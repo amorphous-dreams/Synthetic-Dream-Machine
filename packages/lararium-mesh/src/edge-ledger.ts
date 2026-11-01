@@ -11,8 +11,12 @@
  * which raises this vessel already answered on the key side (`rolled` — every counted raise owes one roll of
  * the seat it names at each acting vessel, once, kapae#/keys).
  *
- * It holds signed acts and nothing compiled about anyone. It crosses to no other operator: no federation gate
- * names its address (`edgeLedgerDocUrl`).
+ * It holds signed acts and signed rolls, and nothing compiled about anyone. It crosses to no peer: the vessel classes
+ * it `vessel-private` under the `device` owner, which no relation opens (road `T33`).
+ *
+ * A ROLL MARK COUNTS ONLY UNDER ITS RECEIPT (road `T33`). Each `rolled/<raise>` row holds the whole roll this vessel's
+ * own island signed, and every reader counts a row only where that receipt verifies under the ledger's own key and
+ * the roll answers that raise. A row a hand planted answers nothing, and never blocks the genuine mark.
  *
  * `readLedgeredEdgeBoard` gives every shore the ONE read a door takes: the board replica and the ledger, in one
  * call, keeping what counted and restoring what the board lost. A node and a browser leaf compose the same call.
@@ -29,7 +33,7 @@ import { verifiedVouchesFromBoard, verifiedVouchesFromRecords, vouchEdgeId, vouc
 import { tiddlerText } from "./base-doc.js";
 import { storedLarRecord } from "./stored-record.js";
 import { NEXUS_AID_PATTERN } from "./wax-stamp.js";
-import type { SeatRoll } from "./seat-duties.js";
+import { verifiedSeatRoll, type SignedSeatRoll } from "./seat-duties.js";
 import {
   edgeKapaeActsFromRecords, edgeRollAnchorsFromRecords, edgeRollAnchorCid, writeEdgeKapae, writeEdgeRollAnchor, mergeEdgeActs, mergeEdgeRollAnchors,
   readEdgeBoard, type CountedEdgeBoard, type EdgeAuthority, type EdgeBoardRead, type EdgeCharter, type EdgeKapae, type EdgeRollAnchor, type KeptEdgeRows,
@@ -181,68 +185,98 @@ export function restoreToBoard(draft: LarDoc, missing: CountedEdgeBoard): number
   return missing.acts.length + missing.anchors.length;
 }
 
-/** The raises this vessel already answered on the key side, for one board. */
-export function rolledRaises(ledger: LarDoc | undefined | null, scope: string): Set<string> {
-  return new Set(marksOf(ledger, scope, "rolled").keys());
+/**
+ * The roll marks one board holds that THIS vessel signed: raise cid → the roll, receipt and all. A row counts only
+ * where its receipt verifies under `vesselKey` (the key the ledger is named by), its scope names this board, and its
+ * raises name the row's own raise. Every other row (no receipt, another key's, one altered after signing) reads as
+ * no mark at all.
+ */
+export function verifiedRollMarks(ledger: LarDoc | undefined | null, scope: string, vesselKey: string): Map<string, SignedSeatRoll> {
+  const out = new Map<string, SignedSeatRoll>();
+  const board = scope.trim().toLowerCase();
+  for (const [raiseCid, text] of marksOf(ledger, scope, "rolled")) {
+    const roll = rowRollOf(text, board, raiseCid, vesselKey);
+    if (roll !== null) out.set(raiseCid, roll);
+  }
+  return out;
 }
 
 /**
- * Remember that this vessel answered one raise on the key side, and HOW. The row holds the roll itself, so the
- * ledger doubles as the roll's durable record: a subscriber that stands later reads every roll this vessel kept
- * (`keptSeatRolls`), whether or not anyone listened when the key act ran. Call INSIDE a `handle.change()` callback.
+ * THE ONE ROW-VALIDITY PREDICATE, read by every reader and by the writer alike (train t4's Sol read): a row's text counts
+ * as this vessel's mark for `raiseCid` on board `scope` only where its receipt verifies under `vesselKey`, its scope names
+ * that board, and its raises name that raise. This vessel's own receipt replayed from another scope or raise holds
+ * nothing here, so it neither answers the raise nor keeps the genuine mark out.
  */
-export function markRaiseRolled(draft: LarDoc, scope: string, raiseCid: string, roll?: Pick<SeatRoll, "edgeId" | "how" | "seat">): void {
+function rowRollOf(text: string, scope: string, raiseCid: string, vesselKey: string): SignedSeatRoll | null {
+  const roll = signedRollOf(text, vesselKey);
+  if (roll === null) return null;
+  if (roll.scope.trim().toLowerCase() !== scope.trim().toLowerCase()) return null;
+  return roll.raiseCids.some((c) => c.toLowerCase() === raiseCid.toLowerCase()) ? roll : null;
+}
+
+/** One row's text as a roll this vessel signed, or null. */
+function signedRollOf(text: string, vesselKey: string): SignedSeatRoll | null {
+  let parsed: unknown = null;
+  try { parsed = JSON.parse(text); } catch { return null; }
+  const roll = verifiedSeatRoll(parsed, vesselKey);
+  return roll === null ? null : { ...roll, receipt: (parsed as { receipt: string }).receipt };
+}
+
+/** The raises this vessel already answered on the key side, for one board: its own signed marks alone. */
+export function rolledRaises(ledger: LarDoc | undefined | null, scope: string, vesselKey: string): Set<string> {
+  return new Set(verifiedRollMarks(ledger, scope, vesselKey).keys());
+}
+
+/**
+ * Remember that this vessel answered one raise on the key side, and HOW. The row holds the signed roll itself, so the
+ * ledger doubles as the roll's durable record: a subscriber that stands later reads every roll this vessel kept
+ * (`keptSeatRolls`), whether or not anyone listened when the key act ran. Call INSIDE a `handle.change()` callback,
+ * with a roll whose receipt the caller already verified under this vessel's key (`verifiedSeatRoll`).
+ *
+ * The first SIGNED answer stands, with one step up: a seat this vessel could not revoke may leave later under the hand
+ * that seated it, and the row then takes that later answer. A row standing there that fails the readers' predicate
+ * (`rowRollOf`: another key's receipt, or this vessel's own replayed from another scope or raise) holds nothing, so the
+ * genuine answer lands over it.
+ */
+export function markRaiseRolled(draft: LarDoc, scope: string, raiseCid: string, roll: SignedSeatRoll, vesselKey: string): void {
   const key = rowKey(scope, "rolled", raiseCid);
-  if (draft.tiddlers[key] !== undefined) {
-    // The first answer stands, with one step up: a seat this vessel could not revoke may leave later under the
-    // hand that seated it, and the row then takes that later answer.
-    const had = tiddlerText(draft.tiddlers[key]!) ?? "";
-    const stoodUnderAnotherHand = had.includes('"how":"no-authority"');
-    if (!stoodUnderAnotherHand || !roll || roll.how === "no-authority") return;
-  }
-  const text = roll ? JSON.stringify({ edgeId: roll.edgeId, how: roll.how, ...(roll.seat ? { seat: roll.seat } : {}) }) : "rolled";
+  const text = JSON.stringify({
+    kind: roll.kind, scope: roll.scope, edgeId: roll.edgeId, raiseCids: [...roll.raiseCids], how: roll.how,
+    ...(roll.seat ? { seat: { group: roll.seat.group, member: roll.seat.member } } : {}), receipt: roll.receipt,
+  });
+  // The incoming roll passes the readers' own predicate for this row, or nothing is written (it would read as no mark).
+  if (rowRollOf(text, scope, raiseCid, vesselKey) === null) return;
+  const had = draft.tiddlers[key] !== undefined ? rowRollOf(tiddlerText(draft.tiddlers[key]!) ?? "", scope, raiseCid, vesselKey) : null;
+  if (had !== null && (had.how !== "no-authority" || roll.how === "no-authority")) return;
   draft.tiddlers[key] = storedLarRecord(key, { text }, scope);
 }
 
 /**
- * The raises whose seat this vessel SAW LEAVE, for one board: revoked here, or gone already. A raise it answered
- * with no authority over the seat stays out: that seat may still stand, so the raise stays owed here, and this
- * vessel tries it again at each settle until it sees the seat leave.
+ * The raises whose seat this vessel SAW LEAVE, for one board: revoked here, or gone already, under its own signed
+ * mark. A raise it answered with no authority over the seat stays out: that seat may still stand, so the raise stays
+ * owed here, and this vessel tries it again at each settle until it sees the seat leave.
  */
-export function raisesSeenThrough(ledger: LarDoc | undefined | null, scope: string): Set<string> {
+export function raisesSeenThrough(ledger: LarDoc | undefined | null, scope: string, vesselKey: string): Set<string> {
   const out = new Set<string>();
-  for (const [raiseCid, text] of marksOf(ledger, scope, "rolled")) if (!text.includes('"how":"no-authority"')) out.add(raiseCid);
+  for (const [raiseCid, roll] of verifiedRollMarks(ledger, scope, vesselKey)) if (roll.how !== "no-authority") out.add(raiseCid);
   return out;
 }
 
 /**
- * The raises this vessel marked answered on the key side for one board, however the seat answered: a subscriber
- * took the roll for each. A counted raise outside this set still owes its roll (kapae#/keys).
+ * The raises this vessel marked answered on the key side for one board, however the seat answered, under its own
+ * signed mark alone (road `T33`): a subscriber took the roll for each. A counted raise outside this set still owes its
+ * roll (kapae#/keys), and a mark a hand planted answers nothing.
  */
-export function raisesMarkedAnswered(ledger: LarDoc | undefined | null, scope: string): Set<string> {
-  return new Set(marksOf(ledger, scope, "rolled").keys());
+export function raisesMarkedAnswered(ledger: LarDoc | undefined | null, scope: string, vesselKey: string): Set<string> {
+  return new Set(verifiedRollMarks(ledger, scope, vesselKey).keys());
 }
 
 /**
- * Every roll this vessel kept for one board, one per raise, sorted by raise. THE CONTENT-KEY SEAM'S DURABLE HALF
- * (kapae#/keys): a subscriber catches up from here, and a row marked with no roll beside it reads as answered
- * with nothing known of how.
+ * Every roll this vessel kept and signed for one board, one per raise, sorted by raise, each with its receipt. THE
+ * CONTENT-KEY SEAM'S DURABLE HALF (kapae#/keys): a subscriber catches up from here and verifies each receipt again.
  */
-export function keptSeatRolls(ledger: LarDoc | undefined | null, scope: string): SeatRoll[] {
-  const out: SeatRoll[] = [];
-  for (const [raiseCid, text] of [...marksOf(ledger, scope, "rolled")].sort(([a], [b]) => a.localeCompare(b))) {
-    let parsed: unknown = null;
-    try { parsed = JSON.parse(text); } catch { parsed = null; }
-    const r = (typeof parsed === "object" && parsed !== null ? parsed : {}) as Record<string, unknown>;
-    const how = r["how"] === "revoked" || r["how"] === "gone" || r["how"] === "no-authority" ? r["how"] : null;
-    if (how === null || typeof r["edgeId"] !== "string") continue;
-    const seat = r["seat"] as Record<string, unknown> | undefined;
-    out.push({
-      kind: "seat-roll", scope, edgeId: r["edgeId"], raiseCids: [raiseCid], how,
-      ...(seat && typeof seat["group"] === "string" && typeof seat["member"] === "string" ? { seat: { group: seat["group"], member: seat["member"] } } : {}),
-    });
-  }
-  return out;
+export function keptSeatRolls(ledger: LarDoc | undefined | null, scope: string, vesselKey: string): SignedSeatRoll[] {
+  return [...verifiedRollMarks(ledger, scope, vesselKey)].sort(([a], [b]) => a.localeCompare(b)).map(([, roll]) => roll);
 }
 
 /** One read of one edge board as one vessel, with the handles a door goes on to write through. */

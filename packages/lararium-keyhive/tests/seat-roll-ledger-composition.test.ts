@@ -5,6 +5,10 @@ import {
   emptyLarDoc, fleetEdgeBoardDocUrl, makeIslandRepo, materializeSharedLarDoc, signEdgeKapae, writeEdgeKapae,
 } from "@lararium/mesh";
 import { markRaiseRolled } from "../../lararium-mesh/src/edge-ledger.js";
+import { signSeatRoll } from "../../lararium-mesh/src/seat-duties.js";
+/** A roll under this vessel's own receipt, as its island signs it (road `T33`): a mark counts under nothing less. */
+const ownRoll = (scope: string, edgeId: string, cid: string, seed: Uint8Array) =>
+  signSeatRoll({ kind: "seat-roll", scope, edgeId, raiseCids: [cid], how: "gone" }, ed25519SignerFromSeed(seed));
 
 const boot = vi.hoisted(() => ({ dyad: "" }));
 vi.mock("../src/boot-daemon-keyhive.js", () => ({
@@ -17,7 +21,8 @@ describe("the island reads the vessel's seat-roll ledger", () => {
   test("missing vessel ledger answers owing now and a later synced roll answers returned", async () => {
     const rootSeed = new Uint8Array(32).fill(121);
     const root = await ed25519VerifyingKeyFromSeed(rootSeed);
-    const own = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(122));
+    const ownSeed = new Uint8Array(32).fill(122);
+    const own = await ed25519VerifyingKeyFromSeed(ownSeed);
     const peer = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(123));
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     try {
@@ -59,7 +64,8 @@ describe("the island reads the vessel's seat-roll ledger", () => {
         "N missing-ledger gate reads share one pending find").toHaveLength(1);
       vi.useRealTimers();
       const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(own), "ledger:edge");
-      ledger.change((draft) => markRaiseRolled(draft, root, up.actCid, { edgeId, how: "gone" }));
+      const roll = await ownRoll(root, edgeId, up.actCid, ownSeed);
+      ledger.change((draft) => markRaiseRolled(draft, root, up.actCid, roll, own));
       boot.dyad = "";
       await expect(read()).rejects.toThrow("dyad-captured");
       expect(boot.dyad, "the next reading sees the roll that arrived in the main Repo").toBe("returned");
@@ -69,7 +75,8 @@ describe("the island reads the vessel's seat-roll ledger", () => {
   test.each([false, true])("lifted peer with vessel roll=%s", async (rolled) => {
     const rootSeed = new Uint8Array(32).fill(111);
     const root = await ed25519VerifyingKeyFromSeed(rootSeed);
-    const own = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(112));
+    const ownSeed = new Uint8Array(32).fill(112);
+    const own = await ed25519VerifyingKeyFromSeed(ownSeed);
     const peer = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(113));
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     const privateRepo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
@@ -83,7 +90,10 @@ describe("the island reads the vessel's seat-roll ledger", () => {
       const down = await signEdgeKapae({ edgeId: deviceEdgeId(root, peer), raised: false, hand: "holder", parents: [up.actCid] }, signer);
       board.change((draft) => { writeEdgeKapae(draft, up); writeEdgeKapae(draft, down); });
       await fx.register(board, [up.actCid]);
-      if (rolled) ledger.change((draft) => markRaiseRolled(draft, root, up.actCid, { edgeId: deviceEdgeId(root, peer), how: "gone" }));
+      if (rolled) {
+        const roll = await ownRoll(root, deviceEdgeId(root, peer), up.actCid, ownSeed);
+        ledger.change((draft) => markRaiseRolled(draft, root, up.actCid, roll, own));
+      }
       const islandLedger = privateRepo.create(emptyLarDoc());
       const daemonAuth = {
         placeVerifyingKey: own, archiveOpens: false, registerBags: [],
