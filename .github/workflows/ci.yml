@@ -38,6 +38,13 @@ on:
     # whole full-CI matrix here — two answers to one push, and the shard lane's point (a cheap,
     # throwaway proof run) would cost a full CI run every time.
     branches-ignore: ["ci/**"]
+    # Meme, docs and wiki paths raise no run on a push (tools/ci-ignored-paths.json; a test pins these globs equal
+    # to it). A push that changes only these leaves the in-flight run alone. pull_request stays un-ignored.
+    paths-ignore:
+      - "bags/**/*.mem"
+      - "**/*.md"
+      - "wikis/**"
+      - "CHANGELOG.md"
   pull_request:
     branches: [main]
 

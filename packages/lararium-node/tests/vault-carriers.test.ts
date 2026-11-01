@@ -66,10 +66,10 @@ const FCID = "cd".repeat(16);
 
 /** A home holding one file per row the table names, spelled the way each writer spells it. */
 const SOWN: Record<string, string> = {
-  "identity/.vessel-key-joshua.json":           "{}",
+  "identity/.vessel-key.json":           "{}",
   "identity/relay-gate-seed.hex": "ab".repeat(32) + "\n",
-  "identity/.vessel-kel-joshua.json":           "{}",
-  "identity/.vessel-rotating-joshua.json":    "{}",
+  "identity/.vessel-kel.json":           "{}",
+  "identity/.vessel-rotating.json":    "{}",
   "identity/s-slots.bin":                      "slots",
   "identity/sk-slots.bin":                      "serving",
   "identity/gate-root.bin":                  "root",
@@ -83,7 +83,7 @@ const SOWN: Record<string, string> = {
   [`identity/faces/${FCID}/face-owner.bin`]: "x",
   [`identity/faces/${FCID}/fk-slots.bin`]: "tree",
   "identity/face-index.json":                    "{}",
-  [`identity/faces/${FCID}/.persona-group-root-joshua-h0.json`]: "{}",
+  [`identity/faces/${FCID}/.persona-group-root-h0.json`]: "{}",
   [`identity/faces/${FCID}/recovery-device-share-h0.bin`]:      "x",
   [`identity/faces/${FCID}/face-proof-key-h0-${"ab".repeat(16)}.bin`]: "x",
   [`identity/faces/${FCID}/seat-key-h0-${"9e".repeat(16)}.bin`]:       "x",
@@ -98,10 +98,10 @@ const SOWN: Record<string, string> = {
   "identity/.persona-grant-pending.json":       "{}",
   "identity/.persona-admissions.json":          "{}",
   [`identity/faces/${FCID}/anchors-h0.json`]:                   "{}",
-  [`identity/faces/${FCID}/.persona-roster-joshua-h0.json`]: "{}",
-  [`identity/faces/${FCID}/.persona-petnames-joshua-h0.json`]: "{}",
-  [`identity/faces/${FCID}/.persona-declarations-joshua-h0.json`]: "{}",
-  [`identity/faces/${FCID}/.persona-public-handles-joshua-h0.json`]: "{}",
+  [`identity/faces/${FCID}/.persona-roster-h0.json`]: "{}",
+  [`identity/faces/${FCID}/.persona-petnames-h0.json`]: "{}",
+  [`identity/faces/${FCID}/.persona-declarations-h0.json`]: "{}",
+  [`identity/faces/${FCID}/.persona-public-handles-h0.json`]: "{}",
   [`identity/faces/${FCID}/.handle-book-h0.json`]: "{}",
   [`identity/faces/${FCID}/recovery-contact-set-h0.json`]:              "{}",
   [`identity/faces/${FCID}/face-provisional-h0.json`]:          "{}",
@@ -162,7 +162,7 @@ describe("the carrier table", () => {
   test("RED — the cold next key rests on the card alone, so no row names a next-key seed and a file spelled like one answers to no row", () => {
     const { homes, root } = freshHomes();
     try {
-      sow(homes, { "identity/.vessel-next-joshua.json": "{}", "identity/.vessel-next.json": "{}", "identity/.vessel-kel.json": "{}" });
+      sow(homes, { "identity/.vessel-next.json": "{}", "identity/.vessel-kel.json": "{}" });
       expect(carrierTable().map((r) => r.row)).not.toContain("vessel-next");
       const census = carrierCensus(homes);
       expect(census.filter((e) => e.file.startsWith(".vessel-next"))).toEqual([]);
@@ -296,7 +296,7 @@ describe("the S key rotation reads its carriers from the table", { timeout: 30_0
   test("every hot and cold carrier standing names its S-sealed carrier by home and file; plain rows stay out", async () => {
     const v = await founded();
     try {
-      sow(v.homes, { "identity/.vessel-key-joshua.json": "{}", "vessel/sealed/lockbox/aa.bb": "x" });
+      sow(v.homes, { "identity/.vessel-key.json": "{}", "vessel/sealed/lockbox/aa.bb": "x" });
       const carriers = sSealedCarriers(v.homes);
       expect(carriers.map((c) => c.name).sort()).toEqual(v.sealed.map((c) => c.name).sort());
       expect(carriers.some((c) => c.name.includes("/hosting-h"))).toBe(false); // hosting belongs to a face key

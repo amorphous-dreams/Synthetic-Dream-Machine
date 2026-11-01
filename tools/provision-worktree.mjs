@@ -126,9 +126,22 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   let common = join(source, '.git');
   try { common = resolve(source, run('git', ['-C', source, 'rev-parse', '--git-common-dir'], source).trim()); } catch { /* the plain .git stands in */ }
   for (const name of ['TiddlyWiki5', 'mempalace']) {
-    const objects = [join(source, '.git/modules', name), join(common, 'modules', name)].find(dir => existsSync(join(dir, 'objects')));
-    const reference = objects ? ['--reference', objects] : [];
-    run('git', ['-C', destination, 'submodule', 'update', '--init', ...reference, '--', name], destination);
+    // A submodule checked out with its own .git directory (mempalace in the main checkout) holds its objects there, not under modules/.
+    const objects = [join(source, '.git/modules', name), join(common, 'modules', name), join(source, name, '.git'), join(dirname(common), name, '.git')].find(dir => existsSync(join(dir, 'objects')));
+    const plain = ['-C', destination, 'submodule', 'update', '--init', '--', name];
+    if (!objects) {
+      log(`SUBMODULE ${name}: no local module objects stand; the clone dials the network`);
+      run('git', plain, destination);
+      continue;
+    }
+    try {
+      run('git', ['-C', destination, 'submodule', 'update', '--init', '--reference', objects, '--', name], destination);
+      log(`SUBMODULE ${name}: cloned against ${objects}`);
+    } catch (error) {
+      // A reference clone can still dial the network for objects the reference lacks; name it, retry plain, never fail on it.
+      log(`SUBMODULE ${name}: reference clone refused (${error.message.split('\n')[0]}); retrying plain, which dials the network`);
+      run('git', plain, destination);
+    }
   }
   for (const name of ['TiddlyWiki5/tiddlywiki.js', 'mempalace']) {
     if (!existsSync(join(destination, name))) throw new Error(`required submodule input absent: ${name}`);
@@ -174,17 +187,23 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   rmSync(join(destination, 'node_modules/.lares-build'), { recursive: true, force: true });
 
   const grammar = `packages/${WASM}`;
-  const wasmFiles = readdirSync(join(source, grammar)).filter(name => name.endsWith('.wasm'));
-  if (wasmFiles.length !== 1) throw new Error(`expected one grammar wasm; found ${wasmFiles.length}`);
   const stamp = `node_modules/.lares-build/wasm/${WASM}`;
-  const expected = wasmStampBody(source, WASM, wasmFiles[0]);
-  if (!existsSync(join(source, stamp)) || readFileSync(join(source, stamp), 'utf8') !== expected) {
-    throw new Error('grammar wasm provenance differs from source or stamp');
-  }
-  copy(source, destination, `${grammar}/${wasmFiles[0]}`, log);
-  if (wasmStampBody(destination, WASM, wasmFiles[0]) !== expected) throw new Error('copied grammar wasm provenance differs from destination source');
-  copy(source, destination, stamp, log);
-  log(`COPIED provenance grammar wasm: ${expected.trim().replaceAll('\n', ' | ')}`);
+  const wasmFiles = readdirSync(join(source, grammar)).filter(name => name.endsWith('.wasm'));
+  if (wasmFiles.length === 1) {
+    const expected = wasmStampBody(source, WASM, wasmFiles[0]);
+    if (!existsSync(join(source, stamp)) || readFileSync(join(source, stamp), 'utf8') !== expected) {
+      throw new Error('grammar wasm provenance differs from source or stamp');
+    }
+    copy(source, destination, `${grammar}/${wasmFiles[0]}`, log);
+    if (wasmStampBody(destination, WASM, wasmFiles[0]) !== expected) throw new Error('copied grammar wasm provenance differs from destination source');
+    copy(source, destination, stamp, log);
+    log(`COPIED provenance grammar wasm: ${expected.trim().replaceAll('\n', ' | ')}`);
+  } else if (wasmFiles.length === 0) {
+    // The source tree holds no grammar wasm: build it in the destination, which stamps its own provenance.
+    run('pnpm', ['run', 'build:wasm'], join(destination, grammar));
+    if (readdirSync(join(destination, grammar)).filter(name => name.endsWith('.wasm')).length !== 1) throw new Error('build:wasm left no single grammar wasm');
+    log(`BUILT ${grammar} wasm (build:wasm; the source held none)`);
+  } else throw new Error(`expected one grammar wasm; found ${wasmFiles.length}`);
 
   const tw5 = join(destination, 'packages/lararium-tw5');
   rmSync(join(tw5, 'tw5-core'), { recursive: true, force: true });
@@ -211,7 +230,11 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   return { destination, head };
   } catch (error) {
     try { run('git', ['-C', source, 'worktree', 'remove', destination], source); }
-    catch (cleanupError) { throw new Error(`${error.message}; plain git worktree remove refused: ${cleanupError.message}`, { cause: error }); }
+    catch (plainError) {
+      // Git refuses a plain remove when the tree holds submodules; this tree is the one provision just added, so force is ours to use.
+      try { run('git', ['-C', source, 'worktree', 'remove', '--force', destination], source); }
+      catch (forceError) { throw new Error(`${error.message}; git worktree remove refused: ${plainError.message}; --force refused: ${forceError.message}`, { cause: error }); }
+    }
     throw error;
   }
 }
