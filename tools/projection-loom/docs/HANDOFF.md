@@ -2,6 +2,24 @@
 
 **Working PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · `feature/green-jello-dinosaur-5--projection-loom` · **2026-10-31**. Inspect the current branch head, exact-head Actions, and the complete [Lares boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) from `feature/green-jello-dinosaur-5` before claiming current evidence. This is the only human-facing Loom handoff; the root [README](../README.md) is its entrance, and the live Lares operational carrier owns intent.
 
+## Current operator direction · YIN-only consolidation
+
+**Operator ruling (2026-10-31 Pacific):** stop new feature work and consolidate the existing Machina. Do not begin native heredity expansion, new emitters, generalized route grammar, source-conditioned morphology or additional editors. One OODA-HA helm, independent STEP and source authority, source/lineage rights, dissent and operator control persist. PR remains open and unmerged. The earlier new-feature program stays deferred testimony in the relational design and Git, not today's backlog.
+
+**Landed feature-neutral consolidation (code history, no inferred current-head acceptance):**
+
+| Wave | Commit | Delivered |
+| --- | --- | --- |
+| YIN I · native presentation | `12b2ba60` | Shared the pixel-exact native six-view sheet for place and topology galleries; direct original-layout PNG equality regression |
+| YIN II · immutable receipt ownership | `44c804b8` | Extracted `receipt_store.save_once` from generalized campaign, rewired identified call sites, preserved hard-link immutable publication; tests and static architecture refusal of the old import |
+| YIN III · native study idempotence | `e26b203d` | Shared read-only completed-study re-entry across orthogonal, compound, topology and recombination studies; no rebuild on repeat; incomplete and changed-source refusals |
+| YIN IV · seed input isomorphism | `3f188e19` | Added reversal-of-adapter-order metamorphic experiment comparing normalized source, typed construction and bounded native campaign receipts |
+| YIN aftermath repair | `8141d8dc` | Replaced malformed literal backslash-n escapes in the new receipt module header with actual Python line breaks; preserved the writer body |
+
+**Known red witness:** the CAD workflow at `44c804b8` failed its *Guard alpha architecture, Python syntax and installed packages* step. Inspection found the receipt-header syntax defect, subsequently repaired by `8141d8dc`. No older green head certifies the repair. Latest exact-code-head CAD, generalized and Fire jobs were pending at this recording. The earlier repository-wide CI Witnesses job failure at `9e3fa57b` remains a separate unresolved upstream/repo acceptance issue; do not attribute it to these Loom refactors without individual logs.
+
+**Next YIN Aftermath:** inspect the latest exact-head CAD/generalized/Fire, repository-wide and held-out results; repair evidence-backed regressions; reconfirm the two-front/15-carrier guard, import ownership and all negative native/idempotence witnesses. Only then consider further behavior-preserving CLI-domain extraction or study I/O cleanup. No speculative new features.
+
 ## O-takiage · completed, Git keeps the ledger
 
 - **Markdown:** `tools/projection-loom/` now contains exactly two tracked Markdown files: `README.md` and `docs/HANDOFF.md`. Earlier design, guide, research, experiment, roadmap, and temporary ashes Markdown files have been retired as actual deletions. Neither source geometry nor independently native-evidenced receipts nor lineage artifacts were deleted.
@@ -60,14 +78,27 @@ python scripts/check_living_docs.py
 python -m pytest -q tests
 ```
 
-## Next OODA-HA program · feature → aftermath → L-prime
+## YIN OODA-HA · feature-neutral Aftermath and evergreen
 
-1. **Finish this closure:** inspect exact-head workflow jobs, repair real regressions, verify the live two-front/15-carrier gate and tracked path census. Independently check any consumer that still demands old `lar:` IDs. Leave operator-controlled promotion and PR merge separate from archive retirement.
-2. **Native heredity, test-first:** under the **one** `projection_loom.fractal_ooda_ha` controller and `OODAHAJournal`, make a complete, independently STEP-admitted parent route into a bounded-mutation parent→distinct-child→descendant three-epoch witness. Derive the route-family from `PlaceGenome + SpatialIntent`; separately bind actual native admission, source obligations, digests, exact budgets, and adversarial replay. No descriptor alone counts as STEP proof.
-3. **Aftermath/consolidation:** match native 2-/3-hop alternatives on frozen source bodies, adversarially test construction refusal before output roots exist, enforce original connect/shelter/ascend/bear goals and fixed-camera six-view replay. Keep construction refusal, native rejection, deferral, admission, source and visualization distinct.
-4. **Second-strategy trial:** compare source-conditioned semantic reconstruction against complete-parent-region mutation with independent native receipts under equal budgets and the same one helm. Preserve the earlier reconstruction-first design as attributed dissent; do not rewrite history into agreement.
-5. **Later operator-facing work:** independent photo/DEM frames and actual Unreal Editor execution, true load/accessibility testing, and aesthetic selection each need their own measured gates and explicit human review. They are not already proved by archive cleanup, render fidelity, or general CI.
+✶ **Observe:** live exact head, source import seams, deterministic receipts and all native witnesses.  
+⏿ **Orient:** shared mechanics belong below campaigns, but independent source/STEP verifiers remain separate authorities.  
+◇ **Decide (operator):** YIN consolidation only; later native heredity and image/grammar expansion are held, not authorized work.  
+▶ **Act:** the five committed waves above, including the receipt-header repair; do not report an unrun test as green.  
+↺ **Aftermath:** read current CI outcomes, preserve old research in Git, keep only README + HANDOFF as living Markdown, and recheck `scripts/check_living_docs.py`.
 
-**Hold:** no second evolutionary scheduler, compatibility aliases, inferred canonical promotion, structural safety claims, automatic winner, PR merge or release of original CAD/source/evidence/lineage.
+**Still open:** final-head acceptance; investigation of repository-wide Witnesses failures; remaining CLI monolith and partial study I/O duplication; no authorized deletions. An exact native STEP/geometry verifier may share pure utility code but must not self-certify a producer's claims.
 
-**Yield:** Git holds the old words. Lares holds live intent. Source and native tests decide what actually exists.
+**Local repeatable gates** (CAD-capable environment):
+
+```bash
+cd tools/projection-loom
+python -m compileall -q projection_loom scripts
+python scripts/check_architecture.py
+python scripts/check_living_docs.py
+python -m pytest -q tests/test_native_six_view_contract.py tests/test_receipt_store_contract.py tests/test_native_study_reentry.py tests/test_seed_order_isomorphism.py
+python -m pytest -q tests
+```
+
+**Hold:** one OODA-HA helm, no compatibility aliases, no implied engineering safety/artistic winner, no new feature expansion, PR merge, pet-name/canon promotion or irreversible o-takiage.
+
+**Yield:** source and native witness before convenience; same inputs, same observable receipts; the operator retains the next bearing.
