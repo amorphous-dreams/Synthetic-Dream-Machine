@@ -893,3 +893,23 @@ test("RED: a queued entry whose CI reads no verdict (unread, a hard read error) 
   assert.equal(r2.code, 11, lines.join("\n"));
   assert.match(lines.join("\n"), /DROPPED a: LANE NOT GREEN/);
 });
+
+test("RED: the class reads what LANDS: a lane editing a path the span renamed into the class needs its SHIP (merge-tree follows the rename; the lane's own diff never names the new path)", async () => {
+  const w = world(["a"]);
+  const c0 = w.commit(w.work, "src/x.txt", "l1\nl2\nl3\nl4\nl5\n", "add x — merge PR #1: x");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  sh(w.work, "checkout", "-q", "-B", `${SPAN}--a`, c0);
+  w.heads.a = w.commit(w.work, "src/x.txt", "l1\nl2\nEVIL\nl4\nl5\n", "lane edits x");
+  sh(w.work, "push", "-q", "-f", "origin", `${SPAN}--a`); sh(w.work, "checkout", "-q", SPAN);
+  sh(w.work, "mv", "src/x.txt", "src/custody-x.txt"); sh(w.work, "commit", "-q", "-m", "rename into the class — merge PR #2: shipped");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  const SP = originRef(w, SPAN);
+  const r = await runQ(w);
+  assert.equal(r.code, 12, r.out);
+  assert.match(r.out, /NO SHIP: a .*src\/custody-x\.txt/);
+  assert.equal(originRef(w, SPAN), SP, "nothing landed");
+  // CONTROL: the SHIP for the lane's exact head lets it land.
+  mkdirSync(join(w.dir, "ship"), { recursive: true });
+  writeFileSync(join(w.dir, "ship", `a-${w.heads.a}.md`), `sha: ${w.heads.a}\nread: controller read of the landed tree\n`);
+  assert.equal((await runQ(w)).code, 0);
+});
