@@ -132,7 +132,7 @@ export function presenterStandsAside(shadow: ShadowConsult | null | undefined, p
  * device of the face's own PersonaGroup, proven over the sibling session: it holds STANDING, never the vessel. It
  * is neither a house member nor the operator's own node, so it never shares freely: every doc it asks for passes
  * the sibling gate, which a vessel composes from its PersonaGroup ring (`composeSiblings`) over the public boards —
- * the face's own planes and nothing else, never the @daemon, never another face's planes.
+ * the face's own planes and nothing else, never the daemon-plane, never another face's planes.
  */
 export interface SiblingShare {
   /** True for a peer a sibling channel PROVED. */

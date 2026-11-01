@@ -2698,7 +2698,7 @@ async function prepareNodeBootOn(
     //
     // The SAME ring decides for this face's SIBLINGS, by its own path (`composeSiblings`): a device the face's
     // PersonaGroup delegated, proven over the sibling session, reaches the face's own planes and the public
-    // boards — never the @daemon, never another face's planes. Its proof source is the sibling channel's alone;
+    // boards — never the daemon-plane, never another face's planes. Its proof source is the sibling channel's alone;
     // the grant path reads only what this vessel's inbound gate proved.
     if (personaGroupId && deviceEdge?.personaRootDid && personaKelPrefix && personaKelChain) {
       const ring = await assemblePersonaGroupRing({
@@ -3173,7 +3173,7 @@ async function prepareNodeBootOn(
 
     // realm-bag — REGISTER a bag this vessel's steward keeps on the realm's shared CRDT (realm-bag-brief): the
     // record `{ bagUri, docUrl, keptBy, readTier }` sealed by the key the acting face (`face`, else the one face standing open) presents to the
-    // realm's Nexus, landed on the realm doc, and announced on @crossroads as `{ bagUri, keptBy }` alone. The
+    // realm's Nexus, landed on the realm doc, and announced on crossroads-plane as `{ bagUri, keptBy }` alone. The
     // steward door holds the whole verb (`realm-steward`): it picks the signer, and it never reaches a root.
     // The verb names its realm (`args.realm`); an act in a cabal realm stands the vessel there.
     registry.register("realm-bag", (args) => runRealmBag({

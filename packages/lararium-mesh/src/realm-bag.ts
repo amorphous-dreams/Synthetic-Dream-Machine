@@ -2,7 +2,7 @@
  * realm-bag — a bag two operators keep THROUGH a relation, registered on the realm's shared CRDT.
  *
  * THE RULING (scale-stories-basket-one#/exit, 2026-09-11): "the shared bag registers in the realm's shared
- * CRDT, @crossroads names only that it exists, read at CONTRACT". Three planes, never fused
+ * CRDT, crossroads-plane names only that it exists, read at CONTRACT". Three planes, never fused
  * (cabal-realm#six-joints): the CABAL is the collective, the REALM its shared CRDT and resources, the NEXUS the
  * hardware. A bag two households keep is stuff held in common — it belongs to the REALM plane.
  *
@@ -111,7 +111,7 @@ export { REALM_BAG_DOMAIN };
 /** The tiddler prefix registrations accrete under on the realm doc. */
 export const REALM_BAG_PREFIX = "lar:///ha.ka.ba/dreamnet/realm-bags/" as const;
 
-/** The tiddler prefix the @crossroads announce rides under — `{ bagUri, keptBy }` and nothing more. */
+/** The tiddler prefix the crossroads-plane announce rides under — `{ bagUri, keptBy }` and nothing more. */
 export const REALM_BAG_ANNOUNCE_PREFIX = "lar:///ha.ka.ba/dreamnet/realm-bag-announce/" as const;
 
 /** The steward's seal and signer, and the reading of a steward's name: the record's own vocabulary. */
@@ -476,7 +476,7 @@ export function mayWriteRealmBag(
  * What the public plane carries about a realm bag — that it exists, who keeps it, and (for a PUBLIC-tier book
  * ALONE) the doc the book lives in.
  *
- * THE RULING (2026-09-13): "the @crossroads ANNOUNCE carries the doc url for PUBLIC-tier books only; the realm
+ * THE RULING (2026-09-13): "the crossroads-plane ANNOUNCE carries the doc url for PUBLIC-tier books only; the realm
  * doc never emits a public face; the Herm follows announces." A carrier reads the PUBLIC tier by hash, and the
  * declaration that a book reads public lives on the realm doc — which withholds from a carrier. So a carrier
  * could never learn WHICH books it may carry. The public plane closes that circle and nothing else moves: a
@@ -495,7 +495,7 @@ export function realmBagAnnounceKey(bagUri: string): string {
   return `${REALM_BAG_ANNOUNCE_PREFIX}${encodeURIComponent(bagUri)}`;
 }
 
-/** The announce a registration projects onto @crossroads — the exists · kept-by pair, plus the doc for a
+/** The announce a registration projects onto crossroads-plane — the exists · kept-by pair, plus the doc for a
  *  PUBLIC-tier book alone; every tighter tier withholds the address exactly as it always did. */
 export function crossroadsAnnounceOf(rec: RealmBagRegistration): RealmBagAnnounce {
   return {
@@ -511,7 +511,7 @@ export interface PublicRealmBook {
 }
 
 /**
- * THE CARRIER'S FOLD — every PUBLIC book the @crossroads board announces, read off a carrier's OWN replica of
+ * THE CARRIER'S FOLD — every PUBLIC book the crossroads-plane board announces, read off a carrier's OWN replica of
  * that board. A place that holds no charter and no realm doc learns here which books it may carry BY HASH, and
  * learns nothing else: an announce without a doc url (every tier tighter than PUBLIC) names no book, a torn
  * payload skips, and an empty board folds empty. The fold grants no read cap — the wire gate still decides

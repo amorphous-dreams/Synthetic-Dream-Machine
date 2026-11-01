@@ -1,6 +1,6 @@
 /**
  * floor-manifest — a CID names history-free system snapshots beside the engine CIDs.
- * The floor lends every wiki a read-only @oracle face; edits copy into that wiki's
+ * The floor lends every wiki a read-only oracle-floor face; edits copy into that wiki's
  * working layer. Kit: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane, first slice.
  */
 

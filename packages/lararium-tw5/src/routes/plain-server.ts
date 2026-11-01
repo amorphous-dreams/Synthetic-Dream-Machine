@@ -4,7 +4,7 @@
  * globals ride the `host-globals` startup module, which runs before any route answers):
  *
  * THE CONTAINER LAW. A 1-wiki server holds ONE container, and `recipes/default` and `bags/default`
- * both name it (TiddlyWeb's own stub). `default` names THE HOST'S ANCHOR — the one wiki here; @daemon
+ * both name it (TiddlyWeb's own stub). `default` names THE HOST'S ANCHOR — the one wiki here; daemon-plane
  * on a lares island — and any other recipe or bag is a name the server cannot resolve. A bag the
  * server cannot name MUST NOT swallow a write, so the skins answer 404 with a one-line body before
  * the path is read.

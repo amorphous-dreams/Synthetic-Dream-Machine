@@ -137,7 +137,7 @@ export interface KindleResult {
   readonly deviceVerifyingKey: string;
   /** The materialized oracle island url (the engine + genesis the bulb carried). */
   readonly oracleUrl:          string;
-  /** The fresh @identities doc url the ceremony seeded (a SOVEREIGN social plane, not the Herm's). */
+  /** The fresh identities-plane doc url the ceremony seeded (a SOVEREIGN social plane, not the Herm's). */
   readonly identitiesUrl:      string;
   /** The fresh circles doc url the ceremony seeded. */
   readonly circlesUrl:         string;

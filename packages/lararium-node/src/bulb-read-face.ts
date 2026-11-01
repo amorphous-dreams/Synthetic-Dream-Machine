@@ -59,7 +59,7 @@ export interface RealmShoreBook {
 }
 
 /**
- * THE CARRIER'S OWN LANE — the books a Herm folds off its @crossroads replica.
+ * THE CARRIER'S OWN LANE — the books a Herm folds off its crossroads-plane replica.
  *
  * A Herm holds no charter, so it stands in no realm and folds no registration: the realm lane above named
  * nothing on the one vessel it was built for (measured — `nexus realm-bags` on the Herm read `bags: []` while
@@ -98,7 +98,7 @@ export async function announcedRealmBooks(opts: {
  *
  *   · THE REGISTRATION ROAD — every registration this vessel's realm plane carries, at the tier the
  *     registration DECLARED. A vessel that stands in no realm folds nothing here.
- *   · THE ANNOUNCE ROAD — the PUBLIC books the @crossroads board names (`announcedRealmBooks`).
+ *   · THE ANNOUNCE ROAD — the PUBLIC books the crossroads-plane board names (`announcedRealmBooks`).
  *
  * THE REGISTRATION WINS THE COLLISION. A bag the registration road already named never takes a second entry
  * off the board, so a stale PUBLIC announce can never re-tier a book whose registration reads CONTRACT here.

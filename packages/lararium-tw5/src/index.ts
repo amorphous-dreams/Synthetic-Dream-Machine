@@ -184,7 +184,7 @@ export {
   makeWardAlertReactor, fileWardRefusal,
 } from "./worker-data-verbs.js";
 export type { ResidencyOpPost } from "./worker-data-verbs.js";
-// The FOLLOW-GRAPH verbs over the sovereign @circles doc (source of truth; PRIVATE, fleet-synced
+// The FOLLOW-GRAPH verbs over the sovereign circles-plane doc (source of truth; PRIVATE, fleet-synced
 // same-operator, NEVER federated). Both vessels register them through the shared operator-daemon-behavior.
 export {
   makeCircleReactors, makeCircleAddReactor, makeCircleRemoveReactor, makeCircleListReactor,
@@ -195,7 +195,7 @@ export type { CircleVerbOptions, ResolveCirclesStore } from "./circle-verbs.js";
 // thread calls them from its custody door.
 export { readPersonaSelves, writePersonaSelfName } from "./persona-selves-plane.js";
 export type { PersonaSelfRow } from "./persona-selves-plane.js";
-// The CABAL-REALM verbs over @daemon — the OFFERING that feeds a realm, and the verdict-free capture-clock.
+// The CABAL-REALM verbs over daemon-plane — the OFFERING that feeds a realm, and the verdict-free capture-clock.
 export { makeCabalRealmReactors, makeRealmFeedReactor, makeRealmClockReactor } from "./cabal-realm-verbs.js";
 export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-verbs.js";
 // Verb-plane reactors (composite/repo-only — pono home is tw5, not node; both vessels hold them).

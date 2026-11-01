@@ -112,7 +112,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   // ── Daemon doc handle (node strategy: merge-on-late-arrival) ────────────────
   const daemonHandle = await resolveBootDoc<LarDoc>(
     repo, daemonUrl as AutomergeUrl,
-    // A caller reaching @daemon by url holds it from the bootstrap, so absence reads as a flush in
+    // A caller reaching daemon-plane by url holds it from the bootstrap, so absence reads as a flush in
     // flight rather than as an absent doc, and earns the grace before it gets believed.
     { tideline: "hearth-private", label: PLANE_LABELS.daemon, settled: () => repo.flush() },
   );
