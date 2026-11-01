@@ -60,7 +60,7 @@ def open_plane_store(palace_root: str, plane: str):
     if plane == "persistence":
         from persistence_io import PersistenceStore
         return PersistenceStore(path)
-    from form_encoder import FormPalaceStore
+    from form_store import FormPalaceStore
     return FormPalaceStore(path)
 
 

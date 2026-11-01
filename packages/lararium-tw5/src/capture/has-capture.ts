@@ -95,8 +95,7 @@ export function hasCapture(opts: CaptureCapOptions): IslandCap {
             gate_maxDepth: frame.gate.maxDepth,
           },
         });
-      // Pass ctx so the vessel can wire the IN-VM annotate ($tw.lares.captureAnnotateVm via ctx.tw5.$tw)
-      // — the parse/harvest runs inside this island's TW5 engine, not the worker around it.
+      // Pass ctx so the vessel wires the engine against this island's own TW5 engine.
       const e = makeEngine(post, ctx);
       engine = e;
       await e.recover(); // open sessions survive a restart (WAL replay)

@@ -6,8 +6,8 @@ per-test unless something makes it per-test, and the three leaks below all measu
 
   1. HANDLES NEVER CLOSED. `mempalace.palace.get_collection` caches ONE PersistentClient per palace
      dir on a long-lived backend singleton and never closes it. Measured over `test_content_io.py`
-     alone: open fds 31 -> 312 across 28 tests (~10 per test), while `test_loci_io.py` — same run,
-     no chroma — held flat at 312. Over a whole-suite run the curve ran 12 -> 1245 and a set of
+     alone: open fds 31 -> 312 across 28 tests (~10 per test), while a no-chroma suite in
+     the same run held flat at 312. Over a whole-suite run the curve ran 12 -> 1245 and a set of
      wall-clock-deadline guards (`serve_loop` idle-reap, 0.5s TTL under a 5s assert) lost their
      margin and reddened, each one green when its file ran alone.
 

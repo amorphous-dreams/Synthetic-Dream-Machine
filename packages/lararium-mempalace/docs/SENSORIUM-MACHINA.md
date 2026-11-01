@@ -42,7 +42,7 @@ Two laws bound everything below:
 A sensorium composes as a **nameless entity #has a cap-stack** — never a typed hierarchy. `compose_sensorium(source, land, embed, [worldline])`. **[BUILT: `sensorium.py`.]**
 
 ### 3.1 · The Li planes (three) — content ⊥ structure ⊥ form
-The *what* of a memory, factored into three orthogonal stores: **content** (the text/vectors — `content_io`, chroma), **structure** (the AST/shape — `structurepalace_io`), **form** (the induced schema — `form_encoder`). Each a caller-vector holder over the shared `holder_caps` NDJSON floor. **[BUILT.]**
+The *what* of a memory, factored into three orthogonal stores: **content** (the text/vectors — `content_io`, chroma), **structure** (the AST/shape — `structurepalace_io`), **form** (the induced schema — `form_store`). Each a caller-vector holder over the shared `holder_caps` NDJSON floor. **[BUILT.]**
 
 ### 3.2 · The Ki bindings — resonance across the Li planes
 The *coupling* between planes and across worldlines. **A Ki binding *is* a coupling-read**: when two traces (or two worldlines' rhythms) cohere, `coupleMesh`/`self-coupling` report P(common-cause) — reversible, χ²-gated, phantom-guarded — **never an entrainment**. The nameless entities the machina hunts surface *here*, as cross-plane resonances, not as pre-stamped labels. **[BUILT: mesh coupling primitives. DESIGNED: the Ki-as-standing-readout wiring.]**

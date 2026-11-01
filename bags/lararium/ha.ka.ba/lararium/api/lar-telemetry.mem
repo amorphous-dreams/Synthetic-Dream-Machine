@@ -68,15 +68,15 @@ Two readers parse the exchange today; one survives.
   grammar runs ''self-hosted'': a tiddler tagged the `SharktoothSigil` grammar tag
   //teaches the parser a new word// (`grammar-cache` reads its `lar-*` fields into a
   `SigilRule`). Adding an instrument adds a tiddler, never code.
-* ''The regex harvester'' — `turn-harvest` reads the whole gradient on the `0..20`
-  band, island-grammar, never dropping source. It earned the gradient discipline;
-  it also ''duplicates the engine's grammar in regex'' — the second reader the
-  `ONE-parser` law forbids.
+* ''No regex reader.'' The regex harvester earned the gradient discipline (the whole
+  gradient on the `0..20` band, island-grammar, never dropping source) and duplicated
+  the engine's grammar in regex — the second reader the `ONE-parser` law forbids. It
+  burned whole (lar:///ha.ka.ba/lararium/api/ingest-canon#/the-harvester-burn).
 
 <<~moves second-reader -> engine-grammar on/the-@daemon-VM if/it-can-read-in-the-engine do/retire-the-regex>>
 
 ''The ruling: if it CAN happen in the wiki''
-''engine, it DOES.'' `turn-harvest`'s regex retires into the engine grammar. One
+''engine, it DOES.'' No regex reader stands beside the engine grammar. One
 grammar SOURCE (the instrument `.tids`), one runtime (the @daemon VM).
 
 !!! Leaf and block
@@ -148,8 +148,8 @@ summons/outcome rail slice-1 `recall` proved).
 
 ''What stands in code.'' The `lar-telemetry` verb (`packages/lararium-tw5/src/verb-caps.ts`,
 `telemetryVerbCap`) calls the telemetry writeback provider, and
-`packages/lararium-sensorium/src/telemetry-writeback.ts` sweeps the drawers the `lar_hv` gate marks,
-reads each turn's gradient (`harvestTurnGradient`) and projects the `lar_*` patch onto the drawer.
+`packages/lararium-sensorium/src/telemetry-writeback.ts` stands as a placeholder that writes nothing
+(operator ruling 2026-10-31, Train Q) until the sensorium arc returns the projection.
 No caller holds a reading on a queue: the three steps below state UNBUILT design.
 
 <<~flows turn -> @daemon-reads-the-instruments -> hold(enqueueNalu) -> next-nalu-flush -> Cmd-projects-lar_*-across-the-shore -> mempalace-drawer>>
@@ -231,6 +231,6 @@ readings AND the form-capture both drain the one emitted-marker stream, no disco
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3GtEux2EspWpuyY-jvnkX0iUNNCqEKmQHMevGVWuDhY
+<<^ code="&#x0003;">>ni:///sha-256;8kQzALsqtzO7NW6s779dy2n3qMftJ8YolOXSsegJhQc
 
 <<^ code="&#x0004;" -> to="?">>

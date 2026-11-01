@@ -346,8 +346,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares sense search \"entrance block\" --lens structure   # hybrid recall over a plane",
       "lares sense status --lens content                       # wings · rooms · entities · total",
-      "lares sense recall keyhive convergent removal           # stamp-filtered verbatim drawers",
-      "lares sense recall fork --voice Council --band canon     # filters compose (AND)",
+      "lares sense recall keyhive convergent removal           # verbatim drawers",
+      "lares sense recall fork --speaker operator --surface claude  # filters compose (AND)",
       "lares sense pour --all                                  # the sovereign re-pave (all sources)",
       "lares sense worldline 0425c035                          # walk a session's spirit tree",
       "lares sense teardown --confirm --drain                  # tear the planes for a clean re-pave",

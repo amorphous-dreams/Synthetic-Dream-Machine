@@ -65,7 +65,7 @@ export interface BranchNode {
   readonly type?: string;
 }
 
-/** A {@link BranchNode} carrying its harvest KEY (turnKeyOf — uuid, or a content hash when uuid absent). */
+/** A {@link BranchNode} carrying its turn KEY (the uuid, or a content hash when the uuid stands absent). */
 export interface KeyedBranchNode extends BranchNode {
   readonly key: string;
 }

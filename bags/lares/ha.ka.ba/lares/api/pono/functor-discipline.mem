@@ -274,7 +274,7 @@ correction ''reversed'' it and returned the read to the stack, so the cap-stack 
 The live proof of the rule it sharpens — no cap, not even a read,
 stays behind.
 
-<<~ pranala #in-vm-derive from="?" -> to="packages/lararium-tw5/src/capture-annotate-vm.ts" family="code" role="has">>
+<<~ pranala #in-vm-derive from="?" -> to="packages/lararium-tw5/src/worldline-read-vm.ts" family="code" role="has">>
 <<~ pranala #coordinator-routes from="?" -> to="packages/lararium-node/src/multi-graph-recall.ts" family="code" role="has">>
 
 A discipline, enacted once here; it earns Canon by talk-story over
@@ -340,6 +340,6 @@ This meme draws the one arrow through all of them — ''the house is a functor; 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qR6jViObAY6FpLi0eUgOPXuZEto3cHvXIZRYoBaHCWg
+<<^ code="&#x0003;">>ni:///sha-256;inGBMiu5Yq9OzESbSjDR-2D0wMCIpLpRxdAE3UIiSks
 
 <<^ code="&#x0004;" -> to="?">>

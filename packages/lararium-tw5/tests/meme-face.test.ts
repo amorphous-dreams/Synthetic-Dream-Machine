@@ -111,11 +111,11 @@ describe.skipIf(wikiSkip)(`$tw.lares.meme — the in-VM face${skipNote}`, () => 
     const parsed = face.parse(URI, meme(["a"]));
     expect(parsed.meme.kind).toBe("Meme");
     expect(parsed.failures).toEqual([]);
-    // CONTROL: `$tw.lares` carries the engine plumbing, the capture · query · worldline VM entries and
-    // the face — and no meme law flat beside the face. One namespace, one spelling per law.
+    // CONTROL: `$tw.lares` carries the engine plumbing, the worldline VM entries and the face — and
+    // no meme law flat beside the face. One namespace, one spelling per law.
     const flat = (engine.$tw as unknown as { lares: Record<string, unknown> }).lares;
     expect(Object.keys(flat).sort()).toEqual([
-      "applyNalu", "captureAnnotateVm", "deriveQuerySkeletonVm", "isApplyingNalu",
+      "applyNalu", "isApplyingNalu",
       "meme", "worldlineCompareVm", "worldlineTrajectoryVm",
     ]);
   });

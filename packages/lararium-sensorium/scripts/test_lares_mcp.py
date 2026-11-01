@@ -332,7 +332,7 @@ def _three_plane_bed(tmp_path):
     import hashlib
 
     import content_io as cio
-    from form_encoder import FormPalaceStore
+    from form_store import FormPalaceStore
     from structure_router import canonical_json, detect_kind, parse_to_tree, structural_hash
     from structurepalace_io import StructurePalaceStore
 
@@ -540,7 +540,7 @@ def test_daemon_recall_plane_lens_owes_the_routing():
 
 
 def test_daemon_pour_routes_to_the_capture_verb(monkeypatch):
-    # pour rides the @daemon `capture` verb (the same verb harvest/`lares sense pour` drives) — the
+    # pour rides the @daemon `capture` verb (the same verb `lares sense capture` drives) — the
     # routed surface REACHES the holder instead of `_owed`-refusing. Record the wire call to prove the
     # verb name + camelCase arg mapping without a live daemon.
     calls = []

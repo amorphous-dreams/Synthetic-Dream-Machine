@@ -129,7 +129,7 @@ def _read_planes(root: str) -> dict:
 
     Record order sorts on (source_file, cid): a stable, content-free corpus order every series
     reads through."""
-    from form_encoder import FormPalaceStore
+    from form_store import FormPalaceStore
     from sensorium import sensorium_paths
 
     paths = sensorium_paths(root)

@@ -2,9 +2,7 @@
 """form_induction — the FORM cap: the corpus's OWN grammar, induced BLIND.
 
 corpus.md #the-form-induction. The COARSEST of the corpus planes (Content ↠ Structure
-↠ FORM — the chain of coarsenings; bands dissolved into the stored address). Where
-`form_encoder.py` scores a turn against a KNOWN constructicon
-(the fuzzy-membership plane, P2 of living-grammar-palace), THIS holder LEARNS the
+↠ FORM — the chain of coarsenings; bands dissolved into the stored address). THIS holder LEARNS the
 constructicon a corpus never told us it had — the nameless learner: miners surface the
 shape, description-length keeps only what pays, and the LLM names LAST (never inside the
 loop).

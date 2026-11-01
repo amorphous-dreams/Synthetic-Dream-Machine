@@ -107,7 +107,7 @@ export function resolveMempalaceSpawn(): MempalaceSpawn {
 
 /**
  * The resolved inputs ANY sensorium holder spawn needs — the ONE shape every holder shares,
- * a `serve` holder (structurepalace · form_encoder) OR a batch holder (structure_router · bands
+ * a `serve` holder (structurepalace · content) OR a batch holder (structure_router · bands
  * · form_induction): the venv-aware python, the helper SCRIPT (CODE at the repo root under
  * @lararium/sensorium's scripts, never LAR_ROOT), the mempalace `submoduleRoot` (spawn cwd + PYTHONPATH
  * so `import mempalace` resolves the nakama), and whether the script is present on disk. This resolver
@@ -151,12 +151,6 @@ export function resolveLaresMcpSpawn(): LaresMcpSpawn {
 export type StructurePalaceSpawn = ResolvedHolderSpawn;
 export function resolveStructurePalaceSpawn(): StructurePalaceSpawn {
   return resolveHolderSpawn("structurepalace_io.py");
-}
-
-/** `form_encoder.py` — the persistent NDJSON `serve` holder for the living-grammar FORM store. */
-export type FormEncoderSpawn = ResolvedHolderSpawn;
-export function resolveFormEncoderSpawn(): FormEncoderSpawn {
-  return resolveHolderSpawn("form_encoder.py");
 }
 
 /** `persistence_io.py` — the persistent NDJSON `serve` holder for a PersistencePalace (testimony) store. */

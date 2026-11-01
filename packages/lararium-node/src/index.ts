@@ -448,7 +448,7 @@ export type {
 // P4 — the RRF multi-graph query: fuse the CONTENT (verbatim mempalace), FORM (.formpalace), and
 // later graphs on verbatim_sha by N-ary reciprocal rank fusion (living-grammar-palace#dual-graph).
 export {
-  fuseMultiGraph, multiGraphRecall, buildFormWhere, combineWhere, makeFormSearch, DEFAULT_RRF_K,
+  fuseMultiGraph, multiGraphRecall, buildFormWhere, makeFormSearch, DEFAULT_RRF_K,
   resolveApertureGrain, apertureWeight, weightByAperture, PARAGRAPH_APERTURE,
   contentKeyOf, contentLeg, formLeg, verbatimShaOf,
 } from "./sensorium-recall.js";

@@ -1,6 +1,6 @@
 /**
  * worldline-read-vm.test.ts — the IN-VM worldline reads (the permainan substrate, lifted into the
- * sovereign daemon worker; the worldline twin of query-derive-vm).
+ * sovereign daemon worker).
  *
  * Proves the reads run IN-VM: the compute fns hold the registry + order/join/shuffle (Wells 1/3/4),
  * the startup publishes them on `$tw.lares`, and the daemon-behavior channel round-trips a compare +
