@@ -257,9 +257,13 @@ test('a `<<` inside a quoted value cites, never calls: the call cuts; a call fed
   assert.equal(one('<<~ has Lock 1b "with our `<<~` overlay loaded">>\n'),
     '<<~ has entity=`Lock` name=`1b` params=```with our `<<~` overlay loaded```>>\n');
   assert.equal(one('<<~ scale ceiling "a ~ x -> b << c ~ y">>\n'), '<<~ scale name=`ceiling` ranks=`a ~ x -> b << c ~ y`>>\n');
-  // CONTROL: a macro fed as a value is a call inside the call, and still lists.
-  const nested = cut('<<~ kue voice=<<x>> key="k">>\n');
-  assert.equal(nested.text, '<<~ kue voice=<<x>> key="k">>\n');
+  // A value an earlier pass closed at the cited `>>` lists: the call runs on past the match.
+  const early = cut('<<~ scale instrument "the <<~…">> ranges are islands >>\n');
+  assert.equal(early.text, '<<~ scale instrument "the <<~…">> ranges are islands >>\n');
+  assert.deepEqual(kinds(early), ['nested']);
+  // CONTROL: a bare `<<` between values is a call inside the call, and still lists.
+  const nested = cut('<<~ scale ceiling a << c>>\n');
+  assert.equal(nested.text, '<<~ scale ceiling a << c>>\n');
   assert.deepEqual(kinds(nested), ['nested']);
 });
 
@@ -276,6 +280,7 @@ test('a renamed head (ranks, folded to scale) reds, never files as unsigned; a c
 test('the census reads every whitespace-led at-sign, a bare one included; a code literal stays out', () => {
   const src = 'Loom-grounded @ 100+ turns; imago @ locus; a `x @ y` span\n\n```\n@<domain> members\n```\n';
   assert.equal(censusText(src, ctx).spacedAt, 2);
+  assert.equal(censusText('<<~ scale name=`p` ranks=```a ~ `x` grounded @ 100 turns```>>\n', ctx).spacedAt, 1);
   assert.equal(censusText('Loom-grounded at 100+ turns; imago at locus\n', ctx).spacedAt, 0);
 });
 

@@ -70,6 +70,8 @@ export const PROSE_VOICES = new Set(["operator", "scene", "enters", "Telarus", "
 /** The turn-frame heads Cut 4 retired; their calls fold into `set lares=` or list. */
 export const RETIRED = new Set(["lares", "hud", "frame", "aperture", "ooda-ha", "drift-ward"]);
 const GAUGES = new Set(["aperture", "ooda-ha", "drift-ward"]);
+/** Heads a ruling renamed (the seed folds `ranks` into `scale`): a call still wearing one REDS, never files as unsigned. */
+export const RENAMED = { ranks: "scale" };
 const PHASES = "_✶⏿◇▶";
 /** A cited placeholder (`<<~ set lares=`aim` …>>`): prose standing in for values, never a value. */
 const ELLIPSIS = /^(…|\.\.\.)$/;
@@ -278,6 +280,7 @@ function signatureOf(ctx, h, toks) {
     return { kind: "house", ...ctx.sigs[`${h.head}~${first.v}`], head: `${h.head}~${first.v}`, compound: first };
   }
   if (ctx.sigs[h.head]) return { kind: "house", ...ctx.sigs[h.head], head: h.head };
+  if (RENAMED[h.head]) return { kind: "renamed", to: RENAMED[h.head] };
   if (PROSE_VOICES.has(h.head)) return { kind: "prose-voice" };
   if (RETIRED.has(h.head)) return { kind: "retired" };
   return { kind: "unsigned" };
@@ -295,11 +298,17 @@ export function cutSigil(ctx, src, opts = {}) {
   const toks = tokenize(h.body);
   const sig = signatureOf(ctx, h, toks);
   if (sig.kind === "foreign") return { unchanged: true, foreign: true };
+  if (sig.kind === "renamed") return { refuse: "renamed", why: `~${h.head} folded into ~${sig.to}: cut it by hand` };
   if (!needsCut(toks)) return { unchanged: true };
   if (sig.kind === "prose-voice" || sig.kind === "unsigned") return { refuse: sig.kind, why: h.head };
   if (sig.kind === "retired") return { refuse: "turn-unmappable", why: `retired ~${h.head}` };
   if (toks.some((t) => t.open)) return { refuse: "unbalanced", why: "an unclosed quote" };
-  if (/<<|>>/.test(h.body)) return { refuse: "nested", why: "a call inside the call" };
+  // A `<<` inside a quoted value cites a sigil and calls nothing (the AFTER oracle binds the value);
+  // a macro fed as a value, or a bare `<<` between values, is a call inside the call.
+  if (toks.some((t) => t.qs === "<<>>" || (t.qs === "" && /<<|>>/.test(t.v)))) return { refuse: "nested", why: "a call inside the call" };
+  // A value ENDING on a cited sigil (`"the <<~…">>`) closed at the citation's own `>>` (an earlier pass
+  // set the quote there): the call runs on past the match, so it lists, never cuts.
+  if (toks.some((t) => t.qs !== "" && /<<\S*$/.test(t.v))) return { refuse: "nested", why: "a value ends on a cited sigil: the call may run on past its >>" };
   const params = sig.params ?? [];
   const pN = params.find((p) => /^p\d+$/.test(p));
   if (pN && toks.some((t) => t.kind === "pos")) return { refuse: "pN", why: `${h.head} still names ${pN}` };
@@ -535,7 +544,7 @@ export function cutText(text, ctx, opts = {}) {
   const envelope = (m, z) => !z.span && (m.src.startsWith("<<^") || m.src.startsWith("<<!DOCTYPE"));
   const push = (start, end, out, z, isEnvelope) => {
     if (opts.envelopeOnly && !isEnvelope) { bodyChanges++; return; }
-    edits.push({ start, end, text: out, span: z.span?.kind === "inline" ? z.span : null });
+    edits.push({ start, end, text: out, span: z.span?.kind === "inline" ? z.span : null, src: text.slice(start, end) });
   };
 
   for (let i = 0; i < matches.length; i++) {
@@ -590,6 +599,7 @@ export function cutText(text, ctx, opts = {}) {
     const r = cutSigil(ctx, m.src, opts);
     if (r.foreign) { counts.foreign++; continue; }
     if (r.unchanged) continue;
+    if (r.refuse === "renamed" && (z.cross || z.span)) continue; // a citation inside a code span, never a call
     if (z.cross) { refuse(m, "crosses-span", "a sigil straddles a code span"); continue; }
     if (z.definition) { refuse(m, "definition-body", "a call inside a procedure definition"); continue; }
     if (r.refuse) { refuse(m, r.refuse, r.why); continue; }
@@ -611,6 +621,11 @@ export function cutText(text, ctx, opts = {}) {
       inner = inner.slice(0, e.start - s.start - s.delim) + e.text + inner.slice(e.end - s.start - s.delim);
     }
     const longest = Math.max(0, ...[...inner.matchAll(/`+/g)].map((x) => x[0].length));
+    if (longest >= 2) {
+      // TiddlyWiki's codeinline rule pairs one or two ticks and no wider run: the span cannot hold this cut.
+      for (const e of es) refusals.push({ rel, line: lineAt(text, e.start), kind: "wide-span", why: "the span would need a run of three or more ticks", src: e.src.replace(/\n/g, "⏎").slice(0, 140) });
+      continue;
+    }
     let out;
     if (longest >= s.delim) {
       const d = "`".repeat(longest + 1);
@@ -650,7 +665,7 @@ export function cutText(text, ctx, opts = {}) {
 
 export function censusText(text, ctx) {
   const spans = spansOf(ctx, text);
-  const c = { sigils: 0, arrows: 0, quotedNamed: 0, positional: 0, spacedAt: 0, phase: 0, turnFrame: 0, filePath: 0 };
+  const c = { sigils: 0, arrows: 0, quotedNamed: 0, positional: 0, spacedAt: 0, phase: 0, turnFrame: 0, filePath: 0, renamedHead: 0, tickMismatch: 0, wideInline: 0 };
   for (const m of text.matchAll(SIGIL)) {
     if (spanAt(spans, m.index)?.kind === "toml") continue;
     const h = readHead(m[0]);
@@ -658,6 +673,7 @@ export function censusText(text, ctx) {
     const sig = signatureOf(ctx, h, toks);
     if (sig.kind === "foreign") continue;
     c.sigils++;
+    if (sig.kind === "renamed" && !spanAt(spans, m.index)) c.renamedHead++;
     if (sig.kind === "retired" || (h.head === "set" && toks.some((t) => t.name === "hud"))) c.turnFrame++;
     for (const t of toks) {
       if (t.kind === "arrow") c.arrows++;
@@ -672,7 +688,54 @@ export function censusText(text, ctx) {
     if (ctx.planes.out.has(m[2])) continue;
     c.spacedAt++;
   }
+  // A bare at-sign after whitespace (`grounded @ 100 turns`) is prose the at-name map never reads;
+  // a code literal (`@<domain>` in a fence) and the phase glyph (`1φ @◇`, counted above) stay out. A
+  // sigil's ticked value (`ranks=```… @ …````) carries prose, so it counts.
+  for (const m of text.matchAll(/(^|\s)@(?![A-Za-z])/gm)) {
+    const at = m.index + m[1].length;
+    const s = spanAt(spans, at);
+    if ((s && !(s.kind === "inline" && text[s.start - 1] === "=")) || /φ[ \t]*$/.test(text.slice(Math.max(0, at - 4), at))) continue;
+    c.spacedAt++;
+  }
+  const ticks = tickFaults(text, ctx, spans);
+  c.tickMismatch = ticks.mismatch.length;
+  c.wideInline = ticks.wide.length;
   return c;
+}
+
+/**
+ * The tick law, read as TiddlyWiki's codeinline rule reads it: a span opens on one or two ticks and
+ * closes at the next occurrence of that same delimiter. A span opening on a run of three or more is
+ * `wide` (TiddlyWiki pairs no such delimiter); one closing on a run of another length, or never closing
+ * inside its paragraph, is a `mismatch`. Block fences, the toml meta block and every house sigil (its
+ * ticked values belong to the call, never to a span) are masked first. Returns the lines of each fault.
+ */
+export function tickFaults(text, ctx, spans = spansOf(ctx, text)) {
+  const chars = text.split("");
+  const blank = (a, b) => { for (let k = a; k < b; k++) if (chars[k] !== "\n") chars[k] = " "; };
+  for (const s of spans) if (s.kind !== "inline") blank(s.start, s.end);
+  for (const m of text.matchAll(SIGIL)) {
+    const a = spanAt(spans, m.index), b = spanAt(spans, m.index + m[0].length - 1);
+    if (a === b && a?.kind !== "toml") blank(m.index, m.index + m[0].length);
+  }
+  const masked = chars.join("");
+  const mismatch = new Set(), wide = new Set();
+  const runAt = (i) => { let n = 0; while (masked[i + n] === "`") n++; return n; };
+  let offset = 0;
+  for (const para of masked.split(/\n[ \t]*\n/)) {
+    for (let i = 0; i < para.length;) {
+      if (para[i] !== "`") { i++; continue; }
+      const run = runAt(offset + i);
+      const delim = run >= 2 ? "``" : "`";
+      const close = para.indexOf(delim, i + delim.length);
+      const line = lineAt(text, offset + i);
+      if (run > 2) wide.add(line);
+      else if (close < 0 || runAt(offset + close) !== delim.length) mismatch.add(line);
+      i = close < 0 ? i + run : close + runAt(offset + close);
+    }
+    offset += para.length + (masked.slice(offset + para.length).match(/^\n[ \t]*\n/)?.[0].length ?? 0);
+  }
+  return { mismatch: [...mismatch], wide: [...wide] };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -746,7 +809,18 @@ async function main(argv) {
   const byHead = {};
   for (const x of report.refusals.filter((y) => y.kind === "unsigned" || y.kind === "prose-voice")) byHead[x.why] = (byHead[x.why] ?? 0) + 1;
   const oracle = report.refusals.filter((x) => x.kind === "oracle-after").length;
-  const reds = Object.keys(report.unmapped).length + oracle + Object.keys(report.canonBody).length + report.sealBlocked.length;
+  const renamed = report.refusals.filter((x) => x.kind === "renamed").length;
+  // The census laws the cut cannot write by itself: a renamed head, a whitespace-led at-sign, a tick
+  // run TiddlyWiki cannot pair. Each REDS, so a hand pass never leaves one standing unread.
+  const laws = { renamedHead: 0, spacedAt: 0, tickMismatch: 0, wideInline: 0 };
+  const lawHits = [];
+  for (const rel of files) {
+    const text = readFileSync(join(repo, rel), "utf8");
+    const c = censusText(text, ctx);
+    for (const k of Object.keys(laws)) if (c[k]) { laws[k] += c[k]; lawHits.push(`${rel} ${k}=${c[k]}`); }
+  }
+  const lawReds = Object.values(laws).reduce((a, b) => a + b, 0);
+  const reds = Object.keys(report.unmapped).length + oracle + renamed + lawReds + Object.keys(report.canonBody).length + report.sealBlocked.length;
 
   console.log(`grammar-cut ${write ? "WRITES" : "dry run"}: ${report.touched.length} of ${files.length} file(s) change · ${report.cut} call(s) cut · ${report.turns} turn firing(s) folded · ${report.phase} phase mark(s) fused · ${report.renamed} at-name(s) renamed · ${report.filePath} file-path line(s) dropped`);
   console.log(`  refusals: ${report.refusals.length} ${JSON.stringify(byKind)}`);
@@ -755,6 +829,8 @@ async function main(argv) {
   console.log(`  unmapped at-names (RED): ${Object.keys(report.unmapped).sort().join(" ") || "none"}`);
   console.log(`  Canon body changes (RED): ${JSON.stringify(report.canonBody)}`);
   console.log(`  seal not verifying (RED): ${report.sealBlocked.length}`);
+  console.log(`  renamed heads (RED): ${renamed}`);
+  console.log(`  census laws (RED): ${JSON.stringify(laws)}${lawHits.length ? "\n    " + lawHits.join("\n    ") : ""}`);
   console.log(`  DOCTYPE names ${ctx.doctype.fromFrame ? "read from the frame package" : "NOT yet declared by the frame package (Q4 owed); the ruled type/spec stand in for the dry run only"}`);
 
   const out = val("--out");
