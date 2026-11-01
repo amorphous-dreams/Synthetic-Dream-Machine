@@ -16,7 +16,7 @@ import { runInit } from "../src/commands/init.js";
 import { ownedStore } from "../src/owned-store.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { checkGenesisPin, resolveGenesis } from "../src/genesis-resolve.js";
-import { foundDirect } from "./found-route.js";
+import { foundDirect, openTestCustody } from "./found-route.js";
 
 const SHIPPED = join(repoRoot, "genesis");
 const roots: string[] = [];
@@ -53,6 +53,7 @@ describe("the pin moves with a successful founding only", () => {
       expect(() => checkGenesisPin(storage, resolveGenesis({ corpusRoot: r, shippedRoot: repoRoot }))).toThrow(/genesis seed/);
 
       // CONTROL: a founding that succeeds pins the seed it used, and the boot passes.
+      await openTestCustody();
       await foundDirect({ storageDir: storage, genesisDir: SHIPPED, force: true });
       expect((JSON.parse(readFileSync(pinPath, "utf8")) as { seedCid: string }).seedCid).toBe(pinned.seedCid);
       expect(() => checkGenesisPin(storage, resolveGenesis({ corpusRoot: r, shippedRoot: repoRoot }))).not.toThrow();

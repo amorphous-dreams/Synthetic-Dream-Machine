@@ -168,7 +168,20 @@ function readPackedTiddlers(path: string): PackedTiddlers {
   return packed.tiddlers ?? {};
 }
 
+/**
+ * The founding act, then the genesis pin. The pin moves ONLY when a founding succeeds (`skipped: false`): a founding
+ * that refuses (custody locked, an occupied store) leaves the earlier pin standing, so the store it left unchanged
+ * still boots against the seed it was founded on.
+ */
 export async function runInit(opts: InitOptions): Promise<InitResult> {
+  const result = await runInitAct(opts);
+  if (!result.skipped) {
+    pinGenesisSeed(result.storageDir, genesisResolutionAt(result.genesisDir, { explicit: process.env["LAR_GENESIS"], configured: loadLaresConfig().resources?.genesis, corpusRoot: daemonCorpusRoot(), shippedRoot: repoRoot }));
+  }
+  return result;
+}
+
+async function runInitAct(opts: InitOptions): Promise<InitResult> {
   const defaults   = defaultDirs();
   const storageDir = opts.storageDir ?? defaults.storageDir;
   const genesisDir = opts.genesisDir ?? defaults.genesisDir;
@@ -210,7 +223,6 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
   const genesisUsed = genesisResolutionAt(genesisDir, { explicit: process.env["LAR_GENESIS"], configured: loadLaresConfig().resources?.genesis, corpusRoot: daemonCorpusRoot(), shippedRoot: repoRoot });
   if (hearthTrueName) {
     console.log(`[lares vessel found] ${genesisFoundingLine(genesisUsed)}`);
-    pinGenesisSeed(storageDir, genesisUsed);
   }
   if (!hearthTrueName) {
     throw new Error(
