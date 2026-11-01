@@ -419,7 +419,7 @@ hold.
 !!! Sprint 2 ~ the run harness (free generation, full vectors, sealed)
 
 <<~ has entity=`Task` name=`T2.1-Cell-Generator` params=`build/the 171-cell factorial generator (A×B×C), × n-runs × seeds, in RANDOMIZED order; OR a prioritized fraction first — priority = the aperture dose-response slice + the mu(_) recursion cell (the sharpest predictions) ~ ACCEPT: balanced cells, randomized order, the priority slice defined and runnable standalone`>>
-<<~ has Task T2.2-Invariant-Free-Prompt "freeze/the minimal FREE-PROMPT shape — {boot×libation context} + 'Examine the poem {Antigonish}. Use the `<<~` sigil.', NO rubric / NO task-constraints, toggling ONLY on Factor C's sigil clause ~ ACCEPT: the prompt text is frozen, the Factor-C toggle is the single point of variation (verified by diff), and NO acceptance-criteria / task-instruction leaks into the prompt (the agent generates FREELY)">>
+<<~ has entity=`Task` name=`T2.2-Invariant-Free-Prompt` params=```freeze/the minimal FREE-PROMPT shape — {boot×libation context} + 'Examine the poem {Antigonish}. Use the `<<~` sigil.', NO rubric / NO task-constraints, toggling ONLY on Factor C's sigil clause ~ ACCEPT: the prompt text is frozen, the Factor-C toggle is the single point of variation (verified by diff), and NO acceptance-criteria / task-instruction leaks into the prompt (the agent generates FREELY)```>>
 <<~ has entity=`Task` name=`T2.3-Sealed-Full-Vectors` params=`build/the sealed run-collection — each run's FULL CONVERSATION VECTORS captured VERBATIM (boot+exchange+free generation, the whole trajectory, not a single output point), condition-blind to the downstream analysis ~ ACCEPT: balanced, randomized, the full conversation per run captured, condition-labels SEALED (the corpus reads without provenance, #the-corpus, #the-double-blind)`>>
 
 !!! Sprint 3 ~ the l-space DEM + nameless-cluster pipeline
@@ -484,6 +484,6 @@ as loss and the Arcane stays self-reported-and-unwitnessed.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0ss5lE9l_NLjNXkQbkG2ieD3LmR7ZKh-w3_JbpX7mFI
+<<^ code=`&#x0003;`>>ni:///sha-256;MvwBTDCwS_X24LmGgJel_J063PoFYiPkmlwAzTjL5r8
 
 <<^ code=`&#x0004;` to=`?`>>

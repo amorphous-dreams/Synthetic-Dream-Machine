@@ -111,7 +111,7 @@ own rows. A pattern plane's native ceiling approaches `log2(N_patterns)` by cons
 that number ''measures the ID column and nothing else'' — the instrument scoring its own primary key, the
 purest form of manufacturing a finding. The reading:
 
-<<~ scale ceiling "record-ceiling ~ H(record) ~ the plane COULD carry the record's signal (never that it DOES) -> record-ceiling << H(record) ~ it CANNOT — STOP; the parser upstream threw the signal away, and no metric, no weight, and no dial downstream brings it back">>
+<<~ scale name=`ceiling` ranks=`record-ceiling ~ H(record) ~ the plane COULD carry the record's signal (never that it DOES) -> record-ceiling << H(record) ~ it CANNOT — STOP; the parser upstream threw the signal away, and no metric, no weight, and no dial downstream brings it back`>>
 
 A plane whose collection fails to load MUST report `unreadable`, loudly, with the error class named.
 Silence there is how the form plane vanished from every report while holding 914 rows.
@@ -548,6 +548,6 @@ five-plane count (#owed, the-five-plane-count).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;rfbD_Q14C2eFe2qacD400zeE0-dgUSaFfvQwKVpX9qU
+<<^ code=`&#x0003;`>>ni:///sha-256;HtCRitmx9X_Cx4-TfCIOEsTZdHBnd1lf4ScCazK--Hc
 
 <<^ code=`&#x0004;` to=`?`>>

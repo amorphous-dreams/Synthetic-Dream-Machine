@@ -109,7 +109,7 @@ the fork stays OPEN, recorded here, not resolved.
 ORTHOGONAL to the three registers runs the construction-DEPTH axis: the nested superset tower the house
 already parses ([[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing]]):
 
-<<~ scale tower "html ~ the base; renders verbatim, never fails -> tw5-wikitext ~ ⊃ HTML (the core html.js wikirule) -> x-memetic-wikitext ~ ⊃ TW5 wikitext (the <<~ overlay, island grammar)">>
+<<~ scale name=`tower` ranks=`html ~ the base; renders verbatim, never fails -> tw5-wikitext ~ ⊃ HTML (the core html.js wikirule) -> x-memetic-wikitext ~ ⊃ TW5 wikitext (the <<~ overlay, island grammar)`>>
 
 ''Authored text BLENDS all three layers'' — one turn carries raw HTML, TW5 transclusions, and `<<~`
 sigils interleaved. The constructicon basis therefore spans all three nested bands; a construction may
@@ -694,6 +694,6 @@ The geometry whole: ''one GROUND · the li spine (shape ↠ idiom) · cross-cutt
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7uhov29zb9XK-dp6Kk_SJQmfyKnIyYz4Dmi672Y5k0g
+<<^ code=`&#x0003;`>>ni:///sha-256;MZZZx3yqWRZi7KP5Q3YEZDD-VFwQNvstHg0PjQP_7uM
 
 <<^ code=`&#x0004;` to=`?`>>
