@@ -10,6 +10,10 @@
  *
  * ── WHAT THIS HOLDS ───────────────────────────────────────────────────────────────────────────────────────
  * Each burned name refuses on the search, the dual and the list paths, and the client never sees the call.
+ * The worldline handle filter `agent-handle` burned beside them: no recall surface reads it (the CLI's
+ * filter table holds agent, surface, speaker, channel and function; the coordinator's signature holds no
+ * handle; canon folds `lar_agent_handle` into the drawer's provenance envelope, and a handle's turns read
+ * through the worldline door, never a recall filter). It refuses in each spelling a caller may send.
  * CONTROLS: `speaker` and the other live filters pass through to the client unchanged.
  */
 
@@ -40,11 +44,11 @@ function harness() {
 }
 
 describe("a burned recall filter refuses by name", () => {
-  for (const burned of ["voice", "band", "drift"]) {
+  for (const burned of ["voice", "band", "drift", "agent-handle", "agent_handle", "agentHandle"]) {
     for (const [mode, extra] of [["search", { query: "q" }], ["dual", { query: "q", dual: true }], ["list", {}]] as const) {
       test(`★ ${burned} refuses on the ${mode} path, and no read runs ★`, async () => {
         const { recall, calls } = harness();
-        await expect(recall({ ...extra, [burned]: "operator" })).rejects.toThrow(new RegExp(`\\b${burned}\\b`));
+        await expect(recall({ ...extra, [burned]: "operator" })).rejects.toThrow(new RegExp(`(^|[^\\w-])${burned}([^\\w-]|$)`));
         expect(calls).toEqual([]);
       });
     }
