@@ -67,7 +67,7 @@ function underTemp(dir: string): boolean {
   return at !== temp && at.startsWith(temp + sep);
 }
 
-async function openScratch(holder: CustodyHolder): Promise<void> {
+export async function openScratch(holder: CustodyHolder): Promise<void> {
   const { identity, storage, seal } = holder.homes;
   if (![identity, storage, seal].every(underTemp)) {
     throw new ScratchCustodyRefused(
