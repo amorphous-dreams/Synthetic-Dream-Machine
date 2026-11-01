@@ -47,6 +47,9 @@ on:
       - "CHANGELOG.md"
   pull_request:
     branches: [main]
+  # A controller runs CI by hand on a lane head whose own push the ignore list skipped: a meme-only head never
+  # raises a run of its own, and the land guard reads a head's verdict, not its ancestor's alone.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
