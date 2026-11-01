@@ -1,0 +1,4 @@
+{
+  "about": "Paths whose change alone raises no CI or held-out run on a push. .github/workflows/ci.yml and held-out.yml carry these globs as push paths-ignore (Actions cannot read a file, so tools/ci-ignored-paths.test.mjs pins them equal); tools/land-train.mjs reads this file to carry a road commit whose push the list skipped.",
+  "paths": ["bags/**/*.mem", "**/*.md", "wikis/**", "CHANGELOG.md"]
+}

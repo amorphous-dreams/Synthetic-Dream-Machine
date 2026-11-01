@@ -148,16 +148,52 @@ test('failed build stops before its stamp', () => {
   } finally { f.close(); }
 });
 
-test('a failed cleanup reports the plain remove refusal beside the build failure', () => {
+test('cleanup retries with --force when plain remove refuses over submodules, and reports both when both refuse', () => {
   const f = fixture();
   try {
     const run = (...args) => {
       if (String(args[0]).endsWith('/tsc')) throw new Error('build failed');
-      if (args[0] === 'git' && args[1].includes('remove')) throw new Error('remove refused');
+      if (args[0] === 'git' && args[1].includes('remove') && !args[1].includes('--force')) throw new Error('working trees containing submodules cannot be removed');
       return f.run(...args);
     };
-    assert.throws(() => provision({ guard: noGuard, source: f.source, destination: f.destination, run, log: () => {} }), /build failed.*remove refused/s);
-    assert.equal(f.calls.some(([, args]) => args.includes('--force')), false);
+    assert.throws(() => provision({ guard: noGuard, source: f.source, destination: f.destination, run, log: () => {} }), /build failed/);
+    assert.equal(f.calls.some(([, args]) => args.includes('--force')), true);
+    assert.equal(existsSync(f.destination), false);
+  } finally { f.close(); }
+  const g = fixture();
+  try {
+    const run = (...args) => {
+      if (String(args[0]).endsWith('/tsc')) throw new Error('build failed');
+      if (args[0] === 'git' && args[1].includes('remove')) throw new Error('remove refused');
+      return g.run(...args);
+    };
+    assert.throws(() => provision({ guard: noGuard, source: g.source, destination: g.destination, run, log: () => {} }), /build failed.*remove refused.*--force refused/s);
+  } finally { g.close(); }
+});
+
+test('a source holding no grammar wasm builds it in the destination, and names it', () => {
+  const f = fixture();
+  try {
+    rmSync(join(f.source, 'packages/tree-sitter-memetic-wikitext/tree-sitter-memetic_wikitext.wasm'));
+    const run = (cmd, args, cwd) => {
+      if (cmd === 'pnpm' && args.includes('build:wasm')) writeFileSync(join(cwd, 'tree-sitter-memetic_wikitext.wasm'), 'built');
+      return f.run(cmd, args, cwd);
+    };
+    provision({ guard: noGuard, source: f.source, destination: f.destination, run, log: line => f.logs.push(line) });
+    assert.equal(readFileSync(join(f.destination, 'packages/tree-sitter-memetic-wikitext/tree-sitter-memetic_wikitext.wasm'), 'utf8'), 'built');
+    assert.equal(f.logs.some(line => /BUILT.*wasm.*source held none/.test(line)), true);
+    assert.equal(f.logs.some(line => /COPIED provenance grammar wasm/.test(line)), false);
+  } finally { f.close(); }
+});
+
+test('a reference clone that refuses retries plain and names the network dial; no reference names it too', () => {
+  const f = fixture();
+  try {
+    mkdirSync(join(f.source, '.git/modules/TiddlyWiki5/objects'), { recursive: true });
+    const run = (cmd, args, cwd) => { if (cmd === 'git' && args.includes('--reference')) throw new Error('fatal: reference repository bad'); return f.run(cmd, args, cwd); };
+    provision({ guard: noGuard, source: f.source, destination: f.destination, run, log: line => f.logs.push(line) });
+    assert.equal(f.logs.some(line => /SUBMODULE TiddlyWiki5: reference clone refused.*dials the network/.test(line)), true);
+    assert.equal(f.logs.some(line => /SUBMODULE mempalace: no local module objects.*dials the network/.test(line)), true);
   } finally { f.close(); }
 });
 
@@ -250,5 +286,15 @@ test('submodules clone against the main checkout objects only where its module d
       ['submodule', 'update', '--init', '--reference', join(f.source, '.git/modules/TiddlyWiki5'), '--', 'TiddlyWiki5'],
       ['submodule', 'update', '--init', '--', 'mempalace'],
     ]);
+  } finally { f.close(); }
+});
+
+test('a submodule whose objects live in its own .git directory serves as the reference', () => {
+  const f = fixture();
+  try {
+    mkdirSync(join(f.source, 'mempalace/.git/objects'), { recursive: true });
+    provision({ guard: noGuard, source: f.source, destination: f.destination, run: f.run, log: () => {} });
+    const updates = f.calls.filter(([cmd, args]) => cmd === 'git' && args.includes('submodule')).map(([, args]) => args.slice(args.indexOf('submodule')));
+    assert.deepEqual(updates[1], ['submodule', 'update', '--init', '--reference', join(f.source, 'mempalace/.git'), '--', 'mempalace']);
   } finally { f.close(); }
 });
