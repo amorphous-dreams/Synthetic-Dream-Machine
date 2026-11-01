@@ -116,6 +116,26 @@ describe("the daemon island's boot subscribes the content-key roll to its own se
     await announceSeatRoll({ ...roll, scope: "cd".repeat(32), raiseCids: ["raise-test-2"] });
     expect(((await vessel.run("sealed-reading", { bag }))["foundings"] as { held: string[] }[])[0]!.held.length).toBe(2);
   }, 120_000);
+
+  test("THE SUCCESSOR OUTLIVES A RESTART: the vessel's counted raises ride the session reading, so the removal version still counts and the next seal stays on it", async () => {
+    const root = scratch();
+    const st = await standFoundedIsland(teardown);
+    const bag = st.daemonAuth.registerBags[0]!;
+    // The vessel counts the raise on its board, and its ledger marks it answered once a subscriber took the roll.
+    let unanswered: string[] = [];
+    const session = await proof((own) => ({ ...own, counted: ["raise-test-r"], unanswered }) as never);
+    const first = await stand(st, root, { session });
+    const sealed = await first.run("sealed-seal", { bag, text: BODY });
+    unanswered = ["raise-test-r"];
+    await expect(announceSeatRoll({ kind: "seat-roll", scope: st.daemonAuth.deviceEdge.personaRootDid, edgeId: "edge-test", raiseCids: ["raise-test-r"], how: "gone" })).rejects.toThrow(/stays owed/);
+    const after = await first.run("sealed-seal", { bag, text: "sealed after the roll" });
+    expect(after["keyVersion"]).not.toBe(sealed["keyVersion"]);
+    unanswered = [];                                               // the next delivery marks it answered
+    await first.dispose();
+    const second = await stand(st, root, { session, archive: first.archives.at(-1)! });
+    const again = await second.run("sealed-seal", { bag, text: "sealed after the restart" });
+    expect(again["keyVersion"]).toBe(after["keyVersion"]);
+  }, 120_000);
 });
 
 describe("a private body seals on a real founded vessel, end to end", () => {
