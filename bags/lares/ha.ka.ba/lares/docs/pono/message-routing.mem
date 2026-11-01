@@ -68,7 +68,7 @@ Variables do not leak through sibling scope. The `meme` sigil sets an explicit l
 
 ```text
 <<~ meme uri=`lar:///uri`>>       binds lar:///uri as the rendering context — lexical, not ambient
-  <<~ kahea sub-template>>  the template reads lar:///uri as current meme
+  <<~ kahea name=`sub-template`>>  the template reads lar:///uri as current meme
 <<~/meme>>
                              sibling sigils outside this block stay unaffected
 ```
@@ -94,6 +94,6 @@ Filters inside `wai` / `huli` / `ui` evaluate against the ''explicit current mem
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-J43dLDtQRkmE6RSM65LeQuUrD61zLaI2GcEnuMRC9g
+<<^ code=`&#x0003;`>>ni:///sha-256;Tm42sBrftT5Yfo7pb1Cm5W5K_aCxiPjU8NLF8KFSd7U
 
 <<^ code=`&#x0004;` to=`?`>>

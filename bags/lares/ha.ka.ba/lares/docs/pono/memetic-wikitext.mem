@@ -89,7 +89,7 @@ Profiles tune posture, not primitive meaning.
 !!! Minimum governed and uncertain work
 
 ```text
-<<~ kapu invocation -> bounded|?>>
+<<~ kapu scope=`invocation` to=`bounded|?`>>
 <<~ ? -> ahu #draft-worksite>>
 Work begins before full binding settles.
 
@@ -193,6 +193,6 @@ The submission-grade specification at `lar:///ha.ka.ba/lares/api/pono/memetic-wi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;XLmkMX35qzZRH7AQxbG8J7pAlAwpZCmUyGHdcnC-kcA
+<<^ code=`&#x0003;`>>ni:///sha-256;RTOBl82FT2TOhNjUujAT0Y8tRuM_iCquhbzfwhq022k
 
 <<^ code=`&#x0004;` to=`?`>>

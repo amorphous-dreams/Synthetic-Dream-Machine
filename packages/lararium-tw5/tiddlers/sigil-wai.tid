@@ -1,0 +1,25 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-wai
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: control
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/wai
+lar-see-also: \if
+lar-open-pattern: <<~\s*wai\s+filter=`([^`]*)`(?:\s+sigil=`[^`]*`)?\s*>>
+lar-close-pattern: <<~\/wai\s*>>
+lar-example: <<~ wai filter=`[<x>match[1]]`>>
+type: text/vnd.tiddlywiki
+
+<!-- wai — the wikispace conditional, head of the water cascade: wai (if) → kahawai (elseif) → mukuwai (else).
+     It rides TW5's <%if filter%>...<%endif%> shortcut (TW5 5.3+). English mirror: if.
+     heihei holds the canvasspace branch (the Verse if/case race) and stays its own sigil.
+
+     <<~ wai filter=`[…]`>>body<<~/wai>> renders body only when the filter yields a non-empty result.
+     The filter runs in the current tiddler context; true = at least one result.
+     Use `[<variable>match[value]]` for equality, `[condition]` for existence tests.
+
+     No mode= param — control flow has no projection posture. -->
+
+\procedure ~wai(filter:"" sigil:"")
+<%if [<filter>]%>
+<$transclude $variable="~" name=<<sigil>>/>
+<%endif%>
+\end

@@ -228,7 +228,7 @@ export interface TextNode extends MemeAstBase {
 //   wehe / kumu        → { name, params }
 //   helu               → { name, params, expression }
 //   kau                → { name, value, scope }
-//   kapu               → { qualifier, inline: "true"|"false" }
+//   kapu               → { qualifier, to?, inline: "true"|"false" }
 //   toml               → { profile, content }
 // ---------------------------------------------------------------------------
 

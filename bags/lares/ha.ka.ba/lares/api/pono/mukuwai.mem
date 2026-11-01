@@ -46,7 +46,7 @@ A wai chain MUST NOT contain more than one mukuwai block.
 !! Syntax
 
 ```text
-<<~ wai [filter]>>
+<<~ wai filter=`[filter]`>>
   first branch
 <<~ mukuwai>>
   fallback
@@ -69,6 +69,6 @@ English alias form:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;his6bkHg-oW9t6tCcYUlk5KEqtdnibaSVoPwuvUcKqo
+<<^ code=`&#x0003;`>>ni:///sha-256;aElLi-eHZbq3kuK3o0f0jsPsK094jRuSxMHNwgtW5Cc
 
 <<^ code=`&#x0004;` to=`?`>>

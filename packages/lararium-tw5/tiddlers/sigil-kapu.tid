@@ -3,12 +3,13 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: edge-sugar
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kapu
 lar-see-also: \guard
-lar-pattern: <<~\s*kapu\s+scope=`([^`]*)`\s*>>
-lar-open-pattern: <<~\s*kapu\s+scope=`([^`]*)`\s*>>
+lar-pattern: <<~\s*kapu\s+scope=`([^`]*)`(?:\s+to=`([^`]*)`)?\s*>>
+lar-open-pattern: <<~\s*kapu\s+scope=`([^`]*)`(?:\s+to=`([^`]*)`)?\s*>>
 lar-close-pattern: <<~\/kapu\s*>>
 lar-example: <<~ kapu scope=`a threshold`>>
 lar-render: compile
 type: text/vnd.tiddlywiki
 
 <!-- kapu — boundary/restriction annotation; compile-layer edge sugar.
-     Marks a threshold, restriction, or qualification. No render output — operates at parse layer. -->
+     Marks a threshold, restriction, or qualification. No render output — operates at parse layer.
+     An optional to= names the governed end: <<~ kapu scope=`invocation` to=`bounded|?`>>. -->

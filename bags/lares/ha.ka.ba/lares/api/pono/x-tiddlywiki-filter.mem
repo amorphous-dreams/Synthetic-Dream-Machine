@@ -94,7 +94,7 @@ Two ways to use this grammar in a carrier:
 as `x-tiddlywiki-filter` / `wikitext-filter` automatically:
 
 ```text
-<<~ wai [tag[invariant]sort[title]]>>
+<<~ wai filter=`[tag[invariant]sort[title]]`>>
 <<~ huli filter=`[toml:l-space[grammar]]` as=`as` sigil=`item`>>
 <<~ ui filter=`[edge:family[control]role[has]]`>>
 ```
@@ -130,6 +130,6 @@ interchangeable in `hana` blocks. Prefer `"wikitext-filter"` for new authoring.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;J9ZYWkhp1qltKzO9f5xP4QdoocNSOlvqFYe5hO-4OF4
+<<^ code=`&#x0003;`>>ni:///sha-256;aOM7io5RBC41Y2kvrYAu6r2EgCSyUQGMeOlpaff0Alc
 
 <<^ code=`&#x0004;` to=`?`>>

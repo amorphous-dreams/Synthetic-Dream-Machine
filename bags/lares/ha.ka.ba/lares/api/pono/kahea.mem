@@ -71,11 +71,11 @@ A kahea URI form MAY carry a role naming the embed posture; the transclusion rol
 ''Name-call form:''
 A kahea name-call MUST reference a declared definition name.
 A kahea name-call MUST stay render-only, creating no pranala edge.
-A kahea name-call MAY carry parenthesized arguments: `<<~ kahea name(arg1, arg2)>>`.
+A kahea name-call MAY carry its arguments in `params=`: ``<<~ kahea name=`definitionName` params=`arg1, arg2`>>``.
 
-The parser tells the two forms apart at parse time by URI shape:
-* Contains `lar:`, `/`, or `#` → URI form (edge)
-* Bare word with optional `(args)` → name-call form (render-only)
+A call carries ONE office, and its named slot tells the parser which:
+* `uri=` → URI form (edge); a `name=` beside it picks the template mask
+* `name=`, with optional `params=`, and no `uri=` → name-call form (render-only)
 
 <<~/ahu>>
 
@@ -92,19 +92,11 @@ URI form (creates transclusion edge):
 
 Name-call form (render-only, no edge):
 ```text
-<<~ kahea definitionName>>
-<<~ kahea definitionName(arg1, arg2)>>
+<<~ kahea name=`definitionName`>>
+<<~ kahea name=`definitionName` params=`arg1, arg2`>>
 ```
 
-Regex — URI form (canonical):
-```
-/<<~\s*kahea\s+(lar:[^\s>]+|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>/
-```
-
-Regex — name-call form (canonical):
-```
-/<<~\s*kahea\s+([\w][\w.-]*)\s*(?:\(([^)]*)\))?\s*>>/
-```
+Regex (canonical): `sigil-kahea.tid` carries the one `lar-pattern`; each named slot rides a lookahead, in any order, and the groups read 1 `uri` · 2 `name` · 3 `params` · 4 `from` · 5 `to`. The `uri` branch wins the office, so a `name=` beside a `uri=` captures nothing.
 
 Full pranala expansion (URI form):
 ```text
@@ -164,6 +156,6 @@ canonical-roles = []   # held — transclusion role vocab deferred with the pono
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FkS0jj3yqdMoHpZrJlwA6nK3cA-0-33XkEyQYJwR_qk
+<<^ code=`&#x0003;`>>ni:///sha-256;KyRnyT7G-zdmep_-Mo4avLDZdJic5LgJ9UsSZuCjZjc
 
 <<^ code=`&#x0004;` to=`?`>>

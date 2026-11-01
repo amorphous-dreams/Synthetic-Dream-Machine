@@ -102,7 +102,7 @@ indentation-only or implicit-end syntax.
 !!! Conditional grammar `[C]` / `[SC]`
 
 ```text
-<<~ wai CONDITION>>          [C] conditional source / if-branch
+<<~ wai filter=`CONDITION`>>          [C] conditional source / if-branch
   BODY
 <<~ mukuwai>>                [C] alternate outflow / else-branch
   FALLBACK BODY
@@ -112,7 +112,7 @@ indentation-only or implicit-end syntax.
 With chained branch-channel `[SC]`:
 
 ```text
-<<~ wai CONDITION>>
+<<~ wai filter=`CONDITION`>>
   BODY A
 <<~ kahawai filter=`CONDITION`>>      [C] branch-channel / else-if
   BODY B
@@ -229,7 +229,7 @@ Design implication: grammar edits follow the implementation checklist below.
 !!! Basic conditional
 
 ```text
-<<~ wai [tag[ready]]>>
+<<~ wai filter=`[tag[ready]]`>>
 Ready text flows here.
 <<~ mukuwai>>
 Fallback text.
@@ -239,7 +239,7 @@ Fallback text.
 !!! Chained conditional
 
 ```text
-<<~ wai [tag[open-question]]>>
+<<~ wai filter=`[tag[open-question]]`>>
 This meme still flows unresolved.
 <<~ kahawai filter=`[tag[ready-for-canon]]`>>
 This meme can be brought to Council.
@@ -257,7 +257,7 @@ This meme rests as ordinary text.
 !!! Arrowed resolution request
 
 ```text
-<<~ kahea source -> ?>>
+<<~ kahea from=`source` to=`?`>>
 ```
 
 !!! Chained command composition
@@ -415,6 +415,6 @@ When editing grammar meme or parser:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;8vQoyzdS11DanWWw7s4amjPNV8TXYtiWp9IiezHgc_U
+<<^ code=`&#x0003;`>>ni:///sha-256;C7TupFQ7nq1j6CHx1lfXihVWKF_rKDwq7KRedp2X2TU
 
 <<^ code=`&#x0004;` to=`?`>>

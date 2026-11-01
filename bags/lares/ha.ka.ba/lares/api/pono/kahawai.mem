@@ -46,7 +46,7 @@ and no preceding condition in the chain has already rendered.
 !! Syntax
 
 ```text
-<<~ wai [first-filter]>>
+<<~ wai filter=`[first-filter]`>>
   first branch
 <<~ kahawai filter=`[second-filter]`>>
   second branch
@@ -73,6 +73,6 @@ English alias forms:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ba6cmigu8x9fBnSKRv5WTCgvFEoOLovvwnHIKczBCOg
+<<^ code=`&#x0003;`>>ni:///sha-256;XNWhfRRu5YsN_v973GxAmJDwKjVG7XWygpG52sgjxLs
 
 <<^ code=`&#x0004;` to=`?`>>

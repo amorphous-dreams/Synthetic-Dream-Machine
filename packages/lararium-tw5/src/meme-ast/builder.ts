@@ -75,6 +75,7 @@ function attrsFromGroups(
   const g = (i: number) => (groups[i] ?? "").trim();
   switch (name) {
     case "heihei":
+    case "wai":
     case "kahawai": return { filter: g(1) };
     case "huli":    return { filter: g(1), binding: g(2) };
     case "hana":    return { grammarKey: g(1) };
@@ -84,7 +85,7 @@ function attrsFromGroups(
     case "helu":    return { name: g(1), params: g(2), expression: g(3) };
     case "waiho":   return { name: g(1), value: g(2), scope };
     case "kau":     return { fragment: g(1).replace(/^#/, ""), name: g(2), propsRaw: g(3) };
-    case "kapu":    return { qualifier: g(1), inline: scope === "carrier" ? "true" : "false" };
+    case "kapu":    return { qualifier: g(1), ...(g(2) ? { to: g(2) } : {}), inline: scope === "carrier" ? "true" : "false" };
     case "ui":      return { filter: g(1) };
     case "kukali":  return g(1) ? { trigger: g(1) } : {};
     case "toml":    return { profile: g(1), content: g(2) };
@@ -221,7 +222,11 @@ function makeLeaf(
       return kaheaInvokeNode(g(1), g(2), base, memeUri, []);
 
     case "kahea":
-      return { kind: "PranalaSugar", ...base, sigil: "kahea", slot: null, fromRaw: null, toRaw: g(1), family: "dataflow", role: null, listenable: null, subscribable: null } as PranalaSugarNode;
+      // ONE OFFICE PER CALL (sigil-kahea.tid's groups: 1 uri · 2 name · 3 params · 4 from · 5 to). An
+      // address and a bearing pair each draw a dataflow edge; a definition call names no address, so it
+      // builds a Sigil carrying the definition and its params.
+      if (!g(1) && g(2)) return { kind: "Sigil", ...base, sigilName: "kahea", attrs: { name: g(2), params: g(3) }, body: [] } as SigilNode;
+      return { kind: "PranalaSugar", ...base, sigil: "kahea", slot: null, fromRaw: g(1) ? null : (g(4) || null), toRaw: g(1) || g(5), family: "dataflow", role: null, listenable: null, subscribable: null } as PranalaSugarNode;
 
     case "kau":
       // ONE SHAPE (the kupono cut): ``<<~ kau slot=`#dev`? name=`Laptop` props=`…`?>>`` — groups slot,

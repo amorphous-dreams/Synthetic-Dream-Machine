@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
-source-check: "ni:///sha-256;lo6ekU9aDgmrZtC1wdQ3K07MHXdG-yvIcVVvTUK24fw"
+source-check: "ni:///sha-256;qiD5Ppk1_gyH5lGlVyy5OQT2GrX35o-RR_zgS8Lm_yc"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -662,7 +662,7 @@ A canvas reaction wire (flow surface):
 | (no direct TW5 analog: a pinned, frozen read) | ``<<~ aka uri=`lar:///uri`>>`` |
 | TW5 `\procedure` / `\function` | `<<~! wehe …>>` / `<<~! helu …>>` |
 | TW5 `<$tiddler>` context | ``<<~ meme uri=`lar:///uri`>>`` |
-| TW5 `<$list>` filter / iterate | `<<~ wai …>>` / `<<~ huli …>>` |
+| TW5 `<$list>` filter / iterate | ``<<~ wai filter=`…`>>`` / `<<~ huli …>>` |
 | Verse `sync`/`race`/`rush`/`branch` | `<<~ hui>>` / `holo` / `puka` / `lele` |
 | Verse device event binding | `<<~ papalohe …>>` (reaction) |
 | Verse event (`listenable`/subscribe) vs expression value | `reaction` (event) vs `dataflow` (value) |
