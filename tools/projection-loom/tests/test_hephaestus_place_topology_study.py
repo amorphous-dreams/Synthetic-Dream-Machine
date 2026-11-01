@@ -82,3 +82,24 @@ def test_forged_constructive_refusal_is_not_accepted_as_native_proof(tmp_path):
     p.write_text(json.dumps(row))
     with pytest.raises(ValueError,match="changed original goal"):
         verify_topology_study(site,spatial,root,**args)
+
+def test_topology_completed_root_replays_without_reconstruction(tmp_path,monkeypatch):
+    from projection_loom import place_topology_study as module
+    original,spatial=authored()
+    opts={"location":"topological-place","goal_index":0,"corner_prefix":"lane"}
+    root=tmp_path/"study"
+    first=run_topology_study(original,spatial,root,**opts)
+    snapshot={str(path.relative_to(root)):path.read_bytes()
+              for path in root.rglob("*") if path.is_file()}
+    def forbidden_rebuild(*args,**kwargs):
+        raise AssertionError("Completed topology replay must not construct new STEP")
+    monkeypatch.setattr(module,"package_scene",forbidden_rebuild)
+    assert run_topology_study(original,spatial,root,**opts)==first
+    assert snapshot=={str(path.relative_to(root)):path.read_bytes()
+                      for path in root.rglob("*") if path.is_file()}
+    with pytest.raises(ValueError,match="original source or operator choices"):
+        run_topology_study(original,spatial,root,location="topological-place",
+                           goal_index=0,corner_prefix="different")
+    (root/"FAILED").write_text("forced interrupted root")
+    with pytest.raises(ValueError,match="new immutable root"):
+        run_topology_study(original,spatial,root,**opts)

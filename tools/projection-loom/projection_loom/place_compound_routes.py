@@ -14,6 +14,7 @@ from .scene_usd import package_scene
 from .place_affordances import assess_place,verify_place_affordances
 from .provenance_encoding import canonical_json_sha256
 from .receipt_store import save_once
+from .study_reentry import replay_completed_or_require_fresh
 
 TURNS=("x-then-y","y-then-x")
 
@@ -130,8 +131,14 @@ def verify_compound_route_study(genome,spatial,root,*,location,goal_index,corner
 
 def run_compound_route_study(genome,spatial,out,*,location,goal_index,corner_id):
     root=Path(out)
-    if root.exists():
-        raise ValueError("Matched compound alternatives need an unused immutable root")
+    resumed=replay_completed_or_require_fresh(
+        root,completion="summary.json",
+        verify=lambda: verify_compound_route_study(
+            genome,spatial,root,location=location,goal_index=goal_index,
+            corner_id=corner_id),
+        occupied_reason="Matched compound alternatives need an unused immutable root")
+    if resumed is not None:
+        return resumed
     pre=_pre(genome,spatial,location,goal_index,corner_id)
     root.mkdir(parents=True)
     save_once(root/"preregistration.json",pre)

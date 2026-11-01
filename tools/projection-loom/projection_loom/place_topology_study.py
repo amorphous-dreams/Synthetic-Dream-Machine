@@ -15,6 +15,7 @@ from .scene_usd import package_scene
 from .place_affordances import assess_place,verify_place_affordances
 from .provenance_encoding import canonical_json_sha256
 from .receipt_store import save_once
+from .study_reentry import replay_completed_or_require_fresh
 
 ALTERNATIVES=("x-then-y","y-then-x","x-y-x","y-x-y")
 
@@ -134,8 +135,14 @@ def verify_topology_study(original,spatial,out,*,location,goal_index,corner_pref
 
 def run_topology_study(original,spatial,out,*,location,goal_index,corner_prefix):
     root=Path(out)
-    if root.exists():
-        raise ValueError("Matched topology study requires a new immutable root")
+    resumed=replay_completed_or_require_fresh(
+        root,completion="summary.json",
+        verify=lambda: verify_topology_study(
+            original,spatial,root,location=location,goal_index=goal_index,
+            corner_prefix=corner_prefix),
+        occupied_reason="Matched topology study requires a new immutable root")
+    if resumed is not None:
+        return resumed
     pre=_pre(original,spatial,location=location,
              goal_index=goal_index,corner_prefix=corner_prefix)
     root.mkdir(parents=True)

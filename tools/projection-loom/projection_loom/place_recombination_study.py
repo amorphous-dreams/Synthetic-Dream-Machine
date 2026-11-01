@@ -12,6 +12,7 @@ from .place_recombination import recombine_place_regions
 from .place_affordances import assess_place,verify_place_affordances
 from .scene_usd import package_scene
 from .receipt_store import save_once
+from .study_reentry import replay_completed_or_require_fresh
 from .provenance_encoding import canonical_json_sha256
 
 
@@ -72,8 +73,14 @@ def verify_recombined_native(root,original,left,right,spatial,*,
 def run_recombined_native(original,left,right,spatial,out,*,
                           location,left_generated,right_generated):
     root=Path(out)
-    if root.exists():
-        raise ValueError("Native recombinant requires a fresh immutable study root")
+    resumed=replay_completed_or_require_fresh(
+        root,completion="receipt.json",
+        verify=lambda: verify_recombined_native(
+            root,original,left,right,spatial,location=location,
+            left_generated=left_generated,right_generated=right_generated),
+        occupied_reason="Native recombinant requires a fresh immutable study root")
+    if resumed is not None:
+        return resumed
     proposal,pre=_pre(original,left,right,spatial,location,
                       left_generated,right_generated)
     child=PlaceGenome.from_dict(proposal["child_genome"])

@@ -72,3 +72,23 @@ def test_compound_summary_cannot_reassign_failure_to_another_goal(tmp_path):
     with pytest.raises(ValueError,match="alternatives or refusal census"):
         verify_compound_route_study(original,aim,path,
                               location="compound-place",goal_index=0,corner_id="bend")
+
+def test_completed_compound_study_replays_without_new_native_build(tmp_path,monkeypatch):
+    from projection_loom import place_compound_routes as module
+    original,aim=inputs()
+    opts={"location":"compound-place","goal_index":0,"corner_id":"bend"}
+    root=tmp_path/"study"
+    first=run_compound_route_study(original,aim,root,**opts)
+    before=(root/"summary.json").read_bytes()
+    def forbidden_rebuild(*args,**kwargs):
+        raise AssertionError("Completed compound replay must not rebuild STEP")
+    monkeypatch.setattr(module,"package_scene",forbidden_rebuild)
+    assert run_compound_route_study(original,aim,root,**opts)==first
+    assert (root/"summary.json").read_bytes()==before
+    with pytest.raises(ValueError,match="original source, goal or operator choice"):
+        run_compound_route_study(original,aim,root,location="compound-place",
+                                goal_index=0,corner_id="different")
+    incomplete=tmp_path/"incomplete"
+    incomplete.mkdir()
+    with pytest.raises(ValueError,match="unused immutable root"):
+        run_compound_route_study(original,aim,incomplete,**opts)

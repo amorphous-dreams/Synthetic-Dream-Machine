@@ -8,6 +8,7 @@ from .place_orthogonal_route import propose_orthogonal_route
 from .scene_usd import package_scene
 from .place_affordances import assess_place,verify_place_affordances
 from .receipt_store import save_once
+from .study_reentry import replay_completed_or_require_fresh
 from .provenance_encoding import canonical_json_sha256, first_json_difference
 
 _TURNS=("x-then-y","y-then-x")
@@ -92,11 +93,13 @@ def run_orthogonal_study(genome:PlaceGenome,spatial:SpatialIntent,out,*,
         raise ValueError("Matched bend study requires one typed original location and goal")
     root=Path(out)
     pre=_preregister(genome,spatial,location,corner_id)
-    if (root/"summary.json").exists():
-        return verify_orthogonal_study(root,genome,spatial,
-                                        location=location,corner_id=corner_id)
-    if root.exists():
-        raise ValueError("Incomplete matched bend study cannot become success")
+    resumed=replay_completed_or_require_fresh(
+        root,completion="summary.json",
+        verify=lambda: verify_orthogonal_study(
+            root,genome,spatial,location=location,corner_id=corner_id),
+        occupied_reason="Incomplete matched bend study cannot become success")
+    if resumed is not None:
+        return resumed
     root.mkdir(parents=True)
     save_once(root/"preregistration.json",pre)
     outcomes=[]

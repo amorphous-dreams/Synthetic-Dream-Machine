@@ -42,3 +42,26 @@ def test_recombined_genome_file_cannot_be_rewritten_after_audition(tmp_path):
     path.write_text(json.dumps(written))
     with pytest.raises(ValueError,match="child genotype"):
         verify_recombined_native(root,original,left,right,aim,**opts)
+
+def test_completed_recombinant_replays_without_copying_parent_audition(tmp_path,monkeypatch):
+    from projection_loom import place_recombination_study as module
+    original,left,right,aim=seed()
+    opts={"location":"recombined-place","left_generated":["intent_deck_000"],
+          "right_generated":["roof"]}
+    root=tmp_path/"child"
+    first=run_recombined_native(original,left,right,aim,root,**opts)
+    before=(root/"receipt.json").read_bytes()
+    def forbidden_rebuild(*args,**kwargs):
+        raise AssertionError("Completed recombinant replay must not rebuild STEP")
+    monkeypatch.setattr(module,"package_scene",forbidden_rebuild)
+    assert run_recombined_native(original,left,right,aim,root,**opts)==first
+    assert (root/"receipt.json").read_bytes()==before
+    with pytest.raises(ValueError,match="original parent sources or choice"):
+        run_recombined_native(original,left,right,aim,root,
+                              location="other-place",
+                              left_generated=["intent_deck_000"],
+                              right_generated=["roof"])
+    incomplete=tmp_path/"incomplete"
+    incomplete.mkdir()
+    with pytest.raises(ValueError,match="fresh immutable study root"):
+        run_recombined_native(original,left,right,aim,incomplete,**opts)
