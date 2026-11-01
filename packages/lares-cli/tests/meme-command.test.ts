@@ -14,7 +14,7 @@ import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync, mkdirSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { projectSubmission } from "@lararium/tw5/weave";
-import { verifyBcc } from "@lararium/memetic-frame";
+import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
 
 const h = vi.hoisted(() => ({
   calls: [] as Array<{ verb: string; args: Record<string, unknown> }>,
@@ -272,6 +272,21 @@ describe("lares meme check — the read-alone seat, local, no daemon", () => {
     vi.spyOn(console, "log").mockImplementation(() => {});
     expect(await cmdMeme(memeArgs(["check", PRISM]))).toBe(0);
     vi.restoreAllMocks();
+  });
+  test("RED: a root meta holding the retired file-path reads as drift; CONTROL: the same carrier without it reads clean", async () => {
+    // Residency rides the envelope (Train Q, 2026-11-01): the check names the retired field, whatever
+    // the seal says, and the carrier stripped of it (re-sealed) reads canonical.
+    const src = readFileSync(PRISM, "utf8").replace(/^file-path[ \t]*=.*\n/m, "");
+    const without = stampCarrier(src);
+    const withField = stampCarrier(without.replace(/^(cacheable[ \t]*=.*\n)/m, `$1file-path = "bags/x/prism.mem"\n`));
+    expect(withField).toMatch(/^file-path = /m);
+    const lines: string[] = [];
+    const spy = vi.spyOn(console, "log").mockImplementation((m: unknown) => { lines.push(String(m)); });
+    expect(await cmdMeme(memeArgs(["check", tmpFile(withField)]))).toBe(1);
+    expect(lines.join("\n")).toMatch(/file-path/);
+    expect(await cmdMeme(memeArgs(["check", tmpFile(without)]))).toBe(0);
+    spy.mockRestore();
+    expect(h.calls).toEqual([]);
   });
   test("--gradient and --edges ride check: read alone, write nothing", async () => {
     const file = staledPrism();
