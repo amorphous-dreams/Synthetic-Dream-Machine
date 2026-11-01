@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
-source-check: "ni:///sha-256;B1CMJrsTgDrHhHHogXOZPoSKs_bozp8SIR9hjICoOnY"
+source-check: "ni:///sha-256;t2aA1ZcYuLGElpNsopcl8U1ym6rHQnjeWD1treHEoM0"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -625,7 +625,7 @@ Body text, with a live embed: <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/meme
 A definition summoned by name:
 ```
 <<~! wehe greeting(name "World")>>Hello, <<~ kahea uri=`name`>>!<<~/wehe>>
-<<~ kahea uri=`greeting` name=`Operator`>>
+<<~ kahea name=`greeting` params=`Operator`>>
 ```
 
 A conditional over a guest filter, and an iteration:

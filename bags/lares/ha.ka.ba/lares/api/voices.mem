@@ -261,7 +261,7 @@ bags/lares/ha.ka.ba/lares/api/masks/
 ''LARES invocation (kahea)'' — session entry:
 
 ```
-<<~ kahea name=`mask` uri=`lar:///ha.ka.ba/lares/api/masks/SUBTYPE/MASK-NAME`>>
+<<~ kahea mask=`mask` uri=`lar:///ha.ka.ba/lares/api/masks/SUBTYPE/MASK-NAME`>>
 stage = 10
 active = true
 # foreground-voices = []     # override Voice affinities
@@ -393,6 +393,6 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ee8-7k5iYV4W3N4XCo19fD4wEjA3vguuJrNiE3smLbA
+<<^ code=`&#x0003;`>>ni:///sha-256;pUxqA5zlGEUuCITUnP-iWz0bfgEbIDFyhIxWMQAtJas
 
 <<^ code=`&#x0004;` to=`?`>>

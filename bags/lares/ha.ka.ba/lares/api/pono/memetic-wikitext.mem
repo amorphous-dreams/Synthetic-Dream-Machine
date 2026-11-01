@@ -665,7 +665,7 @@ Body text, with a live embed: <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/meme
 A definition summoned by name:
 ```
 <<~! wehe greeting(name "World")>>Hello, <<~ kahea uri=`name`>>!<<~/wehe>>
-<<~ kahea uri=`greeting` name=`Operator`>>
+<<~ kahea name=`greeting` params=`Operator`>>
 ```
 
 A conditional over a guest filter, and an iteration:
@@ -750,6 +750,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;B1CMJrsTgDrHhHHogXOZPoSKs_bozp8SIR9hjICoOnY
+<<^ code=`&#x0003;`>>ni:///sha-256;t2aA1ZcYuLGElpNsopcl8U1ym6rHQnjeWD1treHEoM0
 
 <<^ code=`&#x0004;` to=`?`>>

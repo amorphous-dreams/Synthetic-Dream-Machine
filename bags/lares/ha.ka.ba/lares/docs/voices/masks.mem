@@ -117,12 +117,12 @@ Masks enter a session via kahea transclusion. The kahea calls the mask into pres
 A small TOML override block inside the kahea sets session-specific values — only what differs from the definition defaults.
 
 ```
-<<~ kahea name=`mask` uri=`lar:///ha.ka.ba/lares/api/masks/ghost-of-mark-twain`>>
+<<~ kahea mask=`mask` uri=`lar:///ha.ka.ba/lares/api/masks/ghost-of-mark-twain`>>
 stage = 15
 active = true
 <<~/kahea>>
 
-<<~ kahea name=`mask` uri=`lar:///ha.ka.ba/lares/api/masks/friend-computer`>>
+<<~ kahea mask=`mask` uri=`lar:///ha.ka.ba/lares/api/masks/friend-computer`>>
 stage = 10
 active = false
 <<~/kahea>>
@@ -392,6 +392,6 @@ The mask layer spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST impleme
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;KMm7mM77b3KBgRYqnjMejicQsTyqT-KO3Osu6nH7geQ
+<<^ code=`&#x0003;`>>ni:///sha-256;5ppcn49gZB6UNctg2ZwmF_xxNCRcGcviASLLFqzm1_s
 
 <<^ code=`&#x0004;` to=`?`>>

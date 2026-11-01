@@ -9,5 +9,5 @@ lar-example: <<~ import uri=`lar:///a.b.c/x`>>
 type: text/vnd.tiddlywiki
 
 \procedure ~import(uri:"" key:"")
-<$transclude $variable="~kahea" uri=<<uri>> name=<<key>>/>
+<$transclude $variable="~kahea" uri=<<uri>> mask=<<key>>/>
 \end

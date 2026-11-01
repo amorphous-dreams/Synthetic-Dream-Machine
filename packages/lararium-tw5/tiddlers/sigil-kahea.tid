@@ -2,7 +2,7 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kahea
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: edge-sugar
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kahea
-lar-pattern: <<~\s*kahea(?:(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\suri=`([^`]*)`)|(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sname=`([^`]*)`)(?:(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sparams=`([^`]*)`)|)|(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sfrom=`([^`]*)`)(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sto=`([^`]*)`))(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*>>
+lar-pattern: <<~\s*kahea(?:(?!(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sname=`)(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\suri=`([^`]*)`)|(?!(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\suri=`)(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sname=`([^`]*)`)(?:(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sparams=`([^`]*)`)|)|(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sfrom=`([^`]*)`)(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sto=`([^`]*)`))(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*>>
 lar-open-pattern: <<~\s*kahea\s+([a-z][\w-]*)(?:\s+([^>]*?))?\s*>>
 lar-close-pattern: <<~\/kahea\s*>>
 lar-default-family: dataflow
@@ -14,31 +14,33 @@ type: text/vnd.tiddlywiki
      aka carries the projection/frozen posture via its own AkaTemplate cascade.
 
      ONE OFFICE PER CALL (Q10 F3, F4) — the lar-pattern's groups: 1 uri · 2 name · 3 params · 4 from · 5 to.
-       <<~ kahea uri=`lar:///uri`>>                     → an ADDRESS; a name= beside uri= picks the template
-                                                           mask and captures nothing
+       <<~ kahea uri=`lar:///uri`>>                     → an ADDRESS; a mask= beside uri= picks the template
+                                                           and captures nothing
        <<~ kahea name=`definitionName` params=`a, b`>>  → a DEFINITION, called by name with its params
        <<~ kahea from=`source` to=`?`>>                 → a resolution request: the bearing pair, compile layer
+     ONE NAME, ONE RELATION: name= names a definition and nothing else. A name= beside uri= matches no
+     office, and the widget renders a refusal naming mask= rather than guess which office the call meant.
 
      Dispatch shapes:
-       <<~ kahea uri=`lar:///uri`>>   → ~kahea(uri name)       — URI leaf (name = the mask)
+       <<~ kahea uri=`lar:///uri`>>   → ~kahea(uri mask)       — URI leaf (mask = the template)
        <<~ kahea name=`def`>>        → ~kahea(name params)    — definition call
        <<~ kahea ahu slot=`#/slot`>> → ~kahea~ahu(slot to)    — child-slot summons
        <<~ aka ahu slot=`#/slot`>>   → ~aka~ahu(slot to)      — projection child-slot -->
 
-\widget ~kahea(uri:"" name:"" params:"")
-<$let _k-def={{{ [<uri>is[blank]then<name>] }}}>
-<%if [<_k-def>!is[blank]]%>
-<$let _k-call={{{ [<_k-def>addprefix[<<]] [<params>!is[blank]addprefix[ ]] [[>>]] +[join[]] }}}>
+\widget ~kahea(uri:"" name:"" params:"" mask:"")
+<%if [<uri>!is[blank]then<name>!is[blank]]%>
+<span class="lar-kahea-refused">kahea: name= names a definition; the template beside uri= rides mask=</span>
+<%elseif [<name>!is[blank]]%>
+<$let _k-call={{{ [<name>addprefix[<<]] [<params>!is[blank]addprefix[ ]] [[>>]] +[join[]] }}}>
 <$transclude $variable="_k-call"/>
 </$let>
 <%else%>
 <$set name="_k-uri" filter="[<uri>regexp[^#]]" value={{{ [<uri>addprefix<currentTiddler>] }}} emptyValue=<<uri>>>
-<$let _k-template={{{ [<name>!match[]] ~[all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/kahea-template]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/lararium/templates/kahea/html]] }}}>
+<$let _k-cascade={{{ [all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/kahea-template]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/lararium/templates/kahea/html]] }}} _k-template={{{ [<mask>!is[blank]else<_k-cascade>] }}}>
 <$tiddler tiddler=<<_k-uri>>>
 <$transclude $tiddler=<<_k-template>>/>
 </$tiddler>
 </$let>
 </$set>
 <%endif%>
-</$let>
 \end

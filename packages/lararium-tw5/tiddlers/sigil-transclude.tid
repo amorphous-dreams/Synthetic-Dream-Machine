@@ -11,5 +11,5 @@ lar-example: <<~ transclude uri=`lar:///a.b.c/x`>>
 type: text/vnd.tiddlywiki
 
 \procedure ~transclude(uri:"" key:"")
-<$transclude $variable="~kahea" uri=<<uri>> name=<<key>>/>
+<$transclude $variable="~kahea" uri=<<uri>> mask=<<key>>/>
 \end
