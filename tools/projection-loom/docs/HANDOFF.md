@@ -31,6 +31,22 @@ The identity is a siting law: `lar:///ha.ka.ba/lares/api/projection-loom/handoff
 
 Recover an actual historical document using `git show <archive-sha>:<historical-path>`. Archive ref continuity is important if PR #84 is squash-merged; do not delete these without another durable reference.
 
+## Workflow o-takiage · four living entries
+
+**Archive:** `archive/pr84-before-workflow-otakiage-20261031` pins `3e56858541cbc430be78d06498e248bb2a06d37c`, the complete pre-burn YAML tree.
+
+- `projection-loom.yml` — core PR CAD/native and Lares acceptance gate; external CC0 intake is opt-in only.
+- `projection-loom-generalized.yml` — independent multi-input, OpenUSD/STEP and Blender editor checks.
+- `loom-fire-grammar.yml` — typed AI Fire source/native and six-view witness.
+- `projection-loom-studies.yml` — eleven independently selectable native studies, with `all` as an explicit option; all are read-only and upload their own artifacts.
+
+**Commit receipts:** `7749a1f9` created the selected-study suite; `b7a1271d` removed 12 standalone workflows and corrected live trigger paths; `daf53558` added a regression check for the four-workflow surface, write permissions, study selectors, and evidence uploads. The previous GitHub Actions recipe/lineage bot commits and one-time branch deletion have no living workflow.
+
+**Dispatch condition:** A new `workflow_dispatch` workflow normally must exist on GitHub's default branch before the manual Run workflow control is available. Until this PR is integrated appropriately, its source-bound study commands can be run directly in a CAD-capable environment. No PR merge is implied.
+
+**Preservation boundary:** Git retains the full historical YAML, source fixtures, and committed evidence; GitHub Actions artifacts expire according to their 14–90-day retention. A historical script is not an independently native-admitted STEP receipt. Regenerate and independently verify any ephemeral study outputs needed for a present engineering claim.
+
+**Acceptance:** Inspect dedicated CAD, generalized USD/Blender, Fire, repository CI, and held-out checks against the exact *final* SHA; a previous green verdict cannot be inherited by a newer commit. The core gate runs `scripts/check_living_docs.py`, including workflow o-takiage refusals.
 ## Evidence and acceptance · never borrow green
 
 The pre-interruption exact head `0d05dce315397fd2be1a7098270363ff4a948745` passed Projection Loom CAD/evidence CI (`41252048991`), and other full-repository checks were still under observation. Subsequent commits, especially the move and expanded gate, **must pass their own** dedicated CAD, repository CI, and held-out witness checks. A queued or running workflow supplies neither success nor failure. The external CC0 fetch is advisory and never supplies rights or source-camera proof.
