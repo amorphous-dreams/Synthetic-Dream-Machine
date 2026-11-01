@@ -11,11 +11,9 @@ import json
 from pathlib import Path
 import tempfile
 import cadquery as cq
-from PIL import Image,ImageDraw
 from .place_gallery import _original_mesh,_native_mesh
-from .gallery_artifacts import VIEWS
+from .gallery_artifacts import VIEWS,native_six_view_sheet
 from .intent_evolution import fixed_inspection_cameras
-from .render import silhouette
 from .place_topology_study import verify_topology_study
 from .generalized_campaign import save_once
 from .provenance_encoding import canonical_json_sha256
@@ -91,14 +89,7 @@ def render_topology_gallery(original,spatial,study,destination,*,
                 if manifest["sha256"]!=row["native_evidence"]["native_scene_sha256"]:
                     raise ValueError("Topology image source does not match independently audited STEP")
                 mesh=_native_mesh(native_root,manifest)
-                sheet=Image.new("RGB",(3*size[0],2*(size[1]+22)),(15,20,27))
-                pen=ImageDraw.Draw(sheet)
-                for i,name in enumerate(VIEWS):
-                    view=Image.fromarray(silhouette(mesh,cameras[name],size),"L").convert("RGB")
-                    x=(i%3)*size[0]
-                    y=(i//3)*(size[1]+22)
-                    sheet.paste(view,(x,y+22))
-                    pen.text((x+4,y+5),name,fill=(230,236,245))
+                sheet=native_six_view_sheet(mesh,cameras,size)
                 filename=pattern+"_six_view.png"
                 sheet.save(folder/filename)
                 image_sha=sha256((folder/filename).read_bytes()).hexdigest()

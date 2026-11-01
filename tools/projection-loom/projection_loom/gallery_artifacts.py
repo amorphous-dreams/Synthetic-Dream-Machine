@@ -11,6 +11,26 @@ from .render import silhouette
 VIEWS=("oblique","front","left","back","right","top")
 
 
+
+def native_six_view_sheet(mesh,cameras,size=(160,120)):
+    """One byte-stable native operator contact sheet; no admission authority.
+
+    The two native place galleries used this exact 22-pixel label band,
+    RGB colors, camera order and text positions before consolidation.  Keep
+    them independent from the historical 24-pixel finalist-gallery layout.
+    """
+    w,h=size
+    sheet=Image.new("RGB",(3*w,2*(h+22)),(15,20,27))
+    pen=ImageDraw.Draw(sheet)
+    for i,name in enumerate(VIEWS):
+        view=Image.fromarray(silhouette(mesh,cameras[name],size),"L").convert("RGB")
+        x=(i%3)*w
+        y=(i//3)*(h+22)
+        sheet.paste(view,(x,y+22))
+        pen.text((x+4,y+5),name,fill=(230,236,245))
+    return sheet
+
+
 def finalist_gallery(build,cameras,output,*,alpha=None,size=(128,192)):
     folder=Path(output)
     folder.mkdir(parents=True,exist_ok=True)

@@ -9,13 +9,11 @@ from hashlib import sha256
 import tempfile
 import cadquery as cq
 import trimesh
-from PIL import Image, ImageDraw
 from .place_comparison import place_comparison
 from .place_genome import PlaceGenome
 from .developmental import compile_growth
 from .intent_evolution import fixed_inspection_cameras
-from .render import silhouette
-from .gallery_artifacts import VIEWS
+from .gallery_artifacts import VIEWS,native_six_view_sheet
 from .generalized_campaign import save_once
 from .provenance_encoding import canonical_json_sha256
 
@@ -84,14 +82,7 @@ def render_place_gallery(campaign,destination,*,size=(160,120)):
             if manifest["sha256"]!=scene["scene_sha256"]:
                 raise ValueError("Native gallery source changed")
             mesh=_native_mesh(native_root,manifest)
-            sheet=Image.new("RGB",(3*size[0],2*(size[1]+22)),(15,20,27))
-            pen=ImageDraw.Draw(sheet)
-            for i,name in enumerate(VIEWS):
-                image=Image.fromarray(silhouette(mesh,cameras[name],size),"L").convert("RGB")
-                x=(i%3)*size[0]
-                y=(i//3)*(size[1]+22)
-                sheet.paste(image,(x,y+22))
-                pen.text((x+4,y+5),name,fill=(230,236,245))
+            sheet=native_six_view_sheet(mesh,cameras,size)
             name=row["candidate_id"]+"_six_view.png"
             sheet.save(folder/name)
             item.update(native_scene_sha256=manifest["sha256"],
