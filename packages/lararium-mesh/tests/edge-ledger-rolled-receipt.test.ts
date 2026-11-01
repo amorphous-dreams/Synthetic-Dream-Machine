@@ -14,6 +14,10 @@
  *       roll verifies under the vessel's key.
  *   R3  CONTROL: a mark answered with no authority still stays out of `raisesSeenThrough` (the seat may stand), and a
  *       later answer from this vessel's own key steps it up.
+ *   R4  RED (train t4's Sol read, MEDIUM, measured): this vessel's own valid receipt replayed from ANOTHER scope or ANOTHER
+ *       raise into the target row answers nothing there, and never blocks the genuine target mark: the writer preserves
+ *       an existing row only under the readers' own validity (receipt, scope, raise). CONTROL: a valid own row for the
+ *       target stands, and its first answer stays.
  */
 import { describe, expect, it } from "vitest";
 import {
@@ -85,5 +89,26 @@ describe("a roll mark counts only under a receipt this vessel's key signed (T33)
     expect([...rolledRaises(doc, SCOPE, key)]).toEqual([RAISE]);
     markRaiseRolled(doc, SCOPE, RAISE, await signed("gone"), key);
     expect([...raisesSeenThrough(doc, SCOPE, key)]).toEqual([RAISE]);
+  });
+
+  it("R4 — RED: an own receipt replayed from another scope or raise never blocks the genuine target mark; CONTROL: a valid own row stands", async () => {
+    const key = await ed25519VerifyingKeyFromSeed(OWN);
+    const OTHER_SCOPE = "9b".repeat(32), OTHER_RAISE = "b2".repeat(32);
+    const replays: Record<string, SeatRoll> = {
+      "another scope": { ...rollOf("gone"), scope: OTHER_SCOPE },
+      "another raise": { ...rollOf("gone"), raiseCids: [OTHER_RAISE] },
+    };
+    for (const [what, roll] of Object.entries(replays)) {
+      const doc = emptyLedger();
+      plant(doc, JSON.stringify(await signSeatRoll(roll, ed25519SignerFromSeed(OWN))));
+      expect([...rolledRaises(doc, SCOPE, key)], `the replay answers nothing: ${what}`).toEqual([]);
+      markRaiseRolled(doc, SCOPE, RAISE, await signed("revoked"), key);
+      expect([...raisesSeenThrough(doc, SCOPE, key)], `R4: the genuine target mark lands over the replay: ${what}`).toEqual([RAISE]);
+    }
+    // CONTROL: a valid own row for the target stands; a later answer moves nothing (the first answer stays).
+    const doc = emptyLedger();
+    markRaiseRolled(doc, SCOPE, RAISE, await signed("revoked"), key);
+    markRaiseRolled(doc, SCOPE, RAISE, await signed("gone"), key);
+    expect(keptSeatRolls(doc, SCOPE, key).map((r) => r.how)).toEqual(["revoked"]);
   });
 });
