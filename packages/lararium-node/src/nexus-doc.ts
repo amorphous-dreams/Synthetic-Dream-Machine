@@ -205,7 +205,7 @@ export function renderNexusDoc(doc: NexusDoc): string {
     `role      = "the nexus doc — three joints at three cadences: the SEAL lineage (rare, a rotation ceremony), the KAHU roster (steward seats), and the PRACTICE dials (fast, one hand). Each rides its own block and its own narrow writer."`,
     "```",
     "",
-    "<<~ ahu #/the-three-joints>>",
+    "<<~ ahu slot=`#/the-three-joints`>>",
     "",
     "! The nexus Doc — seal · kahu · practice",
     "",

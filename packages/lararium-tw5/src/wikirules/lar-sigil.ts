@@ -10,7 +10,7 @@ module-type: wikirule
  * pranala-inline, ahu/kau invocation) are claimed at inline phase.
  *
  * Dispatch model:
- *   All compound + simple sigils → ~ dispatcher (name=SIGIL, p1=ARGS)
+ *   All compound + simple sigils → ~ dispatcher (name=SIGIL, args=ARGS, each named value by its own name)
  *   pranala block/inline         → ~pranala directly (keyword args: from/to/slot/…)
  *   generic block-with-closer    → text literal pass-through
  *
@@ -20,7 +20,7 @@ module-type: wikirule
 
 import { getGrammar } from "../grammar-cache.js";
 import { SLOT_PATH_SRC, SLOT_SEGMENT_SRC } from "../meme-ast/ahu-scan.js";
-import { positionalsOf, readSigilAttrs } from "../sigil-attrs.js";
+import { readSigilAttrs } from "../sigil-attrs.js";
 import { grammarHeadsOf } from "../grammar-heads.js";
 import type { SigilAttr } from "../sigil-attrs.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -311,13 +311,10 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     // TiddlyWiki renders a transclude's CHILDREN where the target resolves to nothing. So a sigil
     // whose procedure this wiki has never seen puts its own text on the page instead of vanishing —
     // the mechanism is the parser's, not a second one bolted beside it.
-    // ── AND THE SLOTS ARE FILLED, NOT PROMISED ────────────────────────────────────────────────────
-    // The dispatcher declares `p1 … p5` and twenty-nine definitions write against them. Handing the
-    // whole argument run to `p1` alone leaves `p2 … p5` empty on every call, so a definition composing
-    // two slots renders one raw string and a gap — and reads correct, because the raw string still
-    // CONTAINS every word the call was written with. `positionalsOf` splits under TiddlyWiki's own
-    // rules: four delimiters stripped, `name=value` pairs stepped over, an unquoted scheme left to the
-    // name it binds.
+    // ── EVERY VALUE IS NAMED ──────────────────────────────────────────────────────────────────────
+    // Since the kupono cut a call writes ``name=`value` `` for every value, so no positional slot is
+    // left to fill: the dispatcher's `p1 … p5` burned, and the rule hands each named value to the
+    // definition's own parameter of that name.
     // ── THE RULE NAMES ITS TARGET ─────────────────────────────────────────────────────────────────
     // TiddlyWiki hands a procedure only the parameters it DECLARES, so a generic forwarder cannot
     // pass `hud=` to a callee whose signature it has never seen — and every named parameter a sigil
@@ -328,25 +325,19 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     // nothing, which is the very floor the dispatcher stood on. The dispatcher itself stays — it
     // answers INDIRECT dispatch, where a definition hands down a name it was given.
     const run   = attrs["p1"] ?? "";
-    const slots = positionalsOf(run);
     const macroAttrs: Record<string, ParseTreeAttribute> = {
       "$variable": { type: "string", value: `~${dispatchName}` },
       "args":      { type: "string", value: run },
       "src":       { type: "string", value: verbatim },
     };
-    for (let i = 0; i < 5; i++) macroAttrs[`p${i + 1}`] = { type: "string", value: slots[i] ?? "" };
     // ── HANA CARRIES A BODY; NO OTHER COMPOUND SIGIL DOES ─────────────────────────────────────────
     // Every other closer-bearing compound sigil (ahu, kumu, …) splits its block body into child
-    // tiddlers upstream (deserializer), so `__body__` never survives to this rule for them — `attrs`
-    // holds no such key and `body` reads `undefined`. hana (and its English alias `task`, which the
-    // scanner canonicalizes to `hana` but the wikirule's OWN compound matcher — a separate matcher —
-    // reports as its own literal name, so both spellings must be named here) is the one sigil whose
-    // block body is a FOREIGN grammar the host must hand forward untouched (guest-grammar.mem
-    // #/hana-worksite): the `~hana` widget's signature is `~hana(p1:grammar-key p2:body)`, and the
-    // `~task` alias procedure forwards both straight through to `~hana` — so the body rides as p2 on
-    // either name; dropping it here (as the code once did) left every hana body rendering as NOTHING.
+    // tiddlers upstream (deserializer), so `__body__` never survives to this rule for them. hana (and
+    // its English alias `task`, which this rule's own compound matcher reports by its literal name) is
+    // the one sigil whose block body is a FOREIGN grammar the host must hand forward untouched
+    // (guest-grammar.mem #/hana-worksite): the `~hana` widget reads it as `body`, beside `grammar`.
     if ((dispatchName === "hana" || dispatchName === "task") && body !== undefined) {
-      macroAttrs["p2"] = { type: "string", value: body };
+      macroAttrs["body"] = { type: "string", value: body };
     }
     // A NAME WINS ITS OWN SLOT. Written last, so a call carrying `args=` or `src=` reaches the
     // definition's own parameter rather than the rule's bookkeeping.

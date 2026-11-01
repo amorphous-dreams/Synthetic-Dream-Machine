@@ -27,10 +27,16 @@ const WRITE = "packages/lararium-memetic-frame/src/write.ts";
 
 const decl = readFileSync(join(REPO, DECL), "utf8");
 const canonical = /CARRIER_TYPE = "([^"]+)"/.exec(decl)?.[1];
-// THE AUTHORITY'S OWN LITERAL, read verbatim — `CARRIER_DECLARATION` is a plain single-quoted string,
+// THE AUTHORITY'S OWN LITERAL, read verbatim — `CARRIER_DECLARATION` is a plain double-quoted string,
 // never a template needing reassembly, so this witness takes it exactly rather than rebuilding it.
 const write = readFileSync(join(REPO, WRITE), "utf8");
-const declaration = /CARRIER_DECLARATION\s*=\s*'([^']+)'/.exec(write)?.[1] ?? null;
+// The constant is double-quoted: its values ride backtick runs (the kupono cut), so neither quote style
+// inside it collides with the string's own.
+const declaration = /CARRIER_DECLARATION\s*=\s*"([^"]+)"/.exec(write)?.[1] ?? null;
+if (!declaration) {
+  console.error("[type-parity] write.ts names no CARRIER_DECLARATION literal — the authority moved, and every DOCTYPE compare below would run against nothing");
+  process.exit(1);
+}
 if (!canonical) {
   console.error("[type-parity] carrier-type.ts names no CARRIER_TYPE — the declaration moved");
   process.exit(1);
@@ -96,7 +102,10 @@ if (declaration) {
     // read as a bare `<<!DOCTYPE`, which the "names no address" guard below (`!lit.includes("lar:///")`)
     // always skipped — the gate ran, matched, and never once fired, on a corpus that had already
     // drifted on this exact line twice.
-    for (const m of t.matchAll(/<<!DOCTYPE[^`\n]*>>/g)) {
+    // AND THE CLASS ADMITS A TICK. The cut ticks the declaration's values, so a class excluding the
+    // backtick (`[^\`\n]`, the earlier form) matched no ruled declaration at all — the same "ran,
+    // matched, never fired" silence the comment above records. Any byte but a newline, lazily, to `>>`.
+    for (const m of t.matchAll(/<<!DOCTYPE[^\n]*?>>/g)) {
       const lit = normDecl(m[0]);
       // A CONCRETE declaration names the grammar and its address; anything else is a source
       // DESCRIBING the form rather than writing one — a grammar sketch in a comment, or a template

@@ -42,7 +42,7 @@ function strandedPastEtx(reading: CarrierReading): MemeDiagnostic[] {
   if (slot.kind !== "foreign") return [];
   return [error("postamble-content",
     `${slot.lines} line(s) stand between ETX and EOT. The text ends at ETX; that slot `
-    + `carries the block check alone. Move the content above the \`<<^ code="${ETX_CODE}">>\` close.`, reading.text.length)];
+    + `carries the block check alone. Move the content above the \`\`<<^ code=\`${ETX_CODE}\`>>\`\` close.`, reading.text.length)];
 }
 
 /**

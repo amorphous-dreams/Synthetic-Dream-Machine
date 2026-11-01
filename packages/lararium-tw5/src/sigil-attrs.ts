@@ -264,7 +264,7 @@ function maskProtectedSpans(body: string): string {
  * `parseMacroParameterAsAttribute` discards the name AND the separator where `:` follows anything
  * but `^[A-Za-z0-9\-_]+$` — "to avoid mis-parsing values like `$:/foo`" (TiddlyWiki5
  * `core/modules/parsers/parseutils.js:328-346`). So `foo.ts:24-30`, `(foo.ts:24-30)` and `$:/x`
- * each read as ONE positional, whole. `readSigilAttrs` and `positionalsOf` already keep the rule;
+ * each read as ONE positional, whole. `readSigilAttrs` already keeps the rule;
  * this reader keeps it too, so all three halves of the module answer the same parser. A reader
  * STRICTER than the parser condemns a carrier for writing what the parser reads correctly.
  */
@@ -321,78 +321,6 @@ export function lostPositionals(carrierText: string): LostPositional[] {
     const body = m[0].replace(/^<<~?[ \t]*/, "").replace(/>>$/, "");
     const values = schemeShapedPositionals(body);
     if (values.length) out.push({ index: m.index, sigil: m[0], values });
-  }
-  return out;
-}
-
-// ── THE SLOTS, THE OTHER HALF OF THE SAME QUESTION ───────────────────────────────────────────────
-
-/** The four delimiters, as `parseStringLiteral` wears them — the triple form FIRST. */
-const LITERALS: ReadonlyArray<readonly [string, string]> = [
-  ['"""', '"""'], ['"', '"'], ["'", "'"], ["[[", "]]"],
-];
-
-/** A string literal at `i`, delimiters stripped — or null. */
-function literalAt(body: string, i: number): { value: string; end: number } | null {
-  for (const [open, close] of LITERALS) {
-    if (!body.startsWith(open, i)) continue;
-    const end = body.indexOf(close, i + open.length);
-    if (end === -1) continue;
-    return { value: body.slice(i + open.length, end), end: end + close.length };
-  }
-  return null;
-}
-
-/** Past the VALUE a named parameter binds — a literal, one of the typed forms, or a bare run. */
-function pastValue(body: string, i: number): number {
-  const lit = literalAt(body, i);
-  if (lit) return lit.end;
-  for (const [open, close] of NEW_STYLE) {
-    if (!body.startsWith(open, i)) continue;
-    const end = body.indexOf(close, i + open.length);
-    if (end !== -1) return end + close.length;
-  }
-  const ws = body.slice(i).search(/\s/);
-  return ws === -1 ? body.length : i + ws;
-}
-
-/**
- * Read the POSITIONAL arguments of a sigil body, in order, delimiters stripped.
- *
- * ── A DISPATCHER'S SLOTS ARE A PROMISE, AND THIS READER KEEPS IT ────────────────────────────────
- * Twenty-nine sigil definitions declare `p1 … p5`. Filling those slots asks the same question
- * `readSigilAttrs` asks about names, under the same rules: a positional wears the same four
- * delimiters a named value wears, and it stands beside the same `name=value` pairs it must step
- * over. One reader, so the two halves cannot drift apart.
- *
- * ── THE QUOTE BINDS THE VALUE AND IS NOT PART OF IT ─────────────────────────────────────────────
- * `<<~ stage "20" "Mischief-Muse">>` fills TWO slots with `20` and `Mischief-Muse`. Handing a slot
- * its own delimiters back renders them, and every definition would then have to strip what the
- * grammar already bound.
- *
- * ── AND AN UNQUOTED SCHEME STILL BINDS A NAME ───────────────────────────────────────────────────
- * `lar:///x` standing bare spells with parameter-name characters, so TiddlyWiki reads a parameter
- * `lar` and the slot receives nothing. This reader AGREES with that rather than papering over it —
- * a reader kinder than the parser reports a slot the render will leave empty.
- */
-export function positionalsOf(body: string): string[] {
-  const out: string[] = [];
-  const NAME = /^([^\s=:>"'`/]+)[ \t]*([=:])/;
-  const STRICT = STRICT_IDENTIFIER;
-  let i = 0;
-  while (i < body.length) {
-    if (/\s/.test(body[i]!)) { i++; continue; }
-    const named = NAME.exec(body.slice(i));
-    if (named && (named[2] === "=" || STRICT.test(named[1]!))) {
-      i = pastValue(body, i + named[0].length);
-      continue;
-    }
-    const lit = literalAt(body, i);
-    if (lit) { out.push(lit.value); i = lit.end; continue; }
-    const ws = body.slice(i).search(/\s/);
-    const end = ws === -1 ? body.length : i + ws;
-    out.push(body.slice(i, end));
-    i = end;
   }
   return out;
 }

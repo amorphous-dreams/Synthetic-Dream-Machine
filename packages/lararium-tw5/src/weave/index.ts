@@ -351,7 +351,8 @@ const TRANSCLUSION_LINE = /^\s*(\{\{[\s\S]*\}\})\s*$/;
 // body belongs to the EMBEDDED language, never this walk's recognizers: a `#` inside a TOML body
 // must not become a markdown list item. So the whole span weaves as ONE fenced block, info string =
 // the grammar key, body byte-verbatim — captured before any other recognizer gets a look at its lines.
-const HANA_OPEN = /^<<~\s*hana\s+([^\n>]+?)\s*>>\s*$/;
+// The grammar-key names itself (the kupono cut): ``<<~ hana grammar=`toml`>>``, the key captured from the tick run.
+const HANA_OPEN = /^<<~\s*hana\s+grammar=`([^`\n]+)`\s*>>\s*$/;
 const HANA_CLOSE = /^<<~\s*\/\s*hana\s*>>\s*$/;
 // The speaking head with or without a joined name (`<<~ ahu`, `<<~ranks`, `<<~! wehe`) — any
 // line-standing sigil not already given a markdown shape above.
