@@ -591,3 +591,23 @@ test("RED: QUEUE: a lane lacking the span head lands through a train (exit 9 tod
   assert.match(sh(w.work, "log", "-1", "--format=%s", land), / — merge PR #100:/);
   assert.equal(r.calls.local, 0, "no local battery ran");
 });
+
+test("RED: QUEUE: the verdict reads the pushed train head's CI, and the span fast-forwards to that exact sha; CONTROL: a green on another sha of the train branch never lands", async () => {
+  const w = world();
+  const r = await runQ(w);
+  assert.equal(r.code, 0, r.out);
+  const [t] = pushedTrains(r.out);
+  assert.ok(t && t.branch.startsWith(`${SPAN}--train-`), r.out);
+  assert.equal(originRef(w, SPAN), t.sha, "the span IS the train head CI read (a fast-forward, no new commit)");
+  assert.ok(r.calls.asked.includes(t.sha), "the train head's own runs were read");
+  assert.equal(r.calls.local, 0, "the local battery never ran");
+  // CONTROL: the train branch holds a GREEN run of another sha, and the train head's own run reads red.
+  const w2 = world(["a"]);
+  const r2 = await runQ(w2, {
+    red: (sha) => sha !== w2.base,
+    // The train branch also holds a GREEN run of another sha (the lane head): the reader matches the head, never the branch.
+    extra: (sha) => (sha === w2.base ? [] : [{ databaseId: 99, headBranch: `${SPAN}--train-1-x`, headSha: w2.heads.a, status: "completed", conclusion: "success", attempt: 1, createdAt: "x" }]),
+  });
+  assert.equal(r2.code, 5, r2.out);
+  assert.equal(originRef(w2, SPAN), w2.base, "nothing landed");
+});
