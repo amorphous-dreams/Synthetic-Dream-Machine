@@ -78,6 +78,7 @@ import {
   readCarriedRecord, readIndexRow, readLockboxRecord, readsAsOutboxSeal, readSCarrier, restNameHolds, rotateTreeKey,
   type CustodyIo, type KeyClass, type SealedCarrier, type SlotSpec, type SlotTree, type TreeKey,
 } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 import { custodyRootPath } from "./custody-root.js";
 import { VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
 import { FACE_ATOM_GROUP_FILE, FACE_ATOM_ASK_FILE } from "./face-atom-store.js";
@@ -596,7 +597,7 @@ export async function rotateNodeKey(args: {
 }): Promise<SlotTree> {
   return rotateTreeKey({
     io: args.io, treePath: sSlotsPath(args.homes.identity), carriers: sSealedCarriers(args.homes),
-    oldTreeKey: args.oldTreeKey, newTreeKey: args.newTreeKey, slots: args.slots,
+    oldTreeKey: args.oldTreeKey, newTreeKey: args.newTreeKey, slots: args.slots, kdf: nativeKdf,
   });
 }
 

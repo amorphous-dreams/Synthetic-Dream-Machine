@@ -35,7 +35,7 @@ import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { canonicalJsonBytes, defaultCryptoProvider, utf8Bytes, type RandomProvider } from "./crypto.js";
 import { FACE_BUNDLE_BODY_INFO, FACE_BUNDLE_DOMAIN, FACE_BUNDLE_MEMORY_INFO } from "./domains.js";
-import { bindSlot, decodeSlotTree, encodeSlotTree, openTreeKey, type Credential, type SlotSpec, type SlotTree } from "./keyslot.js";
+import { bindSlot, decodeSlotTree, encodeSlotTree, openTreeKey, type Credential, type KdfPort, type SlotSpec, type SlotTree } from "./keyslot.js";
 import { memoryKeypairOf, type MemoryKeypair } from "./memory-section.js";
 import { coercePersonaKelEvent } from "./persona-kel-board.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
@@ -73,11 +73,11 @@ export function bundleMemoryKeypair(bundleKey: Uint8Array): MemoryKeypair {
 }
 
 /** Wrap `bundleKey` under each route of `routes`, one slot per route: any one slot opens the key. */
-export function bindBundleRoutes(bundleKey: Uint8Array, routes: readonly SlotSpec[], rng: RandomProvider = defaultCryptoProvider): SlotTree {
+export async function bindBundleRoutes(bundleKey: Uint8Array, routes: readonly SlotSpec[], kdf: KdfPort, rng: RandomProvider = defaultCryptoProvider): Promise<SlotTree> {
   assertKey(bundleKey);
   if (routes.length === 0) throw new Error("face-bundle: a bundle with no route opens for nobody");
   let tree: SlotTree | null = null;
-  for (const spec of routes) tree = bindSlot(tree, bundleKey as TreeKey, spec, rng);
+  for (const spec of routes) tree = await bindSlot(tree, bundleKey as TreeKey, spec, kdf, rng);
   return tree!;
 }
 
@@ -304,8 +304,8 @@ export type BundleKeyOpening =
   | { readonly reading: "no-slot-opens"; readonly notes: readonly string[] };
 
 /** Open a bundle's key with the routes a person presents. The caller owns the key and zero-fills it. */
-export function openBundleKey(tree: SlotTree, credentials: readonly Credential[]): BundleKeyOpening {
-  const opened = openTreeKey(tree, credentials);
+export async function openBundleKey(tree: SlotTree, credentials: readonly Credential[], kdf: KdfPort): Promise<BundleKeyOpening> {
+  const opened = await openTreeKey(tree, credentials, kdf);
   return opened.reading === "opens" ? { reading: "opens", bundleKey: opened.treeKey, slot: opened.slot } : opened;
 }
 

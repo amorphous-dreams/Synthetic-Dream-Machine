@@ -65,6 +65,7 @@ import { describe, expect, test, vi } from "vitest";
 import {
   bindSlot, commitSlotTree, confirmPaperPin, decodeSlotTree, draftPaperPin, mintTreeKey, openSealedCarrier, writeSealedCarrier, SEALING_SUFFIX,
   type CustodyIo,
+  nobleKdf,
 } from "@lararium/mesh";
 import { BootHalted } from "./wire-vessel-rig.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
@@ -513,7 +514,7 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     // A tree key of the test's own, bound under a tree the mesh writer commits through the port. The vessel's own tree key is
     // unreachable from the public surface, and none is needed: the law under test is the port's.
     const treeKey = mintTreeKey();
-    const tree = bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "port" }] });
+    const tree = await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "port" }] }, nobleKdf);
     const carrier = sealedCarrierOf("veil-archive-ggroup-main");
     await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, treeKey, tree, carriers: [carrier] });
     expect(await rowOf(idbName, CUSTODY_TREE_ROW)).toBeInstanceOf(Uint8Array);
@@ -803,7 +804,7 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     const idbName = `custody-replace-${crypto.randomUUID()}`;
     const io = browserKeystoreCustodyIo(idbName);
     const treeKey = mintTreeKey();
-    const tree = bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "replace" }] });
+    const tree = await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "replace" }] }, nobleKdf);
     const carrier = sealedCarrierOf("veil-archive-ggroup-main");
     await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, treeKey, tree, carriers: [carrier] });
     const a = randomBytes(64);

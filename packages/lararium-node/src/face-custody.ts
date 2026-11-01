@@ -11,6 +11,7 @@ import {
   decodeSlotTree, openTreeKey, settleFaceRotation,
   type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type SlotTree,
 } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 import { carrierTable, type CarrierRow, type CustodyHomes } from "./vault-carriers.js";
 import { FACE_TREE_FILE, FACES_DIR, faceDir, faceTreePath } from "./face-index.js";
 
@@ -56,7 +57,7 @@ export async function openFaceTree(args: {
   const reading = decodeSlotTree(await args.io.read(treePath));
   if (reading.reading === "absent") return { reading: "tree-absent" };
   if (reading.reading === "unreadable") return { reading: "tree-unreadable", why: reading.why };
-  const opened = openTreeKey(reading.tree, args.credentials);
+  const opened = await openTreeKey(reading.tree, args.credentials, nativeKdf);
   if (opened.reading !== "opens") return { reading: "no-slot-opens", notes: opened.notes };
   return { reading: "opens", fck: opened.treeKey, slot: opened.slot };
 }

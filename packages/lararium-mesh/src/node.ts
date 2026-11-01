@@ -6,3 +6,4 @@
 // browser's module graph — the import never runs there, but it RESOLVES, and the hull breaches at load
 // rather than at call. `tests/isomorphic-hull.test.ts` walks the barrel's graph and refuses that.
 export { repoRoot } from "./repo-root.js";
+export { nativeKdf } from "./kdf-native.js";

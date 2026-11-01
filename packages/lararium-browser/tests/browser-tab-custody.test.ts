@@ -21,7 +21,7 @@
  */
 import { readyWorker } from "./fixtures/ready-worker.js";
 import { describe, expect, test } from "vitest";
-import { decodeSlotTree, openTreeKey } from "@lararium/mesh";
+import { decodeSlotTree, nobleKdf, openTreeKey } from "@lararium/mesh";
 import { attachSharedHolder, holderWorkerHandle, type SharedWorkerHost } from "../src/shared-holder.js";
 import { vesselLockName } from "../src/vessel-lock.js";
 import { faceFixture } from "./holder-session-fixture.js";
@@ -107,7 +107,7 @@ describe("no key rests where another tab or the shared holder can read it", () =
     const idbName = await sealedVessel("no-key-at-rest");
     const tree = decodeSlotTree(await browserKeystoreCustodyIo(idbName).read(CUSTODY_TREE_ROW));
     if (tree.reading !== "readable") throw new Error("the sealed vessel's tree does not read");
-    const opened = openTreeKey(tree.tree, [PASS]);
+    const opened = await openTreeKey(tree.tree, [PASS], nobleKdf);
     if (opened.reading !== "opens") throw new Error("the test route does not open the tree");
     const keyHex = hex(opened.treeKey);
 
@@ -147,7 +147,7 @@ describe("nothing a tab posts to the shared holder carries the key", () => {
     const idbName = await sealedVessel("holder-channel");
     const tree = decodeSlotTree(await browserKeystoreCustodyIo(idbName).read(CUSTODY_TREE_ROW));
     if (tree.reading !== "readable") throw new Error("the sealed vessel's tree does not read");
-    const opened = openTreeKey(tree.tree, [PASS]);
+    const opened = await openTreeKey(tree.tree, [PASS], nobleKdf);
     if (opened.reading !== "opens") throw new Error("the test route does not open the tree");
     const key = opened.treeKey;
 

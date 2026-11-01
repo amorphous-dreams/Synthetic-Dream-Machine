@@ -92,6 +92,7 @@ function everyByte(root) {
 
 test("a standing vessel cuts one face's backup bundle through its custody door", { timeout: 900_000 }, async () => {
   const mesh = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/index.js")).href);
+  const { nativeKdf } = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/node.js")).href);
   const root = stageFounded("live");
   const outDir = mkdtempSync(join(tmpdir(), "lares-backup-out-"));
   let vessel = null;
@@ -130,7 +131,7 @@ test("a standing vessel cuts one face's backup bundle through its custody door",
     const read = mesh.readFaceBundle(bytes);
     assert.equal(read.reading, "readable");
     assert.deepEqual(mesh.faceBundleResidue(bytes), { length: bytes.length, slots: [{ t: 1, pins: ["passphrase"] }] });
-    const key = mesh.openBundleKey(read.tree, [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
+    const key = await mesh.openBundleKey(read.tree, [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }], nativeKdf);
     assert.equal(key.reading, "opens");
     const plain = mesh.openFaceBundleBody(read.sealedBody, key.bundleKey);
     assert.ok(plain, "the body opens under the bundle's own key");

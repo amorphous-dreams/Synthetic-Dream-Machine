@@ -29,6 +29,7 @@
 
 import { readFileSync } from "node:fs";
 import { OccupiedStoreRefusal, assertStoreUnoccupied, openBundleKey, readFaceBundle, seatFingerprint, type Credential, type SlotSpec } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 import {
   runInit, runFoundHearth, ownedStore, StoreHeld, CustodyFoundingRefused, FsCustodyIo, custodyTreeStands,
   CustodyLockRefused, HearthFoundingRefused, NameTooLong, occupantCarriers, sSlotsPath,
@@ -190,7 +191,7 @@ async function openRestoreBundle(file: string): Promise<{ readonly sealedBody: U
   catch (err) { throw new HearthFoundingRefused(`bundle-unreadable: no bundle reads at ${file} (${(err as NodeJS.ErrnoException).code ?? "unreadable"}). Nothing was written.`); }
   const read = readFaceBundle(bytes);
   if (read.reading !== "readable") throw new HearthFoundingRefused(`bundle-malformed: ${file} reads as no backup bundle (${read.why}). Nothing was written.`);
-  const opened = openBundleKey(read.tree, await gatherBundle());
+  const opened = await openBundleKey(read.tree, await gatherBundle(), nativeKdf);
   if (opened.reading !== "opens") throw new HearthFoundingRefused(`no-slot-opens: no route of the bundle opens under what was presented${opened.notes.length ? ` (${opened.notes.join("; ")})` : ""}. Nothing was written.`);
   return { sealedBody: read.sealedBody, bundleKey: opened.bundleKey };
 }

@@ -25,6 +25,7 @@ import * as ed from "@noble/ed25519";
 import { bindBundleRoutes, encodeFaceBundle, hex, mintBundleKey, openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, splitRootAtFounding, hexToBytes } from "@lararium/mesh";
 import { SEALED_BYTES_LINE } from "../src/vault-backup.js";
 import { importLines, restoreFromBundle, restoreFromCards, restoreLines, type RestoreLanded, type RunAct } from "../src/vault-restore.js";
+import { nativeKdf } from "@lararium/mesh/node";
 
 vi.setConfig({ testTimeout: 120_000 });
 
@@ -38,11 +39,11 @@ const RESTORED = { face: FACE, prefix: "E-test-prefix-0123456789", resumed: fals
 let dir: string;
 let file: string;
 let bundleKey: Uint8Array;
-beforeEach(() => {
+beforeEach(async () => {
   dir = mkdtempSync(join(tmpdir(), "vault-restore-"));
   file = join(dir, "face.bundle");
   bundleKey = mintBundleKey();
-  const tree = bindBundleRoutes(bundleKey, [{ t: 1, pins: [{ kind: "passphrase", passphrase: ROUTE }] }]);
+  const tree = await bindBundleRoutes(bundleKey, [{ t: 1, pins: [{ kind: "passphrase", passphrase: ROUTE }] }], nativeKdf);
   writeFileSync(file, encodeFaceBundle(tree, sealFaceBundleBody(BODY, bundleKey)));
 });
 afterEach(() => { rmSync(dir, { recursive: true, force: true }); });

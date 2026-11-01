@@ -9,6 +9,7 @@ import {
   bindSlot, commitFaceTree, mintFck, rotateFck, unbindSlot,
   type CustodyIo, type FaceCustodyKey, type SlotSpec, type SlotTree,
 } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 import { faceCarriersOf, readFaceTree } from "./face-custody.js";
 import { faceTreePath } from "./face-index.js";
 import type { CustodyHomes } from "./vault-carriers.js";
@@ -25,7 +26,7 @@ export async function bindFaceSlot(args: {
 }): Promise<{ readonly tree: SlotTree; readonly slotId: string }> {
   const { bytes, tree } = await readFaceTree(args.io, args.homes, args.fcid);
   if (tree === null) throw new FaceTreeUnreadable(args.fcid);
-  const next = bindSlot(tree, args.fck, args.spec);
+  const next = await bindSlot(tree, args.fck, args.spec, nativeKdf);
   await commitFaceTree({
     io: args.io, path: faceTreePath(args.homes.identity, args.fcid), expected: bytes, key: args.fck, tree: next,
     carriers: await faceCarriersOf(args.io, args.homes, args.fcid),
@@ -54,6 +55,6 @@ export async function unbindFaceSlot(args: {
     throw new Error(`[face-slot-ops] ${out.tree.slots.length} route(s) stay once ${args.slotId} leaves, and the rotation names ${args.rotate.length}; nothing was changed`);
   }
   const newKey = mintFck();
-  const next = await rotateFck({ io: args.io, treePath, carriers, oldKey: args.fck, newKey, slots: args.rotate });
+  const next = await rotateFck({ io: args.io, treePath, carriers, oldKey: args.fck, newKey, slots: args.rotate, kdf: nativeKdf });
   return { tree: next, rotationOffer: out.rotationOffer, rotated: true, fck: newKey };
 }

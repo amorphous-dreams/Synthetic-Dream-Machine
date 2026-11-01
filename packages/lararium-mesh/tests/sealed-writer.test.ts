@@ -15,6 +15,7 @@ import {
 } from "../src/sealed-writer.js";
 import { bindSlot, openTreeKey, encodeSlotTree, decodeSlotTree, type SlotTree } from "../src/keyslot.js";
 import { mintTreeKey, treeKeyEquals, type TreeKey } from "../src/tree-key.js";
+import { nativeKdf } from "../src/node.js";
 
 const text = (s: string): Uint8Array => new TextEncoder().encode(s);
 const str = (b: Uint8Array): string => new TextDecoder().decode(b);
@@ -83,7 +84,7 @@ const CARRIERS: SealedCarrier[] = [
 async function found(): Promise<{ io: MemoryIo; treeKey: TreeKey; tree: SlotTree }> {
   const io = new MemoryIo();
   const treeKey = mintTreeKey();
-  const tree = bindSlot(null, treeKey, { t: 1, pins: [right] });
+  const tree = await bindSlot(null, treeKey, { t: 1, pins: [right] }, nativeKdf);
   await commitSlotTree({ io, path: TREE, expected: null, treeKey, tree, carriers: CARRIERS });
   for (const c of CARRIERS) await writeSealedCarrier({ io, treeKey, treePath: TREE, carrier: c, plaintext: text(`${c.name}-v1`) });
   io.log.length = 0;
@@ -113,7 +114,7 @@ describe("write", () => {
   test("RED: a wrong passphrase opens no tree key, and a tree key that did not seal the carriers replaces none of them", async () => {
     const { io } = await found();
     const before = io.snapshot();
-    expect(openTreeKey(await openedTree(io), [wrong]).reading).toBe("no-slot-opens");
+    expect((await openTreeKey(await openedTree(io), [wrong], nativeKdf)).reading).toBe("no-slot-opens");
     // The floor's confusion, made concrete: a vessel holding the wrong tree key tries to write its fresh state.
     const stray = mintTreeKey();
     for (const c of CARRIERS) {
@@ -166,7 +167,7 @@ describe("write", () => {
 describe("the slot tree", () => {
   test("a tree commit refuses when the standing tree moved since the caller read it", async () => {
     const { io, treeKey, tree } = await found();
-    const grown = bindSlot(tree, treeKey, { t: 1, pins: [right] });
+    const grown = await bindSlot(tree, treeKey, { t: 1, pins: [right] }, nativeKdf);
     await expect(commitSlotTree({ io, path: TREE, expected: text("not what stands"), treeKey, tree: grown, carriers: CARRIERS })).rejects.toThrow(/moved/);
     await commitSlotTree({ io, path: TREE, expected: await io.read(TREE), treeKey, tree: grown, carriers: CARRIERS });
     expect((await openedTree(io)).slots.length).toBe(2);
@@ -181,7 +182,7 @@ describe("rotation", () => {
     b[b.length - 1] ^= 0x01;                                  // the AEAD refuses it under the old tree key
     io.files.set(third, b);
     const before = io.snapshot();
-    await expect(rotateTreeKey({ io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] }))
+    await expect(rotateTreeKey({ kdf: nativeKdf, io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] }))
       .rejects.toMatchObject({ reading: "key-fails" });
     expect(io.log).toEqual([]);
     expect(io.snapshot()).toEqual(before);
@@ -190,8 +191,8 @@ describe("rotation", () => {
   test("CONTROL: a rotation re-seals every carrier under the new tree key and binds the new tree; the old tree key opens nothing", async () => {
     const { io, treeKey } = await found();
     const newTreeKey = mintTreeKey();
-    await rotateTreeKey({ io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey, slots: [{ t: 1, pins: [right] }] });
-    const o = openTreeKey(await openedTree(io), [right]);
+    await rotateTreeKey({ kdf: nativeKdf, io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey, slots: [{ t: 1, pins: [right] }] });
+    const o = await openTreeKey(await openedTree(io), [right], nativeKdf);
     expect(o.reading === "opens" && treeKeyEquals(o.treeKey, newTreeKey)).toBe(true);
     for (const c of CARRIERS) {
       const n = await openSealedCarrier({ io, treeKey: newTreeKey, carrier: c });
@@ -207,10 +208,10 @@ describe("rotation", () => {
     const { io, treeKey } = await found();
     const newTreeKey = mintTreeKey();
     io.failWhen = (op, path) => op === "rename" && path === `${CARRIERS[1]!.path}${ROTATING_SUFFIX}`;
-    await expect(rotateTreeKey({ io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey, slots: [{ t: 1, pins: [right] }] })).rejects.toThrow(/injected/);
+    await expect(rotateTreeKey({ kdf: nativeKdf, io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey, slots: [{ t: 1, pins: [right] }] })).rejects.toThrow(/injected/);
     io.revive();
     expect(await settleRotation({ io, treePath: TREE, carriers: CARRIERS })).toBe("completed");
-    const o = openTreeKey(await openedTree(io), [right]);
+    const o = await openTreeKey(await openedTree(io), [right], nativeKdf);
     expect(o.reading === "opens" && treeKeyEquals(o.treeKey, newTreeKey)).toBe(true);
     for (const c of CARRIERS) expect((await openSealedCarrier({ io, treeKey: newTreeKey, carrier: c })).reading).toBe("opens");
   });
@@ -219,7 +220,7 @@ describe("rotation", () => {
     const { io, treeKey } = await found();
     const before = io.snapshot();
     io.failWhen = (op, path) => op === "write" && path === `${TREE}${ROTATING_SUFFIX}`;
-    await expect(rotateTreeKey({ io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] })).rejects.toThrow(/injected/);
+    await expect(rotateTreeKey({ kdf: nativeKdf, io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] })).rejects.toThrow(/injected/);
     io.revive();
     expect(await settleRotation({ io, treePath: TREE, carriers: CARRIERS })).toBe("discarded");
     expect(io.snapshot()).toEqual(before);
@@ -228,21 +229,21 @@ describe("rotation", () => {
 
   test("a rotation refuses while an unsettled one stands", async () => {
     const { io, treeKey } = await found();
-    io.files.set(`${TREE}${ROTATING_SUFFIX}`, encodeSlotTree(bindSlot(null, mintTreeKey(), { t: 1, pins: [right] })));
-    await expect(rotateTreeKey({ io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] }))
+    io.files.set(`${TREE}${ROTATING_SUFFIX}`, encodeSlotTree(await bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, nativeKdf)));
+    await expect(rotateTreeKey({ kdf: nativeKdf, io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] }))
       .rejects.toThrow(/settle/);
   });
 
   test("a rotation with no slot to bind refuses before it writes", async () => {
     const { io, treeKey } = await found();
-    await expect(rotateTreeKey({ io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [] })).rejects.toThrow(/human route/);
+    await expect(rotateTreeKey({ kdf: nativeKdf, io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [] })).rejects.toThrow(/human route/);
     expect(io.log).toEqual([]);
   });
 });
 
 /** Every carrier standing in `io` opens under the tree key the standing tree yields to `right`, and reads `want`. */
 async function everyCarrierOpens(io: MemoryIo, want: (c: SealedCarrier) => string): Promise<void> {
-  const o = openTreeKey(await openedTree(io), [right]);
+  const o = await openTreeKey(await openedTree(io), [right], nativeKdf);
   expect(o.reading).toBe("opens");
   if (o.reading !== "opens") return;
   for (const c of CARRIERS) {
@@ -261,7 +262,7 @@ describe("the tree key in hand proves against the STANDING tree before any byte 
     const { io } = await found();
     const before = io.snapshot();
     const err = await rotateTreeKey({
-      io, treePath: TREE, carriers: [], oldTreeKey: mintTreeKey(), newTreeKey: mintTreeKey(),
+      kdf: nativeKdf, io, treePath: TREE, carriers: [], oldTreeKey: mintTreeKey(), newTreeKey: mintTreeKey(),
       slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "attacker" }] }],
     }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(TreeKeyRefusal);
@@ -275,7 +276,7 @@ describe("the tree key in hand proves against the STANDING tree before any byte 
     const { io } = await found();
     const before = io.snapshot();
     const stranger = mintTreeKey();
-    const foreign = bindSlot(null, stranger, { t: 1, pins: [{ kind: "passphrase", passphrase: "attacker" }] });
+    const foreign = await bindSlot(null, stranger, { t: 1, pins: [{ kind: "passphrase", passphrase: "attacker" }] }, nativeKdf);
     await expect(commitSlotTree({ io, path: TREE, expected: await io.read(TREE), treeKey: stranger, tree: foreign, carriers: CARRIERS }))
       .rejects.toMatchObject({ name: "TreeKeyRefusal", reading: "tree-key-mismatch" });
     expect(io.snapshot()).toEqual(before);
@@ -285,7 +286,7 @@ describe("the tree key in hand proves against the STANDING tree before any byte 
   test("RED (P5-2): a rotation whose carrier list omits a sealed carrier refuses before any write, naming it", async () => {
     const { io, treeKey } = await found();
     const before = io.snapshot();
-    const err = await rotateTreeKey({ io, treePath: TREE, carriers: [CARRIERS[0]!], oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] })
+    const err = await rotateTreeKey({ kdf: nativeKdf, io, treePath: TREE, carriers: [CARRIERS[0]!], oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] })
       .catch((e: unknown) => e);
     expect(err).toBeInstanceOf(CensusRefusal);
     expect((err as CensusRefusal).uncovered).toEqual([CARRIERS[1]!.path, CARRIERS[2]!.path].sort());
@@ -297,7 +298,7 @@ describe("the tree key in hand proves against the STANDING tree before any byte 
 
   test("RED (P5-8): after a rotation, a holder of the retired tree key founds no absent carrier and replaces no standing one", async () => {
     const { io, treeKey } = await found();
-    await rotateTreeKey({ io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] });
+    await rotateTreeKey({ kdf: nativeKdf, io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] });
     const before = io.snapshot();
     io.log.length = 0;
     const fresh: SealedCarrier = { name: "recovery-device-share-h1", path: "/id/recovery-device-share-h1.sealed" };
@@ -328,7 +329,7 @@ describe("the tree key in hand proves against the STANDING tree before any byte 
     // The stale writer has checked and written its sidecar; a rotation starts before its rename lands.
     io.rename = async (from: string, to: string) => {
       if (rotation === null && from === `${CARRIERS[0]!.path}${SEALING_SUFFIX}`) {
-        rotation = rotateTreeKey({ io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey, slots: [{ t: 1, pins: [right] }] })
+        rotation = rotateTreeKey({ kdf: nativeKdf, io, treePath: TREE, carriers: CARRIERS, oldTreeKey: treeKey, newTreeKey, slots: [{ t: 1, pins: [right] }] })
           .catch((e: unknown) => e);
         await yieldMany();
       }
@@ -339,7 +340,7 @@ describe("the tree key in hand proves against the STANDING tree before any byte 
     const rotated = await rotation;
     expect(rotated).not.toBeInstanceOf(Error);
     expect(stale).toBe("landed");
-    const o = openTreeKey(await openedTree(io), [right]);
+    const o = await openTreeKey(await openedTree(io), [right], nativeKdf);
     expect(o.reading === "opens" && treeKeyEquals(o.treeKey, newTreeKey)).toBe(true);
     await everyCarrierOpens(io, (c) => (c === CARRIERS[0] ? "keyring-v2" : `${c.name}-v1`));
   });
@@ -349,7 +350,7 @@ describe("the tree key in hand proves against the STANDING tree before any byte 
     const fresh: SealedCarrier = { name: "recovery-device-share-h1", path: "/id/recovery-device-share-h1.sealed" };
     await writeSealedCarrier({ io, treeKey, treePath: TREE, carrier: fresh, plaintext: text("share") });
     const newTreeKey = mintTreeKey();
-    await rotateTreeKey({ io, treePath: TREE, carriers: [...CARRIERS, fresh], oldTreeKey: treeKey, newTreeKey, slots: [{ t: 1, pins: [right] }] });
+    await rotateTreeKey({ kdf: nativeKdf, io, treePath: TREE, carriers: [...CARRIERS, fresh], oldTreeKey: treeKey, newTreeKey, slots: [{ t: 1, pins: [right] }] });
     const r = await openSealedCarrier({ io, treeKey: newTreeKey, carrier: fresh });
     expect(r.reading === "opens" && str(r.plaintext)).toBe("share");
     await writeSealedCarrier({ io, treeKey: newTreeKey, treePath: TREE, carrier: CARRIERS[0]!, plaintext: text("keyring-v3") });

@@ -19,6 +19,7 @@
  */
 import { readFileSync } from "node:fs";
 import { canonicalJsonBytes, hex, mintBundleKey, openBundleKey, readFaceBundle, sealFaceBundleBody, type Credential } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 import { CardRestoreRefused, buildCardBody, type FaceNamed, type PresentedCard } from "@lararium/node";
 import { SEALED_BYTES_LINE } from "./vault-backup.js";
 
@@ -67,7 +68,7 @@ export async function restoreFromBundle(args: {
   catch (err) { return { ok: false, reason: "bundle-unreadable", message: `no bundle reads at ${args.file} (${(err as NodeJS.ErrnoException).code ?? "unreadable"})` }; }
   const read = readFaceBundle(bytes);
   if (read.reading !== "readable") return { ok: false, reason: "bundle-malformed", message: `${args.file} reads as no backup bundle: ${read.why}. Nothing moved.` };
-  const opened = openBundleKey(read.tree, args.credentials);
+  const opened = await openBundleKey(read.tree, args.credentials, nativeKdf);
   if (opened.reading !== "opens") {
     return { ok: false, reason: "no-slot-opens", message: `no route of the bundle opens under what was presented${opened.notes.length ? ` (${opened.notes.join("; ")})` : ""}. Nothing moved.` };
   }
