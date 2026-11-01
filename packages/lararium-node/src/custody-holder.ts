@@ -16,9 +16,11 @@
  * stands (`torn`, `key-fails`, `bare`, `unopenable`). No caller may mint over `unavailable`.
  *
  * ── THE UNLOCK BOUND ────────────────────────────────────────────────────────────────────────────
- * Any process of the vessel's own user reaches the unlock door. Each credential that opens no slot spends one of
- * `UNLOCK_ATTEMPTS_PER_BOOT` attempts; once spent, every later unlock answers `attempts-spent` before any key
- * derivation runs. Nothing resets the count but a restart: no success, no lock. Unlocks run one at a time, so
+ * Any process of the vessel's own user reaches the unlock door. An offering that opens no slot spends one of
+ * `UNLOCK_ATTEMPTS_PER_BOOT` attempts for EACH distinct passphrase it carries (NFKC-equal spellings count once), and one
+ * for its other routes together (a paper route's sheets make up one route); an empty offering spends one. Passphrases
+ * past the attempts left never reach a derivation, and the call answers `attempts-spent`. A route that opens spends
+ * nothing. Once spent, every later unlock answers `attempts-spent` before any key derivation runs. Nothing resets the count but a restart: no success, no lock. Unlocks run one at a time, so
  * parallel guesses never outrun the bound.
  *
  * ── A FOUNDING HANDS ITS KEY STRAIGHT IN ────────────────────────────────────────────────────────
@@ -116,6 +118,22 @@ export type FaceUnlock =
 export interface FaceOwnerRow { readonly fcid: string; readonly group: string | null }
 
 export const UNLOCK_ATTEMPTS_PER_BOOT = 3;
+
+/** Charge an offering against the attempts `left` (THE UNLOCK BOUND): what reaches the open, what a miss costs, and
+ *  whether passphrases past the bound stayed unread. */
+function chargeOffering(credentials: readonly Credential[], left: number): { readonly offered: readonly Credential[]; readonly cost: number; readonly short: boolean } {
+  const others = credentials.filter((c) => c.kind !== "passphrase");
+  const seen = new Set<string>();
+  const passphrases: Credential[] = [];
+  for (const c of credentials) {
+    if (c.kind !== "passphrase") continue;
+    const route = c.passphrase.normalize("NFKC");
+    if (!seen.has(route)) { seen.add(route); passphrases.push(c); }
+  }
+  const floor = others.length > 0 || passphrases.length === 0 ? 1 : 0;
+  const kept = passphrases.slice(0, Math.max(0, left - floor));
+  return { offered: [...others, ...kept], cost: floor + kept.length, short: kept.length < passphrases.length };
+}
 
 export interface CustodyHolder {
   /** The homes this holder's rows rest in. */
@@ -248,10 +266,11 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
   const doUnlock = async (credentials: readonly Credential[]): Promise<HolderUnlock> => {
     if (treeKey !== null) return { reading: "already-unlocked" };
     if (spent >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent" };
-    const result = await unlockCustody({ io: a.io, homes: a.homes, credentials });
+    const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - spent);
+    const result = await unlockCustody({ io: a.io, homes: a.homes, credentials: charge.offered });
     if (result.reading === "no-slot-opens") {
-      spent++;
-      return { reading: "no-slot-opens", attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - spent };
+      spent += charge.cost;
+      return charge.short ? { reading: "attempts-spent" } : { reading: "no-slot-opens", attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - spent };
     }
     if (result.reading !== "opens") return result;
     const opened = await openCustodyRootCarrier({ io: a.io, treeKey: result.treeKey, identityDir: a.homes.identity });
@@ -270,18 +289,19 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
   const doProve = async (credentials: readonly Credential[]): Promise<HolderProof> => {
     if (treeKey === null || !accepting) return { reading: "locked" };
     if (spent >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent" };
-    const result = await openCustodyNodeKey({ io: a.io, homes: a.homes, credentials });
-    if (result.reading === "no-slot-opens") {
-      spent++;
-      return { reading: "no-slot-opens", attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - spent };
-    }
+    const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - spent);
+    const missed = (): HolderProof => {
+      spent += charge.cost;
+      return charge.short ? { reading: "attempts-spent" } : { reading: "no-slot-opens", attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - spent };
+    };
+    const result = await openCustodyNodeKey({ io: a.io, homes: a.homes, credentials: charge.offered });
+    if (result.reading === "no-slot-opens") return missed();
     if (result.reading !== "opens") return result;
     // A route that opens a tree whose key differs from the one held proves nothing about this vessel.
     const same = treeKey !== null && treeKeyEquals(result.treeKey, treeKey);
     result.treeKey.fill(0);
     if (same) return { reading: "proves" };
-    spent++;
-    return { reading: "no-slot-opens", attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - spent };
+    return missed();
   };
   const operation = <T>(fn: () => Promise<T>): Promise<T> => {
     if (!accepting) return Promise.reject(new CustodyLocked());
@@ -342,10 +362,11 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     const { fcid, ordinal } = found;
     if (faces.has(fcid)) return { reading: "already-unlocked", fcid, ordinal };
     if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent", fcid };
-    const opened = await openFaceTree({ io: a.io, homes: a.homes, fcid, credentials });
+    const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0));
+    const opened = await openFaceTree({ io: a.io, homes: a.homes, fcid, credentials: charge.offered });
     if (opened.reading === "no-slot-opens") {
-      faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + 1);
-      return { reading: "no-slot-opens", fcid, attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0) };
+      faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + charge.cost);
+      return charge.short ? { reading: "attempts-spent", fcid } : { reading: "no-slot-opens", fcid, attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0) };
     }
     if (opened.reading === "tree-absent") return { reading: "tree-absent", fcid };
     if (opened.reading === "tree-unreadable") return { reading: "tree-unreadable", fcid, why: opened.why };
