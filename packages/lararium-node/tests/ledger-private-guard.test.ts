@@ -14,6 +14,9 @@
  *       where a sibling gate or a same-face view would open it: no relation reaches a document only this device keeps.
  *   L1c CONTROL: the same-face session still reads the face's planes and the daemon doc; a sibling still reads the
  *       face's planes.
+ *   L2  RED (the cold read's MEDIUM, controller ruling): ONE function classes every face's ledger whose atom key the vessel
+ *       holds at boot (the worn face, each joined face, each face lit later), under the `device` owner; a key it never
+ *       held stays unclassed, and an absent key classes nothing.
  */
 import { describe, expect, test } from "vitest";
 import * as ed from "@noble/ed25519";
@@ -131,5 +134,16 @@ describe("a vessel's edge ledger crosses to no wire peer (T33)", () => {
     }
     expect(await selfSlotShareDecision({ hasWsSocket: false, sibling: true, siblingGate: open, peerClass: undefined, selfSlotFedGate: null, antigenRing: null, membership: null, planeSeal: null,
       peerId: "sib", documentId: idOf(FACE.circles), protectedDocs: seatedGuard(book, { ...none, sibling: true, siblingGate: open }) }), "a sibling reads the face's plane").toBe(true);
+  });
+
+  test("L2 — RED: classDeviceLedgers classes every held face's ledger under the device owner, and nothing else", async () => {
+    const classDeviceLedgers = (vp as { classDeviceLedgers?: (book: vp.VesselPrivateBook, keys: Iterable<string | null | undefined>) => void }).classDeviceLedgers;
+    expect(typeof classDeviceLedgers, "classDeviceLedgers stands").toBe("function");
+    const book = await bookOf();
+    const worn = ATOM, joined = "4e".repeat(32), lit = "5f".repeat(32), never = "6a".repeat(32);
+    classDeviceLedgers!(book, [worn, joined, null, undefined, ""]);
+    classDeviceLedgers!(book, [lit]);
+    for (const key of [worn, joined, lit]) expect(book.ownerOf(String(idOf(edgeLedgerDocUrl(key)))), `the ledger of ${key.slice(0, 4)}`).toBe("device");
+    expect(book.has(String(idOf(edgeLedgerDocUrl(never)))), "a key the vessel never held").toBe(false);
   });
 });
