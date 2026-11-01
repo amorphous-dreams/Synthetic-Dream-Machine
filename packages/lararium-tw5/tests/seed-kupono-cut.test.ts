@@ -81,6 +81,23 @@ const envelopeAndRetired = (text: string): string[] => {
   return found;
 };
 
+/** A procedure body that prints a call form carries its parameter by `$(param)$` in a backtick span, never `<<param>>` between `&#96;` entities. */
+const entityTicks = (text: string): string[] =>
+  text.split("\n").flatMap((l, i) => (l.startsWith("\\procedure") && /&#96;<<[\w-]+>>&#96;/.test(l) ? [`${i + 1}: &#96;<<param>>&#96; in a procedure body · ${l.slice(0, 60)}`] : []));
+
+/** A standalone `~mu` call names a tool the seed's own Mu rows define (a carry rides `~carry`). */
+const muCallsNameTools = (text: string): string[] => {
+  const tools = new Set([...text.matchAll(/<<~ mu name=`([^`]+)` params=`/g)].map((m) => m[1]!));
+  tools.add(/\\procedure ~mu\(name:([A-Za-z]+)/.exec(text)?.[1] ?? "");
+  if (tools.size < 2) return ["no Mu tool rows to read the tool names from"];
+  return callsOf(text)
+    .filter((c) => c.head === "mu" && c.prefix === "~")
+    .flatMap((c) => {
+      const name = /name=`([^`]*)`/.exec(c.rest)?.[1];
+      return name === undefined || tools.has(name) ? [] : [at(c, `~mu names «${name}», no tool the seed defines`)];
+    });
+};
+
 /** The fold retires the frame-row sigil and the standalone gauge sigils: no procedure, no call, no HUD word, no "two grips" line. */
 const retiredSurface = (text: string): string[] => {
   const found: string[] = [];
@@ -239,7 +256,7 @@ const frameLaw = (text: string): string[] => {
   return found;
 };
 
-const LAWS = { arrowsBetweenValues, spacedAtSigns, unnamedOrQuotedValues, procedureValues, valueHazards, envelopeAndRetired, retiredSurface, slashedCites, oracleCrossCheck, bandLaw, frameLaw };
+const LAWS = { arrowsBetweenValues, spacedAtSigns, unnamedOrQuotedValues, procedureValues, valueHazards, entityTicks, muCallsNameTools, envelopeAndRetired, retiredSurface, slashedCites, oracleCrossCheck, bandLaw, frameLaw };
 
 // ── CONTROLS: a planted fault each law MUST name ───────────────────────────────────────────────────────
 const PLANTED: Record<keyof typeof LAWS, string> = {
@@ -249,6 +266,8 @@ const PLANTED: Record<keyof typeof LAWS, string> = {
   procedureValues: "\\procedure ~season(name params) ~ <<has season name=<<name>> params=<<params>>>>",
   valueHazards: "<<~ set note=`$(x)$`>>",
   envelopeAndRetired: '<<!DOCTYPE root=`x` spec=`y`>>\n<<~ ahu #/entry>>\n<<~ lares fires=`aim` from=`a`>>',
+  entityTicks: "\\procedure ~oracle(throw) ~ oracle throw=&#96;<<throw>>&#96;",
+  muCallsNameTools: "\\procedure ~mu(name:Arcana params:\"x\") y\n<<~ mu name=`Wand` params=`ascii/*`>>\n<<~ mu name=`*!`>>",
   retiredSurface: "\\procedure ~frame(name params) x\n<<~ aperture at=`9/measure`>>\n!!! The HUD\nthe same instruments ride ~set as keys ~ two grips, one handle",
   slashedCites: "<<~ ahu slot=`#/ooda-ha`>>\nthe tally lives at #ooda-ha.\n<<~/ahu>>",
   oracleCrossCheck: "<<~ oracle throw=`↯7 ✲ ⚂(3) ⁂:⌗🜄`>>",
@@ -287,6 +306,10 @@ describe("controls: each law names its planted fault", () => {
     for (const name of ["ooda-ha", "drift-ward", "frame"]) expect(f).toContain(`a <<~ ${name} …>> call still stands`);
     expect(retiredSurface("<<~ season name=`Bureaucracy` params=`patron/Zarathud`>>\n<<~ stance named=`poet`>> · <<~ mu name=`*?`>>")).toEqual([]);
     expect(slashedCites("<<~ ahu slot=`#/ooda-ha`>>\nthe tally lives at #/ooda-ha; `#section` stays a placeholder; &#x0001;\n<<~/ahu>>")).toEqual([]);
+  });
+  test("entityTicks and muCallsNameTools read clean forms clean", () => {
+    expect(entityTicks("\\procedure ~oracle(throw) <$text text=```~ oracle throw=`$(throw)$` ```/>")).toEqual([]);
+    expect(muCallsNameTools("\\procedure ~mu(name:Arcana params:\"x\") y\n<<~ mu name=`Wand` params=`ascii/*`>>\n<<~ mu name=`Wand`>> · <<~ mu name=`Arcana`>>")).toEqual([]);
   });
   test("bandLaw and procedureValues read clean forms clean", () => {
     const scales = "<<scale name=`aperture` ranks=`measure@9..12 -> arc@13..16`>>\n<<scale name=`ooda-ha` ranks=`declare-glyphs@5..8`>>\n";
