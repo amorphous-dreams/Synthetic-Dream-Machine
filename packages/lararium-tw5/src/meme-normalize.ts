@@ -30,7 +30,7 @@
 import {
   fencedSpans, inMask, frameAlt,
 } from "@lararium/memetic-frame";
-import { rootMetaFence, metaValueRaw, metaKeyRedefinitions } from "./root-meta.js";
+import { rootMetaFence, metaFences, metaValueRaw, metaKeyRedefinitions } from "./root-meta.js";
 // GENERATED_SIGILS is pure data (SigilRule[] literals, no runtime deps) — safe in this
 // dependency-free-by-constraint file the same way the frame import above reasons about it.
 import { GENERATED_SIGILS } from "./meme-ast/grammar-table.generated.js";
@@ -597,6 +597,25 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
     if (rooted > 0) {
       seat.apply("frame", next, () => `lar: fragment: ${rooted} fragment${rooted === 1 ? "" : "s"} rooted (#name → #/name)`);
     }
+  }
+
+  // ── 5.5. Retired meta keys — FRAME AUTHORITY ──────────────────────────────
+  //
+  // RESIDENCY RIDES THE ENVELOPE (operator ruling, Train Q). `file-path` named the file a carrier rests
+  // in, inside its own content; the bag carries residency and the title names content, and a meme
+  // travels to hosts that keep no files at all. The line leaves every live meta fence, the root's and
+  // each slot's alike; a fence SHOWN as held text moves no byte. No reader takes the field back.
+  {
+    let dropped = 0;
+    let next = seat.text;
+    for (const fence of metaFences(seat.text).reverse()) {
+      const lines = fence.body.split("\n");
+      const kept = lines.filter((l) => !/^file-path[ \t]*=/.test(l));
+      if (kept.length === lines.length) continue;
+      dropped += lines.length - kept.length;
+      next = next.slice(0, fence.bodyStart) + kept.join("\n") + next.slice(fence.bodyEnd);
+    }
+    if (dropped > 0) seat.apply("frame", next, () => `retired meta key: ${dropped} file-path line${dropped === 1 ? "" : "s"} dropped (residency rides the envelope)`);
   }
 
   // ── 6. Meta columns — FRAME AUTHORITY ─────────────────────────────────────

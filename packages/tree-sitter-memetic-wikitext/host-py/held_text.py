@@ -93,7 +93,7 @@ def held_type(text: str) -> "str | None":
     return None if found is None else found[0]
 
 
-def hold(text: str, *, uri: str, file_path: str, role: str, held_type: str) -> str:
+def hold(text: str, *, uri: str, role: str, held_type: str) -> str:
     """A carrier holding `text` whole. The block check stands unminted: `lares meme normalize`
     stamps it, the one door every carrier's check passes through."""
     if not text.endswith("\n"):
@@ -108,7 +108,6 @@ def hold(text: str, *, uri: str, file_path: str, role: str, held_type: str) -> s
     body = (
         "```toml meta\n"
         "cacheable = false\n"
-        f'file-path = "{file_path}"\n'
         'l-space   = "stable"\n'
         f'role      = "{role}"\n'
         f'title     = "lar:///{uri}"\n'

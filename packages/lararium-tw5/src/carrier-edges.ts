@@ -4,7 +4,7 @@
  * ── WHY THE GRAPH NEEDS ITS OWN READING ─────────────────────────────────────────────────────────
  * A `lar:` URI names; it does not fetch. So a carrier whose target moved keeps rendering, keeps
  * round-tripping, and keeps passing every gate this tree stands — `carrier-shape` asks whether a file
- * is whole, `meme-coordinates` asks whether its own two coordinates agree, `bcc` asks whether its bytes
+ * is whole, `meme-coordinates` asks whether its own coordinate agrees, `bcc` asks whether its bytes
  * match their check. **None of them looks outward.** An edge that resolves to nothing is invisible to
  * all three at once.
  *

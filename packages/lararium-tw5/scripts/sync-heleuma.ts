@@ -570,7 +570,6 @@ function scaffoldDecoratorMeme(d: DecoratorFile): void {
   if (existsSync(memePath)) return; // already exists — drift check handles it
 
   const uriPath   = `${d.uriPrefix}/${d.slug}`;
-  const filePath  = relative(root, resolve(d.memeDir, `${d.slug}.md`));
   const srcSym    = d.symbols.join(" ");
   const bodies    = d.symbols.map(s => extractSymbol(d.relPath, s) ?? "").filter(Boolean);
   const joined    = bodies.join("\n\n");
@@ -585,7 +584,6 @@ function scaffoldDecoratorMeme(d: DecoratorFile): void {
     head: { uri: `lar:///${uriPath}` },
     body: `\`\`\`toml meta
 uri-path    = "${uriPath}"
-file-path   = "${filePath}"
 type        = "text/memetic-wikitext+tiddlywiki"
 mana        = 14
 manao       = 14

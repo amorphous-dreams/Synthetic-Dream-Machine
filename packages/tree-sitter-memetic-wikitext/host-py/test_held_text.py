@@ -32,18 +32,18 @@ _TEXT = (
 
 
 def test_a_held_text_comes_back_byte_for_byte():
-    carrier = ht.hold(_TEXT, uri="x/y", file_path="x/y.mem", role="a probe", held_type="text/x-memetic-wikitext")
+    carrier = ht.hold(_TEXT, uri="x/y", role="a probe", held_type="text/x-memetic-wikitext")
     assert ht.held(carrier) == _TEXT
 
 
 def test_the_holder_declares_the_held_type():
-    carrier = ht.hold(_TEXT, uri="x/y", file_path="x/y.mem", role="a probe", held_type="text/x-memetic-wikitext")
+    carrier = ht.hold(_TEXT, uri="x/y", role="a probe", held_type="text/x-memetic-wikitext")
     assert ht.held_type(carrier) == "text/x-memetic-wikitext"
 
 
 def test_the_fence_outgrows_every_backtick_run_the_text_carries():
     text = "````\nfour\n````\n"
-    carrier = ht.hold(text, uri="x/y", file_path="x/y.mem", role="a probe", held_type="text/markdown")
+    carrier = ht.hold(text, uri="x/y", role="a probe", held_type="text/markdown")
     assert "\n`````\n" in carrier
     assert ht.held(carrier) == text
 
@@ -59,7 +59,7 @@ def test_hold_opens_the_root_meta_inside_stx_not_above_it():
     and bounds ALL root metadata inside STX..ETX. `hold()` matches that order: DOCTYPE, SOH head,
     STX, root toml meta, the holding ahu, ETX, EOT — never a `toml meta` block between the head
     (SOH, code 0001) and STX (code 0002), which reads as the `meta-before-stx` torn fault."""
-    carrier = ht.hold(_TEXT, uri="x/y", file_path="x/y.mem", role="a probe", held_type="text/x-memetic-wikitext")
+    carrier = ht.hold(_TEXT, uri="x/y", role="a probe", held_type="text/x-memetic-wikitext")
     lines = carrier.split("\n")
 
     def _idx(predicate):
@@ -81,7 +81,7 @@ def test_hold_opens_the_root_meta_inside_stx_not_above_it():
 def test_hold_leaves_the_check_unminted_for_normalize_to_stamp():
     """`hold()` mints no block check of its own; `lares meme normalize` is the one door every
     carrier's check passes through (per the writer's own docstring)."""
-    carrier = ht.hold(_TEXT, uri="x/y", file_path="x/y.mem", role="a probe", held_type="text/x-memetic-wikitext")
+    carrier = ht.hold(_TEXT, uri="x/y", role="a probe", held_type="text/x-memetic-wikitext")
     assert "ni:///sha-256;" not in carrier
 
 
@@ -90,7 +90,7 @@ def test_hold_output_reads_canonical_through_the_ts_frame_reader(tmp_path):
     """A cross-language weld: a carrier `hold()` writes, once `lares meme normalize` stamps its
     check, must read canonical (not torn) through the TS frame checker — the same reader that
     refused the pre-heal, meta-before-STX bytes."""
-    carrier = ht.hold(_TEXT, uri="x/y", file_path="x/y.mem", role="a probe", held_type="text/x-memetic-wikitext")
+    carrier = ht.hold(_TEXT, uri="x/y", role="a probe", held_type="text/x-memetic-wikitext")
     path = tmp_path / "probe.mem"
     path.write_text(carrier, encoding="utf-8")
     subprocess.run(["lares", "meme", "normalize", str(path)], check=True, stdout=subprocess.DEVNULL)

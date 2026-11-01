@@ -537,8 +537,7 @@ function splitRecursive(
     const childStructure = extractSlotStructure(inner.rewrittenText);
 
     const childUriPath  = childUri.startsWith("lar:///") ? childUri.slice(7) : childUri;
-    // Record hygiene (carrier-whole at rest): children carry NO `file-path` —
-    // a fragment record never owns a disk file; its carrier root does.
+    // Record hygiene: no record carries a `file-path`, root or child — residency rides the envelope.
 
     allChildren.push({
       // Default carrier type; a child slot's OWN declared meta `type` (e.g. text/markdown) rides in
@@ -802,6 +801,9 @@ const META_DENY: ReadonlySet<string> = new Set([
   // The host's two, and the record stratum they arrive with. TiddlyWiki restricts no field name;
   // MultiWikiServer overwrites `title` and `revision` on every read.
   "text", "modified", "revision",
+  // Residency rides the envelope (Train Q): the bag holds where a carrier rests and the title names
+  // content, so `file-path` never re-emits, on a root or a child.
+  "file-path",
   // The skinny handle's pointer internals (content-handle): a recomposed carrier carries its body
   // inline, so a `_canonical_uri` or `_integrity` re-emitted here would lie about the bytes beneath it.
   ...HANDLE_ONLY_FIELDS,
@@ -818,15 +820,13 @@ const META_DENY: ReadonlySet<string> = new Set([
 // for the same reason: 71 doc memes author it to name the TS source they
 // document; the shore path stamps it nowhere.
 
-// Children additionally drop ingest-stamped coordinates: `uri-path` is
-// derived from the title, and `file-path` on a child is the burned
-// fragment-file leak (carrier-whole at rest — a fragment never owns a file).
+// Children additionally drop the derived coordinate: `uri-path` comes from the title.
 // Everything ELSE the author wrote re-emits verbatim (deny holds MACHINE
 // stamps only): `type` self-describes the child's content family, `namespace`,
 // `created`, `source-file`, `tags` all round-trip = identity, exactly as on
 // the parent — a child that authored them keeps them.
 const CHILD_META_DENY: ReadonlySet<string> = new Set([
-  ...META_DENY, "title", "uri-path", "file-path",
+  ...META_DENY, "title", "uri-path",
 ]);
 
 function fmtTomlValue(v: string | string[]): string {

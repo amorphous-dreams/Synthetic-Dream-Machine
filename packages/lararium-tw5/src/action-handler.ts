@@ -1272,7 +1272,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       // record renders byte-identical to its disk twin). Shared by the single-carrier gate
       // AND the per-member pack gate — each member renders as its OWN single-carrier. `u`
       // selects the record to render (the carrier root, or a lone member); it steers only
-      // the file-path, never the hashed body/meta.
+      // the disk path, never the hashed body/meta.
       const nativeRender = (u: string, records: readonly Record<string, unknown>[]): string => {
         const c = tw5!.renderCarrier(u, records.find((r) => r["title"] === u) ?? records[0]!);
         return c.metaBody === undefined ? c.body : `${c.metaBody}\n\n${c.body}`;

@@ -130,8 +130,7 @@ def test_missing_source_text_fails_loud():
 @pytest.mark.skipif(shutil.which("lares") is None, reason="the lares CLI stamps the block check")
 def test_the_fixture_writer_rebuilds_every_committed_carrier_byte_for_byte(tmp_path):
     """The generator's writer, fed the text a committed fixture holds, rebuilds that fixture exactly —
-    head, role, holding ahu and block check. A scratch tree mirrors the fixture's repo-relative home,
-    so the `file-path` the writer derives matches the one committed."""
+    head, role, holding ahu and block check. A scratch tree mirrors the fixture's repo-relative home."""
     (tmp_path / "bags").mkdir()
     for arm in ("placebo", "shuffled"):
         home = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fixtures",

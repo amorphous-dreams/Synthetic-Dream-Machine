@@ -196,7 +196,6 @@ export function renderNexusDoc(doc: NexusDoc): string {
     // otherwise-derived spelling), so it rides straight off NEXUS_CHARTER_URI rather than the
     // unrelated NEXUS_CHARTER_URI_PATH constant (a display-only path nothing else validates against).
     `uri-path  = "${NEXUS_CHARTER_URI.slice("lar:///".length)}"`,
-    `file-path = "<lares>/nexus/${nexusCharterDocRelPath()}"`,
     `type      = ${JSON.stringify(CARRIER_TYPE)}`,
     `register  = "Canon"`,
     `mana      = 19`,

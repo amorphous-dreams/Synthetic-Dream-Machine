@@ -1,8 +1,8 @@
 /**
  * carrier-edges — the reading that looks OUTWARD from a carrier.
  *
- * `carrier-shape` asks whether a file is whole; `meme-coordinates` asks whether its own two
- * coordinates agree; `bcc` asks whether its bytes match their check. A `lar:` URI names and does not
+ * `carrier-shape` asks whether a file is whole; `meme-coordinates` asks whether its own
+ * coordinate agrees; `bcc` asks whether its bytes match their check. A `lar:` URI names and does not
  * fetch, so a carrier whose target moved satisfies all three and points at nothing.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
