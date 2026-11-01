@@ -22,6 +22,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { parseMemeNodes } from "../src/meme-ast/index.js";
 
 const DIR = new URL("../tiddlers/", import.meta.url).pathname;
 
@@ -162,8 +163,15 @@ const CASES: Case[] = [
   { head: "aka", field: "lar-pattern", call: `<<~ aka uri=\`${A}\`>>`, groups: [U, A] },
   { head: "aka", field: "lar-pattern", call: "<<~ aka ahu slot=`#/x`>>", groups: ["ahu ", "#/x"] },
   { head: "kanawai", field: "lar-pattern", call: `<<~ kanawai uri=\`${A}\`>>`, groups: [U, A] },
-  { head: "kahea", field: "lar-pattern", call: `<<~ kahea uri=\`${A}\`>>`, groups: [A] },
-  { head: "kahea", field: "lar-pattern", call: `<<~ kahea name=\`mask\` uri=\`${A}\`>>`, groups: [A] },
+  // kahea carries ONE office per call (Q10 F3, F4): an ADDRESS by uri= (a name= beside it picks the template
+  // mask and captures nothing), a DEFINITION by name= with params=, or a bearing pair by from= and to=.
+  { head: "kahea", field: "lar-pattern", call: `<<~ kahea uri=\`${A}\`>>`, groups: [A, U, U, U, U] },
+  { head: "kahea", field: "lar-pattern", call: `<<~ kahea name=\`mask\` uri=\`${A}\`>>`, groups: [A, U, U, U, U] },
+  { head: "kahea", field: "lar-pattern", call: "<<~ kahea name=`x`>>", groups: [U, "x", U, U, U] },
+  { head: "kahea", field: "lar-pattern", call: "<<~ kahea name=`definitionName` params=`arg1, arg2`>>", groups: [U, "definitionName", "arg1, arg2", U, U] },
+  { head: "kahea", field: "lar-pattern", call: "<<~ kahea params=`a` name=`sub-template`>>", groups: [U, "sub-template", "a", U, U] },
+  { head: "kahea", field: "lar-pattern", call: "<<~ kahea from=`source` to=`?`>>", groups: [U, U, U, "source", "?"] },
+  { head: "kahea", field: "lar-pattern", call: "<<~ kahea to=`?` from=`source`>>", groups: [U, U, U, "source", "?"] },
   { head: "kahea", field: "lar-open-pattern", call: "<<~ kahea ahu slot=`#/x`>>", groups: ["ahu", "slot=`#/x`"] },
   { head: "loulou", field: "lar-pattern", call: `<<~ loulou uri=\`${A}\`>>`, groups: [A] },
   { head: "import", field: "lar-pattern", call: `<<~ import uri=\`${A}\` key=\`k\`>>`, groups: [A, "k"] },
@@ -173,13 +181,16 @@ const CASES: Case[] = [
   { head: "hana", field: "lar-open-pattern", call: "<<~ hana grammar=`toml` body=`a = 1`>>", groups: ["toml", "a = 1"] },
   // control and pragma
   { head: "if", field: "lar-open-pattern", call: "<<~ if filter=`[<x>match[1]]`>>", groups: ["[<x>match[1]]"] },
+  { head: "wai", field: "lar-open-pattern", call: "<<~ wai filter=`[tag[invariant]sort[title]]`>>", groups: ["[tag[invariant]sort[title]]"] },
   { head: "huli", field: "lar-open-pattern", call: "<<~ huli filter=`[tag[x]]`>>", groups: ["[tag[x]]", U] },
   { head: "huli", field: "lar-open-pattern", call: "<<~ huli filter=`[tag[x]]` as=`item`>>", groups: ["[tag[x]]", "item"] },
   { head: "ui", field: "lar-pattern", call: "<<~ ui filter=`[tag[x]]`>>", groups: ["[tag[x]]"] },
   { head: "waiho", field: "lar-open-pattern", call: "<<~ waiho name=`n` value=`v`>>", groups: ["n", "v"] },
   { head: "waiho", field: "lar-pragma-pattern", call: "<<~! waiho name=`n` value=`v`>>", groups: ["n", "v"] },
   { head: "helu", field: "lar-open-pattern", call: "<<~ helu name=`tally` filter=`[tag[x]count[]]`>>", groups: ["tally", U, "[tag[x]count[]]"] },
-  { head: "kapu", field: "lar-pattern", call: "<<~ kapu scope=`a threshold`>>", groups: ["a threshold"] },
+  { head: "kapu", field: "lar-pattern", call: "<<~ kapu scope=`a threshold`>>", groups: ["a threshold", U] },
+  { head: "kapu", field: "lar-pattern", call: "<<~ kapu scope=`a` to=`b`>>", groups: ["a", "b"] },
+  { head: "kapu", field: "lar-pattern", call: "<<~ kapu scope=`invocation` to=`bounded|?`>>", groups: ["invocation", "bounded|?"] },
   // heads the grammar gained a tiddler for (Q5): each value named
   { head: "moves", field: "lar-pattern", call: "<<~ moves name=`rendering` params=`rides/the-marker on/the-renderer`>>", groups: ["rendering", "rides/the-marker on/the-renderer"] },
   { head: "moves", field: "lar-pattern", call: "<<~moves name=`rendering`>>", groups: ["rendering", U] },
@@ -309,6 +320,36 @@ describe("the Cut 4 burns and the new frame sigils", () => {
     expect(firstLine(t.fields["lar-example"]!)).toMatch(/^<<~ node action=`/);
   });
 
+  test("★ sigil-wai.tid stands as the wikispace conditional's head, and its example matches its pattern ★", () => {
+    expect(existsSync(DIR + "sigil-wai.tid"), "sigil-wai.tid stands").toBe(true);
+    const t = byHead.get("wai")!;
+    expect(t.fields["lar-kind"]).toBe("control");
+    expect(t.text).toMatch(/^\\procedure ~wai\(filter:"" sigil:""\)$/m);
+    expect(firstLine(t.fields["lar-example"]!)).toMatch(/^<<~ wai filter=`/);
+    expect(new RegExp(t.fields["lar-open-pattern"]!).test(firstLine(t.fields["lar-example"]!))).toBe(true);
+    expect(t.fields["lar-close-pattern"]).toBe("<<~\\/wai\\s*>>");
+  });
+
+  test("★ sigil-if.tid mirrors wai, and heihei keeps its own canvasspace office ★", () => {
+    const t = byHead.get("if")!;
+    expect(t.fields["lar-pono-uri"]).toBe("lar:///ha.ka.ba/lares/api/pono/wai");
+    expect(t.fields["lar-mirror-of"]).toBe("wai");
+    expect(t.fields["lar-see-also"]).toBe("wai");
+    expect(t.text).not.toMatch(/heihei/);
+    expect(byHead.get("heihei")!.fields["lar-pono-uri"]).toBe("lar:///ha.ka.ba/lares/api/pono/heihei");
+  });
+
+  test("★ sigil-kahea.tid takes name= and params= beside uri=, and kapu an optional to= ★", () => {
+    expect(byHead.get("kahea")!.text).toMatch(/^\\widget ~kahea\(uri:"" name:"" params:""\)$/m);
+    const kapu = new RegExp(byHead.get("kapu")!.fields["lar-pattern"]!);
+    expect(kapu.test("<<~ kapu scope=`a`>>")).toBe(true);
+    expect(kapu.test("<<~ kapu scope=`a` to=`b`>>")).toBe(true);
+    expect(kapu.test("<<~ kapu to=`b`>>"), "CONTROL — a kapu with no scope stays unmatched").toBe(false);
+    const kahea = new RegExp(byHead.get("kahea")!.fields["lar-pattern"]!);
+    expect(kahea.test("<<~ kahea params=`a`>>"), "CONTROL — params alone names no office").toBe(false);
+    expect(kahea.test("<<~ kahea from=`a`>>"), "CONTROL — a lone end names no pair").toBe(false);
+  });
+
   test("★ sigil-kanawai.tid names its address uri ★", () => {
     expect(byHead.get("kanawai")!.text).toMatch(/^\\widget ~kanawai\(uri[:)]/m);
   });
@@ -323,5 +364,31 @@ describe("the Cut 4 burns and the new frame sigils", () => {
   test("★ no procedure body reads a positional <<pN>> ★", () => {
     const bad = shelf.filter((t) => /<<p[1-5]>>/.test(t.text) || /\bp[1-5]=<</.test(t.text)).map((t) => t.file);
     expect(bad).toEqual([]);
+  });
+});
+
+// ── L7 · the builder reads the Q10 forms the shelf now names ──────────────────────────────────
+describe("the builder reads wai, the if mirror and kapu's governed end", () => {
+  const nodes = (t: string) => parseMemeNodes("lar:///a.b.c/m", t) as unknown as { kind: string; sigilName?: string; attrs?: Record<string, string> }[];
+
+  test("★ a wai block builds a Sigil carrying its filter, and an if block folds to wai ★", () => {
+    for (const t of ["<<~ wai filter=`[tag[x]]`>>body<<~/wai>>", "<<~ if filter=`[tag[x]]`>>body<<~/if>>"]) {
+      const [n] = nodes(t);
+      expect(n?.kind).toBe("Sigil");
+      expect(n?.sigilName).toBe("wai");
+      expect(n?.attrs).toEqual({ filter: "[tag[x]]" });
+    }
+  });
+
+  test("★ a kapu with to= carries its scope and its governed end ★", () => {
+    const [n] = nodes("<<~ kapu scope=`invocation` to=`bounded|?`>>");
+    expect(n?.sigilName).toBe("kapu");
+    expect(n?.attrs).toMatchObject({ qualifier: "invocation", to: "bounded|?" });
+  });
+
+  test("CONTROL — a heihei block still builds heihei", () => {
+    const [n] = nodes("<<~ heihei filter=`[tag[x]]`>>body<<~/heihei>>");
+    expect(n?.sigilName).toBe("heihei");
+    expect(n?.attrs).toEqual({ filter: "[tag[x]]" });
   });
 });
