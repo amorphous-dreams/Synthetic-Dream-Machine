@@ -71,10 +71,13 @@ export function init(this: RuleInstance, parser: WikiParser): void {
  * test declines, and the inline phase, which has no such condition, takes the sigil inside the paragraph
  * with the text after it; the diagnostic floor (`sigil-trailing-text`, meme-ast) leaves its receipt.
  *
- * A closer-bearing compound (`ahu` …) answers to its OPENER's line: the opener with text after its
- * `>>` is not a block opener, so the block claim declines and the inline phase reads the opener
- * where it stands (the body that follows it begins at that same `>>`, as it always has). Stock TW5
- * has no closer-bearing block call to measure against, so the ruling follows the opener's `>>` alone.
+ * A closer-bearing pair (`ahu` …) answers to BOTH its ends. Stock TW5 has no closer-bearing block call
+ * to measure against, so the ruling reads the same law at each end: the block form stands when the
+ * CLOSER's `>>` ends a line AND the opener's `>>` ends its line — or the pair opens and closes on one
+ * line, where the closer's `>>` ends it. An opener with text after its `>>` is no block opener (its
+ * body begins at that same `>>`), so the pair reads inline. A pair whose OPENER ends its line but whose
+ * closer leaves text behind does not pair: the opener stands alone as a block and the lines after it,
+ * the closer's line among them, read as ordinary text — the tree-sitter grammar's reading too.
  */
 const LINE_END_RE = /\r?\n|$/y;
 function endsLine(source: string, at: number): boolean {
@@ -132,23 +135,37 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       .map((s) => s.name),
   );
   const blockPhase = !!this.is?.block;
-  /** In the block phase a claim whose opener's `>>` leaves text on the line declines. */
-  const declines = (openEnd: number): boolean => blockPhase && !endsLine(source, openEnd);
+  /**
+   * The verdict on one claim, in the block phase: `decline` when the opener leaves text on its line (and
+   * no closer ends that same line), `pair` when the opener's `>>` ends its line (or the pair shares the
+   * closer's line) and the closer's `>>` ends a line, `lone` when the opener ends its line but the pair
+   * does not stand — the opener alone, since declining would hand the line to stock TW5's macrocall
+   * block, which reads `<<~` as a macro named `~`. The inline phase has no line law: it pairs as before.
+   */
+  const verdict = (openEnd: number, closeStart: number, closeEnd: number | null): "decline" | "pair" | "lone" => {
+    if (!blockPhase) return closeEnd !== null ? "pair" : "lone";
+    if (closeEnd !== null && endsLine(source, closeEnd) && !source.slice(openEnd, closeStart).includes("\n")) return "pair";
+    if (!endsLine(source, openEnd)) return "decline";
+    return closeEnd !== null && endsLine(source, closeEnd) ? "pair" : "lone";
+  };
   let pos = indexOfSigilOpen(source, startPos);
   while (pos >= 0) {
     // English `fragment` shares the child-slot intent backend with `ahu`. Rendering uses that
     // shared shape; carrier decomposition retains the authored worksite spelling for projection.
     if (source.startsWith("<<fragment", pos)) {
       const open = FRAGMENT_OPEN_RE.exec(source.slice(pos));
-      if (open && declines(pos + open[0].length)) {
-        pos = indexOfSigilOpen(source, pos + 3);
-        continue;
-      }
       if (open) {
-        const close = source.indexOf("<</fragment>>", pos + open[0].length);
+        const openEnd = pos + open[0].length;
+        const close = source.indexOf("<</fragment>>", openEnd);
+        const v = verdict(openEnd, close, close >= 0 ? close + "<</fragment>>".length : null);
+        if (v === "decline") {
+          pos = indexOfSigilOpen(source, pos + 3);
+          continue;
+        }
+        const paired = v === "pair";
         this.matchPos = pos;
-        this.matchEnd = close >= 0 ? close + "<</fragment>>".length : pos + open[0].length;
-        const bodyEnd = close >= 0 ? close : this.matchEnd;
+        this.matchEnd = paired ? close + "<</fragment>>".length : openEnd;
+        const bodyEnd = paired ? close : this.matchEnd;
         this.attrs = { __compound__: "ahu", p1: open[1]!, __body__: source.slice(pos + open[0].length, bodyEnd),
           __verbatim__: source.slice(pos, pos + open[0].length) };
         return pos;
@@ -158,14 +175,16 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     // the block form carries a body. `matchPranalaOpenAt` reads the call through the one attribute
     // reader and hands back both ends by name, so the edge never reads backwards.
     const pranala = matchPranalaOpenAt(source, pos);
-    if (pranala && declines(pranala.end)) {
-      pos = indexOfSigilOpen(source, pos + 3);
-      continue;
-    }
     if (pranala) {
       const closeEnd = findCloseEnd(source, "pranala", pranala.end);
-      if (closeEnd !== null) {
-        const closeTagStart = source.lastIndexOf("<<~/pranala", closeEnd);
+      const closeStart = closeEnd !== null ? source.lastIndexOf("<<~/pranala", closeEnd) : -1;
+      const v = verdict(pranala.end, closeStart, closeEnd);
+      if (v === "decline") {
+        pos = indexOfSigilOpen(source, pos + 3);
+        continue;
+      }
+      if (v === "pair" && closeEnd !== null) {
+        const closeTagStart = closeStart;
         const body = source.slice(pranala.end, closeTagStart);
         this.matchPos = pos;
         this.matchEnd = closeEnd;
@@ -195,10 +214,6 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     // Handles: <<~ kahea ahu #slot>>, <<~ ahu #slot>>…<<~/ahu>>,
     //          <<~ kahea lar:///uri>>, <<~ loulou lar:///uri>>, <<~ kau …>>
     let compound = matchCompoundSigilAt(source, pos, childSlotNames, pragmaKindNames);
-    if (compound && declines(compound.end)) {
-      pos = indexOfSigilOpen(source, pos + 3);
-      continue;
-    }
     if (compound) {
       // `ahu` anchors a bare `#name` at the same slot a rooted `#/name` names — the loop's
       // graceful-read ruling (weave carries it too): the two spellings read as one address, never
@@ -219,8 +234,13 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       const closeKey = compound.closeKey ?? (closers[compound.name] ? compound.name : null);
       if (closeKey) {
         const closeEnd = findCloseEnd(source, closeKey, compound.end, closers);
-        if (closeEnd !== null) {
-          const closeTagStart = source.lastIndexOf(`<<~/${closeKey}`, closeEnd);
+        const closeTagStart = closeEnd !== null ? source.lastIndexOf(`<<~/${closeKey}`, closeEnd) : -1;
+        const v = verdict(compound.end, closeTagStart, closeEnd);
+        if (v === "decline") {
+          pos = indexOfSigilOpen(source, pos + 3);
+          continue;
+        }
+        if (v === "pair" && closeEnd !== null) {
           const body = source.slice(compound.end, closeTagStart);
           this.matchPos = pos;
           this.matchEnd = closeEnd;
@@ -228,6 +248,10 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
                             __verbatim__: source.slice(pos, compound.end) };
           return pos;
         }
+      }
+      if (!closeKey && verdict(compound.end, -1, null) === "decline") {
+        pos = indexOfSigilOpen(source, pos + 3);
+        continue;
       }
       this.matchPos = pos;
       this.matchEnd = compound.end;
@@ -253,18 +277,22 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       // REGISTERS the head, the host runs it; where it does not, the floor catches what the host
       // would swallow.
       if (!generic.spaced && generic.sigil && registeredHeads.has(generic.sigil)) return undefined;
-      if (declines(generic.end)) {
+      let genericCloseEnd: number | null = null;
+      if (generic.sigil && closers[generic.sigil] && generic.sigil !== "pranala") {
+        genericCloseEnd = findCloseEnd(source, generic.sigil, generic.end, closers);
+      }
+      const genericClose = genericCloseEnd;
+      const genericVerdict = verdict(generic.end,
+        genericClose !== null ? source.lastIndexOf(`<<~/${generic.sigil}`, genericClose) : -1, genericClose);
+      if (genericVerdict === "decline") {
         pos = indexOfSigilOpen(source, pos + 3);
         continue;
       }
-      if (generic.sigil && closers[generic.sigil] && generic.sigil !== "pranala") {
-        const closeEnd = findCloseEnd(source, generic.sigil, generic.end, closers);
-        if (closeEnd !== null) {
-          this.matchPos = pos;
-          this.matchEnd = closeEnd;
-          this.attrs    = { __literal__: source.slice(pos, closeEnd) };
-          return pos;
-        }
+      if (genericVerdict === "pair" && genericClose !== null) {
+        this.matchPos = pos;
+        this.matchEnd = genericClose;
+        this.attrs    = { __literal__: source.slice(pos, genericClose) };
+        return pos;
       }
       if (generic.sigil && inlineSigils.has(generic.sigil)) {
         this.matchPos = pos;
