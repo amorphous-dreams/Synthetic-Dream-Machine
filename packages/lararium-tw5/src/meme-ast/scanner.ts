@@ -15,6 +15,8 @@
 import type { GrammarRules, SigilRule } from "./types.js";
 import { fencedSpans, maskedExecAll } from "@lararium/memetic-frame";
 import { GENERATED_SIGILS } from "./grammar-table.generated.js";
+import { SIGIL_TRAILING_TEXT_CODE } from "./diagnostics.js";
+import type { ParseFailure } from "./types.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -205,4 +207,30 @@ export function collectEvents(text: string, grammar?: GrammarRules): ParseEvent[
   }
 
   return events.sort((a, b) => a.pos - b.pos || a.end - b.end);
+}
+
+// ---------------------------------------------------------------------------
+// trailingTextFailures — the graceful floor under the block law
+// ---------------------------------------------------------------------------
+
+/**
+ * A sigil is a block only when its `>>` ends the line (`\r?\n` or the end of the source) — TW5's own
+ * split of `<<m>>` from `<<m>>;abc`. A line that OPENS on a sigil (indentation aside) and leaves text
+ * behind it reads as a paragraph holding the sigil inline, every byte kept; this names the recovery,
+ * one failure per such sigil, so the text stands rendered AND the author hears about it.
+ *
+ * Only single-line leaf and pragma sigils count. An opener (`ahu` …) begins its body at its own `>>`,
+ * so text behind it is body, never trailing; a sigil that does not open its line was inline already.
+ * The events arrive fence-masked, so a quoted lesson raises nothing.
+ */
+export function trailingTextFailures(text: string, events: readonly ParseEvent[]): ParseFailure[] {
+  const out: ParseFailure[] = [];
+  for (const e of events) {
+    if ((e.eventType !== "leaf" && e.eventType !== "pragma") || !e.raw.startsWith("<<") || e.raw.includes("\n")) continue;
+    const lineStart = text.lastIndexOf("\n", e.pos - 1) + 1;
+    if (!/^[ \t]*$/.test(text.slice(lineStart, e.pos))) continue;
+    if (e.end >= text.length || text[e.end] === "\n" || (text[e.end] === "\r" && text[e.end + 1] === "\n")) continue;
+    out.push({ pos: e.pos, raw: e.raw, reason: SIGIL_TRAILING_TEXT_CODE, recoveredAs: "repaired", sigilName: e.sigilName });
+  }
+  return out;
 }
