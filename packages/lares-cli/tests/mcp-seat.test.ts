@@ -19,11 +19,11 @@
  * Every root here stands under a scratch directory; nothing reads or writes a real home.
  */
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { memorySensoriumDir } from "@lararium/node";
-import { resolveLaresMcp } from "../src/mcp-resolve.js";
+import { IMAGE_SEAT, resolveLaresMcp } from "../src/mcp-resolve.js";
 import { homeItems } from "../src/reality-tunnel/catalog.js";
 
 const REPO = join(import.meta.dirname, "..", "..", "..");
@@ -83,6 +83,13 @@ describe("the seat names the hearth's root", () => {
     ]);
     // The container's root, read from the compose file the entry names, never typed here.
     expect(mcp!.env).toEqual({ LAR_ROOT: "/state" });
+  });
+
+  it("the image seat the container form names stands where the Dockerfile lays the scripts", () => {
+    expect(IMAGE_SEAT).toBe(`/app/${SEAT}`);
+    const dockerfile = readFileSync(join(REPO, "Dockerfile"), "utf8");
+    expect(dockerfile).toContain(`python3 /app/packages/lararium-sensorium/scripts/`);
+    expect(dockerfile).toMatch(/^COPY --from=build \/app\/packages\/lararium-sensorium\/scripts \.\/packages\/lararium-sensorium\/scripts$/m);
   });
 
   it("control: with no sensorium stood under the hearth, the native form still refuses (null)", () => {

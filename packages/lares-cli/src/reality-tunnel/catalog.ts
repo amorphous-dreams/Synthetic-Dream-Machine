@@ -106,7 +106,9 @@ function claudeMcp(home: string, mcp: LaresMcpCommand): External {
   };
   const aligned = (): boolean => {
     const s = seat();
-    return s !== undefined && s.command === mcp.command && JSON.stringify(s.args ?? []) === JSON.stringify(mcp.args);
+    // The env counts as much as the argv: a seat with the right command and no `LAR_ROOT` binds another vessel.
+    return s !== undefined && s.command === mcp.command && JSON.stringify(s.args ?? []) === JSON.stringify(mcp.args)
+      && JSON.stringify(sorted(s.env ?? {})) === JSON.stringify(sorted(mcp.env));
   };
   const run = (args: string[]): { ok: boolean; detail: string } => {
     const r = spawnSync("claude", args, { encoding: "utf8", timeout: 15_000 });
@@ -142,6 +144,9 @@ function claudeMcp(home: string, mcp: LaresMcpCommand): External {
   };
 }
 
+/** An env map in key order, so two maps compare by content alone. */
+const sorted = (env: Record<string, string>): Array<[string, string]> => Object.entries(env).sort(([a], [b]) => a.localeCompare(b));
+
 const hostDir: Record<string, string> = { claude: ".claude", codex: ".codex", copilot: ".copilot" };
 const claudeCli = (): boolean => spawnSync("claude", ["--version"], { encoding: "utf8", timeout: 10_000 }).error === undefined;
 
@@ -157,7 +162,7 @@ export interface HomeContext {
 /** Every operator home's items. A host whose home directory stands absent reads absent. */
 export function homeItems(ctx: HomeContext, d: Declared = declared(ctx.repo)): Item[] {
   const clone = mainCloneOf(ctx.repo);
-  const mcp = ctx.mcp === undefined ? resolveLaresMcp() : ctx.mcp;
+  const mcp = ctx.mcp === undefined ? resolveLaresMcp(clone) : ctx.mcp;
   const out: Item[] = [];
   for (const s of d.home) {
     const homes = s["homes"] === "all" ? homesOf(ctx.homes) : homesOf(ctx.homes).slice(0, 1);
@@ -173,7 +178,7 @@ export function homeItems(ctx: HomeContext, d: Declared = declared(ctx.repo)): I
           : dir && !existsSync(join(h.dir, dir)) ? `${join(h.dir, dir)} absent; ${s.host} stands unset in this home` : null;
         const script = join(clone, str(s, "script")).replace(/\\/g, "/");
         const needsScript = s["script"] !== undefined && !existsSync(script) ? `${script} absent in the main clone` : null;
-        const needsMcp = /mcp/.test(s.kind) && mcp === null ? "lares_mcp.py, python or the sensorium stands absent; `lares mempalace install` and `lares sense setup` lay them down" : null;
+        const needsMcp = /mcp/.test(s.kind) && mcp === null ? "lares_mcp.py, python or the sensorium stands absent (`lares mempalace install` and `lares sense setup` lay them down), or the hearth's surface env stands beside a compose file that names no LAR_ROOT" : null;
         const common = { absent, unreachable: needsScript ?? needsMcp };
         out.push(homeItem(base, path, h.dir, clone, d, script, mcp, common, ctx));
       }

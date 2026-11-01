@@ -124,9 +124,9 @@ export interface ResolvedHolderSpawn {
 
 /** Resolve a {@link ResolvedHolderSpawn} for a script under `packages/lararium-sensorium/scripts/`.
  *  ONE body; each named resolver below binds its own `scriptFile` — the only per-holder divergence. */
-function resolveHolderSpawn(scriptFile: string): ResolvedHolderSpawn {
-  const submoduleRoot = join(repoRoot, "mempalace");
-  const script = join(repoRoot, "packages", "lararium-sensorium", "scripts", scriptFile);
+function resolveHolderSpawn(scriptFile: string, root: string = repoRoot): ResolvedHolderSpawn {
+  const submoduleRoot = join(root, "mempalace");
+  const script = join(root, "packages", "lararium-sensorium", "scripts", scriptFile);
   return { python: resolveMempalacePython(), script, submoduleRoot, scriptPresent: existsSync(script) };
 }
 
@@ -139,12 +139,15 @@ function resolveHolderSpawn(scriptFile: string): ResolvedHolderSpawn {
  * kapae · un_kapae). NOT a palace holder — it takes `--palace <sensorium dir>` (the sensorium ROOT,
  * not a leaf store; it resolves `<palace>/content` itself) and speaks MCP over stdio to a harness.
  *
+ * `clone` names the MAIN clone the seat aims at, never the worktree a command runs from: a harness
+ * keeps the path it was handed long after a lane's worktree goes.
+ *
  * The seat `lares home tend` registers: a harness reaches memory
  * THROUGH the lares house, never around it into a palace of its own. One owner per palace.
  */
 export type LaresMcpSpawn = ResolvedHolderSpawn;
-export function resolveLaresMcpSpawn(): LaresMcpSpawn {
-  return resolveHolderSpawn("lares_mcp.py");
+export function resolveLaresMcpSpawn(clone: string): LaresMcpSpawn {
+  return resolveHolderSpawn("lares_mcp.py", clone);
 }
 
 /** `structurepalace_io.py` — the persistent NDJSON `serve` holder for the `.structurepalace` AST store. */
