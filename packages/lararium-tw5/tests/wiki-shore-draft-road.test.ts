@@ -11,7 +11,7 @@ import { wikiSkip, skipNote } from "./test-wiki.js";
 import { sameHeads } from "../src/draft-book.js";
 import { parallelDraftAlertTitle, unroutedSaveAlertTitle } from "../src/island-adaptor.js";
 import {
-  afterDispatch, arrived, atDispatch, canonBag, draftBag, draftTitleOf, ManualBoundary, openDraft, peerWrite, remote, saveSequence,
+  afterDispatch, arrived, atDispatch, canonBag, draftBag, draftTitleOf, landingDeadline, ManualBoundary, openDraft, peerWrite, remote, saveSequence,
   shoreRig, storeDeleted, storeText, turns, typeInto, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 
@@ -460,10 +460,10 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
       await peerWrite(r, workingBag, [{ tiddler: { title: x, text: real ? "desktop edit" : "canon text" } }]);
       if (queued) expect(r.adaptor.ledger.landedOf(x)!.bag, "the ledger still says canon").toBe(canonBag);
       else if (real) {
-        for (let turn = 0; turn < 400 && r.adaptor.ledger.landedOf(x)!.bag !== workingBag; turn++) await new Promise<void>((resolve) => setTimeout(resolve, 5));
+        await r.adaptor.ledger.whenLanded(x, (landed) => landed.bag === workingBag, landingDeadline());
         expect(r.adaptor.ledger.landedOf(x)!.bag, "the desktop's copy-up landed on the phone").toBe(workingBag);
       } else {
-        for (let turn = 0; turn < 400 && r.adaptor.ledger.landedOf(x)!.bag !== workingBag; turn++) await new Promise<void>((resolve) => setTimeout(resolve, 5));
+        await r.adaptor.ledger.whenLanded(x, (landed) => landed.bag === workingBag, landingDeadline());
         expect(r.adaptor.ledger.landedOf(x)!.bag, "the equal copy-up landed too").toBe(workingBag);
       }
       const mark = r.calls.length;
@@ -630,7 +630,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     let open!: () => void;
     const draftOpenBase = r.adaptor.ledger.landedOf(x)!.heads!;
     await peerWrite(r, workingBag, [{ tiddler: { title: x, text: "peer before" } }]);
-    for (let turn = 0; turn < 400 && sameHeads(r.adaptor.ledger.landedOf(x)!.heads, draftOpenBase); turn++) await new Promise<void>((resolve) => setTimeout(resolve, 5));
+    await r.adaptor.ledger.whenLanded(x, (landed) => !sameHeads(landed.heads, draftOpenBase), landingDeadline());
     expect(r.adaptor.ledger.landedOf(x)!.heads, "the ledger moved past the draft-open base").not.toEqual(draftOpenBase);
     r.failures.gate = new Promise<void>((resolve) => { open = resolve; });
     r.failures.family = new Error("refused across a host task");
