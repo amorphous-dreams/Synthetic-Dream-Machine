@@ -20,9 +20,9 @@
  * CONTROLS ride beside each law: the OLD arrow forms fail the NEW patterns, a known-good existing
  * pattern still passes, and the checkers themselves flag a planted bad specimen.
  */
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, beforeAll } from "vitest";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { parseMemeNodes } from "../src/meme-ast/index.js";
+import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 
 const DIR = new URL("../tiddlers/", import.meta.url).pathname;
 
@@ -379,8 +379,16 @@ describe("the Cut 4 burns and the new frame sigils", () => {
 });
 
 // ── L7 · the builder reads the Q10 forms the shelf now names ──────────────────────────────────
-describe("the builder reads wai, the if mirror and kapu's governed end", () => {
-  const nodes = (t: string) => parseMemeNodes("lar:///a.b.c/m", t) as unknown as { kind: string; sigilName?: string; attrs?: Record<string, string> }[];
+// The builder rides its public surface: the meme-ast library module the VM loads, required from the
+// booted wiki the way the parser reaches it, never the compile layer's source.
+describe.skipIf(wikiSkip)(`the builder reads wai, the if mirror and kapu's governed end${skipNote}`, () => {
+  type Node = { kind: string; sigilName?: string; attrs?: Record<string, string> };
+  let parseMemeNodes: (uri: string, text: string) => unknown;
+  beforeAll(async () => {
+    const e = await bootTestWiki();
+    ({ parseMemeNodes } = e.$tw.modules.execute("lar:///ha.ka.ba/lararium/tw5/modules/meme-ast") as { parseMemeNodes: typeof parseMemeNodes });
+  }, 60_000);
+  const nodes = (t: string) => parseMemeNodes("lar:///a.b.c/m", t) as Node[];
 
   test("★ a wai block builds a Sigil carrying its filter, and an if block folds to wai ★", () => {
     for (const t of ["<<~ wai filter=`[tag[x]]`>>body<<~/wai>>", "<<~ if filter=`[tag[x]]`>>body<<~/if>>"]) {
