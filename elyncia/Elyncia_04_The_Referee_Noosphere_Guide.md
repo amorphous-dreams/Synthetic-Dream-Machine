@@ -142,7 +142,7 @@ Or just... come in. The chai is on.
 ```
 
 <<~ oracle throw=`↯7 ✲ ⚁(2) ⁂:🫖🕯️`>>
-<<~ ward pull=`! ⚠ 2 · you are new here · those things are fine · ↻ L-Prime`>>
+<<~ ward pull=`! ⚠ 2 · "you are new here" · "those things are fine" · ↻ L-Prime`>>
 <<~ hud Aperture(8 -> 8) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/welcome.open.waits -> ?>>
 
@@ -188,7 +188,7 @@ Or talk to the chorus. They're listening.
 ```
 
 <<~ oracle throw=`↯8 ✲ ⚂(3) ⁂:🗺️🫖◈`>>
-<<~ ward pull=`! ⚠ 2 · spirits who are, on balance, helpful · They're listening · ↻ L-Prime`>>
+<<~ ward pull=`! ⚠ 2 · "spirits who are, on balance, helpful" · "They're listening" · ↻ L-Prime`>>
 <<~ hud Aperture(9 -> 9) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/orientation.plain.lands -> ?>>
 
@@ -218,7 +218,7 @@ is cleaner than it looks.
 ```
 
 <<~ oracle throw=`↯9 ✲ ⚃(4) ⁂:🪙🌶️☕〰️`>>
-<<~ ward pull=`! ⚠ 3 · The coin is fine · Chai is fresh · cleaner than it looks · ↻ L-Prime`>>
+<<~ ward pull=`! ⚠ 3 · "The coin is fine" · "Chai is fresh" · "cleaner than it looks" · ↻ L-Prime`>>
 <<~ hud Aperture(8 -> 10) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/offering.warm.binds -> ?>>
 
@@ -311,7 +311,7 @@ It is organized by how surprised people looked.
 ```
 
 <<~ oracle throw=`↯12 ✲ ⚄(5) ⁂:⚱️📜🜂◈🕯️`>>
-<<~ ward pull=`! ⚠ 1 · It is organized by how surprised people looked · ↻ L-Prime`>>
+<<~ ward pull=`! ⚠ 1 · "It is organized by how surprised people looked" · ↻ L-Prime`>>
 <<~ hud Aperture(11 -> 12) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/threshold.priced.stands -> ?>>
 
@@ -358,7 +358,7 @@ The vendor prefers memories.
 ```
 
 <<~ oracle throw=`↯11 ✲ ⚂(3) ⁂:🧭🌖⟁`>>
-<<~ ward pull=`! ⚠ 3 · The vendor is real · The maps are real · not yet real · ↻ L-Prime`>>
+<<~ ward pull=`! ⚠ 3 · "The vendor is real" · "The maps are real" · "not yet real" · ↻ L-Prime`>>
 <<~ hud Aperture(10 -> 13) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/map.unreal.beckons -> ?>>
 
@@ -393,7 +393,7 @@ Alcove 1 or 3 recommended if available.
 ```
 
 <<~ oracle throw=`↯8 ✲ ⚁(2) ⁂:🔧🜍`>>
-<<~ ward pull=`! ⚠ 1 · The list is long · ↻ L-Prime`>>
+<<~ ward pull=`! ⚠ 1 · "The list is long" · ↻ L-Prime`>>
 <<~ hud Aperture(9 -> 9) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/rig.patched.holds -> ?>>
 
@@ -520,7 +520,7 @@ this is what sustainable Realm engagement looks like.
 ```
 
 <<~ oracle throw=`↯10 ✲ ⚃(4) ⁂:📡◈☕〰️`>>
-<<~ ward pull=`! ⚠ 2 · Followers are extremely calm · this is what sustainable Realm engagement looks like · ↻ L-Prime`>>
+<<~ ward pull=`! ⚠ 2 · "Followers are extremely calm" · "this is what sustainable Realm engagement looks like" · ↻ L-Prime`>>
 <<~ hud Aperture(11 -> 11) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/feeds.flowing.carry -> ?>>
 
