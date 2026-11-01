@@ -26,7 +26,7 @@
  */
 
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 import { resolveLaresMcpSpawn } from "@lararium/mempalace";
 import { larHome, memorySensoriumDir } from "@lararium/node";
 
@@ -49,12 +49,22 @@ export const IMAGE_SEAT = "/app/packages/lararium-sensorium/scripts/lares_mcp.py
 /** The hearth's surface env when the hearth stands in the surface container, else null. The ONE signal the
  *  resolver and the catalog's refusal both read (`tools/lares-container.sh` reads the same file). */
 export function hearthSurfaceEnv(): string | null {
+  if (relativeHearth() !== null) return null;
   const file = join(larHome(), SURFACE_ENV);
   return existsSync(file) ? file : null;
 }
 
+/** The hearth root when it reads RELATIVE, else null. A seat a harness spawns resolves a relative path against
+ *  that harness's own cwd, a project the house never chose, so a relative hearth names no seat at all. */
+function relativeHearth(): string | null {
+  const hearth = larHome();
+  return isAbsolute(hearth) ? null : hearth;
+}
+
 /** Why no seat resolves, in the form the hearth stands in: the refusal a missing seat reads. */
 export function seatAbsentCause(): string {
+  const relative = relativeHearth();
+  if (relative !== null) return `LAR_ROOT names a relative hearth (${relative}); name it by an absolute path`;
   return hearthSurfaceEnv() !== null
     ? `the hearth stands in the surface container (${SURFACE_ENV}), and the clone's ${SURFACE_COMPOSE} stands absent or names no LAR_ROOT`
     : "lares_mcp.py, python or the sensorium stands absent; `lares mempalace install` and `lares sense setup` lay them down";
@@ -88,6 +98,7 @@ function containerRoot(compose: string): string | null {
  * strands no seat. Every path runs absolute: a harness spawns this with no venv active and no cwd guarantee.
  */
 export function resolveLaresMcp(clone: string): LaresMcpCommand | null {
+  if (relativeHearth() !== null) return null;
   const hearth = larHome();
   const surfaceEnv = hearthSurfaceEnv();
   if (surfaceEnv !== null) {

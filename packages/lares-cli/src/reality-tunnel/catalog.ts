@@ -42,8 +42,11 @@ export function declared(repo: string, textOf: TextOf = treeText(repo)): Declare
 /** The main clone a tree belongs to: the parent of git's common dir, or the tree itself. */
 export function mainCloneOf(root: string): string {
   try {
+    // A leaked git env (a hook's GIT_DIR and its kin) would answer for another repository; the tree handed in decides.
+    const env = { ...process.env };
+    for (const k of ["GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE"]) delete env[k];
     const common = execFileSync("git", ["-C", root, "rev-parse", "--path-format=absolute", "--git-common-dir"], {
-      encoding: "utf8", stdio: ["ignore", "pipe", "ignore"],
+      encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], env,
     }).trim();
     return realpathSync(dirname(common));
   } catch {
