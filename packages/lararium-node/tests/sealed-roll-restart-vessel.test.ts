@@ -14,7 +14,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { announceSeatRoll, type IslandSessionProof, type SessionReading } from "@lararium/keyhive";
-import type { OutboxKey, RecordSigner } from "@lararium/mesh";
+import { isVerbRefusal, type OutboxKey, type RecordSigner } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
 import { faceProofSubjectRef, sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
@@ -81,8 +81,29 @@ describe("a removal version outlives an island restart", () => {
     expect(after["keyVersion"]).not.toBe(sealed["keyVersion"]);
     unanswered = [];                                               // the next delivery marks it answered
     await first.dispose();
+    // AN UNREAD FOLD REFUSES (N1, cold-t2 wave three): after the restart the vessel names no fold of the face's fleet
+    // board (its worn root unserved, or none worn). A seat that minted a removal version then reads no evidence
+    // for it, so it refuses rather than ride the pre-removal head.
+    const unread = await proof((own) => ({ ...own, counted: [], unanswered: [], foldRead: false }) as never);
+    const blind = await stand(st, root, { session: unread, archive: first.archives.at(-1)! });
+    const refused = await blind.run("sealed-seal", { bag, text: "sealed blind" }).catch((e: unknown) => e);
+    expect(isVerbRefusal(refused), String(refused)).toBe(true);
+    expect((refused as { reason: string }).reason).toBe("fold-unread");
+    await blind.dispose();
+    // CONTROL (a): the served fold seals on the successor.
     const second = await stand(st, root, { session, archive: first.archives.at(-1)! });
     const again = await second.run("sealed-seal", { bag, text: "sealed after the restart" });
     expect(again["keyVersion"]).toBe(after["keyVersion"]);
+  }, 120_000);
+
+  test("CONTROL (b): a seat that never rolled seals with an unread fold, as a joinee's fold always reads", async () => {
+    const root = scratch();
+    const st = await standFoundedIsland(teardown);
+    const bag = st.daemonAuth.registerBags[0]!;
+    const unread = await proof((own) => ({ ...own, counted: [], unanswered: [], foldRead: false }) as never);
+    const vessel = await stand(st, root, { session: unread });
+    const first = await vessel.run("sealed-seal", { bag, text: BODY });
+    const next = await vessel.run("sealed-seal", { bag, text: "a second note" });
+    expect(next["keyVersion"]).toBe(first["keyVersion"]);
   }, 120_000);
 });
