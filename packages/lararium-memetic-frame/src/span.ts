@@ -100,7 +100,7 @@ export interface FrameRead {
 export interface FrameFault {
   readonly kind:
     | "second-stx" | "etx-before-stx" | "second-etx" | "no-etx" | "meta-before-stx" | "torn-spelling"
-    | "eot-out-of-order" | "second-soh";
+    | "eot-out-of-order" | "second-soh" | "retired-trailer";
   readonly message: string;
 }
 

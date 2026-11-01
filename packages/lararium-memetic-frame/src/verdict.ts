@@ -5,7 +5,7 @@
  * frame's, and it carries its evidence rather than a bare flag, so a gate deciding policy over it never
  * has to read the bytes a second time:
  *
- *   · `match`  — the check standing after ETX covers the span. The check it read rides along.
+ *   · `match`  — the check in the ETX mark's `bcc` slot covers the span. The check it read rides along.
  *   · `stale`  — a check stands and the span no longer computes it: BOTH digests, the stored and the
  *                computed, so a report can show the operator what moved.
  *   · `absent` — a frame stands (a head, a text frame, a release) and no check was ever stamped.
@@ -33,7 +33,7 @@ import { carrierHeadPattern, carrierMarkPattern, carrierReleasePattern } from ".
 import { frameHex } from "./marks.js";
 import { CARRIER_DECLARATION } from "./write.js";
 import { readFrame, type FrameFault } from "./span.js";
-import { standingCheck } from "./check.js";
+import { etxFaults, standingCheck } from "./check.js";
 
 export type FrameVerdict =
   | { readonly kind: "match"; readonly check: string }
@@ -118,7 +118,7 @@ export function frameShape(text: string): FrameShape {
     || maskedExec(text, carrierMarkPattern("release", "g"), spans);
   if (!marked) return { kind: "bare" };
 
-  const faults = [...frame.faults, ...torn];
+  const faults = [...frame.faults, ...torn, ...(frame.etx ? etxFaults(text, frame.etx, true) : [])];
   if (frame.stx && !frame.etx) faults.push(NO_ETX);
   // A meta fence IS a fence, so its opener sits at a mask span's start: `allowSpanStart` admits it and
   // still refuses one quoted inside another fence.
