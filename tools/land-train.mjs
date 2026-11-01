@@ -32,7 +32,8 @@
  *           its nearest green ancestor).
  *   --plan  prints the commits it would write; it pushes nothing.
  *
- * The security class: a lane whose `git diff --no-renames --raw <base>..<head>` meets tools/security-class-paths.json (read
+ * The security class: a lane whose own diff or whose LAND (each chain link's diff over the land before it: merge-tree and
+ * `git merge` follow renames) meets tools/security-class-paths.json, both read `--no-renames --raw -z` (read
  * from the SPAN HEAD's tree, never the lane's: a glob in `paths`, or a `tokens` word anywhere in a path) lands only with a
  * SHIP the controller wrote, `<ship>/<suffix>-<full head sha>.md`, naming that sha and a `read:` line. Every mode checks.
  * SHIP guards against a mistake on a one-operator box, never against a hostile process running as the same user.
@@ -47,8 +48,8 @@
  *       commit not read green (--local) · 4 merge conflict (--local) · 5 nothing landed (every lane red) or the chain broke
  *       · 6 disk floor, worktree cap or a run in flight on the span (--local, DIRECT), or the queue locked · 7 provision,
  *       install or build failed (--local) · 8 a lane not green · 10 UNREADABLE · 11 some landed, the rest dropped (each named)
- *       · 12 a security-class lane lacks its SHIP · 13 VOID (a train run cancelled clean) · 15 held-out red or lagging
- *       · 16 the span itself reads red.
+ *       · 12 a security-class lane lacks its SHIP · 13 VOID (a train run cancelled clean, or its ref moved) · 14 some
+ *       landed, dark queued entries skipped (kept queued) · 15 held-out red or lagging · 16 the span itself reads red.
  *
  * Author identity reads `git config user.name/email`. Disk floor: LARES_DISK_MIN_C_GB (60) and 40 on /. The Docker prune
  * stays the controller's own (an operator-scoped standing permission), outside this tool.
@@ -211,7 +212,8 @@ const RED_CONCLUSIONS = new Set(["failure", "timed_out", "startup_failure", "act
 /** One sha's CI reading off `gh run list --commit <sha> --json …` rows, over the runs whose branch `branchOk` accepts:
  *  none (no run names it yet) · running · green · red · void (completed with no whole verdict: cancelled, skipped). */
 export function readRunAt(runs, sha, branchOk = () => true) {
-  const own = runs.filter((r) => r.headSha === sha && branchOk(r.headBranch))
+  // Only a push or a dispatch run measured the tree at that sha; a pull_request run tests a merge GitHub made.
+  const own = runs.filter((r) => r.headSha === sha && branchOk(r.headBranch) && (!r.event || r.event === "push" || r.event === "workflow_dispatch"))
     .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)) || Number(b.databaseId) - Number(a.databaseId));
   const done = own.find((r) => r.status === "completed" && (r.conclusion === "success" || RED_CONCLUSIONS.has(r.conclusion)));
   // A whole verdict at the sha decides, from any accepted branch: the span's own run and a train's measure the same tree.
@@ -255,8 +257,8 @@ function door({ span, cwd }, ops) {
 
 /** Read every lane against origin: head, common base, message marker, its own green, the security class and its SHIP.
  *  A named lane that fails refuses the whole land. A queued entry that fails (its lane moved on, went red, lost its message
- *  or its SHIP, or read a positive red) is marked `reject` and drops by name, so one stale entry never strands the queue;
- *  UNREADABLE, and a lane whose CI reads no verdict yet, stop all with every entry kept. */
+ *  or its SHIP, or read a positive red) is marked `reject` and drops by name, so one stale entry never strands the queue.
+ *  A dark entry (UNREADABLE, or a CI with no verdict yet) is marked `skip`: named, kept queued, the rest go on. */
 async function validate(lanes, { span, SP, shipDir, git, say, stop }, ops) {
   let table = null;
   try { table = JSON.parse(git(["show", `${SP}:tools/security-class-paths.json`])); } catch { return { refusal: stop(2, `NO SECURITY TABLE at the span head ${short(SP)} (tools/security-class-paths.json)`) }; }
@@ -295,12 +297,23 @@ async function validate(lanes, { span, SP, shipDir, git, say, stop }, ops) {
     const f = await read(l);
     if (!f) continue;
     const [code, ...lines] = f;
-    if (code === 10 || !l.entry || (code === 8 && l.notRed)) { if (code === 12) { noShip.push(...lines); continue; } return { refusal: stop(code, ...lines) }; }
+    // A dark queued entry (UNREADABLE, or a CI with no verdict yet) is skipped by name and stays queued; the rest go on.
+    if (l.entry && (code === 10 || (code === 8 && l.notRed))) { l.skip = lines.join(" "); l.skipCode = code; continue; }
+    if (!l.entry) { if (code === 12) { noShip.push(...lines); continue; } return { refusal: stop(code, ...lines) }; }
     l.reject = lines.join(" ");
   }
   if (noShip.length) return { refusal: stop(12, ...noShip) };
-  return {};
+  return { table };
 }
+
+/** The SHIP refusal for a lane whose paths (its own diff, unioned with what its land changes) meet the table, or null. */
+function landShipRefusal(table, shipDir, lane, landed, ops) {
+  const hits = securityHits(table, [...new Set([...(lane.paths ?? []), ...landed])]);
+  if (!hits.length) return null;
+  const file = join(shipDir, `${lane.suffix}-${lane.head}.md`), why = shipRefusal(ops.readMsg(file), lane.head);
+  return why ? `NO SHIP: ${lane.suffix} is security-class (${hits.slice(0, 3).join(", ")}${hits.length > 3 ? ", …" : ""}, as it lands): ${why} at ${file}` : null;
+}
+const readTable = (git, SP) => { try { return JSON.parse(git(["show", `${SP}:tools/security-class-paths.json`])); } catch { return null; } };
 
 /** A queue entry leaves `entries/` once its lane landed (`done/`) or dropped (`dropped/`); a named lane holds no entry. */
 function settleEntry(queueDir, lane, to) {
@@ -357,21 +370,29 @@ export async function landTrain({ name = "train", specs = [], plan = false, loca
     files.forEach((f, i) => { lanes[i].entry = f; });
     if (local && !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(String(name))) return stop(2, `train name "${name}" must be one plain path component`);
     const v = await validate(lanes, { span, SP: d.SP, shipDir, git, say, stop }, ops); if (v.refusal) return v.refusal;
-    const rejected = lanes.filter((l) => l.reject);
+    const rejected = lanes.filter((l) => l.reject), skipped = lanes.filter((l) => l.skip);
     for (const l of rejected) { if (!plan) settleEntry(queueDir, l, "dropped"); say(`DROPPED ${l.suffix}: ${l.reject}`); }
-    lanes = lanes.filter((l) => !l.reject);
-    if (lanes.length === 0) return stop(5, `NOTHING LANDED: dropped ${rejected.map((l) => l.suffix).join(" ")}`);
+    for (const l of skipped) say(`SKIPPED ${l.suffix}: ${l.skip} (kept queued)`);
+    lanes = lanes.filter((l) => !l.reject && !l.skip);
+    if (lanes.length === 0) {
+      if (rejected.length) return stop(5, `NOTHING LANDED: dropped ${rejected.map((l) => l.suffix).join(" ")}`);
+      return stop(skipped.some((l) => l.skipCode === 10) ? 10 : 8, `NOTHING LANDED: every queued lane reads dark (${skipped.map((l) => l.suffix).join(" ")}), kept queued`);
+    }
+    const tally = (landed) => (skipped.length ? stop(14, `QUEUE-LANDED-SOME: landed ${landed}; skipped ${skipped.map((l) => l.suffix).join(" ")} (kept queued)${rejected.length ? `; dropped ${rejected.map((l) => l.suffix).join(" ")}` : ""}`)
+      : rejected.length ? stop(11, `QUEUE-LANDED-SOME: landed ${landed}; dropped ${rejected.map((l) => l.suffix).join(" ")}`) : null);
 
     const direct = lanes.length === 1 && isAncestor(git, d.SP, lanes[0].head);
     if (direct || local) {
-      const r = await landLocal({ name, lanes, plan, span, direct, d }, ops);
+      const r = await landLocal({ name, lanes, plan, span, direct, d, table: v.table, shipDir }, ops);
       if (r.code !== 0 || plan) return r;
       for (const l of lanes) settleEntry(queueDir, l, "done");
-      return rejected.length ? stop(11, `QUEUE-LANDED-SOME: landed ${lanes.map((l) => l.suffix).join(" ")}; dropped ${rejected.map((l) => l.suffix).join(" ")}`) : r;
+      return tally(lanes.map((l) => l.suffix).join(" ")) ?? r;
     }
     for (const l of lanes) if (onlyIgnoredPaths(l.paths)) return stop(2, `MEME-ONLY LANE: ${l.suffix} changes ignored paths alone, so no train run would come; merge the span into it and it lands DIRECT`);
     { const l = locked(); if (l) { lock = null; return l; } }
-    return await landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped: rejected, d }, ops);
+    const q = await landQueue({ lanes, plan, span, k, depth, m, queueDir, shipDir, table: v.table, preDropped: rejected, d }, ops);
+    // Skipped entries stay queued: a queue that landed every other lane says so with its own code.
+    return q.code === 0 && skipped.length ? tally(q.landed.join(" ")) : q;
   } finally { lock?.release?.(); }
 }
 
@@ -414,7 +435,7 @@ function trainRefs(git, span) {
 }
 
 /** DIRECT and --local: the land written before the push, from the lane tree or the local battery's merge trees. */
-async function landLocal({ name, lanes, plan, span, direct, d }, ops) {
+async function landLocal({ name, lanes, plan, span, direct, d, table, shipDir }, ops) {
   const { say, git, stop, env, SP } = d;
   // --local keeps the road walk from the lanes' common base: the battery reads only shared packages, so every road commit
   // between that base and the span head must read GREEN on its own (a land carries its train's verdict).
@@ -473,10 +494,14 @@ async function landLocal({ name, lanes, plan, span, direct, d }, ops) {
     const T = t.head;
     const merges = git(["rev-list", "--first-parent", "--reverse", `${SP}..${T}`], { cwd: worktree }).split("\n").filter(Boolean);
     if (merges.length !== lanes.length) return stop(5, `TRAIN CHAIN HOLDS ${merges.length} merges for ${lanes.length} lanes`, `  the train worktree stands at ${worktree}`);
-    let prev = SP;
+    let prev = SP, prevMerge = SP;
     for (const [i, l] of lanes.entries()) {
       const M = merges[i];
       if (git(["rev-parse", `${M}^2`], { cwd: worktree }) !== l.head) return stop(5, `TRAIN ORDER BROKE at ${l.suffix}`, `  the train worktree stands at ${worktree}`);
+      // The class reads what lands: `git merge` follows renames, so the lane's own diff may never name the path it changes.
+      const noShip = landShipRefusal(table, shipDir, l, rawPaths(git(["diff", "--no-renames", "--raw", "-z", prevMerge, M], { cwd: worktree })), ops);
+      if (noShip) { ops.removeWorktree(worktree); return stop(12, noShip); }
+      prevMerge = M;
       const land = git(["commit-tree", git(["rev-parse", `${M}^{tree}`], { cwd: worktree }), "-p", prev, "-p", l.head, "-F", l.msg], { env });
       lands.push({ lane: l, land }); prev = land;
     }
@@ -531,9 +556,9 @@ async function cancelLaneRuns(ops, say, span, moved) {
 }
 
 /** QUEUE: chain, push, read the train head's own CI, fast-forward the span; bisect a red over the chain; speculate one ahead. */
-async function landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped = [], d }, ops) {
+async function landQueue({ lanes, plan, span, k, depth, m, queueDir, shipDir, table: table0, preDropped = [], d }, ops) {
   const { say, git, stop, env } = d;
-  let SP = d.SP;
+  let SP = d.SP, table = table0;
   const trainOk = (b) => b.startsWith(`${span}--train-`);
   const anyOk = (b) => b === span || trainOk(b);
   const landed = [], dropped = [...preDropped];
@@ -561,6 +586,12 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped 
       }
       // An empty link raises no run (paths-ignore over an empty diff) and lands nothing: it drops by name.
       if (tree === git(["rev-parse", `${prev}^{tree}`])) { drop(l, `its change already stands on the span or an earlier lane of this train (an empty land over ${short(prev)})`); continue; }
+      const landed = rawPaths(git(["diff", "--no-renames", "--raw", "-z", prev, tree]));
+      // A land that changes ignored paths alone raises no run either (its code already stands): it drops by name.
+      if (onlyIgnoredPaths(landed)) { drop(l, `its land over ${short(prev)} changes ignored paths alone, so no run would come`); continue; }
+      // The class reads what LANDS (merge-tree follows renames), unioned with the lane's own diff.
+      const noShip = landShipRefusal(table, shipDir, l, landed, ops);
+      if (noShip) throw Object.assign(new Error(noShip), { ship: true });
       const land = git(["commit-tree", tree, "-p", prev, "-p", l.head, "-F", l.msg], { env });
       out.push({ lane: l, land }); prev = land;
     }
@@ -578,10 +609,12 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped 
     for (const [i, c] of firsts.entries()) {
       if (!ok) break;
       const l = pending[i];
-      ok = git(["rev-parse", `${c}^`]) === prev && git(["rev-parse", `${c}^2`]) === l.head
+      ok = git(["rev-parse", `${c}^`]) === prev && git(["rev-parse", `${c}^2`]) === l.head && git(["log", "-1", "--format=%s", c]) === l.subject
         && git(["rev-parse", `${c}^{tree}`]) === git(["merge-tree", "--write-tree", "--no-messages", prev, l.head]).split("\n")[0];
       links.push({ lane: l, land: c }); prev = c;
     }
+    // A standing train resumes only when a run names its sha; one with none would wait on a run that never comes.
+    if (ok) { const runs = await ops.ciRuns(t.sha).catch(() => []); ok = readRunAt(runs, t.sha, trainOk).state !== "none"; }
     if (ok) { trains.push({ branch: t.branch, head: t.sha, links }); say(`RESUMED ${t.branch} at ${short(t.sha)}: ${links.map((x) => x.lane.suffix).join(" ")}`); }
     else {
       for (const r of await ops.ciRuns(t.sha).catch(() => [])) if (r.status !== "completed" && trainOk(r.headBranch)) await ops.cancelRun(r.databaseId).catch(() => {});
@@ -591,7 +624,8 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped 
   let queue = lanes.filter((l) => !trains.some((x) => x.links.some((y) => y.lane === l)));
 
   if (plan) {
-    const { links } = chain(SP, queue.slice(0, k));
+    let links;
+    try { ({ links } = chain(SP, queue.slice(0, k))); } catch (e) { if (!e.ship) throw e; return stop(12, e.message); }
     say(`PLAN QUEUE over span ${short(SP)}: train of ${links.length} lane(s); nothing pushed`);
     for (const { lane, land } of links) say(`PLAN lane ${lane.suffix} (PR #${lane.pr}) head ${short(lane.head)}: land ${short(land)} (merge-tree over the land before it)  subject: ${lane.subject}`);
     say(`PLAN push the chain head to ${span}--train-<n>-<sha9>, read its CI, fast-forward ${span} to it on green`);
@@ -602,27 +636,37 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped 
   /** Wait on one sha's run until it reads a whole verdict (or VOID). After a rerun, `rerun` names the run and the attempt
    *  it must reach, so a stale reading of the prior attempt (or another run's green) never answers for it. `skip` names runs
    *  that answer nothing (a cancelled one a dispatch replaces). */
-  const awaitRun = async (sha, branchOk, { rerun = null, skip = new Set() } = {}) => {
-    let dark = 0;
+  const remoteRef = (ref) => { try { return git(["ls-remote", "origin", `refs/heads/${ref}`]).split(/\s/)[0] || null; } catch { return undefined; } };
+  const awaitRun = async (sha, branchOk, { rerun = null, skip = new Set(), watchRef = null, watchSpan = false } = {}) => {
+    let dark = 0, sawLive = false;
     for (;;) {
       let runs;
       try { runs = await ops.ciRuns(sha); dark = 0; }
       catch (e) { if (classifyFailure(e) !== "unreadable") throw e; if (++dark >= 6) return { state: "unreadable" }; await ops.sleep(30000); continue; }
       runs = runs.filter((x) => !skip.has(x.databaseId));
-      if (rerun) runs = runs.filter((x) => x.databaseId === rerun.id && (x.attempt ?? 1) >= rerun.attempt);
+      if (rerun) {
+        // A gh that answers `attempt` names the new attempt; one that answers none shows the run live, then whole again.
+        runs = runs.filter((x) => x.databaseId === rerun.id);
+        if (runs.some((x) => x.status !== "completed")) sawLive = true;
+        runs = runs.filter((x) => (x.attempt !== undefined ? x.attempt >= rerun.attempt : sawLive));
+      }
       const r = readRunAt(runs, sha, branchOk);
       if (r.state === "green" || r.state === "red" || r.state === "void") return r;
+      // No wait outlives its subject: a train or probe ref that moved or vanished reads VOID; a span that moved re-chains.
+      if (watchRef) { const at = remoteRef(watchRef); if (at !== undefined && at !== sha) return { state: "void", run: null, why: `${watchRef} no longer stands at ${short(sha)}` }; }
+      if (watchSpan) { const at = remoteRef(span); if (at && at !== sha) return { state: "moved", run: null }; }
       if (r.state === "none") say(rerun ? `RERUN NOT YET READ: run ${rerun.id} attempt ${rerun.attempt} at ${sha}` : `NO RUN YET ${sha}`);
       await ops.sleep(30000);
     }
   };
   /** A red reruns its failed jobs once; the reading after it decides. */
-  const verdictAt = async (sha, branchOk, skip) => {
-    const r = await awaitRun(sha, branchOk, { skip });
+  const verdictAt = async (sha, branchOk, { skip, watchRef, watchSpan } = {}) => {
+    const r = await awaitRun(sha, branchOk, { skip, watchRef, watchSpan });
     if (r.state !== "red") return r;
-    try { await ops.rerun(r.run.databaseId); } catch { return r; }
+    // A rerun GitHub refuses leaves the flake question open: UNREADABLE, never a red that would name a lane.
+    try { await ops.rerun(r.run.databaseId); } catch (e) { say(`the rerun of run ${r.run.databaseId} was refused (${String(e?.message ?? e).split("\n")[0]})`); return { state: "unreadable", run: r.run }; }
     say(`rerun of the failed jobs in run ${r.run.databaseId} (${short(sha)}), once`);
-    return awaitRun(sha, branchOk, { rerun: { id: r.run.databaseId, attempt: (r.run.attempt ?? 1) + 1 }, skip });
+    return awaitRun(sha, branchOk, { rerun: { id: r.run.databaseId, attempt: (r.run.attempt ?? 1) + 1 }, skip, watchRef, watchSpan });
   };
   const pushRef = (branch, sha, kind) => { git(["push", "-q", `--force-with-lease=refs/heads/${branch}:`, "origin", `${sha}:refs/heads/${branch}`]); say(`pushed ${kind} ${branch} ${sha}`); };
   const tearDown = async (t) => {
@@ -647,6 +691,9 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped 
     trains.length = 0;
     git(["fetch", "-q", "origin"]); SP = git(["rev-parse", `origin/${span}`]);
     const a = checkoutAt(git, SP); if (a) return stop(2, a);
+    // The moved span may carry a new security table: every re-chained link reads it.
+    table = readTable(git, SP);
+    if (!table) return stop(2, `NO SECURITY TABLE at the span head ${short(SP)} (tools/security-class-paths.json)`);
     return null;
   };
 
@@ -659,14 +706,15 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped 
       // No run, or only runs cancelled clean: none measured the span head, so it gets one of its own.
       const skip = new Set(runs.filter((x) => x.headSha === SP).map((x) => x.databaseId));
       await ops.dispatchCI(span); say(`the span head ${short(SP)} holds no whole run of its own: dispatched CI on ${span}`);
-      return verdictAt(SP, anyOk, skip);
+      return verdictAt(SP, anyOk, { skip, watchSpan: true });
     }
-    return verdictAt(SP, anyOk);
+    return verdictAt(SP, anyOk, { watchSpan: true });
   };
 
   /** Bisect a red train over its own chain: land each green prefix, name the culprit between green and red. */
   const bisect = async (t) => {
     const s = await spanReads();
+    if (s.state === "moved") return { moved: t.links };
     if (s.state === "unreadable") return { code: 10, why: `UNREADABLE: the span head ${short(SP)}'s verdict could not be read; it is no red` };
     if (s.state === "void") return { code: 13, why: `VOID: the span head ${short(SP)}'s run was cancelled clean; nothing measured it` };
     if (s.state !== "green") return { code: 16, why: `SPAN RED at ${short(SP)}: the span itself reads red, so no lane takes the blame; the queue pauses` };
@@ -675,7 +723,7 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped 
       const mid = Math.floor((lo + hi) / 2), c = links[mid - 1].land;
       const branch = nextBranch(c);
       pushRef(branch, c, "probe");
-      const v = await verdictAt(c, trainOk);
+      const v = await verdictAt(c, trainOk, { watchRef: branch });
       deleteRef(branch, c);
       if (v.state === "unreadable") return { code: 10, why: `UNREADABLE: probe ${short(c)} could not be read; it is no red` };
       if (v.state === "void") return { code: 13, why: `VOID: probe ${branch}'s run was cancelled clean` };
@@ -712,7 +760,9 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped 
         if (gate.pause) return finish(15, gate.why);
       }
       const base = trains.at(-1)?.head ?? SP;
-      const { links, head } = chain(base, queue.splice(0, k));
+      let built;
+      try { built = chain(base, queue.splice(0, k)); } catch (e) { if (!e.ship) throw e; for (const x of trains) await tearDown(x); trains.length = 0; return finish(12, e.message); }
+      const { links, head } = built;
       if (links.length === 0) continue;
       const branch = nextBranch(head);
       pushRef(branch, head, "train");
@@ -722,9 +772,10 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped 
 
     const t = trains[0];
     if (!isAncestor(git, SP, t.head)) { const r = await restart(); if (r) return r; continue; }
-    const v = await verdictAt(t.head, trainOk);
+    const v = await verdictAt(t.head, trainOk, { watchRef: t.branch });
     if (v.state === "unreadable") return finish(10, `UNREADABLE: train ${t.branch}'s verdict could not be read; read again later, it is no red`);
-    if (v.state === "void") return finish(13, `VOID: train ${t.branch}'s run at ${short(t.head)} was cancelled clean; nothing measured it (push it again, or run the queue again)`);
+    // VOID tears the train down, so no later run resumes a cancelled run and `status` frees canon pushes.
+    if (v.state === "void") { for (const x of trains) await tearDown(x); trains.length = 0; return finish(13, `VOID: train ${t.branch}'s run at ${short(t.head)} was cancelled clean or its ref moved; nothing measured it (run the queue again)`); }
     if (v.state === "green") {
       git(["fetch", "-q", "origin"]);
       if (git(["rev-parse", `origin/${span}`]) !== SP || !(await fastForward(t.head, t.links))) { const r = await restart(); if (r) return r; continue; }
@@ -746,7 +797,7 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped 
   function finish(code, why) {
     if (why) say(why);
     if (code !== undefined) return { code };
-    if (dropped.length === 0) return stop(0, `QUEUE-LANDED: ${landed.map((l) => l.suffix).join(" ")}`);
+    if (dropped.length === 0) return { ...stop(0, `QUEUE-LANDED: ${landed.map((l) => l.suffix).join(" ")}`), landed: landed.map((l) => l.suffix) };
     if (landed.length === 0) return stop(5, `NOTHING LANDED: dropped ${dropped.map((l) => l.suffix).join(" ")}`);
     return stop(11, `QUEUE-LANDED-SOME: landed ${landed.map((l) => l.suffix).join(" ")}; dropped ${dropped.map((l) => l.suffix).join(" ")}`);
   }
@@ -785,7 +836,7 @@ function realOps({ cwd, scratch, env = process.env }) {
     train: (ctx) => realTrain({ ...ctx, cwd, scratch, git, run, env }),
     // The queue's reads: one sha's CI runs on every branch (`--commit` with no `--branch`, measured 2026-11-01), the span's
     // held-out runs, and the writes it makes on its own trains: a rerun of failed jobs, a cancel, a dispatch on the span.
-    ciRuns: async (sha) => gh(["run", "list", "--commit", sha, "--workflow", "CI", "--limit", "50", "--json", "databaseId,headBranch,headSha,status,conclusion,attempt,createdAt"]),
+    ciRuns: async (sha) => gh(["run", "list", "--commit", sha, "--workflow", "CI", "--limit", "50", "--json", "databaseId,headBranch,headSha,status,conclusion,attempt,createdAt,event"]),
     rerun: async (id) => { run("gh", ["run", "rerun", String(id), "--failed"], { cwd, env: ghe }); },
     cancelRun: async (id) => { run("gh", ["run", "cancel", String(id)], { cwd, env: ghe }); },
     dispatchCI: async (ref) => { run("gh", ["workflow", "run", "CI", "--ref", ref], { cwd, env: ghe }); },

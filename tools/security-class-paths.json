@@ -1,5 +1,5 @@
 {
-  "about": "The security class (controller ruling 2026-11-01, F7 (a)): a lane whose `git diff --no-renames --raw <base>..<head>` names a path matching a glob in `paths`, or a path holding a `tokens` word anywhere (case-folded), lands only with a SHIP the controller wrote for its exact head (tools/land-train.mjs). The land reads this file from the SPAN HEAD's tree, never from the lane's, and the file sits in its own list. The future GitHub gate reads the same table. Prune from evidence; never widen a hole.",
+  "about": "The security class (controller ruling 2026-11-01, F7 (a)): a lane whose own diff (`git diff --no-renames --raw -z <base>..<head>`) or whose LAND (each chain link's diff over the land before it, since merge-tree follows renames) names a path matching a glob in `paths`, or a path holding a `tokens` word anywhere (case-folded), lands only with a SHIP the controller wrote for its exact head (tools/land-train.mjs). The land reads this file from the SPAN HEAD's tree, never from the lane's, and the file sits in its own list. The code that decides CI's verdict (cells, shards, witnesses, the build stamp, every manifest and test config) sits in the class too. The future GitHub gate reads the same table. Prune from evidence; never widen a hole.",
   "paths": [
     "tools/security-class-paths.json",
     "tools/land-train.mjs",
@@ -7,17 +7,38 @@
     "tools/ci-ignored-paths.json",
     "tools/ci-ignored-paths.mjs",
     "tools/held-out-cells.mjs",
-    "tools/witness-all.sh",
     "tools/evergreen-boundary.mjs",
     "tools/battery.sh",
     "tools/provision-worktree.mjs",
     ".github/**",
-    "package.json",
     "pnpm-lock.yaml",
     "pnpm-workspace.yaml",
     ".npmrc",
     ".gitattributes",
-    "packages/lararium-keyhive/**"
+    "packages/lararium-keyhive/**",
+    "tools/ci-cells.mjs",
+    "tools/e2e-shards.mjs",
+    "tools/*witness*",
+    "tools/stamp-build.mjs",
+    "tools/disk-guard.mjs",
+    "**/package.json",
+    "**/vitest.config.*"
   ],
-  "tokens": ["custody", "crypto", "keyhive", "seal", "gate", "caps", "capability", "admit", "admission", "veil", "recovery", "passkey", "keyslot", "prf", "signer"]
+  "tokens": [
+    "custody",
+    "crypto",
+    "keyhive",
+    "seal",
+    "gate",
+    "caps",
+    "capability",
+    "admit",
+    "admission",
+    "veil",
+    "recovery",
+    "passkey",
+    "keyslot",
+    "prf",
+    "signer"
+  ]
 }
