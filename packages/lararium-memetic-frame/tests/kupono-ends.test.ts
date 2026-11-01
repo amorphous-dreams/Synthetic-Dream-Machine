@@ -83,6 +83,22 @@ describe("★ the reader reads the cut, either order ★", () => {
     expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["torn-spelling"]);
   });
 
+  test("the release reads strict: the retired arrow, or any junk before `to=`, reads as no release and the carrier reads torn", () => {
+    expect(carrierReleasePattern().test("<<^ code=`&#x0004;` -> to=`?`>>")).toBe(false);
+    expect(carrierReleasePattern().test("<<^ code=`&#x0004;` junk to=`?`>>")).toBe(false);
+    const c = frameCarrier({ head: { uri: URI }, body: BODY });
+    const old = c.replace(releaseSigil(), "<<^ code=`&#x0004;` -> to=`?`>>");
+    expect(old).not.toBe(c);
+    const v = verdict(old);
+    expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["torn-spelling"]);
+  });
+
+  test("CONTROL: the canonical release reads, spaced or tight before its close", () => {
+    expect(carrierReleasePattern().test("<<^ code=`&#x0004;` to=`?`>>")).toBe(true);
+    expect(carrierReleasePattern().test("<<^ code=`&#x0004;` to=`?` >>")).toBe(true);
+    expect(verdict(frameCarrier({ head: { uri: URI }, body: BODY })).kind).toBe("match");
+  });
+
   test("the retired declaration reads torn", () => {
     const c = frameCarrier({ head: { uri: URI }, body: BODY });
     const old = c.replace(CARRIER_DECLARATION,
