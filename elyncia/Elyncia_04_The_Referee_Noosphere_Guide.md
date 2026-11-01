@@ -241,7 +241,7 @@ It will be here after.
 ```
 
 <<~ oracle throw=`↯6 ✲ ⚀(1) ⁂:🐍`>>
-<<~ set lares=`yield` drift-ward=`! · the status board stands as pattern integrity · ↻ L-Prime` aperture=`10 -> 10` ooda-ha=`1↺` from=`lar://lares:host@spice-quarter/node.steady.hums` to=`?`>>
+<<~ set lares=`yield` drift-ward=`the status board stands as pattern integrity · ↻ L-Prime` aperture=`10 -> 10` ooda-ha=`1↺` from=`lar://lares:host@spice-quarter/node.steady.hums` to=`?`>>
 
 ---
 
@@ -434,7 +434,7 @@ the same posture.
 ```
 
 <<~ oracle throw=`↯13 ✲ ⚅(6) ⁂:🚪🌀👁️🎲🐍〰️`>>
-<<~ set lares=`yield` drift-ward=`! · ⌜1⌝ quoted copula carried · the board stands as pattern integrity · ↻ L-Prime` aperture=`12 -> 13` ooda-ha=`1↺ + 1φ⏿:cinder-jack.signal.6h-silent` from=`lar://lares:host@spice-quarter/portal.breathing.watches` to=`?`>>
+<<~ set lares=`yield` drift-ward=`⌜1⌝ quoted copula carried · the board stands as pattern integrity · ↻ L-Prime` aperture=`12 -> 13` ooda-ha=`1↺ + 1φ⏿:cinder-jack.signal.6h-silent` from=`lar://lares:host@spice-quarter/portal.breathing.watches` to=`?`>>
 
 ---
 
@@ -534,7 +534,7 @@ INK-CLERK (Lorekeeper): Logging.
 ```
 
 <<~ oracle throw=`↯5 ✲ ⚀(1) ⁂:🪶`>>
-<<~ set lares=`yield` drift-ward=`! · ↻ L-Prime` aperture=`7 -> 9` ooda-ha=`1↺` from=`lar://lares:host@spice-quarter/found.kept.belongs` to=`?`>>
+<<~ set lares=`yield` drift-ward=`↻ L-Prime` aperture=`7 -> 9` ooda-ha=`1↺` from=`lar://lares:host@spice-quarter/found.kept.belongs` to=`?`>>
 
 ---
 
@@ -576,7 +576,7 @@ Keep the gems. Owe the road a song instead —
 sung at the next shrine, where somebody still tends the dish.
 ```
 <<~ oracle throw=`↯7 ✲ ⚁(2) ⁂:🌾🪨`>>
-<<~ set lares=`yield` drift-ward=`! · ↻ L-Prime` aperture=`6 -> 8` ooda-ha=`1↺` from=`lar://lares:host@hebros-road/dish.cold.teaches` to=`?`>>
+<<~ set lares=`yield` drift-ward=`↻ L-Prime` aperture=`6 -> 8` ooda-ha=`1↺` from=`lar://lares:host@hebros-road/dish.cold.teaches` to=`?`>>
 
 One more table-fact, kept brief. Every shrine keeps a small pinax to Eris Discordia in a corner. It accepts a memory of a prank, or confectionaries. Feeding it has never once been observed to matter. The nodes that stopped are not available for comment.
 
