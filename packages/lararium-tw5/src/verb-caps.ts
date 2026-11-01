@@ -239,7 +239,7 @@ export function telemetryProviderCap(impl: TelemetryProvider): CapModule {
  * The recall filters that LEFT the coordinator's signature: the enrichment axes `voice`, `band` and `drift`
  * (the taxonomy axis `speaker` carries the stratum now). The coordinator's holder keeps only the parameters
  * its signature declares and drops the rest without a word, so a caller still passing one of these would
- * read an UNFILTERED result as a filtered one. No back-compat: the verb refuses a burned name before any
+ * read an UNFILTERED result as a filtered one. The verb refuses a burned name before any
  * read runs, in every mode.
  */
 const BURNED_RECALL_ARGS: readonly string[] = ["voice", "band", "drift"];
