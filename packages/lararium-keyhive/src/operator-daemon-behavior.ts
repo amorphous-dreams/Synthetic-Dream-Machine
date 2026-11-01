@@ -304,6 +304,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   let contentKeys: ContentKeySeat | null = null;
   /** The vessel's own verified face chain, as the last session reading carried it; null before any session asked. */
   let ownChain: SessionOwnChain | null = null;
+  /** The vessel's counted raises and its unanswered ones on the face's fleet board, as the last session reading
+   *  carried them (the vessel's own fold): a removal version counts by the first, an owed roll stands by the second. */
+  let ownCounted: ReadonlySet<string> = new Set();
+  let ownUnanswered: readonly string[] = [];
   const faceDoor = () => kh && daemonAuth.personaGroupId
     ? makeFaceBagDoor({ face: kh, groupId: daemonAuth.personaGroupId, ...(faceLedger ? { ledger: faceLedger } : {}) }) : null;
   const faceAtom = () => {
@@ -786,10 +790,22 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const reading = sessionProof && ask ? await sessionProof.signer(ask) : { refusal: "signer-unavailable" } as const;
         if ("refusal" in reading) throw new VerbRefusal(reading.refusal, `[daemon] ${verb}: ${reading.refusal} — nothing sealed, nothing opened.`);
         ownChain = reading.chain;
+        ownCounted = new Set(reading.counted);
+        ownUnanswered = [...reading.unanswered];
         if (reading.subject !== faceProofSubjectRef(reading.chain.scope as never)) {
           throw new VerbRefusal("session-face-foreign", `[daemon] ${verb}: session-face-foreign — the session wears another face than this island holds; nothing sealed, nothing opened.`);
         }
         return reading.signer;
+      };
+      /** The vessel's own chain and fold for an act no session asked (the memory section's cut and import): the
+       *  holder reads records under them. A vessel that names none leaves the island as it stood, and the holder
+       *  refuses to read without a chain. */
+      const ownReading = async (): Promise<void> => {
+        const read = await sessionProof?.own?.();
+        if (!read || "refusal" in read) return;
+        ownChain = read.chain;
+        ownCounted = new Set(read.counted);
+        ownUnanswered = [...read.unanswered];
       };
       /** The memory import's signer: the import judges its own door whole (`signer-unavailable` first), so a reading
        *  that refuses hands it none rather than refusing ahead of that door. The face gate holds all the same. */
@@ -939,6 +955,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const shadowRead = args["shadow"] === MEMORY_CUT_SHADOW_READ;
         memoryAsk("sealed-memory-cut", "cut", shadowRead ? { to, shadow: MEMORY_CUT_SHADOW_READ } : { to }, args, context.invocation.requestId);
         if (to === null) throw new Error("[daemon] sealed-memory-cut: `to` (the section pair's public half, 64 lower hex) required.");
+        await ownReading();
         const cut = await holderFor("sealed-memory-cut").holder.cutMemory({ bags: daemonAuth.registerBags, to: meshHexToBytes(to), ...(shadowRead ? { shadowRead: true } : {}) });
         if ("refusal" in cut) return refusedBy("sealed-memory-cut", cut);
         return { verb: "sealed-memory-cut", section: bytesToBase64(cut.section), holds: cut.holds.map((one) => ({ ...one })) };
@@ -955,6 +972,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const sealedSecret = typeof args["secret"] === "string" ? args["secret"] : null;
         memoryAsk("sealed-memory-import", "import", { section, secret: sealedSecret }, args, context.invocation.requestId);
         const seat = holderFor("sealed-memory-import");
+        await ownReading();
         if (section === null || sealedSecret === null) throw new Error("[daemon] sealed-memory-import: `section` and `secret` (each base64) required.");
         const door = memoryDoor;
         memoryDoor = null;   // one door, one import
@@ -1178,7 +1196,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             standingOf: async (member: string) => requireDyadReader(dyadReader(ctx), "the content-key seat")(fleetRoot, bareId(member)),
             ownEdgeShadowed: async () => (await requireDyadReader(dyadReader(ctx), "the content-key seat")(fleetRoot, faceAtom().key)) === "aside",
           } : {}),
-          ...(countedRaises && fleetRoot ? { countedRaises: () => countedRaises(fleetRoot) } : {}),
+          // THE VESSEL'S OWN FOLD: a shore that injects `countedRaises` names them; else the last session reading's.
+          countedRaises: countedRaises && fleetRoot ? () => countedRaises(fleetRoot) : () => ownCounted,
+          unansweredRaises: () => ownUnanswered,
           // THE SEAT'S STANDING READS THE VESSEL'S OWN CHAIN, as the last session reading carried it: before any
           // session asked, no writer stands. A seat roll names no session, so it takes no signer and stays owed by
           // name; a session's own act signs through the door its verb reads (`sessionOf`, below).

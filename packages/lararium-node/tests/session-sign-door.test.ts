@@ -35,8 +35,8 @@ describe("the session sign door answers from the session that placed the call", 
     const book = new SessionSignBook();
     const s = signer();
     const release = book.hold("req-1", "sealed-seal", { signer: s, anchor: NEXUS, subject: "subject-1" });
-    const door = book.door(() => CHAIN);
-    expect(await door({ op: "read", ask: "req-1", verb: "sealed-seal" })).toEqual({ certificate: s.certificate, subject: "subject-1", chain: CHAIN });
+    const door = book.door(() => CHAIN, async () => ({ counted: ["raise-1", "raise-2"], unanswered: ["raise-2"] }));
+    expect(await door({ op: "read", ask: "req-1", verb: "sealed-seal" })).toEqual({ certificate: s.certificate, subject: "subject-1", chain: CHAIN, counted: ["raise-1", "raise-2"], unanswered: ["raise-2"] });
     expect(await door({ op: "sign", ask: "req-1", verb: "sealed-seal", payload })).toEqual({ signature: "sig-act-3" });
     expect(s.signed).toEqual([payload]);
     release();
@@ -89,6 +89,12 @@ describe("the session sign door answers from the session that placed the call", 
     book.hold("req-1", "sealed-seal", { signer: s, anchor: NEXUS, subject: "subject-1" });
     s.drop();
     expect(await book.door(() => CHAIN)({ op: "sign", ask: "req-1", verb: "sealed-seal", payload })).toEqual({ refusal: "signer-refused" });
+  });
+
+  test("a fold that fails answers `signer-unavailable`: the island never reads it as nothing owed", async () => {
+    const book = new SessionSignBook();
+    book.hold("req-1", "sealed-seal", { signer: signer(), anchor: NEXUS, subject: "subject-1" });
+    expect(await book.door(() => CHAIN, async () => { throw new Error("board unread"); })({ op: "read", ask: "req-1", verb: "sealed-seal" })).toEqual({ refusal: "signer-unavailable" });
   });
 
   test("no own chain standing (no dial presentation composed) answers `signer-unavailable`", async () => {

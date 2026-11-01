@@ -207,6 +207,12 @@ interface Line {
 }
 interface Bag { readonly bagId: string; readonly lines: Map<BagLocator, Line> }
 
+/** The holder took no reading: its standing names no chain yet (no session asked). Nothing read, nothing settled. */
+export class ChainAbsent extends Error {
+  override readonly name = "ChainAbsent";
+  constructor() { super("content-key holder: no chain stands yet (no session asked), so the holder reads no record and settles no roll"); }
+}
+
 const ascending = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 const refuse = (refusal: HolderRefusalName, cause?: string): HolderRefusal => (cause === undefined ? { refusal } : { refusal, cause });
 const isRefusal = (value: object): value is HolderRefusal => "refusal" in value;
@@ -227,6 +233,8 @@ const digestsOf = (note: Uint8Array | null): string[] => {
 export class ContentKeyHolder {
   readonly #ports: ContentKeyHolderPorts;
   #bags: Map<string, Bag> | null = null;
+  /** The chain the cached reading was taken under (`WriterStanding.chainOf`). */
+  #bagsChain: string | null | undefined = undefined;
   #locked = false;
   #turn: Promise<unknown> = Promise.resolve();
 
@@ -267,13 +275,24 @@ export class ContentKeyHolder {
 
   // ── The reading: lockboxes, then records ──────────────────────────────────────────────────────
   async #loaded(): Promise<Map<string, Bag>> {
-    if (this.#bags !== null) return this.#bags;
+    // NO CHAIN, NO READING. Under a standing whose chain does not stand yet, every record reads as no writer's, so a
+    // reading taken then would found rivals and settle rolls as unfounded. The holder refuses to read, and a reading
+    // taken under one chain gives way when another stands.
+    const chain = this.#ports.standing.chainOf?.();
+    if (chain === null) throw new ChainAbsent();
+    if (this.#bags !== null && this.#bagsChain === chain) return this.#bags;
     return this.#reload();
   }
+
+  /** Does the standing read writers under a chain now? A holder whose standing names none takes no reading. */
+  #chainStands(): boolean { return this.#ports.standing.chainOf?.() !== null; }
 
   /** Read rest afresh: open every lockbox this seat opens, then count every record under the key it delivered. */
   async #reload(): Promise<Map<string, Bag>> {
     const { store, shore } = this.#ports;
+    // The chain this reading is taken under: a reading taken under none (a vessel ask before any session) gives way
+    // at the first `#loaded` once a chain stands.
+    const chain = this.#ports.standing.chainOf?.();
     const bags = new Map<string, Bag>();
     const forget = (): void => { for (const bag of bags.values()) for (const line of bag.lines.values()) for (const key of line.keys.values()) key.fill(0); };
     try {
@@ -297,6 +316,7 @@ export class ContentKeyHolder {
     // Keys the earlier reading held leave with it.
     for (const bag of this.#bags?.values() ?? []) for (const line of bag.lines.values()) for (const key of line.keys.values()) key.fill(0);
     this.#bags = bags;
+    this.#bagsChain = chain;
     return bags;
   }
 
@@ -586,7 +606,8 @@ export class ContentKeyHolder {
     return {
       bagsOf: (scope) => vessel.bagsOf(scope),
       lineagesOf: async (bagId) => {
-        if (this.#locked) return null;
+        // No chain standing: the holder reads nothing, so the roll reads `unknown-bag` and comes again.
+        if (this.#locked || !this.#chainStands()) return null;
         const bag = (await this.#inTurn(async () => (await this.#loaded()).get(bagId) ?? { bagId, lines: new Map<BagLocator, Line>() })) as Bag | HolderRefusal;
         if (isRefusal(bag)) return null;
         return [...bag.lines.values()].filter((line) => !line.lineage.unfounded).map((line) => ({ founding: line.locator, lineage: line.lineage, held: this.#usable(line) }));

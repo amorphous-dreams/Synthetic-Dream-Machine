@@ -960,12 +960,15 @@ export interface IslandMsg_DyadRead {
  * holds no session key: it names the invocation a session placed (`ask`, its request id, and the `verb` it placed), and
  * the vessel answers from the session that placed it. `op: "read"` asks the session's certificate, its proof subject and
  * this vessel's own verified face chain; `op: "sign"` asks the session's signer to sign `payload` under the `act`
- * purpose. The signer's secret never crosses: it signs on the vessel's main thread, behind its owner's table.
+ * purpose. The signer's secret never crosses: it signs on the vessel's main thread, behind its owner's table. A read
+ * also carries the raises the vessel counts on the face's fleet board and those no subscriber has taken yet (its own
+ * fold), so the holder counts removal versions and owed rolls across a restart.
  */
 export interface IslandMsg_SessionSign {
   type: "session:sign";
   requestId: string;
-  op: "read" | "sign";
+  /** `own` asks no session: it reads the vessel's own chain and its fold (the island counts records by them). */
+  op: "read" | "sign" | "own";
   ask: string;
   verb: string;
   payload?: Uint8Array;
@@ -979,7 +982,8 @@ export interface SessionOwnChain {
 
 /** Vessel → island: the session sign door's answer, or one refusal by name. */
 export type IslandMsg_SessionSigned =
-  | { type: "session:signed"; requestId: string; certificate: unknown; subject: string; chain: SessionOwnChain }
+  | { type: "session:signed"; requestId: string; certificate: unknown; subject: string; chain: SessionOwnChain; counted: readonly string[]; unanswered: readonly string[] }
+  | { type: "session:signed"; requestId: string; own: true; chain: SessionOwnChain; counted: readonly string[]; unanswered: readonly string[] }
   | { type: "session:signed"; requestId: string; signature: string }
   | { type: "session:signed"; requestId: string; refusal: string };
 

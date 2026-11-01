@@ -30,13 +30,22 @@ export interface SessionAsk {
 /** The vessel's answer for one ask: the session's signer (its certificate, its signatures on the main thread), its
  *  proof subject and this vessel's own verified chain; or one refusal by name. */
 export type SessionReading =
-  | { readonly signer: RecordSigner; readonly subject: string; readonly chain: SessionOwnChain }
+  | {
+    readonly signer: RecordSigner; readonly subject: string; readonly chain: SessionOwnChain;
+    /** The raises the vessel counts on its face's fleet board (its own fold): the evidence a removal version counts by. */
+    readonly counted: readonly string[];
+    /** The counted raises no subscriber has taken yet (no mark in the vessel's ledger): owed, a restart included. */
+    readonly unanswered: readonly string[];
+  }
   | { readonly refusal: string };
 
 /** The island's port onto the session that placed an ask. `null` names an ask no session placed (a summons, a
  *  maintenance frame): it reads `signer-unavailable`, and no vessel key or daemon key signs in its place. */
 export interface IslandSessionProof {
   signer(ask: SessionAsk | null): Promise<SessionReading>;
+  /** The vessel's own chain and fold with no session behind the ask (a backup's cut, a restore's import): the island
+   *  counts records by them and signs nothing. Absent, or a refusal: the island reads as before. */
+  own?(): Promise<{ readonly chain: SessionOwnChain; readonly counted: readonly string[]; readonly unanswered: readonly string[] } | { readonly refusal: string }>;
 }
 
 const bare = (s: string): string => s.trim().toLowerCase().replace(/^0x/, "");
@@ -62,5 +71,9 @@ export function certificateUnderChain(certificate: unknown, chain: SessionOwnCha
  * the last session reading carried it (null before any), and `bags()` the bags this face registers.
  */
 export function ownChainStanding(chain: () => SessionOwnChain | null, bags: () => readonly string[]): WriterStanding {
-  return { holdsWrite: ({ certificate, bagId }) => certificateUnderChain(certificate, chain()) && bags().includes(bagId) };
+  return {
+    holdsWrite: ({ certificate, bagId }) => certificateUnderChain(certificate, chain()) && bags().includes(bagId),
+    // No chain before a session asked: the holder takes no reading and settles no roll until one stands.
+    chainOf: () => { const c = chain(); return c === null ? null : `${bare(c.scope.faceKey)}|${c.scope.nexus}|${bare(c.vesselFaceKey)}`; },
+  };
 }

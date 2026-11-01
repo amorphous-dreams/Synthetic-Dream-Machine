@@ -216,6 +216,14 @@ export function raisesSeenThrough(ledger: LarDoc | undefined | null, scope: stri
 }
 
 /**
+ * The raises this vessel marked answered on the key side for one board, however the seat answered: a subscriber
+ * took the roll for each. A counted raise outside this set still owes its roll (kapae#/keys).
+ */
+export function raisesMarkedAnswered(ledger: LarDoc | undefined | null, scope: string): Set<string> {
+  return new Set(marksOf(ledger, scope, "rolled").keys());
+}
+
+/**
  * Every roll this vessel kept for one board, one per raise, sorted by raise. THE CONTENT-KEY SEAM'S DURABLE HALF
  * (kapae#/keys): a subscriber catches up from here, and a row marked with no roll beside it reads as answered
  * with nothing known of how.

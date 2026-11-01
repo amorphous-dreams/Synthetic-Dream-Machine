@@ -74,6 +74,9 @@ export interface ContentKeySeatInput {
   readonly ownEdgeShadowed?: () => boolean | Promise<boolean>;
   /** Raises the vessel's own ledger counts on the face's scope, beyond the rolls this seat itself took. */
   readonly countedRaises?: () => ReadonlySet<string> | Promise<ReadonlySet<string>>;
+  /** The raises the vessel counts in the face's scope that no subscriber has taken yet: its ledger holds no mark for
+   *  them. Durable, so an island restart forgets no owed roll. Absent: only the rolls this seat saw arrive stand owed. */
+  readonly unansweredRaises?: () => readonly string[] | Promise<readonly string[]>;
   /** Admission acts this vessel verified. */
   readonly verifiedAdmissions?: () => ReadonlySet<string> | Promise<ReadonlySet<string>>;
   readonly session?: SessionProof;
@@ -101,8 +104,10 @@ export interface ContentKeySeat {
   seal(args: Omit<Parameters<ContentKeyHolder["sealBlob"]>[0], "owedActs">): ReturnType<ContentKeyHolder["sealBlob"]>;
   /** Settle the rolls still owed with `signer`, the signer of the session whose act runs now. */
   settle(signer: RecordSigner | null): Promise<void>;
-  /** The raises still owed in one bag's scope (a vector reads it). */
+  /** The raises still owed in one bag's scope, as last read (a vector reads it). */
   owedFor(bagId: string): readonly string[];
+  /** The same, after reading the vessel's durable unanswered raises afresh. */
+  owedNow(bagId: string): Promise<readonly string[]>;
   /** Unsubscribe, overwrite every key and forget every reading. */
   lock(): void;
 }
@@ -199,23 +204,29 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
     settling = run.catch(() => undefined);
     return run;
   };
-  /** The raises still owed in `bagId`'s scope. */
+  /** The vessel's durable reading of the unanswered raises, as last read (`refreshOwed`). */
+  let unanswered: readonly string[] = [];
+  const refreshOwed = async (): Promise<void> => { unanswered = input.unansweredRaises ? [...await input.unansweredRaises()] : []; };
+  /** The raises still owed in `bagId`'s scope: each roll seen arrive and not yet taken, and each raise the vessel
+   *  counts that no subscriber has taken (its durable reading, so a restart forgets none). */
   const owedActs = (bagId: string): string[] => {
     if (input.group === null || !input.bags().includes(bagId)) return [];
     const scope = bare(input.group.scope);
-    return [...new Set([...owed.values()].filter((r) => bare(r.scope) === scope).flatMap((r) => [...r.raiseCids]))];
+    return [...new Set([...[...owed.values()].filter((r) => bare(r.scope) === scope).flatMap((r) => [...r.raiseCids]), ...unanswered])].sort();
   };
   const unsubscribe = (input.subscribe ?? subscribeSeatRolls)(sink);
 
   return {
     holder, sink,
     async seal(args) {
+      await refreshOwed();
       await settle(args.signer);
       // The holder reads the owed raises inside its own turn, so a roll that arrives after the settle still binds it.
       return holder.sealBlob({ ...args, owedActs: () => owedActs(args.bagId) });
     },
     settle,
     owedFor: (bagId) => owedActs(bagId),
+    async owedNow(bagId) { await refreshOwed(); return owedActs(bagId); },
     async catchUp(rolls, vesselKey) {
       let taken = 0, refused = 0;
       const owed: string[] = [];

@@ -137,7 +137,7 @@ export function vesselSessionDoor(port: { postMessage(msg: unknown): void; on(ev
     settle(m as IslandMsg_SessionSigned);
   });
   let seq = 0;
-  const askVessel = (op: "read" | "sign", ask: { requestId: string; verb: string }, payload?: Uint8Array): Promise<IslandMsg_SessionSigned | null> => new Promise((resolve) => {
+  const askVessel = (op: "read" | "sign" | "own", ask: { requestId: string; verb: string }, payload?: Uint8Array): Promise<IslandMsg_SessionSigned | null> => new Promise((resolve) => {
     const requestId = `session-sign-${process.pid}-${++seq}`;
     const timer = setTimeout(() => { pending.delete(requestId); resolve(null); }, patienceMs);
     timer.unref?.();
@@ -145,7 +145,13 @@ export function vesselSessionDoor(port: { postMessage(msg: unknown): void; on(ev
     const msg: IslandMsg_SessionSign = { type: "session:sign", requestId, op, ask: ask.requestId, verb: ask.verb, ...(payload ? { payload } : {}) };
     try { port.postMessage(msg); } catch { pending.delete(requestId); clearTimeout(timer); resolve(null); }
   });
+  const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((c): c is string => typeof c === "string") : []);
   return {
+    async own() {
+      const read = await askVessel("own", { requestId: "", verb: "" });
+      if (read === null || !("own" in read)) return { refusal: read !== null && "refusal" in read ? read.refusal : "chain-absent" };
+      return { chain: read.chain, counted: strings(read.counted), unanswered: strings(read.unanswered) };
+    },
     async signer(ask): Promise<SessionReading> {
       if (ask === null) return { refusal: "signer-unavailable" };
       const read = await askVessel("read", ask);
@@ -155,6 +161,8 @@ export function vesselSessionDoor(port: { postMessage(msg: unknown): void; on(ev
       const certificate = read.certificate as never;
       return {
         subject: read.subject, chain: read.chain,
+        counted: Array.isArray(read.counted) ? read.counted.filter((c): c is string => typeof c === "string") : [],
+        unanswered: Array.isArray(read.unanswered) ? read.unanswered.filter((c): c is string => typeof c === "string") : [],
         signer: {
           certificate,
           async sign(purpose, payload) {

@@ -179,7 +179,7 @@ import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
-import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
+import { runEdgeSeatFacts, runEdgeSeatMarks, fleetRaisesOf, EdgeSeatError } from "./commands/edge-seats.js";
 import type { PersonaSelvesPlane, SealedActContext } from "./sealed-acts.js";
 
 /** The hearth dial a custody act reads: `SealedActContext.walk`, lent by the standing composition. */
@@ -1697,7 +1697,9 @@ async function prepareNodeBootOn(
   // THE SESSION SIGN DOOR (sealed-store#/the-store): the daemon island holds no session key. A session call books its
   // signer here, and the island's ask signs through it, under the vessel's own chain at the pin its dial composed at.
   const sessionSigns = new SessionSignBook();
-  setSessionSignDoor(sessionSigns.door(() => dialAnchor.chain()));
+  // Each read carries the vessel's own fold of the face's fleet board: the raises it counts and those no subscriber
+  // took yet, so the holder counts removal versions and owed rolls across a restart.
+  setSessionSignDoor(sessionSigns.door(() => dialAnchor.chain(), async () => (wornFleetRoot ? fleetRaisesOf({ repo, fleetRoot: wornFleetRoot }) : { counted: [], unanswered: [] })));
   stood.push({ what: "the session sign door", down: () => { setSessionSignDoor(null); } });
   // Set when the vessel stands its dial down: a late dial still in flight then stands nothing.
   let dialStoodDown = false;

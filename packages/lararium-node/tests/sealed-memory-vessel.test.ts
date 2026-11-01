@@ -39,8 +39,8 @@ async function proof(): Promise<IslandSessionProof> {
     sign: async (purpose, payload) => ({ signature: await signHex(sessionSignatureImage(purpose, c.scope, c.sessionCertificate.sessionKey, payload), c.session) }),
   };
   // The session sign door as the vessel's book answers it: this chain's session, its subject and the vessel's own chain.
-  const reading = { signer, subject: faceProofSubjectRef(c.scope), chain: { scope: c.scope, vesselFaceKey: c.sessionCertificate.vesselFaceKey } };
-  return { signer: async (ask) => (ask === null ? { refusal: "signer-unavailable" } : reading) };
+  const reading = { signer, subject: faceProofSubjectRef(c.scope), chain: { scope: c.scope, vesselFaceKey: c.sessionCertificate.vesselFaceKey }, counted: [] as readonly string[], unanswered: [] as readonly string[] };
+  return { signer: async (ask) => (ask === null ? { refusal: "signer-unavailable" } : reading), own: async () => ({ chain: reading.chain, counted: reading.counted, unanswered: reading.unanswered }) };
 }
 
 /** Boot the real daemon options over one founded island whose composition names `BAG`; answer its verbs. */
