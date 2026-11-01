@@ -818,3 +818,15 @@ test("RED: a queued lane that lands DIRECT settles its entry, so the next run ne
   assert.deepEqual(readdirSync(join(w.dir, "q", "entries")), [], "the entry left the queue");
   assert.equal((await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops)).code, 2, "the next run finds no lane");
 });
+
+test("RED: run --plan reads the queue and moves no entry, even a lane its chain would drop", async () => {
+  const w = world(["a", "b"], { touch: () => "packages/shared/f.txt" });
+  spanAhead(w);
+  const { ops } = opsQ(w); const lines = []; ops.log = (l) => lines.push(l);
+  const o = { span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") };
+  assert.equal((await LT.enqueue({ ...o, specs: specsOf(w) }, ops)).code, 0);
+  const r = await LT.landTrain({ ...o, fromQueue: true, plan: true, specs: [] }, ops);
+  assert.equal(r.code, 0, lines.join("\n"));
+  assert.equal(readdirSync(join(w.dir, "q", "entries")).length, 2, "both entries still queued");
+  assert.ok(!existsSync(join(w.dir, "q", "dropped")), "nothing moved to dropped/");
+});
