@@ -123,3 +123,47 @@ describe("a stored seat that lacks the root reads as drift", () => {
     expect(observe(home).aligned).toBe(true);
   });
 });
+
+describe("a missing seat names its own form's cause", () => {
+  const unreachable = (home: string): string => String(
+    homeItems({ repo: REPO, homes: { native: home, windows: null }, mcp: null, claudeCli: false })
+      .find((i) => i.id === "copilot.mcp-seat")!.unreachable ?? "",
+  );
+  const home = (): string => { const h = join(dir, "home"); mkdirSync(join(h, ".copilot"), { recursive: true }); return h; };
+
+  it("native: the cause names python, the script or the sensorium, and no compose file", () => {
+    process.env["LAR_ROOT"] = join(dir, "native-hearth");
+    const said = unreachable(home());
+    expect(said).toMatch(/sensorium/);
+    expect(said).not.toMatch(/compose/);
+  });
+
+  it("container: the cause names the compose file's root, and no python or sensorium", () => {
+    const root = join(dir, "container-hearth");
+    mkdirSync(root, { recursive: true });
+    writeFileSync(join(root, "lares-surface.env"), "LARES_STATE=/nowhere\n");
+    process.env["LAR_ROOT"] = root;
+    const said = unreachable(home());
+    expect(said).toMatch(/docker-compose\.surface\.yml/);
+    expect(said).toMatch(/LAR_ROOT/);
+    expect(said).not.toMatch(/sensorium|python/);
+  });
+});
+
+describe("every harness's seat carries the hearth's root", () => {
+  const MCP = { command: "/usr/bin/python3", args: ["/clone/lares_mcp.py"], env: { PYTHONPATH: "/clone/mp", LAR_ROOT: "/hearth" } };
+  const transformed = (id: string, home: string): string => {
+    const item = homeItems({ repo: REPO, homes: { native: home, windows: null }, mcp: MCP, claudeCli: false }).find((i) => i.id === id)!;
+    return item.transform!(null)!;
+  };
+  const homeWith = (sub: string): string => { const h = join(dir, "home"); mkdirSync(join(h, sub), { recursive: true }); return h; };
+
+  it("codex: the toml seat's env names LAR_ROOT", () => {
+    expect(transformed("codex.mcp-seat", homeWith(".codex"))).toMatch(/^env = \{ .*LAR_ROOT = "\/hearth".* \}$/m);
+  });
+
+  it("copilot: the json seat's env names LAR_ROOT", () => {
+    const seat = (JSON.parse(transformed("copilot.mcp-seat", homeWith(".copilot"))) as { mcpServers: { lares: { env: Record<string, string> } } }).mcpServers.lares;
+    expect(seat.env["LAR_ROOT"]).toBe("/hearth");
+  });
+});
