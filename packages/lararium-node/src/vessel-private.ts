@@ -31,7 +31,7 @@
  */
 import { readFileSync, statSync } from "node:fs";
 import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import type { FederationGate } from "@lararium/mesh";
+import { edgeLedgerDocUrl, type FederationGate } from "@lararium/mesh";
 import { bootDaemonUrl, bootFacePlanes } from "./boot-face-planes.js";
 
 type BootTiddlers = Readonly<Record<string, { text?: string }>>;
@@ -56,6 +56,15 @@ export const VESSEL_OWNER = "vessel";
 /** The owner a document only THIS DEVICE keeps carries: its edge ledger (road `T33`). No relation opens it, the worn face's
  *  own session and siblings included: no other device ever reads or writes this device's roll marks. */
 export const DEVICE_OWNER = "device";
+
+/**
+ * Class the edge ledger of every face whose atom key this vessel holds (road `T33`): the worn face, each joined face, each
+ * face lit later. Each ledger's id derives from its atom key (`edgeLedgerDocUrl`), which the fleet board shows in the
+ * clear, so no other relation decides it: each classes under `device`. An absent key classes nothing.
+ */
+export function classDeviceLedgers(book: VesselPrivateBook, keys: Iterable<string | null | undefined>): void {
+  for (const key of keys) if (key) book.add(edgeLedgerDocUrl(key), DEVICE_OWNER);
+}
 
 /** Every id the bootstrap classes, with its owner: each face's five planes by that face's group, the daemon document by the
  *  vessel. A family that faults throws (the boot halts on it too). */
