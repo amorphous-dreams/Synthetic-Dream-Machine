@@ -1,8 +1,9 @@
 /**
- * The scratch custody opens a standing tree by trying its own route ALONE, and the staged route only when the
- * scratch route refuses. `openTreeKey` derives one scrypt per passphrase offered per passphrase pin, so a list of
- * two routes costs two derivations on every open; counting the passphrases handed to the holder counts the
- * derivations without a clock.
+ * The scratch custody opens what the scratch route founded, one route per call: the node tree by the scratch route,
+ * the faces by the face route the harness seated (the scratch route unless a harness founds faces under its own).
+ * A face opens by its own route, never a bag of every route (`custody-holder`: "a face opens by its own unlock").
+ * `openTreeKey` derives one scrypt per passphrase offered, so counting the passphrases handed to the holder counts
+ * the derivations without a clock.
  */
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -12,7 +13,7 @@ import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
 import { makeCustodyHolder, type CustodyHolder } from "../src/custody-holder.js";
 import type { CustodyHomes } from "../src/custody-io.js";
-import { SCRATCH_PASSPHRASE, openScratch } from "./support/scratch-custody-setup.js";
+import { SCRATCH_PASSPHRASE, ScratchCustodyRefused, openScratch, seatScratchFaceRoute } from "./support/scratch-custody-setup.js";
 
 const STAGED = "test-founding-passphrase";
 let dir: string;
@@ -42,25 +43,33 @@ function counting(seen: string[][]): CustodyHolder {
 async function foundUnder(passphrase: string): Promise<void> {
   await foundCustody({ io: new FsCustodyIo(homes), homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase }] }] });
 }
-const derivations = (seen: string[][]): number => seen.reduce((n, list) => n + list.length, 0);
 
 describe("the scratch custody's open", () => {
-  it("RED: a tree the scratch route opens costs ONE derivation for the node tree's unlock, never two", async () => {
+  it("RED: a tree the scratch route opens costs TWO derivations in all: the node tree and the faces, each by the scratch route alone", async () => {
     await foundUnder(SCRATCH_PASSPHRASE);
     const seen: string[][] = [];
     await openScratch(counting(seen));
     expect(seen.length, "an unlock and an unlockFaces").toBe(2);
-    expect(seen[0], "the node tree's unlock offers the scratch route alone").toEqual([SCRATCH_PASSPHRASE]);
-    expect(derivations(seen), "one for the node tree, both routes in the one faces call").toBe(3);
+    expect(seen, "each call offers one route, the scratch route").toEqual([[SCRATCH_PASSPHRASE], [SCRATCH_PASSPHRASE]]);
   });
 
-  it("CONTROL: a tree founded under the staged route still opens, and the staged route reaches the holder", async () => {
-    await foundUnder(STAGED);
+  it("RED: a harness that founds its faces under its own route seats it, and the faces call offers that route alone", async () => {
+    await foundUnder(SCRATCH_PASSPHRASE);
     const seen: string[][] = [];
-    const holder = counting(seen);
-    await openScratch(holder);
-    expect(seen.flat()).toContain(STAGED);
-    const again = await holder.unlock([{ kind: "passphrase", passphrase: STAGED }]);
-    expect(["opens", "already-unlocked"]).toContain(again.reading);
+    seatScratchFaceRoute("a-harness-face-route");
+    try { await openScratch(counting(seen)); } finally { seatScratchFaceRoute(SCRATCH_PASSPHRASE); }
+    expect(seen).toEqual([[SCRATCH_PASSPHRASE], ["a-harness-face-route"]]);
+  });
+
+  it("CONTROL: a tree founded under the scratch route opens", async () => {
+    await foundUnder(SCRATCH_PASSPHRASE);
+    await expect(openScratch(counting([]))).resolves.toBeUndefined();
+  });
+
+  it("RED: a tree founded under another route refuses by name; no staged fallback opens it", async () => {
+    await foundUnder("test-founding-passphrase");
+    const seen: string[][] = [];
+    await expect(openScratch(counting(seen))).rejects.toBeInstanceOf(ScratchCustodyRefused);
+    expect(seen).toEqual([[SCRATCH_PASSPHRASE]]);
   });
 });
