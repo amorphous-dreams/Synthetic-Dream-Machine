@@ -115,9 +115,31 @@ describe.skipIf(wikiSkip)(`a sigil is a block only when its >> ends the line${sk
     }
   });
 
+  // ── THE PAIR RULING ─────────────────────────────────────────────────────────────────────────────
+  // Stock TW5 has no closer-bearing block call to measure against, so the pair answers to both its
+  // ends: the block form stands when the CLOSER's `>>` ends a line AND the opener's `>>` ends its line
+  // or the pair opens and closes on one line. Text trailing either end makes the pair inline.
   test("a closer-bearing compound whose opener ends its line keeps its block claim", () => {
     const t = tree(MEMETIC, "<<~ ahu slot=`#/a`>>\nbody\n<<~/ahu>>");
     expect(t[0]!.rule).toBe("lar-sigil");
     expect(t[0]!.type).toBe("transclude");
+  });
+
+  test("★ CONTROL: a pair opening and closing on one line stays a block ★", () => {
+    const t = tree(MEMETIC, "<<~ ahu slot=`#/a`>><<~/ahu>>");
+    expect(t.map((n) => `${n.type}:${n.rule}`)).toEqual(["transclude:lar-sigil"]);
+  });
+
+  test("★ RED: text after the opener's >> on a multi-line pair makes the pair inline ★", () => {
+    const t = tree(MEMETIC, "<<~ ahu slot=`#/a`>>text\nbody\n<<~/ahu>>");
+    expect(t.map((n) => n.tag ?? n.type)).toEqual(["p"]);
+    expect(t[0]!.children![0]!.rule).toBe("lar-sigil");
+  });
+
+  test("★ RED: text after the closer's >> makes the pair inline ★", () => {
+    const t = tree(MEMETIC, "<<~ ahu slot=`#/a`>>\nbody\n<<~/ahu>>tail");
+    expect(t.map((n) => n.tag ?? n.type)).toEqual(["p"]);
+    expect(t[0]!.children![0]!.rule).toBe("lar-sigil");
+    expect(textOf(t[0]!.children!)).toContain("tail");
   });
 });
