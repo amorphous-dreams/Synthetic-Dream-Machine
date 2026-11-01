@@ -42,7 +42,7 @@ A unit climbs one stack; each layer renames it as its role changes:
 # ''element'' — the unit ''in transit'', flowing through the pour and gates (any format, sometimes character-by-character). Beam/Flink's word for the thing that moves through.
 # ''block'' — the unit ''at rest'': immutable, verbatim, eidetic. Its occurrence ID binds a source, byte revision, parser version and position; a separate digest attests its text bytes. Where the ''ki'' flow comes to rest — a flow-integrity condensed, never raw matter (no plane the sensorium runs touches raw substance). Git/IPFS/IPLD supply a useful content-digest rhyme, but their content-addressed CID does not describe the trial's occurrence key. ''atomic'' survives only as the //property// (one move per block), never the unit's noun.
 # ''grain = li'' (&#29702;) — a block's ''intrinsic structure'', the vein cut along, what the form-lane reads. li &perp; ki. Universal-modulo-instance: every stream-material has a grain, its own per material. This wires the naming into the compression re-founding — li=RESTRICT &perp; ki=EXTEND.
-# ''imago @ locus'' — a block, once ''placed'' in the palace, becomes an ''imago'' resting at a ''locus'' (drawer &sub; room &sub; wing &sub; hall are nested loci). The ars-memoriae pair — a locus //holds//, an imago //is held// (canonically: loci &#58; imagines &#58;&#58; wax-tablet &#58; letters). Myth blooms only at placement — the memory sensoria — while the substrate stays metaphor-neutral (block), so a raw telemetry stream never pretends to have rooms.
+# ''imago at locus'' — a block, once ''placed'' in the palace, becomes an ''imago'' resting at a ''locus'' (drawer &sub; room &sub; wing &sub; hall are nested loci). The ars-memoriae pair — a locus //holds//, an imago //is held// (canonically: loci &#58; imagines &#58;&#58; wax-tablet &#58; letters). Myth blooms only at placement — the memory sensoria — while the substrate stays metaphor-neutral (block), so a raw telemetry stream never pretends to have rooms.
 # ''datom / fact / entity'' — the ''derived views'' (the rebuilt lexical index + entity graph). Reserve the fact-words for the derived layer; never the ground block. Two-tier: content=blocks (ground) &perp; views=facts (derived).
 
 ''Identity and ordering.'' A block carries an ''occurrence ID'' (which parsed act at which revision and position), a ''text digest'' (which text bytes), and an ''order coordinate'' (where that act falls). Equal text never collapses two occurrences; a revised source never overwrites an earlier block. The trial code currently calls its occurrence ID `cid`; callers must not infer content addressing from that field name. The owned Content view stamps `lar_occurrence_id` and `lar_text_sha256` separately; the typed ledger and older capture code still use different CID conventions. Fresh recall joins must use the explicit occurrence relation rather than `lar_verbatim_sha` as a text key.
@@ -73,6 +73,6 @@ One recursion — ''ki &rarr; li &rarr; ki &rarr; li'' — repeating at every sc
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;weR0oLgfx8Ot5y987VoD2gklt6sQRIO2KoRlZ0-QipA
+<<^ code=`&#x0003;`>>ni:///sha-256;EpSPj6G_HtbzZ5xCoZPln5DEEOWliQf43WFvN9PLQgY
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -132,7 +132,7 @@ Clients that carry the previous receipt can compare: if `sha256` matches, the co
 
 ''JSON shape extends minimal boot:''
 
-```json
+```text
 {
   "artifact": "full-boot",
   "compiled_at": "<ISO-8601 UTC>",
@@ -304,6 +304,6 @@ Full boot may trigger compaction once the relation expansion reaches larger grap
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;E3vD0Rht_vPFAGSDXpxBaKf9aG0MhoDfe0R-00BogSE
+<<^ code=`&#x0003;`>>ni:///sha-256;efUUXb7BCUzdTV3UnFfgLh3j9-fDusjIxerPubfTFJ0
 
 <<^ code=`&#x0004;` to=`?`>>

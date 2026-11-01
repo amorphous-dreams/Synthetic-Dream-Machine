@@ -69,7 +69,7 @@ a verdict likely earns its place; a cure that silences every hit silences a true
 
 !! Instruments of grammar testing that read GREEN while they report something false
 
-# ''A prose `#` line in a spec file reaches the grammar as WIKITEXT.'' `vscode-tmgrammar-test` treats only `#` lines carrying `^` or `<-` as assertions; every other one parses as source. A comment containing `@@` opens a style block and swallows the construct asserted below it, and the negative assertion then PASSES because the scope vanished. Spec prose admits no `@@`, no leading `!`, no pipe, no backtick, no `<tag`, no `{{` and no `[[`. Audit: `grep '^#' <spec> | grep -v '\^' | grep -E '@@|\||`|<[a-z$]'`.
+# ''A prose `#` line in a spec file reaches the grammar as WIKITEXT.'' `vscode-tmgrammar-test` treats only `#` lines carrying `^` or `<-` as assertions; every other one parses as source. A comment containing `@@` opens a style block and swallows the construct asserted below it, and the negative assertion then PASSES because the scope vanished. Spec prose admits no `@@`, no leading `!`, no pipe, no backtick, no `<tag`, no `{{` and no `[[`. Audit: `` grep '^#' <spec> | grep -v '\^' | grep -E '@@|\||`|<[a-z$]' ``.
 # ''A negative assertion passes VACUOUSLY'' where the scope name or the column misses. ''Make every negative go RED once on purpose.'' Calibrate a column by asserting PRESENCE at several indices; the snapshot format's caret convention differs from the test format's by one, so a column read off a `.snap` misses.
 # ''A grep over sigils written with `[^>]` stops at the first `>` inside a value.'' A value still holds `>` (a rank's or slide's `->`, a result arrow), so the class `[^>]` cuts the sigil short there. Use `(?:[^>\n]|>(?!>))`, and fence the boundary the claim names — a space before `?`, never a bare `?`.
 # ''A corpus file ending on an unterminated construct swallows everything appended after it.'' Specimens appended below a bare `{{` registered no new scopes while firing correctly in a fresh file. The containment gate catches the reverse leak; suspicion catches this one.
@@ -118,6 +118,6 @@ The cut has landed as one lane, merged once. The seed, the law memes, the tiddle
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;XZkQkxcLzaP1k-hZ8FONNh-G1wdGcaUu3hqE_NStSGU
+<<^ code=`&#x0003;`>>ni:///sha-256;pCzRAL-_YbQ2rKK54QiVqOWi6z5Dzg1z4Zk086R5Gvg
 
 <<^ code=`&#x0004;` to=`?`>>

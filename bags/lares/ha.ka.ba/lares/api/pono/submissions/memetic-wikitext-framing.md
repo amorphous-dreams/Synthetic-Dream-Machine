@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;kEdAU4BsWNj5WvlA-LJXfe2jDTdugxlyfofF2Oze3AY"
+source-check: "ni:///sha-256;cFr32ZMu7ybxb17192zWwEZWzTkaLzsk6vsVGgp4CW4"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -524,7 +524,7 @@ processor MUST keep the division:
 
 ### The root identity block, by position
 
-A labelled ```` ```toml meta ```` fence states identity. The root fence MUST stand immediately after STX;
+A fence labelled `toml meta` states identity. The root fence MUST stand immediately after STX;
 each nested `ahu` or `fragment` fence stands immediately inside its own worksite. Which identity it states reads by POSITION:
 
 1. The fence immediately after STX names the **carrier** — its title, address, namespace, and register.
@@ -606,9 +606,9 @@ its two halves.
 
 ### The fence carries a label, and the label decides the office
 
-A ```` ```memetic-wikitext tangle```` -labelled fence carries structure home at tangle: a reader
+A fence labelled `memetic-wikitext tangle` carries structure home at tangle: a reader
 that meets this label treats the fenced span as the document it names, not as prose about one. A
-bare ```` ```memetic-wikitext```` fence, carrying no `tangle` label, stays an inert example — text
+bare `memetic-wikitext` fence, carrying no `tangle` label, stays an inert example — text
 a document talks about, never text a tangle pass ingests.
 
 This sharpens the fence-mask law already stated for the frame's own marks (#/frame-head-lock): an

@@ -193,7 +193,7 @@ and the configuration tiddlers filter by these strings.
 | `list` | `*` `#` `;` `:` `>` runs — unordered, ordered, definition, quote lists; nesting by repetition. |
 | `table` | `|`-delimited rows with alignment, header/footer/caption markers. |
 | `quoteblock` | `<<<` fenced block quotation. |
-| `codeblock` | ``` fenced verbatim block with optional language. |
+| `codeblock` | a three-backtick fenced verbatim block with optional language. |
 | `typedblock` | `$$$type … $$$` — a block parsed under another content type. |
 | `styleblock` | `@@` fenced block carrying CSS classes/styles. |
 | `horizrule` | `---` horizontal rule. |
@@ -372,6 +372,6 @@ rather than minting sibling types.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;KMyaRK6s6FVCNLwsaCCeuvRQTI7_8RkFRy5j3arBF8I
+<<^ code=`&#x0003;`>>ni:///sha-256;xZamjAV_ySzWL39ahNc4a2ybBAQUHE7of2SWUiSeGIc
 
 <<^ code=`&#x0004;` to=`?`>>

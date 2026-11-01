@@ -99,7 +99,7 @@ One thing, at one band.
 * ''`error` → the placement REFUSES'' (`ingest-gate.ts:145-151`, `put-meme.ts:67` → HTTP 422). Nothing lands.
 * ''`warning` · `info` · `hint` → the placement PROCEEDS'' and the diagnostics ride out on the receipt. `diagnostics.ts:38-46` states the ladder: `error` names the one fault that costs the operator their bytes; every recovery keeps the text and grades below the line, because refusing a recovery would drop bytes to protect the grammar.
 
-''And exactly two faults reach `error''' (measured, #/measured row 7): `postamble-content` — content standing between ETX and EOT (`deserializer.ts:1170-1180`) — and `shore-round-trip`, the carrier that stopped round-tripping (`deserializer.ts:1182`, `diagnostics.ts:70-81`). ''No parse failure ever grades error'': `severityOfRung` (`diagnostics.ts:59-67`) maps every recovery rung to `warning` or `info`.
+''And exactly two faults reach `error`'' (measured, #/measured row 7): `postamble-content` — content standing between ETX and EOT (`deserializer.ts:1170-1180`) — and `shore-round-trip`, the carrier that stopped round-tripping (`deserializer.ts:1182`, `diagnostics.ts:70-81`). ''No parse failure ever grades error'': `severityOfRung` (`diagnostics.ts:59-67`) maps every recovery rung to `warning` or `info`.
 
 That fact narrows the whole seam. ''A grade over a headless child body can reach `error` only when the child's bytes carry a whole carrier FRAME'' — because both error legs need an ETX. Measured (#/measured rows 8-10): a child body with a bare stray ETX and stranded text grades `clean`; the same stranded text inside a pasted frame grades `error` under a child URI exactly as under a root URI.
 
@@ -398,6 +398,6 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;vBULM_22dc-4LqTpRvfjKwFl2sRB4k4ftGgJlm1o2-8
+<<^ code=`&#x0003;`>>ni:///sha-256;AY8YzHZQfrw6MIWcYWLy3sUv2yUk5fQeg3Quo3o5u4g
 
 <<^ code=`&#x0004;` to=`?`>>

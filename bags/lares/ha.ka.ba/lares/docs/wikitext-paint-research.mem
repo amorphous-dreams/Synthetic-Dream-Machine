@@ -51,7 +51,7 @@ delimiter, however many characters it holds.
 
 |!grammar |!delimiter |!how scoped |!split? |
 |markdown |`**` |capture 1 -> `punctuation.definition.bold.markdown` |one token |
-|markdown |```` ``` ```` |capture 3 -> `punctuation.definition.markdown` |one token, any length |
+|markdown |three backticks |capture 3 -> `punctuation.definition.markdown` |one token, any length |
 |html |`</` |`"end": "(?i)(</)(\2)\s*(>)"`, cap 1 -> `punctuation.definition.tag.begin.html` |''ONE token'' |
 |Vue |`{{` / `}}` |cap 1 -> `punctuation.definition.interpolation.begin.html.vue` |one token each |
 |TypeScript |`${` |capture 0 -> `punctuation.definition.template-expression.begin.ts` |one token |
@@ -743,6 +743,6 @@ decisions this shelf settles for the base first.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;U0iz3tsS4mVdmKyQYwnrQzk2xWrFMzUsMGufkAWXMCg
+<<^ code=`&#x0003;`>>ni:///sha-256;PQJOzBOdJbuhqKfPY-J_b6AzBjZ6WZUb9pLJD6plTPE
 
 <<^ code=`&#x0004;` to=`?`>>

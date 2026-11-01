@@ -199,7 +199,7 @@ Each step stands alone; none blocks the next.
 
 # ''`render` end to end'' — one `lar:` URI returns rendered text over the socket. Nothing
 else moves first.
-# ''`lares kairos``'' against check set one — ruled already, and it exercises the same door.
+# ''`lares kairos`'' against check set one — ruled already, and it exercises the same door.
 # ''Slim the frame'' to bearing plus doors, behind the cold-floor ruling.
 # ''`put`'' into the live layers, cap-gated.
 # ''The flat-format projection.''
@@ -222,6 +222,6 @@ else moves first.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;uqfPIj_ca0j64BV69iJRQgrHr5zETgiDkD-CCZ_E28k
+<<^ code=`&#x0003;`>>ni:///sha-256;5QMp-TKPe4IkyuryWWnC6dLf0nnLJTOVWnTr0mb0tUI
 
 <<^ code=`&#x0004;` to=`?`>>

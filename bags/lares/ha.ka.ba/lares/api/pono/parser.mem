@@ -195,7 +195,7 @@ Parser MUST reject ad-hoc closure spellings as canonical. A noncanonical closer 
 
 !! Meta Block
 
-The root identity block carries the canonical identity payload for a meme — a bare `` ```toml meta `` fence immediately after the STX body opener, not an `<<~ ahu>>` wrapper and not a named slot (see `memetic-wikitext-framing#/carrier-spine`).
+The root identity block carries the canonical identity payload for a meme — a bare `toml meta` fence immediately after the STX body opener, not an `<<~ ahu>>` wrapper and not a named slot (see `memetic-wikitext-framing#/carrier-spine`).
 
 Canonical form:
 
@@ -258,6 +258,6 @@ Consumers: island adaptor (`island-adaptor.ts`), deserializer (`deserializer.ts`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;5tCCVvl59_pGKkpoIJ-avRPA9vtVYd0_MEc-T-k7i2w
+<<^ code=`&#x0003;`>>ni:///sha-256;jF_x5T5XW_6kzxVe0E8UTnKmYA73hJ6UdbpcjBqClok
 
 <<^ code=`&#x0004;` to=`?`>>

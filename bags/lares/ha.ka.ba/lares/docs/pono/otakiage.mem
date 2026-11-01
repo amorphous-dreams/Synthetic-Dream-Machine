@@ -173,7 +173,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 !!! The shelf and the archive bag ~ measured, and less of an archive than it reads
 
-`bags/lares-history/` holds 40-odd files. `git log --diff-filter=A` shows them arriving in ''one rename sweep'' — `90e2a2bde`, 2026-08-22, "retire @{slug} to the entity slots' plain names" — never by deliberate individual deposit; and `817cdebc6` shows a carrier later burned out of it. Its contents sit ''outside the `ha.ka.ba/` address scheme'' (`bags/lares-history/lares_research/…`, no `uri-path` meta), while standing canon still names them at `lar:///ha.ka.ba/lares-history/…` addresses (`lararium-identity.mem:570-571`, `sigil-shape-motion.mem`, `stream-sensorium-ontology.mem:31`).
+`bags/lares-history/` holds 40-odd files. `git log --diff-filter=A` shows them arriving in ''one rename sweep'' — `90e2a2bde`, 2026-08-22, `retire @{slug} to the entity slots' plain names` — never by deliberate individual deposit; and `817cdebc6` shows a carrier later burned out of it. Its contents sit ''outside the `ha.ka.ba/` address scheme'' (`bags/lares-history/lares_research/…`, no `uri-path` meta), while standing canon still names them at `lar:///ha.ka.ba/lares-history/…` addresses (`lararium-identity.mem:570-571`, `sigil-shape-motion.mem`, `stream-sensorium-ontology.mem:31`).
 
 ''Measured 2026-09-12'' — `lares meme check --edges $(git ls-files 'bags/*.mem')`:
 
@@ -472,6 +472,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;w5ETa7xEnJ_pHS1of8O1YuTEAPOwr8CKD49obJnEjPE
+<<^ code=`&#x0003;`>>ni:///sha-256;6AvwSZe9eG4tUIJkaoqyuPCf6KLGvMkBGAMp8fQo_FY
 
 <<^ code=`&#x0004;` to=`?`>>
