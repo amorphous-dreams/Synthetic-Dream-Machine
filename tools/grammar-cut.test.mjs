@@ -7,13 +7,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { loadContext, cutText, censusText } from './grammar-cut.mjs';
+import { loadContext, cutText, censusText, canonCarriers, CANON_CUT_WHOLE } from './grammar-cut.mjs';
 
 const REPO = fileURLToPath(new URL('../', import.meta.url));
 const PLANES = {
   rename: { daemon: 'daemon-plane', crossroads: 'crossroads-plane', oracle: 'oracle-floor', personal: 'personal-slot' },
   tagged: { 'circles-': 'circles-plane-' },
-  slug: ['lares', 'lararium'],
+  slug: ['lares', 'lararium', 'sdm'],
+  strip: ['salt-crust'],
   scopes: ['lararium', 'lares', 'types'],
   out: ['editable', 'keyframes'],
 };
@@ -200,4 +201,15 @@ test('KNOWN POSITIVE: the census counts a fixture whose counts are known', () =>
     { arrows: 1, quotedNamed: 4, positional: 2, spacedAt: 2, phase: 1 });
   const zero = censusText('<<~ ahu slot=`#/x`>> the daemon-plane\n', ctx);
   assert.deepEqual({ arrows: zero.arrows, quotedNamed: zero.quotedNamed, positional: zero.positional, spacedAt: zero.spacedAt }, { arrows: 0, quotedNamed: 0, positional: 0, spacedAt: 0 });
+});
+
+test('the strip list and a slug over a slash: a voice loses its at-sign, a title prefix takes the bare slug', () => {
+  assert.equal(one('> @salt-crust: kid.\n'), '> salt-crust: kid.\n');
+  assert.equal(one('title: @sdm/tags/x\n'), 'title: sdm/tags/x\n');
+});
+
+test('Canon carriers touched but never cut leave the envelope-only list; the rest stay on it', () => {
+  const canon = canonCarriers(REPO);
+  assert.equal(canon.size, 15);
+  for (const f of CANON_CUT_WHOLE) assert.ok(!canon.has(f), f);
 });

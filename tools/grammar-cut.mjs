@@ -31,7 +31,8 @@
  *
  * ── SCOPE ───────────────────────────────────────────────────────────────────────────────────────
  * Default files: every tracked `bags/**\/*.mem` plus the Elyncia referee guide, minus the seed
- * (row Q7 lands it). Canon's hand-cut carriers (the diff 9f15dc896..084752cd1) take the ENVELOPE
+ * (row Q7 lands it). Canon's hand-cut carriers (the diff 9f15dc896..084752cd1, less the three it
+ * touched but never cut, CANON_CUT_WHOLE) take the ENVELOPE
  * only (DOCTYPE and the frame marks, then the seal); their bodies must already read as cut, and
  * any body change counts as a red. `--outside` lists, never writes, the sigils still owed in
  * CHANGELOG.md, README.md, packages/AGENTS.md and .claude/.
@@ -53,6 +54,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const SEED_REL = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem";
 export const CANON_RANGE = ["9f15dc896", "084752cd1"];
+/** Carriers in Canon's range that Canon touched but never cut (lead ruling, 2026-11-01): cut whole. */
+export const CANON_CUT_WHOLE = new Set([
+  "bags/lares/ha.ka.ba/lares/api/art-sigils/spec.mem",
+  "bags/lares/ha.ka.ba/lares/api/pono/system-pattern-integrities.mem",
+  "bags/lares/ha.ka.ba/lares/docs/pono/otakiage.mem",
+]);
 export const GUIDE_REL = "elyncia/Elyncia_04_The_Referee_Noosphere_Guide.md";
 export const OUTSIDE = ["CHANGELOG.md", "README.md", "packages/AGENTS.md", ".claude"];
 /** Prose voice tags (F4): a play line or a voice, never a call. Listed for a hand pass. */
@@ -147,7 +154,7 @@ export async function loadContext({ repo, planes, planesPath } = {}) {
     bare: loadBareHouse(repo),
     planes: {
       rename: map.rename ?? {}, tagged: map.tagged ?? {},
-      slug: new Set(map.slug ?? []), scopes: new Set(map.scopes ?? []), out: new Set(map.out ?? []),
+      slug: new Set([...(map.slug ?? []), ...(map.strip ?? [])]), scopes: new Set(map.scopes ?? []), out: new Set(map.out ?? []),
     },
   };
 }
@@ -661,7 +668,7 @@ const git = (repo, args) => execFileSync("git", args, { cwd: repo, encoding: "ut
 export function canonCarriers(repo) {
   try {
     return new Set(git(repo, ["diff", "--name-only", ...CANON_RANGE, "--", "bags"]).split("\n")
-      .filter((f) => f.endsWith(".mem") && existsSync(join(repo, f))));
+      .filter((f) => f.endsWith(".mem") && existsSync(join(repo, f)) && !CANON_CUT_WHOLE.has(f)));
   } catch { return null; }
 }
 
