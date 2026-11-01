@@ -32,7 +32,7 @@ afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /
 const b64 = (bytes: Uint8Array): string => Buffer.from(bytes).toString("base64");
 const unb64 = (s: unknown): Uint8Array => new Uint8Array(Buffer.from(String(s), "base64"));
 
-async function proof(): Promise<IslandSessionProof> {
+async function proof(over: { chainless?: boolean } = {}): Promise<IslandSessionProof> {
   const c = await chain("memory-vessel", "nexus-test-one");
   const signer: RecordSigner = {
     certificate: c.sessionCertificate,
@@ -40,17 +40,19 @@ async function proof(): Promise<IslandSessionProof> {
   };
   // The session sign door as the vessel's book answers it: this chain's session, its subject and the vessel's own chain.
   const reading = { signer, subject: faceProofSubjectRef(c.scope), chain: { scope: c.scope, vesselFaceKey: c.sessionCertificate.vesselFaceKey }, foldRead: true, counted: [] as readonly string[], unanswered: [] as readonly string[] };
+  // A vessel that dials no hearth composes no chain: its door refuses the own reading, and no session signs.
+  if (over.chainless) return { signer: async () => ({ refusal: "signer-unavailable" }), own: async () => ({ refusal: "chain-absent" }) };
   return { signer: async (ask) => (ask === null ? { refusal: "signer-unavailable" } : reading), own: async () => ({ chain: reading.chain, foldRead: reading.foldRead, counted: reading.counted, unanswered: reading.unanswered }) };
 }
 
 /** Boot the real daemon options over one founded island whose composition names `BAG`; answer its verbs. */
-async function stand(over: { dyad?: () => "clear" | "aside" } = {}) {
+async function stand(over: { dyad?: () => "clear" | "aside"; chainless?: boolean } = {}) {
   const root = mkdtempSync(join(tmpdir(), "memory-vessel-"));
   teardown.push(() => rmSync(root, { recursive: true, force: true }));
   const st = await standFoundedIsland(teardown);
   const daemonAuth = { ...st.daemonAuth, registerBags: [...st.daemonAuth.registerBags, BAG], ...st.veil };
   const opts = operatorDaemonOptions({ daemonAuth } as never, {
-    dyadReading: () => (over.dyad ? over.dyad() : "clear"), sealedStore: nodeSealedStoreShore(join(root, "daemon")), persistArchive: () => {}, persistVeilArchive: () => {}, sessionProof: await proof(),
+    dyadReading: () => (over.dyad ? over.dyad() : "clear"), sealedStore: nodeSealedStoreShore(join(root, "daemon")), persistArchive: () => {}, persistVeilArchive: () => {}, sessionProof: await proof({ chainless: over.chainless === true }),
   });
   const kh = await opts.verifierFactory!(st.ctx) as { dispose?: () => Promise<void> };
   teardown.push(() => { void kh.dispose?.(); });
@@ -100,6 +102,17 @@ describe("a memory section leaves and enters a real founded vessel's island seal
     await run("sealed-memory-door", {}, { act: "door", facts: {} });
     const astray = { section: String(cut["section"]), secret: b64(sealMemorySecret(pair.secret, mintMemoryKeypair().public)) };
     expect(await refusal(run("sealed-memory-import", astray, { act: "import", facts: astray }))).toBe("memory-malformed");
+  }, 120_000);
+
+  test("A VESSEL THAT DIALS NO HEARTH cuts its memory section: no chain stands and no lockbox opens, so the section carries nothing; its seal still refuses", async () => {
+    const { run } = await stand({ chainless: true });
+    const pair = mintMemoryKeypair();
+    const to = hex(pair.public);
+    const cut = await run("sealed-memory-cut", { to }, { act: "cut", facts: { to } });
+    expect(cut["holds"]).toEqual([]);
+    expect(openMemorySection(unb64(cut["section"]), pair.secret)).toEqual([]);
+    // CONTROL: the same island seals nothing without a session's chain.
+    expect(await refusal(run("sealed-seal", { bag: BAG, text: "a private note" }))).toBe("signer-unavailable");
   }, 120_000);
 
   test("AN ACT READS ITS SHADOW ONCE: a cut whose signed ask says the vessel read its shadow draws a section under a shadow that landed since; an ask that says nothing refuses", async () => {
