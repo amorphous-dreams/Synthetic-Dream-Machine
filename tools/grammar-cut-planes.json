@@ -1,0 +1,32 @@
+{
+  "_about": "Cut 2's plane map (operator ruling F1, Train Q, 2026-11-01). grammar-cut reads it for every `@name` after whitespace: `rename` maps a plane, floor or slot name; `tagged` maps a `<name>-<tag>` prefix; `slug` strips the at-sign from a bag slug; `scopes` names the npm scopes a `@name/` keeps; `out` names what stays as written (npm scopes standing bare, Caddy/Verse/CSS/code syntax, external handles and quoted mentions). A handle `@name@host` strips to `name@host` with no entry. A name in none of these lists REDS the dry run.",
+  "rename": {
+    "daemon": "daemon-plane",
+    "crossroads": "crossroads-plane",
+    "CROSSROADS": "CROSSROADS-PLANE",
+    "catalog": "catalog-plane",
+    "persona": "persona-plane",
+    "circles": "circles-plane",
+    "identities": "identities-plane",
+    "sessions": "sessions-plane",
+    "oracle": "oracle-floor",
+    "personal": "personal-slot",
+    "working": "working-slot",
+    "draft": "draft-slot",
+    "temp": "temp-slot"
+  },
+  "tagged": {
+    "circles-": "circles-plane-",
+    "intents-": "intents-plane-",
+    "persona-": "persona-plane-"
+  },
+  "slug": ["lares", "lararium"],
+  "scopes": ["lararium", "lares", "types", "automerge", "keyhive", "tldraw", "inkandswitch", "endo", "ocif", "playwright", "noble", "libcomp"],
+  "out": [
+    "automerge", "keyhive", "tldraw", "inkandswitch", "endo", "ocif", "playwright", "noble", "libcomp",
+    "arrival", "live", "editable", "keyframes", "punctuation", "UserIdInt", "json", "x",
+    "user", "topic", "all", "public", "ddurdle", "cvium", "angauber", "pktiuk", "AndreasKralj", "Croydon",
+    "GermanCoding", "joshuaboniface", "anthonylavado", "nielsvanvelzen", "hlinden", "gnattu", "dfederm",
+    "wkearney99", "ready_co", "argentHQ"
+  ]
+}
