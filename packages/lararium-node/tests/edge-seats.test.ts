@@ -110,8 +110,9 @@ describe("runEdgeSeatMarks", () => {
     await direct(runEdgeSeatMarks)({ fleetRoot, rolls: [await rollOf(fleetRoot, raise.edgeId, raise.actCid, "gone")] });
     await ownedStore(larDataDir(), async (repo) => {
       const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl((await atomKeyOf())), "ledger:edge");
-      expect(keptSeatRolls(ledger.doc(), fleetRoot.toLowerCase())).toEqual([
-        { kind: "seat-roll", scope: fleetRoot.toLowerCase(), edgeId: raise.edgeId, raiseCids: [raise.actCid], how: "revoked", seat: { group: "0xgroup", member: "0xmember" } },
+      expect(keptSeatRolls(ledger.doc(), fleetRoot.toLowerCase(), await atomKeyOf())).toEqual([
+        { kind: "seat-roll", scope: fleetRoot.toLowerCase(), edgeId: raise.edgeId, raiseCids: [raise.actCid], how: "revoked", seat: { group: "0xgroup", member: "0xmember" },
+          receipt: expect.any(String) },
       ]);
     });
     const unknown = "0".repeat(64);

@@ -8,6 +8,7 @@ import {
 } from "@lararium/mesh";
 import { edgeKapaeKey } from "../../lararium-mesh/src/edge-kapae.js";
 import { markRaiseRolled } from "../../lararium-mesh/src/edge-ledger.js";
+import { signSeatRoll } from "../../lararium-mesh/src/seat-duties.js";
 import { fleetFixture } from "./fleet-fixture.js";
 
 async function reader() {
@@ -82,7 +83,8 @@ describe("the island's fleet board dyad reader", () => {
   test("a lifted raise remains owing until the seat roll named by this vessel lands", async () => {
     const rootSeed = new Uint8Array(32).fill(81);
     const root = await ed25519VerifyingKeyFromSeed(rootSeed);
-    const own = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(82));
+    const ownSeed = new Uint8Array(32).fill(82);
+    const own = await ed25519VerifyingKeyFromSeed(ownSeed);
     const peer = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(83));
     const scope = "ab".repeat(32);
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
@@ -103,7 +105,10 @@ describe("the island's fleet board dyad reader", () => {
       expect(await makeRead(repo, ledger, undefined, own, undefined, scope, fx.lineage)(root, peer),
         "a named vessel scope with no available seat ledger treats its rolled set as empty").toBe("owing");
       expect(await read(root, peer), "the lift does not return a seat whose raise still lacks a roll").toBe("owing");
-      markRaiseRolled(seatLedger, scope, up.actCid, { edgeId: deviceEdgeId(root, peer), how: "gone" });
+      // A mark under another key answers nothing (road `T33`); the vessel's own receipt-signed roll returns the peer.
+      markRaiseRolled(seatLedger, scope, up.actCid, await signSeatRoll({ kind: "seat-roll", scope, edgeId: deviceEdgeId(root, peer), raiseCids: [up.actCid], how: "gone" }, ed25519SignerFromSeed(new Uint8Array(32).fill(84))), own);
+      expect(await read(root, peer), "a mark another key signed lifts nothing").toBe("owing");
+      markRaiseRolled(seatLedger, scope, up.actCid, await signSeatRoll({ kind: "seat-roll", scope, edgeId: deviceEdgeId(root, peer), raiseCids: [up.actCid], how: "gone" }, ed25519SignerFromSeed(ownSeed)), own);
       expect(await read(root, peer), "CONTROL: a rolled lift returns the peer").toBe("returned");
     } finally { await repo.shutdown(); }
   });

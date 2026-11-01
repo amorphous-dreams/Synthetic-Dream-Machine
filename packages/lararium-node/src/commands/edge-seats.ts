@@ -16,7 +16,7 @@
 import type { Repo } from "@automerge/automerge-repo";
 import {
   fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, faceAtomKeyFromSeed, raisesSeenThrough, markRaiseRolled, verifiedSeatRoll,
-  type EdgeKapae, type SeatRoll,
+  type EdgeKapae, type SignedSeatRoll,
 } from "@lararium/mesh";
 import { listPersonaRoots, loadPersonaGroupRootVerifyingKey } from "../node-vessel-identity.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
@@ -86,7 +86,7 @@ export async function runEdgeSeatFacts(opts: { readonly repo: Repo; readonly fle
     fleets.push({
       fleetRoot, acts: [...read.counted.acts].sort((a, b) => a.actCid.localeCompare(b.actCid)), edges,
       // A raise answered with no authority over its seat stays owed: the island tries it again at each settle.
-      rolled: [...raisesSeenThrough(read.ledger.doc(), fleetRoot)].sort(),
+      rolled: [...raisesSeenThrough(read.ledger.doc(), fleetRoot, vesselKey)].sort(),
       selfAside: read.readings.get(deviceEdgeId(fleetRoot, vesselKey))?.stands === true,
     });
   }
@@ -118,7 +118,7 @@ export async function runEdgeSeatMarks(opts: {
   const raiseEdge = new Map<string, string>();
   for (const [edgeId, r] of read.readings) for (const cid of r.raiseCids) raiseEdge.set(cid, edgeId);
   const marked: string[] = [], unknown: string[] = [];
-  const keep: { cid: string; roll: Pick<SeatRoll, "edgeId" | "how" | "seat"> }[] = [];
+  const keep: { cid: string; roll: SignedSeatRoll }[] = [];
   for (const raw of opts.rolls) {
     // ONLY THIS VESSEL'S OWN ISLAND ANSWERS FOR ITS KEYS: a roll counts under a receipt this vessel's key signed.
     const roll = verifiedSeatRoll(raw, vesselKey);
@@ -128,11 +128,12 @@ export async function runEdgeSeatMarks(opts: {
     const edgeId = roll.edgeId.toLowerCase();
     for (const cid of roll.raiseCids.map((c) => c.toLowerCase())) {
       if (raiseEdge.get(cid) !== edgeId) { unknown.push(cid); continue; }
-      keep.push({ cid, roll: { edgeId, how: roll.how, ...(roll.seat ? { seat: roll.seat } : {}) } });
+      // The mark keeps the whole roll with its receipt: every reader verifies it again (road `T33`).
+      keep.push({ cid, roll: { ...roll, receipt: (raw as { receipt: string }).receipt } });
       marked.push(cid);
     }
   }
-  if (keep.length > 0) read.ledger.change((d) => { for (const k of keep) markRaiseRolled(d, fleetRoot, k.cid, k.roll); });
+  if (keep.length > 0) read.ledger.change((d) => { for (const k of keep) markRaiseRolled(d, fleetRoot, k.cid, k.roll, vesselKey); });
   await opts.repo.flush();
   return { fleetRoot, marked: [...new Set(marked)].sort(), unknown: [...new Set(unknown)].sort() };
 }

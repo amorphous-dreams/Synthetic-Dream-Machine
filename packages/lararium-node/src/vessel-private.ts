@@ -2,8 +2,8 @@
  * vessel-private — the documents a vessel keeps for its own faces alone, classed by IDENTITY for the one share guard
  * (lane `ralias`; P26's `protectedDocGuard`, class `vessel-private`).
  *
- * WHAT THE CLASS HOLDS: the daemon document, each face's five planes (persona, identities, circles, sessions, intents) and
- * the catalog. The ids come off the vessel's own bootstrap (the founding wrote it; `boot-face-planes` reads every face from
+ * WHAT THE CLASS HOLDS: the daemon document, each face's five planes (persona, identities, circles, sessions, intents),
+ * the catalog, and the device's own edge ledger (owner `device`, road `T33`), which crosses to no peer at all. The ids come off the vessel's own bootstrap (the founding wrote it; `boot-face-planes` reads every face from
  * it alone) and its catalog pointer: never a catalog title, a realm registration or a peer's word, so a second name for one
  * of these documents changes nothing.
  *
@@ -52,6 +52,10 @@ export function readBootTiddlers(bootstrapPath: string): Record<string, { text?:
 
 /** The owner the daemon document and the catalog carry: the vessel itself, read as the face it wears. */
 export const VESSEL_OWNER = "vessel";
+
+/** The owner a document only THIS DEVICE keeps carries: its edge ledger (road `T33`). No relation opens it, the worn face's
+ *  own session and siblings included: no other device ever reads or writes this device's roll marks. */
+export const DEVICE_OWNER = "device";
 
 /** Every id the bootstrap classes, with its owner: each face's five planes by that face's group, the daemon document by the
  *  vessel. A family that faults throws (the boot halts on it too). */
@@ -155,6 +159,7 @@ const sameFace = (a: string | null | undefined, b: string | null | undefined): b
  *  Ownership reads first, so no gate's own allow-list (the bridge, a view, a ring) widens it. */
 export async function vesselPrivateRelationOpens(r: VesselPrivateRelation): Promise<boolean> {
   const doc = r.documentId as DocumentId, peer = r.peerId as PeerId;
+  if (r.owner === DEVICE_OWNER) return false;
   const owner = r.owner === VESSEL_OWNER ? r.wornFace : r.owner;
   if (!owner) return false;
   // A sibling and a face-join grant holder each stand for the worn face alone.

@@ -94,7 +94,7 @@ import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonCorpusRoot } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
-import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
+import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl, edgeLedgerDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, readFace, proveFaceFromLog, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
@@ -106,7 +106,7 @@ import { setCasDoor, setRestDoor, setCustodyWriteDoor, setDyadDoor } from "./wor
 import { writeCasEntriesFs } from "./node-cas.js";
 import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass, PersonaGroupIdentityRing, ProtectedDocClass } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
-import { readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
+import { DEVICE_OWNER, readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./persona-kel-ring.js";
 import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
@@ -2019,6 +2019,7 @@ async function prepareNodeBootOn(
         const seed = await loadFaceAtomOfGroup(custodyGroup);
         if (!seed) throw new Error("face-not-named: system canon needs the selected face atom");
         activeAtom = faceAtomKeyFromSeed(seed, custodyGroup);
+        vesselPrivate.add(edgeLedgerDocUrl(activeAtom.key), DEVICE_OWNER);
       }
       kahuCanon = await standKahuCanon({
         repo, sealHome, vesselKey: activeAtom?.key ?? "",
@@ -2122,6 +2123,10 @@ async function prepareNodeBootOn(
     addressSecretBytes?.fill(0);
     const placeAid = await loadPlaceAid().catch(() => null);
     if (activeAtom && deviceEdge && activeAtom.key !== deviceEdge.deviceVerifyingKey) throw new Error("this face's atom differs from its device edge");
+    // THE EDGE LEDGER STAYS ON THIS DEVICE (road `T33`): its roll marks, frontier pins and `seen` rows answer for this
+    // device's own key acts, and its id derives from the atom key the fleet board shows in the clear. It classes
+    // `vessel-private` under the `device` owner, which no relation opens, from the device edge (readable at the floor).
+    for (const key of [deviceEdge?.deviceVerifyingKey, activeAtom?.key]) if (key) vesselPrivate.add(edgeLedgerDocUrl(key), DEVICE_OWNER);
     // ── THE DYAD DOOR (kapae#/reach) ─────────────────────────────────────────────────────────────
     // The daemon island's gates ask what one device's edge reads on the worn fleet's board: the Binding Gate for
     // this vessel's own seat, the join gate for the device a summons names. The ring folds the fleet this edge

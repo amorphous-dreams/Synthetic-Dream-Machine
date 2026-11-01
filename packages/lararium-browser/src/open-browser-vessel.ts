@@ -1408,7 +1408,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             pinned: readFrontierPins(read.ledger.doc(), scope)[FLEET_HAND] ?? null,
           }) : { status: "unknown", missing: [{ hand: FLEET_HAND, why: "no-frontier" }] };
           if (frontier.status === "known") read.ledger.change((draft) => { writeFrontierPin(draft, scope, FLEET_HAND, frontier.asOf[FLEET_HAND]!); });
-          fleetShadows = { root: fleetRootOfFace, readings: read.readings, rolled: raisesSeenThrough(read.ledger.doc(), scope), frontier };
+          fleetShadows = { root: fleetRootOfFace, readings: read.readings, rolled: raisesSeenThrough(read.ledger.doc(), scope, wornAtom.key), frontier };
         };
         fleetRead = readFleet();
         await fleetRead;

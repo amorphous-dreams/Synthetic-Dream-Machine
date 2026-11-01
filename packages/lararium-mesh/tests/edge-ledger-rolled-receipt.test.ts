@@ -61,7 +61,7 @@ describe("a roll mark counts only under a receipt this vessel's key signed (T33)
   it("R1c — CONTROL: the vessel's own receipt-signed mark answers the raise in every reader", async () => {
     const key = await ed25519VerifyingKeyFromSeed(OWN);
     const doc = emptyLedger();
-    markRaiseRolled(doc, SCOPE, RAISE, await signed());
+    markRaiseRolled(doc, SCOPE, RAISE, await signed(), key);
     expect([...raisesSeenThrough(doc, SCOPE, key)], "R1c").toEqual([RAISE]);
     expect([...rolledRaises(doc, SCOPE, key)], "R1c").toEqual([RAISE]);
     expect(edgeStandingOf(lifted, raisesSeenThrough(doc, SCOPE, key)), "R1c").toBe("returned");
@@ -71,7 +71,7 @@ describe("a roll mark counts only under a receipt this vessel's key signed (T33)
     const key = await ed25519VerifyingKeyFromSeed(OWN);
     const doc = emptyLedger();
     plant(doc, JSON.stringify({ edgeId: EDGE, how: "gone" }));
-    markRaiseRolled(doc, SCOPE, RAISE, await signed("revoked"));
+    markRaiseRolled(doc, SCOPE, RAISE, await signed("revoked"), key);
     const kept = keptSeatRolls(doc, SCOPE, key);
     expect(kept.map((r) => r.how), "the genuine answer lands over the plant").toEqual(["revoked"]);
     expect(verifiedSeatRoll(kept[0], key), "the kept roll verifies under the vessel's key").not.toBeNull();
@@ -80,10 +80,10 @@ describe("a roll mark counts only under a receipt this vessel's key signed (T33)
   it("R3 — CONTROL: a no-authority mark stays owed, and the vessel's later answer steps it up", async () => {
     const key = await ed25519VerifyingKeyFromSeed(OWN);
     const doc = emptyLedger();
-    markRaiseRolled(doc, SCOPE, RAISE, await signed("no-authority"));
+    markRaiseRolled(doc, SCOPE, RAISE, await signed("no-authority"), key);
     expect([...raisesSeenThrough(doc, SCOPE, key)]).toEqual([]);
     expect([...rolledRaises(doc, SCOPE, key)]).toEqual([RAISE]);
-    markRaiseRolled(doc, SCOPE, RAISE, await signed("gone"));
+    markRaiseRolled(doc, SCOPE, RAISE, await signed("gone"), key);
     expect([...raisesSeenThrough(doc, SCOPE, key)]).toEqual([RAISE]);
   });
 });
