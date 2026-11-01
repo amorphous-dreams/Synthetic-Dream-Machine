@@ -91,6 +91,7 @@ import {
   type FenceOpen,
 } from "@lararium/memetic-frame";
 import { GENERATED_SIGILS, GENERATED_ALIAS_MAP, GENERATED_PRIMARY_WEAVE } from "../meme-ast/grammar-table.generated.js";
+import { ATTR_RUN } from "../meme-ast/scanner.js";
 // Re-exported so a test of weave's OWN tongue-axis properties (round-trip, injectivity) reaches
 // the mirror/primary tables through this sanctioned surface rather than importing
 // `meme-ast/grammar-table.generated.js` directly (vm-grammar-boundary.test.ts forbids a test
@@ -293,7 +294,9 @@ const ahuAlt = [
   AHU_SHAPES.sharktooth.length ? `<<~\\s*(?:${AHU_SHAPES.sharktooth.join("|")})` : null,
   AHU_SHAPES.bare.length ? `<<(?:${AHU_SHAPES.bare.join("|")})` : null,
 ].filter((s): s is string => s !== null).join("|");
-const AHU_OPEN = new RegExp(`^(?:${ahuAlt})\\s+slot=\`#([^\`\\s]+)\`(?: (?:[^>\\n]|>(?!>))*)?\\s*>>\\s*$`);
+// The tail after the slot is the shared tick-aware attribute run (ATTR_RUN), so a `>>` inside a ticked
+// value rides as content and the opener ends at its own `>>`. A line carries no newline to cross.
+const AHU_OPEN = new RegExp(`^(?:${ahuAlt})\\s+slot=\`#([^\`\\s]+)\`(?: ${ATTR_RUN})?\\s*>>\\s*$`);
 const AHU_CLOSE = new RegExp(`^(?:<<~\\s*\\/\\s*(?:${AHU_SHAPES.sharktooth.join("|")})|<<\\/(?:${AHU_SHAPES.bare.join("|") || "\\x00"})\\s*)>>\\s*$`);
 // `loulou` (+ its mirror `link`) names a plain citation and keeps the reference-bullet shape.
 // `aka`/`kanawai` (English mirrors `pin`/`law`) PIN an edge — rendering follows the TARGET

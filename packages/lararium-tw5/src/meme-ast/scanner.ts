@@ -60,7 +60,7 @@ export interface ParseEvent {
 // (@lararium/memetic-frame marks.ts). (`sigil-frame-soh.tid` etc. DO carry a `lar-pattern` — a deliberately narrower
 // spec-side anchor frame-parity's OWN witness reads; it is not this file's independent recognizer.)
 /** One run of a call's attributes: a tick run (the triple first) is a value, and a `>` ends a call only doubled. */
-const ATTR_RUN = "(?:```(?:(?!```)[\\s\\S])*```|`[^`]*`|[^`>]|>(?!>))*";
+export const ATTR_RUN = "(?:```(?:(?!```)[\\s\\S])*```|`[^`]*`|[^`>]|>(?!>))*";
 /**
  * THE ONE PRANALA OPENER, shared by the inline scan, the block scan and the block-span exclusion, so the
  * three cannot drift. The pair carries the relation (the kupono cut): `slot`, `from` and `to` are named,
@@ -121,8 +121,9 @@ export function buildScansFromGrammar(sigils: SigilRule[]): SigilScan[] {
   }
   // GENERIC catch-all — appended LAST so every specific grammar scan claims its position first (the same
   // partial-rung the bootstrap carries, now in grammar-mode too: an unmatched sharktooth grades `missing`
-  // in the FULL-grammar in-VM parse, not only bootstrap).
-  scans.push({ sigilName: "(generic)", generic: true, regex: /<<~\s*(\\?[A-Za-z][\w-]*)((?:[^>]|>(?!>))*?)\s*>>/g, eventType: "leaf" });
+  // in the FULL-grammar in-VM parse, not only bootstrap). The attribute run is ATTR_RUN, so a `>>` a
+  // ticked value carries rides as content and the call ends at its own `>>`, as `sigilOpenEnd` reads it.
+  scans.push({ sigilName: "(generic)", generic: true, regex: new RegExp(`<<~\\s*(\\\\?[A-Za-z][\\w-]*)(${ATTR_RUN}?)\\s*>>`, "g"), eventType: "leaf" });
   // Control scans must win at identical positions even in grammar-hydrated mode
   return scans.sort((a, b) => (a.sigilName.startsWith("control-") ? 0 : 1) - (b.sigilName.startsWith("control-") ? 0 : 1));
 }
