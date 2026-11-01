@@ -62,10 +62,13 @@ export function relativeToE2eDir(path) {
  *   config       the vitest config that selects its files
  *   trackedGlob  `git ls-files` pathspec of the files the set owns — the gate's own file union
  *   shards       how many shards the set splits across
+ *   companion    `{ of, shard }`: the set has no runner of its own and rides shard `shard` of set `of` as a second run
+ *                in the same job (a runner is one of the ten jobs a full CI run may raise; its gate artifact keeps the
+ *                set's own name, so the merge gate reads it as it always did)
  */
 export const E2E_SETS = Object.freeze([
   Object.freeze({ name: "tests", dir: "tests", config: "vitest.config.ts", trackedGlob: "tests/e2e/*.test.ts", shards: 4 }),
-  Object.freeze({ name: "node", dir: "packages/lararium-node", config: "vitest.e2e.config.ts", trackedGlob: "packages/lararium-node/tests/e2e/*.test.ts", shards: 1 }),
+  Object.freeze({ name: "node", dir: "packages/lararium-node", config: "vitest.e2e.config.ts", trackedGlob: "packages/lararium-node/tests/e2e/*.test.ts", shards: 1, companion: Object.freeze({ of: "tests", shard: 3 }) }),
 ]);
 
 /**

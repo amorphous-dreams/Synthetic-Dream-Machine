@@ -1,7 +1,7 @@
 name: E2E shards
 
 # EVERY e2e set (the table `E2E_SETS` in tools/e2e-shards.mjs: the main set under tests/ split four
-# ways, the node package's own set in one shard) rides the vitest shard matrix below, each shard a SELF-CONTAINED runner: its own recursive checkout, its own
+# ways, the node package's own set riding shard 3 as a companion run) rides the vitest shard matrix below, each shard a SELF-CONTAINED runner: its own recursive checkout, its own
 # frozen install, its own TW5 core render, its own build, then only its slice of the suite. A
 # merge job reassembles every shard's report and FAILS CLOSED unless every shard of every set
 # answered, none failed, none ran zero tests, and each set's union of files actually run is EXACTLY
@@ -56,9 +56,8 @@ jobs:
         include:
           - { set: tests, dir: tests, config: vitest.config.ts, shard: 1, count: 4 }
           - { set: tests, dir: tests, config: vitest.config.ts, shard: 2, count: 4 }
-          - { set: tests, dir: tests, config: vitest.config.ts, shard: 3, count: 4 }
+          - { set: tests, dir: tests, config: vitest.config.ts, shard: 3, count: 4, companion: node }
           - { set: tests, dir: tests, config: vitest.config.ts, shard: 4, count: 4 }
-          - { set: node, dir: packages/lararium-node, config: vitest.e2e.config.ts, shard: 1, count: 1 }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -95,6 +94,22 @@ jobs:
             --reporter=blob --reporter=json \
             --outputFile.json=".vitest/blob/report-shard-${{ matrix.set }}-${{ matrix.shard }}.json"
         timeout-minutes: 45
+      # THE COMPANION SET RIDES THIS RUNNER. A full CI run raises at most ten jobs (tools/ci-graph.test.mjs), so the node
+      # package's 47-second e2e set takes no runner of its own: it runs here, after the shard's slice, and uploads under its
+      # own artifact name (`e2e-shard-node-1`), so the merge gate reads it exactly as it read the shard it replaces.
+      - name: Run the companion set beside this shard
+        if: ${{ !cancelled() && matrix.companion != '' }}
+        working-directory: packages/lararium-node
+        env:
+          LAR_ROOT: ${{ runner.temp }}/lar-root-${{ matrix.companion }}-1
+        run: |
+          mkdir -p "$LAR_ROOT"
+          mapfile -t files < <(node "$GITHUB_WORKSPACE/tools/e2e-shards.mjs" shard-files --set "${{ matrix.companion }}" --shard 1 --repo-root "$GITHUB_WORKSPACE")
+          test "${#files[@]}" -gt 0
+          npx vitest run --config vitest.e2e.config.ts "${files[@]}" \
+            --reporter=blob --reporter=json \
+            --outputFile.json=".vitest/blob/report-shard-${{ matrix.companion }}-1.json"
+        timeout-minutes: 15
       - name: Upload this shard's blob + JSON report (always, even on a red shard)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -105,6 +120,14 @@ jobs:
           # A shard that crashed before vitest ever wrote a blob must still show up as an
           # artifact-less entry the merge gate can name as missing, never as a step that is
           # itself silently green because it had nothing to upload.
+          if-no-files-found: warn
+      - name: Upload the companion set's blob + JSON report (always, even on a red run)
+        if: ${{ always() && matrix.companion != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-shard-${{ matrix.companion }}-1
+          path: packages/lararium-node/.vitest/blob/
+          retention-days: 3
           if-no-files-found: warn
 
   # ─── merge (fails closed) ──────────────────────────────────────────────────────────────────────
