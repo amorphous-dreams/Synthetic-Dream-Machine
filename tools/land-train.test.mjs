@@ -774,3 +774,19 @@ test("RED: QUEUE: enqueue validates and writes one entry per lane; run drains th
   for (const s of ["a", "b"]) assert.ok(hasFile(w, final, `packages/p-${s}/f.txt`));
   assert.equal((await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops)).code, 2, "an empty queue names no lane");
 });
+
+test("RED: QUEUE: a run that finds the lock of a dead process takes it over and RESUMES the standing train ref that chains the queued lanes, landing that exact sha", async () => {
+  const w = world(["a"]);
+  const SP = spanAhead(w);
+  const tree = sh(w.work, "merge-tree", "--write-tree", SP, w.heads.a);
+  const t = sh(w.work, "commit-tree", tree, "-p", SP, "-p", w.heads.a, "-F", w.msgs.a);
+  const branch = `${SPAN}--train-1-${t.slice(0, 9)}`;
+  sh(w.work, "push", "-q", "origin", `${t}:refs/heads/${branch}`);
+  mkdirSync(join(w.dir, "q"), { recursive: true });
+  writeFileSync(join(w.dir, "q", "lock"), "999999\n");
+  const r = await runQ(w);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /RESUMED/);
+  assert.equal(originRef(w, SPAN), t, "the standing train's own sha landed");
+  assert.equal(pushedTrains(r.out).length, 0, "no new train pushed");
+});
