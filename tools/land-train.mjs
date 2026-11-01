@@ -147,7 +147,7 @@ import { classifyFailure } from "./ci-verdict.mjs";
 const short = (sha) => String(sha).slice(0, 9);
 const isAncestor = (git, a, b) => { try { git(["merge-base", "--is-ancestor", a, b]); return true; } catch { return false; } };
 
-const touchesIgnoredOnly = (git, c) => onlyIgnoredPaths(git(["diff-tree", "--no-commit-id", "--name-only", "-r", "-m", "--first-parent", c]).split("\n").filter(Boolean));
+const touchesIgnoredOnly = (git, c) => onlyIgnoredPaths(git(["diff-tree", "-z", "--no-commit-id", "--name-only", "-r", "-m", "--first-parent", c]).split("\0").filter(Boolean));
 /** The nearest first-parent ancestor of `c` reading GREEN at its sha, or null where a commit between holds a run that is not green or touches code. */
 async function greenAncestor(ops, git, branch, c, { lane = false } = {}) {
   for (const a of git(["rev-list", "--first-parent", "-n", "50", `${c}^`]).split("\n").filter(Boolean)) {
@@ -184,8 +184,13 @@ export function landMessageRefusal(text, pr) {
   return new RegExp(`${LAND_SUBJECT}${pr}(?!\\d)`).test(subject) ? null : `MESSAGE LACKS "${LAND_SUBJECT}${pr}"`;
 }
 
-/** The paths of `git diff --no-renames --raw` output: a mode change or a retargeted symlink names its path too. */
-export const rawPaths = (raw) => String(raw).split("\n").filter((l) => l.startsWith(":")).map((l) => l.split("\t").slice(1).join("\t")).filter(Boolean);
+/** The paths of `git diff --no-renames --raw -z` output (NUL-separated, so git never C-quotes a path out of its glob): a
+ *  mode change or a retargeted symlink names its path too. */
+export function rawPaths(raw) {
+  const parts = String(raw).split("\0"), out = [];
+  for (let i = 0; i < parts.length; i++) if (parts[i].startsWith(":") && parts[i + 1]) out.push(parts[++i]);
+  return out;
+}
 
 /** The paths of a lane's diff that put it in the security class, against the table `{ paths, tokens }`. */
 export function securityHits(table, paths) {
@@ -248,20 +253,22 @@ function door({ span, cwd }, ops) {
   return { say, git, stop, env, SP: git(["rev-parse", `origin/${span}`]) };
 }
 
-/** Read every lane against origin: head, common base, message marker, its own green, the security class and its SHIP. */
+/** Read every lane against origin: head, common base, message marker, its own green, the security class and its SHIP.
+ *  A named lane that fails refuses the whole land. A queued entry that fails (its lane moved on, went red, lost its message
+ *  or its SHIP) is marked `reject` and drops by name, so one stale entry never strands the queue; UNREADABLE stops all. */
 async function validate(lanes, { span, SP, shipDir, git, say, stop }, ops) {
   let table = null;
   try { table = JSON.parse(git(["show", `${SP}:tools/security-class-paths.json`])); } catch { return { refusal: stop(2, `NO SECURITY TABLE at the span head ${short(SP)} (tools/security-class-paths.json)`) }; }
   const noShip = [];
-  for (const l of lanes) {
+  const read = async (l) => {
     const branch = `${span}--${l.suffix}`;
     let LH;
-    try { LH = git(["rev-parse", `origin/${branch}`]); } catch { return { refusal: stop(3, `NO LANE BRANCH origin/${branch}`) }; }
-    if (LH !== l.head) return { refusal: stop(3, `HEAD MOVED: ${l.suffix} is ${LH}, not ${l.head}`) };
-    try { l.base = git(["merge-base", SP, LH]); } catch { return { refusal: stop(2, `NO COMMON BASE: ${l.suffix} shares no history with the span`) }; }
+    try { LH = git(["rev-parse", `origin/${branch}`]); } catch { return [3, `NO LANE BRANCH origin/${branch}`]; }
+    if (LH !== l.head) return [3, `HEAD MOVED: ${l.suffix} is ${LH}, not ${l.head}`];
+    try { l.base = git(["merge-base", SP, LH]); } catch { return [2, `NO COMMON BASE: ${l.suffix} shares no history with the span`]; }
     const msg = ops.readMsg(l.msg);
-    if (!msg.trim()) return { refusal: stop(2, `NO MESSAGE FILE: ${l.msg}`) };
-    const bad = landMessageRefusal(msg, l.pr); if (bad) return { refusal: stop(2, `${bad}: ${l.suffix} (${l.msg})`) };
+    if (!msg.trim()) return [2, `NO MESSAGE FILE: ${l.msg}`];
+    const bad = landMessageRefusal(msg, l.pr); if (bad) return [2, `${bad}: ${l.suffix} (${l.msg})`];
     l.subject = msg.split("\n")[0];
     const v = await settled(ops, branch, LH, { lane: true });
     let k = classifyLane(v);
@@ -270,31 +277,49 @@ async function validate(lanes, { span, SP, shipDir, git, say, stop }, ops) {
       const anchor = await greenAncestor(ops, git, branch, LH, { lane: true });
       if (anchor) { say(`lane ${l.suffix} head ${short(LH)} touches ignored paths only; no CI run stands; carried by green ancestor ${short(anchor)}`); k = "green"; }
     }
-    if (k === "unreadable") return { refusal: stop(10, `UNREADABLE: lane ${l.suffix}'s CI verdict could not be read (${v.ci}); read again later, it is no red`) };
-    if (k !== "green") return { refusal: stop(8, `LANE NOT GREEN: ${l.suffix}`, `  ci ${v.ci} · held-out ${heldOutNote(v)}`) };
-    l.paths = rawPaths(git(["diff", "--no-renames", "--raw", `${l.base}..${LH}`]));
+    if (k === "unreadable") return [10, `UNREADABLE: lane ${l.suffix}'s CI verdict could not be read (${v.ci}); read again later, it is no red`];
+    if (k !== "green") return [8, `LANE NOT GREEN: ${l.suffix}`, `  ci ${v.ci} · held-out ${heldOutNote(v)}`];
+    l.paths = rawPaths(git(["diff", "--no-renames", "--raw", "-z", `${l.base}..${LH}`]));
     const hits = securityHits(table, l.paths);
     if (hits.length) {
-      const why = shipRefusal(ops.readMsg(join(shipDir, `${l.suffix}-${LH}.md`)), LH);
-      if (why) noShip.push(`NO SHIP: ${l.suffix} is security-class (${hits.slice(0, 3).join(", ")}${hits.length > 3 ? ", …" : ""}): ${why} at ${join(shipDir, `${l.suffix}-${LH}.md`)}`);
-      else say(`lane ${l.suffix} security-class; SHIP stands for ${short(LH)}`);
+      const file = join(shipDir, `${l.suffix}-${LH}.md`), why = shipRefusal(ops.readMsg(file), LH);
+      if (why) return [12, `NO SHIP: ${l.suffix} is security-class (${hits.slice(0, 3).join(", ")}${hits.length > 3 ? ", …" : ""}): ${why} at ${file}`];
+      say(`lane ${l.suffix} security-class; SHIP stands for ${short(LH)}`);
     }
     say(`lane ${l.suffix} GREEN at ${short(LH)} (PR #${l.pr}) · held-out: ${heldOutNote(v)}`);
+    return null;
+  };
+  for (const l of lanes) {
+    const f = await read(l);
+    if (!f) continue;
+    const [code, ...lines] = f;
+    if (code === 10 || !l.entry) { if (code === 12) { noShip.push(...lines); continue; } return { refusal: stop(code, ...lines) }; }
+    l.reject = lines.join(" ");
   }
   if (noShip.length) return { refusal: stop(12, ...noShip) };
   return {};
 }
 
+/** A queue entry leaves `entries/` once its lane landed (`done/`) or dropped (`dropped/`); a named lane holds no entry. */
+function settleEntry(queueDir, lane, to) {
+  if (!lane.entry) return;
+  try { mkdirSync(join(queueDir, to), { recursive: true }); renameSync(join(queueDir, "entries", lane.entry), join(queueDir, to, lane.entry)); } catch { /* already moved */ }
+}
 const readEntries = (dir) => (existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".json")).sort() : []);
 function takeLock(queueDir, say) {
   mkdirSync(queueDir, { recursive: true });
   const lock = join(queueDir, "lock");
-  if (existsSync(lock)) {
-    const pid = Number(readFileSync(lock, "utf8").trim());
-    if (pid && pid !== process.pid && pidAlive(pid)) return { held: pid };
-    say(`took over the queue lock of process ${pid || "(unreadable)"}, which no longer runs`);
+  // An exclusive create decides between two runs; a lock whose process has exited is removed and created again.
+  for (let tries = 0; ; tries++) {
+    try { writeFileSync(lock, `${process.pid}\n`, { flag: "wx" }); break; }
+    catch (e) {
+      if (e?.code !== "EEXIST" || tries > 0) { if (e?.code === "EEXIST") return { held: Number(readFileSync(lock, "utf8").trim()) || "unknown" }; throw e; }
+      const pid = Number(readFileSync(lock, "utf8").trim());
+      if (pid && pidAlive(pid)) return { held: pid };
+      say(`took over the queue lock of process ${pid || "(unreadable)"}, which has exited`);
+      unlinkSync(lock);
+    }
   }
-  writeFileSync(lock, `${process.pid}\n`);
   return { release: () => { try { if (readFileSync(lock, "utf8").trim() === String(process.pid)) unlinkSync(lock); } catch { /* gone */ } } };
 }
 
@@ -316,7 +341,7 @@ export async function landTrain({ name = "train", specs = [], plan = false, loca
   };
   try {
     if (fromQueue) { const l = locked(); if (l) { lock = null; return l; } }
-    let lanes, files = [];
+    let lanes, files = [];  // lanes narrows below once rejected entries drop
     try {
       files = fromQueue ? readEntries(entriesDir) : [];
       lanes = [...(fromQueue ? files.map((f) => JSON.parse(readFileSync(join(entriesDir, f), "utf8"))).map((e) => parseSpec(`${e.suffix}:${e.pr}:${e.head}:${e.msg}`)) : []), ...specs.map(parseSpec)];
@@ -325,12 +350,21 @@ export async function landTrain({ name = "train", specs = [], plan = false, loca
     files.forEach((f, i) => { lanes[i].entry = f; });
     if (local && !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(String(name))) return stop(2, `train name "${name}" must be one plain path component`);
     const v = await validate(lanes, { span, SP: d.SP, shipDir, git, say, stop }, ops); if (v.refusal) return v.refusal;
+    const rejected = lanes.filter((l) => l.reject);
+    for (const l of rejected) { if (!plan) settleEntry(queueDir, l, "dropped"); say(`DROPPED ${l.suffix}: ${l.reject}`); }
+    lanes = lanes.filter((l) => !l.reject);
+    if (lanes.length === 0) return stop(5, `NOTHING LANDED: dropped ${rejected.map((l) => l.suffix).join(" ")}`);
 
     const direct = lanes.length === 1 && isAncestor(git, d.SP, lanes[0].head);
-    if (direct || local) return await landLocal({ name, lanes, plan, span, direct, d }, ops);
+    if (direct || local) {
+      const r = await landLocal({ name, lanes, plan, span, direct, d }, ops);
+      if (r.code !== 0 || plan) return r;
+      for (const l of lanes) settleEntry(queueDir, l, "done");
+      return rejected.length ? stop(11, `QUEUE-LANDED-SOME: landed ${lanes.map((l) => l.suffix).join(" ")}; dropped ${rejected.map((l) => l.suffix).join(" ")}`) : r;
+    }
     for (const l of lanes) if (onlyIgnoredPaths(l.paths)) return stop(2, `MEME-ONLY LANE: ${l.suffix} changes ignored paths alone, so no train run would come; merge the span into it and it lands DIRECT`);
     { const l = locked(); if (l) { lock = null; return l; } }
-    return await landQueue({ lanes, plan, span, k, depth, m, queueDir, entriesDir, d }, ops);
+    return await landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped: rejected, d }, ops);
   } finally { lock?.release?.(); }
 }
 
@@ -490,21 +524,18 @@ async function cancelLaneRuns(ops, say, span, moved) {
 }
 
 /** QUEUE: chain, push, read the train head's own CI, fast-forward the span; bisect a red over the chain; speculate one ahead. */
-async function landQueue({ lanes, plan, span, k, depth, m, queueDir, entriesDir, d }, ops) {
+async function landQueue({ lanes, plan, span, k, depth, m, queueDir, preDropped = [], d }, ops) {
   const { say, git, stop, env } = d;
   let SP = d.SP;
   const trainOk = (b) => b.startsWith(`${span}--train-`);
   const anyOk = (b) => b === span || trainOk(b);
-  const landed = [], dropped = [];
+  const landed = [], dropped = [...preDropped];
   const ledgerFile = join(queueDir, "ledger.json");
   const readN = () => { try { return Number(JSON.parse(readFileSync(ledgerFile, "utf8")).n) || 0; } catch { return 0; } };
   let n = Math.max(readN(), ...trainRefs(git, span).map((t) => t.n), 0);
   const nextBranch = (sha) => { n += 1; mkdirSync(queueDir, { recursive: true }); writeFileSync(ledgerFile, `${JSON.stringify({ n })}\n`); return `${span}--train-${n}-${sha.slice(0, 9)}`; };
-  const settleEntry = (lane, to) => {
-    if (!lane.entry) return;
-    try { mkdirSync(join(queueDir, to), { recursive: true }); renameSync(join(entriesDir, lane.entry), join(queueDir, to, lane.entry)); } catch { /* already moved */ }
-  };
-  const drop = (lane, why) => { dropped.push(lane); settleEntry(lane, "dropped"); say(`DROPPED ${lane.suffix}: ${why}`); };
+  // A plan reads the queue and moves no entry: what its chain would drop stays queued.
+  const drop = (lane, why) => { dropped.push(lane); if (!plan) settleEntry(queueDir, lane, "dropped"); say(`DROPPED ${lane.suffix}: ${why}`); };
   const deleteRef = (branch, sha) => { try { git(["push", "-q", `--force-with-lease=refs/heads/${branch}:${sha}`, "origin", `:refs/heads/${branch}`]); } catch { /* already gone */ } };
 
   /** The chain over `base`: one land per lane, merge-tree's tree, the lane's message; a conflict drops its lane and its carriers. */
@@ -521,6 +552,8 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, entriesDir,
         const files = String(e.stdout ?? "").split("\n").slice(1).map((x) => x.split("\t").pop()).filter(Boolean);
         drop(l, `conflict${files.length ? ` in ${[...new Set(files)].join(" ")}` : ""} over ${short(prev)}`); gone.push(l); continue;
       }
+      // An empty link raises no run (paths-ignore over an empty diff) and lands nothing: it drops by name.
+      if (tree === git(["rev-parse", `${prev}^{tree}`])) { drop(l, `its change already stands on the span or an earlier lane of this train (an empty land over ${short(prev)})`); continue; }
       const land = git(["commit-tree", tree, "-p", prev, "-p", l.head, "-F", l.msg], { env });
       out.push({ lane: l, land }); prev = land;
     }
@@ -559,27 +592,30 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, entriesDir,
   }
   const at = checkoutAt(git, SP); if (at) return stop(2, at);
 
-  /** Wait on one sha's run until it reads a whole verdict (or VOID); `minAttempt` waits out a rerun. */
-  const awaitRun = async (sha, branchOk, minAttempt = 0) => {
+  /** Wait on one sha's run until it reads a whole verdict (or VOID). After a rerun, `rerun` names the run and the attempt
+   *  it must reach, so a stale reading of the prior attempt (or another run's green) never answers for it. `skip` names runs
+   *  that answer nothing (a cancelled one a dispatch replaces). */
+  const awaitRun = async (sha, branchOk, { rerun = null, skip = new Set() } = {}) => {
     let dark = 0;
     for (;;) {
       let runs;
       try { runs = await ops.ciRuns(sha); dark = 0; }
       catch (e) { if (classifyFailure(e) !== "unreadable") throw e; if (++dark >= 6) return { state: "unreadable" }; await ops.sleep(30000); continue; }
+      runs = runs.filter((x) => !skip.has(x.databaseId));
+      if (rerun) runs = runs.filter((x) => x.databaseId === rerun.id && (x.attempt ?? 1) >= rerun.attempt);
       const r = readRunAt(runs, sha, branchOk);
-      if ((r.state === "green" || r.state === "red") && (r.run?.attempt ?? 1) >= minAttempt) return r;
-      if (r.state === "void" && (r.run?.attempt ?? 1) >= minAttempt) return r;
-      if (r.state === "none") say(`NO RUN YET ${sha}`);
+      if (r.state === "green" || r.state === "red" || r.state === "void") return r;
+      if (r.state === "none") say(rerun ? `RERUN NOT YET READ: run ${rerun.id} attempt ${rerun.attempt} at ${sha}` : `NO RUN YET ${sha}`);
       await ops.sleep(30000);
     }
   };
   /** A red reruns its failed jobs once; the reading after it decides. */
-  const verdictAt = async (sha, branchOk) => {
-    const r = await awaitRun(sha, branchOk);
+  const verdictAt = async (sha, branchOk, skip) => {
+    const r = await awaitRun(sha, branchOk, { skip });
     if (r.state !== "red") return r;
     try { await ops.rerun(r.run.databaseId); } catch { return r; }
     say(`rerun of the failed jobs in run ${r.run.databaseId} (${short(sha)}), once`);
-    return awaitRun(sha, branchOk, (r.run.attempt ?? 1) + 1);
+    return awaitRun(sha, branchOk, { rerun: { id: r.run.databaseId, attempt: (r.run.attempt ?? 1) + 1 }, skip });
   };
   const pushRef = (branch, sha, kind) => { git(["push", "-q", `--force-with-lease=refs/heads/${branch}:`, "origin", `${sha}:refs/heads/${branch}`]); say(`pushed ${kind} ${branch} ${sha}`); };
   const tearDown = async (t) => {
@@ -594,7 +630,7 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, entriesDir,
     try { git(["merge", "--ff-only", "-q", sha]); } catch { say(`WARNING: the local ${span} did not fast-forward to ${short(sha)}`); }
     SP = sha;
     const moved = moveLaneBranches(git, say, span, links);
-    for (const x of links) { landed.push(x.lane); settleEntry(x.lane, "done"); }
+    for (const x of links) { landed.push(x.lane); settleEntry(queueDir, x.lane, "done"); }
     await cancelLaneRuns(ops, say, span, moved);
     return true;
   };
@@ -611,7 +647,13 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, entriesDir,
   const spanReads = async () => {
     let runs = [];
     try { runs = await ops.ciRuns(SP); } catch { /* awaitRun reads again */ }
-    if (readRunAt(runs, SP, anyOk).state === "none") { await ops.dispatchCI(span); say(`the span head ${short(SP)} holds no run of its own: dispatched CI on ${span}`); }
+    const now = readRunAt(runs, SP, anyOk);
+    if (now.state === "none" || now.state === "void") {
+      // No run, or only runs cancelled clean: none measured the span head, so it gets one of its own.
+      const skip = new Set(runs.filter((x) => x.headSha === SP).map((x) => x.databaseId));
+      await ops.dispatchCI(span); say(`the span head ${short(SP)} holds no whole run of its own: dispatched CI on ${span}`);
+      return verdictAt(SP, anyOk, skip);
+    }
     return verdictAt(SP, anyOk);
   };
 

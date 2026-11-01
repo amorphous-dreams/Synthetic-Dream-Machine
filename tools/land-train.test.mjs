@@ -68,7 +68,7 @@ function world(lanes = ["a", "b"], { touch = (s) => `packages/p-${s}/f.txt` } = 
   const commit = (wt, file, body, msg) => { mkdirSync(join(wt, file, ".."), { recursive: true }); writeFileSync(join(wt, file), body); sh(wt, "add", "-A"); sh(wt, "commit", "-q", "-m", msg); return sh(wt, "rev-parse", "HEAD"); };
   commit(work, "README", "base\n", "base");
   // The security-class table stands in the span's tree (the queue reads it from the span head, never from a lane).
-  commit(work, "tools/security-class-paths.json", `${JSON.stringify({ paths: ["tools/security-class-paths.json", "tools/land-train.mjs"], tokens: ["custody"] })}\n`, "the security table");
+  commit(work, "tools/security-class-paths.json", `${JSON.stringify({ paths: ["tools/security-class-paths.json", "tools/land-train.mjs", ".github/**"], tokens: ["custody"] })}\n`, "the security table");
   sh(work, "push", "-q", "origin", SPAN);
   const base = sh(work, "rev-parse", "HEAD");
   const heads = {}, msgs = {};
