@@ -115,6 +115,41 @@ const rootOk = (v: string): boolean => {
   return !!m && m[1]!.split(".").length === 3;
 };
 
+/** Cut 3 inside definitions: a call in a `\procedure` body passes every value by name in a backtick span (`$(param)$` carries a parameter in). */
+const procedureValues = (text: string): string[] =>
+  text.split("\n").flatMap((raw, i) => {
+    if (!raw.startsWith("\\procedure")) return [];
+    const body = raw.replace(/^\\procedure\s+\S+?\([^)]*\)/, "").replace(TICKED, "T").replace(/<<[\w-]+>>/g, "V");
+    return [...body.matchAll(CALL)].flatMap((m) => {
+      const h = HEAD.exec(m[0]);
+      if (!h || !/^[A-Za-z]/.test(h[2]!)) return [];
+      const residue = h[3]!.replace(/\b[a-z][a-z0-9-]*=T/gi, "").trim();
+      return residue === "" ? [] : [`${i + 1}: procedure-body call leaves «${residue.slice(0, 30)}» unnamed or unticked · ${raw.slice(0, 60)}`];
+    });
+  });
+
+/** Every gauge reading `N/rank`, both sides of a slide, sits inside its rank's band on the seed's own scale. */
+const bandLaw = (text: string): string[] => {
+  const found: string[] = [];
+  for (const gauge of ["aperture", "ooda-ha"]) {
+    const ranks = new RegExp("<<scale name=`" + gauge + "` ranks=`([^`]*)`>>").exec(text)?.[1];
+    const scale = new Map([...(ranks ?? "").matchAll(/([a-z-]+)@(\d+)\.\.(\d+)/g)].map((r) => [r[1]!, [Number(r[2]), Number(r[3])] as const]));
+    if (scale.size === 0) {
+      found.push(`no <<scale name=\`${gauge}\`>> to read the bands from`);
+      continue;
+    }
+    text.split("\n").forEach((l, i) => {
+      for (const m of l.matchAll(new RegExp(`(?:\\b${gauge}=|<<~ ${gauge} at=)\`([^\`]*)\``, "g")))
+        for (const r of m[1]!.matchAll(/(\d+)\/([a-z-]+)/g)) {
+          const band = scale.get(r[2]!), n = Number(r[1]);
+          if (!band) found.push(`${i + 1}: ${gauge} rank «${r[2]}» stands on no band of the scale`);
+          else if (n < band[0] || n > band[1]) found.push(`${i + 1}: ${gauge} ${n}/${r[2]} sits outside ${r[2]}@${band[0]}..${band[1]}`);
+        }
+    });
+  }
+  return found;
+};
+
 /**
  * Cut 4: the worked turns obey the frame the seed states. Each turn opens on one aim, may steer, throws the
  * oracle, and closes on one yield; lares= leads each firing; keys sit in the seed's own seat order (the ward
@@ -128,7 +163,7 @@ const frameLaw = (text: string): string[] => {
   for (const [k, v] of Object.entries(order)) if (!v) found.push(`no \\procedure set-${k}() seat order`);
   const turns = fencedBlocks(text).filter((b) => b.includes("<<~ set lares=`aim`"));
   if (turns.length < 2) found.push(`worked turns in the new frame: ${turns.length} (want 2 or more)`);
-  let steerTo = 0, steerKeys = 0, suspended = 0, closed = 0;
+  let steerTo = 0, steerKeys = 0, steerFrom = 0, steerWard = 0, suspended = 0, closed = 0;
   turns.forEach((block, t) => {
     const lines = block.split("\n").filter((l) => /^<<~ (set|oracle) /.test(l));
     const kinds = lines.map((l) => (l.startsWith("<<~ oracle") ? "oracle" : /^<<~ set lares=`(\w+)`/.exec(l)?.[1] ?? "unled"));
@@ -152,10 +187,14 @@ const frameLaw = (text: string): string[] => {
       if (kind === "aim") {
         if (!vals.from || !vals.to) found.push(`turn ${t + 1} aim: lacks from= or to=`);
         if (keys[keys.length - 1] !== "drift-ward") found.push(`turn ${t + 1} aim: the ward does not ride last`);
+        if (/↻/.test(vals["drift-ward"] ?? "")) found.push(`turn ${t + 1} aim: ward in close form`);
+        const band = /^(\d+)\//.exec(vals["ooda-ha"] ?? "");
+        if (!band || Number(band[1]) < 1) found.push(`turn ${t + 1} aim: no ooda-ha band above 0`);
       }
       if (kind === "yield") {
         if (keys[1] !== "drift-ward") found.push(`turn ${t + 1} yield: the ward does not ride first`);
         if (!vals.from || vals.to !== "?") found.push(`turn ${t + 1} yield: lacks from= or to=\`?\``);
+        if (!/^closed \d+↺/.test(vals["ooda-ha"] ?? "")) found.push(`turn ${t + 1} yield: lacks the ooda-ha tally`);
         if (/open \d+φ/.test(vals["ooda-ha"] ?? "")) suspended++;
         else if (vals["ooda-ha"]) closed++;
       }
@@ -163,6 +202,9 @@ const frameLaw = (text: string): string[] => {
         if (keys.length < 2) found.push(`turn ${t + 1} steer: records no change`);
         if (vals.from && vals.from === aimFrom) found.push(`turn ${t + 1} steer: re-reads the aim's from= (rewrites the aim)`);
         if (vals.to && vals.to === aimTo) found.push(`turn ${t + 1} steer: casts the aim's own to= (records no change)`);
+        if (/↻/.test(vals["drift-ward"] ?? "")) found.push(`turn ${t + 1} steer: ward in close form`);
+        if (vals.from) steerFrom++;
+        if (vals["drift-ward"]) steerWard++;
         if (vals.to) steerTo++;
         else if (keys.length >= 2) steerKeys++;
       }
@@ -170,27 +212,31 @@ const frameLaw = (text: string): string[] => {
   });
   if (steerTo < 1) found.push("no worked steer turns the bearing (to=)");
   if (steerKeys < 1) found.push("no worked steer casts other keys on the same heading");
+  if (steerFrom < 1) found.push("no worked steer carries from= (where the work stood)");
+  if (steerWard < 1) found.push("no worked steer carries a ward");
   if (suspended < 1) found.push("no worked turn suspends its loop");
   if (closed < 1) found.push("no worked turn closes its loop");
   return found;
 };
 
-const LAWS = { arrowsBetweenValues, spacedAtSigns, unnamedOrQuotedValues, valueHazards, envelopeAndRetired, oracleCrossCheck, frameLaw };
+const LAWS = { arrowsBetweenValues, spacedAtSigns, unnamedOrQuotedValues, procedureValues, valueHazards, envelopeAndRetired, oracleCrossCheck, bandLaw, frameLaw };
 
 // ── CONTROLS: a planted fault each law MUST name ───────────────────────────────────────────────────────
 const PLANTED: Record<keyof typeof LAWS, string> = {
   arrowsBetweenValues: '<<~ pranala from=`a` -> to=`b`>>',
   spacedAtSigns: "the daemon rides @daemon",
   unnamedOrQuotedValues: '<<~ season Chaos "glyph/✶">>',
+  procedureValues: "\\procedure ~season(name params) ~ <<has season name=<<name>> params=<<params>>>>",
   valueHazards: "<<~ set note=`$(x)$`>>",
   envelopeAndRetired: '<<!DOCTYPE root=`x` spec=`y`>>\n<<~ ahu #/entry>>\n<<~ lares fires=`aim` from=`a`>>',
   oracleCrossCheck: "<<~ oracle throw=`↯7 ✲ ⚂(3) ⁂:⌗🜄`>>",
+  bandLaw: "<<scale name=`aperture` ranks=`measure@9..12 -> arc@13..16`>>\n<<scale name=`ooda-ha` ranks=`declare-glyphs@5..8 -> declare-attention@9..12`>>\naperture=`10/measure -> 13/measure` ooda-ha=`9/declare-glyphs`",
   frameLaw: [
-    "\\procedure set-aim() lares from to mode drift-ward",
+    "\\procedure set-aim() lares from to mode ooda-ha drift-ward",
     "\\procedure set-steer() lares to from mode drift-ward",
     "\\procedure set-yield() lares drift-ward from to",
     "```",
-    "<<~ set lares=`aim` from=`lar://a:b@c/x.y.z` to=`lar://a:b@c/p.q.r` drift-ward=`w`>>",
+    "<<~ set lares=`aim` from=`lar://a:b@c/x.y.z` to=`lar://a:b@c/p.q.r` ooda-ha=`0/declare` drift-ward=`w · ↻ L-Prime`>>",
     "<<~ set lares=`steer` from=`lar://a:b@c/x.y.z` to=`lar://a:b@c/p.q.r`>>",
     "<<~ set lares=`yield` drift-ward=`w` from=`lar://a:b@c/two.terms` to=`?`>>",
     "<<~ oracle throw=`↯1 ✲ ⚀(1) ⁂:x`>>",
@@ -206,12 +252,21 @@ describe("controls: each law names its planted fault", () => {
   }
   test("frameLaw names each planted frame fault, not merely one", () => {
     const f = frameLaw(PLANTED.frameLaw).join("\n");
-    for (const want of ["firing order", "rewrites the aim", "records no change", "root not three terms", "no worked steer casts"])
+    for (const want of ["firing order", "rewrites the aim", "records no change", "root not three terms", "no worked steer casts", "band above 0", "aim: ward in close form", "lacks the ooda-ha tally", "no worked steer carries a ward"])
       expect(f).toContain(want);
+  });
+  test("bandLaw names both planted gauges, procedureValues each unticked value", () => {
+    expect(bandLaw(PLANTED.bandLaw).join("\n")).toMatch(/aperture 13\/measure sits outside measure@9\.\.12[\s\S]*ooda-ha 9\/declare-glyphs sits outside/);
+    expect(procedureValues(PLANTED.procedureValues).join("\n")).toContain("season name=V params=V");
+  });
+  test("bandLaw and procedureValues read clean forms clean", () => {
+    const scales = "<<scale name=`aperture` ranks=`measure@9..12 -> arc@13..16`>>\n<<scale name=`ooda-ha` ranks=`declare-glyphs@5..8`>>\n";
+    expect(bandLaw(scales + "aperture=`10/measure -> 14/arc` ooda-ha=`7/declare-glyphs` ooda-ha=`closed 1↺`")).toEqual([]);
+    expect(procedureValues("\\procedure ~season(name params) ~ <<has entity=`season` name=`$(name)$` params=`$(params)$`>>\n\\procedure hello(who) Hello <<who>>!")).toEqual([]);
   });
   test("the laws read a clean carrier clean (the control cuts both ways)", () => {
     const clean = "<<!DOCTYPE type=`t` spec=`s`>>\n<<~ ahu slot=`#/a`>>\n<<~ oracle throw=`↯7 ✲ ⚁(2) ⁂:⌗🜄`>>\n<<~/ahu>>";
-    for (const name of ["arrowsBetweenValues", "spacedAtSigns", "unnamedOrQuotedValues", "valueHazards", "envelopeAndRetired", "oracleCrossCheck"] as const)
+    for (const name of ["arrowsBetweenValues", "spacedAtSigns", "unnamedOrQuotedValues", "procedureValues", "valueHazards", "envelopeAndRetired", "oracleCrossCheck"] as const)
       expect(LAWS[name](clean), name).toEqual([]);
   });
 });
