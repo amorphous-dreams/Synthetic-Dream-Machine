@@ -210,6 +210,7 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     // T27-c: the dyad door the daemon island asks through, read at the moment the island shuts down. This vessel's own
     // seat reads through a standing door; with no door every ask answers `aside`.
     const dyadNow = async (): Promise<string> => (await answerDyadAsk({ requestId: "t27c", fleetRoot: ownEdge.fleetRoot, deviceKey: ownEdge.deviceKey })).standing;
+    // barrier: the dyad door's own answer, awaited through the vessel's door for this vessel's own seat
     expect(await dyadNow(), "T27-c control: the standing vessel answers through its dyad door").not.toBe("aside");
     const daemon = vessel.daemon as unknown as { shutdown: (...a: unknown[]) => Promise<unknown> };
     const shutdown = daemon.shutdown.bind(daemon);
@@ -218,7 +219,9 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     tornDown = true;
     await vessel.teardown();
     await turn(3_000);                                  // any sweep still in flight lands here
+    // barrier: the teardown's own resolution (every stood entry stood down, the sweep owner closed), then a settle
     expect([...knocks], "a sweep in flight registered a knock after the teardown drained them").toEqual([]);
+    // barrier: the door's answer read inside the island's shutdown call, which the teardown awaited
     expect(atShutdown, "T27-c RED: the dyad door dropped before the daemon island shut down").not.toBe("aside");
   }, 90_000);
 });
