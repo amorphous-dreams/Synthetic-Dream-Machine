@@ -104,8 +104,8 @@ mirror() {
 mirror_aka_targets() {
   local mirrored_src="$1"
   [ -f "$mirrored_src" ] || return 0
-  grep -oE '<<~[[:space:]]*(aka|pin|kanawai|law)[[:space:]]+"?lar:///[^">[:space:]]+' "$mirrored_src" \
-    | sed -E 's/^<<~[[:space:]]*(aka|pin|kanawai|law)[[:space:]]+"?//' \
+  grep -oE '<<~[[:space:]]*(aka|pin|kanawai|law)[[:space:]]+uri=`lar:///[^`]+' "$mirrored_src" \
+    | sed -E 's/^<<~[[:space:]]*(aka|pin|kanawai|law)[[:space:]]+uri=`//' \
     | while IFS= read -r uri; do
         path="${uri#lar:///}"
         path="${path%%#*}"
