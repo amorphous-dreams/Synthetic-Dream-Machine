@@ -638,8 +638,10 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
       (whole, sharkPrefix: string | undefined, sharkName: string | undefined,
         barePrefix: string | undefined, bareName: string | undefined, offset: number) => {
         if (inMask(mask, offset) || inAnySpan(hanaSpans, offset)) return whole;
-        const prefix = sharkPrefix ?? barePrefix!;
         const name = sharkName ?? bareName!;
+        // A bare mirror (`<<fragment`, `<</fragment`) folds to a canonical head that opens on the sharktooth:
+        // the prefix folds with the word, or the result (`<<ahu`) reads as no pattern at all.
+        const prefix = sharkPrefix ?? (barePrefix === "<</" ? "<<~/" : "<<~ ");
         folded += 1;
         return prefix + MIRROR_CANONICAL_OF.get(name)!;
       },
