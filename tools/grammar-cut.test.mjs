@@ -213,3 +213,20 @@ test('Canon carriers touched but never cut leave the envelope-only list; the res
   assert.equal(canon.size, 15);
   for (const f of CANON_CUT_WHOLE) assert.ok(!canon.has(f), f);
 });
+
+test('a text that declares no carrier keeps its foot as written', () => {
+  const body = CARRIER.split('\n').slice(2).join('\n');
+  const r = cut(body);
+  assert.ok(r.text.includes('ni:///sha-256;AAAA'));
+  assert.equal(r.seal, 'none');
+});
+
+test('the hand-reviewed pass drops only the BEFORE check: an apostrophe chain cuts, the AFTER check still binds', () => {
+  const src = "<<~moves kuleana/where -> the-vessel's-Place on/the-plane>>\n";
+  assert.deepEqual(kinds(cut(src)), ['old-misread']);
+  assert.equal(one(src, { handReviewed: true }), "<<~moves name=`kuleana/where` params=`the-vessel's-Place on/the-plane`>>\n");
+});
+
+test('a joined run keeps the quotes that held a space, and drops the ones that only shielded a token', () => {
+  assert.equal(one('<<~ ward ! ⚠ 2 · "you are new here" · "fine" · ↻ L-Prime>>\n'), '<<~ ward pull=`! ⚠ 2 · "you are new here" · fine · ↻ L-Prime`>>\n');
+});

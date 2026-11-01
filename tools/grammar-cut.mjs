@@ -37,7 +37,7 @@
  * any body change counts as a red. `--outside` lists, never writes, the sigils still owed in
  * CHANGELOG.md, README.md, packages/AGENTS.md and .claude/.
  *
- * Usage: node tools/grammar-cut.mjs [--write] [--check] [--census] [--outside] [--out <dir>]
+ * Usage: node tools/grammar-cut.mjs [--write] [--check] [--census] [--outside] [--out <dir>] [--hand-reviewed]
  *                                   [--planes <map.json>] [--files <path> …]
  * Dry run by default. Exit 1 on a red: an unmapped at-name, an oracle disagreement, a Canon body
  * change, a seal that does not verify. `--write` also refuses until the frame package declares
@@ -338,7 +338,10 @@ export function cutSigil(ctx, src, opts = {}) {
   const free = params.filter((p) => !named.has(p) && !fate.some((f) => f.name === p));
   if (loose.length > free.length) {
     if (free.length === 1 && params.length === 1) {
-      fate[fate.indexOf(loose[0])] = { t: loose[0].t, emit: "named", name: free[0], value: loose.map((f) => f.t.v).join(" ") };
+      // A quote that held a space carries prose (a quoted span a ward counts); a quote around a
+      // spaceless token only shielded it from the parser (the oracle's `"⁂:…"`), and drops.
+      const value = loose.map((f) => (QUOTED.has(f.t.qs) && /\s/.test(f.t.v) ? f.t.qs + f.t.v + f.t.qs : f.t.v)).join(" ");
+      fate[fate.indexOf(loose[0])] = { t: loose[0].t, emit: "named", name: free[0], value };
       for (const f of loose.slice(1)) f.emit = "drop";
     } else {
       return { refuse: "overflow", why: `~${h.head} takes ${params.join(" ") || "no values"}; ${loose.length} positional(s) stand` };
@@ -567,7 +570,7 @@ export function cutText(text, ctx, opts = {}) {
       out += ">>";
       const sources = partner ? [role, nextRole] : [role];
       if (bad) { refuse(m, "turn-unmappable", bad); continue; }
-      if (!sources.every((s) => agrees(ctx, s.h.prefix + s.h.body + ">>", beforeReading(s.h, s.toks)))) { refuse(m, "old-misread", "the parser reads the old turn otherwise (a bare URI, an apostrophe): hand-cut"); continue; }
+      if (!opts.handReviewed && !sources.every((s) => agrees(ctx, s.h.prefix + s.h.body + ">>", beforeReading(s.h, s.toks)))) { refuse(m, "old-misread", "the parser reads the old turn otherwise (a bare URI, an apostrophe): hand-cut"); continue; }
       if (!agrees(ctx, out, intended)) { refuse(m, "oracle-after", "the parser reads the new firing otherwise"); continue; }
       push(m.start, end, out, z, false);
       counts.turns++;
@@ -582,7 +585,7 @@ export function cutText(text, ctx, opts = {}) {
     if (z.cross) { refuse(m, "crosses-span", "a sigil straddles a code span"); continue; }
     if (z.definition) { refuse(m, "definition-body", "a call inside a procedure definition"); continue; }
     if (r.refuse) { refuse(m, r.refuse, r.why); continue; }
-    if (!agrees(ctx, m.src, r.before, r.prefixOnly)) { refuse(m, "old-misread", "the parser reads the old call otherwise (a bare URI, an apostrophe, an old pragma form): hand-cut"); continue; }
+    if (!opts.handReviewed && !agrees(ctx, m.src, r.before, r.prefixOnly)) { refuse(m, "old-misread", "the parser reads the old call otherwise (a bare URI, an apostrophe, an old pragma form): hand-cut"); continue; }
     if (!agrees(ctx, r.text, r.intended)) { refuse(m, "oracle-after", "the parser reads the new call otherwise"); continue; }
     push(m.start, m.end, r.text, z, envelope(m, z));
     counts.cut++;
@@ -620,7 +623,7 @@ export function cutText(text, ctx, opts = {}) {
   // ── The seal ──
   let seal = "none";
   const standing = ctx.frame.verifyBcc(text);
-  if (standing !== "unchecked" || /ni:\/\/\/sha-256;/.test(text)) {
+  if (/^<<!DOCTYPE\b/m.test(text) && (standing !== "unchecked" || /ni:\/\/\/sha-256;/.test(text))) {
     const stamped = next === text ? next : ctx.frame.stampCarrier(next);
     seal = ctx.frame.verifyBcc(stamped);
     if (seal === "ok") next = stamped;
@@ -681,6 +684,10 @@ async function main(argv) {
   const flag = (f) => argv.includes(f);
   const val = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] : null; };
   const write = flag("--write");
+  // --hand-reviewed: the hand pass over old calls the parser itself misreads (a bare URI, an
+  // apostrophe). It drops the BEFORE check only; the AFTER check still binds every value written,
+  // and the operator of the pass reads each changed call in the diff.
+  const handReviewed = flag("--hand-reviewed");
   const filesAt = argv.indexOf("--files");
   const given = filesAt >= 0 ? argv.slice(filesAt + 1).filter((a) => !a.startsWith("--")) : null;
   const ctx = await loadContext({ repo, planesPath: val("--planes") });
@@ -708,7 +715,7 @@ async function main(argv) {
   const outputs = [];
   for (const rel of files) {
     const before = readFileSync(join(repo, rel), "utf8");
-    const r = cutText(before, ctx, { rel, envelopeOnly: canon.has(rel) });
+    const r = cutText(before, ctx, { rel, envelopeOnly: canon.has(rel), handReviewed });
     report.refusals.push(...r.refusals);
     report.partialTurns.push(...r.lists.partialTurns);
     for (const u of r.unmapped) (report.unmapped[u] ??= []).push(rel);
