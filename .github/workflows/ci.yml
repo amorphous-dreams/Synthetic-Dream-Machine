@@ -20,8 +20,7 @@ name: CI
 #
 # ONE RUN PER SHA. A push to a branch and a pull request from the same repository name one sha, so the push owns it and
 # every job stands guarded off on the same-repository `pull_request` event; a fork's pull request has no push here and runs
-# whole. `merge_group` is the hook for a native merge queue: no job guards it off, so the queue's merge-ref run raises the
-# same ten jobs.
+# whole. `merge_group` (a native merge queue) has its hook as a comment in the `on:` block below.
 # Defense-in-depth, not a single flag: build-freshness (CI, authoritative) is
 # backed by the always-on plugin-artifact-parity unit test in `test` (local-first,
 # runs in every `pnpm test`). Dropping one gate does not open the hole.
@@ -36,7 +35,7 @@ on:
     # pushes it and watches that ONE run). Without this exclusion the same push would also raise the
     # whole full-CI matrix here — two answers to one push, and the shard lane's point (a cheap,
     # throwaway proof run) would cost a full CI run every time.
-    branches-ignore: ["ci/**", "gh-readonly-queue/**"]
+    branches-ignore: ["ci/**"]
     # Meme, docs and wiki paths raise no run on a push (tools/ci-ignored-paths.json; a test pins these globs equal
     # to it). A push that changes only these leaves the in-flight run alone. pull_request stays un-ignored.
     paths-ignore:
@@ -46,12 +45,12 @@ on:
       - "CHANGELOG.md"
   pull_request:
     branches: [main]
-  # The native merge queue on the span: it raises this event on the group's merge ref, and no job guards it off. The
-  # queue's temporary `gh-readonly-queue/**` branches stay out of `push` above, so a group raises ONE run, not two. A
-  # merge_group event takes no `paths` filter, so a meme-only PR runs the full graph in the queue.
-  merge_group:
-    types: [checks_requested]
-    branches: [feature/green-jello-dinosaur-5]
+  # MERGE QUEUE HOOK (not wired yet). A native merge queue raises `merge_group` on the group's merge ref. When it lands, add here
+  #   merge_group:
+  #     types: [checks_requested]
+  #     branches: [feature/green-jello-dinosaur-5]
+  # and add `gh-readonly-queue/**` to the push `branches-ignore` above, so a group raises ONE run, not two. No job guards
+  # `merge_group` off (the fork guard below reads only `pull_request`), so the queue's run would raise the same ten jobs.
   # A controller runs CI by hand on a lane head whose own push the ignore list skipped: a meme-only head never
   # raises a run of its own, and the land guard reads a head's verdict, not its ancestor's alone.
   workflow_dispatch:
@@ -277,35 +276,6 @@ jobs:
           path: ${{ runner.temp }}/cell/
           retention-days: 14
           if-no-files-found: warn
-
-  # ─── security-read gate (merge_group only) ─────────────────────────────────────────────────
-  # A queued PR that touches a security-class path (the table in tools/security-read-status.mjs) lands only with a
-  # `security-read: success` status on its head, which the controller posts after a SHIP. This job reads the group's PRs
-  # and reports one check on the group sha. It waits on `quick` so a merge_group run stays ten jobs wide (the gate is an
-  # eleventh only beside the cells it follows), and runs `always()` so a red quick job still gets its read reported.
-  security-read-gate:
-    name: security-read-gate
-    needs: quick
-    if: ${{ always() && github.event_name == 'merge_group' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      pull-requests: read
-      statuses: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # The group's first-parent merges between the base and the group name its PRs.
-          fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - name: Read every queued PR's security-read status
-        env:
-          GH_TOKEN: ${{ github.token }}
-          BASE_SHA: ${{ github.event.merge_group.base_sha }}
-        run: node tools/security-read-status.mjs gate
 
   # ─── test (all package suites, as cells) ───────────────────────────────────
   # EACH CELL IS A SLICE OF THE SUITES ON A RUNNER OF ITS OWN, and the slowest cell sets the wall clock. The slices are

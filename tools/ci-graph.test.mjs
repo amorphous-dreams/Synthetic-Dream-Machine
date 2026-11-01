@@ -69,9 +69,10 @@ test("G2b CONTROL: a workflow with no fork guard raises a run per event, a guard
   assert.equal(runsPerLanePush("on:\n  schedule:\n"), 0);
 });
 
-test("G2c RED: a merge queue has a hook: ci.yml lists a merge_group trigger, and no job guards it off", () => {
+test("G2c: the merge queue's hook stands as a comment in ci.yml's on: block, and no job guards merge_group off", () => {
   const files = liveFiles(ROOT);
-  assert.ok(triggers(files["ci.yml"]).includes("merge_group"), "ci.yml lists no merge_group trigger");
+  assert.match(files["ci.yml"], /^ {2}# MERGE QUEUE HOOK \(not wired yet\)/m, "ci.yml lost the comment hook where merge_group will go");
+  assert.ok(!triggers(files["ci.yml"]).includes("merge_group"), "merge_group is wired: its lane (trigger, ref ignore, security-read gate) owns that");
   for (const j of readJobs(files["ci.yml"])) if (j.ifText && !mergeGroupOnly(j.ifText)) assert.doesNotMatch(j.ifText, /merge_group/, `${j.id} guards merge_group off`);
 });
 
