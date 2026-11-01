@@ -97,13 +97,13 @@ async function main(): Promise<void> {
 
   if (docId) {
     console.log("[probe] === Q3: addMember(device, doc, access=admin) ===");
-    const access = KH.Access.tryFromString("admin");
+    const access = KH.Power.tryFromString("admin");
     if (!access) {
       console.log(`[probe] Access.tryFromString("admin") returned undefined`);
     } else {
       try {
         // Membership addresses an Identifier and an explicit MemberedId.
-        const deviceAgent = await operator.getAgent(deviceIndividualId.toIdentifier());
+        const deviceAgent = await operator.getPrincipal(deviceIndividualId.toIdentifier());
         if (!deviceAgent) {
           console.log(`[probe] could not fetch device agent`);
         } else {
@@ -111,7 +111,6 @@ async function main(): Promise<void> {
             deviceIndividualId.toIdentifier(),
             KH.MemberedId.document(docId),
             access,
-            [],
           );
           console.log(`[probe] addMember succeeded; signed delegation type: ${signedDelegation.constructor.name}`);
         }

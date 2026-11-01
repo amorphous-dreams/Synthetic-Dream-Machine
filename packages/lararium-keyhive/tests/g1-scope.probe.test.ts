@@ -51,11 +51,11 @@ describe("G1 scope probes", () => {
       const { docIdHex } = await creator.createSentinelDoc("lar:///probe.read.grade");
       const kh = rawKh(creator);
       const doc = await kh.getDocument(new KH.DocumentId(bytesOf(docIdHex)));
-      const agent = await kh.getAgent(new KH.Identifier(bytesOf(readerId)));
+      const agent = await kh.getPrincipal(new KH.Identifier(bytesOf(readerId)));
       if (!doc || !agent) throw new Error("read-grade fixture could not resolve its document and agent");
-      const access = KH.Access.tryFromString("read");
+      const access = KH.Power.tryFromString("read");
       if (!access) throw new Error("Access 'read' is not a recognized grade");
-      await kh.addMember(agent.id, KH.MemberedId.document(doc.docId), access, []);
+      await kh.addMember(agent.id, KH.MemberedId.document(doc.docId), access);
       const members = await creator.sentinelCgkaMembers(docIdHex);
       // CANARY (measured 2026-09-08: TRUE): ANY access grade is CGKA membership — no sub-roster
       // grade exists. An upstream that splits reader-grades off the tree loosens the veil-born

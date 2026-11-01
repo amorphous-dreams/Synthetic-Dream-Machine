@@ -195,15 +195,15 @@ describe("the substrate under a seat's roll", () => {
     await d.receiveContactCard(await f.contactCard());
     const gid = await f.generateGroup([]);
     const group = (await f.getGroup(gid))!;
-    const admin = KH.Access.tryFromString("admin")!, read = KH.Access.tryFromString("read")!;
-    const cAgent = (await f.getAgent(cInd.toIdentifier()))!, dAgent = (await f.getAgent(dInd.toIdentifier()))!;
-    await f.addMember(cAgent.id, KH.MemberedId.group(gid), admin, []);
-    await f.addMember(dAgent.id, KH.MemberedId.group(gid), admin, []);
+    const admin = KH.Power.tryFromString("admin")!, read = KH.Power.tryFromString("read")!;
+    const cAgent = (await f.getPrincipal(cInd.toIdentifier()))!, dAgent = (await f.getPrincipal(dInd.toIdentifier()))!;
+    await f.addMember(cAgent.id, KH.MemberedId.group(gid), admin);
+    await f.addMember(dAgent.id, KH.MemberedId.group(gid), admin);
     const docId = await f.generateDocument([], cid(1), []);
-    await f.addMember(group.toAgent().id, KH.MemberedId.document(docId), read, []);
+    await f.addMember(group.toAgent().id, KH.MemberedId.document(docId), read);
     const sync = async () => {
       for (const p of [c, d]) {
-        const agent = (await f.getAgent((await p.individual()).id))!;
+        const agent = (await f.getPrincipal((await p.individual()).id))!;
         await p.ingestEventsBytes([...(await f.eventsForAgent(agent) as Map<unknown, Uint8Array>).values()]);
       }
     };

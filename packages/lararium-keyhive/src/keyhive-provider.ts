@@ -26,7 +26,7 @@
 import * as KH from "@keyhive/keyhive/slim";
 import { wasmBase64 } from "@keyhive/keyhive/wasm-base64";
 import { adaptGate, PONO_FLUSH_GATE, hex as hexEncode, hexToBytes as hexDecode, sha256HexBytesSync, webDigest } from "@lararium/mesh";
-import { base64ToBytes } from "./bytes-base64.js";
+import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
 import { ingestTolerant } from "./ingest-tolerant.js";
 import { inSelfSlice } from "./event-store.js";
 import type {
@@ -104,11 +104,16 @@ function bytesToHex(bytes: Uint8Array): string {
 function eventIsland(e: KH.Event): string | undefined {
   try {
     const sd = e.asSignedDelegation();
-    if (sd) return bytesToHex(sd.subjectId.toBytes());
-    const sr = e.asSignedRevocation();
-    if (sr) return bytesToHex(sr.delegation.subjectId.toBytes());
+    if (sd?.subjectId) return bytesToHex(sd.subjectId.toBytes());
+    // 0.6: a Revocation names only its issuer and the revoked delegation's hash, never the subject, so a
+    // revocation reads cross-cutting (co-loads into every island) until the house maps hash -> subject.
   } catch { /* a variant without a recoverable subject stays cross-cutting */ }
   return undefined;
+}
+
+/** 0.6 `getPrincipal` throws on an unknown id where 0.3 `getAgent` answered undefined; the house reads undefined. */
+async function principalOf(kh: KH.Keyhive, id: KH.Identifier): Promise<KH.Principal | undefined> {
+  try { return await kh.getPrincipal(id); } catch { return undefined; }
 }
 
 function hexToBytes(hex: string): Uint8Array {
@@ -302,10 +307,10 @@ export class KeyhiveProvider implements CapabilityProvider {
     // THE MINT IN FLIGHT IS THE CARD. Two asks that arrive together await one mint: the promise rests here before
     // the wasm answers, so a second ask never passes an empty slot and mints a second prekey.
     this.standCard ??= (async () => {
-      // ContactCard serializes as JSON (toJson / fromJson).
-      // We wrap it in a UTF-8 byte form so transport layers stay byte-uniform.
+      // 0.6: ContactCard serializes as binary (toBytes / fromBytes); the house carries a card as TEXT (summons,
+      // ceremony records, intents), so the provider hands out the UTF-8 bytes of its base64 form.
       const card = await this.requireKh().contactCard();
-      return new TextEncoder().encode(card.toJson());
+      return new TextEncoder().encode(bytesToBase64(card.toBytes()));
     })();
     const minting = this.standCard;
     try {
@@ -324,8 +329,7 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   async receiveContactCard(bytes: Uint8Array): Promise<{ id: PeerDID }> {
-    const json = new TextDecoder().decode(bytes);
-    const card = KH.ContactCard.fromJson(json);
+    const card = KH.ContactCard.fromBytes(base64ToBytes(new TextDecoder().decode(bytes)));
     const individual = await this.requireKh().receiveContactCard(card);
     const idBytes = individual.toBytes();
     return { id: bytesToHex(idBytes) };
@@ -400,11 +404,11 @@ export class KeyhiveProvider implements CapabilityProvider {
     await this.ensureIsland(docIdHex);   // CIV-2b — first access materializes a boot-deferred island
     const docId = new KH.DocumentId(hexToBytes(docIdHex));
 
-    const access = KH.Access.tryFromString(args.access);
+    const access = KH.Power.tryFromString(args.access);
     if (!access) throw new Error(`invalid access: ${args.access} (Keyhive accepts only "relay", "read", "edit", or "admin")`);
 
     const audienceId = new KH.Identifier(hexToBytes(args.audience));
-    const audienceAgent = await this.requireKh().getAgent(audienceId);
+    const audienceAgent = await principalOf(this.requireKh(), audienceId);
     if (!audienceAgent) throw new Error(`audience not known to this provider — exchange contact cards first`);
 
     // A grant names a document this provider holds; an id it cannot resolve refuses here, by bag.
@@ -413,7 +417,7 @@ export class KeyhiveProvider implements CapabilityProvider {
 
     // addMember returns the SignedDelegation directly (the group re-keys to the new reader's own prekey).
     const signedDelegation = await this.withActiveIsland(docIdHex, () => this.requireKh().addMember(
-      audienceAgent.id, KH.MemberedId.document(docId), access, [],
+      audienceAgent.id, KH.MemberedId.document(docId), access,
     ));
 
     // SignedDelegation exposes .signature: Uint8Array (unique per delegation) — we use
@@ -530,21 +534,21 @@ export class KeyhiveProvider implements CapabilityProvider {
     const kh = this.requireKh();
     const self = bytesToHex(kh.whoami.toBytes());
     const readers = [...new Set(args.readers.map((id) => bytesToHex(hexToBytes(id))))].filter((id) => id !== self);
-    const known: { id: string; agent: KH.Agent }[] = [];
+    const known: { id: string; agent: KH.Principal }[] = [];
     const unreached: string[] = [];
     for (const id of readers) {
-      const agent = await kh.getAgent(new KH.Identifier(hexToBytes(id)));
+      const agent = await principalOf(kh, new KH.Identifier(hexToBytes(id)));
       if (agent) known.push({ id, agent }); else unreached.push(id);
     }
-    const read = KH.Access.tryFromString("read");
-    if (!read) throw new Error("[keyhive] Access.tryFromString('read') returned undefined");
+    const read = KH.Power.tryFromString("read");
+    if (!read) throw new Error("[keyhive] Power.tryFromString('read') returned undefined");
     await this.settleEvents();
     const failedBefore = this.failedWrites;
     const docId = await kh.generateDocument([], new KH.ChangeId(args.contentRef), []);
     const docIdHex = bytesToHex(docId.toBytes());
     this.hydratedIslands.add(docIdHex);   // minted here: live in memory, never deferred
     const encrypted = await this.withActiveIsland(docIdHex, async () => {
-      for (const { agent } of known) await kh.addMember(agent.id, KH.MemberedId.document(docId), read, []);
+      for (const { agent } of known) await kh.addMember(agent.id, KH.MemberedId.document(docId), read);
       return kh.tryEncrypt(docId, new KH.ChangeId(args.contentRef), [], args.payload);
     });
     await this.settleEvents();
@@ -579,7 +583,7 @@ export class KeyhiveProvider implements CapabilityProvider {
    * prekey secret, no archive, no application key rides here — the joinee holds only its own prekey secret.
    */
   async eventsForPeer(peerAgentIdHex: string): Promise<Uint8Array[]> {
-    const agent = await this.requireKh().getAgent(new KH.Identifier(hexToBytes(peerAgentIdHex)));
+    const agent = await principalOf(this.requireKh(), new KH.Identifier(hexToBytes(peerAgentIdHex)));
     if (!agent) throw new Error(`peer not known to this provider — exchange contact cards first: ${peerAgentIdHex.slice(0, 16)}…`);
     const map = await this.requireKh().eventsForAgent(agent);
     return [...(map as Map<unknown, unknown>).values()] as Uint8Array[];
@@ -615,7 +619,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     if (!doc) throw new Error(`revoke(): document not in scope: ${bagUrl}`);
 
     const audienceId    = new KH.Identifier(hexToBytes(audience));
-    const audienceAgent = await this.requireKh().getAgent(audienceId);
+    const audienceAgent = await principalOf(this.requireKh(), audienceId);
     if (!audienceAgent) throw new Error(`revoke(): audience agent not known: ${audience.slice(0, 16)}…`);
 
     const revocations = await this.withActiveIsland(docIdHex, () => this.requireKh().revokeMember(
@@ -724,11 +728,11 @@ export class KeyhiveProvider implements CapabilityProvider {
     const kh = this.requireKh();
     const { gid } = await this.requireGroup(groupId);
     const identifier = new KH.Identifier(hexToBytes(memberIdentifierHex));
-    const agent = await kh.getAgent(identifier);
+    const agent = await principalOf(kh, identifier);
     if (!agent) throw new Error(`[keyhive] agent not found for group addMember: ${memberIdentifierHex.slice(0, 16)}…`);
-    const access = KH.Access.tryFromString("admin");
-    if (!access) throw new Error("[keyhive] Access.tryFromString('admin') returned undefined");
-    await this.withActiveIsland(groupId, () => kh.addMember(agent.id, KH.MemberedId.group(gid), access, []));
+    const access = KH.Power.tryFromString("admin");
+    if (!access) throw new Error("[keyhive] Power.tryFromString('admin') returned undefined");
+    await this.withActiveIsland(groupId, () => kh.addMember(agent.id, KH.MemberedId.group(gid), access));
   }
 
   /**
@@ -754,7 +758,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     const kh = this.requireKh();
     const { gid } = await this.requireGroup(groupId);
     const identifier = new KH.Identifier(hexToBytes(memberIdentifierHex));
-    const agent = await kh.getAgent(identifier);
+    const agent = await principalOf(kh, identifier);
     if (!agent) return { how: "gone" };
     // A party with no direct seat here draws an empty revocation from Keyhive (measured), so it reads `gone`.
     try {
@@ -772,7 +776,7 @@ export class KeyhiveProvider implements CapabilityProvider {
   private async directSeatStands(identifier: KH.Identifier, groupId: string): Promise<boolean> {
     const { group } = await this.requireGroup(groupId);
     const want = bytesToHex(identifier.toBytes());
-    return (await group.members()).some(({ who }) => bytesToHex(who.id.toBytes()) === want);
+    return (await group.members()).some(({ who }) => bytesToHex(who.toBytes()) === want);
   }
 
   /** Whether an agent reaches a group, directly or through a member group, on this replica. A group this replica
@@ -814,13 +818,13 @@ export class KeyhiveProvider implements CapabilityProvider {
     if (!doc) throw new Error(`[keyhive] sentinel doc not found: ${sentinelDocIdHex.slice(0, 16)}…`);
 
     const agentId = new KH.Identifier(hexToBytes(memberIdentifierHex));
-    const agent   = await this.requireKh().getAgent(agentId);
+    const agent   = await principalOf(this.requireKh(), agentId);
     if (!agent) throw new Error(`[keyhive] agent not found for sentinel addMember: ${memberIdentifierHex.slice(0, 16)}…`);
 
-    const access  = KH.Access.tryFromString("admin");
-    if (!access) throw new Error("[keyhive] Access.tryFromString('admin') returned undefined");
+    const access  = KH.Power.tryFromString("admin");
+    if (!access) throw new Error("[keyhive] Power.tryFromString('admin') returned undefined");
 
-    await this.withActiveIsland(sentinelDocIdHex, () => this.requireKh().addMember(agent.id, KH.MemberedId.document(docId), access, []));
+    await this.withActiveIsland(sentinelDocIdHex, () => this.requireKh().addMember(agent.id, KH.MemberedId.document(docId), access));
   }
 
   /**
@@ -845,7 +849,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     if (!doc) throw new Error(`[keyhive] sentinel doc not found for revoke: ${sentinelDocIdHex.slice(0, 16)}…`);
 
     const agentId = new KH.Identifier(hexToBytes(memberIdentifierHex));
-    const agent   = await this.requireKh().getAgent(agentId);
+    const agent   = await principalOf(this.requireKh(), agentId);
     if (!agent) throw new Error(`[keyhive] agent not found for sentinel revoke: ${memberIdentifierHex.slice(0, 16)}…`);
 
     const revocations = await this.withActiveIsland(sentinelDocIdHex, () => this.requireKh().revokeMember(agent.id, true, KH.MemberedId.document(docId)));
@@ -901,7 +905,7 @@ export class KeyhiveProvider implements CapabilityProvider {
    * once its membership events reached this provider (the seat), never from the pinned id alone.
    */
   async knowsAgent(agentIdentifierHex: string): Promise<boolean> {
-    const agent = await this.requireKh().getAgent(new KH.Identifier(hexToBytes(agentIdentifierHex)));
+    const agent = await principalOf(this.requireKh(), new KH.Identifier(hexToBytes(agentIdentifierHex)));
     return agent !== undefined && agent !== null;
   }
 

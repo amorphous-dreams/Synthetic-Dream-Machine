@@ -50,7 +50,7 @@ function changeId(fill: number): KH.ChangeId {
 }
 
 /** Pull the public events keyhive would ship to a target agent, as a plain bytes array for ingest. */
-async function publicEventsFor(kh: KH.Keyhive, agent: KH.Agent): Promise<unknown[]> {
+async function publicEventsFor(kh: KH.Keyhive, agent: KH.Principal): Promise<unknown[]> {
   const map = await kh.eventsForAgent(agent);
   const out: unknown[] = [];
   for (const v of (map as Map<unknown, unknown>).values()) out.push(v);
@@ -75,10 +75,10 @@ async function main(): Promise<void> {
   // CGKA keys content to the tree epoch at write time; a member reads only content encrypted AT OR AFTER its
   // add. Encrypt-before-add → the PCS op never encrypted to the device's leaf → tryDecrypt "Key not found"
   // (keyhive's own test_cannot_decrypt_content_from_before_joining asserts exactly this).
-  const access = KH.Access.tryFromString("read") ?? KH.Access.tryFromString("admin");
-  const deviceAgent = await founder.getAgent(deviceIndividualId.toIdentifier());
+  const access = KH.Power.tryFromString("read") ?? KH.Power.tryFromString("admin");
+  const deviceAgent = await founder.getPrincipal(deviceIndividualId.toIdentifier());
   if (!access || !deviceAgent) { console.log(`[probe] FAIL setup: access=${!!access} agent=${!!deviceAgent}`); return; }
-  const signedDelegation = await founder.addMember(deviceIndividualId.toIdentifier(), KH.MemberedId.document(docId), access, []);
+  const signedDelegation = await founder.addMember(deviceIndividualId.toIdentifier(), KH.MemberedId.document(docId), access);
   console.log(`[probe] ★ addMember → SignedDelegation (sig ${signedDelegation.signature.length}B) BEFORE encrypt`);
 
   // Encrypt AFTER the add — the fresh PCS update op now encrypts a path secret to the device's leaf.

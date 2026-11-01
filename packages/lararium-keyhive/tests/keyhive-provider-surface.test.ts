@@ -109,7 +109,7 @@ describe("KeyhiveProvider at the keyhive boundary", () => {
       await peer.init({ seed: new Uint8Array(32).fill(0x80 + i), eventStore: new InMemoryEventStore() });
       const { id } = await owner.receiveContactCard(await peer.contactCard());
       // Granted through keyhive itself: the provider's own `delegate` door carries only read and admin.
-      await kh.addMember(new KH.Identifier(bytesOf(id)), KH.MemberedId.document(new KH.DocumentId(bytesOf(docId))), KH.Access.fromString(grade), []);
+      await kh.addMember(new KH.Identifier(bytesOf(id)), KH.MemberedId.document(new KH.DocumentId(bytesOf(docId))), KH.Power.fromString(grade));
       verdicts[grade] = {
         read: (await owner.verify({ bagUrl, presenter: id, access: "read" })).ok,
         admin: (await owner.verify({ bagUrl, presenter: id, access: "admin" })).ok,

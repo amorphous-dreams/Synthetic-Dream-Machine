@@ -14,9 +14,9 @@ const raw = async (fill: number, name = String(fill), archive?: Uint8Array) => {
   return archive ? new KH.Archive(archive).tryToKeyhive(KH.CiphertextStore.newInMemory(), signer, h) : KH.Keyhive.init(signer, KH.CiphertextStore.newInMemory(), h);
 };
 const cid = (n: number) => new KH.ChangeId(new Uint8Array(32).fill(n));
-const read = KH.Access.tryFromString("read")!;
+const read = KH.Power.tryFromString("read")!;
 const ship = async (from: KH.Keyhive, to: KH.Keyhive) => {
-  const agent = (await from.getAgent((await to.individual()).id))!;
+  const agent = (await from.getPrincipal((await to.individual()).id))!;
   const m = await from.eventsForAgent(agent) as Map<unknown, Uint8Array>;
   await to.ingestEventsBytes([...m.values()]);
   return m.size;
@@ -30,15 +30,15 @@ describe("wrap-document probes", () => {
     const idOf = async (p: KH.Keyhive) => (await p.individual()).id;
     const doc = await f.generateDocument([], cid(9), []);
     const n0 = events["1"]!.length;
-    await f.addMember(await idOf(a), KH.MemberedId.document(doc), read, []);
-    await f.addMember(await idOf(b), KH.MemberedId.document(doc), read, []);
+    await f.addMember(await idOf(a), KH.MemberedId.document(doc), read);
+    await f.addMember(await idOf(b), KH.MemberedId.document(doc), read);
     const r = await f.tryEncrypt(doc, cid(10), [], enc("the key"));
     const ct = r.encryptedContent().toBytes();
     console.log("W1 events during wrap:", events["1"]!.slice(n0).map((e) => e.variant), "ct bytes", ct.length, "updateOp", !!r.updateOp());
     console.log("shipped a:", await ship(f, a), "b:", await ship(f, b), "x:", await ship(f, x));
     console.log("a:", await opens(a, doc, ct), "| b:", await opens(b, doc, ct), "| x:", await opens(x, doc, ct), "| f:", await opens(f, doc, ct));
     // later add of x: does x open the EARLIER ciphertext?
-    await f.addMember(await idOf(x), KH.MemberedId.document(doc), read, []);
+    await f.addMember(await idOf(x), KH.MemberedId.document(doc), read);
     await ship(f, x);
     console.log("x after late add, earlier ct:", await opens(x, doc, ct));
     const r2 = await f.tryEncrypt(doc, cid(11), [], enc("second"));
@@ -68,16 +68,16 @@ describe("wrap-document probes", () => {
     for (const p of [b, c]) { await f.receiveContactCard(await p.contactCard()); await p.receiveContactCard(await f.contactCard()); }
     const idOf = async (p: KH.Keyhive) => (await p.individual()).id;
     const g = await f.generateDocument([], cid(1), []);
-    const admin = KH.Access.tryFromString("admin")!;
-    await f.addMember(await idOf(b), KH.MemberedId.document(g), admin, []);
-    await f.addMember(await idOf(c), KH.MemberedId.document(g), admin, []);
+    const admin = KH.Power.tryFromString("admin")!;
+    await f.addMember(await idOf(b), KH.MemberedId.document(g), admin);
+    await f.addMember(await idOf(c), KH.MemberedId.document(g), admin);
     await ship(f, b); await ship(f, c);
     const gb = await b.getDocument(g);
-    console.log("W3 b reads cgka members:", (await gb!.cgkaMembers()).length, "b knows c agent:", !!(await b.getAgent(await idOf(c))));
+    console.log("W3 b reads cgka members:", (await gb!.cgkaMembers()).length, "b knows c agent:", !!(await b.getPrincipal(await idOf(c))));
     try {
       const w = await b.generateDocument([], cid(2), []);
-      await b.addMember(await idOf(c), KH.MemberedId.document(w), read, []);
-      await b.addMember(await idOf(f), KH.MemberedId.document(w), read, []);
+      await b.addMember(await idOf(c), KH.MemberedId.document(w), read);
+      await b.addMember(await idOf(f), KH.MemberedId.document(w), read);
       const ct = (await b.tryEncrypt(w, cid(3), [], enc("from b"))).encryptedContent().toBytes();
       // b never had c's card; ship b->c requires b to know c as agent
       const n = await ship(b, c);
@@ -92,7 +92,7 @@ describe("wrap-document probes", () => {
     await f.receiveContactCard(await a.contactCard()); await a.receiveContactCard(await f.contactCard());
     const aId = (await a.individual()).id;
     const doc = await f.generateDocument([], cid(9), []);
-    await f.addMember(aId, KH.MemberedId.document(doc), read, []);
+    await f.addMember(aId, KH.MemberedId.document(doc), read);
     const ct = (await f.tryEncrypt(doc, cid(10), [], enc("k"))).encryptedContent().toBytes();
     await ship(f, a);
     console.log("W4 live a:", await opens(a, doc, ct));
@@ -106,9 +106,9 @@ describe("wrap-document probes", () => {
     const hEarly = (await h.toArchive()).toBytes(), gEarly = (await g.toArchive()).toBytes();
     const hId = (await h.individual()).id;
     const d2 = await g.generateDocument([], cid(9), []);
-    await g.addMember(hId, KH.MemberedId.document(d2), read, []);
+    await g.addMember(hId, KH.MemberedId.document(d2), read);
     const ct2 = (await g.tryEncrypt(d2, cid(10), [], enc("k2"))).encryptedContent().toBytes();
-    const agent = (await g.getAgent(hId))!;
+    const agent = (await g.getPrincipal(hId))!;
     const evs = [...(await g.eventsForAgent(agent) as Map<unknown, Uint8Array>).values()];
     const h2 = await raw(42, "42b", hEarly);
     console.log("W4 early-archive reader before ingest:", await opens(h2, d2, ct2));
@@ -128,7 +128,7 @@ describe("wrap-document probes", () => {
     await f.receiveContactCard(await a.contactCard());
     const aId = (await a.individual()).id;
     const doc = await f.generateDocument([], cid(9), []);
-    await f.addMember(aId, KH.MemberedId.document(doc), read, []);
+    await f.addMember(aId, KH.MemberedId.document(doc), read);
     const ct = (await f.tryEncrypt(doc, cid(10), [], enc("k"))).encryptedContent().toBytes();
     await blind.ingestEventsBytes(events["51"]!.map((e) => e.bytes));
     console.log("W5 blind holder with every event:", await opens(blind, doc, ct), "hasDoc", await blind.hasDocument(doc));

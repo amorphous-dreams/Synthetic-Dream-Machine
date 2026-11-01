@@ -34,7 +34,7 @@ const accepted: string[] = [];
 const rejected: string[] = [];
 
 for (const s of candidates) {
-  const a = KH.Access.tryFromString(s);
+  const a = KH.Power.tryFromString(s);
   if (a) {
     accepted.push(`${s} → ${a.toString()}`);
   } else {
@@ -100,10 +100,10 @@ await device.receiveContactCard(operatorCard);
 
 const cid = new KH.ChangeId(new Uint8Array(32));
 const docId = await operator.generateDocument([], cid, []);
-const deviceAgent = await operator.getAgent(deviceIndividualId.toIdentifier());
-const access = KH.Access.tryFromString("admin");
+const deviceAgent = await operator.getPrincipal(deviceIndividualId.toIdentifier());
+const access = KH.Power.tryFromString("admin");
 if (access && deviceAgent) {
-  await operator.addMember(deviceIndividualId.toIdentifier(), KH.MemberedId.document(docId), access, []);
+  await operator.addMember(deviceIndividualId.toIdentifier(), KH.MemberedId.document(docId), access);
 }
 
 console.log(`[probe] events fired during ceremony: ${events.length - baseline}`);

@@ -50,7 +50,7 @@ describe("Keyhive 0.3 as the face chain's substrate", () => {
     const root = await peer(0x51);
     const vessel = await peer(0x52);
     const face = await root.kh.generateGroup([]);
-    const delegation = await root.kh.addMember(await introduce(root, vessel), KH.MemberedId.group(face), KH.Access.read(), []);
+    const delegation = await root.kh.addMember(await introduce(root, vessel), KH.MemberedId.group(face), KH.Power.read());
 
     expect(delegation.signature.length).toBe(64);
     expect(delegation.verifyingKey.length).toBe(32);
@@ -73,8 +73,8 @@ describe("Keyhive 0.3 as the face chain's substrate", () => {
     const membered = KH.MemberedId.group(face);
     const keptId = await introduce(root, kept);
     const removedId = await introduce(root, removed);
-    await root.kh.addMember(keptId, membered, KH.Access.read(), []);
-    await root.kh.addMember(removedId, membered, KH.Access.read(), []);
+    await root.kh.addMember(keptId, membered, KH.Power.read());
+    await root.kh.addMember(removedId, membered, KH.Power.read());
 
     const before = root.events.length;
     const revocations = await root.kh.revokeMember(removedId, true, membered);
@@ -90,7 +90,7 @@ describe("Keyhive 0.3 as the face chain's substrate", () => {
 
     // READING 3. The least history that lets the revocation land: every event the root emitted, AND the
     // events Keyhive routes for the root. Either alone leaves the delegations unapplied.
-    const rootAgent = await root.kh.getAgent(root.kh.id.toIdentifier());
+    const rootAgent = await root.kh.getPrincipal(root.kh.id.toIdentifier());
     const routed = [...(await root.kh.eventsForAgent(rootAgent!)).values()] as Uint8Array[];
     expect((await gate.kh.ingestEventsBytes(root.events)).length).toBeGreaterThan(0);   // the emitted events alone: still unapplied
     expect(await gate.kh.hasGroup(face)).toBe(false);
@@ -113,8 +113,8 @@ describe("Keyhive 0.3 as the face chain's substrate", () => {
 
     const faceA = await rootA.kh.generateGroup([]);
     const faceB = await rootB.kh.generateGroup([]);
-    const underA = await rootA.kh.addMember(await introduce(rootA, vessel), KH.MemberedId.group(faceA), KH.Access.read(), []);
-    const underB = await rootB.kh.addMember(await introduce(rootB, vessel), KH.MemberedId.group(faceB), KH.Access.read(), []);
+    const underA = await rootA.kh.addMember(await introduce(rootA, vessel), KH.MemberedId.group(faceA), KH.Power.read());
+    const underB = await rootB.kh.addMember(await introduce(rootB, vessel), KH.MemberedId.group(faceB), KH.Power.read());
 
     const delegateA = hexOf(underA.delegation.delegate.id.toBytes());
     const delegateB = hexOf(underB.delegation.delegate.id.toBytes());
