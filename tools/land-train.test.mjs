@@ -662,3 +662,15 @@ test("RED: QUEUE: train N+1 builds on train N's head while N verifies, and re-ch
   assert.ok(!isAnc(w, t2.sha, final), "the speculative train never landed: its base died with train 1");
   assert.equal(refAt(w, t2.branch), null, "the dead speculative train's branch is gone");
 });
+
+test("RED: a land message whose subject lacks ` — merge PR #<pr>` refuses (2) before any train; a later land would read it as a road commit", async () => {
+  const w = world(["a"]);
+  writeFileSync(w.msgs.a, "lar:///w/a — lane a with no marker\n");
+  const r = await runQ(w);
+  assert.equal(r.code, 2, r.out);
+  assert.match(r.out, /MESSAGE LACKS " — merge PR #100"/);
+  // The marker names THIS pull request: #1000 does not stand for #100.
+  writeFileSync(w.msgs.a, "lar:///w/a — merge PR #1000: lane a\n");
+  assert.equal((await runQ(w)).code, 2);
+  assert.equal(originRef(w, SPAN), w.base);
+});
