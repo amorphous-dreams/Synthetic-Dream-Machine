@@ -49,11 +49,11 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import type { GateBundlePin } from "../../packages/lararium-mesh/src/index.js";
+import { DEVICE_DELEGATION_SELF_TIDDLER, edgeLedgerDocUrl, storedLarRecord, type GateBundlePin, type LarDoc } from "../../packages/lararium-mesh/src/index.js";
 import { LarWSClientAdapter, hearthPinIndex, DAEMON_BAG_ID, strangerFace } from "../../packages/lararium-node/probes/crossing-synthetic-world.js";
 import {
   openStaged, freePort, stageDir, awaitRendezvous, ownGateKey, bootDocUrl, vesselStorageDir, foundStagedHearth, growStagedQuorum,
@@ -631,6 +631,60 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const ford = await pollB(60_000);
     expect(ford.json?.["ok"], `CONTROL — B still reads A's ford through the realm: ${said(ford)}`).toBe(true);
   }, 180_000);
+
+  // ⑮b A VESSEL'S EDGE LEDGER NEVER BECOMES A REALM BOOK (road `T33`, the class half). A's `ledger:edge` keeps her roll
+  // marks, frontier pins and `seen` rows; its id derives from her atom key, which her device edge shows in the clear.
+  // B, a contracted member, names that id on her OWN catalog, registers it on A's realm by her own seal alone, and asks
+  // for it. Before the class, A's realm lane counted the registration and served the ledger to B (unit L0 measured the
+  // lane). A's vessel classes the ledger `vessel-private` under the `device` owner: the fold refuses the registration and
+  // the guard withholds it, so A's own share verdict never answers B `true` for it. CONTROL: the ford still crosses.
+  test("⑮b A's edge ledger never crosses to B, whatever B registers on A's realm; the ford still crosses", async () => {
+    expect(contracted, "the relation's doors stood (③): ⑮b walks only on a contracted member").toBe(true);
+    // A's atom key, off her daemon document's device edge (read from a COPY of her store: her daemon keeps running).
+    const daemonUrl = bootDocUrl(A!, "daemon");
+    expect(daemonUrl, "A's boot names her daemon document").toBeTruthy();
+    const copyA = mkdtempSync(join(stageDir(), "lares-ledger-copyA-"));
+    cpSync(vesselStorageDir(A!), copyA, { recursive: true });
+    const repoCopy = new Repo({ storage: new NodeFSStorageAdapter(copyA) });
+    let atomKeyA = "";
+    try {
+      const daemon = (await repoCopy.find<LarDoc>(daemonUrl as AutomergeUrl)).doc();
+      atomKeyA = JSON.stringify(daemon?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER] ?? {}).match(/deviceVerifyingKey\\?"\s*:\s*\\?"(?:0x)?([0-9a-fA-F]{64})/)?.[1]?.toLowerCase() ?? "";
+    } finally { await repoCopy.shutdown().catch(() => {}); rmSync(copyA, { recursive: true, force: true }); }
+    expect(atomKeyA, "A's device edge names her atom key").toMatch(/^[0-9a-f]{64}$/);
+    const ledgerUrlA = edgeLedgerDocUrl(atomKeyA);
+    const ledgerIdA = ledgerUrlA.slice("automerge:".length);
+    // B names A's ledger on her own catalog (her daemon down for the write), then stands again on the same root.
+    const ALIAS = "lar:///ha.ka.ba/bags/ledger-alias";
+    const catalogUrlB = bootDocUrl(B!, "catalog");
+    expect(catalogUrlB, "B's boot names her catalog").toBeTruthy();
+    const portB = B!.port;
+    await B!.stopDaemonOnly();
+    const repoB = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(B!)) });
+    try {
+      const catalog = await repoB.find<LarDoc>(catalogUrlB as AutomergeUrl);
+      catalog.change((d) => { d.tiddlers[ALIAS] = storedLarRecord(ALIAS, { text: ledgerUrlA }, "alias"); });
+      await repoB.flush();
+    } finally { await repoB.shutdown().catch(() => {}); }
+    B = await openStaged({ tag: "B", root: rootB, port: portB, found: async () => {}, daemonEnv: { LAR_WIRE_LOG: "1" } });
+    expect(await awaitRendezvous(B), `B stands again:\n${B.bootLog().slice(-800)}`).toBe(true);
+    const back = await pollB(90_000);
+    expect(back.json?.["ok"], `B crosses to A again before the ask: ${said(back)}`).toBe(true);
+    // B registers the alias on A's realm by her own seal, then asks for it through the realm.
+    const reg = await B.cli(["nexus", "realm-bag", ALIAS, "--face", "0", "--realm", realmA, "--json"]);
+    console.error(`meme-realm-bag ⑮b MEASURE B realm-bag ${ALIAS} → ${said(reg).trim().slice(0, 300)}`);
+    for (let i = 0; i < 3; i++) {
+      const ask = await B.cli(["meme", "get", "--bag", ALIAS, "--realm", realmA, URI, "--json"]);
+      console.error(`meme-realm-bag ⑮b MEASURE B meme get --bag ${ALIAS} → ${said(ask).trim().slice(0, 200)}`);
+      await new Promise((r) => setTimeout(r, 5_000));
+    }
+    const lines = A!.bootLog().split("\n").map((l) => l.trim()).filter((l) => l.startsWith("[wire] verdict") && l.includes(ledgerIdA));
+    console.error(`meme-realm-bag ⑮b MEASURE A's verdicts for her ledger ${ledgerIdA}:\n  ${lines.join("\n  ") || "(none)"}`);
+    expect(lines.filter((l) => l.endsWith("→ true")), "A's share verdict never answers a peer true for her own edge ledger").toEqual([]);
+    // CONTROL: the ford still crosses to B.
+    const ford = await pollB(60_000);
+    expect(ford.json?.["ok"], `CONTROL — B still reads A's ford through the realm: ${said(ford)}`).toBe(true);
+  }, 360_000);
 
   // ── ⑬ THE MEASURE: WHERE THE RETURN LANE STOPS ──────────────────────────────────────────────────
   // ⑪ stands red and its header names the seam as "past the wire" without saying WHICH of three stops
