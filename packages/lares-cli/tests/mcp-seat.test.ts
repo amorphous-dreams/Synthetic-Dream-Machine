@@ -19,12 +19,14 @@
  * Every root here stands under a scratch directory; nothing reads or writes a real home.
  */
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { memorySensoriumDir } from "@lararium/node";
 import { IMAGE_SEAT, resolveLaresMcp } from "../src/mcp-resolve.js";
-import { homeItems } from "../src/reality-tunnel/catalog.js";
+import { homeItems, mainCloneOf } from "../src/reality-tunnel/catalog.js";
+import { execFileSync } from "node:child_process";
+import { homedir } from "node:os";
 
 const REPO = join(import.meta.dirname, "..", "..", "..");
 const SEAT = join("packages", "lararium-sensorium", "scripts", "lares_mcp.py");
@@ -165,5 +167,53 @@ describe("every harness's seat carries the hearth's root", () => {
   it("copilot: the json seat's env names LAR_ROOT", () => {
     const seat = (JSON.parse(transformed("copilot.mcp-seat", homeWith(".copilot"))) as { mcpServers: { lares: { env: Record<string, string> } } }).mcpServers.lares;
     expect(seat.env["LAR_ROOT"]).toBe("/hearth");
+  });
+});
+
+describe("the hearth root reads absolute, or the seat refuses by name", () => {
+  let priorCwd: string;
+  beforeEach(() => { priorCwd = process.cwd(); });
+  afterEach(() => { process.chdir(priorCwd); });
+
+  it("an empty LAR_ROOT reads as unset (the shims' rule): a cwd-side surface env never flips the form, and no path runs relative", () => {
+    const clone = fakeClone();
+    const cwd = join(dir, "project");
+    mkdirSync(cwd, { recursive: true });
+    writeFileSync(join(cwd, "lares-surface.env"), "COMPOSE_PROJECT_NAME=elsewhere\n");
+    process.chdir(cwd);
+    process.env["LAR_ROOT"] = "";
+    const mcp = resolveLaresMcp(clone);
+    // The hearth reads `~/.lares` (a scratch HOME under the suite law). The cwd's file never decides the form:
+    // only a surface env at `~/.lares` would, and then the seat names it by its absolute path.
+    const homeEnv = join(homedir(), ".lares", "lares-surface.env");
+    if (mcp?.command === "docker") expect(mcp.args[2]).toBe(homeEnv);
+    else if (mcp !== null) expect(mcp.env["LAR_ROOT"]).toBe(join(homedir(), ".lares"));
+    else expect(existsSync(homeEnv)).toBe(false);
+    if (!existsSync(homeEnv)) expect(mcp?.command).not.toBe("docker");
+  });
+
+  it("a relative LAR_ROOT refuses by name", () => {
+    const clone = fakeClone();
+    process.env["LAR_ROOT"] = "relative/hearth";
+    expect(resolveLaresMcp(clone)).toBeNull();
+    mkdirSync(join(dir, "home", ".copilot"), { recursive: true });
+    const said = String(homeItems({ repo: REPO, homes: { native: join(dir, "home"), windows: null }, mcp: null, claudeCli: false })
+      .find((i) => i.id === "copilot.mcp-seat")!.unreachable ?? "");
+    expect(said).toMatch(/LAR_ROOT names a relative hearth \(relative\/hearth\)/);
+  });
+});
+
+describe("a leaked git env never re-aims the seat's clone", () => {
+  let prior: string | undefined;
+  beforeEach(() => { prior = process.env["GIT_DIR"]; });
+  afterEach(() => { if (prior === undefined) delete process.env["GIT_DIR"]; else process.env["GIT_DIR"] = prior; });
+
+  it("GIT_DIR naming another repository leaves mainCloneOf on the tree it was handed", () => {
+    const honest = mainCloneOf(REPO);
+    const other = join(dir, "other");
+    mkdirSync(other, { recursive: true });
+    execFileSync("git", ["init", "-q", other]);
+    process.env["GIT_DIR"] = join(other, ".git");
+    expect(mainCloneOf(REPO)).toBe(honest);
   });
 });

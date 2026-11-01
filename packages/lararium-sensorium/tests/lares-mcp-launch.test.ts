@@ -71,7 +71,13 @@ describe("the seat's launch reads its mcp first", () => {
     expect(r.stderr).not.toContain("below the pin");
   });
 
-  it.each(["2.3", "2.3.1", "2.10.0"])("control: mcp %s, at or past the pin's release, passes the probe", (version) => {
+  it.each(["2.3.0rc1", "2.3.0.dev0", "2.3.0b2"])("a pre-release of the pin (%s) reads below it and refuses by name", (version) => {
+    const r = launch(version);
+    expect(r.code).not.toBe(0);
+    expect(r.stderr).toContain(`mcp ${version} stands below the pin`);
+  });
+
+  it.each(["2.3", "2.3.1", "2.10.0", "2.3.0.post1"])("control: mcp %s, at or past the pin's release, passes the probe", (version) => {
     const r = launch(version);
     expect(r.stderr).toContain("no lares daemon");
     expect(r.stderr).not.toContain("below the pin");
