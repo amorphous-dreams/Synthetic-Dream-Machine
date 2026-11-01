@@ -4,7 +4,14 @@ import { dialIntentRelay } from "@lararium/mesh";
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";
 import { faceGateServer } from "../src/face-gate-server.js";
 import { custodyGateDoor } from "../src/custody-seat.js";
-import { standIntentRelay } from "../src/intent-relay.js";
+import { intentRelayService } from "../src/intent-relay.js";
+/** The service, its first sweep run: the caller holds it before that sweep, as the vessel does. */
+async function standAndSweep(ports: Parameters<typeof intentRelayService>[0]): Promise<ReturnType<typeof intentRelayService>> {
+  const service = intentRelayService(ports);
+  await service.refresh();
+  return service;
+}
+
 import { handDeadlines } from "../../lararium-mesh/tests/face-gate-fixture.js";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -69,7 +76,7 @@ describe("relay admission over a founded face", () => {
         const gate = faceGateServer(), http = createServer();
         http.on("upgrade", (req, socket, head) => { if (!gate.handleUpgrade(req, socket, head)) socket.destroy(); });
         await new Promise<void>((resolve) => http.listen(0, "127.0.0.1", resolve));
-        const service = await standIntentRelay({ gateServer: gate, rootDoor: custodyGateDoor(), deadlines: handDeadlines(), faces: async (g) => g === group ? face : null, log: () => {} });
+        const service = await standAndSweep({ gateServer: gate, rootDoor: custodyGateDoor(), deadlines: handDeadlines(), faces: async (g) => g === group ? face : null, log: () => {} });
         try {
           const pin = await service.enable(group), port = (http.address() as { port: number }).port;
           const submit = (raw: typeof entry) => dialIntentRelay({ pin, entry: raw, socket: wsDialSocket(`ws://127.0.0.1:${port}${pin.route}`, (url, protocols) => new WebSocket(url, protocols, { perMessageDeflate: false }) as unknown as WsLike) });

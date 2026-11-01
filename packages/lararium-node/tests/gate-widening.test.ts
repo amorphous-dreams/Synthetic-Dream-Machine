@@ -20,7 +20,7 @@ import {
   crossroadsDocUrl, whoBoardDocUrl, kapaeAntigenDocUrl,
   type AntigenRing,
 } from "@lararium/mesh";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 // This vessel's operator identity (its Nexus pubkey) — the federatable planes derive from it.
 const MY_NEXUS = "1122334455667788990011223344556677889900112233445566778899001122";
@@ -54,10 +54,11 @@ describe("the sort — a proven foreign key under each posture", () => {
 
 describe("END-TO-END — an OPEN gate's stranger reaches the federatable set, DENIED the private planes", () => {
   const cls = foreignKey(true)!;
-  const share = (documentId: DocumentId | undefined, antigenRing: AntigenRing | null = null) =>
+  const share = (documentId: DocumentId | undefined, antigenRing: AntigenRing = NO_BANS) =>
     selfSlotShareDecision({
       hasWsSocket: true, peerClass: cls, selfSlotFedGate: fedGate, antigenRing,
       membership: null, planeSeal: null, peerId: FOREIGN_PEER, documentId,
+      shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
     });
 
   test("crossroads crosses (MANDATORY public/infra carriage)", async () => { expect(await share(CROSSROADS)).toBe(true); });
@@ -74,8 +75,9 @@ describe("END-TO-END — an OPEN gate's stranger reaches the federatable set, DE
 describe("D3 — a SAME-OPERATOR peer reads through its proven face, never by class", () => {
   const faceGate = { mayFederate: (documentId: DocumentId) => documentId === PERSONAL_LIKE };
   const same = (documentId: DocumentId, sessionFace: typeof faceGate | null = null) => selfSlotShareDecision({
-    hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: fedGate, antigenRing: null,
+    hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: fedGate, antigenRing: NO_BANS,
     membership: null, planeSeal: null, peerId: "own-device-peer", documentId, sessionFace,
+    shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
   });
   test("RED: a PRIVATE plane stays home from a same-operator peer with no face gate", async () => {
     expect(await same(CATALOG_LIKE)).toBe(false);
@@ -101,6 +103,7 @@ describe("the #59 antigen runs AHEAD — a Kapae'd stranger draws Mu", () => {
     const verdict = await selfSlotShareDecision({
       hasWsSocket: true, peerClass: cls, selfSlotFedGate: fedGate, membership: null, planeSeal: null,
       antigenRing: antigen, peerId: KAPAED_PEER, documentId: CROSSROADS,
+      shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
     });
     expect(verdict).toBe(false);
   });
@@ -108,6 +111,7 @@ describe("the #59 antigen runs AHEAD — a Kapae'd stranger draws Mu", () => {
     const verdict = await selfSlotShareDecision({
       hasWsSocket: true, peerClass: cls, selfSlotFedGate: fedGate, membership: null, planeSeal: null,
       antigenRing: antigen, peerId: FOREIGN_PEER, documentId: CROSSROADS,
+      shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
     });
     expect(verdict).toBe(true);
   });

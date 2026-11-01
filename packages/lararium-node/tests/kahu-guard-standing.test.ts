@@ -32,7 +32,7 @@ import { LARES_DOC_URI, hex, protectedDocGuard, signRealmBagRegistration } from 
 import * as kahuRealm from "../src/kahu-realm.js";
 import { kahuProtectedHolder, keepKahuRegistration } from "../src/kahu-realm.js";
 import { nexusCharterDocPath } from "../src/nexus-doc.js";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 const roots: string[] = [];
 afterAll(() => { for (const r of roots) rmSync(r, { recursive: true, force: true }); });
@@ -135,8 +135,9 @@ describe("the guard serves the standing count and each document's own home", () 
     } as GuardOptions);
     // A same-face session whose face view (the alias lane, the bridge) would carry any document it is asked for.
     const crosses = (documentId: string) => selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: { mayFederate: async () => false }, antigenRing: null, membership: null,
+      hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: { mayFederate: async () => false }, antigenRing: NO_BANS, membership: null,
       planeSeal: null, peerId: "same-face-leaf", documentId, sessionFace: { mayFederate: async () => true }, protectedDocs: guard,
+      shadow: NOBODY_ASIDE,
     } as Parameters<typeof selfSlotShareDecision>[0]);
     const kept = join(sealHome, "nexus", "kahu-realm", nexus);
     try {
