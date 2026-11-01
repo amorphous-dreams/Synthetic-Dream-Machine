@@ -244,7 +244,12 @@ const heldPort = (io: CustodyIo): CustodyIo => ({
 let faceAutoFounder: ((selector: Exclude<FaceSelector, null>) => readonly SlotSpec[]) | null = null;
 export function seatFaceAutoFounder(policy: ((selector: Exclude<FaceSelector, null>) => readonly SlotSpec[]) | null): void { faceAutoFounder = policy; }
 
-export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: CustodyHomes }): CustodyHolder {
+export function makeCustodyHolder(a: {
+  readonly io: CustodyIo; readonly homes: CustodyHomes;
+  /** The face-key minter; the vessel passes none and gets mesh's own. A suite wraps it to watch a key's zeroing. */
+  readonly mintFck?: () => FaceCustodyKey;
+}): CustodyHolder {
+  const mintFaceKey = a.mintFck ?? mintFck;
   let treeKey: TreeKey | null = null;
   // The serving key, opened through the serving tree's S key entry at every unlock and held beside the S key. No serving
   // row stands yet for it to open (the rows move under it with the ember's serving tier); the lock zero-fills it.
@@ -266,12 +271,16 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
   const doUnlock = async (credentials: readonly Credential[]): Promise<HolderUnlock> => {
     if (treeKey !== null) return { reading: "already-unlocked" };
     if (spent >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent" };
+    // CHARGE FIRST: the offering pays before the open runs, so a throw partway (a KDF refusal, a read fault, a refusal on
+    // the serving tree after the node tree opened) keeps the charge; a miss keeps it; an open, or a tree-level reading
+    // that ran no derivation, earns it back.
     const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - spent);
+    spent += charge.cost;
     const result = await unlockCustody({ io: a.io, homes: a.homes, credentials: charge.offered });
     if (result.reading === "no-slot-opens") {
-      spent += charge.cost;
       return charge.short ? { reading: "attempts-spent" } : { reading: "no-slot-opens", attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - spent };
     }
+    spent -= charge.cost;
     if (result.reading !== "opens") return result;
     const opened = await openCustodyRootCarrier({ io: a.io, treeKey: result.treeKey, identityDir: a.homes.identity });
     if (opened.reading !== "opens") {
@@ -289,18 +298,18 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
   const doProve = async (credentials: readonly Credential[]): Promise<HolderProof> => {
     if (treeKey === null || !accepting) return { reading: "locked" };
     if (spent >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent" };
+    // CHARGE FIRST, as the unlock: a throw or a miss keeps the charge; a proof, or a reading that ran no derivation, refunds it.
     const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - spent);
-    const missed = (): HolderProof => {
-      spent += charge.cost;
-      return charge.short ? { reading: "attempts-spent" } : { reading: "no-slot-opens", attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - spent };
-    };
+    spent += charge.cost;
+    const missed = (): HolderProof =>
+      charge.short ? { reading: "attempts-spent" } : { reading: "no-slot-opens", attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - spent };
     const result = await openCustodyNodeKey({ io: a.io, homes: a.homes, credentials: charge.offered });
     if (result.reading === "no-slot-opens") return missed();
-    if (result.reading !== "opens") return result;
+    if (result.reading !== "opens") { spent -= charge.cost; return result; }
     // A route that opens a tree whose key differs from the one held proves nothing about this vessel.
     const same = treeKey !== null && treeKeyEquals(result.treeKey, treeKey);
     result.treeKey.fill(0);
-    if (same) return { reading: "proves" };
+    if (same) { spent -= charge.cost; return { reading: "proves" }; }
     return missed();
   };
   const operation = <T>(fn: () => Promise<T>): Promise<T> => {
@@ -335,17 +344,21 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     // The slot tree derives BEFORE the face's index entry lands: a passphrase pin's derivation runs ~0.3 s off the event
     // loop, and a writer that reads the index between the entry and `faces.set` finds the face standing yet unopened
     // (FaceLocked). Deriving first keeps that window to the commit's own writes, and holds no exclusive lock while it derives.
-    const fck = mintFck();
-    let tree = null as import("@lararium/mesh").SlotTree | null;
-    for (const spec of args.slots) tree = await bindSlot(tree, fck, spec, nativeKdf);
-    return a.io.exclusive(async () => {
-      const held = heldPort(a.io);
-      const { ordinal, fcid } = await appendFaceEntry(held, a.homes.identity, { ask: args.ask ?? null, group: args.group ?? null, ...(args.ordinal !== undefined ? { ordinal: args.ordinal } : {}), ...(args.fillRetired ? { fillRetired: true } : {}) });
-      await commitFaceTree({ io: held, path: faceTreePath(a.homes.identity, fcid), expected: null, key: fck, tree: tree!, carriers: [] });
-      await writeFaceCarrier({ io: held, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: ownerCarrier(fcid), plaintext: encodeOwner({ fcid, group: args.group ?? null }) });
-      faces.set(fcid, { fck, slot: null, ordinal });
-      return { ordinal, fcid };
-    });
+    // A founding that fails anywhere (a slot that refuses to bind, a KDF refusal, a lost race for the index, a commit
+    // that throws) zeroes the face key it minted: nothing else holds it then.
+    const fck = mintFaceKey();
+    try {
+      let tree = null as import("@lararium/mesh").SlotTree | null;
+      for (const spec of args.slots) tree = await bindSlot(tree, fck, spec, nativeKdf);
+      return await a.io.exclusive(async () => {
+        const held = heldPort(a.io);
+        const { ordinal, fcid } = await appendFaceEntry(held, a.homes.identity, { ask: args.ask ?? null, group: args.group ?? null, ...(args.ordinal !== undefined ? { ordinal: args.ordinal } : {}), ...(args.fillRetired ? { fillRetired: true } : {}) });
+        await commitFaceTree({ io: held, path: faceTreePath(a.homes.identity, fcid), expected: null, key: fck, tree: tree!, carriers: [] });
+        await writeFaceCarrier({ io: held, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: ownerCarrier(fcid), plaintext: encodeOwner({ fcid, group: args.group ?? null }) });
+        faces.set(fcid, { fck, slot: null, ordinal });
+        return { ordinal, fcid };
+      });
+    } catch (err) { fck.fill(0); throw err; }
   };
   const doBindFace = async (fcid: string, groupDigest: string): Promise<void> => {
     const seat = faces.get(fcid);
@@ -365,12 +378,14 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     const { fcid, ordinal } = found;
     if (faces.has(fcid)) return { reading: "already-unlocked", fcid, ordinal };
     if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent", fcid };
+    // CHARGE FIRST, against the face's own count: a throw or a miss keeps it; anything else refunds it.
     const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0));
+    faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + charge.cost);
     const opened = await openFaceTree({ io: a.io, homes: a.homes, fcid, credentials: charge.offered });
     if (opened.reading === "no-slot-opens") {
-      faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + charge.cost);
       return charge.short ? { reading: "attempts-spent", fcid } : { reading: "no-slot-opens", fcid, attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0) };
     }
+    faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) - charge.cost);
     if (opened.reading === "tree-absent") return { reading: "tree-absent", fcid };
     if (opened.reading === "tree-unreadable") return { reading: "tree-unreadable", fcid, why: opened.why };
     // THE INDEX ROUTES AND NEVER DECIDES: the face's own D row must name the custody id and the group the index entry names.
