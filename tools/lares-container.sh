@@ -34,14 +34,18 @@
 # container.
 # One lararium per HUMAN: nothing here names a face.
 #
-# LARES_STATE and LARES_WORKSPACE come from the environment or `lares-surface.env` beside the compose file
-# (KEY=VALUE lines, as compose reads them). Neither standing refuses by name.
+# LARES_STATE and LARES_WORKSPACE come from the environment or the hearth's own `lares-surface.env` (KEY=VALUE
+# lines, as compose reads them). Neither standing refuses by name. THE HEARTH OWNS ITS ENV FILE: it stands at
+# `<hearth>/lares-surface.env`, the hearth root `LAR_ROOT` names (else `~/.lares`), the same root the MCP seat's
+# resolver reads to know the hearth stands in this container. The checkout carries no operator config, so no
+# file beside the compose file is read.
 set -eu
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT=$(dirname -- "$HERE")
 COMPOSE_FILE_PATH="${LARES_COMPOSE_FILE:-$ROOT/docker-compose.surface.yml}"
-ENV_FILE="$(dirname -- "$COMPOSE_FILE_PATH")/lares-surface.env"
+HEARTH="${LAR_ROOT:-${HOME:?set HOME or LAR_ROOT to name the hearth root}/.lares}"
+ENV_FILE="$HEARTH/lares-surface.env"
 CLI="packages/lares-cli/bin/lares.mjs"
 
 die() { printf 'lares-container: %s\n' "$*" >&2; exit 2; }
