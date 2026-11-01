@@ -257,7 +257,7 @@ function tick(v) {
 }
 
 /** The parser's reading of a call: [{ name, positional, type, value }] in source order. */
-function oracleReading(ctx, src) {
+function parserReading(ctx, src) {
   const node = ctx.parse(src);
   if (!node) return null;
   return (node.orderedAttributes ?? []).filter((a) => a.name !== "$variable").map((a) => ({
@@ -416,7 +416,7 @@ function beforeReading(h, toks) {
 
 /** Does the parser read `src` as `want`? Positional names are indexes, so only order binds them. */
 function agrees(ctx, src, want, prefixOnly = false) {
-  const got = oracleReading(ctx, src);
+  const got = parserReading(ctx, src);
   if (!got || (prefixOnly ? got.length < want.length : got.length !== want.length)) return false;
   return want.every((w, i) => {
     const g = got[i];
