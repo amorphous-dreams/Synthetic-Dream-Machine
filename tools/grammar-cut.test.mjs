@@ -233,3 +233,16 @@ test('the hand-reviewed pass drops only the BEFORE check: an apostrophe chain cu
 test('a joined run keeps the quotes that held a space, and drops the ones that only shielded a token', () => {
   assert.equal(one('<<~ ward ! ⚠ 2 · "you are new here" · "fine" · ↻ L-Prime>>\n'), '<<~ ward pull=`! ⚠ 2 · "you are new here" · fine · ↻ L-Prime`>>\n');
 });
+
+test('Cut 5: every file-path meta line leaves, a quoted fence included; prose naming the key stays; the census counts it', () => {
+  const src = '```toml meta\ncacheable = true\nfile-path = "bags/x/fixture.mem"\nmana      = 16\n```\n\n````text\n```toml meta\nfile-path = "..."\n```\n````\n\nthe `file-path` key retired\n';
+  const r = cut(src);
+  assert.equal(r.text, '```toml meta\ncacheable = true\nmana      = 16\n```\n\n````text\n```toml meta\n```\n````\n\nthe `file-path` key retired\n');
+  assert.equal(r.counts.filePath, 2);
+  assert.equal(censusText(src, ctx).filePath, 2);
+  assert.equal(censusText(r.text, ctx).filePath, 0);
+  // CONTROL: with the rule off the line stands, and a Canon carrier (envelope-only) still takes it.
+  assert.match(cut(src, { disable: ['file-path'] }).text, /^file-path = "bags/m);
+  assert.equal(cut(src, { envelopeOnly: true }).counts.filePath, 2);
+  assert.equal(cut(r.text).changes, 0);
+});

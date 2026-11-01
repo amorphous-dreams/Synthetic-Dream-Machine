@@ -15,6 +15,9 @@
  * Cut 4: the turn frame folds into one sigil: `<<~ lares aim …>>` + `<<~ set hud="aim" …>>`
  *        becomes `<<~ set lares=`aim` from to … drift-ward>>`; the yield mirrors it (ward first,
  *        from and to last); a lone `~aperture`/`~ooda-ha`/`~drift-ward` becomes a steer.
+ * Cut 5: the `file-path` meta key retires (operator ruling, 2026-11-01): residency rides the
+ *        envelope, so every `file-path = …` line leaves every meta fence, a quoted one included.
+ *        It rides with the envelope, so Canon's hand-cut carriers take it too.
  *
  * ── WHAT IT NEVER GUESSES ───────────────────────────────────────────────────────────────────────
  * It REFUSES and lists, leaving the sigil byte-for-byte: a head with no tiddler (`unsigned`), a
@@ -74,6 +77,8 @@ const ELLIPSIS = /^(…|\.\.\.)$/;
 const SIGIL = /<<(?:[~^!][ \t]*)?[A-Za-z&#][\w&#;-]*(?:[^>]|>(?!>))*>>/g;
 const SUBSTITUTION = /\$\([^)]*\)\$|\$\{[\s\S]*?\}\$/;
 const DEFINITION_LINE = /^\s*\\(?:procedure|define|widget|function|end)\b/;
+/** Cut 5: a retired `file-path` meta line, whole. */
+export const FILE_PATH_LINE = /^file-path[ \t]*=[^\n]*\n/gm;
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
 // Context: signatures, the frame shore, the TW5 oracle, the plane map — all read at runtime.
@@ -623,6 +628,10 @@ export function cutText(text, ctx, opts = {}) {
   if (opts.envelopeOnly) { bodyChanges += at.phase + at.renamed; } else next = at.text;
   const unmapped = opts.envelopeOnly ? [] : [...at.unmapped].sort();
 
+  // ── Cut 5: the retired `file-path` line, envelope-class (the identity fence) ──
+  let filePath = 0;
+  if (!opts.disable?.includes("file-path")) next = next.replace(FILE_PATH_LINE, () => { filePath++; return ""; });
+
   // ── The seal ──
   let seal = "none";
   const standing = ctx.frame.verifyBcc(text);
@@ -631,8 +640,8 @@ export function cutText(text, ctx, opts = {}) {
     seal = ctx.frame.verifyBcc(stamped);
     if (seal === "ok") next = stamped;
   }
-  const changes = flat.length + (opts.envelopeOnly ? 0 : at.phase + at.renamed);
-  return { text: next, changes, refusals, unmapped, bodyChanges, seal, lists, counts: { ...counts, phase: at.phase, renamed: at.renamed } };
+  const changes = flat.length + filePath + (opts.envelopeOnly ? 0 : at.phase + at.renamed);
+  return { text: next, changes, refusals, unmapped, bodyChanges, seal, lists, counts: { ...counts, phase: at.phase, renamed: at.renamed, filePath } };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -641,7 +650,7 @@ export function cutText(text, ctx, opts = {}) {
 
 export function censusText(text, ctx) {
   const spans = spansOf(ctx, text);
-  const c = { sigils: 0, arrows: 0, quotedNamed: 0, positional: 0, spacedAt: 0, phase: 0, turnFrame: 0 };
+  const c = { sigils: 0, arrows: 0, quotedNamed: 0, positional: 0, spacedAt: 0, phase: 0, turnFrame: 0, filePath: 0 };
   for (const m of text.matchAll(SIGIL)) {
     if (spanAt(spans, m.index)?.kind === "toml") continue;
     const h = readHead(m[0]);
@@ -657,6 +666,7 @@ export function censusText(text, ctx) {
     }
   }
   c.phase = [...text.matchAll(new RegExp(`φ[ \\t]+@(?=[${PHASES}])`, "g"))].length;
+  c.filePath = [...text.matchAll(FILE_PATH_LINE)].length;
   for (const m of text.matchAll(/(^|\s)@([A-Za-z][\w-]*)(?=([\s\S]?))/gm)) {
     if (m[3] === "/" && (ctx.planes.scopes.has(m[2]) || ctx.planes.out.has(m[2]))) continue;
     if (ctx.planes.out.has(m[2])) continue;
@@ -715,7 +725,7 @@ async function main(argv) {
     return 0;
   }
 
-  const report = { files: files.length, touched: [], changes: 0, turns: 0, cut: 0, phase: 0, renamed: 0, refusals: [], unmapped: {}, canonBody: {}, sealBlocked: [], partialTurns: [] };
+  const report = { files: files.length, touched: [], changes: 0, turns: 0, cut: 0, phase: 0, renamed: 0, filePath: 0, refusals: [], unmapped: {}, canonBody: {}, sealBlocked: [], partialTurns: [] };
   const outputs = [];
   for (const rel of files) {
     const before = readFileSync(join(repo, rel), "utf8");
@@ -728,7 +738,7 @@ async function main(argv) {
     if (r.seal !== "ok" && r.seal !== "none") report.sealBlocked.push(`${rel} (${r.seal})`);
     report.touched.push(rel);
     report.changes += r.changes; report.turns += r.counts.turns; report.cut += r.counts.cut;
-    report.phase += r.counts.phase; report.renamed += r.counts.renamed;
+    report.phase += r.counts.phase; report.renamed += r.counts.renamed; report.filePath += r.counts.filePath;
     outputs.push({ rel, before, after: r.text });
   }
   const byKind = {};
@@ -738,7 +748,7 @@ async function main(argv) {
   const oracle = report.refusals.filter((x) => x.kind === "oracle-after").length;
   const reds = Object.keys(report.unmapped).length + oracle + Object.keys(report.canonBody).length + report.sealBlocked.length;
 
-  console.log(`grammar-cut ${write ? "WRITES" : "dry run"}: ${report.touched.length} of ${files.length} file(s) change · ${report.cut} call(s) cut · ${report.turns} turn firing(s) folded · ${report.phase} phase mark(s) fused · ${report.renamed} at-name(s) renamed`);
+  console.log(`grammar-cut ${write ? "WRITES" : "dry run"}: ${report.touched.length} of ${files.length} file(s) change · ${report.cut} call(s) cut · ${report.turns} turn firing(s) folded · ${report.phase} phase mark(s) fused · ${report.renamed} at-name(s) renamed · ${report.filePath} file-path line(s) dropped`);
   console.log(`  refusals: ${report.refusals.length} ${JSON.stringify(byKind)}`);
   console.log(`  unsigned and prose-voice heads: ${JSON.stringify(Object.fromEntries(Object.entries(byHead).sort((a, b) => b[1] - a[1])))}`);
   console.log(`  partial turns (folded, a partner missing): ${report.partialTurns.length}`);
