@@ -7,6 +7,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { loadContext, cutText, censusText, canonCarriers, CANON_CUT_WHOLE } from './grammar-cut.mjs';
 
 const REPO = fileURLToPath(new URL('../', import.meta.url));
@@ -233,6 +237,17 @@ test('KNOWN POSITIVE: the census counts a fixture whose counts are known', () =>
 test('the strip list and a slug over a slash: a voice loses its at-sign, a title prefix takes the bare slug', () => {
   assert.equal(one('> @salt-crust: kid.\n'), '> salt-crust: kid.\n');
   assert.equal(one('title: @sdm/tags/x\n'), 'title: sdm/tags/x\n');
+});
+
+test('the cut reads no git history: in a clone without the old range it still runs over a carrier', () => {
+  // CI reads a standalone clone; a history-derived list read null there and threw. An empty repository
+  // stands in for that clone: no revision resolves, and the tool must still run.
+  const empty = mkdtempSync(join(tmpdir(), 'grammar-cut-nohist-'));
+  spawnSync('git', ['init', '-q', '--bare', empty]);
+  const r = spawnSync(process.execPath, [fileURLToPath(new URL('./grammar-cut.mjs', import.meta.url)), '--files', 'bags/lares/ha.ka.ba/lares/README.mem'],
+    { cwd: REPO, encoding: 'utf8', env: { ...process.env, GIT_DIR: empty } });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /0 of 1 file\(s\) change/);
 });
 
 test('Canon carriers touched but never cut leave the envelope-only list; the rest stay on it', () => {
