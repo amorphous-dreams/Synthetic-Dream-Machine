@@ -33,7 +33,7 @@ import { mkdirSync } from "node:fs";
 import {
   assertStoreUnoccupied, bindSlot, commitSlotTree, decodeSlotTree, mintServingKey, mintTreeKey,
   openTreeKey, readFckCarrier, readSCarrier, settleRotation, unbindSlot,
-  type Credential, type CustodyIo, type ServingKey, type SlotSpec, type SlotTree, type TreeKey, type SCarrierReading,
+  type Credential, type CustodyIo, type KdfPort, type ServingKey, type SlotSpec, type SlotTree, type TreeKey, type SCarrierReading,
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 import { mintCustodyRoot, sealCustodyRoot, type CustodyRoot } from "./custody-root.js";
@@ -151,12 +151,14 @@ export async function openServingTree(args: {
   readonly io:          CustodyIo;
   readonly homes:       CustodyHomes;
   readonly credentials: readonly Credential[];
+  /** The port the serving tree's passphrases derive through; the host's native scrypt unless a suite names another. */
+  readonly kdf?:        KdfPort;
 }): Promise<{ readonly reading: "opens"; readonly sk: ServingKey } | { readonly reading: ServingUnopenable; readonly why: string }> {
   const path = skSlotsPath(args.homes.identity);
   const t = decodeSlotTree(await args.io.read(path));
   if (t.reading === "absent") return { reading: "serving-tree-absent", why: `no serving tree stands at ${path}` };
   if (t.reading === "unreadable") return { reading: "serving-tree-unreadable", why: t.why };
-  const o = await openTreeKey(t.tree, args.credentials, nativeKdf);
+  const o = await openTreeKey(t.tree, args.credentials, args.kdf ?? nativeKdf);
   if (o.reading !== "opens") return { reading: "no-slot-opens", why: "no slot of the serving tree opens under what was presented" };
   return { reading: "opens", sk: o.treeKey as unknown as ServingKey };
 }
@@ -191,16 +193,29 @@ export async function openCustodyNodeKey(args: {
   return { reading: "opens", treeKey: o.treeKey, slot: o.slot };
 }
 
-/** Open the node key with the presented credentials, then the serving key if the same route fits its tree. Never throws on a credential. */
+/** The two opens an unlock runs. The vessel passes none and gets the real pair; a suite wraps them to watch a key. */
+export interface CustodyOpeners {
+  readonly node:    typeof openCustodyNodeKey;
+  readonly serving: typeof openServingTree;
+}
+const CUSTODY_OPENERS: CustodyOpeners = { node: openCustodyNodeKey, serving: openServingTree };
+
+/**
+ * Open the node key with the presented credentials, then the serving key if the same route fits its tree. Never throws on
+ * a credential. A KDF refusal on the serving tree throws `kdf-refused`, and the node key it already opened zeroes first:
+ * no caller receives it then, so nobody else could.
+ */
 export async function unlockCustody(args: {
   readonly io:          CustodyIo;
   readonly homes:       CustodyHomes;
   readonly credentials: readonly Credential[];
-}): Promise<CustodyUnlock> {
+}, open: CustodyOpeners = CUSTODY_OPENERS): Promise<CustodyUnlock> {
   const { io, homes } = args;
-  const o = await openCustodyNodeKey(args);
+  const o = await open.node(args);
   if (o.reading !== "opens") return o;
-  const s = await openServingTree({ io, homes, credentials: args.credentials });
+  let s: Awaited<ReturnType<typeof openServingTree>>;
+  try { s = await open.serving({ io, homes, credentials: args.credentials }); }
+  catch (err) { o.treeKey.fill(0); throw err; }
   return { reading: "opens", treeKey: o.treeKey, sk: s.reading === "opens" ? s.sk : null, slot: o.slot };
 }
 
