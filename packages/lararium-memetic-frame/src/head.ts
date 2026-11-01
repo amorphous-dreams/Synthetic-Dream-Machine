@@ -120,9 +120,12 @@ export const carrierHeadLinePattern = (flags = ""): RegExp =>
 export const carrierMarkPattern = (which: "head" | "release", flags = ""): RegExp =>
   new RegExp(`${CODE(which === "head" ? SOH_CODES : EOT_CODES)}${INNER}>>`, flags);
 
-/** The release, which resolves toward an address it cannot know. */
+/**
+ * The release, which resolves toward an address it cannot know. Strict as the head: a release is its
+ * code and ``to=`?` `` and nothing between — the retired arrow, or any stray word, reads as a tear.
+ */
 export const carrierReleasePattern = (flags = ""): RegExp =>
-  new RegExp(`${CODE(EOT_CODES)}${INNER}\\sto=${UNK}\\s*>>`, flags);
+  new RegExp(`${CODE(EOT_CODES)}\\s+to=${UNK}\\s*>>`, flags);
 
 const CODE_RE = new RegExp(`&#x(${frameHex("SOH")}|${frameHex("EOT")});`);
 const NS_RE = /\bnamespace=`([^`]*)`/;
