@@ -298,7 +298,8 @@ export function gateSessionRegistry(
 export interface StoodGate {
   /** The exact upgrade pathname: `<route>/<knock>`. */
   readonly path: string;
-  /** Stop answering on this path; a socket already accepted runs on. Idempotent. */
+  /** Stop answering on this path and cut every socket this gate seated: a gate stood down keeps no session it opened
+   *  (a Nexus this vessel stopped carrying keeps no stranger). Idempotent. */
   unstand(): void;
 }
 
@@ -347,7 +348,8 @@ export function faceGateServer<Outcome extends GateOutcome | IntentRelayOutcome 
   if (!Number.isInteger(maxSockets) || maxSockets < 1) throw new RangeError("face-gate-server: the socket bound names a count of at least one");
   const heartbeatMs = opts.heartbeatMs ?? GATE_SERVER_HEARTBEAT_MS;
   if (!Number.isSafeInteger(heartbeatMs) || heartbeatMs < 1 || heartbeatMs > GATE_DEADLINE_MAX_BASE_MS) throw new RangeError("face-gate-server: the heartbeat names a whole number of milliseconds");
-  const gates = new Map<string, { readonly gate: StandableGate; readonly knock: string }>();
+  // Each stood gate holds the sockets it seated, so standing it down cuts them (T19, test-recut-road).
+  const gates = new Map<string, { readonly gate: StandableGate; readonly knock: string; readonly seated: Set<WebSocket> }>();
   // Paths this server once stood: a knock on one after the close is claimed and destroyed by name.
   const once = new Set<string>();
   const sockets = new Set<WebSocket>();
@@ -383,12 +385,17 @@ export function faceGateServer<Outcome extends GateOutcome | IntentRelayOutcome 
       if (closed) throw new Error("face-gate-server: the server stands closed");
       const path = gatePath(pin);
       if (gates.has(path)) throw new Error(`face-gate-server: a gate already stands on ${path}`);
-      const entry = Object.freeze({ gate, knock: gateKnock(pin) });
+      const entry = Object.freeze({ gate, knock: gateKnock(pin), seated: new Set<WebSocket>() });
       gates.set(path, entry);
       once.add(path);
       return Object.freeze({
         path,
-        unstand() { if (gates.get(path) === entry) gates.delete(path); },
+        unstand() {
+          if (gates.get(path) !== entry) return;
+          gates.delete(path);
+          for (const ws of [...entry.seated]) { try { ws.terminate(); } catch { /* already gone */ } }
+          entry.seated.clear();
+        },
       });
     },
     handleUpgrade(req, socket, head) {
@@ -414,8 +421,11 @@ export function faceGateServer<Outcome extends GateOutcome | IntentRelayOutcome 
       socket.once("close", settle);
       wss.handleUpgrade(req, socket, head, (ws) => {
         settle();
-        if (closed) { ws.terminate(); return; }
+        // An upgrade that completes after its gate stood down reaches nobody, as one after the close does.
+        if (closed || gates.get(path) !== stood) { ws.terminate(); return; }
         sockets.add(ws);
+        stood.seated.add(ws);
+        ws.once("close", () => stood.seated.delete(ws));
         follow(ws);
         ws.once("close", () => sockets.delete(ws));
         const gateSocket = wsGateSocket(ws as unknown as GateWire, { knock: stood.knock, message1: flight.message1 }, bound, byteBound);

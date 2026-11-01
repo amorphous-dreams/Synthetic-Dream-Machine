@@ -27,7 +27,7 @@ import {
   LARARIUM_DOC_URI, LARES_DOC_URI, deterministicDocUrl, faceAtomKeyFromSeed, kahuCabalStanding, kahuRealmGroup, materializeSharedLarDoc,
   canonicalJson, parseRealmBagRegistration, realmBagRegistrationCounts, realmBagRegistrationsFromDoc, realmDocUrl, signRealmBagRegistration,
   writeRealmBagRegistration, ed25519SignerFromSeed, admittedKeyOf, followNexusKeyLine, kahuCabalActsFromBoard, realmBagKey, foundingRoster, nexusAidOf,
-  type LarDoc, type RealmBagRegistration, type StewardSigner,
+  type LarDoc, type ProtectedDocClass, type RealmBagRegistration, type StewardSigner,
 } from "@lararium/mesh";
 import { createHmac } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
@@ -507,6 +507,44 @@ async function readKahuProtected(opts: { readonly sealHome: string; readonly can
     } finally { for (const seed of seeds) seed.fill(0); }
   }
   return { homes: ids, failures };
+}
+
+/** What the protected readings read off the Kahu canon holder (`kahuProtectedHolder`). */
+export interface KahuProtectedReadings {
+  ids(): ReadonlyMap<string, "kahu-canon">;
+  settled(): Promise<void>;
+  pending(): boolean;
+  incomplete(): boolean;
+}
+
+/**
+ * THE PROTECTED READINGS the one share guard takes (`protectedDocGuard`): the vessel's private documents, then the Kahu canon
+ * over them, one id map rebuilt only when either moves. The holder stands late (the composer stands it in `systemCanon`), so
+ * it is read through a cell: while the cell reads null the holder has NOT STOOD, and the readings read INCOMPLETE, so the guard
+ * withholds every document from every wire peer (T22, test-recut-road: an input that has not stood withholds; defence in
+ * depth, since the build order keeps a peer out of that window today). A torn vessel-private book reads incomplete too.
+ */
+export function protectedDocsOver(
+  holder: () => KahuProtectedReadings | null,
+  vesselPrivate: { ids(): ReadonlySet<string>; torn(): boolean },
+): { ids(): ReadonlyMap<string, ProtectedDocClass>; settled(): Promise<void>; pending(): boolean; incomplete(): boolean } {
+  const none: ReadonlyMap<string, "kahu-canon"> = new Map();
+  let memo: { kahu: ReadonlyMap<string, ProtectedDocClass>; priv: ReadonlySet<string>; size: number; map: ReadonlyMap<string, ProtectedDocClass> } | null = null;
+  return {
+    ids: () => {
+      const kahu = holder()?.ids() ?? none;
+      const priv = vesselPrivate.ids();
+      if (memo && memo.kahu === kahu && memo.priv === priv && memo.size === priv.size) return memo.map;
+      const map = new Map<string, ProtectedDocClass>();
+      for (const id of priv) map.set(id, "vessel-private");
+      for (const [id, cls] of kahu) map.set(id, cls);
+      memo = { kahu, priv, size: priv.size, map };
+      return map;
+    },
+    settled: () => holder()?.settled() ?? Promise.resolve(),
+    pending: () => holder()?.pending() === true,
+    incomplete: () => { const h = holder(); return h === null || h.incomplete() || vesselPrivate.torn(); },
+  };
 }
 
 /**

@@ -6,13 +6,20 @@ import { dialFaceGate, dialIntentRelay, deriveGateBundle, sovereignGateRoot, sov
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";
 import { faceGateServer, gatePath, gateSessionRegistry } from "../src/face-gate-server.js";
 import { custodyGateDoor } from "../src/custody-seat.js";
-import { standIntentRelay, type IntentRelayService } from "../src/intent-relay.js";
+import { intentRelayService, type IntentRelayService } from "../src/intent-relay.js";
 import { enableIntentRelayFace, disableIntentRelayFace } from "../src/intent-relay-ring.js";
 import { intentRelayKeyOrMint, intentRelayPublicKey, signAsIntentRelay } from "../src/intent-relay-key-store.js";
 import { openRelayGateSeed } from "../src/relay-gate-seed.js";
 import { startCarriageRelay } from "../src/carriage-relay.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { AUDIENCE, handDeadlines, presenter, world } from "../../lararium-mesh/tests/face-gate-fixture.js";
+
+/** The service, its first sweep run: the caller holds it before that sweep, as the vessel does. */
+async function standAndSweep(ports: Parameters<typeof intentRelayService>[0]): Promise<IntentRelayService> {
+  const service = intentRelayService(ports);
+  await service.refresh();
+  return service;
+}
 
 const group = "b".repeat(64);
 const entry = { body: { entry: "intent" } } as unknown as SignedIntentEntry;
@@ -31,7 +38,7 @@ async function rig() {
   const log: string[] = [];
   const deadlines = handDeadlines();
   const stand = (faces: (g: string) => Promise<{ group: string; admit: () => Promise<{ status: "admitted"; receipt: unknown }> } | null>) =>
-    standIntentRelay({ gateServer: server, rootDoor: custodyGateDoor(), deadlines, faces, log: (message) => log.push(message) });
+    standAndSweep({ gateServer: server, rootDoor: custodyGateDoor(), deadlines, faces, log: (message) => log.push(message) });
   const face = async (g: string) => g === group ? { group: g, admit: async () => ({ status: "admitted" as const, receipt: { signature: await signAsIntentRelay(image) } }) } : null;
   const dial = (service: IntentRelayService) => wsDialSocket(`ws://127.0.0.1:${port}${service.pinOf(group)!.route}`, (url, protocols) => new WebSocket(url, protocols, { perMessageDeflate: false }) as unknown as WsLike);
   return { server, stand, face, dial, log, deadlines, base: `ws://127.0.0.1:${port}` };
@@ -166,7 +173,7 @@ describe("the relay service keeps its stands owned", () => {
     await intentRelayKeyOrMint(); await enableIntentRelayFace(group); await enableIntentRelayFace(second);
     let calls = 0, broken = true;
     const dispatcher = { registerUpgrade: () => { if (broken && ++calls === 2) throw new Error("registration failed"); return () => {}; } } as never;
-    const service = await standIntentRelay({ gateServer: r.server, dispatcher, rootDoor: custodyGateDoor(), deadlines: r.deadlines, faces: facesOf(group, second), log: (m) => r.log.push(m) });
+    const service = await standAndSweep({ gateServer: r.server, dispatcher, rootDoor: custodyGateDoor(), deadlines: r.deadlines, faces: facesOf(group, second), log: (m) => r.log.push(m) });
     expect(service.standing().map((s) => s.group)).toEqual([group]);
     expect(r.server.paths()).toHaveLength(1);
     broken = false;
@@ -185,7 +192,7 @@ describe("the relay service keeps its stands owned", () => {
       let release!: () => void, resolving!: () => void, slow = false;
       const held = new Promise<void>((resolve) => { release = resolve; });
       const started = new Promise<void>((resolve) => { resolving = resolve; });
-      const service = await standIntentRelay({ gateServer: r.server, rootDoor: custodyGateDoor(), deadlines: r.deadlines, faces: async (g) => { if (slow) { resolving(); await held; } return facesOf(group)(g); }, log: (m) => r.log.push(m) });
+      const service = await standAndSweep({ gateServer: r.server, rootDoor: custodyGateDoor(), deadlines: r.deadlines, faces: async (g) => { if (slow) { resolving(); await held; } return facesOf(group)(g); }, log: (m) => r.log.push(m) });
       expect(r.server.paths()).toHaveLength(1);
       slow = true;
       const refreshing = service.refresh();
@@ -199,13 +206,47 @@ describe("the relay service keeps its stands owned", () => {
     }
   });
 
+  test("RED: the caller owns the service before its first sweep, so a close while one face's read stalls leaves no route, and the next stand stands its gate; CONTROL: an unstalled stand and close, then the next stand", async () => {
+    // Train t3's Sol read (MEDIUM): the first sweep stood one face's route while it awaited another face, and the caller held
+    // no service to close until that sweep ended. A stalled read left the route owned past the teardown, and the next
+    // composition's stand of that face read "a gate already stands".
+    seat = await seatScratchCustody("relay-own-first");
+    const r = await rig();
+    await intentRelayKeyOrMint(); await enableIntentRelayFace(group); await enableIntentRelayFace(second);
+    for (const stall of [false, true]) {
+      let release!: () => void, stalled!: () => void;
+      const held = new Promise<void>((resolve) => { release = resolve; });
+      const reached = new Promise<void>((resolve) => { stalled = resolve; });
+      // The caller holds the service before its first sweep runs.
+      const service = intentRelayService({
+        gateServer: r.server, rootDoor: custodyGateDoor(), deadlines: r.deadlines, log: (m) => r.log.push(m),
+        faces: async (g) => { if (stall && g === second) { stalled(); await held; } return facesOf(group, second)(g); },
+      });
+      const standing = service.refresh();
+      if (stall) {
+        await reached;                                             // the first face's route stands; the second face's read stalls
+        expect(r.server.paths()).toHaveLength(1);
+        service.close();                                           // the teardown, mid-sweep
+        expect(r.server.paths(), "a route outlived the teardown that met a stalled sweep").toEqual([]);
+        release();
+      }
+      await standing;
+      service.close();
+      expect(r.server.paths()).toEqual([]);
+      // The next composition's stand stands every enabled face's gate, none "already" standing.
+      const next = await standAndSweep({ gateServer: r.server, rootDoor: custodyGateDoor(), deadlines: r.deadlines, faces: facesOf(group, second), log: (m) => r.log.push(m) });
+      expect(next.standing().map((s) => s.group).sort()).toEqual([group, second].sort());
+      next.close();
+    }
+  });
+
   test("RED: a locked face's route closes on the refresh the lock sets off and a dial refuses; CONTROL: the other face's relay keeps admitting", async () => {
     seat = await seatScratchCustody("relay-lock");
     const r = await rig();
     await intentRelayKeyOrMint(); await enableIntentRelayFace(group); await enableIntentRelayFace(second);
     let locked = false;
     const admit = async () => ({ status: "admitted" as const, receipt: { signature: await signAsIntentRelay(image) } });
-    const service = await standIntentRelay({ gateServer: r.server, rootDoor: custodyGateDoor(), deadlines: r.deadlines, faces: async (g) => g === second && locked ? null : { group: g, admit }, log: (m) => r.log.push(m) });
+    const service = await standAndSweep({ gateServer: r.server, rootDoor: custodyGateDoor(), deadlines: r.deadlines, faces: async (g) => g === second && locked ? null : { group: g, admit }, log: (m) => r.log.push(m) });
     const pinOne = service.pinOf(group)!, pinTwo = service.pinOf(second)!;
     const dial = (pin: typeof pinOne) => dialIntentRelay({ pin, entry, socket: wsDialSocket(`${r.base}${pin.route}`, (url, protocols) => new WebSocket(url, protocols, { perMessageDeflate: false }) as unknown as WsLike) });
     expect((await dial(pinTwo)).status).toBe("admitted");

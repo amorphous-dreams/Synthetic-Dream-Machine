@@ -36,7 +36,7 @@ import { makeEdgeShadowRing, type EdgeShadowRing } from "../src/edge-shadow-ring
 import { floorShadowRing } from "../src/floor-fleet-lanes.js";
 import { makeGateSorter } from "../src/socket-sorter.js";
 import { gateShadowRing } from "../src/gate-shadow-ring.js";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 import { decideAndServeWantBlock, type CasWireServerDeps } from "../src/cas-wire.js";
 import type { FaceScope, GateSortInput, VesselFaceKey } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
@@ -393,10 +393,11 @@ describe("a device the fleet root set aside — the sorter, the share verdict an
       const MY_NEXUS = "11".repeat(32);
       const share = (peerId: string, documentId: DocumentId, sibling = false) => selfSlotShareDecision({
         hasWsSocket: !sibling, sibling, siblingGate: { mayFederate: () => true }, peerClass: "same-operator",
-        selfSlotFedGate: new DeterministicFederationGate(MY_NEXUS), antigenRing: null, membership: null, planeSeal: null,
+        selfSlotFedGate: new DeterministicFederationGate(MY_NEXUS), antigenRing: NO_BANS, membership: null, planeSeal: null,
         peerId, documentId, shadow: ring,
         // D3: the gate of the face each session proved; it would hand over the face's every plane, so only the shadow refuses.
         sessionFace: { mayFederate: () => true },
+        protectedDocs: NOTHING_CLASSED,
       });
       const PRIVATE = idOf(realmDocUrl("a-private-plane")), SHELF = idOf(crossroadsDocUrl(MY_NEXUS));
       for (const doc of [PRIVATE, SHELF]) {

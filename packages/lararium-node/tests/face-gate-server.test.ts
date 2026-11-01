@@ -414,6 +414,22 @@ describe("the server's own bounds over a live socket", () => {
     expect(s.refusals).toHaveLength(1);                                 // the dispatcher destroyed that one, unclaimed
   });
 
+  test("RED: unstand cuts every socket its gate seated (a Nexus no longer carried keeps no stranger); CONTROL: another gate's socket stands", async () => {
+    const s = await stand();
+    const a = await seatedWorld({ nexus: "nexus-a.synthetic" });
+    const b = await seatedWorld({ nexus: "nexus-b.synthetic" });
+    const stoodA = s.server.stand({ gate: deafGate(), pin: a.w.pin });
+    const pathB = s.server.stand({ gate: deafGate(), pin: b.w.pin }).path;
+    const atA = await rawKnock(s.base(stoodA.path));
+    const atB = await rawKnock(s.base(pathB));
+    expect(atA.ws).not.toBeNull();
+    expect(atB.ws).not.toBeNull();
+    stoodA.unstand();
+    expect(s.server.paths()).toEqual([pathB]);
+    expect(await stillOpen(atA.closed)).toBe(false);                   // RED on the span: the seated socket outlives its gate
+    expect(await stillOpen(atB.closed)).toBe(true);                    // CONTROL: the gate still standing keeps its own
+  });
+
   test("a live gate on the process timer cuts a silent socket at its lapse; RED: no base past the bound", async () => {
     const s = await stand();
     const short = await world({ lapses: timerGateDeadlines({ baseMs: 30 }) });

@@ -8,7 +8,14 @@ import { wsDialSocket, type WsLike } from '../../lararium-mesh/src/ws-dial-socke
 import { handDeadlines } from '../../lararium-mesh/tests/face-gate-fixture.js';
 import { faceGateServer, gatePath } from '../src/face-gate-server.js';
 import { custodyGateDoor } from '../src/custody-seat.js';
-import { standIntentRelay } from '../src/intent-relay.js';
+import { intentRelayService } from '../src/intent-relay.js';
+/** The service, its first sweep run: the caller holds it before that sweep, as the vessel does. */
+async function standAndSweep(ports: Parameters<typeof intentRelayService>[0]): Promise<ReturnType<typeof intentRelayService>> {
+  const service = intentRelayService(ports);
+  await service.refresh();
+  return service;
+}
+
 import { INTENT_RELAY_FACES_FILE } from '../src/intent-relay-ring.js';
 import { Repo } from '@automerge/automerge-repo';
 import { afterEach, expect, test, vi } from 'vitest';
@@ -91,7 +98,7 @@ async function live(f: Awaited<ReturnType<typeof fixture>>) {
   http.on('upgrade', (req, socket, head) => { if (!gate.handleUpgrade(req, socket, head)) socket.destroy(); });
   await new Promise<void>(resolve => http.listen(0, '127.0.0.1', resolve));
   const port = (http.address() as { port: number }).port;
-  const stand = () => standIntentRelay({ gateServer: gate, rootDoor: custodyGateDoor(), deadlines: handDeadlines(), faces: async g => g === f.group ? { group: g, admit: entry => admitAgentEntry(f.ports, entry, f.relay) } : null, log: () => {} });
+  const stand = () => standAndSweep({ gateServer: gate, rootDoor: custodyGateDoor(), deadlines: handDeadlines(), faces: async g => g === f.group ? { group: g, admit: entry => admitAgentEntry(f.ports, entry, f.relay) } : null, log: () => {} });
   const submit = (pin: NonNullable<ReturnType<Awaited<ReturnType<typeof stand>>['pinOf']>>, entry: typeof f.entry) => dialIntentRelay({ pin, entry, socket: wsDialSocket(`ws://127.0.0.1:${port}${pin.route}`, (url, protocols) => new WebSocket(url, protocols, { perMessageDeflate: false }) as unknown as WsLike) });
   const close = async () => { gate.close(); await new Promise<void>(resolve => http.close(() => resolve())); };
   return { gate, stand, submit, port, close };

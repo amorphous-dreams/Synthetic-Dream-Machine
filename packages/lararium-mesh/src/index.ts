@@ -170,6 +170,8 @@ export * from "./persona-group-secret.js";
 export * from "./persona-kel-drop.js";
 export type { FederationGate, SiblingShare, ShadowConsult } from "./federation-gate.js";
 export { presenterStandsAside } from "./federation-gate.js";
+export { gateSweep } from "./gate-sweep.js";
+export type { GateSweepSeat, GateSweep, GateSweepPorts } from "./gate-sweep.js";
 export { DeterministicFederationGate, federationShareDecision, identityShareDecision, siblingShareDecision, shareConfigOf } from "./federation-gate.js";
 export type { SharePolicyFn, ShareConfigOf, ShareVerdictRecord, ShareVerdictSink } from "./federation-gate.js";
 export type { IdentityRing } from "./federation-gate.js";

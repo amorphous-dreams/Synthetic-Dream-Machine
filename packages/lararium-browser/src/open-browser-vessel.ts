@@ -1088,6 +1088,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       repo,
       catalogHandle,
       waitHandle: <T>(url: AutomergeUrl, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, fallback),
+      // THE SYSTEM CANON THE SHORE NAMES: this browser vessel reads no Kahu realm registration today, so it names none and
+      // reads the floor through `@oracle`; a browser that stands the node's role later names its canon here.
+      systemCanon: async () => ({}),
 
       // Genesis is required only for a first materialization or a source-backed byte fetch. The oracle island is a LIVE
       // CRDT under the DETERMINISTIC doc id (oracleGenesisDocUrl): materializeGenesisIsland
