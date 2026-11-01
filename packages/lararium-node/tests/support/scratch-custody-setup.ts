@@ -96,8 +96,9 @@ export async function openScratch(holder: CustodyHolder): Promise<void> {
   if (opened === null) {
     throw new ScratchCustodyRefused(`the custody standing at ${identity} reads ${reading} under the scratch routes`);
   }
-  // The route that opened the node tree tries every face tree too (`--all`): a face it does not fit stays shut.
-  await holder.unlockFaces(opened);
+  // The scratch route that opened the node tree tries every face tree too (`--all`): a face it does not fit stays shut.
+  // A staged root keeps both routes for its faces, since a face there may stand under either.
+  await holder.unlockFaces(opened === routes[0] ? opened : routes.flat());
 }
 
 function arm(): void {

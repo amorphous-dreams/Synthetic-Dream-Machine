@@ -53,7 +53,7 @@ describe.skipIf(wikiSkip)(`a peer's save reaches an open wiki${skipNote}`, () =>
     const peerStore = new AutomergeDocStore(peerHandle, workingBag);
     for (const title of [temp, volatile, sentinel]) await peerStore.put({ tiddler: { title, text: "from a peer" } }, { kind: "crdt-remote", edgeIsland: "peer" });
     r.handles[workingBag]!.merge(peerHandle);
-    await r.adaptor.ledger.whenLanded(sentinel, (landed) => landed.tiddler != null, landingDeadline());
+    await r.adaptor.ledger.whenLanded(sentinel, (landed) => landed.tiddler != null, landingDeadline(3000));
     await turns(24);
     await r.adaptor.landingIdle();
 
