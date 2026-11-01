@@ -34,7 +34,7 @@ written           = "2026-10-31"
 
 ''The lane law binds every lane here'' (`controller-handoff#/the-lane-law`, `mixed-model-swarm`): one lead per lane in its own worktree; red first, with a control; suites under a scratch `HOME` and a scratch `LAR_ROOT` with `LAR_BAGS` unset; never a boot in the tracked tree; canon lines in each commit, L-Prime kept.
 
-''Train letter and rows.'' This train reads as ''T''. Its rows read `T1` to `T29` (#/the-rows): wave 0 holds the cures the cut reads found, and waves A to C the re-cut itself, and its lanes read `recut-<ground>`.
+''Train letter and rows.'' This train reads as ''T''. Its rows, their numbers and their statuses stand in the road's stride alone (#/the-rows), and this kit copies none: wave 0 holds the cures the cut reads found, and waves A to C the re-cut itself, and its lanes read `recut-<ground>`.
 
 <<~/ahu>>
 
@@ -182,6 +182,6 @@ Train T's complete rows move to the road's own #/o-takiage at each land. This ki
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HsEhQPdLPGl9T3_xqKQV6j_tBPb_0Nzs5h27-lNrolg
+<<^ code="&#x0003;">>ni:///sha-256;KTSRGZcfHs-f8-N2wP8RN5IPBjkH6B1ZAVzECYnjHzY
 
 <<^ code="&#x0004;" -> to="?">>

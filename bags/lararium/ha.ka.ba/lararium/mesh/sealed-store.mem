@@ -252,6 +252,7 @@ A carrier names a bag by an opaque ''locator'': a keyed digest of the bag's id u
 A face's backup bundle carries the content keys its vessel held, so a face that returns on a fresh device reads its own past (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-bundle">>). Two acts of the holder serve it.
 
 * ''A cut seals the memory section inside the holder.'' The holder gathers each key it COUNTED AND HELD among the bags its face's composition names. It writes one entry per bag and key version: the bag's id, the bag's locator, the key version id and the key. It seals the section under the bundle key: to the public half of a key pair that key alone derives, which the cut names. It answers that ciphertext beside a list that names bags and versions and no key. No secret crosses the island's port at a cut.
+* ''A seat that opens no lockbox cuts an empty section, chain or none.'' Such a seat holds nothing under any chain, so a vessel that dials no hearth, and so composes no chain, answers an empty memory section and caches no reading. A seat that opens a lockbox still reads under the vessel's chain alone, and a chainless reading there refuses by name (`chain-absent`).
 * ''The cut refuses under the vessel's own shadow'' (`own-edge-shadowed`), and reads that shadow once, at its entry. A raise the vessel counts while a cut runs binds its next act.
 * ''The island answers its own vessel alone.'' A cut and an import each carry the vessel key's signature over their own request, as the seat's duties do, so no other island, no session and no peer draws a section or lands one. ''One signed ask runs once'': the island keeps each request it answered for its own life and refuses the same one again (`memory-ask-spent`). A replay after a restart gains nothing: a cut seals to the key its own ask named, and an import meets no door.
 * ''One door imports.'' The taking vessel hands its island the section and the pair's secret half, sealed to a public key the island named for that one import, so the secret opens inside the island alone. One door serves one import: the island drops it as the import begins. ''The door judges the act whole before any entry lands.'' A session signer stands (`signer-unavailable`). This vessel's own seat stands in the face's key group (`seat-not-standing`). The vessel reads no shadow over its own edge (`own-edge-shadowed`). The section opens to whole entries (`memory-malformed`).
@@ -382,6 +383,6 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YSavY3CBIZWM28clyC59CIMKLEYOVsrOzTy40CZIbH0
+<<^ code="&#x0003;">>ni:///sha-256;bSgCdBiFYikJZvHUsWL-5oHuqaB1Qmcb4B-jJumHZrU
 
 <<^ code="&#x0004;" -> to="?">>
