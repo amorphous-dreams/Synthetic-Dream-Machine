@@ -18,12 +18,21 @@ FRONTS = frozenset({
     "tools/projection-loom/docs/HANDOFF.md",
 })
 CARRIERS = (
-    "bags/lares/ha.ka.ba/lares/api/projection-loom.mem",
-    "bags/lares/ha.ka.ba/lares/api/projection-loom-handoff.mem",
-    "bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem",
-    "bags/lares/ha.ka.ba/lares/api/projection-loom-research.mem",
-    "bags/lares/ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design.mem",
-    "bags/lares/ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff.mem",
+    "bags/lares/ha.ka.ba/lares/api/projection-loom/index.mem",
+    "bags/lares/ha.ka.ba/lares/api/projection-loom/handoff.mem",
+    "bags/lares/ha.ka.ba/lares/api/projection-loom/capability-composition.mem",
+    "bags/lares/ha.ka.ba/lares/api/projection-loom/athenaion.mem",
+    "bags/lares/ha.ka.ba/lares/api/projection-loom/epochs.mem",
+    "bags/lares/ha.ka.ba/lares/api/projection-loom/growth.mem",
+    "bags/lares/ha.ka.ba/lares/api/projection-loom/hybrid.mem",
+    "bags/lares/ha.ka.ba/lares/api/projection-loom/ooda-ha.mem",
+    "bags/lares/ha.ka.ba/lares/api/projection-loom/pair-a.mem",
+    "bags/lares/ha.ka.ba/lares/api/projection-loom/poc0.mem",
+    "bags/lares/ha.ka.ba/lares/api/projection-loom/reference-ci.mem",
+    "bags/lares/ha.ka.ba/lares/api/projection-loom/research.mem",
+    "bags/lares/ha.ka.ba/lares/api/projection-loom/witness.mem",
+    "bags/lares/ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff.mem",
+    "bags/lares/ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design.mem",
 )
 ASHES_RELEASED = frozenset(CARRIERS[:3])
 STX = '<<^ code="&#x0002;">>'
@@ -99,6 +108,115 @@ def inspect_carrier(path: Path, *, no_nested_ashes: bool = False) -> list[str]:
         errors.append(f"{path}: recursively embedded historical ashes remain")
     return errors
 
+
+
+
+def inspect_carrier_siting(path: Path, repo: Path) -> list[str]:
+    """A Lares address MUST derive exactly from its bag-relative disk location."""
+    text = path.read_text(encoding="utf-8")
+    relative = path.relative_to(repo).as_posix()
+    if not relative.startswith("bags/lares/") or not relative.endswith(".mem"):
+        return [f"Invalid Lares carrier location: {relative}"]
+    bare = relative.removeprefix("bags/lares/").removesuffix(".mem")
+    uri = "lar:///" + bare
+    errors: list[str] = []
+    if not re.search(r'<<\^ code="&#x0001;"[^\n]*-> to="' + re.escape(uri) + r'"', text):
+        errors.append(f"{relative}: SOH destination does not match disk siting {uri}")
+    if not re.search(r'^\s*uri-path\s*=\s*"' + re.escape(bare) + r'"\s*
+    """Check tracked Markdown, live front links and canonical Lares carriers."""
+    repo = loom.resolve().parents[1]
+    cmd = ["git", "ls-files", "--cached", "--", "tools/projection-loom"]
+    result = subprocess.run(
+        cmd, cwd=repo, check=False, capture_output=True, text=True,
+    )
+    if result.returncode:
+        return [f"Could not inspect tracked Markdown via Git index: {result.stderr.strip()}"]
+    markdown = {
+        line for line in result.stdout.splitlines() if line.endswith(".md")
+    }
+    errors = inspect_markdown_set(markdown)
+    for path in sorted(FRONTS):
+        errors.extend(inspect_markdown_links(repo / path, repo))
+    errors.extend(inspect_legacy_siting(repo))
+    for path in CARRIERS:
+        carrier = repo / path
+        errors.extend(inspect_carrier(carrier, no_nested_ashes=path in ASHES_RELEASED))
+        if carrier.is_file():
+            errors.extend(inspect_carrier_siting(carrier, repo))
+    return errors
+
+
+def main() -> None:
+    loom = Path(__file__).resolve().parents[1]
+    errors = inspect_living_surface(loom)
+    if errors:
+        for error in errors:
+            print("Loom o-takiage gate: " + error)
+        raise SystemExit(1)
+    print("Loom o-takiage gate: two living Markdown fronts; links and Lares frames verified")
+
+
+if __name__ == "__main__":
+    main()
+, text, re.MULTILINE):
+        errors.append(f"{relative}: uri-path does not match disk siting")
+    if not re.search(r'^\s*title\s*=\s*"' + re.escape(uri) + r'"\s*
+    """Check tracked Markdown, live front links and canonical Lares carriers."""
+    repo = loom.resolve().parents[1]
+    cmd = ["git", "ls-files", "--cached", "--", "tools/projection-loom"]
+    result = subprocess.run(
+        cmd, cwd=repo, check=False, capture_output=True, text=True,
+    )
+    if result.returncode:
+        return [f"Could not inspect tracked Markdown via Git index: {result.stderr.strip()}"]
+    markdown = {
+        line for line in result.stdout.splitlines() if line.endswith(".md")
+    }
+    errors = inspect_markdown_set(markdown)
+    for path in sorted(FRONTS):
+        errors.extend(inspect_markdown_links(repo / path, repo))
+    for path in CARRIERS:
+        errors.extend(inspect_carrier(repo / path, no_nested_ashes=path in ASHES_RELEASED))
+    return errors
+
+
+def main() -> None:
+    loom = Path(__file__).resolve().parents[1]
+    errors = inspect_living_surface(loom)
+    if errors:
+        for error in errors:
+            print("Loom o-takiage gate: " + error)
+        raise SystemExit(1)
+    print("Loom o-takiage gate: two living Markdown fronts; links and Lares frames verified")
+
+
+if __name__ == "__main__":
+    main()
+, text, re.MULTILINE):
+        errors.append(f"{relative}: title does not match disk siting")
+    match = re.search(r'^\s*file-path\s*=\s*"([^"]+)"', text, re.MULTILINE)
+    if match and match.group(1) != relative:
+        errors.append(f"{relative}: file-path metadata does not match disk siting")
+    return errors
+
+
+def inspect_legacy_siting(repo: Path) -> list[str]:
+    """Do not silently reintroduce root-level projection-loom carriers."""
+    result = subprocess.run(
+        ["git", "ls-files", "--cached", "--", "bags/lares/ha.ka.ba/lares"],
+        cwd=repo, check=False, capture_output=True, text=True,
+    )
+    if result.returncode:
+        return [f"Cannot inspect Lares tracked paths: {result.stderr.strip()}"]
+    prefix = "bags/lares/ha.ka.ba/lares/"
+    stale = []
+    for path in result.stdout.splitlines():
+        relative = path.removeprefix(prefix)
+        if relative == "api/projection-loom.mem" or relative.startswith(
+            ("api/projection-loom-", "docs/projection-loom-")
+        ):
+            stale.append(path)
+    return [f"Legacy Projection Loom carrier outside subtree: {p}" for p in stale]
 
 def inspect_living_surface(loom: Path) -> list[str]:
     """Check tracked Markdown, live front links and canonical Lares carriers."""

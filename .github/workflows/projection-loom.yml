@@ -6,8 +6,11 @@ on:
       - feature/green-jello-dinosaur-5
     paths:
       - 'tools/projection-loom/**'
+      - 'bags/lares/ha.ka.ba/lares/api/projection-loom/**'
+      - 'bags/lares/ha.ka.ba/lares/docs/projection-loom/**'
       - '.github/workflows/projection-loom.yml'
-      - 'bags/lares/ha.ka.ba/lares/api/projection-loom*.mem'
+      - 'bags/lares/ha.ka.ba/lares/api/projection-loom/**'
+      - 'bags/lares/ha.ka.ba/lares/docs/projection-loom/**'
   push:
     branches:
       - 'feature/green-jello-dinosaur-5--projection-loom'

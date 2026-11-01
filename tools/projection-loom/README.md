@@ -4,11 +4,12 @@ Projection Loom is a source-grounded constructive CAD and OODA-HA architecture l
 
 ## Read first
 
+- [Lares core](../../bags/lares/ha.ka.ba/lares/api/projection-loom/index.mem): canonical Projection Loom root carrier; other Loom memes are sited under the API and docs subtrees.
 - [Current working handoff](docs/HANDOFF.md): PR status, exact receipts, unresolved gates, and commands for re-entry.
-- [Lares operational authority](../../bags/lares/ha.ka.ba/lares/api/projection-loom-handoff.mem): active authority for current operation, next priorities, and boundaries.
-- [Lares research](../../bags/lares/ha.ka.ba/lares/api/projection-loom-research.mem): research testimony and evidence constraints.
-- [Lares relational design](../../bags/lares/ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design.mem): native relation-inheritance design and attributed dissent.
-- [Lares crew handoff](../../bags/lares/ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff.mem): OODA-HA working procedure.
+- [Lares operational authority](../../bags/lares/ha.ka.ba/lares/api/projection-loom/handoff.mem): active authority for current operation, next priorities, and boundaries.
+- [Lares research](../../bags/lares/ha.ka.ba/lares/api/projection-loom/research.mem): research testimony and evidence constraints.
+- [Lares relational design](../../bags/lares/ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design.mem): native relation-inheritance design and attributed dissent.
+- [Lares crew handoff](../../bags/lares/ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff.mem): OODA-HA working procedure.
 - Historical experiment and documentation narratives are recoverable at the pre-burn Git commit listed below, including the former `archives/README.md`.
 
 The complete source before the Markdown o-takiage is pinned at commit `864dc19e89a913ac82862b842202bfce0c68e16b` on the durable Git branch [`archive/pr84-markdown-pre-otakiage-20261031`](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/tree/archive/pr84-markdown-pre-otakiage-20261031). This archive branch preserves ancestors including the earlier full recursive fronts. The working PR is [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84), on `feature/green-jello-dinosaur-5--projection-loom`. Git history, not recursively copied Markdown, carries the historical research, experiments, old design contracts and earlier operator instructions. To read a retired document use `git show <pre-burn-head>:<source-path>`.

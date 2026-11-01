@@ -77,3 +77,13 @@ def test_recursive_ashes_are_not_current_carrier_content(tmp_path: Path) -> None
     assert gate.inspect_carrier(carrier) == []
     problems = gate.inspect_carrier(carrier, no_nested_ashes=True)
     assert any("historical ashes" in p for p in problems)
+
+
+def test_all_carriers_are_sited_in_their_own_namespaces() -> None:
+    repo = Path(__file__).resolve().parents[3]
+    assert len(gate.CARRIERS) == 15
+    assert gate.inspect_legacy_siting(repo) == []
+    for path in gate.CARRIERS:
+        carrier = repo / path
+        assert carrier.is_file()
+        assert gate.inspect_carrier_siting(carrier, repo) == []
