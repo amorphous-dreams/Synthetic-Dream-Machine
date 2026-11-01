@@ -6,6 +6,7 @@ import * as ed from "@noble/ed25519";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   deviceEdgeId, edgeKapaeKey, fleetEdgeBoardDocUrl, materializeSharedLarDoc, edgeLedgerDocUrl, keptSeatRolls, signSeatRoll, ed25519SignerFromSeed, foldWithdrawals, hex,
+  EDGE_LEDGER_PREFIX, storedLarRecord, verifiedSeatRoll,
 } from "@lararium/mesh";
 import { ownedStore } from "../src/owned-store.js";
 import {
@@ -231,5 +232,43 @@ describe("the device removal door signs the second act, or says which one it cou
     expect(unkept.shadowStands).toBe(true);
     expect(unkept.withdrawals?.events).toHaveLength(1);                       // the signed event rides out for a retry
     expect(unkept.withdrawals?.unsigned).toEqual([{ faceKey, nexus: "a1".repeat(32), why: "signed-and-not-kept: the disk stands full" }]);
+  });
+});
+
+describe("a planted roll mark answers no raise (road T33)", () => {
+  /** A hand that writes this vessel's ledger plants `rolled/<raise>`: no receipt, or one under another key. */
+  const plant = async (fleetRoot: string, cid: string, text: string): Promise<void> => {
+    const repo = restingRepo(larDataDir());
+    const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(await atomKeyOf()), "ledger:edge");
+    const key = `${EDGE_LEDGER_PREFIX}${fleetRoot.toLowerCase()}/rolled/${cid}`;
+    ledger.change((d) => { d.tiddlers[key] = storedLarRecord(key, { text }, fleetRoot.toLowerCase()); });
+    await repo.flush();
+    await repo.rest();
+  };
+  const rollOf = async (fleetRoot: string, edgeId: string, cid: string, by?: Uint8Array) =>
+    signSeatRoll({ kind: "seat-roll", scope: fleetRoot.toLowerCase(), edgeId, raiseCids: [cid], how: "revoked" }, ed25519SignerFromSeed(by ?? await atomSeedOf()));
+
+  it("RED: the facts still owe a raise whose mark a hand planted, and the genuine mark lands over the plant with its receipt", async () => {
+    const fleetRoot = (await loadPersonaGroupRootVerifyingKey(0))!;
+    const raise = await direct(runEdgeKapae)({ device: "b1".repeat(32), raised: true });
+    await plant(fleetRoot, raise.actCid, JSON.stringify({ edgeId: raise.edgeId, how: "revoked" }));
+    expect((await direct(runEdgeSeatFacts)({ fleetRoot })).fleets[0]!.rolled, "a receipt-less mark").toEqual([]);
+    await plant(fleetRoot, raise.actCid, JSON.stringify(await rollOf(fleetRoot, raise.edgeId, raise.actCid, new Uint8Array(32).fill(0x77))));
+    expect((await direct(runEdgeSeatFacts)({ fleetRoot })).fleets[0]!.rolled, "a mark under another key").toEqual([]);
+    // The genuine roll marks over the plant, and the ledger keeps it with its receipt.
+    expect((await direct(runEdgeSeatMarks)({ fleetRoot, rolls: [await rollOf(fleetRoot, raise.edgeId, raise.actCid)] })).marked).toEqual([raise.actCid]);
+    await ownedStore(larDataDir(), async (repo) => {
+      const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(await atomKeyOf()), "ledger:edge");
+      const own = await atomKeyOf();
+      const kept = keptSeatRolls(ledger.doc(), fleetRoot.toLowerCase(), own);
+      expect(kept.map((r) => verifiedSeatRoll(r, own) !== null)).toEqual([true]);
+    });
+  });
+
+  it("CONTROL: the vessel's own receipt-signed mark answers the raise", async () => {
+    const fleetRoot = (await loadPersonaGroupRootVerifyingKey(0))!;
+    const raise = await direct(runEdgeKapae)({ device: "b2".repeat(32), raised: true });
+    await direct(runEdgeSeatMarks)({ fleetRoot, rolls: [await rollOf(fleetRoot, raise.edgeId, raise.actCid)] });
+    expect((await direct(runEdgeSeatFacts)({ fleetRoot })).fleets[0]!.rolled).toEqual([raise.actCid]);
   });
 });
