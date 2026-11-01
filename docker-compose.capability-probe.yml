@@ -33,7 +33,7 @@ services:
         target: /app
         read_only: true
       - type: bind
-        source: ${CAPABILITY_PROBE_AUTOMERGE:-./node_modules/.pnpm/@automerge+automerge@3.4.1/node_modules/@automerge/automerge/dist/iife}
+        source: ${CAPABILITY_PROBE_AUTOMERGE:-./node_modules/.pnpm/@automerge+automerge@3.5.0/node_modules/@automerge/automerge/dist/iife}
         target: /vendor/automerge
         read_only: true
         bind:
