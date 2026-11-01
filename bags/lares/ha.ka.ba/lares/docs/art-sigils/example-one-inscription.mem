@@ -17,17 +17,17 @@ retain    = true
 <<~ ahu #/inscription>>
 ! Art Sigils — Example One Inscription
 
-Copy only this **913-character** invocation. [[Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]] supplies the canonical `art()` definition outside the image-facing source; native TW5 transclusion requires that declaration in scope.
+Copy only this **915-character** `<<~ art ...>>` invocation. [[Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]] supplies the canonical `~art` definition outside the image-facing source; a Lares-enabled wiki needs its sigil binding in scope. A model may interpret the text directly.
 
 ```tiddlywiki
-<<art worktype=`messy concept-art board` subject=`Tide-Clock Monastery of the Black Lens, a ring of drowned basalt sea stacks` read=`an astronomical sea sanctuary measures tides while concealing an abyssal watcher` imagery=`oblique storm-coast panorama; flooded observatory, bronze tide clock, beacon mirrors, rope bridges, disappearing stairs, kelp gardens, tiny skiffs, leviathan wake` treatment=`Kay Nielsen mythic ornament; Roger Dean organic spires; Caspar David Friedrich storm-sublime; Hiroshi Yoshida layered sea light; Arthur Rackham wiry silhouettes; Anna Podedworna weathered materials` composition=`vast stormlit panorama above pinned beacon, stair, dock, storm-chart and Black Lens studies on separate stocks` relation=`star charts promise orderly tides, but the rising sea erases the path; an abyss beneath the mirrors watches back` depiction-scope=`board fills frame; tiny figures inside studies`>>
+<<~ art worktype="messy concept-art board" subject="Tide-Clock Monastery of the Black Lens, a ring of drowned basalt sea stacks" read="an astronomical sea sanctuary measures tides while concealing an abyssal watcher" imagery="oblique storm-coast panorama; flooded observatory, bronze tide clock, beacon mirrors, rope bridges, disappearing stairs, kelp gardens, tiny skiffs, leviathan wake" treatment="Kay Nielsen mythic ornament; Roger Dean organic spires; Caspar David Friedrich storm-sublime; Hiroshi Yoshida layered sea light; Arthur Rackham wiry silhouettes; Anna Podedworna weathered materials" composition="vast stormlit panorama above pinned beacon, stair, dock, storm-chart and Black Lens studies on separate stocks" relation="star charts promise orderly tides, but the rising sea erases the path; an abyss beneath the mirrors watches back" depiction-scope="board fills frame; tiny figures inside studies">>
 ```
 <<~/ahu>>
 
 <<~ ahu #/literal-rendering>>
 !! Literal rendering
 
-The procedure's named parameters expand to the following expected prose. The reference expresses substitution, not an attestation of live TW5 execution.
+The house procedure's named parameters expand to the following expected prose. The reference expresses substitution, not proof of live Lares execution.
 
 ```text
 messy concept-art board: Tide-Clock Monastery of the Black Lens, a ring of drowned basalt sea stacks. Read: an astronomical sea sanctuary measures tides while concealing an abyssal watcher. Imagery: oblique storm-coast panorama; flooded observatory, bronze tide clock, beacon mirrors, rope bridges, disappearing stairs, kelp gardens, tiny skiffs, leviathan wake. Treatment: Kay Nielsen mythic ornament; Roger Dean organic spires; Caspar David Friedrich storm-sublime; Hiroshi Yoshida layered sea light; Arthur Rackham wiry silhouettes; Anna Podedworna weathered materials. Composition: vast stormlit panorama above pinned beacon, stair, dock, storm-chart and Black Lens studies on separate stocks. Relation: star charts promise orderly tides, but the rising sea erases the path; an abyss beneath the mirrors watches back. Depiction scope: board fills frame; tiny figures inside studies.
@@ -48,6 +48,6 @@ The dominant sea-stack painting presents a navigable sanctuary whose lower stair
 The monastery's astronomers claim predictable cycles; floodwater contradicts dependable access. The Black Lens suggests a watcher without identifying one. These narrative tensions belong to the imagined artwork, not to observed marine archaeology or astronomical evidence.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gcrn1UyNechQLLTKXl7BTDLhtjM4GdFzy-ycMyTufF4
+<<^ code="&#x0003;">>ni:///sha-256;J4HPMuDpmWuEN5RLpKzApOL0CFU08oRPcarNZoOOYjk
 
 <<^ code="&#x0004;" -> to="?">>

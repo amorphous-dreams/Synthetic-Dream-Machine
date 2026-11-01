@@ -1,0 +1,61 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/reference-ci">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/reference-ci.mem"
+l-space   = "stable"
+namespace = "&#x0950; &#x0901;"
+role      = "reproducible external witness acquisition and GitHub Actions verification"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/projection-loom/reference-ci"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/projection-loom/reference-ci"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/entry>>
+! Fetch testimony; do not fetch certainty
+
+The projection loom MAY acquire separately licensed source files through their
+publisher's permitted routes, pin reviewed source bytes, compile authored
+OpenSCAD references, and sample meshes as external testimony. A PR runner may
+execute CAD and synthetic image tests without acquiring any third-party asset.
+
+<<~/ahu>>
+
+<<~ ahu #/contract>>
+!! Source identity and build reproducibility
+
+* ''An URL does not pin content.'' A bootstrap fetch yields an unreviewed
+  SHA-256 and license receipt. An operator MAY inspect and commit a lock. Future
+  runs MUST reject differing bytes unless explicitly reviewed and relocked.
+* ''Provider boundaries govern access.'' Public CC0 OpenGameArt files use
+  ordinary HTTPS. The modern Ur Sketchfab model requires its official Download
+  API with user OAuth, or an official browser download. No viewer scraping,
+  token logged in receipts, or secrets in untrusted pull-request workflows.
+* ''Sources remain separate from inference.'' Archive contents and compiled
+  OpenSCAD STL meshes enter a surface-witness adaptor with explicit native
+  model units; no source can claim exact CAD union or measured archaeological
+  alignment absent independent registration.
+* ''Bound the work.'' External ZIPs face size, expansion, file-count,
+  path-traversal and unexpected-file checks. GitHub Actions uses read-only
+  repository permissions, bounded job time, recorded dependency versions,
+  and produces short-lived preview and test artifacts.
+* ''Local parity.'' The same Python scripts drive desktop/WSL use and CI;
+  `references.lock.json` travels with the project when reviewed. CI success
+  means tests passed, never that absent third-party sources became available.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/hybrid">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;-MdCLXERFJ288V8taY0zCHTUKBHbvJaW9rd8pzDYbGs
+
+<<^ code="&#x0004;" -> to="?">>

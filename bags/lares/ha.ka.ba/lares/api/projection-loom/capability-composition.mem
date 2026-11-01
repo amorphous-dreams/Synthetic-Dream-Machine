@@ -1,0 +1,136 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/capability-composition">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/capability-composition.mem"
+l-space = "stable"
+namespace = "&#x0950; &#x0901;"
+role = "one fractal OODA-HA helm commanding per-entity capability DAGs, separate kernel witnesses and inherited generative recipes"
+tags = ["api/pono/meme"]
+title = "lar:///ha.ka.ba/lares/api/projection-loom/capability-composition"
+type = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/api/projection-loom/capability-composition"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/yin-living>>
+
+!! Current executable relation
+
+The architectural interpretation flows through `spatial_intent.py` → `place_obligations.py` → `place_genome.py` → `place_source_seal.py` → `place_campaign.py` and `place_affordances.py`. `place_composed_route.py` consumes an explicit operator bend; `place_source_transfer.py` tests independent source-carrier intake with equal native budgets. `fractal_ooda_ha.OODAHAJournal` remains the only five-phase authority. `place_board.py` offers read-only native gallery/operator presentation. None of these modules grants source camera registration, safe building certification, or artistic approval. Prior CAD/polygon operator invocation notes remain in the pinned Git archive.
+
+<<~/ahu>>
+
+<<~ ahu #/entry>>
+! Identity carries capabilities; one helm carries their becoming
+
+A pet-named location holds relations among entities. An entity MAY grow through
+an intentionally narrow and composable sequence of CAD, polygon, attachment,
+void and future geometric operators. Its pet-name follows witnessed relations,
+not an OpenCascade face, a mesh vertex, or one compulsory geometry language.
+
+<<~/ahu>>
+
+<<~ ahu #/invariants>>
+!! One OODA-HA authority
+
+* ''One helm.'' All living capability epochs MUST enter the executable
+  `run_ooda_ha_epochs` phase controller. A second compound epoch scheduler MUST NOT
+  independently decide lineages, invent previews or apply operator controls.
+* ''Capabilities as child loops.'' Each actual candidate Act MAY open nested
+  capability OODA-HA loops. Their trusted operators MUST execute in their own
+  Acts; their effects and validation receipts MUST return before the parent
+  leaves its phase. An inactive capability reports inactivity, not fabricated
+  successful work.
+* ''Per-entity composition, not global uniformity.'' A crystal MAY carry CAD,
+  polymesh and a semantic socket; fortress MAY carry CAD and rooms; Joining MAY
+  carry CAD contact with optional sculptural growth. An unrelated nameless
+  entity MAY carry only a polygon operator. Operator versions and activation
+  gates belong to the recipe.
+* ''Lineage inherits methods.'' A selected lineage carries bounded CAD loci,
+  surface loci, active operators, recipe digest, original evidence hashes and
+  operator implementation fingerprints. An exported OBJ or STEP never replaces
+  that generative ancestry.
+* ''Kernel authority remains scoped.'' CAD gates certify exact structural
+  contact, fused valid material and carved voids. Closed polymesh gates certify
+  polygon surface/volume only. Semantic socket tests certify proximity, NEVER
+  cross-kernel Boolean fusion or structural load-bearing capacity.
+* ''The view budget constrains ornament.'' An unregistered artwork MAY guide
+  limited, source-digest-checked visible surface displacement in a fixed camera
+  while preserving protected CAD sockets. It MUST NOT infer true world scale,
+  mechanical soundness, or unseen backsides.
+* ''Do not consume exploration to preserve lineage.'' The inherited parent
+  takes its own named proposal seat. Sobol, local and topology generators retain
+  their independent trials; exact evaluation budgets may defer but not silently
+  replace them.
+* ''Operator choice remains real.'' Aftermath MUST present audited compound
+  preview witnesses with entity `#has` propositions for pet-naming, o-takiage
+  and choosing an alternate valid parent. Full-speed and manual steering run
+  the same phase machine and mandatory gates.
+* ''Aftermath births a reviewable gallery.'' A final location Aftermath MAY
+  open its own full OODA-HA gallery loop. It evaluates the historical scored
+  pool, retains meaningful slack, then regrows and audits each finalist. When
+  fewer than three distinct forms survive, it reports the shortfall rather
+  than duplicating models or manufacturing an image-fitness success.
+* ''Evergreen in widening and tightening passes.'' Development Aftermath
+  inspects method claims, code boundaries, then overall architectural fit;
+  the ensuing tightening passes correct code, tests, documentation and CI.
+  Runtime Aftermath records consequences of model growth, not development QA.
+
+<<~/ahu>>
+
+<<~ ahu #/executable>>
+
+This historical reading moved to [[ashes|#ashes]] within the same carrier. The original section bytes remain below verbatim. For live work use #/yin-living and the branch-current `HANDOFF.md`.
+
+<<~/ahu>>
+
+<<~ ahu #/typed-receipts-and-ci-gates>>
+
+!! Typed witnesses must not merge evidence authority
+
+`evidence_receipts.py` MAY display typed native BRep audits, polygon surface
+audits, CAD/mesh socket proximity, frame registration, trusted capability
+execution and Operator preferences. The shared envelope has a domain and a
+status; it MUST NOT grant a universal validity or source-authenticity claim.
+A rendering cannot certify cross-kernel Boolean fusion, and a verified fit
+does not independently authenticate survey bytes.
+
+!! Code quality keeps one helm
+
+`scripts/check_architecture.py` MUST refuse duplicate OODA controllers,
+retired alpha module aliases, side effects inside `phase_rules.py` and
+back-edges from renderers to the helm. `fractal_ooda_ha.OODAJournal` remains
+the only active five-phase controller. CI checks the direct dependency pins,
+Python syntax and installed package consistency, and records resolved
+versions as evidence, NOT as a complete cryptographic dependency lock.
+
+A queued or cancelled CI job remains an open verification loop. Only the
+final published branch head may support a GREEN claim after dedicated Loom,
+whole-repository and held-out witnesses all pass; failures invite bisecting
+the stepwise red-first commits, not relaxing native evidence checks.
+
+<<~/ahu>>
+
+<<~ ahu #/git-ashes>>
+
+!! Git ledger — no recursively embedded history
+
+The operator released this carrier's displaced historical ahu from the living text. Exact prior bytes survive on `archive/pr84-before-lares-ashes-retirement-20261031`, commit `0d05dce315397fd2be1a7098270363ff4a948745`, file `bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem`; use `git show 0d05dce315397fd2be1a7098270363ff4a948745:bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem` to recover them. The older `archive/pr84-markdown-pre-otakiage-20261031` holds the pre-Markdown fire. Historical claims and dissent are recoverable; Git does not promote them to current verified state.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/hybrid">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;FsFxr7asmVs1TA0WQD-VHv1i7cNLLFjGdCncBpZ8aog
+
+<<^ code="&#x0004;" -> to="?">>

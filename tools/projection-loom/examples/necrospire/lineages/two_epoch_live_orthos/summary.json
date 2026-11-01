@@ -1,0 +1,89 @@
+{
+  "schema": "projection-loom/live-two-epoch-ortho-gallery",
+  "source_seed_name": "Necrospire's First Glimpse",
+  "source_seed_sha256": "f3763c590f9972e5879dee9df22877e11136ba80e918d77990e51ffd40776c1c",
+  "recipe_sha256": "452a4d87658668f24813f07d7918fee326cc6d497e1517da0d1781d1f0cec72a",
+  "original_source_review_sha256": "7e231feccb5468e95250bce288434af34e9c1700aa647fb2380f800487a030c8",
+  "reference_camera": "provisional painting alignment",
+  "reference_frame": "oblique",
+  "epochs": 2,
+  "reviewed": 3,
+  "images": {
+    "shaded_orthos": {
+      "file": "native_shaded_orthos.png",
+      "sha256": "9fe40293f62524a93e18a5073d23c1be0a921d3681b202a96810ff038a6033fb"
+    },
+    "silhouette_orthos": {
+      "file": "native_silhouette_orthos.png",
+      "sha256": "be74dcf4faae33f66bd86a2eb811de1ad5dae07055a8dc3966068b7a498d5e00"
+    }
+  },
+  "views": [
+    {
+      "name": "oblique",
+      "camera_sha256": "35431e87e381496f9d749418142fb1fd5395d63638d8852705c24553f0b59568"
+    },
+    {
+      "name": "front",
+      "camera_sha256": "6210a27b735c408673286fafb1abd5e0ed55df6fbcf4f7c6f9b4d9b355ca8494"
+    },
+    {
+      "name": "r-side",
+      "camera_sha256": "18e71add7262e1a108fee4c34dd4709e343bfc884924b3b7342aa8cc708600c2"
+    },
+    {
+      "name": "back",
+      "camera_sha256": "485bfe46cf35a0a63850c759275680d6c50738e2b91589b8e79da9b3af2655ff"
+    },
+    {
+      "name": "l-side",
+      "camera_sha256": "4f43b668f771d5d135bb7ac7ba0d1fb0a71f011fb26bd5c86f18f7ad435fa2dc"
+    },
+    {
+      "name": "top",
+      "camera_sha256": "8818b75c29f7926c61c0b7f642f195b31b95b143d7f3396201492e5d29483610"
+    }
+  ],
+  "survivors": [
+    {
+      "id": "0002/crystal-002-001",
+      "rank": 1,
+      "family": "crystal",
+      "epoch": 2,
+      "alpha_iou": 0.7091561938958707,
+      "global_loss": 0.30653934133780086,
+      "native_witness_id": "e8ac6e7ce844219e178e",
+      "extra_fraction": 0.0,
+      "brutalist_bands": 1.0,
+      "brutalist_piers": 0.9669754608628737
+    },
+    {
+      "id": "0002/keep-002-001",
+      "rank": 2,
+      "family": "keep",
+      "epoch": 2,
+      "alpha_iou": 0.6956132497761862,
+      "global_loss": 0.32096655253708434,
+      "native_witness_id": "6b7a04a938396aa4a291",
+      "extra_fraction": 0.0,
+      "brutalist_bands": 1.0,
+      "brutalist_piers": 0.8225917015224695
+    },
+    {
+      "id": "0002/fractured-002-001",
+      "rank": 3,
+      "family": "fractured",
+      "epoch": 2,
+      "alpha_iou": 0.6898066783831283,
+      "global_loss": 0.32702076850327955,
+      "native_witness_id": "e8ac6e7ce844219e178e",
+      "extra_fraction": 0.0,
+      "brutalist_bands": 1.0,
+      "brutalist_piers": 0.9669754608628737
+    }
+  ],
+  "render_source": "Independent native CAD/mesh regrowth, depth-tested lit_structure and archived silhouette masks",
+  "operator_authority": "advisory only; no survivor promoted",
+  "historic_pilot": "read-only; excluded from search ancestry",
+  "sha256": "b8b6c0d66cc923befc5924896de631dfb52c618e6cb7416d296baaea1945c630"
+}

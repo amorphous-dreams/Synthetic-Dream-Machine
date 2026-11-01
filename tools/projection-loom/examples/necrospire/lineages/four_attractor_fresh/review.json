@@ -1,0 +1,299 @@
+{
+  "schema": "projection-loom/four-attractor-review",
+  "fresh_lineage_manifest_sha256": "270d19dcc8b7bb0b7fd05f532968a7f55e5cab3662003a7d40a82b4989650ed6",
+  "native_review_sha256": "7e1b75153992d566ec023071c29f910afc3fb162136edd49a4c3117f65f2c30f",
+  "generations": 3,
+  "births_planned": 54,
+  "scored_review": 6,
+  "ranked_advisory_survivors": [
+    {
+      "lineage_id": "0002/needle-002-003",
+      "emitter": "family:needle:topology",
+      "family": "needle",
+      "parent": "0001/needle-001-002",
+      "native_witness_id": "7791e4c6843aba5fde3e",
+      "oblique_alpha_iou": 0.6897746967071057,
+      "original_combined_loss": 0.32569497649378965,
+      "rgba_boundary_match_unregistered": 0.3578088578088578,
+      "ziggurat_unitless_prior_deviation": 0.09975772814368,
+      "brutalist_unitless_prior_deviation": 0.01670093257951156,
+      "four_attractor_advisory_loss": 0.3301270796341253,
+      "extra_frame_fraction": 0.003552397868561279,
+      "views": {
+        "back": {
+          "image": "experiment_zero_review/candidate_01/back.png",
+          "mask_sha256": "1bab6948893e7e2adca9c54dd1f880f6711f857bb0fe3f82c6d5aaef07bf9e38",
+          "camera_sha256": "3d112f427501d8f15c22a571b11fb34a36f0b725b5f075178645ac6fb0985742"
+        },
+        "front": {
+          "image": "experiment_zero_review/candidate_01/front.png",
+          "mask_sha256": "831caddc84b0705feaec768ca13500b35d7f5a8877e1303f5018e09511e35153",
+          "camera_sha256": "4afa50ea2e4830e8e1568a334858c78835db176a325b51d0326e7a43550ee1ab"
+        },
+        "l-side": {
+          "image": "experiment_zero_review/candidate_01/l-side.png",
+          "mask_sha256": "9589485ed04c51749bb8e0acdf2bd893c21f6426f7b8bdfa14e5ab84c2326c6c",
+          "camera_sha256": "fcc4dc5095e83a1a9eb1daf5b265e28a75d9e5548a507bc67e76bc55e24856cc"
+        },
+        "oblique": {
+          "image": "experiment_zero_review/candidate_01/oblique.png",
+          "mask_sha256": "624fbe46e143277e43f039427c9087579471c40927fd9a3e0966db8f3a0ce9dc",
+          "camera_sha256": "35431e87e381496f9d749418142fb1fd5395d63638d8852705c24553f0b59568"
+        },
+        "r-side": {
+          "image": "experiment_zero_review/candidate_01/r-side.png",
+          "mask_sha256": "628287f8f6018354d91bfc019c63721814f98a859b043416dd9e870a3dcc3162",
+          "camera_sha256": "14557a76de784d241d12a1a60577fea5b3d082021c84536c45e62700bc6e18fe"
+        },
+        "top": {
+          "image": "experiment_zero_review/candidate_01/top.png",
+          "mask_sha256": "568a44de093f73cdf4abd01bc85bb4c486b5d26490eac93c602080d5d237e578",
+          "camera_sha256": "a28c0912247fd7d69c077fdae5840be8a8a0b9dabbe6ed7f6c21b23709bddabe"
+        }
+      }
+    },
+    {
+      "lineage_id": "0002/keep-002-003",
+      "emitter": "family:keep:topology",
+      "family": "keep",
+      "parent": "0001/keep-001-002",
+      "native_witness_id": "8a0656cfd4d11a31db12",
+      "oblique_alpha_iou": 0.6809403862300588,
+      "original_combined_loss": 0.33441930702649353,
+      "rgba_boundary_match_unregistered": 0.26254375729288215,
+      "ziggurat_unitless_prior_deviation": 0.1648257617544535,
+      "brutalist_unitless_prior_deviation": 0.01670093257951156,
+      "four_attractor_advisory_loss": 0.34027355910666546,
+      "extra_frame_fraction": 0.003404255319148936,
+      "views": {
+        "back": {
+          "image": "experiment_zero_review/candidate_03/back.png",
+          "mask_sha256": "8d307a646a0bc53e560ba54f747787b69a8eb49b6f713c2d77bdf6f3a2af800f",
+          "camera_sha256": "3d112f427501d8f15c22a571b11fb34a36f0b725b5f075178645ac6fb0985742"
+        },
+        "front": {
+          "image": "experiment_zero_review/candidate_03/front.png",
+          "mask_sha256": "19a2109e14d7fa9438af760860c0944837466282bc19c8b0166dd70bf7088904",
+          "camera_sha256": "4afa50ea2e4830e8e1568a334858c78835db176a325b51d0326e7a43550ee1ab"
+        },
+        "l-side": {
+          "image": "experiment_zero_review/candidate_03/l-side.png",
+          "mask_sha256": "ca7cf6a91484710fd2bbe3f94a437d54b313b3001436e3d15e3df0a0123b689c",
+          "camera_sha256": "fcc4dc5095e83a1a9eb1daf5b265e28a75d9e5548a507bc67e76bc55e24856cc"
+        },
+        "oblique": {
+          "image": "experiment_zero_review/candidate_03/oblique.png",
+          "mask_sha256": "6d6700f91ded2d73a5b51004144c0beff0a394c4dd672e5bcba74ae47708cc7d",
+          "camera_sha256": "35431e87e381496f9d749418142fb1fd5395d63638d8852705c24553f0b59568"
+        },
+        "r-side": {
+          "image": "experiment_zero_review/candidate_03/r-side.png",
+          "mask_sha256": "25a91d480e7c4afcdf34fcf7397ca6f46abcfa413564098fe87835b3e9e2c71f",
+          "camera_sha256": "14557a76de784d241d12a1a60577fea5b3d082021c84536c45e62700bc6e18fe"
+        },
+        "top": {
+          "image": "experiment_zero_review/candidate_03/top.png",
+          "mask_sha256": "568a44de093f73cdf4abd01bc85bb4c486b5d26490eac93c602080d5d237e578",
+          "camera_sha256": "a28c0912247fd7d69c077fdae5840be8a8a0b9dabbe6ed7f6c21b23709bddabe"
+        }
+      }
+    },
+    {
+      "lineage_id": "0003/crystal-003-001",
+      "emitter": "family:crystal:sobol",
+      "family": "crystal",
+      "parent": "0002/crystal-002-003",
+      "native_witness_id": "a802a30082f3c1c7ebc5",
+      "oblique_alpha_iou": 0.6768707482993197,
+      "original_combined_loss": 0.33918825910581335,
+      "rgba_boundary_match_unregistered": 0.38717067583046966,
+      "ziggurat_unitless_prior_deviation": 0.0940228754801356,
+      "brutalist_unitless_prior_deviation": 0.0,
+      "four_attractor_advisory_loss": 0.34314394241017365,
+      "extra_frame_fraction": 0.0017497812773403325,
+      "views": {
+        "back": {
+          "image": "experiment_zero_review/candidate_06/back.png",
+          "mask_sha256": "e7e6c09acf821f006385d2d5a9e03ed2a1bede39268d88a8d430b01e7a46dda3",
+          "camera_sha256": "3d112f427501d8f15c22a571b11fb34a36f0b725b5f075178645ac6fb0985742"
+        },
+        "front": {
+          "image": "experiment_zero_review/candidate_06/front.png",
+          "mask_sha256": "294acce967a2b1fd8c629420209976eee0527bcbbdcd4535b773057d98a46fb3",
+          "camera_sha256": "4afa50ea2e4830e8e1568a334858c78835db176a325b51d0326e7a43550ee1ab"
+        },
+        "l-side": {
+          "image": "experiment_zero_review/candidate_06/l-side.png",
+          "mask_sha256": "7406c882cb7d2666157aa5d4344e805ffc9ec4f463dbfd68fdb887993658c99a",
+          "camera_sha256": "fcc4dc5095e83a1a9eb1daf5b265e28a75d9e5548a507bc67e76bc55e24856cc"
+        },
+        "oblique": {
+          "image": "experiment_zero_review/candidate_06/oblique.png",
+          "mask_sha256": "6f510213cbc24b0268d7ac8ed6d971b7d09c863355e541d5474fe90ee4ce4491",
+          "camera_sha256": "35431e87e381496f9d749418142fb1fd5395d63638d8852705c24553f0b59568"
+        },
+        "r-side": {
+          "image": "experiment_zero_review/candidate_06/r-side.png",
+          "mask_sha256": "7c6a4de07f45b547d22a0331f5c54936bbef9b846e7243d1cf502aacc84b6518",
+          "camera_sha256": "14557a76de784d241d12a1a60577fea5b3d082021c84536c45e62700bc6e18fe"
+        },
+        "top": {
+          "image": "experiment_zero_review/candidate_06/top.png",
+          "mask_sha256": "d203e7f77d82501e0d407598d378c7210eb2565e61ac1a062eb04df6cf0e93c8",
+          "camera_sha256": "a28c0912247fd7d69c077fdae5840be8a8a0b9dabbe6ed7f6c21b23709bddabe"
+        }
+      }
+    },
+    {
+      "lineage_id": "0003/fractured-003-001",
+      "emitter": "family:fractured:sobol",
+      "family": "fractured",
+      "parent": "0002/fractured-002-003",
+      "native_witness_id": "a802a30082f3c1c7ebc5",
+      "oblique_alpha_iou": 0.6553156146179402,
+      "original_combined_loss": 0.36220499602256284,
+      "rgba_boundary_match_unregistered": 0.3421354764638347,
+      "ziggurat_unitless_prior_deviation": 0.09464322700249878,
+      "brutalist_unitless_prior_deviation": 0.0,
+      "four_attractor_advisory_loss": 0.3663507457487475,
+      "extra_frame_fraction": 0.003430531732418525,
+      "views": {
+        "back": {
+          "image": "experiment_zero_review/candidate_02/back.png",
+          "mask_sha256": "b1f391ae1b6e54408e0fb8f76c325ce39fe8f9ecec9e26f924e81d8275f71386",
+          "camera_sha256": "3d112f427501d8f15c22a571b11fb34a36f0b725b5f075178645ac6fb0985742"
+        },
+        "front": {
+          "image": "experiment_zero_review/candidate_02/front.png",
+          "mask_sha256": "437bcf1b5497e1d15e556fd2a659e99d53ddbe1a9d499f339be0d27a9792ae00",
+          "camera_sha256": "4afa50ea2e4830e8e1568a334858c78835db176a325b51d0326e7a43550ee1ab"
+        },
+        "l-side": {
+          "image": "experiment_zero_review/candidate_02/l-side.png",
+          "mask_sha256": "e811e78491dbe60bba418d4adb7eebad68575642a6ba6f880b5012e4f0b9573d",
+          "camera_sha256": "fcc4dc5095e83a1a9eb1daf5b265e28a75d9e5548a507bc67e76bc55e24856cc"
+        },
+        "oblique": {
+          "image": "experiment_zero_review/candidate_02/oblique.png",
+          "mask_sha256": "4e7bf2b3967716d86e4f6d540c434f1e4ad71eca0b2a8466e6ec22d3fca9678f",
+          "camera_sha256": "35431e87e381496f9d749418142fb1fd5395d63638d8852705c24553f0b59568"
+        },
+        "r-side": {
+          "image": "experiment_zero_review/candidate_02/r-side.png",
+          "mask_sha256": "579d245d8d0cce0c89dd6a772fef1c4cb32176e0b879b686c50c76e9e28fb23f",
+          "camera_sha256": "14557a76de784d241d12a1a60577fea5b3d082021c84536c45e62700bc6e18fe"
+        },
+        "top": {
+          "image": "experiment_zero_review/candidate_02/top.png",
+          "mask_sha256": "d203e7f77d82501e0d407598d378c7210eb2565e61ac1a062eb04df6cf0e93c8",
+          "camera_sha256": "a28c0912247fd7d69c077fdae5840be8a8a0b9dabbe6ed7f6c21b23709bddabe"
+        }
+      }
+    },
+    {
+      "lineage_id": "0003/crown-003-001",
+      "emitter": "family:crown:sobol",
+      "family": "crown",
+      "parent": "0002/crown-002-003",
+      "native_witness_id": "7791e4c6843aba5fde3e",
+      "oblique_alpha_iou": 0.6417670682730924,
+      "original_combined_loss": 0.3763720566175638,
+      "rgba_boundary_match_unregistered": 0.3025871766029246,
+      "ziggurat_unitless_prior_deviation": 0.0940228754801356,
+      "brutalist_unitless_prior_deviation": 0.0,
+      "four_attractor_advisory_loss": 0.3806660739188343,
+      "extra_frame_fraction": 0.003286770747740345,
+      "views": {
+        "back": {
+          "image": "experiment_zero_review/candidate_05/back.png",
+          "mask_sha256": "2655d17e92d9a5a7862556f5c1b46b6799da9e5c989eee0b09fd00f255eeb160",
+          "camera_sha256": "3d112f427501d8f15c22a571b11fb34a36f0b725b5f075178645ac6fb0985742"
+        },
+        "front": {
+          "image": "experiment_zero_review/candidate_05/front.png",
+          "mask_sha256": "a8ad2e88f4897865a08a8edfdb8d1151755fa0cae2635294e99ee63d5a16ef88",
+          "camera_sha256": "4afa50ea2e4830e8e1568a334858c78835db176a325b51d0326e7a43550ee1ab"
+        },
+        "l-side": {
+          "image": "experiment_zero_review/candidate_05/l-side.png",
+          "mask_sha256": "1d142ab9a2ad88df64fe547d8752a9fc3d1d434c15e3b0a908a80cc2fd29381e",
+          "camera_sha256": "fcc4dc5095e83a1a9eb1daf5b265e28a75d9e5548a507bc67e76bc55e24856cc"
+        },
+        "oblique": {
+          "image": "experiment_zero_review/candidate_05/oblique.png",
+          "mask_sha256": "9f374c94ea1fcfe7e4814d3a4db420b5931842b58e2da6cc4f11e618e9b46a4f",
+          "camera_sha256": "35431e87e381496f9d749418142fb1fd5395d63638d8852705c24553f0b59568"
+        },
+        "r-side": {
+          "image": "experiment_zero_review/candidate_05/r-side.png",
+          "mask_sha256": "14c1e5482d21742cc7110ebe3f887f5382545f26192612a733a097f9ff347aa4",
+          "camera_sha256": "14557a76de784d241d12a1a60577fea5b3d082021c84536c45e62700bc6e18fe"
+        },
+        "top": {
+          "image": "experiment_zero_review/candidate_05/top.png",
+          "mask_sha256": "d203e7f77d82501e0d407598d378c7210eb2565e61ac1a062eb04df6cf0e93c8",
+          "camera_sha256": "a28c0912247fd7d69c077fdae5840be8a8a0b9dabbe6ed7f6c21b23709bddabe"
+        }
+      }
+    },
+    {
+      "lineage_id": "0003/terraces-003-001",
+      "emitter": "family:terraces:sobol",
+      "family": "terraces",
+      "parent": "0001/terraces-001-002",
+      "native_witness_id": "a802a30082f3c1c7ebc5",
+      "oblique_alpha_iou": 0.6499189627228525,
+      "original_combined_loss": 0.3679224678368095,
+      "rgba_boundary_match_unregistered": 0.31363636363636366,
+      "ziggurat_unitless_prior_deviation": 0.37689926859714645,
+      "brutalist_unitless_prior_deviation": 0.34524554826756604,
+      "four_attractor_advisory_loss": 0.3822222394520995,
+      "extra_frame_fraction": 0.0033085194375516956,
+      "views": {
+        "back": {
+          "image": "experiment_zero_review/candidate_04/back.png",
+          "mask_sha256": "d4a1fd0911cff501e2cda50298d9f34dbd80718c038af357f287507b1cff06af",
+          "camera_sha256": "3d112f427501d8f15c22a571b11fb34a36f0b725b5f075178645ac6fb0985742"
+        },
+        "front": {
+          "image": "experiment_zero_review/candidate_04/front.png",
+          "mask_sha256": "c0efc9f9a6f3fc9273dd9459733189526c6fc7b4f1c177635c1830a9e828e8da",
+          "camera_sha256": "4afa50ea2e4830e8e1568a334858c78835db176a325b51d0326e7a43550ee1ab"
+        },
+        "l-side": {
+          "image": "experiment_zero_review/candidate_04/l-side.png",
+          "mask_sha256": "ddac2cb2971abe7da1de035f001ee046fee46c1c130b938232860466d5a94ef8",
+          "camera_sha256": "fcc4dc5095e83a1a9eb1daf5b265e28a75d9e5548a507bc67e76bc55e24856cc"
+        },
+        "oblique": {
+          "image": "experiment_zero_review/candidate_04/oblique.png",
+          "mask_sha256": "7f7a459027dfecd43e3b188b626726d6dac9dee7f8967064542b0f42fe708c53",
+          "camera_sha256": "35431e87e381496f9d749418142fb1fd5395d63638d8852705c24553f0b59568"
+        },
+        "r-side": {
+          "image": "experiment_zero_review/candidate_04/r-side.png",
+          "mask_sha256": "db7c21aaceaec1e8def2c9418e414a20ec91aaea56b0ae3c9db14d75cf20dccd",
+          "camera_sha256": "14557a76de784d241d12a1a60577fea5b3d082021c84536c45e62700bc6e18fe"
+        },
+        "top": {
+          "image": "experiment_zero_review/candidate_04/top.png",
+          "mask_sha256": "2e6110cfa9250554be29d7e21746752524658c376f37a37f0c744ce7cc548396",
+          "camera_sha256": "a28c0912247fd7d69c077fdae5840be8a8a0b9dabbe6ed7f6c21b23709bddabe"
+        }
+      }
+    }
+  ],
+  "recommendation": "0002/needle-002-003",
+  "recommendation_authority": "adviser-only; no operator selection/pet-name/promotion",
+  "attractor_authority": "alpha/source and RGBA are painting evidence; Ur and brutalism are synthetic or interpretive construction priors",
+  "governance": "no old pilot results or ancestry; full native evidence remains in this new journal",
+  "review_views": [
+    "oblique",
+    "front",
+    "back",
+    "l-side",
+    "r-side",
+    "top"
+  ],
+  "sha256": "3103c9303410d99e94354d43a2a0bcc027f7ee7d7605cc67ff491d6f7bc6502d"
+}

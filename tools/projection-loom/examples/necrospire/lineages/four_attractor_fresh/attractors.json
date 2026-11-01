@@ -1,0 +1,94 @@
+{
+  "schema": "projection-loom/four-attractor-new-lineage",
+  "name": "necrospire-four-attractor-experiment-zero",
+  "seed": 58321,
+  "pilot_ancestor": null,
+  "historical_pilot": "read-only-excluded-from-ancestry-and-scores",
+  "source_identity": {
+    "rgba": {
+      "path": "examples/necrospire/source_rgba.png",
+      "sha256": "80e1d0ee8ae4bda505c053b42ea1d1f661d71ed4c174f57c15423027872c4f89"
+    },
+    "alpha": {
+      "path": "examples/necrospire/source_alpha_8bit.png",
+      "sha256": "78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7"
+    },
+    "ziggurat_project": {
+      "path": "examples/ur/project.json",
+      "sha256": "7f00310d3ccfc96ba7ce9e2ea4999b355b8118de2d9d21818635a3b8ea45ab8b"
+    },
+    "ziggurat_rules": {
+      "path": "examples/ur/grow.py",
+      "sha256": "5a1651d27dfdd171d8513bc523183e0897a72c6eae962e0cd1553d3042d9b22e"
+    },
+    "ziggurat_provenance": {
+      "path": "examples/ur/provenance.json",
+      "sha256": "45ef3189157b28c7e2d20529d4d6dbf99f1a576b62804d32f394f60323db88c8"
+    },
+    "brutalist_project": {
+      "path": "examples/brutalist/project.json",
+      "sha256": "9d16914bb47b2f1ddc0ef4b7155ae3688a995288656ba26bc520bdb9dca22d24"
+    },
+    "brutalist_rules": {
+      "path": "examples/brutalist/grow.py",
+      "sha256": "3c86a19ca81b9f825b665471a1906f8996d036736909435c63f553094688b648"
+    },
+    "brutalist_provenance": {
+      "path": "examples/brutalist/provenance.json",
+      "sha256": "85318f0749abb555bb38dbc0bd352e9f8797579ff8ef76c6b62c892edc056eb8"
+    },
+    "source_project": {
+      "path": "examples/necrospire/project_alpha.json",
+      "sha256": "cf6d9ccbab8ba5e830b17dce4c57ae8460c916015da6d98cca9cb8a9c760e5ec"
+    },
+    "source_recipe": {
+      "path": "examples/necrospire/hybrid/recipe_alpha.json",
+      "sha256": "8d846bedd4df92dca49803266d6045e849efc935723f62bcf7d3756fdae6bdd4"
+    }
+  },
+  "independent_oblique_alpha_match": true,
+  "attractors": {
+    "rgba_oblique": "original pixel-level appearance witness; not surveyed",
+    "oblique_alpha": "original independently archived fixed-view fitness",
+    "ziggurat": "interpretive terracing geometry prior; not an imported ruin",
+    "brutalist": "locally authored cantilever/modular construction prior"
+  },
+  "proxy_unitless_ratios": {
+    "ur_stage_footprint": 0.576,
+    "ur_stage_height_ratio": 0.5181818181818182,
+    "brutalist_cantilever_over_podium": 0.4230769230769231,
+    "brutalist_slab_over_core": 0.6842105263157895
+  },
+  "seed_locus_targets": {
+    "terrace_overhang": 1.23584,
+    "spire_segmentation": 0.5181818181818182,
+    "gallery_reach": 1.0710526315789473,
+    "terrace_offset": -0.06153846153846154
+  },
+  "seed_locus_strength": 1.0,
+  "seed_native_trials": [
+    {
+      "strength": 1.0,
+      "native_valid": true
+    }
+  ],
+  "project_file": "/home/runner/work/Synthetic-Dream-Machine/Synthetic-Dream-Machine/tools/projection-loom/examples/necrospire/project_four_attractor.generated.json",
+  "recipe_file": "/home/runner/work/Synthetic-Dream-Machine/Synthetic-Dream-Machine/tools/projection-loom/examples/necrospire/hybrid/recipe_four_attractor.generated.json",
+  "recipe_sha256": "ca3b8e6a16ddd5df82746d406ba780e68477ec9c1e884ee028175a618373cee4",
+  "initial_genome_sha256": "4388bd331f398beeeac6963090461c4d3e475f126e1e583d900dfff823456d0c",
+  "experiment": {
+    "passes": 3,
+    "offspring_per_family": 3,
+    "exact_budget": 12,
+    "detail_budget": 6,
+    "score_size": [
+      64,
+      96
+    ],
+    "overscan": 2,
+    "mutation_scale": 0.16,
+    "seed": 58321
+  },
+  "interpretation": "Fresh source-bound ancestry. Proxy ratios guide seed only; mandatory native CAD/void/mesh/socket gates remain independent.",
+  "sha256": "270d19dcc8b7bb0b7fd05f532968a7f55e5cab3662003a7d40a82b4989650ed6"
+}

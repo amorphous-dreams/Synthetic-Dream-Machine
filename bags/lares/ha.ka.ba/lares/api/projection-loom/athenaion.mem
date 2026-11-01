@@ -1,0 +1,102 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/athenaion">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/athenaion.mem"
+l-space = "stable"
+namespace = "&#x0950; &#x0901;"
+role = "Operator-pinned external research reference for Projection Loom composition, sites, multi-view matching and modular procedural world generation; noncanonical upstream"
+tags = ["api/pono/meme", "projection-loom", "research", "external-reference"]
+title = "lar:///ha.ka.ba/lares/api/projection-loom/athenaion"
+type = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/api/projection-loom/athenaion"
+written = "2026-10-27"
+```
+
+<<~ ahu #/entry>>
+
+! Athenaion ~ Hard External Research Reference
+
+The Operator designated `Leonxlnx/athenaion` a ''hard source reference'' for
+Projection Loom's intent-generalized, seed-independent architectural growth.
+Consult and compare its pinned source in future planning and implementation.
+This hard reference does NOT grant authority to Athenaion's geometry, aesthetic
+choices, camera calibration, execution model, or Elyncia canon.
+
+<<~/ahu>>
+
+<<~ ahu #/provenance>>
+
+!! Pin, License and Witness Scope
+
+* ''Repository:'' https://github.com/Leonxlnx/athenaion
+* ''Pinned commit:'' `9b8bd23b39c458a50fb1201037360047781c45b5`, inspected 2026-10-27 from public GitHub.
+* ''License:'' MIT, copyright (c) 2026 Leon Lin. Retain the source notice
+  when reusing substantial software; no copied code enters this meme.
+* ''Inspected works:'' README, `docs/ART_BIBLE.md`, `docs/COMPOSITION.md`,
+  `docs/CONTRACT.md`, `src/world/layout.js`, `src/world/index.js`,
+  `src/core/engine.js`, `src/core/rng.js`, `src/core/footprints.js`,
+  `src/arch/build.js`, `src/modules/acropolis.js`,
+  `src/terrain/erosion.js`, and `tools/render.mjs`.
+* ''Read as:'' a procedural Three.js world with nine AI-generated visual
+  references and an author-reported multi-agent composition/render process;
+  no independent verification of its 4K/agent-hour/quality claims here.
+
+<<~/ahu>>
+
+<<~ ahu #/transfer>>
+
+!! Concrete Architecture Rhymes
+
+* ''Shared layout, moving dependents.'' One scene-owned spatial plan drives
+  terrain, architecture, stairs, terraces, city and cameras. Loom SHOULD
+  compose subject-neutral location/frame relationships, not hard-code a
+  Necrospire or Athenaion coordinate master.
+* ''Sites publish opportunities.'' Athenaion's building/engine slots and
+  footprints let later modules place statues, ivy, trees and props around
+  already built sites. Loom SHOULD generate typed structural bearing sockets,
+  decorative slots and occupancy/route zones independently; a footprint check
+  MUST NOT impersonate a native BRep contact or traversability certificate.
+* ''Modules submit to two tests.'' Independent `build(engine)` and
+  `test(engine)` run beside whole-world render comparisons. Loom SHOULD
+  audition each capability alone and then in composed native location space.
+* ''Image groups constrain one world.'' Nine source references invite camera
+  and landmark fits, view-by-view diagnostics and an art bible. Every source
+  keeps its own camera/registration evidence; RGB and alpha of one image
+  remain one entity. Synthetic views inspect, never become new source images.
+* ''Deterministic local variation.'' Named RNG and resource-tiered rendering
+  suggest keyed random substreams and bounded coarse-to-fine rendering for
+  independently reproducible epochs.
+* ''No shot-specific hidden construction.'' Athenaion's `onShot` hooks allow
+  presentation changes. Loom MUST preserve identical construction/void/genome
+  truth across camera views; any shot-varying structural geometry requires a
+  new explicit candidate and independent audits.
+
+<<~/ahu>>
+
+<<~ ahu #/limits>>
+
+Athenaion does not demonstrate native BRep validation, autonomous genetic
+lineage selection, certified multi-view photogrammetry, a generic intent
+contract or idempotent OODA-HA replay. Its no-external-assets constraint
+belongs to that project, not to a general-purpose Projection Loom.
+
+All 20 planned generalization items and the image-group / brutalist grammar /
+ziggurat-proxy seven-combination Experiment Zero matrix live in
+the current `lar:///ha.ka.ba/lares/api/projection-loom/handoff`; the retired comparison and roadmap remain recoverable from `archive/pr84-markdown-pre-otakiage-20261031`.
+Neither document claims the new functionality already executed.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/research">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/growth">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Ai8vqVi0O2wKgsiqapsO1zKdkWUv_fT8FdbGFFVTlqc
+
+<<^ code="&#x0004;" -> to="?">>

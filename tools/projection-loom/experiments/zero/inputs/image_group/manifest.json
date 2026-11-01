@@ -1,0 +1,11 @@
+{
+  "kind": "image-group",
+  "views": [
+    {
+      "rgba": "../../../../examples/necrospire/source_rgba.png",
+      "alpha": "../../../../examples/necrospire/source_alpha_8bit.png",
+      "camera": "original-oblique",
+      "registration": "provisional"
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "ur": {
+    "schema": "projection-loom/pair-a-control/v1",
+    "subject": "ur",
+    "external_sources_ingested": false,
+    "source_test_type": "locally authored SCAD/STL control (not third party)",
+    "evidence_state": "synthetic",
+    "units": "m",
+    "evidence_sources": {
+      "scad": "c18683487b27dff5c202afb918ecb8293bc93192543dcdc1540f472f95da5d91",
+      "compiled_stl": "da3ba5ff8585897e91908d6c0ead5f829ffb5c61393a982558612c36fe12f9d8",
+      "provenance_manifest": "45ef3189157b28c7e2d20529d4d6dbf99f1a576b62804d32f394f60323db88c8"
+    },
+    "passes": [
+      {
+        "epoch": 1,
+        "proposals": 7,
+        "cad_evaluated": 5,
+        "scored": 4,
+        "best_loss": 0.03597613206164533,
+        "phenotype_niches": 2,
+        "selected": {
+          "base_length": 62.5,
+          "base_width": 43.0,
+          "base_height": 11.0,
+          "stage_height": 5.7,
+          "stair_width": 4.4,
+          "summit_shrine": 1.0
+        }
+      },
+      {
+        "epoch": 2,
+        "proposals": 7,
+        "cad_evaluated": 5,
+        "scored": 4,
+        "best_loss": 0.03597613206164533,
+        "phenotype_niches": 2,
+        "selected": {
+          "base_length": 62.5,
+          "base_width": 43.0,
+          "base_height": 11.0,
+          "stage_height": 5.7,
+          "stair_width": 4.4,
+          "summit_shrine": 1.0
+        }
+      }
+    ],
+    "selected_genome": {
+      "base_length": 62.5,
+      "base_width": 43.0,
+      "base_height": 11.0,
+      "stage_height": 5.7,
+      "stair_width": 4.4,
+      "summit_shrine": 1.0
+    },
+    "audit_valid": true,
+    "generated_solid_count": 1,
+    "modelled_parts": 7,
+    "modelled_voids": 0,
+    "fixed_camera_iou": {
+      "front": {
+        "iou": 0.9570572569906791
+      },
+      "oblique": {
+        "iou": 0.9582491193624761
+      },
+      "top": {
+        "iou": 0.9767652274619087
+      }
+    },
+    "sampled_surface_distance": {
+      "sampled_bidirectional_rms": 1.7396560850375897,
+      "observed_count": 800,
+      "modeled_count": 800,
+      "units": "m",
+      "method": "bidirectional-nearest-sampled-point"
+    },
+    "next_hard_inputs": "history-builds-sketchfab"
+  },
+  "brutalist": {
+    "schema": "projection-loom/pair-a-control/v1",
+    "subject": "brutalist",
+    "external_sources_ingested": false,
+    "source_test_type": "locally authored SCAD/STL control (not third party)",
+    "evidence_state": "synthetic",
+    "units": "model_unit",
+    "evidence_sources": {
+      "scad": "f2d128f8a804a1f9cbafc3268d2209142963880083c220181411961647431a99",
+      "compiled_stl": "8bdb04ea56ae920f20302bff6efee17ce6ca3e87e993cdbbd4500eef4f3475c1",
+      "provenance_manifest": "85318f0749abb555bb38dbc0bd352e9f8797579ff8ef76c6b62c892edc056eb8"
+    },
+    "passes": [
+      {
+        "epoch": 1,
+        "proposals": 7,
+        "cad_evaluated": 5,
+        "scored": 4,
+        "best_loss": 0.00020912033899474086,
+        "phenotype_niches": 1,
+        "selected": {
+          "cantilever_offset": 11.0,
+          "tower_height": 7.0,
+          "slab_length": 13.0
+        }
+      },
+      {
+        "epoch": 2,
+        "proposals": 7,
+        "cad_evaluated": 5,
+        "scored": 4,
+        "best_loss": 0.00020912033899474086,
+        "phenotype_niches": 1,
+        "selected": {
+          "cantilever_offset": 11.0,
+          "tower_height": 7.0,
+          "slab_length": 13.0
+        }
+      }
+    ],
+    "selected_genome": {
+      "cantilever_offset": 11.0,
+      "tower_height": 7.0,
+      "slab_length": 13.0
+    },
+    "audit_valid": true,
+    "generated_solid_count": 1,
+    "modelled_parts": 4,
+    "modelled_voids": 2,
+    "fixed_camera_iou": {
+      "front": {
+        "iou": 1.0
+      },
+      "oblique": {
+        "iou": 0.999372876927097
+      },
+      "top": {
+        "iou": 1.0
+      }
+    },
+    "sampled_surface_distance": {
+      "sampled_bidirectional_rms": 1.0589928283049286,
+      "observed_count": 800,
+      "modeled_count": 800,
+      "units": "model_unit",
+      "method": "bidirectional-nearest-sampled-point"
+    },
+    "next_hard_inputs": "nosycat-cc0-brutalism2.zip"
+  }
+}

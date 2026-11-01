@@ -1,0 +1,61 @@
+name: Projection Loom repository snapshot for local audit
+
+on:
+  push:
+    branches:
+      - experiment/necrospire-rerun-20261024-035fb47f
+    paths:
+      - .github/workflows/loom-repository-snapshot.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pack-loon:
+    name: Verified full Loom-branch working tree
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact tested Loom commit, including binary sources
+        uses: actions/checkout@v4
+        with:
+          ref: 035fb47f93e3170d38d2168de41ea955bac20f20
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Verify source and prepare credential-free local checkout
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "035fb47f93e3170d38d2168de41ea955bac20f20"
+          git config --local --get-regexp 'http\\..*extraheader' && exit 1 || test "$?" -eq 1
+          test -f tools/projection-loom/examples/necrospire/source_rgba.png
+          test -f tools/projection-loom/examples/necrospire/source_alpha_8bit.png
+          git switch -c feature/green-jello-dinosaur-5--projection-loom
+          git status --short
+          git rev-parse --is-shallow-repository
+          du -sh . .git
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          base=Path('tools/projection-loom/examples/necrospire')
+          recipe=json.loads((base/'hybrid/recipe.json').read_text())
+          source=(base/'source_alpha_8bit.png').read_bytes()
+          actual=hashlib.sha256(source).hexdigest()
+          assert actual==recipe['source_hashes']['image']
+          print(json.dumps({'sha256_alpha':actual,'recipe_sha256':recipe['sha256'],'source_rgba_bytes':(base/'source_rgba.png').stat().st_size,'commit':'035fb47f93e3170d38d2168de41ea955bac20f20'}))
+          PY
+      - name: Package complete checkout, including safe shallow .git metadata
+        run: |
+          set -euo pipefail
+          tar -czf "$RUNNER_TEMP/loom-branch-035fb47f.tar.gz" -C "$GITHUB_WORKSPACE" .
+          ls -lh "$RUNNER_TEMP/loom-branch-035fb47f.tar.gz"
+          sha256sum "$RUNNER_TEMP/loom-branch-035fb47f.tar.gz"
+          cp "$RUNNER_TEMP/loom-branch-035fb47f.tar.gz" loom-branch-035fb47f.tar.gz
+      - name: Upload complete working tree for offline local clone
+        uses: actions/upload-artifact@v4
+        with:
+          name: loom-full-working-tree-035fb47f
+          path: loom-branch-035fb47f.tar.gz
+          retention-days: 7
+          if-no-files-found: error
+          compression-level: 0

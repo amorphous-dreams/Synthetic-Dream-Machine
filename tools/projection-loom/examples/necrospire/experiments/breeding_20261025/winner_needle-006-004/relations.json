@@ -1,0 +1,197 @@
+{
+  "entities": [
+    {
+      "anonymous": false,
+      "connects": [],
+      "handle": "obsidian needle",
+      "has": [],
+      "kind": "material",
+      "parents": [],
+      "role": "foundation",
+      "slot": null
+    },
+    {
+      "anonymous": false,
+      "connects": [],
+      "handle": "lower terrace",
+      "has": [],
+      "kind": "material",
+      "parents": [
+        "obsidian needle"
+      ],
+      "role": "primary",
+      "slot": null
+    },
+    {
+      "anonymous": false,
+      "connects": [],
+      "handle": "central keep",
+      "has": [],
+      "kind": "material",
+      "parents": [
+        "lower terrace"
+      ],
+      "role": "primary",
+      "slot": null
+    },
+    {
+      "anonymous": false,
+      "connects": [],
+      "handle": "upper keep",
+      "has": [],
+      "kind": "material",
+      "parents": [
+        "central keep"
+      ],
+      "role": "primary",
+      "slot": null
+    },
+    {
+      "anonymous": false,
+      "connects": [],
+      "handle": "parapet",
+      "has": [],
+      "kind": "material",
+      "parents": [
+        "upper keep"
+      ],
+      "role": "primary",
+      "slot": null
+    },
+    {
+      "anonymous": false,
+      "connects": [],
+      "handle": "front lower terrace",
+      "has": [],
+      "kind": "material",
+      "parents": [
+        "lower terrace"
+      ],
+      "role": "primary",
+      "slot": null
+    },
+    {
+      "anonymous": false,
+      "connects": [],
+      "handle": "western gallery",
+      "has": [],
+      "kind": "material",
+      "parents": [
+        "lower terrace"
+      ],
+      "role": "primary",
+      "slot": null
+    },
+    {
+      "anonymous": false,
+      "connects": [
+        "guarded-gate",
+        "upper-shaft"
+      ],
+      "handle": "great-hall",
+      "has": [],
+      "kind": "void",
+      "parents": [
+        "obsidian needle"
+      ],
+      "role": "room",
+      "slot": null
+    },
+    {
+      "anonymous": false,
+      "connects": [
+        "great-hall"
+      ],
+      "handle": "guarded-gate",
+      "has": [],
+      "kind": "void",
+      "parents": [
+        "obsidian needle"
+      ],
+      "role": "doorway",
+      "slot": null
+    },
+    {
+      "anonymous": false,
+      "connects": [
+        "great-hall"
+      ],
+      "handle": "upper-shaft",
+      "has": [],
+      "kind": "void",
+      "parents": [
+        "obsidian needle"
+      ],
+      "role": "shaft",
+      "slot": null
+    },
+    {
+      "anonymous": false,
+      "connects": [],
+      "handle": "@location",
+      "has": [
+        "#has/generative"
+      ],
+      "kind": "location",
+      "parents": [],
+      "role": "composed-location",
+      "slot": "location-root"
+    },
+    {
+      "anonymous": false,
+      "connects": [],
+      "handle": "@entity/Crystal",
+      "has": [
+        "#has/faceted",
+        "#has/obsidian",
+        "#has/operator-cad",
+        "#has/operator-cad-polymesh",
+        "#has/operator-semantic-socket",
+        "#has/protected-interface",
+        "#has/structural-cage"
+      ],
+      "kind": "entity",
+      "parents": [
+        "@location"
+      ],
+      "role": "capability-composition",
+      "slot": "Crystal"
+    },
+    {
+      "anonymous": false,
+      "connects": [],
+      "handle": "@entity/Joining",
+      "has": [
+        "#has/operator-cad",
+        "#has/operator-cad-contact",
+        "#has/structural-interface"
+      ],
+      "kind": "entity",
+      "parents": [
+        "@location"
+      ],
+      "role": "capability-composition",
+      "slot": "Joining"
+    },
+    {
+      "anonymous": false,
+      "connects": [],
+      "handle": "@entity/Fortress",
+      "has": [
+        "#has/fortification",
+        "#has/operator-cad",
+        "#has/operator-cad-contact",
+        "#has/rooms"
+      ],
+      "kind": "entity",
+      "parents": [
+        "@location"
+      ],
+      "role": "capability-composition",
+      "slot": "Fortress"
+    }
+  ],
+  "location": "necrospire",
+  "schema": "projection-loom/relational-witness/v1",
+  "witness_id": "f7ef76828f2d655ee02c"
+}

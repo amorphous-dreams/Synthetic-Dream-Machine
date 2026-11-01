@@ -1,0 +1,85 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/art-sigils/loom-dialect">>
+<<^ code="&#x0002;">>
+
+```toml meta
+uri-path  = "ha.ka.ba/lares/api/art-sigils/loom-dialect"
+title     = "lar:///ha.ka.ba/lares/api/art-sigils/loom-dialect"
+file-path = "bags/lares/ha.ka.ba/lares/api/art-sigils/loom-dialect.mem"
+type      = "text/memetic-wikitext+tiddlywiki"
+register  = "Synthesis-Canon"
+role      = "Loom extension of canonical Art Sigils through current backed-source AI Fire"
+status    = "draft"
+retain    = true
+```
+
+<<~ ahu #/bearing>>
+! Projection Loom — Art Sigil Dialect
+
+This dialect **does not redefine** the canonical eight-attribute
+`<<~ art ...>>` Inscription, its optional studies, counterpoints or facture.
+Memetic-wikitext supplies the Operator–AI expression surface, not the
+machine's whole executable grammar. The **current backed-source AI Fire**
+interprets expression, references source documentation and proposes a
+typed contract. No separate oracle, autonomous model daemon, or protocol
+transpiler is installed or claimed.
+
+Three boundaries remain independent:
+
+* **Inscription / Folio** — picture-facing, optional, creative and possibly
+  ambiguous. Their silence, delegation and withholding remain meaningful.
+* **Fire-authored binding** — explicit JSON Schema validated entity selectors,
+  named seed identity, alternatives, constraints and bounded proposed status.
+  The AI may articulate possibilities but its words cannot certify geometry
+  or exercise Operator approval.
+* **Native witness** — actual CAD positive joins, void checks and
+  orthographic evidence; attributed provenance and retained rejections.
+
+`~loom-relation` below is a **communication procedure**, not an executable
+CAD operation or guaranteed relationship predicate.
+<<~/ahu>>
+
+<<~ ahu #/relation>>
+!! One optional Loom relation scope
+
+```tiddlywiki
+\procedure ~loom-relation(first second action read status:"proposed") Loom relation: <<first>> <<action>> <<second>>. Read: <<read>>. Status: <<status>>.
+```
+
+Suggested invocation:
+
+```tiddlywiki
+<<~ loom-relation first="stepped fortress" second="black crystal" action="encircles" read="inhabited terraces may clasp the spine while the vertical needle remains legible" status="proposed">>
+```
+
+The receiver may return competing interpretations. The `action` string
+remains ordinary language. Fire must explicitly bind any one interpretation
+to a trusted implemented rule and identify its semantic endpoints. No
+unrecognized prose or raw code executes in the Loom.
+<<~/ahu>>
+
+<<~ ahu #/machine>>
+!! Bounded machine-facing handback
+
+Contract: `tools/projection-loom/schemas/fire_proposal.schema.json`.
+Typed validation: `projection_loom/fire_contract.py`.
+Native audition: `projection_loom/fire_geometry.py`.
+Actual view handback: `projection_loom/fire_review.py`.
+
+The current vertical slice recognizes `bridges`, `encircles`, `bears`
+and `studies` as explicitly bound candidates. Implementations are limited
+to trusted, native-audited `bridge-between`, `ring-around`,
+`bearing-column`, and non-geometric `study-only` alternatives. The
+candidate ontology is deliberately smaller than ordinary language.
+An unimplemented poetic relation remains a *study*, never a fabricated CAD
+proof. Output is neither a pet-name assignment nor permission to promote
+a lineage.
+
+This is an Art Sigils *extension* under the canonical house. The eight
+dimensions are unchanged. Machine JSON, hash registers, camera controls,
+model execution, and source URLs stay outside the transmitted Inscription.
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;qoGGBc_FFIhgRPLgYTK6deXygsZ9jbMc1MfSWVKMojw
+<<^ code="&#x0004;" -> to="?">>

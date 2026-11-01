@@ -1,0 +1,82 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/poc0">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/poc0.mem"
+l-space = "stable"
+namespace = "&#x0950; &#x0901;"
+mana = 14
+manao = 14
+manaoio = 14
+role = "first unscaled Necrospire image witness; real operator steering and source-specific PoC 0 receipt"
+tags = ["api/pono/meme"]
+title = "lar:///ha.ka.ba/lares/api/projection-loom/poc0"
+type = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/api/projection-loom/poc0"
+```
+
+<<~ ahu #/entry>>
+
+! PoC 0: A source without a known camera
+
+A user-authored oblique Necrospire RGBA and an independently archived L8
+alpha supply the minimal testimony. A fixed provisional camera permits
+repeatable silhouette comparison but cannot certify physical dimensions or
+perspective. The source RGBA and alpha agree at every pixel (1024×1536).
+The alpha source bears SHA-256
+`78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7`.
+The RGBA bears SHA-256
+`80e1d0ee8ae4bda505c053b42ea1d1f661d71ed4c174f57c15423027872c4f89`.
+
+A location-wide, five-epoch full-speed constructive run selected four
+CAD-valid survivors from scored proposals, keeping valid geometry and its
+witness distinct from the model's drawings. All currently share a narrow
+fortress/needle topology, even though dimensions vary. That limited diversity
+reads as a constructive-grammar ceiling, not as measurement certainty.
+
+<<~/ahu>>
+
+<<~ ahu #/operator-and-model>>
+
+!! Two pilots at one helm
+
+* The Operator–AI pair MAY steer via the persistent OODA-HA inbox without any
+  configured remote provider. Operator pet-names, o-takiage, reviews, pause and
+  lineage choice remain phase-boundary actions with real receipts.
+* A provider-backed adviser MAY connect Ollama (local) or an explicitly trusted
+  OpenAI-compatible HTTP(S) chat endpoint. The model sees small classified
+  summaries, not the original pixels, local secrets, full files, or arbitrary
+  filesystem paths. Model replies are parsed and constrained to a reviewed
+  candidate ID, an inquiry question, or abstention.
+* Provider output never receives authority to certify a mesh, override CAD
+  validity, invent survey ground control, or rewrite an existing source.
+* Operator and model can change their desired degree of steering; no mode
+  weakens source, camera, lineage, or strict CAD gates.
+
+<<~/ahu>>
+
+<<~ ahu #/hard-reference-talk-story>>
+
+!! The hard-reference fork remains open at the Operator's hand
+
+A Penn Museum/Lagash photogrammetric Ziggurat of Ur offers source-authenticated
+Sumerian terrain/terrace architecture with CC BY-NC use conditions. A CC0
+OpenSCAD/STL brutalist architecture kit offers a compact executable reference
+and distinct reconstructive method. A CC BY scanned megalithic passage tomb
+at Øm offers a stronger interior void-and-circulation test. No source scan
+becomes a watertight CAD model by declaration. Research links and licenses
+live in the project's hard-reference scout; the final two await an operator
+choice of method diversity versus architectural/circulation diversity.
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/witness">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
+
+<<^ code="&#x0003;">>ni:///sha-256;kb2aEL59OpHaABtDm5GdNQTQRAz4xTiW6atvoulowVc
+
+<<^ code="&#x0004;" -> to="?">>
