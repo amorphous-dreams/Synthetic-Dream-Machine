@@ -611,3 +611,18 @@ test("RED: QUEUE: the verdict reads the pushed train head's CI, and the span fas
   assert.equal(r2.code, 5, r2.out);
   assert.equal(originRef(w2, SPAN), w2.base, "nothing landed");
 });
+
+test("RED: QUEUE: a red train of three drops the culprit by bisection over its own chain and lands the rest; the green prefix lands at its EXISTING chain sha", async () => {
+  const w = world(["a", "b", "c"]);
+  const r = await runQ(w, { red: (sha) => hasFile(w, sha, "packages/p-b/f.txt") });
+  assert.equal(r.code, 11, r.out);
+  assert.match(r.out, /DROPPED b: /);
+  const final = originRef(w, SPAN);
+  for (const s of ["a", "c"]) assert.ok(hasFile(w, final, `packages/p-${s}/f.txt`), `${s} landed`);
+  assert.ok(!hasFile(w, final, "packages/p-b/f.txt"), "b never landed");
+  const [t1] = pushedTrains(r.out);
+  const prefix = sh(w.work, "rev-parse", `${final}^`);
+  assert.equal(sh(w.work, "rev-parse", `${prefix}^2`), w.heads.a);
+  assert.ok(isAnc(w, prefix, t1.sha), "lane a's land IS the first commit of the first train's chain, never a rebuild");
+  assert.equal(sh(w.work, "rev-parse", `${final}^2`), w.heads.c);
+});
