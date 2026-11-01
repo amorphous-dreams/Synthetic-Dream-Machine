@@ -1544,6 +1544,8 @@ async function prepareNodeBootOn(
    */
   const floorGates: FlowGateArgs["gates"] = Object.assign(async (sessions: GateSessionTable) => {
     const door = await vesselFloorKeyDoor();
+    // One owner turn reads the carried postures fresh. Never call `floorGates` from inside a sweep port: a turn that waits
+    // on its own successor never ends (the cold read's SHOULD 3; no port reaches it today).
     await gateSweepOwner.refold();
     return gateNexusesOf(gateSweepOwner.readings()).map((nexus): FlowReadGate => {
       const bundle = deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(nexus), floorRoute(FLOW_SOCKET_ROUTE));

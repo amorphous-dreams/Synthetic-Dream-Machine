@@ -2,10 +2,11 @@
  * gate-sweep — THE ONE OWNER of a vessel's gate sweep: a transport-free cap-stack stage every vessel holding the "serves a
  * gate" capability composes (test-recut-road `T19`, `T27`; `T13` inherits it as an already-shared stage).
  *
- * One turn at a time, it reads the carried postures, then drops the sockets a refold demotes ON THOSE READINGS, then stands
- * down each gate its read no longer names and stands each one it newly names, then runs the after-steps. So the drop never
- * sorts on an older read, and an older read never lands after a newer one. A refold asked while one turn waits unstarted
- * joins it: that turn reads the carried postures only when it starts, so it sees both asks.
+ * One turn at a time, it reads the carried postures, then drops the sockets a refold demotes ON THOSE READINGS, then runs
+ * its before-step, then stands down each gate its read leaves out and stands each one it newly names. So the drop sorts on
+ * the newest read, and an older read never lands after a newer one. A refold asked while one turn waits unstarted joins it:
+ * that turn reads the carried postures only when it starts, so it sees both asks. The after-steps run one at a time on a
+ * chain of their own, so a stalled one (a relay that never answers) holds no later turn's read or drop.
  *
  * FAIL-CLOSED. A read that throws reads as NOTHING CARRIED: every carried gate stands down and every carried posture reads
  * absent. A seat port that answers null (a floor, or a composition before its arm) stands nothing; the drop still runs.
@@ -27,18 +28,18 @@ export interface GateSweepPorts<R extends { readonly aid: string }> {
   readonly nexusesOf: (readings: readonly R[]) => readonly string[];
   /** The gate seat this turn stands through, or null where the composition stands none. Read at each turn. */
   readonly seat: () => GateSweepSeat | null;
-  /** Drop the sockets these readings no longer hold. */
+  /** Drop the sockets these readings leave unheld. */
   readonly drop: (readings: readonly R[]) => void;
-  /** Before the read (a device book's refresh). A throw here is the port's own; the turn reads on. */
+  /** After the drop, before the gates move (a device book's refresh). A throw here is the port's own; the turn goes on. */
   readonly before?: () => Promise<void>;
-  /** After the gates moved (a same-operator sweep, a relay's refresh). Skipped once the owner closed. */
+  /** After the gates moved (a same-operator sweep, a relay's refresh), one at a time on its own chain. Skipped once closed. */
   readonly after?: () => Promise<void>;
   /** A read that failed, a stand that threw: said once per fault, deciding nothing. */
   readonly onFault?: (err: unknown) => void;
 }
 
 export interface GateSweep<R> {
-  /** Queue one turn (joined when one already waits unstarted); resolves when that turn has run. */
+  /** Queue one turn (joined when one already waits unstarted); resolves when that turn and its after-step have run. */
   refold(): Promise<void>;
   /** The carried postures the last finished read answered. */
   readings(): readonly R[];
@@ -58,17 +59,32 @@ export function gateSweep<R extends { readonly aid: string }>(ports: GateSweepPo
     try { down?.(); } catch (err) { fault(err); }
   };
 
-  const turn = async (): Promise<void> => {
-    if (closed) return;
-    try { await ports.before?.(); } catch (err) { fault(err); }
-    if (closed) return;
+  // THE AFTER-STEPS' OWN CHAIN: one at a time, never on the turns' chain.
+  let afterTail: Promise<void> = Promise.resolve();
+  const afterStep = (): Promise<void> => {
+    const mine = afterTail.then(async () => {
+      if (closed) return;
+      try { await ports.after?.(); } catch (err) { fault(err); }
+    });
+    afterTail = mine;
+    return mine;
+  };
+
+  /** One turn: read, drop on that read, the before-step, then the gates. Answers the after-step it queued, if any. */
+  // The after-step rides in a box: an async function that returned the bare promise would adopt it and wait on it.
+  const turn = async (): Promise<{ readonly after: Promise<void> } | null> => {
+    if (closed) return null;
     let read: readonly R[];
     try { read = await ports.readCarried(); } catch (err) { fault(err); read = []; }
-    if (closed) return;
+    if (closed) return null;
     current = read;
     try { ports.drop(read); } catch (err) { fault(err); }
-    const seat = ports.seat();
-    const wanted = new Set(seat ? ports.nexusesOf(read) : []);
+    try { await ports.before?.(); } catch (err) { fault(err); }
+    if (closed) return null;
+    // From here to the last stand no await runs: a close cannot land between them.
+    let seat: GateSweepSeat | null = null;
+    let wanted = new Set<string>();
+    try { seat = ports.seat(); wanted = new Set(seat ? ports.nexusesOf(read) : []); } catch (err) { fault(err); seat = null; wanted = new Set(); }
     for (const nexus of [...stood.keys()]) if (!wanted.has(nexus)) standDown(nexus);
     if (seat) {
       for (const nexus of wanted) {
@@ -76,8 +92,7 @@ export function gateSweep<R extends { readonly aid: string }>(ports: GateSweepPo
         try { stood.set(nexus, seat.stand(nexus)); } catch (err) { fault(err); }
       }
     }
-    if (closed) return;
-    try { await ports.after?.(); } catch (err) { fault(err); }
+    return { after: afterStep() };
   };
 
   let tail: Promise<void> = Promise.resolve();
@@ -85,10 +100,12 @@ export function gateSweep<R extends { readonly aid: string }>(ports: GateSweepPo
   return {
     refold() {
       if (waiting) return waiting;
-      const mine: Promise<void> = tail.then(() => { if (waiting === mine) waiting = null; return turn(); });
-      waiting = mine;
-      tail = mine.catch(() => {});
-      return mine;
+      // The turns' chain waits on each turn's read, drop and gates, never on its after-step.
+      const core = tail.then(() => { if (waiting === answer) waiting = null; return turn(); });
+      const answer: Promise<void> = core.then((queued) => queued?.after);
+      waiting = answer;
+      tail = core.then(() => {}, () => {});
+      return answer;
     },
     readings: () => current,
     close() {
