@@ -1,28 +1,11 @@
 /**
- * `lares sense pour` — idempotent, re-runnable session-history harvest.
+ * `lares sense pour` — the sovereign re-pave and its writeback leg; `lares sense capture` and
+ * `lares sense sweep` — the source-stream capture doors.
  *
- * TWO REACHES, ONE VERB. A bare `pour` harvests ONE pointer's bearing gradient — the navigational
- * structure the stream already authored, which `lares sense worldline` joins each node against.
  * `pour --all` walks the whole tending movement: quiesce · baseline · drawers · bearing · projection ·
  * verify · resume, in that order, because each landing step reads what the one before it wrote.
- *
- * ONE idempotent command the operator (or a thin hook) re-runs safely.
- *
- *   - Reads a session transcript (.jsonl) — or every transcript under a dir —
- *     turn by turn, full message structure (text blocks; tool blocks noted, not
- *     dropped — mempalace #590).
- *   - Runs the graceful-gradient harvester (@lararium/mesh harvestTurnGradient):
- *     the grammar manifests provisionally, so clean turns harvest with
- *     confidence and degraded/novel/missing forms record on the 0..20 gradient,
- *     down to the floor; below it a turn keeps its raw source and abstains.
- *   - IDEMPOTENT: a per-key content-hash watermark (<state>/harvest/state.json — a watermark
- *     re-derives, so it rides the state home rather than either house)
- *     skips turns already harvested; re-runs and resumes are no-ops. The harvest
- *     index is append-only NDJSON keyed by turn uuid.
- *
- * No holder, no LLM in the parse path — pure local read + the isomorphic parser.
- * The mempalace DRAWER leg (verbatim semantic search) stays the convos mine; this
- * is the BEARING leg (the navigational structure the stream already authored).
+ * `pour --writeback` runs the bearing leg alone — the lar-telemetry projection onto the drawers,
+ * held as a placeholder (operator ruling 2026-10-31, Train Q) until the sensorium arc returns it.
  *
  * One surface, two actors: prose on a TTY, deterministic JSON off-TTY / under
  * --json (../../render.ts #actor-parity).
@@ -31,243 +14,26 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, appendFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, join } from "node:path";
-import { harvestTurnGradient, detectGoneTurns, liveKeysForRewind, sha256HexSync, type KeyedBranchNode } from "@lararium/mesh";
 import { TIMEOUT_CEIL_MS } from "@lararium/mempalace";
-import { writebackWing, resolveLociIo, kapaeTurn, KgUnavailable, isoWholeSeconds } from "@lararium/sensorium";
+import { writebackWing, isoWholeSeconds } from "@lararium/sensorium";
 import { larRoot, larHarvestDir, vesselDid } from "../../env.js";
 import { wingFromDir } from "../../wing-law.js";
 import { partitionEphemeral } from "../../ephemeral.js";
-import { atomicWriteFileSync } from "@lararium/node";
 import { runVerb } from "../../verb-call.js";
 import { readVerbOutcome } from "../../verb-result.js";
 import { emit, exitFor, type LaresError } from "../../render.js";
 import type { ParsedArgs } from "../../parse-args.js";
 
-const HARVEST_DIR = larHarvestDir();   // <state>/harvest — XDG; LAR_ROOT-isolated for staged instances
+/** The re-pave's state home — `<state>/harvest`, XDG; LAR_ROOT-isolated for staged instances. The
+ *  baseline series lands here under the wing. */
+const HARVEST_DIR = larHarvestDir();
 
-/** One harvested turn — the gradient summary, keyed for idempotent dedup. */
-interface HarvestRecord {
-  readonly ts: string;
-  readonly wing: string;
-  readonly session: string; // for a subagent, the PARENT session — the link
-  readonly turn: string; // message uuid (stable dedup key)
-  readonly role: string;
-  /** Subagent id (`agent-<id>.jsonl`), or null for a main-session turn. */
-  readonly agentId: string | null;
-  /** True for a sidechain (worker-swarm) turn — kept SEPARATE, linked via session. */
-  readonly sidechain: boolean;
-  /** In-transcript parent message uuid (the turn DAG), or null at a root. */
-  readonly parentUuid: string | null;
-  readonly standing: number;
-  readonly recordRaw: boolean;
-  readonly aim: string | null;
-  readonly yieldUri: string | null;
-  readonly voices: readonly string[];
-  readonly sigilCount: number;
-  readonly waterCount: number;
-  readonly driftFlags: readonly string[];
-  readonly hash: string;
-}
-
-interface RunSummary {
-  wing: string;
-  files: number;
-  turns: number;
-  harvested: number;
-  skipped: number;
-  framed: number;
-  raw: number;
-  /** Subagent (sidechain) turns harvested — separate records, linked by session. */
-  sidechain: number;
-  /** Turns at or above the harvest floor, and those that fell below it. */
-  standings: Record<string, number>;
-  indexPath: string;
-}
-
-// wingFromDir / readCwdFromTranscript — the wing law, extracted to ../wing-law.ts so
-// `lares wing-of` and the ingest hook read the SAME derivation (imported above).
-
-/** Pull the readable text from a Claude Code message's content (array or string). */
-function messageText(message: unknown): { text: string; hasTools: boolean } {
-  if (typeof message === "string") return { text: message, hasTools: false };
-  const content = (message as { content?: unknown })?.content;
-  if (typeof content === "string") return { text: content, hasTools: false };
-  if (!Array.isArray(content)) return { text: "", hasTools: false };
-  let text = "";
-  let hasTools = false;
-  for (const block of content) {
-    const b = block as { type?: string; text?: string };
-    if (b?.type === "text" && typeof b.text === "string") text += (text ? "\n" : "") + b.text;
-    else if (b?.type === "tool_use" || b?.type === "tool_result") hasTools = true;
-  }
-  return { text, hasTools };
-}
-
-interface RawTurn {
-  uuid: string; role: string; text: string; ts: string; session: string;
-  agentId: string | null; sidechain: boolean; parentUuid: string | null;
-}
-
-/** Pull a subagent id from an `agent-<id>.jsonl` filename, else null. */
-function agentIdFromFile(file: string): string | null {
-  const m = /^agent-(.+)\.jsonl$/.exec(basename(file));
-  return m ? (m[1] ?? null) : null;
-}
-
-/** Parse one transcript .jsonl into turns (one per user/assistant message). */
-function readTurns(file: string): RawTurn[] {
-  const turns: RawTurn[] = [];
-  const fileAgent = agentIdFromFile(file);
-  let lines: string[];
-  try { lines = readFileSync(file, "utf8").split("\n"); } catch { return turns; }
-  for (const line of lines) {
-    if (!line.trim()) continue;
-    let row: Record<string, unknown>;
-    try { row = JSON.parse(line) as Record<string, unknown>; } catch { continue; }
-    const role = String(row["type"] ?? "");
-    if (role !== "user" && role !== "assistant") continue;
-    const { text } = messageText(row["message"]);
-    if (!text.trim()) continue;
-    const agentId = (row["agentId"] as string | undefined) ?? fileAgent;
-    turns.push({
-      uuid: String(row["uuid"] ?? ""),
-      role,
-      text,
-      ts: String(row["timestamp"] ?? ""),
-      // For a subagent, sessionId is the PARENT session — keep it as the link.
-      session: String(row["sessionId"] ?? basename(file).replace(/\.jsonl$/, "")),
-      agentId: agentId ?? null,
-      sidechain: row["isSidechain"] === true || fileAgent !== null,
-      parentUuid: (row["parentUuid"] as string | null | undefined) ?? null,
-    });
-  }
-  return turns;
-}
-
-export function sha(s: string): string {
-  return sha256HexSync(s).slice(0, 16);
-}
-
-/**
- * The TURN KEY — the USER turn's stable identity (its uuid), the join the kapae convergence keys on.
- *
- * TWO LEGS, TWO IMPLEMENTATIONS, ONE KEY ON THE UUID PATH. This helper drives the BEARING/rewind leg
- * (`readTurns` → gone-turn detection → the worldline KG + structurepalace-kapae). The CAPTURE leg rides
- * PYTHON: `lares sense capture` hands source identity to the daemon and
- * `packages/lararium-sensorium/scripts/capture_sources.py` reads the transcript, its `_turn_key`
- * self-describing as a port of this one. Where a turn carries a native uuid both legs return that uuid,
- * so a gone uuid closes the KG edge, the structurepalace tally AND the Measure salience as one key.
- *
- * THE FALLBACK PATHS DIVERGE — measured, deliberate on the Python side, reported here rather than
- * papered over. Where a surface turn carries NO native uuid (Codex user turns, Copilot), Python folds
- * `chunk_index` into the preimage (`<file>#<chunk_index>#<ts><text[:64]>`) and this helper does not
- * (`<file><ts><text[:64]>`). Python's own docstring names the reason: two no-uuid turns sharing a ts and
- * a text-prefix would otherwise collapse to ONE key and kapae would mute both together. Unifying the two
- * formulas would move every existing no-uuid key on one side or the other, so the operator rules that,
- * not this comment.
- */
-export function turnKeyOf(file: string, turn: { uuid: string; ts: string; text: string }): string {
-  return turn.uuid || sha(file + turn.ts + turn.text.slice(0, 64));
-}
-
-/** Load the idempotency watermark: turn-key → content hash already harvested. */
-function loadState(path: string): Record<string, string> {
-  if (!existsSync(path)) return {};
-  try { return JSON.parse(readFileSync(path, "utf8")) as Record<string, string>; } catch { return {}; }
-}
-
-/**
- * Read the existing append-only index into turn-key → content hash — the DURABLE de-dup floor
- * BENEATH the state watermark. The watermark is committed once at the end of a run; a crash
- * mid-loop (after an append, before the state write) would otherwise re-harvest those turns and
- * append a DUPLICATE record for one uuid. The index itself is the ground truth: a key already
- * present in it is never re-appended, no matter what the watermark lost.
- */
-function loadIndexHashes(path: string): Map<string, string> {
-  const seen = new Map<string, string>();
-  if (!existsSync(path)) return seen;
-  try {
-    for (const line of readFileSync(path, "utf8").split("\n")) {
-      if (!line.trim()) continue;
-      try {
-        const r = JSON.parse(line) as { turn?: unknown; hash?: unknown };
-        if (typeof r.turn === "string" && typeof r.hash === "string") seen.set(r.turn, r.hash);
-      } catch { /* skip torn line */ }
-    }
-  } catch { /* fall through */ }
-  return seen;
-}
-
-/**
- * The rewind-detection SCOPE key — `session \0 agentId`. A subagent's turns carry the PARENT
- * session id (the link), so a `session`-only diff would read every subagent turn as gone when a lone
- * main transcript is harvested (its subagents live in a subdir not in that run). Keying by agentId too
- * keeps each scope independent: a scope is reconciled ONLY when its own source rode this run.
- */
-function rewindScope(session: string, agentId: string | null): string {
-  return `${session || "?"}\u0000${agentId ?? ""}`;
-}
-
-/**
- * Read the append-only index into scope → the set of turn-keys it holds — the prior-run snapshot the
- * rewind detector diffs against the live transcript. Scoped by (session + agentId) so a partial
- * harvest never reads a turn from an un-harvested scope (a different session OR a subagent absent from
- * this run) as gone.
- */
-function loadIndexByScope(path: string): Map<string, Set<string>> {
-  const byScope = new Map<string, Set<string>>();
-  if (!existsSync(path)) return byScope;
-  try {
-    for (const line of readFileSync(path, "utf8").split("\n")) {
-      if (!line.trim()) continue;
-      try {
-        const r = JSON.parse(line) as { turn?: unknown; session?: unknown; agentId?: unknown };
-        if (typeof r.turn !== "string" || !r.turn) continue;
-        const session = typeof r.session === "string" ? r.session : "";
-        const agentId = typeof r.agentId === "string" ? r.agentId : null;
-        const scope = rewindScope(session, agentId);
-        let s = byScope.get(scope);
-        if (!s) { s = new Set<string>(); byScope.set(scope, s); }
-        s.add(r.turn);
-      } catch { /* skip torn line */ }
-    }
-  } catch { /* fall through */ }
-  return byScope;
-}
-
-/** All `.jsonl` under a dir (recursive — subagent `agent-*.jsonl` live in subdirs). */
-function listTranscripts(target: string, depth = 0): string[] {
-  try {
-    const st = statSync(target);
-    if (st.isFile()) return target.endsWith(".jsonl") ? [target] : [];
-    if (st.isDirectory() && depth < 6) {
-      const out: string[] = [];
-      for (const e of readdirSync(target, { withFileTypes: true })) {
-        const full = join(target, e.name);
-        if (e.isDirectory()) out.push(...listTranscripts(full, depth + 1));
-        else if (e.name.endsWith(".jsonl")) out.push(full);
-      }
-      return out;
-    }
-  } catch { /* fall through */ }
-  return [];
-}
-
-// --- tensegrity writeback (the daemon memory-shore) -----------------------
-// Read mempalace drawer content, harvest it with the sovereign parser, and write
-// our domain metadata (the tension) back ONTO the drawer (the compression strut).
-
-// The writeback core (buildPatch + writebackWing + lar_hv) lives ONCE in
-// @lararium/mempalace/telemetry-writeback (the lar-telemetry shared core) — both
-// this CLI leg and the daemon `lar-telemetry` verb call it. No local copy here.
+// --- the writeback leg (the daemon memory-shore) --------------------------
+// The lar-telemetry projection onto a wing's drawers lives ONCE in @lararium/sensorium
+// (telemetry-writeback) — this CLI leg and the daemon `lar-telemetry` verb both call it. It stands
+// as a placeholder (operator ruling 2026-10-31, Train Q): an empty pass until the sensorium arc.
 
 function runWriteback(args: ParsedArgs, wing: string): number {
-  const lociIo = resolveLociIo();
-  if (!existsSync(lociIo)) {
-    const error: LaresError = { code: "not-found", message: `loci_io.py missing at ${lociIo}` };
-    emit(args, { ok: false, error, human: () => console.error(`lares sense pour: ${error.message}`) });
-    return 3;
-  }
   const limit = args.options["limit"] ? Number(args.options["limit"]) : 0;
   const r = writebackWing(wing, limit ? { limit } : {});
   emit(args, {
@@ -388,7 +154,7 @@ export function repaveStages(): readonly RepaveStage[] {
     { name: "quiesce",    why: "live capture paused — a bulk pass racing the hook is not reproducible" },
     { name: "baseline",   why: "the before-reading, taken while it can still be taken" },
     { name: "drawers",    why: "every transcript on every surface, landed verbatim into the content plane" },
-    { name: "bearing",    why: "the navigational gradient, stamped onto the drawers that just landed" },
+    { name: "bearing",    why: "the lar-telemetry projection onto the drawers that just landed (a placeholder until the sensorium arc)" },
     { name: "projection", why: "the lexical and entity view, re-derived over the content plane" },
     { name: "verify",     why: "the landed counts read against the sources they came from" },
     { name: "resume",     why: "live capture handed back" },
@@ -499,7 +265,7 @@ async function runRepaveLeg(stage: RepaveStageName, args: ParsedArgs): Promise<n
 /**
  * The rite's verify step — the landed counts read against the sources they came from.
  *
- * It reads the CONTENT plane rather than the bearing index, because drawers are what every instrument
+ * It reads the CONTENT plane, because drawers are what every instrument
  * downstream answers over. The before-count comes from the baseline this pass already took, so the
  * comparison is against this run rather than against a remembered number.
  */
@@ -539,11 +305,9 @@ async function runHooks(verb: "pause" | "resume"): Promise<number> {
 async function readBaseline(args: ParsedArgs, when: "before" | "after"): Promise<number> {
   const wing = repaveWing(args);
   try {
-    const index = join(HARVEST_DIR, `${wing}.ndjson`);
-    const bearing = existsSync(index) ? readFileSync(index, "utf8").split("\n").filter(Boolean).length : 0;
     const drawers = await countDrawers();
-    appendBaseline(wing, { when, bearing, drawers, sources: countSources() });
-    console.log(`  baseline   ${when}: ${drawers} drawer(s) · ${bearing} bearing row(s)`);
+    appendBaseline(wing, { when, drawers, sources: countSources() });
+    console.log(`  baseline   ${when}: ${drawers} drawer(s)`);
     return 0;
   } catch (e) {
     // A BASELINE THAT CANNOT BE WRITTEN MUST NOT PASS QUIETLY. It is the one reading no later pass
@@ -553,7 +317,7 @@ async function readBaseline(args: ParsedArgs, when: "before" | "after"): Promise
   }
 }
 
-/** The kept comparison series — both readings of a pass, in the state home beside the harvest index. */
+/** The kept comparison series — both readings of a pass, in the re-pave's state home. */
 function appendBaseline(wing: string, row: Record<string, unknown>): void {
   mkdirSync(HARVEST_DIR, { recursive: true });
   appendFileSync(join(HARVEST_DIR, `${wing}.baseline.ndjson`),
@@ -587,12 +351,11 @@ async function countDrawers(): Promise<number> {
   } catch { return 0; }
 }
 
-export async function cmdHarvest(args: ParsedArgs): Promise<number> {
-  const roomGuard = guardRoom(args, "harvest");
+export async function cmdPour(args: ParsedArgs): Promise<number> {
+  const roomGuard = guardRoom(args, "pour");
   if (roomGuard !== null) return roomGuard;
 
-  // `--all` IS THE WHOLE MOTION, not a wider target. A bare `pour` harvests one pointer's bearing
-  // gradient; `--all` runs the three legs a sensorium needs filled — drawers, bearing, projection —
+  // `--all` IS THE WHOLE MOTION: the legs a sensorium needs filled — drawers, bearing, projection —
   // in the order the second's dependency on the first sets.
   if (args.flags["all"] === true) {
     const r = await runRepave(args);
@@ -608,175 +371,19 @@ export async function cmdHarvest(args: ParsedArgs): Promise<number> {
     return r.code;
   }
 
-  // --writeback: operate on mempalace DRAWERS (the tensegrity shore), not JSONL.
+  // --writeback: the bearing leg alone, over the mempalace DRAWERS.
   if (args.flags["writeback"] === true) {
     const wing = args.options["wing"] ?? wingFromDir(larRoot());
     return runWriteback(args, wing);
   }
 
-  // Target: explicit positional path, else the project's Claude transcript dir.
-  const target =
-    args.positional[0] ??
-    join(homedir(), ".claude", "projects", "-" + larRoot().replace(/[/_]/g, "-").replace(/^-/, ""));
-  const wing = args.options["wing"] ?? wingFromDir(larRoot());
-  const dryRun = args.flags["dry-run"] === true;
-
-  const allFiles = listTranscripts(target);
-  if (allFiles.length === 0) {
-    const error: LaresError = {
-      code: "not-found",
-      message: `no .jsonl transcripts at ${target}`,
-      hint: "pass a transcript file or dir: lares sense pour <path> --wing <wing>",
-    };
-    emit(args, { ok: false, error, human: () => console.error(`lares sense pour: ${error.message}\n  ${error.hint}`) });
-    return 3;
-  }
-  // THE EPHEMERAL GATE (the readTurns leg): a session marked ephemeral — derived (its recorded
-  // cwd under a scratch root) or declared (a `.ephemeral` sibling / `.lar-ephemeral` in its cwd) —
-  // never enters the harvest index. Ephemeral ≠ deleted: the transcript survives; the ingest
-  // declines, one loud line per skip. A skipped session's scope also never enters the rewind
-  // diff below (skip ≠ gone — its indexed turns stay unreconciled, never kapae'd).
-  const { live: files, skipped: ephemeralSkips } = partitionEphemeral(allFiles, "harvest");
-  if (files.length === 0) {
-    emit(args, {
-      ok: true,
-      data: { wing, files: 0, ephemeralSkipped: ephemeralSkips, dryRun },
-      human: () => console.log(`lares sense pour → ${wing}: all ${ephemeralSkips.length} transcript(s) EPHEMERAL — nothing ingested (transcripts untouched on disk)`),
-    });
-    return 0;
-  }
-
-  mkdirSync(HARVEST_DIR, { recursive: true });
-  const indexPath = join(HARVEST_DIR, `${wing}.ndjson`);
-  const statePath = join(HARVEST_DIR, `${wing}.state.json`);
-  const state = loadState(statePath);
-  const nextState: Record<string, string> = { ...state };
-  // The durable de-dup floor: the index already on disk. A crash between the per-turn append and
-  // the end-of-run state write would otherwise re-append a record for a turn the index already
-  // holds; consulting the index closes that gap (the watermark is the fast path, the index the floor).
-  const indexHashes = loadIndexHashes(indexPath);
-
-  const summary: RunSummary = {
-    wing, files: files.length, turns: 0, harvested: 0, skipped: 0,
-    framed: 0, raw: 0, sidechain: 0,
-    standings: { framed: 0, structured: 0, raw: 0 }, indexPath,
+  const error: LaresError = {
+    code: "usage",
+    message: "pour walks the re-pave (`--all`) or its writeback leg (`--writeback`)",
+    hint: "lares sense pour --all · lares sense pour --writeback [--wing <wing>] · one transcript: lares sense capture <path> --wing <wing>",
   };
-
-  // The records this run saw, per scope (session + agentId), keyed for the CURRENT-BRANCH rewind
-  // reconstruction. A flat "every record" snapshot misses every rewind — the fork-family orphans the
-  // rewound tail in-file, so it stays physically present. liveKeysForRewind (below) walks parentUuid to
-  // the live leaf and drops the genuine rewind-orphans, so the tail reads gone. Collected here, folded
-  // into currentByScope after the loop.
-  const recordsByScope = new Map<string, KeyedBranchNode[]>();
-  for (const file of files) {
-    for (const turn of readTurns(file)) {
-      summary.turns += 1;
-      const key = turnKeyOf(file, turn);
-      const hash = sha(turn.text);
-      const scope = rewindScope(turn.session, turn.agentId);
-      let recs = recordsByScope.get(scope);
-      if (!recs) { recs = []; recordsByScope.set(scope, recs); }
-      recs.push({ uuid: turn.uuid, parentUuid: turn.parentUuid, isSidechain: turn.sidechain, type: turn.role, key });
-      // Skip if the watermark OR the durable index already carries this turn at this content hash.
-      if (state[key] === hash || indexHashes.get(key) === hash) { summary.skipped += 1; continue; }
-
-      const h = harvestTurnGradient(turn.text);
-      summary.harvested += 1;
-      if (h.bearing) summary.framed += 1;
-      if (h.recordRaw) summary.raw += 1;
-      if (turn.sidechain) summary.sidechain += 1;
-      const tier = h.recordRaw ? "raw" : h.bearing ? "framed" : "structured";
-      summary.standings[tier] = (summary.standings[tier] ?? 0) + 1;
-
-      const rec: HarvestRecord = {
-        ts: turn.ts, wing, session: turn.session, turn: key, role: turn.role,
-        agentId: turn.agentId, sidechain: turn.sidechain, parentUuid: turn.parentUuid,
-        standing: h.standing, recordRaw: h.recordRaw,
-        aim: h.bearing?.aimUri ?? null, yieldUri: h.bearing?.yieldUri ?? null,
-        voices: h.voices.map((v) => (v.role ? `${v.name} (${v.role})` : v.name)),
-        sigilCount: h.sigilCount, waterCount: h.waterCount, driftFlags: [...h.driftFlags], hash,
-      };
-      if (!dryRun) { appendFileSync(indexPath, JSON.stringify(rec) + "\n"); indexHashes.set(key, hash); }
-      nextState[key] = hash;
-    }
-  }
-
-  if (!dryRun) {
-    try { atomicWriteFileSync(statePath, JSON.stringify(nextState)); } catch { /* best effort */ }
-  }
-
-  // Fold each scope's records to its CURRENT-BRANCH live keys (orphans + sidechains excluded), the
-  // snapshot the rewind diff reads. The prior index minus these live keys = the rewound tail.
-  const currentByScope = new Map<string, Set<string>>();
-  for (const [scope, recs] of recordsByScope) currentByScope.set(scope, liveKeysForRewind(recs));
-
-  // REWIND DETECTION (kapae) — the index is append-only with no gone-turn reconciliation. For each
-  // session present in THIS run, a turn the index still holds but the live transcript no longer carries
-  // is a rewind: set aside (close) its worldline edges keyed to that turn-uuid, never erase. Scoped
-  // per-session (a turn from an un-harvested session never reads as gone). Best-effort: the KG is a
-  // re-derivable projection, so an absent KG / fault never sinks the harvest.
-  let kapae: { goneTurns: number; closed: number; structurepalace: number } | null = null;
-  if (!dryRun) {
-    const indexByScope = loadIndexByScope(indexPath);
-    const gone: string[] = [];
-    for (const [scope, live] of currentByScope) {
-      const prev = indexByScope.get(scope);
-      if (prev) gone.push(...detectGoneTurns(prev, live));
-    }
-    if (gone.length > 0) {
-      // ONE gone turn-uuid → the THREE convergence effects. Leg 1 (KG valid-close) fires CLI-side
-      // (the KG has no holder). Legs 2+3 (.structurepalace tally set-aside + the Measure salience
-      // down-weight) fire through the daemon's `structurepalace-kapae` verb — the daemon owns the warm
-      // .structurepalace serve holder (a flock-singleton the CLI cannot re-open), and does BOTH in the
-      // worker. Every leg is best-effort: a down KG / down daemon leaves the rewind unreconciled
-      // this run (re-derivable on the next harvest), never fatal.
-      // ONE detection timestamp (iso whole-seconds) rides ALL THREE legs — the KG valid-close,
-      // the .structurepalace tombstone, AND the drawer `lar_kapae` liveness stamp (the rank signal the
-      // recall side reads) — so a rewound turn's every trace carries the SAME moment.
-      const ended = isoWholeSeconds(new Date().toISOString());
-      let closed = 0;
-      try {
-        for (const turnKey of gone) closed += kapaeTurn(turnKey, { ended }).closed;
-      } catch (err) {
-        const why = err instanceof KgUnavailable ? "KG unavailable" : err instanceof Error ? err.message : String(err);
-        if (process.env["LARES_DEBUG"]) console.warn(`[harvest] KG kapae best-effort skipped: ${why}`);
-      }
-      // Legs 2+3 — route each gone turn's rewind to the daemon's warm holder (fire-and-forget).
-      let did = "";
-      try { did = await vesselDid(); } catch { /* un-gated verb; runVerb still reaches the daemon */ }
-      let structurepalace = 0;
-      const fired = await Promise.allSettled(
-        gone.map((turnKey) => runVerb("structurepalace-kapae", { turnKey, ended }, did, { timeoutMs: 5000 })),
-      );
-      for (const r of fired) if (r.status === "fulfilled" && r.value.status === "done") structurepalace += 1;
-      if (structurepalace === 0 && process.env["LARES_DEBUG"]) {
-        console.warn(`[harvest] structurepalace-kapae best-effort skipped (daemon down?) — ${gone.length} gone turn(s) unreconciled this run`);
-      }
-      kapae = { goneTurns: gone.length, closed, structurepalace };
-    }
-  }
-
-  // No repair tail. It ran `mempalace repair --archive-existing --yes` against the GUEST
-  // ~/.mempalace — a WRITE to the comparator — plus `fuser ~/.mempalace | kill -TERM` on its holders.
-  // Divergence-gated, so it usually skipped; but the gate READ the guest, and the moment it read
-  // diverged it rewrote the baseline we measure the sensorium against. `runHarvestAll` already
-  // declined this tail and left the reasoning inline; the single-transcript path never got the cut.
-  // The RUN never writes the comparator.
-  const hnsw = null;
-  emit(args, {
-    ok: true,
-    data: { ...summary, dryRun, ...(ephemeralSkips.length ? { ephemeralSkipped: ephemeralSkips } : {}), ...(hnsw ? { hnswRepair: hnsw } : {}), ...(kapae ? { kapae } : {}) },
-    human: () => {
-      console.log(`lares sense pour → ${wing}${dryRun ? "  (dry run)" : ""}`);
-      console.log(`  transcripts:  ${summary.files}${ephemeralSkips.length ? `  (+${ephemeralSkips.length} EPHEMERAL, skipped)` : ""}`);
-      console.log(`  turns seen:   ${summary.turns}  (${summary.skipped} already harvested, skipped)`);
-      console.log(`  harvested:    ${summary.harvested}  (${summary.framed} framed · ${summary.raw} raw · ${summary.sidechain} sidechain)`);
-      console.log(`  standings:    framed ${summary.standings["framed"]} · structured ${summary.standings["structured"]} · raw ${summary.standings["raw"]}`);
-      if (!dryRun) console.log(`  index:        ${indexPath}`);
-      if (kapae) console.log(`  rewind:       ${kapae.goneTurns} gone turn(s) → ${kapae.closed} worldline edge(s) + ${kapae.structurepalace} structurepalace tally(ies) set aside (kapae)`);
-    },
-  });
-  return 0;
+  emit(args, { ok: false, error, human: () => console.error(`lares sense pour: ${error.message}\n  ${error.hint}`) });
+  return 2;
 }
 
 /**
