@@ -549,7 +549,8 @@ test("E2E_SETS: the node set rides a tests shard as a companion (a shard of its 
   assert.deepEqual(node.companion, { of: "tests", shard: 3 });
   assert.equal(node.shards, 1);
   const yml = readFileSync(fileURLToPath(new URL("../.github/workflows/e2e-shards.yml", import.meta.url)), "utf8");
-  assert.match(yml, /name: e2e-shard-node-1$/m, "the companion run uploads no e2e-shard-node-1 artifact for the merge gate");
+  assert.match(yml, /name: e2e-shard-\$\{\{ matrix\.companion \}\}-1$/m, "the companion run uploads no e2e-shard-<set>-1 artifact for the merge gate");
+  assert.match(yml, /report-shard-\$\{\{ matrix\.companion \}\}-1\.json/, "the companion report loses the name the merge gate reads");
   assert.doesNotMatch(yml, /- \{ set: node,/, "the node set still has a shard row of its own");
 });
 
