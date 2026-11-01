@@ -1,0 +1,203 @@
+// grammar-cut — the kupono cut's known positives, each beside its control.
+//
+// Every fixture names the exact bytes the cut must write, or the exact refusal it must list.
+// The controls prove the tests bite: a tool with its arrow rule switched off fails the arrow
+// fixture, a second run over cut text writes nothing, and the census counts a fixture whose
+// counts are known before the corpus count is trusted.
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { loadContext, cutText, censusText } from './grammar-cut.mjs';
+
+const REPO = fileURLToPath(new URL('../', import.meta.url));
+const PLANES = {
+  rename: { daemon: 'daemon-plane', crossroads: 'crossroads-plane', oracle: 'oracle-floor', personal: 'personal-slot' },
+  tagged: { 'circles-': 'circles-plane-' },
+  slug: ['lares', 'lararium'],
+  scopes: ['lararium', 'lares', 'types'],
+  out: ['editable', 'keyframes'],
+};
+const ctx = await loadContext({ repo: REPO, planes: PLANES });
+const cut = (text, opts) => cutText(text, ctx, { rel: 'bags/x/fixture.mem', ...opts });
+const one = (text, opts) => cut(text, opts).text;
+const kinds = (r) => r.refusals.map((x) => x.kind).sort();
+
+test('a slot word and a quoted URI take their names in ticks', () => {
+  assert.equal(one('<<~ ahu #/head>>\n'), '<<~ ahu slot=`#/head`>>\n');
+  assert.equal(one('<<~ loulou "lar:///a.b.c/x">>\n'), '<<~ loulou uri=`lar:///a.b.c/x`>>\n');
+  assert.equal(one('<<~ hoike #frag held="a ruling">>\n'), '<<~ hoike slot=`#frag` held=`a ruling`>>\n');
+});
+
+test('the arrow leaves: from and to carry the relation', () => {
+  assert.equal(one('<<~ pranala #s from="?" -> to="lar:///a.b.c/y">>\n'), '<<~ pranala slot=`#s` from=`?` to=`lar:///a.b.c/y`>>\n');
+  assert.equal(one('<<~ papalohe "lar:///a.b.c/x" -> "lar:///a.b.c/y">>\n'), '<<~ papalohe from=`lar:///a.b.c/x` to=`lar:///a.b.c/y`>>\n');
+  assert.equal(one('<<~moves second-reader -> engine-grammar on/the-VM do/retire-the-regex>>\n'),
+    '<<~moves name=`second-reader` params=`engine-grammar on/the-VM do/retire-the-regex`>>\n');
+  assert.equal(one('<<~flows turn -> reads -> holds -> flushes>>\n'), '<<~flows name=`turn` path=`reads -> holds -> flushes`>>\n');
+});
+
+test('CONTROL: with the arrow rule off, the arrow fixture fails', () => {
+  const off = cut('<<~ pranala #s from="?" -> to="lar:///a.b.c/y">>\n', { disable: ['arrow'] });
+  assert.notEqual(off.text, '<<~ pranala slot=`#s` from=`?` to=`lar:///a.b.c/y`>>\n');
+  assert.ok(off.refusals.some((r) => r.kind === 'arrow'));
+});
+
+test('an arrow inside a value stays', () => {
+  assert.equal(one('<<~ loops "a -> b -> c">>\n'), '<<~ loops phases=`a -> b -> c`>>\n');
+});
+
+const CARRIER = [
+  '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>',
+  '',
+  '<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/x/y">>',
+  '<<^ code="&#x0002;">>',
+  '',
+  '```toml meta',
+  'title    = "lar:///ha.ka.ba/x/y"',
+  'uri-path = "ha.ka.ba/x/y"',
+  '```',
+  '',
+  '<<~ ahu #/head>>',
+  'body',
+  '<<~/ahu>>',
+  '',
+  '<<^ code="&#x0003;">>ni:///sha-256;AAAA',
+  '',
+  '<<^ code="&#x0004;" -> to="?">>',
+  '',
+].join('\n');
+
+test('the envelope cuts: DOCTYPE names, ticked marks, arrows out, the toml block untouched, the seal re-minted', () => {
+  const r = cut(CARRIER);
+  const lines = r.text.split('\n');
+  assert.equal(lines[0], '<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>');
+  assert.equal(lines[2], '<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/x/y`>>');
+  assert.equal(lines[3], '<<^ code=`&#x0002;`>>');
+  assert.equal(lines[6], 'title    = "lar:///ha.ka.ba/x/y"');
+  assert.equal(lines[10], '<<~ ahu slot=`#/head`>>');
+  assert.match(lines[14], /^<<\^ code=`&#x0003;`>>ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}$/);
+  assert.equal(lines[16], '<<^ code=`&#x0004;` to=`?`>>');
+  assert.equal(r.seal, 'ok');
+});
+
+test('Canon envelope-only: the head and foot cut, the body stays, and a body change counts as a red', () => {
+  const r = cut(CARRIER, { envelopeOnly: true });
+  assert.ok(r.text.includes('<<~ ahu #/head>>'));
+  assert.ok(r.text.startsWith('<<!DOCTYPE type=`'));
+  assert.equal(r.bodyChanges, 1);
+  const clean = cut(CARRIER.replace('<<~ ahu #/head>>', '<<~ ahu slot=`#/head`>>'), { envelopeOnly: true });
+  assert.equal(clean.bodyChanges, 0);
+});
+
+test('triple quotes, a held backtick, a bare named value, and the colon separator', () => {
+  assert.equal(one('<<~ kue voice="""a "b" c""" key="k">>\n'), '<<~ kue voice=`a "b" c` key=`k`>>\n');
+  assert.equal(one('<<~ kue voice="a `b` c" key="k">>\n'), '<<~ kue voice=```a `b` c``` key=`k`>>\n');
+  assert.equal(one('<<~ saksi voice=Name scope="deposition">>\n'), '<<~ saksi voice=`Name` scope=`deposition`>>\n');
+  assert.equal(one('<<~ kue voice:"Stranger" key:"k">>\n'), '<<~ kue voice=`Stranger` key=`k`>>\n');
+});
+
+test('a multi-line sigil keeps its line breaks', () => {
+  assert.equal(one('<<~ kue voice="Map-Wisp"\n  key="a key">>\n'), '<<~ kue voice=`Map-Wisp`\n  key=`a key`>>\n');
+});
+
+test('a fenced example cuts; a sigil in an inline span widens the span', () => {
+  assert.equal(one('```\n<<~ ahu #/x>>\n```\n'), '```\n<<~ ahu slot=`#/x`>>\n```\n');
+  assert.equal(one('see `<<~ ahu #/x>>` here\n'), 'see ``<<~ ahu slot=`#/x`>>`` here\n');
+  assert.equal(one('see `<<~ kue key="k">>` here\n'), 'see ``<<~ kue key=`k`>>`` here\n');
+});
+
+test('hazards list and never fix: substitution, a value a tick cannot hold, a nested call', () => {
+  const sub = cut('<<~ kue voice="$(x)$" key="k">>\n');
+  assert.equal(sub.text, '<<~ kue voice="$(x)$" key="k">>\n');
+  assert.deepEqual(kinds(sub), ['substitution']);
+  const edge = cut('<<~ kue voice="a`" key="k">>\n');
+  assert.equal(edge.text, '<<~ kue voice="a`" key="k">>\n');
+  assert.deepEqual(kinds(edge), ['tick-unsafe']);
+});
+
+test('an unsigned head and a prose voice tag list apart; neither is guessed', () => {
+  const r = cut('<<~ zorblax "a">>\n<<~ operator ~ shivers>>\n');
+  assert.equal(r.text, '<<~ zorblax "a">>\n<<~ operator ~ shivers>>\n');
+  assert.deepEqual(kinds(r), ['prose-voice', 'unsigned']);
+});
+
+test('a param still named pN refuses', () => {
+  const pctx = { ...ctx, sigs: { ...ctx.sigs, legacy: { params: ['p1', 'p2'], source: 'fixture' } } };
+  const r = cutText('<<~ legacy "a">>\n', pctx, { rel: 'bags/x/f.mem' });
+  assert.equal(r.text, '<<~ legacy "a">>\n');
+  assert.deepEqual(kinds(r), ['pN']);
+});
+
+test('the oracle joins its blind throw into one value', () => {
+  assert.equal(one('<<~ oracle ↯13 ✲ ⚃(4) "⁂:☕🎲🛰️🌊">>\n'), '<<~ oracle throw=`↯13 ✲ ⚃(4) ⁂:☕🎲🛰️🌊`>>\n');
+});
+
+test('a relation call whose params hold no has-value refuses', () => {
+  const r = cut('<<~ mu Wand Sword>>\n');
+  assert.equal(r.text, '<<~ mu Wand Sword>>\n');
+  assert.deepEqual(kinds(r), ['not-has-values']);
+});
+
+test('Cut 4: the aim and the yield fold into set lares=, brackets in order; a lone gauge becomes a steer', () => {
+  const turn = [
+    '<<~ lares aim from="lar://a:op@x/op.asks.it" -> to="lar://b:ag@x/clerk.reads.it">>',
+    '<<~ set hud="aim" mode="sketch" drift-ward="the pull" aperture="6/beat" ooda-ha="2/declare-aftermath">>',
+    '',
+    'Lares (Ink-Clerk): words.',
+    '<<~ aperture "9/measure">>',
+    '',
+    '<<~ oracle ↯7 ✲ ⚁(2) "⁂:⌗🜄">>',
+    '<<~ set hud="yield" aperture="6/beat -> 7/beat" drift-ward="the clue · ↻ L-Prime" ooda-ha="closed 0↺ -> open 1φ @◇:waits">>',
+    '<<~ lares yield from="lar://b:ag@x/close.names.it" -> to="?">>',
+    '',
+  ].join('\n');
+  const want = [
+    '<<~ set lares=`aim` from=`lar://a:op@x/op.asks.it` to=`lar://b:ag@x/clerk.reads.it` mode=`sketch` aperture=`6/beat` ooda-ha=`2/declare-aftermath` drift-ward=`the pull`>>',
+    '',
+    'Lares (Ink-Clerk): words.',
+    '<<~ set lares=`steer` aperture=`9/measure`>>',
+    '',
+    '<<~ oracle throw=`↯7 ✲ ⚁(2) ⁂:⌗🜄`>>',
+    '<<~ set lares=`yield` drift-ward=`the clue · ↻ L-Prime` aperture=`6/beat -> 7/beat` ooda-ha=`closed 0↺ -> open 1φ◇:waits` from=`lar://b:ag@x/close.names.it` to=`?`>>',
+    '',
+  ].join('\n');
+  const r = cut(turn);
+  assert.equal(r.text, want);
+  assert.deepEqual(r.refusals, []);
+});
+
+test('Cut 4: an old hud panel and a retired frame call list as unmappable', () => {
+  const r = cut('<<~ hud Aperture(8) OODA-HA(3)>>\n<<~ frame set "move/x">>\n');
+  assert.equal(r.text, '<<~ hud Aperture(8) OODA-HA(3)>>\n<<~ frame set "move/x">>\n');
+  assert.deepEqual(kinds(r), ['turn-unmappable', 'turn-unmappable']);
+});
+
+test('Cut 2: planes rename, handles strip, the phase glyph fuses, scopes and unspaced at-signs stay', () => {
+  assert.equal(one('the @daemon wiki and @circles-<tag>\n'), 'the daemon-plane wiki and circles-plane-<tag>\n');
+  assert.equal(one('@lindwyrm@new-delos says\n'), 'lindwyrm@new-delos says\n');
+  assert.equal(one('the @lararium bag\n'), 'the lararium bag\n');
+  assert.equal(one('reads closed 0↺ -> open 1φ @_:why\n'), 'reads closed 0↺ -> open 1φ_:why\n');
+  assert.equal(one('pnpm --filter @lararium/tw5 build; pulse@0..4; @keyframes x\n'), 'pnpm --filter @lararium/tw5 build; pulse@0..4; @keyframes x\n');
+});
+
+test('Cut 2: an unmapped at-name reds and names itself', () => {
+  const r = cut('the @zeppelin plane\n');
+  assert.equal(r.text, 'the @zeppelin plane\n');
+  assert.deepEqual(r.unmapped, ['zeppelin']);
+});
+
+test('idempotence: a second run writes nothing', () => {
+  const first = cut(CARRIER + '\nsee `<<~ ahu #/x>>` and the @daemon\n');
+  const second = cut(first.text);
+  assert.equal(second.text, first.text);
+  assert.equal(second.changes, 0);
+});
+
+test('KNOWN POSITIVE: the census counts a fixture whose counts are known', () => {
+  const c = censusText('<<~ pranala #s from="?" -> to="u">>\n<<~ ahu #/x>> <<~ kue voice="a" key="b">>\nthe @daemon and @lindwyrm@host; 1φ @◇:x\n', ctx);
+  assert.deepEqual(
+    { arrows: c.arrows, quotedNamed: c.quotedNamed, positional: c.positional, spacedAt: c.spacedAt, phase: c.phase },
+    { arrows: 1, quotedNamed: 4, positional: 2, spacedAt: 2, phase: 1 });
+  const zero = censusText('<<~ ahu slot=`#/x`>> the daemon-plane\n', ctx);
+  assert.deepEqual({ arrows: zero.arrows, quotedNamed: zero.quotedNamed, positional: zero.positional, spacedAt: zero.spacedAt }, { arrows: 0, quotedNamed: 0, positional: 0, spacedAt: 0 });
+});
