@@ -1,0 +1,23 @@
+{
+  "about": "The security class (controller ruling 2026-11-01, F7 (a)): a lane whose `git diff --no-renames --raw <base>..<head>` names a path matching a glob in `paths`, or a path holding a `tokens` word anywhere (case-folded), lands only with a SHIP the controller wrote for its exact head (tools/land-train.mjs). The land reads this file from the SPAN HEAD's tree, never from the lane's, and the file sits in its own list. The future GitHub gate reads the same table. Prune from evidence; never widen a hole.",
+  "paths": [
+    "tools/security-class-paths.json",
+    "tools/land-train.mjs",
+    "tools/ci-verdict.mjs",
+    "tools/ci-ignored-paths.json",
+    "tools/ci-ignored-paths.mjs",
+    "tools/held-out-cells.mjs",
+    "tools/witness-all.sh",
+    "tools/evergreen-boundary.mjs",
+    "tools/battery.sh",
+    "tools/provision-worktree.mjs",
+    ".github/**",
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    ".npmrc",
+    ".gitattributes",
+    "packages/lararium-keyhive/**"
+  ],
+  "tokens": ["custody", "crypto", "keyhive", "seal", "gate", "caps", "capability", "admit", "admission", "veil", "recovery", "passkey", "keyslot", "prf", "signer"]
+}
