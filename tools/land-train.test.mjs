@@ -626,3 +626,25 @@ test("RED: QUEUE: a red train of three drops the culprit by bisection over its o
   assert.ok(isAnc(w, prefix, t1.sha), "lane a's land IS the first commit of the first train's chain, never a rebuild");
   assert.equal(sh(w.work, "rev-parse", `${final}^2`), w.heads.c);
 });
+
+test("RED: QUEUE: a security-class lane with no SHIP for its exact head refuses by name (12) and nothing pushes; CONTROL: the SHIP for that sha passes", async () => {
+  const touch = (s) => (s === "s" ? "packages/p-s/custody-door.txt" : `packages/p-${s}/f.txt`);
+  const w = world(["a", "s"], { touch });
+  const r = await runQ(w);
+  assert.equal(r.code, 12, r.out);
+  assert.match(r.out, /NO SHIP: s/);
+  assert.equal(originRef(w, SPAN), w.base);
+  assert.equal(pushedTrains(r.out).length, 0, "no train pushed");
+  // A SHIP for another sha does not count.
+  mkdirSync(join(w.dir, "ship"), { recursive: true });
+  writeFileSync(join(w.dir, "ship", `s-${"e".repeat(40)}.md`), `sha: ${"e".repeat(40)}\nread: controller diff read\n`);
+  assert.equal((await runQ(w)).code, 12);
+  // A lane that edits the table itself is security-class (the table sits in its own list).
+  const w3 = world(["t"], { touch: () => "tools/security-class-paths.json" });
+  const r3 = await runQ(w3);
+  assert.equal(r3.code, 12, r3.out);
+  // CONTROL: the SHIP naming the exact head passes.
+  writeFileSync(join(w.dir, "ship", `s-${w.heads.s}.md`), `sha: ${w.heads.s}\nread: controller diff read + Sonnet cold read\n`);
+  const ok = await runQ(w);
+  assert.equal(ok.code, 0, ok.out);
+});
