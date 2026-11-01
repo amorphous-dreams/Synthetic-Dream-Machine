@@ -165,8 +165,8 @@ never-fail floor.
 
 ''Route A ~ abstract-then-encode (no discourse-parser needed).'' Our CNL EMITS its own form-markers:
 the classifier channel (`<<~ …>>` sigils — the red that steers, [[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-telemetry]]) already declares
-aperture, ward, confidence, oracle, Voices, bearing. So the form vector reads the EMITTED markers
-(`packages/lararium-mesh/src/turn-harvest.ts`), never a learned discourse-parser over bare prose. This
+aperture, ward, confidence, oracle, Voices, bearing. So the form vector reads the EMITTED markers,
+never a learned discourse-parser over bare prose. This
 inverts the usual move: the grammar abstracts ITSELF into markers, the palace encodes the markers.
 
 ''NOT a deterministic AST-skeleton.'' A rigid AST-skeleton descends from hard-fault machine-grammars and
@@ -448,7 +448,7 @@ Design-only here — the parallel DreamNet session owns the Automerge internals 
 !! Phased Plan ~ smallest-additive-first
 
 <<~ has Phase P0 "does/pin the 3-layer constructicon basis (read-only) ~ name the constructions across HTML·wikitext·memetic">>
-<<~ has Phase P1 "does/move-skeleton emitter (pure) ~ read the emitted markers into a move-n-gram skeleton">>
+<<~ has Phase P1 "does/move-skeleton emitter (pure) ~ read the emitted markers into a move-n-gram skeleton; the emitter burned with the turn readers (ingest-canon#/the-harvester-burn) and waits on the sensorium arc">>
 <<~ has Phase P2 "does/Tier-1 fuzzy-form-vector (pure) ~ structural-match × SLOR × entrenchment, no training">>
 <<~ has Phase P3 "does/wire the form-vector into structurepalace (additive) ~ stamp the vector beside the verbatim">>
 <<~ has Phase P4 "does/RRF multi-graph ~ the two-collection ChromaDB hash-join + RRF fusion">>
@@ -695,6 +695,6 @@ The geometry whole: ''one GROUND · the li spine (shape ↠ idiom) · cross-cutt
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;n19SIkStdSg6PEJ1ux7tQEvQczJulkwNO0kDmxiOslA
+<<^ code="&#x0003;">>ni:///sha-256;w4kssOwOBaeoxZEAPIj7MhCH0FS7W8JaXRdojJLP3vM
 
 <<^ code="&#x0004;" -> to="?">>

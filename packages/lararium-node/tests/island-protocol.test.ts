@@ -19,8 +19,6 @@ import {
   isIslandToVesselMsg,
   mkTeardown,
   mkManifest,
-  mkDaemonDeriveSkeletonRequest,
-  mkDaemonDeriveSkeletonResult,
   mkDaemonWorldlineCompareRequest,
   mkDaemonWorldlineCompareResult,
   mkDaemonWorldlineTrajectoryRequest,
@@ -282,29 +280,6 @@ describe("GP-1 — a frame names its type and carries no counter", () => {
     expect(isIslandToVesselMsg({ type: "teardown:ack" })).toBe(true);
     expect(isIslandToVesselMsg({ type: "ea", wikiUri: "lar:///test" })).toBe(true);
     expect(isIslandToVesselMsg({ type: "fault", wikiUri: "lar:///test", error: "boom" })).toBe(true);
-  });
-
-  test("derive-skeleton request is vessel→island, result is island→vessel (the in-VM query-derive channel)", () => {
-    const req = mkDaemonDeriveSkeletonRequest({ requestId: "derive-1", query: "<<~ ward ! L-Prime>>" });
-    expect(req.type).toBe("daemon:derive-skeleton-request");
-    expect(isVesselToIslandMsg(req)).toBe(true);
-    expect(isIslandToVesselMsg(req)).toBe(false);
-
-    // a real derivation — skeleton + serialized basis ride back as plain objects (GP-2).
-    const hit = mkDaemonDeriveSkeletonResult({
-      requestId: "derive-1",
-      skeleton: { stream: [], graph: [{ kind: "Sigil" }] },
-      basis: { axes: [], dimension: 12 },
-    });
-    expect(hit.type).toBe("daemon:derive-skeleton-result");
-    expect(isIslandToVesselMsg(hit)).toBe(true);
-    expect(isVesselToIslandMsg(hit)).toBe(false);
-
-    // a graceful null — both planes absent (→ recall fuses content-only).
-    const empty = mkDaemonDeriveSkeletonResult({ requestId: "derive-1" });
-    expect(empty.skeleton).toBeUndefined();
-    expect(empty.basis).toBeUndefined();
-    expect(isIslandToVesselMsg(empty)).toBe(true);
   });
 
   test("worldline-compare/-trajectory requests are vessel→island, results island→vessel (the in-VM worldline reads)", () => {

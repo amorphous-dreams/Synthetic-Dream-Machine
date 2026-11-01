@@ -11,8 +11,7 @@ module-type: startup
  * under strict sovereign-worker primacy — the cap-stack lifts WHOLE, no coordinator carve-out. The
  * worker holds the LIVE ITC registry and runs every read's COMPUTE; the host ships only external data
  * (edges derived from a transcript, form-vector bytes from the python form store the worker can't
- * reach), exactly as the recall query-derive (`query-derive-vm`) ships its query string IN. This is
- * the worldline twin of that derive module — same one-runtime lock, same pure-subpath idiom.
+ * reach) — the one-runtime lock, with the pure-subpath idiom.
  *
  * Three wells, two reads:
  *   Well 1 (the TIME axis) — `worldlineCompareVm({ a, b, opens, closes, root })` projects the

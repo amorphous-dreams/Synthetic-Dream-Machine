@@ -1,13 +1,14 @@
 /**
  * subagent-capture-route — the spirit `source_file` carries BOTH channels the daemon capture path
  * needs: the `__spirits` wing PREFIX (routing) and the `<surface>__<name>__agent-<id>__run-<run>`
- * BASENAME (provenance buildPatch reads — surface token first, per the main-transcript law). This
+ * BASENAME (the provenance the branch-frontier derivations read — surface token first, per the
+ * main-transcript law). This
  * proves a spirit turn routed through the capture verb lands the spirits wing + spirit-keyed AST
  * provenance, with `lar_surface` stamped by token and the worldline-handle law UNSHIFTED.
  */
 
 import { describe, expect, test } from "vitest";
-import { buildPatch, harvestTurnGradient } from "@lararium/mesh";
+import { deriveAgent, deriveHandle, deriveSurface } from "@lararium/mesh";
 import { spiritCaptureSourceFile, spiritStageBasename, spiritsWing } from "../src/subagent-mine.js";
 
 describe("spiritCaptureSourceFile", () => {
@@ -23,29 +24,24 @@ describe("spiritCaptureSourceFile", () => {
     expect(spiritStageBasename("spirit-abc123de", "abc123def", "run-99")).toBe(src.split("/")[1]);
   });
 
-  test("the BASENAME drives buildPatch's spirit provenance (surface by token · agent label · worldline handle)", () => {
-    const patch = buildPatch(harvestTurnGradient("Lares (Scout): the verb leads"), src);
-    expect(patch["lar_surface"]).toBe("claude");                  // by token, not by default
-    expect(patch["lar_agent"]).toBe("spirit-abc123de");           // surface token stripped before the label
-    expect(patch["lar_sidechain"]).toBe(1);
-    expect(patch["lar_agent_handle"]).toBe("run-99.abc123def");   // <run>.<agentId> worldline path
-    expect(patch["lar_parent_handle"]).toBe("run-99");            // closes back to the main run
+  test("the BASENAME drives the spirit provenance (surface by token · agent label · worldline handle)", () => {
+    expect(deriveSurface(src)).toBe("claude");                  // by token, not by default
+    expect(deriveAgent(src)).toBe("spirit-abc123de");           // surface token stripped before the label
+    expect(deriveHandle(src)).toBe("run-99.abc123def");         // <run>.<agentId> worldline path
+    expect(deriveHandle(src)?.split(".")[0]).toBe("run-99");    // closes back to the main run
   });
 
   test("a spirit name with no surface token: handle law UNSHIFTED, surface carried HONESTLY as unknown", () => {
     const foreign = "wing_x__spirits/Mapper__agent-abc123def__run-run-99.jsonl";
-    const patch = buildPatch(harvestTurnGradient("Lares (Mapper): the verb leads"), foreign);
-    expect(patch["lar_agent"]).toBe("Mapper");
-    expect(patch["lar_agent_handle"]).toBe("run-99.abc123def");
-    expect(patch["lar_surface"]).toBe("unknown"); // no surface token → honest, never a guessed "claude"
+    expect(deriveAgent(foreign)).toBe("Mapper");
+    expect(deriveHandle(foreign)).toBe("run-99.abc123def");
+    expect(deriveSurface(foreign)).toBe("unknown"); // no surface token → honest, never a guessed "claude"
   });
 
-  test("★ a spirit basename without the run token names no agent, no sidechain and no handle ★", () => {
+  test("★ a spirit basename without the run token names no agent and no handle ★", () => {
     const runless = "wing_x__spirits/claude__Mapper__agent-abc123def.jsonl";
-    const patch = buildPatch(harvestTurnGradient("Lares (Mapper): the verb leads"), runless);
-    expect(patch["lar_surface"]).toBe("claude");
-    expect(patch["lar_agent"]).toBeUndefined();
-    expect(patch["lar_sidechain"]).toBeUndefined();
-    expect(patch["lar_agent_handle"]).toBeUndefined();
+    expect(deriveSurface(runless)).toBe("claude");
+    expect(deriveAgent(runless)).toBeNull();
+    expect(deriveHandle(runless)).toBeNull();
   });
 });

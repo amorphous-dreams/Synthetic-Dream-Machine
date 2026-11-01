@@ -2813,16 +2813,12 @@ async function prepareNodeBootOn(
           return null;
         }
       },
-      // The dual recall fuse — the form-leg construction (markers→vector derive IN the daemon VM, the
-      // content-only degradation on fault) + the RRF fuse, verbatim. The markers derive round-trips the
-      // warm worker (deriveSkeleton); VM cold/unavailable → resolves null → the markers leg fuses
-      // content-only (graceful, no shadow derive). A form-holder rejection collapses to [] → fuse
-      // content-only. REUSES the recall form holder.
+      // The dual recall fuse — the form leg (held as a placeholder, Train Q: it answers []) + the RRF
+      // fuse. A form-leg rejection collapses to [] → fuse content-only. REUSES the recall form palace.
       multiRecall: (legs, args) => {
         recallFormPalace ??= makeFormPalace(larFormPalaceDir());
         recallStructurePalace ??= makeStructurePalace(larStructurePalaceDir());
-        const deriveSkeleton = (q: string) => daemonVm.deriveSkeleton(q);
-        const formSearchLeg = makeFormSearch({ query: args["query"] as string, formPalace: recallFormPalace, deriveSkeleton });
+        const formSearchLeg = makeFormSearch({ query: args["query"] as string, formPalace: recallFormPalace });
         // The STRUCTURE leg rides the reserved `extraGraphs` slot — the 3rd graph, fused on the shared
         // verbatim_sha like content+form (a holder fault degrades to []). The N-ary core needs no change.
         const structureLeg = makeStructureSearch(recallStructurePalace);

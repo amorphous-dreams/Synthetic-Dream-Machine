@@ -132,14 +132,15 @@ tolerance found anywhere else reads as a shim wearing this law's name.
 
 !! The standing instance ~ a reader, outside the four layers
 
-The harvester (`packages/lararium-mesh/src/capture/turn-harvest.ts`) reads `.jsonl` transcripts and lands
-drawers in mempalace; no bag, wiki, doc or carrier holds those bytes, which keeps this tolerance from ever
-reaching a gate. It reads a month of real turns written under whatever the frame said that week, and keeps
-its retired-head tolerance — a retired sigil head stays readable there — under this law: no rite re-makes
-those transcripts, and refusing a retired head would read a turn that fired its instrument as a turn that
-fired nothing. Its own docblock states the same cut: //a corpus states one grammar; a reader tolerates
-every grammar it will meet//. Canon bags admit framed carriers alone; the pre-commit frame check holds that
-line, and no bag-grade policy yet enforces it in the sink.
+A reader of `.jsonl` transcripts stands outside the four layers: no bag, wiki, doc or carrier holds those
+bytes, which keeps its tolerance from ever reaching a gate. It reads turns written under whatever the frame
+said that week, and keeps a retired-head tolerance — a retired sigil head stays readable there — under this
+law: no rite re-makes those transcripts, and refusing a retired head would read a turn that fired its
+instrument as a turn that fired nothing. //A corpus states one grammar; a reader tolerates every grammar it
+will meet.// The turn harvester that held this seat burned whole
+(lar:///ha.ka.ba/lararium/api/ingest-canon#/the-harvester-burn); the flexible method that mines old turns
+later inherits the seat and its law. Canon bags admit framed carriers alone; the pre-commit frame check
+holds that line, and no bag-grade policy yet enforces it in the sink.
 
 <<~/ahu>>
 
@@ -167,6 +168,6 @@ line, and no bag-grade policy yet enforces it in the sink.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;A-TFbs7_cZVyFcWy4ks3spe4uoF4OWCWpHK7-cdR1tM
+<<^ code="&#x0003;">>ni:///sha-256;eUk_xVUdqXKASL1oAawHMuTITsYD7uMUM3Ve3VreoQY
 
 <<^ code="&#x0004;" -> to="?">>

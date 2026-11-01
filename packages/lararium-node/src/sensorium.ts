@@ -47,10 +47,10 @@ import {
   parseRetirementRecord, type RetirementRecord,
 } from "@lararium/mesh";
 import {
-  resolveHolderCapEnv, resolveFormEncoderSpawn, resolveContentPalaceSpawn, resolvePersistencePalaceSpawn,
+  resolveHolderCapEnv, resolveContentPalaceSpawn, resolvePersistencePalaceSpawn,
   resolveStructurePalaceSpawn,
 } from "@lararium/mempalace";
-import type { MoveSkeleton, ConstructiconBasis, BearingFacets } from "@lararium/tw5/form-layer";
+import type { ConstructiconBasis } from "@lararium/tw5/form-layer";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { makeSearchCap, type SearchCap, type SearchCapOptions } from "./search-cap.js";
 import { makeKgCap, type KgCap, type KgCapOptions } from "./kg-cap.js";
@@ -435,7 +435,7 @@ export interface PalaceHolderProc {
 /** Test shore: produce the holder process for a canonical palace dir (defaults to a python helper). */
 export type PalaceHolderSpawn = (canonicalDir: string) => PalaceHolderProc;
 
-/** The resolved spawn inputs a python `serve` holder needs (the shape StructurePalaceSpawn / FormEncoderSpawn share). */
+/** The resolved spawn inputs a python `serve` holder needs (the shape every resolved holder spawn shares). */
 export interface ResolvedServeSpawn {
   /** the venv-aware interpreter, or null when none holds mempalace */
   readonly python: string | null;
@@ -895,49 +895,30 @@ export function _liveContentHolderCount(): number {
 }
 
 // ============================================================================
-// formpalace — the LIVING-GRAMMAR FORM store
+// formpalace — the LIVING-GRAMMAR FORM store, held as a PLACEHOLDER
 // ============================================================================
 /**
- * formpalace — the LIVING-GRAMMAR FORM store: a LOCAL, caller-vector store for the per-turn
- * FORM-vector (the two-planes form-capture's CONTINUOUS plane, encoded). Backed by a "form"
- * collection inside a mempalace instance (the same ChromaDB engine, the SECOND collection beside
- * the palace default), reached through ONE persistent Python holder (`form_encoder.py serve
- * --palace <dir>`). It NEVER federates — local, the eidetic↔grammatical bridge twin to `.structurepalace`.
+ * formpalace — the FORM store's surface, held as a PLACEHOLDER that stores nothing and answers empty.
  *
- * Each turn's move-skeleton (emitMoveSkeleton, P1) + constructicon basis (buildConstructiconBasis,
- * P0) ride to the holder, which ENCODES the sparse fuzzy-membership form-vector (form_encoder, P2)
- * and STORES it as a caller-supplied dense vector (densified to basis.dimension), keyed by the
- * turn's `verbatim_sha` — the SAME key the content drawer carries as `lar_verbatim_sha`, so the
- * FORM graph and the CONTENT graph (the existing verbatim mempalace) fuse on one join key. The
- * embedding model is never invoked (we always supply our own vector), mirroring `.structurepalace`.
- *
- * THE CAP-STACK (the palace-instance #has): formpalace = the SHARED palace transport
- * ({@link PalaceHolderRegistry} in this module) composed with its OWN op-surface —
- * `encode_store`/`query`/`filter`/`get` over the python form-encoder holder. DISTINCT from
- * structurepalace (per-turn form-vectors keyed by verbatim_sha vs per-structure AST drawers keyed by
- * structural hash, no AST payload stored here) but riding the IDENTICAL transport cap — two
- * op-surface shapes, one transport, no god base-class (the holder 2-shapes lesson, one up).
+ * PLACEHOLDER SHIM (operator ruling 2026-10-31, Train Q, row Q6 — the one ruled exception to the
+ * no-shims law). The harvester burn retired the move-skeleton emitter and the Python form encoder that
+ * filled this store, so the form plane has no producer. The surface keeps its export shape for its
+ * callers (the recall fuse's form leg, the worldline form pre-fetch, `lares-query`): `encodeStore`
+ * records nothing and reports a zero-dimension result, `query` and `filter` answer `[]`, `get` answers
+ * `null`, and no holder process spawns. The sensorium arc returns the real store; that arc waits on the
+ * founded-Lararium proof, and a road row tracks this shim until it retires.
  *
  * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#/two-planes
  */
 
-
-
-/** the palace label — the transport registry key (one holder singleton per label per dir). */
-const LABEL_FORM = "form";
-
-/** The serializable basis shape the Python encoder consumes (its `index` is re-derived from order). */
+/** The serializable basis shape a form encoder consumes (its `index` is re-derived from order). */
 export interface SerializedBasis {
   readonly axes: ConstructiconBasis["axes"];
   readonly dimension: number;
 }
 
-/** The metadata stamped on a form entry — the where-filterable facets + the content-join key.
- *  Carries the {@link BearingFacets} (bearing_w1/w2/w3/root/path/frag/grade) too: the aim/yield
- *  bearing descended into flat scalars, where-filterable for the STRUCTURED bearing recall path
- *  (multi-graph-recall#makeFormSearch). Stamped off `skeleton.bearing.facets` in
- *  node-capture-engine#makeFormSplitFlush; the python store carries any `bearing_*` key through. */
-export interface FormMetadata extends BearingFacets {
+/** The metadata a form entry carries — the where-filterable facets + the content-join key. */
+export interface FormMetadata {
   /** the confidence register band (e.g. "synthesis"), for where-filtering */
   readonly register?: string;
   /** the deepest grammar-stack layer the turn touched */
@@ -975,92 +956,55 @@ export interface FormEntry {
 }
 
 export interface FormPalace {
-  /**
-   * Encode a turn's move-skeleton against the basis, then STORE the form-vector keyed by its
-   * `verbatim_sha`. Returns the encode+store outcome. THROWS if the holder did not persist, so the
-   * caller never stamps a dangling form reference (the content path stays intact regardless).
-   */
+  /** Encode a turn's form against the basis and store it by `verbatim_sha`. The placeholder stores nothing. */
   encodeStore(input: {
-    skeleton: MoveSkeleton;
+    skeleton: unknown;
     basis: SerializedBasis;
     key: string;
     metadata: FormMetadata;
   }): Promise<FormStoreResult>;
-  /** Nearest turns by FORM similarity (encode the query skeleton, then search), optional where-filter. */
+  /** Nearest turns by FORM similarity, optional where-filter. The placeholder answers `[]`. */
   query(input: {
-    skeleton: MoveSkeleton;
+    skeleton: unknown;
     basis: SerializedBasis;
     nResults?: number;
     where?: Record<string, unknown>;
   }): Promise<FormMatch[]>;
-  /**
-   * METADATA-ONLY filter — NO vector. The structured bearing / keyword recall path: match form
-   * entries by a `where`-clause alone (chroma `.get(where=…)`), so a bearing root or a register
-   * scope yields matches without encoding a query skeleton. `distance` is null on each match (a
-   * where-match carries no similarity ranking). A null/empty `where` returns up to `nResults` of
-   * the collection; a where matching nothing returns []. (multi-graph-recall#makeFormSearch.)
-   */
+  /** METADATA-ONLY filter, no vector. The placeholder answers `[]`. */
   filter(input: { where?: Record<string, unknown>; nResults?: number }): Promise<FormMatch[]>;
-  /** Read a form entry back by its key (the verbatim_sha), or null if absent. */
+  /** Read a form entry back by its key (the verbatim_sha). The placeholder answers `null`. */
   get(key: string): Promise<FormEntry | null>;
-  /** Release this reference; the holder process is killed when the last reference closes. */
+  /** Release this reference. */
   close(): Promise<void>;
 }
 
-/** Test shore alias: how the holder process is produced (defaults to the python helper). */
+/** Test shore alias: how a holder process is produced. The placeholder spawns none. */
 export type FormHolderSpawn = PalaceHolderSpawn;
 
-/** Default holder spawn: the venv-aware python running `form_encoder.py serve --palace <dir>`. */
-const defaultFormHolderSpawn: PalaceHolderSpawn = makeServeSpawn(resolveFormEncoderSpawn);
-
 export interface FormPalaceOptions {
-  /** per-call RPC timeout (ms); default 60s (covers the one-time chroma open + first encode). */
+  /** per-call RPC timeout (ms); the placeholder makes no call. */
   readonly timeoutMs?: number;
-  /** test shore: override how the holder process is produced (defaults to the python helper). */
+  /** test shore: override how the holder process is produced; the placeholder spawns none. */
   readonly spawn?: FormHolderSpawn;
 }
 
+/** The placeholder's encode outcome: nothing stored, a zero-dimension vector, the reason named. */
+const PLACEHOLDER_SLOR = { live: false, model: null, reason: "form store held as a placeholder (Train Q, Q6)" } as const;
+
 /**
- * Open the FORM store rooted at `dir` — a mempalace instance's "form" collection. Composes the
- * shared transport cap (ref-counted ONE holder per canonical dir) with the form op-surface;
- * `close()` releases this reference and kills the process when the last reference closes.
+ * Open the FORM store rooted at `dir`. PLACEHOLDER (operator ruling 2026-10-31, Train Q): returns a
+ * palace that stores nothing and answers empty, with no holder process behind it.
  */
-export function makeFormPalace(dir: string, opts: FormPalaceOptions = {}): FormPalace {
-  // Compose the SHARED transport cap; layer only the form op-surface below (the holder-2-shapes ward).
-  const p = composePalace(LABEL_FORM, dir, opts.spawn ?? defaultFormHolderSpawn, opts.timeoutMs ?? 60_000);
-
+export function makeFormPalace(_dir: string, _opts: FormPalaceOptions = {}): FormPalace {
   return {
-    async encodeStore({ skeleton, basis, key, metadata }): Promise<FormStoreResult> {
-      return (await p.send("encode_store", { key, skeleton, basis, metadata })) as FormStoreResult;
+    async encodeStore({ key }): Promise<FormStoreResult> {
+      return { key, dimension: 0, count: 0, conformance: 0, slor: PLACEHOLDER_SLOR, form_vector: { indices: [], values: [] } };
     },
-
-    async query({ skeleton, basis, nResults, where }): Promise<FormMatch[]> {
-      const res = (await p.send("query", {
-        skeleton, basis, n_results: nResults ?? 10,
-        ...(where !== undefined ? { where } : {}),
-      })) as { matches: FormMatch[] };
-      return res.matches ?? [];
-    },
-
-    async filter({ where, nResults }): Promise<FormMatch[]> {
-      const res = (await p.send("filter", {
-        n_results: nResults ?? 10,
-        ...(where !== undefined ? { where } : {}),
-      })) as { matches: FormMatch[] };
-      return res.matches ?? [];
-    },
-
-    async get(key: string): Promise<FormEntry | null> {
-      return (await p.send("get", { key })) as FormEntry | null;
-    },
-
-    close: p.close,
+    async query(): Promise<FormMatch[]> { return []; },
+    async filter(): Promise<FormMatch[]> { return []; },
+    async get(): Promise<FormEntry | null> { return null; },
+    async close(): Promise<void> { /* nothing held */ },
   };
-}
-
-/** Test-only: how many holder processes are live (proves "one holder per palace, never a pile"). */
-export function _liveFormHolderCount(): number {
-  return livePalaceHolderCount(LABEL_FORM);
 }
 
 // ============================================================================

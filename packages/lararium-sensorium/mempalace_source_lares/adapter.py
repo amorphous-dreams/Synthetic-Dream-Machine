@@ -5,10 +5,9 @@ adapter decodes the queue-shaped NDJSON records that the source boundary hands
 it; the live capture route remains Python-owned and pointer-driven.
 
 The maintainer anti-pattern smuggles undeclared writes past the schema/transform
-contract. Every `lar_*` field enrichment writes appears here as a FieldSpec, and
-`loci_io.apply` validates each write against it and stamps the adapter
-identity. A declared write carries sovereign enrichment; an undeclared write
-refuses the boundary.
+contract. Every `lar_*` field a producer writes appears here as a FieldSpec; a
+declared write carries sovereign enrichment, and an undeclared write refuses the
+boundary.
 
 Byte-preserving: we touch only metadata, never drawer content
 (`declared_transformations` stays empty).
@@ -36,32 +35,13 @@ logger = logging.getLogger(__name__)
 ADAPTER_NAME = "lares"
 ADAPTER_VERSION = "0.1.0"
 
-# The declared lar_* schema — MUST stay in lockstep with buildPatch() in
-# packages/lares-cli/src/commands/capture/harvest.ts. Every key harvest writes appears
-# here; loci_io validates the write set against it.
+# The declared lar_* schema — every key a producer writes onto a drawer appears here.
+# `lar_hv` reads the enrich-logic version (LAR_HV in packages/lararium-mesh/src/capture/branch-frontier.ts).
 LAR_SCHEMA = AdapterSchema(
     version=ADAPTER_VERSION,
     fields={
         "lar_hv": FieldSpec(type="int", required=True,
                             description="harvest version (idempotency/upgrade gate)"),
-        "lar_bearing_standing": FieldSpec(type="int", required=True, indexed=True,
-                                          description="overall 0..20 gradient standing (earned backward)"),
-        "lar_sigils": FieldSpec(type="int", required=True,
-                                description="recognized sigil-island count in the drawer"),
-        "lar_water": FieldSpec(type="int", required=True,
-                               description="unrecognized <<~ openers (panic-synced water)"),
-        "lar_aim": FieldSpec(type="string", required=False, indexed=True,
-                             description="lares aim bearing payload (verbatim)"),
-        "lar_yield": FieldSpec(type="string", required=False, indexed=True,
-                               description="lares yield forward-vector payload (verbatim)"),
-        "lar_voices": FieldSpec(type="delimiter_joined_string", required=False, indexed=True,
-                                delimiter="|", description="Voices that surfaced in the drawer"),
-        "lar_feedback": FieldSpec(type="string", required=False, indexed=True,
-                                  description="the closing tally: closed N-loops, and any hanging phase"),
-        "lar_drift": FieldSpec(type="delimiter_joined_string", required=False, delimiter="|",
-                               description="drift flags from the gradient parse"),
-        "lar_hall": FieldSpec(type="string", required=False, indexed=True,
-                              description="function-hall routed by sigil: hall_facts|events|discoveries"),
         "lar_surface": FieldSpec(type="string", required=False, indexed=True,
                                  description="originating harness surface: claude|codex|copilot-vscode|copilot-cli"),
         "lar_agent": FieldSpec(type="string", required=False, indexed=True,
@@ -84,13 +64,13 @@ LAR_SCHEMA = AdapterSchema(
         "lar_kapae": FieldSpec(type="string", required=False, indexed=True,
                                description="the rewind LIVENESS stamp: iso whole-seconds of kapae detection (legacy drawers carry int 1) — set aside, never erased/hidden; readers RANK by it (any truthy = rewound) — the convergence twin of the KG valid-close + the structurepalace tally-decrement"),
         "lar_frontier": FieldSpec(type="string", required=False, indexed=True,
-                                  description="the turn-DAG fork-frontier token (head turn-uuids) keying a same-session fork to a distinct worldline handle (build-patch#BranchContext)"),
+                                  description="the turn-DAG fork-frontier token (head turn-uuids) keying a same-session fork to a distinct worldline handle (branch-frontier#BranchContext)"),
     },
 )
 
 
 def declared_field_names() -> frozenset[str]:
-    """The lar_* keys this adapter declares — loci_io validates against this."""
+    """The lar_* keys this adapter declares."""
     return frozenset(LAR_SCHEMA.fields)
 
 

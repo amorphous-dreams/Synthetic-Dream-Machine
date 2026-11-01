@@ -5,10 +5,8 @@ request/response JSON, same serve protocol) and assert the byte-stable contract 
 the load-bearing check that the composition refactor (importing holder_caps at
 launch) left every CLI surface intact:
 
-  loci_io     export --wing W  ·  apply PATCHFILE      (telemetry-writeback.ts)
   kg_io         --palace P add PF · kapae --turn-key K   (worldline-kg.ts)
   structurepalace_io  serve --palace D  + NDJSON ping/put/get   (structurepalace.ts)
-  form_encoder  serve             + NDJSON ping           (formpalace.ts)
 
 Run under the mempalace venv:
 
@@ -82,69 +80,6 @@ def test_kg_io_add_then_kapae_round_trip(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# loci_io — export + apply (ChromaDB collection at HOME/.mempalace/palace)
-# ---------------------------------------------------------------------------
-
-
-def test_loci_io_export_then_apply_round_trip(tmp_path):
-    from mempalace.palace import get_collection
-
-    palace_path = os.path.join(str(tmp_path), ".mempalace", "palace")
-    os.makedirs(palace_path, exist_ok=True)
-    col = get_collection(palace_path, create=True, _skip_identity_check=True)
-    col.upsert(
-        ids=["d1"],
-        documents=["hello shore"],
-        metadatas=[{"wing": "w1", "lar_hv": 0, "source_file": "claude__x"}],
-        embeddings=[[0.1] * 8],
-    )
-
-    exp = _run(["loci_io.py", "--palace", palace_path, "export", "--wing", "w1"], home=tmp_path)
-    assert exp.returncode == 0, exp.stderr
-    lines = _json_lines(exp.stdout)
-    assert lines == [{"id": "d1", "content": "hello shore", "source_file": "claude__x"}]
-
-    import loci_io as dio  # the single source of HARVEST_VERSION (bumps must not break this round-trip)
-    patch = tmp_path / "patch.ndjson"
-    patch.write_text(json.dumps({"id": "d1", "patch": {"lar_hv": dio.HARVEST_VERSION}}) + "\n")
-    app = _run(["loci_io.py", "--palace", palace_path, "apply", str(patch)], home=tmp_path)
-    assert app.returncode == 0, app.stderr
-    out = json.loads(app.stdout)
-    assert out["applied"] == 1 and out["hv"] == dio.HARVEST_VERSION
-
-    # The patch landed: re-export now skips the (now-current) drawer.
-    exp2 = _run(["loci_io.py", "--palace", palace_path, "export", "--wing", "w1"], home=tmp_path)
-    assert _json_lines(exp2.stdout) == []
-
-
-def test_loci_io_embeddings_reads_stored_vectors_in_session_order(tmp_path):
-    """The FFZ Measure cosine feed: read STORED vectors back, ordered per
-    session by (source_file, chunk_index). Never re-embeds (model-agnostic)."""
-    from mempalace.palace import get_collection
-
-    palace_path = os.path.join(str(tmp_path), ".mempalace", "palace")
-    os.makedirs(palace_path, exist_ok=True)
-    col = get_collection(palace_path, create=True, _skip_identity_check=True)
-    # Two drawers in one session, out of ingest order — the command must re-sort by chunk_index.
-    col.upsert(
-        ids=["d2", "d1"],
-        documents=["second", "first"],
-        metadatas=[
-            {"wing": "w1", "source_file": "claude__s", "chunk_index": 1},
-            {"wing": "w1", "source_file": "claude__s", "chunk_index": 0},
-        ],
-        embeddings=[[0.0, 1.0], [1.0, 0.0]],
-    )
-
-    out = _run(["loci_io.py", "--palace", palace_path, "embeddings", "--wing", "w1"], home=tmp_path)
-    assert out.returncode == 0, out.stderr
-    rows = _json_lines(out.stdout)
-    assert [r["id"] for r in rows] == ["d1", "d2"]  # chunk_index 0 before 1
-    assert rows[0]["embedding"] == [1.0, 0.0]
-    assert rows[0]["chunk_index"] == 0 and rows[0]["source_file"] == "claude__s"
-
-
-# ---------------------------------------------------------------------------
 # structurepalace_io serve — ping · put · get over NDJSON (real .structurepalace ChromaDB)
 # ---------------------------------------------------------------------------
 
@@ -170,20 +105,3 @@ def test_structurepalace_io_serve_round_trip(tmp_path):
     assert by_id[3]["ok"] is True
     got = by_id[3]["result"]
     assert got["hash"] == h and got["ast"] == {"k": 1} and got["count"] == 1
-
-
-# ---------------------------------------------------------------------------
-# form_encoder serve — ping (encode-only holder, no --palace)
-# ---------------------------------------------------------------------------
-
-
-def test_form_encoder_serve_ping_round_trip(tmp_path):
-    proc = _run(
-        ["form_encoder.py", "serve"], home=tmp_path,
-        stdin=json.dumps({"id": 1, "op": "ping"}) + "\n",
-    )
-    assert proc.returncode == 0, proc.stderr
-    line = _json_lines(proc.stdout)[0]
-    assert line["id"] == 1 and line["ok"] is True
-    assert line["result"]["ready"] is True
-    assert line["result"]["store"] is False  # no palace bound → encode-only

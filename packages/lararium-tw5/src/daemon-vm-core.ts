@@ -44,7 +44,6 @@ import {
   mkDaemonResolveBindingRequest,
   mkDaemonGateVerbRequest,
   newRequestId,
-  mkDaemonDeriveSkeletonRequest,
   mkDaemonWorldlineCompareRequest,
   mkDaemonWorldlineTrajectoryRequest,
   mkDaemonEvictResult,
@@ -71,7 +70,6 @@ import {
   type DaemonMsg_DelegateVerb,
   type DaemonMsg_ResolveBindingResult,
   type DaemonMsg_GateVerbResult,
-  type DaemonMsg_DeriveSkeletonResult,
   type DaemonMsg_WorldlineCompareResult,
   type DaemonMsg_WorldlineTrajectoryResult,
   type WorldlineStubWire,
@@ -86,16 +84,6 @@ import {
 } from "@lararium/mesh";
 import { runLocalVerb } from "./verb-local-dispatch.js";
 import type { SessionWorn, VerbTable } from "./verb-dispatcher.js";
-import type { MoveSkeleton, ConstructiconAxis } from "./form-layer/index.js";
-
-/** The in-VM query-derive result the recall verb round-trips for — the move-skeleton (FULL functor,
- *  structural plane present) + the serialized `{axes, dimension}` basis. `null` = no derivable form
- *  (→ recall fuses content-only). Structurally matches node's FormSearch deriveSkeleton return. */
-export interface DaemonDeriveSkeletonResult {
-  skeleton: MoveSkeleton;
-  basis: { axes: readonly ConstructiconAxis[]; dimension: number };
-}
-
 /** Well 1 input the host round-trips to the worker — two handles + the edge-DAG to project from. */
 export interface DaemonWorldlineCompareInput {
   a: string;
@@ -254,13 +242,6 @@ export interface DaemonVmCore {
   /** REWIND (kapae) one turn's .structurepalace tally + salience down-weight, IN the daemon island (it owns
    *  the warm holder). Fire-and-forget — the convergence twin of the CLI-side KG valid-close. */
   placeStructurepalaceKapae: (turnKey: string, ended?: string) => void;
-  /**
-   * Derive a recall query's move-skeleton IN the daemon VM (the recall twin of placeTelemetry) —
-   * round-trips the query string through the island's `$tw.lares.deriveQuerySkeletonVm` so the
-   * markers→vector recall runs the SAME Move→Vec functor capture runs (full grammar + live basis,
-   * structural plane present). Resolves `null` when the query carries no derivable move-form.
-   */
-  deriveSkeleton: (query: string) => Promise<DaemonDeriveSkeletonResult | null>;
   /**
    * Well 1 (the ITC LIVE-READ) — answer the concurrent-capable causal verdict between two handles IN
    * the daemon VM. Round-trips the edge-DAG (host-derived from a transcript) + the two handles through
@@ -571,17 +552,6 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       return;
     }
 
-    if (raw.type === "daemon:derive-skeleton-result") {
-      const msg = raw as DaemonMsg_DeriveSkeletonResult;
-      if (msg.error) settleAsk(msg.requestId, undefined, msg.error);
-      // skeleton+basis both present → the derivation; both absent → a graceful null (content-only).
-      else settleAsk(
-        msg.requestId,
-        msg.skeleton !== undefined && msg.basis !== undefined ? { skeleton: msg.skeleton, basis: msg.basis } : null,
-      );
-      return;
-    }
-
     if (raw.type === "daemon:worldline-compare-result") {
       const msg = raw as DaemonMsg_WorldlineCompareResult;
       if (msg.error) settleAsk(msg.requestId, undefined, msg.error);
@@ -826,8 +796,6 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     placeStructurepalaceKapae: (turnKey: string, ended?: string) => {
       worker.post(mkStructurepalaceKapae({ turnKey, ...(ended ? { ended } : {}) }));
     },
-    deriveSkeleton: (query: string) =>
-      askIsland<DaemonDeriveSkeletonResult | null>("derive", (requestId) => mkDaemonDeriveSkeletonRequest({ requestId, query })),
     worldlineCompare: (input: DaemonWorldlineCompareInput) =>
       askIsland<{ order: string }>("wl-cmp", (requestId) => mkDaemonWorldlineCompareRequest({
         requestId, a: input.a, b: input.b, opens: input.opens,

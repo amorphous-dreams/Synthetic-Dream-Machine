@@ -383,8 +383,8 @@ export interface DaemonMsg_TelemetryPlaceVerb {
   /**
    * The branch-frontier — the head turn-uuid(s) the producer (cli) derived from the transcript's
    * parentUuid turn-DAG (branchContextForTurn). Absent on a non-forked turn (the common case),
-   * so the handle stays byte-identical to before. Carried as flat uuid strings; the in-VM annotate
-   * rebuilds the {@link BranchContext} and feeds it to buildPatch's 3rd arg (the fork-cut).
+   * so the handle stays exactly `run`. Carried as flat uuid strings; the capture cap rebuilds the
+   * {@link BranchContext} and hands it to the engine's annotate pass (the fork-cut).
    */
   frontier?: readonly string[];
   /**
@@ -417,38 +417,10 @@ export interface DaemonMsg_StructurepalaceKapae {
   ended?: string;
 }
 
-/**
- * Vessel → island: derive a recall query's move-skeleton IN the daemon VM (the recall twin of the
- * telemetry capture). The host's recall verb routes a sigil-bearing query string here so the
- * markers→vector recall runs the SAME Move→Vec functor capture runs — parse with the full self-hosted
- * grammar + emit the skeleton (structural plane present) against the LIVE grammar-cache basis. One
- * runtime, no node-side fallback. The island calls `$tw.lares.deriveQuerySkeletonVm` and answers with
- * {@link DaemonMsg_DeriveSkeletonResult}.
- */
-export interface DaemonMsg_DeriveSkeletonRequest {
-  type: "daemon:derive-skeleton-request";
-  requestId: string;
-  /** The recall query — sniffed in-VM for sigil markers, parsed with the full grammar. */
-  query: string;
-}
-
-/** Island → vessel: the in-VM query-derive result. `skeleton`+`basis` (plain objects — the move-
- *  skeleton + the serialized `{axes, dimension}` basis) when the query carried a derivable move-form;
- *  BOTH absent (a graceful null) when it did not (→ the recall fuses content-only). `error` carries a
- *  derive fault (the VM unavailable degrades to null at the host, never an error). */
-export interface DaemonMsg_DeriveSkeletonResult {
-  type: "daemon:derive-skeleton-result";
-  requestId: string;
-  skeleton?: unknown;
-  basis?: unknown;
-  error?: string;
-}
-
 // ── Worldline reads (the permainan substrate — sovereign-worker home) ───────
 //
-// The flow-lens reads run IN the daemon VM, the same one-runtime lock the recall
-// query-derive rides (the cap-stack lifts WHOLE — no coordinator carve-out). Two
-// reads, two request/result pairs mirroring DeriveSkeleton:
+// The flow-lens reads run IN the daemon VM, the one-runtime lock (the cap-stack
+// lifts WHOLE — no coordinator carve-out). Two reads, two request/result pairs:
 //
 //   worldline-compare    — Well 1, the ITC LIVE-READ. The worker holds the
 //     WorldlineCausal registry (projected from the edge-DAG it receives) and
@@ -737,7 +709,6 @@ export type VesselToIslandMsg =
   | DaemonMsg_PlaceVerb
   | DaemonMsg_TelemetryPlaceVerb
   | DaemonMsg_StructurepalaceKapae
-  | DaemonMsg_DeriveSkeletonRequest
   | DaemonMsg_WorldlineCompareRequest
   | DaemonMsg_WorldlineTrajectoryRequest
   | DaemonMsg_VerbResult
@@ -1060,7 +1031,6 @@ export type IslandToVesselMsg =
   | WikiMsg_VerbResult
   | DaemonMsg_FaceSettled
   | DaemonMsg_DelegateVerb
-  | DaemonMsg_DeriveSkeletonResult
   | DaemonMsg_WorldlineCompareResult
   | DaemonMsg_WorldlineTrajectoryResult
   | DaemonMsg_ResolveBindingResult
@@ -1095,7 +1065,7 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
@@ -1111,7 +1081,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
   if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }
@@ -1248,33 +1218,6 @@ export function mkStructurepalaceKapae(opts: {
     turnKey: opts.turnKey,
     ...(opts.ended ? { ended: opts.ended } : {}),
   };
-}
-
-export function mkDaemonDeriveSkeletonRequest(opts: {
-  requestId: string;
-  query: string;
-}): DaemonMsg_DeriveSkeletonRequest {
-  return {
-    type: "daemon:derive-skeleton-request",
-    requestId: opts.requestId,
-    query: opts.query,
-  };
-}
-
-export function mkDaemonDeriveSkeletonResult(opts: {
-  requestId: string;
-  skeleton?: unknown;
-  basis?: unknown;
-  error?: string;
-}): DaemonMsg_DeriveSkeletonResult {
-  const msg: DaemonMsg_DeriveSkeletonResult = {
-    type: "daemon:derive-skeleton-result",
-    requestId: opts.requestId,
-  };
-  if (opts.skeleton !== undefined) msg.skeleton = opts.skeleton;
-  if (opts.basis    !== undefined) msg.basis    = opts.basis;
-  if (opts.error    !== undefined) msg.error    = opts.error;
-  return msg;
 }
 
 export function mkDaemonWorldlineCompareRequest(opts: {
