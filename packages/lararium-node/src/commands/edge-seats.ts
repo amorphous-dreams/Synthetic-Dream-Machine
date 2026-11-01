@@ -15,7 +15,7 @@
  */
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, faceAtomKeyFromSeed, raisesSeenThrough, markRaiseRolled, verifiedSeatRoll,
+  fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, faceAtomKeyFromSeed, raisesSeenThrough, raisesMarkedAnswered, markRaiseRolled, verifiedSeatRoll,
   type EdgeKapae, type SeatRoll,
 } from "@lararium/mesh";
 import { listPersonaRoots, loadPersonaGroupRootVerifyingKey } from "../node-vessel-identity.js";
@@ -92,6 +92,26 @@ export async function runEdgeSeatFacts(opts: { readonly repo: Repo; readonly fle
   }
   await opts.repo.flush();
   return { fleets };
+}
+
+/**
+ * The raises this vessel counts on one fleet's board, and those no subscriber has taken yet (no ledger mark): what
+ * the content-key holder counts a removal version by, and what it owes a roll for, a restart included. The read runs
+ * through the ledger, as `runEdgeSeatFacts` does, so a raise deleted from the board still counts.
+ */
+export async function fleetRaisesOf(opts: { readonly repo: Repo; readonly fleetRoot: string | null }): Promise<{ readonly read: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }> {
+  // AN UNREAD FOLD SAYS SO: a vessel that wears no face, or serves no fleet under the root it wears (a joinee holds
+  // no root), reads no board here. It answers `read: false`, never a silent zero, and the island judges it.
+  const fleetRoot = opts.fleetRoot === null ? "" : bare(opts.fleetRoot);
+  if (!HEX64.test(fleetRoot) || !(await servedFleetRoots()).includes(fleetRoot)) return { read: false, counted: [], unanswered: [] };
+  const vesselKey = await atomKeyForFleet(fleetRoot);
+  const read = await readVesselEdgeBoard({
+    repo: opts.repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
+    vesselKey, authorityFor: fleetEdgeAuthority(fleetRoot),
+  });
+  const counted = [...new Set([...read.readings.values()].flatMap((r) => [...r.raiseCids]))].sort();
+  const answered = raisesMarkedAnswered(read.ledger.doc(), fleetRoot);
+  return { read: true, counted, unanswered: counted.filter((cid) => !answered.has(cid)) };
 }
 
 /**

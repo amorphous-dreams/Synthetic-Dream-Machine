@@ -4,7 +4,7 @@
  */
 
 import { Worker, MessageChannel } from "worker_threads";
-import { type VesselWorkerHandle, type EdgeStanding, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_DocRest, type IslandMsg_DocRested, type CustodyWriteCarrier, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten } from "@lararium/mesh";
+import { type VesselWorkerHandle, type EdgeStanding, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_DocRest, type IslandMsg_DocRested, type CustodyWriteCarrier, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten, type IslandMsg_SessionSign, type IslandMsg_SessionSigned } from "@lararium/mesh";
 
 /** The vessel's answer to a worker's `cas:want` — verified bytes, or null (a miss stays a miss). */
 export type CasDoor = (cid: string) => Promise<Uint8Array | null>;
@@ -120,6 +120,41 @@ function attachCustodyWriteDoor(w: Worker): void {
   });
 }
 
+// THE SESSION SIGN DOOR, vessel side (`session-sign-door.ts`). The daemon island names the invocation a session placed;
+// the vessel's book answers from that session's signer, which signs here, behind its owner's table. The DAEMON island's
+// channel alone carries the ask: a wiki island's refuses by name.
+export type SessionSignDoor = (ask: Pick<IslandMsg_SessionSign, "op" | "ask" | "verb" | "payload">) => Promise<
+  { readonly certificate: unknown; readonly subject: string; readonly chain: import("@lararium/mesh").SessionOwnChain; readonly foldRead: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }
+  | { readonly own: true; readonly chain: import("@lararium/mesh").SessionOwnChain; readonly foldRead: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }
+  | { readonly signature: string } | { readonly refusal: string }>;
+let sessionSignDoor: SessionSignDoor | null = null;
+
+/** Stand (or drop) the vessel's session sign door. */
+export function setSessionSignDoor(door: SessionSignDoor | null): void { sessionSignDoor = door; }
+
+/** Answer one `session:sign` ask through the door standing now; no door, a malformed ask or a fault each refuse by name. */
+export async function answerSessionSign(ask: Partial<IslandMsg_SessionSign> & { requestId: string }): Promise<IslandMsg_SessionSigned> {
+  const base = { type: "session:signed" as const, requestId: ask.requestId };
+  if ((ask.op !== "read" && ask.op !== "sign" && ask.op !== "own") || typeof ask.ask !== "string" || typeof ask.verb !== "string" ||
+      (ask.op === "sign" && !(ask.payload instanceof Uint8Array))) return { ...base, refusal: "signer-unavailable" };
+  const door = sessionSignDoor;
+  if (!door) return { ...base, refusal: "signer-unavailable" };
+  try {
+    const answer = await door({ op: ask.op, ask: ask.ask, verb: ask.verb, ...(ask.payload ? { payload: ask.payload } : {}) });
+    return { ...base, ...answer } as IslandMsg_SessionSigned;
+  } catch { return { ...base, refusal: ask.op === "sign" ? "signer-refused" : "signer-unavailable" }; }
+}
+
+function attachSessionSignDoor(w: Worker): void {
+  w.on("message", (raw: unknown) => {
+    const m = raw as Partial<IslandMsg_SessionSign> | null;
+    if (!m || m.type !== "session:sign" || typeof m.requestId !== "string") return;
+    void answerSessionSign(m as Partial<IslandMsg_SessionSign> & { requestId: string }).then((reply) => {
+      try { w.postMessage(reply); } catch { /* the worker went away — nothing to answer */ }
+    });
+  });
+}
+
 function attachRestDoor(w: Worker): void {
   w.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_DocRest> | null;
@@ -177,6 +212,10 @@ function attachRefusals(w: Worker): void {
         why: "RestDoorRefused: only the daemon island reaches the rest door",
       };
       reply(refused);
+    } else if (m.type === "session:sign") {
+      once("SessionSignDoorRefused", "session sign door");
+      const refused: IslandMsg_SessionSigned = { type: "session:signed", requestId: m.requestId, refusal: "signer-unavailable" };
+      reply(refused);
     } else if (m.type === "dyad:ask") {
       once("DyadDoorRefused", "dyad door");
       const refused: IslandMsg_DyadRead = {
@@ -194,6 +233,7 @@ export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass
     attachDyadDoor(w);
     attachRestDoor(w);
     attachCustodyWriteDoor(w);
+    attachSessionSignDoor(w);
   } else if (opts.island === "wiki") {
     attachCasDoor(w);
     attachRefusals(w);

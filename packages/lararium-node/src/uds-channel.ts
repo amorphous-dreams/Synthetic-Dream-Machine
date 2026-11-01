@@ -60,6 +60,7 @@ import type { SwitchActLog } from "./switch-act-log.js";
 // behind a capture pass) is never false-killed the way a fixed 30s cliff killed them.
 import { adaptiveTimeoutMs, recordMineDuration, verbBudgetMs } from "@lararium/mempalace";
 import type { StoreClaim } from "./owned-store.js";
+import type { SessionSignBook } from "./session-sign-door.js";
 
 export interface UdsChannelOptions {
   readonly sessions?: UdsSessionDoor;
@@ -83,6 +84,12 @@ export interface UdsChannelOptions {
    * beside the session's face, refuses one `answers-on-the-socket`, as it refuses every `sessionVerbs` row.
    */
   readonly socketVerbs?: ReadonlySet<string>;
+  /**
+   * The session sign door's book (`session-sign-door.ts`): each `session:call` books its request id, its verb and the
+   * session that placed it for the call's life, so the daemon island signs through THAT session's signer and no other.
+   * Absent → no call books, and every sealed act the island answers refuses `signer-unavailable`.
+   */
+  readonly signers?: SessionSignBook;
   /** The daemon's warm daemon doc handle (result.daemon.daemonHandle). */
   readonly daemonHandle: DocHandle<LarDoc>;
   /** The daemon composite with its attached working layer established as default writable. */
@@ -127,10 +134,13 @@ export interface UdsChannelOptions {
   readonly onLog?: (line: string) => void;
 }
 
-/** The one signer a session holds; the seat drops it at a close and at a switch's fence. */
+/** The one signer a session holds; the seat drops it at a close and at a switch's fence. Its certificate is public;
+ *  it signs on this thread alone, asking its owner's table first (`SessionSigner`, `PlaceSessionSigner`). */
 export interface UdsSessionSigner {
   readonly dropped: boolean;
   drop(): void;
+  readonly certificate: unknown;
+  sign(purpose: "act", payload: Uint8Array): Promise<{ readonly signature: string } | { readonly refusal: string }>;
 }
 /**
  * The face supplier verifies the hint at each open and at each switch's preflight, and answers an immutable
@@ -1059,16 +1069,21 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     // outcome body rests in the daemon document beside the session's face, so neither rides one.
     if (opts.sessionVerbs?.has(frame["verb"]) || opts.socketVerbs?.has(frame["verb"])) return sessionRefuse(sock, "answers-on-the-socket", requestId);
     const args = frame["args"] as Record<string, unknown>;
+    const face = checked.session.face.proofSubject;
+    // THE SIGN DOOR'S BOOKING: the daemon island signs a sealed record through the session that placed this call, for
+    // the call's life and under its verb alone; the booking drops when the call concludes or its socket goes.
+    const release = opts.signers && state.signer && state.supply
+      ? opts.signers.hold(faceScopedId(face, requestId), frame["verb"], { signer: state.signer, anchor: state.supply.anchor, subject: face })
+      : () => {};
     await new Promise<void>((resolve) => {
       const closed = () => resolve();
       sock.once("close", closed);
-      const face = checked.session.face.proofSubject;
       handle({ verb: frame["verb"], args, requestId: faceScopedId(face, requestId),
         requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject, ordinal: state.supply!.ordinal,
         ...(typeof frame["effectKey"] === "string" && { effectKey: faceScopedId(face, frame["effectKey"]) }),
         ...(typeof frame["timeoutMs"] === "number" && { timeoutMs: frame["timeoutMs"] }) }, sock, requestId,
         () => { sock.off("close", closed); resolve(); });
-    });
+    }).finally(release);
   };
   /**
    * `session:switch`: the five-step fence over THIS socket's session (`switchSession`). The frame rides the bound

@@ -41,6 +41,9 @@ export const HOLDER_ROUTES = {
   "dyad:ask": "owner",
   "doc:rest": "owner",
   "custody:write": "owner",
+  // The session sign door (sealed-store#/the-store): the browser island composes no session proof until U4 moves the
+  // daemon kernel into the holder (road F6, slice four), so no browser island asks one; the route stays total.
+  "session:sign": "owner",
   "view:catalog": "owner",
   "view:content": "owner",
   "view:settle": "owner",

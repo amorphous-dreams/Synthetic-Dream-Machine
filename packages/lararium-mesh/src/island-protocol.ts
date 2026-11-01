@@ -756,6 +756,7 @@ export type VesselToIslandMsg =
   | IslandMsg_DyadRead
   | IslandMsg_DocRested
   | IslandMsg_CustodyWritten
+  | IslandMsg_SessionSigned
   | IslandMsg_ViewCatalogResult
   | IslandMsg_ViewContentResult
   | IslandMsg_ViewSettled;
@@ -954,6 +955,38 @@ export interface IslandMsg_DyadRead {
   standing: "clear" | "aside" | "owing" | "returned" | "unknown";
 }
 
+/**
+ * Island → vessel: THE SESSION SIGN DOOR (lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store). The daemon island
+ * holds no session key: it names the invocation a session placed (`ask`, its request id, and the `verb` it placed), and
+ * the vessel answers from the session that placed it. `op: "read"` asks the session's certificate, its proof subject and
+ * this vessel's own verified face chain; `op: "sign"` asks the session's signer to sign `payload` under the `act`
+ * purpose. The signer's secret never crosses: it signs on the vessel's main thread, behind its owner's table. A read
+ * also carries the raises the vessel counts on the face's fleet board and those no subscriber has taken yet (its own
+ * fold), so the holder counts removal versions and owed rolls across a restart.
+ */
+export interface IslandMsg_SessionSign {
+  type: "session:sign";
+  requestId: string;
+  /** `own` asks no session: it reads the vessel's own chain and its fold (the island counts records by them). */
+  op: "read" | "sign" | "own";
+  ask: string;
+  verb: string;
+  payload?: Uint8Array;
+}
+
+/** This vessel's own verified face chain, public: the scope its face stands at and its face-scoped key there. */
+export interface SessionOwnChain {
+  readonly scope: { readonly faceKey: string; readonly nexus: string };
+  readonly vesselFaceKey: string;
+}
+
+/** Vessel → island: the session sign door's answer, or one refusal by name. */
+export type IslandMsg_SessionSigned =
+  | { type: "session:signed"; requestId: string; certificate: unknown; subject: string; chain: SessionOwnChain; foldRead: boolean; counted: readonly string[]; unanswered: readonly string[] }
+  | { type: "session:signed"; requestId: string; own: true; chain: SessionOwnChain; foldRead: boolean; counted: readonly string[]; unanswered: readonly string[] }
+  | { type: "session:signed"; requestId: string; signature: string }
+  | { type: "session:signed"; requestId: string; refusal: string };
+
 /** Island → vessel: ask the vessel's live fleet board for this device's standing. */
 export interface IslandMsg_DyadAsk {
   type: "dyad:ask";
@@ -1039,6 +1072,7 @@ export type IslandToVesselMsg =
   | IslandMsg_DyadAsk
   | IslandMsg_DocRest
   | IslandMsg_CustodyWrite
+  | IslandMsg_SessionSign
   | IslandMsg_ViewCatalog
   | IslandMsg_ViewContent
   | IslandMsg_ViewSettle
@@ -1061,7 +1095,7 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
@@ -1077,7 +1111,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
   if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }
