@@ -57,10 +57,6 @@ export interface LaresNaluAPI {
   applyNalu(change: LarTiddlerChange): void;
   enqueueNalu?: (change: LarTiddlerChange) => void;
   isApplyingNalu(): boolean;
-  /** The IN-VM capture annotate (capture-annotate-vm startup): parse + harvest a turn IN-REALM with
-   *  the full self-hosted grammar → the lar_* patch (+ lar_ast). The daemon wires this as the engine's
-   *  annotate so all ast-parsing runs inside the TW5 engine, never the worker. */
-  captureAnnotateVm(turnText: string, sourceFile?: string): Record<string, string | number>;
   /** The in-VM meme face (meme-face startup) — every meme law, under one name. */
   meme: LaresMemeFace;
   /** The host-door ask a mounted camera installs (tw5-projection) for the root-services startup. */
