@@ -83,18 +83,21 @@ export async function openScratch(holder: CustodyHolder): Promise<void> {
     founded.treeKey.fill(0);
     return;
   }
-  const u = await holder.unlock([
-    { kind: "passphrase", passphrase: SCRATCH_PASSPHRASE },
-    { kind: "passphrase", passphrase: STAGED_ROUTE_PASSPHRASE },
-  ]);
-  if (u.reading !== "opens" && u.reading !== "already-unlocked") {
-    throw new ScratchCustodyRefused(`the custody standing at ${identity} reads ${u.reading} under the scratch routes`);
+  // One route at a time: `openTreeKey` derives a scrypt per passphrase offered, so the scratch route goes alone and the
+  // staged route follows only when the scratch route refuses.
+  const routes = [SCRATCH_PASSPHRASE, STAGED_ROUTE_PASSPHRASE].map((passphrase) => [{ kind: "passphrase" as const, passphrase }]);
+  let opened: (typeof routes)[number] | null = null;
+  let reading = "no-slot-opens";
+  for (const route of routes) {
+    const u = await holder.unlock(route);
+    reading = u.reading;
+    if (u.reading === "opens" || u.reading === "already-unlocked") { opened = route; break; }
   }
-  // The scratch routes try every face tree too (`--all`): a face they do not fit stays shut.
-  await holder.unlockFaces([
-    { kind: "passphrase", passphrase: SCRATCH_PASSPHRASE },
-    { kind: "passphrase", passphrase: STAGED_ROUTE_PASSPHRASE },
-  ]);
+  if (opened === null) {
+    throw new ScratchCustodyRefused(`the custody standing at ${identity} reads ${reading} under the scratch routes`);
+  }
+  // The route that opened the node tree tries every face tree too (`--all`): a face it does not fit stays shut.
+  await holder.unlockFaces(opened);
 }
 
 function arm(): void {
