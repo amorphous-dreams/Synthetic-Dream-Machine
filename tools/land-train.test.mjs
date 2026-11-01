@@ -1004,3 +1004,22 @@ test("RED: only a push or dispatch run answers for a sha: a pull_request run's g
   assert.equal(r.code, 5, r.out);
   assert.equal(originRef(w, SPAN), SP);
 });
+
+test("RED: a re-chain onto a moved span re-reads the security table from the new head: a lane the new table classes needs its SHIP", async () => {
+  const w = world(["a"]);
+  spanAhead(w);
+  let moved = false;
+  const { ops } = opsQ(w); const base = ops.ciRuns; const lines = []; ops.log = (l) => lines.push(l);
+  ops.ciRuns = async (sha) => {
+    if (!moved && sh(w.origin, "for-each-ref", "--points-at", sha, `refs/heads/${SPAN}--train-*`)) {
+      moved = true;
+      const other = join(w.dir, "other"); sh(w.dir, "clone", "-q", w.origin, other); sh(other, "config", "user.name", "O"); sh(other, "config", "user.email", "o@o");
+      w.commit(other, "tools/security-class-paths.json", `${JSON.stringify({ paths: ["tools/security-class-paths.json", "packages/p-a/**"], tokens: [] })}\n`, "the table widens — merge PR #3: table");
+      sh(other, "push", "-q", "origin", SPAN);
+    }
+    return base(sha);
+  };
+  const r = await LT.landTrain({ specs: specsOf(w), span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") }, ops);
+  assert.equal(r.code, 12, lines.join("\n"));
+  assert.match(lines.join("\n"), /NO SHIP: a/);
+});
