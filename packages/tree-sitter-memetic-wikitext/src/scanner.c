@@ -40,6 +40,8 @@ enum TokenType {
   SIGIL_OPEN,
   PAIR_OPEN,
   PAIR_CLOSE,
+  CONTROL_OPEN,
+  MACROCALL_BLOCK,
   ERROR_SENTINEL,
 };
 
@@ -130,6 +132,19 @@ static bool is_ws(int32_t c) {
   return c == ' ' || c == '\t';
 }
 
+/**
+ * The `>>` just read ends its line: the text ends, or `\n` / `\r\n` follows. Stock TiddlyWiki's
+ * macrocallblock law — anything behind the `>>` makes the line a paragraph with the call inline.
+ */
+static bool line_ends_here(TSLexer *lexer) {
+  if (lexer->eof(lexer) || lexer->lookahead == '\n') return true;
+  if (lexer->lookahead == '\r') {
+    advance(lexer);
+    return lexer->lookahead == '\n';
+  }
+  return false;
+}
+
 /** The rest of the line, its newline included. */
 static void skip_line(TSLexer *lexer) {
   while (!at_eol(lexer)) advance(lexer);
@@ -174,6 +189,32 @@ static bool finish_sigil(TSLexer *lexer) {
     }
     advance(lexer);
   }
+}
+
+/**
+ * The exception to the line law: a pair opened and closed on one line. With the opener's `>>` just
+ * read and text behind it, the line still stands as a block when the rest of it is exactly the
+ * closing form `<<~/name>>` of the SAME name, and that close ends the line. On true the close's name
+ * stands in the pool at `*close_off` (`len` codepoints) and the lexer sits past the close.
+ */
+static bool closes_on_this_line(TSLexer *lexer, Scanner *s, uint32_t len, uint32_t *close_off) {
+  if (lexer->lookahead != '<') return false;
+  advance(lexer);
+  if (lexer->lookahead != '<') return false;
+  advance(lexer);
+  if (lexer->lookahead != '~') return false;
+  advance(lexer);
+  while (is_ws(lexer->lookahead)) advance(lexer);
+  if (lexer->lookahead != '/') return false;
+  advance(lexer);
+  while (is_ws(lexer->lookahead)) advance(lexer);
+  uint32_t off = s->pool_len;
+  uint32_t n = read_name(lexer, s);
+  if (n != len || len == 0 || memcmp(s->pool, s->pool + off, len * sizeof(int32_t)) != 0) return false;
+  if (!finish_sigil(lexer)) return false;
+  if (!line_ends_here(lexer)) return false;
+  *close_off = off;
+  return true;
 }
 
 static void push_event(Scanner *s, uint8_t kind, uint32_t off, uint32_t len) {
@@ -227,15 +268,25 @@ static void collect_events(TSLexer *lexer, Scanner *s) {
           uint32_t off = s->pool_len;
           uint32_t len = read_name(lexer, s);
           if (finish_sigil(lexer)) {
-            if (len > 0) push_event(s, kind, off, len);
-            continue;  // a block position again, straight after `>>`
+            // A sigil counts only when its `>>` ends the line (a text line otherwise), save the
+            // pair opened and closed on one line: both ends count.
+            if (line_ends_here(lexer)) {
+              if (len > 0) push_event(s, kind, off, len);
+              continue;
+            }
+            uint32_t close_off = 0;
+            if (kind == 0 && len > 0 && closes_on_this_line(lexer, s, len, &close_off)) {
+              push_event(s, 0, off, len);
+              push_event(s, 1, close_off, len);
+              continue;
+            }
           }
           skip_line(lexer);
           continue;
         }
         if (lexer->lookahead == '^') {
           advance(lexer);
-          if (finish_sigil(lexer)) continue;
+          if (finish_sigil(lexer) && line_ends_here(lexer)) continue;
           skip_line(lexer);
           continue;
         }
@@ -435,11 +486,8 @@ static bool scan_fence(Scanner *scanner, TSLexer *lexer, const bool *valid_symbo
   return false;
 }
 
-/** The tooth `<<~` at the lexer, read with the whole sigil it opens, then answered. */
+/** The tooth `<<~`, its `<<` already read: the third character, the rest of the sigil, then the answer. */
 static bool scan_tooth(Scanner *s, TSLexer *lexer, const bool *valid_symbols) {
-  advance(lexer);
-  if (lexer->lookahead != '<') return false;
-  advance(lexer);
   if (lexer->lookahead != '~') return false;
   advance(lexer);
   lexer->mark_end(lexer);  // every tooth is the three characters `<<~`; the rest reads ahead
@@ -453,6 +501,7 @@ static bool scan_tooth(Scanner *s, TSLexer *lexer, const bool *valid_symbols) {
     while (is_ws(lexer->lookahead)) advance(lexer);
     uint32_t len = read_name(lexer, s);
     if (!finish_sigil(lexer)) return false;
+    if (!line_ends_here(lexer)) return false;
     if (valid_symbols[PAIR_CLOSE] && s->depth > 0 && len > 0) {
       Name *top = &s->stack[s->depth - 1];
       if (top->len == len && memcmp(top->chars, s->pool, len * sizeof(int32_t)) == 0) {
@@ -470,10 +519,18 @@ static bool scan_tooth(Scanner *s, TSLexer *lexer, const bool *valid_symbols) {
   if (!finish_sigil(lexer)) return false;
   bool fits = len > 0 && len <= NAME_CAP && s->depth < STACK_CAP
     && state_size_with(s, len) <= TREE_SITTER_SERIALIZATION_BUFFER_SIZE;
+  // Text behind the `>>` hands no tooth — except a pair that closes on this very line, which
+  // pairs by construction (its close stands right behind it).
+  bool same_line_pair = false;
+  if (!line_ends_here(lexer)) {
+    uint32_t close_off = 0;
+    if (!(valid_symbols[PAIR_OPEN] && fits && closes_on_this_line(lexer, s, len, &close_off))) return false;
+    same_line_pair = true;
+  }
   if (valid_symbols[PAIR_OPEN] && fits) {
     Event target = {0, 0, len};
-    collect_events(lexer, s);
-    if (target_pairs(s, &target)) {
+    if (!same_line_pair) collect_events(lexer, s);
+    if (same_line_pair || target_pairs(s, &target)) {
       Name *slot = &s->stack[s->depth++];
       slot->len = (uint8_t)len;
       memcpy(slot->chars, s->pool, len * sizeof(int32_t));
@@ -486,15 +543,64 @@ static bool scan_tooth(Scanner *s, TSLexer *lexer, const bool *valid_symbols) {
   return true;
 }
 
+/** The control tooth `<<^`, its `<<` already read: held to the same line law as every sigil. */
+static bool scan_control(TSLexer *lexer) {
+  advance(lexer);
+  lexer->mark_end(lexer);
+  if (!finish_sigil(lexer) || !line_ends_here(lexer)) return false;
+  lexer->result_symbol = CONTROL_OPEN;
+  return true;
+}
+
+/**
+ * A macrocall block, its `<<` already read and its first character known to name a call. The call
+ * runs to the `>>` that closes it, counting nested `<<…>>` arguments, on one line; it stands as a
+ * block only when that `>>` ends the line — two calls, a trailing space, or any text behind it
+ * leaves the line to `text_line`. The token carries the line's newline, as the regex it replaces did.
+ */
+static bool scan_macrocall(TSLexer *lexer) {
+  int depth = 1;
+  while (depth > 0) {
+    if (at_eol(lexer)) return false;
+    int32_t c = lexer->lookahead;
+    advance(lexer);
+    if (c == '<' && lexer->lookahead == '<') {
+      advance(lexer);
+      depth++;
+    } else if (c == '>' && lexer->lookahead == '>') {
+      advance(lexer);
+      depth--;
+    }
+  }
+  if (lexer->lookahead == '\r') advance(lexer);
+  if (lexer->lookahead == '\n') advance(lexer);
+  else if (!lexer->eof(lexer)) return false;
+  lexer->result_symbol = MACROCALL_BLOCK;
+  return true;
+}
+
+/** An angle-bracket form at a block position: `<<~` · `<<^` · a macrocall — or `<<<` and the rest, left to regex tokens. */
+static bool scan_angle(Scanner *s, TSLexer *lexer, const bool *valid_symbols) {
+  advance(lexer);
+  if (lexer->lookahead != '<') return false;
+  advance(lexer);
+  int32_t c = lexer->lookahead;
+  if (c == '~') return scan_tooth(s, lexer, valid_symbols);
+  if (c == '^') return valid_symbols[CONTROL_OPEN] && scan_control(lexer);
+  if (c == '<' || is_ws(c) || at_eol(lexer) || c == '\r') return false;
+  return valid_symbols[MACROCALL_BLOCK] && scan_macrocall(lexer);
+}
+
 bool tree_sitter_memetic_wikitext_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
   Scanner *scanner = (Scanner *)payload;
 
   // Error recovery marks every external valid at once; the scanner stands aside.
   if (valid_symbols[ERROR_SENTINEL]) return false;
 
-  if ((valid_symbols[SIGIL_OPEN] || valid_symbols[PAIR_OPEN] || valid_symbols[PAIR_CLOSE])
+  if ((valid_symbols[SIGIL_OPEN] || valid_symbols[PAIR_OPEN] || valid_symbols[PAIR_CLOSE]
+       || valid_symbols[CONTROL_OPEN] || valid_symbols[MACROCALL_BLOCK])
       && lexer->lookahead == '<') {
-    return scan_tooth(scanner, lexer, valid_symbols);
+    return scan_angle(scanner, lexer, valid_symbols);
   }
 
   return scan_fence(scanner, lexer, valid_symbols);
