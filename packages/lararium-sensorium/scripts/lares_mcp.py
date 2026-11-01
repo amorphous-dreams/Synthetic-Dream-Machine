@@ -15,6 +15,54 @@ from __future__ import annotations
 
 import os
 
+# The `mcp` this seat builds on — the pin `requirements.txt` names and the image lock repeats (a test welds
+# all three). An older `mcp` lacks `mcp.server.mcpserver`, and a seat that died on that import inside its build
+# reached the harness as a closed connection and nothing more. A LAUNCH reads the installed version FIRST, ahead
+# of every import below, and refuses by name: before the stack loads (chroma takes seconds to stand for nothing)
+# and before `import mempalace` strips PYTHONPATH from sys.path, so the version read answers for the same path
+# the launch was handed.
+MCP_PIN = "2.3.0"
+
+
+def _release(version: str) -> tuple:
+    """The leading numeric release of a version string (`2.3.0rc1` -> (2, 3, 0)), for an ordered compare."""
+    parts = []
+    for piece in version.split("."):
+        digits = ""
+        for ch in piece:
+            if not ch.isdigit():
+                break
+            digits += ch
+        if not digits:
+            break
+        parts.append(int(digits))
+        if len(digits) != len(piece):
+            break
+    return tuple(parts)
+
+
+def mcp_floor_refusal() -> "str | None":
+    """Why this interpreter cannot carry the seat, or None. Reads the installed `mcp` distribution's version
+    without importing it, so a stale install refuses here, by name, before any build touches it."""
+    from importlib import metadata
+
+    cure = (f"install the pin into the interpreter that runs this seat: "
+            f"<python> -m pip install -r packages/lararium-sensorium/requirements.txt (mcp=={MCP_PIN})")
+    try:
+        found = metadata.version("mcp")
+    except metadata.PackageNotFoundError:
+        return f"lares_mcp: no mcp installed; the seat needs mcp=={MCP_PIN}. {cure}"
+    if _release(found) < _release(MCP_PIN):
+        return f"lares_mcp: mcp {found} stands below the pin mcp=={MCP_PIN}; the seat cannot build on it. {cure}"
+    return None
+
+
+if __name__ == "__main__":
+    _refusal = mcp_floor_refusal()
+    if _refusal is not None:
+        raise SystemExit(_refusal)
+
+
 import content_io as cio
 import worldline_io as wl
 import lares_uds as uds
