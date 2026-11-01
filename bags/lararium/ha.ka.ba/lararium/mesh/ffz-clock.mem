@@ -315,7 +315,7 @@ above the session clock. Canonical grain reference:
 !! The rhythmic address ~ `lar_ffz`, a stamp that names where-in-the-cadence (2026-06-25)
 
 ''A drawer's `lar_ffz` names WHERE the drawer sits in the cadence'' — a nested-membership
-address `buildPatch` stamps at capture (`ffz-project.ts`: `<profile>/<Theme>.<Arc>.<Measure>.<Beat>.<Pulse>`,
+address `ffzMembershipAddress` builds (`ffz-project.ts`: `<profile>/<Theme>.<Arc>.<Measure>.<Beat>.<Pulse>`,
 each cell a label). Separately, `ffzAddress` (`worldline-clock.ts`) serializes a supplied worldline
 clock as the address below. Sampling that clock phase into a drawer at a turn's grounding boundary —
 the agent-work analogue of somitogenesis (the wavefront freezes a free-running oscillator's phase into
@@ -457,7 +457,7 @@ targeted revocation MUST ride Keyhive's convergent removal, never the counter
 * ''`tool-context` profile-selector placement'' — `SessionTiddler` vs a new
   `ToolConnectionTiddler` (depends on whether one session spans multiple tool-connections).
 * ''`lar_ffz` capture-path wiring'' — the clock SERIALIZER + Claude-agent profile stand
-  built/tested (`worldline-clock.ts`); `buildPatch` stamps the drawer's membership address, and
+  built/tested (`worldline-clock.ts`); `ffzMembershipAddress` builds the drawer's membership address, and
   `lares sense worldline enrich` fills an absent Beat cell. A stateful transcript pass mapping
   each drawer back to its `(turn, segment)` clock position (mempalace chunks ≠ transcript
   segments) stands UNBUILT. The grain stands RESOLVED (#/rhythmic-address).
@@ -474,6 +474,6 @@ targeted revocation MUST ride Keyhive's convergent removal, never the counter
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iAtDN6jSwqHVzA6mUp6GVqQmKueouBYwacshYKYQRpI
+<<^ code="&#x0003;">>ni:///sha-256;V0FADC1zqqYpxPr4S7Flz_YFqtRhxwUl3Q4VeMM8oEw
 
 <<^ code="&#x0004;" -> to="?">>

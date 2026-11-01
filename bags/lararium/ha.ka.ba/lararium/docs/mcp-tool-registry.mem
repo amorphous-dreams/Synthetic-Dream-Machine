@@ -11,7 +11,7 @@ mana          = 17
 manao         = 17
 manaoio       = 16
 role          = "SUPERSEDED — MCP tool registry: ten tools + two prompts, OODA-HA phase map, input schemas, env guards"
-source-symbol = "lararium-hud lararium-canvas lararium-read lararium-inspect lararium-query lararium-edges lararium-draft lararium-write lararium-fire lararium-receipt lararium-align lararium-explain_uri"
+source-symbol = "lararium-hud lararium-canvas lararium-read lararium-inspect lararium-edges lararium-draft lararium-write lararium-fire lararium-receipt lararium-align lararium-explain_uri"
 status-date   = "2026-04-30"
 title         = "lar:///ha.ka.ba/lararium/docs/mcp-tool-registry"
 type          = "text/memetic-wikitext+tiddlywiki"
@@ -159,6 +159,6 @@ inputs      = ["uri: string"]
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8Ixp5hunZBYnqBx7S8DfcybWGtlaD08hBdlXNI9TLkA
+<<^ code="&#x0003;">>ni:///sha-256;OIUYcnAhJVVTzCYKtHQt2cyahk578N5Xbg0z5C1Dbwk
 
 <<^ code="&#x0004;" -> to="?">>

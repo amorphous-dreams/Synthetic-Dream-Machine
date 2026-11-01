@@ -167,7 +167,7 @@ batch → count filed), ''`CaptureReserve`'' (the durable WAL twin), ''`CaptureA
 (turn → lar_*). What stays invariant is CAPTURE; what varies is the memory-HOME, shaped by
 CAPABILITY not platform (role = capability ≠ platform):
 
-<<~ scale vessel-job "node ~ KEEP the shared palace · flush=spool+`mine --source lares` · reserve=fs-WAL · annotate=harvestTurnGradient+buildPatch -> browser ~ REMEMBER itself, sovereign-local · flush=IndexedDB/relay · reserve=idb-WAL · annotate=the pure twin -> cli ~ RELAY to a keeper · flush=send-to-daemon · reserve=fs-WAL">>
+<<~ scale vessel-job "node ~ KEEP the shared palace · flush=spool+`mine --source lares` · reserve=fs-WAL · annotate=the injected pass -> browser ~ REMEMBER itself, sovereign-local · flush=IndexedDB/relay · reserve=idb-WAL · annotate=the pure twin -> cli ~ RELAY to a keeper · flush=send-to-daemon · reserve=fs-WAL">>
 
 ''The browser spore's different job IS the design working:'' an anon spore holding no
 PersonGroup keeps its memory local + sovereign (it remembers itself, federates nothing,
@@ -181,7 +181,7 @@ temple serves). Add a vessel = implement two shores, never rewrite the worker.
 engine moved to mesh, pure; the contracts live in mesh; node implements the shores
 (`makeSubprocessFlush` · `makeCaptureReserve` · `defaultAnnotate`, the last unexported so the
 package index never pulls the mempalace barrel). ''In scope:'' the browser shores (idb-WAL
-reserve · local/relay flush · the pure `buildPatch` twin).
+reserve · local/relay flush · a pure annotate twin).
 
 <<~/ahu>>
 
@@ -218,9 +218,9 @@ renders as drift-marks, not FAIL). The instruments:
 
 <<~ scale lar-net "lar_hv ~ enrich-version (Kappa gate; re-enrich on bump) -> lar_surface ~ originating harness -> lar_bearing_conf ~ the 0–20 gradient -> lar_aim · lar_yield ~ the bearing -> lar_voices ~ who held it -> lar_feedback ~ the closing tally -> lar_drift ~ ward/parse drift -> lar_hall ~ function-hall -> lar_agent · lar_sidechain ~ the spirit actor (subagent drawers)">>
 
-''One parser, one runtime:'' the @daemon engine IS the decomposer (the regex
-`turn-harvest` retires into the engine grammar — `SharktoothSigil` .tids + a
-gradient `\procedure`; `$wikify`/`renderTiddler` extracts → `lar_*`). Depth:
+''One parser, one runtime:'' the @daemon engine IS the decomposer (no regex reader
+stands beside it — `SharktoothSigil` .tids + a gradient `\procedure`;
+`$wikify`/`renderTiddler` extracts → `lar_*`). Depth:
 `lar-telemetry`.
 
 <<~/ahu>>
@@ -315,7 +315,7 @@ tmpfs is the never-touch-disk option). Depth: `agent-worldline#lifecycle`.
 * The RFC-002 source-adapter CLI shore in the mempalace FORK (`mine --source` → registry + ingest-loop; `_mine_via_source_adapter`; conformance test; smoke-proven) — branch `feat/mine-source-registry` (pending ruff/pytest in the uv env + the upstream PR).
 
 ''SPECIFIED, not built'' (this model + the sibling memes):
-* The engine-grammar decomposer: chat-sigil `SharktoothSigil` .tids + gradient `\procedure` render; retire `turn-harvest` regex into the engine (`lar-telemetry`).
+* The engine-grammar decomposer: chat-sigil `SharktoothSigil` .tids + gradient `\procedure` render; the engine reads the turn frame, no regex reader beside it (`lar-telemetry`, `ingest-canon#/the-harvester-burn`).
 * The ''forward-facing capture-nalu engine'' (#/forward-facing-nalu): a SEPARATE local non-federated worker-VM; producers enqueue born-annotated records; the daemon's server tick (20 Hz) crests; the backpressure-gated flush drains via the source-adapter. Retires the race-behind hook.
 * The ''`mempalace-source-lares` adapter'' (sibling package on `BaseSourceAdapter`): yields `lar_*`-annotated, byte-preserving (`declared_transformations=frozenset()`) `DrawerRecord`s; plugs into the fork's `--source` shore via the `mempalace.sources` entry-point.
 * The ''flush-gate config tiddler'' (lar-URI-tagged; pono default depth ≥ 32 OR ≥ 2000 ms).
@@ -323,7 +323,6 @@ tmpfs is the never-touch-disk option). Depth: `agent-worldline#lifecycle`.
 * `#has`/`lar_capability` best-effort enrichment (optional; recall already rides semantic search).
 * recall-into-wake (boot climbs already-remembering).
 * `lares ephemeral` launcher + the hardening stack (env-redirect · tiers · caps · `--cleanup`).
-* harvest.ts → shared writeback-core consolidation (retire the duplicate `buildPatch`/`lar_hv`).
 * copilot format-drift fix (`discoverCopilotCli` keys on `events.jsonl`; verify vs `workspace.yaml`).
 
 ''BLOCKED (live):''
@@ -356,6 +355,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ocf1JJeRsy71jnyJT2429yoTucgoAYgWTTSofn8t6cc
+<<^ code="&#x0003;">>ni:///sha-256;4TTJ60cspo8BtcCJJChcusA5ttdCDrWw6UuvK94UxCA
 
 <<^ code="&#x0004;" -> to="?">>
