@@ -111,8 +111,8 @@ describe("normalizeMemeSource — child-slot roots", () => {
     // English spelling takes identically to the sharktooth one — so the canonical result is the
     // rooted, folded form.
     const r = normalizeMemeSource(SLOT_HEAD("<<fragment slot=`#head`>>\n\nbody\n\n<</fragment>>"));
-    expect(r.text).toContain("<<ahu slot=`#/head`>>");
-    expect(r.text).toContain("<</ahu>>");
+    expect(r.text).toContain("<<~ ahu slot=`#/head`>>");
+    expect(r.text).toContain("<<~/ahu>>");
   });
 
 
