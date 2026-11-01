@@ -134,6 +134,17 @@ winner, Elyncia promotion or merge was authorized.
 
 <<~/ahu>>
 
+<<~ ahu #/workflow-otakiage-20261031>>
+
+!! Four-workflow CI and native experiment boundary
+
+Operator-authorized O-takiage on PR #84: three distinct read-only gates (`projection-loom.yml`, `projection-loom-generalized.yml`, `loom-fire-grammar.yml`) and one read-only, operator-selected native study suite (`projection-loom-studies.yml`) are the only living Projection Loom workflows. Eleven distinct experiments retain their execution steps and artifact uploads in that suite. Twelve former standalone YAML files are retired from the working tree, including all repository-writing recipe/lineage bots and the one-time branch deleter.
+
+Full original YAML and ancestral commits are retained on `archive/pr84-before-workflow-otakiage-20261031` at `3e56858541cbc430be78d06498e248bb2a06d37c`. Source receipt commits: `7749a1f9` (manual suite), `b7a1271d` (workflow retirement), `daf53558` (anti-regression gate). A new workflow_dispatch workflow is not a usable GitHub manual control until the workflow file is registered on the default branch. No automatic source mutation, Elyncia promotion, aesthetic winner, branch deletion, or additional OODA-HA helm is authorized by the suite.
+
+The core `scripts/check_living_docs.py` gate refuses new standalone Loom YAML, source-writing workflows and lost experiment uploads. Git holds historical YAML, inputs and committed receipts, but GitHub Actions artifacts expire after their configured retention period. New native evidence requires regenerated, independently audited outputs and exact-head CI. Human navigation remains `tools/projection-loom/docs/HANDOFF.md`.
+
+<<~/ahu>>
 <<~ ahu #/post-move-engineering-roadmap>>
 
 !! Projection Loom · after o-takiage, next OODA-HA program
@@ -183,6 +194,6 @@ The operator released this carrier's displaced historical ahu from the living te
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/reference-ci">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;e6_bL_DK7z63f-kfoy0jcQ9IdZVS_fegoERT6eT5sNA
+<<^ code="&#x0003;">>ni:///sha-256;aPQpQnhm347w7GzXTFaxefMmIuSN7fVp6o7Ikfx9R58
 
 <<^ code="&#x0004;" -> to="?">>
