@@ -674,3 +674,18 @@ test("RED: a land message whose subject lacks ` — merge PR #<pr>` refuses (2) 
   assert.equal((await runQ(w)).code, 2);
   assert.equal(originRef(w, SPAN), w.base);
 });
+
+test("RED: QUEUE: a red train reruns its failed jobs once and reads the NEW attempt (a flake lands, no bisect); a train run cancelled clean is VOID (13), never a wait", async () => {
+  const w = world();
+  const r = await runQ(w, { red: (sha, _w, attempt) => sha !== w.base && attempt === 1 });
+  assert.equal(r.code, 0, r.out);
+  assert.equal(r.calls.reruns.length, 1, "one rerun of the failed jobs");
+  assert.equal(pushedTrains(r.out).length, 1, "no probe: the rerun read green");
+  const w2 = world(["a"]);
+  const r2 = await runQ(w2, {
+    over: { ciRuns: async (sha) => [{ databaseId: 9, headBranch: sha === w2.base ? SPAN : `${SPAN}--train-x`, headSha: sha, status: "completed", conclusion: sha === w2.base ? "success" : "cancelled", attempt: 1, createdAt: "x" }] },
+  });
+  assert.equal(r2.code, 13, r2.out);
+  assert.match(r2.out, /VOID/);
+  assert.equal(originRef(w2, SPAN), w2.base);
+});
