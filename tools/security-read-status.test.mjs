@@ -50,10 +50,10 @@ test("S3 RED: the gate passes a group whose security-class PRs carry security-re
 });
 
 test("S4 RED: the poster builds the statuses call for the PR's own head sha, context security-read, and refuses a state it does not know", () => {
-  const a = sr.postStatusArgs({ repo: "o/r", sha: "abc123", state: "success", description: "SHIP: read at train 7" });
-  assert.deepEqual(a.slice(0, 2), ["api", "repos/o/r/statuses/abc123"]);
+  const a = sr.postStatusArgs({ repo: "o/r", sha: "abc1234", state: "success", description: "SHIP: read at train 7" });
+  assert.deepEqual(a.slice(0, 2), ["api", "repos/o/r/statuses/abc1234"]);
   assert.ok(a.includes("context=security-read") && a.includes("state=success"));
-  assert.throws(() => sr.postStatusArgs({ repo: "o/r", sha: "abc123", state: "maybe" }), /state/);
+  assert.throws(() => sr.postStatusArgs({ repo: "o/r", sha: "abc1234", state: "maybe" }), /state/);
   assert.throws(() => sr.postStatusArgs({ repo: "o/r", sha: "main", state: "success" }), /sha/);
 });
 
@@ -70,8 +70,10 @@ test("S5 RED: ci.yml wires the queue: merge_group checks_requested on the span, 
 });
 
 test("S6 RED: with the gate beside them the graph still holds ten concurrent jobs, and the gate runs on merge_group alone", () => {
-  const n = graphNumbers("ci.yml", liveFiles(ROOT));
-  assert.ok(n.concurrent <= 10, `the graph reads ${n.concurrent} wide`);
+  const push = graphNumbers("ci.yml", liveFiles(ROOT));
+  assert.ok(!push.jobs.includes("security-read-gate"), "a push raises the merge_group gate");
+  const n = graphNumbers("ci.yml", liveFiles(ROOT), { event: "merge_group" });
+  assert.ok(n.concurrent <= 10, `the merge_group graph reads ${n.concurrent} wide`);
   assert.ok(n.jobs.includes("security-read-gate"));
   assert.ok(n.total <= 14, `${n.total} jobs`);
 });

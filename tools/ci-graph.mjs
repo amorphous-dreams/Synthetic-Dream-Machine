@@ -133,9 +133,16 @@ export function widestConcurrent(instances) {
   return best;
 }
 
-/** The two numbers for one workflow set: the most jobs running at once, and every job raised. */
-export function graphNumbers(rootName, files) {
-  const instances = expandInstances(rootName, files);
+/** A job that runs on the queue's merge_group event alone: a push or a pull request never raises it. */
+export const mergeGroupOnly = (ifText) => ifText !== null && /github\.event_name\s*==\s*'merge_group'/.test(ifText) && !/always\(\)\s*\|\|/.test(ifText);
+
+/**
+ * The two numbers for one workflow set: the most jobs running at once, and every job raised. `event` names the run:
+ * "push" (the default: a lane push) leaves out the jobs that stand on merge_group alone; "merge_group" keeps them.
+ */
+export function graphNumbers(rootName, files, { event = "push" } = {}) {
+  const all = expandInstances(rootName, files);
+  const instances = event === "push" ? all.filter((i) => !mergeGroupOnly(i.ifText)) : all;
   return { concurrent: widestConcurrent(instances), total: instances.length, jobs: instances.map((i) => i.key) };
 }
 
@@ -167,7 +174,7 @@ export function runsPerLanePush(workflowText) {
   const on = triggers(workflowText);
   let runs = on.includes("push") ? 1 : 0;
   if (on.includes("pull_request")) {
-    const guarded = readJobs(workflowText).every((j) => j.ifText !== null && FORK_GUARD.test(j.ifText));
+    const guarded = readJobs(workflowText).every((j) => j.ifText !== null && (FORK_GUARD.test(j.ifText) || mergeGroupOnly(j.ifText)));
     if (!guarded) runs += 1;
   }
   return runs;

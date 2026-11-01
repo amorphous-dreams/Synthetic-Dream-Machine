@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
-import { graphNumbers, liveFiles, runsPerLanePush, readJobs, triggers, widestConcurrent } from "./ci-graph.mjs";
+import { graphNumbers, liveFiles, mergeGroupOnly, runsPerLanePush, readJobs, triggers, widestConcurrent } from "./ci-graph.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const CAP = 10;
@@ -72,7 +72,7 @@ test("G2b CONTROL: a workflow with no fork guard raises a run per event, a guard
 test("G2c RED: a merge queue has a hook: ci.yml lists a merge_group trigger, and no job guards it off", () => {
   const files = liveFiles(ROOT);
   assert.ok(triggers(files["ci.yml"]).includes("merge_group"), "ci.yml lists no merge_group trigger");
-  for (const j of readJobs(files["ci.yml"])) if (j.ifText) assert.doesNotMatch(j.ifText, /merge_group/, `${j.id} guards merge_group off`);
+  for (const j of readJobs(files["ci.yml"])) if (j.ifText && !mergeGroupOnly(j.ifText)) assert.doesNotMatch(j.ifText, /merge_group/, `${j.id} guards merge_group off`);
 });
 
 test("G3a CONTROL: held-out holds its cells to the cap already (the row retires: it read green at the cut)", () => {
@@ -109,4 +109,11 @@ test("G4 RED: the quick job keeps every folded gate as a named step that runs wh
     assert.match(named.get(want), /^        if: \$\{\{ !cancelled\(\)/m, `"${want}" stops behind a red step: one red gate would hide the rest`);
   }
   assert.match(block, /name: witness-cell-contract-witness$/m, "the hosted cell uploads no log under its own name");
+});
+
+test("G5 CONTROL: a merge_group-only job joins the merge_group run's graph and no push run's", () => {
+  const text = planted + "  q:\n    needs: a\n    if: ${{ always() && github.event_name == 'merge_group' }}\n";
+  assert.equal(graphNumbers("x.yml", { "x.yml": text }).total, 6);
+  assert.equal(graphNumbers("x.yml", { "x.yml": text }, { event: "merge_group" }).total, 7);
+  assert.equal(mergeGroupOnly("${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}"), false);
 });
