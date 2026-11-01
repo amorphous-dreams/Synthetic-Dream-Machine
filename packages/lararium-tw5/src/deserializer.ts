@@ -537,7 +537,8 @@ function splitRecursive(
     const childStructure = extractSlotStructure(inner.rewrittenText);
 
     const childUriPath  = childUri.startsWith("lar:///") ? childUri.slice(7) : childUri;
-    // Record hygiene: no record carries a `file-path`, root or child — residency rides the envelope.
+    // Record hygiene: no record carries a `file-path`, root or child — residency rides the envelope
+    // (`fieldifyToml` denies it on ingest, `META_DENY` on re-emit).
 
     allChildren.push({
       // Default carrier type; a child slot's OWN declared meta `type` (e.g. text/markdown) rides in
@@ -693,6 +694,9 @@ function fieldifyToml(toml: string): TiddlerFields {
     if (k === "title") { out[k] = String(v); continue; }
     // `text` derives from the body; an authored `text` key is ignored here and named by the carrier check.
     if (k === "text")  continue;
+    // `file-path` retired (Train Q): residency rides the envelope, so the field is denied on ingest as
+    // on re-emit, root and child alike. An arriving value never reaches a record.
+    if (k === "file-path") continue;
     out[k] = Array.isArray(v) ? (v as unknown[]).map(String) : String(v);
   }
   return out;
