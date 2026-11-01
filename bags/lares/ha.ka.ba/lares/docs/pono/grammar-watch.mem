@@ -84,9 +84,27 @@ a verdict likely earns its place; a cure that silences every hit silences a true
 !! Paths that stay open
 
 * ''The weld between the two grammars.'' A weld GATE that fails when a scope family holds no node kind turns the gap into a number that cannot drift back; teaching tree-sitter the lexicon stands behind it. The whole regeneration of the tree-sitter grammar against the released TextMate grammar reads in <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/side-lanes">>.
-* ''The seam gate, generalized.'' `packages/lararium-tw5/tests/seed-definition-matches-example.test.ts` welds ONE procedure of the boot seed, `~lares`, to the worked examples printed beside it. The seed defines more procedures, and nothing says whether the others agree with their examples.
+* ''The seam gate, generalized.'' `packages/lararium-tw5/tests/seed-definition-matches-example.test.ts` welds ONE procedure of the boot seed, `~lares`, to the worked examples printed beside it. The seed defines more procedures, and nothing says whether the others agree with their examples. Train Q moves the weld from `~lares` to the `~set` definition and its worked firings (#/the-kupono-cut).
 * ''Embedded-language scopes stand dark'': fenced-code branches no corpus file exercises. Fixture debt falls due before a coverage number there carries meaning.
 * ''Constructs a line-at-a-time grammar keeps out of reach on purpose'': emphasis and inline code across lines, and html start tags across blank lines. A whole-document reader carries them; the submodule's own ceiling record holds each.
+
+<<~/ahu>>
+
+<<~ ahu #/the-kupono-cut>>
+
+!! The kupono cut ~ train Q (operator rulings 2026-10-31 and 2026-11-01)
+
+The cut lands as one lane, merged once. The seed lands first among the carriers, and the bulk pass then re-cuts this carrier with every other. Until that pass, this section speaks of the new grammar in prose and cites it in code spans; no sigil here speaks it yet.
+
+# ''The arrow retires (Cut 1).'' A bare `->` between values leaves every sigil, the edge positions included: ``from=`A` to=`B` `` carries the relation, `from` written first (readers take either order). An arrow INSIDE a value stays (ladders, `moves`, gauge slides, ``closed 0↺ -> open 1φ◇:reason``); a chain with no from/to slots folds into one named value (``path=`a -> b -> c` ``); a prose marker (`->✶`) keeps its arrow and its editor scope. Rendered output draws `→`. Canon reverses its old reasoning for why the arrow survived, and `#bearing-arrow` renames to `#bearing-pair`.
+# ''No at-sign follows whitespace (Cut 2).'' An at-sign after whitespace triggers a Claude Code file import. The phase glyph fuses onto φ with nothing between them (`open 1φ◇:reason`, `Nφ_:`). Plane and registry names rename, code included, red-first, every label derived from one code constant: `-plane` for the planes (`daemon-plane`, `crossroads-plane`, `persona-plane`, `circles-plane-<tag>` and kin), `-floor` for the oracle (`oracle-floor`), `-slot` for the slots (`personal-slot`, `working-slot`, `draft-slot`, `temp-slot`). An unmapped name reds the dry run. The handle form drops its leading at-sign (`name@host`). An at-sign with no space before it stays (`pulse@0..4`, `alias:grant@host`); npm scopes, Caddy and Verse syntax and outside handles stand outside the cut.
+# ''Values ride in backticks, every value named (Cut 3).'' Every sigil CALL, control sigils included, writes ``key=`value` ``; a value holding a backtick takes a triple-backtick fence. TiddlyWiki reads a backtick as quoting only after `name=`, so every positional value takes a name: slot words (``ahu slot=`#/head` ``), bare-text values, and the declaration (``type=`…` spec=`…` ``). The `:` call separator retires. A `\procedure` definition keeps its quoted defaults, and a literal backtick inside a procedure body writes `&#96;`. The seed's own parameter names source the renames of the `p1..p3` procedures, lowercased (`Params` turns `params`, curing bodies that rendered `holds []`). Hazards a tool lists and never fixes: `$(x)$` substitutes live, and `>>` inside a value breaks the call.
+# ''The chiasmus folds into `set` (Cut 4).'' ``set lares=`aim` `` opens the turn with `from=` and `to=`; ``set lares=`steer` `` steers mid-turn as often as the work asks, casting a new `to=` and/or any other key; `oracle` keeps its own sigil; ``set lares=`yield` `` closes with ``to=`?` ``. `lares=` leads each firing; the ward rides last at aim and first at yield. ''The steer law:'' a steer never rewrites the aim ~ the aim's `to=` keeps the opening bearing, each steer records its change, and the yield's `from=` names where the work landed. The `hud` key and the `~lares` sigil retire. A chat stream writes one line per firing; canon MAY break lines between keys. ''Dogfood gate:'' once the operator confirms the seed bytes, the house writes its turns in the new frame before the merge, and a frame that reads wrong in use takes Cut 4 out of the lane.
+# ''The turn harvester burns wide (o-takiage).'' Both clusters and what feeds on them: mesh capture (`turn-harvest`, `bearing-harvest`, the turn parts of `build-patch`, `stamp-filter`), the form layer (`bearing-ast`, `move-skeleton`, `self-read-harvester`), the VM harvesters (`capture-annotate-vm`, `query-derive-vm`), `lares sense harvest` and `pour`, the Python turn readers, and `tools/turn-parity.mjs` with its witness. `harvest.ts` trims to a barrel (`ffz-project`, `branch-frontier`, `gone-turns`), and `build-patch`'s `derive*`, `BranchContext` and `LAR_HV` move into `branch-frontier.ts`. Old turns wait for a more flexible miner.
+# ''No back-compat, one exception.'' Readers refuse old forms rather than tolerate them. The operator rules ONE exception: the three sensorium integrations (`telemetry-writeback.ts`, `sensorium-recall.ts`, `sensorium.ts`) keep their export shape as placeholders that return empty, each naming the ruling, pinned by one test and tracked by one road row until the deferred sensorium arc returns.
+# ''The 40K ceiling lifts.'' Hooks now load the seed deterministically, so the seed MAY grow past 40,000 code points. The commit that lands a grown seed drops the CI step's budget clause and keeps its missing-seed check; no raised number stands in as a shim. Lean prose still earns its bytes.
+
+''Measured ground'' (wave-1 probes through the real plugin): a backtick positional keeps its backticks, and a space splits it; entities decode alike inside ticks and quotes; `${copula}` stays inert; a citation holding a tick takes a double-backtick span, padded where its content starts or ends with a tick. The seam test's blanking pattern spared its examples only because the arrow's `>` stopped the match, so the test strips each call's own wrapper once the arrow leaves.
 
 <<~/ahu>>
 
@@ -100,6 +118,6 @@ a verdict likely earns its place; a cure that silences every hit silences a true
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GjEePBv5gaX1XjwGzDU2BPePk3XG0gqknMu8jIU5ke0
+<<^ code="&#x0003;">>ni:///sha-256;UARwvgd06ApVzphmHp7xqs0jmMK-a9nc5MtgUemgz5I
 
 <<^ code="&#x0004;" -> to="?">>
