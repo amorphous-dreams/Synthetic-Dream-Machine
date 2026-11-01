@@ -140,7 +140,16 @@ export function readSigilAttrs(body: string): SigilAttr[] {
         const [open, close, kind] = typed;
         const end = body.indexOf(close, at + open.length);
         const stop = end === -1 ? body.length : end + close.length;
-        out.push({ name, value: body.slice(at, stop), sep, quoted: false, kind, start: m.index, end: stop });
+        // ── A TICKED VALUE HANDS BACK ITS INTERIOR ──────────────────────────────────────────────────
+        // ``key=`value` `` is the house's one value spelling (the kupono cut), and every caller asks for
+        // the VALUE. TiddlyWiki reports a substituted attribute's `rawValue` without the ticks, so this
+        // reader does too, the triple pair stripped whole (```` ```it's `odd` ok``` ```` -> it's `odd` ok).
+        // The other typed forms keep their delimiters: a filter or a macro value is text to parse, never
+        // a value to print.
+        const value = kind === "substituted"
+          ? body.slice(at + open.length, end === -1 ? body.length : end)
+          : body.slice(at, stop);
+        out.push({ name, value, sep, quoted: false, kind, start: m.index, end: stop });
         re.lastIndex = stop;
         continue;
       }
@@ -190,8 +199,9 @@ export function quotableAttrs(body: string): SigilAttr[] {
  * Blank every span whose interior a delimiter already protects, keeping offsets.
  *
  * TWO KINDS, and both carry spaces so a word-walker cannot see their edges:
- *   · a QUOTED value — `ooda-ha="closed 1↺ -> open 1φ @◇:reason"`, where the colon separates nothing,
- *     in any of the delimiters a string literal wears, `"""…"""` included and tried FIRST;
+ *   · a DELIMITED value — ``ooda-ha=`closed 1↺ -> open 1φ◇:reason` ``, where the colon separates
+ *     nothing, in a tick run (```` ``` ```` tried first) or any delimiter a string literal wears
+ *     (`"""…"""` tried first);
  *   · a WIKILINK — `[[label|lar:///x]]`, which TiddlyWiki reads as one link and which quoting would
  *     BREAK. A sigil carrying prose carries these, and they are already well-formed.
  */
@@ -210,6 +220,18 @@ function maskProtectedSpans(body: string): string {
     }
     if (c === '"' || c === "'") {
       const end = body.indexOf(c, i + 1);
+      if (end === -1) break;
+      blank(i, end); i = end; continue;
+    }
+    // A TICKED VALUE IS PROTECTED TOO, the triple form tried first for the same reason the quote's is:
+    // ```` ```a `b` c``` ```` closes on its own triple, never on the single tick inside it.
+    if (body.startsWith("```", i)) {
+      const end = body.indexOf("```", i + 3);
+      if (end === -1) break;
+      blank(i, end + 2); i = end + 2; continue;
+    }
+    if (c === "`") {
+      const end = body.indexOf("`", i + 1);
       if (end === -1) break;
       blank(i, end); i = end; continue;
     }

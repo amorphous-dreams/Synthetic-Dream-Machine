@@ -61,7 +61,7 @@ import {
 // The heading is the one head reader's (`carrierHeadPattern`); the STX/ETX/EOT division the one span
 // reader's (`readFrame`). What stays here reads the head's NAMED code binding.
 /** The SOH variant a head names through its `code=` binding, captured. */
-const SOH_CODE_PARAM_RE = new RegExp(`^<<\\^[^>\\n]*?\\bcode=\\s*"&#x(${frameHex("SOH")});"`);
+const SOH_CODE_PARAM_RE = new RegExp(`^<<\\^[^>\\n]*?\\bcode=\\s*\`&#x(${frameHex("SOH")});\``);
 import { parseTaploFields } from "./toml-ast.js";
 import { CARRIER_TYPE, CARRIER_TYPES, isCarrierType } from "@lararium/mesh/carrier-type";
 import { HANDLE_ONLY_FIELDS } from "@lararium/mesh/content-handle";
@@ -169,7 +169,7 @@ export function deserializeCarrier(
     // the frame verdict's tear stays unread here. The Kapu SOH variant (&#x0011; DC1)
     // carries its own semantics — the code survives on the
     // parent as `$carrier-soh`, never normalized away.
-    const namespace = (/^<<\^[^>\n]*?\bnamespace="([^"]*)"/.exec(carrier.text)?.[1] ?? "").trim();
+    const namespace = (/^<<\^[^>\n]*?\bnamespace=`([^`]*)`/.exec(carrier.text)?.[1] ?? "").trim();
     if (namespace.length > 0) for (const t of tiddlers) t["namespace"] = namespace;
     if (SOH_CODE_PARAM_RE.exec(carrier.text)?.[1] === "0011") tiddlers[0]!["$carrier-soh"] = "0011";
     // WHAT MAY STAND BETWEEN ETX AND EOT — the BCC, and nothing else. ETX ends the text; the slot after
@@ -554,7 +554,7 @@ function splitRecursive(
       "$slot":            slot,
     });
     // MINT ON DIFFERENCE, NEVER ON DEFAULT. The render (expandRefs below) already falls back to the
-    // canonical spelling — `<<~ ahu ${slot}>>` / `<<~/ahu>>` — whenever no worksite carriage record
+    // canonical spelling — ``<<~ ahu slot=`${slot}`>>`` / `<<~/ahu>>` — whenever no worksite carriage record
     // exists for a slot. So the split side must NOT mint one when the authored bytes already ARE that
     // canonical spelling: a record there would be a derived value stored, re-deriving the same bytes
     // the render would have emitted for free. Only authored bytes that DIFFER from the canonical
@@ -562,13 +562,13 @@ function splitRecursive(
     const openBytes  = text.slice(block.openStart, block.bodyStart);
     const closeBytes = text.slice(block.bodyEnd, block.closeEnd);
     allChildren.push(
-      ...(openBytes  === `<<~ ahu ${slot}>>` ? [] : carriageRecord(childUri, "worksite-open",  openBytes)),
+      ...(openBytes  === `<<~ ahu slot=\`${slot}\`>>` ? [] : carriageRecord(childUri, "worksite-open",  openBytes)),
       ...(closeBytes === `<<~/ahu>>`         ? [] : carriageRecord(childUri, "worksite-close", closeBytes)),
       ...carriageRecord(childUri, "preamble",  childStructure.preamble  ?? ""),
       ...carriageRecord(childUri, "postamble", childStructure.postamble ?? ""),
     );
     allChildren.push(...inner.children);
-    rewritten += `<<~ kahea ahu ${slot}>>`;
+    rewritten += `<<~ kahea ahu slot=\`${slot}\`>>`;
     cursor = block.closeEnd;
   }
   rewritten += text.slice(cursor);
@@ -1002,7 +1002,7 @@ function expandRefs(reader: FieldsReader, rootUri: string, text: string, parentF
     const spelt = slot;
     const open = carriageText(reader, rootUri + slotPath, "worksite-open");
     const close = carriageText(reader, rootUri + slotPath, "worksite-close");
-    return `${open || `<<~ ahu ${spelt}>>`}${opened}\n\n${close || "<<~/ahu>>"}`;
+    return `${open || `<<~ ahu slot=\`${spelt}\`>>`}${opened}\n\n${close || "<<~/ahu>>"}`;
   });
 }
 

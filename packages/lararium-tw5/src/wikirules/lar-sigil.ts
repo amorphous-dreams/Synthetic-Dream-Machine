@@ -42,8 +42,14 @@ import {
   attrToTree,
 } from "./lar-sigil-shared.js";
 
-/** The English `fragment` opener, its rooted slot path the scanner's one spelling. */
-const FRAGMENT_OPEN_RE = new RegExp(`^<<fragment\\s+(${SLOT_PATH_SRC})(?:\\s+->\\s+[^>]+)?\\s*>>`);
+/**
+ * The English `fragment` opener: ``<<fragment slot=`#/a` to=`lar:///x`?>>``, its rooted slot path the
+ * scanner's one spelling. The named values are captured whole and handed on as the call's argument run,
+ * where the one attribute reader names them, exactly as for ``<<~ ahu slot=`#/a`>>``.
+ */
+const FRAGMENT_OPEN_RE = new RegExp(`^<<fragment\\s+(slot=\`${SLOT_PATH_SRC}\`(?:\\s+to=\`[^\`\\n]*\`)?)\\s*>>`);
+/** A ticked `slot=` value, for the render pass's graceful read of a bare `#name`. */
+const SLOT_VALUE_RE = /(\bslot=`)([^`]*)`/;
 /** A slot written bare (`#name`), for the render pass's graceful read. */
 const BARE_SLOT_RE = new RegExp(`^#${SLOT_SEGMENT_SRC}(?:\\/${SLOT_SEGMENT_SRC})*$`);
 
@@ -78,7 +84,7 @@ function attrNodeOf(a: SigilAttr): ParseTreeAttribute {
   switch (a.kind) {
     case "indirect":    return { type: "indirect",    textReference: a.value.replace(/^\{\{|\}\}$/g, "") };
     case "filtered":    return { type: "filtered",    filter: a.value.replace(/^\{\{\{|\}\}\}$/g, "") };
-    case "substituted": return { type: "substituted", rawValue: a.value.replace(/^`|`$/g, "") };
+    case "substituted": return { type: "substituted", rawValue: a.value };
     case "macro": {
       const parse = typeof $tw !== "undefined" ? $tw?.utils?.parseMacroInvocationAsTransclusion : undefined;
       const node  = parse ? parse(a.value, 0) : null;
@@ -119,10 +125,9 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
         return pos;
       }
     }
-    // pranala: permanent JS exception — <<~ pranala FROM -> TO>> arrow syntax with
-    // keyword attrs (from/to/slot/family/role/body) is structurally distinct from
-    // <<~ WORD ARGS>>. The ~ dispatcher's p1–p5 positional interface cannot carry
-    // named keyword pairs without losing the readable HUD form.
+    // pranala: its pair is TYPED — `from=` is where the edge stands and `to=` where it points, and
+    // the block form carries a body. `matchPranalaOpenAt` reads the call through the one attribute
+    // reader and hands back both ends by name, so the edge never reads backwards.
     const pranala = matchPranalaOpenAt(source, pos);
     if (pranala) {
       const closeEnd = findCloseEnd(source, "pranala", pranala.end);
@@ -163,9 +168,10 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       // two. Normalized HERE, for this render pass alone — the authored bytes on disk move only
       // through `lares meme normalize`'s own child-slot-roots clause, never silently through a
       // render.
+      const slotValue = SLOT_VALUE_RE.exec(compound.p1);
       if ((compound.name === "ahu" || compound.name.endsWith("~ahu")) &&
-          BARE_SLOT_RE.test(compound.p1)) {
-        compound = { ...compound, p1: `#/${compound.p1.slice(1)}` };
+          slotValue && BARE_SLOT_RE.test(slotValue[2]!)) {
+        compound = { ...compound, p1: compound.p1.replace(SLOT_VALUE_RE, (_m, k: string, v: string) => `${k}#/${v.slice(1)}\``) };
       }
       // ── A DECLARED CLOSER CLOSES ────────────────────────────────────────────────────────────────
       // The matcher reports the STRUCTURAL close key — a child slot or a compound head — because

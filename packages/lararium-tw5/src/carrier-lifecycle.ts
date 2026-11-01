@@ -112,7 +112,7 @@ export function readCarrierLifecycle(text: string): CarrierLifecycle {
   };
 }
 
-/** One `<<~ ahu #/name>>` … `<<~/ahu>>` slot, with the text it holds. */
+/** One ``<<~ ahu slot=`#/name`>>`` … `<<~/ahu>>` slot, with the text it holds. */
 interface Slot { readonly name: string; readonly body: string }
 
 /**
@@ -124,7 +124,7 @@ interface Slot { readonly name: string; readonly body: string }
 function readSlots(text: string): Slot[] {
   const mask = fencedSpans(text);
   const out: Slot[] = [];
-  const open = new RegExp(`^<<~ ?ahu #\\/(${SLOT_SEGMENT_SRC}(?:\\/${SLOT_SEGMENT_SRC})*)[^\\n]*>>$`, "gim");
+  const open = new RegExp(`^<<~ ?ahu slot=\`#\\/(${SLOT_SEGMENT_SRC}(?:\\/${SLOT_SEGMENT_SRC})*)\`[^\\n]*>>$`, "gim");
   const close = /^<<~\/ahu\s*>>$/gim;
   const marks: Array<{ at: number; end: number; name?: string }> = [];
   for (const m of text.matchAll(open)) {
@@ -146,8 +146,11 @@ function readSlots(text: string): Slot[] {
   return out;
 }
 
-/** An open lean — a bearing that reaches nothing, the mark a design writes and a ruling closes. */
-const OPEN_LEAN = /`?->\s*\?`?/;
+/**
+ * An open lean — a bearing that reaches nothing, the mark a design writes and a ruling closes. The pair
+ * carries the relation (the kupono cut), so the open end reads ``to=`?` ``, never an arrow.
+ */
+const OPEN_LEAN = /\bto=`\?`/;
 
 /** A slot that names where its content went. */
 const FOLD_POINTER = /folded to\s+`?lar:\/\/\//i;
@@ -181,7 +184,7 @@ export function checkCarrierLifecycle(text: string): string[] {
     const leans = slots.find((s) => s.name === "leans" || s.name.endsWith("/leans"));
     if (leans && OPEN_LEAN.test(leans.body)) {
       faults.push(
-        "lifecycle/standing: an open lean `-> ?` stands in #/leans — a ruling closes it, or the stage reads designed",
+        "lifecycle/standing: an open lean ``to=`?` `` stands in #/leans — a ruling closes it, or the stage reads designed",
       );
     }
   }

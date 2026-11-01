@@ -11,8 +11,8 @@ import { frameCarrier, bccOf, verdict, META_OPEN_CANON } from "../src/index.js";
 
 const URI = "lar:///t/verdict";
 const carrier = frameCarrier({ head: { uri: URI }, body: `${META_OPEN_CANON}\ntitle = "${URI}"\n\`\`\`\n\nProse.` });
-const STX = '<<^ code="&#x0002;">>';
-const ETX = '<<^ code="&#x0003;">>';
+const STX = '<<^ code=`&#x0002;`>>';
+const ETX = '<<^ code=`&#x0003;`>>';
 const CHECK = /ni:\/\/\/sha-256;[A-Za-z0-9_-]+/;
 const STALE = "ni:///sha-256;0000000000000000000000000000000000000000000";
 
@@ -35,7 +35,7 @@ describe("★ verdict(text) ★", () => {
   });
 
   test("a head-only carrier (no text frame) reads absent — it carries a frame, never a check", () => {
-    expect(verdict(`<<^ code="&#x0001;" from="?" -> to="${URI}">>\n\nprose\n\n<<^ code="&#x0004;" -> to="?">>\n`)).toEqual({ kind: "absent" });
+    expect(verdict(`<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n\nprose\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`)).toEqual({ kind: "absent" });
   });
 
   test("STX with no ETX reads torn, the missing close named", () => {
@@ -72,15 +72,19 @@ describe("★ verdict(text) ★", () => {
   });
 
   describe("★ a retired frame spelling reads torn, never repaired ★", () => {
-    const HEAD = `<<^ code="&#x0001;" from="?" -> to="${URI}">>`;
-    const EOT = `<<^ code="&#x0004;" -> to="?">>`;
+    const HEAD = `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>`;
+    const EOT = `<<^ code=\`&#x0004;\` to=\`?\`>>`;
     const retired: Record<string, string> = {
-      "a bare `?` on the head": carrier.replace(HEAD, `<<^ code="&#x0001;" from=? -> to="${URI}">>`),
-      "an unquoted target": carrier.replace(HEAD, `<<^ code="&#x0001;" from="?" -> to=${URI}>>`),
-      "a positional head": carrier.replace(HEAD, `<<^ code="&#x0001;" ? -> ${URI}>>`),
-      "glyphs before the code": carrier.replace(HEAD, `<<^ॐ&#x0001; from="?" -> to="${URI}">>`),
-      "a bare `?` on the release": carrier.replace(EOT, `<<^ code="&#x0004;" -> to=?>>`),
-      "a positional release": carrier.replace(EOT, `<<^ code="&#x0004;" -> ?>>`),
+      "a bare `?` on the head": carrier.replace(HEAD, `<<^ code=\`&#x0001;\` from=? to=\`${URI}\`>>`),
+      "a quoted head": carrier.replace(HEAD, `<<^ code="&#x0001;" from="?" to="${URI}">>`),
+      "an arrowed head": carrier.replace(HEAD, `<<^ code=\`&#x0001;\` from=\`?\` -> to=\`${URI}\`>>`),
+      "an unticked target": carrier.replace(HEAD, `<<^ code=\`&#x0001;\` from=\`?\` to=${URI}>>`),
+      "a positional head": carrier.replace(HEAD, `<<^ code=\`&#x0001;\` ? -> ${URI}>>`),
+      "glyphs before the code": carrier.replace(HEAD, `<<^ॐ&#x0001; from=\`?\` to=\`${URI}\`>>`),
+      "a bare `?` on the release": carrier.replace(EOT, `<<^ code=\`&#x0004;\` to=?>>`),
+      "a quoted, arrowed release": carrier.replace(EOT, `<<^ code="&#x0004;" -> to="?">>`),
+      "a positional release": carrier.replace(EOT, `<<^ code=\`&#x0004;\` -> ?>>`),
+      "the quoted declaration": carrier.replace(/^<<!DOCTYPE[^\n]*/, '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>'),
       "an older declaration": carrier.replace(/^<<!DOCTYPE[^\n]*/, "<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///x>>"),
     };
     for (const [name, text] of Object.entries(retired)) {

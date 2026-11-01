@@ -1,4 +1,4 @@
-import { CARRIAGE_CARRIER_DOMAIN } from "@lararium/mesh";
+import { CARRIAGE_CARRIER_DOMAIN, DAEMON_BAG_ID } from "@lararium/mesh";
 /**
  * carry-bundle-carries-peers.test.ts — a place carried LAST (a reader that runs no daemon and syncs no board) files the
  * floor pin of a herm the same quorum carried EARLIER, off the counted carry its own bundle hands it; and never the pin
@@ -194,7 +194,7 @@ describe("a carry bundle carries the counted carries of the places whose floor p
         const pull = vesselCarriagePull({ placeClass: "lararium", ownPlaceKey: own,
           sign: async () => new Uint8Array(64), readings, ownNexus: () => aid,
           openBoard: (url) => boards.open(url, "board:carriage-contracts"), pins,
-          audience: "@daemon", deadlines: { draw: () => ({ cancel() {} }) },
+          audience: DAEMON_BAG_ID, deadlines: { draw: () => ({ cancel() {} }) },
         });
         const pulled = await pull("http://127.0.0.1:9", herm);
         const carriers = await foldCarrierSet([...acts, unrelatedCarry], foundingRoster(readNexusDoc(larSealHome())),
@@ -226,7 +226,7 @@ describe("a carry bundle carries the counted carries of the places whose floor p
         return vesselCarriagePull({ placeClass: "herm", ownPlaceKey: readerKey,
           sign: async () => new Uint8Array(64), readings, ownNexus: () => null,
           openBoard: (url) => boards.open(url, "board:carriage-contracts"), pins: readerPins,
-          audience: "@daemon", deadlines: { draw: () => ({ cancel() {} }) },
+          audience: DAEMON_BAG_ID, deadlines: { draw: () => ({ cancel() {} }) },
         })("http://127.0.0.1:9", lastHop!);
       } finally { boards.dispose(); }
     });

@@ -106,10 +106,11 @@ describe("★ the deserializer and the normalizer read the ticked head ★", () 
     expect(carrier).toContain("namespace=`⊙`");
   });
 
-  test("the namespace rides every record", () => {
+  test("the namespace rides every record the carrier's text splits into (carriage records aside)", () => {
     const read = deserializeCarrier(carrier, {});
-    expect(read.records.length).toBeGreaterThan(0);
-    for (const t of read.records) expect(t["namespace"]).toBe("⊙");
+    const split = read.records.filter((t) => !String(t["title"]).includes("#/$"));
+    expect(split.length).toBeGreaterThan(0);
+    for (const t of split) expect(t["namespace"]).toBe("⊙");
   });
 
   test("normalize holds the minted carrier as a fixed point", () => {

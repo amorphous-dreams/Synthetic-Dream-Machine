@@ -270,7 +270,7 @@ export function resolveWeaveTarget(opts: {
  * THE SET IS THE DECLARATION'S (`frameAlt()` names every mark): a hand-spelled `&#x00..;` read any C0
  * entity as frame and would have dropped an authored line that merely quoted one.
  */
-const FRAME_LINE = new RegExp(`^<<\\^ code="${frameAlt()}"(?:[^>\\n]|>(?!>))*>>.*$`);
+const FRAME_LINE = new RegExp(`^<<\\^ code=\`${frameAlt()}\`(?:[^>\\n]|>(?!>))*>>.*$`);
 /**
  * The ETX closer with its adjacent check.
  *
@@ -278,22 +278,22 @@ const FRAME_LINE = new RegExp(`^<<\\^ code="${frameAlt()}"(?:[^>\\n]|>(?!>))*>>.
  * line-anchored canonical spelling is what a transpose meets, and the trailing capture takes the BCC
  * that rides the closer with nothing between.
  */
-const ETX_LINE = new RegExp(`^<<\\^ code="${frameAlt("ETX")}"[^\\n]*>>(\\S+)?`);
+const ETX_LINE = new RegExp(`^<<\\^ code=\`${frameAlt("ETX")}\`[^\\n]*>>(\\S+)?`);
 const DOCTYPE_LINE = /^<<!DOCTYPE (?:[^>\n]|>(?!>))*>>\s*$/;
 // The tooth stands at one dispatch position: `<<~` then LWSP then the command word, and a close
 // word carries its own slash (`ahu`, `/ahu`). Both spacings reach the same word, matching the
 // plain register's `<<fragment …>>` / `<</fragment>>`.
 //
-// The `#` sigil marks a slot path, rooted (`#/a/b`) or bare (`#name`) — the capture takes
-// whatever follows the `#` up to whitespace or the close, leading slash included when present, so
-// `ahuId` below can tell the two spellings apart and drop only the ROOT slash, not a bare name.
+// The slot NAMES itself — ``slot=`#/a/b` `` (the kupono cut) — rooted or bare (`#name`); the capture
+// takes whatever follows the `#` inside the tick run, leading slash included when present, so `ahuId`
+// below can tell the two spellings apart and drop only the ROOT slash, not a bare name.
 const AHU_NAMES  = ["ahu", ...mirrorsOf("ahu")];
 const AHU_SHAPES = splitByPrefixShape(AHU_NAMES);
 const ahuAlt = [
   AHU_SHAPES.sharktooth.length ? `<<~\\s*(?:${AHU_SHAPES.sharktooth.join("|")})` : null,
   AHU_SHAPES.bare.length ? `<<(?:${AHU_SHAPES.bare.join("|")})` : null,
 ].filter((s): s is string => s !== null).join("|");
-const AHU_OPEN = new RegExp(`^(?:${ahuAlt})\\s+#(\\S+?)(?: (?:[^>\\n]|>(?!>))*)?\\s*>>\\s*$`);
+const AHU_OPEN = new RegExp(`^(?:${ahuAlt})\\s+slot=\`#([^\`\\s]+)\`(?: (?:[^>\\n]|>(?!>))*)?\\s*>>\\s*$`);
 const AHU_CLOSE = new RegExp(`^(?:<<~\\s*\\/\\s*(?:${AHU_SHAPES.sharktooth.join("|")})|<<\\/(?:${AHU_SHAPES.bare.join("|") || "\\x00"})\\s*)>>\\s*$`);
 // `loulou` (+ its mirror `link`) names a plain citation and keeps the reference-bullet shape.
 // `aka`/`kanawai` (English mirrors `pin`/`law`) PIN an edge — rendering follows the TARGET
@@ -304,14 +304,14 @@ const AHU_CLOSE = new RegExp(`^(?:<<~\\s*\\/\\s*(?:${AHU_SHAPES.sharktooth.join(
 // one-line invoke shape — the block open/close form is declined, see the handback) weaves as a plain
 // link under the profile's own marker, since a LIVE include names no frozen moment to pin.
 const LOULOU_NAMES = ["loulou", ...mirrorsOf("loulou")];
-const LOULOU_LINE = new RegExp(`^<<~\\s*(${LOULOU_NAMES.join("|")}) ((?:[^>\\n]|>(?!>))*?)\\s*>>\\s*$`);
+const LOULOU_LINE = new RegExp(`^<<~\\s*(${LOULOU_NAMES.join("|")})\\s+uri=\`([^\`\\n]*)\`\\s*>>\\s*$`);
 // `aka` (English `pin`, informative) and `kanawai` (English `law`, binding/normative) are TWO
 // canonical sigils sharing one rendering mechanism — a pin's TARGET decides whether it weaves as a
 // citation or a frozen image either way; only the SIGIL decides which kramdown reference list a
 // citation folds into (role = WHICH SIGIL, no parameter, no position rule). Both families' names
 // derive from the table, never hand-listed.
 const AKA_NAMES = ["aka", ...mirrorsOf("aka"), "kanawai", ...mirrorsOf("kanawai")];
-const AKA_LINE = new RegExp(`^<<~\\s*(${AKA_NAMES.join("|")}) ((?:[^>\\n]|>(?!>))*?)\\s*>>\\s*$`);
+const AKA_LINE = new RegExp(`^<<~\\s*(${AKA_NAMES.join("|")})\\s+uri=\`([^\`\\n]*)\`\\s*>>\\s*$`);
 
 /**
  * Every BASE URI (fragment stripped, quotes stripped) an `aka`/`kanawai` pin names in `text` — the
@@ -332,7 +332,7 @@ export function pinTargetsOf(text: string): string[] {
     if (fence !== null) continue;
     const aka = AKA_LINE.exec(line);
     if (!aka) continue;
-    const raw = (aka[2] ?? "").trim().replace(/^"|"$/g, "");
+    const raw = (aka[2] ?? "").trim();
     const base = raw.split("#")[0];
     if (base) targets.add(base);
   }
@@ -341,7 +341,7 @@ export function pinTargetsOf(text: string): string[] {
 // CENSUS LANE B: the word set derives from the table (`mirrorsOf`), matching AHU/LOULOU/AKA above —
 // a hand-typed "kahea" alone would silently miss `import`/`transclude` the tiddlers already declare.
 const KAHEA_NAMES = ["kahea", ...mirrorsOf("kahea")];
-const KAHEA_LINE = new RegExp(`^<<~\\s*(?:${KAHEA_NAMES.join("|")})\\s+("?lar:[^"\\s>]+"?|[^\\s>(]+\\/[^\\s>]*|[^\\s>(]+#[^\\s>]*)\\s*>>\\s*$`);
+const KAHEA_LINE = new RegExp(`^<<~\\s*(?:${KAHEA_NAMES.join("|")})\\s+uri=\`([^\`\\s]+)\`\\s*>>\\s*$`);
 // A transclusion standing alone as a block: `{{title}}`, `{{title||template}}`,
 // `{{{filter}}}`, `{{{filter||template}}}` — no markdown equivalent exists for any of them, so
 // the LINE-STANDING form carries whole into a tangle fence (a mid-line occurrence is handled
@@ -981,7 +981,7 @@ export function transposeMarkdown(
     const kahea = KAHEA_LINE.exec(line);
     if (kahea) {
       flushProse();
-      const target = kahea[1]!.replace(/^"|"$/g, "");
+      const target = kahea[1]!;
       const href = /\s/.test(target) ? `<${target}>` : target;
       const kaheaWord = resolveHeadWord("kahea", tongue);
       out.push(`${profile.kaheaMarker}\`${kaheaWord}\` [${target}](${href})`);

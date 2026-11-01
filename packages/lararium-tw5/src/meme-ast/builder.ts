@@ -119,10 +119,14 @@ function attrOf(tail: string, name: string): string | null {
   //
   // A STRING LITERAL wears FOUR delimiters — `"""…"""`, `"…"`, `'…'` and `[[…]]` — each stripped to
   // a plain value by TiddlyWiki's own `parseStringLiteral`, and all four legal after either.
+  //
+  // AND A TICK RUN IS THE HOUSE'S ONE VALUE SPELLING (the kupono cut): ``name=`v` ``, or
+  // ```` name=```v``` ```` where the value holds a tick. Both strip to the value, the triple tried first,
+  // and both bind after `=` alone, as TiddlyWiki's substituted attribute does.
   const m = new RegExp(
-    `\\b${name}\\s*[=:]\\s*(?:"""([\\s\\S]*?)"""|"([^"]*)"|'([^']*)'|\\[\\[((?:[^\\]]|\\](?!\\]))*)\\]\\]|([^\\s>"']+))`,
+    `\\b${name}\\s*(?:=\\s*(?:\`\`\`([\\s\\S]*?)\`\`\`|\`([^\`]*)\`)|[=:]\\s*(?:"""([\\s\\S]*?)"""|"([^"]*)"|'([^']*)'|\\[\\[((?:[^\\]]|\\](?!\\]))*)\\]\\]|([^\\s>"'\`]+)))`,
   ).exec(tail);
-  return m ? (m[1] ?? m[2] ?? m[3] ?? m[4] ?? m[5] ?? null) : null;
+  return m ? (m[1] ?? m[2] ?? m[3] ?? m[4] ?? m[5] ?? m[6] ?? m[7] ?? null) : null;
 }
 
 function kaheaInvokeNode(
