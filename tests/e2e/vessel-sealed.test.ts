@@ -75,7 +75,7 @@ const faceRowFile = (file: string): string => {
 const veilArchiveRows = (): string[] => faceDirs().flatMap((d) => readdirSync(identity(`faces/${d}`)).filter((f) => /^veil-archive-g[0-9a-f]{64}\.bin$/.test(f)));
 /** The face's own roster line: its name carries the login hint when the host has one. */
 const rosterRow = (): string => {
-  const name = faceDirs().flatMap((d) => readdirSync(identity(`faces/${d}`))).find((f) => /^\.persona-roster(?:-[^./]+?)?-h0\.json$/.test(f));
+  const name = faceDirs().flatMap((d) => readdirSync(identity(`faces/${d}`))).find((f) => /^\.persona-roster-h0\.json$/.test(f));
   if (!name) throw new Error("CONTROL: the founded face holds no roster line at rest");
   return name;
 };
