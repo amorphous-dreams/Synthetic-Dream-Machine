@@ -689,3 +689,24 @@ test("RED: QUEUE: a red train reruns its failed jobs once and reads the NEW atte
   assert.match(r2.out, /VOID/);
   assert.equal(originRef(w2, SPAN), w2.base);
 });
+
+test("RED: QUEUE: a red over a span head with no real run probes the span (dispatch) before blaming a lane; a red span pauses (16) and drops no lane", async () => {
+  const w = world();
+  let dispatched = false, att = 1;
+  const r = await runQ(w, {
+    red: () => true,
+    over: {
+      dispatchCI: async () => { dispatched = true; },
+      // The span head holds no run until the dispatch raises one (its push changed ignored paths alone); that run reads red.
+      ciRuns: async (sha) => (sha === w.base
+        ? (dispatched ? [{ databaseId: 50, headBranch: SPAN, headSha: sha, status: "completed", conclusion: "failure", attempt: att, createdAt: "x" }] : [])
+        : [{ databaseId: 51, headBranch: `${SPAN}--train-x`, headSha: sha, status: "completed", conclusion: "failure", attempt: att, createdAt: "x" }]),
+      rerun: async () => { att++; },
+    },
+  });
+  assert.equal(r.code, 16, r.out);
+  assert.match(r.out, /SPAN RED/);
+  assert.doesNotMatch(r.out, /DROPPED/);
+  assert.ok(dispatched, "the span head got its own run");
+  assert.equal(originRef(w, SPAN), w.base);
+});
