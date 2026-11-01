@@ -660,6 +660,8 @@ Body text, with a live embed: <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/meme
 <<^ code=`&#x0004;` to=`?`>>
 ````
 
+''The identity block names content, never residency.'' The `file-path` meta key stands retired (Train Q, operator ruling 2026-11-01): residency rides the envelope, the bag, and a meme travels to hosts that keep no files; `lares meme normalize` drops the line, and no reader takes it back.
+
 A definition summoned by name:
 ```
 <<~! wehe greeting(name "World")>>Hello, <<~ kahea uri=`name`>>!<<~/wehe>>
@@ -748,6 +750,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9GN_PxWnToXLXO-D6bF-fAeMdI9xtdS5CjBHBZTDyEg
+<<^ code=`&#x0003;`>>ni:///sha-256;B1CMJrsTgDrHhHHogXOZPoSKs_bozp8SIR9hjICoOnY
 
 <<^ code=`&#x0004;` to=`?`>>

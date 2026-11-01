@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
-source-check: "ni:///sha-256;9GN_PxWnToXLXO-D6bF-fAeMdI9xtdS5CjBHBZTDyEg"
+source-check: "ni:///sha-256;B1CMJrsTgDrHhHHogXOZPoSKs_bozp8SIR9hjICoOnY"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -619,6 +619,8 @@ Body text, with a live embed: <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/meme
 
 <<^ code=`&#x0004;` to=`?`>>
 ````
+
+**The identity block names content, never residency.** The `file-path` meta key stands retired (Train Q, operator ruling 2026-11-01): residency rides the envelope, the bag, and a meme travels to hosts that keep no files; `lares meme normalize` drops the line, and no reader takes it back.
 
 A definition summoned by name:
 ```
