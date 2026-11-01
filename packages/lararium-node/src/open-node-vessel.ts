@@ -204,7 +204,7 @@ import { gateGrantRing }                         from "./gate-rings.js";
 import { readFaceJoinRecord, readFaceAddressSecret } from "./fleet-join-custody.js";
 import { gateMemoryRows }                        from "./gate-memory-rows.js";
 import { custodyGateDoor }                       from "./custody-seat.js";
-import { standIntentRelay, type IntentRelayService } from "./intent-relay.js";
+import { intentRelayService, type IntentRelayService } from "./intent-relay.js";
 import { resolveIntentRelayFace } from "./intent-relay-face.js";
 import { vesselFloorKeyDoor, loadPlaceKelChain, loadPlaceAid } from "./node-vessel-identity.js";
 import { hearthFloorPins }                       from "./hearth-sovereign-pin.js";
@@ -1584,13 +1584,13 @@ async function prepareNodeBootOn(
     await registerRelayPlanes?.();
     if (gateSweepOwner.closed) return;
     if (intentRelay === null) {
-      const relay = await standIntentRelay({
+      // The composition owns the relay's cleanup from its first route on (train t3's Sol read): the service lands in the cell
+      // BEFORE its first sweep, so a teardown that meets a sweep stalled on one face's read stands its routes down.
+      intentRelay = intentRelayService({
         gateServer, ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), rootDoor: custodyGateDoor(), deadlines: timerGateDeadlines(),
         faces: (group) => resolveIntentRelayFace(group, { repo, catalogUrl: catalogHandle.url }), log: (message) => console.log(message),
       });
-      // A relay that stood after the teardown began stands down at once: a torn composition keeps no route.
-      if (gateSweepOwner.closed || intentRelay !== null) { relay.close(); return; }
-      intentRelay = relay;
+      await intentRelay.refresh();
     } else await intentRelay.refresh();
   };
   let intentRelay: IntentRelayService | null = null;

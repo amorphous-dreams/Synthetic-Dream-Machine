@@ -26,15 +26,15 @@ const source = readFileSync(new URL("../src/open-node-vessel.ts", import.meta.ur
 const scan = (text: string, pattern: RegExp) => pattern.test(text);
 
 test("RED: the vessel stands, refreshes and closes the intent relay; CONTROL: the census finds a planted call and the gate sweep's after-step", () => {
-  expect(scan("const planted = standIntentRelay({ gateServer });", /\bstandIntentRelay\s*\(/)).toBe(true);
+  expect(scan("const planted = intentRelayService({ gateServer });", /\bintentRelayService\s*\(/)).toBe(true);
   expect(scan(source, /\b(?:const|function)\s+afterGateSweep\b/)).toBe(true);
   const start = source.indexOf("const afterGateSweep =");
   const end = source.indexOf("stood.push({ what: \"the sync gates' knocks\"", start);
   expect(end).toBeGreaterThan(start);
   const sweep = source.slice(start, end);
-  expect(source).toMatch(/import\s*\{[^}]*\bstandIntentRelay\b[^}]*\}\s*from\s*["'][^"']*intent-relay\.js["']/s);
+  expect(source).toMatch(/import\s*\{[^}]*\bintentRelayService\b[^}]*\}\s*from\s*["'][^"']*intent-relay\.js["']/s);
   expect(source).toMatch(/import\s*\{[^}]*\bresolveIntentRelayFace\b[^}]*\}\s*from\s*["'][^"']*intent-relay-face\.js["']/s);
-  expect(sweep).toMatch(/standIntentRelay\s*\(\s*\{[^}]*\bgateServer\b[^}]*dispatcher\s*:\s*opts\.dispatcher/s);
+  expect(sweep).toMatch(/intentRelayService\s*\(\s*\{[^}]*\bgateServer\b[^}]*dispatcher\s*:\s*opts\.dispatcher/s);
   expect(sweep).toMatch(/resolveIntentRelayFace\s*\(\s*\w+\s*,\s*\{\s*repo\s*,\s*catalogUrl\s*:\s*catalogHandle\.url\s*\}/s);
   expect(sweep).toMatch(/intentRelay\.refresh\s*\(/);
   expect(source).toMatch(/stood\.push\s*\(\s*\{\s*what\s*:\s*["']the intent relay["']\s*,\s*down\s*:[\s\S]*?intentRelay\??\.close\s*\(/);
