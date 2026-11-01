@@ -938,3 +938,48 @@ test("RED: a VOID train tears down its ref, so the next run builds afresh instea
   assert.equal(r2.code, 0, r2.out);
   assert.doesNotMatch(r2.out, /RESUMED/);
 });
+
+test("RED: no wait outlives its subject: a link whose landed diff is meme-only drops; a span that moves under a dispatched probe re-chains; a resumed train with no run rebuilds; a vanished train ref reads VOID; a rerun read without `attempt` ends", { timeout: 20000 }, async () => {
+  // (a) the lane's code already stands on the span, so its land changes a meme alone: no run would come.
+  const w = world(["a", "b"], { touch: (s) => `packages/p-${s}/f.txt` });
+  sh(w.work, "checkout", "-q", `${SPAN}--a`); w.heads.a = w.commit(w.work, "bags/x/a.mem", "m\n", "lane a's meme"); sh(w.work, "push", "-q", "origin", `${SPAN}--a`); sh(w.work, "checkout", "-q", SPAN);
+  w.commit(w.work, "packages/p-a/f.txt", "a\n", "a's code — merge PR #0: by another road"); sh(w.work, "push", "-q", "origin", SPAN);
+  const ra = await runQ(w);
+  assert.equal(ra.code, 11, ra.out);
+  assert.match(ra.out, /DROPPED a: .*ignored paths alone/);
+  // (b) a resumed train ref with no run of its own rebuilds rather than waiting (stood a minute in the past, so a fresh
+  // chain over the same parents writes another sha).
+  const w3 = world(["a"]);
+  const SP3 = spanAhead(w3);
+  const tree3 = sh(w3.work, "merge-tree", "--write-tree", SP3, w3.heads.a);
+  const t3 = execFileSync("git", ["commit-tree", tree3, "-p", SP3, "-p", w3.heads.a, "-F", w3.msgs.a], { cwd: w3.work, encoding: "utf8", env: { ...process.env, GIT_COMMITTER_DATE: "2001-01-01T00:00:00Z", GIT_AUTHOR_DATE: "2001-01-01T00:00:00Z" } }).trim();
+  sh(w3.work, "push", "-q", "origin", `${t3}:refs/heads/${SPAN}--train-1-${t3.slice(0, 9)}`);
+  const { ops: o3 } = opsQ(w3); const base3 = o3.ciRuns; const l3 = []; o3.log = (l) => l3.push(l);
+  o3.ciRuns = async (sha) => (sha === t3 ? [] : base3(sha));
+  const r3 = await LT.landTrain({ specs: specsOf(w3), span: SPAN, cwd: w3.work, shipDir: join(w3.dir, "ship"), queueDir: join(w3.dir, "q") }, o3);
+  assert.equal(r3.code, 0, l3.join("\n"));
+  assert.doesNotMatch(l3.join("\n"), /RESUMED/);
+  // (c) the train ref vanishes while no run names it: VOID, never a wait.
+  const w4 = world(["a"]);
+  spanAhead(w4);
+  const { ops: o4 } = opsQ(w4); const base4 = o4.ciRuns; const l4 = []; o4.log = (l) => l4.push(l);
+  o4.ciRuns = async (sha) => {
+    const refs = sh(w4.origin, "for-each-ref", "--points-at", sha, "--format=%(refname:short)", `refs/heads/${SPAN}--train-*`).split("\n").filter(Boolean);
+    if (refs.length) { for (const ref of refs) sh(w4.origin, "update-ref", "-d", `refs/heads/${ref}`); return []; }
+    return base4(sha);
+  };
+  const r4 = await LT.landTrain({ specs: specsOf(w4), span: SPAN, cwd: w4.work, shipDir: join(w4.dir, "ship"), queueDir: join(w4.dir, "q") }, o4);
+  assert.equal(r4.code, 13, l4.join("\n"));
+  // (d) an old gh answers no `attempt`: the rerun's read ends once the run went live and completed again.
+  const w5 = world(["a"]);
+  const SP5 = spanAhead(w5);
+  let phase = 0;
+  const r5 = await runQ(w5, {
+    over: {
+      rerun: async () => { phase = 1; },
+      ciRuns: async (sha) => (sha === SP5 ? [{ databaseId: 1, headBranch: SPAN, headSha: sha, status: "completed", conclusion: "success", createdAt: "x" }]
+        : [{ databaseId: 2, headBranch: `${SPAN}--train-x`, headSha: sha, createdAt: "x", ...(phase === 0 ? { status: "completed", conclusion: "failure" } : phase++ === 1 ? { status: "in_progress", conclusion: "" } : { status: "completed", conclusion: "success" }) }]),
+    },
+  });
+  assert.equal(r5.code, 0, r5.out);
+});
