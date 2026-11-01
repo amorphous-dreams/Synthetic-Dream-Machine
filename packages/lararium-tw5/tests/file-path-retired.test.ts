@@ -7,6 +7,7 @@
  * re-emit drops it from a root record. CONTROL: a carrier without the field reads canonical, and
  * every other authored root field re-emits.
  */
+import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
 import { CARRIER_DECLARATION as DECLARATION } from "@lararium/memetic-frame";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -87,5 +88,34 @@ describe("the file-path meta field retires on a root", () => {
       expect(root?.["role"]).toBe("keep-root");
       expect(kid?.["role"]).toBe("keep-kid");
     }
+  });
+});
+
+// FROZEN, BY REASON: the sensorium's Kumulipo ablation fixtures hold a pre-cut carrier, `file-path`
+// line included, as HELD TEXT inside a four-tick fence in their `#/held` slot. That text feeds the
+// testbeds as measurement input (`kumulipo_sections.held` reads it back byte for byte, and the placebo
+// and shuffled legs re-derive from it deterministically), so it stays byte-exact; the outer carriers
+// declare no `file-path`. This proves the held text stays inert on ingest: it mints no record of its
+// own, and no record carries the field. A fixture that ever minted from its held text reds here.
+describe("held measurement text keeps its file-path inert", () => {
+  const FIX = new URL("../../lararium-sensorium/scripts/fixtures/", import.meta.url);
+  for (const leg of ["placebo", "shuffled"]) for (const name of ["beckwith", "liliuokalani"]) {
+    test(`${leg}-kumulipo/kumulipo-${name}: the fence holds, nothing mints from it`, () => {
+      const text = readFileSync(new URL(`${leg}-kumulipo/kumulipo-${name}.mem`, FIX), "utf8");
+      const root = `lar:///ha.ka.ba/lares/testbed/${leg === "placebo" ? "placebo" : "shuffled"}/kumulipo/kumulipo-${name}`;
+      const { records } = deserializeCarrier(text, { title: root });
+      expect(records.map((r) => String(r.title))).toEqual([root, `${root}#/held`, `${root}#/$postamble`]);
+      for (const r of records) expect(r["file-path"]).toBeUndefined();
+      const held = records.find((r) => r.title === `${root}#/held`)!;
+      expect(Object.keys(held).filter((k) => !k.startsWith("$")).sort()).toEqual(["text", "title", "type", "uri-path"]);
+      expect(String(held.text)).toMatch(/^file-path = "packages\/lararium-sensorium\/scripts\/fixtures\//m);
+    });
+  }
+
+  test("CONTROL: the fence does the holding: lift the four-tick fence and the held carrier no longer reads as one slot", () => {
+    const root = "lar:///ha.ka.ba/lares/testbed/placebo/kumulipo/kumulipo-beckwith";
+    const text = readFileSync(new URL("placebo-kumulipo/kumulipo-beckwith.mem", FIX), "utf8");
+    const { records } = deserializeCarrier(text.replace(/^````\n/gm, ""), { title: root });
+    expect(records.map((r) => String(r.title))).not.toEqual([root, `${root}#/held`, `${root}#/$postamble`]);
   });
 });
