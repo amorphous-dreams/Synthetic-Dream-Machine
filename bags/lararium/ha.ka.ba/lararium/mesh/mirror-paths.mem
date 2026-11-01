@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/mirror-paths">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/mirror-paths`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -15,12 +15,12 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/mirror-paths"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 TODO: describe the load-bearing surface this file owns.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JG8Le4Ub1yDM3K7Jspo7ZBQ8Og_Njx0RBHvtqAhlj98
+<<^ code=`&#x0003;`>>ni:///sha-256;7Vz_aCxxsckQ1jVl2lwhQt0fSvBcgs-RM-JL8s9UGiE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

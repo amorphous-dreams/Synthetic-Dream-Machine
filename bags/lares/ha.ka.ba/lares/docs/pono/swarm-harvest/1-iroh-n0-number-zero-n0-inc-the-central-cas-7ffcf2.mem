@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-iroh-n0-number-zero-n0-inc-the-central-cas-7ffcf2">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-iroh-n0-number-zero-n0-inc-the-central-cas-7ffcf2`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/1-iroh-n0-number-zero-n0-inc-the-central-cas-7ffcf2"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! 1. IROH / n0 (number zero, "n0, inc.") — THE CENTRAL CASE
 
@@ -28,7 +28,7 @@ The three largest messages one research spirit wrote, ''held verbatim and unedit
 
 <<~/ahu>>
 
-<<~ ahu #/message-1>>
+<<~ ahu slot=`#/message-1`>>
 
 !! Message 1 ~ 30,564 characters
 
@@ -285,12 +285,12 @@ So the honest range: **$34/mo (non-archiving, 2-hour window) → ~$152/mo (archi
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IlFs5IL5DflSXeYwCXNF7OPv6PStk3Vqp1c6BE8iMf4
+<<^ code=`&#x0003;`>>ni:///sha-256;TeunZ2iLhVw2wyrxqLpnPt4GzDAEvUfuTrAuUSk9DIk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

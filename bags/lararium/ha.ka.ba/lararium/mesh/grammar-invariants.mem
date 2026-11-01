@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/grammar-invariants">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/grammar-invariants`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/grammar-invariants"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Grammar agreement ~ the second condition of belonging
 
@@ -24,7 +24,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/grammar-invariants"
 
 <<~/ahu>>
 
-<<~ ahu #/the-outside-art>>
+<<~ ahu slot=`#/the-outside-art`>>
 
 !! What the field proved ~ and the one mechanism that held
 
@@ -49,6 +49,6 @@ uri-path  = "ha.ka.ba/lararium/mesh/grammar-invariants"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;b65eEXswdtRMo7DKemifWwKLCITfUgSSuUguNC69TGw
+<<^ code=`&#x0003;`>>ni:///sha-256;JOwXWOo_NNdRnG8T9Hj-GpGppDxV28PXWSQAHHvdhd0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

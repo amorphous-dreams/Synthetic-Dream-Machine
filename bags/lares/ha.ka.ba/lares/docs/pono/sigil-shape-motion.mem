@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/sigil-shape-motion">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/sigil-shape-motion`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/sigil-shape-motion"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Sigil Shape / Detail / Motion
 
@@ -27,7 +27,7 @@ This frame addresses how a human or agent reads sigil structure at varying zoom 
 
 <<~/ahu>>
 
-<<~ ahu #/shape>>
+<<~ ahu slot=`#/shape`>>
 
 !! Shape — The Bracket Structure
 
@@ -45,7 +45,7 @@ Named closers `<<~/SIGIL>>` add a typed jaw: the closer carries the sigil name, 
 
 <<~/ahu>>
 
-<<~ ahu #/detail>>
+<<~ ahu slot=`#/detail`>>
 
 !! Detail — The Sigil Payload
 
@@ -64,7 +64,7 @@ At zoom-in, the reader engages with the detail layer. At zoom-out, the detail st
 
 <<~/ahu>>
 
-<<~ ahu #/motion>>
+<<~ ahu slot=`#/motion`>>
 
 !! Motion — Open / Close Posture
 
@@ -75,14 +75,14 @@ Motion registers in the open/close posture of the sigil:
 
 The motion axis answers: does this sigil grip and contain, or does it point and release?
 
-* `<<~ ahu #/slot>>body<<~/ahu>>` — grips; the jaw closes around the body; WorksiteNode
-* `<<~ loulou "lar:///target">>` — points; the tooth breaks the surface and exits; EdgeNode
+* ``<<~ ahu slot=`#/slot`>>body<<~/ahu>>`` — grips; the jaw closes around the body; WorksiteNode
+* ``<<~ loulou uri=`lar:///target`>>`` — points; the tooth breaks the surface and exits; EdgeNode
 
 ''Temporal scarring:'' when a render-time sigil closes (`>>`), the surrounding document resumes, but the output of the sigil remains — the "scar" the jaw left in the text. The document changes shape at that point.
 
 <<~/ahu>>
 
-<<~ ahu #/progressive-display>>
+<<~ ahu slot=`#/progressive-display`>>
 
 !! Progressive Display — Zoom-Level Reading
 
@@ -102,16 +102,16 @@ This differs from the technical render posture in `render-pipeline#/render-postu
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/render-pipeline#/render-axes">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/consume-archive">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/render-pipeline#/render-axes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/consume-archive`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;G3lsxyKaoXU3Ql_9tRY6glkc3sIehX_4KitwhOkw7Xk
+<<^ code=`&#x0003;`>>ni:///sha-256;pbbd_Q5Tg_8AqVUd5xcuNnv8ikGBvnJedzUtmBpIdN8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

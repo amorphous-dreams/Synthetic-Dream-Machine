@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/salt-stair">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/salt-stair`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/salt-stair"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Salt-Stair
 
@@ -40,6 +40,6 @@ who have never met — the Salt-Stair declines to say, and MUG-SMOKE has never b
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Tm0pNE3uq0XEFlwP51sGGlSwLekdRxyYoo6QDia-TQ4
+<<^ code=`&#x0003;`>>ni:///sha-256;Q5o9HraUJyOZlL-WVugvSCrAiu2iLW5TAzEWWBYMwzo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/capability">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/capability`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -15,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/capability"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The capability shore ~ mesh owns the shape, adapters prove it
 
@@ -25,7 +25,7 @@ mesh package, and the mesh reaches none of them by name.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The invariants
 
@@ -44,7 +44,7 @@ synchronous shape would have forced every one of them to lie about it.
 
 <<~/ahu>>
 
-<<~ ahu #/what-it-does-not-decide>>
+<<~ ahu slot=`#/what-it-does-not-decide`>>
 
 !! What this shore declines to answer
 
@@ -58,16 +58,16 @@ reader a check they could then fail to find.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
-<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/capability.ts" family="code" role="has">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mandate-activity-provenance`>>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/capability.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/keyhive-provider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qs-OSop5cN5Ed89lqVmd-XB143agd9kSPw_jRJzrcD4
+<<^ code=`&#x0003;`>>ni:///sha-256;jlPRLC5otTTxtlMZydCEN0h3KLY0b45PuWjNJ_9VIiY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

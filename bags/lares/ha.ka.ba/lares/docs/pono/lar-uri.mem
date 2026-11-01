@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/lar-uri`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 author    = "Joshua Fontany <joshua.fontany@gmail.com>"
@@ -462,6 +462,6 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IzkFKC2dwE5UgH1qG5hQNzg6MKpZ7KISfrW8gUX1AfQ
+<<^ code=`&#x0003;`>>ni:///sha-256;UYWZ89Q1K4vWrjtaDkyWnQDuttUPOAck2vRiJB-qglg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

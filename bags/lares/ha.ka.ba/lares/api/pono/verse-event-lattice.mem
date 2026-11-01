@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/verse-event-lattice`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -19,7 +19,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/verse-event-lattice"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Verse Event Lattice
 
@@ -33,7 +33,7 @@ episode 19 (Brooklyn Zelenka) for the peer model alignment.
 
 <<~/ahu>>
 
-<<~ ahu #/type-lattice>>
+<<~ ahu slot=`#/type-lattice`>>
 
 !! The Four Types
 
@@ -129,7 +129,7 @@ handle. `ReactionEngine` holds `listenable` references and subscribes to them
 
 <<~/ahu>>
 
-<<~ ahu #/suspends>>
+<<~ ahu slot=`#/suspends`>>
 
 !! `<suspends>` — Effect Specifier
 
@@ -161,7 +161,7 @@ The MemeSyncAdaptor properly awaits it inside an async wrapper — the correct f
 
 <<~/ahu>>
 
-<<~ ahu #/simulation-types>>
+<<~ ahu slot=`#/simulation-types`>>
 
 !! `agent` and `player` — Simulation Participant Types
 
@@ -186,7 +186,7 @@ The compound type `listenable(agent)` functions as the canonical event type for 
 
 <<~/ahu>>
 
-<<~ ahu #/editable>>
+<<~ ahu slot=`#/editable`>>
 
 !! `@editable` — Design/Logic Boundary
 
@@ -217,7 +217,7 @@ the `@editable` surface. The internal `dispatchEvent` call constitutes the runti
 
 <<~/ahu>>
 
-<<~ ahu #/using>>
+<<~ ahu slot=`#/using`>>
 
 !! `using` — Module Import, Not Trait Composition
 
@@ -242,7 +242,7 @@ access to it from a given file.
 
 <<~/ahu>>
 
-<<~ ahu #/lararium-device-model>>
+<<~ ahu slot=`#/lararium-device-model`>>
 
 !! Lararium Device Model Alignment
 
@@ -278,7 +278,7 @@ The asymmetry carries the point.
 
 <<~/ahu>>
 
-<<~ ahu #/composition-edges>>
+<<~ ahu slot=`#/composition-edges`>>
 
 !! Composition Edge Semantics for the Four Types
 
@@ -303,7 +303,7 @@ intent, but built-in device events own `listenable(t)` fields by engine contract
 
 <<~/ahu>>
 
-<<~ ahu #/unreleased-event-types>>
+<<~ ahu slot=`#/unreleased-event-types`>>
 
 !! Unreleased Event Types (Confirmed, Not Yet Shipped)
 
@@ -356,17 +356,17 @@ via TW5's own event bus.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/uefn-scene">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/vm-projection-bus`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/local-first`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/uefn-scene`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;H6LjOxuHqvY-3aWu06gs2e1uargsxcfrOYCdouC7ppw
+<<^ code=`&#x0003;`>>ni:///sha-256;N_v1IL-u8Ovek9bd3YbzSEut5gA5G2DudJTvzlu7UaU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

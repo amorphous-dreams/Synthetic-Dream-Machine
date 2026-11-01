@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/ahu">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/widgets/ahu`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
@@ -18,11 +18,11 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/ahu"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
-`<<~ ahu #/slot>>` … `<<~/ahu>>` bounds a worksite scope and addresses a child-slot record at `parentUri#/slot`.
+``<<~ ahu slot=`#/slot`>>`` … `<<~/ahu>>` bounds a worksite scope and addresses a child-slot record at `parentUri#/slot`.
 
 ''One slot, one address.'' A slot spelled `#a` or `#/a` resolves to `#/a` under the meme root, and to `#/a/c` under the child `#/a` — the fragment never repeats its `#`. The deserializer mints the record's title by that same law.
 
@@ -30,7 +30,7 @@ The declaration rides in `packages/lararium-tw5/tiddlers/sigil-ahu.tid`, which c
 
 <<~/ahu>>
 
-<<~ ahu #/template-cascade>>
+<<~ ahu slot=`#/template-cascade`>>
 
 !! The Template Cascade
 
@@ -46,11 +46,11 @@ A wiki overrides the render by tagging its own pointer tiddler `lar:///ha.ka.ba/
 
 ''Two postures, two cascades.'' `~kahea~ahu` picks the ahu cascade (live child-slot transclusion); `~aka~ahu` picks the aka cascade (frozen projection read of the same child). Posture lives in the cascade, never in sigil dispatch. `lar-sigil.ts` routes the compound form `name="kahea~ahu", p1=slot`.
 
-Live wiki parent tiddlers hold the space form `<<~ kahea ahu #slot>>`, which reads under a HUD.
+Live wiki parent tiddlers hold the space form ``<<~ kahea ahu slot=`#slot`>>``, which reads under a HUD.
 
 <<~/ahu>>
 
-<<~ ahu #/slot-states>>
+<<~ ahu slot=`#/slot-states`>>
 
 !! Four Slot States
 
@@ -67,23 +67,23 @@ A section with nothing under it says the same nothing for three different facts,
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
-<<~ pranala #source from="?" -> to="packages/lararium-tw5/tiddlers/sigil-ahu.tid" family="code" role="has">>
-<<~ pranala #source-template from="?" -> to="packages/lararium-tw5/tiddlers/ahu-template-html.tid" family="code" role="has">>
-<<~ pranala #source-cascade from="?" -> to="packages/lararium-tw5/tiddlers/ahu-cascade-html.tid" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/tiddlers/sigil-ahu.tid` family=`code` role=`has`>>
+<<~ pranala slot=`#source-template` from=`?` to=`packages/lararium-tw5/tiddlers/ahu-template-html.tid` family=`code` role=`has`>>
+<<~ pranala slot=`#source-cascade` from=`?` to=`packages/lararium-tw5/tiddlers/ahu-cascade-html.tid` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/kau">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/widgets/kau`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UB4ug15YLQVHq7FSxcN_CwQ8YohK114y3DoLAmJMvhY
+<<^ code=`&#x0003;`>>ni:///sha-256;OOgqdC8kBm85lUztRoEv8zKSn7_4DYEjWL2wRZDtN9k
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

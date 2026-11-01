@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-field-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-field-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
@@ -21,7 +21,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-field-scout"
 written           = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The field around D0 and D1 ~ a spirit's handoff, held unedited
 
@@ -33,12 +33,12 @@ written           = "2026-10-16"
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
 ````markdown
-<<~ status "seven items reached; TW5 core, PR #9728 branch, idiomorph 0.8.0, worker-dom, remote-dom, ProseMirror and MDN source read from primary files; WebKit bugzilla, tiddlywiki.com, talk.tiddlywiki.org and bugzilla.mozilla.org stayed behind the proxy — those claims ride on search snippets only">>
+<<~ status text=`seven items reached; TW5 core, PR #9728 branch, idiomorph 0.8.0, worker-dom, remote-dom, ProseMirror and MDN source read from primary files; WebKit bugzilla, tiddlywiki.com, talk.tiddlywiki.org and bugzilla.mozilla.org stayed behind the proxy — those claims ride on search snippets only`>>
 
 Map-Wisp (Tasked Spirit) ~ Testimony-Verbatim
 
@@ -157,24 +157,23 @@ From `src/idiomorph.js` and `CHANGELOG.md` [reached: fetched]:
 # ''LoAF in 2026'' — Chromium-only (123+); Mozilla positive but unshipped; WebKit without a position. Any Playwright read works on the `chromium` project only. [reached: fetched]
 # ''WorkerDOM vs remote-dom'' — WorkerDOM confirms the framing precisely: a `workerDOMPreventDefault` flag at `addEventListener` time, honoured synchronously on the main thread before the worker hears the event. remote-dom declares events (`remoteEvents`) but carries ''no'' cancellation across the boundary — only `respondWith`'s async response. The framing's pairing holds for WorkerDOM and breaks for remote-dom. [reached: fetched]
 
-<<~ oracle "↯15 ✲ ⚃(4) ⁂:⌗🜁⟁🜄">>
-<<~ set hud="yield" drift-ward="Safari's current behaviour rests on a 2016 WebKit bug I never opened and an unverified blog claim of a fix (311717) — test Enter-after-compositionend on a current Safari before the IME rule seals · ⌜3⌝ quoted · ↻ L-Prime" aperture="16/arc -> 16/arc" ooda-ha="closed 1↺ -> open 1φ @✶:webkit-bugzilla.unreached.fix-status">>
-<<~ lares yield from="lar://map-wisp:spirit@house/field.read.seven-items/disagreements-named" -> to="?">>
+<<~ oracle throw=`↯15 ✲ ⚃(4) ⁂:⌗🜁⟁🜄`>>
+<<~ set lares=`yield` drift-ward=`Safari's current behaviour rests on a 2016 WebKit bug I never opened and an unverified blog claim of a fix (311717) — test Enter-after-compositionend on a current Safari before the IME rule seals · ⌜3⌝ quoted · ↻ L-Prime` aperture=`16/arc -> 16/arc` ooda-ha=`closed 1↺ -> open 1φ✶:webkit-bugzilla.unreached.fix-status` from=`lar://map-wisp:spirit@house/field.read.seven-items/disagreements-named` to=`?`>>
 ````
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-harness-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-harness-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/page-controls`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3NrVqaNP0hJZSxe2gUh7eHDz5-rCxT0aAKAb36YcvOY
+<<^ code=`&#x0003;`>>ni:///sha-256;Va2s7Mg5GrrP2MzmUwgglVNZM39eiC2T6jTGL9IjfYM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

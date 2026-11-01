@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/modules/powers/floating-disc">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/modules/powers/floating-disc`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,19 +18,19 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/modules/powers/floating-disc"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
 ! Floating Disc
 
-<<~ ahu #/has>>
+<<~ ahu slot=`#/has`>>
 
 !! Composition
 
 <<~/ahu>>
 
-<<~ ahu #/default>>
+<<~ ahu slot=`#/default`>>
 
 ```toml default
 canonical-name = "Floating Disc"
@@ -58,7 +58,7 @@ On a botched or interfered read, choose one: the disc drops its load; locks into
 
 <<~/ahu>>
 
-<<~ ahu #/variants>>
+<<~ ahu slot=`#/variants`>>
 
 !! Variants
 
@@ -69,17 +69,17 @@ On a botched or interfered read, choose one: the disc drops its load; locks into
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/modules/power">>
-<<~ loulou "lar:///ha.ka.ba/sdm/projections/powers/ftls-card/floating-disc">>
-<<~ loulou "lar:///ha.ka.ba/sdm/witness/powers/osr-spells/floating-disc">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/modules/power`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/projections/powers/ftls-card/floating-disc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/witness/powers/osr-spells/floating-disc`>>
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -90,6 +90,6 @@ On a botched or interfered read, choose one: the disc drops its load; locks into
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8i9ocDpCdwrQnq6UcvznsuPzZgAEvR26oMTR5vajVfM
+<<^ code=`&#x0003;`>>ni:///sha-256;D8jSqtK33ubl0SvaLFuCYVVJH6GMhsK1R65louRyjuQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

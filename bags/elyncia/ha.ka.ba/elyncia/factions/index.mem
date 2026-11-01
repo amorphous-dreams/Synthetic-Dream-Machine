@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/index">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/factions/index`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/factions/index"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Elyncia Factions ~ roster index
 
@@ -29,7 +29,7 @@ offer.
 
 <<~/ahu>>
 
-<<~ ahu #/summit-roster>>
+<<~ ahu slot=`#/summit-roster`>>
 
 !! The Summit Roster
 
@@ -67,7 +67,7 @@ correctly as the evening's real agenda wearing a napkin.
 
 <<~/ahu>>
 
-<<~ ahu #/court-colors>>
+<<~ ahu slot=`#/court-colors`>>
 
 !! Court Color Regimes
 
@@ -80,15 +80,15 @@ Derived from the court-dragon alignment canon, never invented whole:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/factions/lamplighters-union">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/grandmother-spider">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/factions/lamplighters-union`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/grandmother-spider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-fae-clans`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;USuo0bRBd-cxaIt33qQUlbEdjouBk35EQ6PooNOFiZ4
+<<^ code=`&#x0003;`>>ni:///sha-256;3xu-RybHljyThmGmViA86baN396ucVQxUyUqp4ZTpYg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/train-h-launch">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/train-h-launch`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/train-h-launch"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Train H ~ the hosted road
 
@@ -24,7 +24,7 @@ uri-path  = "ha.ka.ba/lararium/docs/train-h-launch"
 
 <<~/ahu>>
 
-<<~ ahu #/ground>>
+<<~ ahu slot=`#/ground`>>
 
 !! Ground and crew
 
@@ -32,7 +32,7 @@ Start pure signed-act and grant vectors beside N and W on disjoint files. Start 
 
 <<~/ahu>>
 
-<<~ ahu #/walk>>
+<<~ ahu slot=`#/walk`>>
 
 !! Commit walk
 
@@ -44,7 +44,7 @@ Start pure signed-act and grant vectors beside N and W on disjoint files. Start 
 
 <<~/ahu>>
 
-<<~ ahu #/witness>>
+<<~ ahu slot=`#/witness`>>
 
 !! Witness and red window
 
@@ -52,7 +52,7 @@ Start pure signed-act and grant vectors beside N and W on disjoint files. Start 
 
 <<~/ahu>>
 
-<<~ ahu #/collisions>>
+<<~ ahu slot=`#/collisions`>>
 
 !! Collision sheet
 
@@ -66,7 +66,7 @@ Start pure signed-act and grant vectors beside N and W on disjoint files. Start 
 
 <<~/ahu>>
 
-<<~ ahu #/done>>
+<<~ ahu slot=`#/done`>>
 
 !! Done when
 
@@ -74,14 +74,14 @@ A standing operator-seat delegation authorizes one hosting key. That key signs e
 
 <<~/ahu>>
 
-<<~ ahu #/rulings>>
+<<~ ahu slot=`#/rulings`>>
 
 !! Rulings
 
-The hosting-key and worn-face rulings already stand at the roadmap's `#/rulings` (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). Its H path names the one re-cut, answer door, three dials and H8 (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>). Flag a proposed signer only when it departs from that delegation. E's walker arm waits on H8's public-half check.
+The hosting-key and worn-face rulings already stand at the roadmap's `#/rulings` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). Its H path names the one re-cut, answer door, three dials and H8 (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`>>; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops`>>). Flag a proposed signer only when it departs from that delegation. E's walker arm waits on H8's public-half check.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WbXuZui_X5eq0d1PnZqceES_TyTpEKhFOLxognavxVM
+<<^ code=`&#x0003;`>>ni:///sha-256;AFBzX3H6nR91t83cWkUCyxMpD5hbdS5JHy49GxJK9bY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

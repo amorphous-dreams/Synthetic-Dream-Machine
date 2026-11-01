@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/tw5-module">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/tw5-module`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -62,13 +62,13 @@ The gate carries no fallback of its own: when no module meme passes, it injects 
 boot path the packed `lares-memetic-wikitext` plugin supplies the grammar, and TW5 collects its module
 tiddlers natively. No `_registerMemeticParser()` and no `_registerWidgets()` stand in source.
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/tw5-modules">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/modules/tw5-modules`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Q5sEqhY7k9aCyzQS91D-MPsvKi35X8aI8R3ZYx4RBHY
+<<^ code=`&#x0003;`>>ni:///sha-256;l7f8hKFvtuw0G38CvVsXv3OvtDs-Ju4_19K9CNRJJEg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/tw5-widget-module">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/tw5-widget-module`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 file-path   = "bags/lararium/ha.ka.ba/lararium/docs/tw5-widget-module.mem"
@@ -16,7 +16,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/docs/tw5-widget-module"
 ```
 
-<<~ ahu #/overview>>
+<<~ ahu slot=`#/overview`>>
 
 !! Overview
 
@@ -26,7 +26,7 @@ The canonical source for this protocol is at `lar:///ha.ka.ba/lares/api/lararium
 
 <<~/ahu>>
 
-<<~ ahu #/two-phase>>
+<<~ ahu slot=`#/two-phase`>>
 
 !! Two-Phase Boot
 
@@ -36,7 +36,7 @@ The canonical source for this protocol is at `lar:///ha.ka.ba/lares/api/lararium
 
 <<~/ahu>>
 
-<<~ ahu #/corpus-path>>
+<<~ ahu slot=`#/corpus-path`>>
 
 !! Corpus Path
 
@@ -44,6 +44,6 @@ When the boot gate passes at least one corpus meme, `tw5-modules` is loaded as a
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eoX9SgYx4pNhQwVE3KyEzfFdOtmBUk89hbpU5K9G1EA
+<<^ code=`&#x0003;`>>ni:///sha-256;F4-B_0A9TApfB7D8ReSpEX7hg_V095455Bae3-utw7A
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

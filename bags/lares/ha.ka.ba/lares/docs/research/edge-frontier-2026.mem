@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/edge-frontier-2026">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/edge-frontier-2026`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/edge-frontier-2026"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The edge frontier, 2026 ~ absence needs a signed boundary
 
@@ -23,7 +23,7 @@ A fifth fresh read of `K15` Wave B found that reading an empty edge board's abse
 
 <<~/ahu>>
 
-<<~ ahu #/findings>>
+<<~ ahu slot=`#/findings`>>
 
 !! Findings
 
@@ -36,6 +36,6 @@ A fifth fresh read of `K15` Wave B found that reading an empty edge board's abse
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nCP9iBr1cNeCvBSSN7N9CGStiWO9wtxDrr__FEYXcJk
+<<^ code=`&#x0003;`>>ni:///sha-256;sKpzkCnU-iMw1-QITdd8NpCOePOd-eMNke0kjHXKfXw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -4,10 +4,10 @@ description: Generate, compress, or audit memetic-wikitext surfaces under lar://
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable          = true
@@ -30,7 +30,7 @@ uri-path           = "ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL"
 [[memetic-wikitext.md|../memetic-wikitext.md]] holds the root law.
 This skill carries the working procedure.
 
-<<~ ahu #/load-contract>>
+<<~ ahu slot=`#/load-contract`>>
 
 !! Load Contract
 
@@ -45,7 +45,7 @@ Keep these points active when the skill loads:
 
 <<~/ahu>>
 
-<<~ ahu #/workflow-contract>>
+<<~ ahu slot=`#/workflow-contract`>>
 
 !! Workflow Contract
 
@@ -77,7 +77,7 @@ Do not:
 
 <<~/ahu>>
 
-<<~ ahu #/trigger>>
+<<~ ahu slot=`#/trigger`>>
 
 !! Trigger
 
@@ -97,7 +97,7 @@ Prefer another surface when the work concerns:
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ read the authored surface as meaning first and observe where the actual overload lands
 ⏿ sort root law, primitive distinction, boot grammar, and outward detail by where they belong
@@ -107,7 +107,7 @@ Prefer another surface when the work concerns:
 
 <<~/ahu>>
 
-<<~ ahu #/observe>>
+<<~ ahu slot=`#/observe`>>
 
 !! ✶ Observe
 
@@ -129,7 +129,7 @@ Name the actual overload before you cut.
 
 <<~/ahu>>
 
-<<~ ahu #/orient>>
+<<~ ahu slot=`#/orient`>>
 
 !! ⏿ Orient
 
@@ -152,7 +152,7 @@ Orientation rule:
 
 <<~/ahu>>
 
-<<~ ahu #/decide>>
+<<~ ahu slot=`#/decide`>>
 
 !! ◇ Decide
 
@@ -168,7 +168,7 @@ Do not create a child just to rename clutter.
 
 <<~/ahu>>
 
-<<~ ahu #/act>>
+<<~ ahu slot=`#/act`>>
 
 !! ▶ Act
 
@@ -185,7 +185,7 @@ Aim for a parent that a reader can reload quickly.
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! ↺ Aftermath
 
@@ -212,15 +212,15 @@ If parser or render-pipeline law still lacks its own stable carrier, leave the b
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yDLvbZWbcElgsslkEn10nj1euW-EmRVhVEG15uYwwq0
+<<^ code=`&#x0003;`>>ni:///sha-256;mlKSNvlpaW-IUwLbLXoonGlBwkxD0EER3vtf7hyM3w0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

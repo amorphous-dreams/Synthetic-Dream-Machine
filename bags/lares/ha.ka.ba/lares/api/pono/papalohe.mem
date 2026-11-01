@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/papalohe">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/papalohe`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -133,6 +133,6 @@ Two values, distinct Verse-side origins:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vjYyW5AleefkVPN3FwVPVY0g6NQBJONK4-8rfOd_Q94
+<<^ code=`&#x0003;`>>ni:///sha-256;lrkLkgP1Gx9Yr8ykSJQofOLTn7OS-oCzu12xE6T75JI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

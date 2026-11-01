@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/modules/deserializer">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/modules/deserializer`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 source-sha256 = "sha256:d689443fc704d96b7c2e3802de2f76541b33cd3f9fe422199387a4bd1ce74b21"
@@ -20,7 +20,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/modules/deserializer"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Deserializer — Contract
 
@@ -47,19 +47,19 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 <$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/modules/deserializer" $mode="block"/>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/carrier-split">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/deserializer">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/carrier-split`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/modules/deserializer`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iNtHOmGDFWfkq5L2pYDdmHh1VVf5bmZWRstVgMhFBXA
+<<^ code=`&#x0003;`>>ni:///sha-256;E1Yn7I0cxA_M72dKjtuF9xd3wKlTSDwqAKxQ2vQcxVo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

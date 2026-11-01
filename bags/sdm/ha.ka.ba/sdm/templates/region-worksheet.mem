@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/templates/region-worksheet">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/templates/region-worksheet`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/region-worksheet"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Region Worksheet ~ the practice, held as a spine
 
@@ -39,7 +39,7 @@ neo-thracia (referee bag).
 
 <<~/ahu>>
 
-<<~ ahu #/the-scale-ladder>>
+<<~ ahu slot=`#/the-scale-ladder`>>
 
 !! The Scale Ladder //(Provisional — pace claim flagged below)//
 
@@ -60,7 +60,7 @@ table play.
 
 <<~/ahu>>
 
-<<~ ahu #/the-three-map-kinds>>
+<<~ ahu slot=`#/the-three-map-kinds`>>
 
 !! Three Map-Kinds
 
@@ -74,7 +74,7 @@ table play.
 
 <<~/ahu>>
 
-<<~ ahu #/the-travel-loop>>
+<<~ ahu slot=`#/the-travel-loop`>>
 
 !! The Travel Loop ~ on-route and off
 
@@ -94,7 +94,7 @@ neighbors; feeds the encounter stack and the ambient tables).
 
 <<~/ahu>>
 
-<<~ ahu #/walk>>
+<<~ ahu slot=`#/walk`>>
 
 !! The Walk ~ planned verbatim slots
 
@@ -112,7 +112,7 @@ grain, blessed before moving:
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source ~ verbatim staging
 
@@ -120,14 +120,14 @@ grain, blessed before moving:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet">>
-<<~ loulou "lar:///ha.ka.ba/sdm/docs/arcana-model">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/docs/arcana-model`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZGp71fWcWdJxeDFCubG3Usg6QmNQperOZfhX86JqXa4
+<<^ code=`&#x0003;`>>ni:///sha-256;FNDRiMrptK8CLtJc-hmItnTe-IFXBs-yDT6256NCDbw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

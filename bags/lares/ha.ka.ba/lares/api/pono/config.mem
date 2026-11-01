@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/config">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/config`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/config.mem"
@@ -33,7 +33,7 @@ This lararium remembers.
 
 ...
 
-<<~ ahu #/hud-panel>>
+<<~ ahu slot=`#/hud-panel`>>
 
 !! HUD Panel
 
@@ -53,7 +53,7 @@ Tool render mode controls how ASCII tool-carry symbols project to glyphs on HUD 
 
 
 
-<<~ ahu #/required-handoff-masks>>
+<<~ ahu slot=`#/required-handoff-masks`>>
 
 !! Required Handoff — Masks
 
@@ -65,7 +65,7 @@ The agent MUST read `lar:///ha.ka.ba/lares/docs/voices/masks` before interpretin
 
 <<~/ahu>>
 
-<<~ ahu #/session-masks>>
+<<~ ahu slot=`#/session-masks`>>
 
 !! Session Masks
 
@@ -91,7 +91,7 @@ When no masks are active, the thirteen Voices surface as the resident cast.
 
 <<~/ahu>>
 
-<<~ ahu #/stage-panel>>
+<<~ ahu slot=`#/stage-panel`>>
 
 !! Stage Panel
 
@@ -104,18 +104,18 @@ Live stage positions — shift inline with `[Stage: mask-name 15]`; edits here p
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
 <<~/ahu>>
 
-<<~ ahu #/hello-world>>
+<<~ ahu slot=`#/hello-world`>>
 
 &#2384; Hello World.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UP3S9oh584B-9f0pwAdu2Fvbsxkl_9PnnvcFQDvzBQM
+<<^ code=`&#x0003;`>>ni:///sha-256;jT5s5kMTnG_-UBZEd9kR9yBG0rK_yc0y4w3xoajilDI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kahea">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/kahea`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,11 +17,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kahea"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Kahea
 
@@ -30,7 +30,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/kahea"
 A transclusion-family edge sugar with dual form. The URI form creates a live transclusion edge —
 a live embed of the target's content at the source, kept fresh by subscription (push-forward).
 The name-call form invokes a named definition at render time only (no edge created).
-Sugar for `<<~ pranala from=? -> to=URI family=transclusion propagation=push-forward>>`.
+Sugar for ``<<~ pranala from=`?` to=`URI` family=`transclusion` propagation=`push-forward`>>``.
 
 ''English weave name: `transclude`.'' `kahea` weaves in English as `transclude`, its own weave
 name, not a mirror of any other sigil. `import` rides beside it as a read-only mirror
@@ -47,7 +47,7 @@ family-contract row, its own English weave name (`transclude` for `kahea`, `pin`
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ sense the sigil form — URI (contains `/`, `lar:`, or `#`) or name-call (bare word with optional args)
 ⏿ orient: URI form → transclusion edge, push-forward; name-call → render-only invocation, no edge
@@ -57,7 +57,7 @@ family-contract row, its own English weave name (`transclude` for `kahea`, `pin`
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -79,15 +79,15 @@ The parser tells the two forms apart at parse time by URI shape:
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 URI form (creates transclusion edge):
 ```text
-<<~ kahea "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ kahea "lar:///ha.ka.ba/lares/api/pono/meme#/law">>
-<<~ kahea relative/path>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/meme#/law`>>
+<<~ kahea uri=`relative/path`>>
 ```
 
 Name-call form (render-only, no edge):
@@ -108,12 +108,12 @@ Regex — name-call form (canonical):
 
 Full pranala expansion (URI form):
 ```text
-<<~ pranala from="?" -> to="URI" family="transclusion" lifecycle="instance" traversal="source-to-target" propagation="push-forward">>
+<<~ pranala from=`?` to=`URI` family=`transclusion` lifecycle=`instance` traversal=`source-to-target` propagation=`push-forward`>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -151,19 +151,19 @@ canonical-roles = []   # held — transclusion role vocab deferred with the pono
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loulou">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/aka">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/loulou`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/aka`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/papalohe`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-transclude">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-import">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-transclude`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-import`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jmM2ZcfnAD7_Bgo3J6Fq2Yfaf1FbMjy1D4xtgYJO0as
+<<^ code=`&#x0003;`>>ni:///sha-256;FkS0jj3yqdMoHpZrJlwA6nK3cA-0-33XkEyQYJwR_qk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

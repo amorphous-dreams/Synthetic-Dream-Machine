@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -21,11 +21,11 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/scale-stories-basket-one"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/talk-story">>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>
 
 
 
-<<~ ahu #/ground>>
+<<~ ahu slot=`#/ground`>>
 
 ! Ground — why stories, and the kapu they keep
 
@@ -37,11 +37,11 @@ Each slot below carries the same five parts: ''the tension'' in one plain paragr
 
 ''The yardstick.'' Where a story reaches five hundred years it reads the fire the way `packages/lararium-mesh/src/ahi-ka.ts:36-49` reads a realm: against the realm's OWN baseline, never a wall-clock — `AHI_KA_500YR = { ambientFloor: 8, warmRatio: 0.30, coldRatio: 0.05 }`, "a dormant shrine woken for a centennial rite is not a dying one; long ebbs are the fiction's normal, not a fault" (`ahi-ka.ts:41-42`, quote license). Telarus the wild-mage lit the DreamNet about five hundred years before the modern day (`ahi-ka.ts:38`); the Gaia-scale stories walk that span.
 
-''The one law under every slot'', from the wayfarer's own carrier (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>, quote license): "a node may carry the roads of strangers, and ward them, without ever holding their secrets."
+''The one law under every slot'', from the wayfarer's own carrier (<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/lares-viales`>>, quote license): "a node may carry the roads of strangers, and ward them, without ever holding their secrets."
 
 <<~/ahu>>
 
-<<~ ahu #/the-bridge>>
+<<~ ahu slot=`#/the-bridge`>>
 
 !! 1 · The bridge — a house vessel reaches a surface that never joined the mesh
 
@@ -61,7 +61,7 @@ Either way the cap never touches the herm's step. It rides back to his hearth, s
 
 !!! At the faerie-folk / Gaia scale
 
-Stretch it across the five hundred years since the Lindwyrm "transmitted the Declaration of Confederation over the new DreamNet, founding the League of Free Cities" (<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>, quote license). The Dominion "immediately responds by annexing the nearest city-states" and "the gods of the Kemetic Nexus pull inwards, closing all open routes" (//Elyncia 01 · A Broken World//). For five centuries the mesh stands beside surfaces that never joined it and never will: Dominion registers, Kemetic gate-ledgers, the Astral Sea's own drifting markets. Every generation some kahu carries some cabal's token to some foreign board.
+Stretch it across the five hundred years since the Lindwyrm "transmitted the Declaration of Confederation over the new DreamNet, founding the League of Free Cities" (<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm`>>, quote license). The Dominion "immediately responds by annexing the nearest city-states" and "the gods of the Kemetic Nexus pull inwards, closing all open routes" (//Elyncia 01 · A Broken World//). For five centuries the mesh stands beside surfaces that never joined it and never will: Dominion registers, Kemetic gate-ledgers, the Astral Sea's own drifting markets. Every generation some kahu carries some cabal's token to some foreign board.
 
 The Elf-wildmage reads it so. ''A cap honoured on the far side reads as a request'', never a capability — the far gate decides for itself, so a house that translates its own caps outward has handed the keystone to a stranger (`reach-plane.mem:82`). Across five hundred years the household answer holds exactly where it kept the token at the hearth and the composing at the herm: a Herm seized at a crossroads yields a draft and no credential; a hearth seized yields one house's reach and no one else's identity. It breaks where a generation grew lazy and let a token buy a ''seat'' — the far-side register began to count the house as a member, and the day the Dominion voided the register the house lost a self instead of a re-mint. The MAILBOX-never-seat lock (`reach-plane.mem:94`) reads as five hundred years of that lesson.
 
@@ -79,7 +79,7 @@ Road A rides the fork's own loop and inherits its future unread, which reads as 
 
 <<~/ahu>>
 
-<<~ ahu #/the-fetch-door>>
+<<~ ahu slot=`#/the-fetch-door`>>
 
 !! 2 · The fetch door — a record crosses to a fleet peer; the bytes do not
 
@@ -99,11 +99,11 @@ So Aki sends an Ephyra upriver with the name. That works once. It does not settl
 
 !!! At the faerie-folk / Gaia scale
 
-The Neo-Thracian Nexus stayed cut off for "the next ~490 years" (//Elyncia 01//). Across that span, names travelled where things did not — a shrine on the Hebros road that "kept the rite of passing" (//Elyncia 01//) could name every reliquary of the Illyrian undercities and hold none. The Reachable Worlds carrier says what a whole world learns from that: "Locked works stay locked. A relic whose grammar burned in another world's fire reads exactly like one that burned in the Library of Alexander" (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds">>, quote license). A name without its bytes and a locked record read alike from outside.
+The Neo-Thracian Nexus stayed cut off for "the next ~490 years" (//Elyncia 01//). Across that span, names travelled where things did not — a shrine on the Hebros road that "kept the rite of passing" (//Elyncia 01//) could name every reliquary of the Illyrian undercities and hold none. The Reachable Worlds carrier says what a whole world learns from that: "Locked works stay locked. A relic whose grammar burned in another world's fire reads exactly like one that burned in the Library of Alexander" (<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds`>>, quote license). A name without its bytes and a locked record read alike from outside.
 
 The Elf-wildmage reads it so. ''A name that crosses without its thing keeps the thing's absence honest'' — the PENDING `.meta` with no content file beside it (`blob-carriage.mem:186`) reads as the wayside shrine that says //I know this and I do not hold it//, which a besieged nexus can live on for five centuries. The household answer — send an Ephyra on the first asking — holds at every scale where a holder still stands upriver, and breaks the day the last holder's hearth goes cold, because a fetch-on-read against a dead holder waits forever and a prefetch would have carried the bytes while the road still ran. Prefetch across a whole world, though, floods the leylines with every likeness ever named; the Dominion's sky-castles would read the traffic alone as a map of every family.
 
-On who serves: the wayfarer "carries sealed mana from shrine to shrine — pilgrim-cargo it cannot open" (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>) and "holds the HINT, never the read-cap" (`bags/lararium/ha.ka.ba/lararium/mesh/vessel-caps.mem:127`). A public blob that first travels to a Herm keeps every household hearth off the map; a hearth that serves its own floor answers faster and stands exposed. Over five hundred years the Herm road reads as the one the Hermetic Protocols already drew.
+On who serves: the wayfarer "carries sealed mana from shrine to shrine — pilgrim-cargo it cannot open" (<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/lares-viales`>>) and "holds the HINT, never the read-cap" (`bags/lararium/ha.ka.ba/lararium/mesh/vessel-caps.mem:127`). A public blob that first travels to a Herm keeps every household hearth off the map; a hearth that serves its own floor answers faster and stands exposed. Over five hundred years the Herm road reads as the one the Hermetic Protocols already drew.
 
 !!! What the stories reveal
 
@@ -117,11 +117,11 @@ Fetch-on-read keeps the road light and the absence honest, which reads as the po
 
 <<~/ahu>>
 
-<<~ ahu #/the-shared-bag>>
+<<~ ahu slot=`#/the-shared-bag`>>
 
 !! 3 · The shared bag — two operators keep one ledger through a relation
 
-''The tension.'' Two operators each found their own `lar:///ha.ka.ba/bags/lares` doc, `nexus contract` writes the members board and never a bag, and B's `meme get --bag lares` answers `not-found` (measured over `tools/mesh-scenarios.sh meme`; `realm-bag-brief.mem` #/ground). A relation-carried bag needs one doc id both sides name and a place it REGISTERS: each vessel's private `@catalog`, the realm's shared CRDT, or the public `@crossroads` (`realm-bag-brief.mem` #/what-a-relation-bag-needs). The law under it: a cabal holds NO name of its own; the realm holds the shared CRDT and resources; the nexus federates hardware; "fusing cabal and realm once made feeding a realm stale its own invites" (`realm-bag-brief.mem` #/ground). The read and the write each need a cap-tier — PERSONAGROUP and CONTRACT ride the SAME mechanism, a bag's content key delivered to a recipient set, and differ ONLY in which set (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier#/the-chain">>).
+''The tension.'' Two operators each found their own `lar:///ha.ka.ba/bags/lares` doc, `nexus contract` writes the members board and never a bag, and B's `meme get --bag lares` answers `not-found` (measured over `tools/mesh-scenarios.sh meme`; `realm-bag-brief.mem` #/ground). A relation-carried bag needs one doc id both sides name and a place it REGISTERS: each vessel's private `@catalog`, the realm's shared CRDT, or the public `@crossroads` (`realm-bag-brief.mem` #/what-a-relation-bag-needs). The law under it: a cabal holds NO name of its own; the realm holds the shared CRDT and resources; the nexus federates hardware; "fusing cabal and realm once made feeding a realm stale its own invites" (`realm-bag-brief.mem` #/ground). The read and the write each need a cap-tier — PERSONAGROUP and CONTRACT ride the SAME mechanism, a bag's content key delivered to a recipient set, and differ ONLY in which set (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/the-chain`>>).
 
 !!! At the human / household scale
 
@@ -137,7 +137,7 @@ What they settle on has no name. They do not found a "ford clan" — nobody want
 
 !!! At the faerie-folk / Gaia scale
 
-"YOLD ~3195 – ~4200. The clan wars of the settlement age — a thousand years in which the fae clans of Elyncia fought over a world that had just changed shape" (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>, quote license). "A clan names descent. A Court names allegiance … A clan may scatter across every Court" (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>). Across a thousand years allegiance moves faster than descent, and every ledger kept in a compact's own name dies when the compact's Court changes — because the compact, having a name, can lose one.
+"YOLD ~3195 – ~4200. The clan wars of the settlement age — a thousand years in which the fae clans of Elyncia fought over a world that had just changed shape" (<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars`>>, quote license). "A clan names descent. A Court names allegiance … A clan may scatter across every Court" (<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-fae-clans`>>). Across a thousand years allegiance moves faster than descent, and every ledger kept in a compact's own name dies when the compact's Court changes — because the compact, having a name, can lose one.
 
 The Elf-wildmage reads it so. ''A ledger registered in a private chest outlives nothing but its keeper; a ledger nailed to the crossroads outlives everyone and feeds every enemy; a ledger held in the shared room of the realm outlives the compact that wrote it and reads to no one outside it.'' The household answer holds across the whole span precisely because the compact never took a name: the Courts had nothing to summon. It breaks where a realm, over centuries, quietly became a Court — the moment the room's roof started demanding oaths, the room stopped reading as a realm and the ledger inside it became a standing. "What the Court Wars settled was who got the world the Datum made" (the court-wars carrier); what a nameless compact settles reads smaller and lasts longer.
 
@@ -154,7 +154,7 @@ Registering in each vessel's `@catalog` keeps the copies sovereign and lets them
 
 !!! Moʻolelo — the realm leg, ruled 2026-09-12
 
-<<~ moolelo held="the Nexus decides whether a SOCKET stands (the contract edge); the REALM's own registration decides which DOCUMENTS cross it — read to any CONTRACT-tier holder of that charter, write to keptBy, the PUBLIC tier carried by the Herm by hash; the cabal keeps no roster; 'admit' is a Nexus verb and never decides carriage. Upgrades approved: the realm leg of mayFederate · keptBy charter-aware from day one · registration expiry in realm rolls · the Herm follows the realm's public registrations (operator)">>enacted as the third leg of the one law the reads and writes already walk<<~/moolelo>>
+<<~ moolelo held=`the Nexus decides whether a SOCKET stands (the contract edge); the REALM's own registration decides which DOCUMENTS cross it — read to any CONTRACT-tier holder of that charter, write to keptBy, the PUBLIC tier carried by the Herm by hash; the cabal keeps no roster; 'admit' is a Nexus verb and never decides carriage. Upgrades approved: the realm leg of mayFederate · keptBy charter-aware from day one · registration expiry in realm rolls · the Herm follows the realm's public registrations (operator)`>>enacted as the third leg of the one law the reads and writes already walk<<~/moolelo>>
 
 ''The four sentences a great-grandchild inherits without the reasons'' — written here because the code will say //what// for five centuries and never //why//:
 
@@ -163,13 +163,13 @@ Registering in each vessel's `@catalog` keeps the copies sovereign and lets them
 # ''The Herm holds no cap.'' It carries the public tier by hash and never joins the read set, which is why anyone may run one, seize one, or replace one and the private tier never notices. The line the performance-minded heir will want to cross reads: //holds the HINT, never the read-cap//.
 # ''A book names its keepers.'' `keptBy` and the charter it keys on, never a house's list — so a succession changes nothing about the books, a partition reconnects per book with no reconciliation ceremony, and a book spanning two charters names two charters instead of fusing two realms.
 
-''Held beside it, not yet built'' — ''heraldry.'' A nameless thing on the DreamNet — a cabal, a piece of infra (a Herm, a hearth), a persona behind a veil — reads, from outside, exactly like every other nameless thing; and a True Name that passes between holders (the Dread Pirate Roberts shape: a //role// worn in turn, never a person) reads like an identity when it is a mantle. The operator holds that ''any of them MAY publish a Handle'' — a public Face, a heraldry — through the same quorum-presented name the persona already publishes (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>: k-of-n HandleGlamour, self-certifying card, the KEL chain). A Face is the only outward door (the veil ruling); a Face is not a roster (it names the mantle, never the hands beneath it); a Face may be worn in turn (the KEL's rotate carries the mantle to the next holder, the co-sign threshold keeps a single turned hand from stealing it). What it must never become: a registry of who wears what — the heraldry says //this is the ford-keepers' arms//, never //these are the ford-keepers//. Owed: the design read for a cabal's Handle (who signs its glamour — the `keptBy` set is the natural owner-set) and an infra Handle (a Herm's card, self-certifying, no KEL succession unless the Herm changes hands).
+''Held beside it, not yet built'' — ''heraldry.'' A nameless thing on the DreamNet — a cabal, a piece of infra (a Herm, a hearth), a persona behind a veil — reads, from outside, exactly like every other nameless thing; and a True Name that passes between holders (the Dread Pirate Roberts shape: a //role// worn in turn, never a person) reads like an identity when it is a mantle. The operator holds that ''any of them MAY publish a Handle'' — a public Face, a heraldry — through the same quorum-presented name the persona already publishes (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/handle-card`>>: k-of-n HandleGlamour, self-certifying card, the KEL chain). A Face is the only outward door (the veil ruling); a Face is not a roster (it names the mantle, never the hands beneath it); a Face may be worn in turn (the KEL's rotate carries the mantle to the next holder, the co-sign threshold keeps a single turned hand from stealing it). What it must never become: a registry of who wears what — the heraldry says //this is the ford-keepers' arms//, never //these are the ford-keepers//. Owed: the design read for a cabal's Handle (who signs its glamour — the `keptBy` set is the natural owner-set) and an infra Handle (a Herm's card, self-certifying, no KEL succession unless the Herm changes hands).
 
-That owed design stands: <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/heraldry">> — the three nameless shapes, the mantle's threshold, the Herm's self-certifying card and the CARRIAGE contract that seats it in a realm's PUBLIC registrations, red-by-red.
+That owed design stands: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/heraldry`>> — the three nameless shapes, the mantle's threshold, the Herm's self-certifying card and the CARRIAGE contract that seats it in a realm's PUBLIC registrations, red-by-red.
 
 <<~/ahu>>
 
-<<~ ahu #/the-later-grant>>
+<<~ ahu slot=`#/the-later-grant`>>
 
 !! 4 · The later grant — a companion admitted after the oath
 
@@ -207,7 +207,7 @@ A daemon verb the founder's caller invokes reads as the pono lean for one scoped
 
 <<~/ahu>>
 
-<<~ ahu #/grace-and-pin>>
+<<~ ahu slot=`#/grace-and-pin`>>
 
 !! 5 · Grace and pin — how long a leaf holds bytes before the sweep
 
@@ -215,7 +215,7 @@ A daemon verb the founder's caller invokes reads as the pono lean for one scoped
 
 !!! At the human / household scale
 
-A Librarian of Mu stands in a drifting stack of the High Delos Archive with a satchel that will hold forty workings and a shelf that will hold four thousand, and a fire behind her that spreads through l-space instead of shelf-space. She cannot copy a burned book. "The fire rides the copies" (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-burned-library">>, quote license). What survives clean: the pattern integrities, "the wave under the locked water."
+A Librarian of Mu stands in a drifting stack of the High Delos Archive with a satchel that will hold forty workings and a shelf that will hold four thousand, and a fire behind her that spreads through l-space instead of shelf-space. She cannot copy a burned book. "The fire rides the copies" (<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-burned-library`>>, quote license). What survives clean: the pattern integrities, "the wave under the locked water."
 
 She has three ways to say //keep this//.
 
@@ -245,7 +245,7 @@ One grace for the whole house reads as the pono lean for nothing; a grace per ti
 
 <<~/ahu>>
 
-<<~ ahu #/the-phone-seat>>
+<<~ ahu slot=`#/the-phone-seat`>>
 
 !! 6 · The phone seat — a family phone reaches the household hearth
 
@@ -281,7 +281,7 @@ Explain the seven-day clock and offer the install, never require it, which reads
 
 <<~/ahu>>
 
-<<~ ahu #/the-two-doors>>
+<<~ ahu slot=`#/the-two-doors`>>
 
 !! 7 · The two doors — a stock client saves a meme root through the native door
 
@@ -319,7 +319,7 @@ A server listener alone reads as the pono lean for nothing, since the shelf lies
 
 <<~/ahu>>
 
-<<~ ahu #/one-plugin-or-two>>
+<<~ ahu slot=`#/one-plugin-or-two`>>
 
 !! 8 · One plugin or two — route skins and the in-VM face
 
@@ -345,21 +345,21 @@ Aki, tuning the Strandbeest-Shrine's bells on the Hebros road, keeps the sanctum
 
 One bundle with the caps deciding what rings reads as the pono lean; two bundles read as the pono lean only where a wayfarer must load nothing it cannot ring.
 
-''RULED, and REHOMED 2026-09-13.'' The operator ruled //one bundle, the caps decide what rings// in the moʻolelo at #/exit. The ruling stands in a carrier of its own — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">> `#/one-bundle` — whole, with its three grounds (one law shipped twice reads as two laws · the keel already thins by caps and packaging cannot fail closed · what travels stays a cap question), the bundle's measured shape today, and what the ruling leaves open. ''This slot told it; that carrier holds it.''
+''RULED, and REHOMED 2026-09-13.'' The operator ruled //one bundle, the caps decide what rings// in the moʻolelo at #/exit. The ruling stands in a carrier of its own — <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>> `#/one-bundle` — whole, with its three grounds (one law shipped twice reads as two laws · the keel already thins by caps and packaging cannot fail closed · what travels stays a cap question), the bundle's measured shape today, and what the ruling leaves open. ''This slot told it; that carrier holds it.''
 
 <<~/ahu>>
 
-<<~ ahu #/exit>>
+<<~ ahu slot=`#/exit`>>
 
 !! Exit — moʻolelo
 
 The operator read the eight slots and ruled on 2026-09-11 ("Approve all, OODA-HA forwards"):
 
-<<~ moolelo held="the bridge rides Road B with the five-clause contract pinned as reds both roads must pass, the reach plane stays locked · the fetch door enacts makeCidResolver(localRead, casTransit, cacheWriteThrough) over Socket B with fetch-on-read the default, prefetch a per-peer cap, public blobs re-share via the Herm · the shared bag registers in the realm's shared CRDT, @crossroads names only that it exists, read at CONTRACT · the later grant lands as a record on the PersonaGroup doc and the joinee's own kit takes the seat against the published seal, reading never re-cuts · grace runs per tier against the realm's ahi-kā baseline, PIN at CID grain, the seven-day clock a reported floor · the phone seat explains and offers the install, projection stays the node's, PRF wraps beside and never mints, a synced passkey counts as a cloud, every key names its class in vault status, Mudlet probes the bulb face, Unreal builds against 5.x · the two doors compose: refuse a bare root at the native door naming /memes/, the adaptor rides the plugin the client already loads, a backstop re-stamps and logs · one bundle, the caps decide what rings (operator)">>enacted from this floor by tasked spirits; the eight slots above stay as told<<~/moolelo>> The plans these stories serve read at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">> and <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>.
+<<~ moolelo held=`the bridge rides Road B with the five-clause contract pinned as reds both roads must pass, the reach plane stays locked · the fetch door enacts makeCidResolver(localRead, casTransit, cacheWriteThrough) over Socket B with fetch-on-read the default, prefetch a per-peer cap, public blobs re-share via the Herm · the shared bag registers in the realm's shared CRDT, crossroads-plane names only that it exists, read at CONTRACT · the later grant lands as a record on the PersonaGroup doc and the joinee's own kit takes the seat against the published seal, reading never re-cuts · grace runs per tier against the realm's ahi-kā baseline, PIN at CID grain, the seven-day clock a reported floor · the phone seat explains and offers the install, projection stays the node's, PRF wraps beside and never mints, a synced passkey counts as a cloud, every key names its class in vault status, Mudlet probes the bulb face, Unreal builds against 5.x · the two doors compose: refuse a bare root at the native door naming /memes/, the adaptor rides the plugin the client already loads, a backstop re-stamps and logs · one bundle, the caps decide what rings (operator)`>>enacted from this floor by tasked spirits; the eight slots above stay as told<<~/moolelo>> The plans these stories serve read at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief`>> and <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/fold-readiness>>
+<<~ ahu slot=`#/fold-readiness`>>
 
 !! Fold readiness — measured 2026-09-13, REPORTED and not executed
 
@@ -369,33 +369,33 @@ The operator read the eight slots and ruled on 2026-09-11 ("Approve all, OODA-HA
 
 Seven of the eight slots had a carrier that inherited their ruling; slot 8 stood alone, its moʻolelo clause //one bundle, the caps decide what rings (operator)// recorded on this floor and nowhere else in the tree. A fold cannot re-point what nothing inherited.
 
-''The ruling stands whole at'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">> ''`#/one-bundle`'' — quoted verbatim under quote license, with its three grounds, the bundle's measured shape at `lares-memetic-wikitext.json`, and what it leaves open — plus a ninth entry in that carrier's `#/questions` list and a `status-why` naming what it now holds. ''The home was read off the gradient, never off the path'': that carrier already carries the cap-decides-behaviour rulings this clause instantiates (`#/questions`: //the cap-stack falls to the floor, never reds//; //the daemon reads as a wiki with specific caps to the vessel//) and already inventories what the TW5 side ships (`#/tw5-surfaces`). `composable-keel#/absence-is-structural` holds the DOCTRINE the ruling leans on and gets cited rather than rewritten — it rules runtime composition, never a shipped artifact's contents.
+''The ruling stands whole at'' <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>> ''`#/one-bundle`'' — quoted verbatim under quote license, with its three grounds, the bundle's measured shape at `lares-memetic-wikitext.json`, and what it leaves open — plus a ninth entry in that carrier's `#/questions` list and a `status-why` naming what it now holds. ''The home was read off the gradient, never off the path'': that carrier already carries the cap-decides-behaviour rulings this clause instantiates (`#/questions`: //the cap-stack falls to the floor, never reds//; //the daemon reads as a wiki with specific caps to the vessel//) and already inventories what the TW5 side ships (`#/tw5-surfaces`). `composable-keel#/absence-is-structural` holds the DOCTRINE the ruling leans on and gets cited rather than rewritten — it rules runtime composition, never a shipped artifact's contents.
 
 ''Every slot has an inheritor.'' The blocker that stood before any weld stands cleared; what remains reads below, and none of it is a missing home.
 
 !!! Slot → fold target
 
 |!slot |!where its ruling stands |!what a fold would write |
-|#/the-bridge |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">> — its `status-why` reads //The stories that set the intent ride at `scale-stories-basket-one#/the-bridge`//, RULED and BUILT on Road B (`b2fd7af55`) |a pointer; the inheriting carrier already names this floor, so the fold reverses one sentence |
-|#/the-fetch-door |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">> for the law, with the enactment cited in code at `packages/lararium-mesh/tests/cas-transit.test.ts:97` (//THE FETCH DOOR (scale-stories-basket-one #/the-fetch-door, ruled 2026-09-11)//) |a pointer, plus a decision about whether the code comment re-aims at `blob-carriage` or keeps naming a burned floor |
-|#/the-shared-bag |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">> (the registration ruling) and <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/heraldry">> (the 2026-09-12 Face ruling, quoted verbatim under quote license) |''the hard one'' — both inheritors QUOTE this slot rather than absorb it; see the shape below |
-|#/the-later-grant |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">> and <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">> — the carriers that hold the relation bag's brief and the re-grant law these stories serve |a pointer |
-|#/grace-and-pin |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>, with `packages/lararium-mesh/tests/stowage-clock.test.ts:9` citing `#/grace-and-pin` by address |a pointer, plus the same code-comment decision |
-|#/the-phone-seat |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">> |a pointer |
-|#/the-two-doors |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">> holds the measurement and the outcome; <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">> holds the argument |⚠ ''that second carrier sits in the retirement queue itself'', blocked on seam (b) — a fold pointing there points at something that may burn |
-|#/one-plugin-or-two |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">> `#/one-bundle` — the ruling whole, with its three grounds, since 2026-09-13 |a pointer; this slot already names it |
+|#/the-bridge |<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>> — its `status-why` reads //The stories that set the intent ride at `scale-stories-basket-one#/the-bridge`//, RULED and BUILT on Road B (`b2fd7af55`) |a pointer; the inheriting carrier already names this floor, so the fold reverses one sentence |
+|#/the-fetch-door |<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>> for the law, with the enactment cited in code at `packages/lararium-mesh/tests/cas-transit.test.ts:97` (//THE FETCH DOOR (scale-stories-basket-one #/the-fetch-door, ruled 2026-09-11)//) |a pointer, plus a decision about whether the code comment re-aims at `blob-carriage` or keeps naming a burned floor |
+|#/the-shared-bag |<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief`>> (the registration ruling) and <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/heraldry`>> (the 2026-09-12 Face ruling, quoted verbatim under quote license) |''the hard one'' — both inheritors QUOTE this slot rather than absorb it; see the shape below |
+|#/the-later-grant |<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief`>> and <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot`>> — the carriers that hold the relation bag's brief and the re-grant law these stories serve |a pointer |
+|#/grace-and-pin |<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage`>>, with `packages/lararium-mesh/tests/stowage-clock.test.ts:9` citing `#/grace-and-pin` by address |a pointer, plus the same code-comment decision |
+|#/the-phone-seat |<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>> |a pointer |
+|#/the-two-doors |<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity`>> holds the measurement and the outcome; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable`>> holds the argument |⚠ ''that second carrier sits in the retirement queue itself'', blocked on seam (b) — a fold pointing there points at something that may burn |
+|#/one-plugin-or-two |<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>> `#/one-bundle` — the ruling whole, with its three grounds, since 2026-09-13 |a pointer; this slot already names it |
 
 !!! The six inbound edges, and where each would re-aim
 
 Re-derive: `grep -rn "scale-stories-basket-one" --include='*.mem' . | grep -v node_modules | grep -v "docs/pono/scale-stories-basket-one.mem"`.
 
 |!carrier |!lines |!what it takes |!the weld |
-|`docs/pono/hearths.mem` |''182'' (re-measured 2026-09-13; the `:131` reading went stale) |an edge in `#/edges` alone |''BARE — HANDED BACK 2026-09-13, unwelded.'' A sibling hand holds that carrier this watch. THE ROW IT NEEDS: `hearths.mem:182` carries `<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>` in `#/edges`; nothing in the ledger's prose depends on this floor, and its `#/crossings` row at `:169` names this carrier only as a measured subject — so ''drop the edge line'', or re-aim at whichever carrier inherits the realm leg |
+|`docs/pono/hearths.mem` |''182'' (re-measured 2026-09-13; the `:131` reading went stale) |an edge in `#/edges` alone |''BARE — HANDED BACK 2026-09-13, unwelded.'' A sibling hand holds that carrier this watch. THE ROW IT NEEDS: `hearths.mem:182` carries ``<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>>`` in `#/edges`; nothing in the ledger's prose depends on this floor, and its `#/crossings` row at `:169` names this carrier only as a measured subject — so ''drop the edge line'', or re-aim at whichever carrier inherits the realm leg |
 |`docs/pono/syncer-seams-roundtable.mem` |43 · 75 · 378 · 391 |the two-doors ruling twice in argument (`:43`, `:75`), once as an edge (`:391`), and one stale row at `:378` |''HANDED BACK 2026-09-13'' — a sibling hand holds that carrier this watch, and one of its rows now reads FALSE. THE ROWS IT NEEDS: (a) `:43` and `:75` cite `#/the-two-doors` in argument; both re-aim at `syncer-back-parity`, which carries the outcome. (b) `:391` carries the bare edge. (c) ⚠ ''`:378` reads stale'': it warns that //both of that table's exemplars sit in the retirement queue at once//, because `otakiage:383` leaned on this floor for the `folded` stage. It no longer does — `otakiage#/examples` now rules that a stage ending in deletion cannot be evidenced by a pointer, spells the `folded` exemplar as DESCRIPTION (`docs/handback-stale-rooms`, burned this watch), and gives this floor a row of its own as `standing` × `floor`, QUOTED OUT. Only ONE of that table's exemplars sits in the queue now, and it is `syncer-seams-roundtable` itself. ⚠ ''both floors still stand in the queue together'' — whichever folds first re-points the other, and folding them in one sweep re-points neither |
 |`docs/pono/otakiage.mem` |#/examples |''RESOLVED 2026-09-13 — and NOT by a re-point.'' The `folded` row wanted a replacement exemplar; a pointer could never have served as one. `otakiage#/examples` now states the law: ''a stage that ends in deletion cannot be evidenced by a pointer'' — the rite grades `folded` on ZERO inbound `loulou`, so an exemplar link demotes the carrier out of the stage it was cited to prove, and the stage's own exit runs to ash. The exemplar rides as DESCRIPTION: `docs/handback-stale-rooms` by name and commit (`7d3b3bf5c`), with the shape it held at the moment it stood folded. ''This floor's own row moved up beside it'' — as `standing` × `floor`, QUOTED OUT — so the edge at `#/edges` stays earned and now records the licence shape rather than borrowing this floor as evidence. ''No weld owed here'' |
 |`docs/pono/realm-bag-brief.mem` |31 · 82 |//"the ruling this brief enacts"//, quoted verbatim under quote license |''LICENCE — CONFIRMED 2026-09-13 in that carrier's own words'', beside the quote: the clause rides there verbatim, the `loulou` marks provenance and never a dependency, and a hand folding this floor MUST NOT re-point it. The quote already IS the fold. ''No weld owed'' |
 |`docs/pono/heraldry.mem` |29 · ~147 · 237 |the 2026-09-12 operator ruling, quoted verbatim in three places |''LICENCE — CONFIRMED 2026-09-13'', once at `#/ruling` for all three sites (the ruling, the `#/the-herm-card` great-grandchild sentence, the edge). Same shape, same instruction: re-aiming a provenance mark leaves the quote standing over a hole, silently. ''No weld owed'' |
-|`docs/pono/offering.mem` |449 |an edge in `#/edges` alone |''BARE — HANDED BACK 2026-09-13, unwelded.'' A sibling hand holds that carrier this watch. THE ROW IT NEEDS: `offering.mem:449` carries `<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>` in `#/edges` and nothing in that carrier's prose leans on this floor — so ''drop the line'', or re-aim at `docs/pono/recipe-layer-model` if the offering wants the one-bundle ruling it now holds |
+|`docs/pono/offering.mem` |449 |an edge in `#/edges` alone |''BARE — HANDED BACK 2026-09-13, unwelded.'' A sibling hand holds that carrier this watch. THE ROW IT NEEDS: `offering.mem:449` carries ``<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>>`` in `#/edges` and nothing in that carrier's prose leans on this floor — so ''drop the line'', or re-aim at `docs/pono/recipe-layer-model` if the offering wants the one-bundle ruling it now holds |
 
 A seventh carrier, `docs/pono/outbound-bridge.mem:16`, names this floor in prose inside `status-why` and carries no `loulou`. It welds nothing and the rite counts no edge for it, but a reader arriving through that sentence would meet a missing file. ''CONFIRMED 2026-09-13 in that carrier's own words'' as a naming of where the intent got told, with the ruling and its witness standing in `outbound-bridge` itself — so it survives this floor's ending intact and wants no re-point.
 
@@ -417,36 +417,36 @@ Six code sites cite this carrier: `packages/lararium-mesh/src/realm-bag.ts:4` an
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/action-handler">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/books/the-lares-dreamnet/spine">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-burned-library">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/grandmother-spider">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/kai-a">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/field-collision`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/vessel-caps`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/nexus-topology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/action-handler`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/books/the-lares-dreamnet/spine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/lares-viales`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-fae-clans`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-burned-library`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/grandmother-spider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/kai-a`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9FO-DTtYxsHqefyo7J4G654QJpMvEs0w5Z_7x_EqFas
+<<^ code=`&#x0003;`>>ni:///sha-256;iOTkDJmEsMou4-WNB1bINJXfGeEmKX65Xlc2mDrJ5f8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

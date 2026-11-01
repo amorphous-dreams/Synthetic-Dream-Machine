@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/canon-boundary">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/canon-boundary`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -10,14 +10,14 @@ l-space   = "stable"
 mana      = 15
 manao     = 16
 manaoio   = 13
-role      = "docs sister for the canon boundary — crossing examples, event shape, review pressure, and THE PROMOTION BOUNDARY: a crossing moves the ENVELOPE alone and hostful/hostless carries no residency signal; copy-up is free, promotion-down is the kahu quorum's act; the cap gate holds the line and a signed receipt lands beside the carrier before the move; a crossing into @crossroads also carries the seats' approval"
+role      = "docs sister for the canon boundary — crossing examples, event shape, review pressure, and THE PROMOTION BOUNDARY: a crossing moves the ENVELOPE alone and hostful/hostless carries no residency signal; copy-up is free, promotion-down is the kahu quorum's act; the cap gate holds the line and a signed receipt lands beside the carrier before the move; a crossing into crossroads-plane also carries the seats' approval"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/canon-boundary"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/canon-boundary"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Canon Boundary — Docs Sister
 
@@ -27,7 +27,7 @@ This file gives a fuller map of canon-crossing events.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ observe the source claim, target territory, affected memes, and operator trust tier and intent.
 ⏿ orient the current meme trust tier against the meme tier requested by the claim.
@@ -37,7 +37,7 @@ This file gives a fuller map of canon-crossing events.
 
 <<~/ahu>>
 
-<<~ ahu #/crossing-model>>
+<<~ ahu slot=`#/crossing-model`>>
 
 !! Crossing Model
 
@@ -55,7 +55,7 @@ The boundary keeps all five available without collapsing them.
 
 <<~/ahu>>
 
-<<~ ahu #/the-promotion-boundary>>
+<<~ ahu slot=`#/the-promotion-boundary`>>
 
 !! The promotion boundary ~ who may cross, and in which direction
 
@@ -96,7 +96,7 @@ Naming the live layer as one thing hides the distinction a person actually feels
 
 !!! The direction carries the whole rule
 
-''COPY-UP IS FREE. PROMOTION-DOWN IS THE PRIESTHOOD'S ACT.'' (operator ruling — the threshold's two faces, held apart: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>) A user may copy and alter a public tiddler into a more private bag — a personal shadow copy — and that path MUST stay cheap; the recipe stack runs on it. Moving in the other direction, from any private bag into canon, belongs to the ''kahu quorum's signers''.
+''COPY-UP IS FREE. PROMOTION-DOWN IS THE PRIESTHOOD'S ACT.'' (operator ruling — the threshold's two faces, held apart: <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities`>>) A user may copy and alter a public tiddler into a more private bag — a personal shadow copy — and that path MUST stay cheap; the recipe stack runs on it. Moving in the other direction, from any private bag into canon, belongs to the ''kahu quorum's signers''.
 
 The stack order makes //down// literal: ''core < canon < wiki < user < session''. Canon sits low; a shadow copy rises; a promotion descends. Canon mounts ''read-only'', so an edit seen through it copies UP by overlayfs semantics — structural, not a name check.
 
@@ -127,7 +127,7 @@ The two properties it fuses:
 
 <<~/ahu>>
 
-<<~ ahu #/boundary-event-shape>>
+<<~ ahu slot=`#/boundary-event-shape`>>
 
 !! Boundary Event Shape
 
@@ -147,7 +147,7 @@ These fields define the shape of explicit thinking; a tool schema MAY take them 
 
 <<~/ahu>>
 
-<<~ ahu #/examples>>
+<<~ ahu slot=`#/examples`>>
 
 !! Examples
 
@@ -177,7 +177,7 @@ Operator confirms the canon MOVE target. Patch the canon meme, cite source live 
 
 <<~/ahu>>
 
-<<~ ahu #/review-pressure>>
+<<~ ahu slot=`#/review-pressure`>>
 
 !! Review Pressure
 
@@ -193,18 +193,18 @@ If the answers remain vague, the claim should stay as session pressure.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/l-space-trust">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hooponopono`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space-trust`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/l-space-trust`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rJUoOoVu1vKqmIhVfb2MAt0gjI_3TPrp35EZB8TzCa0
+<<^ code=`&#x0003;`>>ni:///sha-256;K_66UGnQznAt4Sa4o8r6dz_LZJBt0ESAS3vlPwqE2no
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

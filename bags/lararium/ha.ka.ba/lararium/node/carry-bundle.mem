@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/carry-bundle">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/node/carry-bundle`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -18,7 +18,7 @@ uri-path    = "ha.ka.ba/lararium/node/carry-bundle"
 written     = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The carry bundle ~ a herm's explicit join, by hand
 
@@ -29,7 +29,7 @@ carry-take` on the herm. This is the explicit act that opens the herm relay (the
 
 <<~/ahu>>
 
-<<~ ahu #/what-it-holds>>
+<<~ ahu slot=`#/what-it-holds`>>
 
 !! What it holds ~ public bytes only
 
@@ -43,7 +43,7 @@ the board publishes anyway.
 
 <<~/ahu>>
 
-<<~ ahu #/the-take>>
+<<~ ahu slot=`#/the-take`>>
 
 !! The take refuses, writing nothing, unless
 
@@ -59,7 +59,7 @@ nowhere. A running vessel refolds at once; otherwise the next boot stands the ga
 
 <<~/ahu>>
 
-<<~ ahu #/two-vault>>
+<<~ ahu slot=`#/two-vault`>>
 
 !! A cofounded Nexus carries a herm by the two-vault door
 
@@ -69,18 +69,18 @@ act, the claim and the rows in one write, and emits this bundle from there. A pa
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-node/src/carry-bundle.ts" family="code" role="has">>
-<<~ pranala #issuer from="?" -> to="packages/lararium-node/src/commands/nexus-contract.ts" family="code" role="issued-by">>
-<<~ pranala #twin from="?" -> to="packages/lararium-node/src/admit-bundle.ts" family="code" role="twin-of">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/carry-bundle.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#issuer` from=`?` to=`packages/lararium-node/src/commands/nexus-contract.ts` family=`code` role=`issued-by`>>
+<<~ pranala slot=`#twin` from=`?` to=`packages/lararium-node/src/admit-bundle.ts` family=`code` role=`twin-of`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/place-floor-pin`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;li11TKxxFCj41RFI-e1Qlp-qXTJALZl45ijiyC9Ad4c
+<<^ code=`&#x0003;`>>ni:///sha-256;3DXWB2t671le5AB0wthrX8Q21ts4CzXCZSbUtnO-C7o
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

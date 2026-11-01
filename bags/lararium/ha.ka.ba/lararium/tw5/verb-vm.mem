@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/verb-vm">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/verb-vm`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -15,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/verb-vm"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 ''The outcome bound.'' A verb's durable outcome rests in the daemon bag, syncs to every vessel and never shrinks, so `writeOutcome` bounds it. Any top-level array of the handler's result past `AUDIT_ARRAY_CAP` rows (32) rides as a summary in place of its rows: the row count, a tally per `decision` over the rows that carry one, a hash of the whole array, a sample of three, and every row whose decision reads `refuse` or `conflict`, whole, up to the cap (`held`), beside the count of such rows the summary leaves unnamed (`heldMore`). An array at or under the cap rides whole.
 
@@ -29,6 +29,6 @@ Witnesses: `packages/lararium-tw5/tests/verb-vm.test.ts` · `packages/lararium-t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0KNpaEiIlN4rHcmtrl9A-3fN9C1Qu9e07E2h9QcvlKM
+<<^ code=`&#x0003;`>>ni:///sha-256;6zCvceqeDOYzJ1MoFmmsVpj9ELU7Zn-V3s915KneJ9w
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

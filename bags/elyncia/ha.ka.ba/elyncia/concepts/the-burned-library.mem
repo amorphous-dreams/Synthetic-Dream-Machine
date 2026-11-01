@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-burned-library">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/concepts/the-burned-library`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/the-burned-library"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Burned Library
 
@@ -34,7 +34,7 @@ shelf-space, and LOCKED much of the records.''
 
 <<~/ahu>>
 
-<<~ ahu #/the-lock>>
+<<~ ahu slot=`#/the-lock`>>
 
 !! What a Locked Record Reads Like
 
@@ -49,7 +49,7 @@ treatment, and factional sponsorship — every one of them a key someone cut aft
 
 <<~/ahu>>
 
-<<~ ahu #/the-kuleana>>
+<<~ ahu slot=`#/the-kuleana`>>
 
 !! The Kahu Kuleana
 
@@ -70,7 +70,7 @@ its room back.
 
 <<~/ahu>>
 
-<<~ ahu #/voss-interfaces>>
+<<~ ahu slot=`#/voss-interfaces`>>
 
 !! The Voss-Interfaces
 
@@ -81,14 +81,14 @@ your exits memorized.// Some information they hold stays locked — not by the f
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/sdm/docs/arcana-model">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/factions/index">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/docs/arcana-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/factions/index`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vbhPwOBSmqrbJeDvwxWe0CKCHKRJwi1e5xKShilIpAw
+<<^ code=`&#x0003;`>>ni:///sha-256;eDhcVRzaDrtoHRPZdTZ9MTyU5tkw7EZj95n6dR46FnA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/art-sigils/example-one-inscription">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils/example-one-inscription`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 uri-path  = "ha.ka.ba/lares/docs/art-sigils/example-one-inscription"
@@ -14,7 +14,7 @@ status    = "stable"
 retain    = true
 ```
 
-<<~ ahu #/inscription>>
+<<~ ahu slot=`#/inscription`>>
 ! Art Sigils — Example One Inscription
 
 Copy only this **913-character** invocation. [[Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]] supplies the canonical `art()` definition outside the image-facing source; native TW5 transclusion requires that declaration in scope.
@@ -24,7 +24,7 @@ Copy only this **913-character** invocation. [[Procedure Grammar|ha.ka.ba/lares/
 ```
 <<~/ahu>>
 
-<<~ ahu #/literal-rendering>>
+<<~ ahu slot=`#/literal-rendering`>>
 !! Literal rendering
 
 The procedure's named parameters expand to the following expected prose. The reference expresses substitution, not an attestation of live TW5 execution.
@@ -34,7 +34,7 @@ messy concept-art board: Tide-Clock Monastery of the Black Lens, a ring of drown
 ```
 <<~/ahu>>
 
-<<~ ahu #/bearings>>
+<<~ ahu slot=`#/bearings`>>
 !! Artistic bearings
 
 The dominant sea-stack painting presents a navigable sanctuary whose lower stairs disappear under the tide. Smaller studies investigate its mirrored beacon, working dock, storm chart and dark central aperture. Six artist bearings shape ornament, organic architecture, atmosphere, marine light, line and material credibility without requiring printed credits.
@@ -42,12 +42,12 @@ The dominant sea-stack painting presents a navigable sanctuary whose lower stair
 [[Complete Example One Folio|ha.ka.ba/lares/docs/art-sigils/example-one-folio]] carries scoped studies, counterpoints, facture and non-depicted source references.
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 !! Aftermath — partial knowledge
 
 The monastery's astronomers claim predictable cycles; floodwater contradicts dependable access. The Black Lens suggests a watcher without identifying one. These narrative tensions belong to the imagined artwork, not to observed marine archaeology or astronomical evidence.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gcrn1UyNechQLLTKXl7BTDLhtjM4GdFzy-ycMyTufF4
+<<^ code=`&#x0003;`>>ni:///sha-256;vfalCNMrU8w1MruiMGW1Kwtbm6kR74aE5RMLz3gF2hE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

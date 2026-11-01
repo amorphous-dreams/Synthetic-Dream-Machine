@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/art-sigils/example-one-folio">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils/example-one-folio`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 uri-path  = "ha.ka.ba/lares/docs/art-sigils/example-one-folio"
@@ -14,7 +14,7 @@ status    = "stable"
 retain    = true
 ```
 
-<<~ ahu #/invitation>>
+<<~ ahu slot=`#/invitation`>>
 ! Art Sigils — Example One Folio
 
 The **Tide-Clock Monastery of the Black Lens** occupies a crescent of drowned basalt sea stacks. Its inhabitants read the skies while the sea erases familiar passages and returns an ambiguous reflection.
@@ -22,7 +22,7 @@ The **Tide-Clock Monastery of the Black Lens** occupies a crescent of drowned ba
 The Folio develops this single visual inquiry through named studies, counterpoints and material scopes. [[Companion Inscription|ha.ka.ba/lares/docs/art-sigils/example-one-inscription]] presents the compact `art()` invocation. [[Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]] supplies the declarations outside the artistic source.
 <<~/ahu>>
 
-<<~ ahu #/folio-sigils>>
+<<~ ahu slot=`#/folio-sigils`>>
 !! The complete copyable Folio
 
 Copy the entire **5863-character** block as one expanded artwork. The opening `art()` sets the whole work; studies, counterpoints and facture develop location, tide hazards, instruments, habitation and the abyss. Research URIs remain in the `research` ahu outside the copyable sigils.
@@ -50,7 +50,7 @@ Copy the entire **5863-character** block as one expanded artwork. The opening `a
 The Folio follows a practical 6,000-character ceiling and carries no URLs or procedure declarations. The adjacent research ahu preserves all source addresses for capable receivers. Midjourney may rephrase a long prompt; the compact Inscription offers the shorter alternative.
 <<~/ahu>>
 
-<<~ ahu #/research>>
+<<~ ahu slot=`#/research`>>
 !! Maritime and artistic bearings
 
 * [[Skellig Michael World Heritage|https://whc.unesco.org/en/list/757]] — exposed monastic occupation amid steep maritime terrain
@@ -60,7 +60,7 @@ The Folio follows a practical 6,000-character ceiling and carries no URLs or pro
 Kay Nielsen guides ornamental rhythm; Roger Dean lends improbable architecture; Caspar David Friedrich supplies solitary weather; Hiroshi Yoshida offers layered marine light; Arthur Rackham shapes wiry line; Anna Podedworna informs believable fantasy materials. Those bounded bearings remain distinct from a wholesale imitation of any one artist.
 <<~/ahu>>
 
-<<~ ahu #/depiction>>
+<<~ ahu slot=`#/depiction`>>
 !! Pictorial and fictional boundaries
 
 The frame contains a single folio with one dominant oblique panorama and supporting studies on unequal paper supports. Monks, fishers and salvagers appear only *inside* depicted studies. Source photographs, printed artist names, studio furniture, navigational measurements and definite explanations of the Black Lens do not enter the painted work.
@@ -68,12 +68,12 @@ The frame contains a single folio with one dominant oblique panorama and support
 The clock describes a plausible cycle without guaranteeing safe crossing. Mirrors, tide marks and the dark water invite rival explanations without proving an ancient machine or a living abyss. The monastery and its lore occupy a fictional setting; the terrestrial sources offer artistic bearings rather than canonical geography.
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 !! Aftermath — observed relation and withheld certainty
 
 The tide-clock provides order while its stairs lose access; the beacon studies outward while the central aperture appears to answer; gardens and repairs persist alongside peril. Each contrast draws meaning through visible relationships. An implied leviathan does not require a confirmed leviathan, and a reflected light need not settle the Black Lens's identity.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3i0lKWjhrEjrJn20Kck6b7wR_NKmCHzQoVwoEO1XZMA
+<<^ code=`&#x0003;`>>ni:///sha-256;DNeX3lU8SXlS-EzLKo5X0MFb_1xbQGPHxBRToOd7xfc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

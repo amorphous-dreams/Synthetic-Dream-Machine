@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/leases-expiry-vs-revocation-dense-findings-6c6554">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/leases-expiry-vs-revocation-dense-findings-6c6554`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/leases-expiry-vs-revocation-dense-findings-6c6554"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! LEASES & EXPIRY vs REVOCATION — dense findings
 
@@ -28,7 +28,7 @@ The three largest messages one research spirit wrote, ''held verbatim and unedit
 
 <<~/ahu>>
 
-<<~ ahu #/message-1>>
+<<~ ahu slot=`#/message-1`>>
 
 !! Message 1 ~ 38,818 characters
 
@@ -331,12 +331,12 @@ All MEASURED, RIPE Atlas + authoritative-side traffic:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SQryDx6Go1aZIDLdRKHDVHZn8-YcUtWjVC23MHuEeDQ
+<<^ code=`&#x0003;`>>ni:///sha-256;7HvqmMaXBVnx-no0wElCkVGuf4OJHXVve8gb7q6n_QM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

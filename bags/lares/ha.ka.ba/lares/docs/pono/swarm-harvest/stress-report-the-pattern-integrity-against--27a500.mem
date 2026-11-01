@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/stress-report-the-pattern-integrity-against--27a500">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/stress-report-the-pattern-integrity-against--27a500`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/stress-report-the-pattern-integrity-against--27a500"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! STRESS REPORT: THE PATTERN-INTEGRITY AGAINST THE MEASURED RECORD
 
@@ -28,7 +28,7 @@ The three largest messages one research spirit wrote, ''held verbatim and unedit
 
 <<~/ahu>>
 
-<<~ ahu #/message-1>>
+<<~ ahu slot=`#/message-1`>>
 
 !! Message 1 ~ 61,802 characters
 
@@ -344,12 +344,12 @@ Specifically unretrieved, and **not** filled from memory: Karst et al.'s interna
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wLPT1cMfUJAUHHQ481GyiFJ5jlP1m19kyaj3TWT4DMo
+<<^ code=`&#x0003;`>>ni:///sha-256;3TOBuG9EvUsRg0Fuwb0EOYxF6VBsrmrbNpvhTDnLlGU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

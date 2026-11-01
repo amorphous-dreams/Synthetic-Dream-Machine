@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/exchange-vector">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/exchange-vector`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -113,6 +113,6 @@ Long-term, the server should validate the vector and render the panel from the p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ABARRx4ucTKNGamvT9iwTx5Ekd_cc1ZyNveoyOziweY
+<<^ code=`&#x0003;`>>ni:///sha-256;2-fYP2PLoWfIX2DE6lSv2fIvkYF7CjjFLOt-x0lfBxY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

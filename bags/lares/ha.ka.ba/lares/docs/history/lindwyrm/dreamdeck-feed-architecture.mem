@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable       = false
@@ -18,7 +18,7 @@ type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! The Lindwyrm's Hoard — DreamDeck Feed Architecture
 
@@ -26,7 +26,7 @@ Container, cast, format conventions, and tone laws for the Lindwyrm hoard story.
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
@@ -44,7 +44,7 @@ Related loci:
 
 <<~/ahu>>
 
-<<~ ahu #/format>>
+<<~ ahu slot=`#/format`>>
 
 !! Format
 
@@ -62,7 +62,7 @@ The Lindwyrm tells the story herself, on feed, in response to Telarus.
 
 <<~/ahu>>
 
-<<~ ahu #/technical-stack>>
+<<~ ahu slot=`#/technical-stack`>>
 
 !! Technical Stack Target
 
@@ -85,14 +85,14 @@ Render targets:
 
 <<~/ahu>>
 
-<<~ ahu #/post-header-law>>
+<<~ ahu slot=`#/post-header-law`>>
 
 !! Post Header Law
 
 Post header shape:
 
 ```text
-@handle@node — timestamp — //domain.quality.dynamic{/optional/path} confidence <Register> <N>/20 · 🏛️:<tools> 🌊:<tools> …
+handle@node — timestamp — //domain.quality.dynamic{/optional/path} confidence <Register> <N>/20 · 🏛️:<tools> 🌊:<tools> …
 ```
 
 Rules:
@@ -116,13 +116,13 @@ Mu tools (the bind after `:`):
 Example:
 
 ```text
-@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, mid-morning — //memory.deep.surfaces · 🏛️/!
+lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, mid-morning — //memory.deep.surfaces · 🏛️/!
 ```
 
 Sidebar annotation:
 
 ```text
-> @handle: annotation text
+> handle: annotation text
 ```
 
 System message:
@@ -133,7 +133,7 @@ System message:
 
 <<~/ahu>>
 
-<<~ ahu #/cast>>
+<<~ ahu slot=`#/cast`>>
 
 !! Cast
 
@@ -166,7 +166,7 @@ Peanut gallery, awe-to-skepticism spectrum, useful proxies for reader confusion.
 
 <<~/ahu>>
 
-<<~ ahu #/lindwyrm-position>>
+<<~ ahu slot=`#/lindwyrm-position`>>
 
 !! The Lindwyrm Among Great Dragons
 
@@ -185,7 +185,7 @@ Hermes, Hephaestus, Eris-Enyo, and Aracne-Jorogumo (Grandmother Spider) worked w
 
 <<~/ahu>>
 
-<<~ ahu #/wyrmfile>>
+<<~ ahu slot=`#/wyrmfile`>>
 
 !! WyrmFile — A Reader's Dossier
 
@@ -193,7 +193,7 @@ A worked example of the feed format, doubling as the central character's groundi
 
 ```text
 >>>> WYRMFILE :: THE LINDWYRM OF NEW DELOS
->>>> filed to #origin-stories by @ink-clerk@lares · YOLD 4995, 14 Bureaucracy
+>>>> filed to #origin-stories by ink-clerk@lares · YOLD 4995, 14 Bureaucracy
 >>>> subject pronouns: she/them · status: load-bearing · disposition: do not poke
 ```
 
@@ -218,14 +218,14 @@ Then the Necrospire fell, Web 2.0 went dark, and every power that had smirked at
 
 <<~/ahu>>
 
-<<~ ahu #/thread-beats>>
+<<~ ahu slot=`#/thread-beats`>>
 
 !! Thread Beats
 
 Frame:
 
 ```text
-[SYSTEM: @lindwyrm@new-delos starts a live thread in #origin-stories.
+[SYSTEM: lindwyrm@new-delos starts a live thread in #origin-stories.
   Tags: #holy-week-of-fools #hoard-origin #orichalcum]
 ```
 
@@ -243,7 +243,7 @@ Beat sequence:
 
 <<~/ahu>>
 
-<<~ ahu #/tone-laws>>
+<<~ ahu slot=`#/tone-laws`>>
 
 !! Tone Laws
 
@@ -260,21 +260,21 @@ The Lindwyrm did not build the DreamNet from destiny. She wanted to watch //The 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed`>>
 
-<<~ pranala #consumed-from-story-shape-a from="?" -> to="lar:///ha.ka.ba/lares/docs/infrastructure-as-mythology/LINDWYRM_STORY_SHAPE" family="reference" role="source">>
-<<~ pranala #consumed-from-story-shape-b from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/LINDWYRM_STORY_SHAPE" family="reference" role="source">>
-<<~ pranala #format-for-hoard-story from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture" family="relation" role="informs">>
+<<~ pranala slot=`#consumed-from-story-shape-a` from=`?` to=`lar:///ha.ka.ba/lares/docs/infrastructure-as-mythology/LINDWYRM_STORY_SHAPE` family=`reference` role=`source`>>
+<<~ pranala slot=`#consumed-from-story-shape-b` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/LINDWYRM_STORY_SHAPE` family=`reference` role=`source`>>
+<<~ pranala slot=`#format-for-hoard-story` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture` family=`relation` role=`informs`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7oGwTwbTaPOdKVWCF-H7_2v0aagYhTKZgLaYKwW9mh0
+<<^ code=`&#x0003;`>>ni:///sha-256;LhQ8sx9c88GwWjneyVAC5pd_MUi9YrV9LNQJ9vi1gvk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

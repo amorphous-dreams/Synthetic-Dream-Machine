@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/ocif-orion-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/ocif-orion-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
@@ -21,7 +21,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/ocif-orion-scout"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Threadneedle ~ a spirit's handoff, held unedited
 
@@ -33,7 +33,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/ocif-orion-scout"
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
@@ -1081,8 +1081,8 @@ The format itself is sufficient. §Extension Mechanism grants a URI-identified p
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sG22yFzEHkEEXi6znQSHMYo80hW8QpXnIBjXgTb6bS8
+<<^ code=`&#x0003;`>>ni:///sha-256;Mg_c_1IRiAgDd7rb8h66cS-KMF4j_3DFtelVQZJTZeY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

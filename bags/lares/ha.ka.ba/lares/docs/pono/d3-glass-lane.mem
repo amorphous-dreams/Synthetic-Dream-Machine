@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/d3-glass-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/d3-glass-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,17 +14,17 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/d3-glass-lane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! D3 ~ the glass engine and the width spike
 
-Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR #103) and on rest-before-reload (PR #91). The operator ruled full as the default on 2026-10-28; the mirror boot lights that width through the D2 port binding, with none as the fallback (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> D3).
+Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR #103) and on rest-before-reload (PR #91). The operator ruled full as the default on 2026-10-28; the mirror boot lights that width through the D2 port binding, with none as the fallback (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>> D3).
 
 <<~/ahu>>
 
-<<~ ahu #/the-slices>>
+<<~ ahu slot=`#/the-slices`>>
 
 !! The slices, each built red first with its control
 
@@ -38,7 +38,7 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 
 <<~/ahu>>
 
-<<~ ahu #/the-visible-mirror>>
+<<~ ahu slot=`#/the-visible-mirror`>>
 
 !! The visible mirror, the person's choice and the vessel setups (operator, 2026-10-28)
 
@@ -46,11 +46,11 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 * ''ONE mirror step, then teardown.'' Full takes one step to skinny on a named failure, a caught capacity error; a failure past it tears the mirror down to the floor. `port:gone` closes it. A test pins the count.
 * ''Two crash records, both per tab and per wiki, both evidence and never a flag.'' `mirror:began:<wiki>` stands from the widen to full's first painted frame; `mirror:full-standing:<wiki>` stands from that frame to `pagehide` (a back-forward restore writes it again). A boot that finds either holds skinny and names why (`full-promotion-unfinished`, `full-ended-without-pagehide`). A store that throws names `evidence-unavailable`.
 * ''One pattern for boot, width and caps.'' The boot measures capacity and sets the width. The vessel's grant sets authority. A face intent sets experience. No one of the three picks another's value. A person's lighter choice (reduced chrome, a calmer story) is an ''experience'' carried as a face intent, worded for the person and never `skinny`; however a person customizes TW5, the width stays what the boot measured. No setting, URL value or stored value selects a width, and a census test holds the glass sources to the two evidence keys.
-* ''Vessel setups.'' A browser on a node's own box takes a port onto the node's vessel, one setup of many; a ''user'' class cap-stack gets no node infrastructure and stands an anon-device-browser-vessel or a fleet of equivalent vessels (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">> #/device-seats). The mirror reads the same in each.
+* ''Vessel setups.'' A browser on a node's own box takes a port onto the node's vessel, one setup of many; a ''user'' class cap-stack gets no node infrastructure and stands an anon-device-browser-vessel or a fleet of equivalent vessels (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>> #/device-seats). The mirror reads the same in each.
 
 <<~/ahu>>
 
-<<~ ahu #/owed>>
+<<~ ahu slot=`#/owed`>>
 
 !! What stands owed
 
@@ -66,7 +66,7 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 
 <<~/ahu>>
 
-<<~ ahu #/the-realm>>
+<<~ ahu slot=`#/the-realm`>>
 
 !! The mirror's realm ~ the operator's rulings (2026-10-29) as the lane's work order
 
@@ -78,7 +78,7 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 
 <<~/ahu>>
 
-<<~ ahu #/the-fences>>
+<<~ ahu slot=`#/the-fences`>>
 
 !! What the lane leaves alone
 
@@ -88,14 +88,14 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/d2-port-lane">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/d2-port-lane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;H6u7XK_NNdYPGxXJYtH_fwxN0h6XkzCrhpvn4LEm05I
+<<^ code=`&#x0003;`>>ni:///sha-256;9kDfi-XNTv5z4aJ95dvtZFxIH_M7toCQv8kTjzmeldQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

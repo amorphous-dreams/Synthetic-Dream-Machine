@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/model-roster-2026">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/model-roster-2026`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/model-roster-2026"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The model roster, 2026 ~ who takes which seat, and what the seat spends
 
@@ -23,7 +23,7 @@ Two readers gathered the providers' pages (fetched 2026-10-28) and this machine'
 
 <<~/ahu>>
 
-<<~ ahu #/rulings>>
+<<~ ahu slot=`#/rulings`>>
 
 !! The operator's rulings (2026-10-28)
 
@@ -38,7 +38,7 @@ Two readers gathered the providers' pages (fetched 2026-10-28) and this machine'
 
 <<~/ahu>>
 
-<<~ ahu #/the-models>>
+<<~ ahu slot=`#/the-models`>>
 
 !! The models
 
@@ -76,7 +76,7 @@ Gemini 4 Argon `gemini-4-argon` lists $2 / $10 / $0.10 cache hit through 2026-11
 
 <<~/ahu>>
 
-<<~ ahu #/the-plans>>
+<<~ ahu slot=`#/the-plans`>>
 
 !! How each plan meters
 
@@ -87,7 +87,7 @@ Gemini 4 Argon `gemini-4-argon` lists $2 / $10 / $0.10 cache hit through 2026-11
 
 <<~/ahu>>
 
-<<~ ahu #/what-this-crew-measured>>
+<<~ ahu slot=`#/what-this-crew-measured`>>
 
 !! What this crew measured
 
@@ -101,7 +101,7 @@ Gemini 4 Argon `gemini-4-argon` lists $2 / $10 / $0.10 cache hit through 2026-11
 
 <<~/ahu>>
 
-<<~ ahu #/the-roster>>
+<<~ ahu slot=`#/the-roster`>>
 
 !! The roster
 
@@ -124,7 +124,7 @@ Pools: Claude Max 20x (five-hour and weekly, subagents included), Codex team (we
 
 <<~/ahu>>
 
-<<~ ahu #/experiments>>
+<<~ ahu slot=`#/experiments`>>
 
 !! Three experiments
 
@@ -136,7 +136,7 @@ Pools: Claude Max 20x (five-hour and weekly, subagents included), Codex team (we
 
 <<~/ahu>>
 
-<<~ ahu #/open>>
+<<~ ahu slot=`#/open`>>
 
 !! Open
 
@@ -147,9 +147,9 @@ Pools: Claude Max 20x (five-hour and weekly, subagents included), Codex team (we
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/research/codex-controller-2026">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/codex-controller-2026`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bSa5JotUUeqw7h0kc9X1KlmVv-XMe9cSH4HEoFwqAFg
+<<^ code=`&#x0003;`>>ni:///sha-256;Oi5I8gefaU7ANHT0AJhkyWwASSoGKOLeOXJh5fkS8s0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

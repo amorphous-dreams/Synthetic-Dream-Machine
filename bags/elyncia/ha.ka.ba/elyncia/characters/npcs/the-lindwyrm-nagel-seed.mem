@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Lindwyrm ~ Nagel Seed
 
@@ -35,7 +35,7 @@ authority by declining. That stands as the Lindwyrm's own law, executed as techn
 
 <<~/ahu>>
 
-<<~ ahu #/prompt>>
+<<~ ahu slot=`#/prompt`>>
 
 !! The Prompt (verbatim)
 
@@ -56,7 +56,7 @@ zero 3D depth shading.">>
 
 <<~/ahu>>
 
-<<~ ahu #/returns>>
+<<~ ahu slot=`#/returns`>>
 
 !! What the Renders Returned
 
@@ -76,7 +76,7 @@ column of small unreadable type down the left margin.
 
 <<~/ahu>>
 
-<<~ ahu #/what-it-caught>>
+<<~ ahu slot=`#/what-it-caught`>>
 
 !! What the Register Caught
 
@@ -98,7 +98,7 @@ column of small unreadable type down the left margin.
 
 <<~/ahu>>
 
-<<~ ahu #/craft-notes>>
+<<~ ahu slot=`#/craft-notes`>>
 
 !! Craft Notes (for the next seed)
 
@@ -115,14 +115,14 @@ column of small unreadable type down the left margin.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/factions/gorgonne-diaspora">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/factions/gorgonne-diaspora`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QclaDJPvC3e-jYTWRBwSMKQPVhKUBVIstUSGCI1Qxvc
+<<^ code=`&#x0003;`>>ni:///sha-256;j0CDfr3RfWPXnxL0EwT4mOOmhwjRneT1eSsYmG9INEc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

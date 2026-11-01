@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/hui">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/hui`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/hui"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Hui
 
@@ -32,7 +32,7 @@ Grammar only --- the await-all join runtime awaits the async-first sprint.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -42,32 +42,32 @@ A hui block MUST propagate failure from any child flow to the containing flow.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
 <<~ hui>>
-  <<~ lele "lar:///target-a">>
-  <<~ lele "lar:///target-b">>
+  <<~ lele to=`lar:///target-a`>>
+  <<~ lele to=`lar:///target-b`>>
 <<~/hui>>
 
 <<~ sync>>
-  <<~ branch "lar:///target-a">>
-  <<~ branch "lar:///target-b">>
+  <<~ branch to=`lar:///target-a`>>
+  <<~ branch to=`lar:///target-b`>>
 <<~/sync>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-sync">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-sync`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1DPh0k_3jD4cFJrxUt6b3ePcXn4DYV0ZEldmrvyNAYY
+<<^ code=`&#x0003;`>>ni:///sha-256;DDlOQD3FZuDDPcOUMI-3_krGUQ9AdyKSWaQ4UaMIc_A
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

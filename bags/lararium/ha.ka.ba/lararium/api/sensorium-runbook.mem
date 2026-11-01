@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/api/sensorium-runbook">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -21,11 +21,11 @@ uri-path   = "ha.ka.ba/lararium/api/sensorium-runbook"
 written    = "2026-08-04"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Sensorium Runbook ~ the tending rite
 
@@ -34,7 +34,7 @@ written    = "2026-08-04"
 > against this document. ''Where a run contradicts a movement here, the run wins'' and the movement gets
 > rewritten — the same self-amending law the founding rite carries.
 
-''The intake seam now carries a bounded trial.'' Frozen-source custody, scoped receipts, typed-content and semantic-view frontiers, and owned model-backed Content and li witnesses have landed; live host collection and reconciled coverage still await witnesses at <<~ loulou "lar:///ha.ka.ba/lararium/api/mempalace-integration#/provisional-roadmap">>. A green `pour` or an empty source scan cannot certify complete capture, and the movement below remains a proposed rite rather than a deployed drain guarantee.
+''The intake seam now carries a bounded trial.'' Frozen-source custody, scoped receipts, typed-content and semantic-view frontiers, and owned model-backed Content and li witnesses have landed; live host collection and reconciled coverage still await witnesses at <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mempalace-integration#/provisional-roadmap`>>. A green `pour` or an empty source scan cannot certify complete capture, and the movement below remains a proposed rite rather than a deployed drain guarantee.
 
 The one-operator alpha trial at #/alpha-trial precedes any `pour --all`. Its bounded frozen evidence now travels as an explicit repository test fixture. The frozen Claude parent/child pair has landed `/state` intake, typed-content, owned MiniLM Content and full-constituency li receipts over 1,717 matched occurrences. The complete Liliʻuokalani digital witness has its own book ledger, 40 exact typed spans and 38 selected literary occurrences matched across owned Content and li. Both remain disposable trials; neither claims complete native history, live reconciliation or a founded memory Sensorium. The operator has now authorized backfill of all discoverable existing AI–operator conversations plus capture of new live conversations into both the owned Memory Sensorium and the independently mined guest MemPalace comparator. Each backfill batch still needs its own inventory horizon, receipts and explicit gaps; this authorization does not turn a bounded trial into a full-history witness.
 
@@ -54,7 +54,7 @@ the consecration. ''This one runs the daily offering.''
 
 <<~/ahu>>
 
-<<~ ahu #/alpha-trial>>
+<<~ ahu slot=`#/alpha-trial`>>
 
 !! The bounded alpha trial ~ inventory, freeze, probe
 
@@ -78,13 +78,13 @@ These scripts live under `packages/lararium-sensorium/scripts/`. Trial manifests
 
 <<~/ahu>>
 
-<<~ ahu #/next-enactment>>
+<<~ ahu slot=`#/next-enactment`>>
 
 !! OODA-HA ~ the two-wave enactment, with first receipts
 
 ''✶ Observe.'' The frozen Claude pair crosses custody, typed projection, owned MiniLM Content and an immutable full-constituency li basis on the same 1,717 occurrence IDs. The complete Liliʻuokalani witness crosses its separate book ledger into 40 typed spans, with 38 literary occurrences selected for owned Content and li. Duplicate text keeps distinct occurrence IDs and a separate text digest; A→B→A keeps its immutable revisions. The Form opener and FFZ root now honor the pinned MemPalace contract. Equal vector dimensions still cannot prove equal Idiom bases.
 
-''⏿ Orient.'' Keep the source BLOB as producer custody, the typed ledger as parser output, and the owned Content view as model-backed projection. Give a block an occurrence ID, source byte revision and span, parser identity, text digest and order coordinate; keep observation and current-revision selection beside it. Name a third, semantic-view frontier and its idempotent receipt rather than advancing the typed-content frontier for a Chroma write. Read the later ground-and-lattice ruling at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/the-geometry">>: the proven shape→idiom chain occupies one spine, the meaning braid carries separate warrants, and ki reads through admissible apertures. `locus` may name Sensorium placement; a `lar:` address supplies no placement by itself.
+''⏿ Orient.'' Keep the source BLOB as producer custody, the typed ledger as parser output, and the owned Content view as model-backed projection. Give a block an occurrence ID, source byte revision and span, parser identity, text digest and order coordinate; keep observation and current-revision selection beside it. Name a third, semantic-view frontier and its idempotent receipt rather than advancing the typed-content frontier for a Chroma write. Read the later ground-and-lattice ruling at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/the-geometry`>>: the proven shape→idiom chain occupies one spine, the meaning braid carries separate warrants, and ki reads through admissible apertures. `locus` may name Sensorium placement; a `lar:` address supplies no placement by itself.
 
 ''◇ Decide.'' Wave I keeps one immutable declared corpus per li basis. The new `trial_owned_li.py` checkpoints each parsed Shape under its parser identity, then writes the final recurrence-mined ordered Idiom forms and occurrence memberships in one SQLite commit. Its manifest binds input occurrences, parser/miner code, runtime package versions, model asset digests, parser tiers and ordered forms; a degraded parser earns only a degraded warrant. The frozen parent+child li basis and same-root Content projections now have receipts; the book source adapter now has custody, typed, owned Content and li receipts for Liliʻuokalani’s complete digital witness. Wave I still needs the meaning braid with declared/enacted/used warrants. Wave II carries ki apertures, occurrence-based recall, source-declared edges, reversible kapae, live adapters and operational repeats.
 
@@ -100,7 +100,7 @@ An exact 5,731-byte introduction excerpt from the vessel's Liliʻuokalani source
 
 <<~/ahu>>
 
-<<~ ahu #/gpu-capability>>
+<<~ ahu slot=`#/gpu-capability`>>
 
 !! The WSL compute cap ~ measured 2026-10-15
 
@@ -112,7 +112,7 @@ An exact 5,731-byte introduction excerpt from the vessel's Liliʻuokalani source
 
 <<~/ahu>>
 
-<<~ ahu #/the-planes>>
+<<~ ahu slot=`#/the-planes`>>
 
 !! Ⓐ Stand it up ~ sources become planes
 
@@ -150,7 +150,7 @@ no edge to widen.
 
 ''Read this table off `plane_base.PLANE_BASE`, never off memory.'' The roster below records the legacy
 implementation map; it does not replace the later ground, lattice and aperture design at
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/the-geometry">>. A plane absent from the
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/the-geometry`>>. A plane absent from the
 code map ''has no declared base, and no instrument may read it cross-plane'' — which that code enforces
 rather than requests. The next projection must prove its own bases and joins before extending this map.
 
@@ -172,8 +172,8 @@ pattern pushes forward onto strictly fewer records than exhibit it).
 ''`require_base()` refuses a restriction set that mixes bases or omits one'', so the wrong comparison
 stops type-checking rather than returning a plausible figure.
 
-<<~ set hud="yield" drift-ward="! · ⚠ · this table stood hand-written in an earlier draft, with a plane the code does not
-declare and a base it does · ↻ L-Prime">>
+<<~ set lares=`yield` drift-ward=`! · ⚠ · this table stood hand-written in an earlier draft, with a plane the code does not
+declare and a base it does · ↻ L-Prime`>>
 
 !!! The order that matters
 
@@ -189,7 +189,7 @@ declare and a base it does · ↻ L-Prime">>
 
 <<~/ahu>>
 
-<<~ ahu #/feed>>
+<<~ ahu slot=`#/feed`>>
 
 !! Ⓑ Feed it ~ the cadence, and what starvation looks like first
 
@@ -210,7 +210,7 @@ information than a number would; a gauge that returned 0.0 against an unfed plan
 
 <<~/ahu>>
 
-<<~ ahu #/read>>
+<<~ ahu slot=`#/read`>>
 
 !! Ⓒ Read it ~ what a figure claims, and over what
 
@@ -241,7 +241,7 @@ fact about the world when it names a fact about a choice (#/capacity).
 
 <<~/ahu>>
 
-<<~ ahu #/catastrophe>>
+<<~ ahu slot=`#/catastrophe`>>
 
 !! Ⓓ Catastrophe & recovery ~ six drills, each with its detector
 
@@ -307,7 +307,7 @@ slightly off// long before it presents as a failure.
 
 <<~/ahu>>
 
-<<~ ahu #/teardown>>
+<<~ ahu slot=`#/teardown`>>
 
 !! Ⓔ Tear down & re-sweep ~ the deliberate reset
 
@@ -364,7 +364,7 @@ skipped silently is what the single door exists to prevent.
 
 <<~/ahu>>
 
-<<~ ahu #/capacity>>
+<<~ ahu slot=`#/capacity`>>
 
 !! Ⓕ Capacity & honest limits ~ what a reading CANNOT claim
 
@@ -406,7 +406,7 @@ one common space. ''Reading it as a single scalar over one substrate mistypes th
   content-addresses its drawers, so a pour's identity can fall out of its own ground (the source set and
   their hashes, a fold over the drawer cids) with nothing declared by fiat and no network consulted.
 
-<<~ set hud="aim" drift-ward="_ · L-Prime · crossing: generation-talk, where federation vocabulary drifts local">>
+<<~ set lares=`aim` drift-ward=`_ · L-Prime · crossing: generation-talk, where federation vocabulary drifts local`>>
 
 ''AND THE WORDS FOR THIS STAY LOCAL.'' A sensorium's stores ''never federate'' — content, form, structure
 and persistence each say so outright; only the meshpalace takes a feed from the network, and an operator
@@ -420,7 +420,7 @@ stores do not have, and //burn// imports the opposite of what a teardown perform
 
 <<~/ahu>>
 
-<<~ ahu #/reconstitution>>
+<<~ ahu slot=`#/reconstitution`>>
 
 !! Ⓖ Reconstitution ~ what a stranger needs to stand this cold
 
@@ -437,7 +437,7 @@ a movement of this rite rather than a later courtesy:
 
 <<~/ahu>>
 
-<<~ ahu #/surface-drift>>
+<<~ ahu slot=`#/surface-drift`>>
 
 !! The two surfaces ~ how they slice
 
@@ -481,22 +481,22 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/li-ki-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/elyncia">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/living-grammar-palace`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/li-ki-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/elyncia`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;O6PBkUmAAXjromZu2i7GObhZ6Vmm6ehDLn5QKjPGEUA
+<<^ code=`&#x0003;`>>ni:///sha-256;phQx0tZpGeDUtfPLAoiQp8ivkm4pFPfA1zidBYv7mwY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

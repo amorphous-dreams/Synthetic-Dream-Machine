@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/pranala-header">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/pranala-header`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,15 +17,15 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/pranala-header"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Pranala-Header — the bearing a carrier declares about itself
 
-`<<^ code="&#x0001;" from="?" -> to="uri">>` stands on a carrier's head and declares the address it holds. The
+``<<^ code=`&#x0001;` from=`?` to=`uri`>>`` stands on a carrier's head and declares the address it holds. The
 `?` token means ''this carrier itself'' — a self-reference no sigil keyword can express, since a
 keyword names a thing and this one names the speaker.
 
@@ -33,7 +33,7 @@ The bearing reads off the SOH frame scan (the deserializer's head recogniser).
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ sense the `?` token — a self-reference; the carrier declares its own address, never an edge outward
 ⏿ orient: the bearing rides the SOH control sigil, once per carrier, ahead of the meta block
@@ -43,7 +43,7 @@ The bearing reads off the SOH frame scan (the deserializer's head recogniser).
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -63,13 +63,13 @@ frame (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/frame-head-lock
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/path/to/this-carrier">>
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/path/to/this-carrier">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/path/to/this-carrier`>>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/path/to/this-carrier`>>
 ```
 
 The bearing reads off the SOH scan, which anchors on the control code and admits the namespace slot
@@ -79,7 +79,7 @@ stops at the bearing itself and finds no head at all. Every scan in this grammar
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -100,16 +100,16 @@ agrees-with    = "uri-path"
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MfBD9c15jJ6b3U-PrFyDcYtRN9YdxlGNC9-_kbSrhlA
+<<^ code=`&#x0003;`>>ni:///sha-256;2nutRcTbD0Z3ml4fJm7JzamXaWpCywxMf6AnbDzg9kU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

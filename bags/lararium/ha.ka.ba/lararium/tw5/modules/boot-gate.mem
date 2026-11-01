@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/modules/boot-gate">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/modules/boot-gate`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/boot-gate.mem"
@@ -20,7 +20,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/modules/boot-gate"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Boot Gate
 
@@ -32,7 +32,7 @@ uri-path      = "ha.ka.ba/lararium/tw5/modules/boot-gate"
 
 <<~/ahu>>
 
-<<~ ahu #/thresholds>>
+<<~ ahu slot=`#/thresholds`>>
 
 !! Gate Layers
 
@@ -52,7 +52,7 @@ A keyhive capability proof stands as the layer still owed; the gate admits on po
 
 <<~/ahu>>
 
-<<~ ahu #/aggregate>>
+<<~ ahu slot=`#/aggregate`>>
 
 !! The Aggregate Define
 
@@ -60,14 +60,14 @@ After at least one module injects, the gate reads `lar:///ha.ka.ba/lararium/tw5/
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
-<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/tw5-module-gate.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/src/tw5-module-gate.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8fTZjIRpfTGKvcxmbq8AgEpTJ_U8w0uVAoq2-TBOSnA
+<<^ code=`&#x0003;`>>ni:///sha-256;AfbqsXfaB0Z926YNTOh_BYl91dGadEOgxWkJx3G_D0M
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

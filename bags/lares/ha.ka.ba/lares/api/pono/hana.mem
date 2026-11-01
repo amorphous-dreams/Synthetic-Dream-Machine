@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/hana">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/hana`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/hana"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Hana
 
@@ -32,7 +32,7 @@ grammar interpreter consumes the body, it closes.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -43,28 +43,28 @@ A hana block body MUST read as valid input for the named grammar interpreter.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
-<<~ hana grammar-key>>
+<<~ hana grammar=`grammar-key`>>
   body content in the guest grammar
 <<~/hana>>
 
-<<~ task grammar-key>>  ...body...  <<~/task>>
+<<~ task grammar=`grammar-key`>>  ...body...  <<~/task>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-task">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-task`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yIVCBeTyzw75mmetpJi9SDpVXT4AtNkFwlOkX3xZor0
+<<^ code=`&#x0003;`>>ni:///sha-256;cMHOPO87uEsMy-oo3bN0f69lqm3PMAR1448-uMHo8A8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

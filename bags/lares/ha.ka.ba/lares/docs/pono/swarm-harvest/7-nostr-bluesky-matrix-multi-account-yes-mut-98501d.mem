@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/7-nostr-bluesky-matrix-multi-account-yes-mut-98501d">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/7-nostr-bluesky-matrix-multi-account-yes-mut-98501d`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/7-nostr-bluesky-matrix-multi-account-yes-mut-98501d"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! 7. NOSTR · BLUESKY · MATRIX — multi-account yes, mutual blindness no
 
@@ -28,7 +28,7 @@ The three largest messages one research spirit wrote, ''held verbatim and unedit
 
 <<~/ahu>>
 
-<<~ ahu #/message-1>>
+<<~ ahu slot=`#/message-1`>>
 
 !! Message 1 ~ 42,567 characters
 
@@ -301,12 +301,12 @@ Briar's FAQ is the only place any of these projects writes the general law down,
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2V72J5gvlb7vXI1Ms-Hiie5YlQrWroOt2vHUn5OLLlk
+<<^ code=`&#x0003;`>>ni:///sha-256;Pye7_GhBFDeqN17h3DfKbUVP-eaneQOYU1OlOkIOCXE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

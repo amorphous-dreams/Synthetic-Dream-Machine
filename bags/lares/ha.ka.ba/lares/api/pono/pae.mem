@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/pae">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/pae`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,11 +18,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/pae"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Pae
 
@@ -30,7 +30,7 @@ A carrier's phased arrival through a transmission medium.
 
 <<~/ahu>>
 
-<<~ ahu #/etymology>>
+<<~ ahu slot=`#/etymology`>>
 
 !! Etymology
 
@@ -56,7 +56,7 @@ content body has crossed. The streaming protocol WORKS AS a navigation instrumen
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Pae Law (Kānāwai)
 
@@ -69,10 +69,10 @@ Phase semantics:
 
 | Phase | Sigil | Payload | Consumer action |
 |---|---|---|---|
-| `soh` | `<<^ code="&#x0001;" from="?" -> to="lar:///URI">>` | declared URI | open stub card for URI |
-| `stx` | `<<^ code="&#x0002;">>` | none | meta prelude dissolved; render identity panel |
-| `etx` | `<<^ code="&#x0003;">>` | none | content ahus committed; fire activate |
-| `eot` | `<<^ code="&#x0004;" -> to="?">>` | none | edges committed; update graph; release channel |
+| `soh` | ``<<^ code=`&#x0001;` from=`?` to=`lar:///URI`>>`` | declared URI | open stub card for URI |
+| `stx` | ``<<^ code=`&#x0002;`>>`` | none | meta prelude dissolved; render identity panel |
+| `etx` | ``<<^ code=`&#x0003;`>>`` | none | content ahus committed; fire activate |
+| `eot` | ``<<^ code=`&#x0004;` to=`?`>>`` | none | edges committed; update graph; release channel |
 
 `soh` MUST carry the carrier's URI in the `toUri` field.
 `eot` marks the return-to-caller; no payload.
@@ -80,7 +80,7 @@ Phase semantics:
 
 <<~/ahu>>
 
-<<~ ahu #/ast>>
+<<~ ahu slot=`#/ast`>>
 
 !! AST
 
@@ -97,12 +97,12 @@ export interface PaeNode extends AstBase {
 
 <<~/ahu>>
 
-<<~ ahu #/widget>>
+<<~ ahu slot=`#/widget`>>
 
 !! How a phase reaches the page
 
 ''The FRAME MARKS carry the phase, and no widget stands between.'' A carrier writes each phase on the
-CONTROL head — `<<^ code="&#x0001;">>` opens, `&#x0002;` runs the body, `&#x0003;` closes, `&#x0004;`
+CONTROL head — ``<<^ code=`&#x0001;`>>`` opens, `&#x0002;` runs the body, `&#x0003;` closes, `&#x0004;`
 bears away — and `frame-marks.ts` holds those codes as ONE fact the readers derive from
 (`FRAME_MARKS` · `FRAME_CODES` · a lookup by code). A scan reads the mark where it stands.
 
@@ -111,7 +111,7 @@ set, because three scarred readings say a merged scan re-introduces the bugs the
 
 <<~/ahu>>
 
-<<~ ahu #/pae-aina>>
+<<~ ahu slot=`#/pae-aina`>>
 
 !! Pae ʻĀina
 
@@ -125,10 +125,10 @@ EOT pushes off — the carrier releases the channel and the current takes it.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;L_gqLU6lPdeCS7V3wl9TbItjQaSTOd0nK22jO5XtSBs
+<<^ code=`&#x0003;`>>ni:///sha-256;3mC5N4VE89cX2rvD2ZHDQEFfCTS4qJ43VDcJr3aFlJE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

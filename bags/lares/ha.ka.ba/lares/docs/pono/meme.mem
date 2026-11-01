@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/meme">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/meme`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/meme"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Meme — Extended Docs
 
@@ -27,7 +27,7 @@ This surface carries examples, tables, and split residue.
 
 <<~/ahu>>
 
-<<~ ahu #/required-shape-reference>>
+<<~ ahu slot=`#/required-shape-reference`>>
 
 !! Required Shape Reference
 
@@ -47,7 +47,7 @@ It does not replace these surfaces.
 
 <<~/ahu>>
 
-<<~ ahu #/lifecycle-table>>
+<<~ ahu slot=`#/lifecycle-table`>>
 
 !! Lifecycle Table
 
@@ -64,7 +64,7 @@ It does not replace these surfaces.
 
 <<~/ahu>>
 
-<<~ ahu #/resolution-notes>>
+<<~ ahu slot=`#/resolution-notes`>>
 
 !! Resolution Notes
 
@@ -81,7 +81,7 @@ Do not treat decorative motion as structural depth.
 
 <<~/ahu>>
 
-<<~ ahu #/example-skeleton>>
+<<~ ahu slot=`#/example-skeleton`>>
 
 !! Example Skeleton Reading
 
@@ -91,7 +91,7 @@ Then tighten its role, edges, and phase map for the actual carrier you are draft
 
 <<~/ahu>>
 
-<<~ ahu #/migration-note>>
+<<~ ahu slot=`#/migration-note`>>
 
 !! Migration Note
 
@@ -107,7 +107,7 @@ Research backlog and subtype-specific detail should deepen into their own outwar
 
 <<~/ahu>>
 
-<<~ ahu #/the-dual-zoom-audit>>
+<<~ ahu slot=`#/the-dual-zoom-audit`>>
 
 !! The dual-zoom audit ~ read a slot at two zooms at once
 
@@ -117,15 +117,15 @@ Research backlog and subtype-specific detail should deepen into their own outwar
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme/SKILL">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme/SKILL`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;K-8WdyhdYpZueRujsNCYTDhB_MlPgWPHX8M66eXQcDg
+<<^ code=`&#x0003;`>>ni:///sha-256;gsyJjQu_UUpOt43R5nUPZNlKi5nIB6NmOhJVJWfgDqY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

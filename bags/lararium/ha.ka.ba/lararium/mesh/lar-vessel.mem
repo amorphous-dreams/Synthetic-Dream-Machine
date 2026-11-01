@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/lar-vessel`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -15,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/lar-vessel"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! LarVessel ~ one class, four hosts, no subclass
 
@@ -27,7 +27,7 @@ what the host can physically do. Nothing about a host earns it a different type.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The invariants
 
@@ -54,7 +54,7 @@ projection sees composite changes rather than one layer's.
 
 <<~/ahu>>
 
-<<~ ahu #/the-identity-slot>>
+<<~ ahu slot=`#/the-identity-slot`>>
 
 !! What the identity slot admits
 
@@ -84,17 +84,17 @@ names.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/lar-vessel.ts" family="code" role="has">>
-<<~ pranala #identity from="?" -> to="packages/lararium-mesh/src/identity-slot.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/lar-vessel.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#identity` from=`?` to=`packages/lararium-mesh/src/identity-slot.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/open-vessel">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/open-vessel`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/vessel-caps`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/island-protocol`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EzGbwrlC_9JUcXjGTQ97xmuA-NtQnIZBpw41KOVtDss
+<<^ code=`&#x0003;`>>ni:///sha-256;mOgRdJ6IMovkIMh5JJL5appzSNUIwUKxHQZCzCitsOE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/mudlet-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/mudlet-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
@@ -21,7 +21,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/mudlet-scout"
 written           = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Mudlet ~ a spirit's handoff, held unedited
 
@@ -35,7 +35,7 @@ written           = "2026-10-16"
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
@@ -365,13 +365,13 @@ All work outside the tracked tree under a scratch `LAR_ROOT`; e2e vessels per th
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/page-controls`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2IFZXAJozmr9TiOG92RVHNEo5TBlmaoOjXI-aeQsKkg
+<<^ code=`&#x0003;`>>ni:///sha-256;UFCEmGGtSvR35HPvMGkW-eBvKRy1PBQuy-MsyvyAtk4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

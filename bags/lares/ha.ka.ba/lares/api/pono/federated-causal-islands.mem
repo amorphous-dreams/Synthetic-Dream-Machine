@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/federated-causal-islands"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Federated Causal Islands
 
@@ -27,7 +27,7 @@ Named causal island tiers 0–3; authority-first sync order; edge-island identit
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ locate the causal boundary — where can causality not be guaranteed simultaneously?
 ⏿ orient the tier: Tier 0 kumu/active memes, Tier 1 wiki wiki memes, Tier 2 Automerge Realms, Tier 3 Lares nodes, Tier 4 Commons/Universe horizon
@@ -37,7 +37,7 @@ Named causal island tiers 0–3; authority-first sync order; edge-island identit
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Ontological Basis (Fuller-Zelenka)
 
@@ -98,7 +98,7 @@ regardless of first encounter point on the network.
 
 <<~/ahu>>
 
-<<~ ahu #/edge-island-shape>>
+<<~ ahu slot=`#/edge-island-shape`>>
 
 !! Edge Island Shape
 
@@ -138,7 +138,7 @@ resumes from its last known offset — it never re-syncs from the beginning.
 
 <<~/ahu>>
 
-<<~ ahu #/sync-order>>
+<<~ ahu slot=`#/sync-order`>>
 
 !! Authority-First Sync Order
 
@@ -163,7 +163,7 @@ A peer MUST complete step 3 before requesting individual meme deltas.
 
 <<~/ahu>>
 
-<<~ ahu #/lifecycle>>
+<<~ ahu slot=`#/lifecycle`>>
 
 !! Edge Island Lifecycle
 
@@ -185,7 +185,7 @@ stable sediment | current boot receipt | live delta tail
 
 <<~/ahu>>
 
-<<~ ahu #/relay-law>>
+<<~ ahu slot=`#/relay-law`>>
 
 !! Relay Law
 
@@ -204,7 +204,7 @@ The altar does not require the relay to comprehend the offering to carry it.
 
 <<~/ahu>>
 
-<<~ ahu #/task-handoff>>
+<<~ ahu slot=`#/task-handoff`>>
 
 !! Cross-Peer Task Handoff (design space)
 
@@ -261,7 +261,7 @@ distributed-locking "fencing token"; see `project_next_vectors`.)
 
 <<~/ahu>>
 
-<<~ ahu #/tier-map>>
+<<~ ahu slot=`#/tier-map`>>
 
 !! Tier Map
 
@@ -304,7 +304,7 @@ Tier 4 — Commons / Universe horizon (after law-of-5s)
 
 <<~/ahu>>
 
-<<~ ahu #/causal-island-doctrine>>
+<<~ ahu slot=`#/causal-island-doctrine`>>
 
 !! Causal Island Doctrine
 
@@ -329,7 +329,7 @@ Cross-node causality errors produce federation corruption.
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -375,13 +375,13 @@ causal-island-may = [
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/research-streams`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OWj7ZWhKycsl8tsKNUzVzpcp1NoDVBVGCEviuDXriKY
+<<^ code=`&#x0003;`>>ni:///sha-256;vDn-JgQA-j7teveonh8xtZ_kt6LW2vlw5x9yv8uU2FM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

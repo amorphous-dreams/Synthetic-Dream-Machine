@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/guest-grammar">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/guest-grammar`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/guest-grammar"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Guest Grammar — Extended Docs
 
@@ -27,7 +27,7 @@ This surface carries examples, ownership notes, and split residue.
 
 <<~/ahu>>
 
-<<~ ahu #/ownership-notes>>
+<<~ ahu slot=`#/ownership-notes`>>
 
 !! Ownership Notes
 
@@ -41,7 +41,7 @@ This surface carries examples, ownership notes, and split residue.
 
 <<~/ahu>>
 
-<<~ ahu #/fixture-seeds>>
+<<~ ahu slot=`#/fixture-seeds`>>
 
 !! Fixture Seeds
 
@@ -56,7 +56,7 @@ The first fixture family should include:
 
 <<~/ahu>>
 
-<<~ ahu #/admission-notes>>
+<<~ ahu slot=`#/admission-notes`>>
 
 !! Admission Notes
 
@@ -71,7 +71,7 @@ When a region needs long legality tables, schema detail, or runtime procedure, m
 
 <<~/ahu>>
 
-<<~ ahu #/migration-note>>
+<<~ ahu slot=`#/migration-note`>>
 
 !! Migration Note
 
@@ -85,15 +85,15 @@ The current shape keeps:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/guest-grammar`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hN27dXV3D7NBOHVYs567EzOIDV0h8m1xaegprpitBEY
+<<^ code=`&#x0003;`>>ni:///sha-256;LG5QnNVXBuRXWfVgbJX4ZdoVrRaCMRQN36ACwCpLioU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

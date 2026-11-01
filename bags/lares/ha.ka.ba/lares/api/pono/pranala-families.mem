@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/pranala-families">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/pranala-families`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
@@ -20,7 +20,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/pranala-families"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Pranala Families
 
@@ -30,7 +30,7 @@ Families carry role vocabularies and contract flags governing validation.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law
 
@@ -45,7 +45,7 @@ the edge confidence must not exceed the source node's confidence.
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -104,7 +104,7 @@ confidence-bounded  = false
 
 <<~/ahu>>
 
-<<~ ahu #/family-notes>>
+<<~ ahu slot=`#/family-notes`>>
 
 !! Family Notes
 
@@ -142,7 +142,7 @@ Unlocks portal-as-graph-edge and multi-level room navigation.
 
 <<~/ahu>>
 
-<<~ ahu #/canvas-colors>>
+<<~ ahu slot=`#/canvas-colors`>>
 
 !! Canvas Color Map
 
@@ -164,12 +164,12 @@ spatial    = "light-blue"
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2-r9CtMjmcXveuKJRlguaBMUspKRA2yRNKewalNHPHE
+<<^ code=`&#x0003;`>>ni:///sha-256;nVRFVs2GthUXy2UvHe8_eMA9I-7LDnDvNijYij9Rr58
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

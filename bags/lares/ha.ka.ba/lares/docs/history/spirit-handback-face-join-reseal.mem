@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
@@ -17,7 +17,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Spirit Handback — the seat re-seals what stood before
 
@@ -27,7 +27,7 @@ My work is complete. Here is the report.
 
 <<~/ahu>>
 
-<<~ ahu #/what-was-done>>
+<<~ ahu slot=`#/what-was-done`>>
 
 !! What was done
 
@@ -51,7 +51,7 @@ So the committed re-grant loop ''overclaimed'': `regranted` counted the re-point
 
 <<~/ahu>>
 
-<<~ ahu #/tests>>
+<<~ ahu slot=`#/tests`>>
 
 !! Tests
 
@@ -62,7 +62,7 @@ So the committed re-grant loop ''overclaimed'': `regranted` counted the re-point
 
 <<~/ahu>>
 
-<<~ ahu #/witnesses>>
+<<~ ahu slot=`#/witnesses`>>
 
 !! Witnesses
 
@@ -72,7 +72,7 @@ So the committed re-grant loop ''overclaimed'': `regranted` counted the re-point
 
 <<~/ahu>>
 
-<<~ ahu #/files>>
+<<~ ahu slot=`#/files`>>
 
 !! Files
 
@@ -83,7 +83,7 @@ The other dirty paths in `git status` (`nexus-client-dial.test.ts`, `identity-an
 
 <<~/ahu>>
 
-<<~ ahu #/commit-message>>
+<<~ ahu slot=`#/commit-message`>>
 
 !! Proposed commit message
 
@@ -102,7 +102,7 @@ content still reaches with no re-seal.
 
 <<~/ahu>>
 
-<<~ ahu #/deferred>>
+<<~ ahu slot=`#/deferred`>>
 
 !! Deferred (and why)
 
@@ -114,6 +114,6 @@ I did not commit.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AZPZvScORjtPechW5hs0egyEhazLGwKPs0g5-dqMX44
+<<^ code=`&#x0003;`>>ni:///sha-256;yhEoQgp2P3KzgC4ZN89aHwDssmZ7rsn-AK9GDag7lok
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

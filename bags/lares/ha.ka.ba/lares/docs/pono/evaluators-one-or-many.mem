@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/evaluators-one-or-many">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/evaluators-one-or-many`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
@@ -21,7 +21,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/evaluators-one-or-many"
 written           = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Evaluators ~ one engine, one suite, many hosts
 
@@ -35,7 +35,7 @@ written           = "2026-10-16"
 
 <<~/ahu>>
 
-<<~ ahu #/the-ruling>>
+<<~ ahu slot=`#/the-ruling`>>
 
 !! The ruling, four strokes
 
@@ -48,7 +48,7 @@ written           = "2026-10-16"
 
 <<~/ahu>>
 
-<<~ ahu #/the-record>>
+<<~ ahu slot=`#/the-record`>>
 
 !! What the record shows
 
@@ -60,7 +60,7 @@ written           = "2026-10-16"
 
 <<~/ahu>>
 
-<<~ ahu #/golden-principles>>
+<<~ ahu slot=`#/golden-principles`>>
 
 !! Golden principles
 
@@ -79,7 +79,7 @@ written           = "2026-10-16"
 
 <<~/ahu>>
 
-<<~ ahu #/the-suite>>
+<<~ ahu slot=`#/the-suite`>>
 
 !! The suite's shape
 
@@ -128,7 +128,7 @@ One JSON file per section, assembled by script into one `filter-cts.json`, never
 
 <<~/ahu>>
 
-<<~ ahu #/the-hybrid>>
+<<~ ahu slot=`#/the-hybrid`>>
 
 !! The hybrid that fits, in landing order
 
@@ -140,7 +140,7 @@ One JSON file per section, assembled by script into one `filter-cts.json`, never
 
 <<~/ahu>>
 
-<<~ ahu #/host-landing>>
+<<~ ahu slot=`#/host-landing`>>
 
 !! Landing on the forward attractors
 
@@ -157,7 +157,7 @@ One JSON file per section, assembled by script into one `filter-cts.json`, never
 
 <<~/ahu>>
 
-<<~ ahu #/mu>>
+<<~ ahu slot=`#/mu`>>
 
 !! Mu
 
@@ -170,7 +170,7 @@ One JSON file per section, assembled by script into one `filter-cts.json`, never
 
 <<~/ahu>>
 
-<<~ ahu #/two-stories>>
+<<~ ahu slot=`#/two-stories`>>
 
 !! Two stories
 
@@ -180,13 +180,13 @@ One JSON file per section, assembled by script into one `filter-cts.json`, never
 
 <<~/ahu>>
 
-<<~ ahu #/open-rulings>>
+<<~ ahu slot=`#/open-rulings`>>
 
 !! Rulings standing open
 
 # ''Suite strength.'' `tiddlywiki-wikitext` says a parser SHOULD pass its suite; raise to MUST for the house dialects and for any non-reference evaluator, with a published skip list.
 # ''Suite format.'' Adopt the `filter-cts` shape above (generated, then reviewed), or hand-write in the CommonMark manner at many times the cost.
-# ''The `core` charter'' — ruled 2026-10-20: the drafted operators, with string `sort` by code point, locale-free; a locale-aware sort carries `host-bound` (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> #/open-rulings).
+# ''The `core` charter'' — ruled 2026-10-20: the drafted operators, with string `sort` by code point, locale-free; a locale-aware sort carries `host-bound` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>> #/open-rulings).
 # ''Oracle ownership'' — ruled 2026-10-20: an engine-commit bump runs as its own lane that re-pours; a diff that changes a result or a parse tree lands as a hoʻike the operator reads.
 # ''Camera tolerance.'' Exact for `html` and `text`; `blocks`-derived for `label-html`; `fuzzy` for 3D only.
 # ''Mudlet offline need.'' Mudlet receives results only; reopen the subset evaluator on a named offline use.
@@ -194,7 +194,7 @@ One JSON file per section, assembled by script into one `filter-cts.json`, never
 
 <<~/ahu>>
 
-<<~ ahu #/sources>>
+<<~ ahu slot=`#/sources`>>
 
 !! Sources, as the spirit reached them
 
@@ -208,15 +208,15 @@ The full survey with its prior-art table rests in the project's shared reports a
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wikitext-filter">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mudlet-scout">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wikitext-filter`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mudlet-scout`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RV0IVI__AFXHXa3KA1cUCH6klJtINUuhf3qc_ON8lig
+<<^ code=`&#x0003;`>>ni:///sha-256;_UgAIUinrQQyf-fSshvL9O_Dm5ovtiunKvuoSlzZ4nw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

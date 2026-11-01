@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/wild-bytes">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/wild-bytes`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -19,9 +19,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/wild-bytes"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Wild bytes ~ the frame decides at the edge, the reader tolerates outside it
 
@@ -39,7 +39,7 @@ the receipt — and never repair-tolerates state it can re-found.
 
 <<~/ahu>>
 
-<<~ ahu #/the-line>>
+<<~ ahu slot=`#/the-line`>>
 
 !! The line ~ by FRAME at the edge, by SEAT outside it
 
@@ -68,7 +68,7 @@ A store layer MUST NOT carry a reading alias for a house-authored anchor.
 
 <<~/ahu>>
 
-<<~ ahu #/parse-dont-validate>>
+<<~ ahu slot=`#/parse-dont-validate`>>
 
 !! Parse, don't validate ~ the edge types the bytes once
 
@@ -82,21 +82,21 @@ demotion the operator sees and never a drop:
 
 * ''FRAME floor'' — a bare carrier holds as one record.
 * ''BODY floor'' — a malformed span wraps as water
-  (<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing#/recovery-policy">>).
+  (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing#/recovery-policy`>>).
 * ''AHU floor'' — un-decomposable content fences
-  (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor">>); RULED, UNBUILT.
+  (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`>>); RULED, UNBUILT.
 
 A reader names which floor it stands on. Water never lies about structure.
 
 <<~/ahu>>
 
-<<~ ahu #/the-alpha-line>>
+<<~ ahu slot=`#/the-alpha-line`>>
 
 !! With the alpha line ~ one law seen from two sides
 
 ''The alpha line rules no back-compat and no shims'' for anything the house authored: a ruling that obsoletes
 a shape deletes the old reading whole. Its standing text lives in the roadmap's ''Early alpha'' entry
-(<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start">>), and the fence of
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start`>>), and the fence of
 `stable-founding-road#/rulings` ends it; the alpha line
 awaits its own carrier.
 
@@ -114,7 +114,7 @@ tolerance found anywhere else reads as a shim wearing this law's name.
 
 <<~/ahu>>
 
-<<~ ahu #/prior-art>>
+<<~ ahu slot=`#/prior-art`>>
 
 !! Prior art ~ the robustness principle, measured
 
@@ -128,7 +128,7 @@ tolerance found anywhere else reads as a shim wearing this law's name.
 
 <<~/ahu>>
 
-<<~ ahu #/standing-instance>>
+<<~ ahu slot=`#/standing-instance`>>
 
 !! The standing instance ~ a reader, outside the four layers
 
@@ -144,7 +144,7 @@ holds that line, and no bag-grade policy yet enforces it in the sink.
 
 <<~/ahu>>
 
-<<~ ahu #/owed>>
+<<~ ahu slot=`#/owed`>>
 
 !! Owed
 
@@ -155,19 +155,19 @@ holds that line, and no bag-grade policy yet enforces it in the sink.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eUk_xVUdqXKASL1oAawHMuTITsYD7uMUM3Ve3VreoQY
+<<^ code=`&#x0003;`>>ni:///sha-256;BgvVYoleAG6K5MmJMe22V5hzLe2MKB7tqAIeu2mpm4M
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/k15-wave-d-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/k15-wave-d-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,19 +14,19 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/k15-wave-d-lane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Wave D ~ each face keeps its own key
 
 Order (controller, 2026-10-22): Wave D runs BEFORE K17-R. Circles and identities now travel to every device of a face, which raises the stakes of the omnibus node key.
 
-Wave D builds the FCK fence the custody contract of <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-custody-step-zero">> specifies (#/key-classes-and-routes, #/carrier-binding-and-overwrite, #/reds-executable-acceptance-statements). It lands as ONE lane, whole: a slice that moves one carrier family under the fence while the others rest under the omnibus vessel key would read green for the rows it moved and lie about every other row of the same face.
+Wave D builds the FCK fence the custody contract of <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/k15-custody-step-zero`>> specifies (#/key-classes-and-routes, #/carrier-binding-and-overwrite, #/reds-executable-acceptance-statements). It lands as ONE lane, whole: a slice that moves one carrier family under the fence while the others rest under the omnibus vessel key would read green for the rows it moved and lie about every other row of the same face.
 
 <<~/ahu>>
 
-<<~ ahu #/the-slices>>
+<<~ ahu slot=`#/the-slices`>>
 
 !! The eight slices, one lane
 
@@ -42,7 +42,7 @@ Wave D builds the FCK fence the custody contract of <<~ loulou "lar:///ha.ka.ba/
 
 <<~/ahu>>
 
-<<~ ahu #/the-red>>
+<<~ ahu slot=`#/the-red`>>
 
 !! The red
 
@@ -50,6 +50,6 @@ Found A and B with independently random FCKs and trees, occupied D carriers for 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NRaoene-v78uN6Pz03km_9pOlLQz9SB2DkClceHQMu4
+<<^ code=`&#x0003;`>>ni:///sha-256;IB8EuPhEMjNDmY9Y_D6dT1I7RVHaJL4i6ziJT4PcO-w
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

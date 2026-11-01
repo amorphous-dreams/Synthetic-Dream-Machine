@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-pgp-web-of-trust-keyserver-collapse-47552e">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-pgp-web-of-trust-keyserver-collapse-47552e`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-pgp-web-of-trust-keyserver-collapse-47552e"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! TOPIC A — PGP Web of Trust / keyserver collapse
 
@@ -28,7 +28,7 @@ The three largest messages one research spirit wrote, ''held verbatim and unedit
 
 <<~/ahu>>
 
-<<~ ahu #/message-1>>
+<<~ ahu slot=`#/message-1`>>
 
 !! Message 1 ~ 25,114 characters
 
@@ -181,12 +181,12 @@ Brave Search returned HTTP 429 on every attempt across the whole session, and `r
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_xsyoPxvoUi6G2fUXFxYWh0EZ8C0QJJZCO6ccqQpHWI
+<<^ code=`&#x0003;`>>ni:///sha-256;fv9AqVPOnpQK0tKNN8bzjrc5nks8w5MyPbu6MoUStsA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/law-of-5s">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/law-of-5s`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/law-of-5s"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Law of Fives — Extended Docs
 
@@ -26,7 +26,7 @@ This surface carries the unified attention-scale framing, subscript sigils, thre
 
 <<~/ahu>>
 
-<<~ ahu #/subscript-sigils>>
+<<~ ahu slot=`#/subscript-sigils`>>
 
 !! Subscript Attention-Scale Sigils
 
@@ -51,7 +51,7 @@ The parser categorizes by Unicode range check: if `cp in 8304..8351: return SCAL
 
 <<~/ahu>>
 
-<<~ ahu #/three-projections>>
+<<~ ahu slot=`#/three-projections`>>
 
 !! Three-Projection Unification
 
@@ -86,7 +86,7 @@ SIGIL  RANGE      CHRONO   HUD   TEXT        SPATIAL
 
 <<~/ahu>>
 
-<<~ ahu #/boundary-zones>>
+<<~ ahu slot=`#/boundary-zones`>>
 
 !! Boundary Zones
 
@@ -105,7 +105,7 @@ A counter increment at a lower-numbered Chronometer slot without a higher-slot c
 
 <<~/ahu>>
 
-<<~ ahu #/p-parameter-mapping>>
+<<~ ahu slot=`#/p-parameter-mapping`>>
 
 !! p-Parameter Mapping
 
@@ -126,7 +126,7 @@ Aperture 20  = session-arc   → ₄ band
 
 <<~/ahu>>
 
-<<~ ahu #/scale-attenuation>>
+<<~ ahu slot=`#/scale-attenuation`>>
 
 !! Scale UCAN Attenuation
 
@@ -145,7 +145,7 @@ Envelope: <<~ँ₃ ...>>       Watch-scale
 
 <<~/ahu>>
 
-<<~ ahu #/chronometer-fragment>>
+<<~ ahu slot=`#/chronometer-fragment`>>
 
 !! Chronometer Fragment Integration
 
@@ -159,16 +159,16 @@ Each dot-separated position corresponds to one band. Reading left to right zooms
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s#/source">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s#/source`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Er1v35WQR1NY8eItQPsT3RTAohQWGZ04dsZdtUTdnIc
+<<^ code=`&#x0003;`>>ni:///sha-256;wJ4X1sH92eOUdNWsTEFrCQKmqNgQwz0G3GQsXElS8DY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

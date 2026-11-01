@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/boot-splash-banner">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/ui/boot-splash-banner`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -20,6 +20,6 @@ uri-path  = "ha.ka.ba/lararium/tw5/ui/boot-splash-banner"
 <div class="lar-boot-banner">⬡ lararium — warming causal islands…</div>
 </$reveal>
 
-<<^ code="&#x0003;">>ni:///sha-256;PT0fjR9vAzpT2jW-7ZjHD6cRU4d41o9bYnEMZLSpGnk
+<<^ code=`&#x0003;`>>ni:///sha-256;Q_3TRtzP5Si9tPv4Ec4P2uadrzMUIJJ3mCy0-FLPjro
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

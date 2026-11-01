@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/composite-store">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/composite-store`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -15,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/composite-store"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! CompositeStore ~ many layers, one reading
 
@@ -25,7 +25,7 @@ knows this one.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The invariants
 
@@ -41,7 +41,7 @@ store already serves reads.
 
 <<~/ahu>>
 
-<<~ ahu #/the-ordering-hazard>>
+<<~ ahu slot=`#/the-ordering-hazard`>>
 
 !! Subscribe BEFORE the layer arrives
 
@@ -55,16 +55,16 @@ empty bag rather than as a missed window'' — the failure this note exists to n
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/composite-store.ts" family="code" role="has">>
-<<~ pranala #recipe from="?" -> to="packages/lararium-mesh/src/recipe.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/composite-store.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#recipe` from=`?` to=`packages/lararium-mesh/src/recipe.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/tiddler-store">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/lararium-doc-stack">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/tiddler-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/lararium-doc-stack`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;W6QaZGMMD_zmfSxlnxoqGImf8kAq3UdMoHLdVaSsXRM
+<<^ code=`&#x0003;`>>ni:///sha-256;d_q79ZHjrwrTSPDyGmOVrBFvxH7M2pGUl_UlPgUCnOU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/session-0-1-render-research">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/campaign/session-0-1-render-research`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/campaign/session-0-1-render-research"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Painter's Substrate ~ Session 0.1 Render Research
 
@@ -32,7 +32,7 @@ fix ''first canon'' (the six open proposals in #negentropy) go to the operator b
 
 <<~/ahu>>
 
-<<~ ahu #/painter-red>>
+<<~ ahu slot=`#/painter-red`>>
 
 !! The Painter's Red ~ boot handoff
 
@@ -42,7 +42,7 @@ fix ''first canon'' (the six open proposals in #negentropy) go to the operator b
 
 <<~/ahu>>
 
-<<~ ahu #/midjourney>>
+<<~ ahu slot=`#/midjourney`>>
 
 !! Midjourney V8.2 ~ prompt anatomy and workflow (net research, 2026-08-13)
 
@@ -71,7 +71,7 @@ fix ''first canon'' (the six open proposals in #negentropy) go to the operator b
 
 <<~/ahu>>
 
-<<~ ahu #/delos-archaeology>>
+<<~ ahu slot=`#/delos-archaeology`>>
 
 !! Delos Archaeology ~ verified against the live net (2026-08-14)
 
@@ -92,7 +92,7 @@ Real Delos grounds the venue:
 
 <<~/ahu>>
 
-<<~ ahu #/negentropy>>
+<<~ ahu slot=`#/negentropy`>>
 
 !! Negentropy ~ the canon gaps (five settled 2026-08-15, two open)
 
@@ -154,7 +154,7 @@ skin-count, the archaic-Gorgon bronze-hands attribution, the huautli compression
 
 <<~/ahu>>
 
-<<~ ahu #/bag-sweep>>
+<<~ ahu slot=`#/bag-sweep`>>
 
 !! Repo Bag Sweep ~ character canon in the bags
 
@@ -181,7 +181,7 @@ skin-count, the archaic-Gorgon bronze-hands attribution, the huautli compression
 
 <<~/ahu>>
 
-<<~ ahu #/witness-heritage>>
+<<~ ahu slot=`#/witness-heritage`>>
 
 !! Spirit Witness ~ the Fae Casting Bench (FTLS ch03)
 
@@ -350,7 +350,7 @@ Finding: Ch03 read COMPLETE — 34 heritages + full effect catalogue, every one 
 
 <<~/ahu>>
 
-<<~ ahu #/witness-elyncia>>
+<<~ ahu slot=`#/witness-elyncia`>>
 
 !! Spirit Witness ~ the Elyncia Visual Canon
 
@@ -472,7 +472,7 @@ Rendering-relevant laws:
 
 <<~/ahu>>
 
-<<~ ahu #/witness-ftls>>
+<<~ ahu slot=`#/witness-ftls`>>
 
 !! Spirit Witness ~ the FTLS Visual Vocabulary
 
@@ -605,14 +605,14 @@ Finding: Corpus yields strong *object* and *tag* vocabulary (Wild Mage item tabl
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;f3xrQd2Tvv2AYGzP5AcOpdIGqKHPHfSHuMnpppbeWfo
+<<^ code=`&#x0003;`>>ni:///sha-256;jYxTrU66fQBISnuEX4x9Y3m4mTDFFrLMaY4Iz21MKkg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

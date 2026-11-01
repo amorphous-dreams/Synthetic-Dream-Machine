@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/open-node-vessel">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/node/open-node-vessel`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -15,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/node/open-node-vessel"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! openNodeVessel ~ one preparation, two doors
 
@@ -24,7 +24,7 @@ and the capability pieces it alone holds. Everything above that comes from the s
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The invariants
 
@@ -45,17 +45,17 @@ second Node into code that claims isomorphism.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-node/src/open-node-vessel.ts" family="code" role="has">>
-<<~ pranala #daemon from="?" -> to="packages/lararium-node/src/open-daemon-vm.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/open-node-vessel.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#daemon` from=`?` to=`packages/lararium-node/src/open-daemon-vm.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/open-vessel">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-vessel`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/open-vessel`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/causal-island`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MpVtrONPx-TLnHtAak2ENdZmO0vS3g1TQZCX4opN9YQ
+<<^ code=`&#x0003;`>>ni:///sha-256;dQ46Q6UohG3yoVHgTb29TzCsFtJ_FCCe95hylloNNSs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

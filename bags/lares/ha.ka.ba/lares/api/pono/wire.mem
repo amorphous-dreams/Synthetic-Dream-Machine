@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/wire">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/wire`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,11 +17,11 @@ uri-path  = "ha.ka.ba/lares/api/pono/wire"
 written   = "2026-06-12"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Wire — the reified edge
 
@@ -31,7 +31,7 @@ A wire that merely //points// stays a `loulou`; embedding stays `aka`/`kahea`; c
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ find the relation's real pressure before reifying — value, pulse, message, rule, or watch.
 ⏿ orient against the ladder: pointer → loulou; embed → aka/kahea; worn → tags; //doing// → wire.
@@ -41,7 +41,7 @@ A wire that merely //points// stays a `loulou`; embedding stays `aka`/`kahea`; c
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Wire Law
 
@@ -56,7 +56,7 @@ A wire that merely //points// stays a `loulou`; embedding stays `aka`/`kahea`; c
 
 <<~/ahu>>
 
-<<~ ahu #/authoring>>
+<<~ ahu slot=`#/authoring`>>
 
 !! Authoring — two gestures, one existence (ratified 2026-06-12)
 
@@ -77,18 +77,18 @@ Co-projection applied to wires: the operator's mind originates; the carrier body
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala-families">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala-families`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-event-lattice`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HUnRwvT93YjONq0Ma4T5U291fNpp6L4YJrkfjzViUl0
+<<^ code=`&#x0003;`>>ni:///sha-256;ZvmKfnL8_SlURKDoXhJ28kFH_ejBhQXQGdF7ib8rW0o
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

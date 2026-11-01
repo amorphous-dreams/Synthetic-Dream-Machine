@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/bags/lararium">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/bags/lararium`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 bag        = "lararium"
@@ -12,7 +12,7 @@ title      = "lar:///ha.ka.ba/bags/lararium"
 type       = "text/memetic-wikitext+tiddlywiki"
 ```
 
-! @lararium
+! lararium
 
 This bag declares its own caps and its own home. ''cap-tier'' names WHO may read it — and only ever
 TIGHTENS against the structural floor, so a declaration cannot open what the crypto keeps shut.
@@ -21,6 +21,6 @@ clone carries it) · `ley` (nowhere durable — it lives while the mesh carries 
 
 A repository home names a REGISTERED id, never a path: the bag names WHAT, each vessel resolves WHERE.
 
-<<^ code="&#x0003;">>ni:///sha-256;PmGpNvAE_8X48awPRbVXhwbvz4PZnut9Vo83gbaTvsc
+<<^ code=`&#x0003;`>>ni:///sha-256;r3s9_00x7xghdSxDc9ux8c3f_5LKQ9Ev_rs8sqbV7Cw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

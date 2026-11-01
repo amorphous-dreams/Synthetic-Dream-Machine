@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/orichalcum-capabilities"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Orichalcum Capabilities
 
@@ -27,7 +27,7 @@ Authority gate for wiki islands, edge islands, and canon MOVE.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ read the capability shape — who grants, who receives, what resource, what abilities, what caveats
 ⏿ orient the authority ladder: pull/read/write/sync/admin/delegate; locate the principal types
@@ -37,7 +37,7 @@ Authority gate for wiki islands, edge islands, and canon MOVE.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law
 
@@ -55,7 +55,7 @@ Authority travels with the graph. Authority MUST hold in the graph, beyond crypt
 
 <<~/ahu>>
 
-<<~ ahu #/principal>>
+<<~ ahu slot=`#/principal`>>
 
 !! Principal Shapes
 
@@ -79,7 +79,7 @@ These name distinct objects. Keep device identity below operator identity.
 
 <<~/ahu>>
 
-<<~ ahu #/ability-ladder>>
+<<~ ahu slot=`#/ability-ladder`>>
 
 !! Ability Ladder
 
@@ -126,7 +126,7 @@ federable-ratings = ["meme", "ano", "kapu"]
 
 <<~/ahu>>
 
-<<~ ahu #/caveats>>
+<<~ ahu slot=`#/caveats`>>
 
 !! Lararium Caveats
 
@@ -213,7 +213,7 @@ min_manaoio_move     = 16
 
 <<~/ahu>>
 
-<<~ ahu #/gate-points>>
+<<~ ahu slot=`#/gate-points`>>
 
 !! Capability Gate Points
 
@@ -234,7 +234,7 @@ Gate failures at steps 5–6 reject the operation and emit a refusal receipt.
 
 <<~/ahu>>
 
-<<~ ahu #/documents-as-groups>>
+<<~ ahu slot=`#/documents-as-groups`>>
 
 !! Documents as Groups
 
@@ -266,7 +266,7 @@ No global ACL owns these. Authority travels with the graph. Each object owns its
 
 <<~/ahu>>
 
-<<~ ahu #/ucan-posture>>
+<<~ ahu slot=`#/ucan-posture`>>
 
 !! UCAN Posture
 
@@ -289,13 +289,13 @@ the crypto gate, not instead of it.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/research-streams`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RWkZYSLrcs5u_QvE9wKfyQNzzJmwJr9Xe7Zy7J0RZMs
+<<^ code=`&#x0003;`>>ni:///sha-256;UZNzwEPIDP2v-g39Nz3gSK_gq7llxSImREURwcg534Y
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

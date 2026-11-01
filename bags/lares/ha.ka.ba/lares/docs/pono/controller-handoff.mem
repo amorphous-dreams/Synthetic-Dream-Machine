@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/controller-handoff">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,17 +14,17 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/controller-handoff"
 ```
 
-<<~ ahu #/purpose>>
+<<~ ahu slot=`#/purpose`>>
 
 !! The controller's handoff ~ one seat, passed in the open
 
-A session that holds the CONTROLLER's seat drives the build toward the roadmap's attractor (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-attractor">>): it briefs lanes, routes their handbacks, pushes green heads, keeps canon and the changelog true, and brings the operator only what changes authority, custody at rest or identity bytes. This carrier holds what a session needs to take that seat: the practice, the state, and the way two live sessions pass the seat while both stand.
+A session that holds the CONTROLLER's seat drives the build toward the roadmap's attractor (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-attractor`>>): it briefs lanes, routes their handbacks, pushes green heads, keeps canon and the changelog true, and brings the operator only what changes authority, custody at rest or identity bytes. This carrier holds what a session needs to take that seat: the practice, the state, and the way two live sessions pass the seat while both stand.
 
-Read with it, in order: the boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>), the roadmap's cold start (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start">>), then #/the-lane-law.
+Read with it, in order: the boot seed (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>), the roadmap's cold start (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start`>>), then #/the-lane-law.
 
 <<~/ahu>>
 
-<<~ ahu #/the-seat>>
+<<~ ahu slot=`#/the-seat`>>
 
 !! The seat ~ what the controller does
 
@@ -37,7 +37,7 @@ Read with it, in order: the boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noo
 
 <<~/ahu>>
 
-<<~ ahu #/the-practice>>
+<<~ ahu slot=`#/the-practice`>>
 
 !! The practice ~ what every lane keeps
 
@@ -61,7 +61,7 @@ Read with it, in order: the boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noo
 
 <<~/ahu>>
 
-<<~ ahu #/the-lane-law>>
+<<~ ahu slot=`#/the-lane-law`>>
 
 !! The lane law ~ what every lead's brief points at, so a session on any machine reads it here
 
@@ -92,7 +92,7 @@ A session reads this carrier and the roadmap alone; no note outside the reposito
 
 <<~/ahu>>
 
-<<~ ahu #/the-cloud-lanes>>
+<<~ ahu slot=`#/the-cloud-lanes`>>
 
 !! The cloud lanes ~ the briefs a cloud session takes by name
 
@@ -104,7 +104,7 @@ A cloud lane commits on its OWN branch, `feature/green-jello-dinosaur-5--<lane>`
 Train W's assembled cutover landed as PR #44: every vessel socket opens through the sealed face gate on one handshake, fleet join serves every face, a fresh browser device stands at the floor, and a herm answers the knock where a Nexus carries it. The roadmap's `W` rows name what stays owed.
 
 !!! Lane `carriage-fold` ~ a local session's lane
-Kit: <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/carriage-fold-lane">>. Roadmap row `W18`: the carrier folds walk the roll anchors (PR #50, merged 2026-10-19), and `P20`'s gate half reads a place contract across a roll (PR #54), so held-out reads green on every driver; DreamDom-Wright builds `F6` on lane `holder-owner`, owing the deliberate cross-epoch held-out cell beside it. A lane under `mixed-model-swarm#/the-lanes`: its own sub-branch, the work swarm's build pair in one worktree, the other lineage's read, the overwatch, a pull request.
+Kit: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/carriage-fold-lane`>>. Roadmap row `W18`: the carrier folds walk the roll anchors (PR #50, merged 2026-10-19), and `P20`'s gate half reads a place contract across a roll (PR #54), so held-out reads green on every driver; DreamDom-Wright builds `F6` on lane `holder-owner`, owing the deliberate cross-epoch held-out cell beside it. A lane under `mixed-model-swarm#/the-lanes`: its own sub-branch, the work swarm's build pair in one worktree, the other lineage's read, the overwatch, a pull request.
 
 !!! Lane `browser-custody` ~ past lane
 Its custody API landed (the roadmap's `B1` row names what it built and what stays owed). Its boot caller rides with whichever lane next holds `open-browser-vessel.ts` and the web boot. The persona roots' seal waits built and red-first on `feature/green-jello-dinosaur-5--persona-root-seal`: the root mint refuses `no-custody-slot`, so it merges only after that boot binds a slot and unlocks before `openBrowserVessel`.
@@ -117,7 +117,7 @@ The dated `next-path-scout.md` report records the earlier tree; its top line nam
 
 <<~/ahu>>
 
-<<~ ahu #/state>>
+<<~ ahu slot=`#/state`>>
 
 !! State ~ the controller trues this section at every handoff
 
@@ -142,7 +142,7 @@ The span carries, through PR #137 (tonight, 2026-10-31): the agent's intent plan
 
 <<~/ahu>>
 
-<<~ ahu #/the-live-handoff>>
+<<~ ahu slot=`#/the-live-handoff`>>
 
 !! The live handoff ~ two sessions, one seat, passed by word
 
@@ -157,6 +157,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;u6Dn19D6yDusV8_lsGTcwKwR0QiQ1V_o7gt-dTtG0Kc
+<<^ code=`&#x0003;`>>ni:///sha-256;uaXa-_u8GsqiKoTTU63b6hbf9VGAzIvIrDvSpeAspa8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

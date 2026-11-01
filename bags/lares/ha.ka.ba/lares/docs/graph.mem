@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/graph">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/graph`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 file-path        = "bags/lares/ha.ka.ba/lares/docs/graph.mem"
@@ -18,7 +18,7 @@ type             = "text/memetic-wikitext+tiddlywiki"
 uri-path         = "ha.ka.ba/lares/docs/graph"
 ```
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ observe: static `_SOCKET`/`_DEPTH` maps and carrier-index scans stand in for a real graph walk.
 ⏿ orient: build-system depsets, temporal KG bi-temporal edges, and UEFN ECS plane separation each name the same missing structure.
@@ -28,7 +28,7 @@ uri-path         = "ha.ka.ba/lares/docs/graph"
 
 <<~/ahu>>
 
-<<~ ahu #/core-proposition>>
+<<~ ahu slot=`#/core-proposition`>>
 
 !! Core Proposition
 
@@ -53,7 +53,7 @@ Three structural claims drive the redesign:
 
 <<~/ahu>>
 
-<<~ ahu #/decisions>>
+<<~ ahu slot=`#/decisions`>>
 
 !! Committed Design Decisions
 
@@ -71,7 +71,7 @@ They do not require further operator input.
 
 <<~/ahu>>
 
-<<~ ahu #/open-question>>
+<<~ ahu slot=`#/open-question`>>
 
 !! `? ->` Socket Resolution — Closed
 
@@ -80,7 +80,7 @@ The canonical pranala law (`lar:///ha.ka.ba/lares/api/pono/pranala`) settles thi
 > "A named `#fragment` SHOULD win socket resolution before the enclosing meme URI."
 
 ''Resolution: Option A — fragment-level.''
-`? ->` in a pranala block inside `<<~ ahu #/required-preload-l-prime>>` resolves to `lar:///ha.ka.ba/lares/api/noosphere-boot#/required-preload-l-prime`.
+`? ->` in a pranala block inside ``<<~ ahu slot=`#/required-preload-l-prime`>>`` resolves to `lar:///ha.ka.ba/lares/api/noosphere-boot#/required-preload-l-prime`.
 The parser tracks enclosing `ahu` fragment context during scan.
 `from_socket` carries the fragment URI; `from_uri` carries the carrier URI.
 
@@ -88,7 +88,7 @@ The parser implementation in `graph/pranala-parser` may proceed on this basis.
 
 <<~/ahu>>
 
-<<~ ahu #/child-carriers>>
+<<~ ahu slot=`#/child-carriers`>>
 
 !! Child Carriers
 
@@ -101,7 +101,7 @@ The parser implementation in `graph/pranala-parser` may proceed on this basis.
 
 <<~/ahu>>
 
-<<~ ahu #/terminology-alignment>>
+<<~ ahu slot=`#/terminology-alignment`>>
 
 !! Terminology Alignment
 
@@ -111,7 +111,7 @@ Graph design docs should call addressed units ''carriers''; `locus` and `loci` r
 
 <<~/ahu>>
 
-<<~ ahu #/implementation-phases>>
+<<~ ahu slot=`#/implementation-phases`>>
 
 !! What Stands In Code
 
@@ -128,7 +128,7 @@ The graph-traversal model this carrier cluster describes (`Locus`/`LociGraph`, B
 
 <<~/ahu>>
 
-<<~ ahu #/validation-markers>>
+<<~ ahu slot=`#/validation-markers`>>
 
 !! Validation Markers
 
@@ -145,18 +145,18 @@ The graph-traversal model this carrier cluster describes (`Locus`/`LociGraph`, B
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/nodes">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/traversal">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/pranala-parser">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/artifacts">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/graph/nodes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/graph/traversal`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/graph/pranala-parser`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/graph/artifacts`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;at3vvnZ-geqw05ypLCvVHm5GcME3cAMxe6DgT5UAeHs
+<<^ code=`&#x0003;`>>ni:///sha-256;-Ofx9sVVcbNcaXoGcZMHNTumjfjDrh_iahqcpf2wXUk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

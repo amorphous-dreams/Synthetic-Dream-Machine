@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/wsl2/memory-guard">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/wsl2/memory-guard`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -18,7 +18,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/wsl2/memory-guard"
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! The memory guard — why a VM thrashes, and the layers that stop it
 
@@ -26,7 +26,7 @@ On 2026-09-18 a background test grew without bound, filled 31 GiB of RAM and 8 G
 
 <<~/ahu>>
 
-<<~ ahu #/why-no-kill>>
+<<~ ahu slot=`#/why-no-kill`>>
 
 !! Why the kernel never killed anything
 
@@ -36,7 +36,7 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 
 <<~/ahu>>
 
-<<~ ahu #/layers>>
+<<~ ahu slot=`#/layers`>>
 
 !! The layers, strongest first
 
@@ -59,7 +59,7 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 
 <<~/ahu>>
 
-<<~ ahu #/vm-hygiene>>
+<<~ ahu slot=`#/vm-hygiene`>>
 
 !! Two settings that keep the VM honest
 
@@ -69,7 +69,7 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 
 <<~/ahu>>
 
-<<~ ahu #/who-sets-what>>
+<<~ ahu slot=`#/who-sets-what`>>
 
 !! Who can set what, from where
 
@@ -85,6 +85,6 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_k1unEe0qApA80TZCVTViAbIRjVwOKMkPytpuxArxWY
+<<^ code=`&#x0003;`>>ni:///sha-256;w4bSsh5P2MBvS00G-ohe8ptyEatdXiyoGSBz9DmRzd4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

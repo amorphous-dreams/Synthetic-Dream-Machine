@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/templates/modules/power">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/templates/modules/power`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -16,13 +16,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/modules/power"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
 ! Template — Power Module
 
-<<~ ahu #/intent>>
+<<~ ahu slot=`#/intent`>>
 
 !! Intent
 
@@ -32,7 +32,7 @@ The canonical SDM Power card (P/R/T/D/Ox + tags) ''is'' the `#default` block. Th
 
 <<~/ahu>>
 
-<<~ ahu #/required-shape>>
+<<~ ahu slot=`#/required-shape`>>
 
 !! Required Shape
 
@@ -52,7 +52,7 @@ tags = ["@sdm/tags/function/ecm-scan", "@sdm/tags/domain/divination", "@sdm/tags
 
 <<~/ahu>>
 
-<<~ ahu #/has-law>>
+<<~ ahu slot=`#/has-law`>>
 
 !! `#has` Law
 
@@ -61,13 +61,13 @@ tags = ["@sdm/tags/function/ecm-scan", "@sdm/tags/domain/divination", "@sdm/tags
 * Do NOT use the retired `implements` edge, and do NOT link an `interfaces/` meme. That inheritance spine retired with v0.0; v0.1 composes with flat `has`.
 
 ```text
-<<~ pranala #has from="?" -> to="lar:///ha.ka.ba/sdm/components/function/ecm-scan">>
-<<~ pranala #has from="?" -> to="lar:///ha.ka.ba/sdm/mount-points/trait">>
+<<~ pranala slot=`#has` from=`?` to=`lar:///ha.ka.ba/sdm/components/function/ecm-scan`>>
+<<~ pranala slot=`#has` from=`?` to=`lar:///ha.ka.ba/sdm/mount-points/trait`>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/writing-law>>
+<<~ ahu slot=`#/writing-law`>>
 
 !! Writing Law
 
@@ -80,15 +80,15 @@ tags = ["@sdm/tags/function/ecm-scan", "@sdm/tags/domain/divination", "@sdm/tags
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card">>
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NPlwGT8b0EVbMRrTlXdjk04T0vju5zJeeUYT037M92Q
+<<^ code=`&#x0003;`>>ni:///sha-256;_4GEVX0UJ99MRu-1NC5XGTil7b-vp_kGaGxCqke-aoA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

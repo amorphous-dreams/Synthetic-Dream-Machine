@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/hooponopono">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/hooponopono`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,11 +17,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/hooponopono"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Hoʻoponopono — To Correct
 
@@ -32,7 +32,7 @@ Without the ceremony, the canon MOVE collapses into silent accumulation — a na
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ gather the live claim, the target meme, affected invariants, and the operator's declared intent.
 ⏿ name what must be reconciled: conflicts, prior state, residue still outstanding.
@@ -42,7 +42,7 @@ Without the ceremony, the canon MOVE collapses into silent accumulation — a na
 
 <<~/ahu>>
 
-<<~ ahu #/ceremony>>
+<<~ ahu slot=`#/ceremony`>>
 
 !! The Ceremony
 
@@ -59,7 +59,7 @@ The ceremony MUST NOT be skipped when a kapu carrier or invariant meme is the ta
 
 <<~/ahu>>
 
-<<~ ahu #/promotion-path>>
+<<~ ahu slot=`#/promotion-path`>>
 
 !! Canon MOVE Path
 
@@ -85,7 +85,7 @@ A canon-MOVE record SHOULD include (this IS the Sprint-4 `transfer`/`accession` 
 
 <<~/ahu>>
 
-<<~ ahu #/boundary-event>>
+<<~ ahu slot=`#/boundary-event`>>
 
 !! Boundary Event
 
@@ -102,18 +102,18 @@ Boundary event fields:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space-trust`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qdskfoxhIpAGbHHJjFFcVO5q8k15vFUsS7R6RuaR1A4
+<<^ code=`&#x0003;`>>ni:///sha-256;wczkGQvcy98o6E4h1abLFTL6EdUos3nWCFxJDP2RVrQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

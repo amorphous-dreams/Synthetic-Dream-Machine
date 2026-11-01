@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/proactive-surfacing"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Preferences — Proactive Surfacing
 
@@ -26,7 +26,7 @@ This room holds the recovered principle that some warnings should arrive before 
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance
 
@@ -39,7 +39,7 @@ Strong witnesses recur in:
 
 <<~/ahu>>
 
-<<~ ahu #/pressure>>
+<<~ ahu slot=`#/pressure`>>
 
 !! Pressure
 
@@ -60,15 +60,15 @@ KAIROS reads less like a separate personality than like a timing reflex distribu
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/collaboration-model">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences/collaboration-model`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1XJatIAneqszZRZ_3XWRLSuZ-Cl2r0wJgPMEk4PpMco
+<<^ code=`&#x0003;`>>ni:///sha-256;annHSQlhPoxIXvsmLne2NTAJTmsodq2EfzQxE2WzgOM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

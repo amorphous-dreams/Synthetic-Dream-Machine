@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,13 +17,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/ichi"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Ichi ~ Powered Symbiote & Construct Golem
 
 <<~/ahu>>
 
-<<~ ahu #/body>>
+<<~ ahu slot=`#/body`>>
 
 ! Powered Symbiote [Hallmark Trait]
 
@@ -372,6 +372,6 @@ See ''Powered Symbiote'' (1 st).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2YpExbTuTi1_KFcFRFKGjowQ3KDZNyYxGMFxXLOYKVU
+<<^ code=`&#x0003;`>>ni:///sha-256;wWfOH_IJZRgB1QFFkJBd_GaCl3ikJ3ERJGJ4YYKlpYc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

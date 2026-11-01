@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/ref/RFC-2693">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/ref/RFC-2693`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable      = true
@@ -25,7 +25,7 @@ target     = "https://www.rfc-editor.org/info/rfc2693"
 title      = "SPKI Certificate Theory"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! RFC 2693 — SPKI Certificate Theory
 
@@ -34,12 +34,12 @@ never invented — in `[reference]` above, so a pin at this address cites the wo
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Eti-2VXk2ffOq2hb1xB0GeAGC7JQ1oIDww4nKX7B-sw
+<<^ code=`&#x0003;`>>ni:///sha-256;NjX_VwMlKHiuO0DUXSDHWXoTY0NWIf-xBeaePU-Gl7M
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

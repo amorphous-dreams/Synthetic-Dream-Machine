@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/carriage-pull">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/carriage-pull`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -16,7 +16,7 @@ uri-path    = "ha.ka.ba/lararium/mesh/carriage-pull"
 written     = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The carriage pull ~ one dial per (peer, Nexus), through a gate
 
@@ -26,7 +26,7 @@ path stands beside it.
 
 <<~/ahu>>
 
-<<~ ahu #/where-the-pin-comes-from>>
+<<~ ahu slot=`#/where-the-pin-comes-from`>>
 
 !! Where the pin comes from ~ never the wire, never the dial entry
 
@@ -38,7 +38,7 @@ before each pull: where the vessel files the pins its boards carried since the l
 
 <<~/ahu>>
 
-<<~ ahu #/what-it-presents>>
+<<~ ahu slot=`#/what-it-presents`>>
 
 !! What it presents ~ the caller's own standing
 
@@ -48,7 +48,7 @@ skipped by name (`presentation-absent`), never dialed bare. Nothing is composed 
 
 <<~/ahu>>
 
-<<~ ahu #/feed-or-fade>>
+<<~ ahu slot=`#/feed-or-fade`>>
 
 !! Feed or fade
 
@@ -57,18 +57,18 @@ is tried at most once per pull; nothing throws. The last refusal names itself wh
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/carriage-pull.ts" family="code" role="has">>
-<<~ pranala #dial from="?" -> to="packages/lararium-mesh/src/flow-read-client.ts" family="code" role="dials-through">>
-<<~ pranala #caller from="?" -> to="packages/lararium-node/src/herm-carriage.ts" family="code" role="stood-by">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/carriage-pull.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#dial` from=`?` to=`packages/lararium-mesh/src/flow-read-client.ts` family=`code` role=`dials-through`>>
+<<~ pranala slot=`#caller` from=`?` to=`packages/lararium-node/src/herm-carriage.ts` family=`code` role=`stood-by`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/place-floor-pin`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bXiLYVOhJ7q3cmYLWm3_82s9Q2ZPAD6oVhgJ3W6tUBM
+<<^ code=`&#x0003;`>>ni:///sha-256;y0dCnZcjWIkn2-NgekkR9pXeTY-V00XYbkFUhNDE8Mo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

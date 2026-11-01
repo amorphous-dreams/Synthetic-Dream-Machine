@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/waking-floor">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -20,11 +20,11 @@ uri-path  = "ha.ka.ba/lares/api/pono/waking-floor"
 written   = "2026-08-08"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The waking floor
 
@@ -36,7 +36,7 @@ cannot do, and waits for a raise. ''The raise'' names the transition.
 
 <<~/ahu>>
 
-<<~ ahu #/the-problem>>
+<<~ ahu slot=`#/the-problem`>>
 
 !! The problem the shape answers ~ a seal that eats a power cut
 
@@ -51,7 +51,7 @@ standing.
 
 <<~/ahu>>
 
-<<~ ahu #/the-law>>
+<<~ ahu slot=`#/the-law`>>
 
 !! The law it re-uses ~ caps stack above a floor that never dissolves
 
@@ -70,19 +70,19 @@ floor reads as real structure rather than as a special case either occasion inve
 
 <<~/ahu>>
 
-<<~ ahu #/the-shape>>
+<<~ ahu slot=`#/the-shape`>>
 
 !! The shape ~ rest, announce, raise
 
-<<~ has Wake Stand "at/the-minimum-reachable-cap-stack ~ never a refusal">>
-<<~ has Wake Serve "what/needs-no-secret ~ the public shelf serves without opening anything">>
-<<~ has Wake Hold "closed/every-sovereign-act ~ a locked vessel gives no sovereign signature">>
-<<~ has Wake Announce "loudly/what-it-cannot-do signed/always ~ an unsigned announcement spoofs and targets">>
-<<~ has Wake Stamp "every-read/as-of-my-last-sync ~ a bare answer from the floor opens split-brain">>
-<<~ has Wake Raise "by/recognition on/a-nonce-THIS-vessel-emitted ~ never a pre-baked blob">>
-<<~ has Wake Expire "the-raise/lapses-at-its-next-causal-boundary ~ nobody lowers it; no timer and no heartbeat ends it">>
+<<~ has entity=`Wake` name=`Stand` params=`at/the-minimum-reachable-cap-stack ~ never a refusal`>>
+<<~ has entity=`Wake` name=`Serve` params=`what/needs-no-secret ~ the public shelf serves without opening anything`>>
+<<~ has entity=`Wake` name=`Hold` params=`closed/every-sovereign-act ~ a locked vessel gives no sovereign signature`>>
+<<~ has entity=`Wake` name=`Announce` params=`loudly/what-it-cannot-do signed/always ~ an unsigned announcement spoofs and targets`>>
+<<~ has entity=`Wake` name=`Stamp` params=`every-read/as-of-my-last-sync ~ a bare answer from the floor opens split-brain`>>
+<<~ has entity=`Wake` name=`Raise` params=`by/recognition on/a-nonce-THIS-vessel-emitted ~ never a pre-baked blob`>>
+<<~ has entity=`Wake` name=`Expire` params=`the-raise/lapses-at-its-next-causal-boundary ~ nobody lowers it; no timer and no heartbeat ends it`>>
 
-''A RAISE'S EXPIRY IS ITS NEXT CAUSAL BOUNDARY'' (house ruling under the operator's delegation; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). An ember's raise lives one boot and lapses at the first of a lock, a restart, a human unlock or a counted removal; that boundary satisfies the expiry this carrier requires, and the custody ruling's //non-renewal// reads as it. A raise fenced on a Nexus's lease epoch lapses at the causal event that rolls the frontier past it (#/the-breaks). No timer and no heartbeat ends a standing: a quiet ember, a quiet peer and a quiet clock each leave a raise standing until a boundary arrives. An ember's raise spends its count at the raise ledger's durable commit, before SERVING composes: a crash before the commit spends nothing and serves nothing, and a crash after it burns that raise. ''The residue, stated plainly'': a hand that writes an older raise ledger onto a disk copy restores spent raises, and no count detects it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-raise">>).
+''A RAISE'S EXPIRY IS ITS NEXT CAUSAL BOUNDARY'' (house ruling under the operator's delegation; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). An ember's raise lives one boot and lapses at the first of a lock, a restart, a human unlock or a counted removal; that boundary satisfies the expiry this carrier requires, and the custody ruling's //non-renewal// reads as it. A raise fenced on a Nexus's lease epoch lapses at the causal event that rolls the frontier past it (#/the-breaks). No timer and no heartbeat ends a standing: a quiet ember, a quiet peer and a quiet clock each leave a raise standing until a boundary arrives. An ember's raise spends its count at the raise ledger's durable commit, before SERVING composes: a crash before the commit spends nothing and serves nothing, and a crash after it burns that raise. ''The residue, stated plainly'': a hand that writes an older raise ledger onto a disk copy restores spent raises, and no count detects it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ember#/the-raise`>>).
 
 ''ANNOUNCING carries more weight than it looks, and MORE than the first draft granted it.'' A vessel
 standing at the floor and quiet reads worse than one refusing, because a caller cannot tell a held act from
@@ -96,13 +96,13 @@ forever (#the-breaks b).
 
 ''THE CUSTODY DOOR OPENS THE VESSEL'S OWN KEY, AND THE CREDENTIAL TAKES ONE ROAD.'' A vessel stands holding no vessel key: it binds its socket, serves the public shelf, reads no private row and mints nothing. `lares vault unlock` reads a credential on a TTY and sends ONE custody frame on the owner-only socket; the frame meets the custody door ahead of every verb, so it never becomes an invocation and leaves no digest, receipt, outcome or log line. The door hands the credential to the one holder in node-main, which opens the key and the custody root; the standing composition then tears down whole and a fresh one stands on the same floor with what the key opens. `lares vault lock` drops the key and returns the vessel to the floor, and so does every restart: nothing an unlock did touches disk. A refusal names its reading (`no-slot-opens` · `tree-absent` · `tree-unreadable` · `attempts-spent`) and never the input; three failed unlocks spend a boot's attempts, and only a restart restores them. A composition that refuses above the floor leaves the floor standing.
 
-''A SEALED ROW'S ACT RIDES A CUSTODY FRAME, NEVER A STORE VERB'' (operator ruling). A store verb's output rests in the daemon's document in the clear, and the digest of its arguments rests in a receipt, so a roster key, a pet-name or a handle-book snapshot on that road would leave its sealed row for an unsealed document. A command that reads or writes a sealed row sends one `act` frame on the owner-only socket instead: the custody door runs the act on the vessel's main thread, against the key a person already opened, and answers that one caller. ''One typed table bounds the acts'' (`packages/lararium-node/src/sealed-acts.ts`). A frame names an act of the table and that act's typed arguments, and nothing beside them; an act the table does not name refuses by name, and so does an argument a row does not name. No row takes a credential of the vessel, and none hands out a seed or anything that rebuilds one. The restore of a face's backup bundle rides two rows that take the bundle's body still sealed and the bundle's own key, which opens that one body and nothing the vessel holds (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-restore">>). A root comes in through that door and none goes out through it: a root's recovery split hands a person two shares that rebuild the root, so it runs in that person's own process alone and refuses beside a standing vessel. No row signs whatever it gets handed: the one row that signs as a persona root reads the image first and signs the seal ceremony's own two images alone, a charter roll and a crossing record. The door logs an act's name and how it ended; nothing an act frame carries or answers reaches a receipt, an outcome or a log. ''One key session opens a vessel's rows.'' Beside a standing vessel a command opens none of its own: an unlocked vessel answers the act with no second prompt, and a locked one refuses and names `lares vault unlock`. With no vessel standing, the command runs the same act of the same table in its own process and opens its own session at the first sealed row the act touches. ''The fleet mirror of a face's own names rides the same door.'' A pet-name and a declared Handle rest sealed on their vessel and ride that face's OWN `@persona` plane to that face's other vessels. ''One face, one plane'': a name of the face at one handle-index lands on the plane of the group that face's sealed anchors name, and on no other, so a vessel that holds several faces tells no face's fleet about another face. After the sealed act lands, the command sends one more act frame that names the face and which of its two names, and no name: `selves.carry` reads the name off its own sealed row and writes it onto the plane from the vessel's main thread, through the Repo that holds the plane's document, and `selves.clear` clears a name once its sealed row holds it no more. Neither act moves a plane past what the sealed row says: a carry refuses where the row holds no such name, a clear refuses while the row still holds it, and both refuse a face this vessel holds no root for, so a vessel that never held a name clears nobody's. ''A carry lands only on a plane whose rest seals'': each plane names where its document rests, and while that rest stands clear on the vessel's disk the carry refuses by it and the name stays on its sealed row, while a clear still runs (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>). `lares persona sync` carries with `fill`, which lands a name only where the plane never held one: a device cannot tell its own older name from a newer one another vessel set, so a sync replaces neither a name nor a clear, and a rename on the device replaces it. The write needs no vessel key and crosses no worker as a message; it rides the custody door all the same, since that door carries the one frame that leaves no receipt, and since a locked vessel shuts every fleet lane. `selves.read` answers each carried face as its own plane names it, to its one caller. No verb takes or answers a face's own name, and a mirror act leaves no outcome, receipt, argument digest or log line behind it. The daemon island mounts the worn face's plane, so that plane's own document syncs between the main thread's Repo and the island's, as the plane itself; nothing beside the plane's document carries a name across that port. A command with no vessel standing reaches no plane: the act refuses by name before it opens any row, and the name stays on its sealed row until `lares persona sync` carries it. A clear made while no plane answered stays on its own vessel, since a sync carries names and never an absence: the person clears the name again beside a standing vessel, and that clear reaches the plane. ''How far a verb's record travels'': the daemon's own document rests in the main thread's Repo and in the vessel's own daemon island. Among socket peers it leaves a vessel toward one class alone, a socket the gate sorts same-operator (a holder of admin on the daemon bag, or a device the pinned persona KEL delegated), which the share verdict full-syncs (`packages/lararium-node/src/self-slot-share.ts`). A sibling, a contracted carrier, a walker and a stranger never read it. So anything a store verb records reaches each of the operator's own delegated devices that dials the vessel, and no one beyond them.
+''A SEALED ROW'S ACT RIDES A CUSTODY FRAME, NEVER A STORE VERB'' (operator ruling). A store verb's output rests in the daemon's document in the clear, and the digest of its arguments rests in a receipt, so a roster key, a pet-name or a handle-book snapshot on that road would leave its sealed row for an unsealed document. A command that reads or writes a sealed row sends one `act` frame on the owner-only socket instead: the custody door runs the act on the vessel's main thread, against the key a person already opened, and answers that one caller. ''One typed table bounds the acts'' (`packages/lararium-node/src/sealed-acts.ts`). A frame names an act of the table and that act's typed arguments, and nothing beside them; an act the table does not name refuses by name, and so does an argument a row does not name. No row takes a credential of the vessel, and none hands out a seed or anything that rebuilds one. The restore of a face's backup bundle rides two rows that take the bundle's body still sealed and the bundle's own key, which opens that one body and nothing the vessel holds (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-restore`>>). A root comes in through that door and none goes out through it: a root's recovery split hands a person two shares that rebuild the root, so it runs in that person's own process alone and refuses beside a standing vessel. No row signs whatever it gets handed: the one row that signs as a persona root reads the image first and signs the seal ceremony's own two images alone, a charter roll and a crossing record. The door logs an act's name and how it ended; nothing an act frame carries or answers reaches a receipt, an outcome or a log. ''One key session opens a vessel's rows.'' Beside a standing vessel a command opens none of its own: an unlocked vessel answers the act with no second prompt, and a locked one refuses and names `lares vault unlock`. With no vessel standing, the command runs the same act of the same table in its own process and opens its own session at the first sealed row the act touches. ''The fleet mirror of a face's own names rides the same door.'' A pet-name and a declared Handle rest sealed on their vessel and ride that face's OWN `@persona` plane to that face's other vessels. ''One face, one plane'': a name of the face at one handle-index lands on the plane of the group that face's sealed anchors name, and on no other, so a vessel that holds several faces tells no face's fleet about another face. After the sealed act lands, the command sends one more act frame that names the face and which of its two names, and no name: `selves.carry` reads the name off its own sealed row and writes it onto the plane from the vessel's main thread, through the Repo that holds the plane's document, and `selves.clear` clears a name once its sealed row holds it no more. Neither act moves a plane past what the sealed row says: a carry refuses where the row holds no such name, a clear refuses while the row still holds it, and both refuse a face this vessel holds no root for, so a vessel that never held a name clears nobody's. ''A carry lands only on a plane whose rest seals'': each plane names where its document rests, and while that rest stands clear on the vessel's disk the carry refuses by it and the name stays on its sealed row, while a clear still runs (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed`>>). `lares persona sync` carries with `fill`, which lands a name only where the plane never held one: a device cannot tell its own older name from a newer one another vessel set, so a sync replaces neither a name nor a clear, and a rename on the device replaces it. The write needs no vessel key and crosses no worker as a message; it rides the custody door all the same, since that door carries the one frame that leaves no receipt, and since a locked vessel shuts every fleet lane. `selves.read` answers each carried face as its own plane names it, to its one caller. No verb takes or answers a face's own name, and a mirror act leaves no outcome, receipt, argument digest or log line behind it. The daemon island mounts the worn face's plane, so that plane's own document syncs between the main thread's Repo and the island's, as the plane itself; nothing beside the plane's document carries a name across that port. A command with no vessel standing reaches no plane: the act refuses by name before it opens any row, and the name stays on its sealed row until `lares persona sync` carries it. A clear made while no plane answered stays on its own vessel, since a sync carries names and never an absence: the person clears the name again beside a standing vessel, and that clear reaches the plane. ''How far a verb's record travels'': the daemon's own document rests in the main thread's Repo and in the vessel's own daemon island. Among socket peers it leaves a vessel toward one class alone, a socket the gate sorts same-operator (a holder of admin on the daemon bag, or a device the pinned persona KEL delegated), which the share verdict full-syncs (`packages/lararium-node/src/self-slot-share.ts`). A sibling, a contracted carrier, a walker and a stranger never read it. So anything a store verb records reaches each of the operator's own delegated devices that dials the vessel, and no one beyond them.
 
-''A BACKUP ASKS THE VESSEL'S ROUTE AGAIN, ON A FRAME OF ITS OWN.'' An unlocked vessel's door answers any process of its own user, and no act of the table hands out a root. A face's backup bundle rebuilds that face's root for whoever holds the bundle's route, so the cut rides a `backup` frame apart from the act table (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-cut">>). The frame carries the vessel's own route, the face's handle-index and the bundle key, and nothing beside them. The holder proves that the route opens the key it already holds before any row opens; a route that opens no slot spends one of the boot's unlock attempts and refuses `no-slot-opens`, and spent attempts refuse `attempts-spent`. The vessel answers the bundle's body sealed under the bundle key, so no row's plaintext leaves it, and the command binds the bundle's routes in its own process, so the vessel never reads them. The door logs how the cut ended, by name, and nothing of the route, the key, the rows or the body.
+''A BACKUP ASKS THE VESSEL'S ROUTE AGAIN, ON A FRAME OF ITS OWN.'' An unlocked vessel's door answers any process of its own user, and no act of the table hands out a root. A face's backup bundle rebuilds that face's root for whoever holds the bundle's route, so the cut rides a `backup` frame apart from the act table (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-cut`>>). The frame carries the vessel's own route, the face's handle-index and the bundle key, and nothing beside them. The holder proves that the route opens the key it already holds before any row opens; a route that opens no slot spends one of the boot's unlock attempts and refuses `no-slot-opens`, and spent attempts refuse `attempts-spent`. The vessel answers the bundle's body sealed under the bundle key, so no row's plaintext leaves it, and the command binds the bundle's routes in its own process, so the vessel never reads them. The door logs how the cut ended, by name, and nothing of the route, the key, the rows or the body.
 
 <<~/ahu>>
 
-<<~ ahu #/the-arrival-page>>
+<<~ ahu slot=`#/the-arrival-page`>>
 
 !! The arrival page ~ the floor still answers the door (RULED, BUILT but the announcement)
 
@@ -112,7 +112,7 @@ first MUST NOT wait on the second. The arrival page needs no secret — it rides
 (#/the-shape, //Serve//) — so a floor that withholds it has refused for an absence this law forbids gating on.
 
 ''The first arrival trusts the lararium's own origin'', and the lararium's own Pronaos serves the kindle
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-first-arrival">>). A house unreachable while it
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-first-arrival`>>). A house unreachable while it
 waits for a raise would push that first arrival onto some other origin, and whatever origin answers first
 decides what a fresh device runs. The floor serving its own arrival page keeps the first trust at home.
 
@@ -125,7 +125,7 @@ seed, seed-named CAS members and its `/.well-known/lar` descriptor exactly as a 
 
 <<~/ahu>>
 
-<<~ ahu #/the-announcement>>
+<<~ ahu slot=`#/the-announcement`>>
 
 !! The announcement ~ signed, per Nexus, to peers alone (RULED, UNBUILT)
 
@@ -138,11 +138,11 @@ learns nothing of its standing (#/the-breaks (c): an unsigned announcement targe
 ''It signs under the domain `waking-floor-announce`'', which mints into the domain registry only when the
 announcement gets built, at the re-found.
 
-''It signs with the floor bundle's signing key for that Nexus'': a key derived from the floor key, the Nexus and the announcement's own floor route, so a locked vessel signs it (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange">>). NEVER the vessel key in public: the vessel key also signs carry seals, so one public signature under it would correlate the place with every Nexus it carries. Each Nexus therefore reads an announcement it can verify and no other Nexus can link.
+''It signs with the floor bundle's signing key for that Nexus'': a key derived from the floor key, the Nexus and the announcement's own floor route, so a locked vessel signs it (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange`>>). NEVER the vessel key in public: the vessel key also signs carry seals, so one public signature under it would correlate the place with every Nexus it carries. Each Nexus therefore reads an announcement it can verify and no other Nexus can link.
 
 <<~/ahu>>
 
-<<~ ahu #/prior-art>>
+<<~ ahu slot=`#/prior-art`>>
 
 !! What survives contact ~ the field ran this, and inverted our word for it
 
@@ -189,7 +189,7 @@ point the same way — the strongest signal available here.
 
 <<~/ahu>>
 
-<<~ ahu #/the-breaks>>
+<<~ ahu slot=`#/the-breaks`>>
 
 !! ★ ONE FLOOR — a herm grows a house when someone comes to dwell ★
 
@@ -205,7 +205,7 @@ point the same way — the strongest signal available here.
 
 ''A REALM STANDS APART FROM A VESSEL, and the no-lease doctrine governs the first.'' `cabal-realm` rules that a member holds no grant that expires — they ''dwell'', the dwelling deposits a settled depth, and stopping leaves no deed to lapse; //a lease makes a substance-object you hold between exercises, and this stack refuses that shape//. That law governs a REALM: a virtual relationship-place constituted by the people maintaining it. It does NOT govern INFRASTRUCTURE. A vessel's caps form no relationship, and a marker fencing them makes no claim on anybody's standing — reading the realm law onto the vessel layer repeats the same layer error this meme already names once, one plane down.
 
-''What DOES cross the layers is the caution.'' The realm doctrine's own unswept corner — //soft-state rewards whoever keeps feeding, NOT who legitimately holds the realm; a small hostile faction can out-maintain an apathetic majority// — transfers intact to any raise that renews by PRESENCE. At the infrastructure layer it reads: whoever keeps touching a vessel keeps its caps, and diligence confers no title. ''Any presence-renewal MUST answer that, or it hands a squatter tenure.'' The walker's carriage at a hearth answers it: presence earns a guest notice before reclaim, the quota bounds what presence can hold, and the hearth's roll ends what it stops renewing (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-walkers-carriage">>).
+''What DOES cross the layers is the caution.'' The realm doctrine's own unswept corner — //soft-state rewards whoever keeps feeding, NOT who legitimately holds the realm; a small hostile faction can out-maintain an apathetic majority// — transfers intact to any raise that renews by PRESENCE. At the infrastructure layer it reads: whoever keeps touching a vessel keeps its caps, and diligence confers no title. ''Any presence-renewal MUST answer that, or it hands a squatter tenure.'' The walker's carriage at a hearth answers it: presence earns a guest notice before reclaim, the quota bounds what presence can hold, and the hearth's roll ends what it stops renewing (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-walkers-carriage`>>).
 
 ''AN EPOCH FENCES PER NEXUS, and one frontier gives the raise BOTH properties it needs.'' A raise binds the Nexus's lease epoch: ''supersession'' (a newer grant binds a higher epoch) and ''expiry'' (an old one goes stale when the frontier rolls past it), both driven by the Nexus's own events rather than by a duration anybody must agree on, with no clock anywhere (#/the-raise-is-a-vessel-layer-act, where the rolling window of markers stands STRUCK). A vessel standing in more than one Nexus holds more than one frontier, and ''an epoch means nothing outside the Nexus that rolls it''.
 
@@ -255,7 +255,7 @@ against a witness radius rather than tuned to it.
 
 ''Supersession and expiry come from that one mechanism, with no clock anywhere.'' A newer grant binds a higher epoch; an old one goes stale when the frontier rolls past it. A paused, forwarded or replayed raise self-revokes at the next roll — no global broadcast, no duration anybody must agree on, and a returning holder stays fenced whether or not anyone suspected it. This matters most for the vessel this law governs: ''a vessel AT THE FLOOR holds no trustworthy wall time at all''.
 
-''A rolling WINDOW of markers stands STRUCK.'' A set answers //is this listed// and never //is this newer//, so a partitioned island could not reason about it locally; whatever fell off its far end encoded a retention policy nobody wrote; and a list of valid markers makes a roster of moments, which this house does not hold. The full reasoning, and the ownership cut that separates our fence from Keyhive's CGKA epoch and POSIX's time origin, stands at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>.
+''A rolling WINDOW of markers stands STRUCK.'' A set answers //is this listed// and never //is this newer//, so a partitioned island could not reason about it locally; whatever fell off its far end encoded a retention policy nobody wrote; and a list of valid markers makes a roster of moments, which this house does not hold. The full reasoning, and the ownership cut that separates our fence from Keyhive's CGKA epoch and POSIX's time origin, stands at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces`>>.
 
 ''Waiting rides a SECOND wire, deliberately unfused, and that wire ends nothing.'' Under asynchrony nothing tells a slow recogniser from a departed one, so a holder's choice to stop waiting belongs to the liveness wire: local, monotone, suspicion-accruing, never leaving its island as a timestamp anyone else must agree on. That wire paces its own holder and never ends a standing; a standing ends at a causal boundary alone (#/the-shape). Fusing the two smuggles a global now back in.
 
@@ -298,17 +298,17 @@ explicit law with a review gate'', never as an intention.
 
 <<~/ahu>>
 
-<<~ ahu #/the-open-question>>
+<<~ ahu slot=`#/the-open-question`>>
 
 !! The downgrade attack ~ forcing costs nothing; the profit splits four ways
 
 ''An adversary CAN force the floor'' — cut the power. Cheap, deniable, repeatable. What that buys them
 splits, and only the first line reads well for us:
 
-<<~ has Profit Secret-harvest "verdict/NO ~ forcing the floor produces the BFU result extraction vendors call the BAD outcome. The floor holds.">>
-<<~ has Profit Veto "verdict/YES-and-severe ~ a permanent deniable veto to whoever can drop power (MITRE T1562.010)">>
-<<~ has Profit Raise-oracle "verdict/YES ~ forced reboots MANUFACTURE the moment kahu present material; repetition harvests it">>
-<<~ has Profit Gray-failure "verdict/YES ~ peers cannot tell AT-THE-FLOOR from COMPROMISED-AND-IMITATING-THE-FLOOR">>
+<<~ has entity=`Profit` name=`Secret-harvest` params=`verdict/NO ~ forcing the floor produces the BFU result extraction vendors call the BAD outcome. The floor holds.`>>
+<<~ has entity=`Profit` name=`Veto` params=`verdict/YES-and-severe ~ a permanent deniable veto to whoever can drop power (MITRE T1562.010)`>>
+<<~ has entity=`Profit` name=`Raise-oracle` params=`verdict/YES ~ forced reboots MANUFACTURE the moment kahu present material; repetition harvests it`>>
+<<~ has entity=`Profit` name=`Gray-failure` params=`verdict/YES ~ peers cannot tell AT-THE-FLOOR from COMPROMISED-AND-IMITATING-THE-FLOOR`>>
 
 ''THE VETO READS AS THE WORST OF THE FOUR, and it reads worst precisely because it stays QUIET.'' A civic
 mesh whose function runs on sovereign acts hands a deniable, repeatable veto to whoever can reliably drop
@@ -366,7 +366,7 @@ it. A human's unlock raises the vessel. The keyhive archive, each face's veil ar
 anchors rest sealed under the vessel key from the founding's first write, so no stored passphrase and no
 unsealed archive lifts a boot.
 
-''OWED'': a bounded ember, its law stated and unbuilt (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember">>). It raises to SERVING alone and never
+''OWED'': a bounded ember, its law stated and unbuilt (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ember`>>). It raises to SERVING alone and never
 signs or admits; a count dial bounds it, and no clock; it wants the device's own unlock plus a second
 signal; each raise gets recorded at the ledger's durable commit; the raise lapses at its next causal
 boundary (#/the-shape); any other device of the human removes it.
@@ -376,11 +376,11 @@ delegation): the serving key seals the serving rows alone, the outbox key seals 
 alone, the vessel key wraps both, and the vessel key seals every other private row, the device recovery
 shares and the reserve share among them. A credential reaches the vessel
 on a terminal alone, so no environment variable, flag or stored file opens a key or lifts a boot
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-table`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/elyncia>>
+<<~ ahu slot=`#/elyncia`>>
 
 !! The Elyncia reading ~ the myth already carries it
 
@@ -400,14 +400,14 @@ keeps ''the place'' — which is precisely the floor. The myth bore this load be
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-base-model">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-base-model`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/shelter-against-empire`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;p8ZwKelxFbpnjAiqJRDmaAiSoP5b9GzR9Kr-v56Fr9w
+<<^ code=`&#x0003;`>>ni:///sha-256;7SQg8c11HdVCmZqfWgqqGi6yXNLpLuInSKUwwrVFurA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

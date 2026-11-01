@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/nihomano-sigils">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/nihomano-sigils`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/nihomano-sigils"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Nihomano Sigils
 
@@ -63,7 +63,7 @@ English alias: `sharktooth-sigils` — same meme, same law, different face.
 
 <<~/ahu>>
 
-<<~ ahu #/wild-magic>>
+<<~ ahu slot=`#/wild-magic`>>
 
 !! Wild Magic — The Web3 Discovery
 
@@ -101,7 +101,7 @@ operator-visible data layer as the content itself.
 
 <<~/ahu>>
 
-<<~ ahu #/first-discovered-set>>
+<<~ ahu slot=`#/first-discovered-set`>>
 
 !! The First Discovered Sigil Set
 
@@ -163,7 +163,7 @@ the operator may author in either tongue and the parse result is identical.
 
 <<~/ahu>>
 
-<<~ ahu #/mirror-vocabulary>>
+<<~ ahu slot=`#/mirror-vocabulary`>>
 
 !! Mirror Vocabulary
 
@@ -196,7 +196,7 @@ tongue, absent otherwise).
 
 <<~/ahu>>
 
-<<~ ahu #/cultural-contract>>
+<<~ ahu slot=`#/cultural-contract`>>
 
 !! Cultural Contract
 
@@ -249,7 +249,7 @@ cannot yet see.
 
 <<~/ahu>>
 
-<<~ ahu #/language-families>>
+<<~ ahu slot=`#/language-families`>>
 
 !! Language Families in the Grammar
 
@@ -274,7 +274,7 @@ The grammar accepts all five families equally. The parse result for a Hawaiian s
 
 <<~/ahu>>
 
-<<~ ahu #/sharktooth-tag>>
+<<~ ahu slot=`#/sharktooth-tag`>>
 
 !! The SharktoothSigil Tag
 
@@ -296,23 +296,23 @@ derive from those tiddlers, held to them by `tools/sigil-parity-witness.sh`.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/aka">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loulou">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wehe">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/heihei">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/huli">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sharktooth-sigils">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kahea`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/aka`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/loulou`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wehe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/heihei`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/huli`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sharktooth-sigils`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xPlpz4lXBjfqx0Xx-AHkoErUXNNSJm0ifYXXRO-lqgk
+<<^ code=`&#x0003;`>>ni:///sha-256;rCc8iWkKg5-yYYg4bwDk85PPWpMQQ0-EztMHMGgeIqw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

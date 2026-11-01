@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/crypto">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/crypto`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -15,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/crypto"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The crypto boundary ~ define the need, implement nothing
 
@@ -25,7 +25,7 @@ runtime.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The doctrines
 
@@ -44,7 +44,7 @@ bytes, because some runtimes refuse more and refuse it loudly.
 
 <<~/ahu>>
 
-<<~ ahu #/the-two-digest-paths>>
+<<~ ahu slot=`#/the-two-digest-paths`>>
 
 !! Two paths, one digest
 
@@ -61,7 +61,7 @@ elsewhere buys a promise where a value would do.
 
 <<~/ahu>>
 
-<<~ ahu #/the-buffer-constraint>>
+<<~ ahu slot=`#/the-buffer-constraint`>>
 
 !! Why the random port names its buffer
 
@@ -74,16 +74,16 @@ buffer moves that refusal to the call site, where a caller can still choose diff
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/crypto.ts" family="code" role="has">>
-<<~ pranala #digest from="?" -> to="packages/lararium-mesh/src/agile-digest.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/crypto.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#digest` from=`?` to=`packages/lararium-mesh/src/agile-digest.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;S2LyhEoJbGKSsYxcENEzFSvu921qZnANgYkydEJ5UAQ
+<<^ code=`&#x0003;`>>ni:///sha-256;0CIgvUcEIgo61b7gOAxkm8BY2SgW9aB7BYxROLo0NH8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

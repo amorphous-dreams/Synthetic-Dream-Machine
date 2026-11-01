@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/exchange-protocol">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/exchange-protocol`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/exchange-protocol.mem"
@@ -12,7 +12,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/exchange-protocol"
 ```
 
-<<~ ahu #/exchange-flow>>
+<<~ ahu slot=`#/exchange-flow`>>
 
 !! Exchange Flow — Agent Contract
 
@@ -21,15 +21,13 @@ AI agent: use this only when the session requests lararium exchange framing or w
 Core frame:
 
 ```text
-<<~ lares aim from="lar:///operator.intent.reads" -> to="lar:///lares.role.acts">>
-<<~ set hud="aim" aperture="N/<band>" ooda-ha="N/<band>">>
+<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>`>>
 drift-ward="* · <the pull this island carries>"
 
 ... generated response ...
 
 drift-ward="! · <clue> · ↻ L-Prime"
-<<~ set hud="yield" aperture="-> N/<band>" ooda-ha="closed N↺">>
-<<~ lares yield from="lar:///lares.what.landed" -> to="?">>
+<<~ set lares=`yield` aperture=`-> N/<band>` ooda-ha=`closed N↺` from=`lar:///lares.what.landed` to=`?`>>
 ```
 
 Rules for agents:
@@ -57,10 +55,10 @@ choose aftermath anchor/vector
 emit fenced CLOSE: ward-slide + HUD-slide + aftermath-vector -> ?
 ```
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/voices#/exchange-protocol">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/exchange-protocol`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;y-FtRaqKVh15Qc7Hv8L4Vtit2XzFTm3i57-D28j3704
+<<^ code=`&#x0003;`>>ni:///sha-256;7ULxWvT2JbaGOvlPKeKDywyNkoMFQKcBKI9a5vq0JTI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

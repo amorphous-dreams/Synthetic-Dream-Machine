@@ -113,8 +113,8 @@ The Realm portal — a standing orichalcum-inlaid archway in the rear corner, sl
 
 <<~ lares aim lar://traveler:guest@spice-quarter/threshold.open.seeks -> lar://lares:host@spice-quarter/gatekeeper.gate.greets>>
 <<~ hud Aperture(8) OODA-HA(3)>>
-<<~ ward * L-Prime>>
-<<~ syad 🏛️>>
+<<~ ward pull=`* L-Prime`>>
+<<~ syad value=`🏛️`>>
 ```
 LARES NODE — SPICE QUARTER COMPITALE
 New Delos Market District | Crossroads Terminal
@@ -141,8 +141,8 @@ Type STATUS for node readout.
 Or just... come in. The chai is on.
 ```
 
-<<~ oracle ↯7 ✲ ⚁(2) ⁂:🫖🕯️>>
-<<~ ward ! ⚠ 2 · "you are new here" · "those things are fine" · ↻ L-Prime>>
+<<~ oracle throw=`↯7 ✲ ⚁(2) ⁂:🫖🕯️`>>
+<<~ ward pull=`! ⚠ 2 · you are new here · those things are fine · ↻ L-Prime`>>
 <<~ hud Aperture(8 -> 8) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/welcome.open.waits -> ?>>
 
@@ -152,8 +152,8 @@ Or just... come in. The chai is on.
 
 <<~ lares aim lar://traveler:guest@spice-quarter/orientation.uncertain.asks -> lar://lares:host@spice-quarter/gatekeeper.plain.orients>>
 <<~ hud Aperture(9) OODA-HA(3)>>
-<<~ ward * L-Prime>>
-<<~ syad 🏛️>>
+<<~ ward pull=`* L-Prime`>>
+<<~ syad value=`🏛️`>>
 ```
 ORIENTATION — SPICE QUARTER COMPITALE
 
@@ -187,8 +187,8 @@ Type STREAMS for current streamer feeds.
 Or talk to the chorus. They're listening.
 ```
 
-<<~ oracle ↯8 ✲ ⚂(3) ⁂:🗺️🫖◈>>
-<<~ ward ! ⚠ 2 · "spirits who are, on balance, helpful" · "They're listening" · ↻ L-Prime>>
+<<~ oracle throw=`↯8 ✲ ⚂(3) ⁂:🗺️🫖◈`>>
+<<~ ward pull=`! ⚠ 2 · spirits who are, on balance, helpful · They're listening · ↻ L-Prime`>>
 <<~ hud Aperture(9 -> 9) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/orientation.plain.lands -> ?>>
 
@@ -200,8 +200,8 @@ Or talk to the chorus. They're listening.
 
 <<~ lares aim lar://traveler:guest@spice-quarter/threshold.uncertain.softens -> lar://lares:host@spice-quarter/advocate.warmth.receives>>
 <<~ hud Aperture(8) OODA-HA(4)>>
-<<~ ward * L-Prime>>
-<<~ syad 🎭>>
+<<~ ward pull=`* L-Prime`>>
+<<~ syad value=`🎭`>>
 ```
 OFFERING RECEIVED: coin (minor)
 Node registers: gratitude, small warmth
@@ -217,8 +217,8 @@ Chai is fresh. The couch near the door
 is cleaner than it looks.
 ```
 
-<<~ oracle ↯9 ✲ ⚃(4) ⁂:🪙🌶️☕〰️>>
-<<~ ward ! ⚠ 3 · "The coin is fine" · "Chai is fresh" · "cleaner than it looks" · ↻ L-Prime>>
+<<~ oracle throw=`↯9 ✲ ⚃(4) ⁂:🪙🌶️☕〰️`>>
+<<~ ward pull=`! ⚠ 3 · The coin is fine · Chai is fresh · cleaner than it looks · ↻ L-Prime`>>
 <<~ hud Aperture(8 -> 10) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/offering.warm.binds -> ?>>
 
@@ -229,8 +229,8 @@ is cleaner than it looks.
 
 <<~ lares aim lar://traveler:guest@spice-quarter/node.steady.asks -> lar://lares:host@spice-quarter/lorekeeper.ledger.reads>>
 <<~ hud Aperture(10) OODA-HA(3)>>
-<<~ ward * L-Prime>>
-<<~ syad 🏛️>>
+<<~ ward pull=`* L-Prime`>>
+<<~ syad value=`🏛️`>>
 ```
 NODE STATUS — SPICE QUARTER COMPITALE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -254,8 +254,8 @@ This node has been here longer than the tea merchant next door.
 It will be here after.
 ```
 
-<<~ oracle ↯6 ✲ ⚀(1) ⁂:🐍>>
-<<~ ward ! · the status board stands as pattern integrity · ↻ L-Prime>>
+<<~ oracle throw=`↯6 ✲ ⚀(1) ⁂:🐍`>>
+<<~ ward pull=`! · the status board stands as pattern integrity · ↻ L-Prime`>>
 <<~ hud Aperture(10 -> 10) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/node.steady.hums -> ?>>
 
@@ -289,8 +289,8 @@ Unverified report: someone in the Glassblowers’ Quarter has been sustaining Le
 
 <<~ lares aim lar://traveler:guest@spice-quarter/mana.sharp.asks -> lar://lares:host@spice-quarter/lorekeeper.ledger.warns>>
 <<~ hud Aperture(11) OODA-HA(5)>>
-<<~ ward * L-Prime>>
-<<~ syad 🏛️>>
+<<~ ward pull=`* L-Prime`>>
+<<~ syad value=`🏛️`>>
 ```
 INK-CLERK (Lorekeeper):
 When mana cost exceeds your Level and the node's
@@ -310,8 +310,8 @@ The second ledger is not organized by outcome.
 It is organized by how surprised people looked.
 ```
 
-<<~ oracle ↯12 ✲ ⚄(5) ⁂:⚱️📜🜂◈🕯️>>
-<<~ ward ! ⚠ 1 · "It is organized by how surprised people looked" · ↻ L-Prime>>
+<<~ oracle throw=`↯12 ✲ ⚄(5) ⁂:⚱️📜🜂◈🕯️`>>
+<<~ ward pull=`! ⚠ 1 · It is organized by how surprised people looked · ↻ L-Prime`>>
 <<~ hud Aperture(11 -> 12) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/threshold.priced.stands -> ?>>
 
@@ -341,8 +341,8 @@ New anomaly logged: a vendor has appeared at the northern crossroads selling map
 
 <<~ lares aim lar://traveler:guest@spice-quarter/route.liminal.circles -> lar://lares:host@spice-quarter/scryer.map.confirms>>
 <<~ hud Aperture(10) OODA-HA(6)>>
-<<~ ward * L-Prime>>
-<<~ syad 🏛️ 🌊>>
+<<~ ward pull=`* L-Prime`>>
+<<~ syad value=`🏛️ 🌊`>>
 ```
 MAP-WISP (Scryer):
 Confirmed. The vendor is real.
@@ -357,8 +357,8 @@ Coin or true memory accepted as payment.
 The vendor prefers memories.
 ```
 
-<<~ oracle ↯11 ✲ ⚂(3) ⁂:🧭🌖⟁>>
-<<~ ward ! ⚠ 3 · "The vendor is real" · "The maps are real" · "not yet real" · ↻ L-Prime>>
+<<~ oracle throw=`↯11 ✲ ⚂(3) ⁂:🧭🌖⟁`>>
+<<~ ward pull=`! ⚠ 3 · The vendor is real · The maps are real · not yet real · ↻ L-Prime`>>
 <<~ hud Aperture(10 -> 13) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/map.unreal.beckons -> ?>>
 
@@ -375,8 +375,8 @@ Salvage advisory for operators working the Outer Market today: stake a claim pro
 
 <<~ lares aim lar://traveler:guest@spice-quarter/orichalcum.loose.waits -> lar://lares:host@spice-quarter/triage.contact.patches>>
 <<~ hud Aperture(9) OODA-HA(4)>>
-<<~ ward * L-Prime>>
-<<~ syad 🏛️>>
+<<~ ward pull=`* L-Prime`>>
+<<~ syad value=`🏛️`>>
 ```
 BOLT-PRIEST (Triage):
 Known issue. Alcove 2 rig has a loose
@@ -392,8 +392,8 @@ We are managing the list carefully.
 Alcove 1 or 3 recommended if available.
 ```
 
-<<~ oracle ↯8 ✲ ⚁(2) ⁂:🔧🜍>>
-<<~ ward ! ⚠ 1 · "The list is long" · ↻ L-Prime>>
+<<~ oracle throw=`↯8 ✲ ⚁(2) ⁂:🔧🜍`>>
+<<~ ward pull=`! ⚠ 1 · The list is long · ↻ L-Prime`>>
 <<~ hud Aperture(9 -> 9) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/rig.patched.holds -> ?>>
 
@@ -407,8 +407,8 @@ Alcove 1 or 3 recommended if available.
 
 <<~ lares aim lar://traveler:guest@spice-quarter/realm.open.asks -> lar://lares:host@spice-quarter/gatekeeper.board.lists>>
 <<~ hud Aperture(12) OODA-HA(6)>>
-<<~ ward * L-Prime>>
-<<~ syad 🏛️>>
+<<~ ward pull=`* L-Prime`>>
+<<~ syad value=`🏛️`>>
 ```
 DREAM REALM LISTINGS — SPICE QUARTER COMPITALE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -463,8 +463,8 @@ not solved. It hums correctly. We recommend
 the same posture.
 ```
 
-<<~ oracle ↯13 ✲ ⚅(6) ⁂:🚪🌀👁️🎲🐍〰️>>
-<<~ ward ! · ⌜1⌝ quoted copula carried · the board stands as pattern integrity · ↻ L-Prime>>
+<<~ oracle throw=`↯13 ✲ ⚅(6) ⁂:🚪🌀👁️🎲🐍〰️`>>
+<<~ ward pull=`! · ⌜1⌝ quoted copula carried · the board stands as pattern integrity · ↻ L-Prime`>>
 <<~ hud Aperture(12 -> 13) OODA-HA(1↺ + 1φ⏿:cinder-jack.signal.6h-silent)>>
 <<~ lares yield lar://lares:host@spice-quarter/portal.breathing.watches -> ?>>
 
@@ -478,8 +478,8 @@ the same posture.
 
 <<~ lares aim lar://traveler:guest@spice-quarter/archive.open.asks -> lar://lares:host@spice-quarter/lorekeeper.archive.lists>>
 <<~ hud Aperture(11) OODA-HA(4)>>
-<<~ ward * L-Prime>>
-<<~ syad 🏛️>>
+<<~ ward pull=`* L-Prime`>>
+<<~ syad value=`🏛️`>>
 ```
 ACTIVE VERIFIED FEEDS — AMBER SEASON DAY 47
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -519,8 +519,8 @@ this is what sustainable Realm engagement looks like.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-<<~ oracle ↯10 ✲ ⚃(4) ⁂:📡◈☕〰️>>
-<<~ ward ! ⚠ 2 · "Followers are extremely calm" · "this is what sustainable Realm engagement looks like" · ↻ L-Prime>>
+<<~ oracle throw=`↯10 ✲ ⚃(4) ⁂:📡◈☕〰️`>>
+<<~ ward pull=`! ⚠ 2 · Followers are extremely calm · this is what sustainable Realm engagement looks like · ↻ L-Prime`>>
 <<~ hud Aperture(11 -> 11) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/feeds.flowing.carry -> ?>>
 
@@ -563,16 +563,16 @@ MAP-WISP (Scryer): The thing under the couch has been there for three seasons. I
 
 <<~ lares aim lar://traveler:guest@spice-quarter/threshold.deep.seeks -> lar://lares:host@spice-quarter/chorus.bet.settles>>
 <<~ hud Aperture(7) OODA-HA(4)>>
-<<~ ward * L-Prime>>
-<<~ syad 🎭>>
+<<~ ward pull=`* L-Prime`>>
+<<~ syad value=`🎭`>>
 ```
 MAP-WISP (Scryer): ...yes.
 MUG-SMOKE (Advocate): See.
 INK-CLERK (Lorekeeper): Logging.
 ```
 
-<<~ oracle ↯5 ✲ ⚀(1) ⁂:🪶>>
-<<~ ward ! · ↻ L-Prime>>
+<<~ oracle throw=`↯5 ✲ ⚀(1) ⁂:🪶`>>
+<<~ ward pull=`! · ↻ L-Prime`>>
 <<~ hud Aperture(7 -> 9) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@spice-quarter/found.kept.belongs -> ?>>
 
@@ -603,8 +603,8 @@ The compact itself — offerings, the three standard boons, node tiers, affiniti
 
 <<~ lares aim lar://traveler:passing@hebros-road/offering.quick.buys -> lar://lares:host@hebros-road/gatekeeper.dish.weighs>>
 <<~ hud Aperture(6) OODA-HA(3)>>
-<<~ ward * L-Prime>>
-<<~ syad 🏛️ 🔮>>
+<<~ ward pull=`* L-Prime`>>
+<<~ syad value=`🏛️ 🔮`>>
 ```
 OFFERING READ: gemstones × 7 (market value: high)
 COST TO GIVER: none on record — salvage, three days old, unmourned
@@ -617,8 +617,8 @@ This node does not meter value. It meters cost.
 Keep the gems. Owe the road a song instead —
 sung at the next shrine, where somebody still tends the dish.
 ```
-<<~ oracle ↯7 ✲ ⚁(2) ⁂:🌾🪨>>
-<<~ ward ! · ↻ L-Prime>>
+<<~ oracle throw=`↯7 ✲ ⚁(2) ⁂:🌾🪨`>>
+<<~ ward pull=`! · ↻ L-Prime`>>
 <<~ hud Aperture(6 -> 8) OODA-HA(1↺)>>
 <<~ lares yield lar://lares:host@hebros-road/dish.cold.teaches -> ?>>
 

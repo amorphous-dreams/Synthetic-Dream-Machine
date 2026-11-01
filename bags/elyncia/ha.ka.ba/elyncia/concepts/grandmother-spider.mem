@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/grandmother-spider">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/concepts/grandmother-spider`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/grandmother-spider"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Grandmother Spider ~ Three Masks, One Persona
 
@@ -32,7 +32,7 @@ setting's ordinary grammar, not a special case made for this one.
 
 <<~/ahu>>
 
-<<~ ahu #/the-masks>>
+<<~ ahu slot=`#/the-masks`>>
 
 !! The Three Masks
 
@@ -58,7 +58,7 @@ other two.
 
 <<~/ahu>>
 
-<<~ ahu #/not-the-mother-spore>>
+<<~ ahu slot=`#/not-the-mother-spore`>>
 
 !! What the Mother Spore Is NOT
 
@@ -75,15 +75,15 @@ debts do not reduce to one.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/factions/index">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/factions/lamplighters-union">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/strandbeests">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/factions/index`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/factions/lamplighters-union`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/strandbeests`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BcGM7LcS5NK53oku5psBab1JHOBGD6ZWt_p6UlrOIuE
+<<^ code=`&#x0003;`>>ni:///sha-256;7QARAlAP-4ZuhDDxJ81ZdJ8ZORDQplP0ZIToU2vMldI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

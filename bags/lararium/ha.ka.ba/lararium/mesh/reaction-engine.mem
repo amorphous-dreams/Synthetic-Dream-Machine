@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/reaction-engine">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/reaction-engine`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -18,7 +18,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/reaction-engine"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Reaction Engine — Canonical Pipeline
 
@@ -35,7 +35,7 @@ only the irreducible (CRDT, network, crypto, multi-wiki coordination). Everythin
 
 <<~/ahu>>
 
-<<~ ahu #/pipeline>>
+<<~ ahu slot=`#/pipeline`>>
 
 !! The Five-Layer Pipeline
 
@@ -77,7 +77,7 @@ Layer 5 — IslandMsg_Event / CRDT convergence (the crossing)
 
 <<~/ahu>>
 
-<<~ ahu #/laws>>
+<<~ ahu slot=`#/laws`>>
 
 !! Pipeline Laws
 
@@ -97,7 +97,7 @@ Layer 5 — IslandMsg_Event / CRDT convergence (the crossing)
 
 <<~/ahu>>
 
-<<~ ahu #/boundary-map>>
+<<~ ahu slot=`#/boundary-map`>>
 
 !! Boundary Map
 
@@ -119,13 +119,13 @@ Cross-island boundary (IslandMsg_Event):
 Cross-vessel boundary (CRDT convergence):
   placeVerb() writes verb tiddler to shared admin CRDT.
   Automerge convergence delivers to all connected vessels.
-  Outcome tiddler at @daemon/outcomes/<requestId> carries the result.
+  Outcome tiddler at daemon-plane/outcomes/<requestId> carries the result.
   No additional protocol layer.
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/verse-alignment>>
+<<~ ahu slot=`#/verse-alignment`>>
 
 !! UEFN Verse Alignment
 
@@ -145,7 +145,7 @@ One wave. All observers. Same synchronous context.
 
 <<~/ahu>>
 
-<<~ ahu #/non-goals>>
+<<~ ahu slot=`#/non-goals`>>
 
 !! Non-Goals (alpha)
 
@@ -155,20 +155,20 @@ One wave. All observers. Same synchronous context.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reaction-protocol">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kumu-device">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/reaction-graph">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/island-protocol`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-event-lattice`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reaction-protocol`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kumu-device`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/reaction-graph`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Oj3nV_zitzymUrHJ4EFGz1S2tRTHvUolMjNojCu7C2g
+<<^ code=`&#x0003;`>>ni:///sha-256;bYv8zTUn8vC-baWnpbNX4wjtgYcTxQw0tJcL89sHrLE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

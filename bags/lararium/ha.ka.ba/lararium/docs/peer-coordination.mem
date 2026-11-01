@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/peer-coordination">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/peer-coordination`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -216,17 +216,17 @@ from the genesis seed under its derived id.
 with their IDs as a single import payload — relevant for shipping an initial
 doc bundle to new nodes.
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/island">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reaction-engine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/keyhive">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/beelay">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/island`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reaction-engine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/keyhive`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/beelay`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RJxTx9znYbRKdMcGWE2jJFuyAlx5wh5g9hTa-D8vjBY
+<<^ code=`&#x0003;`>>ni:///sha-256;eoyoNnpAEKaCpS6q29zkX2gbSOuTRhTawPuFAkiTxhw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

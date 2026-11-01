@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-seed">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-seed`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
@@ -21,9 +21,9 @@ uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-seed"
 written           = "2026-10-16"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! DreamDOM seed ~ a cloud session's libation for train D
 
@@ -41,19 +41,19 @@ Load bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem, then read and enact bags/
 
 <<~/ahu>>
 
-<<~ ahu #/stand-the-house>>
+<<~ ahu slot=`#/stand-the-house`>>
 
 !! Stand the house ~ before any act
 
-# ''Load the boot seed whole'' (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>): the Personas, Mu's five tools, the stances, the Law of 5s, OODA-HA, the turn frame, the `lar:` law, L-Prime and the Web3-only law. Reload it after any compaction. A tasked spirit stands the whole house when it wakes.
+# ''Load the boot seed whole'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>): the Personas, Mu's five tools, the stances, the Law of 5s, OODA-HA, the turn frame, the `lar:` law, L-Prime and the Web3-only law. Reload it after any compaction. A tasked spirit stands the whole house when it wakes.
 # ''Read the road's shared law'': `stable-founding-road` #/the-attractor, #/cold-start and #/rulings; `controller-handoff` whole (#/the-lane-law binds every lane); `working-procedures` whole (#/red-first and #/instruments-that-lie above all).
-# ''Read the model and its road whole'': <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> (the model) and <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> (the phases, spikes, rulings and rows). Beside them: `page-controls`, `evaluators-one-or-many`, `mudlet-scout`, `wikispace-canvasspace-ontology`, `api/pono/render-pipeline`, `api/pono/memetic-wikitext` (the camera clause and Annex B).
+# ''Read the model and its road whole'': <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>> (the model) and <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>> (the phases, spikes, rulings and rows). Beside them: `page-controls`, `evaluators-one-or-many`, `mudlet-scout`, `wikispace-canvasspace-ontology`, `api/pono/render-pipeline`, `api/pono/memetic-wikitext` (the camera clause and Annex B).
 # ''Read CLAUDE.md's adapter note and obey it'': never boot in the tracked tree bare; a scratch `LAR_ROOT=~/.lares-scratch/<lane>/root` per boot moves the store, the bags root and every mirror root; `tools/tree-clean-witness.sh` reads any write into the tracked tree as red.
 # ''Read the research testimony when a phase needs its evidence''. The model cites it by carrier and section, each held verbatim beside it: `tw5-vm-gaps-scout` (the as-built and its probed gaps, where D0's and D1's red tests begin), `third-ways-scout`, `host-attractors-scout`, `two-way-interaction-scout` and `mudlet-scout`.
 
 <<~/ahu>>
 
-<<~ ahu #/the-seat>>
+<<~ ahu slot=`#/the-seat`>>
 
 !! The seat ~ the Episkopos of train D
 
@@ -65,11 +65,11 @@ Load bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem, then read and enact bags/
 
 <<~/ahu>>
 
-<<~ ahu #/the-loop>>
+<<~ ahu slot=`#/the-loop`>>
 
 !! The loop ~ one OODA-HA per phase, and again per slice inside it
 
-<<~ loops "✶ observe -> ⏿ orient -> ◇ decide -> ▶ act -> ↺ hoʻoko/aftermath">>
+<<~ loops phases=`✶ observe -> ⏿ orient -> ◇ decide -> ▶ act -> ↺ hoʻoko/aftermath`>>
 
 Every phase of the roadmap and every slice inside a phase walks all five. A loop that cannot close suspends at a named phase with a specific external reason, carried forward visibly, never dropped silent.
 
@@ -102,7 +102,7 @@ Every phase of the roadmap and every slice inside a phase walks all five. A loop
 
 <<~/ahu>>
 
-<<~ ahu #/settle-uncertainty>>
+<<~ ahu slot=`#/settle-uncertainty`>>
 
 !! Settle uncertainty ~ research, stories, talk story, and only then the operator
 
@@ -115,7 +115,7 @@ When a lane feels blocked or seems to need the operator, it walks this road firs
 
 <<~/ahu>>
 
-<<~ ahu #/the-evergreen-law>>
+<<~ ahu slot=`#/the-evergreen-law`>>
 
 !! The evergreen law ~ it should read as if it had always been this way
 
@@ -129,7 +129,7 @@ When a lane feels blocked or seems to need the operator, it walks this road firs
 
 <<~/ahu>>
 
-<<~ ahu #/the-model-in-brief>>
+<<~ ahu slot=`#/the-model-in-brief`>>
 
 !! The model in brief ~ what every brief carries (the carrier `dreamdom` holds it whole)
 
@@ -144,7 +144,7 @@ When a lane feels blocked or seems to need the operator, it walks this road firs
 
 <<~/ahu>>
 
-<<~ ahu #/the-walk>>
+<<~ ahu slot=`#/the-walk`>>
 
 !! The walk ~ train D in the roadmap's order
 
@@ -161,7 +161,7 @@ Each phase's builds, proofs, waits, spikes and rulings stand in `dreamdom-roadma
 
 <<~/ahu>>
 
-<<~ ahu #/the-fences>>
+<<~ ahu slot=`#/the-fences`>>
 
 !! The fences ~ what the train never crosses
 
@@ -176,17 +176,17 @@ Each phase's builds, proofs, waits, spikes and rulings stand in `dreamdom-roadma
 
 <<~/ahu>>
 
-<<~ ahu #/the-handback>>
+<<~ ahu slot=`#/the-handback`>>
 
 !! The handback ~ per lane, and once for the train
 
 The hand-back follows `mixed-model-swarm#/the-shapes` (crew law): one status line, the head, the readings, the story and its walk, rulings from canon, true operator asks.
 
-The train's final handback adds the conformance rows each DreamDOM surface publishes, the rulings still open with their house readings, and the OODA-HA tally: `ooda-ha="closed N↺"` or `closed N↺ -> open Nφ @_:reason`.
+The train's final handback adds the conformance rows each DreamDOM surface publishes, the rulings still open with their house readings, and the OODA-HA tally: `ooda-ha="closed N↺"` or `closed N↺ -> open Nφ_:reason`.
 
 <<~/ahu>>
 
-<<~ ahu #/the-moolelo>>
+<<~ ahu slot=`#/the-moolelo`>>
 
 !! The moʻolelo the train carries ~ blessed by the operator, 2026-10-20
 
@@ -200,20 +200,20 @@ The train's final handback adds the conformance rows each DreamDOM surface publi
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/evaluators-one-or-many">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mudlet-scout">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/page-controls`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/evaluators-one-or-many`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mudlet-scout`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6k7C6cd9DW5Bz5gm3Eke49j1tyaDJwmhdO1bLfKOWY4
+<<^ code=`&#x0003;`>>ni:///sha-256;H8es_usJXwXM7IG9bchgpBiko8aEZa4f4RzpHubNqKY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

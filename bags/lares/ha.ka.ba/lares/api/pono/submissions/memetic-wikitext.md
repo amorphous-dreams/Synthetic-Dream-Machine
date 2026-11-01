@@ -6,16 +6,19 @@ docname: "draft-fontany-memetic-wikitext-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
-source-check: "ni:///sha-256;2zTs6vmARmP7gDivmTDCnLgpLP1PSK9iLbn7Zm8hM6w"
+source-check: "ni:///sha-256;lo6ekU9aDgmrZtC1wdQ3K07MHXdG-yvIcVVvTUK24fw"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
+normative:
+  RFC2119:
+  RFC8174:
 ---
 
 
-- `law uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`` (unresolved — no corpus to pin)
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as shown here.
 
-<<~ ahu slot=`#/abstract`>>
+<a id="abstract"></a>
 
 # Memetic-Wikitext — A Composable Markup Language
 
@@ -25,13 +28,13 @@ Memetic-wikitext (`text/memetic-wikitext`) defines a composable, wikitext-derive
 
 This specification names the lexical structure, a formal surface grammar, the dual-layer processing model, the typed-edge (pranala) system, and the conformance, media-type, and security obligations a processor MUST meet. It does **not** enumerate every sigil; the live sigil registry rides the runtime **kernel** face, and the epistemic ontology rides the `api/mu` canon.
 
-<<~ ahu slot=`#/status`>>
+<a id="status"></a>
 
 ## Status and Maturity
 
 This document holds **submission-draft** maturity. The lexical structure, dual-layer model, recursion guard, and pranala type system read as stable. The formal grammar, conformance classes, media-type registration, and security considerations carry RFC-2119 normative force. Items in Annex B remain open. Promotion to canon rests with the operator, not the document.
 
-<<~ ahu slot=`#/introduction`>>
+<a id="introduction"></a>
 
 ## Introduction — Scope, Audience, and Relation to the `lar:` Spec
 
@@ -50,7 +53,7 @@ carrier CARRIES; [FRAMING] defines the wrap, and composes over this grammar's `d
 
 **Audience.** Implementers of parsers and renderers; authors migrating TiddlyWiki5 or Verse content; registry maintainers.
 
-<<~ ahu slot=`#/terminology`>>
+<a id="terminology"></a>
 
 ## Terminology and Conformance Language
 
@@ -73,7 +76,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **
 | **parser** | a processor reading surface into the graph-layer AST and typed edges. |
 | **renderer** | a processor projecting the parse into a camera. |
 
-<<~ ahu slot=`#/abstract-syntax`>>
+<a id="abstract-syntax"></a>
 
 ## Abstract Syntax
 
@@ -114,7 +117,7 @@ carry any document.
 this abstract structure and neither reads the other (#/processing-model). A processor that conflates the
 projection with the structure has read an encoding as the thing encoded.
 
-<<~ ahu slot=`#/lexical-structure`>>
+<a id="lexical-structure"></a>
 
 ## Lexical Structure
 
@@ -247,7 +250,7 @@ Memetic-wikitext SHALL read as a **superset of TW5 wikitext**: every valid TW5 w
 
 A `#fragment-id` carried by a call's `slot=` names an addressable anchor. A block's close tag MUST match the innermost open of the same sigil name.
 
-<<~ ahu slot=`#/grammar`>>
+<a id="grammar"></a>
 
 ## Formal Grammar (ABNF)
 
@@ -337,7 +340,7 @@ every sigil an unbound macro call, and this document's superset claim rests on t
 spellings than the host admits — it MUST NOT refuse a spelling the host accepts, and MUST degrade an
 unrecognised one to text rather than to a parse error (#lexical-structure, the gradient's floor).
 
-<<~ ahu slot=`#/processing-model`>>
+<a id="processing-model"></a>
 
 ## Processing Model — The Dual Layer
 
@@ -372,7 +375,7 @@ The parse yields a typed AST (`MemeAstNode[]`) and typed edges (`PranalaEdge[]`)
 
 Edge and definition sigils carry render directives. `aka` embeds frozen content; `kahea` embeds live content kept fresh by subscription; `loulou` renders a navigable reference; definitions expand named forms; conditionals and iteration gate and repeat render. The render layer crosses a mutation boundary only at its commit step (write a tiddler, a cache, or a disk carrier). The parse→widget→DOM stage pipeline lives at `render-pipeline#render-axes`.
 
-<<~ ahu slot=`#/pranala`>>
+<a id="pranala"></a>
 
 ## Pranala — The Typed Edge System
 
@@ -398,7 +401,7 @@ surfaces:
 
 **Transclusion ≠ dataflow.** A `transclusion` edge carries a *content identity* (render-time, page surface); a `dataflow` edge carries a *computed value* (graph-execution order, canvas surface). A processor MUST route content identities through transclusion edges and computed values through dataflow wires. *(The `transclusion` family surfaces under its English name; its pono Hawaiian name stays held.)*
 
-<<~ ahu slot=`#/anchors`>>
+<a id="anchors"></a>
 
 ## Anchors and Belonging
 
@@ -427,7 +430,7 @@ list its renderers without a write on every transclusion.
 <<~ moves name=`belonging` params=`rides/the-anchor-shape on/every-hop if/derived do/refuse-a-second-copy`>>
 <<~ moves name=`rendering` params=`rides/the-marker on/the-renderer if/many-to-many do/stay-out-of-the-child`>>
 
-<<~ ahu slot=`#/scope-model`>>
+<a id="scope-model"></a>
 
 ## Scope Model
 
@@ -444,7 +447,7 @@ State carries one of five principled scopes. A `kau` binding and a `kapu` qualif
 
 Scope MAY widen; a narrowing MUST surface explicitly. A ``<<~ kapu scope=`<scope>`>>`` block renders only when the active scope reads at that level or wider. Context binds **lexically** through the `meme` sigil — a template MUST take its context through `meme` alone. *(A web2.5 transport adapter MAY map these scopes to external objects behind a causal-island boundary; that mapping lives in the adapter's meme.)*
 
-<<~ ahu slot=`#/recursion-guard`>>
+<a id="recursion-guard"></a>
 
 ## Recursion Guard
 
@@ -457,7 +460,7 @@ A renderer MUST maintain a render stack per chain. When it evaluates a transclus
 
 The compile-time DAG guard (boot-closure cycles) and the render-time stack guard run **orthogonally**; a processor MUST hold both. A break stub MUST stay visible, non-crashing, and traceable to the URI that triggered it.
 
-<<~ ahu slot=`#/guest-grammar`>>
+<a id="guest-grammar"></a>
 
 ## Guest Grammar Model — The Extension Point
 
@@ -471,7 +474,7 @@ The compile-time DAG guard (boot-closure cycles) and the render-time stack guard
 
 Guest grammar MUST leave host primitives intact, and malformed guest work MUST degrade locally, keeping the host parse alive. The inline conditional / iteration / query sigils accept a `filter-expr` as shorthand for a `hana` block over the same guest grammar. The host treats `filter-expr` content as opaque (#/grammar). Currently registered: `x-tiddlywiki-filter`.
 
-<<~ ahu slot=`#/english-aliases`>>
+<a id="english-aliases"></a>
 
 ## English Alias Namespace
 
@@ -496,7 +499,7 @@ name binds no procedure, and MUST render it as its own text.
 it, styled as its own block. The extension point matches the one every sigil uses, so the render arrives
 without the grammar moving.)*
 
-<<~ ahu slot=`#/conformance`>>
+<a id="conformance"></a>
 
 ## Conformance Classes
 
@@ -529,7 +532,7 @@ A **conforming renderer** MUST: read the dual layer as one parse; honor transclu
 
 A **conforming author** SHOULD: reserve capitalized RFC-2119 force for intended normative statements; keep guest grammar inside `hana` or the inline filter forms; pass context lexically through `meme`.
 
-<<~ ahu slot=`#/media-type`>>
+<a id="media-type"></a>
 
 ## Media-Type Registration (RFC 6838)
 
@@ -576,7 +579,7 @@ generic processing: a receiver holding only a TW5 parser processes a carrier use
 total, the storage verbatim, every sigil an unbound macro call rendering harmlessly (#/conformance). That the syntax builds on TW5 states the
 lineage; the degradation property states the warrant.
 
-<<~ ahu slot=`#/security`>>
+<a id="security"></a>
 
 ## Security Considerations
 
@@ -590,7 +593,7 @@ lineage; the degradation property states the warrant.
 
 **Scope leakage.** A widening-only scope discipline (#/scope-model) MUST hold at the Decide→Act boundary; an `ephemeral` value that escapes its container MUST surface as a contract violation, not silently persist.
 
-<<~ ahu slot=`#/examples`>>
+<a id="examples"></a>
 
 ## Worked Examples (Non-Normative)
 
@@ -634,7 +637,7 @@ A canvas reaction wire (flow surface):
 <<~ papalohe from=`DeviceA` to=`DeviceB` listenable=`OnEliminated` subscribable=`ShowScore`>>
 ```
 
-<<~ ahu slot=`#/references`>>
+<a id="references"></a>
 
 ## Normative References
 
@@ -647,7 +650,7 @@ A canvas reaction wire (flow surface):
 - **[TW5]** — TiddlyWiki5 WikiText grammar — the inherited base; memetic-wikitext reads as a superset.
 - **[TW5-WIKITEXT]** — the base-syntax specification (sibling submission): `lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext`.
 
-<<~ ahu slot=`#/annex-parity`>>
+<a id="annex-parity"></a>
 
 ## Annex A — TiddlyWiki5 / Verse Parity (Informative)
 
@@ -664,7 +667,7 @@ A canvas reaction wire (flow surface):
 | Verse device event binding | `<<~ papalohe …>>` (reaction) |
 | Verse event (`listenable`/subscribe) vs expression value | `reaction` (event) vs `dataflow` (value) |
 
-<<~ ahu slot=`#/annex-open`>>
+<a id="annex-open"></a>
 
 ## Annex B — Open Items (Informative)
 
@@ -679,19 +682,19 @@ A canvas reaction wire (flow surface):
   normative reference for TW5 wikitext — the base-syntax document stands drafted
   (`lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext`) and awaits its walk to the TW5 circle.
 
-<<~ ahu slot=`#/edges`>>
+<a id="edges"></a>
 
 ## Edges
 
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/render-pipeline``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter``
-- `loulou uri=`lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/guest-grammar``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-four-tools``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/attention-scale``
+- `loulou lar:///ha.ka.ba/lares/api/pono/pranala`
+- `loulou lar:///ha.ka.ba/lares/api/pono/lar-uri`
+- `loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`
+- `loulou lar:///ha.ka.ba/lares/api/pono/render-pipeline`
+- `loulou lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter`
+- `loulou lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext`
+- `loulou lar:///ha.ka.ba/lares/api/pono/guest-grammar`
+- `loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL`
+- `loulou lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`
+- `loulou lar:///ha.ka.ba/lares/api/mu/the-four-tools`
+- `loulou lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`
+- `loulou lar:///ha.ka.ba/lares/api/pono/attention-scale`

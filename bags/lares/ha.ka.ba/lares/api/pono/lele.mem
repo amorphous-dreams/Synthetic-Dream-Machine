@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/lele">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/lele`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -63,6 +63,6 @@ A lele edge MUST NOT wait for a response from the target.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OcTzm6jsEgcsikfWV1-eySwL7Da6mDTxNnnWa_fN-Pw
+<<^ code=`&#x0003;`>>ni:///sha-256;zNHVbZ9lf_SV5lxF79hZJiua-4Ok1nbsRqySFfy0Joc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/identity-slot">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/identity-slot`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -15,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/identity-slot"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! IdentitySlot ~ a narrow door, three ways through
 
@@ -25,7 +25,7 @@ shape.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The invariants
 
@@ -40,7 +40,7 @@ capability, or null where nothing gates — the shape carries the token and read
 
 <<~/ahu>>
 
-<<~ ahu #/the-quine-split>>
+<<~ ahu slot=`#/the-quine-split`>>
 
 !! The quine split ~ class in code, CONFIG in the wiki
 
@@ -54,7 +54,7 @@ that choice does work beyond tidiness — a `lar:` tiddler stands as a heleuma s
 
 <<~/ahu>>
 
-<<~ ahu #/what-the-open-slot-leaves>>
+<<~ ahu slot=`#/what-the-open-slot-leaves`>>
 
 !! What an empty slot leaves ungated, and what gates anyway
 
@@ -84,15 +84,15 @@ island's store), and on the browser shore admitting a relay peer at all.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/identity-slot.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/identity-slot.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
-<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-vessel`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/keyhive-provider`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;h-FOVsG5GdzqwZiLFH2p_QBU4qGp_U1TJUB1DClrUZY
+<<^ code=`&#x0003;`>>ni:///sha-256;bsdEazuoslaWjIwMdJ0pv3vxvMjxHXStQBtUdWN7scA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

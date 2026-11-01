@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/has">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/has`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -224,6 +224,6 @@ after welded to the before. The trigger does the work the dead water would have 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cIaOjheTzTDsr9I4LH28yz6ru1fP2qy-BsfpksLeUxQ
+<<^ code=`&#x0003;`>>ni:///sha-256;dz1eIHbslgEk4Z4FTRU3ZHdZyjllKm-tr-X8tuA7H5w
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

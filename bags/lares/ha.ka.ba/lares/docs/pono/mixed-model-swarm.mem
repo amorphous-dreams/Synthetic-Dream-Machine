@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -19,17 +19,17 @@ uri-path  = "ha.ka.ba/lares/docs/pono/mixed-model-swarm"
 written   = "2026-10-19"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Mixed-model swarm ~ many lineages, one hand per lane
 
 The house works across several model lineages at once. Each lineage holds the seat it suits, every seat keeps the same lane law, and one hand per lane lands the work. A second lineage earns its place by seeing what the first one misses, never by adding a writer.
 
-The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/the-lane-law; a spirit's mask, lifecycle and handback form stand at <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">> #/worker-swarm.
+The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/the-lane-law; a spirit's mask, lifecycle and handback form stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>> #/worker-swarm.
 
 <<~/ahu>>
 
-<<~ ahu #/the-seats>>
+<<~ ahu slot=`#/the-seats`>>
 !! The seats ~ which lineage holds what
 
 |! Seat |! Lineage |! Holds |! Never |
@@ -45,7 +45,7 @@ The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lar
 
 <<~/ahu>>
 
-<<~ ahu #/the-shapes>>
+<<~ ahu slot=`#/the-shapes`>>
 !! The shapes ~ how a crew stands
 
 * ''The work swarm.'' A lane runs one lead with the smallest crew that finishes the slice: Terra on file-listed edits, Luna and Sol reading, the Copilot seat reading the batch's Aftermath. Terra, Luna, Sol and `gpt-5.3-codex` share the OpenAI lineage, so their cross-read counts once; the lead reads every build as the second lineage, and the controller reads every chunk. A seat never reads a diff it wrote.
@@ -57,13 +57,13 @@ The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lar
 ** The red lands as its own commit before its fix, so a reader sees the red's sha fail on its parent; the commit message quotes the failure, and a control ships beside it. A red written after its fix names that and carries a proof run against the parent. Phase seats wrap this order: reds seat, the lead commits and proves the red, fix seat, the lead commits.
 ** A seat whose run fails, gets cancelled or misses its red lands nothing; the lead discards its partial diff by name.
 ** After a reader's findings the builder revises ONCE; a second round of the same findings goes to the lead, then the controller.
-** A reader's findings go straight to the builder's lead; the controller reads the copy and rules only on forks (design, scope, law), settled by <<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> #/forks.
+** A reader's findings go straight to the builder's lead; the controller reads the copy and rules only on forks (design, scope, law), settled by <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>> #/forks.
 ** One writer per worktree; no claims ledger.
 ** The controller arms ONE watcher per seat (`until [ -f <seat>/final.md ]`, in the harness's background mode); a lead hands back once its seat launches and the controller's watcher wakes it. Leads and seats arm none. The lead keeps `resume.md` current at each commit and before each launch, and the controller sweeps a landed lane's watchers by pid.
 ** A lead hands back ONCE, short: one `<<~ status "…">>` line, the head (full sha), the CI and held-out readings on it, the story and the walk that proved it, the rulings taken from canon each with its source, and the true operator asks each with a lean. A failed or discarded seat gets a leg line (directory, model, effort, mode, attempts, outcome). Spend numbers come from the controller's `spend.py`, never a seat's word.
 ** Spend reads from what each tool writes: Claude subagent transcripts, Codex rollouts, the Copilot run log's `Requests N Premium` line. A Copilot log with no such line reads UNMETERED, never zero; the Codex pool holds a weekly floor read from the newest rollout (20% for a build or research seat, 0% for a read seat, the operator letting readers spend the pool to its end for now). `spend.py` serves the controller alone and binds no lane.
 * ''Observe pair.'' Before a phase designs anything, one seat cold-reads the as-built with `file:line`, and a second, woken apart and handed the framing alone, reads the field. Their handbacks collide in orient.
-* ''The Chao of a review'' (<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>). Two reads over one question wear the Chao's two faces, and the review resolves to three:
+* ''The Chao of a review'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/chao`>>). Two reads over one question wear the Chao's two faces, and the review resolves to three:
 ** ''Hodge'' carries Yang and Ha, the Aneristic face: what holds its shape. It reads what the work states as standing (each claim, name and contract) against the source, and finds the line that does not hold.
 ** ''Podge'' carries Yin and Ka, the Eristic face: what moves. It reads what the work does under change (the race, the other caller, the epoch that rolls, the case left out, the control that never bites).
 ** ''Spin'' carries Ba. Each face reads alone first; then the pair trades: each takes the other's findings, confirms or refutes each against the source, and reads the other's ground for what its own face missed. Orthogonal findings both stand; tensioned ones get measured, never voted; a finding one face alone raised stays a lead.
@@ -72,7 +72,7 @@ The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lar
 
 <<~/ahu>>
 
-<<~ ahu #/the-seat-law>>
+<<~ ahu slot=`#/the-seat-law`>>
 !! The seat law ~ the brief section every Codex seat carries
 
 `tools/launch-codex.mjs` preflights each Codex seat and appends the bullets below to its brief, once, reading them from this section. It refuses a model missing from Codex's models cache, `gpt-6-sol`, a pool at or under its weekly floor (20% for a build or research seat, 0% for a read seat, the operator letting readers spend the pool to its end for now), a pool line unreadable twice (never read as zero), a seat directory outside `~/.lares-scratch/<lane>/`, a build seat on the main checkout, and a build seat over a stale dist. It logs each attempt.
@@ -88,7 +88,7 @@ The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lar
 * The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
 <<~/ahu>>
 
-<<~ ahu #/the-feature-unit>>
+<<~ ahu slot=`#/the-feature-unit`>>
 !! The feature unit ~ a PR lands one whole capability
 
 # ''A PR lands one capability'': a story a person carries out end to end, on every vessel class it names, its security fence complete. Slices live inside the PR as red and fix pairs, each read by the lead and the batch's Luna read; a slice never opens a PR alone.
@@ -98,11 +98,11 @@ The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lar
 # ''One push per green fast tier, plus cure pushes.'' The lead pushes the lane branch once its fast tier reads green and its reds stand proven (#/the-lanes); it pushes again only to cure a red. It merges the span once, right before that push, where a conflict or a non-land span commit asks.
 # ''A span fault stops the queue once.'' A red the span carries goes at once to ONE cure lane. Queued lanes push, rerun and re-merge nothing until the cure lands; then each merges once and pushes once. A failed job reruns ONCE as a flake candidate; a second red on the same test names a fault.
 # ''A feature waits on its dependency unbuilt, or stacks.'' A feature that needs another lane's land starts after that land, or stacks on that lane's branch and lands in the same batch. It never builds ahead and rests while the span moves.
-# ''Done means the story walks.'' The hand-back names the story and the one walk that proves it: the one e2e file, or a live stand where a vessel class carries it. A capability no walk proves stands "specified", never built (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> #/wiring-an-unreached-module).
+# ''Done means the story walks.'' The hand-back names the story and the one walk that proves it: the one e2e file, or a live stand where a vessel class carries it. A capability no walk proves stands "specified", never built (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>> #/wiring-an-unreached-module).
 # ''The record rides with the capability'': each feature PR hands the controller its changelog bullet and road-row text; the lane edits neither file.
 <<~/ahu>>
 
-<<~ ahu #/the-tiers>>
+<<~ ahu slot=`#/the-tiers`>>
 !! The tiers ~ each seat draws the tier that serves it
 
 * ''Controller'': Opus 5.5, high effort, refreshing its context at each batch boundary. Fable takes a named ruling Opus at max visibly missed.
@@ -113,20 +113,20 @@ The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lar
 * ''Researcher'': Fable for parallel web collides, Opus for repo-grounded research, Sonnet for audits and sweeps, Codex Sol with `--search` for one question.
 * ''General-purpose subagents'' run Sonnet unless the roster names Opus or Fable.
 
-The measures behind each placement stand at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/model-tiers-2026">>.
+The measures behind each placement stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/model-tiers-2026`>>.
 <<~/ahu>>
 
-<<~ ahu #/the-battery>>
+<<~ ahu slot=`#/the-battery`>>
 !! The battery ~ the local run and the verdict
 
 * ''A lane's CI makes its verdict; held-out runs per train.'' `.github/workflows/held-out.yml` fires on the span, `main`, the weekly clock and by hand, never on a lane push; a push that changes only meme, docs or wiki paths (`tools/ci-ignored-paths.json`, read by both workflows' `paths-ignore` and by the train's road guard) raises no run and cancels none, and the guard carries such a road commit over its nearest green ancestor; a lane reads GREEN on its CI alone, its held-out reading prints but never gates (`held-out: not run (per train)` where no run stands), and the vigil on the span reads both after each land. The lane's local battery reads what it touched, in this order: `pnpm build`; each red's proof against its parent; `node tools/evergreen-boundary.mjs`; `bash tools/witness-all.sh --static` (or `--fast`, the FAST tier: `--static` minus `contract-witness`, `custody-census-witness` and `law-mutants-witness`, which the long tier and the train run; the docker witnesses, `household-https` and `household-resolver`, leave the lane battery; CI and the train run the whole roster);  `tools/typecheck-witness.sh`; the touched packages' related tests (vitest `--changed` or `related`, never the whole suite) under a scratch `HOME` and a scratch `LAR_ROOT` with `LAR_BAGS` unset; `node --test` over the touched tools; ONE e2e file that exercises the touched surface, named in the hand-back.
 * ''Two tiers.'' The FAST tier runs on the box with no lock: `pnpm build`, each red's proof against its parent, `tools/typecheck-witness.sh`, `node tools/evergreen-boundary.mjs`, `bash tools/witness-all.sh --fast` and each touched package's related tests (operator ruling, 2026-11-01: //"Approve the fast-tier lever"//), with no e2e. The LONG tier runs in the cloud on the lane's push and again on the train: every whole package suite, every e2e set, the slow witnesses, the docker witnesses and held-out.
 * ''CI carries the rest'': the whole e2e sets and every other suite, and reads the witness fleet again as the verdict.
 * ''One heavy battery at a time on the box.'' The fast tier's unit suites and static checks run without `tools/battery.sh`; the lock holds for the train and any heavy local run. The lead runs a heavy battery through `tools/battery.sh`, whose lock reads `LARES_BATTERY_LOCK`, else the passwd home's `.lares-scratch/.battery.lock` (never `$HOME`, since a lead runs under a scratch `HOME`); it refuses (exit 64) where the lock cannot open, never runs unlocked, and passes the command's exit code through.
-* ''A red that clears with no edit names shared state'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> #/red-first).
+* ''A red that clears with no edit names shared state'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>> #/red-first).
 <<~/ahu>>
 
-<<~ ahu #/the-lens-law>>
+<<~ ahu slot=`#/the-lens-law`>>
 
 !! The lens law ~ why several eyes outweigh one
 
@@ -139,7 +139,7 @@ The measures behind each placement stand at <<~ loulou "lar:///ha.ka.ba/lares/do
 
 <<~/ahu>>
 
-<<~ ahu #/the-copilot-seat>>
+<<~ ahu slot=`#/the-copilot-seat`>>
 
 !! The Copilot seat ~ Copilot's models in the swarm
 
@@ -164,7 +164,7 @@ A premium request counts per prompt, never per tool call.
 
 <<~/ahu>>
 
-<<~ ahu #/the-lanes>>
+<<~ ahu slot=`#/the-lanes`>>
 !! The lanes ~ a sub-branch, a pull request, a batch
 
 * ''A lane opens its own sub-branch'' of the work branch, `feature/green-jello-dinosaur-5--<lane>`, cut from the span's head as it reads green. The lead commits there, in its own provisioned worktree, after `pnpm build`, with `git commit -F <msg> --only -- <paths>`; a subject reads `lar:///ha.ka.ba/<pkg-or-bag>/<area>/<w1.w2.w3> — summary`; a `Co-Authored-By` names each lineage that wrote lines, then the session line.
@@ -174,16 +174,16 @@ A premium request counts per prompt, never per tool call.
 * ''A lane hands back on green'': its battery (#/the-battery), CI reads green on its head (held-out rides the train), its pull request opens into the work branch, and its fresh read precedes the land. A Copilot PR review runs only on the operator's ask.
 * ''A lane worktree'' counts toward five at most (`node tools/provision-worktree.mjs <dir>` builds it whole in one run: submodules against the main checkout's objects, the frozen install, the grammar wasm, the TW5 vendor blob, every package build and the stamp); the train holds the sixth. Worktrees and scratch roots live under `~/.lares-scratch/<lane>/`, never `/tmp`; a provision reads `df` first and stops under 60G free on C:. A lane may hold a second worktree, each with one writer, when two features on its path build in parallel. Free slots fill from the road's order without asking.
 * ''One tool lands a batch'': `tools/land-train.mjs` carries the train, the chained land, the direct land of a lane that already holds the span head, the disk floor (`LARES_DISK_MIN_C_GB`), the worktree cap, the span-push gate and the cancel of the landed lanes' runs; `--plan` prints the commits it would write and pushes nothing. A verdict reads three states: green, red, and UNREADABLE (GitHub unreachable or a 5xx), which waits, exits 10 and never reads as red or green; `tools/ci-verdict.mjs --wait` carries that wait, and its `job-minutes` line gives the CI currency below.
-* ''The controller lands in batches'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/state). A batch forms once two or more features read green; a lone green feature drains as a batch of one when no other lane has a feature nearing green, and a span-fault cure or shared ground other lanes build on lands at once. One train reads every green lane merged over the span as it stands: the shared packages' suites, `tools/witness-all.sh`, evergreen and the tallies (a suite log with no "Test Files" line reads red; a dirty tree reads red); each lane's CI carried the e2e. The land writes one commit per lane, chained, each with the train's merge tree, so the span's last tree equals the train's tree. The span pushes only while no run flies on it, and the land cancels the CI runs its lane-branch pushes start. A lane on an older base lands when the span moved only by lands since (subjects carrying ` — merge PR #N`).
+* ''The controller lands in batches'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/state). A batch forms once two or more features read green; a lone green feature drains as a batch of one when no other lane has a feature nearing green, and a span-fault cure or shared ground other lanes build on lands at once. One train reads every green lane merged over the span as it stands: the shared packages' suites, `tools/witness-all.sh`, evergreen and the tallies (a suite log with no "Test Files" line reads red; a dirty tree reads red); each lane's CI carried the e2e. The land writes one commit per lane, chained, each with the train's merge tree, so the span's last tree equals the train's tree. The span pushes only while no run flies on it, and the land cancels the CI runs its lane-branch pushes start. A lane on an older base lands when the span moved only by lands since (subjects carrying ` — merge PR #N`).
 * ''Road commits'' (road rows, o-takiage moves, changelog bullets, `#/state`) ride behind a batch, never between queued lands.
 * ''After each land'' the build cache caps at 15GB (`docker builder prune -f --max-used-space 15GB`); no image or system prune without the operator's word.
 * ''Job-minutes make the CI currency'': every CI change reports total job-minutes beside the critical path, and the fewest, fullest cells win while the critical path stays at or under the slowest e2e shard.
 
 <<~/ahu>>
 
-<<~ ahu #/the-otakiage>>
+<<~ ahu slot=`#/the-otakiage`>>
 
-!! The o-takiage ~ every lane closes by returning what it superseded (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/otakiage">>)
+!! The o-takiage ~ every lane closes by returning what it superseded (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage`>>)
 
 A lane closes with an o-takiage pass before its pull request opens, and the controller closes each settle with one over everything it landed. The rite returns rather than discards: git keeps the ashes, and the tree reads as if the new shape had always stood.
 
@@ -198,12 +198,12 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<~ ahu #/the-fences>>
+<<~ ahu slot=`#/the-fences`>>
 
 !! The fences ~ every lineage keeps them
 
 * ''One writer per lane.'' Seats of any lineage write only inside their own worktree; the lead alone commits, from its own tree.
-* ''A refused command stops that step'' for every lineage alike: never retried, reshaped, split, moved to another tool, or handed to another seat (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/the-lane-law).
+* ''A refused command stops that step'' for every lineage alike: never retried, reshaped, split, moved to another tool, or handed to another seat (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/the-lane-law).
 * ''Every brief carries the git lines'': no `git stash` in any form, no `--no-verify`, no `.git/config`, no git write from a seat; `git config core.bare` reads `false` before and after.
 * ''A build reads its own tree'': a provisioned checkout whose links resolve inside it.
 * ''A process stops by its own pid'' or through the harness's task stop, never by a command-line pattern that matches the shell running it. Watchers too: a watcher reads a file by its modification time, never `pgrep -f`.
@@ -212,7 +212,7 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<~ ahu #/the-launch>>
+<<~ ahu slot=`#/the-launch`>>
 !! The launch ~ one brief file, any lineage
 
 * ''A brief stands as a file'' that names the mask, the ground, the ruling it enacts, the house style and the handback shape.
@@ -224,21 +224,21 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 * ''A moved plugin source runs `witness-all`'', since genesis-parity reads DRIFT until `genesis/unbaked.json` declares the new sha or a labelled re-bake lands.
 * ''A Copilot read names its target'': the branch, its head sha and the pull request, read through `git show <branch>:<path>` or the lane's own worktree, never the main tree. A paired read runs each face alone, then hands each its twin's handback.
 * ''A seat that cannot write its out file'' hands back on stdout; the launcher's log keeps it.
-* ''Owed probes'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/research/codex-controller-2026">>): a `--json` event stream ending on `turn.completed` as the watch's signal, `--output-schema` for a mechanical status beside `out.md`, permission profiles in place of the flag list, and a matched A/B across Sol, a newer Sol and Luna; each lands here once measured on this host.
+* ''Owed probes'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/codex-controller-2026`>>): a `--json` event stream ending on `turn.completed` as the watch's signal, `--output-schema` for a mechanical status beside `out.md`, permission profiles in place of the flag list, and a matched A/B across Sol, a newer Sol and Luna; each lands here once measured on this host.
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance ~ each landed line names its hands
 
 * A commit carries a `Co-Authored-By` trailer for each lineage whose work it lands: the lead's own, `Codex <model>` for a Codex seat, `GitHub Copilot <model>` for a Copilot seat's work, and the session line.
 * A handback the house keeps lands verbatim as a testimony carrier, so no relaying hand rewrites it.
-* Each lineage's own transcript rests where its harness keeps it; the capture plane reads them read-only (<<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>, <<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>).
+* Each lineage's own transcript rests where its harness keeps it; the capture plane reads them read-only (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/capture-annotation-model`>>, <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/agent-worldline`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/rulings>>
+<<~ ahu slot=`#/rulings`>>
 !! Rulings ~ the operator's words the body rests on
 
 # 2026-10-16, 2026-10-19: Terra, Luna, Sol and `gpt-5.3-codex` share one lineage and count once; the lead reads every build as the second lineage.
@@ -259,19 +259,19 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 # 2026-10-31, cloud contract (operator's words): "Approve with a Sonnet scout to cure the gh cloud uncertainties."
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-seed">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/research/model-tiers-2026">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-seed`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/capture-annotation-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/agent-worldline`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/model-tiers-2026`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8pIBbFQU6k5OdYM5rc3jRJyl60lhHI2b6CxYyPO5fZw
+<<^ code=`&#x0003;`>>ni:///sha-256;I0Qv8bzG9rejrCK90ZNEgEBKsBaWlCMUXi81V32RSgU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

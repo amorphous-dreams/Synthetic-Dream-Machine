@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/reach-plane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/reach-plane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -21,11 +21,11 @@ uri-path   = "ha.ka.ba/lararium/mesh/reach-plane"
 written    = "2026-08-08"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Reach Plane ~ foreign credentials as instruments the vessel holds
 
@@ -39,25 +39,25 @@ The whole design turns on ''one split, held absolutely'': a foreign credential b
 
 <<~/ahu>>
 
-<<~ ahu #/three-planes>>
+<<~ ahu slot=`#/three-planes`>>
 
 !! Three planes, unfused
 
-<<~ has Plane Sovereign "holds/vessel-keys holds/persona-KELs holds/the-Nexus-contract leaves/never custody/NON-CUSTODIAL-BY-TYPE">>
-<<~ has Plane Reach "holds/foreign-app-credentials reads/an-instrument-never-an-identity seals/at-rest separates/per-app-HKDF-info travels/fleet-only">>
-<<~ has Plane Projection "holds/nothing renders/bag-to-foreign-surface law/RENDER-never-copy">>
+<<~ has entity=`Plane` name=`Sovereign` params=`holds/vessel-keys holds/persona-KELs holds/the-Nexus-contract leaves/never custody/NON-CUSTODIAL-BY-TYPE`>>
+<<~ has entity=`Plane` name=`Reach` params=`holds/foreign-app-credentials reads/an-instrument-never-an-identity seals/at-rest separates/per-app-HKDF-info travels/fleet-only`>>
+<<~ has entity=`Plane` name=`Projection` params=`holds/nothing renders/bag-to-foreign-surface law/RENDER-never-copy`>>
 
 ''The sovereign plane stands unchanged by this doctrine.'' It gains no credential, loses no rule. The reach plane sits ''beside'' it, and the projection plane consumes both.
 
 The flow reuses instruments already standing — no new gate, no new distribution mechanism:
 
-<<~flows author-in-the-wiki -> the-content-already-declares-its-cap-tier -> the-Confluence-gate-checks-declared∧floor -> render-to-the-target-native-form -> sign-and-post-with-THAT-target-reach-cap>>
+<<~flows name=`author-in-the-wiki` path=`the-content-already-declares-its-cap-tier -> the-Confluence-gate-checks-declared∧floor -> render-to-the-target-native-form -> sign-and-post-with-THAT-target-reach-cap`>>
 
 ''Posting outward reads as another projection sink.'' The disk-projection law already names bags as canon and `wikis/` as a render of them (`disk-projection-law.mem`); a foreign surface joins that list as a target, never as a second source. ''One genuinely new subsystem falls out of the whole design: the credential vault.''
 
 <<~/ahu>>
 
-<<~ ahu #/compose-and-request>>
+<<~ ahu slot=`#/compose-and-request`>>
 
 !! Compose-and-request ~ the glass drafts, the hearth posts
 
@@ -71,7 +71,7 @@ The reason reads structural rather than cautious. The browser stands as the weak
 
 <<~/ahu>>
 
-<<~ ahu #/downstream-law>>
+<<~ ahu slot=`#/downstream-law`>>
 
 !! The downstream law ~ a foreign actor never sits upstream of a vessel
 
@@ -81,7 +81,7 @@ The domain takes the same shape at the naming layer, and that shape makes operat
 
 <<~/ahu>>
 
-<<~ ahu #/the-four-locks>>
+<<~ ahu slot=`#/the-four-locks`>>
 
 !! The four locks (operator, 2026-08-08)
 
@@ -113,13 +113,13 @@ Of the surfaces a foreign identity protocol offers, take the ''resolvable-identi
 
 <<~/ahu>>
 
-<<~ ahu #/the-truncated-chain>>
+<<~ ahu slot=`#/the-truncated-chain`>>
 
 !! The truncated chain ~ where a credential may travel
 
 A reach credential rides the ''same'' chain a bag rides (`cap-tier.mem`) and the ''same'' delivery mechanism (a key delivered to a recipient set). It differs in one structural way: ''the chain truncates.''
 
-<<~ scale reach "veil@0 ~ {this-vessel} · the credential opens nowhere else -> personagroup@1 ~ {your-fleet} · delivered to the fleet, so every device of yours may post -> contract@2 ~ {your-fleet ∪ a-cabal} · a genuinely shared account, and the blast radius grows to match">>
+<<~ scale name=`reach` ranks=`veil@0 ~ {this-vessel} · the credential opens nowhere else -> personagroup@1 ~ {your-fleet} · delivered to the fleet, so every device of yours may post -> contract@2 ~ {your-fleet ∪ a-cabal} · a genuinely shared account, and the blast radius grows to match`>>
 
 ''THE TYPE REFUSES PUBLIC.'' A world-readable credential loses the confidentiality that makes it a reach credential. The reach plane therefore carries a ''ceiling at CONTRACT'' where the content chain carries none — the one place the two planes' orders differ, and the difference comes from a definition, not a policy.
 
@@ -129,7 +129,7 @@ A reach credential rides the ''same'' chain a bag rides (`cap-tier.mem`) and the
 
 <<~/ahu>>
 
-<<~ ahu #/the-honeypot>>
+<<~ ahu slot=`#/the-honeypot`>>
 
 !! The honeypot ~ the hazard this doctrine accepts
 
@@ -149,7 +149,7 @@ A reach credential rides the ''same'' chain a bag rides (`cap-tier.mem`) and the
 
 <<~/ahu>>
 
-<<~ ahu #/far-side-revocation>>
+<<~ ahu slot=`#/far-side-revocation`>>
 
 !! The far-side revocation asymmetry
 
@@ -161,13 +161,13 @@ That asymmetry reads as honest rather than broken — it names precisely what ho
 
 <<~/ahu>>
 
-<<~ ahu #/the-vault-reads-as-a-bag>>
+<<~ ahu slot=`#/the-vault-reads-as-a-bag`>>
 
 !! The vault reads as a bag, never as a third carrier
 
 The vessel already holds two at-rest secret carriers under a two-file ratify discipline, and both stay ''per-device by design'' — the archive and the device-share never replicate. A reach credential declared PERSONAGROUP must reach the ''fleet'', so it cannot ride that discipline at all.
 
-Read as a ''cap-tiered bag'' instead and almost nothing new gets built: sealing-on-the-wire already runs universal, the declared∧floor gate already stands, a bag's key reaches its recipient set by one ruled mechanism, its store owed (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier#/key-delivery">>), fleet-sync already syncs.
+Read as a ''cap-tiered bag'' instead and almost nothing new gets built: sealing-on-the-wire already runs universal, the declared∧floor gate already stands, a bag's key reaches its recipient set by one ruled mechanism, its store owed (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/key-delivery`>>), fleet-sync already syncs.
 
 ''THE TRUNCATION FALLS OUT OF A FLOOR, NEVER A CEILING'' — which reads as the tell that the framing lands right. The keystone already computes `meet(declared, floor)`, so a credential bag floored at CONTRACT meets any PUBLIC declaration back down on its own. Publishing a credential becomes ''mechanically impossible'' rather than merely forbidden, and no new enforcement carries it.
 
@@ -179,7 +179,7 @@ Read as a ''cap-tiered bag'' instead and almost nothing new gets built: sealing-
 
 <<~/ahu>>
 
-<<~ ahu #/the-service-manifest>>
+<<~ ahu slot=`#/the-service-manifest`>>
 
 !! The service manifest ~ each surface declares what it can do
 
@@ -193,7 +193,7 @@ The manifest exists because ''the surfaces genuinely differ and none of them tel
 
 <<~/ahu>>
 
-<<~ ahu #/emit-receipts>>
+<<~ ahu slot=`#/emit-receipts`>>
 
 !! Emit receipts ~ content-addressed, from the first line
 
@@ -205,7 +205,7 @@ The manifest exists because ''the surfaces genuinely differ and none of them tel
 
 <<~/ahu>>
 
-<<~ ahu #/persona-binding>>
+<<~ ahu slot=`#/persona-binding`>>
 
 !! Persona binding ~ high cardinality, and two kinds of breach
 
@@ -229,7 +229,7 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<~ ahu #/cred-onboarding>>
+<<~ ahu slot=`#/cred-onboarding`>>
 
 !! Credential onboarding ~ named, unbuilt
 
@@ -253,7 +253,7 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<~ ahu #/what-stays-open>>
+<<~ ahu slot=`#/what-stays-open`>>
 
 !! What stays open
 
@@ -265,24 +265,24 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/crypto">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/disk-projection-law">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/network-edge">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/nexus-topology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/crypto`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/disk-projection-law`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/network-edge`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;M3WMbrIMkPwMRAz7VSNU6j5aK8x6gH5DahhZUpLYe1g
+<<^ code=`&#x0003;`>>ni:///sha-256;i94BZemsRzVDDtOti5MUjpl-zJ3dyzse-O-Y-NTDzbQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

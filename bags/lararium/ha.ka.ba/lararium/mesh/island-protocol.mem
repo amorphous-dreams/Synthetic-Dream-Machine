@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/island-protocol">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/island-protocol`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
@@ -17,7 +17,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/island-protocol"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Island Protocol
 
@@ -30,10 +30,10 @@ Vessel entrypoints (node, browser) bind the I/O; this module names the envelopes
 # Every island boots a Repo-in-island via a transferred `syncPort` (MessagePort).
 # The island derives tiddler state from its own CRDT doc — never from vessel oracle deltas. CRDT sync via `syncPort` stands as the sole source of tiddler truth.
 # The island owns its timing. The wiki shore queues every inbound change at `$tw.lares.enqueueNalu` and lands the queue in slices, yielding to the host between them; the in-wiki nalu engine applies each change synchronously (`$tw.lares.applyNalu`). One queue serves all bags. No raw-message-receipt drains (`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`).
-# `IslandMsg_Manifest` carries `syncPort` (transferred, not cloned), `recipe` (WikiRecipe slot structure), `grants` (IslandGrants — typed structural capabilities), and `coreHash` (content-address intent vector; null names no pinned core). TW5 core bytes do NOT ride the manifest — islands read them from `LarDoc.blobs[ENGINE_CORE_ID]` on the @lararium CRDT doc after `handle.whenReady()`; two vessels federating @lararium share the engine automatically via Automerge sync.
+# `IslandMsg_Manifest` carries `syncPort` (transferred, not cloned), `recipe` (WikiRecipe slot structure), `grants` (IslandGrants — typed structural capabilities), and `coreHash` (content-address intent vector; null names no pinned core). TW5 core bytes do NOT ride the manifest — islands read them from `LarDoc.blobs[ENGINE_CORE_ID]` on the lararium CRDT doc after `handle.whenReady()`; two vessels federating lararium share the engine automatically via Automerge sync.
 # The vessel MUST close `mainPort` at evict/unmount time. Failure leaks the Automerge NetworkAdapter silently. Structural: every vessel holds `mainPort: MessagePort` on its hot slot and calls `mainPort.close()` in teardown. No exceptions.
 # Federation shore — when a grant carries a non-empty AutomergeUrl, two obligations activate. Vessel: wire `MessageChannelNetworkAdapter(mainPort)` on the vessel Repo before delivering `manifest`. Island: call `repo.find(docUrl).whenReady()` and await readiness before seeding TW5 and declaring `ea`; failure on either side moves the slot to disposed within `HANDSHAKE_TIMEOUT_MS`. Gate proof: `federation-shore.test.ts` (node) + `browser-repo-in-island.test.ts` test 2 (browser). When this law holds, two vessels sharing a bag converge without any explicit sync call.
-# No sovereign VM and no key on a surface. A page never stands as a vessel: it holds a surface with a port onto one. Every sovereign `TW5Engine` lives inside a Worker; the main thread holds `DocHandle` references and `CompositeStore` layers only. Any `bootTw5()` outside a Worker constitutes a sovereignty violation, save the page mirror, which boots through its one private door as a camera fed by the port alone and holds no truth and no key (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> #/open-rulings).
+# No sovereign VM and no key on a surface. A page never stands as a vessel: it holds a surface with a port onto one. Every sovereign `TW5Engine` lives inside a Worker; the main thread holds `DocHandle` references and `CompositeStore` layers only. Any `bootTw5()` outside a Worker constitutes a sovereignty violation, save the page mirror, which boots through its one private door as a camera fed by the port alone and holds no truth and no key (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>> #/open-rulings).
 
 !!! IslandGrants — typed ocap manifest capabilities
 
@@ -42,7 +42,7 @@ The manifest HANDS the island typed structural capabilities — each field arriv
 | Grant | Carries | Law |
 |---|---|---|
 | `islandUrl` | `@oracle` runtime system-island doc | REQUIRED — engine bytes precede TW5 boot |
-| `catalogUrl?` | @catalog registry ACCESS | access ≠ load; never layered; absent = no watch |
+| `catalogUrl?` | catalog-plane registry ACCESS | access ≠ load; never layered; absent = no watch |
 | `wikiUrl?` | the island's OWN write-layer bag | `@{wikiSlug}`; `@daemon` under the one-recipe model |
 | `personalUrl?` / `draftUrl?` | keyhive-bound sovereign instance mounts | minted by admin `resolveBinding` |
 
@@ -68,7 +68,7 @@ The manifest HANDS the island typed structural capabilities — each field arriv
 | `admin:place-verb` | Place a volatile job tiddler in the admin island's TW5 wiki. |
 | `admin:verb-result` | Deliver delegation result back to the admin island. |
 | `admin:verify-request` | Ask the keyholder admin island to verify before delegation proceeds. |
-| `admin:resolve-binding-request` | Ask the admin island to mint/resolve keyhive-bound @personal/@draft docs. |
+| `admin:resolve-binding-request` | Ask the admin island to mint/resolve keyhive-bound personal-slot/@draft docs. |
 | `admin:evict-result` / `admin:residency-op-result` | Outcomes for admin-commanded eviction / residency ops. |
 | `wiki:place-verb` | Place a wiki-scope job in a wiki island's TW5 wiki. |
 | `lar:control-event` | One act, sense, write or service answer from a surface, addressed to one control of one camera under one mount epoch; read whole at the door through the camera contract's reader. |
@@ -111,17 +111,17 @@ The manifest HANDS the island typed structural capabilities — each field arriv
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ea">>
-<<~ loulou "lar:///ha.ka.ba/lararium/browser/browser-vessel-island-pool">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-tiers">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ea`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/browser-vessel-island-pool`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-tiers`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qwuMI1DC4zRCH0K44temMhKH5upKqL2Oue4xD9fSZlI
+<<^ code=`&#x0003;`>>ni:///sha-256;cOIbTps25-D_LGlaEZZMGrZGJKnOTP9J8xjncNPHBOw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

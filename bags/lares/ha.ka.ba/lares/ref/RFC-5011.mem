@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/ref/RFC-5011">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/ref/RFC-5011`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable      = true
@@ -25,7 +25,7 @@ target     = "https://www.rfc-editor.org/info/rfc5011"
 title      = "Automated Updates of DNS Security (DNSSEC) Trust Anchors"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! RFC 5011 — Automated Updates of DNS Security (DNSSEC) Trust Anchors
 
@@ -34,12 +34,12 @@ never invented — in `[reference]` above, so a pin at this address cites the wo
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4XMr86n2IT_RzhSV6iXLtPBOrGlkf-G28L-J13OiZlA
+<<^ code=`&#x0003;`>>ni:///sha-256;kutnznLgeX7jNvo4BOLNJ4YjJsx6QLVZxHQur2XHup0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

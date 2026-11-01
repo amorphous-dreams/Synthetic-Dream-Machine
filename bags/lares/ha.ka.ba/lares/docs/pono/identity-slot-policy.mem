@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = false
@@ -19,7 +19,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/identity-slot-policy"
 ```
 
-<<~ ahu #/the-measurement-first>>
+<<~ ahu slot=`#/the-measurement-first`>>
 
 ! The measurement, before the design (a dated record, 2026-09-13; `OpenIdentitySlot` leaves the tree at #/the-ruling)
 
@@ -35,7 +35,7 @@ The standing reading calls `OpenIdentitySlot.verifyCapability`'s `return true; /
 
 <<~/ahu>>
 
-<<~ ahu #/what-decides-today>>
+<<~ ahu slot=`#/what-decides-today`>>
 
 !! What decided a verdict at the measurement, in order
 
@@ -44,7 +44,7 @@ The slot is absent from this stack entirely.
 # ''the deterministic set'' (`federation-gate.ts:78-96`) — a pure function of the Nexus gate pubkey: crossroads · WHO · Kapae-antigen · carriage · persona-KEL boards, plus caller-supplied extras. Set membership, nothing else.
 # ''the peer ring'' (`:108-118`) — an in-process island peer syncs whole; a same-operator relay peer syncs whole; a doc-less ask denies.
 # ''the antigen ring'' (`:205-224`) — the quorum-signed Kapae denylist against the presenter's resolved nym. Additive deny only.
-# ''the members board'' (`nexus-carriage.ts:219-225`) — the folded carriage contracts, keyed on the PROVEN contract nym ahead of the raw wire key. Fail-closed: unknown reads STRANGER. This ring folds an allow set, and the presented-admit ruling retires it as the gate — the subject presents its quorum-signed admit against the deny-only antigen ring — with the build owed (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
+# ''the members board'' (`nexus-carriage.ts:219-225`) — the folded carriage contracts, keyed on the PROVEN contract nym ahead of the raw wire key. Fail-closed: unknown reads STRANGER. This ring folds an allow set, and the presented-admit ruling retires it as the gate — the subject presents its quorum-signed admit against the deny-only antigen ring — with the build owed (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale`>>).
 # ''the plane seal'' (`:295-298`) — provable ciphertext, fail-closed.
 # ''the realm leg'' (`realm-bag.ts:490-512`) — the charter's own hearth · the registration's `keptBy` stewards · `holdsCharter(nym, charterId)` at CONTRACT · a faceless carrier PLACE at `readTier === "public"` alone · else the members board.
 # ''the posture'' (`:405-424`) — `private` by default; `open` admits cross-operator.
@@ -53,7 +53,7 @@ The slot is absent from this stack entirely.
 
 <<~/ahu>>
 
-<<~ ahu #/what-the-slot-could-key-on>>
+<<~ ahu slot=`#/what-the-slot-could-key-on`>>
 
 !! What the slot could key on, with the realm leg standing
 
@@ -65,7 +65,7 @@ Three readings are available to a share verdict, and NONE of them is a roster (`
 
 <<~/ahu>>
 
-<<~ ahu #/the-fork-that-wants-a-ruling>>
+<<~ ahu slot=`#/the-fork-that-wants-a-ruling`>>
 
 !! ★ The fork — which plane owns the verdict ★
 
@@ -85,7 +85,7 @@ So the fork stands, and it is a ruling and not a patch — the three answers dif
 
 <<~/ahu>>
 
-<<~ ahu #/the-ruling>>
+<<~ ahu slot=`#/the-ruling`>>
 
 ! ★ The fork CLOSED — arm (B), 2026-09-13 ★
 
@@ -117,7 +117,7 @@ No `OpenIdentitySlot` stands — no alias, the alpha line's own law. `LarVessel.
 
 <<~/ahu>>
 
-<<~ ahu #/the-leaf-taxonomy>>
+<<~ ahu slot=`#/the-leaf-taxonomy`>>
 
 !! The leaf taxonomy — where the ring runs
 
@@ -127,9 +127,9 @@ The ring runs on EVERY vessel that holds a face, because a leaf comes in more th
 # ''A single user device.'' One leaf, one face, dialing the hearth that hosts it. The same two-way proof on the one socket.
 # ''One device in a user-caps-only fleet, where no vessel listens.'' No node stands to prove anyone, so the fleet's devices prove each other leaf to leaf through a relay that reads nothing (#/the-ruling, the third proof source). This kind explains why the ring must run on leaves at all: with no listening vessel, no other hand could decide. Each device dials EVERY herm it pins, each through the knock that herm's pinned gate key derives, proves its device key at each one gate, and joins ONE sibling channel at each: the tag the secret its KEL head sealed to it keys, an HMAC under that secret over the herm's gate key (`siblingChannelTag`), so a non-member holding the group's id computes none and two herms see two tags. A later join replaces the channel it held. Each herm carries its own exchange and session, so a herm that drops or hangs closes only the sessions it carried, and a sibling stands as one repo peer while any of its sessions stands. Siblings run the proof through the herm, and Automerge sync rides only the session a passing proof binds (`SiblingNetworkAdapter`, in the automerge-repo `NetworkAdapter` shape), under the repo peer id the proven device key derives (`siblingPeerIdOf`): a sibling naming any other id is refused, and an id the repo already routes through another adapter gives it no route. Both vessel shores compose it by one call (`standSiblingChannel`) over every pinned herm, and the face's own KEL board re-licenses every standing session as it moves. Two herms under distinct gate keys make the condition for tolerance, never a boot precondition. ONE herm stands the channel in a named DEGRADED mode: the channel dials and syncs over it, and says on every dial (`pins`, standing) and in the vessel's `siblingChannel()` status that withholding cannot be tolerated through one herm, since what that herm withholds no other herm answers. No herm, or an address that pins no gate key, refuses the CHANNEL and never the vessel: the channel dials nothing and says why as `pins` on every dial and in that status. Either way the rest of the vessel boots.
 
-''A proven sibling holds STANDING, and nothing more.'' The PersonaGroup ring's sibling path (`composeSiblings`, reading the device key the sibling session proved) admits it to this face's own planes and the public boards — never the vessel's @daemon, and never another face's planes. A vessel that holds many faces keeps each face's siblings to that face (a session wears a face, the vessel wears none: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>); neither shore shares a sibling freely, and both read sibling-ness before any other ring, so an id a sibling and another carrier both claim denies. An impostor, a sibling whose lease lapsed, and a frame the herm forged each meet a refusal that surfaces and names its suspect (`peer`, `relay`, `route`, `pins`, or `self` by cause: `revoked`, `unreadable`, `unsealed`, `fork`); none drops in silence. A KEL head that rolls a sibling's edge past closes the session inside it and the pair proves again under the head. A leaf its own KEL revokes says goodbye inside every session it held, so no sibling stands half-open. Every KEL source — the board, a herm's drops, a chain a caller hands — folds through ONE reader (`foldPersonaContests`, `packages/lararium-mesh/src/persona-kel.ts`): VERIFY, THEN FOLD. At each seat of the lineage only an event that verifies against the head already folded may compete, a rotation by its recovery contact quorum, a veto by the head's own op-key. An event that does not verify moves nothing and revokes no one: neither a junk veto nor a junk rotation planted ahead of a lawful one rolls a revocation back, and the leaf and every gate door name it `unreadable`. A veto kills only a provisional it names, never a hardened rotation. Two events that verify at one seat stand as a FORK, which only duplicity mints (a quorum that signed twice, or two recoveries that raced): no reader settles it by board order or herm order, the leaf says `fork` and keeps the standing it last read, and the Binding Gate admits no edge under it.
+''A proven sibling holds STANDING, and nothing more.'' The PersonaGroup ring's sibling path (`composeSiblings`, reading the device key the sibling session proved) admits it to this face's own planes and the public boards — never the vessel's daemon-plane, and never another face's planes. A vessel that holds many faces keeps each face's siblings to that face (a session wears a face, the vessel wears none: <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session`>>); neither shore shares a sibling freely, and both read sibling-ness before any other ring, so an id a sibling and another carrier both claim denies. An impostor, a sibling whose lease lapsed, and a frame the herm forged each meet a refusal that surfaces and names its suspect (`peer`, `relay`, `route`, `pins`, or `self` by cause: `revoked`, `unreadable`, `unsealed`, `fork`); none drops in silence. A KEL head that rolls a sibling's edge past closes the session inside it and the pair proves again under the head. A leaf its own KEL revokes says goodbye inside every session it held, so no sibling stands half-open. Every KEL source — the board, a herm's drops, a chain a caller hands — folds through ONE reader (`foldPersonaContests`, `packages/lararium-mesh/src/persona-kel.ts`): VERIFY, THEN FOLD. At each seat of the lineage only an event that verifies against the head already folded may compete, a rotation by its recovery contact quorum, a veto by the head's own op-key. An event that does not verify moves nothing and revokes no one: neither a junk veto nor a junk rotation planted ahead of a lawful one rolls a revocation back, and the leaf and every gate door name it `unreadable`. A veto kills only a provisional it names, never a hardened rotation. Two events that verify at one seat stand as a FORK, which only duplicity mints (a quorum that signed twice, or two recoveries that raced): no reader settles it by board order or herm order, the leaf says `fork` and keeps the standing it last read, and the Binding Gate admits no edge under it.
 
-''The threshold keeps two faces'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>):
+''The threshold keeps two faces'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities`>>):
 
 * ''Outward — the herm's face: carriage of sealed frames.'' The herm routes on the channel tags and the key its gate proved, and holds no secret, no session key, no edge in the clear — even when it acts, since a hello it forges draws no box — no group id and no document byte. Every act it takes on a session (a forged `here`, an injected frame, a frame reflected to its own sender) surfaces as a refusal that names the relay.
 * ''Inward — the siblings' face: the PersonaGroup secret and the proven session.'' Only members hold the secret, and only the two siblings hold the session's keys. The herm's stamp of a sender key must agree with the proven edge, and it never stands in for one.
@@ -140,7 +140,7 @@ A leaf holds only its own device key, its own edge, its sealed secret and its Pe
 
 <<~/ahu>>
 
-<<~ ahu #/the-persona-group-secret>>
+<<~ ahu slot=`#/the-persona-group-secret`>>
 
 !! The PersonaGroup secret — what keeps a forged hello from reading an edge
 
@@ -162,7 +162,7 @@ A leaf holds only its own device key, its own edge, its sealed secret and its Pe
 
 <<~/ahu>>
 
-<<~ ahu #/what-a-red-would-need>>
+<<~ ahu slot=`#/what-a-red-would-need`>>
 
 !! What the smallest red would need, and why none is written here
 
@@ -176,17 +176,17 @@ The asked-for red — //a stranger asking an identity-slot doc is refused; a mem
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 ! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-slot">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-slot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qbjg-D7ny3b3jbEjS3Trf-udfFJb7pV1aI4sxueWl64
+<<^ code=`&#x0003;`>>ni:///sha-256;Z_vwWM95cdWFIxj2dkSXfLnBxaf-S5QwK8By-68__H8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

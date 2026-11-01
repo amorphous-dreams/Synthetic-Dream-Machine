@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/art-sigils/procedures">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/procedures`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 uri-path  = "ha.ka.ba/lares/api/art-sigils/procedures"
@@ -14,7 +14,7 @@ status    = "stable"
 retain    = true
 ```
 
-<<~ ahu #/bearing>>
+<<~ ahu slot=`#/bearing`>>
 ! Art Sigils — Procedure Grammar
 
 The portable Inscription carries **one native named-argument `<<art ...>>` invocation**, without a procedure declaration. This meme holds the canonical definition. TW5 transclusion requires that definition in the receiving wiki's scope; an image model familiar with wikitext may instead interpret the invocation's semantic structure directly. Neither path guarantees identical reception across models.
@@ -22,7 +22,7 @@ The portable Inscription carries **one native named-argument `<<art ...>>` invoc
 The art-house lexicons live in the semantic specification and **inside values**, not in one procedure per artistic term. Only independently meaningful structural scopes warrant extended procedures. The 1,024-character target applies to the complete **invocation alone**, excluding the source code fence, meme wrapper, reference register and Folio.
 <<~/ahu>>
 
-<<~ ahu #/inscription>>
+<<~ ahu slot=`#/inscription`>>
 !! Canonical `art()` procedure
 
 The following definition governs Inscription and Folio calls. It stays in this grammar meme rather than in the transmitted artwork. Procedure declarations use colon plus double-quoted defaults (`worktype:"artwork"`); invocations use equals plus backtick-wrapped values (`name=` followed by its tick-delimited contents). The two syntactic roles remain distinct.
@@ -38,7 +38,7 @@ The following definition governs Inscription and Folio calls. It stays in this g
 * The procedure's subject and read do not prescribe genre, palette, medium, figures or photographic style. Context may deepen the *reading*, never secretly transplant source metadata as image content.
 <<~/ahu>>
 
-<<~ ahu #/folio-modules>>
+<<~ ahu slot=`#/folio-modules`>>
 !! Optional Folio procedures — scoped artistic extensions
 
 The eight-dimension `art()` call handles the artistic nucleus. A Folio can speak with ordinary art-house vocabulary in those same parameter values. The following three procedures offer **optional**, named scopes only when a separate investigation, consequential comparison or material condition merits independent expression.
@@ -56,7 +56,7 @@ The eight-dimension `art()` call handles the artistic nucleus. A Folio can speak
 A Folio invokes these procedures only where an independent artistic question, consequential counterpoint or material condition benefits from its own scope. A portrait, an all-over painting, a photograph or a temporal installation may invoke only `art()`. Other artistic vocabulary belongs within parameter values.
 <<~/ahu>>
 
-<<~ ahu #/compositional-contract>>
+<<~ ahu slot=`#/compositional-contract`>>
 !! Composition, relation, and nested artistic scope
 
 Let the nucleus name **what artwork the maker proposes**. Elaborate only the dimensions whose pictorial or experiential work benefits from more space.
@@ -72,7 +72,7 @@ Let the nucleus name **what artwork the maker proposes**. Elaborate only the dim
 The extended procedures provide modular **ways of telling**, not mandatory steps in production, a universal artwork layout, or proof of the artist's intent.
 <<~/ahu>>
 
-<<~ ahu #/sample>>
+<<~ ahu slot=`#/sample`>>
 !! Generic use — abstract textile diptych
 
 The following example deliberately leaves maps, genre illustration and studio boards aside. One artistic read unifies a two-panel material work and three optional elaborations.
@@ -87,7 +87,7 @@ The following example deliberately leaves maps, genre illustration and studio bo
 Copy the relevant native procedure definitions into a live TW5 context before transcluding these calls. `<<~ name ...>>` denotes a Lares house sigil, not a substitute for a native `<<name ...>>` call. This example demonstrates expressive portability without imposing requirements on other artworks.
 <<~/ahu>>
 
-<<~ ahu #/notation-contract>>
+<<~ ahu slot=`#/notation-contract`>>
 !! Procedure declaration, invocation and delegation
 
 * Canonical declarations use colon plus double-quoted defaults, e.g. `worktype:"artwork"` and `treatment:"suit the read"`.
@@ -97,14 +97,14 @@ Copy the relevant native procedure definitions into a live TW5 context before tr
 * A default-free missing argument can yield empty output rather than an instruction to invent content. Where supported, intentional dynamic substitutions inside backtick payloads should declare their context; the portable Inscription favors literal values.
 * An artwork-specific Inscription carries one invocation; its surrounding meme may include a literal-rendering reference and a link to this grammar. The invocation alone does not register the procedure in a TW5 instance.
 <<~/ahu>>
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 !! Aftermath — meaning across representation
 
 The written call, its literal transclusion and the resulting artwork carry related but distinct meanings. A receiving artist's unexpected pictorial choices invite interpretation; they do not silently add parameters to the native procedure.
 
 A support, motif, genre, material convention, named artist or depicted subject belongs to the artistic invitation that names it. The eight-dimensional nucleus and three optional Folio procedures impose no house style, narrative format or image layout.
 <<~/ahu>>
-<<~ ahu #/tw5-source>>
+<<~ ahu slot=`#/tw5-source`>>
 !! Native TiddlyWiki documentation and verification boundary
 
 * Procedures: https://tiddlywiki.com/static/Procedures.html
@@ -115,6 +115,6 @@ A support, motif, genre, material convention, named artist or depicted subject b
 These references describe native TW5 syntax. Hand-derived literal expansions express lexical expectations without claiming execution in a live runtime. An image-producing AI may read wikitext semantically without executing TW5.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ht2WS_Nw7kODpgMJm-C_OGAR0BUWEGI21jlSwioi7f0
+<<^ code=`&#x0003;`>>ni:///sha-256;OGnszzq9uAuxnmahe1ce-52yA7Kdm6hRYDsAl38kL3k
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

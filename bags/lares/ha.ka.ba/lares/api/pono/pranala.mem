@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/pranala">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable       = true
@@ -80,6 +80,6 @@ The typed-edge law divides in three: ''composition'' rides the meta `tags` field
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-N_9kIT3wQcgEEfB1cDv13HfCKWfqnAGrmvOsxfPex0
+<<^ code=`&#x0003;`>>ni:///sha-256;o8MlNMckqRy7gRsJeN2OAXnUgST_IMSOkZdFE29eUHI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

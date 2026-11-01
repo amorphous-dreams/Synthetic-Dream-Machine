@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/w14-floor-pin-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/w14-floor-pin-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,17 +14,17 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/w14-floor-pin-lane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! W14 to W16 ~ the place claims its floor pin
 
-Three road rows share one shape: the `#floor=` card read unsigned on origin trust (W14), a floor pin statement carried no causal position and the index filed first-wins, so a rotated floor key re-filed only on a restart (W15), and two-vault carry partials landed no floor pin, so a cofounded Nexus carried no herm (W16). The prerequisite, the pre-rotated place KEL, stands from W29 (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/w29-place-kel-lane">>). This lane builds the one relation the three rows name.
+Three road rows share one shape: the `#floor=` card read unsigned on origin trust (W14), a floor pin statement carried no causal position and the index filed first-wins, so a rotated floor key re-filed only on a restart (W15), and two-vault carry partials landed no floor pin, so a cofounded Nexus carried no herm (W16). The prerequisite, the pre-rotated place KEL, stands from W29 (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w29-place-kel-lane`>>). This lane builds the one relation the three rows name.
 
 <<~/ahu>>
 
-<<~ ahu #/the-model>>
+<<~ ahu slot=`#/the-model`>>
 
 !! The model ~ what stands
 
@@ -40,7 +40,7 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 
 <<~/ahu>>
 
-<<~ ahu #/the-slices>>
+<<~ ahu slot=`#/the-slices`>>
 
 !! The slices
 
@@ -55,7 +55,7 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 
 <<~/ahu>>
 
-<<~ ahu #/the-reds>>
+<<~ ahu slot=`#/the-reds`>>
 
 !! The reds
 
@@ -67,6 +67,6 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yU2ZGTCieHBatIg2bP5NkY6YXZo6nRg3EKIdXItWKXk
+<<^ code=`&#x0003;`>>ni:///sha-256;I7qPRMomQcFi5lkcE39EYkwnshP6q1oBOz_8u2UiiEQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

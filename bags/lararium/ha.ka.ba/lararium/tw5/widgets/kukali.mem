@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/kukali">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/widgets/kukali`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
@@ -18,11 +18,11 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/kukali"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
-`<<~ kukali trigger="on-score">>` declares a WAIT inside a causal island, until a named trigger fires. //Kūkali// waits, patient, remaining in suspense: the island parks rather than freezes, and it resumes EXACTLY ONCE — subscribeOnce semantics.
+``<<~ kukali trigger=`on-score`>>`` declares a WAIT inside a causal island, until a named trigger fires. //Kūkali// waits, patient, remaining in suspense: the island parks rather than freezes, and it resumes EXACTLY ONCE — subscribeOnce semantics.
 
 `trigger` names the `#slot` fragment of a papalohe wire in the same carrier. Omitted, the wait takes the first reaction that arrives. Papalohe declares the wire; kukali declares the wait at the receiving end.
 
@@ -30,7 +30,7 @@ uri-path      = "ha.ka.ba/lararium/tw5/widgets/kukali"
 
 <<~/ahu>>
 
-<<~ ahu #/render>>
+<<~ ahu slot=`#/render`>>
 
 !! Render
 
@@ -44,21 +44,21 @@ The declaration rides in `packages/lararium-tw5/tiddlers/sigil-kukali.tid` with 
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
-<<~ pranala #source from="?" -> to="packages/lararium-tw5/tiddlers/sigil-kukali.tid" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/tiddlers/sigil-kukali.tid` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kukali">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/papalohe">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kukali`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/widgets/papalohe`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mqUW5B316KmqZBT178E87C30V-0aAwgwshztsH40XtY
+<<^ code=`&#x0003;`>>ni:///sha-256;tEVy6HcJ6gxb766vQSIcbKsJmmFRQ8Oj46tCSRM6OYA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

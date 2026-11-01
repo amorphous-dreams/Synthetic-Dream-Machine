@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/compaction-handlers">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/compaction-handlers`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -16,14 +16,14 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/compaction-handlers"
 ```
 
-<<~ ahu #/disambiguation>>
+<<~ ahu slot=`#/disambiguation`>>
 
 !! Disambiguation — `epoch` here names COMPACTION
 
 This `epoch` (the DXOS-style snapshot-restart that mints a fresh history-less doc) names
 the ''compaction'' that bounds CRDT history — DISTINCT from the authority/liveness
 ''lease-epoch'' (the re-key / re-share clock, max-register, coordinator-free) that runs the
-siege refresh window at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">>. The
+siege refresh window at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/siege-resilience`>>. The
 two MAY co-occur at a boundary, never fuse: this one bounds //state-history growth//, the
 lease-epoch bounds //who may still act//. Reserve bare //epoch// for the lease going forward;
 read this mechanism as ''compaction''. ''AND THE VERB SAYS SO'': `lares bag compact` /
@@ -38,11 +38,11 @@ frontier and nothing else; every other claimant carries a qualifier that names w
 and it blanks where ours picks a winner), ''seal'' epoch (ours, charter grain), ''POSIX ms'' for a
 wall-clock (never spelled //epoch// beside a clockless fence). One question separates them: does the
 fold pick a WINNER, or blank both paths? This one picks nothing — a compaction is a CUT, not a fold.
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces`>>
 
 <<~/ahu>>
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -62,7 +62,7 @@ Two reactors, both running worker-ward over the catalog accessor
 
 <<~/ahu>>
 
-<<~ ahu #/invariants>>
+<<~ ahu slot=`#/invariants`>>
 
 !! Invariants
 
@@ -85,7 +85,7 @@ reclaiming its storage stays an operator act (OS-level or a future GC sprint).
 
 <<~/ahu>>
 
-<<~ ahu #/deferred-design>>
+<<~ ahu slot=`#/deferred-design`>>
 
 !! Deferred design — EPOCH as an operator rite (proposed 2026-06-15)
 
@@ -119,17 +119,17 @@ is free recovery until growth on a long-lived high-churn bag actually bites
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/engine-watch">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/recipe">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/handler-args">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/engine-watch`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/recipe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/handler-args`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;P3l5JqT2Ya1Kb1qGCgmlzt4abmP2YB98muc-yDTpQUc
+<<^ code=`&#x0003;`>>ni:///sha-256;cIEx_clmWLScjb05Rq3WRF7s9mYhogzV-goQMDMTmvY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

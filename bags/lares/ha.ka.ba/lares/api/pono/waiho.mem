@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/waiho">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/waiho`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,11 +17,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/waiho"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Waiho
 
@@ -29,7 +29,7 @@ An ephemeral name deposit. Nothing persists past scope boundary.
 
 <<~/ahu>>
 
-<<~ ahu #/etymology>>
+<<~ ahu slot=`#/etymology`>>
 
 !! Etymology and Mythology
 
@@ -43,7 +43,7 @@ In the Kumulipo creation chant, //waiho// appears in the context of primal mater
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law
 
@@ -56,7 +56,7 @@ In the Kumulipo creation chant, //waiho// appears in the context of primal mater
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
@@ -70,7 +70,7 @@ In the Kumulipo creation chant, //waiho// appears in the context of primal mater
 
 <<~/ahu>>
 
-<<~ ahu #/contrast>>
+<<~ ahu slot=`#/contrast`>>
 
 !! Waiho vs Kau vs Aka
 
@@ -82,17 +82,17 @@ In the Kumulipo creation chant, //waiho// appears in the context of primal mater
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kau">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/aka">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kau`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/aka`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-const">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-let">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-var">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-const`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-let`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-var`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Hxyvd5ZpADbCIJYJfmQTubfiO_AUZUvexQEqnfHyVBI
+<<^ code=`&#x0003;`>>ni:///sha-256;Y92Coc4nav_JM1a-4Gjf_3RD8YXTajlKRIjmIQzsi4s
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Orrery of High Delos
 
@@ -36,6 +36,6 @@ and the Painter's establishing boards stands noted).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;x5S712O2e0xpr1lM4-EFEi_9np5iqxdhF5kJ_V03B2o
+<<^ code=`&#x0003;`>>ni:///sha-256;3JfXY6hTOM0ZLUrCv0QdmiQbbN5Mma7TSC77jjl6nJQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

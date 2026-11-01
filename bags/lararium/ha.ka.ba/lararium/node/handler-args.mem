@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/handler-args">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/node/handler-args`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/node/handler-args"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -37,6 +37,6 @@ These helpers carry no side effects or platform assumptions. They could become a
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ClDbe_njo-m_thAdlgsbJ49NBRgEdHpzyAFmnVfSzj0
+<<^ code=`&#x0003;`>>ni:///sha-256;gTE8XZhmR3kkxOANKxWcbmdur-SLCbBt9_YZ1i6j3yI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

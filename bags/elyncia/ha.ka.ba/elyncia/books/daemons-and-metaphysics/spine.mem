@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/books/daemons-and-metaphysics/spine">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/books/daemons-and-metaphysics/spine`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/books/daemons-and-metaphysics/spine"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Elyncia 03 ~ Daemons and the Metaphysics of Play ~ Spine
 
@@ -33,7 +33,7 @@ below activate one by one as each chunk meme seats; until then the walk reads as
 
 <<~/ahu>>
 
-<<~ ahu #/walk>>
+<<~ ahu slot=`#/walk`>>
 
 !! The Walk ~ reading order
 
@@ -43,7 +43,7 @@ below activate one by one as each chunk meme seats; until then the walk reads as
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source Staging
 
@@ -53,12 +53,12 @@ comes only after all source text reads as moved.)//
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/books/index">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/books/index`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3RJXUI5O3hfC0K71I4pdfbYPPDnuM40cJ3bI-YAqTqI
+<<^ code=`&#x0003;`>>ni:///sha-256;gTkChsKFDv5aVffsWE5e4Ni30krKSQZT-TvdaOCX7-w
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

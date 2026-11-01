@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/scale-architecture">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/scale-architecture`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -19,11 +19,11 @@ uri-path  = "ha.ka.ba/lares/api/pono/scale-architecture"
 written   = "2026-07-01"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! The Scale Architecture ~ tractable from the start, quality a dial
 
@@ -33,7 +33,7 @@ The design principle: ''never densify the whole corpus, never solve exactly what
 
 <<~/ahu>>
 
-<<~ ahu #/the-descent>>
+<<~ ahu slot=`#/the-descent`>>
 
 !! The Structure-Distance Descent ~ the house never needs exact TED
 
@@ -41,17 +41,17 @@ The design principle: ''never densify the whole corpus, never solve exactly what
 
 The structure plane ([[corpus|lar:///ha.ka.ba/lares/api/corpus#/the-caps]]) reads trees. The exact structural metric — Zhang–Shasha tree-edit-distance — runs O(n³) per tree pair, and comparing every pair across a corpus of N trees runs O(N²·n³): a wall, not a slope. The house can avoid the wall because ''the house never needs the exact distance'' — it needs the neighbor structure (who sits near whom, which trees cluster), and a Lipschitz-faithful proxy preserves exactly that.
 
-<<~ scale descent "exact-TED ~ the wall: Zhang–Shasha O(n³)/pair, O(N²·n³)/corpus — the metric the descent REFUSES -> pq-gram ~ constant-per-node PROFILES: shred each tree into its p-ancestor × q-sibling grams, distance = L1 / Jaccard over gram bags — linear to build, sub-quadratic to index -> deckard ~ characteristic VECTORS: the tree's structure cast to a Euclidean feature vector (Jiang 2007), Euclidean-approx clustering via LSH — an embedding, indexable in metric-tree time">>
+<<~ scale name=`descent` ranks=`exact-TED ~ the wall: Zhang–Shasha O(n³)/pair, O(N²·n³)/corpus — the metric the descent REFUSES -> pq-gram ~ constant-per-node PROFILES: shred each tree into its p-ancestor × q-sibling grams, distance = L1 / Jaccard over gram bags — linear to build, sub-quadratic to index -> deckard ~ characteristic VECTORS: the tree's structure cast to a Euclidean feature vector (Jiang 2007), Euclidean-approx clustering via LSH — an embedding, indexable in metric-tree time`>>
 
 ''The Lipschitz argument licenses the trade.'' The pq-gram distance differs from the edit distance, but it ''bounds'' it (bi-Lipschitz up to constants: the pq-gram distance and the edit distance sandwich each other within a factor that depends on tree fanout and p,q). A metric that sandwiches the true one within constants preserves the //ordering of neighbors// up to those constants — so a nearest-neighbor query, a cluster, a DEM basin computed under the proxy lands in the same place the exact metric would, minus a bounded slack. The descent trades an EXACT metric for a ''Lipschitz-faithful'' one that indexes in LSH / metric-tree time, and the house reads neighbor-structure, so the house can afford the slack where it cannot afford the O(n³).
 
-<<~moves exact-structural-metric -> on/Lipschitz-faithful-proxy if/the-read-is-neighbor-structure-not-absolute-distance do/embed-and-index-never-pairwise-exact>>
+<<~moves name=`exact-structural-metric` params=`on/Lipschitz-faithful-proxy if/the-read-is-neighbor-structure-not-absolute-distance do/embed-and-index-never-pairwise-exact`>>
 
 The descent has a floor: where a rare adjudication (not a clustering) genuinely requires an //absolute// edit distance, the exact TED stays available as the rarely-taken option — but the DEFAULT path runs the embedding, and the corpus scale rides the default.
 
 <<~/ahu>>
 
-<<~ ahu #/the-fusion>>
+<<~ ahu slot=`#/the-fusion`>>
 
 !! The Fusion ~ cheap H¹, matrix-free diffusion, the Chebyshev escape
 
@@ -59,7 +59,7 @@ The descent has a floor: where a rare adjudication (not a clustering) genuinely 
 
 The cohomological gate ([[cohomological-gate|lar:///ha.ka.ba/lares/api/pono/cohomological-gate#/the-gate]]) reads H¹ before it diffuses. Its economy rests on an asymmetry the scale architecture must preserve:
 
-<<~ scale fusion "consistency-radius ~ CHEAP — the H⁰-side / li-restriction check is a MAX of per-overlap pseudometrics over the nerve's edges, O(edges); it tells you WHETHER the sections glue at cost linear in the overlap graph -> laplacian-threat ~ the DANGER — the sheaf-Laplacian's spectrum (the H⁰-diffusion operator + the harmonic H¹ space) via dense eigendecomposition runs O(n³), the operation that would sink the fusion at scale -> chebyshev-escape ~ the OUT — approximate the matrix FUNCTION (heat-kernel exp(−tL), spectral filter g(L)) by a degree-L Chebyshev polynomial in L; evaluate by L sparse matrix-vector products, matrix-FREE, O(L · edges), NEVER the eigensolve">>
+<<~ scale name=`fusion` ranks=`consistency-radius ~ CHEAP — the H⁰-side / li-restriction check is a MAX of per-overlap pseudometrics over the nerve's edges, O(edges); it tells you WHETHER the sections glue at cost linear in the overlap graph -> laplacian-threat ~ the DANGER — the sheaf-Laplacian's spectrum (the H⁰-diffusion operator + the harmonic H¹ space) via dense eigendecomposition runs O(n³), the operation that would sink the fusion at scale -> chebyshev-escape ~ the OUT — approximate the matrix FUNCTION (heat-kernel exp(−tL), spectral filter g(L)) by a degree-L Chebyshev polynomial in L; evaluate by L sparse matrix-vector products, matrix-FREE, O(L · edges), NEVER the eigensolve`>>
 
 ''The consistency-radius stands as the cheap gate.'' Robinson's consistency radius (Hansen–Ghrist sheaf-Laplacian substrate) reads whether the local sections glue as a maximum of pseudometrics over the engineered overlaps — O(edges), no spectrum needed. So the H¹≠0 //detection// the gate runs first comes cheap by construction; the house pays the fusion's price only on the H⁰ branch it licenses.
 
@@ -69,7 +69,7 @@ The two facts compose into the gate's economy: ''cheap check (consistency-radius
 
 <<~/ahu>>
 
-<<~ ahu #/the-catma>>
+<<~ ahu slot=`#/the-catma`>>
 
 !! The Catma ~ scalable from the start, quality a dial
 
@@ -77,17 +77,17 @@ The two facts compose into the gate's economy: ''cheap check (consistency-radius
 
 The house holds this as a ''catma'' ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/law-of-5s]] — a held-loosely stance, not a dogma): //scalable from the start.// The cheap path runs as the default, and every accuracy knob turns continuously so the corpus can grow without the architecture changing shape.
 
-<<~ scale dial "K ~ neighbor count in the graph — fewer neighbors, sparser Laplacian, faster diffusion; a smooth accuracy↔compute trade -> epsilon ~ ε, the approximation tolerance on the structural proxy / LSH bucket width — looser ε, faster index, more slack -> L ~ the Chebyshev polynomial DEGREE — lower L, cheaper matrix function, coarser spectral filter; error falls as L rises -> nSurr ~ the surrogate / permutation count for the R null (the false-discovery ward, [[sensorium-machina|lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/ki]]) — fewer surrogates, faster, weaker null-calibration">>
+<<~ scale name=`dial` ranks=`K ~ neighbor count in the graph — fewer neighbors, sparser Laplacian, faster diffusion; a smooth accuracy↔compute trade -> epsilon ~ ε, the approximation tolerance on the structural proxy / LSH bucket width — looser ε, faster index, more slack -> L ~ the Chebyshev polynomial DEGREE — lower L, cheaper matrix function, coarser spectral filter; error falls as L rises -> nSurr ~ the surrogate / permutation count for the R null (the false-discovery ward, [[sensorium-machina|lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/ki]]) — fewer surrogates, faster, weaker null-calibration`>>
 
 ''Never densify the whole corpus.'' Nothing ever materializes the full O(corpus²) pairwise structure. A ''merge-and-reduce coreset tree'' (Bentley–Saxe decomposition; Har-Peled–Mazumdar coresets) streams the corpus into a bounded summary: ingest a block, reduce it to a coreset, merge coresets pairwise up a binary tree, keep only O(log N) levels of bounded-size summaries. Memory stays ''O(coreset)'', the corpus never sits dense in RAM, and the summary carries the neighbor structure the DEM basins and the fusion read — so scale holds as a streaming property, engineered in from the first ingest rather than retrofitted when the corpus outgrows memory.
 
-<<~moves corpus-growth -> on/streaming-coreset-summary if/never-densify-whole do/turn-the-quality-dial-not-rebuild>>
+<<~moves name=`corpus-growth` params=`on/streaming-coreset-summary if/never-densify-whole do/turn-the-quality-dial-not-rebuild`>>
 
 The catma's payoff: a corpus that grows 100× turns a dial (fewer neighbors, lower Chebyshev degree, a coarser coreset) rather than hitting a wall. Quality degrades gracefully and //legibly// — the operator reads the dial position, so the accuracy the run bought sits on the record, never a silent ceiling.
 
 <<~/ahu>>
 
-<<~ ahu #/the-numerical-path>>
+<<~ ahu slot=`#/the-numerical-path`>>
 
 !! The Numerical Minimalist-Path ~ closed-form where iteration tempts
 
@@ -95,15 +95,15 @@ The catma's payoff: a corpus that grows 100× turns a dial (fewer neighbors, low
 
 The sensorium's confidence and precision reads resist the pull toward iterative fitting. Three identities keep them closed-form — cheap, stable, and honest:
 
-<<~ has Numeric Signal-Fraction "form/conf = var(t) / (var(t) + var(r)) ~ a PARTITION-OF-VARIANCE confidence — task-variance over task-plus-residual variance; the fraction of the reading explained by signal, closed-form, no fit; conf→1 as residual vanishes, conf→0 as signal drowns">>
-<<~ has Numeric Closed-Form-Precision "form/π* analytic ~ the optimal precision SETTLES analytically — the precision-weighting ([[li-ki-integrities|lar:///ha.ka.ba/lares/api/pono/li-ki-integrities#/crucible-tested]], confidence = precision) has a closed-form minimizer, so the settle takes ONE step, never an iteration to convergence">>
-<<~ has Numeric Complementary-Guard "form/π→conf via the complement ~ where the DIRECT π→conf map diverges numerically (large mean-squared-error ε̄², the precision-blows-up regime), compute through the COMPLEMENTARY form — algebraically identical, numerically stable — so the read holds at the extreme instead of overflowing">>
+<<~ has entity=`Numeric` name=`Signal-Fraction` params=`form/conf = var(t) / (var(t) + var(r)) ~ a PARTITION-OF-VARIANCE confidence — task-variance over task-plus-residual variance; the fraction of the reading explained by signal, closed-form, no fit; conf→1 as residual vanishes, conf→0 as signal drowns`>>
+<<~ has entity=`Numeric` name=`Closed-Form-Precision` params=`form/π* analytic ~ the optimal precision SETTLES analytically — the precision-weighting ([[li-ki-integrities|lar:///ha.ka.ba/lares/api/pono/li-ki-integrities#/crucible-tested]], confidence = precision) has a closed-form minimizer, so the settle takes ONE step, never an iteration to convergence`>>
+<<~ has entity=`Numeric` name=`Complementary-Guard` params=`form/π→conf via the complement ~ where the DIRECT π→conf map diverges numerically (large mean-squared-error ε̄², the precision-blows-up regime), compute through the COMPLEMENTARY form — algebraically identical, numerically stable — so the read holds at the extreme instead of overflowing`>>
 
 ''This path stands partly ENACTED, not only designed.'' The sensorium's `settlePrecision` already carries the closed-form settle and the complementary-form guard against the large-ε̄² divergence (commit lineage `f50a35b8` //sensorium.numerics.harden — signal-fraction confidence · closed-form settle · complementary π→conf//; the QA hardening in `ab85fc2b` caught the large-ε̄² divergence and the false-critical / EWS-guard leaks). That enactment lives ''py/R'' — the full sensorium model's home, instanced per-stream — while TS keeps the pure-functor math floor these identities also seed. The record honors the enacted-vs-aimed cut: the numerical path stands in code py/R-side, where the sensorium reads; the fusion escape and the structure descent stand as design grounded in established algorithms not yet all wired.
 
 <<~/ahu>>
 
-<<~ ahu #/north-star>>
+<<~ ahu slot=`#/north-star`>>
 
 !! North-Star ~ named, not built (the honest ledger)
 
@@ -111,13 +111,13 @@ The sensorium's confidence and precision reads resist the pull toward iterative 
 
 The honesty gate ([[gold-anchor|lar:///ha.ka.ba/lares/api/pono/gold-anchor]]) demands the record name the //aspirational// as aspirational. Three tools sit on the horizon, each promising, none built:
 
-<<~ scale north-star "EI-aperture-selection ~ EFFECTIVE INFORMATION (Hoel's causal-emergence EI) choosing the aperture band — let the band the sensorium reads at be SELECTED by which scale maximizes effective information, so the aperture is discovered, not fixed; NAMED, not built -> bures-quantum-drift ~ the BURES / fidelity metric (the quantum-information distance between states) ridden as a DRIFT-LENS — a geometry on the reading-state finer than Fisher-Rao at the boundary; a north-star instrument, NAMED, not built -> tangled-hierarchy ~ the STRANGE-LOOP self-model (Hofstadter's tangled hierarchy) — the sensorium modeling itself modeling the stream, the Good-Regulator self-model ([[sensorium-machina|lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/the-family]]) closed into a loop; the deepest aim, the least enacted">>
+<<~ scale name=`north-star` ranks=`EI-aperture-selection ~ EFFECTIVE INFORMATION (Hoel's causal-emergence EI) choosing the aperture band — let the band the sensorium reads at be SELECTED by which scale maximizes effective information, so the aperture is discovered, not fixed; NAMED, not built -> bures-quantum-drift ~ the BURES / fidelity metric (the quantum-information distance between states) ridden as a DRIFT-LENS — a geometry on the reading-state finer than Fisher-Rao at the boundary; a north-star instrument, NAMED, not built -> tangled-hierarchy ~ the STRANGE-LOOP self-model (Hofstadter's tangled hierarchy) — the sensorium modeling itself modeling the stream, the Good-Regulator self-model ([[sensorium-machina|lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/the-family]]) closed into a loop; the deepest aim, the least enacted`>>
 
 These carry Provisional-to-Synthesis weight deliberately. Recording them as north-stars keeps the atlas from mistaking a direction for a destination — the enacted numerical path (#/the-numerical-path) sits at Synthesis-Canon //because// it runs; these sit low //because// they beckon. The map shows both, and shows which path runs and which tools beckon.
 
 <<~/ahu>>
 
-<<~ ahu #/grounds>>
+<<~ ahu slot=`#/grounds`>>
 
 !! Grounds ~ what this meme stands on
 
@@ -132,18 +132,18 @@ Established algorithms carrying the descent and the escape, 2026 fusion research
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/corpus">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cohomological-gate">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/li-ki-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/gold-anchor">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/corpus`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cohomological-gate`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/li-ki-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/gold-anchor`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;z4nALs9VmfwoltriPxWSu75jp0KKDOcLppePJ5hS_v0
+<<^ code=`&#x0003;`>>ni:///sha-256;DNQOs1Mc49PPv_K_VsGV7qlVQ0bxDxRvL3Z2Gap87Zw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

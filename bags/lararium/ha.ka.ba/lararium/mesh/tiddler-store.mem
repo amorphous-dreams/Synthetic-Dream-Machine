@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/tiddler-store">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/tiddler-store`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -15,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/tiddler-store"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! LarTiddlerStore ~ the contract that names no wiki
 
@@ -24,7 +24,7 @@ one, a canon one, a memory one — and the shape moves for none of them.
 
 <<~/ahu>>
 
-<<~ ahu #/the-five-layers>>
+<<~ ahu slot=`#/the-five-layers`>>
 
 !! Five layers, one priority
 
@@ -40,7 +40,7 @@ furthest holds the record.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The four hard rules
 
@@ -58,15 +58,15 @@ rather than an absence it must guess at.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/tiddler-store.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/tiddler-store.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-provider">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/meme-provider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DqYEdt56NSGSjVAvJh6eP9M4LQsX3QonrTtACm8y9Ag
+<<^ code=`&#x0003;`>>ni:///sha-256;cEIvxJLNKtHwcK5qJdLOXAOsMnnoQK5Ke6P-Do33RK8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

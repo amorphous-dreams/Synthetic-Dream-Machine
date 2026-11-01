@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/infinite-canvas-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/infinite-canvas-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
@@ -21,10 +21,10 @@ uri-path          = "ha.ka.ba/lares/docs/pono/infinite-canvas-scout"
 written           = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 !! The canvas camera ~ a talk-story on placing whole tiles on a plane
-<<~ set mode="talk-story" mu="*!" stance="🏛️ 🗡️ 🌊" aperture="15/arc" note="research spirit, read-only; reach marked per claim">>
+<<~ set mode=`talk-story` mu=`*!` stance=`🏛️ 🗡️ 🌊` aperture=`15/arc` note=`research spirit, read-only; reach marked per claim`>>
 
 ''Lares (Gatekeeper).'' The seed holds up in its spine: a second camera beside `lar:story`, one whole key per placed tile, pan and zoom on the page, a move answered like every act. It breaks in three joints, each named below: ''one placement list as one record'' (a merge hazard the StoryList never meets, since StoryList stays on the glass [reached: dreamdom.mem:140]), ''the layout key written by two hands'' (it violates one-writer-per-key [reached: dreamdom.mem:274]), and ''the frustum fed by nothing'' (culling needs a sensed viewport the seed calls droppable and then never feeds back [reached: dreamdom.mem:264-265]).
 
@@ -157,10 +157,10 @@ Each needs two README verbs: `pan` (a viewport sense) and `place` (a drag gestur
 
 ''Lares (Map-Wisp).'' D7, held by name [reached: dreamdom-roadmap.mem:80, :134]. It waits on: D1's keyed contract with per-key revisions, membership, epochs and sensed revision (row `D2` [reached: dreamdom-roadmap.mem:196]); D5's `blocks` golden, which the roadmap names as its gate; D2's subscriptions for the skinny reading of §4; spike 1 above, since a second camera on one island stands unproven; and rulings 11 and 12 of `dreamdom#/open-rulings` for shared state and presence. None of it moves before D1 lands its contract whole.
 
-<<~ set hud="yield" drift-ward="the per-tile costs divide one whole-surface number by twelve, an upper bound never measured per tile; and the merge reading rests on Automerge's field resolution, unread in the store's code · ↻ L-Prime" aperture="15/arc -> 16/arc" ooda-ha="closed 1↺ -> open 1φ @◇:eight-questions.await-the-operator">>
+<<~ set lares=`yield` drift-ward=`the per-tile costs divide one whole-surface number by twelve, an upper bound never measured per tile; and the merge reading rests on Automerge's field resolution, unread in the store's code · ↻ L-Prime` aperture=`15/arc -> 16/arc` ooda-ha=`closed 1↺ -> open 1φ◇:eight-questions.await-the-operator`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Gq9xNli-LawwUqIqClB3WgQj0fuObShHbuSiDsVs66Y
+<<^ code=`&#x0003;`>>ni:///sha-256;D45CQXdvAzk-aY7eunv6UGMl4qZUL6gTLFFdzJHsUK0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

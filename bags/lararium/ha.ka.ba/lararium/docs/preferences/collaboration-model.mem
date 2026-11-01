@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/preferences/collaboration-model">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/preferences/collaboration-model`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/collaboration-model"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Preferences — Collaboration Model
 
@@ -26,7 +26,7 @@ This room holds one of the strongest recovered principles in the lararium shelf:
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance
 
@@ -40,7 +40,7 @@ Strong witnesses recur in:
 
 <<~/ahu>>
 
-<<~ ahu #/pressure>>
+<<~ ahu slot=`#/pressure`>>
 
 !! Pressure
 
@@ -61,7 +61,7 @@ It likely belongs among the deepest recovered house habits.
 
 <<~/ahu>>
 
-<<~ ahu #/relation>>
+<<~ ahu slot=`#/relation`>>
 
 !! Relation To Live Surfaces
 
@@ -73,16 +73,16 @@ This room leans toward future deeper articulation in:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/continuity">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/continuity`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;v4M8iZ8xkkCm9Z0ue9IFt5R0Z0Zj8Z7KG1KU_Y8nkcw
+<<^ code=`&#x0003;`>>ni:///sha-256;XGP8jT7X3jmo7I7rUhFO8JlS6sv0SE5mMQIvRYnOL7g
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

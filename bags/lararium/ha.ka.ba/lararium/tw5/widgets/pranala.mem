@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/pranala">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/widgets/pranala`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
@@ -18,17 +18,17 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/pranala"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
-`<<~ pranala from="lar:///a.b.c/x" -> to="lar:///a.b.c/y">>` names an edge. It takes `from`, `to`, `slot`, `family`, `role`, `body` and an optional `template`; the block form wraps a body between the open and `<<~/pranala>>`. Absent `family`, the edge reads `relation`.
+``<<~ pranala from=`lar:///a.b.c/x` to=`lar:///a.b.c/y`>>`` names an edge. It takes `from`, `to`, `slot`, `family`, `role`, `body` and an optional `template`; the block form wraps a body between the open and `<<~/pranala>>`. Absent `family`, the edge reads `relation`.
 
 ''A fragment resolves against the carrier.'' A `from` or `to` that opens with `#` gains the current tiddler as its prefix, so `#/head` addresses this carrier's own child rather than a bare fragment.
 
 <<~/ahu>>
 
-<<~ ahu #/parse-exception>>
+<<~ ahu slot=`#/parse-exception`>>
 
 !! The Permanent Parse Exception
 
@@ -38,7 +38,7 @@ The sibling exception, `pranala-header`, spends `?` as a self-reference token fo
 
 <<~/ahu>>
 
-<<~ ahu #/template-cascade>>
+<<~ ahu slot=`#/template-cascade`>>
 
 !! The Template Cascade
 
@@ -50,24 +50,24 @@ The shipped template renders a `<span class="lar-pranala">` carrying `data-from`
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
-<<~ pranala #source from="?" -> to="packages/lararium-tw5/tiddlers/sigil-pranala.tid" family="code" role="has">>
-<<~ pranala #source-header from="?" -> to="packages/lararium-tw5/tiddlers/sigil-pranala-header.tid" family="code" role="has">>
-<<~ pranala #source-template from="?" -> to="packages/lararium-tw5/tiddlers/pranala-template-html.tid" family="code" role="has">>
-<<~ pranala #source-rule from="?" -> to="packages/lararium-tw5/src/wikirules/lar-sigil-shared.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/tiddlers/sigil-pranala.tid` family=`code` role=`has`>>
+<<~ pranala slot=`#source-header` from=`?` to=`packages/lararium-tw5/tiddlers/sigil-pranala-header.tid` family=`code` role=`has`>>
+<<~ pranala slot=`#source-template` from=`?` to=`packages/lararium-tw5/tiddlers/pranala-template-html.tid` family=`code` role=`has`>>
+<<~ pranala slot=`#source-rule` from=`?` to=`packages/lararium-tw5/src/wikirules/lar-sigil-shared.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/sigil">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/widgets/sigil`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kAOLF8kNn01fhJB6mtvPQvS0rABXwjvYliyPZSB5MH8
+<<^ code=`&#x0003;`>>ni:///sha-256;27vOO0D1na-ad0h-JbjNr7dYqn4wXXFIDz_5_Hifb1I
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

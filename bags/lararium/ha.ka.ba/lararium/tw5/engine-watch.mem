@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/engine-watch">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/engine-watch`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
@@ -10,7 +10,7 @@ l-space       = "lararium"
 mana          = 14
 manao         = 14
 revised-on    = "2026-06-15"
-revision-note = "EW-5 SEATED (was held-open): engine-genesis update = operator(admin) on @oracle, peers federate read-only; the fold rides the RECONCILE rite. EW-6 added: boot warns, never auto-folds (relocates the boot auto-merge to the rite). Watch subscribes to @oracle (the runtime island), split from the @lararium corpus."
+revision-note = "EW-5 SEATED (was held-open): engine-genesis update = operator(admin) on oracle-floor, peers federate read-only; the fold rides the RECONCILE rite. EW-6 added: boot warns, never auto-folds (relocates the boot auto-merge to the rite). Watch subscribes to oracle-floor (the runtime island), split from the lararium corpus."
 role          = "engine-watch — island-side engine-epoch drift detection; a waiting engine surfaces as an alert the island writes itself; carries the seated engine-update authority (EW-5/6)"
 source-file   = "packages/lararium-tw5/src/engine-watch.ts"
 title         = "lar:///ha.ka.ba/lararium/tw5/engine-watch"
@@ -18,7 +18,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/engine-watch"
 ```
 
-<<~ ahu #/change-classes>>
+<<~ ahu slot=`#/change-classes`>>
 
 !! The two change classes
 
@@ -37,7 +37,7 @@ protocol — permanent mechanism, not interim UX.
 
 <<~/ahu>>
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -59,7 +59,7 @@ unsubscribes.
 
 <<~/ahu>>
 
-<<~ ahu #/invariants>>
+<<~ ahu slot=`#/invariants`>>
 
 !! Invariants
 
@@ -118,18 +118,18 @@ each island adopts the roll in; kāhuli is the mesh-scale act that offers it.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/sovereign-kernel">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/compaction-handlers">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/memory-store">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/sovereign-kernel`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/compaction-handlers`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/memory-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7oiekNNFqVLdKAgIP_tG4_Ke56-ORQSFliK48DaZrvs
+<<^ code=`&#x0003;`>>ni:///sha-256;xsHXX9stjXdL4yslajK8fEGVZ3KGJ8M-6m8nI0ptxc4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

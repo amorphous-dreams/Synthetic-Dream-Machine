@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/hydration-grain">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/hydration-grain`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -21,11 +21,11 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/api/hydration-grain"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/core-claim>>
+<<~ ahu slot=`#/core-claim`>>
 
 ! Hydration Grain — carry the name, defer the body
 
@@ -35,13 +35,13 @@ The invariant: ''a holder may know a thing's ADDRESS without carrying its BODY''
 
 <<~/ahu>>
 
-<<~ ahu #/the-three-grains>>
+<<~ ahu slot=`#/the-three-grains`>>
 
 !! The three grains — same integrity, different water
 
-<<~ has Grain Tiddler "skinny/fields-only-no-text fat/hydrated-with-body owner/TW5 lineage/the wiki's own lazy-load ~ the envelope arrives, the body follows">>
-<<~ has Grain Body "skinny/the-handle-names-a-cid resolved/the-bytes-carried owner/content-resolution lineage/skinny handle ~ the name travels, the body resolves on demand">>
-<<~ has Grain Bag "anu/URL-known-doc-not-loaded wela/live-handle-Worker-running owner/residency-tiers lineage/ʻōlelo thermal axis ~ the address stands, the CRDT hydrates">>
+<<~ has entity=`Grain` name=`Tiddler` params=`skinny/fields-only-no-text fat/hydrated-with-body owner/TW5 lineage/the wiki's own lazy-load ~ the envelope arrives, the body follows`>>
+<<~ has entity=`Grain` name=`Body` params=`skinny/the-handle-names-a-cid resolved/the-bytes-carried owner/content-resolution lineage/skinny handle ~ the name travels, the body resolves on demand`>>
+<<~ has entity=`Grain` name=`Bag` params=`anu/URL-known-doc-not-loaded wela/live-handle-Worker-running owner/residency-tiers lineage/ʻōlelo thermal axis ~ the address stands, the CRDT hydrates`>>
 
 ''Read the column and the integrity shows.'' Each grain answers the same question — //what may a holder know without paying for the whole?// — and each answers it in its own layer's vocabulary. ''The vocabularies MUST NOT merge'' (they name different layers, and a merged word would flatten the layer distinction the model rests on); ''the integrity MUST stay legible across them'' (a reader who sees three unrelated mechanisms has lost the wave).
 
@@ -49,7 +49,7 @@ The invariant: ''a holder may know a thing's ADDRESS without carrying its BODY''
 
 <<~/ahu>>
 
-<<~ ahu #/the-missing-rung>>
+<<~ ahu slot=`#/the-missing-rung`>>
 
 !! The missing rung — the bag grain jumps
 
@@ -72,7 +72,7 @@ The candidate: a ''bag snapshot'' — a quick-load skinny path standing BEFORE t
 
 <<~/ahu>>
 
-<<~ ahu #/laws-that-already-govern>>
+<<~ ahu slot=`#/laws-that-already-govern`>>
 
 !! Laws already standing over this — the house rules before the research runs
 
@@ -86,7 +86,7 @@ Any snapshot design MUST satisfy these; none of them awaits research.
 
 <<~/ahu>>
 
-<<~ ahu #/research-charge>>
+<<~ ahu slot=`#/research-charge`>>
 
 !! The research charge — what must land before any build
 
@@ -101,22 +101,22 @@ Any snapshot design MUST satisfy these; none of them awaits research.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-tiers">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-tiers`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
-<<~ pranala #same-integrity-at from="?" -> to="lar:///ha.ka.ba/lararium/api/residency-tiers" family="relation" role="bag-grain">>
-<<~ pranala #same-integrity-at from="?" -> to="lar:///ha.ka.ba/lararium/mesh/content-resolution" family="relation" role="body-grain">>
-<<~ pranala #gated-by from="?" -> to="lar:///ha.ka.ba/lararium/api/residency-tiers#/third-tier-gate" family="constraint" role="governed-by">>
-<<~ pranala #projection-law from="?" -> to="lar:///ha.ka.ba/lararium/api/disk-projection" family="constraint" role="governed-by">>
+<<~ pranala slot=`#same-integrity-at` from=`?` to=`lar:///ha.ka.ba/lararium/api/residency-tiers` family=`relation` role=`bag-grain`>>
+<<~ pranala slot=`#same-integrity-at` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/content-resolution` family=`relation` role=`body-grain`>>
+<<~ pranala slot=`#gated-by` from=`?` to=`lar:///ha.ka.ba/lararium/api/residency-tiers#/third-tier-gate` family=`constraint` role=`governed-by`>>
+<<~ pranala slot=`#projection-law` from=`?` to=`lar:///ha.ka.ba/lararium/api/disk-projection` family=`constraint` role=`governed-by`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7VTLOhbDdPEIXuQo9WwD5OTqC2Re01ytakmAxQoiZZs
+<<^ code=`&#x0003;`>>ni:///sha-256;_8krmM129rS2XLORNEmgZvkpfxewhB9hQVzos9Gf-Yg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

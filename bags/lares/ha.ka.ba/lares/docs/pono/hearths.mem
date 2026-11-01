@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/hearths">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/hearths`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -21,7 +21,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/hearths"
 ```
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 ! The law of the ledger
 
@@ -37,7 +37,7 @@ A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing
 
 <<~/ahu>>
 
-<<~ ahu #/hearths>>
+<<~ ahu slot=`#/hearths`>>
 
 ! The hearths — one stands, five closed
 
@@ -54,7 +54,7 @@ A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing
 
 <<~/ahu>>
 
-<<~ ahu #/owed-forward>>
+<<~ ahu slot=`#/owed-forward`>>
 
 ! The closed hearths' debts, carried onto the standing hearths
 
@@ -75,7 +75,7 @@ A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing
 
 <<~/ahu>>
 
-<<~ ahu #/holds>>
+<<~ ahu slot=`#/holds`>>
 
 ! What each hearth HOLDS, in paths
 
@@ -179,7 +179,7 @@ globs   = [
 
 <<~/ahu>>
 
-<<~ ahu #/crossings>>
+<<~ ahu slot=`#/crossings`>>
 
 ! Crossings, and what each cost
 
@@ -276,17 +276,17 @@ globs   = [
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 ! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;agZf99P6dWS2XwM6y1pDsvtHSTser97i-XobrnJoWvI
+<<^ code=`&#x0003;`>>ni:///sha-256;tH5ri_DcSTwMMSRmjT9UpeO2X_p-tPRaZHMB09MQiMQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

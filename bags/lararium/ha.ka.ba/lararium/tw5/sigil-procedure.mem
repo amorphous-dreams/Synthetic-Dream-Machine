@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/sigil-procedure">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/sigil-procedure`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -16,18 +16,18 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/sigil-procedure"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! ~\procedure Sigil Design
 
-`<<~ procedure name(params)>>body<<~/procedure>>` — TW5 procedure declaration form.
+``<<~ procedure name=`name(params)`>>body<<~/procedure>>`` — TW5 procedure declaration form.
 
 The `\procedure` sigil makes TW5's `\procedure` pragma first-class in memetic-wikitext and aligns the meme with the submodule-on-disk definition and call patterns.
 Hawaiian equivalent: `wehe` (procedure/function executor; outside/exit boundary).
 
 <<~/ahu>>
 
-<<~ ahu #/semantics>>
+<<~ ahu slot=`#/semantics`>>
 
 !! Semantics
 
@@ -42,7 +42,7 @@ Cross-ref: `lar-see-also: wehe`. When `sigil-wehe.tid` ships (Path G.SharktoothS
 
 <<~/ahu>>
 
-<<~ ahu #/dispatch>>
+<<~ ahu slot=`#/dispatch`>>
 
 !! Dispatch Form
 
@@ -62,17 +62,17 @@ the body runs through the pragma handler (TW5 parse-time, not render-time).
 
 <<~/ahu>>
 
-<<~ ahu #/source-shelf>>
+<<~ ahu slot=`#/source-shelf`>>
 
 !! Source Shelf
 
 <<~/pranala>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-wehe">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-wehe`>>
 <<~/pranala>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;inm0iuULfslg97jV7RCD-yUWADdzOY8tYKQFWMY-I9M
+<<^ code=`&#x0003;`>>ni:///sha-256;BMsbvgPAqUWvayDNN812IjNR4GTeHG6t755vCUlOnOM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

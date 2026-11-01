@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/face-intent-plane-2026">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/face-intent-plane-2026`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -15,15 +15,15 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/face-intent-plane-2026"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The face intent plane, 2026 ~ what the field says about a channel of intent
 
-The operator un-asked the daemon doc on 2026-10-20 and kept one point: the operator and the AIs need a channel of intent through each face's fleet of device vessels. A Sonnet pair read the field in two traded waves: YIN on multi-device fleets, YANG on intent channels between humans and AI agents. Each claim reads MEASURED (read in a source on 2026-10-20) or LEAD (inference). The model the operator approved rests at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-intent-plane">>.
+The operator un-asked the daemon doc on 2026-10-20 and kept one point: the operator and the AIs need a channel of intent through each face's fleet of device vessels. A Sonnet pair read the field in two traded waves: YIN on multi-device fleets, YANG on intent channels between humans and AI agents. Each claim reads MEASURED (read in a source on 2026-10-20) or LEAD (inference). The model the operator approved rests at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/findings>>
+<<~ ahu slot=`#/findings`>>
 
 !! Findings
 
@@ -38,7 +38,7 @@ The operator un-asked the daemon doc on 2026-10-20 and kept one point: the opera
 
 <<~/ahu>>
 
-<<~ ahu #/sources>>
+<<~ ahu slot=`#/sources`>>
 
 !! Sources (accessed 2026-10-20)
 
@@ -55,6 +55,6 @@ The operator un-asked the daemon doc on 2026-10-20 and kept one point: the opera
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cg3iVCtCetvYhLDJFrfBoc7sVU8TmvtGMDRGlv3vdLw
+<<^ code=`&#x0003;`>>ni:///sha-256;jhYC5Isz3fJDn4Vt5_IccR-a6TnWFnzwGBg4mMM0E-M
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

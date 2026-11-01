@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/sigil-grammar-research">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/sigil-grammar-research`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/sigil-grammar-research"
 ```
 
-<<~ ahu #/purpose>>
+<<~ ahu slot=`#/purpose`>>
 
 ! Hawaiian Dream-Code Sigil Grammar — Research Document
 
@@ -35,7 +35,7 @@ explicit avoidance of direct natural-language overwrite.
 
 <<~/ahu>>
 
-<<~ ahu #/findings>>
+<<~ ahu slot=`#/findings`>>
 
 !! Findings (2026-04-27)
 
@@ -72,7 +72,7 @@ Loulou (`loulou`) was sourced from the cultural team directly and is treated as 
 
 <<~/ahu>>
 
-<<~ ahu #/recommended-sigil-grammar>>
+<<~ ahu slot=`#/recommended-sigil-grammar`>>
 
 !! Recommended Sigil Grammar
 
@@ -114,7 +114,7 @@ With chained branch-channel `[SC]`:
 ```text
 <<~ wai CONDITION>>
   BODY A
-<<~ kahawai CONDITION>>      [C] branch-channel / else-if
+<<~ kahawai filter=`CONDITION`>>      [C] branch-channel / else-if
   BODY B
 <<~ mukuwai>>
   FALLBACK BODY
@@ -156,7 +156,7 @@ suppression. General imperative looping, switch/case, and try-catch remain defer
 
 <<~/ahu>>
 
-<<~ ahu #/precedent-alignment>>
+<<~ ahu slot=`#/precedent-alignment`>>
 
 !! Precedent Alignment
 
@@ -222,7 +222,7 @@ Design implication: grammar edits follow the implementation checklist below.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax-examples>>
+<<~ ahu slot=`#/syntax-examples`>>
 
 !! Syntax Examples
 
@@ -241,7 +241,7 @@ Fallback text.
 ```text
 <<~ wai [tag[open-question]]>>
 This meme still flows unresolved.
-<<~ kahawai [tag[ready-for-canon]]>>
+<<~ kahawai filter=`[tag[ready-for-canon]]`>>
 This meme can be brought to Council.
 <<~ mukuwai>>
 This meme rests as ordinary text.
@@ -251,7 +251,7 @@ This meme rests as ordinary text.
 !!! Inline command
 
 ```text
-<<~ kahea "lar:///ha.ka.ba/lares/mu">>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/mu`>>
 ```
 
 !!! Arrowed resolution request
@@ -272,7 +272,7 @@ Sugar forms do not lock out downstream command grammar.
 !!! Block worksite
 
 ```text
-<<~ ahu #/fragment-id>>
+<<~ ahu slot=`#/fragment-id`>>
 Body text, local claims, citations, or child sigils.
 
 <<~/ahu>>
@@ -292,7 +292,7 @@ Function expression.
 
 <<~/ahu>>
 
-<<~ ahu #/parser-implementation-notes>>
+<<~ ahu slot=`#/parser-implementation-notes`>>
 
 !! Parser / Agent Implementation Notes
 
@@ -347,7 +347,7 @@ When editing grammar meme or parser:
 
 <<~/ahu>>
 
-<<~ ahu #/uncertainty-list>>
+<<~ ahu slot=`#/uncertainty-list`>>
 
 !! Uncertainty List
 
@@ -386,7 +386,7 @@ When editing grammar meme or parser:
 
 <<~/ahu>>
 
-<<~ ahu #/source-notes>>
+<<~ ahu slot=`#/source-notes`>>
 
 !! Source Notes
 
@@ -406,15 +406,15 @@ When editing grammar meme or parser:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;P6pMDq_wXXNZuPgHhKmL63IYUhZBZZZYgdc6cV0QsRA
+<<^ code=`&#x0003;`>>ni:///sha-256;FRU044p-p5lbD7ae9m5xWjNOTCDAe3ycy5dxomoXscg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

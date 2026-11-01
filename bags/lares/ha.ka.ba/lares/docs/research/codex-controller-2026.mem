@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/codex-controller-2026">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/codex-controller-2026`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,17 +18,17 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/codex-controller-2026"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/question>>
+<<~ ahu slot=`#/question`>>
 
 ! Codex under a controller, 2026 ~ what Codex's own docs say about our launch
 
-The operator sent one Sol-6 reader to gather how a controller agent works best with Codex: the `codex exec` shell seat, its sandbox and approval modes, resume, the event stream, output schemas, model and effort choice. The seat read OpenAI's Codex pages, the installed `codex-cli 0.163.0` help and this host's config, then collided them with <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">> #/the-launch and the walled-seat lessons. One seat reads as one lens (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">> #/the-lens-law): its MEASURED marks rest on primary sources, and the house measures before it adopts.
+The operator sent one Sol-6 reader to gather how a controller agent works best with Codex: the `codex exec` shell seat, its sandbox and approval modes, resume, the event stream, output schemas, model and effort choice. The seat read OpenAI's Codex pages, the installed `codex-cli 0.163.0` help and this host's config, then collided them with <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>> #/the-launch and the walled-seat lessons. One seat reads as one lens (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>> #/the-lens-law): its MEASURED marks rest on primary sources, and the house measures before it adopts.
 
 <<~/ahu>>
 
-<<~ ahu #/the-sort>>
+<<~ ahu slot=`#/the-sort`>>
 
 !! The controller's sort
 
@@ -38,7 +38,7 @@ The operator sent one Sol-6 reader to gather how a controller agent works best w
 
 <<~/ahu>>
 
-<<~ ahu #/testimony>>
+<<~ ahu slot=`#/testimony`>>
 
 !! Testimony ~ Sol-Codexreader (verbatim)
 
@@ -92,13 +92,13 @@ WORDS=1082
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5VYI5P8Q_kNNL7KolLdX1GcFYRCyFIVVX5sCNX3417M
+<<^ code=`&#x0003;`>>ni:///sha-256;MIY9FwgyLZ-X8lAldRNcpmCX-zGc-PD0Fwfy3b6PhBA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

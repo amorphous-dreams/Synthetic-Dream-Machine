@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/preferences/epistemology">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/preferences/epistemology`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/epistemology"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Preferences — Epistemic Residue
 
@@ -26,7 +26,7 @@ The foundation braid lives outward; this shelf holds what remains unsettled, cro
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance
 
@@ -40,7 +40,7 @@ Strong witnesses recur in:
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 !! OODA-HA — Collection Pass
 
@@ -52,7 +52,7 @@ Strong witnesses recur in:
 
 <<~/ahu>>
 
-<<~ ahu #/pressure>>
+<<~ ahu slot=`#/pressure`>>
 
 !! Pressure
 
@@ -69,7 +69,7 @@ It keeps the residue visible until it either promotes upward or dissolves into a
 
 <<~/ahu>>
 
-<<~ ahu #/tree>>
+<<~ ahu slot=`#/tree`>>
 
 !! Tree
 
@@ -78,7 +78,7 @@ It keeps the residue visible until it either promotes upward or dissolves into a
 
 <<~/ahu>>
 
-<<~ ahu #/docs-migration>>
+<<~ ahu slot=`#/docs-migration`>>
 
 !! Docs Migration — Foundation Braid
 
@@ -96,7 +96,7 @@ This room keeps the more API-adjacent residue:
 
 <<~/ahu>>
 
-<<~ ahu #/relation>>
+<<~ ahu slot=`#/relation`>>
 
 !! Relation To Live Surfaces
 
@@ -114,7 +114,7 @@ This parent shelf keeps the promotion map.
 
 <<~/ahu>>
 
-<<~ ahu #/api-annotation>>
+<<~ ahu slot=`#/api-annotation`>>
 
 !! Annotation — Current API State
 
@@ -212,18 +212,18 @@ It still needs to witness what has already promoted, what remains braided, and w
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/register-stance-complementarity">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/degraded-epistemic-weather">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences/register-stance-complementarity`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences/degraded-epistemic-weather`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZBFSFfSMqA0m_59KBW-H7UwKjgG5eE16CeLpv7GyRrI
+<<^ code=`&#x0003;`>>ni:///sha-256;-riGIax7_b6LeCLF_-eTF6NC8hwqXMPSeu4sNNokU_8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

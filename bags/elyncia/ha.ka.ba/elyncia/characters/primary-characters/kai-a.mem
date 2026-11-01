@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/kai-a">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/primary-characters/kai-a`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/kai-a"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Kai ʻĀ ~ Prismatic Elf Warrior-Ranger, Kaiju Stalker
 
@@ -37,7 +37,7 @@ co-narrated in-scene. Nothing below pre-empts what Kai speaks there.
 
 <<~/ahu>>
 
-<<~ ahu #/the-build>>
+<<~ ahu slot=`#/the-build`>>
 
 !! The Build
 
@@ -60,7 +60,7 @@ stays a table question.
 
 <<~/ahu>>
 
-<<~ ahu #/threads>>
+<<~ ahu slot=`#/threads`>>
 
 !! Open Threads (Provisional — the table decides)
 
@@ -76,15 +76,15 @@ stays a table question.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/the-grimalkin">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/company-structure">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/the-grimalkin`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/campaign/company-structure`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;itwFmgFzmf5rmUwb4uqtFYWQaNYtTNM0ZJaS-hspER4
+<<^ code=`&#x0003;`>>ni:///sha-256;4DbssQy-2Q2_q8Ha-x_ubCXcrkIimztOwwnpYc27KmI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

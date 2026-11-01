@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/heleuma">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/heleuma`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/heleuma"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Heleuma — Anchor
 
@@ -32,7 +32,7 @@ A heleuma does not mark failure. It marks a ''named threshold crossing'' — the
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ detect compiled artifact — TypeScript module, runtime registration, or build asset outside lar:/// space
 ⏿ orient heleuma tier: ha (permanent structure), ka (promotion-eligible soul/fire), ba (path marker)
@@ -42,7 +42,7 @@ A heleuma does not mark failure. It marks a ''named threshold crossing'' — the
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Heleuma Law (SHALL)
 
@@ -57,7 +57,7 @@ A heleuma does not mark failure. It marks a ''named threshold crossing'' — the
 
 <<~/ahu>>
 
-<<~ ahu #/freyja-alignment>>
+<<~ ahu slot=`#/freyja-alignment`>>
 
 !! Freyja Alignment
 
@@ -67,7 +67,7 @@ The heleuma does not try to absorb the anchor into the graph. It holds the rope.
 
 <<~/ahu>>
 
-<<~ ahu #/promotion-path>>
+<<~ ahu slot=`#/promotion-path`>>
 
 !! Promotion Path
 
@@ -81,10 +81,10 @@ A heleuma API meme that acquires:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uJNKGKWqfTvEarVuq1cUC2OQkEy89ouYksWZsa3cobY
+<<^ code=`&#x0003;`>>ni:///sha-256;TEsp6sgka7l2GZOmkEM_KvJJzav79G90Y1QyTg5WdQE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

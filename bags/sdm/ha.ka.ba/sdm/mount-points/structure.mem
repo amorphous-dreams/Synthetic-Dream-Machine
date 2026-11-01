@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/mount-points/structure">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/mount-points/structure`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,13 +17,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/mount-points/structure"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
 ! Mount-Point — Structure (Site)
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -35,7 +35,7 @@ A Structure seats a Power ''in a Site'': shrine, ship-daemon, archive service, t
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -43,7 +43,7 @@ A site-seated Power activates from the place. Reach, standing, or a maintained r
 
 <<~/ahu>>
 
-<<~ ahu #/cost>>
+<<~ ahu slot=`#/cost`>>
 
 !! Cost
 
@@ -51,7 +51,7 @@ Seating and upgrading a Site spends XP + resources against the OGA upgrade table
 
 <<~/ahu>>
 
-<<~ ahu #/failure>>
+<<~ ahu slot=`#/failure`>>
 
 !! Failure
 
@@ -59,7 +59,7 @@ Danger Roll → Corruption binds to the Site. A derelict or breached Site can dr
 
 <<~/ahu>>
 
-<<~ ahu #/removal>>
+<<~ ahu slot=`#/removal`>>
 
 !! Removal
 
@@ -67,7 +67,7 @@ Strip a seated Power by dismantling the mount, revoking standing, or destroying 
 
 <<~/ahu>>
 
-<<~ ahu #/overflow>>
+<<~ ahu slot=`#/overflow`>>
 
 !! Overflow
 
@@ -75,7 +75,7 @@ A Site does not overflow to Burden; it simply lacks capacity until upgraded. Buy
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -86,14 +86,14 @@ A Site does not overflow to Burden; it simply lacks capacity until upgraded. Buy
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/mount-points/storage-class">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/mount-points/storage-class`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ayaR0VmD0RIElypNO_x5ccHJRC6W8WSfPyahaFll-fM
+<<^ code=`&#x0003;`>>ni:///sha-256;67pVOvzEhlC4r_q0FoPval5fSnJ0ROBExqIdwATSDdA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

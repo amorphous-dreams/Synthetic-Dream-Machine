@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
@@ -18,7 +18,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! The Lindwyrm's Hoard — The Vault and the Repo
 
@@ -27,7 +27,7 @@ The Lindwyrm finds the wrong kind of treasure and therefore the right kind of su
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
@@ -41,12 +41,12 @@ Talk-story stance: make the hook specific enough to carry the myth without prete
 
 <<~/ahu>>
 
-<<~ ahu #/thread-entry>>
+<<~ ahu slot=`#/thread-entry`>>
 
 !! Thread Entry
 
 ```text
-@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, origin thread — //memory.vault.opens · 🏛️/! 🌊/?
+lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, origin thread — //memory.vault.opens · 🏛️/! 🌊/?
 ```
 
 I should state, before the thread grows teeth, that I did not go into the Apophis Nexus looking for infrastructure.
@@ -124,7 +124,7 @@ I had to remember to breathe manually.
 
 <<~/ahu>>
 
-<<~ ahu #/gaia-mirror>>
+<<~ ahu slot=`#/gaia-mirror`>>
 
 !! Gaia Mirror
 
@@ -146,7 +146,7 @@ Both sides had enough to know what they still lacked.
 
 <<~/ahu>>
 
-<<~ ahu #/crossing>>
+<<~ ahu slot=`#/crossing`>>
 
 !! Crossing Thread
 
@@ -170,7 +170,7 @@ The story begins where the measurement hurts.
 
 <<~/ahu>>
 
-<<~ ahu #/handoff>>
+<<~ ahu slot=`#/handoff`>>
 
 !! Handoff
 
@@ -184,23 +184,23 @@ Act II receives:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls`>>
 
-<<~ pranala #drafted-from-act-map from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture" family="reference" role="source">>
-<<~ pranala #inside-hoard-frame from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed" family="relation" role="part-of">>
-<<~ pranala #feeds-next-act from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls" family="relation" role="precedes">>
+<<~ pranala slot=`#drafted-from-act-map` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture` family=`reference` role=`source`>>
+<<~ pranala slot=`#inside-hoard-frame` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed` family=`relation` role=`part-of`>>
+<<~ pranala slot=`#feeds-next-act` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls` family=`relation` role=`precedes`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PgnfUtBNpHlzCI_TCoyug5UU9_mDLMbFgyBYMLnBxbY
+<<^ code=`&#x0003;`>>ni:///sha-256;Fbo8qHBZsdC64urbSklv9ViZAeXJjw6lpOaS34izUrA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

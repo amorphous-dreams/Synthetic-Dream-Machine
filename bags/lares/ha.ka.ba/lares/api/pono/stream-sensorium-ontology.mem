@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚷" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/stream-sensorium-ontology">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚷` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/stream-sensorium-ontology`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -20,11 +20,11 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/stream-sensorium-ontology"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Entry ~ Stream → Sensorium, the layered unit ontology
 
@@ -34,7 +34,7 @@ Grounded by [[lar:///ha.ka.ba/lares/docs/pattern-integrities]].
 
 <<~/ahu>>
 
-<<~ ahu #/the-stack>>
+<<~ ahu slot=`#/the-stack`>>
 
 !! The Stack
 
@@ -50,7 +50,7 @@ A unit climbs one stack; each layer renames it as its role changes:
 
 <<~/ahu>>
 
-<<~ ahu #/chat-special-case>>
+<<~ ahu slot=`#/chat-special-case`>>
 
 !! Chat ~ the special-case&sup2;
 
@@ -64,7 +64,7 @@ The block stays the block; //move// and //speaker// tag what kind of block it is
 
 <<~/ahu>>
 
-<<~ ahu #/as-above-so-below>>
+<<~ ahu slot=`#/as-above-so-below`>>
 
 !! Ki ~ as above, so below
 
@@ -74,6 +74,6 @@ One recursion — ''ki &rarr; li &rarr; ki &rarr; li'' — repeating at every sc
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;icblWQ12Zmg9sYhrhOYHhBU9QiM3egJpPi1vdpt3cAE
+<<^ code=`&#x0003;`>>ni:///sha-256;nwXavawcwMrBcXh1OFwgWSy0wCjlqEsTXbMZtZjF5s8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

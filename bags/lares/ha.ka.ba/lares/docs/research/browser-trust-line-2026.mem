@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/browser-trust-line-2026">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/browser-trust-line-2026`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/browser-trust-line-2026"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The browser trust line, 2026 ~ one custody context, no human counted
 
@@ -23,7 +23,7 @@ Four fresh reads of `K15` Wave B kept finding that other code on the same browse
 
 <<~/ahu>>
 
-<<~ ahu #/findings>>
+<<~ ahu slot=`#/findings`>>
 
 !! Findings
 
@@ -35,6 +35,6 @@ Four fresh reads of `K15` Wave B kept finding that other code on the same browse
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QMiY78LrWArAWfSpkxcrPNh7dTBUZHOzhkWHlxv135s
+<<^ code=`&#x0003;`>>ni:///sha-256;e203GflWH3hsPMNcwg0WMmJ8LFBZS8zYcmu-95MP1oE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

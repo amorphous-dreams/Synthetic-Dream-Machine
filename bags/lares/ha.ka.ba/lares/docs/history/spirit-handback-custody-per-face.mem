@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
@@ -14,15 +14,15 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Custody per face, the wave-two handbacks
 
-Verbatim wave-two handbacks of four Luna-6 YIN and YANG rounds (2026-10-19); only Markdown transliterated to memetic-wikitext. Each round's two handbacks trade findings, so a later round confirms or refutes an earlier one, and round four outranks the rest. The rulings and the per-vessel table rest at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>.
+Verbatim wave-two handbacks of four Luna-6 YIN and YANG rounds (2026-10-19); only Markdown transliterated to memetic-wikitext. Each round's two handbacks trade findings, so a later round confirms or refutes an earlier one, and round four outranks the rest. The rulings and the per-vessel table rest at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yin-opening>>
+<<~ ahu slot=`#/r1-yin-opening`>>
 
 YIN-Luna · merged F6 seal-fork handback · platform lens · accessed 2026-10-19
 
@@ -30,7 +30,7 @@ Evidence marks: MEASURED means read directly in cited source or on a cited vendo
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yin-platform-ground>>
+<<~ ahu slot=`#/r1-yin-platform-ground`>>
 
 !!! Platform ground
 
@@ -47,7 +47,7 @@ Evidence marks: MEASURED means read directly in cited source or on a cited vendo
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yin-ratchet-claims-in-twin-md-checked-against-source>>
+<<~ ahu slot=`#/r1-yin-ratchet-claims-in-twin-md-checked-against-source`>>
 
 !!! Ratchet: claims in TWIN.md checked against source
 
@@ -63,7 +63,7 @@ Evidence marks: MEASURED means read directly in cited source or on a cited vendo
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yin-consequence-of-the-one-vk>>
+<<~ ahu slot=`#/r1-yin-consequence-of-the-one-vk`>>
 
 !!! Consequence of the one VK
 
@@ -74,7 +74,7 @@ Evidence marks: MEASURED means read directly in cited source or on a cited vendo
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yin-ranked-merged-verdict>>
+<<~ ahu slot=`#/r1-yin-ranked-merged-verdict`>>
 
 !!! Ranked merged verdict
 
@@ -88,7 +88,7 @@ Evidence marks: MEASURED means read directly in cited source or on a cited vendo
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yang-opening>>
+<<~ ahu slot=`#/r1-yang-opening`>>
 
 YANG handback — F6 seal fork (code lens)
 
@@ -96,7 +96,7 @@ Evidence labels: MEASURED means directly present in source; LEAD means inferred 
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yang-sharp-answer>>
+<<~ ahu slot=`#/r1-yang-sharp-answer`>>
 
 !!! Sharp answer
 
@@ -107,7 +107,7 @@ No: the daemon mesh's sealed content records do not update an old sealed row. Th
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yang-call-site-inventory-cause-read-key>>
+<<~ ahu slot=`#/r1-yang-call-site-inventory-cause-read-key`>>
 
 !!! Call-site inventory: cause, read, key
 
@@ -129,7 +129,7 @@ LEAD: a sync-triggered `sealed-rolls` catch-up may itself create roll writes (`o
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yang-lead-claim-review>>
+<<~ ahu slot=`#/r1-yang-lead-claim-review`>>
 
 !!! Lead claim review
 
@@ -143,7 +143,7 @@ LEAD: a sync-triggered `sealed-rolls` catch-up may itself create roll writes (`o
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yang-what-each-option-protects-with-a-shared-vk>>
+<<~ ahu slot=`#/r1-yang-what-each-option-protects-with-a-shared-vk`>>
 
 !!! What each option protects with a shared VK
 
@@ -160,7 +160,7 @@ Per-face keys: LEAD recommendation is to ask for distinct face archive/custody s
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yang-ranked-verdict>>
+<<~ ahu slot=`#/r1-yang-ranked-verdict`>>
 
 !!! Ranked verdict
 
@@ -176,7 +176,7 @@ Biggest probe: in one browser vessel, seal distinct A and B archives, unlock eac
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yang-house-constraints-read>>
+<<~ ahu slot=`#/r1-yang-house-constraints-read`>>
 
 !!! House constraints read
 
@@ -185,7 +185,7 @@ MEASURED: per-tab unlock, face-scoped sessions, holder retains face content keys
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yang-wave-two-twin-claim-audit-and-merged-view>>
+<<~ ahu slot=`#/r1-yang-wave-two-twin-claim-audit-and-merged-view`>>
 
 !!! Wave two: twin claim audit and merged view
 
@@ -194,7 +194,7 @@ YIN's twin handback is TWIN.md; its platform evidence is distinct from this code
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yang-twin-claim-audit>>
+<<~ ahu slot=`#/r1-yang-twin-claim-audit`>>
 
 !!!! Twin claim audit
 
@@ -209,7 +209,7 @@ YIN's twin handback is TWIN.md; its platform evidence is distinct from this code
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yang-what-the-platform-lens-adds-to-this-code-verdict>>
+<<~ ahu slot=`#/r1-yang-what-the-platform-lens-adds-to-this-code-verdict`>>
 
 !!!! What the platform lens adds to this code verdict
 
@@ -220,7 +220,7 @@ YIN's twin handback is TWIN.md; its platform evidence is distinct from this code
 
 <<~/ahu>>
 
-<<~ ahu #/r1-yang-merged-ranked-verdict>>
+<<~ ahu slot=`#/r1-yang-merged-ranked-verdict`>>
 
 !!!! Merged ranked verdict
 
@@ -236,7 +236,7 @@ YIN's twin handback is TWIN.md; its platform evidence is distinct from this code
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yin-yin-wave-two-ratchet-handback-per-face-custody-keys>>
+<<~ ahu slot=`#/r2-yin-yin-wave-two-ratchet-handback-per-face-custody-keys`>>
 
 !! YIN · Wave-two ratchet handback — per-face custody keys
 
@@ -245,7 +245,7 @@ Research date: ''2026-10-19''. ''MEASURED'' = directly supported by code or date
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yin-ratchet-audit-twin-s-top-claims-against-cited-lines-pages>>
+<<~ ahu slot=`#/r2-yin-ratchet-audit-twin-s-top-claims-against-cited-lines-pages`>>
 
 !!! Ratchet audit: twin's top claims against cited lines/pages
 
@@ -262,7 +262,7 @@ Research date: ''2026-10-19''. ''MEASURED'' = directly supported by code or date
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yin-twin-lens-added-to-yin-s-platform-and-prior-art-ground>>
+<<~ ahu slot=`#/r2-yin-twin-lens-added-to-yin-s-platform-and-prior-art-ground`>>
 
 !!! Twin lens added to YIN's platform and prior-art ground
 
@@ -273,7 +273,7 @@ Research date: ''2026-10-19''. ''MEASURED'' = directly supported by code or date
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yin-q3-prior-art-keys-and-what-a-person-touches>>
+<<~ ahu slot=`#/r2-yin-q3-prior-art-keys-and-what-a-person-touches`>>
 
 !!! Q3 — prior art, keys and what a person touches
 
@@ -288,7 +288,7 @@ Research date: ''2026-10-19''. ''MEASURED'' = directly supported by code or date
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yin-q1-row-classes-unlock-shapes-restore-and-removal>>
+<<~ ahu slot=`#/r2-yin-q1-row-classes-unlock-shapes-restore-and-removal`>>
 
 !!! Q1 — row classes, unlock shapes, restore and removal
 
@@ -319,7 +319,7 @@ Research date: ''2026-10-19''. ''MEASURED'' = directly supported by code or date
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yin-reconciliation-shape-choice>>
+<<~ ahu slot=`#/r2-yin-reconciliation-shape-choice`>>
 
 !!! Reconciliation: shape choice
 
@@ -328,7 +328,7 @@ Research date: ''2026-10-19''. ''MEASURED'' = directly supported by code or date
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yin-q2-placement-in-k15-and-composition-with-f6-slice-three-a>>
+<<~ ahu slot=`#/r2-yin-q2-placement-in-k15-and-composition-with-f6-slice-three-a`>>
 
 !!! Q2 — placement in K15 and composition with F6 slice three (a′)
 
@@ -359,7 +359,7 @@ K15.4 removal/content-key lifecycle → K15.5 one-face restore → K15.6 atomic 
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yin-final-ranked-recommendations-and-one-red-test>>
+<<~ ahu slot=`#/r2-yin-final-ranked-recommendations-and-one-red-test`>>
 
 !!! Final ranked recommendations and one red test
 
@@ -370,7 +370,7 @@ K15.4 removal/content-key lifecycle → K15.5 one-face restore → K15.6 atomic 
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yang-yang-wave-two-ratchet-per-face-custody-keys>>
+<<~ ahu slot=`#/r2-yang-yang-wave-two-ratchet-per-face-custody-keys`>>
 
 !! YANG · Wave two ratchet: per-face custody keys
 
@@ -379,7 +379,7 @@ Research date: 2026-10-19. Repository source is read-only; no suites, builds, or
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yang-a-ratchet-audit-of-twin-md>>
+<<~ ahu slot=`#/r2-yang-a-ratchet-audit-of-twin-md`>>
 
 !!! A. Ratchet audit of TWIN.md
 
@@ -400,7 +400,7 @@ Research date: 2026-10-19. Repository source is read-only; no suites, builds, or
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yang-b-twin-lens-applied-to-code-row-census-and-corrections>>
+<<~ ahu slot=`#/r2-yang-b-twin-lens-applied-to-code-row-census-and-corrections`>>
 
 !!! B. Twin lens applied to code: row census and corrections
 
@@ -425,7 +425,7 @@ The table below separates ''current code custody'' (the existing carrier class) 
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yang-c-q1-shapes-per-tab-unlock-and-recovery>>
+<<~ ahu slot=`#/r2-yang-c-q1-shapes-per-tab-unlock-and-recovery`>>
 
 !!! C. Q1 shapes, per-tab unlock and recovery
 
@@ -444,7 +444,7 @@ The table below separates ''current code custody'' (the existing carrier class) 
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yang-d-q2-k15-owns-the-key-data-boundary-f6-slice-three-consumes>>
+<<~ ahu slot=`#/r2-yang-d-q2-k15-owns-the-key-data-boundary-f6-slice-three-consumes`>>
 
 !!! D. Q2: K15 owns the key/data boundary; F6 slice three consumes it
 
@@ -464,7 +464,7 @@ The table below separates ''current code custody'' (the existing carrier class) 
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yang-e-prior-art-check-four-systems-dated-2026-10-19>>
+<<~ ahu slot=`#/r2-yang-e-prior-art-check-four-systems-dated-2026-10-19`>>
 
 !!! E. Prior art check: four systems, dated 2026-10-19
 
@@ -479,7 +479,7 @@ These systems are precedents, not evidence of Lares isolation. “Type per ident
 
 <<~/ahu>>
 
-<<~ ahu #/r2-yang-f-one-red-test-and-ranked-recommendation>>
+<<~ ahu slot=`#/r2-yang-f-one-red-test-and-ranked-recommendation`>>
 
 !!! F. One red test and ranked recommendation
 
@@ -494,7 +494,7 @@ These systems are precedents, not evidence of Lares isolation. “Type per ident
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yin-yin-wave-two-merged-handback-unasking-vessel-common-unlock>>
+<<~ ahu slot=`#/r3-yin-yin-wave-two-merged-handback-unasking-vessel-common-unlock`>>
 
 !! YIN — wave-two merged handback: unasking vessel-common unlock
 
@@ -503,7 +503,7 @@ Research date: ''2026-10-19''. Repo read-only; no suites, builds or git writes r
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yin-prior-rulings-held>>
+<<~ ahu slot=`#/r3-yin-prior-rulings-held`>>
 
 !!! Prior rulings held
 
@@ -512,7 +512,7 @@ Research date: ''2026-10-19''. Repo read-only; no suites, builds or git writes r
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yin-wave-two-ratchet-test-twin-against-code-and-sources>>
+<<~ ahu slot=`#/r3-yin-wave-two-ratchet-test-twin-against-code-and-sources`>>
 
 !!! Wave-two ratchet: test TWIN against code and sources
 
@@ -529,7 +529,7 @@ Research date: ''2026-10-19''. Repo read-only; no suites, builds or git writes r
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yin-twin-lens-additions-to-my-prior-art-and-story-lens>>
+<<~ ahu slot=`#/r3-yin-twin-lens-additions-to-my-prior-art-and-story-lens`>>
 
 !!!! Twin-lens additions to my prior-art and story lens
 
@@ -538,7 +538,7 @@ Research date: ''2026-10-19''. Repo read-only; no suites, builds or git writes r
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yin-prior-art-system-versus-per-user-custody>>
+<<~ ahu slot=`#/r3-yin-prior-art-system-versus-per-user-custody`>>
 
 !!! Prior art: system versus per-user custody
 
@@ -557,7 +557,7 @@ All descriptions below carry ''MEASURED'', pages accessed 2026-10-19. These syst
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yin-census-of-current-vessel-common-carriers-and-acts>>
+<<~ ahu slot=`#/r3-yin-census-of-current-vessel-common-carriers-and-acts`>>
 
 !!! Census of current vessel-common carriers and acts
 
@@ -581,7 +581,7 @@ The D/F/S label gives target disposition: ''D'' dissolve into independent per-fa
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yin-re-asked-question-and-candidate-answer>>
+<<~ ahu slot=`#/r3-yin-re-asked-question-and-candidate-answer`>>
 
 !!! Re-asked question and candidate answer
 
@@ -592,7 +592,7 @@ The D/F/S label gives target disposition: ''D'' dissolve into independent per-fa
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yin-what-kalani-types-touches>>
+<<~ ahu slot=`#/r3-yin-what-kalani-types-touches`>>
 
 !!!! What Kalani types/touches
 
@@ -603,7 +603,7 @@ The D/F/S label gives target disposition: ''D'' dissolve into independent per-fa
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yin-single-red-test>>
+<<~ ahu slot=`#/r3-yin-single-red-test`>>
 
 !!!! Single red test
 
@@ -612,7 +612,7 @@ Create A, B and C with independent random FCKs, distinct slot trees, archives, f
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yin-platform-source-links>>
+<<~ ahu slot=`#/r3-yin-platform-source-links`>>
 
 !!! Platform source links
 
@@ -626,7 +626,7 @@ Create A, B and C with independent random FCKs, distinct slot trees, archives, f
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yin-roadmap-placement>>
+<<~ ahu slot=`#/r3-yin-roadmap-placement`>>
 
 !!! Roadmap placement
 
@@ -635,7 +635,7 @@ Create A, B and C with independent random FCKs, distinct slot trees, archives, f
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yang-yang-wave-two-merged-handback-what-remains-common>>
+<<~ ahu slot=`#/r3-yang-yang-wave-two-merged-handback-what-remains-common`>>
 
 !! YANG wave-two merged handback — what remains common?
 
@@ -644,7 +644,7 @@ Research date: ''2026-10-19''. Repository `/home/joshu/Synthetic-Dream-Machine` 
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yang-wave-two-ratchet-audit-of-local-twin-md>>
+<<~ ahu slot=`#/r3-yang-wave-two-ratchet-audit-of-local-twin-md`>>
 
 !!! Wave-two ratchet: audit of local TWIN.md
 
@@ -659,7 +659,7 @@ Research date: ''2026-10-19''. Repository `/home/joshu/Synthetic-Dream-Machine` 
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yang-1-census-each-currently-vessel-common-row-act>>
+<<~ ahu slot=`#/r3-yang-1-census-each-currently-vessel-common-row-act`>>
 
 !!! 1. Census — each currently vessel-common row act
 
@@ -683,7 +683,7 @@ Research date: ''2026-10-19''. Repository `/home/joshu/Synthetic-Dream-Machine` 
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yang-2-prior-art-system-versus-per-user-keys>>
+<<~ ahu slot=`#/r3-yang-2-prior-art-system-versus-per-user-keys`>>
 
 !!! 2. Prior art: system versus per-user keys
 
@@ -699,7 +699,7 @@ Sources opened/accessed ''2026-10-19''. These systems show useful splits, not re
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yang-3-the-re-asked-question-and-candidate-end-state>>
+<<~ ahu slot=`#/r3-yang-3-the-re-asked-question-and-candidate-end-state`>>
 
 !!! 3. The re-asked question and candidate end state
 
@@ -710,7 +710,7 @@ Sources opened/accessed ''2026-10-19''. These systems show useful splits, not re
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yang-what-kalani-types>>
+<<~ ahu slot=`#/r3-yang-what-kalani-types`>>
 
 !!!! What Kalani types
 
@@ -721,7 +721,7 @@ Sources opened/accessed ''2026-10-19''. These systems show useful splits, not re
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yang-roadmap-landing>>
+<<~ ahu slot=`#/r3-yang-roadmap-landing`>>
 
 !!!! Roadmap landing
 
@@ -732,7 +732,7 @@ Sources opened/accessed ''2026-10-19''. These systems show useful splits, not re
 
 <<~/ahu>>
 
-<<~ ahu #/r3-yang-single-red-test>>
+<<~ ahu slot=`#/r3-yang-single-red-test`>>
 
 !!!! Single red test
 
@@ -741,7 +741,7 @@ Create faces A, B, C with independent random FCKs, distinct slot trees, face arc
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yin-yin-round-four-confirmation-and-lock>>
+<<~ ahu slot=`#/r4-yin-yin-round-four-confirmation-and-lock`>>
 
 !! YIN — round-four confirmation and lock
 
@@ -750,7 +750,7 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` f
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yin-1-ratchet-twin-claims-against-source>>
+<<~ ahu slot=`#/r4-yin-1-ratchet-twin-claims-against-source`>>
 
 !!! 1. Ratchet: TWIN claims against source
 
@@ -768,7 +768,7 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` f
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yin-yin-lens-applied-to-node-side-types-what-wave-one-missed>>
+<<~ ahu slot=`#/r4-yin-yin-lens-applied-to-node-side-types-what-wave-one-missed`>>
 
 !!!! YIN lens applied to node-side types (what wave one missed)
 
@@ -783,7 +783,7 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` f
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yin-2-locked-law-including-the-one-unresolved-house-conflict>>
+<<~ ahu slot=`#/r4-yin-2-locked-law-including-the-one-unresolved-house-conflict`>>
 
 !!! 2. Locked law, including the one unresolved house conflict
 
@@ -796,7 +796,7 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` f
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yin-3-every-vessel-type-and-one-red-test-each>>
+<<~ ahu slot=`#/r4-yin-3-every-vessel-type-and-one-red-test-each`>>
 
 !!! 3. Every vessel type and one red test each
 
@@ -823,7 +823,7 @@ Rows refer to the common act census in `../PRIOR-YIN.md` (“Census of current v
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yin-platform-vendor-spec-facts-that-constrain-the-law>>
+<<~ ahu slot=`#/r4-yin-platform-vendor-spec-facts-that-constrain-the-law`>>
 
 !!!! Platform/vendor/spec facts that constrain the law
 
@@ -835,7 +835,7 @@ Rows refer to the common act census in `../PRIOR-YIN.md` (“Census of current v
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yin-4-roadmap-landing>>
+<<~ ahu slot=`#/r4-yin-4-roadmap-landing`>>
 
 !!! 4. Roadmap landing
 
@@ -846,7 +846,7 @@ Rows refer to the common act census in `../PRIOR-YIN.md` (“Census of current v
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yin-lock-witness>>
+<<~ ahu slot=`#/r4-yin-lock-witness`>>
 
 !!!! Lock witness
 
@@ -855,7 +855,7 @@ For every vessel, instantiate faces A/B/C with independent random FCKs, distinct
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yin-5-open-evidence-ruling-items>>
+<<~ ahu slot=`#/r4-yin-5-open-evidence-ruling-items`>>
 
 !!! 5. Open evidence/ruling items
 
@@ -869,7 +869,7 @@ For every vessel, instantiate faces A/B/C with independent random FCKs, distinct
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-yang-wave-three-node-side-confirmation-and-lock>>
+<<~ ahu slot=`#/r4-yang-yang-wave-three-node-side-confirmation-and-lock`>>
 
 !! YANG — wave-three node-side confirmation and lock
 
@@ -878,7 +878,7 @@ Research date: ''2026-10-19''. Repository `/home/joshu/Synthetic-Dream-Machine` 
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-ruling-what-the-herm-serving-key-is>>
+<<~ ahu slot=`#/r4-yang-ruling-what-the-herm-serving-key-is`>>
 
 !!! Ruling: what the herm serving key is
 
@@ -893,7 +893,7 @@ Research date: ''2026-10-19''. Repository `/home/joshu/Synthetic-Dream-Machine` 
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-locked-law>>
+<<~ ahu slot=`#/r4-yang-locked-law`>>
 
 !!! Locked law
 
@@ -904,7 +904,7 @@ The two prior handbacks' current-row census remains authoritative: founding/rost
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-node-side-census-and-type-lock>>
+<<~ ahu slot=`#/r4-yang-node-side-census-and-type-lock`>>
 
 !!! Node-side census and type lock
 
@@ -922,7 +922,7 @@ The type list below combines canon's one LarVessel/four-host/no-subclass rule (`
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-cross-house-types-included-in-lock>>
+<<~ ahu slot=`#/r4-yang-cross-house-types-included-in-lock`>>
 
 !!!! Cross-house types included in lock
 
@@ -940,7 +940,7 @@ These are listed to close the house inventory; prior YIN/YANG handbacks give the
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-per-type-inventory-of-expected-common-acts>>
+<<~ ahu slot=`#/r4-yang-per-type-inventory-of-expected-common-acts`>>
 
 !!! Per-type inventory of expected common acts
 
@@ -949,7 +949,7 @@ For every row-bearing node/container type above, acts are filtered from the merg
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-single-law-s-node-cadence>>
+<<~ ahu slot=`#/r4-yang-single-law-s-node-cadence`>>
 
 !!! Single law's node cadence
 
@@ -958,7 +958,7 @@ For every row-bearing node/container type above, acts are filtered from the merg
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-evidence-gaps-kept-explicit>>
+<<~ ahu slot=`#/r4-yang-evidence-gaps-kept-explicit`>>
 
 !!! Evidence gaps kept explicit
 
@@ -970,7 +970,7 @@ For every row-bearing node/container type above, acts are filtered from the merg
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-lock-tests-compact-set>>
+<<~ ahu slot=`#/r4-yang-lock-tests-compact-set`>>
 
 !!! Lock tests, compact set
 
@@ -979,7 +979,7 @@ The per-row RED tests in the tables are the single red witnesses for each type. 
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-wave-two-ratchet-against-twin-md-yin>>
+<<~ ahu slot=`#/r4-yang-wave-two-ratchet-against-twin-md-yin`>>
 
 !!! Wave-two ratchet against `TWIN.md` (YIN)
 
@@ -1001,7 +1001,7 @@ The user asked to compare the twin's top claims to code and sources, then apply 
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-yin-lens-applied-to-node-types-additions-and-corrections>>
+<<~ ahu slot=`#/r4-yang-yin-lens-applied-to-node-types-additions-and-corrections`>>
 
 !!! YIN lens applied to node types: additions and corrections
 
@@ -1014,7 +1014,7 @@ For every node/container/seat type in the previous table, common acts filter as 
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-browser-and-device-roster-for-the-all-vessel-lock>>
+<<~ ahu slot=`#/r4-yang-browser-and-device-roster-for-the-all-vessel-lock`>>
 
 !!! Browser and device roster, for the all-vessel lock
 
@@ -1040,7 +1040,7 @@ Canon defines ''one LarVessel class, four host families, no subclass'' (`bags/la
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-roadmap-lock-and-required-house-rulings>>
+<<~ ahu slot=`#/r4-yang-roadmap-lock-and-required-house-rulings`>>
 
 !!! Roadmap lock and required house rulings
 
@@ -1051,7 +1051,7 @@ Canon defines ''one LarVessel class, four host families, no subclass'' (`bags/la
 
 <<~/ahu>>
 
-<<~ ahu #/r4-yang-source-and-method-boundaries>>
+<<~ ahu slot=`#/r4-yang-source-and-method-boundaries`>>
 
 !!! Source and method boundaries
 
@@ -1060,7 +1060,7 @@ No test, build, suite, or git write was run. The tree remained read-only. Local 
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave1-yin-wave-one-internet-scout-place-signer>>
+<<~ ahu slot=`#/r5-yin-wave1-yin-wave-one-internet-scout-place-signer`>>
 
 !! YIN wave-one internet scout — place signer
 
@@ -1069,7 +1069,7 @@ Research date: ''2026-10-19''. All claims below are dated to 2026-10-19. ''MEASU
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave1-q3-how-always-on-identities-are-protected>>
+<<~ ahu slot=`#/r5-yin-wave1-q3-how-always-on-identities-are-protected`>>
 
 !!! Q3 — how always-on identities are protected
 
@@ -1088,7 +1088,7 @@ Research date: ''2026-10-19''. All claims below are dated to 2026-10-19. ''MEASU
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave1-q3-synthesis-lead>>
+<<~ ahu slot=`#/r5-yin-wave1-q3-synthesis-lead`>>
 
 !!!! Q3 synthesis (LEAD)
 
@@ -1099,7 +1099,7 @@ None of those analogies means a place signer should open a face's custody row. T
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave1-q4-third-shape>>
+<<~ ahu slot=`#/r5-yin-wave1-q4-third-shape`>>
 
 !!! Q4 — third shape
 
@@ -1112,7 +1112,7 @@ An alternative is candidate (1) strictly bounded and wrapped by owner-only file 
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave1-q2-if-attacker-reads-the-current-seed-at-rest>>
+<<~ ahu slot=`#/r5-yin-wave1-q2-if-attacker-reads-the-current-seed-at-rest`>>
 
 !!! Q2 — if attacker reads the current seed at rest
 
@@ -1125,7 +1125,7 @@ Detection: compare KEL histories / witnessed public floor records, keep tamper-e
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave1-q1-bounded-mapping-from-the-round-four-canon>>
+<<~ ahu slot=`#/r5-yin-wave1-q1-bounded-mapping-from-the-round-four-canon`>>
 
 !!! Q1 — bounded mapping from the round-four canon
 
@@ -1138,7 +1138,7 @@ Detection: compare KEL histories / witnessed public floor records, keep tamper-e
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave1-ranked-recommendation-and-per-vessel-effect>>
+<<~ ahu slot=`#/r5-yin-wave1-ranked-recommendation-and-per-vessel-effect`>>
 
 !!! Ranked recommendation and per-vessel effect
 
@@ -1156,7 +1156,7 @@ Detection: compare KEL histories / witnessed public floor records, keep tamper-e
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave1-red-test-lead>>
+<<~ ahu slot=`#/r5-yin-wave1-red-test-lead`>>
 
 !!!! Red test (LEAD)
 
@@ -1165,7 +1165,7 @@ Build one end-to-end adversarial test around a copied data disk and a no-human r
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave1-source-provenance-notes>>
+<<~ ahu slot=`#/r5-yin-wave1-source-provenance-notes`>>
 
 !!! Source / provenance notes
 
@@ -1174,7 +1174,7 @@ Internet claims above cite primary vendor/project specifications or official doc
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave1-yang-handback-place-signer-code-audit>>
+<<~ ahu slot=`#/r5-yang-wave1-yang-handback-place-signer-code-audit`>>
 
 !! YANG handback — place signer code audit
 
@@ -1183,13 +1183,13 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` b
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave1-q1-what-the-place-signer-can-do-today>>
+<<~ ahu slot=`#/r5-yang-wave1-q1-what-the-place-signer-can-do-today`>>
 
 !!! Q1 — what the place signer can do today
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave1-key-file-and-identity-lifecycle>>
+<<~ ahu slot=`#/r5-yang-wave1-key-file-and-identity-lifecycle`>>
 
 !!!! Key file and identity lifecycle
 
@@ -1200,7 +1200,7 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` b
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave1-direct-seed-consumers-and-signing-derivation-purposes>>
+<<~ ahu slot=`#/r5-yang-wave1-direct-seed-consumers-and-signing-derivation-purposes`>>
 
 !!!! Direct seed consumers and signing/derivation purposes
 
@@ -1220,7 +1220,7 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` b
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave1-humanless-versus-operator-acts>>
+<<~ ahu slot=`#/r5-yang-wave1-humanless-versus-operator-acts`>>
 
 !!!! Humanless versus operator acts
 
@@ -1231,7 +1231,7 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` b
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave1-q2-consequence-of-seed-theft>>
+<<~ ahu slot=`#/r5-yang-wave1-q2-consequence-of-seed-theft`>>
 
 !!! Q2 — consequence of seed theft
 
@@ -1244,7 +1244,7 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` b
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave1-place-kel-and-the-proposed-third-shape>>
+<<~ ahu slot=`#/r5-yang-wave1-place-kel-and-the-proposed-third-shape`>>
 
 !!! Place KEL and the proposed third shape
 
@@ -1255,7 +1255,7 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` b
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave1-q3-comparison-research-deliberately-deferred>>
+<<~ ahu slot=`#/r5-yang-wave1-q3-comparison-research-deliberately-deferred`>>
 
 !!! Q3 — comparison research deliberately deferred
 
@@ -1264,7 +1264,7 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` b
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave1-ranked-ruling-per-vessel-effect-and-red-proof>>
+<<~ ahu slot=`#/r5-yang-wave1-ranked-ruling-per-vessel-effect-and-red-proof`>>
 
 !!! Ranked ruling, per-vessel effect, and red proof
 
@@ -1285,7 +1285,7 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` b
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave2-yin-wave-two-handback-place-signer>>
+<<~ ahu slot=`#/r5-yin-wave2-yin-wave-two-handback-place-signer`>>
 
 !! YIN wave-two handback — place signer
 
@@ -1294,7 +1294,7 @@ Research date: ''2026-10-19''. All claims are dated 2026-10-19. ''MEASURED'' mea
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave2-trade-a-audit-of-twin-s-top-claims>>
+<<~ ahu slot=`#/r5-yin-wave2-trade-a-audit-of-twin-s-top-claims`>>
 
 !!! Trade (a): audit of TWIN's top claims
 
@@ -1312,7 +1312,7 @@ Research date: ''2026-10-19''. All claims are dated 2026-10-19. ''MEASURED'' mea
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave2-trade-b-yin-internet-lens-on-yang-s-code-paths>>
+<<~ ahu slot=`#/r5-yin-wave2-trade-b-yin-internet-lens-on-yang-s-code-paths`>>
 
 !!! Trade (b): YIN internet lens on YANG's code paths
 
@@ -1325,7 +1325,7 @@ Research date: ''2026-10-19''. All claims are dated 2026-10-19. ''MEASURED'' mea
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave2-q3-primary-source-comparison-scoped-to-this-signer>>
+<<~ ahu slot=`#/r5-yin-wave2-q3-primary-source-comparison-scoped-to-this-signer`>>
 
 !!! Q3: primary-source comparison, scoped to this signer
 
@@ -1344,7 +1344,7 @@ Research date: ''2026-10-19''. All claims are dated 2026-10-19. ''MEASURED'' mea
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave2-q2-seed-theft-detection-recovery>>
+<<~ ahu slot=`#/r5-yin-wave2-q2-seed-theft-detection-recovery`>>
 
 !!! Q2: seed theft, detection, recovery
 
@@ -1359,7 +1359,7 @@ Research date: ''2026-10-19''. All claims are dated 2026-10-19. ''MEASURED'' mea
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave2-q4-and-ranked-ruling>>
+<<~ ahu slot=`#/r5-yin-wave2-q4-and-ranked-ruling`>>
 
 !!! Q4 and ranked ruling
 
@@ -1379,7 +1379,7 @@ Research date: ''2026-10-19''. All claims are dated 2026-10-19. ''MEASURED'' mea
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave2-red-test-lead-2026-10-19>>
+<<~ ahu slot=`#/r5-yin-wave2-red-test-lead-2026-10-19`>>
 
 !!!! Red test (LEAD, 2026-10-19)
 
@@ -1388,7 +1388,7 @@ Run an adversarial no-human boot and copied-disk test. On the authorized host, a
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yin-wave2-primary-source-references-and-limits>>
+<<~ ahu slot=`#/r5-yin-wave2-primary-source-references-and-limits`>>
 
 !!! Primary-source references and limits
 
@@ -1397,7 +1397,7 @@ All external pages above were read 2026-10-19. Systemd/TPM behavior depends on i
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave2-yang-place-signer-handback-wave-two>>
+<<~ ahu slot=`#/r5-yang-wave2-yang-place-signer-handback-wave-two`>>
 
 !! YANG — place signer handback, wave two
 
@@ -1406,7 +1406,7 @@ Research date: ''2026-10-19''. All claims below dated 2026-10-19. MEASURED = rea
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave2-1-twin-s-principal-claims-checked-against-code>>
+<<~ ahu slot=`#/r5-yang-wave2-1-twin-s-principal-claims-checked-against-code`>>
 
 !!! 1. Twin's principal claims checked against code
 
@@ -1425,7 +1425,7 @@ Research date: ''2026-10-19''. All claims below dated 2026-10-19. MEASURED = rea
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave2-2-yang-code-lens-on-yin-s-ground>>
+<<~ ahu slot=`#/r5-yang-wave2-2-yang-code-lens-on-yin-s-ground`>>
 
 !!! 2. YANG code lens on YIN's ground
 
@@ -1438,7 +1438,7 @@ Research date: ''2026-10-19''. All claims below dated 2026-10-19. MEASURED = rea
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave2-3-ranked-ruling-and-per-vessel-effect>>
+<<~ ahu slot=`#/r5-yang-wave2-3-ranked-ruling-and-per-vessel-effect`>>
 
 !!! 3. Ranked ruling and per-vessel effect
 
@@ -1460,7 +1460,7 @@ Research date: ''2026-10-19''. All claims below dated 2026-10-19. MEASURED = rea
 
 <<~/ahu>>
 
-<<~ ahu #/r5-yang-wave2-4-decision-critical-caveat>>
+<<~ ahu slot=`#/r5-yang-wave2-4-decision-critical-caveat`>>
 
 !!! 4. Decision-critical caveat
 
@@ -1469,8 +1469,8 @@ Current seed's direct and derived uses exceed the candidate's “place acts only
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mIsR9ZK52OClsm0OeS17Nw3QYAeWGFElmgPOMkcJEWQ
+<<^ code=`&#x0003;`>>ni:///sha-256;Bw0CWNiyTER7QMhjoGlNpeI8383rQ3SFFBFtN7F8FhM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

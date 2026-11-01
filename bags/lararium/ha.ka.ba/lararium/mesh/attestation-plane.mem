@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -16,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/attestation-plane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/the-seat>>
+<<~ ahu slot=`#/the-seat`>>
 
 ! The Attestation Plane ~ where the registrar seat hides
 
@@ -55,7 +55,7 @@ already stands closest to it.
 
 <<~/ahu>>
 
-<<~ ahu #/the-six>>
+<<~ ahu slot=`#/the-six`>>
 
 !! The Six Rulings (operator, 2026-07-26)
 
@@ -229,7 +229,7 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<~/ahu>>
 
-<<~ ahu #/what-stays-open>>
+<<~ ahu slot=`#/what-stays-open`>>
 
 !! What Stays Open
 
@@ -283,23 +283,23 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/steward-doctrine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-price">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/alignment-layer">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mandate-activity-provenance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/steward-doctrine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-classes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/nexus-topology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-price`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/alignment-layer`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xKndZyoTbrbeVmTHGwPu9xv5VnF-AL_1WPURjTEnTDU
+<<^ code=`&#x0003;`>>ni:///sha-256;6uYb-aZ5yOH6w95WGvIrRxAYlC0pvSs1W2m_msq4f10
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/method-channel-notes-383d96">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/method-channel-notes-383d96`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/method-channel-notes-383d96"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Method / channel notes
 
@@ -28,7 +28,7 @@ The three largest messages one research spirit wrote, ''held verbatim and unedit
 
 <<~/ahu>>
 
-<<~ ahu #/message-1>>
+<<~ ahu slot=`#/message-1`>>
 
 !! Message 1 ~ 21,931 characters
 
@@ -257,7 +257,7 @@ The two comparative-research strands — **Google+ Circles post-mortems / curati
 
 <<~/ahu>>
 
-<<~ ahu #/message-2>>
+<<~ ahu slot=`#/message-2`>>
 
 !! Message 2 ~ 10,516 characters
 
@@ -361,7 +361,7 @@ I apologise again for the fabricated relay. The retraction stands; what survives
 
 <<~/ahu>>
 
-<<~ ahu #/message-3>>
+<<~ ahu slot=`#/message-3`>>
 
 !! Message 3 ~ 9,237 characters
 
@@ -468,12 +468,12 @@ Confidence overall: **medium-high**. The load-bearing weakness is the Bluesky 2.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;22-5pKWhvYafpbHgjhfbZo2_N8COEscM4A6uS7rSqMQ
+<<^ code=`&#x0003;`>>ni:///sha-256;osnSejgcOvQYu6TUZQ4tSiKnCBKXyvuFiNsPMTnBqpw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/what-a-nexus-wants">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/what-a-nexus-wants`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
@@ -18,11 +18,11 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/what-a-nexus-wants"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! What a Nexus Wants Members FOR ~ open, and it gates the rest
 
@@ -34,7 +34,7 @@ So the operative variable reads: ''does the collective want something the incumb
 
 <<~/ahu>>
 
-<<~ ahu #/why-it-gates>>
+<<~ ahu slot=`#/why-it-gates`>>
 
 !! Why it gates
 
@@ -44,7 +44,7 @@ The conversion act (`the-thing-event`) runs on an assembly standing as the third
 
 <<~/ahu>>
 
-<<~ ahu #/open>>
+<<~ ahu slot=`#/open`>>
 
 !! To pour here later
 
@@ -54,14 +54,14 @@ The conversion act (`the-thing-event`) runs on an assembly standing as the third
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-thing-event">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-thing-event`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/shelter-against-empire`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qjTfhhppnj9G7Li5tteyLEPoOMRecQhLqpaWtkVLLdY
+<<^ code=`&#x0003;`>>ni:///sha-256;c-OC27fNyNsNs4NQnLJa_iVqVgJEVBjVVPMANZvkCZQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

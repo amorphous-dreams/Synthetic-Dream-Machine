@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/lar-uris">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/lar-uris`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -15,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/lar-uris"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! lar: URIs ~ one namespace, two l-spaces
 
@@ -24,7 +24,7 @@ names the volatile one, and each vessel's daemon VM owns its own.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The invariants
 
@@ -43,7 +43,7 @@ segment for a bag would enrol half the namespace.
 
 <<~/ahu>>
 
-<<~ ahu #/the-dispatch-marker>>
+<<~ ahu slot=`#/the-dispatch-marker`>>
 
 !! The dispatch marker ~ the absence carries the safety
 
@@ -56,15 +56,15 @@ machinery-written fields would admit anything the machinery could produce.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/lar-uris.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/lar-uris.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/one-name-one-relation">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/one-name-one-relation`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cE8j-Foja4HLOcu11cKgCA_I5EBa6MI8Bz6kMhet8mY
+<<^ code=`&#x0003;`>>ni:///sha-256;FtHBd6zPHj2ZwL6Kl5vTAsk7qcfRClUlAoWbXvumE2U
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

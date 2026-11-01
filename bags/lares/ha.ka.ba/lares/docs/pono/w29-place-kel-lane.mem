@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/w29-place-kel-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/w29-place-kel-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,17 +14,17 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/w29-place-kel-lane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! W29 ~ the place KEL rotates by its card
 
-The floor trust chain orders its pin claims by place-KEL descent, so the place KEL carries a sequence, a digest chain and a committed next key. X0 bakes the pre-rotation and the scoped signer; each member of X0 carries its own readiness red, and this lane builds them (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> :207, :544).
+The floor trust chain orders its pin claims by place-KEL descent, so the place KEL carries a sequence, a digest chain and a committed next key. X0 bakes the pre-rotation and the scoped signer; each member of X0 carries its own readiness red, and this lane builds them (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> :207, :544).
 
 <<~/ahu>>
 
-<<~ ahu #/the-model>>
+<<~ ahu slot=`#/the-model`>>
 
 !! The model ~ what stands
 
@@ -38,7 +38,7 @@ The floor trust chain orders its pin claims by place-KEL descent, so the place K
 
 <<~/ahu>>
 
-<<~ ahu #/the-slices>>
+<<~ ahu slot=`#/the-slices`>>
 
 !! The slices
 
@@ -57,7 +57,7 @@ The floor trust chain orders its pin claims by place-KEL descent, so the place K
 
 <<~/ahu>>
 
-<<~ ahu #/the-reds>>
+<<~ ahu slot=`#/the-reds`>>
 
 !! The reds
 
@@ -68,6 +68,6 @@ The floor trust chain orders its pin claims by place-KEL descent, so the place K
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uXTtMrNRsthUDMWY1G0KOCgbu88D_rtMn0k93O0LnpY
+<<^ code=`&#x0003;`>>ni:///sha-256;X-wATS7AeaR_jXg0-PANlmyozaL7E19Ket-S5CV2orQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

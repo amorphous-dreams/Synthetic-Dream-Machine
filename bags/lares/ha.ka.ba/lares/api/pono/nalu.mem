@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/nalu">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/nalu`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -17,7 +17,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/nalu"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Nalu — The Changeset Wave
 
@@ -35,7 +35,7 @@ TW5 SyncAdaptor contract; Elm Architecture (Czaplicki 2012); UEFN SceneGraph Bet
 
 <<~/ahu>>
 
-<<~ ahu #/the-wave-shape>>
+<<~ ahu slot=`#/the-wave-shape`>>
 
 !! The Wave Shape — Three Implementations, One Pattern
 
@@ -90,8 +90,8 @@ shore); the ''local capture'' nalu crests on the server tick (CAPTURE waves → 
 not conflate their boundaries: the `nextTick` dispatch and the host-task pacing ride the wiki shore, the 20 Hz server
 tick rides the local/daemon engine.
 
-''The capture nalu rides @daemon as an idempotent cap'': the `#has capture` cap rides the
-''@daemon'' (the bound-operator's vessel-only worker, severed from federation). Every @daemon
+''The capture nalu rides daemon-plane as an idempotent cap'': the `#has capture` cap rides the
+''@daemon'' (the bound-operator's vessel-only worker, severed from federation). Every daemon-plane
 CARRIES the cap (tending the operator's session-capture is a daemon duty); its sink (the
 `mine --source ndjson` flush) and feed (the producers) may be unwired, and that inert state is a
 valid resting point — `role = capability ≠ platform`, the cap distinct so the FLOW capture never
@@ -116,7 +116,7 @@ dispatches: the shore lands it slice by slice, and each dispatch hands every obs
 
 <<~/ahu>>
 
-<<~ ahu #/below-the-grammar>>
+<<~ ahu slot=`#/below-the-grammar`>>
 
 !! Below the Grammar Layer
 
@@ -124,9 +124,9 @@ The nalu is ''not'' a sigil the operator emits. It is what the engine delivers.
 
 ```
 Grammar layer (above nalu):
-  <<~ lele "lar:///target">>    ← sigil declares intent
+  <<~ lele to=`lar:///target`>>    ← sigil declares intent
   <<~ hui>>                   ← sigil declares sync shape
-  <<~ kukali trigger>>        ← sigil declares suspension
+  <<~ kukali trigger=`trigger`>>        ← sigil declares suspension
 
 Nalu layer (below grammar):
   refresh(changedTiddlers)     ← engine delivers consistent state
@@ -144,7 +144,7 @@ itself has no sigil; the `\tick` sigil hooks into the nalu.
 
 <<~/ahu>>
 
-<<~ ahu #/yin-collapse-law>>
+<<~ ahu slot=`#/yin-collapse-law`>>
 
 !! Yin-Collapse Law
 
@@ -197,7 +197,7 @@ The TS layer forms the minimal shore around it — only what TW5 cannot do from 
 
 <<~/ahu>>
 
-<<~ ahu #/one-graph>>
+<<~ ahu slot=`#/one-graph`>>
 
 !! One Graph, Not Two
 
@@ -235,7 +235,7 @@ The widget tree receives the wave. One wiki shore stands per engine: every bag's
 
 <<~/ahu>>
 
-<<~ ahu #/tw5-scale-note>>
+<<~ ahu slot=`#/tw5-scale-note`>>
 
 !! TW5 Unfiltered Delivery — Scale Note
 
@@ -257,7 +257,7 @@ real but not yet triggered at current projected scale.
 
 <<~/ahu>>
 
-<<~ ahu #/uefn-alignment>>
+<<~ ahu slot=`#/uefn-alignment`>>
 
 !! UEFN SceneGraph Alignment (Beta, June 2025)
 
@@ -281,7 +281,7 @@ edges encoded with FRU orientation assumptions need migration. See `uefn-scene.m
 
 <<~/ahu>>
 
-<<~ ahu #/the-surface>>
+<<~ ahu slot=`#/the-surface`>>
 
 !! The surface ~ one carrier per concept
 
@@ -304,37 +304,37 @@ home; every other carrier on the surface points back here.
 ''No clock decides on this surface.'' A timer may pace a hand at the island's edge; what leaves, what
 lands and what refuses follow from state alone (`lar:///ha.ka.ba/lares/docs/pono/no-global-now`).
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/servo">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-provider">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/save-path">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/disk-projector">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tick">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/servo`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/nalu-engine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/meme-provider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-adaptor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/save-path`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/disk-projector`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tick`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-task-tree">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/reaction-graph">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/uefn-scene">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-task-tree`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-event-lattice`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/vm-projection-bus`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/reaction-graph`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/uefn-scene`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1DCFBYwhqo2rb6xNCI64xVPP3Ohv-bbyEXD_4NJCSoc
+<<^ code=`&#x0003;`>>ni:///sha-256;ImE1GyDrvKXQBXFNrJrSfOg1zI0tE5dLzq5CdVJFt9Q
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

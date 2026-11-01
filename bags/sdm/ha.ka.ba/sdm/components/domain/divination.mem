@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/domain/divination">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/components/domain/divination`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/sdm/components/domain/divination"
 
 ! Divination
 
-<<~ ahu #/definition>>
+<<~ ahu slot=`#/definition`>>
 
 !! Definition
 
@@ -27,7 +27,7 @@ The domain of perceiving the hidden — reading inscriptions, scrying distance, 
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -35,7 +35,7 @@ Orients a module toward ''knowing rather than changing''. It targets information
 
 <<~/ahu>>
 
-<<~ ahu #/interaction>>
+<<~ ahu slot=`#/interaction`>>
 
 !! Interaction
 
@@ -43,7 +43,7 @@ Pairs with `function/ecm-scan`, `function/magic-decode`, and `function/archive`.
 
 <<~/ahu>>
 
-<<~ ahu #/filters>>
+<<~ ahu slot=`#/filters`>>
 
 !! Filters
 
@@ -55,7 +55,7 @@ Pairs with `function/ecm-scan`, `function/magic-decode`, and `function/archive`.
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -63,14 +63,14 @@ Pairs with `function/ecm-scan`, `function/magic-decode`, and `function/archive`.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/components/tag`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;I5xMYUvYdUPVTj8uVXjx8KFfZ_vNf5wlwE4Uvjj1uxc
+<<^ code=`&#x0003;`>>ni:///sha-256;Tti22RqZRm4bEkO6oAb-EuLYNlSNqaNAj9x3m1aM-S0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

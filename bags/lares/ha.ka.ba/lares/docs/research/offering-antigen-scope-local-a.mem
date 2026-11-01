@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,9 +18,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/scope-contract>>
+<<~ ahu slot=`#/scope-contract`>>
 
 ! Offering Antigen Scope — local scout
 
@@ -99,5 +99,5 @@ This ruling gives the operator the stronger isolation property without pretendin
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;e9nvJPtLTjYoRzL8IoS3b-wZybqIv9Na6nXCRFs5yRo
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0003;`>>ni:///sha-256;O1z8D-qZCN7zwzT219Qx55svfx9SjSfCbOygipAZ4Hw
+<<^ code=`&#x0004;` to=`?`>>

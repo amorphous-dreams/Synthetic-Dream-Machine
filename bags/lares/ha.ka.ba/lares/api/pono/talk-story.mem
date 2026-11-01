@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/talk-story">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -18,11 +18,11 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/talk-story"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Talk Story — The Floor Before the Ruling
 
@@ -32,7 +32,7 @@ Talk story convenes the floor where the shape of a thing emerges from the tellin
 
 <<~/ahu>>
 
-<<~ ahu #/sigils>>
+<<~ ahu slot=`#/sigils`>>
 
 !! The Two Sigils
 
@@ -46,10 +46,10 @@ The contested exit rides its own sigil: `hoike` (`\testimony`) — law at the si
 ''Block form (floor):''
 
 ```
-<<~ talk-story #fragment ground="the work surface convened on">>
+<<~ talk-story slot=`#fragment` ground=`the work surface convened on`>>
 bearings: where we stand · where we want to go · how we get there
 telling — the Voices the moment calls co-narrate; the operator overlaps and steers
-<<~ moolelo held="direction (operator)">>one line; lands inline in the artifact worked<<~/moolelo>>
+<<~ moolelo held=`direction (operator)`>>one line; lands inline in the artifact worked<<~/moolelo>>
 <<~/talk-story>>
 ```
 
@@ -61,7 +61,7 @@ telling — the Voices the moment calls co-narrate; the operator overlaps and st
 
 <<~/ahu>>
 
-<<~ ahu #/word-family>>
+<<~ ahu slot=`#/word-family`>>
 
 !! The Word-Family — One Grammar, Five Seas
 
@@ -83,7 +83,7 @@ Beneath the triad two grounds rhyme: ''kapwa'' (Filipino — the other met as sh
 
 <<~/ahu>>
 
-<<~ ahu #/laws>>
+<<~ ahu slot=`#/laws`>>
 
 !! Laws
 
@@ -98,7 +98,7 @@ Beneath the triad two grounds rhyme: ''kapwa'' (Filipino — the other met as sh
 
 <<~/ahu>>
 
-<<~ ahu #/off-true>>
+<<~ ahu slot=`#/off-true`>>
 
 !! Off True
 
@@ -111,7 +111,7 @@ Beneath the triad two grounds rhyme: ''kapwa'' (Filipino — the other met as sh
 
 <<~/ahu>>
 
-<<~ ahu #/lineage>>
+<<~ ahu slot=`#/lineage`>>
 
 !! Lineage
 
@@ -119,17 +119,17 @@ Beneath the triad two grounds rhyme: ''kapwa'' (Filipino — the other met as sh
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hoike">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3d3fpUQL-y9IvQtAiMwBCsLYzneTAPoW5W9H3suva5c
+<<^ code=`&#x0003;`>>ni:///sha-256;pARBKlz4_2J5I55614XPcEmIGC9jj_DNTrdv7xWkeBQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

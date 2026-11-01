@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/house-of-masks">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/house-of-masks`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/house-of-masks"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The House of Masks
 
@@ -43,6 +43,6 @@ place's seat on the map; that locus keeps its life.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BqSTshrI_hrn0fVac2YHj6dSBSIaZ8jQ09vGrpgmrIw
+<<^ code=`&#x0003;`>>ni:///sha-256;7FP2jIHUXqagpFXoBZb7I4Km9RJeUAnlE6X6xZNcu98
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

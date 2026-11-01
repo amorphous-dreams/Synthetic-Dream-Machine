@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/g15-refold-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/g15-refold-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,9 +14,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/g15-refold-lane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! G15 ~ the refold's answers
 
@@ -24,7 +24,7 @@ The operator ruled (2026-10-26) to close as much open work as possible before th
 
 <<~/ahu>>
 
-<<~ ahu #/the-chain>>
+<<~ ahu slot=`#/the-chain`>>
 
 !! The chain as a module
 
@@ -35,7 +35,7 @@ The operator ruled (2026-10-26) to close as much open work as possible before th
 
 <<~/ahu>>
 
-<<~ ahu #/the-bound>>
+<<~ ahu slot=`#/the-bound`>>
 
 !! The bound
 
@@ -51,7 +51,7 @@ Reds: sixty rolls over four holders land in at most five passes, never two at on
 
 <<~/ahu>>
 
-<<~ ahu #/the-transcript>>
+<<~ ahu slot=`#/the-transcript`>>
 
 !! The transcript
 
@@ -65,6 +65,6 @@ The lane's re-bake carries the plugin bundle `genesis/unbaked.json` declared, th
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FkanWt2umiecWiCV4nq0d_cYGOcplEgTaPpn6PKFZq8
+<<^ code=`&#x0003;`>>ni:///sha-256;zba3UaoKHRcFte36RQERsNzRsAL_klPMmDNai3pcmOE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/ref/RFC-9162">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/ref/RFC-9162`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable      = true
@@ -25,7 +25,7 @@ target     = "https://www.rfc-editor.org/info/rfc9162"
 title      = "Certificate Transparency Version 2.0"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! RFC 9162 — Certificate Transparency Version 2.0
 
@@ -35,14 +35,14 @@ Obsoletes `lar:///ha.ka.ba/lares/ref/RFC-6962`.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/ref/RFC-6962">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/ref/RFC-6962`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zJMc2Kx3u6ihudEKz9tzXQ9j5eP5s9wVi2_q1llomYs
+<<^ code=`&#x0003;`>>ni:///sha-256;fqgwJl0AWqUra6eL2hIO-_FohDjrJ95p35Dj3AcLlpQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

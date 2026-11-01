@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/train-x-launch">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/train-x-launch`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/train-x-launch"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Train X ~ two hearths
 
@@ -24,7 +24,7 @@ uri-path  = "ha.ka.ba/lararium/docs/train-x-launch"
 
 <<~/ahu>>
 
-<<~ ahu #/ground>>
+<<~ ahu slot=`#/ground`>>
 
 !! Ground and crew
 
@@ -32,7 +32,7 @@ Start the automated witness after N, W, O1, sealed-store step 3, H, E, browser c
 
 <<~/ahu>>
 
-<<~ ahu #/walk>>
+<<~ ahu slot=`#/walk`>>
 
 !! Commit walk
 
@@ -43,7 +43,7 @@ Start the automated witness after N, W, O1, sealed-store step 3, H, E, browser c
 
 <<~/ahu>>
 
-<<~ ahu #/witness>>
+<<~ ahu slot=`#/witness`>>
 
 !! Witness and driver contract
 
@@ -51,7 +51,7 @@ The driver reports separate root and image evidence, both seed fingerprints, one
 
 <<~/ahu>>
 
-<<~ ahu #/collisions>>
+<<~ ahu slot=`#/collisions`>>
 
 !! Collision sheet
 
@@ -66,7 +66,7 @@ The driver reports separate root and image evidence, both seed fingerprints, one
 
 <<~/ahu>>
 
-<<~ ahu #/done>>
+<<~ ahu slot=`#/done`>>
 
 !! Done when
 
@@ -74,14 +74,14 @@ Two isolated vessels from one image digest keep separate seeds and private handl
 
 <<~/ahu>>
 
-<<~ ahu #/rulings>>
+<<~ ahu slot=`#/rulings`>>
 
 !! Rulings
 
-The roadmap's TWO HEARTHS path and fresh-start instructions hold the driver and ceremony (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start">>). The operator moves old homes aside by hand and keeps them reversible. Recovery contact threshold and succession remain with the operator at `#/open`; X supplies no answer (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/open">>).
+The roadmap's TWO HEARTHS path and fresh-start instructions hold the driver and ceremony (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`>>; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start`>>). The operator moves old homes aside by hand and keeps them reversible. Recovery contact threshold and succession remain with the operator at `#/open`; X supplies no answer (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/open`>>).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MJRMT_I934T37wV6fgjGaEjhbTdfY9Nu45vuN8vAoko
+<<^ code=`&#x0003;`>>ni:///sha-256;lE_hpZ-Gn4qYoffprmmiv_lFfHN3za-OdBmGC8E7ejk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

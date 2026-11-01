@@ -1,7 +1,7 @@
 ---
 lang: "en"
 source: "lar:///ha.ka.ba/lares/docs/tw5-calls-undeclared-parameter"
-source-check: "ni:///sha-256;xLymsK-7yyYGFjW9qo4AcMlKVVWmDt2n4BbsCT37Ceg"
+source-check: "ni:///sha-256;xybFaG0A80CgCM58yw2wMwholKBXVNSmTDv-WnkzR78"
 title: "lar:///ha.ka.ba/lares/api/pono/submissions/tw5-calls-undeclared-parameter"
 tongue: "x-lares>en"
 variant: "GFM"
@@ -93,5 +93,5 @@ render tells them apart.
 
 ## Edges
 
-- `loulou "lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"`
+- `loulou lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat`
+- `loulou lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext`

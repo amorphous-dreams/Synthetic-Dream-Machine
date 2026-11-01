@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/cap-tier">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -21,11 +21,11 @@ uri-path   = "ha.ka.ba/lararium/mesh/cap-tier"
 written    = "2026-07-23"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Cap-Tier ~ the sealing posture the quine declares and the gate tightens
 
@@ -37,7 +37,7 @@ A bag answers ''one question'' about its sealing — WHO holds the read-cap — 
 
 <<~/ahu>>
 
-<<~ ahu #/posture>>
+<<~ ahu slot=`#/posture`>>
 
 !! The posture ~ sealed everywhere, cleartext only at the human surfaces
 
@@ -45,13 +45,13 @@ A bag answers ''one question'' about its sealing — WHO holds the read-cap — 
 
 <<~/ahu>>
 
-<<~ ahu #/the-chain>>
+<<~ ahu slot=`#/the-chain`>>
 
 !! The chain ~ four read-cap holder-sets, one total order
 
 The tier names the read-cap holder-set, ascending in openness — a lower rank names a ''smaller'' set (fewer readers → more restrictive):
 
-<<~ scale captier "veil@0 ~ {this-vessel} · cleartext-local, nothing crosses in the clear -> personagroup@1 ~ {your-fleet} · the bag's content key reaches the operator's own persona fleet -> contract@2 ~ {your-fleet ∪ a-cabal} · the bag's content key reaches the fleet PLUS a contracted cabal -> public@3 ~ {world} · the deterministically-federatable public shelf">>
+<<~ scale name=`captier` ranks=`veil@0 ~ {this-vessel} · cleartext-local, nothing crosses in the clear -> personagroup@1 ~ {your-fleet} · the bag's content key reaches the operator's own persona fleet -> contract@2 ~ {your-fleet ∪ a-cabal} · the bag's content key reaches the fleet PLUS a contracted cabal -> public@3 ~ {world} · the deterministically-federatable public shelf`>>
 
 ''TWO RATCHETS, OPPOSITE DIRECTIONS, ORTHOGONAL PLANES.'' This chain ratchets ''tighter'' — a declaration only ever narrows the read-cap holder-set, mechanically never widens it. The dwelling plane ratchets the other way: `nohopapa` ''deposits'' depth by staying, and erodes when tending stops (`identity-enacts-relation`). Disclosure narrows; dwelling deepens. `papa` carries //layer · rank · structured sequence// and BOTH planes read as strata — exactly why they must stay named apart. ''A deep dweller holds no wider read-cap, and a public bag confers no depth.'' Fusing them would let standing buy disclosure, the shape this stack refuses.
 
@@ -61,17 +61,17 @@ The tier names the read-cap holder-set, ascending in openness — a lower rank n
 
 <<~/ahu>>
 
-<<~ ahu #/self-describing-datum>>
+<<~ ahu slot=`#/self-describing-datum`>>
 
 !! The self-describing datum ~ the quine speaks its own walls
 
-The tier rides as a ''declared datum'' the @daemon recipe carries (a bag-level default; a per-tiddler `capTier` refines it). ''Fail-closed by construction'': `DEFAULT_CAP_TIER = "veil"`, and `parseCapTier` folds any torn / absent / unknown value to VEIL — a torn datum NEVER silently opens a bag.
+The tier rides as a ''declared datum'' the daemon-plane recipe carries (a bag-level default; a per-tiddler `capTier` refines it). ''Fail-closed by construction'': `DEFAULT_CAP_TIER = "veil"`, and `parseCapTier` folds any torn / absent / unknown value to VEIL — a torn datum NEVER silently opens a bag.
 
 Modeled ''isomorphic to `FederationPosture`'' (federation-gate.ts) by composition, never by an interface tower: a closed string union + a `DEFAULT_…` fail-closed constant + a `…FromDoc` parser that fail-closes a torn value + a pure gate fn. The tier carries ''one structure more'' than a posture — a total order + a `meet` (a posture reads as the two-valued special case). The rhyme works by subtraction, not inheritance.
 
 <<~/ahu>>
 
-<<~ ahu #/the-keystone>>
+<<~ ahu slot=`#/the-keystone`>>
 
 !! The keystone ~ declare ⊥ enforce, so the quine can only self-tighten
 
@@ -87,7 +87,7 @@ The keystone reads back through the code: revert the meet to take the more-OPEN 
 
 <<~/ahu>>
 
-<<~ ahu #/declassification>>
+<<~ ahu slot=`#/declassification`>>
 
 !! Declassification ~ the one-way ratchet under no-global-now
 
@@ -95,19 +95,19 @@ Tightening runs free — a bag may always self-tighten, and a tightening cascade
 
 <<~/ahu>>
 
-<<~ ahu #/key-delivery>>
+<<~ ahu slot=`#/key-delivery`>>
 
 !! Key delivery ~ the member read-cap, delivered AUTHENTICATED
 
-The member tiers (PERSONAGROUP / CONTRACT) become concrete through ''delivery to the recipient set''. The road below states the ruled model, and no production path delivers a content key yet. ''A member reads a private body through its bag's content key'': a lockbox carries each key version to the bag's key group, and the sealed store states that road (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records">>). The durable lockbox store stands owed there.
+The member tiers (PERSONAGROUP / CONTRACT) become concrete through ''delivery to the recipient set''. The road below states the ruled model, and no production path delivers a content key yet. ''A member reads a private body through its bag's content key'': a lockbox carries each key version to the bag's key group, and the sealed store states that road (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records`>>). The durable lockbox store stands owed there.
 
-''No per-Nexus secret opens a body, and no keyring stands in the model'' (operator ruling). A private body takes a random content key for its bag, so nothing derives from a per-Nexus convergence secret: the Stable founding act yields no keyring, no seat act commits to a keyring secret, and no admission delivers one (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). The code agrees: no module mints, stores or carries a convergence secret, and the sealed CAS names a body's Nexus by its scope alone (`ciphertext-cas-seal.ts`).
+''No per-Nexus secret opens a body, and no keyring stands in the model'' (operator ruling). A private body takes a random content key for its bag, so nothing derives from a per-Nexus convergence secret: the Stable founding act yields no keyring, no seat act commits to a keyring secret, and no admission delivers one (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). The code agrees: no module mints, stores or carries a convergence secret, and the sealed CAS names a body's Nexus by its scope alone (`ciphertext-cas-seal.ts`).
 
 ''The lesson, load-bearing: a delivery must stand as AUTHENTICATED as the ceremony it rides.'' An enrollment offer exposes the recipient pubkey publicly, so a ''sealed-only'' fragment proves nothing about WHO authored it: an active paster could substitute a secret of their own, sealed to that same public key, and the joinee would trust an attacker-known value. Confidential ≠ authenticated when the recipient key rides public. The cure ''binds a digest of the exact carried token INTO the persona-signed grant transcript'': the joinee installs ONLY on a signature-covered digest match. Whatever an admission carries beside its grant meets that bar.
 
 <<~/ahu>>
 
-<<~ ahu #/groundings>>
+<<~ ahu slot=`#/groundings`>>
 
 !! Groundings ~ the falsifiable rhymes
 
@@ -126,40 +126,40 @@ The model reads as a real pattern integrity because independent fields under the
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance ~ PROPOSED, the core built
 
 This meme stands ''PROPOSED'' (crucible-before-binding). The CORE stands built (`packages/lararium-mesh/src/cap-tier.ts`): the 4-tier total order, the keystone, the high-water-mark cascade, and `mayDeclareTier` / `mayDeclassify`. ''Honest bounds, kept lit'':
 
 * The ''structural FLOOR'' helper stands built and UNWIRED to the live share path — `structuralFloorFor` reads the SAME federatable-set + sealed-plane oracles the carry-split consults (a federatable plane floors at PUBLIC, a provably-sealed plane at CONTRACT, else VEIL), while `capTierShareDecision` holds no production caller and the live share path calls `carrierShareDecision`.
-* The ''declared SOURCE'' rides a defined-but-UNLIT shore — no @daemon recipe carries a `capTier` datum in the tree yet, so a live `declaredTierForDoc` returns null for every doc → the floor governs → zero behavior change. Lighting it needs the recipe-write path + a doc→bag resolver.
+* The ''declared SOURCE'' rides a defined-but-UNLIT shore — no daemon-plane recipe carries a `capTier` datum in the tree yet, so a live `declaredTierForDoc` returns null for every doc → the floor governs → zero behavior change. Lighting it needs the recipe-write path + a doc→bag resolver.
 * ''PERSONAGROUP and CONTRACT collapse to "member peer" at the wire'' — the wire shore cannot itself split fleet from cabal, so CONTRACT reads as the honest structural ceiling of the sealed lane and a PERSONAGROUP refinement rides atop as a declared tightening.
 
 Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-cascade rendering, the remote-vessel-edits-the-@daemon-recipe UX, the CLI/browser surfaces.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh#/two-revocation-modes">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-veil">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/encrypt-from-start">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/convergent-mesh`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/convergent-mesh#/two-revocation-modes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-veil`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/encrypt-from-start`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UMBfRnm76Ru_n77hsWD-cel03-cwUIxZ4blLQH9ww4A
+<<^ code=`&#x0003;`>>ni:///sha-256;g--c2k_AMm6_UxLBULpHve7D6NwEI5XbiDVs9LOwzag
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

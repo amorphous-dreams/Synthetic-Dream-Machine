@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/research-streams/chronometer/Vector_Chronometer_Research_Seed">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/research-streams/chronometer/Vector_Chronometer_Research_Seed`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 title    = "lar:///ha.ka.ba/lares/docs/pono/research-streams/chronometer/Vector_Chronometer_Research_Seed"
@@ -313,6 +313,6 @@ Amor et hilaritas.
 
 lar:///research.seeded.awaits/chronometer/vector/?stances=^.^.?.-.-&confidence=P:7&p=10#/O0.O0.A1.A23.A1 → ∞
 
-<<^ code="&#x0003;">>ni:///sha-256;CwZ3q6UapJ1V7yyoqgN2fVbvTz0l2n9Kc2GXfHDib2U
+<<^ code=`&#x0003;`>>ni:///sha-256;RYk7Ar9-aAShUuvLvjcti1PL86u7067TQPbLOqGqPJo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

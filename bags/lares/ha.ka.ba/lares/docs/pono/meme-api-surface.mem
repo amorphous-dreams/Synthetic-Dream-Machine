@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/meme-api-surface`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
@@ -22,11 +22,11 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/meme-api-surface"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/lab>>
+<<~ ahu slot=`#/lab`>>
 
 ! The Meme API Surface ~ the work QA lab
 
@@ -47,7 +47,7 @@ The same lab stands on a published engine: swap the first argument for `npm pack
 
 <<~/ahu>>
 
-<<~ ahu #/paths>>
+<<~ ahu slot=`#/paths`>>
 
 !! Paths and methods
 
@@ -61,11 +61,11 @@ The meme's URI projects onto the path with the scheme as its own segment: `lar:/
 | `GET` | `/{recipes\|bags}/default/memes.json[?tree=1]` | every ROOT with its canonical hash (`listMemes`); `tree=1` nests each root's slot tree. A sibling of stock's `tiddlers.json`: a `$:/`-titled root rides only while `$:/config/SyncSystemTiddlersFromServer` reads `yes` | `200` JSON array · `404` |
 | `PUT` | `/recipes/default/tiddlers/<title>` | THE NATIVE DOOR, gated ahead of stock: a framed root refuses (#/two-doors); every other record reaches stock's own handler | `422` · stock's `204` |
 
-Both container kinds read the same records on a plain server; on an island `--recipe` reads the wiki's whole cascade top-down and writes its designated bag — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>.
+Both container kinds read the same records on a plain server; on an island `--recipe` reads the wiki's whole cascade top-down and writes its designated bag — <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/headers>>
+<<~ ahu slot=`#/headers`>>
 
 !! Headers
 
@@ -82,7 +82,7 @@ Both container kinds read the same records on a plain server; on an island `--re
 
 <<~/ahu>>
 
-<<~ ahu #/status>>
+<<~ ahu slot=`#/status`>>
 
 !! The status table
 
@@ -100,7 +100,7 @@ Both container kinds read the same records on a plain server; on an island `--re
 
 <<~/ahu>>
 
-<<~ ahu #/two-doors>>
+<<~ ahu slot=`#/two-doors`>>
 
 !! The two doors
 
@@ -114,7 +114,7 @@ A framed meme root lands whole through the native tiddler door and never splits;
 
 <<~/ahu>>
 
-<<~ ahu #/principals>>
+<<~ ahu slot=`#/principals`>>
 
 !! The principal table ~ parity with `/tiddlers/`
 
@@ -128,7 +128,7 @@ The server's method→principal mapping and its authenticator run before any rou
 
 <<~/ahu>>
 
-<<~ ahu #/pristine>>
+<<~ ahu slot=`#/pristine`>>
 
 !! The pristine claim ~ with its version
 
@@ -145,7 +145,7 @@ The witness landed at `f144ed242` (14/14 then; the listing added three). Its `pu
 
 <<~/ahu>>
 
-<<~ ahu #/skins>>
+<<~ ahu slot=`#/skins`>>
 
 !! The four skins ~ verb parity
 
@@ -160,13 +160,13 @@ One law, four skins. Every row calls the same function in `packages/lararium-tw5
 | the projection | `tiddlywiki --render` through the house templates | `meme-project {(recipe \| bag), uri, to}` | `lares meme project <uri\|file> --to <mem\|md\|html\|tid\|json> (--recipe <slug> \| --bag <slug>)` for a store-backed projection; `lares meme project <file> --to md` runs local | `meme_project(uri, to, (recipe \| bag))` |
 | `normalizeMemeSource` · the check | — (a file law) | — | `lares meme normalize` · `lares meme check [--gradient\|--edges]` | — (LOCAL seat, by law) |
 
-''The listing pages on the daemon verb.'' A verb's outcome carries a bounded number of rows of any array (`AUDIT_ARRAY_CAP`, <<~ loulou "lar:///ha.ka.ba/lararium/tw5/verb-vm">>), so `meme-list` answers at most that many roots, in title order, and names the cursor of the page behind them (`next`); a caller hands it back as `after`, and `next: null` ends the listing. The CLI reads every page and prints every root; the MCP tool hands the page and its cursor to its caller. A named bag lists its own records; a named recipe lists the roots its whole stack resolves, each row naming the bag that answered, and a root the wiki removed (a tombstone in a bag above) lists nowhere, as its read answers `not-found`. The plain server's route answers one whole array, since no outcome bounds it.
+''The listing pages on the daemon verb.'' A verb's outcome carries a bounded number of rows of any array (`AUDIT_ARRAY_CAP`, <<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/verb-vm`>>), so `meme-list` answers at most that many roots, in title order, and names the cursor of the page behind them (`next`); a caller hands it back as `after`, and `next: null` ends the listing. The CLI reads every page and prints every root; the MCP tool hands the page and its cursor to its caller. A named bag lists its own records; a named recipe lists the roots its whole stack resolves, each row naming the bag that answered, and a root the wiki removed (a tombstone in a bag above) lists nowhere, as its read answers `not-found`. The plain server's route answers one whole array, since no outcome bounds it.
 
-Every door requires exactly one container on every store verb. At the CLI a missing or doubled container refuses `no-container` (exit 2) before file reads or daemon calls; the daemon verb refuses under the same code before any cap ask, read or write, and the MCP tool refuses under it before the wire. No default wiki exists: `--recipe default` at the CLI, `recipe: "default"` at the daemon verb and `recipe="default"` at the MCP tool name the daemon's own wiki. The in-VM face publishes the same verbs to a wiki-side caller as `$tw.lares.meme.{place, read, list, remove, normalize, check, project, recompose, parse}`. The CLI's exit classes: `no-container` exits 2; a `conflict` exits `conflict`; an absent meme on `get` or `delete` exits `not-found`; a refusal exits `verb-error`. The fixture `packages/lararium-sensorium/scripts/fixtures/cli-verbs.json` welds the MCP names to the CLI spellings; `tools/mirror-parity-witness.sh` reds when it goes stale. The CLI door law: <<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>.
+Every door requires exactly one container on every store verb. At the CLI a missing or doubled container refuses `no-container` (exit 2) before file reads or daemon calls; the daemon verb refuses under the same code before any cap ask, read or write, and the MCP tool refuses under it before the wire. No default wiki exists: `--recipe default` at the CLI, `recipe: "default"` at the daemon verb and `recipe="default"` at the MCP tool name the daemon's own wiki. The in-VM face publishes the same verbs to a wiki-side caller as `$tw.lares.meme.{place, read, list, remove, normalize, check, project, recompose, parse}`. The CLI's exit classes: `no-container` exits 2; a `conflict` exits `conflict`; an absent meme on `get` or `delete` exits `not-found`; a refusal exits `verb-error`. The fixture `packages/lararium-sensorium/scripts/fixtures/cli-verbs.json` welds the MCP names to the CLI spellings; `tools/mirror-parity-witness.sh` reds when it goes stale. The CLI door law: <<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/walkthrough>>
+<<~ ahu slot=`#/walkthrough`>>
 
 !! A curl walkthrough
 
@@ -211,23 +211,23 @@ The CLI walk names its container on each store verb: `lares meme put lar:///t/x 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tiddler-record">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tiddler-record`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kt2FAV91a8G4PtZSdUBRodHqtt8OJqUtkSlj4VWJznw
+<<^ code=`&#x0003;`>>ni:///sha-256;CE8N3b3ah4RgEz4UxUs7QGbVGbpVhgcbsznqgDq-XlE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/domain/abjuration">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/components/domain/abjuration`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/sdm/components/domain/abjuration"
 
 ! Abjuration
 
-<<~ ahu #/definition>>
+<<~ ahu slot=`#/definition`>>
 
 !! Definition
 
@@ -27,7 +27,7 @@ The domain of protection and negation — barriers, wards, dispelling, raising t
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -35,7 +35,7 @@ Orients a module toward ''defense'': it blocks, deflects, or unmakes rather than
 
 <<~/ahu>>
 
-<<~ ahu #/interaction>>
+<<~ ahu slot=`#/interaction`>>
 
 !! Interaction
 
@@ -43,7 +43,7 @@ Pairs with `function/barrier` and `function/ward`. Counters offensive crossings;
 
 <<~/ahu>>
 
-<<~ ahu #/filters>>
+<<~ ahu slot=`#/filters`>>
 
 !! Filters
 
@@ -54,7 +54,7 @@ Pairs with `function/barrier` and `function/ward`. Counters offensive crossings;
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -62,14 +62,14 @@ Pairs with `function/barrier` and `function/ward`. Counters offensive crossings;
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/components/tag`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pZSsYTSnPDYChRKDxFjpeZlC9tKQGE1SfW5zTXvKKOY
+<<^ code=`&#x0003;`>>ni:///sha-256;3P3J0uKfnk2ogDb-rPYHDX6ib9uHY9VhbHfuGQA2UEA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

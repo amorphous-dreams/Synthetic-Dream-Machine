@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⏳" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/no-global-now">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⏳` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -21,11 +21,11 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/no-global-now"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/charge>>
+<<~ ahu slot=`#/charge`>>
 
 ! No Global Now ~ the clockless lease, mined
 
@@ -35,7 +35,7 @@ uri-path   = "ha.ka.ba/lares/docs/pono/no-global-now"
 
 ''Register: Mined-Testimony.'' Quotes ride under quote license; the copulas inside them belong to their speakers.
 
-<<~ ahu #/charge/currentness-reframe>>
+<<~ ahu slot=`#/charge/currentness-reframe`>>
 
 !! Currentness reframe ~ lineage, frontier, and typed fences
 
@@ -46,9 +46,9 @@ follows the acts it has actually observed and reports a local frontier; it never
 member, a complete roster, or a universal present. The frontier may therefore hold an act as ''held'',
 ''withdrawn'', ''unsettled'', ''unavailable'', or ''rejected'' according to the evidence and the local
 policy. A concurrent contradiction stays visible until a later witnessed relation gives the reader more
-ground. This is the causal-lineage shape carried by <<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">>,
-<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>, and
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">>.
+ground. This is the causal-lineage shape carried by <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/causal-island`>>,
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/agent-worldline`>>, and
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation`>>.
 
 ''NARROW EXCEPTION.'' A protocol may still require a typed cryptographic fencing token for a resource
 supersession or key-rotation gate. Such a token is local evidence for that resource's safety rule. It is
@@ -64,7 +64,7 @@ the direction and the boundary, not those fields.
 
 <<~/ahu>>
 
-<<~ ahu #/the-mines>>
+<<~ ahu slot=`#/the-mines`>>
 
 !! The mines — what got read, and what answered
 
@@ -101,7 +101,7 @@ the direction and the boundary, not those fields.
 
 ''The high-signal filter'' (dropping `lease`·`itc`·`fence` and the bare `supersede`) left ''225 operator turns'' and ''456 node turns''. Many of the 177 `no global now` hits ride the boot seed re-served inside a system reminder or a standing spirit-prompt template; the operator sentences quoted at #/no-global-now survive that filter by hand.
 
-''The carriers.'' `git grep -il` over `bags/**/*.mem` for the tight term set answered ''92 carriers''. The load-bearing ones read whole: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">> (the supersession law) · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">> (the accrual impossibility) · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">> (the clockless-verdict fork, ruled) · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>.
+''The carriers.'' `git grep -il` over `bags/**/*.mem` for the tight term set answered ''92 carriers''. The load-bearing ones read whole: <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>> (the supersession law) · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lamplighters`>> (the accrual impossibility) · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/field-collision`>> (the clockless-verdict fork, ruled) · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>.
 
 ''The memory.'' `project_clockless_lease_model.md` (the Fork-4 resolution, verbatim at #/the-ruling) · `project_cap_stack_taxonomy_research.md` · `project_turn_decompose_architecture.md` · `project_worldline_rewind_fork_rhizome.md` · `project_talk_story_hoike_layer.md`.
 
@@ -109,7 +109,7 @@ the direction and the boundary, not those fields.
 
 <<~/ahu>>
 
-<<~ ahu #/no-global-now>>
+<<~ ahu slot=`#/no-global-now`>>
 
 !! "No Global Now" — the operator's own sentences, dated
 
@@ -123,7 +123,7 @@ the direction and the boundary, not those fields.
 # ''2026-07-01'' — //"ensure we align with the web3 laws of the repo, \"no global now\", \"causal islands\", \"nested nameless entities with #has caps\", and our other Pono intent vectors"// — RULES the law as a standing audit axis.
 # ''2026-07-06'' — ''THE FORK-4 SENTENCE'' — //"4. I really want to avoid ANY hard attachments to wall-clocks (soft \"unrealiable-witness-timestamp\" seems pono). This may need a internet research deep knowledge domain \"find the pattern integrities that ryme with the missing puzzle piece\" to resolve."// — ''RULES the direction and commissions the research'' that produced #/the-ruling. Read the two halves apart: //ANY hard attachment// refused; a //soft// unreliable-witness timestamp allowed.
 # ''2026-07-17'' — //"Pono, 'no global now', 'causal islands', and 'pet-name tagged nameless-entities with #has capability stacks' serves as our core pattern integrity triangle."// — ''RULES the law's RANK'': one of three legs, not a preference.
-# ''2026-07-17'' (the HINGE) — //"We can have 'shared public Cabal/org documents posted to the @crossroads layer of the dreamNet' but they MUST retain our base web3 causal island 'no global now' intent (unable to scrape 'person history/registry' etc), but a publicly availalble 'surface'."// — RULES that a PUBLIC surface inherits the law; it names the law's second face, //no aggregable registry//.
+# ''2026-07-17'' (the HINGE) — //"We can have 'shared public Cabal/org documents posted to the crossroads-plane layer of the dreamNet' but they MUST retain our base web3 causal island 'no global now' intent (unable to scrape 'person history/registry' etc), but a publicly availalble 'surface'."// — RULES that a PUBLIC surface inherits the law; it names the law's second face, //no aggregable registry//.
 # ''2026-08-08'' — //"Approved, but no 'rosters' remember? Only contracts (no global now, causal island shores, web3-but-not-finance-illth).)"// — ''RULES: a roster carries a global now.'' Carried forward verbatim as a standing constraint in every later session summary.
 # ''2026-08-12'' — //"We lean toward requiring a raise on every boot. \"No global now/protection against empire/web3-but-not-illth-crypto\" lead the way here."// — LEANS, and names the law as a tie-breaker between designs.
 # ''2026-08-13'' — //"Aah pono, language itself has no global now (authority), we each carry our own maps at our personal resolution/grains/capabilities."// — the operator's own GLOSS: ''global now ≡ authority''. The sharpest one-line reading of the law the mines hold.
@@ -142,7 +142,7 @@ the direction and the boundary, not those fields.
 
 <<~/ahu>>
 
-<<~ ahu #/the-ruling>>
+<<~ ahu slot=`#/the-ruling`>>
 
 !! The ruling — Fork-4, resolved 2026-07-06
 
@@ -171,14 +171,14 @@ the direction and the boundary, not those fields.
 ''Three amendments the house landed AFTER the ruling, each dated:''
 
 * ''φ-accrual's wall-time, named and confined (2026-08-15).'' A research pass collided the ledger: //"φ-accrual carries wall-time inside it. That ledger entry and the 'no wall-clock durations' law cannot both stand."// A measuring pass the same day found the collision ''moot in code'' — `grep -rin "accrual\|phiAccrual"` over `packages/**/*.ts` returned ''zero hits''; `clock-recovery.ts:1-3` stands the opposite discipline in its own comment (//"recovers the FFZ rhythmic clock FROM the fed stream (no Date.now, no global now)… never a wall-clock timestamp"//). ''Nothing needs unwinding; something needs never-building.'' Roughtime likewise stands ''cited and unbuilt'' — the same pass found zero implementation, zero dependency, zero test.
-* ''THE ACCRUAL IMPOSSIBILITY (2026-08-15, and it does not yield).'' <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">> states it: //"''a logical epoch cannot accrue silence at all'' — a per-writer max-register advances only when somebody writes, so ''the neglected herm's counter stops at exactly the moment neglect begins''. Any clockless accrual MUST ride a monotone quantity driven by parties other than the neglected one."//
-* ''THE FOURTH OPTION, and the clockless-verdict fork RULED (operator, 2026-09-11).'' <<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">> `:117` records it: //"THE CLOCKLESS-VERDICT FORK — RULED (operator, 2026-09-11): READ FREE, ACT BY CONTRACT … the ahi kā reading stays a log-fact plus attenuation ALWAYS: clockless, accusing nobody."// The mechanism that escapes the impossibility reads as a ''RATIO against an INDEPENDENT ambient'' — the realm still while a motion it cannot drive advanced by K — never a duration (`ahi-ka.ts` header). The numeric half stands RATIFIED the same way (operator, 2026-09-13): `ambientFloor 8 · warmRatio 0.30 · coldRatio 0.05`, //"fiction-QA defaults"//.
+* ''THE ACCRUAL IMPOSSIBILITY (2026-08-15, and it does not yield).'' <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lamplighters`>> states it: //"''a logical epoch cannot accrue silence at all'' — a per-writer max-register advances only when somebody writes, so ''the neglected herm's counter stops at exactly the moment neglect begins''. Any clockless accrual MUST ride a monotone quantity driven by parties other than the neglected one."//
+* ''THE FOURTH OPTION, and the clockless-verdict fork RULED (operator, 2026-09-11).'' <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/field-collision`>> `:117` records it: //"THE CLOCKLESS-VERDICT FORK — RULED (operator, 2026-09-11): READ FREE, ACT BY CONTRACT … the ahi kā reading stays a log-fact plus attenuation ALWAYS: clockless, accusing nobody."// The mechanism that escapes the impossibility reads as a ''RATIO against an INDEPENDENT ambient'' — the realm still while a motion it cannot drive advanced by K — never a duration (`ahi-ka.ts` header). The numeric half stands RATIFIED the same way (operator, 2026-09-13): `ambientFloor 8 · warmRatio 0.30 · coldRatio 0.05`, //"fiction-QA defaults"//.
 
 ''So the liveness leg the ruling named φ-accrual has MOVED, by ruling, to a ratio-against-an-ambient; the safety leg and the witness leg stand as written.''
 
 <<~/ahu>>
 
-<<~ ahu #/supersession>>
+<<~ ahu slot=`#/supersession`>>
 
 !! Supersession — what the house means by the word
 
@@ -193,7 +193,7 @@ the direction and the boundary, not those fields.
 
 ''The ruling's own gate sentence'': //"Expiry = SUPERSESSION ('a higher epoch exists downstream of me'), NEVER 'a duration elapsed.'"// And for the pointer specifically: //"live until a higher-Sequence record appears"//.
 
-''The house has already written this law once, for the sibling grant type.'' <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">> `:163` (quote license): //"''AND THE RAISE ENDS BY SUPERSESSION, never by a duration.'' A first cut expressed the expiry as a wall-clock interval, which fails twice: two islands with different clocks disagree about whether a raise stands, and a vessel AT THE FLOOR holds no trustworthy wall time at all … A paused, forwarded or replayed raise ''self-revokes the instant a higher epoch lands'' — no broadcast, no clock … ''Fusing the two wires is how a global now gets smuggled back in.''"//
+''The house has already written this law once, for the sibling grant type.'' <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>> `:163` (quote license): //"''AND THE RAISE ENDS BY SUPERSESSION, never by a duration.'' A first cut expressed the expiry as a wall-clock interval, which fails twice: two islands with different clocks disagree about whether a raise stands, and a vessel AT THE FLOOR holds no trustworthy wall time at all … A paused, forwarded or replayed raise ''self-revokes the instant a higher epoch lands'' — no broadcast, no clock … ''Fusing the two wires is how a global now gets smuggled back in.''"//
 
 ''And it names the MECHANISM, refusing a third invention'' (`waking-floor:201-205`): //"A raise ENDS by non-renewal, exactly as every other grant in this house does. `raiseStands` reads `boundEpoch >= effective` against the Nexus's own lease epoch — the same comparison, against the same fold, that `device-delegation` already makes. The Nexus is the resource; its lease epoch is the fence. Supersession and expiry come from that one mechanism, with no clock anywhere."//
 
@@ -203,7 +203,7 @@ the direction and the boundary, not those fields.
 
 <<~/ahu>>
 
-<<~ ahu #/expiry>>
+<<~ ahu slot=`#/expiry`>>
 
 !! Does `expiry` survive — and in what shape
 
@@ -232,7 +232,7 @@ The operator asked (2026-08-16, quote license): //"Does this read 'no global now
 
 <<~/ahu>>
 
-<<~ ahu #/the-fence>>
+<<~ ahu slot=`#/the-fence`>>
 
 !! Is the FENCE mandatory in the ruling's own words
 
@@ -248,7 +248,7 @@ The operator asked (2026-08-16, quote license): //"Does this read 'no global now
 
 <<~/ahu>>
 
-<<~ ahu #/silence>>
+<<~ ahu slot=`#/silence`>>
 
 !! Where the operator's intent runs SILENT
 
@@ -263,7 +263,7 @@ The operator asked (2026-08-16, quote license): //"Does this read 'no global now
 
 <<~/ahu>>
 
-<<~ ahu #/pattern-integrity-rhymes>>
+<<~ ahu slot=`#/pattern-integrity-rhymes`>>
 
 !! Pattern-integrity rhymes the house already carries
 
@@ -281,7 +281,7 @@ Each row names what the house built, how it rhymes with the lease, and where it 
 
 <<~/ahu>>
 
-<<~ ahu #/plan>>
+<<~ ahu slot=`#/plan`>>
 
 !! The plan — the two gaps, red by red
 
@@ -322,7 +322,7 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<~ ahu #/questions>>
+<<~ ahu slot=`#/questions`>>
 
 !! Questions only the operator answers
 
@@ -332,27 +332,27 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 # ''Q2 — the pointer's `expiry` unit.'' Does the oracle/bulb pointer keep a wall-ms backstop ''NAMED'' as the floor (the `clockKind: "wall-floor"` shape), or move to ROLLS against `realmPace` (the `realm-bag.ts` shape), or drop the field entirely and let supersession alone carry it? Note the coupling: a Herm or a browser vessel that wires no realm clock would read every pointer as unexpirable under the rolls spelling.
 # ''Q3 — the fail polarity when a reader cannot judge.'' `realm-bag.ts` and `readAhiKa` both fail toward STANDING (//it cannot judge, so it never narrows// · `abstain`). The pointer today fails toward DEAD. Does the house's abstain discipline reach the oracle pointer, or does a public read face warrant the stricter polarity?
 # ''Q4 — the ledger line.'' `project_clockless_lease_model.md` still reads `LIVENESS = φ-accrual`, which the 2026-09-11 ruling superseded with the ratio-against-an-ambient. Does that memory line get re-written to the ruling, and does the WITNESS = Roughtime line carry a //cited, unbuilt, roster-tension-named// mark beside it?
-# ''Q5 — does this carrier cross.'' It sits at `docs/pono`. If its findings settle, does it move to `api/pono` beside <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>, or does it stay a mining record and let `waking-floor` carry the law forward alone?
+# ''Q5 — does this carrier cross.'' It sits at `docs/pono`. If its findings settle, does it move to `api/pono` beside <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>>, or does it stay a mining record and let `waking-floor` carry the law forward alone?
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ffz-clock">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/local-first`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/convergent-mesh`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/field-collision`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lamplighters`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ffz-clock`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Jxd-sTkS_lsnzI99bLitnmj24Gnu-mVLsS3mJ-LnyvY
+<<^ code=`&#x0003;`>>ni:///sha-256;SS-iPcDPdMwqghaLkSwhNjLQIn4inT0MgbKQwcMn5P0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

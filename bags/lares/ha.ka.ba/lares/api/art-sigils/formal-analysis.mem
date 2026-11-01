@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/art-sigils/formal-analysis">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/formal-analysis`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 uri-path  = "ha.ka.ba/lares/api/art-sigils/formal-analysis"
@@ -14,7 +14,7 @@ status    = "stable"
 retain    = true
 ```
 
-<<~ ahu #/orientation>>
+<<~ ahu slot=`#/orientation`>>
 ! Art Sigils — Formal Analysis
 
 When the operator invokes Formal Analysis upon an existing image, examine the evidence before forming conclusions; **the first visible output must supply one complete Inscription**: a single `<<art ...>>` invocation, total transmitted source <= 1,024 characters, with no explanatory preamble. Then proceed with a *verbose natural-language analysis*. A Folio requires a distinct request rather than following automatically from Formal Analysis. The initial reverse-specified sigil remains a plausible artistic description, never a recovered original prompt or verified creator intention.
@@ -22,7 +22,7 @@ When the operator invokes Formal Analysis upon an existing image, examine the ev
 The native core procedure bears the name `art`, while the discipline retains the name Art Sigils. The canonical declaration and its defaults live in [[Art Sigils Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]], outside the Inscription. A TW5 runtime requires that procedure in scope; a model may read the invocation directly. The source block excludes definitions, critical prose and wrapper metadata from its character budget.
 <<~/ahu>>
 
-<<~ ahu #/discipline>>
+<<~ ahu slot=`#/discipline`>>
 !! Look before composing the descriptive Inscription
 
 Before the first visible source block, privately inspect the actual artwork:
@@ -38,7 +38,7 @@ Before the first visible source block, privately inspect the actual artwork:
 The opening Inscription may keep weakly evidenced fields delegated or broad. Its concise scope should clarify what the image presents and invites, not smuggle the analyst's unresolved inferences into a false fact.
 <<~/ahu>>
 
-<<~ ahu #/response>>
+<<~ ahu slot=`#/response`>>
 !! Required output shape for invoked Formal Analysis
 
 **First visible output:** one native `<<art ...>>` invocation in a fenced `tiddlywiki` block, at most 1,024 characters including no procedure definition. Invocation arguments use backtick-wrapped values; the referenced canonical definition lives in the Procedures meme. Supply defensible `subject` and `read` values and other fields as supported. No explanatory preamble precedes this initial source block.
@@ -58,7 +58,7 @@ When closer inspection contradicts the opening Inscription, the analysis names t
 **Distinct Folio expression:** a requested Folio may organize the reading through scoped studies, counterpoints and facture. Formal Analysis reports evidence and interpretation, not a recovered original prompt or privileged access to the artist's intentions.
 <<~/ahu>>
 
-<<~ ahu #/comparative-reading>>
+<<~ ahu slot=`#/comparative-reading`>>
 !! Comparative reading across works, versions and receivers
 
 When an operator presents several versions of a work, make comparisons on **visible and source-grounded grounds**.
@@ -75,7 +75,7 @@ When an operator presents several versions of a work, make comparisons on **visi
 The authored Inscription, any associated Folio and the rendered work occupy distinct evidentiary positions. A viewer's reading neither recovers an originating prompt nor supersedes the stated artistic intention.
 <<~/ahu>>
 
-<<~ ahu #/counter-read>>
+<<~ ahu slot=`#/counter-read`>>
 !! Critical drift and failure modes
 
 * **Prompt archaeology:** visible effects do not reveal the originating model prompt, software, or private maker intention.
@@ -91,19 +91,19 @@ The authored Inscription, any associated Folio and the rendered work occupy dist
 <<~/ahu>>
 
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 !! Aftermath — critical limits
 
 Formal reading distinguishes observable form, plausible inference, documented manufacture and interpretive possibility. An Inscription articulates artistic intention, an image communicates visible form and a viewer brings situated knowledge; none automatically authenticates the others.
 
 Across painting, print, photography, installation, abstraction and pictures within pictures, the same method examines what appears, how parts relate and what supports each claim. Specialist subject lore belongs to the artwork and its sources, not to the general analytical method.
 <<~/ahu>>
-<<~ ahu #/sources>>
+<<~ ahu slot=`#/sources`>>
 !! Methodological anchors
 
 Getty CDWA subject analysis, material and facture; Harvard Project Zero's See, Think, Wonder and What Makes You Say That?; Panofsky, Arnheim, Baxandall, Kress/van Leeuwen, Mitchell and Warburg; Feldman's descriptive/interpretive/critical moves. See the Art Sigils Specification's research ahu for source paths and authority boundaries. No reference source alone settles the intention of an unknown artist.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PJ-gnSDofwV6sJ4rEofvULfuNoXxKEElyfYKa8rHjZw
+<<^ code=`&#x0003;`>>ni:///sha-256;M9TiorPiI79EDk2xwFlIROhKmD-YnKzYhdmfJsCK2qM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

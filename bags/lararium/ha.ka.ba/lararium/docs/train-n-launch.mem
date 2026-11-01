@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/train-n-launch">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/train-n-launch`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/train-n-launch"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Train N ~ the two-founder Nexus launch
 
@@ -24,7 +24,7 @@ uri-path  = "ha.ka.ba/lararium/docs/train-n-launch"
 
 <<~/ahu>>
 
-<<~ ahu #/ground>>
+<<~ ahu slot=`#/ground`>>
 
 !! Ground and crew
 
@@ -34,7 +34,7 @@ The Stable founding supplies the seed charter, persona zero, private charter and
 
 <<~/ahu>>
 
-<<~ ahu #/walk>>
+<<~ ahu slot=`#/walk`>>
 
 !! Commit walk
 
@@ -47,7 +47,7 @@ The Stable founding supplies the seed charter, persona zero, private charter and
 
 <<~/ahu>>
 
-<<~ ahu #/witness>>
+<<~ ahu slot=`#/witness`>>
 
 !! Witness and red window
 
@@ -57,7 +57,7 @@ Signed-inception fixtures and the seed door stand. Run changed package suites, b
 
 <<~/ahu>>
 
-<<~ ahu #/collisions>>
+<<~ ahu slot=`#/collisions`>>
 
 !! Collision sheet
 
@@ -73,7 +73,7 @@ Pure N image and read-back modules may run beside W's pure Noise, bundle and exc
 
 <<~/ahu>>
 
-<<~ ahu #/done>>
+<<~ ahu slot=`#/done`>>
 
 !! Done when
 
@@ -81,14 +81,14 @@ Two isolated vaults read both offer and final fingerprints, sign one fresh 2-of-
 
 <<~/ahu>>
 
-<<~ ahu #/rulings>>
+<<~ ahu slot=`#/rulings`>>
 
 !! Open rulings
 
-Offering Antigen scope and the fork-resolve act stand as house rulings under the operator's delegation (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). The signed inception commits to the offer fingerprint, the cadence inception citation and both fresh successor commitments, and refuses a reused successor. Its AID supplies the Offering act's stable scope: an Offering act signs that scope beside its epoch, and a receiver folds it only inside its own scope, at an epoch its lineage holds (`offeringReaderOfLineage`). The seal record names a sorted predecessor set: none at genesis, one at a roll and two at a reunion. ABANDON's verifier and REUNION's image stand; a two-predecessor record refuses `REUNION_UNBUILT` until the reunion verifier lands.
+Offering Antigen scope and the fork-resolve act stand as house rulings under the operator's delegation (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). The signed inception commits to the offer fingerprint, the cadence inception citation and both fresh successor commitments, and refuses a reused successor. Its AID supplies the Offering act's stable scope: an Offering act signs that scope beside its epoch, and a receiver folds it only inside its own scope, at an epoch its lineage holds (`offeringReaderOfLineage`). The seal record names a sorted predecessor set: none at genesis, one at a roll and two at a reunion. ABANDON's verifier and REUNION's image stand; a two-predecessor record refuses `REUNION_UNBUILT` until the reunion verifier lands.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FwCWpgAlOsUTanXT3U8MRZntBNBM8xMMwRrFG8Ap7Nw
+<<^ code=`&#x0003;`>>ni:///sha-256;aYAU5a7OYZNS2RBPYLgS7uEaTe_CJHI7RkfwlJ0p2yw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

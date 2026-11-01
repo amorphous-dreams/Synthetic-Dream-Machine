@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/parser">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/parser`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,11 +18,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/parser"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Parser Law
 
@@ -37,7 +37,7 @@ Both share the same sigil grammar. Their outputs differ in shape and consumer.
 
 <<~/ahu>>
 
-<<~ ahu #/memetic-parser>>
+<<~ ahu slot=`#/memetic-parser`>>
 
 !! MemeticParser — TW5 WikiParser Subclass
 
@@ -52,7 +52,7 @@ On construction it records a deny list; the deny list filters the inherited rule
 
 <<~/ahu>>
 
-<<~ ahu #/lar-sigil-dispatch>>
+<<~ ahu slot=`#/lar-sigil-dispatch`>>
 
 !! lar-sigil Dispatch Model
 
@@ -62,17 +62,17 @@ Implementation: `packages/lararium-tw5/src/wikirules/lar-sigil.ts`
 
 Dispatch proceeds in this fixed order on every `<<~` encounter:
 
-# ''pranala'' — `<<~ pranala from=FROM -> to=TO [attrs]>>`, and the block form closing at `<<~/pranala>>`. It keeps its own matcher because the edge graph needs `from` and `to` as SEPARATELY TYPED ends: a reader taking whichever address comes first names the SOURCE, and a graph built on that points backwards. Its parameters spell like every other sigil's; only the arrow between the two ends stands apart.
+# ''pranala'' — ``<<~ pranala from=`FROM` to=`TO` slot=`[attrs]`>>``, and the block form closing at `<<~/pranala>>`. It keeps its own matcher because the edge graph needs `from` and `to` as SEPARATELY TYPED ends: a reader taking whichever address comes first names the SOURCE, and a graph built on that points backwards. Its parameters spell like every other sigil's; only the arrow between the two ends stands apart.
 # ''compound sigil'' — `<<~ WORD1 [WORD2] ARGS>>` covers all remaining named sigils. Child-slot detection (`ahu`, `kau`, future) uses `grammarChildSlotNames()` — dynamic, not hardcoded. Compound with `closeKey` scans for `<<~/SIGIL>>` body; compound without `closeKey` produces a leaf node.
 # ''generic fallback'' — covers `<<~WORD>>` (no-space), C0 control-char forms, and any `<<~` not claimed above. When the generic sigil carries a registered closer and names anything but `pranala`, the fallback attempts block capture.
 
-''The carrier's own head rides the CONTROL frame, never a sharktooth.'' A carrier opens at `<<^ code="&#x0001;" … from="?" -> to="lar:///…">>` and closes at `<<^ code="&#x0004;" -> to="?">>` — the `<<^` scanner reads those, so no `<<~` rule stands for a header and none is tried here.
+''The carrier's own head rides the CONTROL frame, never a sharktooth.'' A carrier opens at `<<^ code="&#x0001;" … from="?" -> to="lar:///…">>` and closes at ``<<^ code=`&#x0004;` to=`?`>>`` — the `<<^` scanner reads those, so no `<<~` rule stands for a header and none is tried here.
 
 Dispatch output: `macrocall` nodes with `$variable = "~"` and `name = SIGIL` for compound forms; `$variable = "~pranala"` with `from`/`to`/`body` keyword attrs for pranala forms.
 
 <<~/ahu>>
 
-<<~ ahu #/grammar-self-hosting>>
+<<~ ahu slot=`#/grammar-self-hosting`>>
 
 !! Grammar Self-Hosting
 
@@ -100,7 +100,7 @@ These apply before grammar tiddlers finish loading. Grammar TOML `close_pattern`
 
 <<~/ahu>>
 
-<<~ ahu #/context-pointer>>
+<<~ ahu slot=`#/context-pointer`>>
 
 !! Context Pointer — `currentTiddler`
 
@@ -108,11 +108,11 @@ These apply before grammar tiddlers finish loading. Grammar TOML `close_pattern`
 
 It covers: meme URIs (`lar:///ha.ka.ba/...`), child-fragment URIs (slot children), base `$:/` TW5 system titles, and any other tiddler address the VM resolves. No separate `+currentMeme` alias stands — `currentTiddler` handles the full range.
 
-Filter expressions inside `<<~ ui FILTER>>` and guest-grammar blocks operate against `currentTiddler` via standard TW5 filter semantics. Both `wikitext-filter` and `x-tiddlywiki-filter` resolve context through `currentTiddler`.
+Filter expressions inside ``<<~ ui filter=`FILTER`>>`` and guest-grammar blocks operate against `currentTiddler` via standard TW5 filter semantics. Both `wikitext-filter` and `x-tiddlywiki-filter` resolve context through `currentTiddler`.
 
 <<~/ahu>>
 
-<<~ ahu #/normalization-open>>
+<<~ ahu slot=`#/normalization-open`>>
 
 !! Normalization — Open Question
 
@@ -124,7 +124,7 @@ Open question: should the live system adopt explicit normalization with warning 
 
 <<~/ahu>>
 
-<<~ ahu #/sigil-kinds>>
+<<~ ahu slot=`#/sigil-kinds`>>
 
 !! Sigil Kinds
 
@@ -150,13 +150,13 @@ family        sigil-family-*          FamilyRule only; no dispatch; governs edge
 
 <<~/ahu>>
 
-<<~ ahu #/control-sigils>>
+<<~ ahu slot=`#/control-sigils`>>
 
 !! C0 Control Sigil Roles
 
 The four C0 control characters (`&#x0001;`–`&#x0004;`) form the ''carrier spine'' — SOH · STX · ETX · EOT. Their roles, byte values, kapu aliases, and the REQUIRED-in-order law live in their one home: `memetic-wikitext-framing#carrier-spine` (#/edges). This section owns only how the parser ''checks'' them — it does not redefine the marks.
 
-`&#x0005;` (ENQ) and `&#x0006;` (ACK) appeared in earlier research as query/response throat operators. They did not land in the live system. Live query surface uses `<<~ ui FILTER>>` (kind: `query`) instead.
+`&#x0005;` (ENQ) and `&#x0006;` (ACK) appeared in earlier research as query/response throat operators. They did not land in the live system. Live query surface uses ``<<~ ui filter=`FILTER`>>`` (kind: `query`) instead.
 
 Parser SHOULD check:
 * `&#x0001;` appears near the document top with a valid target URI
@@ -167,14 +167,14 @@ Missing or out-of-order control sigils SHOULD emit structural warnings rather th
 
 <<~/ahu>>⊙:7c926d0ede886109
 
-<<~ ahu #/closure-law>>
+<<~ ahu slot=`#/closure-law`>>
 
 !! Closure Law
 
 Block forms open with a named opener and close with a named typed closer.
 
 ```text
-<<~ ahu #/slot>>      — opener
+<<~ ahu slot=`#/slot`>>      — opener
 
 <<~/ahu>>            — typed closer
 ```
@@ -191,7 +191,7 @@ Parser MUST reject ad-hoc closure spellings as canonical. A noncanonical closer 
 
 <<~/ahu>>
 
-<<~ ahu #/meta-block>>
+<<~ ahu slot=`#/meta-block`>>
 
 !! Meta Block
 
@@ -199,8 +199,8 @@ The root identity block carries the canonical identity payload for a meme — a 
 
 Canonical form:
 ````text
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/path/to/meme">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/path/to/meme`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 uri-path  = "..."
@@ -220,7 +220,7 @@ One further ahu control slot dissolves rather than projecting as a child: `#body
 
 <<~/ahu>>
 
-<<~ ahu #/meme-ast>>
+<<~ ahu slot=`#/meme-ast`>>
 
 !! Meme AST — Non-TW5 Path
 
@@ -245,18 +245,18 @@ Consumers: island adaptor (`island-adaptor.ts`), deserializer (`deserializer.ts`
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/render-pipeline">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/render-pipeline`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8MvDMmiD39wyFHrXDNQUdwr9BJIEZlQsCbr_Ph4ldJ0
+<<^ code=`&#x0003;`>>ni:///sha-256;wiRg7xq9ZW0dra5dOUbIwBD5HJbHOd_p55mx2MIwlL0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

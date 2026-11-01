@@ -1,7 +1,7 @@
 title: lar:///ha.ka.ba/lares/api/pono/submissions/lar-uri
 type: text/markdown
 source: lar:///ha.ka.ba/lares/docs/pono/lar-uri
-source-check: ni:///sha-256;IzkFKC2dwE5UgH1qG5hQNzg6MKpZ7KISfrW8gUX1AfQ
+source-check: ni:///sha-256;UYWZ89Q1K4vWrjtaDkyWnQDuttUPOAck2vRiJB-qglg
 variant: kramdown-rfc2629
 tongue: en
 projected-by: weave (lares meme project --to md · meme-project)

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/STANCE_LOCI">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/STANCE_LOCI`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = false
@@ -163,6 +163,6 @@ If the reader still has to guess what `0.65` means here, stance has not yet done
 
 ---
 
-<<^ code="&#x0003;">>ni:///sha-256;UeBuJBs-Y6nmWeM4Y8XUn11HcD-xu2-sQTpmTmkISzo
+<<^ code=`&#x0003;`>>ni:///sha-256;ExlFJkRKbuFTfjkI8b2DRmlZ0PQioJGYBDX_c-maNI8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

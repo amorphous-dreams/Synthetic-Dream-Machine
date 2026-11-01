@@ -1,7 +1,7 @@
 title: lar:///ha.ka.ba/lares/api/pono/submissions/tiddlywiki-wikitext
 type: text/markdown
 source: lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext
-source-check: ni:///sha-256;SLK_nZU5gLIOHJHaqT11r4xDRbmFrmFrnl9dyeUGPjA
+source-check: ni:///sha-256;owJCJIWNL06IhHVysgOKb4kCorgks0yn-f4mGa-X0mk
 variant: GFM
 tongue: en
 projected-by: weave (lares meme project --to md · meme-project)

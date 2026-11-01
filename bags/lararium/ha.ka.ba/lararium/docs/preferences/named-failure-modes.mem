@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/preferences/named-failure-modes">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/preferences/named-failure-modes`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/named-failure-modes"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Preferences — Named Failure Modes
 
@@ -26,7 +26,7 @@ This room holds the old stack's habit of naming failure modes so they can be rec
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance
 
@@ -39,7 +39,7 @@ Strong witnesses recur in:
 
 <<~/ahu>>
 
-<<~ ahu #/pressure>>
+<<~ ahu slot=`#/pressure`>>
 
 !! Pressure
 
@@ -59,7 +59,7 @@ Once named, it becomes easier to flag early and easier to discuss without false 
 
 <<~/ahu>>
 
-<<~ ahu #/relation>>
+<<~ ahu slot=`#/relation`>>
 
 !! Relation To Live Surfaces
 
@@ -68,17 +68,17 @@ A fuller future recovery may sort the old failure lexicon by domain.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/off-true">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/ooda-ha`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/off-true`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BOrcVdh2tHwtKvz_UPfLXQ16BBOoLg0f8IYaWuZWOUI
+<<^ code=`&#x0003;`>>ni:///sha-256;mezwyFkj1f-v_ZgRBWsNV6U6LbdBzSdHC2Oje6shAtE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/social-guardian-key-recovery-as-actually-pra-e9aa59">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/social-guardian-key-recovery-as-actually-pra-e9aa59`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/social-guardian-key-recovery-as-actually-pra-e9aa59"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Social / guardian key recovery as actually practiced and measured
 
@@ -28,7 +28,7 @@ The three largest messages one research spirit wrote, ''held verbatim and unedit
 
 <<~/ahu>>
 
-<<~ ahu #/message-1>>
+<<~ ahu slot=`#/message-1`>>
 
 !! Message 1 ~ 44,394 characters
 
@@ -285,7 +285,7 @@ Ordered by weight of evidence, not attention received.
 
 <<~/ahu>>
 
-<<~ ahu #/message-2>>
+<<~ ahu slot=`#/message-2`>>
 
 !! Message 2 ~ 38,733 characters
 
@@ -512,7 +512,7 @@ Separated from the evidence, and each tagged with which measurement drives it.
 
 <<~/ahu>>
 
-<<~ ahu #/message-3>>
+<<~ ahu slot=`#/message-3`>>
 
 !! Message 3 ~ 5,260 characters
 
@@ -551,12 +551,12 @@ Krombholz et al., *"The Other Side of the Coin"* (Financial Cryptography 2016, D
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xc1rCP72voyA28thZMKxyjWD_zi_zKDpOdGBkW8T5UE
+<<^ code=`&#x0003;`>>ni:///sha-256;GP9lHDX-7lSAGfXKkQSpV_wtXxGdlwm79RQ0zJmwdlU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

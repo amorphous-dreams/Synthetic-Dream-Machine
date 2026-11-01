@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/catalog-doc">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/catalog-doc`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
@@ -18,17 +18,17 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/catalog-doc"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Catalog Doc
 
 `CATALOG_DOC_URI = bagUri("catalog")` names the catalog document (`packages/lararium-mesh/src/lar-uris.ts`). Its `tiddlers` map holds registry records whose `text` fields carry Automerge document URLs. The genesis row gives the catalog `readPolicy: "public"` and `writePolicy: "private"` (`packages/lararium-mesh/src/genesis-doc.ts`).
 
-Keep the catalog small: registry pointers belong here; tiddler bodies and corpus content belong in their own documents. The content-plane law stands at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/automerge-tiga#/tiga-law">>.
+Keep the catalog small: registry pointers belong here; tiddler bodies and corpus content belong in their own documents. The content-plane law stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/automerge-tiga#/tiga-law`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/entries>>
+<<~ ahu slot=`#/entries`>>
 
 !! Registry Entries
 
@@ -40,24 +40,24 @@ Wiki leaves use `wikiBagUri(slug) = bagUri(slug)` as catalog keys (`packages/lar
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Catalog Law
 
 * The catalog reads public and writes private (`packages/lararium-mesh/src/genesis-doc.ts`).
 * Keep the catalog small: no tiddler text bodies or full corpus content.
-* An Automerge URL locates bytes; it never authorizes access (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/automerge-tiga#/tiga-law">>).
+* An Automerge URL locates bytes; it never authorizes access (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/automerge-tiga#/tiga-law`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/readiness-keys">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/open-phases">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/readiness-keys`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/open-phases`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jnE-rKJTzGBjmBZp4q3puxaQhbEdNu7huKCI8FIfLXQ
+<<^ code=`&#x0003;`>>ni:///sha-256;JTuWEWtxUGz3JGjt1Ibm3jAOT_csvoxFkGAqSbK6ucw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

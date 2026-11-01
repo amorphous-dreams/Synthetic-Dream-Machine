@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/train-s3-launch">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/train-s3-launch`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/train-s3-launch"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Sealed-store step 3 ~ the document store's rest
 
@@ -24,7 +24,7 @@ uri-path  = "ha.ka.ba/lararium/docs/train-s3-launch"
 
 <<~/ahu>>
 
-<<~ ahu #/ground>>
+<<~ ahu slot=`#/ground`>>
 
 !! Ground and crew
 
@@ -32,18 +32,18 @@ Start the live storage cut after O1 supplies a production verified face, signer 
 
 <<~/ahu>>
 
-<<~ ahu #/walk>>
+<<~ ahu slot=`#/walk`>>
 
 !! Commit walk
 
 # ''PURE: value and lineage vectors.'' Fix sealed `change` and `checkpoint` references under the step-1 format. Include parent manifests, a random authenticated ciphertext address, a key version and a fresh checkpoint before any new-version change. A bad tag yields no bytes. A second plaintext with equal content still takes a fresh private ciphertext address.
 # ''PURE: face decision.'' Define the session-face check over every fetch, write, catalog resolution and content read. A correct key alone grants no read. A refused catalog ask reveals no name. A value the store cannot open reads as a named refusal, never as an absent value.
 # ''LIVE: sealed Repo rest.'' Connect the holder's values and lockboxes to the production document store. Seal each stored value, hydrate only after authentication and the face check, and hand the sealed-store shore to the session view. Supply `freshBase` from the document store; commit the checkpoint before the admission's first change or lockbox permits that version.
-# ''LIVE: roll and restart.'' Roll content keys at a counted seat removal, retain causal parent references and reopen sealed values after restart. Each replacement takes its re-seal record, signed by the face session that writes it and naming the removal act that authorized the roll (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>).
+# ''LIVE: roll and restart.'' Roll content keys at a counted seat removal, retain causal parent references and reopen sealed values after restart. Each replacement takes its re-seal record, signed by the face session that writes it and naming the removal act that authorized the roll (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/witness>>
+<<~ ahu slot=`#/witness`>>
 
 !! Witness and red window
 
@@ -51,7 +51,7 @@ Face-checked hydration takes a behavioural witness at the production reader, nev
 
 <<~/ahu>>
 
-<<~ ahu #/collisions>>
+<<~ ahu slot=`#/collisions`>>
 
 !! Collision sheet
 
@@ -65,7 +65,7 @@ Face-checked hydration takes a behavioural witness at the production reader, nev
 
 <<~/ahu>>
 
-<<~ ahu #/done>>
+<<~ ahu slot=`#/done`>>
 
 !! Done when
 
@@ -73,14 +73,14 @@ Repo values rest under randomized authenticated sealing. Every document and cont
 
 <<~/ahu>>
 
-<<~ ahu #/rulings>>
+<<~ ahu slot=`#/rulings`>>
 
 !! Rulings
 
-The roadmap's sealed-store ruling and step-3 pointer hold this cut (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/side-lanes">>). The re-seal proof stands ruled: its record's format lands with this step.
+The roadmap's sealed-store ruling and step-3 pointer hold this cut (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/side-lanes`>>). The re-seal proof stands ruled: its record's format lands with this step.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aCu9iX4qBYOv9T4k4sioyZv5koZXniWEW_fS1Iw-F3I
+<<^ code=`&#x0003;`>>ni:///sha-256;S2qcbrLzy-4No4w-3s6svEFbpNQQ6fZCZKuGZU1jJTM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

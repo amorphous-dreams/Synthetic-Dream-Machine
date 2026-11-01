@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/function/magic-decode">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/components/function/magic-decode`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/sdm/components/function/magic-decode"
 
 ! Magic Decode
 
-<<~ ahu #/definition>>
+<<~ ahu slot=`#/definition`>>
 
 !! Definition
 
@@ -27,7 +27,7 @@ Decoding a magical inscription or interface layer into active, readable meaning 
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -35,7 +35,7 @@ Turns opaque marks into usable instruction: one inscription per activation at ba
 
 <<~/ahu>>
 
-<<~ ahu #/interaction>>
+<<~ ahu slot=`#/interaction`>>
 
 !! Interaction
 
@@ -43,7 +43,7 @@ Depends on `domain/divination`; pairs with `function/archive` for the handshake 
 
 <<~/ahu>>
 
-<<~ ahu #/filters>>
+<<~ ahu slot=`#/filters`>>
 
 !! Filters
 
@@ -54,7 +54,7 @@ Depends on `domain/divination`; pairs with `function/archive` for the handshake 
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -62,14 +62,14 @@ Depends on `domain/divination`; pairs with `function/archive` for the handshake 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/components/tag`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WweVmHIOrfAdnXNnbccNfHzDarLKyUe-jakyY1GBtrA
+<<^ code=`&#x0003;`>>ni:///sha-256;h4cc0omE9SferwRVOBYdAxSsXtTf-22nEvONU_I78zE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

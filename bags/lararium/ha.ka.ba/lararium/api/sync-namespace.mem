@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/sync-namespace">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/sync-namespace`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
@@ -21,11 +21,11 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/sync-namespace"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/core-claim>>
+<<~ ahu slot=`#/core-claim`>>
 
 ! Sync Namespace — What Crosses the Boundary, and What the Filters Keep
 
@@ -35,7 +35,7 @@ This forms the ''title-level companion'' to disk-projection's bag-level law. Dis
 
 <<~/ahu>>
 
-<<~ ahu #/tw5-boundary>>
+<<~ ahu slot=`#/tw5-boundary`>>
 
 !! The TW5 `$:/` boundary, mirrored
 
@@ -43,7 +43,7 @@ TW5 reserves the `$:/` URI prefix for system tiddlers that stay browser-local �
 
 <<~/ahu>>
 
-<<~ ahu #/system-tiddlers>>
+<<~ ahu slot=`#/system-tiddlers`>>
 
 !! System tiddlers carry `lar:///` titles
 
@@ -60,7 +60,7 @@ This lets browser-side shadow-tiddler edits and in-VM plugin re-packs sync to di
 
 <<~/ahu>>
 
-<<~ ahu #/tag-values>>
+<<~ ahu slot=`#/tag-values`>>
 
 !! Tag values stay exempt
 
@@ -70,7 +70,7 @@ The predicate reads ''titles'', never tag values — the two never collide.
 
 <<~/ahu>>
 
-<<~ ahu #/browser-local>>
+<<~ ahu slot=`#/browser-local`>>
 
 !! Browser-local by design
 
@@ -78,7 +78,7 @@ Drafts, ephemeral UX state, and per-operator working surface remain in the `$:/`
 
 <<~/ahu>>
 
-<<~ ahu #/dual-distribution>>
+<<~ ahu slot=`#/dual-distribution`>>
 
 !! Dual distribution — a packaging convention
 
@@ -88,18 +88,18 @@ This dual-distribution shape names a ''packaging convention, not a namespace exc
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/save-path">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/save-path`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;F7Vgbx2ge9yzwxpGGBZYWcivix9eD2O1Yuy-W3j9oes
+<<^ code=`&#x0003;`>>ni:///sha-256;zDL5g9shReuidMcUzXLuDTVUb7sVfQFvQwFDZBF0JAs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

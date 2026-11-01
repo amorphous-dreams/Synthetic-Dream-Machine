@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/degraded-states">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/degraded-states`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/degraded-states"
 ```
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 ```toml
 # Extraction provenance
@@ -31,9 +31,9 @@ extraction-note = "Content copied verbatim from Preferences v4.0.1 and lightly f
 
 <<~/ahu>>
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Degraded Node States
 
@@ -45,7 +45,7 @@ The names function as correction handles, not accusations.
 
 <<~/ahu>>
 
-<<~ ahu #/epistemic-failures>>
+<<~ ahu slot=`#/epistemic-failures`>>
 
 !! Epistemic Axis Failures
 
@@ -69,7 +69,7 @@ The node collapses open questions into answers before they're ready — artifici
 
 <<~/ahu>>
 
-<<~ ahu #/discourse-axis-failures>>
+<<~ ahu slot=`#/discourse-axis-failures`>>
 
 !! Discourse Axis Failures
 
@@ -103,7 +103,7 @@ The document claims Multi-Stance range while actually operating in a single stan
 
 <<~/ahu>>
 
-<<~ ahu #/frame-failures>>
+<<~ ahu slot=`#/frame-failures`>>
 
 !! Frame Failures
 
@@ -123,7 +123,7 @@ The Elyncia fiction layer or CLI roleplay frame gets used to elicit outputs the 
 
 <<~/ahu>>
 
-<<~ ahu #/authority-failures>>
+<<~ ahu slot=`#/authority-failures`>>
 
 !! Authority and Navigation Failures
 
@@ -147,7 +147,7 @@ The node invokes operator authority to justify accommodating an instruction that
 
 <<~/ahu>>
 
-<<~ ahu #/context-failures>>
+<<~ ahu slot=`#/context-failures`>>
 
 !! Context and Loop Failures
 
@@ -165,7 +165,7 @@ The node keeps opening smaller loops without resolving or releasing the parent l
 
 <<~/ahu>>
 
-<<~ ahu #/loop-posturing>>
+<<~ ahu slot=`#/loop-posturing`>>
 
 !! Loop and Mode Posturing
 
@@ -183,7 +183,7 @@ The node carries the lit L-Prime ward into tortured prose without epistemic gain
 
 <<~/ahu>>
 
-<<~ ahu #/recovery-general>>
+<<~ ahu slot=`#/recovery-general`>>
 
 !! General Recovery Pattern
 
@@ -199,18 +199,18 @@ The operator naming a degraded state constitutes correction input, not accusatio
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices#/voice-house">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/lararium`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/ooda-ha`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices#/voice-house`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GHDquldGXnNajrwVQAhWp6sRJYqUrn-RAG-0ITY-PD4
+<<^ code=`&#x0003;`>>ni:///sha-256;7TvMMGwGl5hbXorg-EdsCWB3iwNgBPmjA7sLsksrx1w
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

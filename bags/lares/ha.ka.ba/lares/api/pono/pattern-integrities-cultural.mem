@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/pattern-integrities-cultural">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/pattern-integrities-cultural`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -15,17 +15,17 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/pattern-integrities-cultural"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Entry ~ Negentropy Handoff · Sensorium Pattern Integrities
 
 > ''PROMOTED from the research bag.'' Fifteen cultural pattern-integrities, each crucible-constrained against a cargo-cult null — canon that sat in history because it was gathered as research. Several rows answer live questions on the identity plane, and the identity work rediscovered two of them at cost before anyone walked here (`failure-states/not-walking-before-minting`):
-> * ''P7 Ise shikinen sengū'' — //the stored object never reads as the building; it reads as the CAPACITY TO RE-STAND the building, kept alive only by mandated exercise.// That is the capacity/exercise split the gauge needs, with a thirteen-century worked example: mechanism-presence grounds a capacity, and the capacity stays ''parasitic on a history of actual exercise''. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation#/the-gauge">>
-> * ''P8 The Icelandic Lawspeaker'' — recitation-or-lapse, the law RECITED rather than owned. The assembly's own officer, and the shape `the-thing-event` reaches for. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-thing-event#/the-word">>
+> * ''P7 Ise shikinen sengū'' — //the stored object never reads as the building; it reads as the CAPACITY TO RE-STAND the building, kept alive only by mandated exercise.// That is the capacity/exercise split the gauge needs, with a thirteen-century worked example: mechanism-presence grounds a capacity, and the capacity stays ''parasitic on a history of actual exercise''. <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation#/the-gauge`>>
+> * ''P8 The Icelandic Lawspeaker'' — recitation-or-lapse, the law RECITED rather than owned. The assembly's own officer, and the shape `the-thing-event` reaches for. <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-thing-event#/the-word`>>
 > * ''P14 The Camino waymark'' — navigation by held bearing, which is `lar:`'s own law (//it names; it does not fetch//) with pilgrims' feet under it.
 > * ''P3 Roman stipulatio'' — felicity conditions and a nine-century ''softening gradient'', which reads directly on how a rite erodes rather than lapses.
 
@@ -35,7 +35,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/pattern-integrities-cultural"
 
 <<~/ahu>>
 
-<<~ ahu #/crucible-constraints>>
+<<~ ahu slot=`#/crucible-constraints`>>
 
 !! I ~ The Crucible Constraints (adversarial law, govern everything below)
 
@@ -67,7 +67,7 @@ Parry-Lord oral-formulaic scholarship (web-grounded): the natural state of oral 
 
 <<~/ahu>>
 
-<<~ ahu #/dive-one>>
+<<~ ahu slot=`#/dive-one`>>
 
 !! II ~ Dive One · one integrity, five beds
 
@@ -105,7 +105,7 @@ A compact boot text (c. 530) that has re-stood the same institutional architectu
 
 <<~/ahu>>
 
-<<~ ahu #/dive-two>>
+<<~ ahu slot=`#/dive-two`>>
 
 !! III ~ Dive Two · where does the record live?
 
@@ -143,7 +143,7 @@ Held at pattern level, with the respect owed a living sacred tradition whose acc
 
 <<~/ahu>>
 
-<<~ ahu #/dive-three>>
+<<~ ahu slot=`#/dive-three`>>
 
 !! IV ~ Dive Three · distributed correctness with no center
 
@@ -181,7 +181,7 @@ Hadith science welded every transmitted report to its ''chain of named transmitt
 
 <<~/ahu>>
 
-<<~ ahu #/organ-mappings>>
+<<~ ahu slot=`#/organ-mappings`>>
 
 !! V ~ Organ Mappings (the shapes, seated in the code)
 
@@ -227,7 +227,7 @@ order against meaning against rhythm — in place of hoped ones.
 
 <<~/ahu>>
 
-<<~ ahu #/steering-note>>
+<<~ ahu slot=`#/steering-note`>>
 
 !! VI ~ One finding from the news stratum that survives the crossing
 
@@ -237,7 +237,7 @@ Why it rides in this file: it names, at civilizational scale, the exact structur
 
 <<~/ahu>>
 
-<<~ ahu #/close>>
+<<~ ahu slot=`#/close`>>
 
 !! VII ~ The braid, whole
 
@@ -251,6 +251,6 @@ Feed the node. Run the bench whole. Grade on the chain. Keep the cliff independe
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;A4pFbKg7WYfLVj3DVuMvH0ZXpeG_FIQWoUIo7Blb-uw
+<<^ code=`&#x0003;`>>ni:///sha-256;Y30Bx2E5NoKRyDKeg4cnJyK6mgoyFR2SA3ZdMaCZRX4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

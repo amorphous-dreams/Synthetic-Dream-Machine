@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/browser-persona-ring-parity">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/browser-persona-ring-parity`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,9 +18,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/browser-persona-ring-parity"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/scope-and-question>>
+<<~ ahu slot=`#/scope-and-question`>>
 
 ! Browser PersonaGroup ring — local capability scout
 
@@ -144,5 +144,5 @@ No code deletion, browser import, inbound transport, grant format change, or enf
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;G71ehAbuySK3P9aDTz6g7saQKWBc_5bwfmmybZ6MLQ0
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0003;`>>ni:///sha-256;6UEb2Ibrk_Mmox3iBYM02_sTf72tU_m_VK53KC9y7dg
+<<^ code=`&#x0004;` to=`?`>>

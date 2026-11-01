@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/canvas-shell-ux">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/canvas-shell-ux`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
@@ -21,7 +21,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/canvas-shell-ux"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Canvas Shell UX ~ the canvas comes first, the chrome wraps it
 
@@ -33,7 +33,7 @@ The study takes ''Kinopio'' as its reference implementation (`kinopio.club`, Vue
 
 <<~/ahu>>
 
-<<~ ahu #/pointer-events>>
+<<~ ahu slot=`#/pointer-events`>>
 
 !! The pointer-events discipline
 
@@ -45,7 +45,7 @@ Chrome sits at ''fixed viewport corners'' with `position: fixed; pointer-events:
 
 <<~/ahu>>
 
-<<~ ahu #/the-ios-viewport>>
+<<~ ahu slot=`#/the-ios-viewport`>>
 
 !! ⚠ The iOS visual viewport ~ a fixed header does not stay fixed
 
@@ -59,7 +59,7 @@ The studied answer says to ''reposition the chrome against `visualViewport` on a
 
 <<~/ahu>>
 
-<<~ ahu #/one-finger-pan>>
+<<~ ahu slot=`#/one-finger-pan`>>
 
 !! One-finger pan ~ let the browser do it
 
@@ -71,7 +71,7 @@ The studied answer says to ''reposition the chrome against `visualViewport` on a
 
 <<~/ahu>>
 
-<<~ ahu #/the-boundary-is-visible>>
+<<~ ahu slot=`#/the-boundary-is-visible`>>
 
 !! A boundary the reader cannot see gets crossed by accident
 
@@ -81,7 +81,7 @@ This decorates nothing. Capability enforces the `canon-boundary` crossing, and p
 
 <<~/ahu>>
 
-<<~ ahu #/dual-load>>
+<<~ ahu slot=`#/dual-load`>>
 
 !! Dual-load ~ the local replica renders first, the network merges after
 
@@ -97,7 +97,7 @@ This decorates nothing. Capability enforces the `canon-boundary` crossing, and p
 
 <<~/ahu>>
 
-<<~ ahu #/layout>>
+<<~ ahu slot=`#/layout`>>
 
 !! The layout, surface-invariant
 
@@ -123,10 +123,10 @@ This decorates nothing. Capability enforces the `canon-boundary` crossing, and p
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8FOG7UShlYalHehSVe5bZqckg2tMGYBMfTKElk7Rzi0
+<<^ code=`&#x0003;`>>ni:///sha-256;yAwMfBZI98PZzQdByQQhvYqyd6sZ2_aNe7MsrAm4HaU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

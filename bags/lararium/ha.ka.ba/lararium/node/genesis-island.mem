@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/genesis-island">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/node/genesis-island`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -15,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/node/genesis-island"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The genesis island ~ how one artifact gets built, and why the builder holds no doctrine
 
@@ -25,7 +25,7 @@ what it declares about each blob, and what it refuses to decide.
 
 <<~/ahu>>
 
-<<~ ahu #/three-layers>>
+<<~ ahu slot=`#/three-layers`>>
 
 !! Three layers, and the middle one touches no disk
 
@@ -48,7 +48,7 @@ content and discovers the second as state.
 
 <<~/ahu>>
 
-<<~ ahu #/the-declaration>>
+<<~ ahu slot=`#/the-declaration`>>
 
 !! A blob's class gets DECLARED at the mint, never read off its path
 
@@ -71,7 +71,7 @@ that re-derived the class from a path would stand as a second reader, free to di
 
 <<~/ahu>>
 
-<<~ ahu #/regions>>
+<<~ ahu slot=`#/regions`>>
 
 !! Three regions, two ratchets
 
@@ -89,7 +89,7 @@ domain literal. Three hand-written folds read like an inconsistency and enact th
 
 <<~/ahu>>
 
-<<~ ahu #/determinism>>
+<<~ ahu slot=`#/determinism`>>
 
 !! The actor seed makes two builds the same build
 
@@ -113,16 +113,16 @@ than none, because every vessel downstream would carry the lie by hash.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-node/scripts/build-genesis-island.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/scripts/build-genesis-island.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Y0q10VcxsOOYpGVXDGoo0yPZIVx4KcrYWMI1lIdZ3RQ
+<<^ code=`&#x0003;`>>ni:///sha-256;TfmoeTsCWsd_oj1bEDeP1DqMAI0lv6AlpVx5k2LBd84
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

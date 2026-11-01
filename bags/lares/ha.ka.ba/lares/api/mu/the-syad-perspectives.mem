@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
@@ -20,11 +20,11 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/mu/the-syad-perspectives"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Syad Perspectives
 
@@ -34,7 +34,7 @@ Standpoint declares the measure.
 
 <<~/ahu>>
 
-<<~ ahu #/relationship>>
+<<~ ahu slot=`#/relationship`>>
 
 !! The Relationship --- Standpoints License Predications
 
@@ -46,7 +46,7 @@ The two wings hold a ''relationship, not a mapping.'' A stance does not //equal/
 
 <<~/ahu>>
 
-<<~ ahu #/the-seven>>
+<<~ ahu slot=`#/the-seven`>>
 
 !! The Seven --- a Sequential Plane Pierced by One Pole
 
@@ -66,7 +66,7 @@ Six of the seven run a ''sequential axis'' (//krama//): assert from one standpoi
 
 <<~/ahu>>
 
-<<~ ahu #/avaktavya>>
+<<~ ahu slot=`#/avaktavya`>>
 
 !! Avaktavya Law --- the Inexpressible Pole
 
@@ -78,7 +78,7 @@ Two stances stand nearest the pole. ''Poet'' reaches it outward --- analogical r
 
 <<~/ahu>>
 
-<<~ ahu #/syad-law>>
+<<~ ahu slot=`#/syad-law`>>
 
 !! Syad Law
 
@@ -90,7 +90,7 @@ Do not flatten the five measures into one truth spectrum.
 
 <<~/ahu>>
 
-<<~ ahu #/stances>>
+<<~ ahu slot=`#/stances`>>
 
 !! Stance Register Table
 
@@ -118,12 +118,12 @@ One or more stance icons or names may surface in text-spans or other generated o
 
 <<~/ahu>>
 
-<<~ ahu #/syad-sigil>>
+<<~ ahu slot=`#/syad-sigil`>>
 
 !! The `syad` Sigil — license the standpoints
 
 `<<~ stance>>` parameterless surfaces all five standpoints — the full reading, quiet stances named.
-`<<~ stance "🏛️ 🗡️">>` invokes one or more — Lares adopts the named standpoints as an explicit focus, and the sigil licenses each adopted stance into a non-absolutist claim (the //syāt// office, #relationship). A parameterized reading surfaces exactly the standpoints invoked, named in full, never an omission that implies silence. The `syad` sigil carries the reading; the `lar:` URI names place only and holds no stance query.
+``<<~ stance named=`🏛️ 🗡️`>>`` invokes one or more — Lares adopts the named standpoints as an explicit focus, and the sigil licenses each adopted stance into a non-absolutist claim (the //syāt// office, #relationship). A parameterized reading surfaces exactly the standpoints invoked, named in full, never an omission that implies silence. The `syad` sigil carries the reading; the `lar:` URI names place only and holds no stance query.
 
 ''Input as text'' (the name) ''or Unicode'' (the codepoint / hex-entity); the render surface ''presents'' the emoji. The emoji column names the render target; the input form carries the written name or codepoint. All three forms parse to the same standpoint:
 
@@ -138,17 +138,17 @@ One or more stance icons or names may surface in text-spans or other generated o
 Names invoke the standpoints directly; forms MAY mix in one sigil:
 
 ```text
-<<~ stance "Philosopher Satirist">>                          # text names
-<<~ stance "&#x1F3DB; &#x1F5E1; &#x1F52E;">>                 # Unicode input --- renders 🏛️ 🗡️ 🔮
-<<~ stance "Philosopher Poet Satirist Humorist Private">>    # all five, named in full
-<<~ stance "Philosopher 🗡️ Private">>                        # forms mixed
+<<~ stance named=`Philosopher Satirist`>>                          # text names
+<<~ stance named=`&#x1F3DB; &#x1F5E1; &#x1F52E;`>>                 # Unicode input --- renders 🏛️ 🗡️ 🔮
+<<~ stance named=`Philosopher Poet Satirist Humorist Private`>>    # all five, named in full
+<<~ stance named=`Philosopher 🗡️ Private`>>                        # forms mixed
 ```
 
 A standpoint MAY carry a `mu` tool through the optional `:` bind (`🏛️/*!`); the full grammar lives in #stance-tool-modulation.
 
 <<~/ahu>>
 
-<<~ ahu #/stance-tool-modulation>>
+<<~ ahu slot=`#/stance-tool-modulation`>>
 
 !! Stance Tool Modulation
 
@@ -191,7 +191,7 @@ Examples:
 
 <<~/ahu>>
 
-<<~ ahu #/multi-stance>>
+<<~ ahu slot=`#/multi-stance`>>
 
 !! Multi-Stance
 
@@ -201,7 +201,7 @@ The number does not widen itself. Each claim carries its own confidence, and the
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 !! The Reading Loop
 
@@ -213,13 +213,13 @@ The number does not widen itself. Each claim carries its own confidence, and the
 
 <<~/ahu>>
 
-<<~ ahu #/source-shelf>>
+<<~ ahu slot=`#/source-shelf`>>
 
 !! Source Shelf
 
 The naya↔predication relationship grounds in the Jain canon: Umāsvāti's //Tattvārtha Sūtra// 1.34–35 (five standpoints unfolding to seven), Matilal's two-wings framing of anekānta, and Akalaṅka's //krama/////yugapad// distinction that sets the `avaktavya` pole apart. The extracted derivation lives in docs space; Discordian witness texts rest in library space.
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives#/provenance">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives#/provenance`>>
 
 ```toml
 family = "reference"
@@ -234,7 +234,7 @@ payload = {
 
 <<~/pranala>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/library/discordia/malaclypse-the-younger/are-discordians-serious#/reading">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/library/discordia/malaclypse-the-younger/are-discordians-serious#/reading`>>
 
 ```toml
 family = "reference"
@@ -253,7 +253,7 @@ The invariant stays here.
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -292,20 +292,20 @@ satirist-operational = "nasti-avaktavya"
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives">>
-<<~ loulou "lar:///ha.ka.ba/lares/library/discordia/malaclypse-the-younger/are-discordians-serious">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/chao`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-four-tools`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/library/discordia/malaclypse-the-younger/are-discordians-serious`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;A-0sEEDE4LV1VqkMfKg-BphH9QS1I_JeqkC1dQo7V-0
+<<^ code=`&#x0003;`>>ni:///sha-256;3E3awDa6HZNnmmpkFiUz-FLmmyVgtLCMxWUHw6mvZcI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

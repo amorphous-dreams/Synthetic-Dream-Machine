@@ -4,10 +4,10 @@ description: Audit or correct EXISTING text for L-Prime conformance under lar://
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable          = true
@@ -25,7 +25,7 @@ type               = "text/memetic-wikitext+tiddlywiki"
 uri-path           = "ha.ka.ba/lares/api/mu/l-prime/SKILL"
 ```
 
-<<~ ahu #/place>>
+<<~ ahu slot=`#/place`>>
 
 ! L-Prime Auditor
 
@@ -33,7 +33,7 @@ The ward seeds generation forward; the loci governs first-pass composition. ''Th
 
 <<~/ahu>>
 
-<<~ ahu #/trigger>>
+<<~ ahu slot=`#/trigger`>>
 
 !! Trigger
 
@@ -41,7 +41,7 @@ A request to scan, flag, compare before/after, or correct ''already-settled'' wo
 
 <<~/ahu>>
 
-<<~ ahu #/loop>>
+<<~ ahu slot=`#/loop`>>
 
 !! The Loop
 
@@ -63,7 +63,7 @@ A request to scan, flag, compare before/after, or correct ''already-settled'' wo
 
 <<~/ahu>>
 
-<<~ ahu #/surfaces>>
+<<~ ahu slot=`#/surfaces`>>
 
 !! Output Surfaces
 
@@ -87,15 +87,15 @@ A sentence turn beats a lecture. Output stays compact: location, bucket, reason,
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XjzZGvKM221CIh0Oem8TLZOmG6leO80ijCeS-O_lsKg
+<<^ code=`&#x0003;`>>ni:///sha-256;-cdDmQdyZdNEyTxbFDjgo5w_A0bfTFIRoP_BQlNYqSY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

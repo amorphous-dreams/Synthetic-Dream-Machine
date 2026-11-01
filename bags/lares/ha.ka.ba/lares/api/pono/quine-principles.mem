@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/quine-principles">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/quine-principles`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -19,7 +19,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/quine-principles"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Quine Principles
 
@@ -37,7 +37,7 @@ In neither: the description stands as a separate documentation artifact.
 
 <<~/ahu>>
 
-<<~ ahu #/p1-unified-store>>
+<<~ ahu slot=`#/p1-unified-store`>>
 
 !! P1 — Unified Store
 
@@ -62,7 +62,7 @@ The meme CARRIES the documentation; the documentation INHABITS the meme.
 
 <<~/ahu>>
 
-<<~ ahu #/p2-no-privileged-meta>>
+<<~ ahu slot=`#/p2-no-privileged-meta`>>
 
 !! P2 — No Privileged Meta-Level
 
@@ -87,7 +87,7 @@ as a `filterTiddlers()` call. The filter layer serves as the reflection API.
 
 <<~/ahu>>
 
-<<~ ahu #/p3-causal-closure>>
+<<~ ahu slot=`#/p3-causal-closure`>>
 
 !! P3 — Causal Closure
 
@@ -114,7 +114,7 @@ the content graph for P3 reasons.
 
 <<~/ahu>>
 
-<<~ ahu #/p4-live-feedback>>
+<<~ ahu slot=`#/p4-live-feedback`>>
 
 !! P4 — Live Feedback
 
@@ -141,7 +141,7 @@ the gate prefers the meme over the compiled TypeScript equivalent.
 
 <<~/ahu>>
 
-<<~ ahu #/tw5-smalltalk-comparison>>
+<<~ ahu slot=`#/tw5-smalltalk-comparison`>>
 
 !! TiddlyWiki vs Smalltalk
 
@@ -160,7 +160,7 @@ Lararium's answer: a filter expression that returns the self-describing layer.
 
 <<~/ahu>>
 
-<<~ ahu #/the-inviolable-kernel>>
+<<~ ahu slot=`#/the-inviolable-kernel`>>
 
 !! The inviolable kernel ~ what a self-hosting system refuses to let itself rewrite
 
@@ -168,11 +168,11 @@ Lararium's answer: a filter expression that returns the self-describing layer.
 
 ''Lararium's kernel reads as `resolveLarUri()` plus the parse-dispatch engine.'' A meme supplies grammar patterns, family contracts and templates ''as data'', and modifies nothing about the mechanism that reads them. That boundary lets P1's unified store stay safe: everything may live in the wiki precisely because the thing that opens the wiki does not.
 
-''And the shadow layer names the shape for `lares/`.'' TiddlyWiki's read-through gives a user tiddler the power to override a shadow at a different address and never to delete one, with the shadow layer regenerating from disk at every compile. A carrier under `lares/` takes the same posture: ''override at a new address, never unmake the address beneath.'' That rhymes exactly with the retirement law — an address MUST keep meaning what it meant (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme#/retirement">>).
+''And the shadow layer names the shape for `lares/`.'' TiddlyWiki's read-through gives a user tiddler the power to override a shadow at a different address and never to delete one, with the shadow layer regenerating from disk at every compile. A carrier under `lares/` takes the same posture: ''override at a new address, never unmake the address beneath.'' That rhymes exactly with the retirement law — an address MUST keep meaning what it meant (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme#/retirement`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/if-can-live-in-wiki>>
+<<~ ahu slot=`#/if-can-live-in-wiki`>>
 
 !! The "If It CAN Live In The Wiki It MUST" Rule
 
@@ -198,7 +198,7 @@ meme's `status-date` field.
 
 <<~/ahu>>
 
-<<~ ahu #/ipld-bridge>>
+<<~ ahu slot=`#/ipld-bridge`>>
 
 !! IPLD Bridge
 
@@ -220,7 +220,7 @@ at the access level.
 
 <<~/ahu>>
 
-<<~ ahu #/heleuma-anchor-system>>
+<<~ ahu slot=`#/heleuma-anchor-system`>>
 
 !! Heleuma Anchor System
 
@@ -250,17 +250,17 @@ of the pattern. The TypeScript file stands as the material instantiation; the me
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/pattern-integrity">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/pattern-integrity`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/local-first`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/vm-projection-bus`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JP7MwadrN7OpXq_Wipsj53ypvWi_eUfBwp9B4FR6788
+<<^ code=`&#x0003;`>>ni:///sha-256;WMqVi8dxwFAJPbwLAQruZED1zY-Iua7l-6g16I-tqrw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

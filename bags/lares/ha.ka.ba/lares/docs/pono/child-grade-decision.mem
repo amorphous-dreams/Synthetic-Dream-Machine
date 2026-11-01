@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/child-grade-decision">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/child-grade-decision`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -21,15 +21,15 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/child-grade-decision"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
 
 
 
-<<~ ahu #/ground>>
+<<~ ahu slot=`#/ground`>>
 
 ! Ground — what stands open, and what this carrier refuses to do
 
-''Lares (Gatekeeper).'' Seam (b) of the syncer back-parity floor stands as the last open one. Its question, in the roundtable's own words (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">> `#/questions` §7): //should a slot child's save be graded at all?// — a child's save grading against its OWN authored text, or a child reading UNGRADED by law.
+''Lares (Gatekeeper).'' Seam (b) of the syncer back-parity floor stands as the last open one. Its question, in the roundtable's own words (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable`>> `#/questions` §7): //should a slot child's save be graded at all?// — a child's save grading against its OWN authored text, or a child reading UNGRADED by law.
 
 The operator, handed that fork, answered: "needs more technical context, tiddler ontology, consequences, etc."
 
@@ -41,7 +41,7 @@ That refutation names the shape any new proposal must survive. ''A cure that han
 
 <<~/ahu>>
 
-<<~ ahu #/ontology>>
+<<~ ahu slot=`#/ontology`>>
 
 ! The tiddler ontology — what a "child" holds, concretely
 
@@ -60,7 +60,7 @@ That refutation names the shape any new proposal must survive. ''A cure that han
 
 !! What rides the child, what rides the parent
 
-* ''The child holds the body bytes authoritatively.'' `deserializer.ts:566-569`: the parent's text keeps only `<<~ kahea ahu #/a>>` where the block stood; the child record holds what the author wrote inside it.
+* ''The child holds the body bytes authoritatively.'' `deserializer.ts:566-569`: the parent's text keeps only ``<<~ kahea ahu slot=`#/a`>>`` where the block stood; the child record holds what the author wrote inside it.
 * ''The child carries NO `file-path`'' (`deserializer.ts:590-591`): a fragment record never owns a disk file; its carrier root does. So a child has no independent projection and no independent disk round trip.
 * ''The child carries its own `type`'' when its meta declares one (`deserializer.ts:598-601`) — a markdown section under a memetic root keeps `text/markdown`.
 * ''`$fragment-parent` points ONE LEVEL up'', never at the meme root (`deserializer.ts:562-564`), so a climb to the root walks a hop chain.
@@ -79,7 +79,7 @@ The fields that DO decide things decide ADDRESS, not grade: `isMemeRoot` (`place
 
 <<~/ahu>>
 
-<<~ ahu #/grading>>
+<<~ ahu slot=`#/grading`>>
 
 ! What "grades" means mechanically — the call, followed
 
@@ -118,7 +118,7 @@ Traced end to end for a slot child's save from a stock browser:
 
 <<~/ahu>>
 
-<<~ ahu #/forks>>
+<<~ ahu slot=`#/forks`>>
 
 ! The two forks, each with its failure mode
 
@@ -157,7 +157,7 @@ Both leave the ROOT's door exactly as it stands, both leave the address law (`is
 
 <<~/ahu>>
 
-<<~ ahu #/third-shape>>
+<<~ ahu slot=`#/third-shape`>>
 
 ! The third shape — the instrument neither fork names
 
@@ -202,7 +202,7 @@ faults: ["2 text frames stand where the grammar admits one — only the first ve
 
 <<~/ahu>>
 
-<<~ ahu #/ladder>>
+<<~ ahu slot=`#/ladder`>>
 
 ! The consequence ladder — what closes behind you
 
@@ -244,7 +244,7 @@ faults: ["2 text frames stand where the grammar admits one — only the first ve
 
 <<~/ahu>>
 
-<<~ ahu #/stories>>
+<<~ ahu slot=`#/stories`>>
 
 ! Three humans, and what each one sees
 
@@ -281,7 +281,7 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 <<~/ahu>>
 
-<<~ ahu #/standing-law>>
+<<~ ahu slot=`#/standing-law`>>
 
 ! What the house's law already decides — and where it stops
 
@@ -329,7 +329,7 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 <<~/ahu>>
 
-<<~ ahu #/measured>>
+<<~ ahu slot=`#/measured`>>
 
 ! The measurements — collided 2026-09-13
 
@@ -337,7 +337,7 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 | # | what ran | answer |
 |---|---|---|
-| 1 | `deserialize(child, "<<~ ahu #/z>>\\nunclosed")` | `grade: info` · `info:unclosed-frame` |
+| 1 | ``deserialize(child, "<<~ ahu slot=`#/z`>>\\nunclosed")`` | `grade: info` · `info:unclosed-frame` |
 | 2 | `deserialize(child, "<<~/ahu>>\\nstray closer")` | `grade: warning` · `warning:orphan-close:ahu` |
 | 3 | `placeMeme(root, readMeme(root))` over a pasted child | `noop · clean · 0 diagnostics · 0 landed` — the fixed point, re-confirmed |
 | 4 | `deserialize(child, "plain prose")` — CONTROL | `grade: clean` · 0 diagnostics |
@@ -365,7 +365,7 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 <<~/ahu>>
 
-<<~ ahu #/what-a-ruling-would-say>>
+<<~ ahu slot=`#/what-a-ruling-would-say`>>
 
 ! The shape of an answer, unfilled
 
@@ -378,27 +378,27 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 ''Answering (1) alone leaves (2), (3) and (4) open, and a hand enacting a bare yes or no will pick them silently.'' That reads as the same drift the (b′) seam opened through: one law, two spellings, and the second one moved.
 
-''RULED (operator, 2026-10-04) — the write-grain half, canonized.'' [[ahu #/quoteblock-floor|lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor]] answers the part of (1)-(4) this carrier can settle without the operator choosing an instrument: un-decomposable content fences to a quoteblock, never drops, at the grain the WRITE lands in — the whole chunk on ingest (no family exists yet), or just that ahu's body on an in-place update (the family, and the `<<~ ahu #/slot>>` wrapper, untouched). A fenced span declares zero slots, so the ahu-fidelity guard measured at #/third-shape passes by construction — the paste case this carrier opened on (#/forks) can no longer mint a phantom slot or a false conflict once it lands un-decomposable. This settles the FLOOR under any instrument the operator still picks for (2); it does not pick that instrument, and (3) and (4) stand open exactly as before.
+''RULED (operator, 2026-10-04) — the write-grain half, canonized.'' [[ahu #/quoteblock-floor|lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor]] answers the part of (1)-(4) this carrier can settle without the operator choosing an instrument: un-decomposable content fences to a quoteblock, never drops, at the grain the WRITE lands in — the whole chunk on ingest (no family exists yet), or just that ahu's body on an in-place update (the family, and the ``<<~ ahu slot=`#/slot`>>`` wrapper, untouched). A fenced span declares zero slots, so the ahu-fidelity guard measured at #/third-shape passes by construction — the paste case this carrier opened on (#/forks) can no longer mint a phantom slot or a false conflict once it lands un-decomposable. This settles the FLOOR under any instrument the operator still picks for (2); it does not pick that instrument, and (3) and (4) stand open exactly as before.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 ! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme-api-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kahea`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/handle-card`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Vl7cFQvDQPZBz7UR9JkgjFtDy6vgAz6Rl3yihfB6EAQ
+<<^ code=`&#x0003;`>>ni:///sha-256;9oQvxdCPCLxI66SrPq8IkQMXMWGdD-RBjbe1vuKCWvk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

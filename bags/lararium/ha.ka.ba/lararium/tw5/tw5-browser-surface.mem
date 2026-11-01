@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -15,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/tw5-browser-surface"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -46,14 +46,14 @@ engine. No worker-side TW5 authority may import these types without an explicit 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/browser/deletion-map">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/deletion-map`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WRI-ydVBSpTDHHiShtnK4weN_AbD60s7aG_38DJKhFs
+<<^ code=`&#x0003;`>>ni:///sha-256;c_D6ewMM4n25yNcA62oZARXBC1ij6jK9KeM3TzWBnsU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

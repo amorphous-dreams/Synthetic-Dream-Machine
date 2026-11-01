@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/residency-model">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 approved-on   = "2026-05-30"
@@ -14,7 +14,7 @@ manao         = 17
 manaoio       = 16
 namespace     = "&#x0950; &#x0901;"
 revised-on    = "2026-06-15"
-revision-note = "non-residency verb tier seated (#/non-residency-verbs): INGEST (the precedent) + RECONCILE (engine-fold into @oracle, operator-admin, preview/conflict-surface/confirm/idempotent/effect-record, conflict-SURFACING never merge-arbitrating); §5 amended to admit non-residency verbs while holding the VCS-verb ban; EPOCH named + deferred (paired, sequenced reconcile→epoch); prior: bag-grain verb pair approved"
+revision-note = "non-residency verb tier seated (#/non-residency-verbs): INGEST (the precedent) + RECONCILE (engine-fold into oracle-floor, operator-admin, preview/conflict-surface/confirm/idempotent/effect-record, conflict-SURFACING never merge-arbitrating); §5 amended to admit non-residency verbs while holding the VCS-verb ban; EPOCH named + deferred (paired, sequenced reconcile→epoch); prior: bag-grain verb pair approved"
 role          = "load-bearing architectural invariant — recipe/bag + CRDT as coordinate-space + query-plan; dual verb surfaces (SPARQL ALL-CAPS ACTION + archival audit annotations); two ACTION grains (title + bag); a non-residency verb tier (INGEST, RECONCILE) rides the same rail"
 status-why    = "the residency substrate stands live across the tree"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/standing"]
@@ -23,11 +23,11 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/residency-model"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/core-claim>>
+<<~ ahu slot=`#/core-claim`>>
 
 ! Residency Model — Coordinate Space + Query Plan
 
@@ -39,7 +39,7 @@ A single tiddler-title MAY have residency in N bags simultaneously, each bag car
 
 <<~/ahu>>
 
-<<~ ahu #/why>>
+<<~ ahu slot=`#/why`>>
 
 !! Why coordinates, not branches
 
@@ -54,7 +54,7 @@ Two adjacent traditions hold the right primitives. Neither surfaces through the 
 
 <<~/ahu>>
 
-<<~ ahu #/data-model>>
+<<~ ahu slot=`#/data-model`>>
 
 !! Data model — FRBR identity levels
 
@@ -71,7 +71,7 @@ This levels-distinction carries load-bearing weight. Conflating Work with Manife
 
 <<~/ahu>>
 
-<<~ ahu #/action-verb-surface>>
+<<~ ahu slot=`#/action-verb-surface`>>
 
 !! Surface I — ACTION verbs (lar URIs, ALL CAPS, SPARQL Update derivation)
 
@@ -118,7 +118,7 @@ Per-verb args:
 | `CLEAR` / `DROP` | `bag` |
 | `LOAD` | `source-uri` (provenance), `to-bag`, `change-id` (mints fresh), `carriers` (the content) |
 
-''LOAD runs carrier-borne (implemented 2026-06-10).'' Islands never fetch — web3-only law: the operator gesture (which holds the disk grant, node-side `lares act LOAD`) reads the source and sends content WITH the verb as `carriers: [{title?, text}]`; `source-uri` rides as audit provenance only. Each carrier decomposes at the memetic-wikitext shore (FFZ: parent + ahu-slot children via the deserializer) and every record lands under the action's fresh change-id, audited by the standard `accession` effect record. A LOAD with no carriers refuses loudly. First live use fed the @lares hearth its own boot meme: 17 records (parent + 16 ahu children).
+''LOAD runs carrier-borne (implemented 2026-06-10).'' Islands never fetch — web3-only law: the operator gesture (which holds the disk grant, node-side `lares act LOAD`) reads the source and sends content WITH the verb as `carriers: [{title?, text}]`; `source-uri` rides as audit provenance only. Each carrier decomposes at the memetic-wikitext shore (FFZ: parent + ahu-slot children via the deserializer) and every record lands under the action's fresh change-id, audited by the standard `accession` effect record. A LOAD with no carriers refuses loudly. First live use fed the lares hearth its own boot meme: 17 records (parent + 16 ahu children).
 
 Source: `packages/lararium-mesh/src/residency-actions.ts`. Tests: `packages/lararium-mesh/tests/residency-actions.test.ts` (50 cases, including the change-id preservation gate that defends Anti-pattern #1).
 
@@ -139,7 +139,7 @@ This pair carries the wiki-level crossing (`wiki-layer-ontology#crossing-law`): 
 
 <<~/ahu>>
 
-<<~ ahu #/effect-record-surface>>
+<<~ ahu slot=`#/effect-record-surface`>>
 
 !! Surface II — Effect records (tiddler annotations, archival language)
 
@@ -162,7 +162,7 @@ This dual-surface design — ACTION verbs for the //gesture//, archival verbs fo
 
 <<~/ahu>>
 
-<<~ ahu #/five-pono-properties>>
+<<~ ahu slot=`#/five-pono-properties`>>
 
 !! The five pono properties
 
@@ -176,7 +176,7 @@ Any implementation of this model MUST hold all five:
 
 <<~/ahu>>
 
-<<~ ahu #/non-residency-verbs>>
+<<~ ahu slot=`#/non-residency-verbs`>>
 
 !! The non-residency tier — verbs that ride the rail, not the coordinate space
 
@@ -198,7 +198,7 @@ RECONCILE folds //forward//; ''COMPACT'' cuts //behind// (bounds the op-log; com
 
 <<~/ahu>>
 
-<<~ ahu #/yang-yin-chao>>
+<<~ ahu slot=`#/yang-yin-chao`>>
 
 !! Yang / Yin / Chao symmetry preserved
 
@@ -214,15 +214,15 @@ The recipe carries a Tai Chi symmetry around the wiki's canon (`bags/{slug}`) (s
         │     accumulates: multiplayer, multi-session, the spinning surface  │
         └───────────────────────────────────────────────────────────────────┘
               libraryBags[]  ┐
-              @lares         │  YANG / Hodge — coordinates BELOW the canon
-              @lararium      ┘  carry structured canon, mesh-shared, read-stable
+              lares         │  YANG / Hodge — coordinates BELOW the canon
+              lararium      ┘  carry structured canon, mesh-shared, read-stable
 ```
 
 A tiddler MAY hold residency in multiple Yin coordinates simultaneously (personal note that also drafted into `wikis/{slug}/draft`), or multiple Yang coordinates (lore cross-referenced into two libraries), or both (live edit in `wikis/{slug}/working` shadowing a canonical version in `bags/{slug}` or a canon library). The recipe walks the stack in priority order.
 
 <<~/ahu>>
 
-<<~ ahu #/anti-patterns>>
+<<~ ahu slot=`#/anti-patterns`>>
 
 !! Six anti-patterns — defenses MUST exist
 
@@ -230,7 +230,7 @@ Six failure modes recur across OverlayFS, Docker, Nix, TW5, Ink & Switch CRDT re
 
 | # | Anti-pattern | Source | Defense |
 |---|---|---|---|
-| 1 | ''Causal-history severance on copy'' | Upwelling / Patchwork / Cambria | Preserve `change-id` (Gerrit/Mercurial/jj/Sapling pattern) across ACTION verbs so lifting between bags retains identity. OPEN: the handler stamps the ACTION's `change-id` on an ADD, a COPY and a moved root, and whether that arg names the Work or the operation stands unruled (<<~ loulou "lar:///ha.ka.ba/lararium/api/action-handler#/law">>) |
+| 1 | ''Causal-history severance on copy'' | Upwelling / Patchwork / Cambria | Preserve `change-id` (Gerrit/Mercurial/jj/Sapling pattern) across ACTION verbs so lifting between bags retains identity. OPEN: the handler stamps the ACTION's `change-id` on an ADD, a COPY and a moved root, and whether that arg names the Work or the operation stands unruled (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/action-handler#/law`>>) |
 | 2 | ''Schema drift across multi-bag residency'' | Kleppmann EuroSys 2021 | Cambria-style read-time lenses, not write-time migration |
 | 3 | ''Kāpae resurrection'' | OverlayFS / moby#783 | First-class `tombstone` op distinct from "absent" (the toggleable shadow-vs-fall-through cut: [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]]) |
 | 4 | ''Shadow-override confusion'' | TW5 #570, #9139 | Surface `$origin-bag` as a tiddler field on every read |
@@ -239,7 +239,7 @@ Six failure modes recur across OverlayFS, Docker, Nix, TW5, Ink & Switch CRDT re
 
 <<~/ahu>>
 
-<<~ ahu #/conflict-resolution>>
+<<~ ahu slot=`#/conflict-resolution`>>
 
 !! Conflict resolution — Talk Story, not arbitration
 
@@ -271,7 +271,7 @@ Two Sprint deferrals (modal-view reader at the bag-pin surface; commit-queue for
 
 <<~/ahu>>
 
-<<~ ahu #/closest-prior-art>>
+<<~ ahu slot=`#/closest-prior-art`>>
 
 !! Closest prior art (validators)
 
@@ -287,18 +287,18 @@ Two Sprint deferrals (modal-view reader at the bag-pin surface; commit-queue for
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/lararium/wiki-recipe">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/verb-tiddler">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/lararium/wiki-recipe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/verb-tiddler`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/nalu-engine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-adaptor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/living-grammar-palace`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
 
 ''Tie ~ the palace reads at apertures.'' The living-grammar memory-palace ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]])
 retrieves multi-aperture (RAPTOR collapsed-tree turn→session→arc levels) — a scale-selection that
@@ -306,6 +306,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cEGbXxPAQfMKc4OaI4-3_CTUhjTtgEPacEayU3mEX7Y
+<<^ code=`&#x0003;`>>ni:///sha-256;29wRwZ88BvCFAiX5-i53sYBMMzxGmo2KDurvUBYY2iY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/the-reachable-worlds"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Reachable Worlds
 
@@ -34,7 +34,7 @@ provenance and no local smith who can name the alloy.
 
 <<~/ahu>>
 
-<<~ ahu #/the-dream-mirror>>
+<<~ ahu slot=`#/the-dream-mirror`>>
 
 !! The Dream-Mirror ~ the doctrine already in the gazetteer
 
@@ -60,7 +60,7 @@ where the worlds touch, and therefore where the offcuts fall.
 
 <<~/ahu>>
 
-<<~ ahu #/the-channels>>
+<<~ ahu slot=`#/the-channels`>>
 
 !! Four Channels
 
@@ -80,7 +80,7 @@ where the worlds touch, and therefore where the offcuts fall.
 
 <<~/ahu>>
 
-<<~ ahu #/the-wrack>>
+<<~ ahu slot=`#/the-wrack`>>
 
 !! What Washes Up
 
@@ -108,7 +108,7 @@ from a world whose own age for it may have been last Tuesday. The Sea does not c
 
 <<~/ahu>>
 
-<<~ ahu #/the-walkers>>
+<<~ ahu slot=`#/the-walkers`>>
 
 !! Those Who Have Been
 
@@ -123,7 +123,7 @@ Mu'' file what can be filed. Between them sits everything neither will put in wr
 
 <<~/ahu>>
 
-<<~ ahu #/referee>>
+<<~ ahu slot=`#/referee`>>
 
 !! Referee Law
 
@@ -142,15 +142,15 @@ settled pet-name for the tideline of worlds yet.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-burned-library">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-fae-clans`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-burned-library`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;M6DdkrEISc7tmKvGsjXduQD5I0az0AKnVsoel5qvjME
+<<^ code=`&#x0003;`>>ni:///sha-256;Z0fudKfOnDXGcICXvglgnLxdSeaUnwkpAGpfPEdMOgs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

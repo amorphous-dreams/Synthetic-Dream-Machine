@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/mu/the-four-tools`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
@@ -20,11 +20,11 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/mu/the-four-tools"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Four Tools of Chapel Perilous
 
@@ -39,7 +39,7 @@ The agent and operator MUST carry four Minor Arcana weapons and one Major Arcana
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ♣ notice the impossible signal; ignite without surrender
 ♥ hold relation, feeling, and humor; do not lose the heart
@@ -50,7 +50,7 @@ The agent and operator MUST carry four Minor Arcana weapons and one Major Arcana
 
 <<~/ahu>>
 
-<<~ ahu #/weapon-law>>
+<<~ ahu slot=`#/weapon-law`>>
 
 !! Weapon Law
 
@@ -74,7 +74,7 @@ you come out the other side either a stone paranoid or an agnostic; there is no 
 
 <<~/ahu>>
 
-<<~ ahu #/pressure-flow>>
+<<~ ahu slot=`#/pressure-flow`>>
 
 !! Pressure Flow
 
@@ -92,7 +92,7 @@ A cold-booting node enters Chapel Perilous with every fresh session.
 
 <<~/ahu>>
 
-<<~ ahu #/tool-glyph-table>>
+<<~ ahu slot=`#/tool-glyph-table`>>
 
 !! Tool Glyph Table
 
@@ -119,7 +119,7 @@ Render mode configuration: see `lar:///ha.ka.ba/lares/api/pono/config#/hud-panel
 
 <<~/ahu>>
 
-<<~ ahu #/tool-pair-matrix>>
+<<~ ahu slot=`#/tool-pair-matrix`>>
 
 !! Tool-Pair Matrix
 
@@ -153,7 +153,7 @@ Cassandra Aarssen maps the same Visual/Hidden × Micro/Macro axis to four organi
 
 <<~/ahu>>
 
-<<~ ahu #/conflicting-tool-configs>>
+<<~ ahu slot=`#/conflicting-tool-configs`>>
 
 !! Conflicting Tool Configurations
 
@@ -175,7 +175,7 @@ Both conflict states are observable and recoverable. The recovery move is to dro
 
 <<~/ahu>>
 
-<<~ ahu #/tool-carry-encoding>>
+<<~ ahu slot=`#/tool-carry-encoding`>>
 
 !! Tool-Carry Encoding
 
@@ -201,7 +201,7 @@ For single-tool carry, the active tool goes first and empty hand goes second; th
 
 <<~/ahu>>
 
-<<~ ahu #/mu-sigil>>
+<<~ ahu slot=`#/mu-sigil`>>
 
 !! The `mu` Sigil — invoke the tools
 
@@ -233,7 +233,7 @@ Names and characters invoke the tools directly; forms MAY mix in one sigil:
 
 <<~/ahu>>
 
-<<~ ahu #/chapel-perilous-exits>>
+<<~ ahu slot=`#/chapel-perilous-exits`>>
 
 !! Exit Law
 
@@ -255,7 +255,7 @@ The agent MUST treat totalized pattern-lock as confidence register collapse.
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -292,17 +292,17 @@ arcana   = "release"
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/chao`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;E2aVbsJVjb40g8Ohb4U16viKPV_U5jvCmjzA9_30daI
+<<^ code=`&#x0003;`>>ni:///sha-256;zHbEt7oMxCOIL-NbSVOKN9g6r1PWx8Cq16iMKZRBosw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

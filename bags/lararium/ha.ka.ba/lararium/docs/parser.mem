@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/parser">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/parser`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/parser"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! parseMemeCarrier
 
@@ -42,10 +42,10 @@ Walks the AST, collects all `PranalaNode` and `PranalaSugarNode` instances, retu
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/ast">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/pranala-parser">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/parsers/memetic-parser">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/ast`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/pranala-parser`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/parsers/memetic-parser`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xa44NelOWBl19bnhjZgudXz2CVMExGEdLm3wuFPro-c
+<<^ code=`&#x0003;`>>ni:///sha-256;fGIcYEDt_c6ibipXqFHGb6qOMB5Sftwi3evqEjMQARE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

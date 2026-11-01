@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/train-w-launch">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/train-w-launch`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/train-w-launch"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Train W ~ the wire and face-proof launch
 
@@ -24,7 +24,7 @@ uri-path  = "ha.ka.ba/lararium/docs/train-w-launch"
 
 <<~/ahu>>
 
-<<~ ahu #/ground>>
+<<~ ahu slot=`#/ground`>>
 
 !! Ground and crew
 
@@ -34,11 +34,11 @@ K12 already mints random per-Nexus face keys, keeps sealed custody rows and sign
 
 <<~/ahu>>
 
-<<~ ahu #/walk>>
+<<~ ahu slot=`#/walk`>>
 
 !! Commit walk
 
-# ''PURE: browser measurement and fixed vectors.'' The first flight stands measured and fixed in `gate-exchange.ts`: `lar-gate`, then one 128-character token, the 101 selecting `lar-gate` alone (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-browser-envelope">>). The gate names each silence from a fixed vocabulary (`face-gate.ts`). `noise-ik.ts`, `face-proof-subjects.ts`, `face-authority.ts`, `session-signer.ts`, `session-document-view.ts`, `gate-bundle.ts`, `gate-exchange.ts`, `face-gate.ts` and `face-dial.ts` stand called, the live gate path among their callers (`gate-bundle.ts`, `face-gate.ts`, `face-dial.ts`). The built-image trace contract stands drafted and unregistered (`.train-w-built-image.test.ts`); its driver remains unregistered.
+# ''PURE: browser measurement and fixed vectors.'' The first flight stands measured and fixed in `gate-exchange.ts`: `lar-gate`, then one 128-character token, the 101 selecting `lar-gate` alone (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof#/the-browser-envelope`>>). The gate names each silence from a fixed vocabulary (`face-gate.ts`). `noise-ik.ts`, `face-proof-subjects.ts`, `face-authority.ts`, `session-signer.ts`, `session-document-view.ts`, `gate-bundle.ts`, `gate-exchange.ts`, `face-gate.ts` and `face-dial.ts` stand called, the live gate path among their callers (`gate-bundle.ts`, `face-gate.ts`, `face-dial.ts`). The built-image trace contract stands drafted and unregistered (`.train-w-built-image.test.ts`); its driver remains unregistered.
 # ''BUILT: fleet join and the face-subject seam.'' Fleet join carries the root-signed `device-admit/v1` edge, gate carriage, sealed address secret, vessel face-key certificates and add-a-face grants on node and browser. `openJoinedFaceSession` and the pure grant ring stand. `lares fleet join offer|answer --face <i>` carries the charter, household admit, floor pins and, with `--doc-url`, the document URL in the root-signed answer (`fleet-join.ts`, `device-admit.ts`). The admit carriage carries its full sovereign sync route pin inside signed bytes; `nexus-contract.ts` preserves the anchor and prior-roll checks.
 
 # ''LIVE: SEALED FACE GATE.'' Node and browser dialers open each vessel socket through attach, verdict and open. The pin selects `(hearth, Nexus, route, tier)`; `gateKnock` and `knockSegment` in `gate-bundle.ts` form the knock, the sealed presentation carries face authority, and `GateSessionChannel` opens after the verdict (`face-dial.ts`, `face-gate.ts`, `gate-session-channel.ts`). The floor announcement signs under its pinned bundle. A herm's `herm-relay-port.ts` accepts persona-KEL drops over HTTP and stands no socket; its floor gate answers the knock on the vessel's own gate server (`herm-carriage.ts`) at the Nexus whose quorum counts its `carry` (`nexus carry-for`, `nexus carry --floor-pin`, `nexus carry-take`).
@@ -46,7 +46,7 @@ K12 already mints random per-Nexus face keys, keeps sealed custody rows and sign
 
 <<~/ahu>>
 
-<<~ ahu #/briefs>>
+<<~ ahu slot=`#/briefs`>>
 
 !! Six fixed module briefs
 
@@ -63,7 +63,7 @@ Each builder returns an API, vectors and a fixed refusal vocabulary. Pure work m
 
 <<~/ahu>>
 
-<<~ ahu #/cutover>>
+<<~ ahu slot=`#/cutover`>>
 
 !! Assembled cutover and proof order
 
@@ -73,7 +73,7 @@ Prove in this order: pure Noise, chain, bundle and exchange vectors; two-root cu
 
 <<~/ahu>>
 
-<<~ ahu #/slices>>
+<<~ ahu slot=`#/slices`>>
 
 !! Slices ~ the assembled cutover cut into seven owners
 
@@ -93,7 +93,7 @@ Three seams freeze first, each with vectors: C's `GateSessionChannel`, which the
 
 <<~/ahu>>
 
-<<~ ahu #/collisions>>
+<<~ ahu slot=`#/collisions`>>
 
 !! Collision sheet
 
@@ -107,7 +107,7 @@ Three seams freeze first, each with vectors: C's `GateSessionChannel`, which the
 
 <<~/ahu>>
 
-<<~ ahu #/done>>
+<<~ ahu slot=`#/done`>>
 
 !! Red window and done when
 
@@ -117,6 +117,6 @@ Done when every enabled production dial emits Noise IK first, follows one typed 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EM49DG8FbgXuFVkoaI2Xy7Fs5ifHEL2TC1tFc6kVrZ4
+<<^ code=`&#x0003;`>>ni:///sha-256;tTkM2ZQEhATE97kGtjowzJb2JXijOc4BxxvA0oGoM7w
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

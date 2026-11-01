@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/witness/architecture/v0.0-transition">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/witness/architecture/v0.0-transition`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/sdm/witness/architecture/v0.0-transition"
 
 ! Architecture Witness — v0.0 Transition
 
-<<~ ahu #/what-v0-was>>
+<<~ ahu slot=`#/what-v0-was`>>
 
 !! What v0.0 Was
 
@@ -39,7 +39,7 @@ It carried three proof Powers (read-magic, floating-disc, shield-ward), a `power
 
 <<~/ahu>>
 
-<<~ ahu #/why-it-retired>>
+<<~ ahu slot=`#/why-it-retired`>>
 
 !! Why It Retired
 
@@ -57,7 +57,7 @@ The edge taxonomy collapsed to one flat verb (`#has`, no family/role) for compos
 
 <<~/ahu>>
 
-<<~ ahu #/migration-notes>>
+<<~ ahu slot=`#/migration-notes`>>
 
 !! Migration Notes
 
@@ -67,6 +67,6 @@ The edge taxonomy collapsed to one flat verb (`#has`, no family/role) for compos
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fAdDzLEZ8omQVGvMYrhC0Nbdb0mMRFPDYCE5Xj5Nkbo
+<<^ code=`&#x0003;`>>ni:///sha-256;FqV5rfGWrQaxOPGRgFt6c6Tul-6cUGi92gKVkLEclLE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

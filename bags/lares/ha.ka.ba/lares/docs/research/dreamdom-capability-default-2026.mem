@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/dreamdom-capability-default-2026">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/dreamdom-capability-default-2026`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/dreamdom-capability-default-2026"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! DreamDOM's capability default, 2026 ~ measure the vessel, carry the authority
 
@@ -23,7 +23,7 @@ A browser that carries the full DreamDOM runs it by default, and the boot learns
 
 <<~/ahu>>
 
-<<~ ahu #/rulings>>
+<<~ ahu slot=`#/rulings`>>
 
 !! The operator's rulings (2026-10-28)
 
@@ -39,7 +39,7 @@ A browser that carries the full DreamDOM runs it by default, and the boot learns
 
 <<~/ahu>>
 
-<<~ ahu #/rulings-realm>>
+<<~ ahu slot=`#/rulings-realm`>>
 
 !! The operator's rulings (2026-10-29), after the mirror-realm talk-story
 
@@ -51,7 +51,7 @@ A browser that carries the full DreamDOM runs it by default, and the boot learns
 
 <<~/ahu>>
 
-<<~ ahu #/what-the-platform-offers>>
+<<~ ahu slot=`#/what-the-platform-offers`>>
 
 !! What the platform offers
 
@@ -76,7 +76,7 @@ The house's own measures bound the default. Full stands at 106.44 MiB against a 
 
 <<~/ahu>>
 
-<<~ ahu #/the-design>>
+<<~ ahu slot=`#/the-design`>>
 
 !! The design
 
@@ -107,7 +107,7 @@ The greeting decides; no step reads a clock, and `shared-holder.ts` states the l
 
 <<~/ahu>>
 
-<<~ ahu #/red-tests>>
+<<~ ahu slot=`#/red-tests`>>
 
 !! Red tests ~ each plants, then must read
 
@@ -126,7 +126,7 @@ The greeting decides; no step reads a clock, and `shared-holder.ts` states the l
 
 <<~/ahu>>
 
-<<~ ahu #/open>>
+<<~ ahu slot=`#/open`>>
 
 !! Open
 
@@ -138,9 +138,9 @@ The greeting decides; no step reads a clock, and `shared-holder.ts` states the l
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/research/browser-trust-line-2026">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/browser-trust-line-2026`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Gg-AXm02zade9r8PjK4e9O7wIFuUYndWi9ikjcHn-zg
+<<^ code=`&#x0003;`>>ni:///sha-256;AWQC53pjOhteMjQic48-dtc84_fyN_mFBKHH-vP1giY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

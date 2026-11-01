@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/books/the-lares-dreamnet/spine">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/books/the-lares-dreamnet/spine`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/books/the-lares-dreamnet/spine"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Elyncia 02 ~ The Lares DreamNet ~ Spine
 
@@ -32,7 +32,7 @@ below activate one by one as each chunk meme seats; until then the walk reads as
 
 <<~/ahu>>
 
-<<~ ahu #/walk>>
+<<~ ahu slot=`#/walk`>>
 
 !! The Walk ~ reading order
 
@@ -50,7 +50,7 @@ below activate one by one as each chunk meme seats; until then the walk reads as
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source Staging
 
@@ -60,12 +60,12 @@ comes only after all source text reads as moved.)//
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/books/index">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/books/index`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;r8zjJnN831Z9KNsP07UnzbE74Fd4UtTnedqFiVNabMM
+<<^ code=`&#x0003;`>>ni:///sha-256;CHDGNSCsK1Dikn-U_FWWeMFBhEmT6nxU1GJQe_W8U44
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

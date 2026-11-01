@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/memetic-wikitext"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Memetic Wikitext — Extended Docs
 
@@ -26,7 +26,7 @@ This surface carries guidance, examples, and split residue.
 
 <<~/ahu>>
 
-<<~ ahu #/primitive-reading-guide>>
+<<~ ahu slot=`#/primitive-reading-guide`>>
 
 !! Primitive Reading Guide
 
@@ -46,7 +46,7 @@ Other quick chant terms may also serve as named `pranala` sugar where their own 
 
 <<~/ahu>>
 
-<<~ ahu #/authoring-profiles>>
+<<~ ahu slot=`#/authoring-profiles`>>
 
 !! Recommended Authoring Profiles
 
@@ -61,29 +61,29 @@ Profiles tune posture, not primitive meaning.
 
 <<~/ahu>>
 
-<<~ ahu #/minimum-boot-examples>>
+<<~ ahu slot=`#/minimum-boot-examples`>>
 
 !! Minimum Boot Example Set
 
 !!! Minimum document
 
 ````markdown
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/example">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/example`>>
 
 
 
 
-<<^ code="&#x0003;">>:e4165dad924ed38d
+<<^ code=`&#x0003;`>>:e4165dad924ed38d
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>
 ````
 
 !!! Minimum relation, inclusion, invocation
 
 ```text
-<<~ loulou "lar:///ha.ka.ba/lares/api/target">>
-<<~ aka "lar:///ha.ka.ba/lares/api/source">>
-<<~ kahea "lar:///ha.ka.ba/lares/api/source">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/target`>>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/source`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/source`>>
 ```
 
 !!! Minimum governed and uncertain work
@@ -98,7 +98,7 @@ Work begins before full binding settles.
 
 <<~/ahu>>
 
-<<~ ahu #/boundary-notes>>
+<<~ ahu slot=`#/boundary-notes`>>
 
 !! Boundary Notes
 
@@ -114,7 +114,7 @@ Deepen each contract in its own carrier; do not re-expand the parent submission.
 
 <<~/ahu>>
 
-<<~ ahu #/migration-note>>
+<<~ ahu slot=`#/migration-note`>>
 
 !! Migration Note
 
@@ -127,7 +127,7 @@ The current shape keeps:
 
 <<~/ahu>>
 
-<<~ ahu #/w3c-lineage-verdicts>>
+<<~ ahu slot=`#/w3c-lineage-verdicts`>>
 
 !! W3C + Prior Art Lineage Verdicts
 
@@ -163,7 +163,7 @@ XML and XHTML supply the right model for well-formedness, nesting, closure, quot
 W3C fragment guidance requires fragment meaning to bind to a representation or media type, not just to a URI scheme. The `#/slot` anchor form in `ahu` needs a registered media type (`text/memetic-wikitext`) to carry normative fragment semantics.
 
 ''5. Normative language: RFC 8174 + W3C QA guidance.''
-`MUST`, `SHOULD`, `MAY`, conformance classes, and claims follow RFC 8174. The `<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>` head pin in every invariant file satisfies this requirement.
+`MUST`, `SHOULD`, `MAY`, conformance classes, and claims follow RFC 8174. The ``<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>`` head pin in every invariant file satisfies this requirement.
 
 ''6. Machine-readable artifacts: prose primary, schemas subordinate.''
 JSON Schema and OpenAPI show the correct authority split. Prose spec text remains primary; validators and schemas are valuable but subordinate. The TypeScript `FAMILY_CONTRACTS` validator in `pranala-parser.ts` follows this correctly.
@@ -184,15 +184,15 @@ The submission-grade specification at `lar:///ha.ka.ba/lares/api/pono/memetic-wi
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Cuiat_zZbFyvbdD_D_9IDhN5rEYA2l5s8yCDzjoHn_s
+<<^ code=`&#x0003;`>>ni:///sha-256;XLmkMX35qzZRH7AQxbG8J7pAlAwpZCmUyGHdcnC-kcA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

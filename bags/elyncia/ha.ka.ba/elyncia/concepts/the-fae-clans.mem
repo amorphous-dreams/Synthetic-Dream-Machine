@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/concepts/the-fae-clans`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/the-fae-clans"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Fae Clans
 
@@ -28,7 +28,7 @@ taxonomy, never across its border, because no such border was ever drawn.
 
 <<~/ahu>>
 
-<<~ ahu #/the-elder-residents>>
+<<~ ahu slot=`#/the-elder-residents`>>
 
 !! The Elder Residents ~ whose world this is
 
@@ -52,7 +52,7 @@ left the same handprints on both — and then one of the two lost the company.
 
 <<~/ahu>>
 
-<<~ ahu #/the-arrivals>>
+<<~ ahu slot=`#/the-arrivals`>>
 
 !! The Arrivals ~ how the human clan reached Elyncia
 
@@ -79,7 +79,7 @@ thresholds took the threshold as its birthright, and its sub-lineages carry the 
 
 <<~/ahu>>
 
-<<~ ahu #/the-conceit>>
+<<~ ahu slot=`#/the-conceit`>>
 
 !! The Neo-Thracian Conceit
 
@@ -101,7 +101,7 @@ remember why. A conceit outlives the thing it justified. That is generally what 
 
 <<~/ahu>>
 
-<<~ ahu #/the-courts>>
+<<~ ahu slot=`#/the-courts`>>
 
 !! Clans and Courts ~ not the same axis
 
@@ -116,14 +116,14 @@ and reads as an outrage to anyone who does not.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/factions/index">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/grandmother-spider">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/factions/index`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/grandmother-spider`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9J0lAT41xEqL5drdWlfleH18GB_u8VsgAZhOGLbsM3s
+<<^ code=`&#x0003;`>>ni:///sha-256;nHsUv8iDgf-G3Wt2o7iKO1qGXd4JuZK_DEBO08OR1p8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/corpus-conformance">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/corpus-conformance`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
@@ -21,11 +21,11 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/corpus-conformance"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/the-claim>>
+<<~ ahu slot=`#/the-claim`>>
 
 ! Corpus Conformance ~ a run, not a claim
 
@@ -42,7 +42,7 @@ booleans cannot tell that from a regression.
 
 <<~/ahu>>
 
-<<~ ahu #/what-stands>>
+<<~ ahu slot=`#/what-stands`>>
 
 !! The ground this design starts from
 
@@ -60,7 +60,7 @@ measuring. Each witness answers alone, to a console, once.
 
 <<~/ahu>>
 
-<<~ ahu #/the-five-classes>>
+<<~ ahu slot=`#/the-five-classes`>>
 
 !! The five law classes
 
@@ -110,7 +110,7 @@ record it writes.
 
 <<~/ahu>>
 
-<<~ ahu #/the-drift-reading>>
+<<~ ahu slot=`#/the-drift-reading`>>
 
 !! The drift reading ~ why the record matters more than the verdict
 
@@ -143,7 +143,7 @@ the house's own grammar-history the way it reads a chant.
 
 <<~/ahu>>
 
-<<~ ahu #/failure-discipline>>
+<<~ ahu slot=`#/failure-discipline`>>
 
 !! Failure discipline ~ four rules the instruments earned
 
@@ -167,7 +167,7 @@ gate reporting green about a question it never asked.
 
 <<~/ahu>>
 
-<<~ ahu #/what-it-must-not-say>>
+<<~ ahu slot=`#/what-it-must-not-say`>>
 
 !! What a conformance run MUST NOT claim
 
@@ -182,7 +182,7 @@ digest travel together, or the claim travels alone.
 
 <<~/ahu>>
 
-<<~ ahu #/the-door>>
+<<~ ahu slot=`#/the-door`>>
 
 !! The door
 
@@ -206,10 +206,10 @@ moved.
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RVgBJVkpD32Cp-ssHsp2SRgAf0l5p08Ajy4o310Alz0
+<<^ code=`&#x0003;`>>ni:///sha-256;e8P02S_TIUQaOG1yvgt70JWsJYY-6j5cS01amwdSBLE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

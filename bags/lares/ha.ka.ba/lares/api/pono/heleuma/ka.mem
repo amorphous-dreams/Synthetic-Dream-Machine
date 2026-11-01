@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/heleuma/ka">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/heleuma/ka`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/heleuma/ka"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Heleuma-Ka (Soul / Fire)
 
@@ -27,7 +27,7 @@ A heleuma-ka anchor exists outside the corpus ''by current necessity, not by nat
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ locate the compiled artifact and its extractable symbol; confirm it has a standalone function boundary.
 ⏿ orient: could `_bootModules()` load this function from a corpus meme? If yes, this counts as ka.
@@ -37,7 +37,7 @@ A heleuma-ka anchor exists outside the corpus ''by current necessity, not by nat
 
 <<~/ahu>>
 
-<<~ ahu #/required-fields>>
+<<~ ahu slot=`#/required-fields`>>
 
 !! Required Fields (SHALL)
 
@@ -64,7 +64,7 @@ Signal fields (`mana`, `manao`, `manaoio`) SHALL approach 16 / 16 / 15 as the so
 
 <<~/ahu>>
 
-<<~ ahu #/promotion-path>>
+<<~ ahu slot=`#/promotion-path`>>
 
 !! Promotion Path
 
@@ -76,12 +76,12 @@ When `source-sha256` stands present and the signals meet every threshold, `_boot
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/boot-gate">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/modules/boot-gate`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;c9fXfl_-XupfUInZetXmP0KUJadyqrzFmAfNz-_z9M0
+<<^ code=`&#x0003;`>>ni:///sha-256;H3XNstWkp_f0F4KtH0ntmm2Pg9s9CkBB_K2Fc6Eywjs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/projections/powers/ftls-card/floating-disc">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/projections/powers/ftls-card/floating-disc`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/sdm/projections/powers/ftls-card/floating-disc"
 
 ! Floating Disc — FTLS Card
 
-<<~ ahu #/card>>
+<<~ ahu slot=`#/card`>>
 
 !! Floating Disc
 //Mage's Mule, Shield of the Righteous//
@@ -30,7 +30,7 @@ A concave disc of stuckforce, 1m across, hovering at waist height. It bears a lo
 
 <<~/ahu>>
 
-<<~ ahu #/overcharge>>
+<<~ ahu slot=`#/overcharge`>>
 
 !! Overcharge
 
@@ -39,24 +39,24 @@ A concave disc of stuckforce, 1m across, hovering at waist height. It bears a lo
 
 <<~/ahu>>
 
-<<~ ahu #/components>>
+<<~ ahu slot=`#/components`>>
 
 !! Components
 
-<<~ kahea "lar:///ha.ka.ba/lararium/lists/components">>
+<<~ kahea uri=`lar:///ha.ka.ba/lararium/lists/components`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card">>
-<<~ loulou "lar:///ha.ka.ba/sdm/modules/powers/floating-disc">>
-<<~ loulou "lar:///ha.ka.ba/sdm/procedures/tag-pill">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/modules/powers/floating-disc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/procedures/tag-pill`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;D3TQeQscQj58yX9hjUv-BEoQuuCGpt4vhuy10Ah5Hl4
+<<^ code=`&#x0003;`>>ni:///sha-256;sA-pKh-bP92p0wUfM9ZqXzOFLKwBwqC4yCXWldYJl_A
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

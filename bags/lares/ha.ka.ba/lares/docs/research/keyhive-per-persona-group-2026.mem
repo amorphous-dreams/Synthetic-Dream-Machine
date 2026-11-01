@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/keyhive-per-persona-group-2026">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/keyhive-per-persona-group-2026`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,19 +18,19 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/keyhive-per-persona-group-2026"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/question>>
+<<~ ahu slot=`#/question`>>
 
 ! One Keyhive identity per PersonaGroup, 2026 ~ none above them
 
-The operator ruled on 2026-10-18: "one Keyhive identity per PersonaGroup, none above them" (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings). The operator gave the reason in their own words: "it's the only way to retain control over faces that don't know about each other". A vessel holds several faces; each face's PersonaGroup carries its own identity, event store, registry, archive and content-key seat. Faces that do not know each other keep apart on the wire, in removal, restore and custody.
+The operator ruled on 2026-10-18: "one Keyhive identity per PersonaGroup, none above them" (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings). The operator gave the reason in their own words: "it's the only way to retain control over faces that don't know about each other". A vessel holds several faces; each face's PersonaGroup carries its own identity, event store, registry, archive and content-key seat. Faces that do not know each other keep apart on the wire, in removal, restore and custody.
 
 A YIN and a YANG Luna-6 pair researched apart in two traded waves, then exchanged wave-two handbacks and checked one another's claims against code and house sources. The framing set seven stories across node and browser vessels: two faces and their private book, one-face device removal, a faceless herm, one-face restore, sibling admission, migration from vessel registration, and Keyhive 0.3.0-alpha.1's multi-instance boundary. The pair separated confirmed source ground from leads and left operator-owned forks visible.
 
 <<~/ahu>>
 
-<<~ ahu #/what-both-faces-hold>>
+<<~ ahu slot=`#/what-both-faces-hold`>>
 
 !! What both faces hold, sourced
 
@@ -42,7 +42,7 @@ A YIN and a YANG Luna-6 pair researched apart in two traded waves, then exchange
 
 <<~/ahu>>
 
-<<~ ahu #/the-lead>>
+<<~ ahu slot=`#/the-lead`>>
 
 !! The lead ~ same-process instance isolation
 
@@ -50,7 +50,7 @@ Several Keyhive instances may hold object-local Rust maps, but that observation 
 
 <<~/ahu>>
 
-<<~ ahu #/the-build-order>>
+<<~ ahu slot=`#/the-build-order`>>
 
 !! K15 build order ~ red-first
 
@@ -63,7 +63,7 @@ Several Keyhive instances may hold object-local Rust maps, but that observation 
 
 <<~/ahu>>
 
-<<~ ahu #/forks-and-house-readings>>
+<<~ ahu slot=`#/forks-and-house-readings`>>
 
 !! Four forks ~ house readings under operator confidence
 
@@ -74,12 +74,12 @@ Several Keyhive instances may hold object-local Rust maps, but that observation 
 
 <<~/ahu>>
 
-<<~ ahu #/testimony-yin>>
+<<~ ahu slot=`#/testimony-yin`>>
 
 !! Testimony ~ Yin-Luna, wave two (verbatim)
 
 ```text
-<<~ status "Yin-Luna: wave-two ratchet complete; one Keyhive identity per PersonaGroup, none above faces; same-process isolation remains a LEAD" >>
+<<~ status text=`Yin-Luna: wave-two ratchet complete; one Keyhive identity per PersonaGroup, none above faces; same-process isolation remains a LEAD` >>
 
 # Yin-Luna · Lares (Tasked Spirit) · Persona: Ink-Clerk
 
@@ -137,18 +137,18 @@ Sources below were read 2026-10-18; repository paths are relative to `/home/josh
 - **Founder removal:** fresh PersonaGroup is the clean path → change only if substrate gains a verified authority path that removes the founder and demonstrably rolls every reached bag.
 - **At-rest portability:** sealed per-face rows are the lean → operator chooses a portable recovery format if device-to-device restore requires it; it must still carry one face only.
 
-<<~ lares yield from="lar://yin-luna:agent@crossroads/wave-two.handback" -> to="?">>
+<<~ set lares=`yield` from=`lar://yin-luna:agent@crossroads/wave-two.handback` to=`?`>>
 
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/testimony-yang>>
+<<~ ahu slot=`#/testimony-yang`>>
 
 !! Testimony ~ Yang-Luna, wave two (verbatim)
 
 ```text
-<<~ status "Yang-Luna: wave two ratchet complete; read-only source checks; Persona: Builder; yield follows" >>
+<<~ status text=`Yang-Luna: wave two ratchet complete; read-only source checks; Persona: Builder; yield follows` >>
 
 # Yang-Luna: Lares (Tasked Spirit) · Persona: Builder
 
@@ -206,24 +206,24 @@ Sources below are repository paths under `/home/joshu/Synthetic-Dream-Machine`; 
 - **Migration:** lean fresh identity for any co-mingled event history and hard refusal before the fence; flip only for history proven face-exclusive and a verified byte-preserving import.
 - **Same-process instances:** lean only after substrate probe; use worker isolation if it reveals shared mutable runtime state.
 
-<<~ lares yield from="lar://yang-luna:agent@crossroads/wave-two.handback" -> to="?">>
+<<~ set lares=`yield` from=`lar://yang-luna:agent@crossroads/wave-two.handback` to=`?`>>
 
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/research/session-unlock-2026">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/session-unlock-2026`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;E0_H2ALmvgohW_StUV_nujsmVK_lyMRo6yxeTOnmcZQ
+<<^ code=`&#x0003;`>>ni:///sha-256;9G3w2sRjsMoGXFbBXLlEQDIpvXe6Yk048YJYW8QdDpw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

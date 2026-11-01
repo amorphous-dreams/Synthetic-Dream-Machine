@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/consume-archive">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/consume-archive`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/consume-archive"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Consume Archive — where the early research landed
 
@@ -29,7 +29,7 @@ deleted on 2026-05-16 — so a row here answers "where did this come from", and 
 
 <<~/ahu>>
 
-<<~ ahu #/history>>
+<<~ ahu slot=`#/history`>>
 
 !! Origin-story records
 
@@ -48,7 +48,7 @@ The arc that DID survive stands at [[lindwyrm|lar:///ha.ka.ba/lares/docs/history
 
 <<~/ahu>>
 
-<<~ ahu #/index>>
+<<~ ahu slot=`#/index`>>
 
 !! What landed where
 
@@ -74,7 +74,7 @@ Each row: a research file the pass consumed, and the doctrine that carries its c
 
 <<~/ahu>>
 
-<<~ ahu #/the-harvest-room>>
+<<~ ahu slot=`#/the-harvest-room`>>
 
 !! The harvest room ~ `lares-history`, read whole and emptied
 
@@ -84,7 +84,7 @@ Every file below was read before it burned. Where a row names living carriers, t
 
 !!! `last-sprint/` and `memes/history/research/` ~ thirteen shells, one lift
 
-''The lift.'' The web3 genesis arc closed S0--S8 on `feature/lararium-node-3` (2026-05): genesis artifact → runtime loader → peer-factory rewrite → quine round-trip → promotion ceremony → BagResidencyManager → Keyhive capability layer → wiki composition. ''Its North Star stands as law'' — every peer boots from one content-addressed genesis artifact, and the artifact carries the engine that deserializes it. The roadmap that recorded it burned with the room; the doctrine it produced lives at <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>, <<~ loulou "lar:///ha.ka.ba/lararium/node/genesis-island">> and the keyhive carriers.
+''The lift.'' The web3 genesis arc closed S0--S8 on `feature/lararium-node-3` (2026-05): genesis artifact → runtime loader → peer-factory rewrite → quine round-trip → promotion ceremony → BagResidencyManager → Keyhive capability layer → wiki composition. ''Its North Star stands as law'' — every peer boots from one content-addressed genesis artifact, and the artifact carries the engine that deserializes it. The roadmap that recorded it burned with the room; the doctrine it produced lives at <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>, <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/genesis-island`>> and the keyhive carriers.
 
 | Source (burned) | What it held | Where a reader goes now |
 |---|---|---|
@@ -106,9 +106,9 @@ Every file below was read before it burned. Where a row names living carriers, t
 
 ''Two files carried their own 2026-09-06 harvest banner'' — `ARCHITECTURE.md` (the forward-commitment rig, whose disciplines stand at `lares/api/pono/gold-anchor#/rig-disciplines`) and `the-kumulipo-test-campaign.md` (a torn terminal capture whose findings stand at `lares/api/corpus#/the-dial-findings`).
 
-''The three lifts.'' The E-Prime scanner's mechanics — the copula and contraction patterns, the fence and `<!-- eprime-ok -->` exclusions, the `-ing`/`-ed` demotion — went to <<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL#/loop">>, which stood the audit ACT and carried no scan mechanics. The `⊕ [tag]` marker went to <<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing#/pressure">> — the one convention in the whole instructions file with no living home. The dual-zoom slot audit went to <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme#/the-dual-zoom-audit">>.
+''The three lifts.'' The E-Prime scanner's mechanics — the copula and contraction patterns, the fence and `<!-- eprime-ok -->` exclusions, the `-ing`/`-ed` demotion — went to <<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL#/loop`>>, which stood the audit ACT and carried no scan mechanics. The `⊕ [tag]` marker went to <<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing#/pressure`>> — the one convention in the whole instructions file with no living home. The dual-zoom slot audit went to <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme#/the-dual-zoom-audit`>>.
 
-''And one pointer re-aimed.'' `lararium/docs/kairos`'s `spec-source` named a three-line section inside the burned instructions file; it now names <<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing#/pressure">>, which holds that section's whole content and the marker it lacked. `lararium/docs/operations-review` inventories the instructions file section by section, so the room's own provenance survives the burn independently.
+''And one pointer re-aimed.'' `lararium/docs/kairos`'s `spec-source` named a three-line section inside the burned instructions file; it now names <<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing#/pressure`>>, which holds that section's whole content and the marker it lacked. `lararium/docs/operations-review` inventories the instructions file section by section, so the room's own provenance survives the burn independently.
 
 | Source (burned) | What it held | Where a reader goes now |
 |---|---|---|
@@ -128,7 +128,7 @@ Every file below was read before it burned. Where a row names living carriers, t
 
 ''Three files carried their own harvest banner already'' — `CAPABILITY-LAYER.md` ("Surveyed 2026-09-06, nothing harvested"), `LARARIUM-TICK-CLOCK.md` (its two-time-bases text already sitting in `lararium/mesh/ffz-clock#/the-two-time-bases` with a provenance line) and `LARES-CLI-DAEMON-SPRINT-PLAN.md` (its record-laws already at `lares/cli/vessel-door#/the-record-laws`). A shelf that reads itself is the shelf easiest to empty.
 
-''The three lifts, each one paragraph.'' The ATProto OAuth profile and its curve policy went to <<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane#/cred-onboarding">>, which already named the OAuth route as an open debt. The randomness doctrine went to <<~ loulou "lar:///ha.ka.ba/lararium/mesh/crypto#/law">> as a fourth doctrine beside the three that stood. The two-phase-boot and inviolable-kernel law went to <<~ loulou "lar:///ha.ka.ba/lares/api/pono/quine-principles#/the-inviolable-kernel">> — P1--P4 stood there and the kernel/surface boundary did not.
+''The three lifts, each one paragraph.'' The ATProto OAuth profile and its curve policy went to <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane#/cred-onboarding`>>, which already named the OAuth route as an open debt. The randomness doctrine went to <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/crypto#/law`>> as a fourth doctrine beside the three that stood. The two-phase-boot and inviolable-kernel law went to <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/quine-principles#/the-inviolable-kernel`>> — P1--P4 stood there and the kernel/surface boundary did not.
 
 | Source (burned) | What it held | Where a reader goes now |
 |---|---|---|
@@ -154,14 +154,14 @@ Every file below was read before it burned. Where a row names living carriers, t
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/period-forms">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/dreamnet-memewiki">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/period-forms`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/dreamnet-memewiki`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;W3SKFGOCWscJ9GzGRpoSQGeUjIzvvhmcC1CpOziUU-o
+<<^ code=`&#x0003;`>>ni:///sha-256;i04mtTtn4lB_FDDvV61XsVHm91SEJiuG8NrC1HJg0cc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

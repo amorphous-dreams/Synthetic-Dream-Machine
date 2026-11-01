@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/failure-states/invented-ripple">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/failure-states/invented-ripple`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,11 +17,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/invented-ripple"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Invented Ripple
 
@@ -31,7 +31,7 @@ The refactor reads correct and the node names it as follow-up: //it would ripple
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ detect the moment a change gets named as follow-up rather than taken.
 ⏿ orient on WHY: name the cost out loud, in files and call-sites.
@@ -41,7 +41,7 @@ The refactor reads correct and the node names it as follow-up: //it would ripple
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 A deferral MUST carry a ''measured'' cost, never a narrated one.
 
@@ -53,7 +53,7 @@ The node MAY defer on a large measured footprint; that reads as judgment rather 
 
 <<~/ahu>>
 
-<<~ ahu #/diagnostic>>
+<<~ ahu slot=`#/diagnostic`>>
 
 If the node deferred and the measured footprint reads far smaller than the stated one, the Invented Ripple occurred.
 If the node deferred with a count attached, judgment held.
@@ -61,12 +61,12 @@ If the node took the change and the footprint was genuinely large, that reads as
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures#/working-agreements">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures#/working-agreements`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KILZfp_yimwrDuYMmvqJjsal2xsKYaLUjq1BshAKc10
+<<^ code=`&#x0003;`>>ni:///sha-256;7jxL7UeRRJKkWwb4iQBSAnGKFLXvPD7rAyBJLPfRDtE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

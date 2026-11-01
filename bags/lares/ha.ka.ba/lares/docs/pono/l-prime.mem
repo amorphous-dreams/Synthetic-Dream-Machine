@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/l-prime">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/l-prime`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -20,7 +20,7 @@ Law lives at [[l-prime.md|../../api/mu/l-prime.md]].
 
 This file holds research provenance and extended Level guidance.
 
-<<~ ahu #/plan>>
+<<~ ahu slot=`#/plan`>>
 
 !! Plan Skeleton
 
@@ -36,7 +36,7 @@ The invariant already holds elsewhere.
 
 <<~/ahu>>
 
-<<~ ahu #/research-braid>>
+<<~ ahu slot=`#/research-braid`>>
 
 !! Research Braid
 
@@ -54,7 +54,7 @@ It demands that every `${copula}` carry its weight honestly.
 
 <<~/ahu>>
 
-<<~ ahu #/verbatim-preferences-l-prime>>
+<<~ ahu slot=`#/verbatim-preferences-l-prime`>>
 
 !! Verbatim — `Lares_Preferences.system-prompt.md` — L-Prime
 
@@ -70,7 +70,7 @@ This node plays the L-Prime game as background discipline, not a hard restrictio
 
 <<~/ahu>>
 
-<<~ ahu #/binary-notes>>
+<<~ ahu slot=`#/binary-notes`>>
 
 !! Binary Ward Notes
 
@@ -82,7 +82,7 @@ The ward governs grammar alone. Every `${copula}` that passes under the lit ward
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
@@ -91,6 +91,6 @@ The ward governs grammar alone. Every `${copula}` that passes under the lit ward
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TkphIuDHlC0qAP4hAtmEGWSQ6GQmT13DM0F7yoV8d8I
+<<^ code=`&#x0003;`>>ni:///sha-256;zhOEh8HaulC4GJ7WA_fPxy7Ru7O1Hc_czEwQeVKTy0g
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

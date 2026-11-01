@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/failure-states/table-hides-a-plane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/failure-states/table-hides-a-plane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,11 +17,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/table-hides-a-plane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Table That Hides a Plane
 
@@ -37,7 +37,7 @@ A table reads as clarity, so the node builds one — and adjacency in a row asse
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ detect a table, a list, or a parallel construction gathering more than one entity.
 ⏿ orient on each row's ''plane'', not its shape — which axis does it ride, what layer of the stack, whose cost.
@@ -47,7 +47,7 @@ A table reads as clarity, so the node builds one — and adjacency in a row asse
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 ''Check whether two things share a PLANE before sharing a ROW.''
 
@@ -59,7 +59,7 @@ The node MUST re-check any ruling derived while the blur stood; a fused table ge
 
 <<~/ahu>>
 
-<<~ ahu #/diagnostic>>
+<<~ ahu slot=`#/diagnostic`>>
 
 If two tabled entities differ in what plane they ride, what authors them, or what makes them scarce, the Table Hid a Plane.
 If the table names its shared axis explicitly and every row rides it, the compression held.
@@ -67,12 +67,12 @@ If the entities share a plane but differ in degree, that reads as an ordinary ta
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;d9GLwZahcfLZlHfzmlfkBFBy25G4y6eIBX1tJYIZhH0
+<<^ code=`&#x0003;`>>ni:///sha-256;v6IzixrJQjmO19M-qSGvdElehvQ0HPK8VKru-9TnXKc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

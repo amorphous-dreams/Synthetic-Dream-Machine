@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/function/ward">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/components/function/ward`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/sdm/components/function/ward"
 
 ! Ward
 
-<<~ ahu #/definition>>
+<<~ ahu slot=`#/definition`>>
 
 !! Definition
 
@@ -27,7 +27,7 @@ A selective protection against a named category — turning aside a kind of harm
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -35,7 +35,7 @@ Sets a condition the warded thing enforces against its named target. Stronger or
 
 <<~/ahu>>
 
-<<~ ahu #/interaction>>
+<<~ ahu slot=`#/interaction`>>
 
 !! Interaction
 
@@ -43,7 +43,7 @@ Pairs with `domain/abjuration`. Often `hook/sustained` or `hook/imbued` to keep 
 
 <<~/ahu>>
 
-<<~ ahu #/filters>>
+<<~ ahu slot=`#/filters`>>
 
 !! Filters
 
@@ -54,7 +54,7 @@ Pairs with `domain/abjuration`. Often `hook/sustained` or `hook/imbued` to keep 
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -62,14 +62,14 @@ Pairs with `domain/abjuration`. Often `hook/sustained` or `hook/imbued` to keep 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/components/tag`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;43olnmx20o29nekAtNq1v-XDsNlYofE9Sr_QQndHItw
+<<^ code=`&#x0003;`>>ni:///sha-256;kC3JeAaHiAlnSgYEJNT6WsnICCglFSQbNxPzpYfIj8I
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

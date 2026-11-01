@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/preferences/frame-uncertainty">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/preferences/frame-uncertainty`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/frame-uncertainty"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Preferences — Frame Uncertainty
 
@@ -26,7 +26,7 @@ This room holds the recovered habit of naming the fork before picking a branch t
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance
 
@@ -39,7 +39,7 @@ Strong witnesses recur in:
 
 <<~/ahu>>
 
-<<~ ahu #/pressure>>
+<<~ ahu slot=`#/pressure`>>
 
 !! Pressure
 
@@ -58,15 +58,15 @@ Where the branch matters, the fork must surface.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/collaboration-model">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences/collaboration-model`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kS7gesZb0pMSKPsW3F8hboTKLaQ8EYfjzhjgSfWMyUk
+<<^ code=`&#x0003;`>>ni:///sha-256;7HnZvh6mVdC-MusDcy0wTgl5LhKlv3lMFmLtlMX8oaU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

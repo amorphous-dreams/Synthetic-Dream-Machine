@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/meme-ast">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/meme-ast`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 source-sha256 = "sha256:a31316c2e25c7209328b72006b8cfa76a65365403452a630b397508083e9a2ad"
@@ -20,7 +20,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/meme-ast"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! meme-ast — Contract
 
@@ -43,22 +43,22 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/core/meme-ast/types">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/core/meme-ast/scanner">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/core/meme-ast/builder">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/core/meme-ast/edges">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/core/meme-ast/parse">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-ast">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/deserializer">>
-
-<<~/ahu>>
-
-<<~ ahu #/source>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/core/meme-ast/types`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/core/meme-ast/scanner`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/core/meme-ast/builder`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/core/meme-ast/edges`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/core/meme-ast/parse`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/meme-ast`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/modules/deserializer`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;G0QC99tXrKTkP50P8YT-_CVCZvqhGG7OGVwNQLOAlb0
+<<~ ahu slot=`#/source`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<~/ahu>>
+
+<<^ code=`&#x0003;`>>ni:///sha-256;17U_4DsA3wIJTj5w17biIMo8z0MdzIhuZv4i0kFZE1k
+
+<<^ code=`&#x0004;` to=`?`>>

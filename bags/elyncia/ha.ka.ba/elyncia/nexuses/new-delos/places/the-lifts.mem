@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-lifts">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-lifts`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/the-lifts"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Mana Lifts
 
@@ -35,6 +35,6 @@ politics.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wMIwNp1Ax1oKKuSezCybjQ4dQ5kcDoiFEfDpVP2hb2k
+<<^ code=`&#x0003;`>>ni:///sha-256;T8pPUHMbdOrHC3zB1jo67Tyn8zxgzYikKvPtlxkd-fo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

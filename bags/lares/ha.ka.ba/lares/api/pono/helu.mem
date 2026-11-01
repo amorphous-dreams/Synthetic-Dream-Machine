@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/helu">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/helu`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/helu"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Helu
 
@@ -32,7 +32,7 @@ Where `wehe` / `\procedure` declares a body that renders, `helu` declares a body
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -43,7 +43,7 @@ A helu declaration MUST register a function definition only, producing no render
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
@@ -62,14 +62,14 @@ TW5 equivalent:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wehe">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wehe`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;n4t9ekVNYH3RMRU0RHKYBg8w27SEsYEuLh0SbMmzc7M
+<<^ code=`&#x0003;`>>ni:///sha-256;GuBgDMLnThN0bFDn4MV9lFfJjpJjAXmcioK7ga7vvJo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

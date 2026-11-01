@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/wikitext-paint-research">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/wikitext-paint-research`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 file-path = "bags/lares/ha.ka.ba/lares/docs/wikitext-paint-research.mem"
@@ -13,7 +13,7 @@ uri-path  = "ha.ka.ba/lares/docs/wikitext-paint-research"
 written   = "2026-09-11"
 ```
 
-<<~ ahu #/shelf>>
+<<~ ahu slot=`#/shelf`>>
 
 ! Wikitext paint — the grammar research shelf
 
@@ -728,11 +728,11 @@ memetic-wikitext refactor stands on it. The dialect carries 10 patterns against 
 not name its own verb, and splits its bearing arrow in two — and every one of those cures rides on
 decisions this shelf settles for the base first.
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/grammar-watch">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pattern-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/grammar-watch`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;o23TvbmvtjssojJ68bBWpoJ5onhyJqSO8SFf9_KYjMk
+<<^ code=`&#x0003;`>>ni:///sha-256;2vPkKOqyqQr099YyxTZ02112Kf5EgUQPUIkxQmbjJHY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-necrospire">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/concepts/the-necrospire`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/the-necrospire"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Necrospire
 
@@ -39,7 +39,7 @@ node, toppling the Empire, and breaking the world a second time.
 
 <<~/ahu>>
 
-<<~ ahu #/the-caldera>>
+<<~ ahu slot=`#/the-caldera`>>
 
 !! The Caldera ~ where the myth chose to land
 
@@ -58,14 +58,14 @@ sinking.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-burned-library">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-burned-library`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;n3zxpoTOrfQfHOE8HLicj6TgnAsr_HHv07pH1uIXfp4
+<<^ code=`&#x0003;`>>ni:///sha-256;_TcYiqqrijBi0LvPnLtkzazkryiJZRoVF6bC4H1V6lg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,11 +17,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/protective-optional"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Protective Optional
 
@@ -31,7 +31,7 @@ A required parameter would break existing callers, so the node makes it optional
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ detect an optional parameter, a default value, or a fallback added during a change.
 ⏿ orient by asking ''who does this protect'' — name them.
@@ -41,7 +41,7 @@ A required parameter would break existing callers, so the node makes it optional
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 In early alpha, ''an optional parameter asks whom the node protects.''
 
@@ -53,7 +53,7 @@ The node MUST let a required parameter break its own witnesses rather than defau
 
 <<~/ahu>>
 
-<<~ ahu #/diagnostic>>
+<<~ ahu slot=`#/diagnostic`>>
 
 If the parameter is optional and the only callers are witnesses, the Protective Optional occurred.
 If the parameter is required and callers holding nothing pass a named absence, discipline held.
@@ -61,12 +61,12 @@ If the parameter is optional and a real outside consumer needs the default, that
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/invented-ripple">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/invented-ripple`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;afGeSFo_zi2CaF2dWdvu_hkhBb-wyg2oq5cm3fOfRhY
+<<^ code=`&#x0003;`>>ni:///sha-256;LGElCeShpbY5buueLlmbaqDbEmNOxRFJVVu0lmTMaeQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

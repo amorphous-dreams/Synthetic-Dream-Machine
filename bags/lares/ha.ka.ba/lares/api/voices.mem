@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/voices">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/voices`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -394,6 +394,6 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yOxLwoo8iFC8OHbTEiPuHeIMBoNGUqyFrY4eftte028
+<<^ code=`&#x0003;`>>ni:///sha-256;6t-NB3kvhY0nG5dm_2_I2vrSmPeOs8jyBN5Eu6KFzFY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

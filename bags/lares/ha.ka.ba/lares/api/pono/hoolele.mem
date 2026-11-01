@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/hoolele">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/hoolele`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -18,7 +18,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/hoolele"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Hoolele
 
@@ -44,7 +44,7 @@ Concurrency runtime pending (async-first sprint). Current tiddler registers gram
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -61,7 +61,7 @@ A hoolele edge MUST carry a target URI as its first argument.
 
 <<~/ahu>>
 
-<<~ ahu #/when-to-use>>
+<<~ ahu slot=`#/when-to-use`>>
 
 !! When to Use
 
@@ -86,7 +86,7 @@ remains predictable; resource leaks are prevented.
 
 <<~/ahu>>
 
-<<~ ahu #/six-operator-table>>
+<<~ ahu slot=`#/six-operator-table`>>
 
 !! Six-Operator Concurrency Table
 
@@ -108,12 +108,12 @@ the formal mechanism that allows it to create a new root with no parent scope.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
-<<~ hoolele "lar:///target/uri">>
+<<~ hoolele to=`lar:///target/uri`>>
 <<~ spawn "lar:///target/uri">>
 ```
 
@@ -122,7 +122,7 @@ Returns a `task(t)` handle. The caller MUST retain it for later `Cancel()` or
 
 <<~/ahu>>
 
-<<~ ahu #/lararium-use-cases>>
+<<~ ahu slot=`#/lararium-use-cases`>>
 
 !! Lararium-Specific Use Cases
 
@@ -143,15 +143,15 @@ work below it (CRDT, network) uses `hoolele`-style spawn semantics in TS.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lele">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-task-tree">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lele`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-task-tree`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1ILJw1ECseo-qHbyfhFlzKmesHJlKjeQ8cVzrmmrF20
+<<^ code=`&#x0003;`>>ni:///sha-256;JhtXRbmdAL56JdyV0CGFPebOsgwx-Gs6cBFoPD_jA8A
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

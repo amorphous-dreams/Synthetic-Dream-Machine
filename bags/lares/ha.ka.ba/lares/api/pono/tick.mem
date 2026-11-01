@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/tick">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/tick`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/tick"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! \tick (Deferred)
 
@@ -29,14 +29,14 @@ Concurrency runtime (async-first sprint) comes first as a prerequisite. Grammar 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-aX5TBDHXseuzo-fQ5KRKTcUfxPsUqcceJiMpr0dqzY
+<<^ code=`&#x0003;`>>ni:///sha-256;C1oyDVYFxpo-pWgBWiv7f9oyudRhWgOiSgYmBILb7vE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

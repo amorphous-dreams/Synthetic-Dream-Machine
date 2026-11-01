@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
@@ -22,11 +22,11 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/outbound-bridge"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/ground>>
+<<~ ahu slot=`#/ground`>>
 
 ! Outbound Bridge ~ the one subscription that carries a live wiki change out
 
@@ -36,7 +36,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/outbound-bridge"
 
 <<~/ahu>>
 
-<<~ ahu #/the-shore-law>>
+<<~ ahu slot=`#/the-shore-law`>>
 
 !! The wiki-shore law ~ one act: a tiddler replaces a tiddler
 
@@ -61,7 +61,7 @@ Both of TiddlyWiki's edit roads meet this one act. The draft road (`tm-edit-tidd
 
 <<~/ahu>>
 
-<<~ ahu #/tw5-outbound-law>>
+<<~ ahu slot=`#/tw5-outbound-law`>>
 
 !! How TiddlyWiki carries a live edit outward
 
@@ -85,7 +85,7 @@ Two facts the stock adaptors carry that the island's shape already mirrors: the 
 
 <<~/ahu>>
 
-<<~ ahu #/island-holds>>
+<<~ ahu slot=`#/island-holds`>>
 
 !! What the island holds in the syncer's place, and where the seam sits
 
@@ -107,7 +107,7 @@ Two facts the stock adaptors carry that the island's shape already mirrors: the 
 
 <<~/ahu>>
 
-<<~ ahu #/back-parity>>
+<<~ ahu slot=`#/back-parity`>>
 
 !! Back-parity ~ the ONE contract, and the two roads
 
@@ -136,7 +136,7 @@ Two facts the stock adaptors carry that the island's shape already mirrors: the 
 
 <<~/ahu>>
 
-<<~ ahu #/daemon-mirror>>
+<<~ ahu slot=`#/daemon-mirror`>>
 
 !! The daemon wiki projects to `wikis/daemon/` ~ the grant, the seam, the residency door
 
@@ -152,7 +152,7 @@ Two facts the stock adaptors carry that the island's shape already mirrors: the 
 
 <<~/ahu>>
 
-<<~ ahu #/reds>>
+<<~ ahu slot=`#/reds`>>
 
 !! The witnesses, one per clause
 
@@ -177,7 +177,7 @@ CONTROLS standing green beside them: an explicit `--recipe default` put lands in
 
 <<~/ahu>>
 
-<<~ ahu #/remains>>
+<<~ ahu slot=`#/remains`>>
 
 !! What remains, named
 
@@ -186,24 +186,24 @@ CONTROLS standing green beside them: an explicit `--recipe default` put lands in
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/save-path">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/save-path`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-adaptor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/nalu-engine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6tyCZixuU_RFB2oOozg2DVfnJwjxN5F5KRpfUyu5464
+<<^ code=`&#x0003;`>>ni:///sha-256;iJzJ8gP8chcvVLJmDQcUfmXSLL_0bRlMWkalNXYnaRY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -19,7 +19,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The swarm harvest
 
@@ -33,7 +33,7 @@ Four research waves went out and ran three levels deep. ''55 spirits wrote somet
 
 <<~/ahu>>
 
-<<~ ahu #/the-roll>>
+<<~ ahu slot=`#/the-roll`>>
 
 !! What stands
 
@@ -98,14 +98,14 @@ Four research waves went out and ran three levels deep. ''55 spirits wrote somet
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/managed-identity-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/circles-field-scout">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/managed-identity-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/circles-field-scout`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ud6Y99cBkLkq6g8FwGLUaQxUwvFgNJ8goyqPmOZDjJ4
+<<^ code=`&#x0003;`>>ni:///sha-256;TWrssx03iNRxfPjCRvgRMLNQTOIk6YVpjDRR3CdKH1M
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

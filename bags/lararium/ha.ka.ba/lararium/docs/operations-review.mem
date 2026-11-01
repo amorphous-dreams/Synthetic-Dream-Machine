@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/operations-review">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/operations-review`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/operations-review"
 ```
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 ```toml
 primary-source = "packages/lares-core/memes/docs/lararium/prompts/Lares_Preferences.system-prompt.md"
@@ -30,9 +30,9 @@ scope-note = "Plan only — no content extracted in this memo. Extractions to fo
 
 <<~/ahu>>
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Operations — Extraction Review
 
@@ -47,7 +47,7 @@ undergoes inventory and classification here.
 
 <<~/ahu>>
 
-<<~ ahu #/observe>>
+<<~ ahu slot=`#/observe`>>
 
 !! ✶ Observe
 
@@ -98,7 +98,7 @@ Secondary source: `FFZ_Chronometer_SPEC_OUTLINE.md` — Talk Story references at
 
 <<~/ahu>>
 
-<<~ ahu #/orient>>
+<<~ ahu slot=`#/orient`>>
 
 !! ⏿ Orient
 
@@ -159,7 +159,7 @@ docs/lararium/
 
 <<~/ahu>>
 
-<<~ ahu #/decide>>
+<<~ ahu slot=`#/decide`>>
 
 !! ◇ Decide
 
@@ -221,7 +221,7 @@ This pass produces:
 
 <<~/ahu>>
 
-<<~ ahu #/act>>
+<<~ ahu slot=`#/act`>>
 
 !! ▶ Act
 
@@ -249,7 +249,7 @@ Talk Story sourcing from RAW's Brain Machine Symposium 1989 constitutes a verbat
 
 <<~/ahu>>
 
-<<~ ahu #/assess>>
+<<~ ahu slot=`#/assess`>>
 
 !! ↺ Assess
 
@@ -282,17 +282,17 @@ After the extraction pass closes, these questions remain for a future consolidat
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/degraded-states">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/collaboration-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/lararium`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/degraded-states`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences/collaboration-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;l-jW-2n_FEQ0iTyll2bsoqG5SDRVmU4z2bPyt9WmbRE
+<<^ code=`&#x0003;`>>ni:///sha-256;aJ9cSHQ3N1AjBDsU9kpVnfkdhO6gp9l99aRInDqvoQk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

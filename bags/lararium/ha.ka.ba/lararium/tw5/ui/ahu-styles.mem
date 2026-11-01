@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/ahu-styles">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/ui/ahu-styles`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -158,10 +158,10 @@ span[data-lar-kind="worksite"]:not([data-lar-slot="#body"]) {
   display: none;
 }
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dpsoWo6c0g_p4BjPA77A2jR6F609vJno_Db_N1CaIU8
+<<^ code=`&#x0003;`>>ni:///sha-256;gAKvJ3pZh7RyX_11ppTJfF2uqPBSzJ2dtkmRBViz1q4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

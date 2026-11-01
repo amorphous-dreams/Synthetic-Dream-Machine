@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/modules/powers/read-magic">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/modules/powers/read-magic`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,13 +18,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/modules/powers/read-magic"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
 ! Read Magic
 
-<<~ ahu #/has>>
+<<~ ahu slot=`#/has`>>
 
 !! Composition
 
@@ -32,7 +32,7 @@ Flat composition. The TOML `tags` field mirrors these edges for TW5 filters.
 
 <<~/ahu>>
 
-<<~ ahu #/default>>
+<<~ ahu slot=`#/default`>>
 
 ```toml default
 canonical-name = "Read Magic"
@@ -62,7 +62,7 @@ A botched read mis-recognizes: the operator marks the wrong meaning as trusted, 
 
 <<~/ahu>>
 
-<<~ ahu #/variants>>
+<<~ ahu slot=`#/variants`>>
 
 !! Variants
 
@@ -73,17 +73,17 @@ A botched read mis-recognizes: the operator marks the wrong meaning as trusted, 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/modules/power">>
-<<~ loulou "lar:///ha.ka.ba/sdm/projections/powers/ftls-card/read-magic">>
-<<~ loulou "lar:///ha.ka.ba/sdm/witness/powers/osr-spells/read-magic">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/modules/power`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/projections/powers/ftls-card/read-magic`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/witness/powers/osr-spells/read-magic`>>
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -94,6 +94,6 @@ A botched read mis-recognizes: the operator marks the wrong meaning as trusted, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GJM1QuIiB27KuI0rSaEVz2Ra3W_Ib8EKdKY3ZqH2N2w
+<<^ code=`&#x0003;`>>ni:///sha-256;ic5iwTKMhGaAoysV89yidPNmYj7HekzgHTlkeY4bF38
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

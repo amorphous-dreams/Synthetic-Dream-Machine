@@ -1,30 +1,30 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/k15-wave-c-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/k15-wave-c-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k15-wave-c-lane.mem"
 l-space   = "adjacent"
-role      = "the Wave C lane's kit: K15 step 6, the fence, under the identity model the operator approved on 2026-10-20 (sync carries; verification decides): the sealed identity anchor, the signed @persona log, verified projections, each face's D rows sealed under its own key, the daemon's last singletons split by face, and the browser's per-face planes"
+role      = "the Wave C lane's kit: K15 step 6, the fence, under the identity model the operator approved on 2026-10-20 (sync carries; verification decides): the sealed identity anchor, the signed persona-plane log, verified projections, each face's D rows sealed under its own key, the daemon's last singletons split by face, and the browser's per-face planes"
 status    = "draft"
 title     = "lar:///ha.ka.ba/lares/docs/pono/k15-wave-c-lane"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/k15-wave-c-lane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Wave C ~ the hearth-stone carries the name
 
-Wave C builds `K15` step 6, the fence, under one identity model the operator approved on 2026-10-20: //sync carries; verification decides// (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings; the research at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026">>). Beneath it stands the moʻolelo's first line: the truth rests in the minds of the operators, and the CRDTs carry it to the synced stores. Wave C launches once Wave B lands on a green span; `W26`'s slices 3, 4 and 6 run beside it on the floor's own ground; its slice 5 follows, since the accepted floor rests as a face's D row.
+Wave C builds `K15` step 6, the fence, under one identity model the operator approved on 2026-10-20: //sync carries; verification decides// (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings; the research at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026`>>). Beneath it stands the moʻolelo's first line: the truth rests in the minds of the operators, and the CRDTs carry it to the synced stores. Wave C launches once Wave B lands on a green span; `W26`'s slices 3, 4 and 6 run beside it on the floor's own ground; its slice 5 follows, since the accepted floor rests as a face's D row.
 
 <<~/ahu>>
 
-<<~ ahu #/the-stories>>
+<<~ ahu slot=`#/the-stories`>>
 
 !! The stories
 
@@ -40,7 +40,7 @@ Wave C builds `K15` step 6, the fence, under one identity model the operator app
 
 <<~/ahu>>
 
-<<~ ahu #/the-reds>>
+<<~ ahu slot=`#/the-reds`>>
 
 !! The reds ~ grounds before wins, each written as the specification, all proven at the wave's end
 
@@ -57,7 +57,7 @@ Wave C builds `K15` step 6, the fence, under one identity model the operator app
 
 <<~/ahu>>
 
-<<~ ahu #/beside-it>>
+<<~ ahu slot=`#/beside-it`>>
 
 !! Beside it ~ the edge frontier
 
@@ -65,21 +65,21 @@ Row `K17`, the signed edge frontier (#/rulings, the edge frontier), shares Wave 
 
 <<~/ahu>>
 
-<<~ ahu #/the-crew>>
+<<~ ahu slot=`#/the-crew`>>
 
 !! The crew ~ very large work chunks under the mixed-model-swarm protocols
 
-One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request, landed whole and merged by train. A Sonnet Episkopos leads; the Codex Sol (`gpt-6-sol`, walled) builds; the Copilot seat (`gpt-5.3-codex`) reads, scouts and sweeps (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>). The battery rides CI's shards: locally the wave runs its build and each red's proof against the base tree, pushes once, and reads lane CI, held-out and the shards. A fresh Sol reader, from a lineage that built none of it, reads the whole diff before the train. The scout census opens the lane: every place an identity pin reads from a mutable doc without verification, by file and line, sorted by what inherits shape from what.
+One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request, landed whole and merged by train. A Sonnet Episkopos leads; the Codex Sol (`gpt-6-sol`, walled) builds; the Copilot seat (`gpt-5.3-codex`) reads, scouts and sweeps (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>). The battery rides CI's shards: locally the wave runs its build and each red's proof against the base tree, pushes once, and reads lane CI, held-out and the shards. A fresh Sol reader, from a lineage that built none of it, reads the whole diff before the train. The scout census opens the lane: every place an identity pin reads from a mutable doc without verification, by file and line, sorted by what inherits shape from what.
 
 <<~/ahu>>
 
-<<~ ahu #/owed>>
+<<~ ahu slot=`#/owed`>>
 
 !! Owed beyond Wave C
 
 * ''The recovery door: recovery-contact-quorum rotation, then `reanchorAfterRotation`, then a re-admit carrying the log and frontier.'' No production door rotates a persona root beneath its KEL prefix: `reanchorAfterRotation` stands proven as a library function with its red and control (a face recovered to a new root boots against the rewritten anchor; a document naming the new root with no KEL rotation behind it refuses), and `runReadmitEdge` has no production caller. Building the door means the recovery-contact-quorum ceremony, whose recovery contact count is an open operator gate (`kahu#/seed-and-nexus`). The re-admit then carries the current `@persona` log and the signed frontier as a first admit does.
-* ''The FCK fence'' leaves this wave whole and becomes Wave D (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-wave-d-lane">>). The two key-class `test.fails` rows in `face-isolation-routes.test.ts` stand for it.
-* ''A face's circles and identities follow the face'' (operator ruling, 2026-10-22): minted once at founding, named by a signed `plane` act, carried in the admit bundle, adopted by every admitted device, and named in the face proof beside the persona plane (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">> #/the-atom). Sessions stay per vessel, as motion.
+* ''The FCK fence'' leaves this wave whole and becomes Wave D (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/k15-wave-d-lane`>>). The two key-class `test.fails` rows in `face-isolation-routes.test.ts` stand for it.
+* ''A face's circles and identities follow the face'' (operator ruling, 2026-10-22): minted once at founding, named by a signed `plane` act, carried in the admit bundle, adopted by every admitted device, and named in the face proof beside the persona plane (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>> #/the-atom). Sessions stay per vessel, as motion.
 * ''A device's own entry joins the face's shared documents when they ARRIVE'': a fresh device holds neither document at its admit, so `joinFaceDocumentsOnArrival` subscribes to the replica's own progress view and writes its identity entry and ceremony circles the moment the document is ready, once. No reboot and no timer decide it, and a vessel outside the group never reaches it. Red and control: `join-face-documents.test.ts`.
 * ''The retired-key window after a lost-and-recovered offline device'': an act beyond a reader's accepted frontier signs under the KEL's current epoch, and a lease advance counts only from the current roster. A legitimate act or advance signed under the old epoch that this reader had not yet accepted therefore needs re-signing under the new epoch; the recovery door (K18) owns that re-sign.
 * ''A browser holding several faces'' takes the dedicated-worker floor (`houseOfBoot` reads the founding bootstrap and refuses when more than one persona root stands), and its worn second face proves its persona plane alone: the founding bootstrap names one face's circles and identities. Both ride Wave D's browser mirror (slice 4), where each face keeps its own documents and key.
@@ -91,11 +91,11 @@ One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request,
 * ''The fleet frontier's pin lives in the vessel's own mutable ledger'' (read 4's LEAD against `edge-frontier-board.ts` and `edge-kapae.ts`): a vessel that loses that ledger and then reads a stale board under an older valid frontier reads an absent edge as clear. A reader with a pin refuses a board that does not extend it (`does-not-extend-pin`, red in `edge-frontier.test.ts`), and a vessel with no pin at all is a fresh one, which cannot tell a stale board from a young fleet. Pinning the fleet head in the sealed anchor, beside the act head and the lease, belongs to K17.
 * ''Read 5's remaining MEDIUMs'' (5 HIGH cured in the lane, MEDIUMs named, none authority-bearing past the proof): the admit preflight checks that a frontier record exists but leaves its signed hand, group, roster and snapshot to the later boot's reader (`ceremony-core.ts`); the issuer stamps the signed admission's epoch from the raw chain head, where the verified lineage's last epoch would match (`device-admit.ts`); the fleet-join offer reads its group through `facePersonaGroup` from the bootstrap on the founding face (`fleet-join.ts`) and `init.ts` reads the bootstrap group to choose `alreadyStood`; a holder session whose lock or proof rejects after the greeting leaves queued asks waiting without a named refusal (`shared-holder.ts`); the browser's second face neither joins nor proves its identities and circles documents (Wave D slice 4). Each rides its owning lane's row: K17 for the frontier verification, K15-H for the Handle owner, Wave D for the browser faces.
 * ''Read 6's two lane-owned HIGH, written verbatim as Wave D's opening rows'' (read 6 found no P0: an unaffiliated wire peer reached no face act and no private plane). ROW 1: MEASURED — lane-owned composition, foreign face share falls open when its catalog row is absent. `packages/lararium-node/src/face-fleet-view.ts:76-87,131-137`; `packages/lararium-node/src/open-node-vessel.ts:753-754`. One-line reason: the worn face bridge allows *every* document id outside a negative set derived from the mutable catalog, so deleting or withholding a foreign face's row before a new session is seated removes that face's private plane from the deny set. This is the exact inverse of the proposed authority direction: an unverified catalog *absence* changes a share from false to true. The `bb8513247` repair added `foreignFaceDocs`, but the live verdict is `view.fetch(id).ok || !others.has(id)`; a missing catalog entry makes `others.has` false. The source test itself demonstrates the relevant behavior at `face-fleet-view.test.ts:122-140`: with only the worn bootstrap, the bare bridge reads the other face's circles, and supplying a catalog-derived `foreign` set blocks it. The control never tries the catalog row deleted after registration, or a held other-face document whose catalog entry was omitted. A same-operator session of the worn face can fetch the other face's held document by id in that state. The verdict is wired through `shareConfigOf` to both the announce and access hooks (`federation-gate.ts:602-611`), so this is an access decision rather than an announcement-only cosmetic leak; the live transport control at `share-policy-is-access.test.ts:49-67` demonstrates that distinction. This is not P0 under the user's definition because the reader already has an admitted face; the leak crosses face compartments on one vessel. The authorization decision must come from the sealed/proven face-document inventory or a positive view, rather than catalog completeness. The broad bridge predates Wave C (Wave B/O1), but Wave C owns the `foreignFaceDocs` repair and its composer wiring; this finding concerns that lane-owned repair, not the inherited bridge in isolation. ROW 2: MEASURED — lane-owned node daemon keeps a lease floor older than the sealed anchor it raises at boot. `packages/lararium-node/src/open-node-vessel.ts:2260-2271,2311-2346`; `packages/lararium-keyhive/src/operator-daemon-behavior.ts:306-321,421-423,704-743,986-1008`; `packages/lararium-keyhive/src/lease-frontier.ts:64-70`. One-line reason: the composer snapshots `standingAnchor` into `daemonAuth` and awaits `openDaemonVm` *before* it raises and persists the verified lease epoch; the running daemon's live join and grant reads keep flooring under the old object. For a concrete counterexample, start with sealed lease epoch 0 and a verified signed advance to 7 in the mirrored daemon doc. The daemon receives anchor 0, starts, then the parent persists anchor 7 at `:2346`. If that mutable slot is deleted or replayed to 0 during the same daemon lifetime, `readLeaseUnderFace` reads 0 and floors against the daemon's captured anchor 0, despite custody now pinning 7. Its live face-join at `operator-daemon-behavior.ts:704-743` passes the lowered `lease.n` into a new seat and re-seal, while grant ingest at `:306-321` verifies an older bound. A restart loads 7 and closes the window; the claim that the sealed frontier never falls in a standing daemon does not hold. This is Wave C's lease-observation and composer ordering, not an inherited timer. The seam should raise the anchor before forming/sending `daemonAuth`, or deliver the raised pin to the daemon through a verified update. The existing red at `signed-lease-frontier.test.ts:50-61` hands `readLeaseUnderFace` an anchor already at 7, and `lease-observation.test.ts:26` tests the pure raise, so both can pass while the composer sends 0 before it persists 7. A red needs the live daemon, a signed advance, a subsequent slot deletion, and a control that the older edge or grant remains refused without restart.
-* ''The realm leg'' is its own lane, K17-R (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k17-realm-lease-lane">>): one lease law on the realm boards, landed after Wave C.
+* ''The realm leg'' is its own lane, K17-R (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/k17-realm-lease-lane`>>): one lease law on the realm boards, landed after Wave C.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges ~ held outside Wave C
 
@@ -106,6 +106,6 @@ One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wH2N48UUwo5yPqkHOKIy9N7sQaO6hPMU9crJlJeC6-w
+<<^ code=`&#x0003;`>>ni:///sha-256;ZYJflqE-mw6Diq5jBY_-lM8hrtypYg0xdCGpSB-oMq8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

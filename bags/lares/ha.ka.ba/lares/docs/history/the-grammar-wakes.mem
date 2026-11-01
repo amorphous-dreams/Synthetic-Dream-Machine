@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/the-grammar-wakes"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Grammar Wakes — Genesis Arc
 
@@ -28,7 +28,7 @@ It opens the history. Nothing hands in; everything that follows hands out from h
 
 <<~/ahu>>
 
-<<~ ahu #/general-arc>>
+<<~ ahu slot=`#/general-arc`>>
 
 !! The General Arc — the SharktoothSigil's Birth
 
@@ -42,7 +42,7 @@ The history that follows speaks this grammar. The prequel holds the only stretch
 
 <<~/ahu>>
 
-<<~ ahu #/handoff-in>>
+<<~ ahu slot=`#/handoff-in`>>
 
 !! Handoff In
 
@@ -50,7 +50,7 @@ The blank page. This arc carries the origin — no prior thread feeds it. Where 
 
 <<~/ahu>>
 
-<<~ ahu #/act-i>>
+<<~ ahu slot=`#/act-i`>>
 
 !! Act I — The First Teeth
 
@@ -79,7 +79,7 @@ Then it named the whole field:
 
 <<~/ahu>>
 
-<<~ ahu #/act-ii>>
+<<~ ahu slot=`#/act-ii`>>
 
 !! Act II — Mu Wakes
 
@@ -121,7 +121,7 @@ By the end a mark could ''name'' a thing, ''hold'' it, and ''reach'' it across t
 
 <<~/ahu>>:1ab16197a96ce176
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance
 
@@ -131,7 +131,7 @@ Act II further absorbs the ''mu emergence sequence'' — the eight-step arrival 
 
 <<~/ahu>>
 
-<<~ ahu #/handoff-out>>
+<<~ ahu slot=`#/handoff-out`>>
 
 !! Handoff Out
 
@@ -139,7 +139,7 @@ Forward into [[the Lindwyrm arc|lindwyrm/index.md]] — the grammar that wakes h
 
 <<~/ahu>>
 
-<<~ ahu #/drafting-constraints>>
+<<~ ahu slot=`#/drafting-constraints`>>
 
 !! Drafting Constraints
 
@@ -157,21 +157,21 @@ MUST NOT:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/index">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/index`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art`>>
 
-<<~ pranala #precedes-lindwyrm-arc from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/index" family="relation" role="precedes">>
-<<~ pranala #grammar-now-formalized from="?" -> to="lar:///ha.ka.ba/lares/api/mu" family="reference" role="becomes">>
-<<~ pranala #design-research-side-car from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art" family="relation" role="accompanies">>
+<<~ pranala slot=`#precedes-lindwyrm-arc` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/index` family=`relation` role=`precedes`>>
+<<~ pranala slot=`#grammar-now-formalized` from=`?` to=`lar:///ha.ka.ba/lares/api/mu` family=`reference` role=`becomes`>>
+<<~ pranala slot=`#design-research-side-car` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art` family=`relation` role=`accompanies`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4m51Egmb60V9YryOmIID6MIfimL64GLa-BicANVBbS0
+<<^ code=`&#x0003;`>>ni:///sha-256;HI4ks3tTAMG9l9bCV72pTEjsfc6VMugZ1m7_m26bCXs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

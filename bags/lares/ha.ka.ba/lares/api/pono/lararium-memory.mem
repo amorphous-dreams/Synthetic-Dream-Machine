@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="≋" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/lararium-memory">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`≋` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -20,11 +20,11 @@ uri-path  = "ha.ka.ba/lares/api/pono/lararium-memory"
 written   = "2026-06-24"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Lararium Memory ~ four registers · two peers · one mesh
 
@@ -64,15 +64,15 @@ five stances, five seasons, five-phase OODA-HA — memory keeps the meter.
 
 <<~/ahu>>
 
-<<~ ahu #/four-registers>>
+<<~ ahu slot=`#/four-registers`>>
 
 !! The Four Registers
 
-<<~ has Register RAM "axis/sovereign·lived holder/each-peer metaphor/the-breath grain/the-turn federates/no ~ the live chat as working state, polymorphic across client-forms (cli-session · embedded-extension · floating-desktop-app · browser · Mudlet · Unreal); each turn runs a causal island, no shared now across the turn boundary; the source that drains two ways">>
-<<~ has Register Seat "axis/sovereign·distilled holder/each-peer-by-kind metaphor/the-home grain/standing federates/no ~ the holder's persistent continuity — a human keeps a DreamDeckSurface (composed, spatial), a node keeps Agent.MEMORY (curated, propositional); one office, the medium each mind thinks in">>
-<<~ has Register Memory-Sensorium "axis/meshed·lived metaphor/PLACE-memory · hippocampus grain/permanent-local federates/never ~ verbatim episodic drawers, fractal, hearth-bound — the Lar guards place; append-only, structurally outside the CRDT Repo">>
-<<~ has Register Quine "axis/meshed·distilled metaphor/ley-line-mesh-memory · cortex grain/session→permanent federates/yes@≥meme ~ the lararium's authored canon and standing graph; the DreamNet web between shrines, the wiki-quine-relay carrying it across the mesh">>
-<<~ has Register Four>>
+<<~ has entity=`Register` name=`RAM` params=`axis/sovereign·lived holder/each-peer metaphor/the-breath grain/the-turn federates/no ~ the live chat as working state, polymorphic across client-forms (cli-session · embedded-extension · floating-desktop-app · browser · Mudlet · Unreal); each turn runs a causal island, no shared now across the turn boundary; the source that drains two ways`>>
+<<~ has entity=`Register` name=`Seat` params=`axis/sovereign·distilled holder/each-peer-by-kind metaphor/the-home grain/standing federates/no ~ the holder's persistent continuity — a human keeps a DreamDeckSurface (composed, spatial), a node keeps Agent.MEMORY (curated, propositional); one office, the medium each mind thinks in`>>
+<<~ has entity=`Register` name=`Memory-Sensorium` params=`axis/meshed·lived metaphor/PLACE-memory · hippocampus grain/permanent-local federates/never ~ verbatim episodic drawers, fractal, hearth-bound — the Lar guards place; append-only, structurally outside the CRDT Repo`>>
+<<~ has entity=`Register` name=`Quine` params=`axis/meshed·distilled metaphor/ley-line-mesh-memory · cortex grain/session→permanent federates/yes@≥meme ~ the lararium's authored canon and standing graph; the DreamNet web between shrines, the wiki-quine-relay carrying it across the mesh`>>
+<<~ has entity=`Register` name=`Four`>>
 
 ''RAM'' holds what a turn works with — operator intent, the role adopted, the
 live exchange. It wears many client-skins and answers to none of them; it empties at the
@@ -92,7 +92,7 @@ crosses to canon (`@{slug}`) only through a cap-gated `MOVE` (the shore, below).
 
 <<~/ahu>>
 
-<<~ ahu #/two-peers>>
+<<~ ahu slot=`#/two-peers`>>
 
 !! The Two Peers ~ asymmetric, each whole
 
@@ -123,7 +123,7 @@ it holds the grant.
 
 <<~/ahu>>
 
-<<~ ahu #/shared-mesh>>
+<<~ ahu slot=`#/shared-mesh`>>
 
 !! The Shared Mesh ~ PLACE and ley-line
 
@@ -140,7 +140,7 @@ Beneath both peers lies one mesh, two registers, named in Elyncian terms:
   384-dim cosine) and extends it for the sibling palaces (`source_file` /
   `chunk_index` · `wing` / `room` · `lar_salience` / `frontier` · `lar_witnesses`
   / `pubinfo` / `signer`). Ingest offloads
-  via @daemon coordinator verbs to the py nalu-gates.
+  via daemon-plane coordinator verbs to the py nalu-gates.
   The pinned MemPalace Python package supplies library functions to that owned store.
   The upstream `~/.mempalace/palace` guest keeps a separate store, config, hooks and
   lifecycle. In alpha it shall consume the same discoverable AI–operator source history through
@@ -165,7 +165,7 @@ canon. Recall ''composes across all four'' and surfaces conflict to Talk-Story
 
 <<~/ahu>>
 
-<<~ ahu #/two-organs>>
+<<~ ahu slot=`#/two-organs`>>
 
 !! Two Organs ~ the GroundedVow binding
 
@@ -173,7 +173,7 @@ The quine and the Memory Sensorium serve genuinely different offices — ''stand
 ''episodic testimony, cortex and hippocampus — mutually referential, never''
 ''sequential.''
 
-<<~moves grounding -> consult on/the-witness do/anchor-a-claim never/feed-into-canon>>
+<<~moves name=`grounding` params=`consult on/the-witness do/anchor-a-claim never/feed-into-canon`>>
 
 * The ''cortex consults the hippocampus'' to ground a claim ~ //"what did we//
 //  actually say at this bearing?"//
@@ -188,16 +188,16 @@ one `lar:` namespace.
 
 <<~/ahu>>
 
-<<~ ahu #/two-drains>>
+<<~ ahu slot=`#/two-drains`>>
 
 !! The Two Drains ~ how RAM empties
 
 RAM, the lived sovereign register, drains in ''two independent directions'' at the
 turn's close. Neither drain feeds the other:
 
-<<~ has Drain Verbatim "into/Memory-Sensorium as/episodic-occurrence grain/typed-block ground/source-bytes-and-revision ~ the full source history lands through custody and projection; aim→yield reads over it">>
-<<~ has Drain Authored "into/Quine as/standing-meme path/@working→MOVE→canon ~ the operator authors meaning, crossing the shore by a witnessed residency verb">>
-<<~ has Drain Two>>
+<<~ has entity=`Drain` name=`Verbatim` params=`into/Memory-Sensorium as/episodic-occurrence grain/typed-block ground/source-bytes-and-revision ~ the full source history lands through custody and projection; aim→yield reads over it`>>
+<<~ has entity=`Drain` name=`Authored` params=`into/Quine as/standing-meme path/@working→MOVE→canon ~ the operator authors meaning, crossing the shore by a witnessed residency verb`>>
+<<~ has entity=`Drain` name=`Two`>>
 
 The ''working↔canon shore'' governs the authored drain: a `@working` edit shadows
 canon via the recipe cascade; the crossing to `@{slug}` rides a cap-gated `MOVE`
@@ -207,7 +207,7 @@ shore: it appends and never normalizes.
 
 <<~/ahu>>
 
-<<~ ahu #/capture-before-wire>>
+<<~ ahu slot=`#/capture-before-wire`>>
 
 !! Capture Before Wire ~ the turn-grammar rides the VM
 
@@ -221,14 +221,14 @@ Memory Sensorium custody and typed-occurrence ledger.
 ''The remaining wire is operational.'' Give each harvested reading a source
 occurrence, evidence revision, parser identity and receipt, then join it to the
 owned Content view without changing verbatim source bytes. The hook→Lararium→
-@daemon→decompose→hand-back route remains a proposed integration for grammar
+daemon-plane→decompose→hand-back route remains a proposed integration for grammar
 that needs TW5. A legacy `lar_*` stamp or a parsed meme alone does not advance
 the new typed-content or semantic frontier. Preserve raw text and drift when a
 reading cannot earn that frontier.
 
 <<~/ahu>>
 
-<<~ ahu #/register-dressed>>
+<<~ ahu slot=`#/register-dressed`>>
 
 !! Register-Dressed, Never Gated
 
@@ -236,7 +236,7 @@ A captured channel carries its ''confidence as a forward Play→Committed gradie
 — a stance the turn vowed, never a how-true-is-it grade stamped after. So recall
 ''dresses'' a memory in its register; it never ''gates'' by it.
 
-<<~ scale recall "provisional@1..4 ~ a live re-openable thread (play) -> synthesis@9..12 ~ working ground -> canon@17..20 ~ weight-bearing">>
+<<~ scale name=`recall` ranks=`provisional@1..4 ~ a live re-openable thread (play) -> synthesis@9..12 ~ working ground -> canon@17..20 ~ weight-bearing`>>
 
 * A `provisional@3` drawer surfaces ''as play'' — an invitation to re-open, not
   noise to suppress. Low reads fertile.
@@ -251,25 +251,25 @@ conflict press a `hoike`.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/mempalace-integration">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/lararium-canonical-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/talk-story">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mempalace-integration`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/lararium-canonical-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/local-first`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NMtUL6vs2BIDHfiMhJRTcx-WB5u4B0AVweQmdZFUQcI
+<<^ code=`&#x0003;`>>ni:///sha-256;VJpI9_6siGrRprH0mWBxFEVO7e4bOirXMLijSzSmoYs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

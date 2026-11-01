@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/infrastructure-as-myth">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/infrastructure-as-myth`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/infrastructure-as-myth"
 ```
 
-<<~ ahu #/seat>>
+<<~ ahu slot=`#/seat`>>
 
 ! Infrastructure as Myth — the submission seat
 
@@ -27,10 +27,10 @@ pipeline the spec submissions share.
 
 The working design surface — the doctrine-and-paper draft the submission condenses from — rides the documentation shelf:
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/infrastructure-as-myth">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/infrastructure-as-myth`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8cDEnR1d1v-kRjGj5058JqAp7nI7Bs0ADYmKhv726LI
+<<^ code=`&#x0003;`>>ni:///sha-256;Xubc8UNg-eZVC3C7c1gbYkxOZrnBiGBFJ3UMDVBlWDA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

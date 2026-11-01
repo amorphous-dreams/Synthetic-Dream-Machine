@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
@@ -21,7 +21,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/recovery-custody-scout"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Recovery custody ~ what the field has MEASURED
 
@@ -31,7 +31,7 @@ A tasked spirit went out over `identity-classes#the-two-forks` — Fork A ''reco
 
 <<~/ahu>>
 
-<<~ ahu #/the-decisive-finding>>
+<<~ ahu slot=`#/the-decisive-finding`>>
 
 !! ★ The decisive comparative finding ★
 
@@ -53,7 +53,7 @@ A tasked spirit went out over `identity-classes#the-two-forks` — Fork A ''reco
 
 <<~/ahu>>
 
-<<~ ahu #/the-counterweight>>
+<<~ ahu slot=`#/the-counterweight`>>
 
 !! ⚠ And the counterweight — Fork B carries a risk the in-house framing also missed
 
@@ -67,7 +67,7 @@ Read plainly: where a recovery authority ''reconstructs'', a rogue sub-quorum ca
 
 <<~/ahu>>
 
-<<~ ahu #/the-third-axis>>
+<<~ ahu slot=`#/the-third-axis`>>
 
 !! ⚠ The axis that dominates the one we asked about
 
@@ -79,7 +79,7 @@ This changes the SHAPE of the decision rather than answering it: the fork prices
 
 <<~/ahu>>
 
-<<~ ahu #/what-actually-fails>>
+<<~ ahu slot=`#/what-actually-fails`>>
 
 !! What actually fails — nineteen measured cases, and none of them is the fork
 
@@ -117,7 +117,7 @@ They turned on, every time:
 
 <<~/ahu>>
 
-<<~ ahu #/the-archives>>
+<<~ ahu slot=`#/the-archives`>>
 
 !! The distro archives ~ nobody does threshold signing, and one project lost its key
 
@@ -135,7 +135,7 @@ They turned on, every time:
 
 <<~/ahu>>
 
-<<~ ahu #/the-negative-results>>
+<<~ ahu slot=`#/the-negative-results`>>
 
 !! The negative results ~ load-bearing
 
@@ -146,7 +146,7 @@ They turned on, every time:
 
 <<~/ahu>>
 
-<<~ ahu #/our-own-ground>>
+<<~ ahu slot=`#/our-own-ground`>>
 
 !! ★ Traced against OUR OWN keel — three measurements, not readings ★
 
@@ -156,7 +156,7 @@ The sweep names three things unmeasured at home. All three are measurable, and t
 
 * ''CIVIC scale'' — ⚠ ''corrected on a second read''. The charter ROTATION does not reconstruct anything: `sealRotate` seats the key-set that STANDS and verifies its digest against the head's `nextKeyCommit`, fail-closed. That is ''pre-rotation with a key-set reveal'' (TUF≈KERI), neither fork. ''Fork A's Shamir sits one layer beneath'' — `splitReserveSeed` 2-of-3 custodies the RESERVE SEED, the material `deriveReserveKeySet` turns into the successor key-set. So the 2-of-3 recovers ''the pre-committed future'', never the rotation authority.
 * ''HUMAN scale'' (persona-KEL) runs ''Fork B'': `attestAndRotate` gathers ≥k independent recovery contact signatures and its own comment states the property — //"each signs with their OWN recovery key and returns a signature, and NOTHING assembles (no seed, no share)."//
-* ⚠ ''Neither scale walks its recovery from a CLI door.'' At the civic scale no verb carries a card into a rotation: `seal rotate` reads vault persona roots alone, so a head armed with the reserve's commit never rolls and the roll refuses it by name (`reserve-armed`); `seal reserve rehearse` reads two cards back under a scratch root, proves the rebuilt key-set against the charter head, and rolls nothing. At the human scale `attestAndRotate` stands in the mesh library with no verb above it, and no verb enrolls a recovery contact set. The 2-of-3 therefore custodies a future that no ceremony can yet spend (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/threshold-attest-recovery">>); the field's principles for a recovery object and its reader rest on the shelf (<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities#/shelf">>).
+* ⚠ ''Neither scale walks its recovery from a CLI door.'' At the civic scale no verb carries a card into a rotation: `seal rotate` reads vault persona roots alone, so a head armed with the reserve's commit never rolls and the roll refuses it by name (`reserve-armed`); `seal reserve rehearse` reads two cards back under a scratch root, proves the rebuilt key-set against the charter head, and rolls nothing. At the human scale `attestAndRotate` stands in the mesh library with no verb above it, and no verb enrolls a recovery contact set. The 2-of-3 therefore custodies a future that no ceremony can yet spend (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/threshold-attest-recovery`>>); the field's principles for a recovery object and its reader rest on the shelf (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pattern-integrities#/shelf`>>).
 
 So a move //off// the wired mechanism is not a move toward an unbuilt thing. ''Each scale currently holds the fork that answers its own failure mode'', and whether that coincidence is right is the question — not whether the other branch exists.
 
@@ -189,7 +189,7 @@ Read from `persona-kel.ts` and `recovery-keel-core.ts` at their current heads. �
 
 <<~/ahu>>
 
-<<~ ahu #/how-far-to-trust-this>>
+<<~ ahu slot=`#/how-far-to-trust-this`>>
 
 !! How far to trust this sweep
 
@@ -200,15 +200,15 @@ Read from `persona-kel.ts` and `recovery-keel-core.ts` at their current heads. �
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-classes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pattern-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DHZ-hLNkzkR2WO6ykt0Kok_7mz6dsq_Q2ceNXmT5IV8
+<<^ code=`&#x0003;`>>ni:///sha-256;9ExJt2VSLJXqV8G1uc4AyjwKrPgANavUoT6ycZ2exq4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

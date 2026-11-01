@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -150,6 +150,6 @@ The HUD tag is therefore a ''memory prosthetic'' — it carries calibration forw
 
 //Syād — perhaps, from a certain standpoint. The emoji are the syād.//
 
-<<^ code="&#x0003;">>ni:///sha-256;kiv9n-sf9sEMOmHO3jFrFOk09lUwVRdTnyz0yhAq4SI
+<<^ code=`&#x0003;`>>ni:///sha-256;kP8gzKnrKwO5c8exObiT5ex-ENLxoJyDAYsargkak1Y
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

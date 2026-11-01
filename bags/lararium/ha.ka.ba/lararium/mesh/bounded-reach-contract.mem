@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -18,9 +18,9 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/bounded-reach-contract"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Bounded Reach Contract ~ a signpost leased without leasing the self
 
@@ -37,7 +37,7 @@ global fact.
 
 <<~/ahu>>
 
-<<~ ahu #/capability-matrix>>
+<<~ ahu slot=`#/capability-matrix`>>
 
 !! Five capabilities, five holders
 
@@ -55,7 +55,7 @@ peer behind the origin.
 
 <<~/ahu>>
 
-<<~ ahu #/grant-shape>>
+<<~ ahu slot=`#/grant-shape`>>
 
 !! The grant carries bounded evidence
 
@@ -84,7 +84,7 @@ serializable into an unscoped bearer secret.
 
 <<~/ahu>>
 
-<<~ ahu #/lifecycle>>
+<<~ ahu slot=`#/lifecycle`>>
 
 !! Lifecycle ~ contract first, renewal local, withdrawal severable
 
@@ -109,7 +109,7 @@ serializable into an unscoped bearer secret.
 
 <<~/ahu>>
 
-<<~ ahu #/dns-boundaries>>
+<<~ ahu slot=`#/dns-boundaries`>>
 
 !! Two DNS views and one named governance fork
 
@@ -144,7 +144,7 @@ apex write, identity, membership, or read capability.
 
 <<~/ahu>>
 
-<<~ ahu #/evidence-boundaries>>
+<<~ ahu slot=`#/evidence-boundaries`>>
 
 !! Evidence says what was witnessed
 
@@ -162,7 +162,7 @@ individual evidence never carried.
 
 <<~/ahu>>
 
-<<~ ahu #/gaia-story>>
+<<~ ahu slot=`#/gaia-story`>>
 
 !! Operators on Gaia (Earth circa 2026) SHALL need
 
@@ -184,7 +184,7 @@ answers who, and the DNS name answers where.
 
 <<~/ahu>>
 
-<<~ ahu #/elyncia-story>>
+<<~ ahu slot=`#/elyncia-story`>>
 
 !! Operators on Elyncia (Orichalcum Mythpunk RPG) SHALL need
 
@@ -207,7 +207,7 @@ causal history.
 
 <<~/ahu>>
 
-<<~ ahu #/consistency-control>>
+<<~ ahu slot=`#/consistency-control`>>
 
 !! RED-first authored invariant
 
@@ -231,7 +231,7 @@ tls-acme-role        = "origin-attestation-only"
 
 <<~/ahu>>
 
-<<~ ahu #/held>>
+<<~ ahu slot=`#/held`>>
 
 !! Unbuilt holds
 
@@ -242,25 +242,25 @@ before any deployment path opens.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/books/the-lares-dreamnet/spine">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/nexus-topology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/books/the-lares-dreamnet/spine`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Eo0sPsf3LhqCNr3D9Lwa8ouVlrnYahI-aAOeHcD98Xo
+<<^ code=`&#x0003;`>>ni:///sha-256;RHQKHiP-AjC2CMZmHgonIOnwR2NgFoGo8N_B8UkfoZ4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

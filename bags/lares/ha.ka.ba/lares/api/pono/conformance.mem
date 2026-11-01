@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/conformance">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/conformance`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,11 +17,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/conformance"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Conformance
 
@@ -33,7 +33,7 @@ The lens fires only when summoned. It never rides a turn by default.
 
 <<~/ahu>>
 
-<<~ ahu #/operation>>
+<<~ ahu slot=`#/operation`>>
 
 !! The Operation
 
@@ -54,7 +54,7 @@ A trace MAY also ''suspend'' honestly --- reaching a phase and naming an externa
 
 <<~/ahu>>
 
-<<~ ahu #/invocation>>
+<<~ ahu slot=`#/invocation`>>
 
 !! Invocation
 
@@ -69,7 +69,7 @@ The `->` delegates the lens toward what it reads. The target names //other// con
 
 <<~/ahu>>
 
-<<~ ahu #/output>>
+<<~ ahu slot=`#/output`>>
 
 !! The Reading
 
@@ -89,7 +89,7 @@ The overlay reads as fresh orientation for the node's //next// decision. It feed
 
 <<~/ahu>>
 
-<<~ ahu #/not-self-audit>>
+<<~ ahu slot=`#/not-self-audit`>>
 
 !! Outward, Not Backward
 
@@ -102,7 +102,7 @@ By the speech-act test the invocation reads as a first-person present-tense act 
 
 <<~/ahu>>
 
-<<~ ahu #/lineage>>
+<<~ ahu slot=`#/lineage`>>
 
 !! Lineage
 
@@ -113,14 +113,14 @@ By the speech-act test the invocation reads as a first-person present-tense act 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/exchange-vector">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/ooda-ha`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/exchange-vector`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CY0OjPd5dqU-qHpEnrdR6TDL92agLzfkBu50VgGko7s
+<<^ code=`&#x0003;`>>ni:///sha-256;ABF45fCPLhZ85cqhVBFvRCMtcWqgVtNCPI9-TaS5YeA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

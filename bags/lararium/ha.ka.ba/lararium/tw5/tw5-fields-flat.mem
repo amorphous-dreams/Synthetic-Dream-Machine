@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -17,7 +17,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/tw5/tw5-fields-flat"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -39,12 +39,12 @@ Before this file, `wiki-handlers.ts` owned `flattenRuntimeTiddlerFields()` (skip
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 <$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat" $mode="block"/>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7_WoUlDEYXkM4_XZSptf84qkr2moh88E3qnd4per0zs
+<<^ code=`&#x0003;`>>ni:///sha-256;3NmpNztqjb94J_lSmb-S45cuW60EuPFJoN8r79EkbFU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

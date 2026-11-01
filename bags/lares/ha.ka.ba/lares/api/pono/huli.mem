@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/huli">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/huli`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,11 +17,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/huli"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Huli
 
@@ -38,7 +38,7 @@ directed attention moving through the set.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ sense the filter expression — what set does this huli iterate over?
 ⏿ orient: huli = iterate result set; body renders once per result; currentTiddler bound to each
@@ -48,7 +48,7 @@ directed attention moving through the set.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -65,20 +65,20 @@ Common filter forms:
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 Hawaiian form:
 ```text
-<<~ huli [filter-expression]>>
+<<~ huli filter=`[filter-expression]`>>
 body template (currentTiddler = each result)
 <<~/huli>>
 ```
 
 English alias form (identical semantics):
 ```text
-<<~ for [filter-expression]>>
+<<~ for filter=`[filter-expression]`>>
 body template (currentTiddler = each result)
 <<~/for>>
 ```
@@ -92,7 +92,7 @@ body template
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -111,17 +111,17 @@ close-pattern = '<<~\/huli\s*>>'
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wehe">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wai">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wehe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wai`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-for">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-for`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;S0_xF59t77wRW_8Pzp4-AuVudEuW9Q4bCZOjUDm2UZ0
+<<^ code=`&#x0003;`>>ni:///sha-256;CeB8-kZV897SNjWEsugdZHjWRqa7fmz53dg0TMsSmm8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

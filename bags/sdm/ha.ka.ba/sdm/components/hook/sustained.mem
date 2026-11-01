@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/hook/sustained">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/components/hook/sustained`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/sdm/components/hook/sustained"
 
 ! Sustained
 
-<<~ ahu #/definition>>
+<<~ ahu slot=`#/definition`>>
 
 !! Definition
 
@@ -27,7 +27,7 @@ A canonical duration hook (the `focus` family): the Power persists only while th
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -35,7 +35,7 @@ Modifies duration, not effect. The Power runs as long as attention holds; a save
 
 <<~/ahu>>
 
-<<~ ahu #/interaction>>
+<<~ ahu slot=`#/interaction`>>
 
 !! Interaction
 
@@ -43,7 +43,7 @@ Common on `function/barrier`, `function/ward`, `function/cargo`, and `domain/stu
 
 <<~/ahu>>
 
-<<~ ahu #/filters>>
+<<~ ahu slot=`#/filters`>>
 
 !! Filters
 
@@ -54,7 +54,7 @@ Common on `function/barrier`, `function/ward`, `function/cargo`, and `domain/stu
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -62,14 +62,14 @@ Common on `function/barrier`, `function/ward`, `function/cargo`, and `domain/stu
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/components/tag`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;o95OpLwJDjjhwIFxBAlVFVYTqxOHVyvzFNfLeRAFutk
+<<^ code=`&#x0003;`>>ni:///sha-256;p7YPhJNjMjYYAob3k-HKOGaCnHN193VTER7mTn7hUfc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

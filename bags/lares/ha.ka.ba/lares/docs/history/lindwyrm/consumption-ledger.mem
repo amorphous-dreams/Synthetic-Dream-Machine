@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Lindwyrm Narrative Consumption Ledger
 
@@ -27,7 +27,7 @@ This ledger tracks source-talk-story material as it moves into coherent narrativ
 
 <<~/ahu>>
 
-<<~ ahu #/intent-vector>>
+<<~ ahu slot=`#/intent-vector`>>
 
 !! Intent Vector
 
@@ -43,7 +43,7 @@ Narrate to self while consuming:
 
 <<~/ahu>>
 
-<<~ ahu #/rules>>
+<<~ ahu slot=`#/rules`>>
 
 !! Consumption Rules
 
@@ -57,7 +57,7 @@ Narrate to self while consuming:
 
 <<~/ahu>>
 
-<<~ ahu #/ledger>>
+<<~ ahu slot=`#/ledger`>>
 
 !! Ledger
 
@@ -74,7 +74,7 @@ Narrate to self while consuming:
 
 <<~/ahu>>
 
-<<~ ahu #/next-targets>>
+<<~ ahu slot=`#/next-targets`>>
 
 !! Next Targets
 
@@ -85,31 +85,31 @@ Likely next slices:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/self-booting-lararium">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/self-booting-lararium`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls`>>
 
-<<~ pranala #first-consumption from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed" family="reference" role="records">>
-<<~ pranala #second-consumption from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself" family="reference" role="records">>
-<<~ pranala #third-consumption from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node" family="reference" role="records">>
-<<~ pranala #fourth-consumption from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/self-booting-lararium" family="reference" role="records">>
-<<~ pranala #fifth-consumption from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture" family="reference" role="records">>
-<<~ pranala #sixth-consumption from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture" family="reference" role="records">>
-<<~ pranala #act-i-draft from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo" family="reference" role="records">>
-<<~ pranala #act-ii-draft from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls" family="reference" role="records">>
+<<~ pranala slot=`#first-consumption` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed` family=`reference` role=`records`>>
+<<~ pranala slot=`#second-consumption` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself` family=`reference` role=`records`>>
+<<~ pranala slot=`#third-consumption` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node` family=`reference` role=`records`>>
+<<~ pranala slot=`#fourth-consumption` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/self-booting-lararium` family=`reference` role=`records`>>
+<<~ pranala slot=`#fifth-consumption` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture` family=`reference` role=`records`>>
+<<~ pranala slot=`#sixth-consumption` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture` family=`reference` role=`records`>>
+<<~ pranala slot=`#act-i-draft` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo` family=`reference` role=`records`>>
+<<~ pranala slot=`#act-ii-draft` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls` family=`reference` role=`records`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vPm2CnemVnBo9awvCNKVwm1hX0etlXlNw2iN3_BmXT4
+<<^ code=`&#x0003;`>>ni:///sha-256;p9EfOar5CdB_XF4-XRMIh9REVsy_Za8Q_amqAwAVObA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

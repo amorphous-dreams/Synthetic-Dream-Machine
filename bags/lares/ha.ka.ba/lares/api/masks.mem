@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/masks`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -20,11 +20,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/masks"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Masks API Tree
 
@@ -35,9 +35,9 @@ Grammar and stacking law defined in `lar:///ha.ka.ba/lares/docs/voices/masks`.
 
 <<~/ahu>>
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/voices#/mask-layer">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/mask-layer`>>
 ```toml
 family = "hydration"
 lifecycle = "template"
@@ -48,7 +48,7 @@ label = "parent-index-entry"
 
 <<~/ahu>>
 
-<<~ ahu #/taxonomy>>
+<<~ ahu slot=`#/taxonomy`>>
 
 !! Mask Type Taxonomy
 
@@ -62,7 +62,7 @@ Three subtypes. Each subtype lives in its own directory.
 
 <<~/ahu>>
 
-<<~ ahu #/child-routes>>
+<<~ ahu slot=`#/child-routes`>>
 
 !! Child Routes
 
@@ -91,7 +91,7 @@ Three subtypes. Each subtype lives in its own directory.
 
 <<~/ahu>>
 
-<<~ ahu #/invocation>>
+<<~ ahu slot=`#/invocation`>>
 
 !! Invocation Pattern
 
@@ -112,7 +112,7 @@ Named Voice masks may also be invoked directly by their earned name in Voice hou
 a mask already seated, for as long as the moment asks:
 
 ```
-<<~ stage "20" "Mischief-Muse">>
+<<~ stage rank=`20` name=`Mischief-Muse`>>
 ```
 
 The depth rides first — a summon answers //how near// before //who// — and reads on the 0--20 stage
@@ -122,23 +122,23 @@ gates, so masks share the apron and no collision rule arbitrates them.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/masks/named/mischief-muse">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/masks/named/tide-caller">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/masks/named/breach-watch">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/masks/named/ink-clerk">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/masks/named/map-wisp">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/masks/character/friend-computer">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/masks/chorus/lagrange-chorus">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices/masks`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks/named/mischief-muse`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks/named/tide-caller`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks/named/breach-watch`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks/named/ink-clerk`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks/named/map-wisp`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks/character/friend-computer`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks/chorus/lagrange-chorus`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SABS41HkiSxDER39RLKKC2MmGNjQo3yaqRt47tU-9Uk
+<<^ code=`&#x0003;`>>ni:///sha-256;dC5gxfoy0nWF1DB-fNll_boUb9JAwNWAPLZAMHBhrVA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/broken-isles/region-worksheet">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/broken-isles/region-worksheet`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/broken-isles/region-worksheet"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Broken Isles ~ Region Worksheet
 
@@ -40,7 +40,7 @@ battlefield where the household was born all sit inside this Nexus.
 
 <<~/ahu>>
 
-<<~ ahu #/the-severing>>
+<<~ ahu slot=`#/the-severing`>>
 
 !! The Severing ~ what YOLD 5000 did here
 
@@ -67,7 +67,7 @@ runs to a cliff and stops.
 
 <<~/ahu>>
 
-<<~ ahu #/the-three-isles>>
+<<~ ahu slot=`#/the-three-isles`>>
 
 !! The Three Isles
 
@@ -97,7 +97,7 @@ and who cuts them · which sky-island has drifted somewhere it should not have.
 
 <<~/ahu>>
 
-<<~ ahu #/powers>>
+<<~ ahu slot=`#/powers`>>
 
 !! Powers, Hazards, Nodes
 
@@ -129,7 +129,7 @@ this season · what a temporal pocket returns you into.
 
 <<~/ahu>>
 
-<<~ ahu #/the-wilds>>
+<<~ ahu slot=`#/the-wilds`>>
 
 !! The Wilds ~ the Nausicaä register
 
@@ -150,16 +150,16 @@ not to say about it.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/kai-a">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/strandbeests">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/kai-a`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/strandbeests`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3pxgLM0QkzEtXuqdTNH8LdqBI1pUKecb_3uyrO75Lk8
+<<^ code=`&#x0003;`>>ni:///sha-256;J8-UKISep0BHONffq3ZMJIkCrvF-R3fCclK1wrZ_aSw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

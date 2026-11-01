@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/credit-compact">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/campaign/credit-compact`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,13 +17,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/campaign/credit-compact"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Lindwyrm's Expedition Credit Compact
 
 <<~/ahu>>
 
-<<~ ahu #/body>>
+<<~ ahu slot=`#/body`>>
 
 ! Sidebar — Lindwyrm Expedition Credit Compact v2
 
@@ -64,6 +64,6 @@ They may:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;s-RtVchLxFSXyzKW5nFIICYDUOWqrb5VAIs3VHUm2y0
+<<^ code=`&#x0003;`>>ni:///sha-256;uUzlwocUTbVLneqkRaAKPb98KWZgkzPppfKgTJURaMs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

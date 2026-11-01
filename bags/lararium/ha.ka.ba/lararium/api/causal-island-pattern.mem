@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/causal-island-pattern">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/causal-island-pattern`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -20,29 +20,29 @@ uri-path  = "ha.ka.ba/lararium/api/causal-island-pattern"
 written   = "2026-06-26"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lararium/api/network-edge">>
+<<~ aka uri=`lar:///ha.ka.ba/lararium/api/network-edge`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! The Causal-Island Pattern ~ the map, carried with high confidence
 
 A Lares causal island — local-first, sovereign, in a mesh with no global now — forms one pattern integrity that reappears from every angle the build takes (projection-nalu · transport-kernel · network-edge · membership). Two rhyme-swarms and a four-domain ''validation'' swarm confirm it as a genuine ''Fuller pattern integrity'': a wave-form held invariant across substrates. It carries six names, because six deep traditions each found it as an ''attractor'' — the house did not invent it, it keeps rediscovering it:
 
-<<~ scale named-six "homeostat=Ashby -> self-stabilizing-system=Dijkstra -> rate-distortion-encoder=Shannon -> operational-closure+structural-coupling+precariousness=Varela -> autopoietic-monad=Leibniz/Whitehead -> open-system=categorical-systems-theory/Myers">>
+<<~ scale name=`named-six` ranks=`homeostat=Ashby -> self-stabilizing-system=Dijkstra -> rate-distortion-encoder=Shannon -> operational-closure+structural-coupling+precariousness=Varela -> autopoietic-monad=Leibniz/Whitehead -> open-system=categorical-systems-theory/Myers`>>
 
 ''Confidence: high — //because// of the earned edges, not despite them.'' The validation did not merely bless the pattern; it (a) collapsed five surface-invariants to ONE master cut, (b) separated what holds UNIVERSALLY from what stands as OUR sovereign DESIGN VOW, (c) found the floor below which it cannot reach, and (d) flagged its one outright hazard. The map below carries all four.
 
 <<~/ahu>>
 
-<<~ ahu #/the-master-cut>>
+<<~ ahu slot=`#/the-master-cut`>>
 
 !! The master cut ~ AUTHORITY(safety) ⊥ FLOW(liveness)
 
 The five surface-invariants do not stand independent. Control theory and category theory agree: ''they collapse to one cut.''
 
-<<~moves five-surface-invariants -> ONE-master-cut on/AUTHORITY⊥FLOW do/state-it-once>>
+<<~moves name=`five-surface-invariants` params=`ONE-master-cut on/AUTHORITY⊥FLOW do/state-it-once`>>
 
 * ''FLOW = liveness'' — pacing, dissemination, connectivity-emergence, the gated wave. ''May run probabilistic, local, eventual, lossy.'' (FLP forced this — we did not choose it.)
 * ''AUTHORITY = safety'' — who-may, exactly-once, no-double-spend, total order, the credential. ''Must NOT run probabilistic or purely local.'' Distributional facts can never earn safety.
@@ -51,7 +51,7 @@ That //makes// the orthogonality necessary, not optional. Invariants 2 (flow⊥a
 
 <<~/ahu>>
 
-<<~ ahu #/universal>>
+<<~ ahu slot=`#/universal`>>
 
 !! What holds UNIVERSAL (grounds hard across domains — keep, lean on)
 
@@ -68,7 +68,7 @@ That //makes// the orthogonality necessary, not optional. Invariants 2 (flow⊥a
 
 <<~/ahu>>
 
-<<~ ahu #/design-vows>>
+<<~ ahu slot=`#/design-vows`>>
 
 !! What stands as OUR DESIGN VOW (sound engineering, NOT inherited law — own it)
 
@@ -80,7 +80,7 @@ Two invariants stand as ''our sovereign choices'', not laws of nature or math. T
 
 <<~/ahu>>
 
-<<~ ahu #/the-floor>>
+<<~ ahu slot=`#/the-floor`>>
 
 !! The floor ~ Ashby's requisite variety (the boundary of the possible)
 
@@ -96,7 +96,7 @@ Two Ashby-sanctioned moves — and ''our design already uses both'' (strong vali
 
 <<~/ahu>>
 
-<<~ ahu #/the-hazard>>
+<<~ ahu slot=`#/the-hazard`>>
 
 !! The hazard ~ criticality marks the edge of stability (target a margin below)
 
@@ -107,7 +107,7 @@ The one outright hazard, flagged by every domain that touched it: ''self-tuning 
 
 <<~/ahu>>
 
-<<~ ahu #/carry-forward>>
+<<~ ahu slot=`#/carry-forward`>>
 
 !! Carry forward ~ what the map says to build
 
@@ -125,6 +125,6 @@ The high-confidence bearings for the build (when the forks unblock):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_a06FubxXn6xe2vC-hyLrigyJYmKJ-ZE-LqumPghxKg
+<<^ code=`&#x0003;`>>ni:///sha-256;2Q4oG4gNt2LL4Q1v2ZGpOJ6KbhQbHxIs7WR_xBbTt3o
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

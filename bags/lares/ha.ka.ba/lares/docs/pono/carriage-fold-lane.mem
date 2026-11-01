@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/carriage-fold-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/carriage-fold-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -19,11 +19,11 @@ uri-path  = "ha.ka.ba/lares/docs/pono/carriage-fold-lane"
 written   = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The carriage-fold lane ~ a kit for the session that takes it
 
-''What this lane closes.'' Roadmap row `W18` (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/o-takiage): in the held-out herm-mesh cell, all four places join A's Nexus, then the host reader reads relay-2 as `unverified: pin-absent` on every attempt; in the mesh-scenarios nexus cell, `the hearths carry from the herm` fails with `no carriage`. Both cells read red on the work branch since the wire-socket lane merged (PR #44).
+''What this lane closes.'' Roadmap row `W18` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/o-takiage): in the held-out herm-mesh cell, all four places join A's Nexus, then the host reader reads relay-2 as `unverified: pin-absent` on every attempt; in the mesh-scenarios nexus cell, `the hearths carry from the herm` fails with `no carriage`. Both cells read red on the work branch since the wire-socket lane merged (PR #44).
 
 ''How to start.'' Open a fresh session in the repository and paste:
 
@@ -31,11 +31,11 @@ written   = "2026-10-16"
 Load bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem, then read and enact bags/lares/ha.ka.ba/lares/docs/pono/carriage-fold-lane.mem whole.
 ```
 
-''Read before acting'': this carrier whole; <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">> whole (#/the-lanes binds this lane, #/the-otakiage closes it); <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/the-lane-law; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> #/red-first and #/instruments-that-lie.
+''Read before acting'': this carrier whole; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>> whole (#/the-lanes binds this lane, #/the-otakiage closes it); <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/the-lane-law; <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>> #/red-first and #/instruments-that-lie.
 
 <<~/ahu>>
 
-<<~ ahu #/the-evidence>>
+<<~ ahu slot=`#/the-evidence`>>
 
 !! The evidence ~ measured, with where each reading rests
 
@@ -59,7 +59,7 @@ So the herms count the carries from their bundles and read every pin, while A's 
 
 <<~/ahu>>
 
-<<~ ahu #/the-lane>>
+<<~ ahu slot=`#/the-lane`>>
 
 !! The lane ~ branch, crew, crucible
 
@@ -71,7 +71,7 @@ So the herms count the carries from their bundles and read every pin, while A's 
 
 <<~/ahu>>
 
-<<~ ahu #/the-kit-on-disk>>
+<<~ ahu slot=`#/the-kit-on-disk`>>
 
 !! The kit on disk ~ outside the tree, for this lane alone
 
@@ -87,7 +87,7 @@ The Copilot allowance read 299.2 of 300 premium requests at handoff, resetting 2
 
 <<~/ahu>>
 
-<<~ ahu #/advice>>
+<<~ ahu slot=`#/advice`>>
 
 !! Advice ~ for the lane's first hour
 
@@ -101,7 +101,7 @@ The Copilot allowance read 299.2 of 300 premium requests at handoff, resetting 2
 
 <<~/ahu>>
 
-<<~ ahu #/questions>>
+<<~ ahu slot=`#/questions`>>
 
 !! Questions ~ while the controller's session stays open
 
@@ -109,16 +109,16 @@ The controller's session (Lares-Awakens) stays open for a short while after this
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/place-floor-pin`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2XPvz3-x5JuQUgssxWYU-FutyWDfmv4ibzUXQ5IyhA8
+<<^ code=`&#x0003;`>>ni:///sha-256;-5hqSwjaHE0oTuv-UPcoqDl6fEgVbqDP_LhpjX5C4sY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

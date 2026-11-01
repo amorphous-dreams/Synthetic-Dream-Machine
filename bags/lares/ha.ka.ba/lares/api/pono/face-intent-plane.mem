@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/face-intent-plane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,19 +14,19 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/face-intent-plane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The face intent plane ~ the channel of intent through a face's fleet
 
-The operator un-asked the daemon doc's whole position on 2026-10-20 and kept one point pinned: //the daemon wiki reads pono; the operator and the AIs need a channel of intent through each PersonaGroup's fleet of device vessels.// A two-wave research pair read the field (the research rests at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/face-intent-plane-2026">>) and the operator approved the model below the same day: //"Approve your leans, land the full models into the architecture now."//
+The operator un-asked the daemon doc's whole position on 2026-10-20 and kept one point pinned: //the daemon wiki reads pono; the operator and the AIs need a channel of intent through each PersonaGroup's fleet of device vessels.// A two-wave research pair read the field (the research rests at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/face-intent-plane-2026`>>) and the operator approved the model below the same day: //"Approve your leans, land the full models into the architecture now."//
 
 The model in one line: ''the daemon wiki keeps working memory; a face's intents travel on that face's own intent plane; a vessel's own records rest in its daemon bag.''
 
 <<~/ahu>>
 
-<<~ ahu #/the-split>>
+<<~ ahu slot=`#/the-split`>>
 
 !! The split ~ what the daemon doc carried, and where each part goes
 
@@ -40,12 +40,12 @@ The daemon wiki shows the intent plane through a read-only view: the pane where 
 
 <<~/ahu>>
 
-<<~ ahu #/the-plane>>
+<<~ ahu slot=`#/the-plane`>>
 
 !! The plane ~ one face-owned, append-only log
 
-* ''A fifth face plane'', `@intents-<tag>`, beside `@persona`, `@circles`, `@identities` and `@sessions` (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/automerge-tiga">>). It derives from the PersonaGroup's tag like its siblings, so every device that joins the face derives its name and syncs it with no extra provisioning; two faces on one device share no entry; nothing stands above it. The PersonaGroup mints it and delegates append to each device edge; the mint order binds as for every face plane.
-* ''Never mirrored'': the plane carries the control plane, so it never projects to the tracked tree (the daemon bag's own law, <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>).
+* ''A fifth face plane'', `@intents-<tag>`, beside `@persona`, `@circles`, `@identities` and `@sessions` (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/automerge-tiga`>>). It derives from the PersonaGroup's tag like its siblings, so every device that joins the face derives its name and syncs it with no extra provisioning; two faces on one device share no entry; nothing stands above it. The PersonaGroup mints it and delegates append to each device edge; the mint order binds as for every face plane.
+* ''Never mirrored'': the plane carries the control plane, so it never projects to the tracked tree (the daemon bag's own law, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>).
 * ''Entries append, never edit'', each signed by the atom of the device that writes it (a far agent's by its own key, #/the-far-agent). Kinds:
 ** `intent`: an invocation naming its verb, its arguments, its audience and its causal bound (#/no-clock). Its id is the content hash of issuer, verb, arguments and nonce, so every device derives it offline and a replayed copy carries the same id. An idempotent verb takes the empty nonce.
 ** `outcome`: a receipt whose `cause` names the intent's id and whose signer names the device that acted.
@@ -56,7 +56,7 @@ The daemon wiki shows the intent plane through a read-only view: the pane where 
 
 <<~/ahu>>
 
-<<~ ahu #/who-answers>>
+<<~ ahu slot=`#/who-answers`>>
 
 !! Who answers ~ stand-down first, idempotent effects as the floor, no election
 
@@ -69,7 +69,7 @@ The field holds no leaderless election for "any device of a fleet", and a lease 
 
 <<~/ahu>>
 
-<<~ ahu #/no-clock>>
+<<~ ahu slot=`#/no-clock`>>
 
 !! No clock ~ nothing expires by time
 
@@ -81,21 +81,21 @@ The field holds no leaderless election for "any device of a fleet", and a lease 
 
 <<~/ahu>>
 
-<<~ ahu #/the-far-agent>>
+<<~ ahu slot=`#/the-far-agent`>>
 
 !! The far agent ~ an AI that acts from afar
 
-An agent off every device of the face (a cloud sandbox, another machine) never holds an atom: a shared act never makes a shared secret. The agent never wears the face's session either: a session meets one face and one anchor and carries a hand that acts as the face (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>), while the agent acts as itself under a delegation the face signed.
+An agent off every device of the face (a cloud sandbox, another machine) never holds an atom: a shared act never makes a shared secret. The agent never wears the face's session either: a session meets one face and one anchor and carries a hand that acts as the face (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands`>>), while the agent acts as itself under a delegation the face signed.
 
 * The agent holds its own key and a narrow delegation from the face: a verb prefix, an argument policy and a causal bound (`until` or `asOf` naming a signed roster act) in place of an expiry time. The persona root signs the grant at its epoch, and it lives only at the lineage's current root epoch.
 * It signs an `intent` that references its delegation and hands it to a ''relay seat'': a vessel of the face with a door off the local socket on `INTENT_RELAY_ROUTE`, opened per face, ring-gated and off by default, with its enablement resting in a custody row. The relay decides on fresh authority, appends the entry unchanged with the AGENT's signature, and countersigns only its admission, a separate receipt under the relay's own key that lists as provenance and changes no status, `mayAct` or winner.
 * The answering device signs the outcome with its atom, `cause` naming the invocation. A reader on a node or in a browser verifies agent → delegation → face, invocation → outcome, and atom → device edge → face, and trusts the relay for nothing after admission: a receipt under a valid relay key for an absent, revoked or out-of-prefix entry makes nothing act.
 * A revoked delegation refuses on read, wherever the revocation arrives first; a pending sibling voids, and an act admitted before the revocation arrived stays recorded as revoked-after-acting.
-* The kit reads what stands (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/i2-relay-lane">>).
+* The kit reads what stands (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/i2-relay-lane`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/the-rubric>>
+<<~ ahu slot=`#/the-rubric`>>
 
 !! The rubric ~ what earns a place in a face's log
 
@@ -123,7 +123,7 @@ The operator's tension, 2026-10-20: //every little action must not end up in eac
 
 <<~/ahu>>
 
-<<~ ahu #/the-reds>>
+<<~ ahu slot=`#/the-reds`>>
 
 !! The reds ~ what a test must show for the plane to hold
 
@@ -145,14 +145,14 @@ The operator's tension, 2026-10-20: //every little action must not end up in eac
 
 <<~/ahu>>
 
-<<~ ahu #/the-build>>
+<<~ ahu slot=`#/the-build`>>
 
 !! The build ~ roadmap row `I1`
 
-Row `I1` at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> carries the build, red-first in this order: the plane and its entry kinds; stand-down and the verb classes; the read-side winner; claims, takeover and causal voids; the face-join summons moving off the daemon doc onto the plane (closing "two hearths of one face"); the daemon wiki's view pane; the rubric's witness; then the far agent's relay seat, row `I2`, built. Row `I3` carries the plane's hardening under re-pin, re-target and growth (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/i2-relay-lane">>). The CLI's per-invocation face naming (the session model's commit 5) lands beside the summons move, since an intent names its issuing face.
+Row `I1` at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> carries the build, red-first in this order: the plane and its entry kinds; stand-down and the verb classes; the read-side winner; claims, takeover and causal voids; the face-join summons moving off the daemon doc onto the plane (closing "two hearths of one face"); the daemon wiki's view pane; the rubric's witness; then the far agent's relay seat, row `I2`, built. Row `I3` carries the plane's hardening under re-pin, re-target and growth (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/i2-relay-lane`>>). The CLI's per-invocation face naming (the session model's commit 5) lands beside the summons move, since an intent names its issuing face.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OckeZMNIKYywwOdDYKYRleamxZAf8-9eCQkiax1mxtI
+<<^ code=`&#x0003;`>>ni:///sha-256;GEzyPsenZct6j84znZfMc7s6bi_bAE0T49wC9s6qDlk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

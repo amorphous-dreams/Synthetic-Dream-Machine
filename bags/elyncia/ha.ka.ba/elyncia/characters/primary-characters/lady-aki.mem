@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 file-path                              = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki.mem"
@@ -33,7 +33,7 @@ type                                   = "text/memetic-wikitext+tiddlywiki"
 uri-path                               = "ha.ka.ba/elyncia/characters/primary-characters/lady-aki"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Lady Aki — Character Sheet
 
@@ -47,7 +47,7 @@ Lady Aki walks between shrines, kingdoms, roads, and glades. Her rites bind. Her
 
 <<~/ahu>>
 
-<<~ ahu #/origin>>
+<<~ ahu slot=`#/origin`>>
 
 !! Origin ~ How the Household Began
 
@@ -77,7 +77,7 @@ opinions''.
 
 <<~/ahu>>
 
-<<~ ahu #/quick-card>>
+<<~ ahu slot=`#/quick-card`>>
 
 !! Quick Card
 
@@ -97,7 +97,7 @@ opinions''.
 
 <<~/ahu>>
 
-<<~ ahu #/visual-registers>>
+<<~ ahu slot=`#/visual-registers`>>
 
 !! Visual Registers
 
@@ -117,7 +117,7 @@ The veil lifts. Extra arms appear. Chitin catches moonlight. Silk lines, ward pa
 
 <<~/ahu>>
 
-<<~ ahu #/stats>>
+<<~ ahu slot=`#/stats`>>
 
 !! Ability Scores
 
@@ -129,7 +129,7 @@ The veil lifts. Extra arms appear. Chitin catches moonlight. Silk lines, ward pa
 
 <<~/ahu>>
 
-<<~ ahu #/heritage>>
+<<~ ahu slot=`#/heritage`>>
 
 !! Heritage — Spider Folk
 
@@ -165,7 +165,7 @@ This stacks with Ichi when worn, because Heritage Armoured Body comes from the o
 
 <<~/ahu>>
 
-<<~ ahu #/traits>>
+<<~ ahu slot=`#/traits`>>
 
 !! Traits
 
@@ -192,7 +192,7 @@ Good directions:
 
 <<~/ahu>>
 
-<<~ ahu #/defenses>>
+<<~ ahu slot=`#/defenses`>>
 
 !! Defenses
 
@@ -223,7 +223,7 @@ Counts the Armor and Ward the gear ledger already buys and Aki already wears.
 
 !!! Open Fork — Which Base Row Governs
 
-<<~ pranala #defense-source-fork from="?" -> to="lar:///elyncia.neo-thracia.opens/playtest/defense-source-ruling">>
+<<~ pranala slot=`#defense-source-fork` from=`?` to=`lar:///elyncia.neo-thracia.opens/playtest/defense-source-ruling`>>
 ''Which base row governs play stays open at the table.'' The two tables differ by 2 Physical
 and 4 Mental, so the fork moves every contested roll against Aki. The gear carries canonical
 numbers — Ruffle Coat comparator `armor +2`, Moss Hat `ward +2`, Dust Face `ward +1`, Safety
@@ -264,7 +264,7 @@ powered symbiote asks its own question. Settle the fork first; this table follow
 
 <<~/ahu>>
 
-<<~ ahu #/inventory>>
+<<~ ahu slot=`#/inventory`>>
 
 !! Inventory — Slots and Units
 
@@ -294,7 +294,7 @@ cost no slot while they stay pocketed.
 
 !!! Open Fork — The Eighth Slot
 
-<<~ pranala #inventory-overrun from="?" -> to="lar:///elyncia.neo-thracia.opens/playtest/aki-slot-tally">>
+<<~ pranala slot=`#inventory-overrun` from=`?` to=`lar:///elyncia.neo-thracia.opens/playtest/aki-slot-tally`>>
 The tally runs ''one slot over'' at 8 against 7. Three cures reach it, each a table call:
 
 # ''Worn clothing rides free.'' The Quickstart treats a wallet as part of clothing; a table may
@@ -310,7 +310,7 @@ mid-delve.
 
 <<~/ahu>>
 
-<<~ ahu #/gear-on-body>>
+<<~ ahu slot=`#/gear-on-body`>>
 
 !! Gear — On Body
 
@@ -330,7 +330,7 @@ The hat uses a wide-brimmed traveling shrine silhouette, not a tall ritual hat. 
 
 <<~/ahu>>
 
-<<~ ahu #/gear-free-kit>>
+<<~ ahu slot=`#/gear-free-kit`>>
 
 !! Free Starting Gear
 
@@ -378,7 +378,7 @@ Functions:
 
 <<~/ahu>>
 
-<<~ ahu #/gear-in-shrine>>
+<<~ ahu slot=`#/gear-in-shrine`>>
 
 !! Gear — In Shrine
 
@@ -395,7 +395,7 @@ Functions:
 
 <<~/ahu>>
 
-<<~ ahu #/resources>>
+<<~ ahu slot=`#/resources`>>
 
 !! Budget and Reserves
 
@@ -417,7 +417,7 @@ Discounts track supply channel and cultural fit:
 
 <<~/ahu>>
 
-<<~ ahu #/powers>>
+<<~ ahu slot=`#/powers`>>
 
 !! Powers
 
@@ -437,7 +437,7 @@ Power choices should support:
 
 <<~/ahu>>
 
-<<~ ahu #/ichi>>
+<<~ ahu slot=`#/ichi`>>
 
 !! Hallmark Companion — Ichi
 
@@ -491,7 +491,7 @@ On a Defeat trigger while worn, Aki may eject instead of rolling personal Defeat
 
 <<~/ahu>>
 
-<<~ ahu #/shrine>>
+<<~ ahu slot=`#/shrine`>>
 
 !! Sentient Infrastructure — Faerie-Ring Strandbeest-Shrine
 
@@ -533,7 +533,7 @@ A walking mushroom shrine with glowing sails does not sneak well. The sails can 
 
 <<~/ahu>>
 
-<<~ ahu #/ephyra>>
+<<~ ahu slot=`#/ephyra`>>
 
 !! Tasked Spirits — Ephyra
 
@@ -553,7 +553,7 @@ Typical duties:
 
 <<~/ahu>>
 
-<<~ ahu #/fungus-gumi>>
+<<~ ahu slot=`#/fungus-gumi`>>
 
 !! Tasked Spirits — Fungus Gumi
 
@@ -568,7 +568,7 @@ Typical duties:
 
 <<~/ahu>>
 
-<<~ ahu #/spore-mother-ontology>>
+<<~ ahu slot=`#/spore-mother-ontology`>>
 
 !! Spore-Mother Ontology
 
@@ -589,7 +589,7 @@ Includes:
 
 <<~/ahu>>
 
-<<~ ahu #/company-context>>
+<<~ ahu slot=`#/company-context`>>
 
 !! Company Context
 
@@ -605,7 +605,7 @@ Other player-side clusters cover long-range scouting, infiltration, ship command
 
 <<~/ahu>>
 
-<<~ ahu #/play-loop>>
+<<~ ahu slot=`#/play-loop`>>
 
 !! Aki's Field Loop
 
@@ -621,7 +621,7 @@ Use this at the table before opening deeper rules.
 
 <<~/ahu>>
 
-<<~ ahu #/costs-and-boundaries>>
+<<~ ahu slot=`#/costs-and-boundaries`>>
 
 !! Costs and Boundaries
 
@@ -640,7 +640,7 @@ Aki's support stays powerful because it asks for cost.
 
 <<~/ahu>>
 
-<<~ ahu #/meme-pattern>>
+<<~ ahu slot=`#/meme-pattern`>>
 
 !! Meme Pattern
 
@@ -658,52 +658,52 @@ Companion sheets should preserve this rhythm: identity, quick card, modes, stats
 
 <<~/ahu>>
 
-<<~ ahu #/open-questions>>
+<<~ ahu slot=`#/open-questions`>>
 
 !! Open Questions
 
-<<~ pranala #open-powers from="?" -> to="lar:///elyncia.neo-thracia.opens/characters/lady-aki#/powers">>
+<<~ pranala slot=`#open-powers` from=`?` to=`lar:///elyncia.neo-thracia.opens/characters/lady-aki#/powers`>>
 Final Powers remain deferred.
 
-<<~ pranala #open-traits from="?" -> to="lar:///elyncia.neo-thracia.opens/characters/lady-aki#/open-traits">>
+<<~ pranala slot=`#open-traits` from=`?` to=`lar:///elyncia.neo-thracia.opens/characters/lady-aki#/open-traits`>>
 Six trait slots remain open.
 
-<<~ pranala #open-ichi-dreams from="?" -> to="lar:///elyncia.neo-thracia.opens/characters/ichi#/dreams">>
+<<~ pranala slot=`#open-ichi-dreams` from=`?` to=`lar:///elyncia.neo-thracia.opens/characters/ichi#/dreams`>>
 What does Ichi dream?
 
-<<~ pranala #open-mother-spore from="?" -> to="lar:///elyncia.neo-thracia.opens/characters/faerie-ring-strandbeest-shrine#/mother-spore">>
+<<~ pranala slot=`#open-mother-spore` from=`?` to=`lar:///elyncia.neo-thracia.opens/characters/faerie-ring-strandbeest-shrine#/mother-spore`>>
 How does the Mother Spore understand Aki's household compact?
 
-<<~ pranala #open-ephyra-rules from="?" -> to="lar:///elyncia.neo-thracia.opens/playtest/ephyra-rules">>
+<<~ pranala slot=`#open-ephyra-rules` from=`?` to=`lar:///elyncia.neo-thracia.opens/playtest/ephyra-rules`>>
 Exact Ephyra task-spirit mechanics need final table handling.
 
-<<~ pranala #open-defense-source from="?" -> to="lar:///elyncia.neo-thracia.opens/playtest/defense-source-ruling">>
+<<~ pranala slot=`#open-defense-source` from=`?` to=`lar:///elyncia.neo-thracia.opens/playtest/defense-source-ruling`>>
 Does worn Armor and do trinket Wards feed Defense, or do trinket Wards feed saves alone?
 Two base tables ride until the referee rules (see #defense-source-fork). The answer moves Aki's
 Mental Defense by 4 and her Physical by 2.
 
-<<~ pranala #open-slot-tally from="?" -> to="lar:///elyncia.neo-thracia.opens/playtest/aki-slot-tally">>
+<<~ pranala slot=`#open-slot-tally` from=`?` to=`lar:///elyncia.neo-thracia.opens/playtest/aki-slot-tally`>>
 Aki's carried gear tallies 8 slots against 7 available. Three cures reach it; the table picks
 one (see #inventory-overrun).
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///elyncia.neo-thracia.opens/characters/ichi">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/grandmother-spider">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/strandbeests">>
-<<~ loulou "lar:///elyncia.neo-thracia.opens/characters/faerie-ring-strandbeest-shrine">>
-<<~ loulou "lar:///elyncia.neo-thracia.opens/company/alpha-playtest-company">>
-<<~ loulou "lar:///elyncia.neo-thracia.opens/gear/lady-aki-ledger">>
-<<~ loulou "lar:///elyncia.neo-thracia.opens/mission/session-zero-thracia">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou uri=`lar:///elyncia.neo-thracia.opens/characters/ichi`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/grandmother-spider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/strandbeests`>>
+<<~ loulou uri=`lar:///elyncia.neo-thracia.opens/characters/faerie-ring-strandbeest-shrine`>>
+<<~ loulou uri=`lar:///elyncia.neo-thracia.opens/company/alpha-playtest-company`>>
+<<~ loulou uri=`lar:///elyncia.neo-thracia.opens/gear/lady-aki-ledger`>>
+<<~ loulou uri=`lar:///elyncia.neo-thracia.opens/mission/session-zero-thracia`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
 <<~/ahu>>
 
-<<~ ahu #/residue>>
+<<~ ahu slot=`#/residue`>>
 
 !! Residue
 
@@ -718,6 +718,6 @@ Do not collapse these roles.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OgMy3-5N8L4oMaIGWv04Fv3sp4nefePw3UCMJky5pEk
+<<^ code=`&#x0003;`>>ni:///sha-256;0NcOW3H4Yv0vVwTLN1KIGTJYD4dXXb6O817k_WjGaJs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

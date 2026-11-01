@@ -1,14 +1,14 @@
 ---
 lang: "en"
 source: "lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat"
-source-check: "ni:///sha-256;Tkgx-_P-ok-Aq_8HwaQJvux0V9Folwq-OdaGP6gAtEQ"
+source-check: "ni:///sha-256;vorRxZNyrWoFgQZWvODrxf-WrLDkzIEgrW0tECzacTs"
 title: "lar:///ha.ka.ba/lares/api/pono/submissions/tw5-calls-colon-caveat"
 tongue: "x-lares>en"
 variant: "GFM"
 ---
 
 
-<<~ ahu slot=`#/entry`>>
+<a id="entry"></a>
 
 # Calls ~ an unquoted value carrying a colon
 
@@ -16,7 +16,7 @@ variant: "GFM"
 
 **Title** Document that an unquoted parameter value cannot contain a colon
 
-<<~ ahu slot=`#/the-claim`>>
+<a id="the-claim"></a>
 
 ## The claim being corrected
 
@@ -28,7 +28,7 @@ That last sentence promises more than the grammar allows, and the gap stays sile
 
 `Call Syntax` already states this correctly. `param-name ":" value` stands as one of its productions, and `param-name` reads as a sequence of letters, digits, hyphens and underscores. A URI scheme spells with exactly those characters, so `https://example.com` matches the named-parameter form. The prose in `Calls` reaches past its own grammar.
 
-<<~ ahu slot=`#/the-change`>>
+<a id="the-change"></a>
 
 ## The proposed change
 
@@ -51,7 +51,7 @@ positional parameter receives nothing. Enclose such a value in quotes, or label 
 parameter name — `<<my-procedure address=https://example.com>>` — where no quotes are needed.""">>
 ```
 
-<<~ ahu slot=`#/for-the-reviewer`>>
+<a id="for-the-reviewer"></a>
 
 ## Notes for the reviewer
 
@@ -59,7 +59,7 @@ A tiddler title needs no delimiters, and the reason carries the whole behaviour:
 
 The `name=value` form asks the least of an author, since it drops the quoting entirely — the `=` binds before the value's colon arrives. The house writes that form with a backtick value, ``name=`https://example.com` ``, which the host reads as a substituted value after the `=` (`parseutils.js:333`); a backtick run without its name keeps its backticks and splits at the first space.
 
-<<~ ahu slot=`#/measured`>>
+<a id="measured"></a>
 
 ## Measured
 
@@ -76,7 +76,7 @@ Rendered in TiddlyWiki against `\procedure link-to(target)` returning `[target=<
 
 A time of day trips the case a URI trips, so the warning leads with the general shape rather than with URIs alone.
 
-<<~ ahu slot=`#/edges`>>
+<a id="edges"></a>
 
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/lexical-structure``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext``
+- `loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/lexical-structure`
+- `loulou lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext`

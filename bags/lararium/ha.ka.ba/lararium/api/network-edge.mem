@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/network-edge">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/network-edge`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -20,23 +20,23 @@ uri-path  = "ha.ka.ba/lararium/api/network-edge"
 written   = "2026-06-26"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! The Undefined Network Edge ~ how a mesh of sovereign islands connects, crosses, and admits
 
 A lararium sits at the edge of an ''unbounded, only-partially-known'' peer set — no registry, no global census, only "as of my last sync." Four research spirits (Erdős/random-graph · local-first SOTA · biology · physics/social, 2026-06-26) swept this edge and ''converged on one shape'':
 
-<<~ scale edge-law "connects-as-a-PHASE-TRANSITION -> reasoned-PROBABILISTICALLY -> carried-by-the-WEAK-CROSSING -> admitted-by-admit-then-SEVER">>
+<<~ scale name=`edge-law` ranks=`connects-as-a-PHASE-TRANSITION -> reasoned-PROBABILISTICALLY -> carried-by-the-WEAK-CROSSING -> admitted-by-admit-then-SEVER`>>
 
 The federated core stands ''not built'' — past a threshold of local crossings it ''cannot help but exist'', the way a giant component crystallizes in a random graph. Design //for the threshold//, never for the census.
 
 <<~/ahu>>
 
-<<~ ahu #/phase-transition>>
+<<~ ahu slot=`#/phase-transition`>>
 
 !! The edge connects as a phase transition
 
@@ -51,19 +51,19 @@ The same law wears four masks across the domains, all naming a ''sharp threshold
 
 <<~/ahu>>
 
-<<~ ahu #/no-global-now-is-probabilistic>>
+<<~ ahu slot=`#/no-global-now-is-probabilistic`>>
 
 !! "No global now" ENACTS the probabilistic method
 
 The house's own doctrine and Paul Erdős's 1947 method make ''one renunciation wearing two masks''. Erdős proves a structure //exists// by reasoning about the whole unenumerable space through a single ''expectation'' — never building it, never enumerating the `2^(n choose 2)` colorings. A causal island can take no global census of the mesh, so it proves what it needs — //a crossing forms · a path to the core exists · an update reaches all// — ''with high probability'', from local/distributional facts, never by enumeration.
 
-<<~moves global-census -> w.h.p.-claim on/no-global-now do/hold-as-Maybe-Logic>>
+<<~moves name=`global-census` params=`w.h.p.-claim on/no-global-now do/hold-as-Maybe-Logic`>>
 
 The rhyme runs wide: ''Hayek's knowledge problem'' (a global price emerges from local-only trades, no central auctioneer — "as of my last sync" renders the price-signal causal) and ''bacterial quorum sensing'' (an autoinducer threshold stands in for a global count) make the same move. Connectivity claims become ''Maybe Logic'' — a confidence band, the Law of 5s applied to topology — never a global certainty stamped after.
 
 <<~/ahu>>
 
-<<~ ahu #/the-crossing>>
+<<~ ahu slot=`#/the-crossing`>>
 
 !! The crossing ~ the weak tie, carried cheap and optimistic
 
@@ -76,13 +76,13 @@ The second spore — two sovereign islands meeting and syncing for the first tim
 
 <<~/ahu>>
 
-<<~ ahu #/membership>>
+<<~ ahu slot=`#/membership`>>
 
 !! Membership ~ admit-then-test-then-SEVER at the shore
 
 Biology inverts authenticate-then-admit. ''Hyphal anastomosis + vegetative incompatibility'' folds crossing AND membership-gate into one mechanism: two mycelia ''fuse first'', then ''vegetative incompatibility'' triggers a //localized programmed cell death// that kills the fusion shore if they mismatch — recognition ''distributed across `het` loci'' (≈6–11 polymorphic challenge-points, no registry); fuse-and-stay only if matched at every locus (same ''vegetative compatibility group''). The gate evolved against ''somatic parasitism'' (freeloaders draining the network) and ''mycovirus'' transmission riding the fusion — //precisely the veil/vouch threat model.//
 
-<<~moves crossing -> fuse-on-contact then/challenge-at-the-shore reject/SEVER-the-local-junction never/ban-the-peer>>
+<<~moves name=`crossing` params=`fuse-on-contact then/challenge-at-the-shore reject/SEVER-the-local-junction never/ban-the-peer`>>
 
 ''The build pattern (biologically literal, and = BeeKEM "blank the tree path"):''
 # ''Admit optimistically'' — fuse on contact (cheap weak-tie crossing).
@@ -90,11 +90,11 @@ Biology inverts authenticate-then-admit. ''Hyphal anastomosis + vegetative incom
 # ''Reject by SEVERING the junction'' — kill the //fused edge//, not the peer (''anergy, not ban'' — biologically literal per-edge revocation). A non-match harms neither island; it kills the channel between them.
 # ''Memory'' — a vouched/burned crossing leaves a faster, cheaper secondary response (the decaying lease that ''re-arms faster'' on a known peer).
 
-''The durable form of the sever'' — the maintainer's ''evict'' verb (TreeKEM blank-the-path = lose all future access, paired with a raised kāpae on the membership stack) — and the ''proactive-refresh that resets the siege clock'' (re-randomized shares so a slow adversary's theft expires every window) carry this same admit-then-sever shape into the long siege; the repair-kit lives at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience#/repair-kit">>.
+''The durable form of the sever'' — the maintainer's ''evict'' verb (TreeKEM blank-the-path = lose all future access, paired with a raised kāpae on the membership stack) — and the ''proactive-refresh that resets the siege clock'' (re-randomized shares so a slow adversary's theft expires every window) carry this same admit-then-sever shape into the long siege; the repair-kit lives at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/siege-resilience#/repair-kit`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/the-dials>>
+<<~ ahu slot=`#/the-dials`>>
 
 !! The dials ~ dependence as a resource, the lease as a pheromone
 
@@ -104,7 +104,7 @@ Biology inverts authenticate-then-admit. ''Hyphal anastomosis + vegetative incom
 
 <<~/ahu>>
 
-<<~ ahu #/the-build>>
+<<~ ahu slot=`#/the-build`>>
 
 !! The build ~ adopt the machinery, invent the admission semantics
 
@@ -119,13 +119,13 @@ The local-first field converged hard (2024–2026) and ships the crossing's mach
 
 <<~/ahu>>
 
-<<~ ahu #/the-wire>>
+<<~ ahu slot=`#/the-wire`>>
 
 !! The wire ~ the gate-model FORMS the transport kernel (a peer moʻolelo, 2026-06-26)
 
 The network ring stands UNBUILT; the mapping and the wire-answers below read as design. ''The ring invents nothing new — it applies the projection-nalu gate-model with the SINK moved `local → peer → many`.'' The mapping (mirror: `projection-nalu#network-ring`, `dreamnet-architecture#transport-kernel`, `federated-causal-islands#task-handoff`):
 
-<<~ scale transport-kernel "accumulate=reliable-ordered -> coalesce=gossip-epidemic -> servo=congestion-control">>
+<<~ scale name=`transport-kernel` ranks=`accumulate=reliable-ordered -> coalesce=gossip-epidemic -> servo=congestion-control`>>
 
 * ''accumulate → reliable-ordered'' (TCP/ARQ; the reserve = the retransmit buffer; CRDT-as-dedup = at-least-once + idempotent; vector clocks order across peers — never a global now).
 * ''coalesce → gossip / epidemic'' (newest-wins → last-write-wins; one → many; eventual; the lossy drop stays the correct dual at scale).
@@ -142,6 +142,6 @@ The network ring stands UNBUILT; the mapping and the wire-answers below read as 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;R0ysWtXuWwhJ8k8z9sQ8_cN6YDJTu99BdBFr-zoZqEk
+<<^ code=`&#x0003;`>>ni:///sha-256;mQeE_eZb6L2L0GwAcylTvzhTnd-CO6Zs8gkatbSOHRo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/function">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/function`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,12 +17,12 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/function"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! \function
 
 English-form filter-function declaration pragma (TW5 5.3+).
-`<<~ function name(params)>>filter-expression<<~/function>>` declares a named filter function
+``<<~ function name=`name(params)`>>filter-expression<<~/function>>`` declares a named filter function
 callable in TW5 filter expressions as `[function[name]]` or `[name[args]]`.
 
 No direct Hawaiian equivalent. TW5 filter-function semantics have no natural Hawaiian sigil form in
@@ -30,7 +30,7 @@ the current vocabulary. `lar-kind: pragma-alias` — the sigil serves as the dec
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -44,7 +44,7 @@ return wikitext. Do not use interchangeably.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
@@ -61,14 +61,14 @@ TW5 native equivalent:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wehe">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wehe`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;y0z4LPpI2YYJOT5V8FaSbTv-pxo9NE9g_V_T_CjabDE
+<<^ code=`&#x0003;`>>ni:///sha-256;d4kJkbc5shycSnbPaY8RH9GJNtPv639s9rhWSGUskq4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/w28-gate-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/w28-gate-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/docs/pono/w28-gate-lane"
 written   = "2026-10-26"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The w28-gate lane ~ the dial's bytes move once
 
@@ -27,7 +27,7 @@ Both rows touch the sealed channel's dial bytes, so each settles before the X0 b
 
 <<~/ahu>>
 
-<<~ ahu #/the-frozen-frames>>
+<<~ ahu slot=`#/the-frozen-frames`>>
 
 !! The frozen frames ~ W28
 
@@ -45,7 +45,7 @@ Both rows touch the sealed channel's dial bytes, so each settles before the X0 b
 
 <<~/ahu>>
 
-<<~ ahu #/the-knock-reading>>
+<<~ ahu slot=`#/the-knock-reading`>>
 
 !! The knock reading ~ W10, a research pair woken apart, two waves traded
 
@@ -59,15 +59,15 @@ Both rows touch the sealed channel's dial bytes, so each settles before the X0 b
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kCOvPmklBloQ8Va9a23jFTg1OpQ9sSeB_Dhj4JXRGT8
+<<^ code=`&#x0003;`>>ni:///sha-256;Dp6jz8g_Dacjo_rSa1zq6jQb2HX7OTdmjfWDE1gSWw4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

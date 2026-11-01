@@ -6,16 +6,19 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;oAPQJ-Nf5k-JAx8k0IqcL5uM8T7pqBbyZqNKNEsLXQY"
+source-check: "ni:///sha-256;PMz9Jt66-s1YGSnlseVNRh_KfMyOlnw09i9_Jhj_TpQ"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
+normative:
+  RFC2119:
+  RFC8174:
 ---
 
 
-- `law uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`` (unresolved — no corpus to pin)
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as shown here.
 
-<<~ ahu slot=`#/abstract`>>
+<a id="abstract"></a>
 
 # Memetic-Wikitext Carrier Framing
 
@@ -33,7 +36,7 @@ and one frame carries any document. The language framed here rides the sibling s
 [MEMETIC-WIKITEXT]; the addresses the frame declares ride [LAR-URI]. The Lar keeps the frame — the
 guardian at the threshold of the place, naming it on the way in and pouring the libation on the way out.
 
-<<~ ahu slot=`#/status`>>
+<a id="status"></a>
 
 ## Status and Maturity
 
@@ -41,7 +44,7 @@ This document holds **submission-draft** maturity. The control set, spine order,
 byte law read as stable; the conformance clauses and frame-security analysis carry RFC-2119 normative
 force. Items in the open annex remain open. Promotion to canon rests with the operator, not the document.
 
-<<~ ahu slot=`#/introduction`>>
+<a id="introduction"></a>
 
 ## Introduction — Scope, Audience, and Relation to the Sibling Specifications
 
@@ -65,7 +68,7 @@ this specification reads inside it.
 **Audience.** Implementers of carrier readers, relays, and consumers; operators of bags and sync
 boundaries; authors of migrations and independent implementations.
 
-<<~ ahu slot=`#/terminology`>>
+<a id="terminology"></a>
 
 ## Terminology and Conformance Language
 
@@ -90,7 +93,7 @@ The umbrella **processor** class and its other subclasses (parser, renderer) sta
 [MEMETIC-WIKITEXT] #conformance; an obligation stated there on **a processor** binds the carrier reader
 and consumer here as well.
 
-<<~ ahu slot=`#/conformance`>>
+<a id="conformance"></a>
 
 ## Conformance Classes
 
@@ -115,7 +118,7 @@ A **conforming consumer** MUST honour the verdict obligations (#/the-touchstone)
 to its operator before any bag admission, refuse `torn`, read absence as `absent` — refusing admission
 only under a policy it declares — and hold `bare` whole as one record, flagged UNSTABLE.
 
-<<~ ahu slot=`#/grammar`>>
+<a id="grammar"></a>
 
 ## Formal Grammar (ABNF)
 
@@ -163,7 +166,7 @@ MUST hold (#/carrier-spine). (3) The `check` slot names a POSITION, never a para
 closed `text-close` sigil, on the same line (#/control-set). (4) The composition wraps `document`
 without entering it; everything inside defers to [MEMETIC-WIKITEXT].
 
-<<~ ahu slot=`#/doctype`>>
+<a id="doctype"></a>
 
 ## The DOCTYPE — declaring an extension of TW5 wikitext
 
@@ -193,7 +196,7 @@ the media type into the DOCTYPE slot would put both under one name for no gain.
 The suffix states a structural fact about the syntax and holds whatever name the subtype takes; the
 earlier `x-` spellings file as deprecated read-side aliases there.
 
-<<~ ahu slot=`#/declaration-register`>>
+<a id="declaration-register"></a>
 
 ## Carrier Frame — The Declaration Register
 
@@ -251,7 +254,7 @@ maintained by hand — repeats the twin-drift this corpus already keeps a witnes
 `!WORD` declarations under the same law — read before content, selecting or constraining the grammar,
 never performing a move the renderer runs. A `!WORD` that acts belongs in the speaking set.
 
-<<~ ahu slot=`#/carrier-spine`>>
+<a id="carrier-spine"></a>
 
 ## The Carrier Spine — Four Required Sigils
 
@@ -292,7 +295,7 @@ A carrier travels as one framed transmission. It opens on a heading that names t
 
 **SOH and EOT echo the bearing vectors.** SOH opens facing a bearing (``from=`?` to=`lar:///…` ``) as the `aim` firing opens a turn; EOT releases to the unknown (``to=`?` ``) as the `yield` firing closes one. The spine frames a meme the way the turn-frame frames an exchange.
 
-<<~ ahu slot=`#/bearing-pair`>>
+<a id="bearing-pair"></a>
 
 ## The Bearing Pair — one edge, two orientations
 
@@ -329,7 +332,7 @@ lied about its resolution.** The same cut runs through the block check (`absent`
 and through the ward's infelicities (a misfire voids, an abuse rings hollow): ABSENCE DECLARED and
 ABSENCE DISCOVERED stand as different facts, and every instrument here that conflated them read useless.
 
-<<~ ahu slot=`#/control-set`>>
+<a id="control-set"></a>
 
 ## Carrier Frame — The Control Set
 
@@ -467,7 +470,7 @@ below the grammar (canon: `lar:///ha.ka.ba/lares/api/pono/persona-circle`).
 Each mark's `sigil-*.tid` carries `lar-pattern`, and a SHAPE-EXACT pattern refuses a wrong fill the way
 a shape-exact slug rule refuses a truncated tag. Enforcement rides the recogniser, never the surface.
 
-<<~ ahu slot=`#/resonance`>>
+<a id="resonance"></a>
 
 ## Namespace Resonance Glyphs — A Separate Mark
 
@@ -493,7 +496,7 @@ Two laws govern the namespace:
 1. **Opener-only.** A resonance glyph rides SOH alone, as the `namespace=` param beside the code.
 2. **EOT rides bare, always.** The resonance mark rides the heading (SOH); the release states its code and its bearing, and no namespace.
 
-<<~ ahu slot=`#/trust-tiers`>>
+<a id="trust-tiers"></a>
 
 ## Trust Tiers — The Control-Character Roles
 
@@ -512,7 +515,7 @@ Each kernel-tier control character carries **three simultaneous roles**, bound a
 
 SOH substitutes DC1 (`0x11`, SOH₂) in kapu-tier carriers; the parser accepts both. EOT carries no kapu alias — a kapu-tier carrier still closes on plain EOT (`0x04`), at rest and in flight. SOH₂ names the ONLY kapu alias this grammar stands; DC4 (`0x14`) carries no office — stream/batch framing belongs to a future transport envelope, not a second at-rest EOT spelling. `&#x0016;` SYN stays the one reserved stream mark (#/the-marks-held-in-reserve).
 
-<<~ ahu slot=`#/authoring`>>
+<a id="authoring"></a>
 
 ## Authoring — what an author states, and what the carrier adds
 
@@ -590,7 +593,7 @@ Projecting a projection MUST change nothing. A processor whose output re-reads d
 input leaves every carrier reading "edited" on every scan, so the ingest loop never converges and a
 write-back rewrites the author's source forever.
 
-<<~ ahu slot=`#/weave-and-tangle`>>
+<a id="weave-and-tangle"></a>
 
 ## Weave and Tangle ~ the pattern-integrity behind "the projection settles"
 
@@ -645,7 +648,7 @@ Until every criterion above holds, tangle's law stands written ahead of its code
 (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/the-putback-law` carries the matching
 confidence markers for the putback law specifically; this entry names tangle's own build gate).
 
-<<~ ahu slot=`#/the-putback-law`>>
+<a id="the-putback-law"></a>
 
 ## The Putback Law ~ tangle as an edit, not a read
 
@@ -674,7 +677,7 @@ reads a woven artifact once, forward; no implementation computes `weave(canon)`,
 or holds a same-region pair open as a hoike. This section states the target law ahead of the code
 that would enforce it.>
 
-<<~ ahu slot=`#/frame-head-lock`>>
+<a id="frame-head-lock"></a>
 
 ## The Frame Head Locks to Control
 
@@ -694,7 +697,7 @@ onto the first example it meets and answers for a span the writer never wrote �
 reader here once verified a digest written inside a teaching example while the body it named went
 unexamined, and reported the carrier sound.
 
-<<~ ahu slot=`#/the-touchstone`>>
+<a id="the-touchstone"></a>
 
 ## The Touchstone Hash ~ the check as the Oracle's inversion
 
@@ -824,7 +827,7 @@ document bytes survive carriage — and a reader MUST NOT take a `match` as cove
 The check stands. The seal, the render vocabulary and the projection stamper wait for a live wiki to
 render them first — a vocabulary chosen before anything renders it would freeze a form nobody has read.
 
-<<~ ahu slot=`#/canonical-form`>>
+<a id="canonical-form"></a>
 
 ## Canonical Form ~ the writer's law
 
@@ -867,7 +870,7 @@ the one writing a sweep or an independent implementation. Such a writer SHOULD r
 through the emitter rather than reproduce it: the projection path already does, and every carrier in
 this corpus that failed to render back came from a hand that went around it.
 
-<<~ ahu slot=`#/the-woven-dialect`>>
+<a id="the-woven-dialect"></a>
 
 ## The Woven Dialect ~ one mouth speaking outward
 
@@ -946,7 +949,7 @@ supplies content inside that span; it never reaches out to shape the carrier's o
 matches the fence-mask law (#/weave-and-tangle): a foreign or example span stays legible, and no reader ever
 mistakes it for the grammar that holds it.
 
-<<~ ahu slot=`#/the-carriage`>>
+<a id="the-carriage"></a>
 
 ## The Carriage ~ what the grammar owns, and where it keeps it
 
@@ -1022,7 +1025,7 @@ A carriage record round-trips whole in bytes and lossy in fields: re-read, a fra
 fold into the body and the record dissolves. **That loss follows the design.** The boundary lives in position, and
 reserving a field to re-state it would put a derived fact back on the record.
 
-<<~ ahu slot=`#/the-gradient`>>
+<a id="the-gradient"></a>
 
 ## The Gradient ~ how far down a carrier sits
 
@@ -1056,7 +1059,7 @@ rather than an address: links written before the corpus poured to `.mem`. Those 
 all, so they neither resolve nor dangle; matching one to a carrier means guessing which one it became,
 and a resolver must not guess.
 
-<<~ ahu slot=`#/classifier-channel`>>
+<a id="classifier-channel"></a>
 
 ## The Classifier Channel — What the Sigil Layer Does
 
@@ -1066,7 +1069,7 @@ The carrier sigils, the namespace glyphs, and the OODA-HA marks ride as an **unp
 
 Field grounds: `lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds#/classifier-channel`.
 
-<<~ ahu slot=`#/schema`>>
+<a id="schema"></a>
 
 ## Schema (machine-readable)
 
@@ -1098,7 +1101,7 @@ kernel        = { range = "0x01–0x0F",   trust = "kernel",   resonance = "stan
 kapu-elevated = { range = "0x11",        trust = "kapu",     resonance = "elevated", writable-by = "admin-only" }
 ```
 
-<<~ ahu slot=`#/frame-security`>>
+<a id="frame-security"></a>
 
 ## Frame Security Considerations
 
@@ -1152,7 +1155,7 @@ escape discipline — keeps a quoted mark from framing. The mask therefore stand
 boundary: a reader that drops it verifies teaching examples instead of bodies, a failure the corpus
 has met.
 
-<<~ ahu slot=`#/carrier-bytes`>>
+<a id="carrier-bytes"></a>
 
 ## Carrier Bytes Law
 
@@ -1165,7 +1168,7 @@ A carrier at rest carries one byte law (pinned here in the spec, per the canonic
 
 The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees normalized bytes; every projection outward emits them. Mid-pipeline re-normalization constitutes a degraded shore.
 
-<<~ ahu slot=`#/references`>>
+<a id="references"></a>
 
 ## Normative References
 
@@ -1186,7 +1189,7 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 - **[LAR-URI]** — the `lar:` URI specification (sibling submission): `lar:///ha.ka.ba/lares/api/pono/lar-uri`.
 - **[TW5]** — TiddlyWiki5 WikiText grammar — the host whose macro call every frame sigil stands as.
 
-<<~ ahu slot=`#/annex-open`>>
+<a id="annex-open"></a>
 
 ## Annex — Open Items (Informative)
 
@@ -1209,19 +1212,19 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
   and the currency gate's byte-equality and model-equality questions all stand as target law ahead of
   any implementation (#/the-putback-law).
 
-<<~ ahu slot=`#/edges`>>
+<a id="edges"></a>
 
 ## Edges
 
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/parser``
-- `loulou uri=`lar:///ha.ka.ba/lararium/docs/carrier-parse``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/render-pipeline``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapu``
-- `loulou uri=`lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/aka``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/hana``
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/nihomano-sigils``
+- `loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`
+- `loulou lar:///ha.ka.ba/lares/api/pono/lar-uri`
+- `loulou lar:///ha.ka.ba/lares/api/pono/parser`
+- `loulou lar:///ha.ka.ba/lararium/docs/carrier-parse`
+- `loulou lar:///ha.ka.ba/lares/api/pono/render-pipeline`
+- `loulou lar:///ha.ka.ba/lares/api/pono/meme`
+- `loulou lar:///ha.ka.ba/lares/api/pono/kapu`
+- `loulou lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds`
+- `loulou lar:///ha.ka.ba/lares/api/pono/aka`
+- `loulou lar:///ha.ka.ba/lares/api/pono/hoike`
+- `loulou lar:///ha.ka.ba/lares/api/pono/hana`
+- `loulou lar:///ha.ka.ba/lares/api/pono/nihomano-sigils`

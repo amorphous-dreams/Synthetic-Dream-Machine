@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/witness/items/uvg/porters-pebble">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/witness/items/uvg/porters-pebble`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/sdm/witness/items/uvg/porters-pebble"
 
 ! UVG Witness — Porter's Pebble
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
@@ -33,7 +33,7 @@ UVG is dense with Long Ago relics — pebble-machines, biomantic stores, half-fo
 
 <<~/ahu>>
 
-<<~ ahu #/lift>>
+<<~ ahu slot=`#/lift`>>
 
 !! What the module lifts
 
@@ -45,7 +45,7 @@ The v0.1 ''Porter's Pebble'' is the epic's first ''module-nesting'' proof:
 
 <<~/ahu>>
 
-<<~ ahu #/fidelity>>
+<<~ ahu slot=`#/fidelity`>>
 
 !! Fidelity notes
 
@@ -54,14 +54,14 @@ The v0.1 ''Porter's Pebble'' is the epic's first ''module-nesting'' proof:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/modules/items/porters-pebble">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/modules/items/porters-pebble`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sxZGTwuGcPpLGz7Zgrcdz3Rn8D9twZQOTH6wsnOgbuw
+<<^ code=`&#x0003;`>>ni:///sha-256;ih_QkMLE24EHl85jMVYDFCn5oj1h03KWjY6G9QBEfbU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

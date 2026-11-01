@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/dispatcher">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/dispatcher`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -95,6 +95,6 @@ TW5 wikitext body:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ds8wkUxRgaUgiVU9Qj-F5LMBEWXgdE2q0qlPTX6w5Ao
+<<^ code=`&#x0003;`>>ni:///sha-256;oz81Xl1QU9NLtwQAKhB2fYd2PqXy6JZR7K8dZtjpheE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

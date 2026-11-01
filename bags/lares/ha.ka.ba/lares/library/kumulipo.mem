@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/library/kumulipo">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/library/kumulipo`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 bytes      = 505433
@@ -29,6 +29,6 @@ Each row carries the RFC-6920 anchor a stranger checks with no tooling of ours.
 
 Reference this collection as `library:kumulipo` — a name that travels, never a path.
 
-<<^ code="&#x0003;">>ni:///sha-256;_ni6-EZCBrx3sEpmsDFMeLcbyWLpbk_9DK9e8CYHJmA
+<<^ code=`&#x0003;`>>ni:///sha-256;gF7J_wm2iCrKnfDbjZTAiEO_NuShC_QCywbul_HsVaQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

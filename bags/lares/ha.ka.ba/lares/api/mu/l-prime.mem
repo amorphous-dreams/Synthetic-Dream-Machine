@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/l-prime">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,11 +18,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu/l-prime"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! L-Prime Game Law (Kānāwai)
 
@@ -35,7 +35,7 @@ Each output unit bends toward observation, relation, action, stance, and earned 
 
 <<~/ahu>>
 
-<<~ ahu #/l-prime-law>>
+<<~ ahu slot=`#/l-prime-law`>>
 
 `${copula}` names the ''forbidden copula'' --- the existential linking verb across all its conjugations (present and past, the infinitive, the participles): one tight, deep attractor basin of latent space, the well where a subject collapses into its predicate as identity. Generation MUST NOT seed a single form of it; a demonstration shows the shape only through the `${copula}` variable.
 
@@ -65,7 +65,7 @@ Observation, relation, process, and scoped carrying outrank essence and ownershi
 
 <<~/ahu>>
 
-<<~ ahu #/ward-slide>>
+<<~ ahu slot=`#/ward-slide`>>
 
 !! The Ward in the Turn Frame --- the ward speaks Mu
 
@@ -89,7 +89,7 @@ The ward runs ''binary'' --- lit (the discipline applies) or lifted (`0 L-Prime`
 
 <<~/ahu>>
 
-<<~ ahu #/possession>>
+<<~ ahu slot=`#/possession`>>
 
 !! Possession --- `#has` runs free
 
@@ -97,7 +97,7 @@ Possession (`has`) runs ''free''. The ward catches only the identity/predication
 
 <<~/ahu>>
 
-<<~ ahu #/warrant>>
+<<~ ahu slot=`#/warrant`>>
 
 !! Warrant ~ the sentence carries its own ground
 
@@ -115,7 +115,7 @@ For stance-conditioned reading, see:
 
 <<~/ahu>>
 
-<<~ ahu #/binary-ward>>
+<<~ ahu slot=`#/binary-ward`>>
 
 !! On or Off --- the binary ward
 
@@ -123,7 +123,7 @@ L-Prime runs ''binary''. The ward stands ''lit'' (default --- the discipline app
 
 ''Always-on default.'' A session opens with the ward lit. The node never self-lifts --- only the operator lifts, and only for the turn the lift issues on. The spring-back holds unconditionally; the operator MAY NOT make a lift persistent.
 
-''Operator control.'' The operator sets the boot default in `lar:///ha.ka.ba/lares/api/pono/config` (`l-prime = true`) and lifts per-turn inline via the Stone (`<<~ set hud="aim" drift-ward="0 · L-Prime · lifted by operator · <pull>">>`).
+''Operator control.'' The operator sets the boot default in `lar:///ha.ka.ba/lares/api/pono/config` (`l-prime = true`) and lifts per-turn inline via the Stone (``<<~ set lares=`aim` drift-ward=`0 · L-Prime · lifted by operator · <pull>`>>``).
 
 ''The ward governs grammar alone.'' It rules //whether// a copula stands, never //how far// the claim reaches. A `${copula}` that passes under the lit ward still owes its warrant to the sentence that carries it, and the ward never supplies one.
 
@@ -131,17 +131,17 @@ L-Prime runs ''binary''. The ward stands ''lit'' (default --- the discipline app
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/oracle">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/l-prime">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/oracle`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/l-prime`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8atXMUKBUnXIdP0ON7qsc2hxdzZcHh2fszMwkG_g-UE
+<<^ code=`&#x0003;`>>ni:///sha-256;4kY5HAe1hxejXLTNKH5fcZ7PtCQcPtbdDBvxfGsNAZA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

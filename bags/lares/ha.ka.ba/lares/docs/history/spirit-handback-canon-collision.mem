@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-canon-collision">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-canon-collision`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
@@ -17,7 +17,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-canon-collision"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Canon-collision — the corrected three-tier + kāhuli forward-rebind vs the OWN memegraph
 
@@ -27,7 +27,7 @@ Read fully: both handback captures; `epoch-binding-surfaces`, `bag-wiki-uri-spli
 
 <<~/ahu>>
 
-<<~ ahu #/agreements>>
+<<~ ahu slot=`#/agreements`>>
 
 !! AGREEMENTS — where canon already states the corrected model
 
@@ -47,7 +47,7 @@ Read fully: both handback captures; `epoch-binding-surfaces`, `bag-wiki-uri-spli
 
 <<~/ahu>>
 
-<<~ ahu #/contradictions>>
+<<~ ahu slot=`#/contradictions`>>
 
 !! CONTRADICTIONS — where a meme says the opposite and would need editing
 
@@ -61,7 +61,7 @@ They cannot both stand as stated: the model treats the seat as empty; canon reco
 
 <<~/ahu>>
 
-<<~ ahu #/re-admission-judged>>
+<<~ ahu slot=`#/re-admission-judged`>>
 
 !! The re-admission question, judged
 
@@ -76,7 +76,7 @@ They cannot both stand as stated: the model treats the seat as empty; canon reco
 
 <<~/ahu>>
 
-<<~ ahu #/siege-vs-churp>>
+<<~ ahu slot=`#/siege-vs-churp`>>
 
 !! siege-resilience / shelter-against-empire vs CHURP-refresh / kāhuli
 
@@ -84,7 +84,7 @@ They cannot both stand as stated: the model treats the seat as empty; canon reco
 
 <<~/ahu>>
 
-<<~ ahu #/blurs>>
+<<~ ahu slot=`#/blurs`>>
 
 !! BLURS — where canon is ambiguous/silent and the model forces a choice
 
@@ -101,7 +101,7 @@ So canon simultaneously calls the grammar layer "fast" (composition ratchet) and
 
 <<~/ahu>>
 
-<<~ ahu #/rulings-owed>>
+<<~ ahu slot=`#/rulings-owed`>>
 
 !! RULINGS OWED (ranked by load-bearing impact) — decide BEFORE any meme edit
 
@@ -126,7 +126,7 @@ So canon simultaneously calls the grammar layer "fast" (composition ratchet) and
 
 <<~/ahu>>
 
-<<~ ahu #/could-not-read>>
+<<~ ahu slot=`#/could-not-read`>>
 
 !! Could-not-read within budget
 
@@ -136,6 +136,6 @@ Read by role-line/grep only, not in full: `nexus-topology` (body — severabilit
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_hvGXlgKw5edKME-728OoEC4Fm2skNoQ2HKvpbnu6xg
+<<^ code=`&#x0003;`>>ni:///sha-256;E_RNdSK5vN6pBK0MZFw5PkT8ItVJCZcZNySc3x-fM6I
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

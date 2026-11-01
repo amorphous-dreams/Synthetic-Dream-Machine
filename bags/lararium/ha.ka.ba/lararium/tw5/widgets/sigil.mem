@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/sigil">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/widgets/sigil`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
@@ -18,7 +18,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/sigil"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -37,7 +37,7 @@ Child-slot detection (ahu, kau, and whatever the grammar adds next) reads `gramm
 
 <<~/ahu>>
 
-<<~ ahu #/the-gradient-floor>>
+<<~ ahu slot=`#/the-gradient-floor`>>
 
 !! The Gradient's Floor
 
@@ -51,7 +51,7 @@ A sigil form the rule cannot recognize renders as `<span class="lar-sigil-degrad
 
 <<~/ahu>>
 
-<<~ ahu #/slots-and-runs>>
+<<~ ahu slot=`#/slots-and-runs`>>
 
 !! A Slot and a Run Answer Different Questions
 
@@ -61,25 +61,25 @@ A sigil form the rule cannot recognize renders as `<span class="lar-sigil-degrad
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
-<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/wikirules/lar-sigil.ts" family="code" role="has">>
-<<~ pranala #source-shared from="?" -> to="packages/lararium-tw5/src/wikirules/lar-sigil-shared.ts" family="code" role="has">>
-<<~ pranala #source-pragma from="?" -> to="packages/lararium-tw5/src/wikirules/lar-sigil-pragma.ts" family="code" role="has">>
-<<~ pranala #source-dispatcher from="?" -> to="packages/lararium-tw5/tiddlers/sigil-dispatcher.tid" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/src/wikirules/lar-sigil.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-shared` from=`?` to=`packages/lararium-tw5/src/wikirules/lar-sigil-shared.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-pragma` from=`?` to=`packages/lararium-tw5/src/wikirules/lar-sigil-pragma.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-dispatcher` from=`?` to=`packages/lararium-tw5/tiddlers/sigil-dispatcher.tid` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sigil">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/ahu">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/pranala">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sigil`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/widgets/ahu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/widgets/pranala`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Q_OnimZjy48N4OORwAYG5EGdAx8DfeBP1OVd4DZke0c
+<<^ code=`&#x0003;`>>ni:///sha-256;Jc0M-cuDGn3e3fgJQfftFDxaTYWYjZKGe22mYXCcIaQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

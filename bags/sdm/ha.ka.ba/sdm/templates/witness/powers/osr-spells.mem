@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -16,13 +16,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/witness/powers/osr-spells"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
 ! Template — OSR Spell Witness
 
-<<~ ahu #/intent>>
+<<~ ahu slot=`#/intent`>>
 
 !! Intent
 
@@ -30,7 +30,7 @@ A witness meme preserves provenance and conversion anchors for a Power module. I
 
 <<~/ahu>>
 
-<<~ ahu #/witness-shape>>
+<<~ ahu slot=`#/witness-shape`>>
 
 !! Witness Shape
 
@@ -46,7 +46,7 @@ Conversion anchor: P2 ≈ 1st, P4 ≈ 2nd, P6 ≈ 3rd, P18 ≈ 9th.
 
 <<~/ahu>>
 
-<<~ ahu #/writing-law>>
+<<~ ahu slot=`#/writing-law`>>
 
 !! Writing Law
 
@@ -57,14 +57,14 @@ Conversion anchor: P2 ≈ 1st, P4 ≈ 2nd, P6 ≈ 3rd, P18 ≈ 9th.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/modules/power">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/modules/power`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MUFby5LeikLy3JIMza85JwyT8XM5-rjvYrJ0bEi_ORg
+<<^ code=`&#x0003;`>>ni:///sha-256;OG7mq8H36a1VTmvmuuAx8GnVUc9r0nNt1Dg4X5Wb4hY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

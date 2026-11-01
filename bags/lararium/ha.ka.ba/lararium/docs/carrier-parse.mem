@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/carrier-parse">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/carrier-parse`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 file-path     = "bags/lararium/ha.ka.ba/lararium/docs/carrier-parse.mem"
@@ -20,17 +20,17 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/carrier-parse"
 ```
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ carrier text arrives at the shore; normalize bytes (strip a leading BOM, fold CR into LF).
 ⏿ orient: does an SOH sentinel frame a carrier? the one head reader finds the live heading and the span reader (`readFrame`) closes the carrier — one file, one carrier.
 ◇ decide: each carrier-close routes through `splitMemeToTiddlers`; a bare doc (no SOH framing) falls through to a verbatim-body split.
-▶ split ahu slots recursively into child tiddlers, rewrite each block to a `<<~ kahea ahu #/slot>>` reference in the parent, and grade the parse via `parseMemeText().failures`.
+▶ split ahu slots recursively into child tiddlers, rewrite each block to a ``<<~ kahea ahu slot=`#/slot`>>`` reference in the parent, and grade the parse via `parseMemeText().failures`.
 ↺ verify: a split failure degrades loss-lessly (verbatim fallback, `lar_parse_degraded`), warnings ride a `parse-warning` tiddler that `deserializeCarrier` reads into `MemeDiagnostic[]` — text-in, records-out, no `fs`/`path`/`window`. Callers own persistence and routing.
 
 <<~/ahu>>
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -40,7 +40,7 @@ The shore marks the causal-island boundary (spec: TW5 VM). `memeticWikitextDeser
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source (TypeScript — compiled to a tiddlerdeserializer plugin tiddler)
 
@@ -63,13 +63,13 @@ export function deserializeCarrier(
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/schema/projection-codec">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/schema/projection-codec`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1HJAKzn0PTyZce0igAwt3_oOu0EPUKQIrhe3z6zVcxQ
+<<^ code=`&#x0003;`>>ni:///sha-256;jEy1wtVW8zDHpJclYf4QFosQiFijSY0OEysMutQLN6w
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

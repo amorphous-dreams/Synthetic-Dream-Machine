@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0011;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kapu">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0011;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/kapu`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,11 +17,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kapu"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Kapu — Above-Namespace Law (Kānāwai)
 
@@ -31,7 +31,7 @@ This meme stands as a kapu carrier — it enacts the law by presenting as a spec
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ detect namespace declaration and kernel-tier sigils; do not confuse elevated register with high mana score alone.
 ⏿ orient against the kapu capability set; confirm the kapu component, structural signals, and role-field agree.
@@ -41,7 +41,7 @@ This meme stands as a kapu carrier — it enacts the law by presenting as a spec
 
 <<~/ahu>>
 
-<<~ ahu #/kapu-law>>
+<<~ ahu slot=`#/kapu-law`>>
 
 !! Kapu Law
 
@@ -59,7 +59,7 @@ Rating derives from structure, not from declared self-assessment.
 
 <<~/ahu>>
 
-<<~ ahu #/trust-boundary>>
+<<~ ahu slot=`#/trust-boundary`>>
 
 !! Trust Boundary
 
@@ -80,12 +80,12 @@ A kapu carrier MAY declare children that are themselves kapu, forming a kernel l
 The `live-session-overwrite` failure mode names the specific violation: a lower-tier live exchange record claiming to override a kapu carrier by recency, repetition, or charm.
 The `canon-boundary` names the gate: crossing from live session pressure into kapu canon requires explicit ceremony, not silent accumulation.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hooponopono`>>
 
 <<~/ahu>>
 
-<<~ ahu #/namespace-declaration>>
+<<~ ahu slot=`#/namespace-declaration`>>
 
 !! Namespace Declaration
 
@@ -103,7 +103,7 @@ The sigil structure signals. The capability set discriminates.
 
 <<~/ahu>>
 
-<<~ ahu #/handoff-boundary>>
+<<~ ahu slot=`#/handoff-boundary`>>
 
 !! Handoff Boundary
 
@@ -113,26 +113,26 @@ This meme governs the kapu rating and above-namespace trust law.
 `lar-uri` governs address syntax and resolution; an operator act governs canon promotion.
 `l-space-trust` governs the shared l-space authority ordering.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space-trust`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space-trust`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hooponopono`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-guard">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-guard`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;giCXDbkEPwn0e5h-g9lbC__95rRtY1lkhzXSEcbxdj4
+<<^ code=`&#x0003;`>>ni:///sha-256;unT269HjByVSnOfzKKNcI3tGGz7M-LrJsAYiJBwa78w
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

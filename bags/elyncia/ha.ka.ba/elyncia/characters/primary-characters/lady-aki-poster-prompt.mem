@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,13 +17,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Lady Aki ~ Poster Sheet Prompt
 
 <<~/ahu>>
 
-<<~ ahu #/body>>
+<<~ ahu slot=`#/body`>>
 
 ! Lady Aki — Poster-Sized Landscape Concept Sheet Prompt v1
 
@@ -52,6 +52,6 @@ No spider legs on Ichi. No tall ritual hat. No generic witch hat. No polished fi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TH6ohJ9tcc_78eomya4YaYx2PdmOKJq7o534ai9FVko
+<<^ code=`&#x0003;`>>ni:///sha-256;dAo8XWclUkSs8T6u2rBlpW_olhOai5v45rLmjlJQ_cQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

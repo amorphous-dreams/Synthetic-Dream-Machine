@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
@@ -22,11 +22,11 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/recipe-layer-model"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/ruling>>
+<<~ ahu slot=`#/ruling`>>
 
 ! Recipe Layer Model ~ a scout against the ruling
 
@@ -48,7 +48,7 @@ The ruling names FOUR strata per recipe — ''canon bags'' ← ''named wiki bag'
 
 <<~/ahu>>
 
-<<~ ahu #/as-mounted>>
+<<~ ahu slot=`#/as-mounted`>>
 
 !! The layers exactly as three composites mount them
 
@@ -79,7 +79,7 @@ Same kernel (`packages/lararium-node/src/open-daemon-vm.ts`; browser `open-brows
 | layer (top wins) | writable | default | sync class | disk mirror |
 |---|---|---|---|---|
 | `wikis/daemon/temp` | yes | never | device | none |
-| `wikis/daemon/working` (late-attached) | yes | ''YES'' | fleet | `wikis/daemon/` (node) — `daemonWorkingMirror` (`packages/lararium-node/src/bag-paths.ts`) rides the daemon manifest's `diskMirrors` (`open-daemon-vm.ts`), mounted by `node-daemon-island.ts`'s `onBoot` → `mountDiskProjection` (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>, `#/daemon-mirror`) |
+| `wikis/daemon/working` (late-attached) | yes | ''YES'' | fleet | `wikis/daemon/` (node) — `daemonWorkingMirror` (`packages/lararium-node/src/bag-paths.ts`) rides the daemon manifest's `diskMirrors` (`open-daemon-vm.ts`), mounted by `node-daemon-island.ts`'s `onBoot` → `mountDiskProjection` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>, `#/daemon-mirror`) |
 | `bags/daemon` (the daemon bag: verbs, outcomes, bindings — the control plane) | yes | no | fleet (private plane) | none — excluded by design |
 | `bags/crossroads` | yes | no | fleet · federatable | `bags/crossroads/` (node) — the daemon designates it in its own mirror set (`open-daemon-vm.ts`), so a residency MOVE out of `wikis/daemon/working` publishes there |
 | `bags/lares` · `bags/lararium` | yes | no | fleet | none here |
@@ -106,7 +106,7 @@ The host mounts the wiki's working layer as its default writable (`mountWikiSlot
 
 <<~/ahu>>
 
-<<~ ahu #/as-routed>>
+<<~ ahu slot=`#/as-routed`>>
 
 !! The cascade ~ which KIND of tiddler lands where
 
@@ -147,7 +147,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 <<~/ahu>>
 
-<<~ ahu #/as-written>>
+<<~ ahu slot=`#/as-written`>>
 
 !! What the canon carriers say, and where they contradict the code or each other
 
@@ -169,7 +169,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 <<~/ahu>>
 
-<<~ ahu #/the-blur>>
+<<~ ahu slot=`#/the-blur`>>
 
 !! The blur, named
 
@@ -185,7 +185,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 <<~/ahu>>
 
-<<~ ahu #/one-model>>
+<<~ ahu slot=`#/one-model`>>
 
 !! One model ~ the fewest changes that satisfy the ruling
 
@@ -207,7 +207,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 <<~/ahu>>
 
-<<~ ahu #/questions>>
+<<~ ahu slot=`#/questions`>>
 
 !! Questions the operator answered, and the one still open
 
@@ -223,7 +223,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 <<~/ahu>>
 
-<<~ ahu #/tw5-surfaces>>
+<<~ ahu slot=`#/tw5-surfaces`>>
 
 !! TW5 surfaces for non-meme workflows ~ what exists, what the house rides
 
@@ -249,7 +249,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 <<~/ahu>>
 
-<<~ ahu #/one-bundle>>
+<<~ ahu slot=`#/one-bundle`>>
 
 !! One bundle ~ the caps decide what rings (operator ruling, 2026-09-11)
 
@@ -262,18 +262,18 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 ''The three grounds the ruling rests on.''
 
 # ''One law shipped twice reads as two laws.'' The contract every skin carries VERBATIM already reads as ONE law. A split bundle carries it in two artifacts that must be tuned together, and the hand-derived enumeration drifts the way every hand-derived enumeration drifts. One casting rings the same law at the road, the gate and the sanctum; two castings drift by a hair a year and nobody notices until a reader does.
-# ''The keel already answers it, for free.'' <<~ loulou "lar:///ha.ka.ba/lararium/api/composable-keel">> `#/absence-is-structural` rules that a Herm reads as //a cap-stack that never declares the wiki cap// and runs //blind by structure, never by a flag a later bug could flip// — //an absent cap grants no authority//. ''One keel, two `#has`-stacks: the same code, thinned by caps, never two codes.'' A bundle split by tier re-spells that thinning in packaging, where the composition root already spells it in wiring — and packaging cannot fail closed. This carrier's own cap posture reads the same direction at #/questions: //the cap-stack falls to the floor, never reds//.
+# ''The keel already answers it, for free.'' <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/composable-keel`>> `#/absence-is-structural` rules that a Herm reads as //a cap-stack that never declares the wiki cap// and runs //blind by structure, never by a flag a later bug could flip// — //an absent cap grants no authority//. ''One keel, two `#has`-stacks: the same code, thinned by caps, never two codes.'' A bundle split by tier re-spells that thinning in packaging, where the composition root already spells it in wiring — and packaging cannot fail closed. This carrier's own cap posture reads the same direction at #/questions: //the cap-stack falls to the floor, never reds//.
 # ''What travels stays a cap question, never a bundle question.'' Whether the road-bells — the HTTP route, the MCP tool — ring on a given vessel answers off that vessel's declared stack. A wayfarer that declares no sanctum rings no sanctum-bell, and it does so without a second artifact existing.
 
-''Where the bundle stands, measured.'' `packages/lararium-tw5/plugins/lares-memetic-wikitext.json` ships as ONE plugin tiddler carrying `nalu-engine` and `bag-paths` and no syncadaptor (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>, `#/island-holds`). Road A of the bridge would have added a packed module to that same bundle, applying //the same law to the daemon island and the wiki island alike (one plugin)// (`outbound-bridge.mem` `#/back-parity`) — the ruling holds either road, because it rules the artifact count rather than the wire.
+''Where the bundle stands, measured.'' `packages/lararium-tw5/plugins/lares-memetic-wikitext.json` ships as ONE plugin tiddler carrying `nalu-engine` and `bag-paths` and no syncadaptor (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>, `#/island-holds`). Road A of the bridge would have added a packed module to that same bundle, applying //the same law to the daemon island and the wiki island alike (one plugin)// (`outbound-bridge.mem` `#/back-parity`) — the ruling holds either road, because it rules the artifact count rather than the wire.
 
-''Where the ruling was told.'' The stories that set the intent ride at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">> `#/one-plugin-or-two`, and the moʻolelo carrying all eight clauses rides at that floor's `#/exit`. ''That floor holds the telling; this carrier holds the ruling.''
+''Where the ruling was told.'' The stories that set the intent ride at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>> `#/one-plugin-or-two`, and the moʻolelo carrying all eight clauses rides at that floor's `#/exit`. ''That floor holds the telling; this carrier holds the ruling.''
 
 ⚠ ''What the ruling does NOT settle.'' It fixes the artifact count at one. It says nothing about which caps gate which skin, nor about the manifest shape a thinned bundle presents to a vessel that declares less than the whole. Those stand open here.
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath ~ the blast-radius spiral (operator-approved)
 
@@ -283,32 +283,32 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme-api-surface`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/save-path">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-isomorphism">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/composable-keel">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/save-path`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-isomorphism`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/composable-keel`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-adaptor`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">> — anchors the shared oracle surface model
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split">> — sets the seed-named read-only floor
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — sets the seed-named read-only floor
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oafONkTyGf5teiQEawOjp2HuXb68L0OLpb3NsxbGu_I
+<<^ code=`&#x0003;`>>ni:///sha-256;WwrL8Qnz0PaP1OqBKR1AA-T_zxscFgIYnIl2waVI5oY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

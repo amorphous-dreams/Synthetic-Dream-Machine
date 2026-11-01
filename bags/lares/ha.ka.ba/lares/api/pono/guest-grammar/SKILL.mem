@@ -4,10 +4,10 @@ description: Generate, compress, or audit guest-grammar surfaces under lar:///ha
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable          = true
@@ -30,7 +30,7 @@ uri-path           = "ha.ka.ba/lares/api/pono/guest-grammar/SKILL"
 [[guest-grammar.md|../guest-grammar.md]] holds the law.
 This skill carries the working procedure.
 
-<<~ ahu #/load-contract>>
+<<~ ahu slot=`#/load-contract`>>
 
 !! Load Contract
 
@@ -45,7 +45,7 @@ Keep these points active when the skill loads:
 
 <<~/ahu>>
 
-<<~ ahu #/workflow-contract>>
+<<~ ahu slot=`#/workflow-contract`>>
 
 !! Workflow Contract
 
@@ -75,7 +75,7 @@ Do not:
 
 <<~/ahu>>
 
-<<~ ahu #/trigger>>
+<<~ ahu slot=`#/trigger`>>
 
 !! Trigger
 
@@ -95,7 +95,7 @@ Prefer another surface when the work concerns only:
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ read host and guest boundaries first and observe the actual admission surface
 ⏿ sort admission law, ownership boundary, degradation pressure, and implementation detail by where they belong
@@ -105,7 +105,7 @@ Prefer another surface when the work concerns only:
 
 <<~/ahu>>
 
-<<~ ahu #/observe>>
+<<~ ahu slot=`#/observe`>>
 
 !! ✶ Observe
 
@@ -126,7 +126,7 @@ Preserve the difference between admitted, malformed, unsupported, and absent gue
 
 <<~/ahu>>
 
-<<~ ahu #/orient>>
+<<~ ahu slot=`#/orient`>>
 
 !! ⏿ Orient
 
@@ -148,7 +148,7 @@ Orientation rule:
 
 <<~/ahu>>
 
-<<~ ahu #/decide>>
+<<~ ahu slot=`#/decide`>>
 
 !! ◇ Decide
 
@@ -169,7 +169,7 @@ Do not round up from aspiration to law.
 
 <<~/ahu>>
 
-<<~ ahu #/act>>
+<<~ ahu slot=`#/act`>>
 
 !! ▶ Act
 
@@ -185,7 +185,7 @@ When writing or revising:
 !!! Canonical Hana Shape
 
 ````text
-<<~ hana #work>>
+<<~ hana grammar=`#work`>>
 ```toml
 grammar = "x-tiddlywiki-filter"
 profile = "canonical"
@@ -200,7 +200,7 @@ result-shape = "set"
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! ↺ Aftermath
 
@@ -226,15 +226,15 @@ Aftermath — close by naming:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/guest-grammar">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/guest-grammar`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/guest-grammar`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9nlKb61i3EWY8wcdrbKjseHaaY3XzbDC-fDyS_qaGyE
+<<^ code=`&#x0003;`>>ni:///sha-256;H9lfsbsuD22eZbg6YJHnRc-ilE39P-ALrgDx4gROtbY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

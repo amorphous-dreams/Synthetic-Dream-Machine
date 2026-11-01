@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/ea">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/ea`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/ea"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Ea — Sovereignty, Breath, Life
 
@@ -35,7 +35,7 @@ On the DreamNet, any entity that holds its own CRDT state, owns its own timing, 
 
 <<~/ahu>>
 
-<<~ ahu #/doctrine>>
+<<~ ahu slot=`#/doctrine`>>
 
 !! Doctrine
 
@@ -51,7 +51,7 @@ When all three hold, the island may emit `ea` — the sovereignty declaration th
 
 <<~/ahu>>
 
-<<~ ahu #/protocol>>
+<<~ ahu slot=`#/protocol`>>
 
 !! Protocol Pattern
 
@@ -77,7 +77,7 @@ The courier (main thread, orchestrator, or peer) acts as a delivery surface only
 
 <<~/ahu>>
 
-<<~ ahu #/scope>>
+<<~ ahu slot=`#/scope`>>
 
 !! Scope — What Can Declare Ea
 
@@ -94,7 +94,7 @@ The web2 concept of a "heartbeat" (a server-side liveness ping) shares the //liv
 
 <<~/ahu>>
 
-<<~ ahu #/contrast>>
+<<~ ahu slot=`#/contrast`>>
 
 !! Contrast — What Ea Does Not Mean
 
@@ -104,15 +104,15 @@ The web2 concept of a "heartbeat" (a server-side liveness ping) shares the //liv
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/island-protocol`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;20B2f2Kuzj-niAoYOPFfdM4SrLF_qcBuyuPeGL-QWEU
+<<^ code=`&#x0003;`>>ni:///sha-256;nXz_DRi4C3eCZjLhlEAPTUZL143MZgYfbLpvPuOC_YM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

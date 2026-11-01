@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/node-host">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/node-host`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
@@ -20,7 +20,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/node-host"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Node Host
 
@@ -31,7 +31,7 @@ every downstream stratum reads one path law.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law
 
@@ -44,7 +44,7 @@ climbs from the compiled module to its package root, `packages/lararium-node`.
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -69,7 +69,7 @@ quine = "true (optional)"
 
 <<~/ahu>>
 
-<<~ ahu #/http-transport>>
+<<~ ahu slot=`#/http-transport`>>
 
 !! HTTP Transport
 
@@ -94,7 +94,7 @@ write-mode-value-required = "enabled"
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
@@ -122,12 +122,12 @@ export interface CorpusSource {
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/corpus-sources">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/corpus-sources`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MPevK6S__86iJArpfImavZ7BoWZf3kLm0yZUHC3F2IE
+<<^ code=`&#x0003;`>>ni:///sha-256;feeD_jk-bmd8PbrWJzLwjQLehtO7WzDQEDGLrzT47IA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

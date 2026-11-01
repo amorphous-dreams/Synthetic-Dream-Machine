@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -22,19 +22,19 @@ written    = "2026-07-20"
 ```
 
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 ! Founding Runbook ~ one household walk
 
-<<~ ahu #/the-rite>>
+<<~ ahu slot=`#/the-rite`>>
 
 !! 1 · What founding makes
 
-A node founded by one operator stands as a SEED. A Nexus stands when two operators each seat their own key in a fresh charter (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>). One act founds the household's node, the Stable founding act (`lares vessel found --hearth`): under one human route it mints the custody, the place and persona zero, and a PRIVATE seed charter with one seat at threshold one, whose next key rests on a cold-key card; persona zero's face binds that charter's Nexus AID. No keyring rides it. The node then seeds its corpus from the tracked bags. No prior CRDT document needs to survive. Each operator founds their own node on their own machine. A browser counts as a leaf of its human's Lararium; each device mints its own key, one face per device, and no device receives a seed.
+A node founded by one operator stands as a SEED. A Nexus stands when two operators each seat their own key in a fresh charter (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>). One act founds the household's node, the Stable founding act (`lares vessel found --hearth`): under one human route it mints the custody, the place and persona zero, and a PRIVATE seed charter with one seat at threshold one, whose next key rests on a cold-key card; persona zero's face binds that charter's Nexus AID. No keyring rides it. The node then seeds its corpus from the tracked bags. No prior CRDT document needs to survive. Each operator founds their own node on their own machine. A browser counts as a leaf of its human's Lararium; each device mints its own key, one face per device, and no device receives a seed.
 
 <<~/ahu>>
 
-<<~ ahu #/fresh-state>>
+<<~ ahu slot=`#/fresh-state`>>
 
 !! Fresh state
 
@@ -48,7 +48,7 @@ A fresh founding needs only a fresh state mount and this household's tracked rep
 
 <<~/ahu>>
 
-<<~ ahu #/prepare>>
+<<~ ahu slot=`#/prepare`>>
 
 !! 2 · Prepare the machine
 
@@ -75,7 +75,7 @@ Use `tools/lares-container.sh` on Unix-like hosts or `tools/lares-container.ps1`
 
 <<~/ahu>>
 
-<<~ ahu #/the-hands>>
+<<~ ahu slot=`#/the-hands`>>
 
 !! 2a · The operator's hands before the two-hearth day
 
@@ -95,7 +95,7 @@ Each act below waits on a person and a machine; no session performs one. Check e
 
 <<~/ahu>>
 
-<<~ ahu #/decisions>>
+<<~ ahu slot=`#/decisions`>>
 
 !! 3 · Decide names and custody before typing
 
@@ -111,7 +111,7 @@ Synthetic examples below use `operator-one`, `Operator One`, and `hearth.home.ex
 
 <<~/ahu>>
 
-<<~ ahu #/rehearse>>
+<<~ ahu slot=`#/rehearse`>>
 
 !! 4 · Rehearse in an isolated Docker project
 
@@ -129,7 +129,7 @@ HARBOR_PROJECT=founding-rehearsal tools/harbor-walk-witness.sh
 
 <<~/ahu>>
 
-<<~ ahu #/found>>
+<<~ ahu slot=`#/found`>>
 
 !! 5 · Found the first node
 
@@ -150,21 +150,21 @@ tools/lares-container.sh nexus seal show
 tools/lares-container.sh meme list --recipe default --json
 ```
 
-The second line declares persona zero's public Handle; skip it for a face that keeps none. The label and the Handle land on the sealed rows alone, before `up` or on a standing vessel: a face's persona plane rests in the clear on disk, so no name rides onto it until its rest seals (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
+The second line declares persona zero's public Handle; skip it for a face that keeps none. The label and the Handle land on the sealed rows alone, before `up` or on a standing vessel: a face's persona plane rests in the clear on disk, so no name rides onto it until its rest seals (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed`>>).
 
 The host shim starts the container at `up`. The vessel stands holding no vessel key, so `up` then runs `vault unlock` on the attached terminal: type the custody passphrase, and the vessel opens its key, opens the serving key through the vessel key's own entry, and composes with what the keys open. Every restart returns the vessel to the floor; the shim unlocks again after each restart it performs, and with no terminal attached it names the command (`tools/lares-container.sh vault unlock`). `tools/lares-container.sh vault lock` drops the key by hand. A face created after `up` triggers the shim's automatic restart when the CLI reports `restand`; the operator never types a restart flag.
 
 ''A place that stands already lifts the same way.'' Stop the vessel (`tools/lares-container.sh vessel stop`), run `found --hearth` over the standing place, then `up`. A face on a place with no seed charter refuses by name and names the act. Bare `found` still founds a place with no face (a herm's rite). `lares fleet join` carries a joiner through offer, request, answer and land.
 
-''The seed leaves the checkout as it stood.'' A carrier whose bytes say what its records render stands unchanged, whatever framing a hand gave it, so a first `vessel seed` writes no tracked file and `git status` in the checkout reads clean. The unlock adds no untracked file either: the records the daemon seeds from source never project (<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles">>), so `wikis/` receives a file only where a person writes one. A later change to a record writes that one carrier in its canonical render.
+''The seed leaves the checkout as it stood.'' A carrier whose bytes say what its records render stands unchanged, whatever framing a hand gave it, so a first `vessel seed` writes no tracked file and `git status` in the checkout reads clean. The unlock adds no untracked file either: the records the daemon seeds from source never project (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles`>>), so `wikis/` receives a file only where a person writes one. A later change to a record writes that one carrier in its canonical render.
 
-''See'': the act prints `the hearth stands: nexus-<sha>`, the seed charter at one seat and threshold one, PRIVATE, the seat's fingerprint, and persona zero's edge bound to this hearth. `vessel seed` names each holding under `/workspace/bags` and ends `6/6 holding(s) converged` (the count follows the holdings the checkout carries); the two infrastructure holdings ride the diff-gated ingest, and every other holding walks the island's named road: the act creates the bag, loads the carriers onto that wiki's working layer, then moves each landed record into canon, since a write lands on a working layer and canon takes it by promotion (<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles">>); a second run submits nothing for a bag that already matches. `vessel read` reports the live node; `persona list` marks index zero active; `nexus seal show` reads SEED with one seated key; the daemon recipe list returns seeded wiki entries.
+''See'': the act prints `the hearth stands: nexus-<sha>`, the seed charter at one seat and threshold one, PRIVATE, the seat's fingerprint, and persona zero's edge bound to this hearth. `vessel seed` names each holding under `/workspace/bags` and ends `6/6 holding(s) converged` (the count follows the holdings the checkout carries); the two infrastructure holdings ride the diff-gated ingest, and every other holding walks the island's named road: the act creates the bag, loads the carriers onto that wiki's working layer, then moves each landed record into canon, since a write lands on a working layer and canon takes it by promotion (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles`>>); a second run submits nothing for a bag that already matches. `vessel read` reports the live node; `persona list` marks index zero active; `nexus seal show` reads SEED with one seated key; the daemon recipe list returns seeded wiki entries.
 
 ''Proves'': one act founds the hearth's custody, place, persona zero and seed charter, the vessel seeds its corpus from the tracked bags, and it serves as the first operator's live node.
 
 <<~/ahu>>
 
-<<~ ahu #/reserve>>
+<<~ ahu slot=`#/reserve`>>
 
 !! 6 · Establish custody
 
@@ -179,11 +179,11 @@ tools/lares-container.sh nexus seal cold rehearse
 tools/lares-container.sh vault backup --face 0 --out /state/face-0.bundle
 ```
 
-The seed's seat holds its own key, sealed on the node, and its NEXT key rests on the card alone. Rehearse the card before the paper leaves the room: `nexus seal cold rehearse` asks for one or more cards on the terminal (a blank line skips a chair), reads each against the digests the head committed, names the chair each would roll, and moves nothing. A card that answers no digest refuses by its place in the typing and never by a byte of its code. The charter grows or rolls only by the roll its card arms (`nexus seal rotate`, which asks each card back the same way); the quorum rite (`nexus rite quorum`) refuses on a hearth, `hearth-bound`, since a re-seat would mint another AID and orphan every relation bound to the first (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
+The seed's seat holds its own key, sealed on the node, and its NEXT key rests on the card alone. Rehearse the card before the paper leaves the room: `nexus seal cold rehearse` asks for one or more cards on the terminal (a blank line skips a chair), reads each against the digests the head committed, names the chair each would roll, and moves nothing. A card that answers no digest refuses by its place in the typing and never by a byte of its code. The charter grows or rolls only by the roll its card arms (`nexus seal rotate`, which asks each card back the same way); the quorum rite (`nexus rite quorum`) refuses on a hearth, `hearth-bound`, since a re-seat would mint another AID and orphan every relation bound to the first (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale`>>).
 
-''The backup bundle carries one face.'' `vault backup --face <N> --out <file>` runs on the standing vessel, unlocked and wearing that face. It asks the vessel's own route again, then a NEW route for the bundle (a passphrase typed twice, or a paper sheet read back), and writes the file; it never writes over a standing one. The bundle carries the face's root with its own lines, its key history and its content keys, and no key of any seat; the serving tree stays on its hearth. Move the file off the machine. Its memory section holds keys alone: the sealed bytes they open must survive elsewhere, and on a production vessel that section stands empty until the wire cutover opens a session signer (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-cut">>).
+''The backup bundle carries one face.'' `vault backup --face <N> --out <file>` runs on the standing vessel, unlocked and wearing that face. It asks the vessel's own route again, then a NEW route for the bundle (a passphrase typed twice, or a paper sheet read back), and writes the file; it never writes over a standing one. The bundle carries the face's root with its own lines, its key history and its content keys, and no key of any seat; the serving tree stays on its hearth. Move the file off the machine. Its memory section holds keys alone: the sealed bytes they open must survive elsewhere, and on a production vessel that section stands empty until the wire cutover opens a session signer (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-cut`>>).
 
-''A restore brings the face back as a recovery act'' onto a fresh hearth: found it first (`found --hearth`, which stands its own persona zero), then, on the standing vessel, `vault restore <file> --as 1`. The restored face takes a new seat under its fixed prefix and binds that hearth's seed charter. It lands at the handle-index its bundle named only where no root stands there; persona zero holds index zero, so a persona-zero bundle takes `--as <N>` at a free index and lands beside persona zero, never as it (`V5` of the roadmap's loops). `vault restore <file> --memory` lands the bundle's content keys once the vessel wears that face (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-restore">>).
+''A restore brings the face back as a recovery act'' onto a fresh hearth: found it first (`found --hearth`, which stands its own persona zero), then, on the standing vessel, `vault restore <file> --as 1`. The restored face takes a new seat under its fixed prefix and binds that hearth's seed charter. It lands at the handle-index its bundle named only where no root stands there; persona zero holds index zero, so a persona-zero bundle takes `--as <N>` at a free index and lands beside persona zero, never as it (`V5` of the roadmap's loops). `vault restore <file> --memory` lands the bundle's content keys once the vessel wears that face (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-restore`>>).
 
 The credential prompts need the attached terminal. The vessel key seals the keyhive archive, each face's veil archive and each face's anchors where they rest, and the custody slot tree travels with them. For the whole vessel, stop it, then make one consistent copy of the full state mount, including its custody slots and relation carriers; that copy plus the custody passphrase (or paper pin) restores the vessel whole.
 
@@ -193,11 +193,11 @@ The credential prompts need the attached terminal. The vessel key seals the keyh
 
 <<~/ahu>>
 
-<<~ ahu #/threshold-attest-recovery>>
+<<~ ahu slot=`#/threshold-attest-recovery`>>
 
 !! Recovery cards and the recovery contact signing boundary
 
-`persona new` splits no root by default. `persona new <index> --name '<label>' --split-root` opts into the 2-of-3 memory split. No card restores a charter. Recovery contacts and paper restore a face's key lineage; only key material restores its private documents (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
+`persona new` splits no root by default. `persona new <index> --name '<label>' --split-root` opts into the 2-of-3 memory split. No card restores a charter. Recovery contacts and paper restore a face's key lineage; only key material restores its private documents (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery`>>).
 
 `persona new` prints no recovery material by default; `--split-root` opts into self-custody reconstruction material and prints its own warning about shares. `lares persona recovery-contact show <index>` reads a face's prefix and set. `lares persona recovery-contact offer --prefix <prefix>` cuts one recovery contact key for that face; the recovery contact keeps its card and hands over its offer. `lares persona recovery-contact enrol <index> --threshold <k> <offer>…` lets the face's current key sign its typed first enrolment. The vessel keeps that set in a sealed `recovery-contact-set` row and refuses a key another face holds. A later recovery contact rotation needs the recovery contact quorum; the root-card reader and the bundle's carriage of an enrolled set still stand owed.
 
@@ -211,7 +211,7 @@ The credential prompts need the attached terminal. The vessel key seals the keyh
 
 <<~/ahu>>
 
-<<~ ahu #/household-reach>>
+<<~ ahu slot=`#/household-reach`>>
 
 !! 7 · Establish household reach
 
@@ -234,7 +234,7 @@ Household HTTPS uses a DNS-01 wildcard certificate for a Kahu-held domain and on
 
 <<~/ahu>>
 
-<<~ ahu #/gather-the-fleet>>
+<<~ ahu slot=`#/gather-the-fleet`>>
 
 !! 8 · Add the first operator's browser, then tablet or phone leaves
 
@@ -248,7 +248,7 @@ The first operator starts with a browser leaf; a tablet or phone forms a separat
 
 <<~/ahu>>
 
-<<~ ahu #/second-operator>>
+<<~ ahu slot=`#/second-operator`>>
 
 !! 9 · The second operator founds a seed, then both found the Nexus
 
@@ -292,7 +292,7 @@ tools/lares-container.sh nexus admit-take /workspace/admit-bundle.json
 
 <<~/ahu>>
 
-<<~ ahu #/hosted-family-member>>
+<<~ ahu slot=`#/hosted-family-member`>>
 
 !! 10 · Host a family member's phone leaf
 
@@ -306,7 +306,7 @@ A further family member may ride as a user leaf under an operator's Nexus. That 
 
 <<~/ahu>>
 
-<<~ ahu #/aftercare>>
+<<~ ahu slot=`#/aftercare`>>
 
 !! 11 · Aftercare and the next road
 
@@ -322,7 +322,7 @@ A live vessel may continue with its local corpus while household HTTPS, browser 
 
 <<~/ahu>>
 
-<<~ ahu #/key-replacement-cost>>
+<<~ ahu slot=`#/key-replacement-cost`>>
 
 !! Key replacement cost
 
@@ -330,7 +330,7 @@ Relationships acquired after founding raise the cost of replacing keys. Preserve
 
 <<~/ahu>>
 
-<<~ ahu #/the-growth-rite>>
+<<~ ahu slot=`#/the-growth-rite`>>
 
 !! Charter succession crossing
 
@@ -338,7 +338,7 @@ The built `nexus seal grow` ceremony records a later charter crossing. It spans 
 
 <<~/ahu>>
 
-<<~ ahu #/identity-classes>>
+<<~ ahu slot=`#/identity-classes`>>
 
 !! Identity classes
 
@@ -346,34 +346,34 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
 !!! The founding and custody surface ~ where each part reads
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">> seed and Nexus readings, quorum admission and open rulings
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle">> Nexus life stages, succession, liveness and quiet
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">> hosted introductions, admission and three bound dials
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">> identity classes and their promotion paths
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">> persona custody, recovery contacts and face rules
-<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">> personal slot bindings and Keyhive registration
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">> wiki layers, working writes and canon promotion
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout">> recovery custody evidence, reserve rehearsal and open work
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">> host boundary, vessel shim and household reach
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">> secure origins and browser custody boundaries
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> founding acts, order and household road
-<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">> vessel command doors and host shim surface
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">> browser capability measurements and device limits
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/bag-home-axes">> bag read tier, residency and byte home, declared on disk
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">> compromise resistance and what nothing reconstructs
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/first-realm-arc">> the joins beyond one vessel: fleet, realm, dwelling
-<<~ loulou "lar:///ha.ka.ba/lararium/api/sensorium-runbook">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start">> the roadmap carries the instruments and the cold-start steps
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>> seed and Nexus readings, quorum admission and open rulings
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle`>> Nexus life stages, succession, liveness and quiet
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite`>> hosted introductions, admission and three bound dials
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-classes`>> identity classes and their promotion paths
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>> persona custody, recovery contacts and face rules
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot`>> personal slot bindings and Keyhive registration
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>> wiki layers, working writes and canon promotion
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout`>> recovery custody evidence, reserve rehearsal and open work
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/harbor`>> host boundary, vessel shim and household reach
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>> secure origins and browser custody boundaries
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> founding acts, order and household road
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>> vessel command doors and host shim surface
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>> browser capability measurements and device limits
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/bag-home-axes`>> bag read tier, residency and byte home, declared on disk
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/siege-resilience`>> compromise resistance and what nothing reconstructs
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/first-realm-arc`>> the joins beyond one vessel: fleet, realm, dwelling
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start`>> the roadmap carries the instruments and the cold-start steps
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xoHvb-JavnyWXbc7A8bgaOdifHxB5AwoXCCKOA8d0Og
+<<^ code=`&#x0003;`>>ni:///sha-256;3kzd2ceYjzbCNdxUR8PlDfAPIIPmGA4AhjQvANuUEMY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

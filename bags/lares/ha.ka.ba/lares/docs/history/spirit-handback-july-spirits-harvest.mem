@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-july-spirits-harvest">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-july-spirits-harvest`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
@@ -14,7 +14,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-july-spirits-harvest"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Harvest-Clerk handback
 
@@ -22,10 +22,10 @@ Verbatim final message of Harvest-Clerk (2026-10-18); only Markdown transliterat
 
 <<~/ahu>>
 
-<<~ ahu #/opening>>
+<<~ ahu slot=`#/opening`>>
 
 ```text
-<<~ status "harvest read-only · five branch tips read · one ahu drafted · repository untouched">>
+<<~ status text=`harvest read-only · five branch tips read · one ahu drafted · repository untouched`>>
 ```
 
 Harvest-Clerk: Lares (Tasked Spirit). The table reads `origin/feature/green-jello-dinosaur-5`; REACHED marks a commit, source, or carrier inspected here, and INFERRED marks the judgment drawn from those readings.
@@ -38,12 +38,12 @@ Harvest-Clerk: Lares (Tasked Spirit). The table reads `origin/feature/green-jell
 | `worktree-agent-a522be6155f677695` · `3c119b3b8` | ''REACHED:'' `auth-wire.ts`, client adapter, daemon gate, tests, domains, barrel, and `hearths.mem` move a public `PresentedAdmit { admit, lineage }` onto `lar:auth`, keep it untrusted per socket, and retire the transient relation witness. The commit also records an unresolved `open-node-vessel.ts` getter call and typecheck break. | ''REACHED:'' `dreamnet-architecture.mem` already names presentation of the admit and receiver-side verification. The span carries no old `auth-wire.ts` or `daemon-auth-gate.ts`; `face-proof.mem` and `gate-exchange.ts` place the arm inside a sealed Noise presentation, sign the presentation digest in the finish, and let `face-gate.ts` read the admit against held Nexus state. ''INFERRED:'' the old public vessel-key-bound wire and partial call-site migration conflict with that newer face-gate path. The face-proof carrier still marks the socket cutover owed. | ''SUPERSEDED:'' retain the presentation principle through the face gate; do not transplant the old `lar:auth` layout or retired getter. | Existing `bags/lares/ha.ka.ba/lares/api/pono/face-proof.mem#/the-gate-exchange` and `#/owed` already carry the successor; no old-wire ahu. |
 <<~/ahu>>
 
-<<~ ahu #/draft-ahu-bags-lares-ha-ka-ba-lares-api-mu-the-law-of-5s-mem-rank-consensus>>
+<<~ ahu slot=`#/draft-ahu-bags-lares-ha-ka-ba-lares-api-mu-the-law-of-5s-mem-rank-consensus`>>
 
 !! Draft ahu → `bags/lares/ha.ka.ba/lares/api/mu/the-law-of-5s.mem#/rank-consensus`
 
 ```text
-<<~ ahu #/rank-consensus>>
+<<~ ahu slot=`#/rank-consensus`>>
 
 !! Rank consensus ~ several lenses over one item set
 
@@ -61,7 +61,7 @@ Harvest-Clerk: Lares (Tasked Spirit). The table reads `origin/feature/green-jell
 Read boundary: no branch received a cherry-pick, merge, stash, or other repository write. The draft rests in this workspace for the controller to place.
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 ! Edges
 
@@ -69,6 +69,6 @@ Sources: `in/july-spirits-harvest.md`. Persona: Harvest-Clerk. Date: 2026-10-18.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ttjcXyaf8g9WGS0nrcfsogBzO0y1-hp6e0zc-0VNifI
+<<^ code=`&#x0003;`>>ni:///sha-256;ZtAsdkUuXOEzBNtpR2RbecpP7puXOdFpX2SkLccz_7E
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

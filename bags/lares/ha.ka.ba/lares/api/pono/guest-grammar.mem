@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/guest-grammar">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/guest-grammar`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,11 +17,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/guest-grammar"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Guest Grammar Law (Kānāwai)
 
@@ -31,7 +31,7 @@ Parser, render, and pono detail move outward.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ read the host surface for explicit guest entry, bounded worksite, and primitive-boundary pressure.
 ⏿ orient the region by ownership: host meaning stays local, guest law stays bounded, parser and render detail stay outward.
@@ -39,11 +39,11 @@ Parser, render, and pono detail move outward.
 ▶ write the smallest bounded guest region that preserves priming payload, guest body, and honest degradation.
 ↺ verify the host keeps its own primitives, the guest keeps its own family, and the handoff boundary stays explicit; close with residue named; malformed or unsupported guest work degrades locally rather than collapsing the parent.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL`>>
 
 <<~/ahu>>
 
-<<~ ahu #/admission-law>>
+<<~ ahu slot=`#/admission-law`>>
 
 !! Admission Law
 
@@ -70,7 +70,7 @@ This law does not govern:
 
 <<~/ahu>>
 
-<<~ ahu #/hana-worksite>>
+<<~ ahu slot=`#/hana-worksite`>>
 
 !! Hana Worksite
 
@@ -88,7 +88,7 @@ If ambiguity rises, the stricter profile should demand a wrapped payload form.
 
 <<~/ahu>>
 
-<<~ ahu #/ownership-boundary>>
+<<~ ahu slot=`#/ownership-boundary`>>
 
 !! Ownership Boundary
 
@@ -103,7 +103,7 @@ The root primitives stay constitutional host territory.
 
 <<~/ahu>>
 
-<<~ ahu #/degradation-and-handoff>>
+<<~ ahu slot=`#/degradation-and-handoff`>>
 
 !! Degradation and Handoff
 
@@ -122,18 +122,18 @@ Schema detail, fixture families, and execution procedure belong in the companion
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/guest-grammar">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/guest-grammar`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4EIB8XZzejC90X32SyXaxbJ336IaV-N8WUtak_e7FOk
+<<^ code=`&#x0003;`>>ni:///sha-256;lxSBmGU5__4AawPTzLrCpm34G6iez86D30IGVy6vVgI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

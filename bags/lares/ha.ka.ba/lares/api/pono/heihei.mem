@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/heihei">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/heihei`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,11 +17,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/heihei"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Heihei
 
@@ -33,7 +33,7 @@ Three principles share only the word "first": `heihei` tests a condition to bran
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ sense the condition — a `<decides>` failable expression on the flow node
 ⏿ orient: heihei branches execution, it does not select content (that is `wai`) and it does not race (that is `holo`)
@@ -43,7 +43,7 @@ Three principles share only the word "first": `heihei` tests a condition to bran
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -57,18 +57,18 @@ The condition names a failure context, not a boolean test: the `then` arm fires 
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 Verse `if` form (failable condition → one arm):
 ```text
-<<~ heihei (Condition)>>then-flow<<~ mukuwai>>else-flow<<~/heihei>>
+<<~ heihei filter=`(Condition)`>>then-flow<<~ mukuwai>>else-flow<<~/heihei>>
 ```
 
 Verse `case` form (value-match → one arm):
 ```text
-<<~ heihei case(Value)>>
+<<~ heihei filter=`case(Value)`>>
   MatchA => arm-a
   MatchB => arm-b
   _       => default-arm
@@ -79,7 +79,7 @@ Verse grounding: `if (Condition): then else: else` (the condition runs in a `<de
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -95,17 +95,17 @@ arm-wire       = "reaction"
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wai">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/holo">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wai`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/holo`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-event-lattice`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;p2upjCk3FNdh4hJpDzcymgddHdCeGg--nCQ9x_O_NnA
+<<^ code=`&#x0003;`>>ni:///sha-256;20TpD718LOMtHLTsUfePaPi4gk3BOh00EvQzuR7LQ9E
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

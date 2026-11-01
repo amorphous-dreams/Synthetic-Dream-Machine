@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -20,11 +20,11 @@ uri-path   = "ha.ka.ba/lararium/mesh/epoch-binding-surfaces"
 written    = "2026-08-08"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Epoch Binding Surfaces ~ what a dependency bump actually costs
 
@@ -36,14 +36,14 @@ a wrong answer here reads identically to a right one until a founding breaks.
 
 <<~/ahu>>
 
-<<~ ahu #/the-five>>
+<<~ ahu slot=`#/the-five`>>
 
 !! The five surfaces, and what each binds TO
 
-<<~ has Surface Seal-epoch "binds/seated-keys + threshold moved-by/a-roster-or-quorum-change ~ the Nexus AID (`nexus-…`, the genesis epoch address) — carries NO dependency, NO blob, NO version">>
-<<~ has Surface Hearth-true-name "binds/the-TW5-core-blob-sha256 moved-by/a-TW5-submodule-bump ~ engineCid, and it rides INSIDE every signed delegation preimage">>
-<<~ has Surface Plugins-CID "binds/the-built-plugin-blob-shas moved-by/THIS-REPO'S-OWN-SOURCE ~ 23 modules + 115 tiddlers packed from our TS; verified at BUILD time by verifyGenesisArtifact — LOCAL integrity, never a membership criterion, and no peer path reads it (#/the-real-mover)">>
-<<~ has Surface On-disk-serde "binds/automerge + keyhive byte formats moved-by/a-RUNTIME-dep-bump ~ the only npm-movable surface">>
+<<~ has entity=`Surface` name=`Seal-epoch` params=```binds/seated-keys + threshold moved-by/a-roster-or-quorum-change ~ the Nexus AID (`nexus-…`, the genesis epoch address) — carries NO dependency, NO blob, NO version```>>
+<<~ has entity=`Surface` name=`Hearth-true-name` params=`binds/the-TW5-core-blob-sha256 moved-by/a-TW5-submodule-bump ~ engineCid, and it rides INSIDE every signed delegation preimage`>>
+<<~ has entity=`Surface` name=`Plugins-CID` params=`binds/the-built-plugin-blob-shas moved-by/THIS-REPO'S-OWN-SOURCE ~ 23 modules + 115 tiddlers packed from our TS; verified at BUILD time by verifyGenesisArtifact — LOCAL integrity, never a membership criterion, and no peer path reads it (#/the-real-mover)`>>
+<<~ has entity=`Surface` name=`On-disk-serde` params=`binds/automerge + keyhive byte formats moved-by/a-RUNTIME-dep-bump ~ the only npm-movable surface`>>
 
 !!! ★ ONE MECHANISM — A MONOTONE FRONTIER THAT ONLY ROLLS FORWARD ★
 
@@ -131,7 +131,7 @@ performed. ''The binding PAIRS (vessel × hearthTrueName)'': the engine CID serv
 
 <<~/ahu>>
 
-<<~ ahu #/the-measurement>>
+<<~ ahu slot=`#/the-measurement`>>
 
 !! What a runtime dep bump ACTUALLY moves ~ measured 2026-08-08
 
@@ -158,7 +158,7 @@ read. The vessel already names that condition and its cure rather than boot-loop
 
 <<~/ahu>>
 
-<<~ ahu #/the-real-mover>>
+<<~ ahu slot=`#/the-real-mover`>>
 
 !! ⚠ CORRECTED — what a source commit actually moves
 
@@ -219,7 +219,7 @@ co-observed points, ''no transformation exists at all, only translation by asser
 
 <<~/ahu>>
 
-<<~ ahu #/the-rule>>
+<<~ ahu slot=`#/the-rule`>>
 
 !! The rule for a founding
 
@@ -232,20 +232,20 @@ a rebuild at an inconvenient moment.
 They move when the operator bumps the TW5 submodule or when this repo's source changes, and ''both of those
 count as acts, never upgrades''.
 
-<<~ has Rule Runtime-deps "when/before-founding cost/a-rebuild-if-skipped surface/serde-only ~ automerge · noble · ws · vite">>
-<<~ has Rule TW5-submodule "when/an-ACT-never-an-upgrade cost/every-delegation-edge surface/hearthTrueName ~ moves the PLACE half of the atom">>
-<<~ has Rule Our-own-source "when/a-per-operator-ACT cost/LOCAL-integrity-only surface/pluginsCid ~ a parser rebuild moves a local witness and composes per-operator, NEVER perturbs the true-name, NEVER a membership criterion (#/the-real-mover)">>
+<<~ has entity=`Rule` name=`Runtime-deps` params=`when/before-founding cost/a-rebuild-if-skipped surface/serde-only ~ automerge · noble · ws · vite`>>
+<<~ has entity=`Rule` name=`TW5-submodule` params=`when/an-ACT-never-an-upgrade cost/every-delegation-edge surface/hearthTrueName ~ moves the PLACE half of the atom`>>
+<<~ has entity=`Rule` name=`Our-own-source` params=`when/a-per-operator-ACT cost/LOCAL-integrity-only surface/pluginsCid ~ a parser rebuild moves a local witness and composes per-operator, NEVER perturbs the true-name, NEVER a membership criterion (#/the-real-mover)`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/device-delegation">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/device-delegation`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LA50BmATafDF8Cfr4Lqi_TF2d_0cfj6kOeA9GQwpp_Y
+<<^ code=`&#x0003;`>>ni:///sha-256;2url1enfnPJP9Ju7DaD6WUWQ49hM4OBIepDT8iUUqoY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

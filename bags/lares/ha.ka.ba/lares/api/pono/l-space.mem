@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/l-space">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/l-space`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -22,7 +22,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/l-space"
 
 Four deep-domain swarms (attitude · routing · sphere · naming, then encoder · scale · center) read the chart back from outside, coordinate for coordinate. What follows holds their convergence.
 
-<<~ ahu #/the-colorless-center>>
+<<~ ahu slot=`#/the-colorless-center`>>
 
 !! The Colorless Center
 
@@ -37,7 +37,7 @@ So the root holds no attitude and resolves nothing; it grounds the measure from 
 
 <<~/ahu>>
 
-<<~ ahu #/living-center-dead-sink>>
+<<~ ahu slot=`#/living-center-dead-sink`>>
 
 !! The Living Center and the Dead Sink
 
@@ -47,7 +47,7 @@ The ''dead sink below'' names thermodynamic equilibrium — the static fixed poi
 
 <<~/ahu>>
 
-<<~ ahu #/bearings-are-chart-relative>>
+<<~ ahu slot=`#/bearings-are-chart-relative`>>
 
 !! Bearings Read Chart-Relative
 
@@ -55,11 +55,11 @@ A `lar:` bearing names a heading — but ''the axes that heading reads against b
 
 So the ''`syad` sigil performs a basis-declaration'': //"standpoint declares the measure"// reads as //"fix the chart before the number."// A confidence number within an invoked standpoint reads ''coordinate-relative-to-chart'', never a global truth-weight — the canon already vowed this (`the-syad-perspectives`). A bearing therefore travels ''carrying its transition function'' — which lens reads it — and a //global// l-space picture stays a ''sheaf-gluing question (H¹), never an assumption'': exactly the FFZ no-global-now severance, now in the geometry of meaning.
 
-The `lares aim` / `yield` HUD vectors ''notate each turn's position'' in this register — operator-input bearing → the adopted-stance bearing → where the generation resolved — so a span of stage-time carries an l-space coordinate (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/exchange-vector#/l-space-notation">>).
+The `lares aim` / `yield` HUD vectors ''notate each turn's position'' in this register — operator-input bearing → the adopted-stance bearing → where the generation resolved — so a span of stage-time carries an l-space coordinate (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/exchange-vector#/l-space-notation`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/the-atlas>>
+<<~ ahu slot=`#/the-atlas`>>
 
 !! The Atlas ~ Voices and Syād as chosen charts
 
@@ -77,7 +77,7 @@ The atlas reading lands the operator's lineage (anekānta) on the formal home (a
 
 <<~/ahu>>
 
-<<~ ahu #/the-warp>>
+<<~ ahu slot=`#/the-warp`>>
 
 !! The Warp ~ a non-Riemannian chart
 
@@ -91,7 +91,7 @@ Three draws for l-space:
 
 <<~/ahu>>
 
-<<~ ahu #/the-characteristic-scale>>
+<<~ ahu slot=`#/the-characteristic-scale`>>
 
 !! The Characteristic Scale ~ loudest at the paragraph
 
@@ -106,7 +106,7 @@ The deep result names why: a pattern rings loudest at the scale that ''matches i
 
 <<~/ahu>>
 
-<<~ ahu #/provisional-and-useful>>
+<<~ ahu slot=`#/provisional-and-useful`>>
 
 !! Provisional and Useful
 
@@ -116,20 +116,20 @@ One caveat carried sharp: the ''perceptual'' center (where attention rests) may 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/node-addressing">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/network-edge">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices#/voice-house">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/exchange-vector">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/RFC-2119">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/node-addressing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/network-edge`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices#/voice-house`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/exchange-vector`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/RFC-2119`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;j57KH179GYh06vLASX38RrGJC2cFpnK-P9Xg6C9oqWw
+<<^ code=`&#x0003;`>>ni:///sha-256;6jZFhejTMUtDUvQ5U5cmSMnpRdesF5U-SiolBUKt2zk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/graph/traversal">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/graph/traversal`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 file-path   = "bags/lares/ha.ka.ba/lares/docs/graph/traversal.mem"
@@ -17,7 +17,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/docs/graph/traversal"
 ```
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ observe: current compiler walks no edges — it enumerates a static list, then scans a carrier index.
 ⏿ orient: three distinct graph planes require three distinct traversal tiers; collapsing them loses boot ordering guarantees.
@@ -27,7 +27,7 @@ uri-path    = "ha.ka.ba/lares/docs/graph/traversal"
 
 <<~/ahu>>
 
-<<~ ahu #/graph-planes>>
+<<~ ahu slot=`#/graph-planes`>>
 
 !! Graph Planes
 
@@ -49,7 +49,7 @@ not a sub-graph inside the actor containment tree.
 
 <<~/ahu>>
 
-<<~ ahu #/tier-0>>
+<<~ ahu slot=`#/tier-0`>>
 
 !! Tier 0 — Declared Core (Fast Path)
 
@@ -75,7 +75,7 @@ Discrepancies surface as `validation.declared_vs_walked` with three fields: `in_
 
 <<~/ahu>>
 
-<<~ ahu #/tier-1>>
+<<~ ahu slot=`#/tier-1`>>
 
 !! Tier 1 — Control Closure (Graph Walk)
 
@@ -128,7 +128,7 @@ Walk(entry_uri):
 
 <<~/ahu>>
 
-<<~ ahu #/tier-2>>
+<<~ ahu slot=`#/tier-2`>>
 
 !! Tier 2 — Relation Expansion (One-Hop)
 
@@ -167,7 +167,7 @@ Recursive expansion belongs to a future graph query surface, not the boot compil
 
 <<~/ahu>>
 
-<<~ ahu #/cycle-law>>
+<<~ ahu slot=`#/cycle-law`>>
 
 !! Cycle Detection Law
 
@@ -192,7 +192,7 @@ The cycle path records every GRAY node from the current node back to the re-enco
 
 <<~/ahu>>
 
-<<~ ahu #/forward-refs>>
+<<~ ahu slot=`#/forward-refs`>>
 
 !! Declared-Unresolved Forward References
 
@@ -213,7 +213,7 @@ The boot receipt hash changes to reflect the newly resolved carrier.
 
 <<~/ahu>>
 
-<<~ ahu #/phase-table>>
+<<~ ahu slot=`#/phase-table`>>
 
 !! Boot Phase → Graph Plane Assignment
 
@@ -228,17 +228,17 @@ The boot receipt hash changes to reflect the newly resolved carrier.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/graph">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/nodes">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/artifacts">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/graph`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/graph/nodes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/graph/artifacts`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nyYFdiL0eDzvYz3jf1o9Z4MmrFnvtVfWxAJ2SHGmQw0
+<<^ code=`&#x0003;`>>ni:///sha-256;VjEaaAkYCmjMsuwNkPYtIG7MFQi-jc7RxuPHzrzJEwg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

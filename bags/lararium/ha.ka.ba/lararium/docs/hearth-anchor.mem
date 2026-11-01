@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/hearth-anchor">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/hearth-anchor`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,13 +14,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/hearth-anchor"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Hearth Anchor ~ what an ember can trust after a power cut
 
 Which freshness anchor lets an ember answer a hearth unattended while a copied disk fails the same ask? What does each anchor ask a household to install, maintain, trust and replace?
 
-This design serves the ember's raise law (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-raise">>) and the five custody classes (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>): an unattended raise reaches SERVING alone, while every hearth without a disk-independent anchor asks a person to confirm.
+This design serves the ember's raise law (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ember#/the-raise`>>) and the five custody classes (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-table`>>): an unattended raise reaches SERVING alone, while every hearth without a disk-independent anchor asks a person to confirm.
 
 !! The threat ~ three hands, three reaches
 
@@ -129,6 +129,6 @@ For the operator's WSL2 hearth, keep every ember confirm-only today. The measure
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EQt9Y3743GbufhozIaA0Ud1xXUIte6Iv4enCa-eyRWM
+<<^ code=`&#x0003;`>>ni:///sha-256;OVrmxRRKlHC8X4keWbHRgo5t9zMhYxes-eDi6PCzOfY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pattern-integrities">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pattern-integrities`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 file-path = "bags/lares/ha.ka.ba/lares/docs/pattern-integrities.mem"
@@ -16,7 +16,7 @@ uri-path  = "ha.ka.ba/lares/docs/pattern-integrities"
 written   = "2026-06-12"
 ```
 
-<<~ ahu #/shelf>>
+<<~ ahu slot=`#/shelf`>>
 
 ! Pattern Integrities — the research shelf
 
@@ -35,7 +35,7 @@ Nine research spirits swept the field across two days. What follows binds as kup
 
 The strict-bytes vs canonical-form fork resolves ''canonical-form'' (field-wide convergence: gofmt, Prettier, jj's render-then-reparse conflict loop; strict bytes would require Roslyn-style trivia fields leaking formatting into records and souring merges). Three guarantees bind as LAW:
 
-# ''Idempotent render:'' canonical input round-trips byte-identical — `render(parse(render(x))) == render(x)`; the template MUST emit exactly what the corpus writes (`<<^ code="&#x0002;">>`, spaced).
+# ''Idempotent render:'' canonical input round-trips byte-identical — `render(parse(render(x))) == render(x)`; the template MUST emit exactly what the corpus writes (``<<^ code=`&#x0002;`>>``, spaced).
 # ''No unsolicited sweeps'' (the Logseq sin): normalization touches only memes whose records actually changed; the projector MUST NOT reformat-the-world on boot or upgrade.
 # ''Semantic identity verified:'' `parse(render(records)) ≡ records` — the harness proves it, never assertion.
 
@@ -53,7 +53,7 @@ The strict-bytes vs canonical-form fork resolves ''canonical-form'' (field-wide 
 !!! 4 · Residency & ownership across replicas
 
 * ''Coordinate ⊥ change-identity, two axes'' (AT Protocol: record identity = path/rkey, stable across edits; CIDs address versions): our COPY-preserves-change-id ruling stands independently validated.
-* ''Visibility ≠ residency'' (automerge-repo sharePolicy vs storage; the anti-pattern = conflating "synced to me" with "resident here"): atproto's answer — one authoritative home, others hold derived views — reads cleanest and matches @catalog `holdings` accession as the registration act.
+* ''Visibility ≠ residency'' (automerge-repo sharePolicy vs storage; the anti-pattern = conflating "synced to me" with "resident here"): atproto's answer — one authoritative home, others hold derived views — reads cleanest and matches catalog-plane `holdings` accession as the registration act.
 * Named: DXOS spaces (container bounds replication — bag-as-ACL-locus mirrored) · IPFS/IPLD (content addressing answers //what//, never //where//; residency devolves to pinning).
 
 !!! 5 · Confined derived writers
@@ -119,21 +119,21 @@ The admin↔hot-wiki bridge today (postMessage event → main translates → pla
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-isomorphism">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-isomorphism`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-classes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/field-collision`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2Apwc1ulHYaS1ySO9dVOMyljq8WXh3ab5DZY-Y-WM6k
+<<^ code=`&#x0003;`>>ni:///sha-256;pGMecC2fRvsO3_iWMzT5AYuyi5fZhz3QDb5HGTxLlY8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

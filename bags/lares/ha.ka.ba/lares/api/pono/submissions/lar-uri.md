@@ -6,16 +6,19 @@ docname: "draft-fontany-lar-uri-scheme-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
-source-check: "ni:///sha-256;IzkFKC2dwE5UgH1qG5hQNzg6MKpZ7KISfrW8gUX1AfQ"
+source-check: "ni:///sha-256;UYWZ89Q1K4vWrjtaDkyWnQDuttUPOAck2vRiJB-qglg"
 title: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
+normative:
+  RFC2119:
+  RFC8174:
 ---
 
 
-- `law uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`` (unresolved — no corpus to pin)
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as shown here.
 
-<<~ ahu slot=`#/meme-header`>>
+<a id="meme-header"></a>
 
 # `lar:` URI Scheme — Canon Documentation
 
@@ -23,7 +26,7 @@ Full specification prose, examples, and appendices.
 Law lives in `lar:///ha.ka.ba/lares/api/pono/lar-uri`.
 This surface carries the explanation.
 
-<<~ ahu slot=`#/design-intent`>>
+<a id="design-intent"></a>
 
 ## 1. Design Intent
 
@@ -61,7 +64,7 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 
 No metric sits claimed yet. The scheme names attitude-bearing only and defines no distance function over roots.
 
-<<~ ahu slot=`#/exchange-flow`>>
+<a id="exchange-flow"></a>
 
 ### 1.1 Exchange Flow — Order of Operations
 
@@ -96,7 +99,7 @@ On the same firing: `` aperture=`N/<band>` `` · `` ooda-ha=`N/<band>` `` · `` 
 
 > **SA grounding:** the `aim` is prospective AI transparency — what the node *will* do, not what it did (Endsley 2023). The sigil panel externalizes the node's metacognitive state before generation begins, an externalized metacognitive scaffold (Ji-An et al., 2025; Wang et al., 2023). *Source: `_todo/E-deep-research-report.md` §§2.1, 3.2*
 
-<<~ ahu slot=`#/scheme-registration`>>
+<a id="scheme-registration"></a>
 
 ## 2. Scheme Registration
 
@@ -112,7 +115,7 @@ On the same firing: `` aperture=`N/<band>` `` · `` ooda-ha=`N/<band>` `` · `` 
 
 The `lar:` scheme identifies semantic positions, signal states, and machine events within the Lares agent architecture. It does not resolve to a network resource. URI consumers (crystal replay tools, debug log parsers, registry resolvers) treat it as an opaque structured identifier parsed according to this specification.
 
-<<~ ahu slot=`#/uri-syntax`>>
+<a id="uri-syntax"></a>
 
 ## 3. URI Syntax
 
@@ -146,7 +149,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use th
 
 This applies to authority-less forms as well: `lar:///ha.ka.ba/lares/` names the stable attitude root of l-space.
 
-<<~ ahu slot=`#/component-map`>>
+<a id="component-map"></a>
 
 ### 3.3 Component Map
 
@@ -162,13 +165,13 @@ This applies to authority-less forms as well: `lar:///ha.ka.ba/lares/` names the
 
 > **Layout validation:** The BEARING → HOW → SECTION ordering (path → query → fragment) places the most semantically stable, least volatile information first. Grouped, goal-oriented layout confirmed by Li et al. (2024) automotive HUD research: grouped information layouts produce superior cognitive performance, lower workload, and better eye movement patterns compared to disordered layouts. *Source: `_todo/E-deep-research-report.md` §4.2*
 
-<<~ ahu slot=`#/identity-stack`>>
+<a id="identity-stack"></a>
 
 ### 3.3.1 Identity Addressing
 
 Identity addressing lives at `lar:///ha.ka.ba/lares/docs/pono/identity-stack` — the DID / handle / lar: alias stack, the ActivityPub handle form, and the DreamDeck `chat-log:post-header` render target. That reference names *who speaks* and projects identity onto the social layer; this scheme names the bearing. The scheme's own render targets (`record:full`, `hud:exchange-pair`) ride here, in §1 Design Intent.
 
-<<~ ahu slot=`#/component-semantics`>>
+<a id="component-semantics"></a>
 
 ### 3.4 Component Semantics
 
@@ -196,7 +199,7 @@ Span sequencing is intentionally **not** encoded in URI authority. Exchange iden
 
 **fragment** (`#/section-anchor`) — Named section within this meme: `#/ahu-name`, `#/section-id`, `#/pranala-name`. The fragment carries section anchors only, always rooted at the carrier — never bare — per the media-type's own fragment law (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/media-type`), since fragment semantics belong to the representation's media type (RFC 3986 §3.5), not this scheme.
 
-<<~ ahu slot=`#/provisionality`>>
+<a id="provisionality"></a>
 
 ## 4. Provisionality Markers
 
@@ -236,7 +239,7 @@ lar://scryer:agent@enyalios/~s0.schema.updated/
 ```
 Trajectory provisional: "I predict our next territory is the updated schema — operator may redirect entirely."
 
-<<~ ahu slot=`#/marker-ontology`>>
+<a id="marker-ontology"></a>
 
 ## 5. Marker Ontology — the authoring surface
 
@@ -249,7 +252,7 @@ The marker grammar — the meme span opener `? ->` and closer `→ ?`, the `ahu`
 
 A `lar:` URI *names* a meme; how memes, waypoints, and transclusions get *written* belongs to the authoring surface above. The per-marker semantics — what each marker settles and what it leaves open — live rigorously in `ahu` and `kahea`.
 
-<<~ ahu slot=`#/stable-address`>>
+<a id="stable-address"></a>
 
 ## 6. Stable Address — Named Graph Form
 
@@ -265,7 +268,7 @@ No authority (empty), no query, no fragment. This is the invariant semantic bear
 
 **Comparison rule:** two URIs designate the same stable address iff their lowercased, stripped paths are byte-identical. Query and fragment are excluded from comparison.
 
-<<~ ahu slot=`#/cache-tiers`>>
+<a id="cache-tiers"></a>
 
 ## 7. Invariant-Core Cache Tier Mapping
 
@@ -276,7 +279,7 @@ No authority (empty), no query, no fragment. This is the invariant semantic bear
 | 2 — Session Core | Cached within session; rolling `cache_control` breakpoint | Session-stable |
 | 3 — Dynamic | Ephemeral (5-min TTL with hit-reset) | Per-exchange |
 
-<<~ ahu slot=`#/module-registry`>>
+<a id="module-registry"></a>
 
 ## 8. Module and Registry Metadata
 
@@ -301,7 +304,7 @@ version-num = 1
 
 Module descriptors use `version_num` or semver-like fields for content versioning. Exchange sequencing belongs to spanSpan metadata (`span_seq`), not module descriptors.
 
-<<~ ahu slot=`#/validation`>>
+<a id="validation"></a>
 
 ## 9. Validation Rules
 
@@ -341,7 +344,7 @@ A spanSpan record is **consistent** when:
 4. Two URIs designate the same stable address iff their lowercased, stripped paths are byte-identical
 5. Query and fragment components are excluded from stable-address comparison
 
-<<~ ahu slot=`#/security`>>
+<a id="security"></a>
 
 ## 10. Security Considerations
 
@@ -357,7 +360,7 @@ A spanSpan record is **consistent** when:
 
 > **Status:** Security section partially complete — required for IANA registration (RFC 7595 §7.4). To be expanded with formal threat model before any provisional IANA registration attempt.
 
-<<~ ahu slot=`#/prior-art`>>
+<a id="prior-art"></a>
 
 ## 11. Prior Art
 
@@ -375,7 +378,7 @@ A spanSpan record is **consistent** when:
 - **OODA-HA Composable Invariant Modules** (Telarus / Lares, 2026) — Phase-scoped instruction loading with section-level confidence URIs.
 - **Kowloon / ActivityStreams export model** — Kowloon's Activity envelope (`actorId`, `object`, `target`, `to`, `canReply`, `canReact`) is a good downstream publication adapter for Lares spans. Kowloon IDs remain sink-local identifiers, not replacements for `span_id`.
 
-<<~ ahu slot=`#/how-to-read`>>
+<a id="how-to-read"></a>
 
 ## Appendix A — How to Read an Exchange Opening
 
@@ -394,7 +397,7 @@ Quick read:
 
 The standpoint reads within its own frame (Syadasti rule): a Philosopher weighs propositional support, a Poet weighs resonance — never one universal truth-scale. A bare ``<<~ stance named=`🏛️ 🌊 🎭`>>`` names which frames a claim spans without flattening them.
 
-<<~ ahu slot=`#/lineage`>>
+<a id="lineage"></a>
 
 ## Lineage — the Ha-Ka-Ba palimpsest
 
@@ -411,9 +414,9 @@ Source: Luka Rejec, *Vastlands Guidebook* §"Death and Hakaba" --- *"the existen
 
 Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire"; "Ba: Psyche... unique direction." These anchors justify heading/angle/dynamic reinterpretation without claiming strict one-to-one term identity.
 
-<<~ ahu slot=`#/edges`>>
+<a id="edges"></a>
 
 ## Edges
 
-- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri``
-- `loulou uri=`lar:///ha.ka.ba/lares/docs/pono/identity-stack``
+- `loulou lar:///ha.ka.ba/lares/api/pono/lar-uri`
+- `loulou lar:///ha.ka.ba/lares/docs/pono/identity-stack`

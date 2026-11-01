@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Neo-Thracia ~ Region Worksheet
 
@@ -26,7 +26,7 @@ untouched; md table separator rows dropped.//
 
 <<~/ahu>>
 
-<<~ ahu #/body>>
+<<~ ahu slot=`#/body`>>
 
 ```shell
 Local Lares node: Enyalios-lararium // DreamNet link: stable (salt-air, cracked marble, low static)
@@ -263,6 +263,6 @@ Purpose: turn metaphysics into handles: rift types, necro-fog effects, iron-curs
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5UwKZXRT58GYoJxt65_XkyXHT6olRwGtsR73H6-s7_4
+<<^ code=`&#x0003;`>>ni:///sha-256;9feBt9toCkWInh0YryoV0-I4Rto_4WIkv9-mNmmsWEs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

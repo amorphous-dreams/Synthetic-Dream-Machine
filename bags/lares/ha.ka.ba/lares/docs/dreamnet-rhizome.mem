@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/dreamnet-rhizome">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/dreamnet-rhizome`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,17 +17,17 @@ uri-path  = "ha.ka.ba/lares/docs/dreamnet-rhizome"
 written   = "2026-07-14"
 ```
 
-<<~ ahu #/the-ground>>
+<<~ ahu slot=`#/the-ground`>>
 
 ! The Growing Rhizome ~ anon floor to two launches
 
 !! The Ground ~ must fall back to anon
 
-Every vessel — a browser at elyncia.app, a node at a Lararium, any device — ''stands anon at its floor'': its own veiled-key, its own local content, no group, and it MUST always return there. Caps, node infrastructure, Handle memberships stack ABOVE the floor; none dissolves it. The whole mesh rests on this one unremovable ground (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-base-model">>).
+Every vessel — a browser at elyncia.app, a node at a Lararium, any device — ''stands anon at its floor'': its own veiled-key, its own local content, no group, and it MUST always return there. Caps, node infrastructure, Handle memberships stack ABOVE the floor; none dissolves it. The whole mesh rests on this one unremovable ground (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-base-model`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/the-rhizome>>
+<<~ ahu slot=`#/the-rhizome`>>
 
 !! The Rhizome ~ additive overlays, grown one operator at a time
 
@@ -37,13 +37,13 @@ Each rung rides as an OPTIONAL overlay ON the floor; burning any overlay drops t
 
 * ''anon vessel'' — one device, own key, own content. The floor. Every visitor to either surface starts here.
 * ''known-user'' — a PersonaGroup of a human's OWN vessels, sharing doc-syncs (the crossing, `persona-crossing`). Single-principal; converges under one ordering authority.
-* ''operator'' — a known-user who RUNS a node vessel + local infrastructure (a Lararium) and relays. The rhizome node; the scale ladder's first rung (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>).
+* ''operator'' — a known-user who RUNS a node vessel + local infrastructure (a Lararium) and relays. The rhizome node; the scale ladder's first rung (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>).
 * ''cabal'' — a multi-principal Circle (operators + users share a charter and corpus). Rides CGKA under bounded concurrency (`cabal-two-human`); the tie-break narrows to the add-while-remove window, which accept-and-heal covers for a small cabal.
 * ''nexus → DreamNet'' — Lararia federating by treaty; the super-mesh of all nexuses. No global now; each Lararium a causal island.
 
 <<~/ahu>>
 
-<<~ ahu #/two-surfaces>>
+<<~ ahu slot=`#/two-surfaces`>>
 
 !! Two Surfaces ~ one stack, two admission dials
 
@@ -54,11 +54,11 @@ The closed↔open choice runs as ONE NUMBER, never two codebases — the admissi
 
 <<~/ahu>>
 
-<<~ ahu #/what-holds-what-owes>>
+<<~ ahu slot=`#/what-holds-what-owes`>>
 
 !! What Holds · What Owes ~ the launch critical path
 
-''Proven + canon-true'' (this session's floor): the base model · the @catalog content crossing (add-before-encrypt, forward-only, burn cuts future-not-history) · the two-human cabal under bounded concurrency · the joinee-side admit wiring (`capEvents` → @daemon → hydrate) · the admission instruments (`cabal-invite` / `admission-price` / `vouch-dag`).
+''Proven + canon-true'' (this session's floor): the base model · the catalog-plane content crossing (add-before-encrypt, forward-only, burn cuts future-not-history) · the two-human cabal under bounded concurrency · the joinee-side admit wiring (`capEvents` → daemon-plane → hydrate) · the admission instruments (`cabal-invite` / `admission-price` / `vouch-dag`).
 
 ''Owed on the launch critical path'':
 * ''make the crossing LIVE'' — the Option-A founder-side wiring (the daemon mints membership via `packPersonaCrossing`; the CLI forwards over the socket; the joinee's keyhive card rides the handshake). Ruled by the web3 elders (BeeKEM requires a live-member adder; ssh-agent shape).
@@ -70,11 +70,11 @@ The identity-privacy hardening (per-handle vessel credential · scope-exclusive 
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/federation">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/federation`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vYHy-_NvJ38ljn3Ymbh3ARsLhCp8R6PpCb3uzEozFis
+<<^ code=`&#x0003;`>>ni:///sha-256;M_yAlObyp2w2ICrazY03YesDAEGWeMD7O3-Qqru27q8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

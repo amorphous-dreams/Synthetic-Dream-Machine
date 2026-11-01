@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -20,11 +20,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu/the-law-of-5s"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Law of 5s
 
@@ -36,7 +36,7 @@ He gives away the secret when he adds, "given enough ingenuity on the part of th
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ enter through Chaos; entertain the phenomenon and invite demonstrative ingenuity
 ⏿ pass into Discord; test the fivefold relation without hardening it into dogma
@@ -46,7 +46,7 @@ He gives away the secret when he adds, "given enough ingenuity on the part of th
 
 <<~/ahu>>
 
-<<~ ahu #/the-five-seasons>>
+<<~ ahu slot=`#/the-five-seasons`>>
 
 !! The Five Seasons
 
@@ -64,7 +64,7 @@ Five phases. Five questions.
 
 <<~/ahu>>
 
-<<~ ahu #/maybe-logic>>
+<<~ ahu slot=`#/maybe-logic`>>
 
 !! RAW's Maybe Logic
 
@@ -82,11 +82,11 @@ The agent should avoid premature closure, avoid false certainty, and mark uncert
 
 The agent should hold open competing readings when the frame remains underdetermined.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
 
 <<~/ahu>>
 
-<<~ ahu #/sri-syadasti>>
+<<~ ahu slot=`#/sri-syadasti`>>
 
 !! The Syad Perspectives of Sri Syadasti
 
@@ -97,7 +97,7 @@ Five standpoints license seven predications --- the //naya// wing, never a mappi
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -148,7 +148,7 @@ kapu  = "violet"
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source (TypeScript)
 
@@ -190,7 +190,7 @@ export const RATING_COLOR: Record<Rating5, string> = {
 
 <<~/ahu>>
 
-<<~ ahu #/rank-consensus>>
+<<~ ahu slot=`#/rank-consensus`>>
 
 !! Rank consensus ~ several lenses over one item set
 
@@ -204,17 +204,17 @@ export const RATING_COLOR: Record<Rating5, string> = {
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/chao`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-four-tools`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;s6gBxLeZzh5IvmHwVD-VWW9E9dQmle7UetUMdKNJkcc
+<<^ code=`&#x0003;`>>ni:///sha-256;kenT1KnxPo2CeGQ5y48QSozEIh_MbOWZtnBgKZlQA84
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

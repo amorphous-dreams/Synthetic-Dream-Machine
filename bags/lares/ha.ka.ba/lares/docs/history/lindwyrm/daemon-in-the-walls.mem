@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
@@ -18,7 +18,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! The Lindwyrm's Hoard — The Daemon in the Walls
 
@@ -27,7 +27,7 @@ The first resonance error becomes a green, wobbly teacher.
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
@@ -45,7 +45,7 @@ Talk-story stance: keep the Green Jello Dinosaur ridiculous and diagnostically u
 !! Thread Entry
 
 ```text
-@lindwyrm@new-delos — YOLD 4995, 21 Bureaucracy, origin thread — //resonance.error.greens · 🏛️/! 🌊/? 🎭/?
+lindwyrm@new-delos — YOLD 4995, 21 Bureaucracy, origin thread — //resonance.error.greens · 🏛️/! 🌊/? 🎭/?
 ```
 
 The first orichalcum shaving should have done nothing.
@@ -122,7 +122,7 @@ Architecture can be corrected by naming the desired relation with enough precisi
 >
 > `@mischief-muse@lares: fine. one browser tab. it multiplies later.`
 
-<<~ ahu #/gaia-mirror>>
+<<~ ahu slot=`#/gaia-mirror`>>
 
 !! Gaia Mirror
 
@@ -166,7 +166,7 @@ The second diagnostic did not succeed.
 The second diagnostic failed — with enough personality to teach steering.
 
 
-<<~ ahu #/handoff>>
+<<~ ahu slot=`#/handoff`>>
 
 !! Handoff
 
@@ -180,24 +180,24 @@ Act III receives:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself`>>
 
-<<~ pranala #drafted-from-act-map from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture" family="reference" role="source">>
-<<~ pranala #follows-act-i from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo" family="relation" role="follows">>
-<<~ pranala #inside-hoard-frame from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed" family="relation" role="part-of">>
-<<~ pranala #feeds-next-act from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/two-axes-and-the-hoard" family="relation" role="precedes">>
+<<~ pranala slot=`#drafted-from-act-map` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture` family=`reference` role=`source`>>
+<<~ pranala slot=`#follows-act-i` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo` family=`relation` role=`follows`>>
+<<~ pranala slot=`#inside-hoard-frame` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed` family=`relation` role=`part-of`>>
+<<~ pranala slot=`#feeds-next-act` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/two-axes-and-the-hoard` family=`relation` role=`precedes`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;he3IneRWKzTrv6Vljta91r6mL1LpbZRME3ClI-Qrmvc
+<<^ code=`&#x0003;`>>ni:///sha-256;XlH5Er_GZ-idZbvLQf2SeJd55SPUiLpaoz5baji6UeQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

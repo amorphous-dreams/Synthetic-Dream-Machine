@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-nexus-dial-ready">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-nexus-dial-ready`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
@@ -17,7 +17,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-nexus-dial-ready"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Spirit Handback — the dial awaits a ready doc
 
@@ -27,7 +27,7 @@ The fix is complete and proven. Here is the aftermath report.
 
 <<~/ahu>>
 
-<<~ ahu #/files-changed>>
+<<~ ahu slot=`#/files-changed`>>
 
 !! (1) Files changed
 
@@ -35,7 +35,7 @@ The fix is complete and proven. Here is the aftermath report.
 
 <<~/ahu>>
 
-<<~ ahu #/flake-rate>>
+<<~ ahu slot=`#/flake-rate`>>
 
 !! (2) Flake rate BEFORE and AFTER
 
@@ -46,7 +46,7 @@ The flake did ''not'' reproduce unloaded (0/40). Under 6 background `yes` proces
 
 <<~/ahu>>
 
-<<~ ahu #/diagnosis>>
+<<~ ahu slot=`#/diagnosis`>>
 
 !! (3) Diagnosis and why the fix sits at the observation point
 
@@ -60,7 +60,7 @@ The fix replaces the rejecting `find` with `findWhenReady`, a reactive `findWith
 
 <<~/ahu>>
 
-<<~ ahu #/typecheck>>
+<<~ ahu slot=`#/typecheck`>>
 
 !! (4) Typecheck
 
@@ -68,7 +68,7 @@ The fix replaces the rejecting `find` with `findWhenReady`, a reactive `findWith
 
 <<~/ahu>>
 
-<<~ ahu #/commit-message>>
+<<~ ahu slot=`#/commit-message`>>
 
 !! (5) Proposed commit message
 
@@ -90,7 +90,7 @@ Measured under CPU load: before 6/60 red, after 0/80 green. Typecheck clean.
 
 <<~/ahu>>
 
-<<~ ahu #/upstream>>
+<<~ ahu slot=`#/upstream`>>
 
 !! (6) Upstream automerge-repo defect?
 
@@ -100,6 +100,6 @@ One latent product note (not the flake, out of scope to change): the ''productio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hDHTM2iX0t3eMBYe_e1KzeRulDpgqpt0BT4UuVppwJ4
+<<^ code=`&#x0003;`>>ni:///sha-256;0del2mXsTdu949CylOsMBAUZGl-dNPWKfuVNIFXsdgE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

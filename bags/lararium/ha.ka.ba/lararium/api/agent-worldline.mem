@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/agent-worldline">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/agent-worldline`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -20,11 +20,11 @@ uri-path  = "ha.ka.ba/lararium/api/agent-worldline"
 written   = "2026-06-25"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lararium/mesh/ffz-clock">>
+<<~ aka uri=`lar:///ha.ka.ba/lararium/mesh/ffz-clock`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Agent Worldline ~ the binding that names a spirit, attributes its acts, and times its life
 
@@ -45,20 +45,20 @@ hunted the shape and ''rhymed to one binding'', and that binding reads cleanly a
 
 The three faces, each its own organ, none collapsing into another:
 
-<<~ has Face Name "carries/descent = address ~ a derived lineage-path handle baptized at spawn (#/name)">>
-<<~ has Face Attribution "carries/who-drove-whom ~ a reified prov:Delegation DAG, doubling as the worldline's happened-before (#/attribution)">>
-<<~ has Face Time "carries/two laws ~ Automerge owns causal order inside its CRDTs; FfzClock carries the worldline grain everywhere else (#/time)">>
-<<~ has Face Three>>
+<<~ has entity=`Face` name=`Name` params=`carries/descent = address ~ a derived lineage-path handle baptized at spawn (#/name)`>>
+<<~ has entity=`Face` name=`Attribution` params=`carries/who-drove-whom ~ a reified prov:Delegation DAG, doubling as the worldline's happened-before (#/attribution)`>>
+<<~ has entity=`Face` name=`Time` params=`carries/two laws ~ Automerge owns causal order inside its CRDTs; FfzClock carries the worldline grain everywhere else (#/time)`>>
+<<~ has entity=`Face` name=`Three`>>
 
 <<~/ahu>>
 
-<<~ ahu #/name>>
+<<~ ahu slot=`#/name`>>
 
 !! Face I ~ Name ~ descent serves as the address
 
-<<~ has Part Handle "carries/a lineage-path handle BAPTIZED at spawn, DERIVED not minted — `run.parent.child` or `CID(parent,role,spawn-args,nonce)`; the parent recovers FROM the child; no registry. = the trace-id/span-id formalized [Meristem: the division path AB.pla IS the name · Deixis: Kripke baptism + teknonymy · Cipher: pid/span-id/BIP32-path · Archivist: local-first, no-registry]">>
-<<~ has Part Self "resolves/by RULE against the spawn-context (the indexical 'I' = the agent of THIS context), never a stored referent; the handle addresses and recalls work, the Mask carries authorship [Deixis: character vs content · Cipher: petname split]">>
-<<~ has Part Two>>
+<<~ has entity=`Part` name=`Handle` params=```carries/a lineage-path handle BAPTIZED at spawn, DERIVED not minted — `run.parent.child` or `CID(parent,role,spawn-args,nonce)`; the parent recovers FROM the child; no registry. = the trace-id/span-id formalized [Meristem: the division path AB.pla IS the name · Deixis: Kripke baptism + teknonymy · Cipher: pid/span-id/BIP32-path · Archivist: local-first, no-registry]```>>
+<<~ has entity=`Part` name=`Self` params=`resolves/by RULE against the spawn-context (the indexical 'I' = the agent of THIS context), never a stored referent; the handle addresses and recalls work, the Mask carries authorship [Deixis: character vs content · Cipher: petname split]`>>
+<<~ has entity=`Part` name=`Two`>>
 
 ''The fork resolves on different organs'' (Deixis): the //handle// baptizes ''FIXED''
 at spawn (a Kripke rigid designator — an immutable lineage path); the
@@ -80,7 +80,7 @@ the verb the same way the handle does: descent SERVES AS the address, so the wor
 
 <<~/ahu>>
 
-<<~ ahu #/attribution>>
+<<~ ahu slot=`#/attribution`>>
 
 !! Face II ~ Attribution ~ the reified DAG (and the worldline's happened-before)
 
@@ -88,10 +88,10 @@ the verb the same way the handle does: descent SERVES AS the address, so the wor
 its own wing; this face names the //edges between them// — the coordination graph the
 frameworks throw away and the memory must keep. It stacks ''three layers'':
 
-<<~ has Layer Identity "organ/wing + #has grain/the-actor ~ PERSISTENT actors (operator, recurring specialists) keep a NAMED wing. EPHEMERAL tasked spirits carry a Mask; their #has stack (capabilities · role · task) routes recall. They land in the project __spirits wing and recall by semantic search over captured verbatim (capability-routed comes free), never name-exact. The run-id is never the key.">>
-<<~ has Layer Provenance "organ/added_by grain/the-chunk ~ every drawer carries its actor (who-said-what). PROV wasAttributedTo; mem0 agent_id. The episodic provenance layer.">>
-<<~ has Layer Relationship "organ/reified-node+projected-edge grain/the-relation ~ the spawn/handoff REIFIES to its own node (a PROV Delegation/Communication shape) carrying parent·child·driver·correlation, WITH a projected (parent)—spawned/actedOnBehalfOf→(child) edge for cheap traversal. Bi-temporal: mutable valid-interval [spawn,handback) + append-only transaction-interval; INVALIDATE-don't-delete. The reified node owns the truth; a labeled tunnel MAY mirror it for browsing only.">>
-<<~ has Layer Three>>
+<<~ has entity=`Layer` name=`Identity` params=`organ/wing + #has grain/the-actor ~ PERSISTENT actors (operator, recurring specialists) keep a NAMED wing. EPHEMERAL tasked spirits carry a Mask; their #has stack (capabilities · role · task) routes recall. They land in the project __spirits wing and recall by semantic search over captured verbatim (capability-routed comes free), never name-exact. The run-id is never the key.`>>
+<<~ has entity=`Layer` name=`Provenance` params=`organ/added_by grain/the-chunk ~ every drawer carries its actor (who-said-what). PROV wasAttributedTo; mem0 agent_id. The episodic provenance layer.`>>
+<<~ has entity=`Layer` name=`Relationship` params=`organ/reified-node+projected-edge grain/the-relation ~ the spawn/handoff REIFIES to its own node (a PROV Delegation/Communication shape) carrying parent·child·driver·correlation, WITH a projected (parent)—spawned/actedOnBehalfOf→(child) edge for cheap traversal. Bi-temporal: mutable valid-interval [spawn,handback) + append-only transaction-interval; INVALIDATE-don't-delete. The reified node owns the truth; a labeled tunnel MAY mirror it for browsing only.`>>
+<<~ has entity=`Layer` name=`Three`>>
 
 !!! Reify the edge as a node
 
@@ -100,7 +100,7 @@ frameworks throw away and the memory must keep. It stacks ''three layers'':
 triples, Neo4j's intermediate-node guidance). Promote a relation to a node when ANY
 holds; else keep a property-edge:
 
-<<~ scale reify """queryable-attrs ~ you'd index a relation property (relations index poorly → factor to a node) -> n-ary ~ binds >2 arms (parent · child · driver · correlation · times); an edge holds only two -> provenance-of-provenance ~ the fact "A spawned B" needs its own recording-time · author · validity""">>
+<<~ scale name=`reify` ranks=`queryable-attrs ~ you'd index a relation property (relations index poorly → factor to a node) -> n-ary ~ binds >2 arms (parent · child · driver · correlation · times); an edge holds only two -> provenance-of-provenance ~ the fact "A spawned B" needs its own recording-time · author · validity`>>
 
 A spawn/handoff trips all three → ''node''. A structural link (`agent —memberOf→
 wing`) stays an edge. The ''PROV gift'': every influence relation has a //qualified//
@@ -118,7 +118,7 @@ never severs the upward edge.
 
 !!! The handoff record ~ the edge as data
 
-<<~ scale handoff "correlation_id ~ groups the spawn-tree (trace-id / session) -> edge_id ~ this handoff (span-id) -> parent_edge_id ~ chains the tree (CHAIN it or grandchildren go dark) -> from_agent ~ delegator -> to_agent ~ delegate -> task ~ the prompt handed down -> result_ref ~ pointer to the child's output, never inlined -> status ~ spawned·running·handed-back·failed -> t_spawned · t_returned ~ the edge's valid-interval">>
+<<~ scale name=`handoff` ranks=`correlation_id ~ groups the spawn-tree (trace-id / session) -> edge_id ~ this handoff (span-id) -> parent_edge_id ~ chains the tree (CHAIN it or grandchildren go dark) -> from_agent ~ delegator -> to_agent ~ delegate -> task ~ the prompt handed down -> result_ref ~ pointer to the child's output, never inlined -> status ~ spawned·running·handed-back·failed -> t_spawned · t_returned ~ the edge's valid-interval`>>
 
 The record becomes KG triples: `(parent) —spawned→ (child)`, `(child)
 —actedOnBehalfOf→ (parent)`, `(output) —wasGeneratedBy→ (task)`, each stamped
@@ -145,9 +145,9 @@ merge-point //other than// a handback. So 'the worldline's one sync point' gener
 
 Wings stay isolated; one shared token lets the harvester draw the inter-wing edge:
 
-<<~ has Kind In-Process "case/Claude tasked-spirits key/IN-BAND — agentId + parentUuid + the subagents/ dir + the handoff ~ the structure already carries the link; the edge stamps at mine time. No env needed.">>
-<<~ has Kind Cross-Surface "case/a claude coordinator drives gh-copilot/codex key/W3C trace-id via env TRACEPARENT ~ the coordinator MINTS a trace-id + span-id once, injects TRACEPARENT into the worker env, BOTH sides record it; the harvester joins on trace-id, orients the arrow by parent-span-id. Needs a thin launcher SHIM (gh copilot ignores TRACEPARENT today).">>
-<<~ has Kind Two>>
+<<~ has entity=`Kind` name=`In-Process` params=`case/Claude tasked-spirits key/IN-BAND — agentId + parentUuid + the subagents/ dir + the handoff ~ the structure already carries the link; the edge stamps at mine time. No env needed.`>>
+<<~ has entity=`Kind` name=`Cross-Surface` params=`case/a claude coordinator drives gh-copilot/codex key/W3C trace-id via env TRACEPARENT ~ the coordinator MINTS a trace-id + span-id once, injects TRACEPARENT into the worker env, BOTH sides record it; the harvester joins on trace-id, orients the arrow by parent-span-id. Needs a thin launcher SHIM (gh copilot ignores TRACEPARENT today).`>>
+<<~ has entity=`Kind` name=`Two`>>
 
 Causality over timing: a propagated id
 records happened-before ''at the point of the edge's creation'' — a fact, not an
@@ -156,7 +156,7 @@ now), retries, and fan-out. The id travels //with// the work.
 
 <<~/ahu>>
 
-<<~ ahu #/time>>
+<<~ ahu slot=`#/time`>>
 
 !! Face III ~ Time ~ the two-domain boundary (the operator's cut, 2026-06-25)
 
@@ -255,7 +255,7 @@ The ''edge-DAG absorbs this'' (causal stays on the structure); the ''FfzClock st
 ''rhythmic'' — the PATH-B cut holds: causal never rides the clock, so the rhizome adds no
 burden to it. ''The forks, operator-cut (2026-06-29):''
 
-<<~ scale rhizome-cut "C-turn-DAG ~ handoffs key to the TURN-DAG node (survives rewind/fork) — operator-cut -> D-full-ticks ~ EVERY injection ticks+merges (full vector-clock fidelity); we cannot yet reliably detect a bearing/vector-change, so full ticks beat a lossy bearing-test — operator-cut -> E-operator-root ~ injected siblings share their injector as a COMMON CAUSE, and the OPERATOR is the root (the operator initiates every flow today; chron / other triggers MAY add non-operator roots later — held open) — operator-cut">>
+<<~ scale name=`rhizome-cut` ranks=`C-turn-DAG ~ handoffs key to the TURN-DAG node (survives rewind/fork) — operator-cut -> D-full-ticks ~ EVERY injection ticks+merges (full vector-clock fidelity); we cannot yet reliably detect a bearing/vector-change, so full ticks beat a lossy bearing-test — operator-cut -> E-operator-root ~ injected siblings share their injector as a COMMON CAUSE, and the OPERATOR is the root (the operator initiates every flow today; chron / other triggers MAY add non-operator roots later — held open) — operator-cut`>>
 
 //Mechanism (the build path):// the worldline's merge-where-messages-land rides the ''edge-DAG''
 ''stamped into the mempalace'' — the ''chat-session store''. ''Automerge does NOT hold''
@@ -274,7 +274,7 @@ only a fresh one.
 
 So the canon's earlier 'twin-reunion, the worldline's one sync point' widens: ''handback is''
 ''one merge among many; the rhizome merges wherever a message lands.'' The donation boundary
-holds — these models ride //our// @daemon atop the base's bi-temporal KG (`kg_invalidate`) +
+holds — these models ride //our// daemon-plane atop the base's bi-temporal KG (`kg_invalidate`) +
 content-addressed tunnels; MemPalace's trunk (entity-first real-name registry, single-node
 "local-first") stays a different ontology — faithful upstream gets only backend/adapters/fixes.
 
@@ -284,13 +284,13 @@ already ships; the rhizome forks (C·D·E) stand operator-cut (turn-DAG · full-
 
 <<~/ahu>>
 
-<<~ ahu #/lifecycle>>
+<<~ ahu slot=`#/lifecycle`>>
 
 !! Lifecycle ~ ephemeral by default, a few promoted to memory
 
-<<~ has Stage Mandate "carries/scope + TTL + revocability + duties on the spawn (power-of-attorney); lapses on parent-dissolution unless 'durable'; handback RATIFIES (back-dates, re-checks scope) + merges packaged-atomic-filtered (apoptosis: sealed, never spilled; the bottleneck filters what merges back) [Fiduciary: POA + ratification · Meristem: apoptosis + mtDNA bottleneck]">>
-<<~ has Stage Span "runs/EPHEMERAL by default (effectors culled after task), a few promoted to MEMORY (persistent named wings); spawn-rate governed by backpressure; a parent normally holds MANY merged lineages (chimerism = health, not corruption) [Meristem: clonal effector/memory · CLV-WUS feedback]">>
-<<~ has Stage Two>>
+<<~ has entity=`Stage` name=`Mandate` params=`carries/scope + TTL + revocability + duties on the spawn (power-of-attorney); lapses on parent-dissolution unless 'durable'; handback RATIFIES (back-dates, re-checks scope) + merges packaged-atomic-filtered (apoptosis: sealed, never spilled; the bottleneck filters what merges back) [Fiduciary: POA + ratification · Meristem: apoptosis + mtDNA bottleneck]`>>
+<<~ has entity=`Stage` name=`Span` params=`runs/EPHEMERAL by default (effectors culled after task), a few promoted to MEMORY (persistent named wings); spawn-rate governed by backpressure; a parent normally holds MANY merged lineages (chimerism = health, not corruption) [Meristem: clonal effector/memory · CLV-WUS feedback]`>>
+<<~ has entity=`Stage` name=`Two`>>
 
 !!! Ephemeral execution ~ the blind dir
 
@@ -312,11 +312,11 @@ CLI's transcript or state.
 ''The keystone of isolation — redirect each CLI's state dir into the blind dir.'' Each
 agent CLI keys its whole transcript/state tree off ONE env var:
 
-<<~ scale redirect "CLAUDE_CONFIG_DIR ~ Claude Code: ~/.claude → $BLIND (caveat #3833: may still drop a local .claude/ in cwd → run cwd INSIDE $BLIND) -> COPILOT_HOME ~ Copilot CLI -> CODEX_HOME ~ Codex -> HOME · XDG_* ~ belt-and-suspenders for any state dir missed">>
+<<~ scale name=`redirect` ranks=`CLAUDE_CONFIG_DIR ~ Claude Code: ~/.claude → $BLIND (caveat #3833: may still drop a local .claude/ in cwd → run cwd INSIDE $BLIND) -> COPILOT_HOME ~ Copilot CLI -> CODEX_HOME ~ Codex -> HOME · XDG_* ~ belt-and-suspenders for any state dir missed`>>
 
 ''Sandbox tiers — match heaviness to trust'' (operator selects per task):
 
-<<~ scale tier "T0-blind ~ temp dir + env-redirect + caps; the DEFAULT, right for trusted self-judging Q&A -> T1-bwrap ~ bubblewrap namespaces (--ro-bind repo · --tmpfs work · --unshare-net) -> T2-container ~ Podman/Docker --rm, shared kernel, semi-trusted -> T3-microvm ~ E2B/gVisor/Firecracker, untrusted generated code">>
+<<~ scale name=`tier` ranks=`T0-blind ~ temp dir + env-redirect + caps; the DEFAULT, right for trusted self-judging Q&A -> T1-bwrap ~ bubblewrap namespaces (--ro-bind repo · --tmpfs work · --unshare-net) -> T2-container ~ Podman/Docker --rm, shared kernel, semi-trusted -> T3-microvm ~ E2B/gVisor/Firecracker, untrusted generated code`>>
 
 Blast-radius levers (T1+): read-only-bind the real repo, tmpfs the work, deny egress,
 cap runaway swarms (`systemd-run --scope -p MemoryMax -p CPUQuota -p RuntimeMaxSec`,
@@ -327,7 +327,7 @@ prompts vs untrusted generated code (sets the tier floor: T0 vs T1+).
 
 <<~/ahu>>
 
-<<~ ahu #/crypto>>
+<<~ ahu slot=`#/crypto`>>
 
 !! Crypto ~ the vessel's key serves; a spirit holds none
 
@@ -340,15 +340,15 @@ authorship.
 
 <<~/ahu>>
 
-<<~ ahu #/the-six-rhymes>>
+<<~ ahu slot=`#/the-six-rhymes`>>
 
 !! The Six Rhymes ~ pattern integrities, one per domain
 
-<<~ scale rhyme "physics ~ Lightcone: each worldline carries its own proper time; happened-before orders only cone-neighbors; 'elsewhere' = concurrency (REFUSE to order siblings); the twin REUNITES at handback; keep the order a union of local cones, never a global DAG -> law ~ Fiduciary: the act binds the principal (qui-facit), keyed to the act, stopping at scope; re-delegation defaults CLOSED; mandate carries scope+TTL+revocability; conduit-not-person until a deliberate founding; anonymity never severs the upward edge -> biology ~ Meristem: the division path SERVES AS the name (no registry); work attributed to the LINE; apoptosis packages teardown (merge sealed, never spilled); coordinate on locally-sensed thresholds (no global clock) -> linguistics ~ Deixis: identity = a character (rule) resolving content per context; the 'I' shifts at the spawn boundary; the parent resolves as a bound variable up the tree; name by relation (teknonymy) -> cs-web3 ~ Cipher: the lineage handle addresses and recalls work INSIDE one trust-domain (ocap-grade); the vessel's own key serves at crossings; attribute by reference edge, not signed chain -> repo ~ Archivist: local-first, run-local-stable (not crypto), capability-not-platform, Masked-subagents-ok, no-global-wall-clock; the KG triple (temporal validity + provenance fields) stands ready to extend with agent_handle">>
+<<~ scale name=`rhyme` ranks=`physics ~ Lightcone: each worldline carries its own proper time; happened-before orders only cone-neighbors; 'elsewhere' = concurrency (REFUSE to order siblings); the twin REUNITES at handback; keep the order a union of local cones, never a global DAG -> law ~ Fiduciary: the act binds the principal (qui-facit), keyed to the act, stopping at scope; re-delegation defaults CLOSED; mandate carries scope+TTL+revocability; conduit-not-person until a deliberate founding; anonymity never severs the upward edge -> biology ~ Meristem: the division path SERVES AS the name (no registry); work attributed to the LINE; apoptosis packages teardown (merge sealed, never spilled); coordinate on locally-sensed thresholds (no global clock) -> linguistics ~ Deixis: identity = a character (rule) resolving content per context; the 'I' shifts at the spawn boundary; the parent resolves as a bound variable up the tree; name by relation (teknonymy) -> cs-web3 ~ Cipher: the lineage handle addresses and recalls work INSIDE one trust-domain (ocap-grade); the vessel's own key serves at crossings; attribute by reference edge, not signed chain -> repo ~ Archivist: local-first, run-local-stable (not crypto), capability-not-platform, Masked-subagents-ok, no-global-wall-clock; the KG triple (temporal validity + provenance fields) stands ready to extend with agent_handle`>>
 
 <<~/ahu>>
 
-<<~ ahu #/build-sequence>>
+<<~ ahu slot=`#/build-sequence`>>
 
 !! What Stands vs What Builds
 
@@ -360,11 +360,11 @@ keys it on the handle.
 
 ''Build sequence — the handle first; the edge and the rhythm both ride it:''
 
-<<~ scale build """handle ~ DERIVED in `capture/branch-frontier.ts` (`deriveHandle` · `deriveRootHandle`; live-proven on real drawers, 2026-06-25): a SPIRIT reads `<run>.<agentId>` with parent and root = run; a MAIN reads handle = root = run (no parent — a root); a branch frontier rides the run component (`run~frontier`). A spirit's `lar_parent_handle` RESOLVES to its main agent's `lar_agent_handle` (both = the session run), so the attribution graph CLOSES. Derived from the staged source_file (in-process); the cross-surface launcher shim that mints trace-id/span-id reads UNBUILT — the keystone -> edge ~ PROJECTED form BUILT: the handle's run component names the appointed-by parent and the root-principal, single-source; no TypeScript writer stamps them onto drawers since the harvester burn (lar:///ha.ka.ba/lararium/api/ingest-canon#/the-harvester-burn). `worldline-edge.ts` builds "`prov:Delegation`" and "`prov:Communication`" triple descriptors with optional `turnKey` and `valid_from` fields; `handbackClose` builds a separate descriptor that closes the delegation interval. `worldline-kg.ts` exposes `persistWorldlineEdges` and `closeWorldlineEdges` through `kg_io.py`, and no production path calls either; `kapaeTurn` closes the rows of a gone turn, and no production path calls it either. `lares sense worldline` reads a different default KG path. End-to-end edge persistence and readback stand UNBUILT, as does a reified NODE carrying status and transaction-time; when the node lands the edge RE-PROJECTS from it (never a double-write) -> rhythm ~ MECHANISM BUILT AND TESTED (`worldline-clock.ts`); no production path constructs a per-handle clock (`worldlineClockFor`, `groundWorldlineEvent`): per-handle FfzClock keyed on the HANDLE (`actorId` carries the handle) · construct-on-first-event · grounding-tick (L1 Beat on the operator's acknowledging move, NEVER on emission) · rollover detection for a caller-owned LOCAL work-log (NOT the mesh SessionEventLog — work-memory rides a local island); durable checkpoint writing stands UNBUILT. GRAIN RESOLVED (Loom-grounded, 2026-06-25): the clock serializer `ffzAddress` yields a prefix-truncatable rhythmic ADDRESS `Theme.Arc.Measure.Beat.Segment[.block]` — ''L0 Pulse = one generation segment'' (`stop_reason`, = the OTel span), ''block = a sub-offset'' (index, not a tick); the clock's intended input comes from the HARNESS transcript, never the rendered grammar, and production harness wiring stands UNBUILT (lar:///ha.ka.ba/lararium/mesh/ffz-clock#/rhythmic-address). Address serializer + Claude-agent profile BUILT/TESTED (`ffzAddress`, `CLAUDE_AGENT_BOUNDS`). Separately, `ffzMembershipAddress` (`ffz-project.ts`) builds a drawer's `lar_ffz` as `<profile>/<Theme>.<Arc>.<Measure>.<Beat>.<Pulse>`, trailing absent cells trimmed; each cell names membership, never a count, and Pulse names the inscription atom. Arc derives from the source file; the caller may supply Theme, Measure, Beat and Pulse, and absent cells stay porous. `lares sense worldline enrich` (`lararium-sensorium/src/ffz-enrich.ts`, spawning `worldline_ffz.py enrich`) fills an absent Beat cell with the turn's identity label, idempotently; no harvest pass calls it. Grounded by the Horologe spirit — ITC identity/event split (bearer≠replica) · Clark-Brennan/Ginzburg grounding (Pending→Moves) · Automerge/Yjs ephemeral convention · event-sourcing checkpoints -> mandate ~ carry scope+TTL+revocability+duties; handback ratifies + filters the merge -> crypto ~ at the peer/founding boundary only, anchor to keyhive""">>
+<<~ scale name=`build` ranks=```handle ~ DERIVED in `capture/branch-frontier.ts` (`deriveHandle` · `deriveRootHandle`; live-proven on real drawers, 2026-06-25): a SPIRIT reads `<run>.<agentId>` with parent and root = run; a MAIN reads handle = root = run (no parent — a root); a branch frontier rides the run component (`run~frontier`). A spirit's `lar_parent_handle` RESOLVES to its main agent's `lar_agent_handle` (both = the session run), so the attribution graph CLOSES. Derived from the staged source_file (in-process); the cross-surface launcher shim that mints trace-id/span-id reads UNBUILT — the keystone -> edge ~ PROJECTED form BUILT: the handle's run component names the appointed-by parent and the root-principal, single-source; no TypeScript writer stamps them onto drawers since the harvester burn (lar:///ha.ka.ba/lararium/api/ingest-canon#/the-harvester-burn). `worldline-edge.ts` builds "`prov:Delegation`" and "`prov:Communication`" triple descriptors with optional `turnKey` and `valid_from` fields; `handbackClose` builds a separate descriptor that closes the delegation interval. `worldline-kg.ts` exposes `persistWorldlineEdges` and `closeWorldlineEdges` through `kg_io.py`, and no production path calls either; `kapaeTurn` closes the rows of a gone turn, and no production path calls it either. `lares sense worldline` reads a different default KG path. End-to-end edge persistence and readback stand UNBUILT, as does a reified NODE carrying status and transaction-time; when the node lands the edge RE-PROJECTS from it (never a double-write) -> rhythm ~ MECHANISM BUILT AND TESTED (`worldline-clock.ts`); no production path constructs a per-handle clock (`worldlineClockFor`, `groundWorldlineEvent`): per-handle FfzClock keyed on the HANDLE (`actorId` carries the handle) · construct-on-first-event · grounding-tick (L1 Beat on the operator's acknowledging move, NEVER on emission) · rollover detection for a caller-owned LOCAL work-log (NOT the mesh SessionEventLog — work-memory rides a local island); durable checkpoint writing stands UNBUILT. GRAIN RESOLVED (Loom-grounded, 2026-06-25): the clock serializer `ffzAddress` yields a prefix-truncatable rhythmic ADDRESS `Theme.Arc.Measure.Beat.Segment[.block]` — ''L0 Pulse = one generation segment'' (`stop_reason`, = the OTel span), ''block = a sub-offset'' (index, not a tick); the clock's intended input comes from the HARNESS transcript, never the rendered grammar, and production harness wiring stands UNBUILT (lar:///ha.ka.ba/lararium/mesh/ffz-clock#/rhythmic-address). Address serializer + Claude-agent profile BUILT/TESTED (`ffzAddress`, `CLAUDE_AGENT_BOUNDS`). Separately, `ffzMembershipAddress` (`ffz-project.ts`) builds a drawer's `lar_ffz` as `<profile>/<Theme>.<Arc>.<Measure>.<Beat>.<Pulse>`, trailing absent cells trimmed; each cell names membership, never a count, and Pulse names the inscription atom. Arc derives from the source file; the caller may supply Theme, Measure, Beat and Pulse, and absent cells stay porous. `lares sense worldline enrich` (`lararium-sensorium/src/ffz-enrich.ts`, spawning `worldline_ffz.py enrich`) fills an absent Beat cell with the turn's identity label, idempotently; no harvest pass calls it. Grounded by the Horologe spirit — ITC identity/event split (bearer≠replica) · Clark-Brennan/Ginzburg grounding (Pending→Moves) · Automerge/Yjs ephemeral convention · event-sourcing checkpoints -> mandate ~ carry scope+TTL+revocability+duties; handback ratifies + filters the merge -> crypto ~ at the peer/founding boundary only, anchor to keyhive```>>
 
 <<~/ahu>>
 
-<<~ ahu #/open>>
+<<~ ahu slot=`#/open`>>
 
 !! Open ~ held, not papered over
 
@@ -386,7 +386,7 @@ keys it on the handle.
 
 <<~/ahu>>
 
-<<~ ahu #/standards-anchor>>
+<<~ ahu slot=`#/standards-anchor`>>
 
 !! Standards Anchor ~ stand on the ratified
 
@@ -407,17 +407,17 @@ keys it on the handle.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ffz-clock">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/lar-telemetry">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/voices#/worker-swarm">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mandate-activity-provenance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ffz-clock`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/capture-annotation-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/lar-telemetry`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/worker-swarm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/living-grammar-palace`>>
 
 ''Tie ~ the form-palace as a third FeedCap.'' The nameless palace-instance that captures a turn's FORM
 ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace#/palace-instance]]) extends the same has-stack runtime twin a spirit's worldline
@@ -426,6 +426,6 @@ attribute to the spirit that moved them.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VL0PInAh3yCe6JtVyH1hJuteuEW8-iNbq5t3qXjA6CM
+<<^ code=`&#x0003;`>>ni:///sha-256;-IMDHeJaT8Eq61iRVwNZGjaEgKdS4CXFcXqbFsWYo5U
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

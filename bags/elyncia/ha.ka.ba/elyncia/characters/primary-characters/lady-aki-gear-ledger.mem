@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -17,13 +17,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Lady Aki ~ Discounted Gear Ledger
 
 <<~/ahu>>
 
-<<~ ahu #/body>>
+<<~ ahu slot=`#/body`>>
 
 ! Lady Aki — Discounted Gear Ledger
 
@@ -231,6 +231,6 @@ Current answer: yes, provisionally.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WQhG49U1k_BNjgjwyN4mB1HXshz0CruzV9e-OPmYVy4
+<<^ code=`&#x0003;`>>ni:///sha-256;AOHfuTbfa265cRdRbdpev9PUYHOKx0dsET-eRk62B38
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/exchange-vector">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/exchange-vector`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -101,6 +101,6 @@ The sigils carry the panel inline. Each renders as a SharktoothSigil (``<<~ word
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hTmvO43c7hG3gAq7Uszo7_dEyCkcvzZcK8QuBPQ-1ys
+<<^ code=`&#x0003;`>>ni:///sha-256;JdNZ1ytnY5OcenXUHECJ_OXDOeMAqL65M1DePByb-es
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

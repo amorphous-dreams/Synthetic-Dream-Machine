@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -16,13 +16,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/projections/powers/ftls-card"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
 ! Template — FTLS Power Card Projection
 
-<<~ ahu #/intent>>
+<<~ ahu slot=`#/intent`>>
 
 !! Intent
 
@@ -30,7 +30,7 @@ An FTLS card projection renders a Power module as one table-facing game surface.
 
 <<~/ahu>>
 
-<<~ ahu #/card-shape>>
+<<~ ahu slot=`#/card-shape`>>
 
 !! Card Shape
 
@@ -43,7 +43,7 @@ An FTLS card projection renders a Power module as one table-facing game surface.
 
 ''Composition is declared once, as tags.'' The card's `toml meta` carries a `tags` field that mirrors the module's `#has` — the full lar: URI of each component and mount-point (every meme's title is its lar URI; tags reference titles). The `#components` section then holds a single call:
 
-`<<~ kahea "lar:///ha.ka.ba/lararium/lists/components">>`
+``<<~ kahea uri=`lar:///ha.ka.ba/lararium/lists/components`>>``
 
 That procedure reads the current tiddler's `@`-prefixed tags and renders each as a clickable `tag-pill`. No hand-listing — add or drop a tag in `meta` and the pill row follows. On screen each pill clicks through to its component tiddler and a filter of every module that shares it.
 
@@ -51,7 +51,7 @@ That procedure reads the current tiddler's `@`-prefixed tags and renders each as
 
 <<~/ahu>>
 
-<<~ ahu #/writing-law>>
+<<~ ahu slot=`#/writing-law`>>
 
 !! Writing Law
 
@@ -70,15 +70,15 @@ That procedure reads the current tiddler's `@`-prefixed tags and renders each as
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/modules/power">>
-<<~ loulou "lar:///ha.ka.ba/sdm/procedures/tag-pill">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/modules/power`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/procedures/tag-pill`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-xSPgcmdLwrtWE6WndXr7m11z20DqxI6h4jvNvejU6w
+<<^ code=`&#x0003;`>>ni:///sha-256;3Rr69ZumVGcxWCCH8W2ksBrhWk8xZ4AV9QpJKti07r8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

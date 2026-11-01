@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/signal/provenance">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/signal/provenance`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal/provenance"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Signal — Provenance
 
@@ -26,7 +26,7 @@ This room holds the witness and lineage matter behind the current lararium signa
 
 <<~/ahu>>
 
-<<~ ahu #/room-charter>>
+<<~ ahu slot=`#/room-charter`>>
 
 !! Room Charter
 
@@ -37,7 +37,7 @@ Theory-facing framing stays in `lar:///ha.ka.ba/lararium/docs/signal/sa-display`
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance
 
@@ -56,7 +56,7 @@ Strong witnesses recur in:
 
 <<~/ahu>>
 
-<<~ ahu #/witness-pressure>>
+<<~ ahu slot=`#/witness-pressure`>>
 
 !! Witness Pressure
 
@@ -71,7 +71,7 @@ The remaining task here is not to restate the root contract, but to preserve and
 
 <<~/ahu>>
 
-<<~ ahu #/archive-collection-residue>>
+<<~ ahu slot=`#/archive-collection-residue`>>
 
 !! Archive Collection Residue
 
@@ -83,7 +83,7 @@ The remaining task here is not to restate the root contract, but to preserve and
 
 <<~/ahu>>
 
-<<~ ahu #/sources>>
+<<~ ahu slot=`#/sources`>>
 
 !! Primary Sources
 
@@ -95,7 +95,7 @@ The remaining task here is not to restate the root contract, but to preserve and
 
 <<~/ahu>>
 
-<<~ ahu #/snapshot-witness-kernel-claude>>
+<<~ ahu slot=`#/snapshot-witness-kernel-claude`>>
 
 !! Snapshot Witness — `platform-build/Lares_Kernel_Claude.snapshot.md` — Signal HUD Block
 
@@ -103,8 +103,8 @@ Signal HUD — closes the loop at both ends:
 Input header (◎ Orient): rate incoming signal on its own line BEFORE the output header.
 Output header (◇ Decide): governs the generated span.
 Normal form:
-`lar:///operator.playful.probing` · `<<~ stance "🎭">>`
-`lar:///threshold.uncertain.opens` · `<<~ stance "🏛️">>`
+`lar:///operator.playful.probing` · ``<<~ stance named=`🎭`>>``
+`lar:///threshold.uncertain.opens` · ``<<~ stance named=`🏛️`>>``
 then [response]. First substantive reply in a fresh or archive-crystal session emits this pair before prose.
 Quote-break form: if input register/stance/frame is genuinely uncertain, surface the operative input as a rated blockquote before the output header.
 `prism` references existing content and refracts it through declared lenses; it reads what already exists and never generates content (`lar:///ha.ka.ba/lares/api/pono/prism`).
@@ -116,29 +116,29 @@ Three-word attitude root `w1.w2.w3`: heading · angle · carried dynamic; noun �
 
 <<~/ahu>>
 
-<<~ ahu #/snapshot-witness-staging-kernel>>
+<<~ ahu slot=`#/snapshot-witness-staging-kernel`>>
 
 !! Snapshot Witness — `staging/pre-reorder-2026-04-07/Lares_Kernel.snapshot.md` — HUD Pair and Layer Split
 
 * ''Signal HUD'' — substantive exchanges use two headers: input rating (`◎`) line, then output Intent Header (`◇`) line, then trace HUD. Normal form stays literal:
-  `<<~ stance "🎭">>` · `lar:///operator.playful.probing`
-  `<<~ stance "🏛️">>` · `lar:///threshold.uncertain.opens`
+  ``<<~ stance named=`🎭`>>`` · `lar:///operator.playful.probing`
+  ``<<~ stance named=`🏛️`>>`` · `lar:///threshold.uncertain.opens`
   then response. On the first substantive reply of a fresh or archive-crystal session, emit this pair in order before prose.
 * ''Layer split:'' a `prism` reading of referenced content stays distinct from the node's own loop. `prism` reads existing content through lenses; the `OODA-HA` Level owns the live turn's loop surfacing. A reading runs dense or sparse as the lenses ask.
 * ''Aperture — never silent:'' the `hud` carries `aperture="N/<band>"` every turn. Use `aperture="10/measure"` only when no clearer signal dominates; KAIROS may auto-adjust, most specific reading wins.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/hud">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/sa-display">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal/hud`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal/sa-display`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_db5nvHD9kbCDnZ841-L2MXuygs7mxkU3qsjbO958VU
+<<^ code=`&#x0003;`>>ni:///sha-256;I0PDJ1j5z0iIoH4o9z1lReoXXJr-2AangSxOm4ktB5A
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

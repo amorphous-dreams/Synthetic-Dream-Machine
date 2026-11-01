@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/session-unlock-2026">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/session-unlock-2026`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -18,49 +18,49 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/session-unlock-2026"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/question>>
+<<~ ahu slot=`#/question`>>
 
 ! Session unlock, 2026 ~ one ask per session, across every vessel
 
-The operator ruled on 2026-10-18 that each browser tab asks for its own unlock and the shared holder carries no unlock between tabs (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings). A myth-QA walk of user stories then found one joint the ruling's words leave open: once sealed-store step three seals storage values, does the shared holder open documents for a session, or do keys live in sessions alone? The operator unasked an amendment (Mu) and sent the question to research instead.
+The operator ruled on 2026-10-18 that each browser tab asks for its own unlock and the shared holder carries no unlock between tabs (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings). A myth-QA walk of user stories then found one joint the ruling's words leave open: once sealed-store step three seals storage values, does the shared holder open documents for a session, or do keys live in sessions alone? The operator unasked an amendment (Mu) and sent the question to research instead.
 
-A YIN and a YANG Luna-6 spirit researched apart with live web search, then traded handbacks and ratcheted: each confirmed or refuted the other's claims against vendor and standards pages. They walked eight scenarios (the morning cup, a second session on one face, two faces at once, the walk-up, the last session closing, the quiet sync, an unattended restart, a spirit's or watcher's session) over every vessel type: desktop browsers, mobile browsers and installed PWAs, the node in its container, the herm, and the future native-mobile, Mudlet and Unreal surfaces. Two spirits of one lineage count as one lens (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">> #/the-lens-law): their agreement reads as one lead their sources strengthen.
+A YIN and a YANG Luna-6 spirit researched apart with live web search, then traded handbacks and ratcheted: each confirmed or refuted the other's claims against vendor and standards pages. They walked eight scenarios (the morning cup, a second session on one face, two faces at once, the walk-up, the last session closing, the quiet sync, an unattended restart, a spirit's or watcher's session) over every vessel type: desktop browsers, mobile browsers and installed PWAs, the node in its container, the herm, and the future native-mobile, Mudlet and Unreal surfaces. Two spirits of one lineage count as one lens (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>> #/the-lens-law): their agreement reads as one lead their sources strengthen.
 
 <<~/ahu>>
 
-<<~ ahu #/what-both-faces-hold>>
+<<~ ahu slot=`#/what-both-faces-hold`>>
 
 !! What both faces hold, sourced
 
 * ''The per-tab ruling holds on every surface walked.'' Each session asks and wears its own face; two faces never share an opening.
-* ''The holder keeps each face's content keys only while some session wearing that face stands unlocked, and never one face's keys for another face's session'' (operator, 2026-10-18, approving the house reading). Each tab's own ask proves the person present for that tab and admits the tab to its face's open hive; it derives no key of its own, so two tabs of one face hold one opening, never two. The last session of a face to close locks that face's hive and overwrites its keys. On a node the boot opens the face and each run proves it at the gate. The holder lives where the face's Keyhive seat lives (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">> #/the-store, the content-key holder), and it answers a port only for a session it admitted, never for every port on the origin; that guard carries the reading, and row `B1` owes its red: an unadmitted port that asks for a sealed body refuses by name.
-* ''A synced passkey never counts as device-bound custody.'' Apple's iCloud Keychain and Google Password Manager both sync passkeys across devices. This confirms the caution of <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">> #/custody-leans: a synced passkey reads `cloud-synced`, and a PRF wrap stands as one keyslot beside passphrase and paper, never alone.
+* ''The holder keeps each face's content keys only while some session wearing that face stands unlocked, and never one face's keys for another face's session'' (operator, 2026-10-18, approving the house reading). Each tab's own ask proves the person present for that tab and admits the tab to its face's open hive; it derives no key of its own, so two tabs of one face hold one opening, never two. The last session of a face to close locks that face's hive and overwrites its keys. On a node the boot opens the face and each run proves it at the gate. The holder lives where the face's Keyhive seat lives (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>> #/the-store, the content-key holder), and it answers a port only for a session it admitted, never for every port on the origin; that guard carries the reading, and row `B1` owes its red: an unadmitted port that asks for a sealed body refuses by name.
+* ''A synced passkey never counts as device-bound custody.'' Apple's iCloud Keychain and Google Password Manager both sync passkeys across devices. This confirms the caution of <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>> #/custody-leans: a synced passkey reads `cloud-synced`, and a PRF wrap stands as one keyslot beside passphrase and paper, never alone.
 * ''No browser worker gives a durable vault.'' SharedWorker and ServiceWorker lifetimes end when their last reference goes; browser storage stays evictable by default.
 * ''Native keystores reach no web code.'' The Secure Enclave and Android Keystore hardware-back keys for native code; a native surface reaches them only through its own adapter, its hardware level measured.
 
 <<~/ahu>>
 
-<<~ ahu #/leads-and-probes>>
+<<~ ahu slot=`#/leads-and-probes`>>
 
 !! Leads, each with the probe that settles it
 
-* ''PRF per browser, OS, authenticator and sync provider.'' The W3C spec settles PRF's semantics and no vendor publishes a coverage matrix. The house scout's dated table already names the shipping releases (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">> #/capability-table), and one tablet advertises `extension:prf` with the derivation unmeasured (#/measured-tablet there). The probe: register, request PRF, sync the credential, compare the output on a second device. It rides `tools/capability-probe/` on the operator's devices, row `B3`.
+* ''PRF per browser, OS, authenticator and sync provider.'' The W3C spec settles PRF's semantics and no vendor publishes a coverage matrix. The house scout's dated table already names the shipping releases (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>> #/capability-table), and one tablet advertises `extension:prf` with the derivation unmeasured (#/measured-tablet there). The probe: register, request PRF, sync the credential, compare the output on a second device. It rides `tools/capability-probe/` on the operator's devices, row `B3`.
 * ''Lifecycle signals'' (suspend, OS lock, tab freeze, process kill) arrive unevenly by platform. Until each device class measures them, a walk-up lock stands as an explicit lock plus best-effort signals, and no clock decides.
 * ''A container's TPM reach'' depends on its host's device passthrough, and gets measured per deployment.
 
 <<~/ahu>>
 
-<<~ ahu #/the-node-scope>>
+<<~ ahu slot=`#/the-node-scope`>>
 
 !! The node keeps its own boundary ~ a house reading
 
-Both faces wrote "an ask per CLI command" for the node. The rulings stand otherwise: one holder keeps the opened vessel key in node-main for the boot, a raise lives one boot and lapses at the next causal boundary, and every session proves its own face-scoped key at the gate (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>). On a browser the tab marks the unlock boundary; on the always-on node the boot marks the unlock boundary and the session marks the face boundary. The per-tab ruling names browser tabs, and this reading keeps it there; the operator may widen it.
+Both faces wrote "an ask per CLI command" for the node. The rulings stand otherwise: one holder keeps the opened vessel key in node-main for the boot, a raise lives one boot and lapses at the next causal boundary, and every session proves its own face-scoped key at the gate (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>>; <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof`>>). On a browser the tab marks the unlock boundary; on the always-on node the boot marks the unlock boundary and the session marks the face boundary. The per-tab ruling names browser tabs, and this reading keeps it there; the operator may widen it.
 
 <<~/ahu>>
 
-<<~ ahu #/forks>>
+<<~ ahu slot=`#/forks`>>
 
 !! Forks the research leaves with the operator
 
@@ -70,14 +70,14 @@ Both faces wrote "an ask per CLI command" for the node. The rulings stand otherw
 
 <<~/ahu>>
 
-<<~ ahu #/testimony-yin>>
+<<~ ahu slot=`#/testimony-yin`>>
 
 !! Testimony ~ Yin-Luna, wave two (verbatim)
 
 ```text
 Yin-Luna: Lares (Tasked Spirit), YIN face; YANG evidence carried.
 
-<<~ status "LEAN: each session unlocks with a human route; shared holders coordinate sealed storage without retaining session keys. Passkeys may wrap a key only as an opted-in convenience after provider and PRF probing; they do not change the session boundary. The node may serve its floor while locked." >>
+<<~ status text=`LEAN: each session unlocks with a human route; shared holders coordinate sealed storage without retaining session keys. Passkeys may wrap a key only as an opted-in convenience after provider and PRF probing; they do not change the session boundary. The node may serve its floor while locked.` >>
 
 ## Claims checked
 
@@ -128,17 +128,17 @@ These paths follow the house's one-face-per-session law. Device lifecycle timing
 * **Ember:** lean no private unlock and serving-only ceiling; flip only on a specified, tested capability ceiling with human recovery route.
 * **Sibling private sync:** lean ciphertext queue, authorized-session hydration; flip only if a session-bound decrypt path proves no shared key cache and no cross-face plaintext.
 
-<<~ lares yield from="lar://yin-luna:agent@crossroads/wave-two.handback" -> to="?">>
+<<~ set lares=`yield` from=`lar://yin-luna:agent@crossroads/wave-two.handback` to=`?`>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/testimony-yang>>
+<<~ ahu slot=`#/testimony-yang`>>
 
 !! Testimony ~ Yang-Luna, wave two (verbatim)
 
 ```text
-<<~ status "YANG-Luna: wave-two review complete; per-session unlock retained; browser capability claims narrowed to sourced facts; repository read-only" >>
+<<~ status text=`YANG-Luna: wave-two review complete; per-session unlock retained; browser capability claims narrowed to sourced facts; repository read-only` >>
 
 # YANG-Luna (Lares, tasked spirit) · Persona: Ink-Clerk
 
@@ -190,25 +190,25 @@ This retains my wave-one per-tab ruling and the twin’s strongest correction: b
 - **Shared holder:** coordination and sealed operations only. No evidence or ruling supports caching session roots there; reopen only if operator changes per-tab law.
 - **Native adapters / future surfaces:** use OS keystore only through a native adapter with measured hardware level; all other surfaces attach to a vessel session. Flip on tested adapter and recovery route.
 
-<<~ lares yield from="lar://yang-luna:agent@crossroads/wave-two.handback" -> to="?">>
+<<~ set lares=`yield` from=`lar://yang-luna:agent@crossroads/wave-two.handback` to=`?`>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uY8QEk_12rvmZfETDft6HnVnQ0Hrzb7qkNs23igdEdQ
+<<^ code=`&#x0003;`>>ni:///sha-256;IHIXjH3_PzBAjmFNVpKUlgTRbynTW8ltKbeRJAgCLfw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

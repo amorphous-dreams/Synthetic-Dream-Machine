@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/grammar-watch">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/grammar-watch`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/grammar-watch"
 ```
 
-<<~ ahu #/the-law>>
+<<~ ahu slot=`#/the-law`>>
 
 !! The law the grammar work stands on
 
@@ -40,7 +40,7 @@ and never rides a commit.
 
 <<~/ahu>>
 
-<<~ ahu #/the-host-corpus>>
+<<~ ahu slot=`#/the-host-corpus`>>
 
 !! The host corpus ~ rebuild it, never look for it
 
@@ -66,7 +66,7 @@ a verdict likely earns its place; a cure that silences every hit silences a true
 
 <<~/ahu>>
 
-<<~ ahu #/instruments-that-lie>>
+<<~ ahu slot=`#/instruments-that-lie`>>
 
 !! Instruments of grammar testing that read GREEN while they report something false
 
@@ -79,18 +79,18 @@ a verdict likely earns its place; a cure that silences every hit silences a true
 
 <<~/ahu>>
 
-<<~ ahu #/open-paths>>
+<<~ ahu slot=`#/open-paths`>>
 
 !! Paths that stay open
 
-* ''The weld between the two grammars.'' A weld GATE that fails when a scope family holds no node kind turns the gap into a number that cannot drift back; teaching tree-sitter the lexicon stands behind it. The whole regeneration of the tree-sitter grammar against the released TextMate grammar reads in <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/side-lanes">>.
+* ''The weld between the two grammars.'' A weld GATE that fails when a scope family holds no node kind turns the gap into a number that cannot drift back; teaching tree-sitter the lexicon stands behind it. The whole regeneration of the tree-sitter grammar against the released TextMate grammar reads in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/side-lanes`>>.
 * ''The seam gate, generalized.'' `packages/lararium-tw5/tests/seed-definition-matches-example.test.ts` welds ONE procedure of the boot seed, `~lares`, to the worked examples printed beside it. The seed defines more procedures, and nothing says whether the others agree with their examples. Train Q moves the weld from `~lares` to the `~set` definition and its worked firings (#/the-kupono-cut).
 * ''Embedded-language scopes stand dark'': fenced-code branches no corpus file exercises. Fixture debt falls due before a coverage number there carries meaning.
 * ''Constructs a line-at-a-time grammar keeps out of reach on purpose'': emphasis and inline code across lines, and html start tags across blank lines. A whole-document reader carries them; the submodule's own ceiling record holds each.
 
 <<~/ahu>>
 
-<<~ ahu #/the-kupono-cut>>
+<<~ ahu slot=`#/the-kupono-cut`>>
 
 !! The kupono cut ~ train Q (operator rulings 2026-10-31 and 2026-11-01)
 
@@ -108,16 +108,16 @@ The cut lands as one lane, merged once. The seed lands first among the carriers,
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> the house's general test and wiring procedures
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/parser">> the parser law the memetic grammar rides
-<<~ loulou "lar:///ha.ka.ba/lares/docs/wikitext-paint-research">> how a TextMate grammar paints, measured
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>> the house's general test and wiring procedures
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/parser`>> the parser law the memetic grammar rides
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/wikitext-paint-research`>> how a TextMate grammar paints, measured
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UARwvgd06ApVzphmHp7xqs0jmMK-a9nc5MtgUemgz5I
+<<^ code=`&#x0003;`>>ni:///sha-256;zCKF8RM26L4Mew693N2Y9cyi4BLXevQ1xz3UzqVPXbM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

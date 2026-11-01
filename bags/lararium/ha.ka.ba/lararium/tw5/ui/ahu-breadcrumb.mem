@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/ahu-breadcrumb">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/ui/ahu-breadcrumb`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -31,10 +31,10 @@ uri-path    = "ha.ka.ba/lararium/tw5/ui/ahu-breadcrumb"
 
 </$list>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;80EBZTIbW58jif8mi7qcA_L9tfeH10qBTF4XUiVRHjs
+<<^ code=`&#x0003;`>>ni:///sha-256;ygvR-5HD0YzeQn3F2P2yVnZmWVtQcSn1MqSNe-ZE_Bo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

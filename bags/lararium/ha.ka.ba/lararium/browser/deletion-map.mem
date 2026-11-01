@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/browser/deletion-map">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/browser/deletion-map`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -28,7 +28,7 @@ touching the browser vessel surface. Four classifications:
 | ''Quarantine'' | Carries a mix of constitutional and residue; the residue stays behind the adapter boundary. |
 | ''Dead residue'' | Whole-page singleton or web2 smell. Stays out of the package. |
 
-<<~ ahu #/shore-inventory>>
+<<~ ahu slot=`#/shore-inventory`>>
 
 !! Shore Inventory
 
@@ -85,7 +85,7 @@ capabilities, projection return legs, and the host-side vessel composition. The 
 
 <<~/ahu>>
 
-<<~ ahu #/adapter-boundary>>
+<<~ ahu slot=`#/adapter-boundary`>>
 
 !! Named Adapter Boundary
 
@@ -100,7 +100,7 @@ Future HUD surfaces (canvas, UE, Mudlet) bypass this file entirely — they use 
 
 <<~/ahu>>
 
-<<~ ahu #/deletion-targets>>
+<<~ ahu slot=`#/deletion-targets`>>
 
 !! Patterns That Stay Out
 
@@ -115,16 +115,16 @@ These patterns stay out of the package and out of worker-side authority.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/browser/pono-charter">>
-<<~ loulou "lar:///ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprint">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/pono-charter`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprint`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NXX6WblB5HQEfX6vck_JUuZpLqsqxP0MJbpH77Onj7I
+<<^ code=`&#x0003;`>>ni:///sha-256;FEZkB-NqTQqVNUUofx9ydc5KjWH8U8dX2q6Xi6NxKNI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

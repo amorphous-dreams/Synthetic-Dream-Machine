@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/shelter-against-empire">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/shelter-against-empire`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
@@ -19,11 +19,11 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/shelter-against-empire"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/the-brief>>
+<<~ ahu slot=`#/the-brief`>>
 
 ! Shelter Against Empire ~ the brief the graph reasons toward
 
@@ -35,7 +35,7 @@ Named, because a brief that names nobody protects nobody: ''kanaka maoli'' and t
 
 <<~/ahu>>
 
-<<~ ahu #/what-empire-does>>
+<<~ ahu slot=`#/what-empire-does`>>
 
 !! What empire does, structurally
 
@@ -51,7 +51,7 @@ Strip the costume and empire runs ''three moves'', each answerable in architectu
 
 <<~/ahu>>
 
-<<~ ahu #/the-myth>>
+<<~ ahu slot=`#/the-myth`>>
 
 !! The myth ~ what the fiction encodes
 
@@ -69,7 +69,7 @@ The Elyncia frame carries the architecture, and it carries it as ''specification
 
 <<~/ahu>>
 
-<<~ ahu #/consequences>>
+<<~ ahu slot=`#/consequences`>>
 
 !! What follows, in the design
 
@@ -82,7 +82,7 @@ The Elyncia frame carries the architecture, and it carries it as ''specification
 
 <<~/ahu>>
 
-<<~ ahu #/designation>>
+<<~ ahu slot=`#/designation`>>
 
 !! Designation ~ the move that beats a good design
 
@@ -92,11 +92,11 @@ The Elyncia frame carries the architecture, and it carries it as ''specification
 
 > ''AND THE WARNING RUNS SHARPER THAN THE CURE.'' The one time a technical field met a well-resourced unilateral declarer, ''that declarer won'' — its frame became the world's because it held the measuring instrument, never because anyone governed well. ''Ask what our instrument is, and who can seize it.''
 
-''The category may expose before the roster does.'' A published declaration says //this group declares itself a group//, and under a hostile state that fact can outrank the member list — the categorisation risk this meme already names. So publication rides a LADDER rather than a switch: a realm publishes at the tier it can survive, and standing-to-object scopes to that tier (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>). A realm in danger keeps its internal challengers and gains no outside ones — ''the actual condition, never a defect to design away''.
+''The category may expose before the roster does.'' A published declaration says //this group declares itself a group//, and under a hostile state that fact can outrank the member list — the categorisation risk this meme already names. So publication rides a LADDER rather than a switch: a realm publishes at the tier it can survive, and standing-to-object scopes to that tier (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>). A realm in danger keeps its internal challengers and gains no outside ones — ''the actual condition, never a defect to design away''.
 
 <<~/ahu>>
 
-<<~ ahu #/what-conferral-costs>>
+<<~ ahu slot=`#/what-conferral-costs`>>
 
 !! What conferral from below costs, said plainly
 
@@ -108,7 +108,7 @@ The Elyncia frame carries the architecture, and it carries it as ''specification
 
 <<~/ahu>>
 
-<<~ ahu #/legibility>>
+<<~ ahu slot=`#/legibility`>>
 
 !! Removing the roster MOVED the target ~ it never removed it
 
@@ -134,7 +134,7 @@ The Elyncia frame carries the architecture, and it carries it as ''specification
 
 <<~/ahu>>
 
-<<~ ahu #/the-honest-limit>>
+<<~ ahu slot=`#/the-honest-limit`>>
 
 !! The honest limit
 
@@ -161,14 +161,14 @@ on the ordering as a judgement across the cases; the individual attributions hol
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-thing-event">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-thing-event`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iqQ1BIvTm9hYfXL3nembGV9INzvqypHiVy3pHvIJBf4
+<<^ code=`&#x0003;`>>ni:///sha-256;EuepPyjP1BLtRfpYWovpJljCdCcKLnDqWgHXoYsi2eE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

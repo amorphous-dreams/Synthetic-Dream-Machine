@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -14,17 +14,17 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/w26-floor-lane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The W26 floor lane ~ one owner per registry, the floor by CID
 
-Roadmap row `W26` carries the build of two operator rulings: //the system wikis release; every other wiki reads the floor// (2026-10-16) and //one owner per registry; the floor reads by CID// (2026-10-18), both at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings. Rows `W21` and `P8` ride it. The law it enacts already stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">> #/oracle-planes: an oracle names documents at one scope, that scope's owner writes its registry, and a registry travels no wider than its scope.
+Roadmap row `W26` carries the build of two operator rulings: //the system wikis release; every other wiki reads the floor// (2026-10-16) and //one owner per registry; the floor reads by CID// (2026-10-18), both at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings. Rows `W21` and `P8` ride it. The law it enacts already stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>> #/oracle-planes: an oracle names documents at one scope, that scope's owner writes its registry, and a registry travels no wider than its scope.
 
 <<~/ahu>>
 
-<<~ ahu #/the-shape>>
+<<~ ahu slot=`#/the-shape`>>
 
 !! The shape
 
@@ -37,19 +37,19 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
   RELEASE ANSWER        one per Nexus, on its crossroads board: the Nexus AID, the charter epoch,
                         the release before it, the floor manifest CID. The steward seals it; the
                         cabal approves its exact bytes; a herm carries it and signs nothing.
-  @oracle               the floor's read-face, mounted under every wiki by the pin its face
+  oracle-floor               the floor's read-face, mounted under every wiki by the pin its face
                         accepted. Never a document any vessel writes.
 
   REGISTRIES, each written by its own scope's owner alone
     vessel bootstrap    this vessel: its daemon url, its own document pointers, its face planes,
                         its accepted floor pin per (face, Nexus) as sealed hot rows
-    @catalog            the operator's documents, at the operator's scope
+    catalog-plane            the operator's documents, at the operator's scope
     Kahu realm          the cabal: the LIVE lares and lararium documents and their drafts
     crossroads board    the Nexus: its one public answer, the release
 
-  A WIKI                a recipe over bags: @oracle floor (pinned CID, read-only) < libraries
-                        (read-only) < its own canon (promotion only) < @working (every save
-                        lands here) < @draft, @personal, @temp. An edit copies up; a promotion
+  A WIKI                a recipe over bags: oracle-floor floor (pinned CID, read-only) < libraries
+                        (read-only) < its own canon (promotion only) < working-slot (every save
+                        lands here) < draft-slot, personal-slot, temp-slot. An edit copies up; a promotion
                         moves down by receipt; system canon moves only as a Kahu-cabal promotion
                         in the realm, and reaches everyone else only as a release.
 ```
@@ -58,7 +58,7 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 <<~/ahu>>
 
-<<~ ahu #/the-evidence>>
+<<~ ahu slot=`#/the-evidence`>>
 
 !! The evidence that drew it (2026-10-18, lane `--w26-own-canon`)
 
@@ -69,13 +69,13 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 <<~/ahu>>
 
-<<~ ahu #/the-slices>>
+<<~ ahu slot=`#/the-slices`>>
 
 !! The slices ~ each red-first, in the order what inherits shape from what
 
 # ''The floor.'' A manifest CID names history-free snapshots of the `lares` and `lararium` rows beside the engine CIDs; `@oracle` mounts as its read-face, read-only, under every recipe; genesis bakes the first floor, its corpus CID in the seed, in one labelled `GENESIS RE-BAKE`. Red: a minted wiki reads a system carrier through `@oracle` and its write refuses.
 # ''Pointers go home.'' Each vessel's own document pointers leave the shared document for its bootstrap; the shared `@oracle` document as a writable registry retires. `shared-oracle-doc.probe` (`packages/lararium-node/tests/shared-oracle-doc.probe.test.ts`) turns into this slice's red: two synced vessels each keep their own pointer. `W21` re-cuts here: a joinee mounts its hearth's floor by CID.
-# ''The live system documents rest in the Kahu realm'', under persona zero's group until `K15`'s face context stands and the Kahu face's own group takes the seat (#/the-seam-owed-to-wave-c). A one-seat founding lands a counted 1-of-1 Kahu-cabal admission for persona zero's group; `kahuCabalCanonAccess` carries the production reads (`kahu-cabal-admission.ts`); `bags/` projects on the Kahu's vessel alone. A one-seat founding reads system canon through it over a founded island, a lone hearth's `working-loop` promotion lands, and a second vessel holds no live system document. Each document's id derives from the steward's seed and the Kahu canon counts only the steward's own sealed registrations (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>).
+# ''The live system documents rest in the Kahu realm'', under persona zero's group until `K15`'s face context stands and the Kahu face's own group takes the seat (#/the-seam-owed-to-wave-c). A one-seat founding lands a counted 1-of-1 Kahu-cabal admission for persona zero's group; `kahuCabalCanonAccess` carries the production reads (`kahu-cabal-admission.ts`); `bags/` projects on the Kahu's vessel alone. A one-seat founding reads system canon through it over a founded island, a lone hearth's `working-loop` promotion lands, and a second vessel holds no live system document. Each document's id derives from the steward's seed and the Kahu canon counts only the steward's own sealed registrations (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>).
 # ''The release answer.'' One porch body per Nexus, sealed by the steward under its own signing domain, `floor-release` (operator-approved, 2026-10-18), the promotion approval over the manifest's exact bytes attached; the crossroads board carries it; `P8` folds in. `ORACLE_POINTER_DOMAIN` retires once releases stand.
 # ''The accept act.'' A person's act moves a sealed hot row per (face, Nexus) to a newer release that verifies against that Nexus's charter at its epoch and links to the pinned release; no clock and no automatic accept. With no Nexus speaking, a face stands on its last accepted floor, or genesis.
 # ''Reach into system canon.'' Every residency verb into `bags/lares` or `bags/lararium` refuses a hand outside the Kahu cabal, through the one predicate slice 3 seats; the skipped red in `unbuilt-laws.test.ts` ("a non-Kahu MOVE into a canon bag refuses") greens here.
@@ -84,7 +84,7 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 <<~/ahu>>
 
-<<~ ahu #/the-seam-owed-to-wave-c>>
+<<~ ahu slot=`#/the-seam-owed-to-wave-c`>>
 
 !! The seam owed to Wave C ~ one accessor names the Kahu realm's group
 
@@ -107,7 +107,7 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<~ ahu #/what-retires>>
+<<~ ahu slot=`#/what-retires`>>
 
 !! What retires, slice by slice (the o-takiage census)
 
@@ -122,7 +122,7 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<~ ahu #/owed>>
+<<~ ahu slot=`#/owed`>>
 
 !! Owed beside the slices
 
@@ -136,34 +136,34 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<~ ahu #/the-lane>>
+<<~ ahu slot=`#/the-lane`>>
 
 !! The lane ~ crew and crucible
 
 * ''Branch'': `feature/green-jello-dinosaur-5--w26-floor-<n>`, one per slice or burst, cut from the span's head. Nothing lands on the span directly.
-* ''Crew'': the work swarm (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">> #/the-shapes): an Opus Episkopos, a Sol-6 and a Luna-6 in one provisioned worktree, walled per #/the-launch; spirits build and write red tests, and the lead runs every suite. Every slice moves facts between processes (a vessel and its islands, a vessel and its siblings), so the overwatch reads every burst.
+* ''Crew'': the work swarm (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>> #/the-shapes): an Opus Episkopos, a Sol-6 and a Luna-6 in one provisioned worktree, walled per #/the-launch; spirits build and write red tests, and the lead runs every suite. Every slice moves facts between processes (a vessel and its islands, a vessel and its siblings), so the overwatch reads every burst.
 * ''Shared ground'': both vessel composers. One lane at a time holds a composer hunk; the others hand theirs to the controller as a patch. Slice 1's re-bake and every plugin-bundle rebuild land on the controller's word.
 * ''The crucible'': each touched package's whole suite under a scratch `HOME` and `LAR_ROOT`, `tools/typecheck-witness.sh`, one shard run with its `MERGE-VERIFY` line, a pull request into the span with no Copilot review unless the operator asks; the controller runs `tools/witness-all.sh` and merges.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mesh-goldens">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mesh-goldens`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2t2nIdp-JwY1SJZNEtROBEFSCk32NeJY561890hGAgk
+<<^ code=`&#x0003;`>>ni:///sha-256;J5_DCnKWK06STxYQWfkQWmJEMhdbP2dWfuJJU8SSC28
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

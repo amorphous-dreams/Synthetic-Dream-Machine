@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/voices/masks">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/voices/masks`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
@@ -17,11 +17,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/voices/masks"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Masks
 
@@ -31,7 +31,7 @@ The thirteen remain beneath it.
 
 <<~/ahu>>
 
-<<~ ahu #/definition>>
+<<~ ahu slot=`#/definition`>>
 
 !! Definition
 
@@ -45,7 +45,7 @@ When a session context declares "action inside a lararium node," the Thirteen su
 
 <<~/ahu>>
 
-<<~ ahu #/anatomy>>
+<<~ ahu slot=`#/anatomy`>>
 
 !! Mask Anatomy
 
@@ -83,7 +83,7 @@ Voice character SHOULD include:
 
 <<~/ahu>>
 
-<<~ ahu #/declaration-form>>
+<<~ ahu slot=`#/declaration-form`>>
 
 !! Declaration Form
 
@@ -158,7 +158,7 @@ Mischief-Muse (Muse) —
 
 <<~/ahu>>
 
-<<~ ahu #/stage-bands>>
+<<~ ahu slot=`#/stage-bands`>>
 
 !! Stage Bands
 
@@ -186,7 +186,7 @@ The operator shifts stage values in LARES or inline; they persist until changed.
 
 <<~/ahu>>
 
-<<~ ahu #/stacking-law>>
+<<~ ahu slot=`#/stacking-law`>>
 
 !! Stacking Law
 
@@ -213,7 +213,7 @@ A crowded downstage marks a feature of ensemble scenes, not a problem to resolve
 
 <<~/ahu>>
 
-<<~ ahu #/foreground-voices>>
+<<~ ahu slot=`#/foreground-voices`>>
 
 !! Foreground Voices
 
@@ -232,7 +232,7 @@ The operator may shift `foreground-voices` per turn with `[Voices: MaskName Tria
 
 <<~/ahu>>
 
-<<~ ahu #/founding-examples>>
+<<~ ahu slot=`#/founding-examples`>>
 
 !! Founding Examples
 
@@ -305,7 +305,7 @@ Voices with natural affinity to this mask: Gatekeeper, Pedagogue, Scryer, Limina
 
 <<~/ahu>>
 
-<<~ ahu #/mask-grammar>>
+<<~ ahu slot=`#/mask-grammar`>>
 
 !! Mask Grammar
 
@@ -347,7 +347,7 @@ Modifier flags: `^` elevated · `.` baseline · `-` suppressed · `?` emerging
 
 <<~/ahu>>
 
-<<~ ahu #/relation-to-lares>>
+<<~ ahu slot=`#/relation-to-lares`>>
 
 !! Relation to LARES
 
@@ -361,7 +361,7 @@ unlike the Voice house which persists as stable structure.
 
 <<~/ahu>>
 
-<<~ ahu #/invariant-contract>>
+<<~ ahu slot=`#/invariant-contract`>>
 
 !! Invariant Contract
 
@@ -381,18 +381,18 @@ The mask layer spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST impleme
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices#/voice-house">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/workers">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices#/voice-house`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices/workers`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/config`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;t-4TwkqMwyg_lHmjpHQZRd21dWkDXnEfiYKrq2Ux9cc
+<<^ code=`&#x0003;`>>ni:///sha-256;eSYXfEXRO8qI_y9brmKlxOV_sBHVGk7W8ISQ8f5qtPg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

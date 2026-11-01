@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/memory-store">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/memory-store`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -9,14 +9,14 @@ file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/memory-store.mem"
 l-space     = "lararium"
 mana        = 17
 manao       = 17
-role        = "MemoryTiddlerStore — in-memory LarTiddlerStore, body of the @temp slot in every WikiRecipe"
+role        = "MemoryTiddlerStore — in-memory LarTiddlerStore, body of the temp-slot slot in every WikiRecipe"
 source-file = "packages/lararium-tw5/src/memory-store.ts"
 title       = "lar:///ha.ka.ba/lararium/tw5/memory-store"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/memory-store"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -37,15 +37,15 @@ Two callers exist:
 
 <<~/ahu>>
 
-<<~ ahu #/temp-scope>>
+<<~ ahu slot=`#/temp-scope`>>
 
-!! What belongs in @temp
+!! What belongs in temp-slot
 
-The @temp slot holds ''device-vessel-local state that never leaves the island''.
+The temp-slot slot holds ''device-vessel-local state that never leaves the island''.
 The in-wiki bag-paths cascade (`lar:///ha.ka.ba/lararium/config/bag-paths`)
-routes the following TW5 title patterns to @temp:
+routes the following TW5 title patterns to temp-slot:
 
-| Title pattern | TW5 use | Why @temp |
+| Title pattern | TW5 use | Why temp-slot |
 |---|---|---|
 | `$:/temp/*` | Drafts mid-typing, alerts, HTTP request trackers (`wiki.isTemporaryTiddler`) | TW5 designates these as transient by convention |
 | `$:/temp/volatile/*` | rAF tick markers, animation frames (`wiki.isVolatileTiddler`) | Sub-frame transience; rebuilds every frame |
@@ -66,9 +66,9 @@ would ride the cascade as one more named rule.
 
 <<~/ahu>>
 
-<<~ ahu #/not-temp>>
+<<~ ahu slot=`#/not-temp`>>
 
-!! What does NOT belong in @temp (the tension)
+!! What does NOT belong in temp-slot (the tension)
 
 TW5's default `$:/config/SyncFilter` (`core/wiki/config/SyncFilter.tid`) treats
 some `$:/*` patterns as ''operator intent worth carrying across devices'' —
@@ -105,7 +105,7 @@ cabal per `(PersonaGroup × recipe-fingerprint)`.
 
 <<~/ahu>>
 
-<<~ ahu #/invariants>>
+<<~ ahu slot=`#/invariants`>>
 
 !! Invariants
 
@@ -129,18 +129,18 @@ same change record any AutomergeDocStore would emit.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/lararium/wiki-recipe">>
-<<~ loulou "lar:///ha.ka.ba/lararium/config/bag-paths">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/island-recipe">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-surface">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/lararium/wiki-recipe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/config/bag-paths`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/island-recipe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;j2tU3WoCEkmoDcuPeBF2T0ewUJISJr2utbSpykKMy-A
+<<^ code=`&#x0003;`>>ni:///sha-256;2X9aGQPDyZxIsKJmTjfQsIIU9cGhLTEWaM7kpCMmJ1s
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

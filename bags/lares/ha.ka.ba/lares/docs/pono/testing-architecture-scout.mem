@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/testing-architecture-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/testing-architecture-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
@@ -21,7 +21,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/testing-architecture-scout"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Mason ~ a spirit's handoff, held unedited
 
@@ -35,7 +35,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/testing-architecture-scout"
 
 <<~/ahu>>
 
-<<~ ahu #/collided-2026-09-13>>
+<<~ ahu slot=`#/collided-2026-09-13`>>
 
 !! Collided — the three CI claims in §3, re-measured
 
@@ -55,7 +55,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/testing-architecture-scout"
 
 <<~/ahu>>
 
-<<~ ahu #/collided-2026-10-05>>
+<<~ ahu slot=`#/collided-2026-10-05`>>
 
 !! Collided — §4's "six welds" claim, re-derived
 
@@ -69,7 +69,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/testing-architecture-scout"
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
@@ -252,7 +252,7 @@ Whether Stage 2's newly-lit suites are **green** — I did not run them (the pyt
 
 <<~/ahu>>
 
-<<~ ahu #/mandate-activity-red-first>>
+<<~ ahu slot=`#/mandate-activity-red-first`>>
 
 !! Current guidance — scenario records and failure reds
 
@@ -273,8 +273,8 @@ The canonical vocabulary and failure-state mapping live in [[mandate-activity-pr
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1uxUW2AzK2W-gEIEigOSfpzg3dDibXaZSyXxh4lFI2A
+<<^ code=`&#x0003;`>>ni:///sha-256;GIHEM1RdpjNRa8ubw3O6ZdZa5L_VljPNhau9L0xrMOc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

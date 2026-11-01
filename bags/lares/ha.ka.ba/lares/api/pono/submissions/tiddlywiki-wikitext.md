@@ -1,7 +1,7 @@
 ---
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
-source-check: "ni:///sha-256;SLK_nZU5gLIOHJHaqT11r4xDRbmFrmFrnl9dyeUGPjA"
+source-check: "ni:///sha-256;owJCJIWNL06IhHVysgOKb4kCorgks0yn-f4mGa-X0mk"
 title: "lar:///ha.ka.ba/lares/api/pono/submissions/tiddlywiki-wikitext"
 tongue: "x-lares>en"
 variant: "GFM"
@@ -335,5 +335,5 @@ rather than minting sibling types.
 
 <a id="edges"></a>
 
-- `loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"`
+- `loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`
+- `loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`

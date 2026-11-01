@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/node-vessel-identity">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/node/node-vessel-identity`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
@@ -15,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/node/node-vessel-identity"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The True Name model ~ three parts that bind without merging
 
@@ -24,7 +24,7 @@ An edge joins them and keeps them apart.
 
 <<~/ahu>>
 
-<<~ ahu #/the-three-parts>>
+<<~ ahu slot=`#/the-three-parts`>>
 
 !! Three parts, and each answers for something different
 
@@ -43,7 +43,7 @@ as one key wearing three hats.
 
 <<~/ahu>>
 
-<<~ ahu #/why-the-split-carries-weight>>
+<<~ ahu slot=`#/why-the-split-carries-weight`>>
 
 !! What one key would cost
 
@@ -57,7 +57,7 @@ work; it decides whether the design exists.''
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The lifecycle invariants
 
@@ -70,16 +70,16 @@ network call, so opening a vessel asks nobody's permission to know what to call 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-node/src/node-vessel-identity.ts" family="code" role="has">>
-<<~ pranala #ceremony from="?" -> to="packages/lararium-tw5/src/cold-boot-ceremony.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/node-vessel-identity.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#ceremony` from=`?` to=`packages/lararium-tw5/src/cold-boot-ceremony.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-slot">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/one-name-one-relation">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-slot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/one-name-one-relation`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;34IlOBK9xpjf0OY0wDDQT94xHW0B1iT1JLXpKFlKjxs
+<<^ code=`&#x0003;`>>ni:///sha-256;DSfQF_IpiL-b3AbUEr1RWl3NErQwXK_1D1Yl97w_1wE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

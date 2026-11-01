@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
@@ -17,7 +17,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! FIELD COLLISION II — the magical-mesh field vs our five load-bearing stances
 
@@ -27,7 +27,7 @@ Collided 2026-09-11. Builds on `field-collision.mem` (do not repeat its SPKI/SDS
 
 <<~/ahu>>
 
-<<~ ahu #/rank-1-live-equivocation>>
+<<~ ahu slot=`#/rank-1-live-equivocation`>>
 
 !! RANK 1 — The live-equivocation recovery gap (the hardest open exposure)
 
@@ -55,7 +55,7 @@ The field's verdict is unanimous and it CONFIRMS our honesty: ''no deployed or r
 
 <<~/ahu>>
 
-<<~ ahu #/rank-2-watchers>>
+<<~ ahu slot=`#/rank-2-watchers`>>
 
 !! RANK 2 — The OWED watcher layer (equivocation detection is carriage) — and its near-twin exists
 
@@ -77,7 +77,7 @@ The field's verdict is unanimous and it CONFIRMS our honesty: ''no deployed or r
 
 <<~/ahu>>
 
-<<~ ahu #/rank-3-epoch-frontier>>
+<<~ ahu slot=`#/rank-3-epoch-frontier`>>
 
 !! RANK 3 — The epoch as a monotone forward frontier / the no-flag-day engine roll
 
@@ -102,7 +102,7 @@ We are about to design the coexistence span for rolling the engine on a live mes
 
 <<~/ahu>>
 
-<<~ ahu #/rank-4-rendezvous>>
+<<~ ahu slot=`#/rank-4-rendezvous`>>
 
 !! RANK 4 — Rendezvous ≠ identity (the severability law)
 
@@ -124,7 +124,7 @@ We are about to design the coexistence span for rolling the engine on a live mes
 
 <<~/ahu>>
 
-<<~ ahu #/rank-5-contradictions>>
+<<~ ahu slot=`#/rank-5-contradictions`>>
 
 !! RANK 5 — Where the field CONTRADICTS us (a collision that flatters is useless)
 
@@ -135,7 +135,7 @@ We are about to design the coexistence span for rolling the engine on a live mes
 
 <<~/ahu>>
 
-<<~ ahu #/follow-up-threads>>
+<<~ ahu slot=`#/follow-up-threads`>>
 
 !! Threads worth a follow-up spirit
 
@@ -147,7 +147,7 @@ We are about to design the coexistence span for rolling the engine on a live mes
 
 <<~/ahu>>
 
-<<~ ahu #/fold-map>>
+<<~ ahu slot=`#/fold-map`>>
 
 !! Fold-map (proposed — operator decides what enters the memegraph)
 
@@ -161,7 +161,7 @@ We are about to design the coexistence span for rolling the engine on a live mes
 
 <<~/ahu>>
 
-<<~ ahu #/w3-head>>
+<<~ ahu slot=`#/w3-head`>>
 
 ! FIELD COLLISION III — the five threads, gone deep
 
@@ -171,7 +171,7 @@ Second-wave research-collision handback (2026-09-11). Extends the wave above; do
 
 <<~/ahu>>
 
-<<~ ahu #/w3-rank-1-churp>>
+<<~ ahu slot=`#/w3-rank-1-churp`>>
 
 !! RANK 1 — CHURP makes the GRAFT a share-refresh: the live-equivocation window gets a real bound (thread 2)
 
@@ -189,7 +189,7 @@ This is the highest-impact find because it touches wave-one's RANK 1 (the live-e
 
 <<~/ahu>>
 
-<<~ ahu #/w3-rank-2-webvh>>
+<<~ ahu slot=`#/w3-rank-2-webvh`>>
 
 !! RANK 2 — did:webvh line-by-line: they gate EVERY update by witness-threshold; we gate only the GRAFT (thread 1)
 
@@ -213,7 +213,7 @@ Diffing did:webvh v1.0 (https://identity.foundation/didwebvh/v1.0/) against `han
 
 <<~/ahu>>
 
-<<~ ahu #/w3-rank-3-buchanan>>
+<<~ ahu slot=`#/w3-rank-3-buchanan`>>
 
 !! RANK 3 — Buchanan's Bluesky hijack: our binding discipline closes his attack class; two analogs remain (thread 5)
 
@@ -233,7 +233,7 @@ Diffing did:webvh v1.0 (https://identity.foundation/didwebvh/v1.0/) against `han
 
 <<~/ahu>>
 
-<<~ ahu #/w3-rank-4-credible-exit>>
+<<~ ahu slot=`#/w3-rank-4-credible-exit`>>
 
 !! RANK 4 — the credible-exit tax, costed: half the wave-one contradiction dissolves at the public-card line (thread 3)
 
@@ -256,7 +256,7 @@ This ''partly dissolves wave-one's RANK 5 contradiction'': Bluesky's "credible-e
 
 <<~/ahu>>
 
-<<~ ahu #/w3-rank-5-sedimentree>>
+<<~ ahu slot=`#/w3-rank-5-sedimentree`>>
 
 !! RANK 5 — Sedimentree vindicates the compaction-epoch split and hands us a clockless boundary rule (thread 4)
 
@@ -274,7 +274,7 @@ Crucially, Sedimentree states the forward-secrecy interaction plainly: because "
 
 <<~/ahu>>
 
-<<~ ahu #/w3-fold-map>>
+<<~ ahu slot=`#/w3-fold-map`>>
 
 !! FIELD COLLISION III — Fold-map (proposed — operator decides what enters the memegraph)
 
@@ -289,6 +289,6 @@ Crucially, Sedimentree states the forward-secrecy interaction plainly: because "
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8u6ZxcEaL2ZJoWT6hpPjkGL4_mEprHQ7N6n5HnEYdbc
+<<^ code=`&#x0003;`>>ni:///sha-256;wdJPtyJGFP5Jcf73C1RtMPPo2Qoly_vFdz3hB4_xUOo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>
