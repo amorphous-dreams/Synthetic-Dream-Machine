@@ -237,12 +237,14 @@ export function telemetryProviderCap(impl: TelemetryProvider): CapModule {
 
 /**
  * The recall filters that LEFT the coordinator's signature: the enrichment axes `voice`, `band` and `drift`
- * (the taxonomy axis `speaker` carries the stratum now). The coordinator's holder keeps only the parameters
- * its signature declares and drops the rest without a word, so a caller still passing one of these would
- * read an UNFILTERED result as a filtered one. The verb refuses a burned name before any
- * read runs, in every mode.
+ * (the taxonomy axis `speaker` carries the stratum now), and the worldline handle filter `agent-handle` in
+ * each spelling a caller may send (no recall surface reads it: `lar_agent_handle` rides the drawer's
+ * provenance envelope, and a handle's turns read through the worldline door). The coordinator's holder
+ * keeps only the parameters its signature declares and drops the rest without a word, so a caller still
+ * passing one of these would read an UNFILTERED result as a filtered one. The verb refuses a burned name
+ * before any read runs, in every mode.
  */
-const BURNED_RECALL_ARGS: readonly string[] = ["voice", "band", "drift"];
+const BURNED_RECALL_ARGS: readonly string[] = ["voice", "band", "drift", "agent-handle", "agent_handle", "agentHandle"];
 
 /** recall — the mempalace READ shore (semantic-search | list | get | multi-graph fuse). Requires
  *  the mempalace read-client + the form store (the dual fuse). */
