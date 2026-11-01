@@ -830,3 +830,22 @@ test("RED: run --plan reads the queue and moves no entry, even a lane its chain 
   assert.equal(readdirSync(join(w.dir, "q", "entries")).length, 2, "both entries still queued");
   assert.ok(!existsSync(join(w.dir, "q", "dropped")), "nothing moved to dropped/");
 });
+
+test("RED: a span head whose only run was cancelled clean gets a dispatched run before any lane takes blame, never a VOID stop", async () => {
+  const w = world(["a"]);
+  const SP = spanAhead(w);
+  let dispatched = false;
+  const r = await runQ(w, {
+    red: (sha) => hasFile(w, sha, "packages/p-a/f.txt"),
+    over: {
+      dispatchCI: async () => { dispatched = true; },
+      ciRuns: async (sha) => (sha === SP
+        ? [{ databaseId: 70, headBranch: SPAN, headSha: sha, status: "completed", conclusion: "cancelled", attempt: 1, createdAt: "1" }, ...(dispatched ? [{ databaseId: 72, headBranch: SPAN, headSha: sha, status: "completed", conclusion: "success", attempt: 1, createdAt: "2" }] : [])]
+        : [{ databaseId: 71, headBranch: `${SPAN}--train-x`, headSha: sha, status: "completed", conclusion: "failure", attempt: 1, createdAt: "1" }]),
+      rerun: async () => { throw new Error("HTTP 403: rerun refused"); },
+    },
+  });
+  assert.equal(r.code, 5, r.out);
+  assert.ok(dispatched, "the span head got its own run");
+  assert.match(r.out, /DROPPED a: /);
+});
