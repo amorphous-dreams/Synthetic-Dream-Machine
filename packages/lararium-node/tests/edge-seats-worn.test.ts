@@ -11,6 +11,9 @@
  *   W3  RED (road `T35`): a vessel that wears a face whose fleet root or atom stands unread never reads a silent zero: the
  *       fold refuses by name, so the session sign door refuses and nothing seals on a pre-removal head. CONTROL: a vessel
  *       that wears no face reads `read: false`, and the island judges it.
+ *   W4  RED (cold read M1): the operator's road (`lares edge settle`, the store door's edge-seat rows) reads the worn fleet
+ *       too, so a joinee settles by hand as the fold settles it; CONTROL: a door lent no worn fleet still refuses a fleet
+ *       the roster does not serve.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -25,6 +28,8 @@ import { generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, fleetRaisesOf, EdgeSeatError } from "../src/commands/edge-seats.js";
 import { seedFaceAtom, atomSeedOf } from "./atom-fixture.js";
+import { storeDoorReactors } from "../src/store-door-verbs.js";
+import { larSealHome } from "../src/vessel-paths.js";
 
 const ROOT_SEED = new Uint8Array(32).fill(0x5a);       // the fleet root's seed: held by the founder, never by this joinee
 const REMOVED = "c4".repeat(32);
@@ -104,6 +109,22 @@ describe("a joinee reads the fleet it wears (T34)", () => {
       await expect(fold({ repo, worn: { fleetRoot: null, atomKey: worn.atomKey } }), "no root read yet").rejects.toThrow(EdgeSeatError);
       await expect(fold({ repo, worn: { fleetRoot: worn.fleetRoot, atomKey: null } }), "no atom opened yet").rejects.toThrow(EdgeSeatError);
       expect(await fold({ repo, worn: null }), "CONTROL: a faceless vessel").toEqual({ read: false, counted: [], unanswered: [] });
+    } finally { await repo.rest(); }
+  });
+
+  it("W4 — RED (M1): the store door's edge-seat rows read the worn fleet; CONTROL: a door lent none refuses it", async () => {
+    const worn = await wornOf();
+    const raise = await raiseOnBoard(worn.fleetRoot);
+    const repo = restingRepo(larDataDir());
+    try {
+      const base = { storageDir: larDataDir(), sealHome: larSealHome(), repo };
+      const lent = storeDoorReactors({ ...base, wornFleet: () => worn } as never);
+      const facts = await lent["edge-seat-facts"]({ fleetRoot: worn.fleetRoot }, {} as never) as { fleets?: Array<{ fleetRoot: string; edges: unknown[] }> };
+      expect(facts.fleets?.map((f) => f.fleetRoot), "the worn fleet reads through the store door").toEqual([worn.fleetRoot]);
+      expect(facts.fleets?.[0]?.edges).toContainEqual({ edgeId: raise.edgeId, aside: true, raiseCids: [raise.actCid] });
+      const bare = storeDoorReactors(base);
+      const refused = await bare["edge-seat-facts"]({ fleetRoot: worn.fleetRoot }, {} as never) as { refused?: string };
+      expect(refused.refused, "CONTROL: a door lent no worn fleet refuses it by name").toMatch(/holds no face under that fleet root/);
     } finally { await repo.rest(); }
   });
 });
