@@ -180,7 +180,7 @@ import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
-import { runEdgeSeatFacts, runEdgeSeatMarks, fleetRaisesOf, EdgeSeatError } from "./commands/edge-seats.js";
+import { runEdgeSeatFacts, runEdgeSeatMarks, fleetRaisesOf, EdgeSeatError, type WornFleet } from "./commands/edge-seats.js";
 import type { PersonaSelvesPlane, SealedActContext } from "./sealed-acts.js";
 
 /** The hearth dial a custody act reads: `SealedActContext.walk`, lent by the standing composition. */
@@ -1424,6 +1424,10 @@ async function prepareNodeBootOn(
   // the fleet its device edge names reads no facts for it, exactly as `lares edge settle` refuses there, and says
   // so once.
   let rootlessSaid = false;
+  // THE FLEET THIS VESSEL WEARS (road `T34`): its device edge's root and its own atom, the pair every edge-seats door reads
+  // its own fleet by, so a joinee (which holds no root) settles its own foundings on a counted removal. None at the floor.
+  const wornFleetOf = (): { worn?: WornFleet } =>
+    wornFleetRoot && activeAtom ? { worn: { fleetRoot: wornFleetRoot, atomKey: activeAtom.key } } : {};
   // THE ONE ASKER OF `seat-duties`: this main thread, signing each ask as the vessel. The fold's settle below and
   // the store door's row for `lares edge settle` share it; no other road reaches the verb with a proof.
   const askSeatDutiesAsVessel = (facts: { readonly fleetRoot: string; readonly acts: readonly unknown[]; readonly rolled: readonly string[] }): IslandAsk => {
@@ -1441,7 +1445,7 @@ async function prepareNodeBootOn(
     wornFleetRoot: () => wornFleetRoot,
     fold:          () => builtRing.fold(),
     facts: async (fleetRoot) => {
-      try { return (await runEdgeSeatFacts({ repo, fleetRoot })).fleets[0] ?? null; }
+      try { return (await runEdgeSeatFacts({ repo, fleetRoot, ...wornFleetOf() })).fleets[0] ?? null; }
       catch (err) {
         if (!(err instanceof EdgeSeatError)) throw err;
         if (!rootlessSaid) { rootlessSaid = true; console.log(`[edge-seats] no settle runs here for this vessel's own fleet: ${err.message}`); }
@@ -1453,7 +1457,7 @@ async function prepareNodeBootOn(
       const ask = askSeatDutiesAsVessel(facts);
       return { answer: ask.answer as Promise<unknown> as Promise<SeatDutiesAnswer>, abandon: () => ask.abandon() };
     },
-    mark:       (fleetRoot, rolls) => runEdgeSeatMarks({ repo, fleetRoot, rolls }),
+    mark:       (fleetRoot, rolls) => runEdgeSeatMarks({ repo, fleetRoot, rolls, ...wornFleetOf() }),
     // The marks moved the ledger and no board: the ring folds again so every gate reads the roll, and the Repo
     // re-reads its verdicts. This fold sets off no further settle.
     afterMarks: async () => { await builtRing.refold(); reverdict(); },
@@ -1743,7 +1747,7 @@ async function prepareNodeBootOn(
   const sessionSigns = new SessionSignBook();
   // Each read carries the vessel's own fold of the face's fleet board: the raises it counts and those no subscriber
   // took yet, so the holder counts removal versions and owed rolls across a restart.
-  setSessionSignDoor(sessionSigns.door(() => dialAnchor.chain(), async () => fleetRaisesOf({ repo, fleetRoot: wornFleetRoot })));
+  setSessionSignDoor(sessionSigns.door(() => dialAnchor.chain(), async () => fleetRaisesOf({ repo, fleetRoot: wornFleetRoot, ...wornFleetOf() })));
   stood.push({ what: "the session sign door", down: () => { setSessionSignDoor(null); } });
   // Set when the vessel stands its dial down: a late dial still in flight then stands nothing.
   let dialStoodDown = false;
