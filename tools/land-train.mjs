@@ -5,17 +5,21 @@
  *   node tools/land-train.mjs [--plan] [--span <branch>] [--scratch <dir>] <name> <base> <suffix:pr:head:msgfile>...
  *   run from the main checkout, which stands on the span; wrap it in tools/battery.sh (a train is the heavy battery).
  *
- * Each lane `<span>--<suffix>` stands GREEN (CI and held-out, read by tools/ci-verdict.mjs) on a head that carries <base>,
+ * Each lane `<span>--<suffix>` stands GREEN (its CI alone, read by tools/ci-verdict.mjs; held-out runs per train, on the span,
+ * so a lane's held-out reading prints but never gates, and a lane with no run reads `held-out: not run (per train)`) on a head that carries <base>,
  * the last span commit no lane here wrote. The span may stand past <base> only by LANDS (a first-parent subject carrying
  * ` — merge PR #`) or by ROAD commits the span's own CI and held-out read GREEN: the newest road commit at its exact sha, and
- * an older one at its own sha or carried by a newer road commit read GREEN, whose run tested a tree holding it.
+ * an older one at its own sha or carried by a newer road commit read GREEN, whose run tested a tree holding it. A road commit
+ * whose push changed only the paths of tools/ci-ignored-paths.json (meme, docs, wiki) raised no run; it passes when every commit
+ * between it and the nearest first-parent ancestor reading GREEN changed ignored paths alone, and a code commit with no run refuses.
+ * A lane head follows the same rule on its own branch, over an ancestor whose CI reads GREEN.
  *
  *   TRAIN   merge every lane over the span in a provisioned worktree, install when the lockfile moved, build, run the suites of
  *           every package two lanes both touch, witness-all, evergreen; read each verdict from its tally, never an exit alone.
  *           Then write one commit per lane, chained, each with the train's own merge tree, and check the last tree IS the
  *           train's tree before anything pushes.
  *   DIRECT  one lane whose head already holds the span head lands with no train: the land commit takes the lane head's tree,
- *           which the lane's own CI and held-out already read.
+ *           which the lane's own CI already read.
  *   --plan  runs the read-only preflight and prints the commits it would write; it pushes nothing, builds nothing.
  *
  * A verdict reads THREE states. UNREADABLE (GitHub unreachable, a 5xx) reads again six times, thirty seconds apart, and then
@@ -116,20 +120,36 @@ export function verdictWords(stdout, status) {
   return { ci: ci ?? "unread", heldOut: heldOut ?? "unread" };
 }
 
+import { onlyIgnoredPaths } from "./ci-ignored-paths.mjs";
+
 const short = (sha) => String(sha).slice(0, 9);
 const isAncestor = (git, a, b) => { try { git(["merge-base", "--is-ancestor", a, b]); return true; } catch { return false; } };
 
+const touchesIgnoredOnly = (git, c) => onlyIgnoredPaths(git(["diff-tree", "--no-commit-id", "--name-only", "-r", "-m", "--first-parent", c]).split("\n").filter(Boolean));
+/** The nearest first-parent ancestor of `c` reading GREEN at its sha, or null where a commit between holds a run that is not green or touches code. */
+async function greenAncestor(ops, git, branch, c, { lane = false } = {}) {
+  for (const a of git(["rev-list", "--first-parent", "-n", "50", `${c}^`]).split("\n").filter(Boolean)) {
+    const v = await settled(ops, branch, a, { lane });
+    if ((lane ? classifyLane(v) : classify(v)) === "green") return a;
+    if (!(v.ci === "unread" && touchesIgnoredOnly(git, a))) return null;
+  }
+  return null;
+}
+
 /** A lane or road verdict read until it stops reading UNREADABLE (six reads, thirty seconds apart). */
-async function settled(ops, branch, sha) {
+async function settled(ops, branch, sha, { lane = false } = {}) {
   let v;
   for (let i = 0; i < 6; i++) {
     v = await ops.verdict(branch, sha);
-    if (v.ci !== "unreadable" && v.heldOut !== "unreadable") return v;
-    if (v.ci === "red" || v.heldOut === "red") return v;
+    if (lane ? v.ci !== "unreadable" : v.ci !== "unreadable" && v.heldOut !== "unreadable") return v;
+    if (v.ci === "red" || (!lane && v.heldOut === "red")) return v;
     await ops.sleep(30000);
   }
   return v;
 }
+/** A lane reads GREEN on its CI alone: its held-out reading prints but never gates (held-out runs per train, on the span). */
+const classifyLane = (v) => (v.ci === "green" ? "green" : v.ci === "unreadable" ? "unreadable" : "notgreen");
+const heldOutNote = (v) => (v.heldOut === "unread" ? "not run (per train)" : v.heldOut);
 const classify = (v) => (v.ci === "red" || v.heldOut === "red" ? "notgreen"
   : v.ci === "unreadable" || v.heldOut === "unreadable" ? "unreadable"
   : v.ci === "green" && v.heldOut === "green" ? "green" : "notgreen");
@@ -162,13 +182,19 @@ export async function landTrain({ name, base, specs, plan = false, span = SPAN, 
   // The span stands past <base> only by lands or by road commits read green. The walk runs newest first: a road commit read
   // GREEN carries every older commit beneath it, since its run tested a tree that holds them (a push that lands while a run
   // flies cancels that run, so an older sha may hold no verdict of its own). The newest road commit always reads at its sha.
-  let carrier = null;
+  let carrier = null, spanCarried = false;
   for (const c of git(["rev-list", "--first-parent", `${baseSha}..${SP}`]).split("\n").filter(Boolean)) {
     if (git(["log", "-1", "--format=%s", c]).includes(LAND_SUBJECT)) continue;
     if (carrier) { say(`road commit ${short(c)} carried by ${short(carrier)} GREEN`); continue; }
     const v = await settled(ops, span, c);
     const k = classify(v);
     if (k === "green") { say(`road commit ${short(c)} GREEN on the span`); carrier = c; continue; }
+    if (v.ci === "unread" && touchesIgnoredOnly(git, c)) {
+      // The push of this commit changed ignored paths alone (tools/ci-ignored-paths.json), so the push raised no run. It passes only over
+      // a green ancestor, reached first-parent through commits that also changed ignored paths alone and hold no run of their own.
+      const anchor = await greenAncestor(ops, git, span, c);
+      if (anchor) { say(`road commit ${short(c)} touches ignored paths only; no run stands; carried by green ancestor ${short(anchor)}`); carrier = anchor; if (c === SP) spanCarried = true; continue; }
+    }
     if (k === "unreadable") return stop(10, `UNREADABLE: the verdict of road commit ${short(c)} could not be read (${v.ci}/${v.heldOut}); read again later, it is no red`);
     return stop(3, `SPAN MOVED BY A NON-LAND COMMIT NOT READ GREEN since ${short(baseSha)}: ${git(["log", "-1", "--oneline", c]).slice(0, 80)}`);
   }
@@ -180,18 +206,24 @@ export async function landTrain({ name, base, specs, plan = false, span = SPAN, 
     if (LH !== l.head) return stop(3, `HEAD MOVED: ${l.suffix} is ${LH}, not ${l.head}`);
     if (!isAncestor(git, baseSha, LH)) return stop(9, `LANE LACKS THE BASE: ${l.suffix}`);
     if (!ops.readMsg(l.msg).trim()) return stop(2, `NO MESSAGE FILE: ${l.msg}`);
-    const v = await settled(ops, branch, LH);
-    const k = classify(v);
-    if (k === "unreadable") return stop(10, `UNREADABLE: lane ${l.suffix}'s verdict could not be read (${v.ci}/${v.heldOut}); read again later, it is no red`);
-    if (k !== "green") return stop(8, `LANE NOT GREEN: ${l.suffix}`, `  ci ${v.ci} · held-out ${v.heldOut}`);
+    const v = await settled(ops, branch, LH, { lane: true });
+    let k = classifyLane(v);
+    if (k !== "green" && v.ci === "unread" && touchesIgnoredOnly(git, LH)) {
+      // The lane head's push changed ignored paths alone and raised no run; it reads GREEN over a CI-green ancestor on its own branch.
+      const anchor = await greenAncestor(ops, git, branch, LH, { lane: true });
+      if (anchor) { say(`lane ${l.suffix} head ${short(LH)} touches ignored paths only; no CI run stands; carried by green ancestor ${short(anchor)}`); k = "green"; }
+    }
+    if (k === "unreadable") return stop(10, `UNREADABLE: lane ${l.suffix}'s CI verdict could not be read (${v.ci}); read again later, it is no red`);
+    if (k !== "green") return stop(8, `LANE NOT GREEN: ${l.suffix}`, `  ci ${v.ci} · held-out ${heldOutNote(v)}`);
     l.subject = ops.readMsg(l.msg).split("\n")[0];
-    say(`lane ${l.suffix} GREEN at ${short(LH)} (PR #${l.pr})`);
+    say(`lane ${l.suffix} GREEN at ${short(LH)} (PR #${l.pr}) · held-out: ${heldOutNote(v)}`);
   }
 
   const direct = lanes.length === 1 && isAncestor(git, SP, lanes[0].head);
   if (!direct) {
     // The train reads every lane over the span as it stands: the span head itself must read GREEN (the shell's SPAN NOT GREEN).
-    const sv = await settled(ops, span, SP), sk = classify(sv);
+    // A span head whose push the ignore list skipped holds no run; the walk above already carried it over a green ancestor.
+    const sv = spanCarried ? { ci: "green", heldOut: "green" } : await settled(ops, span, SP), sk = classify(sv);
     if (sk === "unreadable") return stop(10, `UNREADABLE: the span head ${short(SP)}'s verdict could not be read (${sv.ci}/${sv.heldOut}); read again later, it is no red`);
     if (sk !== "green") return stop(5, `SPAN NOT GREEN at ${short(SP)}: ci ${sv.ci} · held-out ${sv.heldOut}`);
     const d = diskRefusal(ops.disk(), ops.env); if (d) return stop(6, d);

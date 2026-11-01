@@ -99,11 +99,11 @@ Generated laws draw from `fast-check` through `@fast-check/vitest`, the literal 
 
 !! The holes the laws name
 
-* ''Mutation testing at scale.'' Stryker 10 runs against this suite's vitest 5 and activates no mutant at runtime: every score read the same, killing only mutants that act at load. The named catalog stands in until a runner activates them; a probe of each Stryker release with vitest 5 settles it.
+* ''Mutation testing at scale.'' StrykerJS 10.1.1 activates and kills mutants under this suite's vitest 5 (measured 2026-10-31 in a sandbox probe: `kinds.ts` and `engine.ts`, 994 mutants, 72.7%; the runner's `pool` set to `forks`), and its survivors name boundaries no test pins. The named catalog keeps the three shapes Stryker cannot generate (an operand swap, a statement insertion, a template reorder); how mutation joins the house's battery rides the road's `T18`.
 * ''Tests that cannot fail.'' The census names 24: string-length checks, constants a test pins against itself, "mutation proof" blocks that re-implement the old shape and assert their own code, and a refusal test whose two exits read the same code.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5HEQJlO53wWvJOf_9-b_ikJGrEyUO88xpvM7MxlAnyM
+<<^ code="&#x0003;">>ni:///sha-256;C38R7_i0K5nvoD415SAa8b_TQrum00lVJMK7Y_A4zwY
 
 <<^ code="&#x0004;" -> to="?">>

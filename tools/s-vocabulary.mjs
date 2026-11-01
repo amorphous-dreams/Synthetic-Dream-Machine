@@ -5,7 +5,7 @@
  * The omnibus vessel key retired: the node (S) tree seals the gate root and the place archive, each face seals under its own
  * key (FCK), and the serving tree wraps SK. A word that still spells that key's old abbreviation reads as the thing that retired.
  * The check scans code, comments and strings alike, with named line exceptions, itself included: it names the
- * abbreviation only through character classes. The floor vessel key (`.vessel-key*.json`, the place signing seed) is a different
+ * abbreviation only through character classes. The floor vessel key (`.vessel-key.json`, the place signing seed) is a different
  * thing; its names do not contain the abbreviation.
  *
  * Live canon is scanned too: every carrier the one finder (`carrierFiles()`, the built shore) declares, except `docs/history/` (the canon-history class owns that directory).
