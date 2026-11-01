@@ -3,7 +3,8 @@
 # vessel stand  <lares verb…>. The CLI runs by exec while a vessel stands and through the offline door while none
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
-# LARES_STATE / LARES_WORKSPACE come from the environment or `lares-surface.env` beside the compose file; keep both
+# LARES_STATE / LARES_WORKSPACE come from the environment or the hearth's own `lares-surface.env`
+# (`<hearth>/lares-surface.env`, the hearth root `LAR_ROOT` names, else `~/.lares`; never beside the compose file); keep both
 # mounts inside the WSL distro's filesystem, never a Windows share. One lararium per HUMAN: nothing here names a face.
 # A VESSEL STANDS HOLDING NO KEY. Every start returns it to the floor, so after `up`, after `vessel stand`, and after
 # each restart this shim performs, it runs `vault unlock` attached when this shell holds a TTY, and otherwise names
@@ -15,7 +16,8 @@ function Die([string]$m) { [Console]::Error.WriteLine("lares-container: $m"); ex
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = Split-Path -Parent $Here
 $ComposeFile = if ($env:LARES_COMPOSE_FILE) { $env:LARES_COMPOSE_FILE } else { Join-Path $Root 'docker-compose.surface.yml' }
-$EnvFile = Join-Path (Split-Path -Parent $ComposeFile) 'lares-surface.env'
+$Hearth = if ($env:LAR_ROOT) { $env:LAR_ROOT } else { Join-Path $HOME '.lares' }
+$EnvFile = Join-Path $Hearth 'lares-surface.env'
 $Cli = 'packages/lares-cli/bin/lares.mjs'
 
 foreach ($name in 'LARES_STATE', 'LARES_WORKSPACE') {

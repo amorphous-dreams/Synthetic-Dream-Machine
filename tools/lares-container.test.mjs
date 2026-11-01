@@ -18,7 +18,13 @@ const SH = join(ROOT, "tools/lares-container.sh");
 const PS1 = join(ROOT, "tools/lares-container.ps1");
 const havePwsh = spawnSync("pwsh", ["-NoProfile", "-Command", "1"]).status === 0;
 
-async function run(shim, argv, { env = {}, envFile } = {}) {
+/**
+ * THE HEARTH OWNS ITS ENV FILE. The shim reads `lares-surface.env` from the hearth root (`LAR_ROOT`, else
+ * `~/.lares`), the same root `resolveLaresMcp` reads, and never from the clone: a file beside the compose file
+ * would sit in the tracked checkout. Every run names a scratch hearth, so no test reads a real `~/.lares`.
+ * `envAt: "clone"` plants the file beside the compose file instead, where the shim must not look.
+ */
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth" } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -31,11 +37,13 @@ async function run(shim, argv, { env = {}, envFile } = {}) {
     await chmod(join(dir, "docker"), 0o755);
     const compose = join(dir, "docker-compose.surface.yml");
     await writeFile(compose, "services: {}\n");
-    if (envFile) await writeFile(join(dir, "lares-surface.env"), envFile);
+    const hearth = join(dir, "hearth");
+    await mkdir(hearth, { recursive: true });
+    if (envFile) await writeFile(join(envAt === "clone" ? dir : hearth, "lares-surface.env"), envFile);
     const cmd = shim === SH ? ["sh", [SH, ...argv]] : ["pwsh", ["-NoProfile", "-File", PS1, ...argv]];
     // A standing vessel answers a steady verdict unless a test scripts another answer.
     const steady = '{"data":{"standing":{"act":"attach","reason":"steady"}}}';
-    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: process.env.HOME, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady };
+    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: process.env.HOME, LAR_ROOT: hearth, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady };
     const r = spawnSync(cmd[0], cmd[1], { env: { ...base, ...env }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
     return { ...r, calls, dir };
@@ -54,7 +62,7 @@ test("sh: found under a TTY runs attached, with no -T", { skip: !haveScript }, a
     const compose = join(dir, "docker-compose.surface.yml");
     await writeFile(compose, "services: {}\n");
     spawnSync("script", ["-qec", `sh ${SH} found`, "/dev/null"], {
-      env: { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: process.env.HOME, LARES_COMPOSE_FILE: compose, LARES_STATE: "/s", LARES_WORKSPACE: "/w" },
+      env: { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: process.env.HOME, LAR_ROOT: join(dir, "hearth"), LARES_COMPOSE_FILE: compose, LARES_STATE: "/s", LARES_WORKSPACE: "/w" },
       encoding: "utf8",
     });
     const calls = await readFile(log, "utf8");
@@ -74,10 +82,17 @@ for (const [name, shim] of shims) {
     assert.equal(r.calls, "");
   });
 
-  test(`${name}: a mount named in lares-surface.env stands`, async () => {
+  test(`${name}: a mount named in the hearth's lares-surface.env stands`, async () => {
     const r = await run(shim, ["vessel", "read"], { envFile: "LARES_STATE=/s\nLARES_WORKSPACE=/w\n" });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /--env-file \S*lares-surface\.env/);
+    assert.match(r.calls, /--env-file \S*\/hearth\/lares-surface\.env/);
+  });
+
+  test(`${name}: an env file beside the compose file goes unread: no hearth file, the mounts refuse by name`, async () => {
+    const r = await run(shim, ["vessel", "read"], { envFile: "LARES_STATE=/s\nLARES_WORKSPACE=/w\n", envAt: "clone" });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /LARES_STATE stands in neither the environment nor \S*\/hearth\/lares-surface\.env/);
+    assert.equal(r.calls, "");
   });
 
   test(`${name}: any other argv with a running vessel runs the CLI by exec`, async () => {
