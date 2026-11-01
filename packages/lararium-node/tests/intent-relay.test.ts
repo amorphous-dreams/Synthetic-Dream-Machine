@@ -199,6 +199,40 @@ describe("the relay service keeps its stands owned", () => {
     }
   });
 
+  test("RED: the caller owns the service before its first sweep, so a close while one face's read stalls leaves no route, and the next stand stands its gate; CONTROL: an unstalled stand and close, then the next stand", async () => {
+    // Train t3's Sol read (MEDIUM): the first sweep stood one face's route while it awaited another face, and the caller held
+    // no service to close until that sweep ended. A stalled read left the route owned past the teardown, and the next
+    // composition's stand of that face read "a gate already stands".
+    seat = await seatScratchCustody("relay-own-first");
+    const r = await rig();
+    await intentRelayKeyOrMint(); await enableIntentRelayFace(group); await enableIntentRelayFace(second);
+    for (const stall of [false, true]) {
+      let release!: () => void, stalled!: () => void;
+      const held = new Promise<void>((resolve) => { release = resolve; });
+      const reached = new Promise<void>((resolve) => { stalled = resolve; });
+      let owned: IntentRelayService | null = null;
+      const standing = standIntentRelay({
+        gateServer: r.server, rootDoor: custodyGateDoor(), deadlines: r.deadlines, log: (m) => r.log.push(m),
+        faces: async (g) => { if (stall && g === second) { stalled(); await held; } return facesOf(group, second)(g); },
+        onStand: (service: IntentRelayService) => { owned = service; },
+      } as Parameters<typeof standIntentRelay>[0]);
+      if (stall) {
+        await reached;                                             // the first face's route stands; the second face's read stalls
+        expect(r.server.paths()).toHaveLength(1);
+        (owned as IntentRelayService | null)?.close();             // the teardown, mid-sweep
+        expect(r.server.paths(), "a route outlived the teardown that met a stalled sweep").toEqual([]);
+        release();
+      }
+      const service = await standing;
+      service.close();
+      expect(r.server.paths()).toEqual([]);
+      // The next composition's stand stands every enabled face's gate, none "already" standing.
+      const next = await standIntentRelay({ gateServer: r.server, rootDoor: custodyGateDoor(), deadlines: r.deadlines, faces: facesOf(group, second), log: (m) => r.log.push(m) });
+      expect(next.standing().map((s) => s.group).sort()).toEqual([group, second].sort());
+      next.close();
+    }
+  });
+
   test("RED: a locked face's route closes on the refresh the lock sets off and a dial refuses; CONTROL: the other face's relay keeps admitting", async () => {
     seat = await seatScratchCustody("relay-lock");
     const r = await rig();
