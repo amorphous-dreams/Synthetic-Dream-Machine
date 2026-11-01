@@ -755,3 +755,22 @@ test("RED: QUEUE: a lane whose diff changes ignored paths alone refuses the queu
   assert.equal(d.code, 0, d.out);
   assert.match(d.out, /DIRECT-LANDED/);
 });
+
+test("RED: QUEUE: enqueue validates and writes one entry per lane; run drains the queue; status exits 1 while a train ref stands unlanded and 0 when none does", async () => {
+  const w = world();
+  const { ops } = opsQ(w); const lines = []; ops.log = (l) => lines.push(l);
+  const o = { span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") };
+  assert.equal((await LT.enqueue({ ...o, specs: specsOf(w) }, ops)).code, 0, lines.join("\n"));
+  const bad = specsOf(w, ["a"])[0].replace(w.heads.a, "f".repeat(40));
+  assert.equal((await LT.enqueue({ ...o, specs: [bad] }, ops)).code, 3, "a moved head never enters");
+  assert.equal((await LT.queueStatus(o, ops)).code, 0);
+  const t = sh(w.work, "commit-tree", `${w.heads.a}^{tree}`, "-p", w.base, "-m", "stray train");
+  sh(w.work, "push", "-q", "origin", `${t}:refs/heads/${SPAN}--train-9-${t.slice(0, 9)}`);
+  assert.equal((await LT.queueStatus(o, ops)).code, 1, "a train ref stands unlanded");
+  sh(w.work, "push", "-q", "origin", "--delete", `${SPAN}--train-9-${t.slice(0, 9)}`);
+  const r = await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops);
+  assert.equal(r.code, 0, lines.join("\n"));
+  const final = originRef(w, SPAN);
+  for (const s of ["a", "b"]) assert.ok(hasFile(w, final, `packages/p-${s}/f.txt`));
+  assert.equal((await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops)).code, 2, "an empty queue names no lane");
+});
