@@ -399,6 +399,9 @@ export async function signRecord<K extends RecordKind>(args: {
  *  certificate, for the face's withdrawal history, and for the face's standing in the bag. */
 export interface WriterStanding {
   holdsWrite(args: { readonly certificate: SessionCertificate; readonly bagId: string }): boolean;
+  /** The chain this standing reads writers under, named, or null where none stands yet: a reading taken then counts
+   *  no writer, so a holder takes no reading and settles no roll on it. Absent: the standing reads alike always. */
+  readonly chainOf?: () => string | null;
 }
 export const READ_RECORD_REFUSALS = [
   "record-malformed",       // the carried record, or its clear part, reads as no record of this kind
