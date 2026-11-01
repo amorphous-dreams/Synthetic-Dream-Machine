@@ -923,3 +923,18 @@ test("RED: the repo's security table classes the code that decides CI's verdict:
   // CONTROL: an ordinary source path stays out of the class.
   assert.deepEqual(LT.securityHits(table, ["packages/lararium-tw5/src/wiki-shore.ts"]), []);
 });
+
+test("RED: a VOID train tears down its ref, so the next run builds afresh instead of resuming the cancelled run forever; status clears", async () => {
+  const w = world(["a"]);
+  const SP = spanAhead(w);
+  let cancelledOnce = true;
+  const ciRuns = async (sha) => [{ databaseId: sha === SP ? 1 : 2, headBranch: sha === SP ? SPAN : `${SPAN}--train-x`, headSha: sha, status: "completed", conclusion: sha === SP || !cancelledOnce ? "success" : "cancelled", attempt: 1, createdAt: "x" }];
+  const r1 = await runQ(w, { over: { ciRuns } });
+  assert.equal(r1.code, 13, r1.out);
+  const { ops } = opsQ(w); ops.log = () => {};
+  assert.equal((await LT.queueStatus({ span: SPAN, cwd: w.work, queueDir: join(w.dir, "q") }, ops)).code, 0, "no train ref stands after VOID");
+  cancelledOnce = false;
+  const r2 = await runQ(w, { over: { ciRuns } });
+  assert.equal(r2.code, 0, r2.out);
+  assert.doesNotMatch(r2.out, /RESUMED/);
+});
