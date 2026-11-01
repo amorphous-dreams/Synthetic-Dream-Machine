@@ -41,16 +41,21 @@ function fromWidget(source) {
   return tokens;
 }
 
-function fromHost(rootNode, bytes) {
+/** The host reduction reads the live opener (`slot=` and `uri=` in ticks); `legacy` reads the frozen specimens'
+ * own positional opener, for the pins that show the host fold still folds it. */
+const LIVE = { ahu: /<<~\s*ahu\s+slot=`(#[\w/-]+)`/, link: /<<~\s*loulou\s+uri=`([^`]+)`\s*>>/ };
+const LEGACY = { ahu: /<<~\s*ahu\s+(#[\w/-]+)/, link: /<<~\s*loulou\s+([^\s>]+)\s*>>/ };
+
+function fromHost(rootNode, bytes, read = LIVE) {
   const tokens = [];
   const source = (node) => new TextDecoder().decode(bytes.slice(node.start, node.end));
   const visit = (node) => {
     if (node.kind === "meme.ahu") {
-      const slot = /<<~\s*ahu\s+(#[\w/-]+)/.exec(source(node))?.[1];
+      const slot = read.ahu.exec(source(node))?.[1];
       if (slot) tokens.push({ kind: "ahu", value: slot });
     }
     if (node.kind === "meme.sigil") {
-      const target = /<<~\s*loulou\s+([^\s>]+)\s*>>/.exec(source(node))?.[1];
+      const target = read.link.exec(source(node))?.[1];
       if (target) tokens.push({ kind: "link", value: target });
     }
     for (const child of node.children ?? []) visit(child);
@@ -73,9 +78,11 @@ test("widget-tree-parity: reviewed source and seven fixture-derived specimens ag
     // in memory first; a specimen holding an old-form ahu opener must move.
     const ctx = await loadContext({ repo });
     const kupono = (text) => {
-      const cut = cutText(text, ctx, { rel: "parity-specimen" }).text;
+      // handReviewed: the specimens cite bare URIs (`<<~ loulou lar:///…>>`) the parser misreads BEFORE the cut;
+      // the AFTER oracle still binds every value the cut writes.
+      const cut = cutText(text, ctx, { rel: "parity-specimen", handReviewed: true }).text;
       if (/<<~\s*ahu\s+#/.test(text)) assert.notEqual(cut, text, "the cut moves a frozen specimen's old-form opener");
-      assert.doesNotMatch(cut, /<<~\s*ahu\s+#/, "no old-form ahu opener survives the cut");
+      assert.doesNotMatch(cut, /<<~\s*(?:ahu\s+#|loulou\s+[^\s>u])/, "no old-form ahu or loulou opener survives the cut");
       return cut;
     };
     const spaced = fixtures[0].slice(fixtures[0].indexOf("<<~ ahu #open-and-close"), fixtures[0].indexOf("\\procedure"));
@@ -96,22 +103,27 @@ test("widget-tree-parity: reviewed source and seven fixture-derived specimens ag
       assert.deepEqual(widget.filter((t) => t.kind === "ahu"), host.filter((t) => t.kind === "ahu"), `specimen ${index} ahu slots`);
       const links = widget.filter((t) => t.kind === "link").map((t) => t.value);
       const hostLinks = host.filter((t) => t.kind === "link").map((t) => t.value);
-      const midLine = (source.match(/[^\n]<<~\s*loulou\s+[^\s>]+\s*>>/g) ?? []).length;
+      const midLine = (source.match(/[^\n]<<~\s*loulou\s+uri=`[^`]+`\s*>>/g) ?? []).length;
       assert.equal(links.length - hostLinks.length, midLine, `specimen ${index} extra links are the mid-line sigils`);
       let at = 0;
       for (const link of links) if (link === hostLinks[at]) at++;
       assert.equal(at, hostLinks.length, `specimen ${index} host links are a subsequence of the widget links`);
       if (index >= 2 && index <= 3) assert.equal(widget.some((t) => t.kind === "ahu"), true, `specimen ${index} carries ahu slots both sides read`);
     }
-    // KNOWN DIVERGENCES, pinned as they stand (the writer emits neither spelling): the spaced `<<~ ahu #x >>` of
-    // authored-01 and the legacy `#slot` spelling fold in the host and read as no slot in the in-VM parser.
+    // KNOWN DIVERGENCES, pinned as they stand (the writer emits none of these spellings): the frozen specimens'
+    // positional opener, the spaced `<<~ ahu #x >>` of authored-01 and the legacy `#slot` spelling fold in the host
+    // and read as no slot in the in-VM parser.
     const spacedBytes = new TextEncoder().encode(spaced);
     assert.deepEqual(fromWidget(spaced), [], "the in-VM parser reads no ahu from the spaced spelling");
-    assert.ok(fromHost(fold(spacedBytes, artifact), spacedBytes).map((t) => t.value).includes("#open-and-close"), "the host fold reads it");
+    assert.ok(fromHost(fold(spacedBytes, artifact), spacedBytes, LEGACY).map((t) => t.value).includes("#open-and-close"), "the host fold reads it");
     const legacy = "<<~ ahu #legacy>>\nbody\n<<~/ahu>>";
     const legacyBytes = new TextEncoder().encode(legacy);
     assert.deepEqual(fromWidget(legacy), [], "the in-VM parser reads no slot from the legacy spelling");
-    assert.deepEqual(fromHost(fold(legacyBytes, artifact), legacyBytes).map((t) => t.value), ["#legacy"], "the host fold reads it");
+    assert.deepEqual(fromHost(fold(legacyBytes, artifact), legacyBytes, LEGACY).map((t) => t.value), ["#legacy"], "the host fold reads it");
+    const positional = "<<~ ahu #/positional>>\nbody\n<<~/ahu>>";
+    const positionalBytes = new TextEncoder().encode(positional);
+    assert.deepEqual(fromWidget(positional), [], "the in-VM parser reads no slot from the frozen positional opener");
+    assert.deepEqual(fromHost(fold(positionalBytes, artifact), positionalBytes, LEGACY).map((t) => t.value), ["#/positional"], "the host fold reads it");
     const witnessSource = "<<~ ahu slot=`#/witness`>>\n<<~/ahu>>";
     const witnessBytes = new TextEncoder().encode(witnessSource);
     const witness = fromWidget(witnessSource);
