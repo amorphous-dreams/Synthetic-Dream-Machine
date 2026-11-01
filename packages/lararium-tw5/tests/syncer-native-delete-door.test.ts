@@ -63,7 +63,7 @@ function fire(w: ReturnType<typeof wiki>, title: string, ifMatch?: string): Prom
 
 /** A root with two slot children and one `/path` child — the whole group the removal law names. */
 function splitMeme(w: ReturnType<typeof wiki>): void {
-  w.addTiddler({ title: "lar:///t/x", type: CARRIER_TYPE, text: "<<~ kahea ahu #/a>>\n\n<<~ kahea ahu #/b>>", "uri-path": "t/x" } as TiddlerFields);
+  w.addTiddler({ title: "lar:///t/x", type: CARRIER_TYPE, text: "<<~ kahea ahu slot=`#/a`>>\n\n<<~ kahea ahu slot=`#/b`>>", "uri-path": "t/x" } as TiddlerFields);
   w.addTiddler({ title: "lar:///t/x#/a", type: CARRIER_TYPE, text: "! a", "$fragment-parent": "lar:///t/x", $slot: "#/a" } as unknown as TiddlerFields);
   w.addTiddler({ title: "lar:///t/x#/b", type: CARRIER_TYPE, text: "! b", "$fragment-parent": "lar:///t/x", $slot: "#/b" } as unknown as TiddlerFields);
   w.addTiddler({ title: "lar:///t/x/child", type: CARRIER_TYPE, text: "a child carrier", "uri-path": "t/x/child" } as TiddlerFields);

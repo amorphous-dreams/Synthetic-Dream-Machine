@@ -13,7 +13,7 @@ const derivations = (): number => vi.mocked(stratify).mock.calls.filter((call) =
 const { WikiStoreAdapter, buildFixtureIsland, projectWikiSensorium } = await import("../src/wiki-store-adapter.js");
 
 const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: "warm-refold" };
-const seeds = Array.from({ length: 40 }, (_, i) => ({ title: `Carrier ${i}`, text: `<<~ ahu #/a${i}>>\n\n! Head ${i}\n\nbody words number ${i} recurring grammar here\n\n<<~/ahu>>` }));
+const seeds = Array.from({ length: 40 }, (_, i) => ({ title: `Carrier ${i}`, text: `<<~ ahu slot=\`#/a${i}\`>>\n\n! Head ${i}\n\nbody words number ${i} recurring grammar here\n\n<<~/ahu>>` }));
 
 describe("the coherence read refolds warm: one write re-derives one stalk, not the corpus", () => {
   test("RED: a refold after one body edit derives exactly one stalk; CONTROL: the first fold derives every stalk", async () => {

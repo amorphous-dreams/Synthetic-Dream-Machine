@@ -24,7 +24,7 @@ import { bootTestWiki, renderWikitext, wikiSkip, skipNote } from "./test-wiki.js
 /** Every call whose definition re-enters the dispatcher with a slot that arrives empty. */
 const RE_ENTRANT = [
   '<<~ if "[[1]match[1]]">>',
-  '<<~ meme "lar:///a.b.c/x">>',
+  '<<~ meme uri=`lar:///a.b.c/x`>>',
   '<<~ for "[tag[x]]">>',
   '<<~ tiddler "lar:///a.b.c/x">>',
   '<<~ let name "value">>',

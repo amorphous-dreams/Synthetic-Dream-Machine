@@ -31,9 +31,9 @@ afterEach(() => { if (root) { rmSync(root, { recursive: true, force: true }); ro
 const BAG = "lar:///ha.ka.ba/bags/x";
 const uriOf = (i: number) => `lar:///ha.ka.ba/lares/api/settle-${String(i).padStart(3, "0")}`;
 const framed = (i: number): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uriOf(i)}">>\n<<^ code="&#x0002;">>\n\n` +
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uriOf(i)}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
   "```toml meta\nzeta = \"last\"\nalpha = \"first\"\nuri-path = \"" + uriOf(i).slice("lar:///".length) + "\"\n```\n\n\n\n" +
-  `body ${i}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `body ${i}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function seed(n: number): ScanRow[] {
   root = mkdtempSync(join(tmpdir(), "ingest-settle-"));

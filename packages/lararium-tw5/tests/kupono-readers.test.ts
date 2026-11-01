@@ -1,3 +1,4 @@
+// vm-grammar-boundary: exempt — reads the ahu scanner's own opener regexes as reader-shape vectors (the slot names itself), never as a grammar surface
 /**
  * THE KUPONO READERS — the tw5 readers read the cut grammar (Train Q, row Q4).
  *

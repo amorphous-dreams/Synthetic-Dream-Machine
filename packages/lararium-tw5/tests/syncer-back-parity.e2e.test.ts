@@ -34,15 +34,15 @@ if (!forkPresent) {
 
 /** A framed meme carrying one slot per name — the canonical frame: the root meta opens the body, after STX. */
 const meme = (uri: string, uriPath: string, slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uriPath}"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uriPath}"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 /** The same meme MIS-framed: its meta fence stands above STX, a tear the frame verdict names. */
 const misframed = (uri: string, uriPath: string, slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n\`\`\`toml meta\nuri-path = "${uriPath}"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n\`\`\`toml meta\nuri-path = "${uriPath}"\n\`\`\`\n\n<<^ code=\`&#x0002;\`>>\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function freePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -218,7 +218,7 @@ describe.skipIf(!forkPresent)("★ THE STOCK SYNCER'S BACK-PARITY FLOW — six l
     // CONTROL: the plain tiddler beside it took the door it always took.
     expect(wire).toContain("PUT /recipes/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa-plain -> 204");
     expect(await under("lar:///t/a")).toEqual(["lar:///t/a", "lar:///t/a#/a", "lar:///t/a#/b", "lar:///t/a-plain"]);
-    expect((await shelf("lar:///t/a"))["text"]).toBe("<<~ kahea ahu #/a>>\n\n<<~ kahea ahu #/b>>");
+    expect((await shelf("lar:///t/a"))["text"]).toBe("<<~ kahea ahu slot=`#/a`>>\n\n<<~ kahea ahu slot=`#/b`>>");
   }, 60_000);
 
   // ── (e) the `revision`/`bag` stamps stock's GET lays on ──────────────────────────────────────────
@@ -259,7 +259,7 @@ describe.skipIf(!forkPresent)("★ THE STOCK SYNCER'S BACK-PARITY FLOW — six l
     expect(after.body).toContain("EDITED");
     expect(after.etag).not.toBe(before.etag);
     // The root's own record never moved: no re-cut, and the backstop reads `framedRootOf` null on a child.
-    expect((await shelf("lar:///t/a"))["text"]).toBe("<<~ kahea ahu #/a>>\n\n<<~ kahea ahu #/b>>");
+    expect((await shelf("lar:///t/a"))["text"]).toBe("<<~ kahea ahu slot=`#/a`>>\n\n<<~ kahea ahu slot=`#/b`>>");
     expect(fork!.log.join("").split("\n").filter((l) => l.includes("[memetic-wikitext]"))).toEqual([]);
   }, 60_000);
 
@@ -296,7 +296,7 @@ describe.skipIf(!forkPresent)("★ THE STOCK SYNCER'S BACK-PARITY FLOW — six l
     // THE POINTER STAYS. The root never re-cuts — `deserializer.ts:1013` keeps a missing child's marker
     // (never invented bytes), and a re-cut would move the ROOT's canonical hash and 412 every unrelated
     // in-flight edit of the same carrier. So the served meme carries the call to the record that left.
-    expect((await memeGet("lar/t/a")).body).toContain("<<~ kahea ahu #/b>>");
+    expect((await memeGet("lar/t/a")).body).toContain("<<~ kahea ahu slot=`#/b`>>");
     // AND THE RENDER MARKS IT DEAD. An arriving child HAS a record; a dead one does not, so the slot's
     // own template reads which nothing it holds — this is the half a reader sees.
     const html = await page.evaluate(() => {

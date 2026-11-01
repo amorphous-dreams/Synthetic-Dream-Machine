@@ -17,9 +17,9 @@ import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 
 const URI = "lar:///t/face";
 const meme = (slots: readonly string[]): string =>
-  `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n\n<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/face"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<!DOCTYPE type=\`memetic-wikitext+tiddlywiki\` spec=\`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\`>>\n\n<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/face"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 describe.skipIf(wikiSkip)(`$tw.lares.meme — the in-VM face${skipNote}`, () => {
   let engine: TW5Engine;
@@ -52,7 +52,7 @@ describe.skipIf(wikiSkip)(`$tw.lares.meme — the in-VM face${skipNote}`, () => 
     expect(receipt.decision).toBe("ingest");
     expect(engine.wiki.getTiddler(`${URI}#/b`)).toBeTruthy();
     const back = await face.read(URI);
-    expect(back?.text).toContain("<<~ ahu #/b>>");
+    expect(back?.text).toContain("<<~ ahu slot=`#/b`>>");
     expect(back?.canonicalHash).toMatch(/^sha256:/);
     expect(await face.read("lar:///t/absent")).toBeNull();
   });

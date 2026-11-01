@@ -55,7 +55,7 @@ const parse = (text: string) =>
  * Null where the fragment declares nothing — a distinct fact from a block that declares badly.
  */
 function childMetaBlock(out: string): string | null {
-  const start = out.indexOf("<<~ ahu #/kid>>");
+  const start = out.indexOf("<<~ ahu slot=`#/kid`>>");
   if (start < 0) return null;
   const end = out.indexOf("<<~/ahu>>", start);
   const region = out.slice(start, end < 0 ? undefined : end);
@@ -70,7 +70,7 @@ function childMeta(out: string): TiddlerFields {
 }
 
 const parent: TiddlerFields = {
-  title: ROOT, type: CARRIER_TYPE, namespace: "ns", text: "<<~ kahea ahu #/kid>>",
+  title: ROOT, type: CARRIER_TYPE, namespace: "ns", text: "<<~ kahea ahu slot=`#/kid`>>",
 };
 
 describe("child name blocks — what a fragment may declare", () => {

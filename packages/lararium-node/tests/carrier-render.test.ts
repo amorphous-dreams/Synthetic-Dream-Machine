@@ -78,10 +78,10 @@ describe("writeBagManifest/readBagManifest — through carrier-render, not a bes
     try {
       writeBagManifest(join(root, "bag"), { bag: "crossroads", tier: "public", home: "repository", repository: "synthetic-dream-machine" });
       const wire = readFileSync(join(root, "bag", "meta.mem"), "utf8");
-      expect(wire).toContain('from="?" -> to="lar:///ha.ka.ba/bags/crossroads"');
-      expect(wire).toContain('<<^ code="&#x0002;">>');
-      expect(wire).toMatch(/<<\^ code="&#x0003;">>ni:\/\/\/sha-256;/);
-      expect(wire).toContain('<<^ code="&#x0004;" -> to="?">>');
+      expect(wire).toContain('from=`?` to=`lar:///ha.ka.ba/bags/crossroads`');
+      expect(wire).toContain('<<^ code=`&#x0002;`>>');
+      expect(wire).toMatch(/<<\^ code=`&#x0003;`>>ni:\/\/\/sha-256;/);
+      expect(wire).toContain('<<^ code=`&#x0004;` to=`?`>>');
       expect(verifyBcc(wire)).toBe("ok");
       const shape = readCarrierShape(wire);
       expect(shape.faults).toEqual([]);
@@ -124,7 +124,7 @@ describe("the library index — one slot per entry, through the same canonical d
       "! Library — shelf",
     ].join("\n");
     const wire = renderCarrier(uri, body);
-    expect(wire).toContain('from="?" -> to="lar:///ha.ka.ba/library/shelf"');
+    expect(wire).toContain('from=`?` to=`lar:///ha.ka.ba/library/shelf`');
     expect(verifyBcc(wire)).toBe("ok");
     expect(readCarrierShape(wire).faults).toEqual([]);
   });
@@ -132,7 +132,7 @@ describe("the library index — one slot per entry, through the same canonical d
   test("★ every entry is addressable as `<index-uri>#/<cid>` and round-trips its own fields ★", () => {
     const uri = "lar:///ha.ka.ba/library/shelf";
     const entryBlock = (e: LibraryEntryMeta): string =>
-      [`<<~ ahu #/${e.cid}>>`, "```toml meta", [kv("name", e.name), kv("bytes", String(e.size)), kv("anchor", e.integrity)].join("\n"), "```", "<<~/ahu>>"].join("\n");
+      [`<<~ ahu slot=\`#/${e.cid}\`>>`, "```toml meta", [kv("name", e.name), kv("bytes", String(e.size)), kv("anchor", e.integrity)].join("\n"), "```", "<<~/ahu>>"].join("\n");
     const body = [
       "```toml meta",
       kv("collection", "shelf"),

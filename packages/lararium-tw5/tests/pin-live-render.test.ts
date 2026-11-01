@@ -24,7 +24,7 @@ const NOWHERE_URI = "lar:///t/pin-nowhere";
 const BARE_REF_URI = "lar:///t/pin-ref-bare";
 
 const refMeme = (uri: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n` +
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
   "```toml meta\n" +
   'reference-author     = "A. Author"\n' +
   'reference-date       = "January 2024"\n' +
@@ -35,13 +35,13 @@ const refMeme = (uri: string): string =>
   `uri-path             = "${uri.replace(/^lar:\/\/\//, "")}"\n` +
   "```\n\n" +
   "! Target body heading — must not render\n\n" +
-  '<<^ code="&#x0003;">>ni:///sha-256;REFCHECK\n' +
-  '<<^ code="&#x0004;" -> to="?">>\n';
+  '<<^ code=`&#x0003;`>>ni:///sha-256;REFCHECK\n' +
+  '<<^ code=`&#x0004;` to=`?`>>\n';
 
 // A reference meme carrying no `reference-seriesinfo`/`reference-target` — the absent-field case:
 // a citation row with no data renders no row, never an empty placeholder.
 const bareRefMeme = (uri: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n` +
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
   "```toml meta\n" +
   'reference-author = "B. Author"\n' +
   'reference-date   = "February 2024"\n' +
@@ -50,17 +50,17 @@ const bareRefMeme = (uri: string): string =>
   `uri-path         = "${uri.replace(/^lar:\/\/\//, "")}"\n` +
   "```\n\n" +
   "! Target body heading — must not render\n\n" +
-  '<<^ code="&#x0003;">>ni:///sha-256;BARECHECK\n' +
-  '<<^ code="&#x0004;" -> to="?">>\n';
+  '<<^ code=`&#x0003;`>>ni:///sha-256;BARECHECK\n' +
+  '<<^ code=`&#x0004;` to=`?`>>\n';
 
 const contentMeme = (uri: string, slotText: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n` +
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
   "```toml meta\n" +
   `uri-path = "${uri.replace(/^lar:\/\/\//, "")}"\n` +
   "```\n\n" +
-  `<<~ ahu #/s>>\n\n! Slot S\n\n${slotText}\n\n<<~/ahu>>\n\n` +
-  '<<^ code="&#x0003;">>ni:///sha-256;WHOLECHECK\n' +
-  '<<^ code="&#x0004;" -> to="?">>\n';
+  `<<~ ahu slot=\`#/s\`>>\n\n! Slot S\n\n${slotText}\n\n<<~/ahu>>\n\n` +
+  '<<^ code=`&#x0003;`>>ni:///sha-256;WHOLECHECK\n' +
+  '<<^ code=`&#x0004;` to=`?`>>\n';
 
 describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or frozen image${skipNote}`, () => {
   let engine: TW5Engine;
@@ -77,7 +77,7 @@ describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or fr
   const render = (src: string) => renderWikitext(engine, src);
 
   test("★ (a) aka of a REFERENCE meme renders a citation card — title, author, date, seriesinfo, a link to target — never the target's body ★", () => {
-    const html = render(`<<~ aka "${REF_URI}">>`);
+    const html = render(`<<~ aka uri=\`${REF_URI}\`>>`);
     expect(html).toContain("lar-pin-card");
     expect(html).toContain("An Example Reference");
     expect(html).toContain("A. Author");
@@ -88,7 +88,7 @@ describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or fr
   });
 
   test("★ (b) kanawai of the SAME reference meme renders the same card shape, with the BINDING role ★", () => {
-    const html = render(`<<~ kanawai "${REF_URI}">>`);
+    const html = render(`<<~ kanawai uri=\`${REF_URI}\`>>`);
     expect(html).toContain("lar-pin-card");
     expect(html).toContain("An Example Reference");
     expect(html).toContain("A. Author");
@@ -103,7 +103,7 @@ describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or fr
 
     const before = checkNow();
     expect(before).toMatch(/^ni:\/\/\/sha-256;/);
-    const html1 = render(`<<~ aka "${CONTENT_URI}#/s">>`);
+    const html1 = render(`<<~ aka uri=\`${CONTENT_URI}#/s\`>>`);
     expect(html1).toContain("Slot s content, version one.");
     expect(html1).toContain("lar-pin-digest");
     expect(html1).toContain(before);
@@ -113,7 +113,7 @@ describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or fr
       const after = checkNow();
       expect(after).toMatch(/^ni:\/\/\/sha-256;/);
       expect(after).not.toBe(before);
-      const html2 = render(`<<~ aka "${CONTENT_URI}#/s">>`);
+      const html2 = render(`<<~ aka uri=\`${CONTENT_URI}#/s\`>>`);
       expect(html2).toContain("Slot s content, version TWO.");
       expect(html2).toContain(after);
       expect(html2).not.toContain(before);
@@ -121,12 +121,12 @@ describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or fr
   });
 
   test("★ (d) pin/law render identically to aka/kanawai ★", () => {
-    expect(render(`<<~ pin "${REF_URI}">>`)).toBe(render(`<<~ aka "${REF_URI}">>`));
-    expect(render(`<<~ law "${REF_URI}">>`)).toBe(render(`<<~ kanawai "${REF_URI}">>`));
+    expect(render(`<<~ pin uri=\`${REF_URI}\`>>`)).toBe(render(`<<~ aka uri=\`${REF_URI}\`>>`));
+    expect(render(`<<~ law uri=\`${REF_URI}\`>>`)).toBe(render(`<<~ kanawai uri=\`${REF_URI}\`>>`));
   });
 
   test("★ (e) an unresolved target renders a clearly marked unresolved line, naming the uri ★", () => {
-    const html = render(`<<~ aka "${NOWHERE_URI}">>`);
+    const html = render(`<<~ aka uri=\`${NOWHERE_URI}\`>>`);
     expect(html).toContain("lar-pin-unresolved");
     expect(html).toContain("unresolved");
     expect(html).toContain(NOWHERE_URI);
@@ -149,7 +149,7 @@ describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or fr
   });
 
   test("★ (h) a reference meme with no reference-seriesinfo/reference-target renders no placeholder row for either ★", () => {
-    const html = render(`<<~ aka "${BARE_REF_URI}">>`);
+    const html = render(`<<~ aka uri=\`${BARE_REF_URI}\`>>`);
     expect(html).toContain("lar-pin-card");
     expect(html).toContain("A Bare Reference");
     expect(html).toContain("B. Author");
@@ -159,7 +159,7 @@ describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or fr
   });
 
   test("★ (i) the card's citation rows derive from meme-pin[citation-keys] — one row per CITATION_FIELD_KEYS member present, never five hand-spelled rows ★", () => {
-    const html = render(`<<~ aka "${REF_URI}">>`);
+    const html = render(`<<~ aka uri=\`${REF_URI}\`>>`);
     for (const key of CITATION_FIELD_KEYS) {
       const count = (html.match(new RegExp(`class="lar-pin-card-${key}"`, "g")) ?? []).length;
       expect(count).toBe(1);

@@ -29,7 +29,7 @@ afterEach(() => { if (root) { rmSync(root, { recursive: true, force: true }); ro
 
 function rig(bagsHolding?: (uri: string) => Promise<string[]>): { projector: Flushable; root: string } {
   root = mkdtempSync(join(tmpdir(), "lar-daemon-mirror-"));
-  const file: CarrierFile = { ext: ".mem", body: "<<^ code=\"&#x0001;\">>\n" };
+  const file: CarrierFile = { ext: ".mem", body: "<<^ code=`&#x0001;`>>\n" };
   const projector = new LarDiskProjector({
     mirrors: [daemonWorkingMirror(root)],
     carrierFileFn: async () => file,

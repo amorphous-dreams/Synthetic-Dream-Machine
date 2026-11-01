@@ -165,7 +165,7 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
       const bare = `${root}-never-had-children`;
       const store = childBag === canonBag ? r.canon : r.working;
       await store.writeFamily([
-        { tiddler: { title: root, text: "intro\n\n<<~ kahea ahu #/a>>\n", type: "text/memetic-wikitext+tiddlywiki" } },
+        { tiddler: { title: root, text: "intro\n\n<<~ kahea ahu slot=`#/a`>>\n", type: "text/memetic-wikitext+tiddlywiki" } },
         { tiddler: { title: child, text: "slot body", "$fragment-parent": root, "$slot": "#/a" } },
         { tiddler: { title: bare, text: "prose", type: "text/memetic-wikitext+tiddlywiki" } },
       ], [], remote);
@@ -200,14 +200,14 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     const root = "lar:///t/route/keeps-child";
     const child = `${root}#/a`;
     await r.working.writeFamily([
-      { tiddler: { title: root, text: "intro\n\n<<~ kahea ahu #/a>>\n", type: "text/memetic-wikitext+tiddlywiki" } },
+      { tiddler: { title: root, text: "intro\n\n<<~ kahea ahu slot=`#/a`>>\n", type: "text/memetic-wikitext+tiddlywiki" } },
       { tiddler: { title: child, text: "slot body", "$fragment-parent": root, "$slot": "#/a" } },
     ], [], remote);
     await turns();
     await r.adaptor.armSeedCheckpoint();
     await r.adaptor.landingIdle();
     const mark = r.calls.length;
-    r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(root)!.fields, { text: "intro, edited\n\n<<~ kahea ahu #/a>>\n" }));
+    r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(root)!.fields, { text: "intro, edited\n\n<<~ kahea ahu slot=`#/a`>>\n" }));
     await hand(r, boundary);
     expect(r.calls.slice(mark).flatMap((c) => c.deletes)).toEqual([]);
     expect(storeText(r, workingBag, child)).toBe("slot body");
@@ -220,7 +220,7 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     const r = await shoreRig({ boundary });
     const root = "lar:///t/route/quotes-a-reference";
     const child = `${root}#/a`;
-    const fenced = "prose\n\n```\n<<~ kahea ahu #/a>>\n```\n";
+    const fenced = "prose\n\n```\n<<~ kahea ahu slot=`#/a`>>\n```\n";
     await r.working.writeFamily([
       { tiddler: { title: root, text: fenced, type: "text/memetic-wikitext+tiddlywiki" } },
       { tiddler: { title: child, text: "a record at the quoted address", "$fragment-parent": "lar:///t/route/another-parent" } },
@@ -243,8 +243,8 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     const child = `${root}#/a`;
     const grandchild = `${root}#/a/b`;
     await r.working.writeFamily([
-      { tiddler: { title: root, text: "intro\n\n<<~ kahea ahu #/a>>\n", type: "text/memetic-wikitext+tiddlywiki" } },
-      { tiddler: { title: child, text: "<<~ kahea ahu #/a/b>>", "$fragment-parent": root, "$slot": "#/a" } },
+      { tiddler: { title: root, text: "intro\n\n<<~ kahea ahu slot=`#/a`>>\n", type: "text/memetic-wikitext+tiddlywiki" } },
+      { tiddler: { title: child, text: "<<~ kahea ahu slot=`#/a/b`>>", "$fragment-parent": root, "$slot": "#/a" } },
       { tiddler: { title: grandchild, text: "deep body", "$fragment-parent": child, "$slot": "#/a/b" } },
     ], [], remote);
     await turns();

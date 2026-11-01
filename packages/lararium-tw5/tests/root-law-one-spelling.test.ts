@@ -28,9 +28,9 @@ const declared = (text: string): ReadonlySet<string> => memeticIngestOps.declare
 
 /** A framed carrier declaring one `ahu` block per name. */
 const carrier = (uri: string, slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/a"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/a"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function recordsOf(uri: string, text: string): Map<string, TiddlerFields> {
   const out = new Map<string, TiddlerFields>();
@@ -55,16 +55,16 @@ describe("Phase 0 · the leans collided", () => {
     const recomposed = expandMemeRefs((t) => records.get(t), URI);
     expect(recomposed).not.toBeNull();
     // MEASURED: the call stands, unexpanded, in the root's own recomposed body.
-    expect(recomposed!).toContain("<<~ kahea ahu #/b>>");
+    expect(recomposed!).toContain("<<~ kahea ahu slot=`#/b`>>");
     // And the slot it named is gone — the residue is a CALL, never a revived block.
-    expect(recomposed!).not.toContain("<<~ ahu #/b>>");
+    expect(recomposed!).not.toContain("<<~ ahu slot=`#/b`>>");
   });
 
   test("CONTROL · a root whose members all stand recomposes every block — the probe reads the recompose, not the fixture", () => {
     const records = recordsOf(URI, carrier(URI, ["a", "b"]));
     const recomposed = expandMemeRefs((t) => records.get(t), URI);
-    expect(recomposed!).toContain("<<~ ahu #/b>>");
-    expect(recomposed!).not.toContain("<<~ kahea ahu #/b>>");
+    expect(recomposed!).toContain("<<~ ahu slot=`#/b`>>");
+    expect(recomposed!).not.toContain("<<~ kahea ahu slot=`#/b`>>");
   });
 
   // ── the scanner lean ────────────────────────────────────────────────────────────────────────────
@@ -73,34 +73,34 @@ describe("Phase 0 · the leans collided", () => {
   // pairing, so the ahu-drop guard (`ingest-gate.ts:167-178`) reads a CALL as a DECLARED slot.
   // A DECLARATION opens a block; a CALL names one. The cure belongs in the scanner, never the guard.
   test("a `kahea ahu` CALL declares NO slot — only an `ahu` block does", () => {
-    expect([...declared("<<~ kahea ahu #/b>>")]).toEqual([]);
+    expect([...declared("<<~ kahea ahu slot=`#/b`>>")]).toEqual([]);
   });
 
   test("CONTROL · a true `ahu` block still declares its slot, at every depth", () => {
-    expect([...declared("<<~ ahu #/b>>\nbody\n<<~/ahu>>")]).toEqual(["#/b"]);
-    expect([...declared("<<~ ahu #/a>>\n<<~ ahu #/c>>\nx\n<<~/ahu>>\n<<~/ahu>>")].sort())
+    expect([...declared("<<~ ahu slot=`#/b`>>\nbody\n<<~/ahu>>")]).toEqual(["#/b"]);
+    expect([...declared("<<~ ahu slot=`#/a`>>\n<<~ ahu slot=`#/c`>>\nx\n<<~/ahu>>\n<<~/ahu>>")].sort())
       .toEqual(["#/a", "#/c"]);
     // The English spelling reads the same — two spellings, one structure.
-    expect([...declared("<<fragment #/b>>\nbody\n<</fragment>>")]).toEqual(["#/b"]);
+    expect([...declared("<<fragment slot=`#/b`>>\nbody\n<</fragment>>")]).toEqual(["#/b"]);
   });
 
   test("CONTROL · a call and a block over the SAME slot declare that slot exactly once", () => {
-    expect([...declared("<<~ kahea ahu #/b>>\n\n<<~ ahu #/b>>\nbody\n<<~/ahu>>")]).toEqual(["#/b"]);
+    expect([...declared("<<~ kahea ahu slot=`#/b`>>\n\n<<~ ahu slot=`#/b`>>\nbody\n<<~/ahu>>")]).toEqual(["#/b"]);
   });
 
   test("a call standing BEFORE a block leaves its pairing whole — the slot lands as a child record", () => {
     // A call that pushes onto the pairing stack makes the real block's closer pop at depth 1: the block never
     // emits as top-level, and the slot's body lands in NO child at all.
     const text = carrier(URI, []).replace("uri-path = \"t/a\"\n```\n\n",
-      "uri-path = \"t/a\"\n```\n\n<<~ kahea ahu #/b>>\n\n<<~ ahu #/b>>\n\n! b\n\n<<~/ahu>>\n\n");
+      "uri-path = \"t/a\"\n```\n\n<<~ kahea ahu slot=`#/b`>>\n\n<<~ ahu slot=`#/b`>>\n\n! b\n\n<<~/ahu>>\n\n");
     const records = recordsOf(URI, text);
     expect([...records.keys()]).toContain(`${URI}#/b`);
     expect(String(records.get(`${URI}#/b`)!["text"])).toContain("! b");
   });
 
   test("CONTROL · a quoted call or block declares nothing — the fence mask holds", () => {
-    expect([...declared("```\n<<~ ahu #/b>>\nx\n<<~/ahu>>\n```")]).toEqual([]);
-    expect([...declared("`<<~ kahea ahu #/b>>`")]).toEqual([]);
+    expect([...declared("```\n<<~ ahu slot=`#/b`>>\nx\n<<~/ahu>>\n```")]).toEqual([]);
+    expect([...declared("`<<~ kahea ahu slot=`#/b`>>`")]).toEqual([]);
   });
 });
 
@@ -154,7 +154,7 @@ describe("Phase 1 · the root law, one spelling", () => {
   test("CONTROL · a plain tiddler and a SPLIT root both pass the native door untouched", () => {
     for (const fields of [
       { title: "lar:///t/a-plain", type: "text/vnd.tiddlywiki", text: "plain" },
-      { title: URI, type: CARRIER_TYPE, text: "<<~ kahea ahu #/a>>" },  // split: a body of calls, no head
+      { title: URI, type: CARRIER_TYPE, text: "<<~ kahea ahu slot=`#/a`>>" },  // split: a body of calls, no head
     ]) {
       expect(framedRootOf(fields)).toBeNull();
     }

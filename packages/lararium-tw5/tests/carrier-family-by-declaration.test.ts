@@ -22,15 +22,15 @@ import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 const BAG = "lar:///ha.ka.ba/wikis/family/working";
 const URI = "lar:///ha.ka.ba/t/family/teaches-the-frame";
 
-const HEAD = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/t/shown">>`;
+const HEAD = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/t/shown\`>>`;
 /** Markdown that SHOWS a head inside a fence, and names one inline. */
-const TEACHES_FENCED = `# The frame\n\nA carrier opens with a head:\n\n\`\`\`\n${HEAD}\n<<^ code="&#x0002;">>\n\`\`\`\n\nThen the body.\n`;
+const TEACHES_FENCED = `# The frame\n\nA carrier opens with a head:\n\n\`\`\`\n${HEAD}\n<<^ code=\`&#x0002;\`>>\n\`\`\`\n\nThen the body.\n`;
 /** Markdown whose head stands LIVE, outside every fence (a rendered artifact quoting a carrier raw). */
 const TEACHES_LIVE = `# The frame\n\nA carrier opens with a head:\n\n${HEAD}\n\nThen the body.\n`;
 const SIDECAR = `title: ${URI}\ntype: text/markdown\nsource: lar:///ha.ka.ba/t/source\nsource-check: ni:///sha-256;AAAA\nvariant: kramdown-rfc2629\ntongue: en\n`;
 
 const memetic = (uri: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uri.slice("lar:///".length)}"\n\`\`\`\n\n<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice("lar:///".length)}"\n\`\`\`\n\n<<~ ahu slot=\`#/a\`>>\n\n! a\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 const allowCap = async (_a: CapabilityAccess, _b: string): Promise<CapabilityVerifyResult> => ({ ok: true });
 function ctx(composite: CompositeStore, action: "INGEST" | "LOAD", args: Record<string, unknown>): VerbContext {

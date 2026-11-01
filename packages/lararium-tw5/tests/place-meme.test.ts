@@ -13,10 +13,10 @@ import type { TiddlerFields } from "../src/deserializer.js";
 const URI = "lar:///t/x";
 
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n` +
-  `<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n` +
+  `<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 /** An in-memory sink: the smallest thing that holds tiddlers by title. */
 function memorySink(): MemeSink & { store: Map<string, TiddlerFields> } {
@@ -79,7 +79,7 @@ describe("★ placeMeme lands a meme from text alone ★", () => {
 
   test("CONTROL: content stranded past ETX refuses, and the sink stays untouched", async () => {
     const sink = memorySink();
-    const stranded = meme(["a"]).replace("<<^ code=\"&#x0003;\">>\n", "<<^ code=\"&#x0003;\">>\n<<~ ahu #edges>>\n\n* a link\n\n<<~/ahu>>\n");
+    const stranded = meme(["a"]).replace("<<^ code=`&#x0003;`>>\n", "<<^ code=`&#x0003;`>>\n<<~ ahu slot=`#edges`>>\n\n* a link\n\n<<~/ahu>>\n");
     const r = await placeMeme({ uri: URI, text: stranded }, sink);
     expect(r.decision).toBe("refuse");
     expect(r.grade).toBe("error");
@@ -179,7 +179,7 @@ describe("★ listMemes — roots by default, the slot tree on request ★", () 
     await placeMeme({ uri: "lar:///t/y", text: other("t/y", ["c"]) }, sink);
     // A nested slot: `#/d` holds `#/d/e` — canon: a nested open carries its WHOLE path from the
     // carrier root, a strict descendant of its enclosing slot, never a bare relative leaf.
-    const nested = other("t/z", []).replace("<<^ code=\"&#x0002;\">>\n\n", "<<^ code=\"&#x0002;\">>\n\n<<~ ahu #/d>>\n\n! d\n\n<<~ ahu #/d/e>>\n\n! e\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
+    const nested = other("t/z", []).replace("<<^ code=`&#x0002;`>>\n\n", "<<^ code=`&#x0002;`>>\n\n<<~ ahu slot=`#/d`>>\n\n! d\n\n<<~ ahu slot=`#/d/e`>>\n\n! e\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
     const z = await placeMeme({ uri: "lar:///t/z", text: nested }, sink);
     expect(z.decision, z.warnings.join()).toBe("ingest");
     const listed = await listMemes(sink, { tree: true });

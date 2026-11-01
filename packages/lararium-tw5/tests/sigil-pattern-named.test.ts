@@ -79,7 +79,7 @@ describe("every worked call is named and ticked", () => {
 
   test("CONTROL — the checker flags a planted quoted call, an arrow call and a positional call", () => {
     expect(callProblems('<<~ persona Lares "a multitude">>')).not.toEqual([]);
-    expect(callProblems('<<~ pranala from="lar:///a.b.c/x" -> to="lar:///a.b.c/y">>')).not.toEqual([]);
+    expect(callProblems('<<~ pranala lar:///a.b.c/x lar:///a.b.c/y>>')).not.toEqual([]);
     expect(callProblems("<<~ pranala from=`A` -> to=`B`>>")).toContain("an arrow stands between values");
     expect(callProblems("<<~ aperture 9/measure>>")).not.toEqual([]);
   });
@@ -223,7 +223,7 @@ describe("the capture groups the builder indexes stay put", () => {
 describe("the old forms fail and a known-good pattern passes", () => {
   const OLD = [
     '<<~ lares aim from="lar:///a.b.c/x" -> to="lar:///a.b.c/y">>',
-    '<<~ pranala from="lar:///a.b.c/x" -> to="lar:///a.b.c/y">>',
+    '<<~ pranala "lar:///a.b.c/x" -> "lar:///a.b.c/y">>',
     '<<~ pono "lar:///a.b.c/x" -> "lar:///a.b.c/y">>',
     '<<~ constraint "lar:///a.b.c/x" -> "lar:///a.b.c/y">>',
     '<<~ papalohe "lar:///a.b.c/x" -> "lar:///a.b.c/y">>',

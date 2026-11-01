@@ -18,12 +18,12 @@ import { carrierFiles } from "../src/carrier-files.js";
 import { REPO } from "./test-wiki.js";
 
 const FIXTURES: Record<string, string> = {
-  sound:        "<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\n<<~ ahu #/b>>\nb\n<<~/ahu>>",
-  nested:       "<<~ ahu #/a>>\n<<~ ahu #/a/b>>\ninner\n<<~/ahu>>\nouter\n<<~/ahu>>",
-  orphanClose:  "<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\nstray prose\n\n<<~/ahu>>",
-  unbalanced:   "<<~ ahu #/a>>\n<<~ ahu #/a/b>>\ninner\n<<~/ahu>>\nno closer for a",
-  fenced:       "```\n<<~ ahu #/q>>\n```\n<<~ ahu #/a>>\na\n<<~/ahu>>\n`<<~/ahu>>`",
-  fragment:     "<<fragment #/f>>\nf\n<</fragment>>",
+  sound:        "<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~/ahu>>\n\n<<~ ahu slot=`#/b`>>\nb\n<<~/ahu>>",
+  nested:       "<<~ ahu slot=`#/a`>>\n<<~ ahu slot=`#/a/b`>>\ninner\n<<~/ahu>>\nouter\n<<~/ahu>>",
+  orphanClose:  "<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~/ahu>>\n\nstray prose\n\n<<~/ahu>>",
+  unbalanced:   "<<~ ahu slot=`#/a`>>\n<<~ ahu slot=`#/a/b`>>\ninner\n<<~/ahu>>\nno closer for a",
+  fenced:       "```\n<<~ ahu slot=`#/q`>>\n```\n<<~ ahu slot=`#/a`>>\na\n<<~/ahu>>\n`<<~/ahu>>`",
+  fragment:     "<<fragment slot=`#/f`>>\nf\n<</fragment>>",
 };
 
 describe("★ scanAhu — one stack, two readings ★", () => {

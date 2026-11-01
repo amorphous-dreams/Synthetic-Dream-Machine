@@ -47,8 +47,8 @@ const SEED = new Uint8Array(32).fill(9);
 /** A carrier assembled at read time — no DOCTYPE, no `type =`, nothing a corpus reader would claim. */
 function carrier(uriPath: string, filePath: string, tags: string): string {
   return [
-    `<<^ code="&#x0001;" from="?" -> to="lar:///${uriPath}">>`,
-    '<<^ code="&#x0002;">>',
+    `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///${uriPath}\`>>`,
+    '<<^ code=`&#x0002;`>>',
     "",
     "```toml meta",
     `file-path  = "${filePath}"`,
@@ -58,8 +58,8 @@ function carrier(uriPath: string, filePath: string, tags: string): string {
     "",
     "! A fixture that crosses nothing real",
     "",
-    '<<^ code="&#x0003;">>ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-    '<<^ code="&#x0004;" -> to="?">>',
+    '<<^ code=`&#x0003;`>>ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    '<<^ code=`&#x0004;` to=`?`>>',
     "",
   ].join("\n");
 }
@@ -67,18 +67,18 @@ function carrier(uriPath: string, filePath: string, tags: string): string {
 /** A second carrier that POINTS AT the first — the inbound edge a promotion must leave alone. */
 function pointer(uriPath: string, filePath: string, at: string): string {
   return [
-    `<<^ code="&#x0001;" from="?" -> to="lar:///${uriPath}">>`,
-    '<<^ code="&#x0002;">>',
+    `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///${uriPath}\`>>`,
+    '<<^ code=`&#x0002;`>>',
     "",
     "```toml meta",
     `file-path  = "${filePath}"`,
     `uri-path   = "${uriPath}"`,
     "```",
     "",
-    `<<~ loulou "lar:///${at}">>`,
+    `<<~ loulou uri=\`lar:///${at}\`>>`,
     "",
-    '<<^ code="&#x0003;">>ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-    '<<^ code="&#x0004;" -> to="?">>',
+    '<<^ code=`&#x0003;`>>ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    '<<^ code=`&#x0004;` to=`?`>>',
     "",
   ].join("\n");
 }
@@ -157,7 +157,7 @@ describe("lares meme promote — the crossing moves residency, and the address h
       expect(after, "the carrier's bytes moved under a residency move").toBe(before);
       expect(after).toContain(`uri-path   = "${SUBJECT_URI}"`);
       expect(after).toContain(`file-path  = "${SUBJECT_REL}"`);
-      expect(after).toContain(`to="lar:///${SUBJECT_URI}"`);
+      expect(after).toContain(`to=\`lar:///${SUBJECT_URI}\``);
       // THE BLOCK CHECK SURVIVES UNTOUCHED — same digest line, character for character.
       const digest = (t: string): string => /ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/.exec(t)?.[0] ?? "";
       expect(digest(after)).toBe(digest(before));

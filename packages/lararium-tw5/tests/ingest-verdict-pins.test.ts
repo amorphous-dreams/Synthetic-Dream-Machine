@@ -15,14 +15,14 @@ const sha = (s: string): string => `sha256:${createHash("sha256").update(s, "utf
 
 const URI  = "lar:///t/pin";
 const META = "```toml meta\ntitle    = \"lar:///t/pin\"\ntype     = \"text/memetic-wikitext+tiddlywiki\"\nuri-path = \"t/pin\"\n```";
-const canonical = frameCarrier({ head: { uri: URI }, body: `${META}\n\n! Pin\n\n<<~ ahu #/a>>\n\nslot a\n\n<<~/ahu>>` });
-const STX = '<<^ code="&#x0002;">>';
-const ETX = '<<^ code="&#x0003;">>';
+const canonical = frameCarrier({ head: { uri: URI }, body: `${META}\n\n! Pin\n\n<<~ ahu slot=\`#/a\`>>\n\nslot a\n\n<<~/ahu>>` });
+const STX = '<<^ code=`&#x0002;`>>';
+const ETX = '<<^ code=`&#x0003;`>>';
 const CHECK = /ni:\/\/\/sha-256;[A-Za-z0-9_-]+/;
 const STALE = "ni:///sha-256;0000000000000000000000000000000000000000000";
 
 const BARE      = "just bare data found on the internet\n\nno frame at all\n";
-const BARE_TOML = "```toml meta\ncustom = \"lifted\"\n```\n\nbare body\n<<~ ahu #/a>>\n\nslot\n\n<<~/ahu>>\n";
+const BARE_TOML = "```toml meta\ncustom = \"lifted\"\n```\n\nbare body\n<<~ ahu slot=`#/a`>>\n\nslot\n\n<<~/ahu>>\n";
 
 interface Row { readonly text: string; readonly decision: string; readonly codes: readonly string[] }
 
@@ -41,8 +41,8 @@ const ROWS: Record<string, Row> = {
   "a title naming another uri refuses":    { text: canonical.replace('title    = "lar:///t/pin"', 'title    = "lar:///t/other"'), decision: "refuse", codes: ["block-check-mismatch:warning", "shore-round-trip:error"] },
   "a uri-path naming another refuses":     { text: canonical.replace('uri-path = "t/pin"', 'uri-path = "t/other"'), decision: "refuse", codes: ["block-check-mismatch:warning", "shore-round-trip:error"] },
   "a root `text` key refuses":             { text: canonical.replace('uri-path = "t/pin"', 'text     = "x"\nuri-path = "t/pin"'), decision: "refuse", codes: ["block-check-mismatch:warning", "shore-round-trip:error"] },
-  "a slot `text` key refuses":             { text: canonical.replace("<<~ ahu #/a>>\n", "<<~ ahu #/a>>\n```toml meta\ntext = \"x\"\n```\n"), decision: "refuse", codes: ["block-check-mismatch:warning", "shore-round-trip:error"] },
-  "a head-only carrier ingests":           { text: '<<^ code="&#x0001;" from="?" -> to="lar:///t/pin">>\n\nhead only prose\n\n<<^ code="&#x0004;" -> to="?">>\n', decision: "ingest", codes: [] },
+  "a slot `text` key refuses":             { text: canonical.replace("<<~ ahu slot=`#/a`>>\n", "<<~ ahu slot=`#/a`>>\n```toml meta\ntext = \"x\"\n```\n"), decision: "refuse", codes: ["block-check-mismatch:warning", "shore-round-trip:error"] },
+  "a head-only carrier ingests":           { text: '<<^ code=`&#x0001;` from=`?` to=`lar:///t/pin`>>\n\nhead only prose\n\n<<^ code=`&#x0004;` to=`?`>>\n', decision: "ingest", codes: [] },
   "bare data is held, flagged UNSTABLE":   { text: BARE, decision: "ingest", codes: ["bare-data:warning"] },
   "bare data with a toml fence is held":   { text: BARE_TOML, decision: "ingest", codes: ["bare-data:warning"] },
 };
