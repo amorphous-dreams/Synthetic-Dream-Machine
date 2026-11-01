@@ -235,6 +235,15 @@ export function telemetryProviderCap(impl: TelemetryProvider): CapModule {
 
 // ── VERB-GROUP caps — declare the providers they route, register their verb(s) over the resolved impls ─
 
+/**
+ * The recall filters that LEFT the coordinator's signature: the enrichment axes `voice`, `band` and `drift`
+ * (the taxonomy axis `speaker` carries the stratum now). The coordinator's holder keeps only the parameters
+ * its signature declares and drops the rest without a word, so a caller still passing one of these would
+ * read an UNFILTERED result as a filtered one. No back-compat: the verb refuses a burned name before any
+ * read runs, in every mode.
+ */
+const BURNED_RECALL_ARGS: readonly string[] = ["voice", "band", "drift"];
+
 /** recall — the mempalace READ shore (semantic-search | list | get | multi-graph fuse). Requires
  *  the mempalace read-client + the form store (the dual fuse). */
 export function recallVerbCap(): CapModule {
@@ -246,6 +255,10 @@ export function recallVerbCap(): CapModule {
       const form = resolve<FormPalaceProvider>(VERB_PROVIDER.formPalace);
       return (registry: VerbTable) => {
         registry.register("recall", async (args) => {
+          const burned = BURNED_RECALL_ARGS.filter((name) => Object.hasOwn(args, name));
+          if (burned.length) {
+            throw new Error(`recall: ${burned.join(", ")} ${burned.length === 1 ? "names a burned filter" : "name burned filters"} — the coordinator no longer reads ${burned.length === 1 ? "it" : "them"}; narrow the stratum by speaker, channel or function`);
+          }
           const imagoId = typeof args["imago"] === "string" ? (args["imago"] as string) : "";
           const query    = typeof args["query"]  === "string" ? (args["query"]  as string) : "";
           const wing     = typeof args["wing"]   === "string" ? (args["wing"]   as string) : undefined;
