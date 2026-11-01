@@ -30,7 +30,9 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 const NAMES_CODE = /^(packages|tools|scripts)\//;
 
 const META_KEY = /^source-file\s*=\s*"([^"]+)"/m;
-const PRANALA  = /<<~\s*pranala\s+#source[a-z-]*\b(?:(?!>>).)*?to="([^"]+)"/gs;
+// The pair and the slot name themselves (the kupono cut): ``<<~ pranala slot=`#source` from=`?` to=`packages/…`>>``,
+// either order, the target captured by its name.
+const PRANALA  = /<<~\s*pranala(?=(?:(?!>>).)*?\sslot=`#source[a-z-]*`)(?:(?!>>).)*?\sto=`([^`]+)`/gs;
 
 const mems = execFileSync("git", ["ls-files", "-z", "*.mem"], { cwd: REPO, encoding: "utf8", maxBuffer: 1 << 28 })
   .split("\0").filter(Boolean);

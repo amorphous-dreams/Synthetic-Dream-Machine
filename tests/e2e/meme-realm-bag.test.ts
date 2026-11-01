@@ -72,16 +72,16 @@ const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${
 
 /** The ledger with a second slot — B's edit, the one A must read back through the ford. */
 const memeWithSlot = (slot = "/b"): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "salt: 12 · barley: 40"\n\`\`\`\n\n<<~ ahu #/count>>\n\n! the count\n\n<<~/ahu>>\n\n<<~ ahu #${slot}>>\n\n! the highland tally\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "salt: 12 · barley: 40"\n\`\`\`\n\n<<~ ahu slot=\`#/count\`>>\n\n! the count\n\n<<~/ahu>>\n\n<<~ ahu slot=\`#${slot}\`>>\n\n! the highland tally\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 /** One carrier for A's own live Kahu canon (`@lares`), landed by the canon's ingest door (road P26's walk). */
 const KAHU_PATH = "p26.kahu.walk/ledger";
 const KAHU_URI  = `lar:///${KAHU_PATH}`;
 const kahuMeme = (): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${KAHU_URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${KAHU_PATH}"\n\`\`\`\n\n<<~ ahu #/count>>\n\n! the steward's line\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${KAHU_URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${KAHU_PATH}"\n\`\`\`\n\n<<~ ahu slot=\`#/count\`>>\n\n! the steward's line\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 const meme = (): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "salt: 12 · barley: 40"\n\`\`\`\n\n<<~ ahu #/count>>\n\n! the count\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "salt: 12 · barley: 40"\n\`\`\`\n\n<<~ ahu slot=\`#/count\`>>\n\n! the count\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function missing(): string[] {
   const out: string[] = [];

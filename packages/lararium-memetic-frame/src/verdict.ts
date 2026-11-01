@@ -80,7 +80,7 @@ function tornSpellings(text: string, spans: ReturnType<typeof fencedSpans>): Fra
     if (hit && hit[0] === m[0]) continue;
     faults.push({
       kind: "torn-spelling",
-      message: `\`${m[0]}\` reads outside the frame grammar — the ends read \`code="…" from="?" -> to="…"\` and \`-> to="?"\`, quoted; nothing repairs it`,
+      message: `\`${m[0]}\` reads outside the frame grammar — the ends read \`\`code=\`…\` from=\`?\` to=\`…\`\`\` and \`\`to=\`?\`\`\`, every value named and ticked; nothing repairs it`,
     });
   }
   for (const m of maskedExecAll(text, ETB_MARK_RE, spans)) {

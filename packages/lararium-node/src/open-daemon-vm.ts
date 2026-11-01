@@ -35,6 +35,7 @@ import {
 } from "@lararium/tw5";
 import { isStillJoining, resolveBootDoc } from "./repo-helpers.js";
 import { nodeNewSyncChannel, nodeSpawnDaemonWorker } from "./worker-handle.js";
+import { PLANE_LABELS } from "@lararium/mesh";
 
 const DEFAULT_ADMIN_WORKER_URL = new URL("./node-daemon-island.js", import.meta.url);
 
@@ -113,7 +114,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     repo, daemonUrl as AutomergeUrl,
     // A caller reaching @daemon by url holds it from the bootstrap, so absence reads as a flush in
     // flight rather than as an absent doc, and earns the grace before it gets believed.
-    { tideline: "hearth-private", label: "@daemon", settled: () => repo.flush() },
+    { tideline: "hearth-private", label: PLANE_LABELS.daemon, settled: () => repo.flush() },
   );
   // ── Persona doc handle (same strategy) — the one VM tends both bags ──────────
   // A plane this replica already HOLDS (a joinee's admit landed it, or a sync delivered it) is read where it stands: the
@@ -122,12 +123,12 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   const heldPersona = personaUrl ? repo.handles[parseAutomergeUrl(personaUrl as AutomergeUrl).documentId] : undefined;
   const personaRead = personaUrl
     ? (heldPersona?.isReady() ? heldPersona as DocHandle<LarDoc> : personaLate
-        ? await resolveBootDoc<LarDoc>(repo, personaUrl as AutomergeUrl, { tideline: "mesh-shared", label: "@persona", scale: "vessel" })
-        : await resolveBootDoc<LarDoc>(repo, personaUrl as AutomergeUrl, { tideline: "hearth-private", label: "@persona" }))
+        ? await resolveBootDoc<LarDoc>(repo, personaUrl as AutomergeUrl, { tideline: "mesh-shared", label: PLANE_LABELS.persona, scale: "vessel" })
+        : await resolveBootDoc<LarDoc>(repo, personaUrl as AutomergeUrl, { tideline: "hearth-private", label: PLANE_LABELS.persona }))
     : undefined;
   const personaHandle = personaRead && !isStillJoining(personaRead) ? personaRead : undefined;
   if (personaRead && isStillJoining(personaRead)) {
-    console.log("[daemon] @persona still joining — this composition holds no vessel key, so the plane stands on the hearth until the unlocked composition dials it");
+    console.log(`[daemon] ${PLANE_LABELS.persona} still joining — this composition holds no vessel key, so the plane stands on the hearth until the unlocked composition dials it`);
   }
 
   // The daemon holds NO standing system-bag mount: it reaches a deep target bag

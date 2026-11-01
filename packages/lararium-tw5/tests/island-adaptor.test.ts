@@ -365,7 +365,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     const orig = store.tombstone.bind(store);
     store.tombstone = async (title, origin) => { tombstoned.push(title); return orig(title, origin); };
 
-    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu slot=`#/new`>>\n\nfresh\n\n<<~/ahu>>" } });
     await adaptor.boundary();
     await done;
 
@@ -649,7 +649,7 @@ describe("IslandAdaptor — the family write", () => {
 
     const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
-    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu slot=`#/new`>>\n\nfresh\n\n<<~/ahu>>" } });
     await adaptor.boundary();
     await done;
     adaptor.stop();
@@ -665,7 +665,7 @@ describe("IslandAdaptor — the family write", () => {
 
     const adaptor = new IslandAdaptor(tw5 as never, composite, INSTANCE_ID);
     adaptor.start();
-    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu slot=`#/new`>>\n\nfresh\n\n<<~/ahu>>" } });
     await adaptor.boundary();
     await done;
     adaptor.stop();
@@ -688,7 +688,7 @@ describe("IslandAdaptor — the family write", () => {
     await other.put({ tiddler: { title: `${LAR_URI}#/old`, text: "old" } }, crdtRemote());
     await vi.advanceTimersByTimeAsync(1);
     expect(adaptor.ledger.landedOf(`${LAR_URI}#/old`)?.bag).toBe(OTHER);
-    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu slot=`#/new`>>\n\nfresh\n\n<<~/ahu>>" } });
     await adaptor.boundary();
     await done;
     adaptor.stop();
@@ -700,7 +700,7 @@ describe("IslandAdaptor — the family write", () => {
 
   test("★ a draft keeps its ahu bodies whole — a draft never splits ★", async () => {
     const DRAFT = `Draft of '${LAR_URI}' by Alice`;
-    const body = "lead\n\n<<~ ahu #/a>>\n\nalpha body\n\n<<~/ahu>>\n";
+    const body = "lead\n\n<<~ ahu slot=`#/a`>>\n\nalpha body\n\n<<~/ahu>>\n";
     const store = new MemoryTiddlerStore();
     const titles: string[] = [];
     const put = store.put.bind(store);

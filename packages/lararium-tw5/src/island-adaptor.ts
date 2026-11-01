@@ -76,6 +76,7 @@ import type { TW5Engine } from "./tw5-vm.js";
 import type { RestDoor } from "./rest-door.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
+import { KAHEA_REF_RE } from "./meme-ast/ahu-scan.js";
 import { LandedLedger, same, sameWithStamp } from "./landed-ledger.js";
 import { WaveLanding } from "./wave-landing.js";
 import { HandGate } from "./hand-gate.js";
@@ -181,7 +182,7 @@ function toTW5FieldStrings(
 function kaheaChildUris(rootUri: string, text: string): Set<string> {
   const uris = new Set<string>();
   if (!text.includes("<<~ kahea ahu ")) return uris;
-  for (const match of maskedExecAll(text, /<<~ kahea ahu (#[^\s>]+)>>/g)) uris.add(rootUri + match[1]!);
+  for (const match of maskedExecAll(text, KAHEA_REF_RE)) uris.add(rootUri + match[1]!);
   return uris;
 }
 

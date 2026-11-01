@@ -278,7 +278,7 @@ export { getGrammar, resetGrammar } from "./grammar-cache.js";
 // positionals a scheme would steal.
 export {
   readSigilAttrs, sigilAttr, sigilAttrValue, quotableAttrs,
-  positionalsOf, schemeShapedPositionals, lostPositionals,
+  schemeShapedPositionals, lostPositionals,
 } from "./sigil-attrs.js";
 export type { SigilAttr, SigilValueKind, LostPositional } from "./sigil-attrs.js";
 export type { CarrierShape, CarrierMarks } from "./carrier-shape.js";

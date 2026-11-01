@@ -59,15 +59,30 @@ export interface ParseEvent {
 // (@lararium/memetic-frame head.ts); the bootstrap SCAN did not, by the same ruling that keeps every frame scan local
 // (@lararium/memetic-frame marks.ts). (`sigil-frame-soh.tid` etc. DO carry a `lar-pattern` — a deliberately narrower
 // spec-side anchor frame-parity's OWN witness reads; it is not this file's independent recognizer.)
+/** One run of a call's attributes: a tick run (the triple first) is a value, and a `>` ends a call only doubled. */
+const ATTR_RUN = "(?:```(?:(?!```)[\\s\\S])*```|`[^`]*`|[^`>]|>(?!>))*";
+/**
+ * THE ONE PRANALA OPENER, shared by the inline scan, the block scan and the block-span exclusion, so the
+ * three cannot drift. The pair carries the relation (the kupono cut): `slot`, `from` and `to` are named,
+ * ticked values in either order, read by lookahead into groups 1-3; group 4 is the whole attribute run,
+ * where `attrOf` reads `family` and `role`. A pranala naming no `from` or no `to` opens nothing.
+ */
+export const PRANALA_OPEN_SRC =
+  `<<~\\s*pranala(?=\\s)` +
+  `(?:(?=${ATTR_RUN}?\\sslot=\`([^\`]*)\`)|)` +
+  `(?=${ATTR_RUN}?\\sfrom=\`([^\`]*)\`)` +
+  `(?=${ATTR_RUN}?\\sto=\`([^\`]*)\`)` +
+  `(${ATTR_RUN})>>`;
+
 export const BOOTSTRAP_SCANS: SigilScan[] = [
-  { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0001;(?:[^>]|>(?!>))*"?\?"?\s*->\s*(?:to=)?"?([^"\s>]+)"?\s*>>/g, eventType: "pragma" },
+  { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0001;(?=(?:[^>]|>(?!>))*?\sfrom=`\?`)(?:[^>]|>(?!>))*?\sto=`([^`\s>]+)`(?:[^>]|>(?!>))*>>/g, eventType: "pragma" },
   { sigilName: "control-stx", regex: /<<\^(?:[^>]|>(?!>))*&#x0002;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   { sigilName: "control-etx", regex: /<<\^(?:[^>]|>(?!>))*&#x0003;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   { sigilName: "control-eot", regex: /<<\^(?:[^>]|>(?!>))*&#x0004;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   // Kapu extended range — DC1 (&#x0011;) SOH₂ variant (the Kapu opener). No second EOT spelling
   // stands: every carrier closes on plain EOT, at rest and in flight; stream/batch framing belongs
   // to a future transport envelope, not a second at-rest EOT spelling.
-  { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0011;(?:[^>]|>(?!>))*"?\?"?\s*->\s*(?:to=)?"?([^"\s>]+)"?\s*>>/g, eventType: "pragma" },
+  { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0011;(?=(?:[^>]|>(?!>))*?\sfrom=`\?`)(?:[^>]|>(?!>))*?\sto=`([^`\s>]+)`(?:[^>]|>(?!>))*>>/g, eventType: "pragma" },
   // pranala stays a reasoned SECOND hand-kept exception (RED: pranala-attribute-spellings.test.ts).
   // `sigil-pranala.tid`'s own `lar-inline-pattern` /
   // `lar-block-pattern` carry a DIFFERENT capture shape than builder.ts's makeLeaf "pranala" case
@@ -77,8 +92,8 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   // the generic tiddler-pattern dispatch, so the tiddler's pattern fields describe the sigil for
   // reference/generation, not the shape a scanner-and-builder contract can derive blind. Order
   // matters below: block before inline — block wins at same position.
-  { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, eventType: "leaf" },
-  { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>/g, eventType: "leaf" },
+  { sigilName: "pranala", regex: new RegExp(`${PRANALA_OPEN_SRC}([\\s\\S]*?)<<~\\/pranala\\s*>>`, "gs"), eventType: "leaf" },
+  { sigilName: "pranala", regex: new RegExp(PRANALA_OPEN_SRC, "g"), eventType: "leaf" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -139,7 +154,7 @@ export function collectEvents(text: string, grammar?: GrammarRules): ParseEvent[
 
   // Pranala block spans: inline events inside a pranala block body are excluded
   const blockSpans: [number, number][] = [];
-  for (const m of maskedExecAll(text, /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, mask, true)) {
+  for (const m of maskedExecAll(text, new RegExp(`${PRANALA_OPEN_SRC}([\\s\\S]*?)<<~\\/pranala\\s*>>`, "gs"), mask, true)) {
     blockSpans.push([m.index!, m.index! + m[0].length]);
   }
   const inBlock = (pos: number): boolean => blockSpans.some(([s, e]) => pos >= s && pos < e);

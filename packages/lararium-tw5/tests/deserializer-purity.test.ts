@@ -12,7 +12,7 @@ const recordsOf = (text: string) => memeticWikitextDeserializer(text, { title: U
 
 describe("★ the deserializer stamps no reading onto a record ★", () => {
   test("a carrier with an advisory mints no `failure-count` anywhere", () => {
-    const text = frameCarrier({ head: { uri: URI }, body: "```toml meta\ntext = \"x\"\n```\n\n<<~ ahu #dangling>>\n" });
+    const text = frameCarrier({ head: { uri: URI }, body: "```toml meta\ntext = \"x\"\n```\n\n<<~ ahu slot=`#dangling`>>\n" });
     for (const r of recordsOf(text)) expect(r["failure-count"]).toBeUndefined();
   });
 

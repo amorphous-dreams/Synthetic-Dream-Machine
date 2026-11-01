@@ -175,7 +175,7 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
           return new MemoryTiddlerStore(bag);
         },
       };
-      const text = `<<^ code="&#x0001;" from=? -> to=lar:///t/x>>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n<<~ ahu #a>>\n\n! a\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+      const text = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///t/x\`>>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n<<^ code=\`&#x0002;\`>>\n\n<<~ ahu slot=\`#a\`>>\n\n! a\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` -> to=?>>\n`;
       await makeMemePutReactor(memeOpts)({ recipe: "garden", uri: "lar:///t/x", text }, { daemon: r.daemon, invocation: { requestId: "m" } as never, cap: async () => ({ ok: true }) });
       sites["meme put --recipe"] = reachedUrls[0] ?? "(none)";
 

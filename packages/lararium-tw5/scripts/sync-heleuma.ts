@@ -66,7 +66,7 @@ const SYNC_MODULES     = args.includes("--sync-modules");
 // Regex patterns
 // ---------------------------------------------------------------------------
 
-const SOURCE_SLOT_RE = /<<~ ahu #\/source\s*>>([\s\S]*?)<<~\/ahu\s*>>/;
+const SOURCE_SLOT_RE = /<<~ ahu slot=`#\/source`\s*>>([\s\S]*?)<<~\/ahu\s*>>/;
 const FENCE_RE       = /```[^\n]*\n([\s\S]*?)\n```/;
 
 /**
@@ -254,7 +254,7 @@ function runScanPromote(): void {
   // Collect names already present as corpus memes in lararium-tw5/memes/.
   // Checks: uri-path basename, source-symbol, and TOML keys in any #schema slot.
   const existingNames = new Set<string>();
-  const VOCAB_SLOT_RE = /<<~ ahu #schema\s*>>([\s\S]*?)<<~\/ahu\s*>>/g;
+  const VOCAB_SLOT_RE = /<<~ ahu slot=`#\/?schema`\s*>>([\s\S]*?)<<~\/ahu\s*>>/g;
 
   for (const mdPath of walkExt(tw5MemesRoot, ".mem")) {
     const content = readFileSync(mdPath, "utf8");
@@ -601,7 +601,7 @@ cacheable   = true
 status-date = "${new Date().toISOString().slice(0, 10)}"
 \`\`\`
 
-<<~ ahu #/head>>
+<<~ ahu slot=\`#/head\`>>
 
 # ${d.slug}
 
@@ -609,19 +609,19 @@ ${kindLabel} from \`${d.pkgName}\`.
 
 <<~/ahu>>
 
-<<~ ahu #/contract>>
+<<~ ahu slot=\`#/contract\`>>
 
 Exported symbols: \`${d.symbols.join("`, `")}\`.
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=\`#/source\`>>
 
 <$transclude $tiddler="lar:///${uriPath}" $mode="block"/>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=\`#/edges\`>>
 
 <<~/ahu>>`,
   });

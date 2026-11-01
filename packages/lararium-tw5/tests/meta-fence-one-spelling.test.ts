@@ -38,16 +38,16 @@ import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { META_OPEN_CANON } from "@lararium/memetic-frame";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 
-const DECL = "<<!DOCTYPE \"memetic-wikitext+tiddlywiki\" \"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\">>";
-const HEAD = '<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/x/y">>';
+const DECL = "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>";
+const HEAD = '<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/x/y`>>';
 
 /**
  * A whole carrier whose meta opener is spelled `open`. Everything else is held constant. The root meta
  * opens the BODY, directly after STX — where the canon seats a carrier's identity.
  */
 const carrier = (open: string) =>
-  `${DECL}\n\n${HEAD}\n<<^ code="&#x0002;">>\n\n${open}\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n` +
-  `<<~ ahu #a>>\n\nbody\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `${DECL}\n\n${HEAD}\n<<^ code=\`&#x0002;\`>>\n\n${open}\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n` +
+  `<<~ ahu slot=\`#a\`>>\n\nbody\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 /**
  * The five readers that must agree, each reached through its own door.

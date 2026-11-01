@@ -199,7 +199,7 @@ export function standingCheck(
 
 // THE SLOT READER KEEPS ITS OWN SCAN (marks.ts). It reads an EOT sigil DECORATED — `(?:\s*\S+)?\s*`
 // admits namespace glyphs and a `code=` binding alike — and strips to the line's end, because `[^>]*`
-// cannot cross the `>` inside `-> ?`. Only the entity alternation travels.
+// cannot cross a `>` a value carries. Only the entity alternation travels.
 const DECOR = "(?:\\s*\\S+)?\\s*";
 const EOT_STRIP_SRC = `<<\\^${DECOR}${frameAlt("EOT")}[^\\n]*?>>`;
 
@@ -236,7 +236,7 @@ export function classifyPostamble(postamble: string): Postamble {
 
   // EOT and any trailing whitespace belong to the frame, never to the slot — strip them before
   // judging what the operator actually wrote there.
-  // `[^>]*` cannot cross the `>` inside `-> ?`, so the EOT sigil's own arrow defeats a naive strip.
+  // `[^>]*` cannot cross a `>` a value carries, so a naive strip stops short inside the sigil.
   // Match to the line's end instead — a frame sigil never spans lines.
   const body = postamble
     .replace(new RegExp(EOT_STRIP_SRC, "g"), "")

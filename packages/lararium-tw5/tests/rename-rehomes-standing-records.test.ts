@@ -18,9 +18,9 @@ const URI = "lar:///t.rename.rehomes/arrived";
 const BAG = "lar:///ha.ka.ba/wikis/rename-rehomes/working";
 
 const framed = (prose: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n` +
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
   "```toml meta\nuri-path = \"t.rename.rehomes/arrived\"\n```\n\n" +
-  `${prose}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `${prose}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 const allowCap = async (_a: CapabilityAccess, _b: string): Promise<CapabilityVerifyResult> => ({ ok: true });
 function ctx(composite: CompositeStore, args: Record<string, unknown>): VerbContext {

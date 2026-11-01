@@ -37,9 +37,9 @@ const PLUGIN_TID = path.join(PKG, "dist-plugin/lares-memetic-wikitext.tid");
 
 const URI = "lar:///t/x";
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 /** A port the OS hands out free right now. */
 function freePort(): Promise<number> {
@@ -152,7 +152,7 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
     expect(get.status).toBe(200);
     expect(get.headers.get("content-type")).toMatch(/memetic-wikitext/);
     expect(get.headers.get("etag")).toBe(put.headers.get("etag"));
-    expect(get.body).toContain("<<~ ahu #/b>>");
+    expect(get.body).toContain("<<~ ahu slot=`#/b`>>");
   });
 
   test("★ memes.json lists the roots with the base a writer hands back; ?tree=1 nests the slots; CONTROL: a plain tiddler never lists ★", async () => {
@@ -220,7 +220,7 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
 
   test("PUT a meme with content stranded past ETX → 422, records untouched", async () => {
     const before = await titles();
-    const stranded = meme(["a"]).replace("<<^ code=\"&#x0003;\">>\n", "<<^ code=\"&#x0003;\">>\n<<~ ahu #edges>>\n\n* x\n\n<<~/ahu>>\n");
+    const stranded = meme(["a"]).replace("<<^ code=`&#x0003;`>>\n", "<<^ code=`&#x0003;`>>\n<<~ ahu slot=`#edges`>>\n\n* x\n\n<<~/ahu>>\n");
     const r = await http("PUT", memePath(), { body: stranded });
     expect(r.status, r.body).toBe(422);
     expect(await titles()).toEqual(before);
@@ -540,7 +540,7 @@ describe.skipIf(!forkPresent)("★ THE TWO DOORS (b): a stock client's save of a
       expect(seen.filter((t) => t.startsWith("lar:///t/client"))).toEqual([uri, `${uri}#/a`, "lar:///t/client-plain"]);
       // The shelf holds the root SPLIT — the door ran, the native PUT never landed it whole.
       const shelf = JSON.parse((await http("GET", `/recipes/default/tiddlers/${encodeURIComponent(uri)}`)).body) as { text: string };
-      expect(shelf.text).toBe("<<~ kahea ahu #/a>>");
+      expect(shelf.text).toBe("<<~ kahea ahu slot=`#/a`>>");
     } finally {
       await page.close();
     }
@@ -585,7 +585,7 @@ describe.skipIf(!forkPresent)("★ THE TWO DOORS (c): a root landed by `--load` 
     }
     expect(seen).toEqual([uri, `${uri}#/a`, "lar:///t/loaded-plain"]);
     const shelf = JSON.parse(await (await fetch(`${fork!.base}/recipes/default/tiddlers/${encodeURIComponent(uri)}`)).text()) as { text: string };
-    expect(shelf.text).toBe("<<~ kahea ahu #/a>>");
+    expect(shelf.text).toBe("<<~ kahea ahu slot=`#/a`>>");
     const lines = fork!.log.join("").split("\n").filter((l) => l.includes("[memetic-wikitext]"));
     expect(lines).toEqual([`[memetic-wikitext] re-stamped ${uri} (landed via a native write)`]);
   }, 30_000);

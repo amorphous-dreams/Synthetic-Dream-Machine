@@ -23,9 +23,9 @@ const BAG = "lar:///ha.ka.ba/wikis/two-sides/working";
 
 /** One carrier in a framing the render normalizes: an unsorted meta block and a wide margin. */
 const framed = (prose: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n` +
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
   "```toml meta\nzeta = \"last\"\nalpha = \"first\"\nuri-path = \"t.base.two-sides/one\"\n```\n\n\n\n" +
-  `${prose}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `${prose}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function memorySink(): MemeSink & { store: Map<string, TiddlerFields> } {
   const store = new Map<string, TiddlerFields>();

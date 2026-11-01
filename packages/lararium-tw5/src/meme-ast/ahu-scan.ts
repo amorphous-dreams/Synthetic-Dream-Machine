@@ -26,12 +26,12 @@ import { fencedSpans, maskedExecAll } from "@lararium/memetic-frame";
  * Slot identifier — supports nested fragment paths via `/`-separated
  * segments per memetic-wikitext spec §nested-ahu and lar-uri.md §5.6.
  *
- * `<<~ ahu #/parent/child/grandchild>>` opens a slot whose URI reads
+ * ``<<~ ahu slot=`#/parent/child/grandchild`>>`` opens a slot whose URI reads
  * `parentURI#/parent/child/grandchild` — single-hash invariant; the
  * fragment-path is the addressable hierarchy.
  *
- * TWO SPELLINGS, ONE SLOT FORM. The sharktooth house opens `<<~ ahu #/slot>>`; an English carrier opens
- * `<<fragment #/slot>>`. Both name a meme holding tiddlers and scan through this
+ * TWO SPELLINGS, ONE SLOT FORM. The sharktooth house opens ``<<~ ahu slot=`#/slot`>>``; an English carrier
+ * opens ``<<fragment slot=`#/slot`>>``. Both name a meme holding tiddlers and scan through this
  * shared reader. A bare `#slot` belongs to neither child-slot grammar.
  *
  * A SEGMENT ADMITS the Hawaiian long vowels (ā ē ī ō ū, precomposed) and the ʻokina (U+02BB) beside
@@ -45,14 +45,18 @@ import { fencedSpans, maskedExecAll } from "@lararium/memetic-frame";
 export const SLOT_SEGMENT_SRC = "[\\wāēīōūʻ-]+";
 /** A rooted slot path — `#/a`, `#/a/b/c` — as a regex source, uncaptured. The ONE spelling every reader composes. */
 export const SLOT_PATH_SRC = `#\\/${SLOT_SEGMENT_SRC}(?:\\/${SLOT_SEGMENT_SRC})*`;
-export const AHU_OPEN_RE  = new RegExp(`<<(?:~[^>]*\\bahu|fragment)\\s+(${SLOT_PATH_SRC})(?:\\s+->\\s+\\S+)?\\s*>>`, "g");
-/** A kahea call naming a slot — `<<~ kahea ahu #/a/b>>` — the path captured. Global: `replace` and the masked scans reset it. */
-export const KAHEA_REF_RE = new RegExp(`<<~\\s*kahea\\s+ahu\\s+(${SLOT_PATH_SRC})\\s*>>`, "g");
+/**
+ * The slot NAMES itself (the kupono cut): ``<<~ ahu slot=`#/a`>>``, the path captured. A pointer away
+ * from the slot rides a named ``to=`…` `` after it; no arrow tail stands.
+ */
+export const AHU_OPEN_RE  = new RegExp(`<<(?:~[^>]*\\bahu|fragment)\\s+slot=\`(${SLOT_PATH_SRC})\`(?:\\s+to=\`[^\`\\n]*\`)?\\s*>>`, "g");
+/** A kahea call naming a slot — ``<<~ kahea ahu slot=`#/a/b`>>`` — the path captured. Global: `replace` and the masked scans reset it. */
+export const KAHEA_REF_RE = new RegExp(`<<~\\s*kahea\\s+ahu\\s+slot=\`(${SLOT_PATH_SRC})\`(?:\\s+to=\`[^\`\\n]*\`)?\\s*>>`, "g");
 export const AHU_CLOSE_RE = /<<(?:~\/ahu|\/fragment)\s*>>/g;
 
 /**
  * A DECLARATION OPENS A SLOT; A CALL NAMES ONE — and `AHU_OPEN_RE` matches both, because `~[^>]*\bahu`
- * swallows the dispatch verb in `<<~ kahea ahu #/b>>` and `<<~ aka ahu #/b>>`. Every declaration in the
+ * swallows the dispatch verb in ``<<~ kahea ahu slot=`#/b`>>`` and ``<<~ aka ahu slot=`#/b`>>``. Every declaration in the
  * corpus spells `<<~ ahu` with nothing between the namespace mark and the word; every call carries a verb
  * there. So the test is the span between them: empty (or whitespace) declares, anything else calls.
  *
@@ -171,7 +175,7 @@ export function scanAhu(text: string): AhuScan {
  * ways, so the two can never drift on what counts as balanced.
  *
  * Meant to run over a COMPOSED root (a child's edited body, recomposed inline through its parent's
- * `<<~ ahu #/slot>>…<<~/ahu>>` wrapper) — at that altitude a child's dangling opener eats the parent's
+ * ``<<~ ahu slot=`#/slot`>>…<<~/ahu>>`` wrapper) — at that altitude a child's dangling opener eats the parent's
  * own closer (surfaces here as `ahu-unbalanced-open` on the child's opener, the parent's closer simply
  * consumed), and a child's stray closer closes the parent early, leaving the parent's own closer an
  * orphan (surfaces here as `ahu-orphan-close` on that trailing closer). Per #/quoteblock-floor, the

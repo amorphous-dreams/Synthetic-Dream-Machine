@@ -60,9 +60,9 @@ const BAG_LINE = new RegExp(`^bag\\s+= "${INVENTORY}"$`, "m");
 
 /** The NPC meme: the author's `bag` rides the meta, the named slots ride the body. */
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "${INVENTORY}"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "${INVENTORY}"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function missing(): string[] {
   const out: string[] = [];
@@ -134,7 +134,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
       await new Promise((r) => setTimeout(r, 1000));
     }
     const text = readFileSync(f, "utf8");
-    expect(text).toContain("<<~ ahu #/a>>");
+    expect(text).toContain("<<~ ahu slot=`#/a`>>");
     expect(text).toMatch(BAG_LINE);
   });
 
@@ -203,8 +203,8 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     const wiki = await B!.cli(["meme", "get", URI, ...WIKI, "--json"]);
     const which = await B!.cli(["wiki", "which", URI, "--no-json"]);
     console.error(`meme-two-vessel-bag MEASURE B: bag → ${said(bag).trim().slice(0, 240)}; wiki → ${said(wiki).trim().slice(0, 240)}`);
-    expect(String((bag.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu #/a>>");
-    expect(String((wiki.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu #/a>>");
+    expect(String((bag.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu slot=`#/a`>>");
+    expect(String((wiki.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu slot=`#/a`>>");
     expect(which.stdout).not.toContain(`  ${LARES_BAG}`);
     expect(existsSync(join(B!.root, "bags/lares", `${PATH}.mem`))).toBe(false);
   });
@@ -220,8 +220,8 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     expect(JSON.stringify(mv.json), "a missing source refuses closed, by name").toContain("kahu-reach");
     const a = await A!.cli(["meme", "get", URI, ...BAG, "--json"]);
     const aText = String((a.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
-    expect(aText).toContain("<<~ ahu #/a>>");
-    expect(aText).not.toContain("<<~ ahu #/b>>");
+    expect(aText).toContain("<<~ ahu slot=`#/a`>>");
+    expect(aText).not.toContain("<<~ ahu slot=`#/b`>>");
   });
 
   // OWED ROW (`w26-floor-lane` #/owed, "a sibling device of a seat-holding face"): B is a joined sibling device of the
@@ -237,13 +237,13 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     await promoteLoadedTitles(B!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
     const local = await B!.cli(["meme", "get", URI, ...BAG, "--json"]);
     const localText = String((local.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
-    expect(localText).toContain("<<~ ahu #/b>>");
+    expect(localText).toContain("<<~ ahu slot=`#/b`>>");
     expect(localText).toMatch(BAG_LINE);
     expect(localText).not.toContain("$origin-bag");
     const a = await A!.cli(["meme", "get", URI, ...BAG, "--json"]);
     const aText = String((a.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
-    expect(aText).toContain("<<~ ahu #/a>>");
-    expect(aText).not.toContain("<<~ ahu #/b>>");
+    expect(aText).toContain("<<~ ahu slot=`#/a`>>");
+    expect(aText).not.toContain("<<~ ahu slot=`#/b`>>");
   });
 
   // THE LATER GRANT (basket-one #/the-later-grant, ruled 2026-09-11). A's door answers B's `face-join` intent and seats B in the group

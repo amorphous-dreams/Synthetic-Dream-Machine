@@ -125,8 +125,8 @@ describe("the acquired tier", () => {
 
     const indexText = readFileSync(join(libraryCollectionDir("c"), "index.mem"), "utf8");
     // Each entry is its own typed-JSON ahu slot, addressed by the entry's own cid.
-    expect(indexText).toContain(`<<~ ahu #/${sha("body a")}>>`);
-    expect(indexText).toContain(`<<~ ahu #/${sha("body b")}>>`);
+    expect(indexText).toContain(`<<~ ahu slot=\`#/${sha("body a")}\`>>`);
+    expect(indexText).toContain(`<<~ ahu slot=\`#/${sha("body b")}\`>>`);
     expect((indexText.match(/type\s*=\s*"application\/json"/g) ?? [])).toHaveLength(2);
 
     expect(listCollection("c")).toHaveLength(2);

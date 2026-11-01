@@ -92,7 +92,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     const root = "lar:///t/shadow/placed-root";
     const child = `${root}#/a`;
     await r.canon.writeFamily([
-      { tiddler: { title: root, text: "<<~ kahea ahu #/a>>", type: "text/memetic-wikitext+tiddlywiki" } },
+      { tiddler: { title: root, text: "<<~ kahea ahu slot=`#/a`>>", type: "text/memetic-wikitext+tiddlywiki" } },
       { tiddler: { title: child, text: "slot body", "$fragment-parent": root } },
     ], [], remote, { bag: canonBag });
     await r.adaptor.armSeedCheckpoint();
@@ -371,7 +371,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
       const canonBefore = heads(r, canonBag);
       const working = r.changes(workingBag);
       const mark = r.calls.length;
-      const body = `<<^ code="&#x0001;" from="?" -> to="${root}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${root.slice(7)}"\n\`\`\`\n\n<<~ ahu #/a>>\n\n! body\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+      const body = `<<^ code=\`&#x0001;\` from=\`?\` to=\`${root}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${root.slice(7)}"\n\`\`\`\n\n<<~ ahu slot=\`#/a\`>>\n\n! body\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
       r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(root)!.fields, { text: body }));
       await afterDispatch();
       boundary.fire();

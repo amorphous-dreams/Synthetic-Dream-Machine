@@ -83,7 +83,7 @@ export function distFresh(repo) {
 
 /** The canon seat-law bullets as the section a brief carries. */
 export function seatLaw(canonText) {
-  const m = /<<~ ahu #\/the-seat-law>>([\s\S]*?)<<~\/ahu>>/.exec(canonText);
+  const m = /<<~ ahu slot=`#\/the-seat-law`>>([\s\S]*?)<<~\/ahu>>/.exec(canonText);
   const bullets = m ? m[1].split("\n").filter((l) => l.startsWith("* ")) : [];
   if (!bullets.length) throw new Error(`no seat-law bullets in ${CANON} #/the-seat-law`);
   return `## SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)\n${bullets.join("\n")}\n`;

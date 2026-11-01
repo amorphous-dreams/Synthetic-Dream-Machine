@@ -16,7 +16,7 @@ const codes = (text: string): string[] => checkCarrier(deserializeCarrier(text, 
 
 describe("★ checkCarrier(reading) ★", () => {
   test("content between ETX and EOT is an error, read from the bytes", () => {
-    const stranded = carrier.replace(/(ni:\/\/\/sha-256;[A-Za-z0-9_-]+)\n/, "$1\n<<~ ahu #/edges>>\n\n* a link\n\n<<~/ahu>>\n");
+    const stranded = carrier.replace(/(ni:\/\/\/sha-256;[A-Za-z0-9_-]+)\n/, "$1\n<<~ ahu slot=`#/edges`>>\n\n* a link\n\n<<~/ahu>>\n");
     expect(codes(stranded)).toEqual(["postamble-content:error"]);
     expect(checkCarrier(deserializeCarrier(stranded, { title: URI }))[0]!.message).toMatch(/^6 line\(s\) stand between ETX and EOT/);
   });
@@ -26,6 +26,6 @@ describe("★ checkCarrier(reading) ★", () => {
   });
 
   test("CONTROL: a frame-less text strands nothing — there is no slot", () => {
-    expect(codes("prose\n\n<<^ code=\"&#x0003;\">>\nstray\n<<^ code=\"&#x0004;\" -> to=\"?\">>\n")).toEqual([]);
+    expect(codes("prose\n\n<<^ code=`&#x0003;`>>\nstray\n<<^ code=`&#x0004;` to=`?`>>\n")).toEqual([]);
   });
 });

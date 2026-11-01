@@ -28,12 +28,12 @@ import { carrierFiles } from "../src/carrier-files.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { REPO } from "./test-wiki.js";
 
-const DECL = "<<!DOCTYPE \"memetic-wikitext+tiddlywiki\" \"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\">>";
+const DECL = "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>";
 /** The head sigil as the CORPUS writes it — the far side is a named `to=` field, and corpus carriers
  *  name it (the test below asks the corpus rather than carrying a stale count).
  *  A fixture in the bare form is legal grammar and measures a shape no file has. */
 const head = (uri: string, ns = "") =>
-  `<<^ code="&#x0001;"${ns ? ` namespace="${ns}"` : ""} from="?" -> to="${uri}">>`;
+  `<<^ code=\`&#x0001;\`${ns ? ` namespace=\`${ns}\`` : ""} from=\`?\` to=\`${uri}\`>>`;
 
 describe("carrier-shape — every source reads as a carrier, with its marks and faults", () => {
   /**
@@ -110,7 +110,7 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
 
   test("a bag-declaring carrier carries the complete frame that seals its declaration and prose", () => {
     const d = readCarrierShape(
-      `${DECL}\n\n${head("lar:///ha.ka.ba/bags/lares")}\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nbag = "lares"\n\`\`\`\n\nprose\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`,
+      `${DECL}\n\n${head("lar:///ha.ka.ba/bags/lares")}\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nbag = "lares"\n\`\`\`\n\nprose\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`,
     );
     expect(d.marks).toMatchObject({ stx: true, etx: true, eot: true });
     expect(d.faults).toEqual([]);
@@ -119,7 +119,7 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
   /** THE ADVISORIES THE CARRIER CHECK NAMES, the gradient names too — one fault per authored drift. */
   describe("★ the gradient names what the carrier check refuses ★", () => {
     const framed = (meta: string, tail = "") =>
-      `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\n${meta}\n\`\`\`\n\nprose\n\n<<^ code="&#x0003;">>${tail}\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+      `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\n${meta}\n\`\`\`\n\nprose\n\n<<^ code=\`&#x0003;\`>>${tail}\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
     const faultsOf = (text: string) => readCarrierShape(text).faults.join("\n");
 
     test("CONTROL: a carrier whose meta agrees with its head carries none of these faults", () => {
@@ -135,7 +135,7 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
       expect(faultsOf(framed('text = "x"'))).toMatch(/root meta carries a `text` key/);
     });
     test("root meta on both sides of STX", () => {
-      const both = framed('uri-path = "ha.ka.ba/x/y"').replace(`<<^ code="&#x0002;">>`, "```toml meta\ncustom = 1\n```\n<<^ code=\"&#x0002;\">>");
+      const both = framed('uri-path = "ha.ka.ba/x/y"').replace(`<<^ code=\`&#x0002;\`>>`, "```toml meta\ncustom = 1\n```\n<<^ code=`&#x0002;`>>");
       expect(faultsOf(both)).toMatch(/root meta stands on both sides of STX/);
     });
     test("a byte-order mark and CR line endings — the tolerant read folds them, the gradient names them", () => {
@@ -194,7 +194,7 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
    * its tail, and the gradient faults the second.
    */
   test("a torn frame reads as truncated, never as unchecked", () => {
-    const torn = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\nbody cut mid-transmissi`;
+    const torn = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code=\`&#x0002;\`>>\n\nbody cut mid-transmissi`;
     const shape = readCarrierShape(torn);
     expect(shape.marks.check).toBe("torn");
     expect(shape.faults.join(" ")).toContain("torn reads as truncated");
@@ -206,7 +206,7 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
    * than blessed by the first frame's `ok`.
    */
   test("a second text frame surfaces as a fault rather than riding beneath the first frame's verdict", () => {
-    const two = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\nfirst body\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0002;">>\n\nsmuggled body\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+    const two = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code=\`&#x0002;\`>>\n\nfirst body\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0002;\`>>\n\nsmuggled body\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
     const shape = readCarrierShape(two);
     expect(shape.faults.join(" ")).toContain("2 text frames");
   });
@@ -214,10 +214,10 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
   /** ADJACENT, EXACTLY. A check shifted off its closer by even one space does not verify — slack there
    *  would let two byte-different files share one verdict, the class the span law exists to close. */
   test("a shifted check does not verify", () => {
-    const base = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\nbody\n\n<<^ code="&#x0003;">>`;
-    const good = readCarrierShape(`${base}ni:///sha-256;AAAA\n\n<<^ code="&#x0004;" -> to="?">>\n`);
+    const base = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code=\`&#x0002;\`>>\n\nbody\n\n<<^ code=\`&#x0003;\`>>`;
+    const good = readCarrierShape(`${base}ni:///sha-256;AAAA\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
     expect(good.marks.check).toBe("mismatch");   // adjacent but wrong digest — SEEN, judged
-    const shifted = readCarrierShape(`${base} ni:///sha-256;AAAA\n\n<<^ code="&#x0004;" -> to="?">>\n`);
+    const shifted = readCarrierShape(`${base} ni:///sha-256;AAAA\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
     expect(shifted.marks.check).toBe("unchecked"); // one space off — not a check at all
   });
 
@@ -324,7 +324,7 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
     expect(tally.get("&#x0011;") ?? 0, "no carrier writes SOH2 — the SOH family reads as one code").toBeGreaterThanOrEqual(1);
 
     // EOT2's own fixture — no at-rest carrier is ruled to carry this mark, so the floor stands here.
-    const eot2Fixture = '<<^ code="&#x0003;">>ni:///sha-256;x\n\n<<^ code="&#x0014;" -> to="?">>';
+    const eot2Fixture = '<<^ code=`&#x0003;`>>ni:///sha-256;x\n\n<<^ code=`&#x0014;` to=`?`>>';
     const eot2Seen = new Set<string>();
     for (const sig of maskedExecAll(eot2Fixture, SIGIL, fencedSpans(eot2Fixture))) {
       for (const ent of sig[0].matchAll(/&#x[0-9A-Fa-f]{4};/g)) eot2Seen.add(ent[0]);
@@ -374,7 +374,7 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
    * above, and so would one that answered `true` unconditionally.
    */
   test("CONTROL — a carrier spelled in undeclared codes reads no marks at all", () => {
-    const real = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\nbody\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+    const real = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code=\`&#x0002;\`>>\n\nbody\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
     expect(familiesWritten(real)).toEqual({ stx: true, etx: true, eot: true });
     expect(readCarrierShape(real).marks).toMatchObject({ stx: true, etx: true, eot: true });
 
@@ -385,7 +385,7 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
 
   /** CONTROL — a frame quoted in a lesson writes no frame, on BOTH sides of the comparison. */
   test("CONTROL — a fenced frame counts for neither reading", () => {
-    const lesson = "```\n<<^ code=\"&#x0002;\">>\n<<^ code=\"&#x0003;\">>\n<<^ code=\"&#x0004;\" -> to=\"?\">>\n```\n";
+    const lesson = "```\n<<^ code=`&#x0002;`>>\n<<^ code=`&#x0003;`>>\n<<^ code=`&#x0004;` to=`?`>>\n```\n";
     expect(familiesWritten(lesson)).toEqual({ stx: false, etx: false, eot: false });
     expect(readCarrierShape(lesson).marks).toMatchObject({ stx: false, etx: false, eot: false });
   });

@@ -109,7 +109,7 @@ describe("meme normalize — the check follows the body", () => {
     const stray = path.join(dir, "post-eot.mem");
     const source = readFileSync(SOURCE, "utf8");
     if (checkSpan(source) === null) throw new Error("fixture must carry a complete frame");
-    writeFileSync(stray, `${source.trimEnd()}\n<<^ code="&#x0014;" -> to="?">>\n`);
+    writeFileSync(stray, `${source.trimEnd()}\n<<^ code=\`&#x0014;\` to=\`?\`>>\n`);
     const before = readFileSync(stray, "utf8");
     const { out, code } = meme("check", stray);
     expect(out).toMatch(/postamble|boundary|after.*0004|terminat/i);
@@ -140,7 +140,7 @@ describe("meme normalize — the check follows the body", () => {
     writeFileSync(bare, stripped);
     meme("normalize", bare);
     const after = readFileSync(bare, "utf8");
-    expect(after).toMatch(/code="&#x0003;"[^>]*>>ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/);
+    expect(after).toMatch(/code=`&#x0003;`[^>]*>>ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/);
     // Exactly ONE mark appeared: the stamp. Every `ni:///` the body discussed stands untouched.
     expect((after.match(/ni:\/\/\//g) ?? []).length).toBe(proseCount + 1);
   });
@@ -153,7 +153,7 @@ describe("meme normalize — the check follows the body", () => {
     const torn = path.join(dir, "torn.mem");
     writeFileSync(torn, readFileSync(SOURCE, "utf8")
       .replace(/ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/, "")
-      .replace(/<<\^\s*code="&#x0003;"[^>]*>>/, ""));
+      .replace(/<<\^\s*code=`&#x0003;`[^>]*>>/, ""));
     expect(verifyBcc(readFileSync(torn, "utf8")), "the fixture never tore").toBe("torn");
 
     const { out } = meme("normalize", torn);
@@ -265,7 +265,7 @@ describe("meme normalize — a SHIFTED check is REPLACED, never duplicated", () 
     const span = checkSpan(source);
     if (!span) throw new Error("fixture must carry a complete frame");
     // Shift the check by one space AND append real trailing content after EOT.
-    const shifted = source.slice(0, span.end) + " " + source.slice(span.end) + "\n<<~ loulou \"lar:///ha.ka.ba/lares/api/pono\">>\n";
+    const shifted = source.slice(0, span.end) + " " + source.slice(span.end) + "\n<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono`>>\n";
     writeFileSync(file, shifted);
     expect(verifyBcc(shifted)).toBe("unchecked");
     expect(classifyPostamble(shifted.slice(span.end)).kind, "the whole tail must read foreign — that is the case this test guards").toBe("foreign");
@@ -302,8 +302,8 @@ describe("meme normalize/check — FRAME drift and GRAMMAR drift read as two aut
     const source = readFileSync(SOURCE, "utf8");
     const staled = source.replace("The node summons it.", "The node summons it, once.");
     return staled.replace(
-      "<<~/ahu>>\n\n<<~ ahu #/operation>>",
-      '<<~/ahu>>\n\n<<~ kue voice:Mischief-Muse key:"a value carrying spaces" held:[[a bracketed value]]>>\n\n<<~ ahu #/operation>>',
+      "<<~/ahu>>\n\n<<~ ahu slot=`#/operation`>>",
+      '<<~/ahu>>\n\n<<~ kue voice:Mischief-Muse key:"a value carrying spaces" held:[[a bracketed value]]>>\n\n<<~ ahu slot=`#/operation`>>',
     );
   }
 
@@ -335,8 +335,8 @@ describe("meme normalize/check — FRAME drift and GRAMMAR drift read as two aut
     const file = path.join(dir, "grammar-only.mem");
     const source = readFileSync(SOURCE, "utf8");
     const src = source.replace(
-      "<<~/ahu>>\n\n<<~ ahu #/operation>>",
-      '<<~/ahu>>\n\n<<~ kue key:"a value carrying spaces">>\n\n<<~ ahu #/operation>>',
+      "<<~/ahu>>\n\n<<~ ahu slot=`#/operation`>>",
+      '<<~/ahu>>\n\n<<~ kue key:"a value carrying spaces">>\n\n<<~ ahu slot=`#/operation`>>',
     );
     writeFileSync(file, src);
     expect(verifyBcc(src), "the fixture must start with a MATCHING check — the only drift here is grammar").toBe("mismatch");

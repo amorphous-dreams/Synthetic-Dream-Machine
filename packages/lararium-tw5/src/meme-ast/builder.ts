@@ -83,15 +83,15 @@ function attrsFromGroups(
     case "kumu":    return { name: g(1), params: g(2) };
     case "helu":    return { name: g(1), params: g(2), expression: g(3) };
     case "waiho":   return { name: g(1), value: g(2), scope };
-    case "kau":     return { name: g(1), value: g(2), scope };
+    case "kau":     return { fragment: g(1).replace(/^#/, ""), name: g(2), propsRaw: g(3) };
     case "kapu":    return { qualifier: g(1), inline: scope === "carrier" ? "true" : "false" };
     case "ui":      return { filter: g(1) };
     case "kukali":  return g(1) ? { trigger: g(1) } : {};
     case "toml":    return { profile: g(1), content: g(2) };
-    // Turn/HUD-frame sigils — recognized so the tree carries a turn's own frame (not graded degraded).
-    case "lares":   return { mode: g(1), from: g(2), to: g(3) };
+    // Turn-frame and metadata sigils — recognized so the tree carries a turn's own frame (not graded
+    // degraded). Their patterns hand back the whole named-value run as ONE body group; `set` (the
+    // frame's one sigil since the kupono cut) rides the grammar's own reading, never a case here.
     case "confidence": return { body: g(1) };
-    case "hud":     return { body: g(1) };
     case "ward":    return { body: g(1) };
     case "oracle":  return { body: g(1) };
     case "syad":    return { body: g(1) };
@@ -119,10 +119,14 @@ function attrOf(tail: string, name: string): string | null {
   //
   // A STRING LITERAL wears FOUR delimiters — `"""…"""`, `"…"`, `'…'` and `[[…]]` — each stripped to
   // a plain value by TiddlyWiki's own `parseStringLiteral`, and all four legal after either.
+  //
+  // AND A TICK RUN IS THE HOUSE'S ONE VALUE SPELLING (the kupono cut): ``name=`v` ``, or
+  // ```` name=```v``` ```` where the value holds a tick. Both strip to the value, the triple tried first,
+  // and both bind after `=` alone, as TiddlyWiki's substituted attribute does.
   const m = new RegExp(
-    `\\b${name}\\s*[=:]\\s*(?:"""([\\s\\S]*?)"""|"([^"]*)"|'([^']*)'|\\[\\[((?:[^\\]]|\\](?!\\]))*)\\]\\]|([^\\s>"']+))`,
+    `\\b${name}\\s*(?:=\\s*(?:\`\`\`([\\s\\S]*?)\`\`\`|\`([^\`]*)\`)|[=:]\\s*(?:"""([\\s\\S]*?)"""|"([^"]*)"|'([^']*)'|\\[\\[((?:[^\\]]|\\](?!\\]))*)\\]\\]|([^\\s>"'\`]+)))`,
   ).exec(tail);
-  return m ? (m[1] ?? m[2] ?? m[3] ?? m[4] ?? m[5] ?? null) : null;
+  return m ? (m[1] ?? m[2] ?? m[3] ?? m[4] ?? m[5] ?? m[6] ?? m[7] ?? null) : null;
 }
 
 function kaheaInvokeNode(
@@ -133,7 +137,9 @@ function kaheaInvokeNode(
   children:  MemeAstNode[],
 ): MemeAstNode {
   if (type === "ahu") {
-    const slot = args.trim();
+    // The slot names itself: ``<<~ kahea ahu slot=`#/a`>>`` hands back an args run, and the slot is
+    // its `slot=` value.
+    const slot = attrOf(args, "slot") ?? "";
     return { kind: "Ahu", ...base, slot, uri: slotUriOf(memeUri, slot), delegate: null, body: children, invocation: true } as AhuNode;
   }
   return { kind: "Sigil", ...base, sigilName: type, attrs: { summon: "true", args }, body: children } as SigilNode;
@@ -194,21 +200,21 @@ function makeLeaf(
 
     case "aka": {
       // Two surface forms (per memetic-wikitext spec):
-      //   child-slot: `<<~ aka ahu #slot>>`  → scanner regex with two
+      //   child-slot: ``<<~ aka ahu slot=`#s`>>`` → scanner regex with two
       //                                          groups: g(1)=sigil keyword,
       //                                          g(2)=`#slot` → AhuNode
       //                                          (projection).
-      //   URI form:   `<<~ aka lar:///foo>>` → scanner regex with one
+      //   URI form:   ``<<~ aka uri=`lar:///foo`>>`` → scanner regex with one
       //                                          group: g(1)=URI, g(2)=""
       //                                          → PranalaSugar (observe).
       // Discriminator: g(2) starting with `#` selects child-slot. Otherwise
-      // route to URI / edge branch with toRaw = g(1) (URI lives in group 1
-      // when group 2 is absent).
+      // route to URI / edge branch with toRaw = g(2) (the uri-or-slot group;
+      // group 1 carries the compound word, empty on the URI form).
       const akaSlot = g(2);
       if (akaSlot.startsWith("#")) {
         return { kind: "Ahu", ...base, slot: akaSlot, uri: slotUriOf(memeUri, akaSlot), delegate: null, body: [], projection: true } as AhuNode;
       }
-      return { kind: "PranalaSugar", ...base, sigil: "aka", slot: null, fromRaw: null, toRaw: g(1), family: "observe", role: null, listenable: null, subscribable: null } as PranalaSugarNode;
+      return { kind: "PranalaSugar", ...base, sigil: "aka", slot: null, fromRaw: null, toRaw: akaSlot, family: "observe", role: null, listenable: null, subscribable: null } as PranalaSugarNode;
     }
 
     case "kahea-invoke":
@@ -217,20 +223,11 @@ function makeLeaf(
     case "kahea":
       return { kind: "PranalaSugar", ...base, sigil: "kahea", slot: null, fromRaw: null, toRaw: g(1), family: "dataflow", role: null, listenable: null, subscribable: null } as PranalaSugarNode;
 
-    case "kau": {
-      const scope = eventType === "pragma" ? "carrier" : "block";
-      if (raw.match(/<<~!?\s*kau\s+[\w-]+\s*=/)) {
-        return { kind: "Sigil", ...base, sigilName: "kau", attrs: { name: g(1), value: g(2), scope }, body: [] } as SigilNode;
-      }
-      if (g(3) === "" && g(1) !== "" && !g(1).startsWith("#") && raw.includes("(")) {
-        return { kind: "Sigil", ...base, sigilName: "kau", attrs: { name: g(1), args: g(2) }, body: [] } as SigilNode;
-      }
-      if (!g(1) && g(2) && g(3) === "") {
-        return { kind: "Sigil", ...base, sigilName: "kau", attrs: { name: g(2), args: "" }, body: [] } as SigilNode;
-      }
-      const fragment = g(1).replace(/^#/, "").trim() || null;
-      return { kind: "Sigil", ...base, sigilName: "kau", attrs: { fragment: fragment ?? "", name: g(2), propsRaw: g(3) }, body: [] } as SigilNode;
-    }
+    case "kau":
+      // ONE SHAPE (the kupono cut): ``<<~ kau slot=`#dev`? name=`Laptop` props=`…`?>>`` — groups slot,
+      // name, props. Every value names itself, so no declare-style or call-style spelling remains to
+      // tell apart.
+      return { kind: "Sigil", ...base, sigilName: "kau", attrs: attrsFromGroups("kau", groups), body: [] } as SigilNode;
 
     case "pono":
       return { kind: "PranalaSugar", ...base, sigil: "pono", slot: g(1) || null, fromRaw: g(2), toRaw: g(3), family: "constraint", role: g(4) || null, listenable: null, subscribable: null } as PranalaSugarNode;

@@ -155,7 +155,7 @@ export function readLibraryMeta(entryDir: string): LibraryEntryMeta | null {
 
 /** One top-level `#/<cid>` ahu entry block, open tag through its own close — never nested (the index
  *  mints every entry flat, one slot per body). */
-const AHU_ENTRY_RE = /<<~\s*ahu\s+#\/([0-9a-f]{64})\s*>>([\s\S]*?)<<~\/ahu\s*>>/g;
+const AHU_ENTRY_RE = /<<~\s*ahu\s+slot=`#\/([0-9a-f]{64})`\s*>>([\s\S]*?)<<~\/ahu\s*>>/g;
 
 /**
  * Read a collection's index carrier back into entries, keyed by the SLOT ADDRESS (never by whatever cid
@@ -271,7 +271,7 @@ function renderLibraryIndex(collection: string, entries: readonly LibraryEntryMe
   const total = rows.reduce((n, e) => n + e.size, 0);
   const uri = `lar:///ha.ka.ba/library/${collection}`;
   const entryBlock = (e: LibraryEntryMeta): string => [
-    `<<~ ahu #/${e.cid}>>`,
+    `<<~ ahu slot=\`#/${e.cid}\`>>`,
     "",
     "```toml meta",
     kv("type", "application/json"),

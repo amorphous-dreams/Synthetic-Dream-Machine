@@ -7,7 +7,7 @@
 import { describe, expect, test } from "vitest";
 import { metaFenceAt, rootMetaFence, rootMetaFields, metaValueRaw } from "../src/root-meta.js";
 
-const STX = `<<^ code="&#x0002;">>`;
+const STX = `<<^ code=\`&#x0002;\`>>`;
 
 describe("root-meta — the root meta fence rides the body", () => {
   test("a frame head, STX, then a toml meta fence — the body is read", () => {
