@@ -651,6 +651,14 @@ export function cutText(text, ctx, opts = {}) {
   let seal = "none";
   const standing = ctx.frame.verifyBcc(text);
   if (/^<<!DOCTYPE\b/m.test(text) && (standing !== "unchecked" || /ni:\/\/\/sha-256;/.test(text))) {
+    // A RE-SEAL ATTESTS ONLY WHAT ALREADY VERIFIED. A check that fails over the arriving bytes (a body
+    // tampered, a seal gone stale before the cut) would come out re-stamped and read `match`, laundering
+    // whatever broke it. So the cut stamps over `ok` or `unchecked` alone; any other standing refuses by
+    // name and the file stays exactly as it stood.
+    if (standing !== "ok" && standing !== "unchecked") {
+      refusals.push({ rel, line: 1, kind: "seal-broken", why: `the arriving check reads ${standing}: re-seal by hand after reading the body`, src: "" });
+      return { text, changes: 0, refusals, unmapped, bodyChanges, seal: standing, lists, counts: { ...counts, phase: 0, renamed: 0, filePath: 0 } };
+    }
     const stamped = next === text ? next : ctx.frame.stampCarrier(next);
     seal = ctx.frame.verifyBcc(stamped);
     if (seal === "ok") next = stamped;
@@ -797,8 +805,9 @@ async function main(argv) {
     report.partialTurns.push(...r.lists.partialTurns);
     for (const u of r.unmapped) (report.unmapped[u] ??= []).push(rel);
     if (canon.has(rel) && r.bodyChanges) report.canonBody[rel] = r.bodyChanges;
-    if (r.text === before) continue;
+    // A broken arriving seal leaves the file untouched, so it reds here, before the unchanged skip.
     if (r.seal !== "ok" && r.seal !== "none") report.sealBlocked.push(`${rel} (${r.seal})`);
+    if (r.text === before) continue;
     report.touched.push(rel);
     report.changes += r.changes; report.turns += r.counts.turns; report.cut += r.counts.cut;
     report.phase += r.counts.phase; report.renamed += r.counts.renamed; report.filePath += r.counts.filePath;
