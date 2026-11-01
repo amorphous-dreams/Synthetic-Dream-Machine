@@ -26,9 +26,7 @@
  *     signs nothing / under the primary it signs.
  * N11 an act refused before its write pins nothing / the act that lands pins its Nexus.
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { afterEach, beforeEach, describe, expect } from "vitest";
 import { join } from "node:path";
 import {
   DAEMON_BAG_ID, edgeKapaeActsFromBoard, edgeLedgerDocUrl, ledgerRealmNexus, materializeSharedLarDoc, memberEdgeId,
@@ -55,9 +53,8 @@ import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { chairKey, seatChairs } from "./seat-fixture.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
-let root: string;
-let priorLarRoot: string | undefined;
 const REALM = "b1".repeat(32), OTHER_REALM = "b2".repeat(32), MEMBER = "c3".repeat(32), JOINER = "d4".repeat(32);
 
 /** The primary charter: one seat this vessel holds, threshold one. */
@@ -66,9 +63,6 @@ let primary: { aid: string; doc: NexusDoc; seat: { signer: string; sign: (b: Uin
 let carried: { aid: string; doc: NexusDoc };
 
 beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), "lares-realm-nexus-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
@@ -94,8 +88,7 @@ beforeEach(async () => {
 });
 afterEach(async () => {
   await restEvery();
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot;
-  rmSync(root, { recursive: true, force: true });
+
 });
 
 /** Two faces held: these vectors act as h0 unless one names another. */

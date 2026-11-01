@@ -6,9 +6,7 @@
  * properties that make the door safe rather than merely functional: one challenge answers once, the fence
  * gets re-read rather than remembered, and so do the readings an admit is judged against.
  */
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { describe, expect } from "vitest";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 
@@ -24,6 +22,7 @@ import { writeNexusDoc } from "../src/nexus-doc.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { scratchRoot as root, test } from "./support/scratch-fixture.js";
 
 const VESSEL = "vessel-key";
 const NEXUS  = "aid-of-nexus-n";
@@ -232,11 +231,6 @@ describe("★ the door raises through the presented admit, and re-reads it every
 });
 
 describe("★ a PLACE carries a Nexus by its own counted carrier seal ★", () => {
-  let root: string;
-  let prior: string | undefined;
-  beforeEach(() => { root = mkdtempSync(join(tmpdir(), "lares-raise-place-")); prior = process.env["LAR_ROOT"]; process.env["LAR_ROOT"] = root; });
-  afterEach(() => { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; rmSync(root, { recursive: true, force: true }); });
-
   /** A held charter at the primary path, and a board opener serving `entries` at that charter's island. */
   async function held(entries: readonly CarriageEntry[]) {
     const keys = await Promise.all(KAHU_SEEDS.map(pubOf));

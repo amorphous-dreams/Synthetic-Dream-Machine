@@ -6,9 +6,8 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/kapae#/reach
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { afterEach, beforeEach, describe, expect } from "vitest";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import { interpretAsDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
@@ -47,17 +46,13 @@ import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixtu
 import { seedFleet } from "./fleet-seed-fixture.js";
 import { fleetLineageOf } from "../src/fleet-lineage.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
-let root: string;
-let priorLarRoot: string | undefined;
 const REALM = "a".repeat(64);
 const nymOf = (byte: number) => ed.getPublicKeyAsync(new Uint8Array(32).fill(byte)).then(hex);
 const idOf = (url: string): DocumentId => interpretAsDocumentId(url as never) as DocumentId;
 
 beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), "lares-ring-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
@@ -71,10 +66,7 @@ beforeEach(async () => {
   });
 });
 afterEach(async () => {
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
-  else process.env["LAR_ROOT"] = priorLarRoot;
   await new Promise((r) => setTimeout(r, 200));
-  rmSync(root, { recursive: true, force: true });
 });
 
 /**

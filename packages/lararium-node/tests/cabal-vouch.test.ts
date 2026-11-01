@@ -9,10 +9,7 @@
  * What this deliberately does NOT assert: that the vouch admitted anyone. A vouch grants nothing on its
  * own — it rides as signal-2 on the lineage, and the crossing runs elsewhere (`admitOnLineage`).
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import {
@@ -28,9 +25,8 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { runCabalVouch, CabalVouchError } from "../src/commands/cabal-vouch.js";
 import { direct } from "./direct-store.js";
 import { seedFaceAtom } from "./atom-fixture.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
-let root: string;
-let priorLarRoot: string | undefined;
 
 const REALM  = "a".repeat(64);
 const JOINER = "b".repeat(64);
@@ -40,9 +36,6 @@ const verify = (bytes: Uint8Array, sigHex: string, did: string) =>
   ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);
 
 beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), "lares-vouch-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });   // the REALM's key — scopes the board
   await generateOrLoadPersonaGroupRoot(); // the HUMAN's face — the hand that stakes
   await seedFaceAtom(0);
@@ -53,9 +46,7 @@ let face: string;
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
   await restEvery();
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
-  else process.env["LAR_ROOT"] = priorLarRoot;
-  rmSync(root, { recursive: true, force: true });
+
 });
 
 /** Read the board back the way any consumer must — through the verifying read. */

@@ -12,10 +12,9 @@
  *   · a re-import that forks or rewinds the held lineage refuses and leaves the held bytes standing,
  *   · the primary's own charter, or a torn one, refuses to land as a carried charter.
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect } from "vitest";
 import { createHash, createPrivateKey, createPublicKey } from "node:crypto";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
@@ -31,21 +30,10 @@ import {
 import { runNexusAcceptCarriage } from "../src/commands/nexus-contract.js";
 import { heldCharter, type HeldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
-let root: string;
-let priorLarRoot: string | undefined;
 const sealHome = (): string => join(root, "state", "nexus");
 
-beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lares-carried-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
-});
-afterEach(() => {
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
-  else process.env["LAR_ROOT"] = priorLarRoot;
-  rmSync(root, { recursive: true, force: true });
-});
 
 /** The seed behind each foreign key, so a partner's revealed hands can sign its rolls. */
 const seedOf = new Map<string, Uint8Array>();

@@ -4,10 +4,9 @@
  * verb reads effective 0 and the sealed anchor's frontier stays; the verb's own advance raises both. Controls: a second
  * advance climbs by one, and a face with no lineage refuses by name.
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { afterEach, describe, expect } from "vitest";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import {
   DAEMON_BAG_ID, ed25519SignerFromSeed, leaseEpochSlotUri, seedDaemonDoc, signLeaseAdvance, signedLeaseEpoch, raiseFaceFrontier, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
@@ -19,9 +18,8 @@ import { ownedStore } from "../src/owned-store.js";
 import { storeDoorDirect } from "../src/store-door-verbs.js";
 import { seedFaceAtom } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
-let root: string;
-let prior: string | undefined;
 let daemonUrl: string;
 
 async function setup(withFleet: boolean) {
@@ -38,11 +36,8 @@ async function setup(withFleet: boolean) {
     writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: packed }) }), "utf8");
   });
 }
-beforeEach(() => { root = mkdtempSync(join(tmpdir(), "lares-lease-")); prior = process.env["LAR_ROOT"]; process.env["LAR_ROOT"] = root; });
 afterEach(async () => {
-  if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
   await new Promise((r) => setTimeout(r, 200));
-  rmSync(root, { recursive: true, force: true });
 });
 
 const roll = () => storeDoorDirect("persona-lease", { handleIndex: 0 }, { sealHome: larSealHome() });
