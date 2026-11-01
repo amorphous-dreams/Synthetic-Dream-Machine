@@ -1069,3 +1069,19 @@ test("RED: a RESUMED train re-reads what it lands against the table and the SHIP
   assert.equal(originRef(w, SPAN), SP, "nothing landed");
   assert.equal(sh(w.origin, "for-each-ref", `refs/heads/${SPAN}--train-*`), "", "the refused train is torn down");
 });
+
+test("RED: a queued entry refused for its SHIP at chain time drops by name and the queue drains the rest (11); CONTROL: a named lane still refuses the whole land (12)", async () => {
+  const w = renameWorld();
+  sh(w.work, "checkout", "-q", "-b", `${SPAN}--b`, w.base); w.heads.b = w.commit(w.work, "packages/p-b/f.txt", "b\n", "lane b"); sh(w.work, "push", "-q", "origin", `${SPAN}--b`); sh(w.work, "checkout", "-q", SPAN);
+  w.lanes.push("b"); w.msgs.b = join(w.dir, "b.msg"); writeFileSync(w.msgs.b, "lar:///w/b — merge PR #101: lane b\n");
+  const named = await runQ(w);
+  assert.equal(named.code, 12, named.out);
+  const { ops } = opsQ(w); const lines = []; ops.log = (l) => lines.push(l);
+  const o = { span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") };
+  assert.equal((await LT.enqueue({ ...o, specs: specsOf(w) }, ops)).code, 0);
+  const r = await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops);
+  assert.equal(r.code, 11, lines.join("\n"));
+  assert.match(lines.join("\n"), /DROPPED a: NO SHIP/);
+  assert.deepEqual(readdirSync(join(w.dir, "q", "entries")), []);
+  assert.ok(hasFile(w, originRef(w, SPAN), "packages/p-b/f.txt"), "lane b landed");
+});
