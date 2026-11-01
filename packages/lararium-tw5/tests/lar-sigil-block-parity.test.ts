@@ -136,10 +136,12 @@ describe.skipIf(wikiSkip)(`a sigil is a block only when its >> ends the line${sk
     expect(t[0]!.children![0]!.rule).toBe("lar-sigil");
   });
 
-  test("★ RED: text after the closer's >> makes the pair inline ★", () => {
+  test("★ RED: text after the closer's >> unpairs the pair — the opener stands alone, the closer's line reads as text ★", () => {
     const t = tree(MEMETIC, "<<~ ahu slot=`#/a`>>\nbody\n<<~/ahu>>tail");
-    expect(t.map((n) => n.tag ?? n.type)).toEqual(["p"]);
-    expect(t[0]!.children![0]!.rule).toBe("lar-sigil");
-    expect(textOf(t[0]!.children!)).toContain("tail");
+    // The opener's line ends, so stock TW5 would take it as a macrocall to a macro named `~`; the rule keeps it.
+    expect(`${t[0]!.type}:${t[0]!.rule}`).toBe("transclude:lar-sigil");
+    expect(t.slice(1).map((n) => n.tag)).toEqual(["p"]);
+    expect(textOf(t[1]!.children!)).toContain("body");
+    expect(textOf(t[1]!.children!)).toContain("tail");
   });
 });
