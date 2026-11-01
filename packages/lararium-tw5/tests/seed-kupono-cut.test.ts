@@ -1,0 +1,229 @@
+/**
+ * THE BOOT SEED SPEAKS THE KUPONO GRAMMAR AND TEACHES THE TURN FRAME IT STATES.
+ *
+ * ── WHY ───────────────────────────────────────────────────────────────────────────────────────────────────
+ * Every host seats the boot seed whole at turn 1, so its calls and its worked turns teach the house grammar
+ * by example. Train Q's rulings (lar:///ha.ka.ba/lares/docs/pono/grammar-watch#/the-kupono-cut) retire the
+ * arrow between values, the whitespace-led at-sign and the quoted or positional value, and fold the turn
+ * frame into one sigil: set lares=aim · set lares=steer (as needed) · oracle · set lares=yield. A seed that
+ * states one frame and prints another teaches both, and no other gate reads the two together.
+ *
+ * ── WHAT THIS HOLDS ───────────────────────────────────────────────────────────────────────────────────────
+ * Each law runs as a pure function of the seed text that returns its findings. The CONTROLS feed every law a
+ * planted fault it MUST name, so a law that reads nothing cannot pass for green. The SEED block asserts that
+ * the repo seed yields no finding. The seat orders come from the seed's own `set-aim`, `set-steer` and
+ * `set-yield` procedures, never from a list kept here.
+ */
+
+import { describe, test, expect } from "vitest";
+import { readFileSync } from "node:fs";
+
+const SEED = new URL("../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem", import.meta.url).pathname;
+const seed = readFileSync(SEED, "utf8");
+
+const TICKED = /`[^`]*`/g;
+const CALL = /<<(?:[^>\n]|>(?!>))*>>/g;
+const HEAD = /^<<\s*([~^!]?)\s*([^\s>]*)\s*([\s\S]*?)\s*>>$/;
+const KEYED = /([a-z][a-z0-9-]*)=`([^`]*)`/g;
+
+interface Call { line: number; text: string; prefix: string; head: string; rest: string }
+
+/** Every single-line sigil or procedure CALL outside a `\procedure` definition line. */
+function callsOf(text: string): Call[] {
+  const out: Call[] = [];
+  text.split("\n").forEach((raw, i) => {
+    if (raw.startsWith("\\procedure") || raw.startsWith("\\widget")) return;
+    for (const m of raw.matchAll(CALL)) {
+      const h = HEAD.exec(m[0]);
+      if (!h || !/^\/?[A-Za-z]/.test(h[2]!)) continue;
+      out.push({ line: i + 1, text: m[0], prefix: h[1]!, head: h[2]!, rest: h[3]! });
+    }
+  });
+  return out;
+}
+
+const at = (c: Call, what: string) => `${c.line}: ${what} · ${c.text.slice(0, 70)}`;
+
+/** Cut 1: no bare arrow between values inside a call; an arrow inside a ticked value stays. */
+const arrowsBetweenValues = (text: string): string[] =>
+  callsOf(text).filter((c) => c.rest.replace(TICKED, "T").includes("->")).map((c) => at(c, "bare ->"));
+
+/** Cut 2: no at-sign after whitespace anywhere in the carrier. */
+const spacedAtSigns = (text: string): string[] =>
+  text.split("\n").flatMap((l, i) => (/(^|\s)@/.test(l) ? [`${i + 1}: spaced @ · ${l.trim().slice(0, 70)}`] : []));
+
+/** Cut 3: every value rides named in a backtick span; no quoted value, no positional residue. */
+const unnamedOrQuotedValues = (text: string): string[] =>
+  callsOf(text).flatMap((c) => {
+    const masked = c.rest.replace(TICKED, "T");
+    const found: string[] = [];
+    if (/[a-z0-9-]+="/i.test(masked)) found.push(at(c, 'quoted key="value"'));
+    const residue = masked.replace(/\b[a-z][a-z0-9-]*=T/gi, "").trim();
+    if (residue !== "" && residue !== "…") found.push(at(c, `positional residue «${residue.slice(0, 30)}»`));
+    return found;
+  });
+
+/** Hazards a ticked value never carries: `>>` ends the call early, `$(x)$` substitutes live. */
+const valueHazards = (text: string): string[] =>
+  callsOf(text).flatMap((c) => [...c.rest.matchAll(TICKED)].filter((m) => m[0].includes("$(")).map(() => at(c, "$( in a value")));
+
+/** Envelope and openers: DOCTYPE names type= and spec=; every ahu opener names slot=; the old frame names stand nowhere. */
+const envelopeAndRetired = (text: string): string[] => {
+  const found: string[] = [];
+  const calls = callsOf(text);
+  const doctype = calls.find((c) => c.prefix === "!" && c.head === "DOCTYPE");
+  if (!doctype || !/^type=`[^`]+` spec=`[^`]+`$/.test(doctype.rest)) found.push("DOCTYPE lacks type=`…` spec=`…`");
+  for (const c of calls.filter((c) => c.head === "ahu" && c.prefix === "~"))
+    if (!/^slot=`#\/[^`]+`$/.test(c.rest)) found.push(at(c, "ahu opener without slot="));
+  if (/^\\procedure ~lares\(/m.test(text)) found.push("\\procedure ~lares still stands");
+  for (const c of calls.filter((c) => c.head === "lares")) found.push(at(c, "<<~ lares …>> still stands"));
+  for (const c of calls.filter((c) => /\bhud=/.test(c.rest))) found.push(at(c, "hud= still stands"));
+  return found;
+};
+
+/** Every oracle throw passes its own cross-check: die face == (N) == blind-tail grapheme count, spend above zero. */
+const oracleCrossCheck = (text: string): string[] => {
+  const faces: Record<string, number> = { "⚀": 1, "⚁": 2, "⚂": 3, "⚃": 4, "⚄": 5, "⚅": 6 };
+  const seg = new Intl.Segmenter("en", { granularity: "grapheme" });
+  return callsOf(text)
+    .filter((c) => c.head === "oracle")
+    .flatMap((c) => {
+      const m = /^throw=`↯(\d+) ✲ ([⚀-⚅])\((\d)\) ⁂:([^`]+)`$/.exec(c.rest);
+      if (!m) return [at(c, "oracle throw unreadable")];
+      const [spend, die, face, tail] = [Number(m[1]), faces[m[2]!], Number(m[3]), [...seg.segment(m[4]!)].length];
+      return die === face && face === tail && spend > 0 ? [] : [at(c, `oracle die ${die} face ${face} tail ${tail} spend ${spend}`)];
+    });
+};
+
+/** The bodies of the carrier's fenced blocks, paired by toggling on each fence line (an info string opens too). */
+const fencedBlocks = (text: string): string[] => {
+  const blocks: string[] = [];
+  let open: string[] | null = null;
+  for (const line of text.split("\n")) {
+    if (line.startsWith("```")) {
+      if (open) { blocks.push(open.join("\n")); open = null; } else open = [];
+    } else open?.push(line);
+  }
+  return blocks;
+};
+
+const orderOf = (text: string, firing: string): string[] | undefined =>
+  new RegExp(`^\\\\procedure set-${firing}\\(\\)\\s+(.+)$`, "m").exec(text)?.[1]!.trim().split(/\s+/);
+
+const rootOk = (v: string): boolean => {
+  const m = /^lar:\/\/[^/]*\/([^/]+)/.exec(v);
+  return !!m && m[1]!.split(".").length === 3;
+};
+
+/**
+ * Cut 4: the worked turns obey the frame the seed states. Each turn opens on one aim, may steer, throws the
+ * oracle, and closes on one yield; lares= leads each firing; keys sit in the seed's own seat order (the ward
+ * last at aim, first at yield); every bearing names a three-term root; the yield hands off to ?. A steer
+ * records a change and never rewrites the aim: it never re-reads the aim's from=, and a to= it casts names a
+ * new bearing. Across the seed the turns show both steer uses and both loop endings.
+ */
+const frameLaw = (text: string): string[] => {
+  const found: string[] = [];
+  const order = { aim: orderOf(text, "aim"), steer: orderOf(text, "steer"), yield: orderOf(text, "yield") };
+  for (const [k, v] of Object.entries(order)) if (!v) found.push(`no \\procedure set-${k}() seat order`);
+  const turns = fencedBlocks(text).filter((b) => b.includes("<<~ set lares=`aim`"));
+  if (turns.length < 2) found.push(`worked turns in the new frame: ${turns.length} (want 2 or more)`);
+  let steerTo = 0, steerKeys = 0, suspended = 0, closed = 0;
+  turns.forEach((block, t) => {
+    const lines = block.split("\n").filter((l) => /^<<~ (set|oracle) /.test(l));
+    const kinds = lines.map((l) => (l.startsWith("<<~ oracle") ? "oracle" : /^<<~ set lares=`(\w+)`/.exec(l)?.[1] ?? "unled"));
+    const shape = kinds.join(" ");
+    if (!/^aim( steer)* oracle yield$/.test(shape)) found.push(`turn ${t + 1}: firing order «${shape}»`);
+    const keysOf = (l: string) => [...l.matchAll(KEYED)].map((m) => [m[1]!, m[2]!] as const);
+    const aim = keysOf(lines[0] ?? "");
+    const aimFrom = aim.find(([k]) => k === "from")?.[1], aimTo = aim.find(([k]) => k === "to")?.[1];
+    lines.forEach((l, i) => {
+      const kind = kinds[i]!;
+      if (kind === "oracle") return;
+      const keys = keysOf(l).map(([k]) => k).filter((k) => k !== "note");
+      const vals = Object.fromEntries(keysOf(l));
+      if (keys[0] !== "lares") found.push(`turn ${t + 1} ${kind}: lares= does not lead`);
+      const seat = order[kind as keyof typeof order];
+      if (seat) {
+        const idx = keys.map((k) => seat.indexOf(k));
+        if (idx.some((x) => x < 0) || idx.some((x, j) => j > 0 && x < idx[j - 1]!)) found.push(`turn ${t + 1} ${kind}: keys «${keys.join(" ")}» break the seat order`);
+      }
+      for (const k of ["from", "to"]) if (vals[k] && vals[k] !== "?" && !rootOk(vals[k]!)) found.push(`turn ${t + 1} ${kind}: ${k}= root not three terms`);
+      if (kind === "aim") {
+        if (!vals.from || !vals.to) found.push(`turn ${t + 1} aim: lacks from= or to=`);
+        if (keys[keys.length - 1] !== "drift-ward") found.push(`turn ${t + 1} aim: the ward does not ride last`);
+      }
+      if (kind === "yield") {
+        if (keys[1] !== "drift-ward") found.push(`turn ${t + 1} yield: the ward does not ride first`);
+        if (!vals.from || vals.to !== "?") found.push(`turn ${t + 1} yield: lacks from= or to=\`?\``);
+        if (/open \d+φ/.test(vals["ooda-ha"] ?? "")) suspended++;
+        else if (vals["ooda-ha"]) closed++;
+      }
+      if (kind === "steer") {
+        if (keys.length < 2) found.push(`turn ${t + 1} steer: records no change`);
+        if (vals.from && vals.from === aimFrom) found.push(`turn ${t + 1} steer: re-reads the aim's from= (rewrites the aim)`);
+        if (vals.to && vals.to === aimTo) found.push(`turn ${t + 1} steer: casts the aim's own to= (records no change)`);
+        if (vals.to) steerTo++;
+        else if (keys.length >= 2) steerKeys++;
+      }
+    });
+  });
+  if (steerTo < 1) found.push("no worked steer turns the bearing (to=)");
+  if (steerKeys < 1) found.push("no worked steer casts other keys on the same heading");
+  if (suspended < 1) found.push("no worked turn suspends its loop");
+  if (closed < 1) found.push("no worked turn closes its loop");
+  return found;
+};
+
+const LAWS = { arrowsBetweenValues, spacedAtSigns, unnamedOrQuotedValues, valueHazards, envelopeAndRetired, oracleCrossCheck, frameLaw };
+
+// ── CONTROLS: a planted fault each law MUST name ───────────────────────────────────────────────────────
+const PLANTED: Record<keyof typeof LAWS, string> = {
+  arrowsBetweenValues: '<<~ pranala from=`a` -> to=`b`>>',
+  spacedAtSigns: "the daemon rides @daemon",
+  unnamedOrQuotedValues: '<<~ season Chaos "glyph/✶">>',
+  valueHazards: "<<~ set note=`$(x)$`>>",
+  envelopeAndRetired: '<<!DOCTYPE root=`x` spec=`y`>>\n<<~ ahu #/entry>>\n<<~ lares fires=`aim` from=`a`>>',
+  oracleCrossCheck: "<<~ oracle throw=`↯7 ✲ ⚂(3) ⁂:⌗🜄`>>",
+  frameLaw: [
+    "\\procedure set-aim() lares from to mode drift-ward",
+    "\\procedure set-steer() lares to from mode drift-ward",
+    "\\procedure set-yield() lares drift-ward from to",
+    "```",
+    "<<~ set lares=`aim` from=`lar://a:b@c/x.y.z` to=`lar://a:b@c/p.q.r` drift-ward=`w`>>",
+    "<<~ set lares=`steer` from=`lar://a:b@c/x.y.z` to=`lar://a:b@c/p.q.r`>>",
+    "<<~ set lares=`yield` drift-ward=`w` from=`lar://a:b@c/two.terms` to=`?`>>",
+    "<<~ oracle throw=`↯1 ✲ ⚀(1) ⁂:x`>>",
+    "```",
+  ].join("\n"),
+};
+
+describe("controls: each law names its planted fault", () => {
+  for (const [name, law] of Object.entries(LAWS)) {
+    test(`${name} reads its planted fault red`, () => {
+      expect(law(PLANTED[name as keyof typeof LAWS]).length).toBeGreaterThan(0);
+    });
+  }
+  test("frameLaw names each planted frame fault, not merely one", () => {
+    const f = frameLaw(PLANTED.frameLaw).join("\n");
+    for (const want of ["firing order", "rewrites the aim", "records no change", "root not three terms", "no worked steer casts"])
+      expect(f).toContain(want);
+  });
+  test("the laws read a clean carrier clean (the control cuts both ways)", () => {
+    const clean = "<<!DOCTYPE type=`t` spec=`s`>>\n<<~ ahu slot=`#/a`>>\n<<~ oracle throw=`↯7 ✲ ⚁(2) ⁂:⌗🜄`>>\n<<~/ahu>>";
+    for (const name of ["arrowsBetweenValues", "spacedAtSigns", "unnamedOrQuotedValues", "valueHazards", "envelopeAndRetired", "oracleCrossCheck"] as const)
+      expect(LAWS[name](clean), name).toEqual([]);
+  });
+});
+
+// ── THE SEED ───────────────────────────────────────────────────────────────────────────────────────────
+describe("the boot seed speaks the kupono grammar", () => {
+  test("the seed carries calls to read (vacuity gate)", () => {
+    expect(callsOf(seed).length).toBeGreaterThan(50);
+  });
+  for (const [name, law] of Object.entries(LAWS)) {
+    test(`★ ${name}: no finding ★`, () => {
+      expect(law(seed)).toEqual([]);
+    });
+  }
+});
