@@ -238,10 +238,19 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
   it("MUTATION PROOF (M-d) — boot-set-unknown: an ABSENT genesis refuses the collision check rather than failing open", async () => {
     // No seedMinimalGenesis() here — the whole point. Before M-d's fix, an absent/torn genesis read
     // as "no boot ids at all" and let a source claiming the grammar's own id sign and announce.
-    const source = seedUnsignedSource();
-    await standPersona();
-    await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
-      .rejects.toThrow(/boot-set-unknown/);
+    // A root holding no seed now reaches the build's shipped genesis (genesis-resolve), so "absent" is declared:
+    // an explicit LAR_GENESIS naming a dir with no seed never falls back.
+    const priorGenesis = process.env["LAR_GENESIS"];
+    process.env["LAR_GENESIS"] = join(root, "declared-absent-genesis");
+    try {
+      const source = seedUnsignedSource();
+      await standPersona();
+      await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
+        .rejects.toThrow(/boot-set-unknown/);
+    } finally {
+      if (priorGenesis === undefined) delete process.env["LAR_GENESIS"];
+      else process.env["LAR_GENESIS"] = priorGenesis;
+    }
   });
 
   it("boot-set-collision: a source naming a real boot-set id refuses, WITH genesis readable", async () => {

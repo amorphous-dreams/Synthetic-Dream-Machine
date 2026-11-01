@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { assertPronaosRuntimeConfiguration, assertPronaosRuntimeInputs } from "./pronaos-runtime-wiring.mjs";
+import { assertPronaosRuntimeConfiguration, assertPronaosRuntimeInputs, assertSurfacePronaosConfiguration } from "./pronaos-runtime-wiring.mjs";
 
 let root;
 afterEach(() => { if (root) rmSync(root, { recursive: true, force: true }); });
@@ -54,4 +54,31 @@ test("refuses missing/relocated QA inputs and invalid actual-contract fields", (
     writeFileSync(artifactRecord, JSON.stringify({ schema: "lararium-pronaos-artifact/v1", routes: [{ path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "public", sha256: "a".repeat(64) }] }));
     assert.throws(() => assertPronaosRuntimeInputs({ webRoot, artifactRecord }), /fails the mesh contract/);
     assert.throws(() => assertPronaosRuntimeInputs({ webRoot: join(root, "missing"), artifactRecord }), /Web root is absent/);
+});
+
+test("binds the SURFACE compose: the preferred container path names the page, the receipt and the same origin", () => {
+    const compose = readFileSync("docker-compose.surface.yml", "utf8");
+    assert.deepEqual(assertSurfacePronaosConfiguration({ compose }), {
+      webRoot: "/app/packages/lararium-web/dist",
+      artifactRecord: "/app/pronaos-build/pronaos-artifact.json",
+      service: "lares",
+    });
+});
+
+test("the SURFACE witness bites: a copy missing one line, or carrying it only on the herm, reads red", () => {
+    const compose = readFileSync("docker-compose.surface.yml", "utf8");
+    for (const line of ["LAR_PRONAOS_WEB_ROOT", "LAR_PRONAOS_ARTIFACT_RECORD", "LAR_SAME_ORIGIN"]) {
+        const mutated = compose.split("\n").filter((l, i, all) => !(l.trim().startsWith(line + ":") && all.slice(0, i).join("\n").lastIndexOf("\n  lares:") > all.slice(0, i).join("\n").lastIndexOf("\n  herm:"))).join("\n");
+        assert.notEqual(mutated, compose, `${line} is on the lares service`);
+        assert.throws(() => assertSurfacePronaosConfiguration({ compose: mutated }), new RegExp(line));
+    }
+    const wrongPath = compose.replace("LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist", "LAR_PRONAOS_WEB_ROOT: /srv/web");
+    assert.throws(() => assertSurfacePronaosConfiguration({ compose: wrongPath }), /LAR_PRONAOS_WEB_ROOT/);
+});
+
+test("CONTROL: the herm service carries no page by law, and the witness asks none of it", () => {
+    const compose = readFileSync("docker-compose.surface.yml", "utf8");
+    const herm = compose.slice(compose.indexOf("\n  herm:"), compose.indexOf("\n  terminator:"));
+    assert.ok(!herm.includes("LAR_PRONAOS_WEB_ROOT"));
+    assert.doesNotThrow(() => assertSurfacePronaosConfiguration({ compose }));
 });

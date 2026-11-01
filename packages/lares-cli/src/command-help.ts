@@ -321,6 +321,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "stand --foreground   this terminal owns the node (no Vite)",
       "stand --with-web     node + Vite web surface together",
+      "stand --page         the daemon also serves the built Web page (names its root and receipt; declares same origin where undeclared)",
       "stand --restart             free the port, then serve the current vessel",
       "stand --observe      REPORT ONLY — withholds the standing half; outranks every acting flag",
       "stand --init         found a vessel where the root holds none — writes LAR_ROOT alone; the operator's homes ride `lares home`, the mempalace sidecar `mempalace install`",
