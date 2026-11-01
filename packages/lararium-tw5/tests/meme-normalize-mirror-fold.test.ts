@@ -47,9 +47,17 @@ describe("normalizeMemeSource — every read-only mirror folds to its canonical 
     const src = HEAD("<<fragment slot=`#/head`>>\nbody\n<</fragment>>");
     const { text, changed } = normalizeMemeSource(src);
     expect(changed).toBe(true);
-    expect(text).toContain("<<ahu slot=`#/head`>>");
-    expect(text).toContain("<</ahu>>");
+    expect(text).toContain("<<~ ahu slot=`#/head`>>");
+    expect(text).toContain("<<~/ahu>>");
+    expect(text).not.toMatch(/<<\/?ahu/);
     expect(text).not.toContain("fragment");
+  });
+
+  test("CONTROL — a fold that already carries the `~` stays as it stands", () => {
+    const src = HEAD("<<~ ahu slot=`#/head`>>\nbody\n<<~/ahu>>");
+    const { text } = normalizeMemeSource(src);
+    expect(text).toContain("<<~ ahu slot=`#/head`>>");
+    expect(text).toContain("<<~/ahu>>");
   });
 
   test("define/procedure fold to wehe; let/var/const fold to waiho (the pragma-kind mirrors)", () => {
