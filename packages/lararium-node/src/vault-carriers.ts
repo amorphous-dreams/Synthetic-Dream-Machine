@@ -62,7 +62,7 @@
  * destroys a share.
  *
  * Where a writer exports its own path function, the row spells its filename through it, so a writer that
- * moves takes the row with it. Login-keyed identity filenames carry an optional `-<login>` segment.
+ * moves takes the row with it.
  *
  * ── THE S key ROTATION READS THESE ROWS ────────────────────────────────────────────────────────────
  * Every `hot` and `cold` carrier standing is a S-sealed carrier (`sSealedCarriers`), named by its home and
@@ -231,10 +231,8 @@ export const DEVICE_SHARE_FILE = /^recovery-device-share-h(\d+)\.bin$/;
 const escape = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 /** A filename the writer's own path function spells. */
 const exact = (path: string): RegExp => new RegExp(`^${escape(basename(path))}$`);
-/** A login-keyed identity filename: `.<stem>.json` or `.<stem>-<login>.json`. */
-const loginKeyed = (stem: string): RegExp => new RegExp(`^\\.${escape(stem)}(?:-[^./]+)?\\.json$`);
-/** A face's own login-keyed row: `.<stem>[-login]-h<N>.json`, the handle index in the first capture. */
-const faceLoginKeyed = (stem: string): RegExp => new RegExp(`^\\.${escape(stem)}(?:-[^./]+?)?-h(0|[1-9]\\d*)\\.json$`);
+/** A face's own row: `.<stem>-h<N>.json`, the handle index in the first capture. */
+const faceIndexed = (stem: string): RegExp => new RegExp(`^\\.${escape(stem)}-h(0|[1-9]\\d*)\\.json$`);
 /** A plain filename. */
 const file = (name: string): RegExp => new RegExp(`^${escape(name)}$`);
 
@@ -307,16 +305,16 @@ function buildTable(): readonly CarrierRow[] {
   const id = (r: IdentityRowSpec): CarrierRow => row({ home: "identity", under: "", ...r });
   return Object.freeze([
     // ── floor: outside the S key ──────────────────────────────────────────────────────────────────
-    id({ row: "vessel-key", target: tgt(["S"], LEAD, "place-signer"), match: loginKeyed("vessel-key"), custody: "floor", keyClass: "device-minted",
+    id({ row: "vessel-key", target: tgt(["S"], LEAD, "place-signer"), match: file(".vessel-key.json"), custody: "floor", keyClass: "device-minted",
          writer: "node-vessel-identity (founding)",
          bare: "the floor signs with it before any person unlocks, so no vessel key may stand between a boot and it" }),
     id({ row: "relay-gate-seed", target: tgt(["S"]), match: file(RELAY_GATE_SEED_FILE), custody: "floor", keyClass: "device-minted",
          writer: "relay-gate-seed (relay standing and explicit rotation)", holds: (_file, bytes) => /^[0-9a-f]{64}\n?$/.test(Buffer.from(bytes).toString("utf8")),
          bare: "the relay service stands before a person unlocks; its random gate seed grants only the relay handshake" }),
-    id({ row: "vessel-kel", target: tgt(["F"]), match: loginKeyed("vessel-kel"), custody: "floor", keyClass: null,
+    id({ row: "vessel-kel", target: tgt(["F"]), match: file(".vessel-kel.json"), custody: "floor", keyClass: null,
          writer: "node-vessel-identity (founding and rotation)",
          bare: "the place KEL names the online signer and its next cold commitment; every standing-key load verifies its head" }),
-    id({ row: "vessel-rotating", target: tgt(["S"], LEAD, "place-signer"), match: loginKeyed("vessel-rotating"), custody: "floor", keyClass: "device-minted",
+    id({ row: "vessel-rotating", target: tgt(["S"], LEAD, "place-signer"), match: file(".vessel-rotating.json"), custody: "floor", keyClass: "device-minted",
          writer: "node-vessel-identity (rotation)",
          bare: "a read-back replacement card permits this staged signer to finish the KEL and key commit after a restart" }),
     id({ row: "s-slots", target: tgt(["D", "S"], LEAD, "place-signer"), match: exact(sSlotsPath()), custody: "floor", keyClass: null,
@@ -394,13 +392,13 @@ function buildTable(): readonly CarrierRow[] {
          writer: "identity-anchors", name: (m) => `anchors-h${m[1]}`, face: faceOf, bundle: "lines" }),
     // The roster of a vessel's roots, its pet-names, declarations and published records: one row per face, in that face's own
     // directory, named by the handle index. No shared roster names the faces: the floor index does, by ordinal alone.
-    faceRowOf({ row: "persona-roster", target: tgt(["D"]), inner: faceLoginKeyed("persona-roster"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRowOf({ row: "persona-roster", target: tgt(["D"]), inner: faceIndexed("persona-roster"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-vessel-identity", name: (m) => `persona-roster-h${m[1]}`, face: faceOf, bundle: "lines" }),
-    faceRowOf({ row: "persona-petnames", target: tgt(["D"]), inner: faceLoginKeyed("persona-petnames"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRowOf({ row: "persona-petnames", target: tgt(["D"]), inner: faceIndexed("persona-petnames"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-vessel-identity", name: (m) => `persona-petnames-h${m[1]}`, face: faceOf, bundle: "lines" }),
-    faceRowOf({ row: "persona-declarations", target: tgt(["D"]), inner: faceLoginKeyed("persona-declarations"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRowOf({ row: "persona-declarations", target: tgt(["D"]), inner: faceIndexed("persona-declarations"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-vessel-identity", name: (m) => `persona-declarations-h${m[1]}`, face: faceOf, bundle: "lines" }),
-    faceRowOf({ row: "public-handles", target: tgt(["D"]), inner: faceLoginKeyed("persona-public-handles"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRowOf({ row: "public-handles", target: tgt(["D"]), inner: faceIndexed("persona-public-handles"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-vessel-identity", name: (m) => `persona-public-handles-h${m[1]}`, face: faceOf }),
     // This vessel's own face-scoped key under one face at one Nexus (`face-key-custody`, the face proof's library
     // names the row). It stays on its vessel: no bundle carries it.
@@ -468,7 +466,7 @@ function buildTable(): readonly CarrierRow[] {
           custody: "outbox", keyClass: null, writer: "sealed-store-fs", holds: restFileHolds }),
 
     // ── cold: sealed under the S key, opened per act ──────────────────────────────────────────────
-    faceRowOf({ row: "persona-root", target: tgt(["D"]), inner: /^\.persona-group-root(?:-[^./]+?)?-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
+    faceRowOf({ row: "persona-root", target: tgt(["D"]), inner: faceIndexed("persona-group-root"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "node-vessel-identity", name: (m) => `persona-root-h${m[1]}`, face: faceOf, bundle: "whole" }),
     // One face's proof key at one Nexus, held by the root-holding vessel alone (`face-key-custody`). Its file names
     // the face, so that face's bundle carries it.

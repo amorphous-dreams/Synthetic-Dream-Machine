@@ -1,0 +1,186 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/test-recut-road">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/test-recut-road.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 14
+manao             = 14
+manaoio           = 12
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "test-recut-road — train T's kit: the measured ground, the god-method's lift map sorted by capability, the floor that settled its forks and the two-wave reads behind its rows. The rows, rulings, order and open items stand in stable-founding-road (#/stride-t-recut, #/rulings, #/the-order); this kit folds when T's last row lands."
+tags              = ["api/pono/meme", "lifecycle/designed"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/test-recut-road"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/test-recut-road"
+written           = "2026-10-31"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! The test re-cut road ~ test-first refactoring and the cap-stack lift
+
+''What this carrier holds: train T's kit.'' The road holds the train's rows, rulings and order (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-order">>); this kit holds what they rest on. The build order that makes the house's code testable at the grain its claims live at, ahead of the founding: a shared scratch fixture, events where tests poll, pure readers lifted out of the boot composer, instance-owned doors, the composer cut along capability lines into stages both vessel kinds share, and a mutation runner that scores what a test proves. Each row names what it builds, its red-first shape, the files it touches, what it waits on, and the house law it touches. Landed work reads in git and the CHANGELOG; a complete row moves to #/o-takiage at its land, and this carrier keeps only what stays owed.
+
+''How it rides the house roadmap.'' The train runs ''beside'' the six paths of `stable-founding-road#/the-road`, never stalling them. The compose hunks of `open-node-vessel.ts` and `open-browser-vessel.ts` keep their named owners (`stable-founding-road` owner law): a row here reaches them only through a module boundary, or through the one named single-owner step `T12` holds.
+
+''The lane law binds every lane here'' (`controller-handoff#/the-lane-law`, `mixed-model-swarm`): one lead per lane in its own worktree; red first, with a control; suites under a scratch `HOME` and a scratch `LAR_ROOT` with `LAR_BAGS` unset; never a boot in the tracked tree; canon lines in each commit, L-Prime kept.
+
+''Train letter and rows.'' This train reads as ''T''. Its rows read `T1` to `T29` (#/the-rows): wave 0 holds the cures the cut reads found, and waves A to C the re-cut itself, and its lanes read `recut-<ground>`.
+
+<<~/ahu>>
+
+<<~ ahu #/rulings>>
+
+!! The rulings
+
+Train T's rulings stand in the road: <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">> (2026-10-31). This kit keeps the floor that settled them (#/the-floor) and the reads behind them (#/the-reads).
+
+<<~/ahu>>
+
+<<~ ahu #/as-built>>
+
+!! The ground, measured 2026-10-31
+
+|! Measure |! Reads |
+| test to source, non-comment TS/MJS | 1.39 to 1 (204,872 test lines in 1,819 files); 1.08 to 1 raw, source running 39% comment lines |
+| heaviest packages by ratio | `lararium-web` 2.02 · `lararium-node` 1.88 · `lararium-keyhive` 1.60 · `lararium-tw5` 1.50; node, mesh and tw5 carry 74% of test lines |
+| where the weight comes from | repeated setup and breadth, never giant test files (p90 223 lines): 1,032 `mkdtemp` calls in 389 files; node runs 2.1 test files per source file |
+| the god-method | `prepareNodeBootOn` (`open-node-vessel.ts`, about 709 to 3546): about 2,840 lines, 164 closures, 49 `let`s; 185 commits touched the file since 2026-10-01 |
+| what blocks a small test | four process-global doors in `worker-handle.ts` (`setRestDoor`, `setCasDoor`, `setDyadDoor`, `setCustodyWriteDoor`): two vessels in one process overwrite each other's doors, so a test stands up nothing smaller than a whole boot; about 40 forward-declared cells tie the stages together |
+| mutation testing | no Stryker config; a 14-mutant hand catalog for `lares-cli` (`tools/law-mutants-witness.sh`); fast-check rides the CLI laws suite alone. StrykerJS 10.1.0 (PR #6214, 2026-10-23) carries a vitest 5 fix tested against vitest 4.1.11; the repo pins vitest 5.0.3, so only the `T1` probe proves it here |
+| dead exports | 53 names nothing references; 16 more ride barrel re-exports |
+| flake families | the wiki-shore 2 s poll (`LandedLedger` fires no event) · the staged unlock answering before the store acknowledges · the TW5 dropdown e2e with no ready signal |
+
+The scout reports behind this table rest outside the memegraph, in the controller's scratch: the two-wave scout, its cold refinement, and the god-method lift map.
+
+<<~/ahu>>
+
+<<~ ahu #/the-lift-map>>
+
+!! The god-method's lift map ~ sorted by capability
+
+`prepareNodeBootOn` fuses two jobs. Its first half (R1 to R19) stands the cap-stack stages: the Repo, the face-gates, the share verdict, the membership, antigen and edge-shadow holders, the dials and the relays. Its second half (R22 to R35) builds the `VesselOrchestration` record (keel, wiki slot, daemon open, verb wiring, the pool, after-live). `composeCoreVessel` (`lararium-tw5/src/core-caps.ts`) already sequences that record for both vessel kinds, so the seam already stands.
+
+The substrate: a vessel's host binding hands `composeCoreVessel` its ports; `openDaemonVmCore` starts the daemon island on a worker (`runSovereignKernel` → `TW5Engine.boot`), which holds the face-atom seed, Keyhive and the sealed store and asks its host for rest, cas, dyad and custody writes over its port. `VesselIslandPool` starts one worker per wiki. The browser vessel's worker runs the same kernel over IDB and OPFS. The page mirror boots one guarded engine with no syncer, fed by the port alone, and holds no truth.
+
+Six lift targets, each row in #/the-rows naming its own:
+
+# ''Inside the VM'': native TW5 cjs modules with a `module-type` header and tiddler metadata, compiled by the `plugin-build/` pipeline (46 modules ship so today), on the `*-vm` startup pattern where the host ships data in and the engine computes. Fits the verb-provider math and the wiki-act routing. Never transport, custody or keys. A shared-plugin module also loads in the glass mirror, so anything near custody rides a daemon-only plugin chosen by recipe.
+# ''A pure module'', testable with no boot.
+# ''A shared cap-stack stage'' in mesh or tw5, consumed by every vessel holding the capability; the browser twin burns in the same PR.
+# ''A substrate adapter'' behind a narrow capability port: thread kind, store kind, socket server.
+# ''A worker or process boundary.''
+# ''Burning'': duplication a ruling already retired.
+
+<<~/ahu>>
+
+<<~ ahu #/the-rows>>
+
+!! The rows
+
+Train T's rows stand in the road's own stride: <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/stride-t-recut">>. Each row's evidence and lift target read here, in #/as-built, #/the-lift-map and #/the-reads.
+
+<<~/ahu>>
+
+<<~ ahu #/the-floor>>
+
+!! The floor ~ the forks the reads left, talked out
+
+Operator, 2026-10-31: //"In this house, we 'talk story' to decide, we don't hold an invisible slot at the end of the turn for the operator ... Only surface things that survive this with uncertainty."// The house convened on the eight forks the reads named, two rounds each, against canon and a Gaia and an Elyncia story; every fork settled, and none survived to the operator.
+
+```
+<<~ talk-story #test-recut-forks ground:"eight forks the cut reads left owed on this road" >>
+bearings: forks parked as operator asks · each settled in-house against canon · the rows carry the settlement
+telling: Council ranks the forks by what inherits shape; Stranger asks of each what capability it rests on;
+Breach-Watch holds the security floor (verification never bends); Liminal checks none closes falsely.
+Round one floated each house lean; round two pressed it with a story and the canon that governs.
+<<~ moolelo held:"each fork below settles in-house; the rows carry it (house, under the operator's delegation, 2026-10-31)" >>
+T5 daemonAuth: a node-local builder promoted later would stage "a now, b later"; the cut sorts by capability
+  and browser vessels hold every cap. Settled: one pure shared builder in mesh, never surface-reachable,
+  proven by a sentinel-seed no-leak test.
+T5 boot pins: one relation, one name. Settled: node and browser pin one list under one reason tag.
+T10: both readers agree. Settled: seven refuse-by-name cells; the share inputs keep a typed closed default with T11.
+T11: the node verdict (`selfSlotShareDecision`) and the browser verdict (`federationShareDecision`, the relay-ring
+  verdict) may answer different relations. Settled by measure, not by talk: the lane reads both first and lands
+  ONE law per relation, capability-named; two laws stand only where a capability difference measures.
+T12, T14: both readers agree. Settled as the rows read (pure deciders first; pure module before the VM step).
+T13: Gaia, a teen's browser joins the household Nexus and later carries a sibling's wikis while the node sleeps;
+  Elyncia, a district shrine's tablet stands the crossroads node's role when the orichalcum figure dims.
+  Each needs the node's fuller behaviour in the browser. Settled: the five rows converge on node's form
+  (several fleets with the roll read, face proof and plane registration, island resolution re-reading its pin
+  per boot, founding and admit as one stage, the persona and face verbs shared by every vessel holding the cap).
+T16/T20: the login suffix keys custody by an OS git email, a host fact; the house runs one operator per
+  machine and container, and its second operator joins on her own machine. Shape-changing cuts land
+  before she joins, under the alpha line. Settled: retire the suffix; custody resolves its home once at open.
+  The cut re-names the operator's own custody files, a format cut the alpha line already sanctions.
+T21: burning the one-use claim alone would leave a removed member re-entering on an old invite: a hole
+  documented, never closed. Settled: the law stands as "a removed joiner never re-enters on an invite minted
+  before the removal"; the red decides the mechanism (removal advancing the epoch, or a refusal keyed on the
+  joiner's removal record), never a seen-cache that needs a shared registry.
+<<~/moolelo >>
+<<~/talk-story >>
+```
+
+<<~/ahu>>
+
+<<~ ahu #/the-reads>>
+
+!! The reads behind the rows
+
+The scouts and readers wrote to the controller's scratch, outside the memegraph, on 2026-10-31: the testability scout in two waves and its cold refinement; the god-method lift map; the root-map read; six cut reads by seam (pure readers, doors and cells, cap-stack stages, orchestration, browser twins, exports and homes) and a collision read beside each. What survived both waves stands in the rows above. Outside precedent they leaned on: fail-safe defaults (Saltzer and Schroeder), the new-enemy ordering in authorization systems (whose global timestamps the house's no-global-now law declines; refresh-then-drop inside the serial refold chain stands as the house analogue), characterization tests before extraction (Feathers), named exemptions for held seats in dead-code tools, TiddlyWiki's own boot sequencing (read whole), and the Automerge Repo share configuration. Most sources stood at search-summary level; each row's red decides, never the citation.
+
+<<~/ahu>>
+
+<<~ ahu #/laws>>
+
+!! The laws each row keeps
+
+* ''Red first, with a control'' (`working-procedures#/red-first`): mutation kill data never deletes a control, which by design kills no unique mutant.
+* ''No key on a surface'': no custody, transport or key path lifts into a shared-plugin module the mirror loads.
+* ''Custody and identity read by capability, never by host'': every stage and port carries a capability name.
+* ''One owner per registry'': the process-global doors break it per process, and `T9` cures it.
+* ''No global now'': fake timers patch the global clock (23 test files use them today), so a new seam waits on an event or an injected clock, never a patched global.
+* ''Web3 only'': the Stryker dashboard never enters the stack; local reporters only.
+* ''Old shapes burn'': each cut lands whole, with no shim beside it.
+
+<<~/ahu>>
+
+<<~ ahu #/open>>
+
+!! What stays open
+
+Train T's open items stand in the road's #/open.
+
+<<~/ahu>>
+
+<<~ ahu #/o-takiage>>
+
+!! O Takiage
+
+Train T's complete rows move to the road's own #/o-takiage at each land. This kit folds (`lifecycle/folded`) when T's last row lands, and the operator calls the fire.
+
+<<~/ahu>>
+
+<<~ ahu #/loulou>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-attractor">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff#/the-lane-law">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/cli-test-laws">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/otakiage">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures#/red-first">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;QmkdnlBW4nwYMETpYwm4wqKnaWqjKvQ7ApJAlLhDhJg
+
+<<^ code="&#x0004;" -> to="?">>

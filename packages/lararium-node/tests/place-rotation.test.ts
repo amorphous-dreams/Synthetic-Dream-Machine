@@ -53,11 +53,10 @@ describe("place rotation", () => {
         const first = await watch();
         expect(first).toEqual(await loadPlaceReading());
         expect(await watch()).toBe(first);                                    // the same reading: the unchanged KEL verified once
-        // The operator's git config moves: a fresh read now looks for another login's KEL; the door's anchor stands.
+        // The operator's git config moves: no custody name reads it, so a fresh read and the door both stand on one KEL.
         writeFileSync(gitConfig, "[user]\n\temail = another.login@example.invalid\n");
-        await expect(loadPlaceReading()).rejects.toThrow();                   // CONTROL: the per-call read moved with git config
+        expect(await loadPlaceReading()).toEqual(first);
         expect(await watch()).toBe(first);
-        writeFileSync(gitConfig, "[user]\n\temail = first.login@example.invalid\n");
         await rotatePlace({ card, entropy: entropy(90), placeFoundingCard: { readBack: async () => {} } });
         const rotated = await watch();
         expect(rotated.place).toBe(first.place);

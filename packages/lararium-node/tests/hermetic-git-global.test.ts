@@ -1,7 +1,6 @@
 /**
- * The node suites read no person's git config. `readLocalOperatorHint` shells `git config --global user.email`, and the
- * login it derives names the rows a suite writes; an operator's own global config moved those names, so six suites read
- * red on a person's box and green on CI. The shared setup file (`tests/support/scratch-custody-setup.ts`) points git's
+ * The node suites read no person's git config. The vessel's display name shells `git config --global user.name`, and a
+ * person's own global config would move what a suite sees, red on a person's box and green on CI. The shared setup file (`tests/support/scratch-custody-setup.ts`) points git's
  * global config at the null device, so every suite and every child it spawns reads the same empty global.
  */
 import { execFileSync } from "node:child_process";

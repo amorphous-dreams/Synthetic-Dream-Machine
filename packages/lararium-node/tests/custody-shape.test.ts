@@ -63,7 +63,7 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
     const { homes, root } = freshHomes();
     try {
       sow(homes, {
-        "identity/.vessel-key-joshua.json": "{}",
+        "identity/.vessel-key.json": "{}",
         [`identity/faces/abababababababababababababababab/.persona-group-root-h0.json`]: '{"seed":"00"}',
         "nexus/founding-roster.mem": "charter",
       });
