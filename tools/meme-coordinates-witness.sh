@@ -45,10 +45,13 @@ for f in _carriers:
     # carrier growing a longer head would have retired itself from this check by getting longer.
     head = f.read_text(errors="replace")
 
-    m = re.search(r'(?m)^file-path\s*=\s*"(.*?)"', head)
+    # ANY SPELLING READS. `meme-normalize` drops the line however its value is written, so the probe
+    # sees every TOML spelling of the key too: a double-quoted, single-quoted or bare value, any spacing
+    # around `=`, a quoted key. One spelling bound here once let a single-quoted value walk past clean.
+    m = re.search(r"""(?m)^[ \t]*(?:file-path|"file-path"|'file-path')[ \t]*=[ \t]*(.*?)[ \t]*$""", head)
     if m:
         declared_file_path += 1
-        drift.append((str(f), "file-path", m.group(1), "retired: residency rides the envelope"))
+        drift.append((str(f), "file-path", m.group(1).strip("\"'"), "retired: residency rides the envelope"))
 
     # `uri-path` answers to the HEAD SIGIL, never to the tree: a root resource may deliberately carry a
     # rootless address (`lar:///AGENTS`), and the field must follow the address rather than the folder.
