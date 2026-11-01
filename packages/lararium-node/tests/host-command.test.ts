@@ -15,12 +15,10 @@
  *   · REFUSALS write nothing: no charter, a Nexus this hearth does not carry, an invite before any roll.
  */
 import { HOSTING_ACT_DOMAIN, writeHostingAct, mintHostingAct } from "@lararium/mesh";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect } from "vitest";
 import { seatedCustody } from "../src/custody-seat.js";
 import { holdSealsUntilBothArrive } from "./custody-seat-fixture.js";
-import { mkdtempSync, rmSync, existsSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { rmSync, existsSync } from "node:fs";
 import * as ed from "@noble/ed25519";
 import {
   hex, carriageDocUrl, hostingDocUrl, materializeSharedLarDoc, hostingActsFromBoard, hostingActCid, decodeInvite,
@@ -40,22 +38,14 @@ import { direct } from "./direct-store.js";
 import { FaceNotNamed } from "../src/face-selector.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
-let root: string;
-let priorLarRoot: string | undefined;
 // The seal home the vessel's own resolver names: the custody door's host acts read the charter there.
 const sealHome = (): string => larSealHome();
 
-beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lares-host-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
-});
 afterEach(async () => {
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot;
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
   await restEvery();
-  rmSync(root, { recursive: true, force: true });
 });
 
 /** Seat a charter whose founding kahu are this vessel's held seat keys — so the vessel carries it. */

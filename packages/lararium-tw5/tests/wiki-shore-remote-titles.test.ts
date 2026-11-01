@@ -12,7 +12,7 @@
 import { describe, expect, test } from "vitest";
 import { AutomergeDocStore, volatileVmUri, type LarDoc } from "@lararium/mesh";
 import { wikiSkip, skipNote } from "./test-wiki.js";
-import { Repo, peerWrite, personalBag, shoreRig, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
+import { Repo, peerWrite, personalBag, landingDeadline, shoreRig, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
 
 const textOf = (r: Rig, title: string): unknown => r.wiki.getTiddler(title)?.fields["text"];
 
@@ -53,7 +53,7 @@ describe.skipIf(wikiSkip)(`a peer's save reaches an open wiki${skipNote}`, () =>
     const peerStore = new AutomergeDocStore(peerHandle, workingBag);
     for (const title of [temp, volatile, sentinel]) await peerStore.put({ tiddler: { title, text: "from a peer" } }, { kind: "crdt-remote", edgeIsland: "peer" });
     r.handles[workingBag]!.merge(peerHandle);
-    for (let attempt = 0; attempt < 600 && textOf(r, sentinel) === undefined; attempt++) await new Promise<void>((resolve) => setTimeout(resolve, 5));
+    await r.adaptor.ledger.whenLanded(sentinel, (landed) => landed.tiddler != null, landingDeadline(3000));
     await turns(24);
     await r.adaptor.landingIdle();
 

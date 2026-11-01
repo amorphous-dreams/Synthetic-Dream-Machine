@@ -14,9 +14,7 @@
  * quorum with two of their OWN held seats; seats that rest in two vaults cross as a partial (nexus-kapae-two-vault).
  */
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { afterEach, beforeEach, describe, expect } from "vitest";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { hex, kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord, signAntigenEntry } from "@lararium/mesh";
@@ -31,27 +29,22 @@ import { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "../src/comman
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
 const VICTIM = "beadfeed".repeat(8);   // the presenter nym a ban targets
 
-let root: string;
-let priorLarRoot: string | undefined;
 
 /** The bags dir under the isolated LAR_ROOT — mirrors the CLI's `larBagsDir()` (LAR_BAGS ?? <root>/bags). */
 const sealHome = (): string => join(root, "state", "nexus");
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lares-kapae-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;   // isolates data/state/bags under the temp tree
+// isolates data/state/bags under the temp tree
 });
 
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
   await restEvery();
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
-  else process.env["LAR_ROOT"] = priorLarRoot;
-  rmSync(root, { recursive: true, force: true });
+
 });
 
 /** Seat the keys under a verifiable genesis lineage in `bags/nexus`; return its cid. */

@@ -4,10 +4,9 @@
  * The inspection reads the board off the holder's Repo and never shuts that Repo down: run as a door row inside a
  * standing vessel, the Repo it reads IS the vessel's own, and its peers keep syncing after the row answers.
  */
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { afterEach, describe, expect, vi } from "vitest";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { restEvery, restingRepo } from "./resting-repo.js";
@@ -23,20 +22,13 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { storeDoorReactors } from "../src/store-door-verbs.js";
 import { direct } from "./direct-store.js";
 import { tiddlerText } from "@lararium/mesh";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
-let root: string;
-let priorRoot: string | undefined;
 
-beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lares-offering-inspect-"));
-  priorRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
-});
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
   await restEvery();
-  if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
-  rmSync(root, { recursive: true, force: true });
+
 });
 
 /** An UNSIGNED offering source directory — `offering.json` plus the one blob's bytes beside it

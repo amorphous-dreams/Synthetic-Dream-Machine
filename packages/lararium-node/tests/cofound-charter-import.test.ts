@@ -6,9 +6,8 @@
  * Every charter doc here bends one the fixture factory built over the founders' own seat keys; its lineage takes
  * the joint genesis the pure act sealed. No doc gets written by hand.
  */
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { describe, expect } from "vitest";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { cidV1Sha256, coldKeyFromSeed, foundingRoster, hex, seatFingerprint, type NexusDoc, type SealEpoch } from "@lararium/mesh";
@@ -20,6 +19,7 @@ import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { CarriedCharterError, importCarriedCharter } from "../src/carried-set.js";
 import { parseNexusDoc, renderNexusDoc } from "../src/nexus-doc.js";
 import { fixtureKey } from "./fixture-keys.js";
+import { scratchRoot as root, test } from "./support/scratch-fixture.js";
 
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const key = async (n: number): Promise<string> => hex(await ed.getPublicKeyAsync(seedOf(n)));
@@ -28,14 +28,7 @@ const cidOf = (text: string): string => cidV1Sha256(new TextEncoder().encode(tex
 const MANIFEST = { image: `sha256:${"ab".repeat(32)}`, genesis: cidOf("genesis"), engine: cidOf("engine"), grammar: cidOf("grammar") };
 const LAW = "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus";
 
-let root: string;
-let prior: string | undefined;
 const sealHome = (): string => join(root, "state", "nexus");
-beforeEach(() => { root = mkdtempSync(join(tmpdir(), "lares-cofound-")); prior = process.env["LAR_ROOT"]; process.env["LAR_ROOT"] = root; });
-afterEach(() => {
-  if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
-  rmSync(root, { recursive: true, force: true });
-});
 
 /** The founders' act, and a charter doc whose lineage holds the joint genesis it sealed. */
 async function act() {

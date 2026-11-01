@@ -40,6 +40,8 @@ const automerge = meshRequire("@automerge/automerge") as {
 };
 
 export const turns = async (n = 8): Promise<void> => { for (let i = 0; i < n; i++) await new Promise<void>((resolve) => setImmediate(resolve)); };
+/** The guard a `whenLanded` waiter carries: settles after `ms` of real time, so a title that never lands refuses by name instead of hanging. */
+export const landingDeadline = (ms = 2000): Promise<void> => new Promise<void>((resolve) => { setTimeout(resolve, ms).unref(); });
 /** Resolves after the wiki's own `change` dispatch (TiddlyWiki dispatches on `process.nextTick`, FIFO). */
 export const afterDispatch = (): Promise<void> => new Promise<void>((resolve) => process.nextTick(resolve));
 

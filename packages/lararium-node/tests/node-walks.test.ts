@@ -9,9 +9,8 @@
  *   · walking grants no carry duty: the node's carried set and its own charter stand exactly as before, and the
  *     walk lands only under its own `walk/` store.
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync, readdirSync, existsSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { describe, expect } from "vitest";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { encodeInvite, mintHostToken, takeInvite } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
@@ -19,22 +18,12 @@ import { faceRowNames } from "./face-paths.js";
 import { carriedSet } from "../src/carried-set.js";
 import { nodeWalkStore } from "../src/node-walk-store.js";
 import { rollHosting, readHostingState, liveEpochs } from "../src/hosting-store.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
 const AID = "nexus-" + "a".repeat(64);
 const HEARTH_LEAF = new Uint8Array(32).fill(91);
 const GATE = "ee".repeat(32);
 
-let root: string;
-let priorLarRoot: string | undefined;
-beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lares-node-walks-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
-});
-afterEach(() => {
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot;
-  rmSync(root, { recursive: true, force: true });
-});
 
 /** A hearth's invite at its live epoch: the token a newcomer carries. */
 async function invite(): Promise<() => string> {

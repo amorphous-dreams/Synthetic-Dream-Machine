@@ -12,12 +12,10 @@
  *   · `walk invite` hands out the newest token with the hearth's relay; an empty wallet refuses;
  *   · RED: the walk and hosting directories stand owner-only (0700), and an existing wider one is re-moded.
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect } from "vitest";
 import { seatedCustody } from "../src/custody-seat.js";
 import { holdSealsUntilBothArrive } from "./custody-seat-fixture.js";
-import { mkdtempSync, rmSync, chmodSync, statSync, existsSync, readdirSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { chmodSync, statSync, readdirSync } from "node:fs";
 import {
   encodeInvite, decodeInvite, mintHostToken, mintHostingAct, tokenVerifiesAt, type HostingEpoch,
 } from "@lararium/mesh";
@@ -31,6 +29,7 @@ import { nodeWalkStore, listWalkRecords } from "../src/node-walk-store.js";
 import { rollHosting } from "../src/hosting-store.js";
 import { hostingDirPath } from "../src/hosting-face.js";
 import { runWalkTake, runWalkInvite, runWalkState, WalkRefusal } from "../src/commands/walk.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
 const AID = "nexus-" + "a".repeat(64);
 const GATE = "ee".repeat(32);
@@ -38,17 +37,6 @@ const OTHER_GATE = "dd".repeat(32);
 const RELAY = "ws://hearth:7700/ws";
 const HEARTH = new Uint8Array(32).fill(91);
 
-let root: string;
-let priorLarRoot: string | undefined;
-beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lares-walk-doors-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
-});
-afterEach(() => {
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot;
-  rmSync(root, { recursive: true, force: true });
-});
 
 let epoch: HostingEpoch;
 async function invite(gate = GATE, relay: string | null = RELAY): Promise<string> {

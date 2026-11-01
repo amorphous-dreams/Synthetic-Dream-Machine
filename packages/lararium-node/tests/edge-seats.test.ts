@@ -1,6 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { afterEach, beforeEach, describe, expect } from "vitest";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { restEvery, restingRepo } from "./resting-repo.js";
@@ -20,13 +19,9 @@ import { assertDyadBinds } from "../src/commands/device-admit.js";
 import { direct } from "./direct-store.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
-let root: string;
-let priorLarRoot: string | undefined;
 beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), "lares-edge-seats-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
@@ -35,9 +30,7 @@ beforeEach(async () => {
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
   await restEvery();
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
-  else process.env["LAR_ROOT"] = priorLarRoot;
-  rmSync(root, { recursive: true, force: true });
+
 });
 
 describe("runEdgeSeatFacts", () => {

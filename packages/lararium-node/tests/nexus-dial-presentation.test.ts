@@ -7,9 +7,7 @@
  *   · CONTROL: a kept bundle for the OTHER carried Nexus, dialed at this hearth, presents nothing;
  *   · an unmoved board presents the same admit and the same lineage on every dial.
  */
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { describe, expect } from "vitest";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
@@ -24,6 +22,7 @@ import { writeNexusDoc } from "../src/nexus-doc.js";
 import { carriedCharterHome } from "../src/carried-set.js";
 import type { NexusLeaf } from "../src/nexus-leaf.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { scratchRoot as root, test } from "./support/scratch-fixture.js";
 
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
@@ -56,18 +55,6 @@ function boardOf(entries: CarriageEntry[]): LarDoc {
 }
 
 describe("the dial presents the DIALED island's admit only", () => {
-  let root: string;
-  let prior: string | undefined;
-  beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), "lares-dial-presentation-"));
-    prior = process.env["LAR_ROOT"];
-    process.env["LAR_ROOT"] = root;
-  });
-  afterEach(() => {
-    if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
-    rmSync(root, { recursive: true, force: true });
-  });
-
   const P_KAHU = [seed(1), seed(2), seed(3)];
   const C_KAHU = [seed(4), seed(5), seed(6)];
   const LEAF_AT = new Map<string, Uint8Array>();

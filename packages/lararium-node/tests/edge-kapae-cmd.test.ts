@@ -1,8 +1,5 @@
 /** edge-kapae command vectors: board scope, hand authority, causal heads, and vessel accretion. */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import {
@@ -22,14 +19,10 @@ import { seatOwnCharter, presentFace } from "./acting-face-fixture.js";
 import { FaceNotNamed } from "../src/face-selector.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
-let root: string;
-let priorLarRoot: string | undefined;
 const EDGE = "a".repeat(64), REALM = "b".repeat(64), MEMBER = "c".repeat(64), DEVICE = "d".repeat(64);
 beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), "lares-kapae-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
@@ -38,9 +31,7 @@ beforeEach(async () => {
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
   await restEvery();
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
-  else process.env["LAR_ROOT"] = priorLarRoot;
-  rmSync(root, { recursive: true, force: true });
+
 });
 
 async function boardState(url: string, authority: string) {

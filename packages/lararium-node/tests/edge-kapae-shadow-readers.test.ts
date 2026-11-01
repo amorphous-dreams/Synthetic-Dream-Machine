@@ -8,9 +8,8 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/kapae
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { afterEach, beforeEach, describe, expect } from "vitest";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
@@ -28,16 +27,12 @@ import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { direct } from "./direct-store.js";
 import { seedFaceAtom } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
-let root: string;
-let priorLarRoot: string | undefined;
 
 const REALM = "a".repeat(64);
 
 beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), "lares-shadow-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
@@ -60,10 +55,7 @@ let face0: string, face1: string;
 /** Face `i`'s signing seed at the realm's Nexus: the hand a carried invite signs with. */
 const faceSeed = async (i: number): Promise<Uint8Array> => (await nexusLeafFor(i, primaryAid()))!.seed;
 afterEach(async () => {
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
-  else process.env["LAR_ROOT"] = priorLarRoot;
   await new Promise((r) => setTimeout(r, 200));
-  rmSync(root, { recursive: true, force: true });
 });
 
 const foreignSeed = (byte: number) => new Uint8Array(32).fill(byte);

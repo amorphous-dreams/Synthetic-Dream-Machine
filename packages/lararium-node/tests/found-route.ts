@@ -15,6 +15,7 @@ import { makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { seatFaceRoute } from "../src/face-route.js";
 import { seatFaceAutoFounder } from "../src/custody-holder.js";
+import { seatScratchFaceRoute } from "./support/scratch-custody-setup.js";
 import { larDataDir, larIdentityDir, larSealHome } from "../src/vessel-paths.js";
 
 /** The fixed test passphrase. It guards nothing: every founding here lives under a scratch root. */
@@ -27,6 +28,8 @@ export const TEST_CUSTODY = { slots: [TEST_SLOT] } as const;
 
 // A face asks its own route when it founds; every test founding of a face answers with the test passphrase.
 seatFaceRoute(async () => [TEST_SLOT]);
+// ...and the scratch custody opens those faces by that same route.
+seatScratchFaceRoute(TEST_PASSPHRASE);
 // A write to a face a fixture never founded founds it under the test route (the product seats no such policy).
 seatFaceAutoFounder(() => [TEST_SLOT]);
 
