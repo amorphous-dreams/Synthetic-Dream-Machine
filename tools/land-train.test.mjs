@@ -993,3 +993,14 @@ test("RED: a rerun GitHub refuses reads UNREADABLE (10), never a red: a flake mu
   assert.equal(r.code, 10, r.out);
   assert.doesNotMatch(r.out, /DROPPED/);
 });
+
+test("RED: only a push or dispatch run answers for a sha: a pull_request run's green at the train head never lands it", async () => {
+  const w = world(["a"]);
+  const SP = spanAhead(w);
+  const r = await runQ(w, {
+    red: (sha) => sha !== SP,
+    extra: (sha) => (sha === SP ? [] : [{ databaseId: 500, event: "pull_request", headBranch: `${SPAN}--train-pr`, headSha: sha, status: "completed", conclusion: "success", attempt: 1, createdAt: "9999" }]),
+  });
+  assert.equal(r.code, 5, r.out);
+  assert.equal(originRef(w, SPAN), SP);
+});
