@@ -163,10 +163,12 @@ const CASES: Case[] = [
   { head: "aka", field: "lar-pattern", call: `<<~ aka uri=\`${A}\`>>`, groups: [U, A] },
   { head: "aka", field: "lar-pattern", call: "<<~ aka ahu slot=`#/x`>>", groups: ["ahu ", "#/x"] },
   { head: "kanawai", field: "lar-pattern", call: `<<~ kanawai uri=\`${A}\`>>`, groups: [U, A] },
-  // kahea carries ONE office per call (Q10 F3, F4): an ADDRESS by uri= (a name= beside it picks the template
-  // mask and captures nothing), a DEFINITION by name= with params=, or a bearing pair by from= and to=.
+  // kahea carries ONE office per call (Q10 F3, F4): an ADDRESS by uri= (a mask= beside it picks the template
+  // and captures nothing), a DEFINITION by name= with params=, or a bearing pair by from= and to=. One name,
+  // one relation: name= names a definition only, so a name= beside uri= matches no office (below).
   { head: "kahea", field: "lar-pattern", call: `<<~ kahea uri=\`${A}\`>>`, groups: [A, U, U, U, U] },
-  { head: "kahea", field: "lar-pattern", call: `<<~ kahea name=\`mask\` uri=\`${A}\`>>`, groups: [A, U, U, U, U] },
+  { head: "kahea", field: "lar-pattern", call: `<<~ kahea mask=\`mask\` uri=\`${A}\`>>`, groups: [A, U, U, U, U] },
+  { head: "kahea", field: "lar-pattern", call: `<<~ kahea uri=\`${A}\` mask=\`mask\`>>`, groups: [A, U, U, U, U] },
   { head: "kahea", field: "lar-pattern", call: "<<~ kahea name=`x`>>", groups: [U, "x", U, U, U] },
   { head: "kahea", field: "lar-pattern", call: "<<~ kahea name=`definitionName` params=`arg1, arg2`>>", groups: [U, "definitionName", "arg1, arg2", U, U] },
   { head: "kahea", field: "lar-pattern", call: "<<~ kahea params=`a` name=`sub-template`>>", groups: [U, "sub-template", "a", U, U] },
@@ -221,6 +223,15 @@ describe("the capture groups the builder indexes stay put", () => {
       expect(m!.length - 1, "the pattern captures exactly the groups the builder indexes").toBe(c.groups.length);
     });
   }
+
+  test("★ one name, one relation: a kahea name= beside uri= matches no office ★", () => {
+    const pat = new RegExp(byHead.get("kahea")?.fields["lar-pattern"] ?? "$^");
+    expect(pat.test(`<<~ kahea name=\`mask\` uri=\`${A}\`>>`)).toBe(false);
+    expect(pat.test(`<<~ kahea uri=\`${A}\` name=\`mask\`>>`)).toBe(false);
+    // CONTROL: each office alone still reads.
+    expect(pat.test(`<<~ kahea uri=\`${A}\` mask=\`mask\`>>`)).toBe(true);
+    expect(pat.test("<<~ kahea name=`x`>>")).toBe(true);
+  });
 
   test("★ the `set` pattern takes a lares firing, whatever its keys carry ★", () => {
     const pat = new RegExp(byHead.get("set")?.fields["lar-pattern"] ?? "$^");
@@ -339,8 +350,8 @@ describe("the Cut 4 burns and the new frame sigils", () => {
     expect(byHead.get("heihei")!.fields["lar-pono-uri"]).toBe("lar:///ha.ka.ba/lares/api/pono/heihei");
   });
 
-  test("★ sigil-kahea.tid takes name= and params= beside uri=, and kapu an optional to= ★", () => {
-    expect(byHead.get("kahea")!.text).toMatch(/^\\widget ~kahea\(uri:"" name:"" params:""\)$/m);
+  test("★ sigil-kahea.tid takes name=, params= and mask= beside uri=, and kapu an optional to= ★", () => {
+    expect(byHead.get("kahea")!.text).toMatch(/^\\widget ~kahea\(uri:"" name:"" params:"" mask:""\)$/m);
     const kapu = new RegExp(byHead.get("kapu")!.fields["lar-pattern"]!);
     expect(kapu.test("<<~ kapu scope=`a`>>")).toBe(true);
     expect(kapu.test("<<~ kapu scope=`a` to=`b`>>")).toBe(true);
