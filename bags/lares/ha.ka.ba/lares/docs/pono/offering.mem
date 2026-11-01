@@ -226,7 +226,7 @@ The operator's charge already granted the overlap: //"not kahu, tho many may hol
 ''MUST NOT FUSE — the one forbidden composition'': ''an act that offers and installs in the same breath, for anyone but its own vessel.'' That shape has a name in the field and the field named it the wrong way round — it reads as AUTO-UPDATE, and `engine-watch` already ruled against it in this house: alert-only, never auto-reboot, ''the operator holds the reboot cap'' (memory `project_nexus_identity_kahuli_onboarding`, model A). ''A push-install turns one stolen key into a fleet'' — exactly the Shai-Hulud shape (#/the-field ⑥).
 
 <<~moves name=`an-offering` params=`ANNOUNCED on/the-crossroads-plane by/the-offeror's-own-hand ~ reaches no other vessel's disk`>>
-<<~moves an-offering -> INSTALLED on/the-receiving-hearth by/the-RECEIVER's-own-hand if/the-region-recomputes ~ one operator at a time, always>>
+<<~moves name=`an-offering` params=`INSTALLED on/the-receiving-hearth by/the-RECEIVER's-own-hand if/the-region-recomputes ~ one operator at a time, always`>>
 <<~moves name=`offer+install` params=`REFUSED on/any-vessel-but-one's-own ~ the fusion IS push, and push IS the takeover's amplifier`>>
 
 ''The structural guarantee, so the fusion cannot arrive by accident'': the two live in ''different packages with different reach''. `offer` composes in `@lararium/mesh` where every vessel holding the cap can mint one (commit `dcec1ef0b`); the ratchet's re-derive runs as the node-bound genesis bake (`nexus-publish.ts:41-47` states why the region read stays node-bound). ''A mesh module cannot bake an island'' — some hand would have to write the fusion on purpose, at a third site, and mean it.
@@ -257,7 +257,7 @@ Read the ''Gap'' column first. Four rows answer structurally, two answer partial
 
 Against that class exactly two things help. ''First'': a human decides, per hearth, per act — which a future bounded `kahuli grammar --from <offering CID>` reader may report, subject to the grammar-ratchet contract still held by the operator. ''Second'': a quorum can set a region aside after the fact — the causal antigen's work, ready for a receiver-local consult but not wired to any receiver yet. ''Everything else in the stack amounts to hygiene.''
 
-<<~moves --apply -> MUST-NOT-INSTALL on/the-takeover-row ~ a push-install converts one stolen key into every follower's disk>>
+<<~moves name=`--apply` params=`MUST-NOT-INSTALL on/the-takeover-row ~ a push-install converts one stolen key into every follower's disk`>>
 <<~moves name=`the-antigen` params=`OWES-A-CALLER on/the-takeover-row ~ causally folded, tested, and consulted by no production receiver yet`>>
 
 !!! And one honest note on what an offering does NOT carry
@@ -463,6 +463,6 @@ an ordered announce claim, or a receiver caller by implication.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;zMfJx8gWTxCiKKAo5Nx1ZFTljqFL67ydhSj_AKAf-9M
+<<^ code=`&#x0003;`>>ni:///sha-256;0siL6pmc8BLtbO9eiSLVrsfkLSs4tA70slmT-bOuXbQ
 
 <<^ code=`&#x0004;` to=`?`>>

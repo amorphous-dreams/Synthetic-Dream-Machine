@@ -47,7 +47,7 @@ Cross-ref: `lar-see-also: wehe`. When `sigil-wehe.tid` ships (Path G.SharktoothS
 !! Dispatch Form
 
 ```
-<<~ procedure greet(name:"world")>>Hello <<name>>!<<~/procedure>>
+<<~ procedure name=`greet` params=`name:"world"`>>Hello <<name>>!<<~/procedure>>
 ```
 
 Equivalent native TW5:
@@ -73,6 +73,6 @@ the body runs through the pragma handler (TW5 parse-time, not render-time).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;BMsbvgPAqUWvayDNN812IjNR4GTeHG6t755vCUlOnOM
+<<^ code=`&#x0003;`>>ni:///sha-256;OuHnhiwbDhJtXlvuicBmHAAxSdPWQiBwuGSggfOf40Y
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -115,8 +115,8 @@ nobody's grammar. Built at `@lararium/mesh` · `plugin-offering` · `offering-an
 
 ''Read the requirement precisely: the burden half needs AN ADDRESS, never a person.'' A Place DID supplies exactly that — //a somewhere: addressable, vouchable, carriage-contractable//. So the vessel already carries one half. The other half answers a different question, and `hookupu-the-flow` names it: //you cannot be an accountable monitor anonymously//. ''A place holds an address and can never stand answerable.''
 
-<<~moves kuleana/where -> the-vessel's-Place-DID on/the-office-plane ~ the address the burden lands on>>
-<<~moves kuleana/who -> the-holder's-declared-Handle on/their-own-plane ~ the name that answers for it>>
+<<~moves name=`kuleana/where` params=`the-vessel's-Place-DID on/the-office-plane ~ the address the burden lands on`>>
+<<~moves name=`kuleana/who` params=`the-holder's-declared-Handle on/their-own-plane ~ the name that answers for it`>>
 
 ''So an office publishes BOTH, sited apart, and the pair carries the vicomagistri property'': named, accountable people holding a term at a shrine that carries no name of its own. The vessel seats no persona root through either half, so a stolen civic disk still yields nothing of anybody's person — ''a published face ⊥ a seated root'', and only the second one a thief can carry away.
 
@@ -195,8 +195,8 @@ Three shipped verdicts: ''Lifeguard'' exists because delay-based suspicion ran 5
 
 ''Road (iii) splits the two halves an office carries, and gives each its own carrier.''
 
-<<~moves office/fence -> the-PLACE's-own-lease on/the-built-fence do/the-place-alone-writes-and-mints-it>>
-<<~moves office/seating -> the-Nexus's-seal-lineage if/the-issuing-seal-epoch-stands-an-ancestor-of-the-head do/the-seating-carries-across-the-roll>>
+<<~moves name=`office/fence` params=`the-PLACE's-own-lease on/the-built-fence do/the-place-alone-writes-and-mints-it`>>
+<<~moves name=`office/seating` params=`the-Nexus's-seal-lineage if/the-issuing-seal-epoch-stands-an-ancestor-of-the-head do/the-seating-carries-across-the-roll`>>
 
 ''The fence keys on the PLACE.'' The lease resource reads `office/<nexusId>/<placeDid>`, and the place stands as its sole writer and sole minter. No holder holds a slot in it, so no holder self-renews; no Nexus-wide roll touches it, so no island-wide mass-stale reaches it.
 
@@ -455,6 +455,6 @@ An operator contracts their OWN herm with one signature, scoped to one place and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;V7ruhTJCmqZkon2QgMWSUhH7eAt9It_brFbZxjjxcYg
+<<^ code=`&#x0003;`>>ni:///sha-256;FGvECqTXKhrLCZEXxrygcHnZSTNDFWqnAK2I7pNRIzY
 
 <<^ code=`&#x0004;` to=`?`>>

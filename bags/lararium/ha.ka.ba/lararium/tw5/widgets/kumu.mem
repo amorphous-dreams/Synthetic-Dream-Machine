@@ -22,7 +22,7 @@ uri-path      = "ha.ka.ba/lararium/tw5/widgets/kumu"
 
 !! Contract
 
-`<<~ kumu Name props>>` … `<<~/kumu>>` DECLARES a named structural node type — a reusable container shape. `sigil-kumu.tid` carries it with `lar-kind: pragma` and `lar-render: compile`: the declaration registers the type and emits no render output of its own.
+`<<~ kumu name=`Name` params=`props`>>` … `<<~/kumu>>` DECLARES a named structural node type — a reusable container shape. `sigil-kumu.tid` carries it with `lar-kind: pragma` and `lar-render: compile`: the declaration registers the type and emits no render output of its own.
 
 ''Kumu declares a type; wehe declares a procedure.'' The two pragmas sit side by side and answer different questions.
 
@@ -58,6 +58,6 @@ An unresolved name renders `<span class="lar-kau-hole">` at the placement site, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3c0VDdCXPkl9RghVIit-98_wJJxg36V5UMzpiSmp1lM
+<<^ code=`&#x0003;`>>ni:///sha-256;sjjT4GeGxpGhuEnl5C0e_xlNm7CbUM3SS67B8eiaUwM
 
 <<^ code=`&#x0004;` to=`?`>>

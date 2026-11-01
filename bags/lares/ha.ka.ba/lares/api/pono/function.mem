@@ -49,7 +49,7 @@ return wikitext. Do not use interchangeably.
 !! Syntax
 
 ```text
-<<~ function myFilter(param:"")>>[<param>match[value]]<<~/function>>
+<<~ function name=`myFilter` params=`param:""`>>[<param>match[value]]<<~/function>>
 ```
 
 TW5 native equivalent:
@@ -69,6 +69,6 @@ TW5 native equivalent:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;d4kJkbc5shycSnbPaY8RH9GJNtPv639s9rhWSGUskq4
+<<^ code=`&#x0003;`>>ni:///sha-256;tP-dUB67bZwj7FQ-zrd3rl0RtTkyp3ly3TQ_dijukuM
 
 <<^ code=`&#x0004;` to=`?`>>

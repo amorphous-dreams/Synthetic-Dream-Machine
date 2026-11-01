@@ -78,7 +78,7 @@ Stage bands: `GR 1–4` · `OS 5–8` · `US 9–12` · `CS 13–16` · `DS 17�
 No masks active. Add kahea blocks below to invoke masks for this session:
 
 ```
-<<~ kahea mask "lar:///ha.ka.ba/lares/api/masks/MASK-NAME">>
+<<~ kahea name=`mask` uri=`lar:///ha.ka.ba/lares/api/masks/MASK-NAME`>>
 stage = 10
 active = true
 # foreground-voices = []     # override Voice affinities
@@ -116,6 +116,6 @@ Live stage positions — shift inline with `[Stage: mask-name 15]`; edits here p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;jT5s5kMTnG_-UBZEd9kR9yBG0rK_yc0y4w3xoajilDI
+<<^ code=`&#x0003;`>>ni:///sha-256;SfKZbbwOBOot3bY54x4wb4xmcVTGITdSeAfULI3TdYw
 
 <<^ code=`&#x0004;` to=`?`>>

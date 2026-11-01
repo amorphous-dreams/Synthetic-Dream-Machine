@@ -51,7 +51,7 @@ the body uses TW5 widget syntax (`<$...>`) and `\procedure` when the body is pur
 !! Syntax
 
 ```text
-<<~ widget ~mysigil(uri:"" p1:"")>>
+<<~ widget name=`~mysigil` params=`uri:"" p1:""`>>
 <$tiddler tiddler=<<uri>>>
 ...
 </$tiddler>
@@ -69,6 +69,6 @@ the body uses TW5 widget syntax (`<$...>`) and `\procedure` when the body is pur
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;oryznDuUAekaHXx5IV8R16TBoHUPEfZVarek6xFYmis
+<<^ code=`&#x0003;`>>ni:///sha-256;apYaCfXthRii3XTY32y8iuxoGRl7_rlSHIhdcDhXOKI
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -95,7 +95,7 @@ Above-namespace carriers declare their register through:
 | signal | example | meaning |
 |---|---|---|
 | `namespace` IAM field | `namespace = "ॐ ँ"` | named glyph-space above base |
-| kernel control chars | `<<^ code="&#x0001;" namespace="⊙" from="?" -> to=` | positions 1–4 reserved for kernel-tier structural sigils |
+| kernel control chars | ``<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`…`>>`` | positions 1–4 reserved for kernel-tier structural sigils |
 | role field | `role = "... kernel ..."` | explicit declaration of kernel authority |
 
 A carrier that uses kernel control characters without implementing kapu reads as `ano` or below.
@@ -133,6 +133,6 @@ This meme governs the kapu rating and above-namespace trust law.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;unT269HjByVSnOfzKKNcI3tGGz7M-LrJsAYiJBwa78w
+<<^ code=`&#x0003;`>>ni:///sha-256;U-9qU7bTqT-0y1i7vc43QvWD-hUxcS7iM42_zDA05Z0
 
 <<^ code=`&#x0004;` to=`?`>>

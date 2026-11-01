@@ -48,11 +48,11 @@ A helu declaration MUST register a function definition only, producing no render
 !! Syntax
 
 ```text
-<<~ helu functionName(param:"default")>>
+<<~ helu name=`functionName` params=`param:"default"`>>
   [filter-expression-using-param]
 <<~/helu>>
 
-<<~ function functionName(param:"default")>>  [filter]  <<~/function>>
+<<~ function name=`functionName` params=`param:"default"`>>  [filter]  <<~/function>>
 ```
 
 TW5 equivalent:
@@ -70,6 +70,6 @@ TW5 equivalent:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;GuBgDMLnThN0bFDn4MV9lFfJjpJjAXmcioK7ga7vvJo
+<<^ code=`&#x0003;`>>ni:///sha-256;0_G2neZ6coBVfTMf4l6lx99iXcV3SAQ9Pavt7Snr6K4
 
 <<^ code=`&#x0004;` to=`?`>>

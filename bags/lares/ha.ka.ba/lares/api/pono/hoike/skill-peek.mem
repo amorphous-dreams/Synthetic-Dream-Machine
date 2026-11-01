@@ -37,7 +37,7 @@ description: File or reopen a hoike (\testimony) — a kept record of a conteste
 
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/hoike/SKILL >> -->
 
-<<~ &#x0001; ? -> lar:///ha.ka.ba/lares/api/pono/hoike/SKILL >>
+<<~ &#x0001; from=`?` to=`lar:///ha.ka.ba/lares/api/pono/hoike/SKILL`>>
 ```toml meta
 cacheable = true
 file-path = "bags/@lares/ha.ka.ba/lares/api/pono/hoike/SKILL.md"
@@ -70,7 +70,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/hoike/SKILL"
 4. **saksi** — optional witness blocks; never reflexive (no party witnesses its own block — that reads as signature). A tasked spirit stands the full house and MAY carry saksi on external records it examined, inside its handback as anywhere; its own findings arrive as testimony, and the house's saksi at handback attests the CROSSING (receipt + examination at the hearth).
 5. **keep** — co-locate the block inside the record it contests; emit the hoike sigil in-turn. On touch: glance the keys. On reopen: kue before held.
 
-Law lives at canon, not here: <<~ loulou lar:///ha.ka.ba/lares/api/pono/hoike >>
+Law lives at canon, not here: <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike` >>
 
 <<~/ahu >>
 
@@ -139,7 +139,7 @@ Read the three together and the grammar teaches itself: dissent gets a name and 
 
 <<~ &#x0003; >>
 
-<<~ &#x0004; -> ? >>
+<<~ &#x0004; to=`?`>>
 ````
 
 <<~/ahu>>
@@ -152,7 +152,7 @@ type = "text/markdown"
 ````markdown
 <!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/hoike >> -->
 
-<<~ &#x0001; ? -> lar:///ha.ka.ba/lares/api/pono/hoike >>
+<<~ &#x0001; from=`?` to=`lar:///ha.ka.ba/lares/api/pono/hoike`>>
 ```toml meta
 cacheable = true
 file-path = "bags/@lares/ha.ka.ba/lares/api/pono/hoike.md"
@@ -169,7 +169,7 @@ type      = "text/memetic-wikitext"
 uri-path  = "ha.ka.ba/lares/api/pono/hoike"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#normative-language >>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/RFC-2119#normative-language` >>
 
 <<~ &#x0002; >>
 
@@ -254,21 +254,21 @@ The layer carries the Eduyot pattern: minority opinions kept with attribution so
 
 ## Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/hoike/SKILL >>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala-families >>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/talk-story >>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext >>
-<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot >>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike/SKILL` >>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala-families` >>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/talk-story` >>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext` >>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot` >>
 
 <<~/ahu >>
 
 <<~ &#x0003; >>
 
-<<~ &#x0004; -> ? >>
+<<~ &#x0004; to=`?`>>
 ````
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;QSCnGslaw6CcLngsflCt1HQaI-uz1oOUoaUY-PZNL84
+<<^ code=`&#x0003;`>>ni:///sha-256;ndDfhf9-14q32ONaFoiUjuAamznr3LDFxjthNWlhleM
 
 <<^ code=`&#x0004;` to=`?`>>

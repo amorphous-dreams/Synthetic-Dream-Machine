@@ -98,7 +98,7 @@ Three subtypes. Each subtype lives in its own directory.
 All masks enter a session via kahea transclusion in LARES:
 
 ```
-<<~ kahea mask "lar:///ha.ka.ba/lares/api/masks/SUBTYPE/MASK-NAME">>
+<<~ kahea name=`mask` uri=`lar:///ha.ka.ba/lares/api/masks/SUBTYPE/MASK-NAME`>>
 stage = 10
 active = true
 <<~/kahea>>
@@ -139,6 +139,6 @@ gates, so masks share the apron and no collision rule arbitrates them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;dC5gxfoy0nWF1DB-fNll_boUb9JAwNWAPLZAMHBhrVA
+<<^ code=`&#x0003;`>>ni:///sha-256;zU44qvTKozaNQ7S2mKGfCwU1Lq_PP-R4rJ8_hMrFqYw
 
 <<^ code=`&#x0004;` to=`?`>>

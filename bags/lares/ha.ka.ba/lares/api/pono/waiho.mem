@@ -49,7 +49,7 @@ In the Kumulipo creation chant, //waiho// appears in the context of primal mater
 
 * Waiho MUST carry exactly one name and one value per pragma/block.
 * Carrier-scoped (`<<~! waiho name = val>>`) MUST hoist to the top of the carrier execution context before any render pass.
-* Block-scoped (`<<~ waiho name = val>>...<<~/waiho>>`) MUST bind name for the duration of the block only.
+* Block-scoped (``<<~ waiho name=`name` value=`val`>>...<<~/waiho>>``) MUST bind name for the duration of the block only.
 * Waiho MUST NOT produce a graph node, URI, or edge in the pranala graph.
 * Waiho MUST NOT persist across carrier boundaries.
 * Implementations MUST treat `\const`, `\let`, `\var` as aliases that map to waiho before evaluation.
@@ -62,7 +62,7 @@ In the Kumulipo creation chant, //waiho// appears in the context of primal mater
 
 ```
 <<~! waiho name = value>>                  carrier-scoped (hoisted, immutable by convention)
-<<~ waiho name = value>>...<<~/waiho>>    block-scoped
+<<~ waiho name=`name` value=`value`>>...<<~/waiho>>    block-scoped
 \const name = value                         English alias (carrier-scoped)
 \let name = value ... /\let                 English alias (block-scoped)
 \var name = value ... /\var                 English alias (block-scoped, mutable)
@@ -93,6 +93,6 @@ In the Kumulipo creation chant, //waiho// appears in the context of primal mater
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Y92Coc4nav_JM1a-4Gjf_3RD8YXTajlKRIjmIQzsi4s
+<<^ code=`&#x0003;`>>ni:///sha-256;eWfNZVlgMo0wKZC-bGXKBSjO8ly8pt7Y-5_csfTbjwI
 
 <<^ code=`&#x0004;` to=`?`>>

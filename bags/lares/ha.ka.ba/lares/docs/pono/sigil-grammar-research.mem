@@ -281,11 +281,11 @@ Body text, local claims, citations, or child sigils.
 !!! Block-vs-inline rendering declaration
 
 ```text
-<<~ wehe my-procedure (param1 param2) shape=block>>
+<<~ wehe name=`my-procedure` params=`param1 param2` shape=`block`>>
 Procedure body.
 <<~/wehe>>
 
-<<~ helu my-function (input) shape=inline>>
+<<~ helu name=`my-function` params=`input` shape=`inline`>>
 Function expression.
 <<~/helu>>
 ```
@@ -415,6 +415,6 @@ When editing grammar meme or parser:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FRU044p-p5lbD7ae9m5xWjNOTCDAe3ycy5dxomoXscg
+<<^ code=`&#x0003;`>>ni:///sha-256;8vQoyzdS11DanWWw7s4amjPNV8TXYtiWp9IiezHgc_U
 
 <<^ code=`&#x0004;` to=`?`>>
