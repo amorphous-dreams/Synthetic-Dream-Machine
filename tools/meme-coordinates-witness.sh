@@ -12,10 +12,11 @@
 # field that drifts unnoticed. 3 `uri-path` values had.
 #
 # Exit 0 = every coordinate names its own file. Exit 1 = the drift, listed.
+# Usage: meme-coordinates-witness.sh [walk-root]   (default bags/; a test aims it at a fixture tree)
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
-python3 - <<'PY'
+python3 - "$@" <<'PY'
 import pathlib, re, sys, json, subprocess
 
 # THE HEAD IS READ BY THE SHORE, NEVER BY THIS FILE. Nine spellings of that question stood across the
@@ -30,7 +31,8 @@ def heads(paths):
     return {r["file"]: r for r in (json.loads(l) for l in out.stdout.splitlines() if l.strip())}
 
 drift = []
-_carriers = sorted(pathlib.Path("bags").rglob("*.mem"))
+_walk = sys.argv[1] if len(sys.argv) > 1 else "bags"
+_carriers = sorted(pathlib.Path(_walk).rglob("*.mem"))
 _heads = heads(_carriers)
 declared_file_path = 0
 read_uri_path = 0
@@ -67,7 +69,7 @@ for f in _carriers:
 # and a walk that read it on NOBODY fails rather than reporting the cleanest run.
 _floor = []
 if not _carriers:
-    _floor.append("no carrier under bags/ — the walk had no members")
+    _floor.append(f"no carrier under {_walk}/ — the walk had no members")
 if read_uri_path == 0:
     _floor.append("not one carrier declared `uri-path` — the probe reads a spelling nothing writes")
 if _floor:
