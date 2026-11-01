@@ -75,7 +75,7 @@ as canon draws them.
 !! The Open Firing ~ the pull coming in
 
 ```text
-<<~ set lares=`aim` aperture=`10/measure` ooda-ha=`5/declare-glyphs` drift-ward=`* · <the pull this island carries toward exposure>`>>
+<<~ set lares=`aim` aperture=`10/measure` ooda-ha=`5/declare-glyphs` drift-ward=`<the pull this island carries toward exposure>`>>
 ```
 
 Tool glyph, then the vow, then the pull. `*` lights · `_` braces primed ground · `0` marks the
@@ -97,7 +97,7 @@ no pull this island carries.
 !! The Close Firing ~ the clue going out
 
 ```text
-<<~ set lares=`yield` drift-ward=`! · <the joint that breaks first on outside contact> · ↻ L-Prime` aperture=`10/measure -> 13/arc` ooda-ha=`closed 2↺`>>
+<<~ set lares=`yield` drift-ward=`<the joint that breaks first on outside contact> · ↻ L-Prime` aperture=`10/measure -> 13/arc` ooda-ha=`closed 2↺`>>
 ```
 
 Sword, vow, clue, re-arm. Breaches and quotes compose freely ~ `⚠ N · "span"` · `⌜N⌝` · `lift held`.
@@ -127,6 +127,6 @@ yesterday's hazard recurring unchanged deserves its own suspicion.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;VPdSEcbDjfmDGaCfHUPGV-0ZoiJjlxtCZWBQrF2VerE
+<<^ code=`&#x0003;`>>ni:///sha-256;Tx84XP4VXtO039MSz9Y1bs1sfloa_cIjXs4H5Zt5N0A
 
 <<^ code=`&#x0004;` to=`?`>>

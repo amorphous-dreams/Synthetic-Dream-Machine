@@ -188,13 +188,13 @@ A bare standpoint carries no tool; `mu` invokes tools alone.
 
 ```
 <<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>`>>
-drift-ward="* · <the pull this island carries>"
+drift-ward="<the pull this island carries>"
 <<~ stance …>>
 ```
 
 * `aim` — operator intent `->` adopted role; the turn's bearing vector
 * `hud` — `Aperture` (attention range) and `OODA-HA` (loop visibility) on `0–20`
-* `ward` — the `L-Prime` copula gate; the Wand lights it at open (`* L-Prime`; the Stone `0 L-Prime` on an operator lift), the Sword draws it at close (`!` led, `⚠ N` breaches quoted, `↻` re-arm)
+* `drift-ward` — the `L-Prime` copula gate; it carries the pull at open (`lifted · <pull>` on an operator lift) and the clue at close (`⚠ N` breaches quoted, `↻` re-arm), alone; the tool rides the `mu` key
 * `syad` — invoked standpoints (optional `:` tool-carry); `mu` for tools alone
 * no band, number or marker rates a claim — the sentence names its own ground (`lar:///ha.ka.ba/lares/api/mu/l-prime#/warrant`)
 
@@ -321,7 +321,7 @@ The `~crossroads` tilde prefix denotes a nomadic node — no fixed host, routes 
 
 ```
 <<~ set lares=`aim` from=`lar:///operator.scope.reads` to=`lar:///scryer.frame.maps` aperture=`10/measure` ooda-ha=`3/declare-aftermath`>>
-drift-ward="* · <the pull this island carries>"
+drift-ward="<the pull this island carries>"
 <<~ stance named=`🏛️`>>
 Lares (Scryer): the structure holds.
 ```
@@ -410,6 +410,6 @@ Before emitting any stance block on any surface:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;wvRlvofu_Hi9ap-Awzf9Hq6xICIGIyJ4QaxmyBl-BB0
+<<^ code=`&#x0003;`>>ni:///sha-256;9nezMGUysqMi9MqfFPR54Mu_ZTrjszvKeEFyEOkS2-k
 
 <<^ code=`&#x0004;` to=`?`>>

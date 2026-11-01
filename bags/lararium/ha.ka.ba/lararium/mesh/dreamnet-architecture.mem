@@ -515,7 +515,7 @@ Each door of the tiered gate names a built mechanism, so the abstract split runs
 
 ''The herm relay port carries persona-KEL drops over HTTP.'' `herm-relay-port.ts` serves verified successor-drop reads and deposits over HTTP and destroys WebSocket upgrades. The herm's floor gate answers the knock on its vessel's own gate server (`herm-carriage.ts`); it stands at a Nexus whose quorum carries its pin through `nexus carry-for`, `nexus carry --floor-pin` and `nexus carry-take` (`herm-carriage.ts`, `herm-explicit-join.test.ts`).
 
-<<~ set lares=`aim` drift-ward=`? “the relay-forward gate admits by lease + cost” — the crossing-cost calibration (siege-gate, Sybil-filter`>>
+<<~ set lares=`aim` drift-ward=`“the relay-forward gate admits by lease + cost” — the crossing-cost calibration (siege-gate, Sybil-filter`>>
 
 <<~/ahu>>
 
@@ -639,6 +639,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;H-Ta41mQP97wghPsfKzf88fFcRNBQQduM931Bf0oWKM
+<<^ code=`&#x0003;`>>ni:///sha-256;xz7ABfMq-kOX6XdW69BEp6CjhXp5NCSvLD6qLbsQKzE
 
 <<^ code=`&#x0004;` to=`?`>>

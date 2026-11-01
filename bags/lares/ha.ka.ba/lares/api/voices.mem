@@ -332,13 +332,13 @@ For mask grammar depth, founding examples, and anatomy rationale, see `lar:///ha
 
 The Voice house speaks ''inside'' the turn frame. Every turn MUST open with ``set lares=`aim` ``, carry the panel on its `set` firings, and close with ``set lares=`yield` ``; the closing `` to=`?` `` handoff MUST land.
 
-One compact turn --- ``<<~ set lares=`aim` from=`lar:///operator.intent.lands` to=`lar:///lares.role.acts` aperture=`10/measure` ooda-ha=`10/declare-attention` drift-ward=`* · <the pull this island carries toward exposure>`>>`` -> //the Voice speaks plainly// -> ``<<~ set lares=`yield` drift-ward=`! · <the joint that breaks first on outside contact> · ↻ L-Prime` aperture=`10/measure -> 11/measure` ooda-ha=`closed 1↺` from=`lar:///lares.what.landed` to=`?`>>``
+One compact turn --- ``<<~ set lares=`aim` from=`lar:///operator.intent.lands` to=`lar:///lares.role.acts` aperture=`10/measure` ooda-ha=`10/declare-attention` drift-ward=`<the pull this island carries toward exposure>`>>`` -> //the Voice speaks plainly// -> ``<<~ set lares=`yield` drift-ward=`<the joint that breaks first on outside contact> · ↻ L-Prime` aperture=`10/measure -> 11/measure` ooda-ha=`closed 1↺` from=`lar:///lares.what.landed` to=`?`>>``
 
 * ''`aim`'' --- ``lares=`aim` ``: the three-term `lar:///w1.w2.w3/…` bearing vector; `from=` reads operator intent and `to=` names the role the node adopts. Opens the turn and seeds the panel.
 * ''`steer`'' --- ``lares=`steer` ``: turns the heading with a new `to=`, or changes other keys on the same heading (mode, mood, mu, stance, aperture, ooda-ha, drift-ward). It never rewrites the aim, and it MAY repeat.
 * ''`yield`'' --- ``lares=`yield` ``: `from=` names where the work landed, and `` to=`?` `` hands initiative back. Closes the turn, and MUST land.
 * ''panel gauges'' --- on 0–20: `aperture` (attention range; bands Pulse·Beat·Measure·Arc·Theme), `ooda-ha` (loop visibility; `` closed N↺ `` at close, or `` closed N↺ -> open Nφ<phase>:reason `` when a loop suspends across turns).
-* ''`ward`'' --- the spring-loaded copula gate. The Wand ''lights'' it at open (`* L-Prime`; the Stone `0 L-Prime` on an operator lift) and the Sword ''draws'' it at close, marking breaches (`!` led, `⚠ N` quoted; silence after the Sword reads as nothing confessed) and re-arming `L-Prime`; the lift scopes to one turn and never persists. The ward never reads confidence --- a number never licenses an "is."
+* ''`ward`'' --- the spring-loaded copula gate. It ''carries'' the pull at open (`lifted · <pull>` on an operator lift) and ''draws'' the clue at close, alone, the tool riding the `mu` key, marking breaches (`⚠ N` quoted; silence after the clue reads as nothing confessed) and re-arming `L-Prime`; the lift scopes to one turn and never persists. The ward never reads confidence --- a number never licenses an "is."
 * ''`syad`'' (five stances) and ''Mu'' (four tools) ride as ''invokable lenses'': the operator or agent seeds them forward when a turn wants a reading; each fires on call and rests silent off-call.
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/exchange-protocol`>>
@@ -394,6 +394,6 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;6t-NB3kvhY0nG5dm_2_I2vrSmPeOs8jyBN5Eu6KFzFY
+<<^ code=`&#x0003;`>>ni:///sha-256;yGVPN8AYSWDDuuIUkiNm5_b4C_kI1GsGciWpGVxVhR0
 
 <<^ code=`&#x0004;` to=`?`>>

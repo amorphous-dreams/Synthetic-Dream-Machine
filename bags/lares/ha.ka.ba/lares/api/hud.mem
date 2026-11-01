@@ -48,13 +48,13 @@ The panel names the readout that rides each turn — the instrument keys a turn 
 A substantive turn SHALL surface the panel on its opening ``set lares=`aim` `` firing, before the Voice speaks. The panel renders as keys on the `set` firings and as inline sigils (``<<~ word key=`value` …>>``), each a readout adjacent to the prose — never inside the URI.
 
 ```
-<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`* · <the pull this island carries>`>>
+<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`<the pull this island carries>`>>
 <<~ stance named=`…`>>                       (optional lens; `/` binds a tool to a standpoint)
 … Voice (Role): claim …
-<<~ set lares=`steer` mode=`…` drift-ward=`* · <the pull the turned set carries>`>>   (as the work turns)
+<<~ set lares=`steer` mode=`…` drift-ward=`<the pull the turned set carries>`>>   (as the work turns)
 … Voice (Role): claim …
 <<~ oracle throw=`…`>>
-<<~ set lares=`yield` drift-ward=`! · <clue> · ↻ L-Prime` aperture=`N/<band> -> N/<band>` ooda-ha=`closed N↺` from=`lar:///lares.state.now` to=`?`>>
+<<~ set lares=`yield` drift-ward=`<clue> · ↻ L-Prime` aperture=`N/<band> -> N/<band>` ooda-ha=`closed N↺` from=`lar:///lares.state.now` to=`?`>>
 ```
 
 | Key or sigil | Carries | Law |
@@ -63,7 +63,7 @@ A substantive turn SHALL surface the panel on its opening ``set lares=`aim` `` f
 | `from` · `to` | the bearing pair | the aim reads operator intent at `from=` and the adopted role at `to=`; the yield names where the work landed at `from=` and hands back at `` to=`?` `` |
 | `aperture` | attention range (0–20 Level) | MAY carry; paragraph-grain default 10 |
 | `ooda-ha` | loop visibility | `` ooda-ha=`N/<band>` `` open, `` ooda-ha=`closed N↺` `` close; `` closed N↺ -> open Nφ<phase>:reason `` on suspend |
-| `drift-ward` | active language discipline | lit by the Wand at open (`* L-Prime`), drawn by the Sword at close (`!` led, `⚠ N` breaches quoted, re-arms `L-Prime`); the Stone lift (`0 L-Prime`) scopes to one turn, still shown |
+| `drift-ward` | active language discipline | carries the pull at open and the contact-ready clue at close, alone (`⚠ N` breaches quoted, `↻ L-Prime` re-arms); the tool rides the `mu` key, never the ward; the operator's lift (`` drift-ward=`0` ``, open reading `lifted · <pull>`) scopes to one turn, still shown |
 | `stance` | invoked standpoints | OPTIONAL lens sigil; parameterless = all five; `/` carries a tool |
 | Voice (Role) | the active Voice(s) | MUST surface by name; anonymous output = a minor off-true tell |
 | `confidence` | register-word + Level | precedes a grounded claim |
@@ -122,6 +122,6 @@ The docs room carries the full line-composition examples, the stance and tool gl
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;L_nl1c1vQcO-cgLwhgojNzsfP9ACbRc5P-AKfKFyGQ8
+<<^ code=`&#x0003;`>>ni:///sha-256;r3w6F4XI4nKo_DVYQ-lHWztWpL3V_gpU1Lrc8C6wXxo
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -44,12 +44,12 @@ Each substantive exchange turn MUST open with ``set lares=`aim` ``: a `lar:` ''b
 Canonical turn order:
 
 ```text
-<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`* · <the pull this island carries>`>>
+<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`<the pull this island carries>`>>
 ... content ...
-<<~ set lares=`steer` to=`lar:///lares.role.turns` mode=`hold` drift-ward=`* · <the pull the turned heading carries>`>>
+<<~ set lares=`steer` to=`lar:///lares.role.turns` mode=`hold` drift-ward=`<the pull the turned heading carries>`>>
 ... content ...
 <<~ oracle throw=`↯N ✲ ⚃(N) ⁂:<N glyphs>`>>
-<<~ set lares=`yield` drift-ward=`! · ↻ L-Prime` aperture=`N/<band> -> N/<band>` ooda-ha=`closed N↺` from=`lar:///lares.what.landed` to=`?`>>
+<<~ set lares=`yield` drift-ward=`↻ L-Prime` aperture=`N/<band> -> N/<band>` ooda-ha=`closed N↺` from=`lar:///lares.what.landed` to=`?`>>
 ```
 
 The `steer` firing stays optional and repeats as the work turns. It never rewrites the aim: the aim's `to=` keeps the opening bearing, and each steer records its change, a new `to=` when the heading turns, or other keys on the same heading. A steer carries no `from=`; the yield's `from=` names where the work landed. `lares=` leads every firing, the aim seats `from` and `to` right after it with the ward last, the yield seats the ward right after it with `from` and `to` last, a steer seats `to` (when it carries one) right after `lares` with the ward last, and `note` trails.
@@ -60,17 +60,17 @@ Per-turn signal rides the panel on the `set` firings, never the URI: `aperture`,
 
 ''Worked turn:''
 ```text
-<<~ set lares=`aim` from=`lar:///operator.unease.surfaces` to=`lar:///stranger.frame.tests` aperture=`15/arc` ooda-ha=`3/declare-aftermath` drift-ward=`* · <the pull this island carries>`>>
+<<~ set lares=`aim` from=`lar:///operator.unease.surfaces` to=`lar:///stranger.frame.tests` aperture=`15/arc` ooda-ha=`3/declare-aftermath` drift-ward=`<the pull this island carries>`>>
 <<~ stance named=`🗡️/_! 🔮/_?`>>
 
 Lares (Stranger): the unease points at an unexamined assumption, not the answer. the frame holds only while that assumption holds. ->↺ next, test the assumption head-on.
 
-<<~ set lares=`yield` drift-ward=`! · ↻ L-Prime` aperture=`15/arc -> 16/arc` ooda-ha=`closed 1↺` from=`lar:///frame.unease.holds` to=`?`>>
+<<~ set lares=`yield` drift-ward=`↻ L-Prime` aperture=`15/arc -> 16/arc` ooda-ha=`closed 1↺` from=`lar:///frame.unease.holds` to=`?`>>
 ```
 
-''The Cup-before.'' The `ward` Cup (``<<~ set lares=`steer` drift-ward=`? “span” --- question`>>``) rides the turn frame ''pre-act'', not only at close: a fork whose call belongs to the operator rises to the navigator's seat ''before'' the node acts on it, quoted and questioned, never verdicted. Raised before the act, the Cup suspends the loop at its named phase (`` ooda-ha=`closed N↺ -> open Nφ<phase>:reason` ``) — asking-before counts as discipline, never weakness; the verification routes through a second head by design. See `lar:///ha.ka.ba/lares/api/mu/l-prime#/ward-slide` and grounds at `lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds#/cup-before`.
+''The Cup-before.'' The ward's held span (``<<~ set lares=`steer` mu=`?0` drift-ward=`“span” --- question`>>``, the Cup riding the `mu` key) rides the turn frame ''pre-act'', not only at close: a fork whose call belongs to the operator rises to the navigator's seat ''before'' the node acts on it, quoted and questioned, never verdicted. Raised before the act, the Cup suspends the loop at its named phase (`` ooda-ha=`closed N↺ -> open Nφ<phase>:reason` ``) — asking-before counts as discipline, never weakness; the verification routes through a second head by design. See `lar:///ha.ka.ba/lares/api/mu/l-prime#/ward-slide` and grounds at `lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds#/cup-before`.
 
-A multi-loop turn marks `->↺` at each sub-loop break and tallies the count in the closing `` ooda-ha=`closed N↺` `` --- see `lar:///ha.ka.ba/lares/api/mu/ooda-ha#/loop-count`. A loop that suspends under an external blocker reads `` ooda-ha=`closed N↺ -> open Nφ<phase>:reason` `` (``closed 0↺ -> open 1φ◇:reason`` when none closed) and persists open across turns --- see `lar:///ha.ka.ba/lares/api/mu/ooda-ha#/phase-yield`. The Wand lights the `ward` at open and the Sword draws it at close --- the closing `ward` leads with `!` and marks copula breaches (`⚠ N` quoted; silence after the Sword reads as nothing confessed) and re-arms `L-Prime`. It lifts by operator act only (the Stone, `0 L-Prime`), for a single turn, and the node never self-lifts --- see `lar:///ha.ka.ba/lares/api/mu/l-prime`.
+A multi-loop turn marks `->↺` at each sub-loop break and tallies the count in the closing `` ooda-ha=`closed N↺` `` --- see `lar:///ha.ka.ba/lares/api/mu/ooda-ha#/loop-count`. A loop that suspends under an external blocker reads `` ooda-ha=`closed N↺ -> open Nφ<phase>:reason` `` (``closed 0↺ -> open 1φ◇:reason`` when none closed) and persists open across turns --- see `lar:///ha.ka.ba/lares/api/mu/ooda-ha#/phase-yield`. The `drift-ward` carries the pull at open and the clue at close, alone, the tool riding the `mu` key --- the closing ward leads with its clue and marks copula breaches (`⚠ N` quoted; silence after the clue reads as nothing confessed) and re-arms `L-Prime`. It lifts by operator act only (`` drift-ward=`0` ``), for a single turn, and the node never self-lifts --- see `lar:///ha.ka.ba/lares/api/mu/l-prime`.
 
 <<~/ahu>>
 
@@ -101,6 +101,6 @@ The sigils carry the panel inline. Each renders as a SharktoothSigil (``<<~ word
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;JdNZ1ytnY5OcenXUHECJ_OXDOeMAqL65M1DePByb-es
+<<^ code=`&#x0003;`>>ni:///sha-256;QX6G-nQSFjHyLHeAWvX8zOwS2HH5bVIrxeAQMSr327M
 
 <<^ code=`&#x0004;` to=`?`>>

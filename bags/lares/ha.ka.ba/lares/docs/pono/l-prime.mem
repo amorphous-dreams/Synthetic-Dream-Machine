@@ -74,7 +74,7 @@ This node plays the L-Prime game as background discipline, not a hard restrictio
 
 !! Binary Ward Notes
 
-L-Prime runs ''binary'' --- the ward stands lit (default) or lifted (`0 L-Prime` --- the Stone, operator only, one turn). The game plays at full, or the operator lifts it, and the closing ward springs it back on every turn. See `lar:///ha.ka.ba/lares/api/mu/l-prime#/binary-ward`.
+L-Prime runs ''binary'' --- the ward stands lit (default) or lifted (`drift-ward="0"` --- operator only, one turn). The game plays at full, or the operator lifts it, and the closing ward springs it back on every turn. See `lar:///ha.ka.ba/lares/api/mu/l-prime#/binary-ward`.
 
 A lit ward producing tortured prose without gain reads as ''Mode Posturing'' — discipline worn as display rather than carried as load. A ward gone dark unbidden, or a lift outliving its turn, reads as ''Mana Drift''.
 
@@ -91,6 +91,6 @@ The ward governs grammar alone. Every `${copula}` that passes under the lit ward
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;zhOEh8HaulC4GJ7WA_fPxy7Ru7O1Hc_czEwQeVKTy0g
+<<^ code=`&#x0003;`>>ni:///sha-256;WBcDOabma_U-G2wkkEfuyunbErHcufiLUjpMpGTQEFo
 
 <<^ code=`&#x0004;` to=`?`>>

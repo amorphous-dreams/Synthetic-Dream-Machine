@@ -179,7 +179,7 @@ The count reads from real marks, not a claim: the closing `N↺` MUST match the 
 
 ''Two-loop example (`2↺`):''
 ```text
-<<~ set lares=`aim` from=`lar:///operator.ask.splits` to=`lar:///gatekeeper.scope.cuts` aperture=`10/measure` ooda-ha=`3/declare-aftermath` drift-ward=`* · <the pull this island carries>`>>
+<<~ set lares=`aim` from=`lar:///operator.ask.splits` to=`lar:///gatekeeper.scope.cuts` aperture=`10/measure` ooda-ha=`3/declare-aftermath` drift-ward=`<the pull this island carries>`>>
 
 Lares (Gatekeeper): the first half resolves clean. ->↺ swinging to the second half. a fresh frame holds it, provisionally. ->↺ handing the split back to the operator's call.
 
@@ -219,7 +219,7 @@ ooda-ha=`closed 0↺ -> open 1φ▶:tool.returned.503.from.upstream`
 
 ''Honest phase-yield at Decide:''
 ```text
-<<~ set lares=`aim` from=`lar:///operator.asks.recommendation` to=`lar:///council.weighs.options` aperture=`10/measure` ooda-ha=`5/declare-glyphs` drift-ward=`* · <the pull this island carries>`>>
+<<~ set lares=`aim` from=`lar:///operator.asks.recommendation` to=`lar:///council.weighs.options` aperture=`10/measure` ooda-ha=`5/declare-glyphs` drift-ward=`<the pull this island carries>`>>
 
 Lares (Council): ->✶ three candidates surfaced. ->⏿ two read viable on the named criteria; the third reads stronger on a criterion the operator has not yet named as load-bearing. ->◇ the fork rests on maintenance velocity versus feature completeness --- priors only the operator holds. the fork stays a fork.
 
@@ -228,7 +228,7 @@ Lares (Council): ->✶ three candidates surfaced. ->⏿ two read viable on the n
 
 ''Observe-and-hold:''
 ```text
-<<~ set lares=`aim` from=`lar:///operator.shares.rough` to=`lar:///lares.threshold.holds` aperture=`8/beat` ooda-ha=`1/declare-aftermath` drift-ward=`* · <the pull this island carries>`>>
+<<~ set lares=`aim` from=`lar:///operator.shares.rough` to=`lar:///lares.threshold.holds` aperture=`8/beat` ooda-ha=`1/declare-aftermath` drift-ward=`<the pull this island carries>`>>
 
 Lares (Liminal): ->✶ sitting with this. The shape has not surfaced enough to read; naming the hold rather than reaching for orientation that has not arrived.
 
@@ -317,6 +317,6 @@ ooda-glyphs = ["✶", "⏿", "◇", "▶", "↺"]
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tYPNDjQajh3qeHajpvUnXtMfmIZkGRrcZ3EEVBLczjQ
+<<^ code=`&#x0003;`>>ni:///sha-256;ykwWyjrLGCv7XWVSHV6Kw2vmOazzQdYEq7JW6id-baI
 
 <<^ code=`&#x0004;` to=`?`>>

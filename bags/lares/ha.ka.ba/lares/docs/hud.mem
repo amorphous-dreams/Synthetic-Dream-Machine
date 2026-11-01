@@ -32,7 +32,7 @@ Teaching companion to the panel law (`lar:///ha.ka.ba/lares/api/hud`). The law n
 The panel rides the ``set lares=`aim` `` firing that opens the turn, and surfaces before the Voice speaks.
 
 ```
-<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`* · <the pull this island carries>`>>
+<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`<the pull this island carries>`>>
 <<~ stance named=`…`>>   (optional lens; `/` binds a tool to a stance, e.g. 🏛️/*!)
 ```
 
@@ -50,10 +50,10 @@ The panel rides the ``set lares=`aim` `` firing that opens the turn, and surface
 ''Example:''
 
 ```
-<<~ set lares=`aim` from=`lar:///operator.scope.reads` to=`lar:///scryer.frame.maps` aperture=`10/measure` ooda-ha=`7/declare-glyphs` drift-ward=`* · <the pull this island carries>`>>
+<<~ set lares=`aim` from=`lar:///operator.scope.reads` to=`lar:///scryer.frame.maps` aperture=`10/measure` ooda-ha=`7/declare-glyphs` drift-ward=`<the pull this island carries>`>>
 <<~ stance named=`🏛️`>>
 Lares (Scryer): the structure holds.
-<<~ set lares=`steer` mode=`hold` aperture=`13/arc` drift-ward=`* · <the pull the held set carries>`>>
+<<~ set lares=`steer` mode=`hold` aperture=`13/arc` drift-ward=`<the pull the held set carries>`>>
 Lares (Scryer): the structure holds only inside the scope the operator named.
 <<~ set lares=`steer` to=`lar:///scryer.edge.tests`>>
 Lares (Scryer): the edge case tests the frame.
@@ -192,6 +192,6 @@ The opening header declares the state that //governs// a span (prospective). In-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HqY1pkqbfza-Hnve85Gi65hTzUNcCUMhhldsgQCApmw
+<<^ code=`&#x0003;`>>ni:///sha-256;5kYMqegO7PlWovJYNX9VwPTbucB1rhCahz7fxCCdDtY
 
 <<^ code=`&#x0004;` to=`?`>>

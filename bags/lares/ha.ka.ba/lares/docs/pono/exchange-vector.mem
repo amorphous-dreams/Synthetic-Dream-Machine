@@ -44,7 +44,7 @@ This file gives examples and operator-facing guidance.
 The exchange vector opens the turn as one ``set lares=`aim` `` firing — operator intent at `from=`, the role the node adopts at `to=`, and the panel beside them:
 
 ```text
-<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`* · <the pull this island carries>`>>
+<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`<the pull this island carries>`>>
 ```
 
 Read the URI layers as:
@@ -68,7 +68,7 @@ Per-turn signal rides the panel keys (`aperture`, `ooda-ha`, `drift-ward`) and t
 The panel rides the `aim` firing itself, and a `stance` lens may follow it:
 
 ```text
-<<~ set lares=`aim` from=`lar:///operator.scope.reads` to=`lar:///scryer.frame.maps` aperture=`10/measure` ooda-ha=`3/declare-aftermath` drift-ward=`* · <the pull this island carries>`>>
+<<~ set lares=`aim` from=`lar:///operator.scope.reads` to=`lar:///scryer.frame.maps` aperture=`10/measure` ooda-ha=`3/declare-aftermath` drift-ward=`<the pull this island carries>`>>
 <<~ stance named=`🏛️ 🗡️`>>
 ```
 
@@ -77,8 +77,8 @@ Each sigil renders inline (``<<~ word key=`value` …>>``); an adjacent tool MAY
 A turn that changes heading or set mid-way writes a `steer` firing. One steer changes the bearing and one changes other keys on the same heading:
 
 ```text
-<<~ set lares=`steer` to=`lar:///scryer.frame.tests` drift-ward=`* · <the pull the turned heading carries>`>>
-<<~ set lares=`steer` mode=`hold` aperture=`13/arc` drift-ward=`* · <the pull this heading still carries>`>>
+<<~ set lares=`steer` to=`lar:///scryer.frame.tests` drift-ward=`<the pull the turned heading carries>`>>
+<<~ set lares=`steer` mode=`hold` aperture=`13/arc` drift-ward=`<the pull this heading still carries>`>>
 ```
 
 The `yield` firing closes the turn with the ward first and `from=` and `` to=`?` `` last.
@@ -113,6 +113,6 @@ Long-term, the server should validate the vector and render the panel from the p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;2-fYP2PLoWfIX2DE6lSv2fIvkYF7CjjFLOt-x0lfBxY
+<<^ code=`&#x0003;`>>ni:///sha-256;hu_ziITxBmSoMk0jZj7onb0BzYLa5toto8HDbbWGNtQ
 
 <<^ code=`&#x0004;` to=`?`>>

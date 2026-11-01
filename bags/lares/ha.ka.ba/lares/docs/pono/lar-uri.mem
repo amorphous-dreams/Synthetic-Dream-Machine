@@ -99,13 +99,13 @@ lar://lares:agent@enyalios/~schema.flow.documented/
 ''Step 3 — Open the turn with the `aim` firing.''
 
 ```
-<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`* · <the pull this island carries>`>>
+<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`<the pull this island carries>`>>
 ```
 
 > ''Canonical URI Rule'' — every `lar:` URI in the stream stays canonical ASCII record form, directly ingestible by MemPalace, crystal logs, and registry tools without a sigil-lookup step.
 
 ''Step 4 — Ride the panel.''
-On the same firing: `` aperture=`N/<band>` `` · `` ooda-ha=`N/<band>` `` · `` drift-ward=`* · <the pull this island carries>` ``, plus the `syad` / `mu` lenses when summoned. The panel keys carry per-turn signal; the URI carries bearing only.
+On the same firing: `` aperture=`N/<band>` `` · `` ooda-ha=`N/<band>` `` · `` drift-ward=`<the pull this island carries>` ``, plus the `syad` / `mu` lenses when summoned. The panel keys carry per-turn signal; the URI carries bearing only.
 
 ''Step 5 — Generate, then close.'' OODA-HA phase markers (`->◇ ->▶ ->↺`) surface forward inline by band. The turn closes on ``<<~ set lares=`yield` … from=`lar:///lares.what.landed` to=`?`>>`` — `` to=`?` `` marks unknown temporal resumption.
 
@@ -420,7 +420,7 @@ A spanSpan record is ''consistent'' when:
 A complete exchange opening, annotated by scan order. The `aim` URI carries bearing; the sigil panel beside it carries the rest.
 
 ```text
-<<~ set lares=`aim` from=`lar:///operator.threshold.opens` to=`lar:///scryer.parse.models` aperture=`10/measure` ooda-ha=`7/declare-glyphs` drift-ward=`* · <the pull this island carries>`>>
+<<~ set lares=`aim` from=`lar:///operator.threshold.opens` to=`lar:///scryer.parse.models` aperture=`10/measure` ooda-ha=`7/declare-glyphs` drift-ward=`<the pull this island carries>`>>
 <<~ stance named=`🏛️/*!`>>
 ```
 
@@ -462,6 +462,6 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;UYWZ89Q1K4vWrjtaDkyWnQDuttUPOAck2vRiJB-qglg
+<<^ code=`&#x0003;`>>ni:///sha-256;W3em9qyA6tC6XfnjwW8DnSS8GnwFPQAZJU1THM6YWck
 
 <<^ code=`&#x0004;` to=`?`>>

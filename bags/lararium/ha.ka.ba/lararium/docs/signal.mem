@@ -100,7 +100,7 @@ The frame runs as follows:
   The `~` prefix marks an execution-provisional heading — a declared aim, not a confirmed landed resource.
 
 # Ride the panel beneath the `aim`.
-  ``<<~ set lares=`aim` aperture=`N/<band>` ooda-ha=`N/<band>`>>`` · `drift-ward="* · <the pull this island carries>"`, plus the `syad` / `mu` lenses when summoned. No band, number or marker rides beside a claim: the sentence names its own ground (`lar:///ha.ka.ba/lares/api/mu/l-prime#/warrant`).
+  ``<<~ set lares=`aim` aperture=`N/<band>` ooda-ha=`N/<band>`>>`` · `drift-ward="<the pull this island carries>"`, plus the `syad` / `mu` lenses when summoned. No band, number or marker rides beside a claim: the sentence names its own ground (`lar:///ha.ka.ba/lares/api/mu/l-prime#/warrant`).
 
 # Generate, then close.
   OODA-HA phase markers MAY surface forward inline, banded by the gauge.
@@ -172,6 +172,6 @@ Settled child rooms in this branch:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;TyV5Avu0kR1MFqLuohufHA_vOKxGsf4ta07JLlJY5Fo
+<<^ code=`&#x0003;`>>ni:///sha-256;_Cd8J8JBOzfbz-36goa0HzR24oPnPUhzlUmcLVhbNUo
 
 <<^ code=`&#x0004;` to=`?`>>
