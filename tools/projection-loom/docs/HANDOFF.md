@@ -1,57 +1,57 @@
-# Projection Loom · evergreen handoff / O-takiage · 2026-10-31
+# Projection Loom · Evergreen O-takiage handoff
 
-**Carrier siting correction:** all 15 Projection Loom memes now reside under `bags/lares/ha.ka.ba/lares/api/projection-loom/` and `bags/lares/ha.ka.ba/lares/docs/projection-loom/` with canonical disk-derived `lar:` identities. Root `projection-loom.mem` became `api/projection-loom/index.mem`; no legacy alias remains. The unrelated browser comment was restored to the PR merge-base spelling in `9f16a30b`. A durable pre-move archive ref `archive/pr84-before-projection-loom-carrier-move-20261031` preserves previous addresses and digests.
+**Working PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · `feature/green-jello-dinosaur-5--projection-loom` · **2026-10-31**. Inspect the current branch head, exact-head Actions, and the complete [Lares boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) from `feature/green-jello-dinosaur-5` before claiming current evidence. This is the only human-facing Loom handoff; the root [README](../README.md) is its entrance, and the live Lares operational carrier owns intent.
 
-**Work:** [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · `feature/green-jello-dinosaur-5--projection-loom`. Read the **full Lares boot** from `feature/green-jello-dinosaur-5` at `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`, then inspect the actual PR head and CI. This file is the human-facing entry point; operational authority is the root-bag Lares carrier, not this handoff.
+## O-takiage · completed, Git keeps the ledger
 
-## What this o-takiage actually changed
+- **Markdown:** `tools/projection-loom/` now contains exactly two tracked Markdown files: `README.md` and `docs/HANDOFF.md`. Earlier design, guide, research, experiment, roadmap, and temporary ashes Markdown files have been retired as actual deletions. Neither source geometry nor independently native-evidenced receipts nor lineage artifacts were deleted.
+- **Recursive Lares ashes:** displaced prose in the operational, Loom-core, and capability-composition carriers was released from their live bodies; full antecedent bytes remain in Git. Other carriers keep their unique working design, testimony and dissent.
+- **Scope correction:** `packages/lararium-browser/src/open-browser-vessel.ts` was restored to its exact merge-base blob (commit `9f16a30b91f322d290ba55eebec169f133401a67`). Against the actual merge base `2485242b4fb4105f12c1724c605d96cf233c695d`, there are **zero unrelated non-Loom code changes**. The branches have diverged extensively; do not replace unrelated code with the *current* moving base head.
+- **Memetic carrier siting:** commit `0bdfb782057f3d404efc508dc11c9398f20822fa` moved 13 API and 2 docs carriers into nested Projection Loom subtrees. Their `lar:` identities now match the physical path; each STX-to-ETX SHA-256 frame was resealed. **No legacy identity aliases.** Commit `382f5e5fce48227ec6254e99261aff5b34e58a85` repaired README/handoff paths, CI triggers, and the structural check. The live operational carrier next-wave program was refreshed at `b7b6505bbf50d1920465f8055c730875fea51092`.
+- **Regression gate:** `scripts/check_living_docs.py` guards the two Markdown fronts, their relative links, all 15 carrier checksums, URI↔disk siting, and refusal of legacy root-level carriers or recursive ashes. `tests/test_living_docs_gate.py` witnesses failure modes. `.github/workflows/projection-loom.yml` runs it alongside the architecture check before native CAD regressions.
 
-- **Baseline before this session:** `864dc19e89a913ac82862b842202bfce0c68e16b`. The earlier full-document source is also recoverable at `7c644e670390ab51aaa39e9216bb833eb32e6762` (before the previous recursive-front reductions).
-- **Stable operator navigation:** `tools/projection-loom/README.md` was consolidated at `58fc84ce` and its stale archive link removed at `2efe931a`. It points to this handoff and root-bag Lares authorities.
-- **Historical research wave:** seven `docs/research/archive/*.md` sources and eight `docs/research/*.md` sources were retired from the live tree. Exact original paths/bytes remain at the baseline commit. The research register is historical; current semantic owner is `lar:///ha.ka.ba/lares/api/projection-loom/research`.
-- **Design/capability wave:** twenty-one `docs/*.md` prose sources were retired, including GUIDEBOOK/Fire grammar, OODA-HA procedure, Living Place, and the detailed relational inheritance design. Current design authority is `lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design`; the initial reconstruction-first versus later mutation-first research disagreement remains attributable in Git and Lares crew testimony.
-- **Example wave:** seven experiment/lineage README or narrative files were retired; source experiments, models, witnesses, receipts, native geometry and lineage binaries/scripts remain untouched.
-- **Temporary audit documents:** `archives/PR84_MARKDOWN_ASHES_INDEX.md`, `archives/PR84_MARKDOWN_OTAKIAGE_CENSUS.md`, and `archives/README.md` were retired in commits `cbfa59bf`, `6e739639`, and `bc487529`, respectively; Git is now their archive.
+### Current addresses · no compatibility shims
 
-The session retires **43 Markdown files in the research, design, and example waves**, plus **three temporary archive Markdown documents**, all already committed as deleted. The root README and this one handoff remain. Earlier sessions separately retired `ROADMAP.md`, `HEPHAESTUS-KANBAN.md`, and `BRANCHED_SESSION_HANDOFF.md`; their source text also remains in Git.
+| Responsibility | Current file |
+| --- | --- |
+| Source/constructive Loom contract | `bags/lares/ha.ka.ba/lares/api/projection-loom/index.mem` |
+| Operational handoff/next waves | `bags/lares/ha.ka.ba/lares/api/projection-loom/handoff.mem` |
+| Research ledger | `bags/lares/ha.ka.ba/lares/api/projection-loom/research.mem` |
+| Relational-inheritance design/dissent | `bags/lares/ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design.mem` |
+| Crew handoff | `bags/lares/ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff.mem` |
+| Other capabilities | 10 remaining carriers under `bags/lares/ha.ka.ba/lares/api/projection-loom/` |
 
-## Reachable Git ashes · final archival lock
+The identity is a siting law: `lar:///ha.ka.ba/lares/api/projection-loom/handoff` maps to `bags/lares/ha.ka.ba/lares/api/projection-loom/handoff.mem`. `lar:` routes and `file-path`/title/SOH/uri-path fields must agree. Archive history retains pre-move names and the dissent they carried; old URLs are not live handles.
 
-The operator-directed o-takiage does not rely on PR branch retention alone. A dedicated nonworking archival branch, `archive/pr84-markdown-pre-otakiage-20261031`, now points exactly to `864dc19e89a913ac82862b842202bfce0c68e16b`. A direct GitHub read on that branch recovered `docs/RELATIONAL-INHERITANCE-DESIGN.md` with the original Git blob SHA `8e581cc5eaaca201ab337acaccf1b8c4a8827ed6`. That commit's ancestors include the earlier `7c644e67` source and its recursive historical fronts. This archive branch **MUST remain reachable** if PR #84 is squash-merged or its working branch is deleted; do not remove it without another enduring ref.
+### Durable recovery refs
 
-The final living entry points are `tools/projection-loom/README.md` and this `tools/projection-loom/docs/HANDOFF.md`. The 46 other Markdown files that existed in this tool's PR working surface at the beginning of this turn were retired from the live tree in Git commits. The four primary Lares carriers received canonically sealed top-level post-fire route notes, preserving the former wording as historical testimony. No native CAD or lineage files were deleted.
+- `archive/pr84-markdown-pre-otakiage-20261031` → `864dc19e89a913ac82862b842202bfce0c68e16b` (complete pre-Markdown-burn documents; ancestors include older recursive fronts).
+- `archive/pr84-before-lares-ashes-retirement-20261031` → `0d05dce315397fd2be1a7098270363ff4a948745` (root-bag recursive-history predecessors).
+- `archive/pr84-before-projection-loom-carrier-move-20261031` → `9f16a30b91f322d290ba55eebec169f133401a67` (all original carrier paths, addresses, and latest pre-move code).
 
-## Re-entry and recovery
+Recover an actual historical document using `git show <archive-sha>:<historical-path>`. Archive ref continuity is important if PR #84 is squash-merged; do not delete these without another durable reference.
+
+## Evidence and acceptance · never borrow green
+
+The pre-interruption exact head `0d05dce315397fd2be1a7098270363ff4a948745` passed Projection Loom CAD/evidence CI (`41252048991`), and other full-repository checks were still under observation. Subsequent commits, especially the move and expanded gate, **must pass their own** dedicated CAD, repository CI, and held-out witness checks. A queued or running workflow supplies neither success nor failure. The external CC0 fetch is advisory and never supplies rights or source-camera proof.
+
+Run locally from `tools/projection-loom` in a CAD-capable environment:
 
 ```bash
-git fetch origin feature/green-jello-dinosaur-5--projection-loom
-git show 864dc19e89a913ac82862b842202bfce0c68e16b:tools/projection-loom/docs/RELATIONAL-INHERITANCE-DESIGN.md
-git show 7c644e670390ab51aaa39e9216bb833eb32e6762:tools/projection-loom/docs/ROADMAP.md
-cd tools/projection-loom
 python -m projection_loom --help
 python scripts/check_architecture.py
+python scripts/check_living_docs.py
 python -m pytest -q tests
 ```
 
-The single `projection_loom.fractal_ooda_ha` helm controls OODA-HA; there is no second evolution controller. Independent STEP/native admission, artifact digests, replay, source-goal preservation, human operator judgment and held-out CI retain distinct authority. Native-admitted parent-to-distinct-child route inheritance under mutation-first design is **not** proved by document retirement. No new CAD functionality, source deletion, Elyncia canon promotion or PR merge was performed in these waves.
+## Next OODA-HA program · feature → aftermath → L-prime
 
-## Final L-prime frame repair · verified commit receipts
+1. **Finish this closure:** inspect exact-head workflow jobs, repair real regressions, verify the live two-front/15-carrier gate and tracked path census. Independently check any consumer that still demands old `lar:` IDs. Leave operator-controlled promotion and PR merge separate from archive retirement.
+2. **Native heredity, test-first:** under the **one** `projection_loom.fractal_ooda_ha` controller and `OODAHAJournal`, make a complete, independently STEP-admitted parent route into a bounded-mutation parent→distinct-child→descendant three-epoch witness. Derive the route-family from `PlaceGenome + SpatialIntent`; separately bind actual native admission, source obligations, digests, exact budgets, and adversarial replay. No descriptor alone counts as STEP proof.
+3. **Aftermath/consolidation:** match native 2-/3-hop alternatives on frozen source bodies, adversarially test construction refusal before output roots exist, enforce original connect/shelter/ascend/bear goals and fixed-camera six-view replay. Keep construction refusal, native rejection, deferral, admission, source and visualization distinct.
+4. **Second-strategy trial:** compare source-conditioned semantic reconstruction against complete-parent-region mutation with independent native receipts under equal budgets and the same one helm. Preserve the earlier reconstruction-first design as attributed dissent; do not rewrite history into agreement.
+5. **Later operator-facing work:** independent photo/DEM frames and actual Unreal Editor execution, true load/accessibility testing, and aesthetic selection each need their own measured gates and explicit human review. They are not already proved by archive cleanup, render fidelity, or general CI.
 
-The four root-bag living Lares carriers now open with an explicit post-o-takiage routing ahu. Each original frame check was verified before editing, and each replacement SHA-256 frame check was computed over the canonical UTF-8 STX-through-ETX span and checked before its GitHub commit:
+**Hold:** no second evolutionary scheduler, compatibility aliases, inferred canonical promotion, structural safety claims, automatic winner, PR merge or release of original CAD/source/evidence/lineage.
 
-- Operational handoff: `00cf87f73f010d75debdae6b6c61002fbf2537e0`
-- Research: `0e551b3fba15b4146a92d40ef6e55164962ef8e8`
-- Relational design: `5baef720d6e96642a60ea7d447d358b20a6af785`
-- Crew handoff: `6c81389ea8dd3b350dff40eae122e07b4c931307`
-
-Those carriers explicitly state that links to retired Markdown in older ahu are Git-history references, not live paths. The living body, law, sources, design dissent and older testimony remain untouched except for the newly inserted routing ahu and the required updated frame digest. This does not constitute a complete repository-wide link or native CI witness.
-
-## Aftermath / L-prime open gates
-
-1. **Old links:** Lares `.mem` carriers and archived commits still contain historical references to removed `.md` paths. These are now Git-history references, not resolvable live files. Repair current-facing references inside `.mem` only with the repository's canonical framing law/checksum validator; no unsealed carrier writes were attempted.
-2. **Consumer safety:** inspection of PR #84's changed non-Markdown/non-`.mem` diff showed no new references to `docs/*.md`, but that is **not** a complete repository-wide static/dynamic consumer census. A full search of the current working tree and external links remains required before asserting zero broken consumers.
-3. **Exact-head validation:** no local architecture, native CAD, held-out witness, Blender, OpenUSD or whole-repo test run was executed as part of the fire. Older successful runs do not transfer to the new head. Observe and fix CI at the latest commit before feature acceptance.
-4. **Design dissent:** do not rewrite the prior reconstruction-first position as if it never existed. The later research recommends bounded mutation of a complete native-admitted parent region first, while semantic reconstruction remains a subsequent strategy; neither is an independently admitted three-epoch child proof.
-5. **L-prime:** historical Markdown and ashes ledgers belong to Git, not recursive live prose. Keep this handoff short and evergreen; prefer code, tests, actual evidence and the correct Lares semantic owner for future substantive state.
-
-**Yield:** Documentation retirement and Git preservation only. Operator still decides code retirement, architectural promotion, selection, and canon.
+**Yield:** Git holds the old words. Lares holds live intent. Source and native tests decide what actually exists.
