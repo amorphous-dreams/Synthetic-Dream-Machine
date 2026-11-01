@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/protective-optional.mem"
 mana      = 14
 manao     = 15
 manaoio   = 13
@@ -67,6 +66,6 @@ If the parameter is optional and a real outside consumer needs the default, that
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;LGElCeShpbY5buueLlmbaqDbEmNOxRFJVVu0lmTMaeQ
+<<^ code=`&#x0003;`>>ni:///sha-256;6Jvaw-_K4b6ck9oWkSjoVEGw0S29FdgfFO3w1qAbHIE
 
 <<^ code=`&#x0004;` to=`?`>>

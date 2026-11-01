@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/lar-uri-namespace.mem"
 mana      = 19
 manao     = 18
 manaoio   = 18
@@ -116,6 +115,6 @@ a network hop for DID resolution but the content itself is local (CRDT store).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;YuEGoKh2ND_cBXezZ5LE-_uB1yqsey4M-OlbmSZYb6A
+<<^ code=`&#x0003;`>>ni:///sha-256;3UQWuLFM_vF2DrO1NASQWyxLWC98oR1wmXOJwDMs0z4
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-fae-clans.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 15
@@ -124,6 +123,6 @@ and reads as an outrage to anyone who does not.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;nHsUv8iDgf-G3Wt2o7iKO1qGXd4JuZK_DEBO08OR1p8
+<<^ code=`&#x0003;`>>ni:///sha-256;RGqWjXUGcilvW9LJp_C9X6rd2qDrTCO_quRZ6HdZr2Y
 
 <<^ code=`&#x0004;` to=`?`>>

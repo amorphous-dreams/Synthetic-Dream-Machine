@@ -20,7 +20,6 @@ They arrive already moving.
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/mu.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 17
@@ -107,6 +106,6 @@ Mu does not hold:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;V3oKpRRSjDpF6gCxVPuHHPJLnSQ7srZtqzfoWHuwNt4
+<<^ code=`&#x0003;`>>ni:///sha-256;WN2emspLXNYJcOvwmGwy8lI_ZYjixTYUichHkF6B008
 
 <<^ code=`&#x0004;` to=`?`>>

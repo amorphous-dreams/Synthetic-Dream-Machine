@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/place-floor-pin.mem"
 l-space     = "lararium"
 mana        = 14
 role        = "invariant law: the FLOOR PIN CLAIM. A place claims this exact gate pin at one head of its own KEL (place AID, seq, event digest, Nexus, tier, route), signed through its scoped signer under the place floor pin duty, and the reader resolves the signer at the named head. KEL descent orders the pin: a descendant claim replaces, a known ancestor refuses, a fork surfaces, arrival order selects nothing. The place's standing is a counted carry of the signer at the head, or an anchor conveyed apart from the card. Under the house ruling \"The admit's gate pin\"."
@@ -111,6 +110,6 @@ counted `uncarry` that descends from it leaves the place with no arm to present.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/carry-bundle`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;6h2cZmxsVh051mr8ls3q91riVS23tMbuYlwCUZJX6-w
+<<^ code=`&#x0003;`>>ni:///sha-256;d9j00zkrPYA2cW4SccT3Pqu0QCte44OcCx9wt2pTbD4
 
 <<^ code=`&#x0004;` to=`?`>>

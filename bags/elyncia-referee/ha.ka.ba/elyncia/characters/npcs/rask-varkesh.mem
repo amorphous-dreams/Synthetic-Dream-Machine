@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/rask-varkesh.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -174,6 +173,6 @@ Run these fast; they’re competent but not heroic.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;lRRQ3Vi-aDA9Pf7axcqDxabNp9R96QwsKsx1UdvVRMs
+<<^ code=`&#x0003;`>>ni:///sha-256;c6WoRKMFql1Vb3wP_y9g4ehjAENLMo3kp3bgbJriUbs
 
 <<^ code=`&#x0004;` to=`?`>>

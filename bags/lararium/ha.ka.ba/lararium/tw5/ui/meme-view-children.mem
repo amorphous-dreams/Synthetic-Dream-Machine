@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/tw5/ui/meme-view-children.mem"
 list-after = "$:/core/ui/ViewTemplate/body"
 mana       = 18
 manao      = 17
@@ -63,6 +62,6 @@ uri-path   = "ha.ka.ba/lararium/tw5/ui/meme-view-children"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;G09LrMTZw742Whd0Dp1f9KYc29mQjDRO3LH3UhHlSR4
+<<^ code=`&#x0003;`>>ni:///sha-256;6o_W92YyO0aOpMsxQmBI6nLzRCSk103iLpZNYCG8e_E
 
 <<^ code=`&#x0004;` to=`?`>>

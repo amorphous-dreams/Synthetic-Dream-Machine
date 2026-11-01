@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal/hud.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 16
@@ -63,6 +62,6 @@ The instrument grammar itself stays in the pair; this room holds only the signal
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3dzBCZdc4bIIhXGEbch0P99Afcje4rd2Fp-iarHrz1A
+<<^ code=`&#x0003;`>>ni:///sha-256;1OKG7e3CC2jbgXZ6jhLDvLkabdFO6IYf_Gg2EsniJos
 
 <<^ code=`&#x0004;` to=`?`>>

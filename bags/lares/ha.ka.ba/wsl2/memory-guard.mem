@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/wsl2/memory-guard.mem"
 l-space    = "stable"
 mana       = 12
 manao      = 14
@@ -85,6 +84,6 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;w4bSsh5P2MBvS00G-ohe8ptyEatdXiyoGSBz9DmRzd4
+<<^ code=`&#x0003;`>>ni:///sha-256;hrbswSg6PwDk1V-KM7-p9zbxpCwLZyHGFsTFMF7IQUU
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/cli-test-laws.mem"
 l-space   = "adjacent"
 role      = "the lares CLI's test architecture: the pattern integrities the suite defends, each tested as a law over inputs drawn from the live tables, its literal bug-finds kept as seeds, a known-positive control beside every zero; the census, the module shape, the migration, and the holes the laws name"
 status    = "draft"
@@ -104,6 +103,6 @@ Generated laws draw from `fast-check` through `@fast-check/vitest`, the literal 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tGFTTYg5wahXXQs-Jo2voFSMiAs6gibBq7_tykHqdUM
+<<^ code=`&#x0003;`>>ni:///sha-256;tqXIpNi8k7_JvHwM4VkgtG9owDa6ZNkGAHABQ6QCtWI
 
 <<^ code=`&#x0004;` to=`?`>>

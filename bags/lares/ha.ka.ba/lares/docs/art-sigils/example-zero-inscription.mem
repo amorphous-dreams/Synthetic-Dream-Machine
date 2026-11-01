@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/docs/art-sigils/example-zero-inscription"
-title     = "lar:///ha.ka.ba/lares/docs/art-sigils/example-zero-inscription"
-file-path = "bags/lares/ha.ka.ba/lares/docs/art-sigils/example-zero-inscription.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "portable, invocation-only Example Zero art inscription"
-status    = "stable"
-retain    = true
+uri-path = "ha.ka.ba/lares/docs/art-sigils/example-zero-inscription"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils/example-zero-inscription"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "portable, invocation-only Example Zero art inscription"
+status   = "stable"
+retain   = true
 ```
 
 <<~ ahu slot=`#/inscription`>>
@@ -72,6 +71,6 @@ The invocation alone can provide meaningful artistic direction to an image model
 The compact invocation names the primary visual intention; the accompanying Folio expands distinct questions, material behaviors, viewpoints and sources. Source URLs and artist names guide visual interpretation but need not enter the rendered picture as labels. Neither the invocation nor its prose expansion certifies traversability, relic identity or fictional canon.
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;WDpiU_Z3dT8pJah81JvMDrFxsmPQdRjzf3j9ue00R3M
+<<^ code=`&#x0003;`>>ni:///sha-256;5TQBdWXeNCp1GskGy1Un3KHaC49R-vRsX0YtyMRx03I
 
 <<^ code=`&#x0004;` to=`?`>>

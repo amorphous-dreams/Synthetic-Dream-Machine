@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/lele.mem"
 namespace = "&#x2299;"
 role      = "structured fire-and-continue sigil — lele as Verse branch; English alias: branch; async-first concurrency sprint pending"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-lele"]
@@ -63,6 +62,6 @@ A lele edge MUST NOT wait for a response from the target.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;zNHVbZ9lf_SV5lxF79hZJiua-4Ok1nbsRqySFfy0Joc
+<<^ code=`&#x0003;`>>ni:///sha-256;EE8AjRAP8RmTNBHf3-5z2DhvRm2yEYfqV6GaJe5_of4
 
 <<^ code=`&#x0004;` to=`?`>>

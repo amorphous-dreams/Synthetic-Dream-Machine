@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/guest-grammar.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -94,6 +93,6 @@ The current shape keeps:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;LG5QnNVXBuRXWfVgbJX4ZdoVrRaCMRQN36ACwCpLioU
+<<^ code=`&#x0003;`>>ni:///sha-256;U7YzAXcz_GKFlfx8KgwK6lHFDl2bvDdHTLJJ6oNojzM
 
 <<^ code=`&#x0004;` to=`?`>>

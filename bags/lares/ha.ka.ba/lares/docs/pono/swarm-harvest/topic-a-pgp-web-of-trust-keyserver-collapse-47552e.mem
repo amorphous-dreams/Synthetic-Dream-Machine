@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-pgp-web-of-trust-keyserver-collapse-47552e.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -187,6 +186,6 @@ Brave Search returned HTTP 429 on every attempt across the whole session, and `r
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;fv9AqVPOnpQK0tKNN8bzjrc5nks8w5MyPbu6MoUStsA
+<<^ code=`&#x0003;`>>ni:///sha-256;TSssU-cAQqeo1cAQeAkoWyP2eiojJ79KM5o11YrdgOc
 
 <<^ code=`&#x0004;` to=`?`>>

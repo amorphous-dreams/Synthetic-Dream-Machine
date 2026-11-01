@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/hui.mem"
 namespace = "&#x2299;"
 role      = "await-all synchronization sigil — hui as gathering; English alias: \\sync; async-first concurrency sprint pending"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-hui"]
@@ -68,6 +67,6 @@ A hui block MUST propagate failure from any child flow to the containing flow.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;DDlOQD3FZuDDPcOUMI-3_krGUQ9AdyKSWaQ4UaMIc_A
+<<^ code=`&#x0003;`>>ni:///sha-256;PhncGHqtHV5A1pICxof0A2e1tsWIgKgY-WvkisVNaMk
 
 <<^ code=`&#x0004;` to=`?`>>

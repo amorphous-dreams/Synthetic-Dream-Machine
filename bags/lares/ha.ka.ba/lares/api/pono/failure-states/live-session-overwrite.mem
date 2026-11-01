@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite.mem"
 mana      = 16
 manao     = 17
 manaoio   = 14
@@ -82,6 +81,6 @@ If the node records the claim and marks promotion pressure separately, boundary 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;wv7p3QF41hU8QMU0uHdZemhc8ht1oafkHZArxrgZqqs
+<<^ code=`&#x0003;`>>ni:///sha-256;Nd96ndtT9S52tMxHohX_4X6xUZtZ-yINZQiLwDojuFQ
 
 <<^ code=`&#x0004;` to=`?`>>

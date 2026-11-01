@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/parser.mem"
 l-space   = "stable"
 mana      = 18
 manao     = 17
@@ -204,7 +203,6 @@ Canonical form:
 
 ```toml meta
 uri-path  = "..."
-file-path = "..."
 type      = "text/memetic-wikitext+tiddlywiki"
 ...
 ```
@@ -257,6 +255,6 @@ Consumers: island adaptor (`island-adaptor.ts`), deserializer (`deserializer.ts`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;wiRg7xq9ZW0dra5dOUbIwBD5HJbHOd_p55mx2MIwlL0
+<<^ code=`&#x0003;`>>ni:///sha-256;3oQSQ-7NCBtwLZ5En0xC5P9B2Ayz4fseWd8_SUUiGnw
 
 <<^ code=`&#x0004;` to=`?`>>

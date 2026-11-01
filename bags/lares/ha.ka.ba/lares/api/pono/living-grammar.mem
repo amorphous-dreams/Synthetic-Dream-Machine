@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/living-grammar.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 18
@@ -164,6 +163,6 @@ seven substrates.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;6wYFZQVgKQSsqSIcLEVisqW4qtUDhcT3cjB-a6ofNwA
+<<^ code=`&#x0003;`>>ni:///sha-256;bb--PWd91wU6cdXkQLmbN-RtSrYlFp1R5j4RsC4I3R8
 
 <<^ code=`&#x0004;` to=`?`>>

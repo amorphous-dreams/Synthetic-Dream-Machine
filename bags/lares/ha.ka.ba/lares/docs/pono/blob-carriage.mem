@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/blob-carriage.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 13
@@ -227,6 +226,6 @@ What moved: decode-before-hash in `cas-stage.ts` (+ `declaredType`); `ridesAsPoi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tOutBR8rE_byoV9X5aWKRFcnfK-b08iJl_pX3XqRJyQ
+<<^ code=`&#x0003;`>>ni:///sha-256;ZLfG3KyR4BmATJxkOGLdIU2RUVsI8TtUy67vvaxmuA4
 
 <<^ code=`&#x0004;` to=`?`>>

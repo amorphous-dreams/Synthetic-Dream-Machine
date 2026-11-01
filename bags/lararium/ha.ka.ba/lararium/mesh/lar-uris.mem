@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/lar-uris.mem"
 l-space     = "lararium"
 mana        = 14
 role        = "invariant law: the lar: URI constants and builders. Names the STABLE l-space against the volatile VM scratch space, the three predicates and what each answers (NAMING never federation), the bag/wiki/cid segments, and the dispatch marker whose absence — not presence — is the safe reading."
@@ -65,6 +64,6 @@ machinery-written fields would admit anything the machinery could produce.
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/one-name-one-relation`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FtHBd6zPHj2ZwL6Kl5vTAsk7qcfRClUlAoWbXvumE2U
+<<^ code=`&#x0003;`>>ni:///sha-256;833GTYe6U9idQvep6-e9LT3N6633ycy64cA2ehiK5cE
 
 <<^ code=`&#x0004;` to=`?`>>

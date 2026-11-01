@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/node/genesis-artifact.mem"
 l-space     = "lararium"
 mana        = 3
 role        = "self-documentation: TODO describe genesis-artifact.ts"
@@ -21,6 +20,6 @@ TODO: describe the load-bearing surface this file owns.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;oohnkmPhPu7tnGfpeijuJgOr8eiNYogeMBbUGuyVTAU
+<<^ code=`&#x0003;`>>ni:///sha-256;oyHpCGQ_4PTFDlU7oT8xjIen_z8ZXOB_hsSXni11Fys
 
 <<^ code=`&#x0004;` to=`?`>>

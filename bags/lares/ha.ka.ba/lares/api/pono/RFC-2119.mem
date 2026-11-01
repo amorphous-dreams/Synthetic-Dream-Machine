@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/RFC-2119.mem"
 mana      = 18
 manao     = 18
 manaoio   = 18
@@ -61,6 +60,6 @@ Carrier laws may explain local usage, but MUST cite this meme rather than re-dec
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;k0gG1URY_QoeehhLvgHY6DhvhcPQUu_CEXxCN-e6zbU
+<<^ code=`&#x0003;`>>ni:///sha-256;bpBHB6qIj-fRdZQymDF04LNe0wZQrOEcrTRXjJmW5Rg
 
 <<^ code=`&#x0004;` to=`?`>>

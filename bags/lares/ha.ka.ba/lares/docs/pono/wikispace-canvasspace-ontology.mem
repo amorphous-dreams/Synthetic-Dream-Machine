@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 16
@@ -248,6 +247,6 @@ When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;NtE95b9z_kmVSaRU-pnmMujOCVLhq_Pw9XwDpPczcDM
+<<^ code=`&#x0003;`>>ni:///sha-256;iDPhZ7XkEGitSkt7JgtWMWglrAX0iNWRWhgE4Hah3Y4
 
 <<^ code=`&#x0004;` to=`?`>>

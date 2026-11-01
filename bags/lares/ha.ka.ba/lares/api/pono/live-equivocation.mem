@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/live-equivocation.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 15
@@ -118,6 +117,6 @@ to refresh.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;aGewT_IY5DVElRT0Dw0OUPqmWavMsQM6RHgmAQfgwg4
+<<^ code=`&#x0003;`>>ni:///sha-256;l3JVKrA_GhKHTsJDjFPCGbn-UGb_ZuW5ltayL9qilEs
 
 <<^ code=`&#x0004;` to=`?`>>

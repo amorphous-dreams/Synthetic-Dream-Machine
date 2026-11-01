@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/ichi.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -372,6 +371,6 @@ See ''Powered Symbiote'' (1 st).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;wWfOH_IJZRgB1QFFkJBd_GaCl3ikJ3ERJGJ4YYKlpYc
+<<^ code=`&#x0003;`>>ni:///sha-256;sTq63AFm40j3eCyKAWT7-e_kpRMp94FHb6DbAo1ZXOE
 
 <<^ code=`&#x0004;` to=`?`>>

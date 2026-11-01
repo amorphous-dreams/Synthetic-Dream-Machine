@@ -8,7 +8,6 @@ cacheable     = false
 l-space       = "adjacent"
 render-target = "docs"
 role          = "VERBATIM custody-per-face wave-two handbacks (four Luna-6 YIN and YANG rounds, 2026-10-19) — Markdown transliterated only; source wording retained; round four outranks the earlier rounds"
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face.mem"
 title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face"
@@ -1471,6 +1470,6 @@ Current seed's direct and derived uses exceed the candidate's “place acts only
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Bw0CWNiyTER7QMhjoGlNpeI8383rQ3SFFBFtN7F8FhM
+<<^ code=`&#x0003;`>>ni:///sha-256;FoPPeaniFGSMgrSph8pH-Tkr94tCPp2EvBo8r-ByrEk
 
 <<^ code=`&#x0004;` to=`?`>>

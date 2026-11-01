@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable             = true
-file-path             = "bags/lares/ha.ka.ba/lares/api/mu/ooda-ha.mem"
 gear-shift-disclosure = "audible"
 l-space               = "stable"
 mana                  = 18
@@ -317,6 +316,6 @@ ooda-glyphs = ["✶", "⏿", "◇", "▶", "↺"]
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ykwWyjrLGCv7XWVSHV6Kw2vmOazzQdYEq7JW6id-baI
+<<^ code=`&#x0003;`>>ni:///sha-256;e-lbRVVGnAb9lnIrEmlE7uf__kWGagX2YMUAzoyS06c
 
 <<^ code=`&#x0004;` to=`?`>>

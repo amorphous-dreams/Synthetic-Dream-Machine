@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/cli/reality-tunnel.mem"
 l-space   = "adjacent"
 role      = "the radius law and the operator's declared reality tunnel: what the checkout and every operator home on the device hold, read by `lares repo` and `lares home`"
 status    = "draft"
@@ -337,6 +336,6 @@ what = "`lares` answers on the operator's path"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-TFq7KA9w2NDHM6TK25oMVbhQ0gKAj2xQot8iwJCPlM
+<<^ code=`&#x0003;`>>ni:///sha-256;wB2YUWVZDWkfFl9q61zLLOjJC1pJKRjmGtCa6DX5iVg
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/mandate-activity-provenance.mem"
 l-space   = "stable"
 mana      = 19
 manao     = 18
@@ -86,6 +85,6 @@ The fiction failure modes serve as test names, not authority: False Archive test
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;d-GUWSNfLsPEWeIIR0Ana7trjqVGphlFi4ahJvS9sJ0
+<<^ code=`&#x0003;`>>ni:///sha-256;bPbg-CfyuvMUr7UE-nBJksLM7NAcAz3GF6_cw6tBI0A
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/docs/catalog-doc.mem"
 l-space       = "stable"
 mana          = 18
 manao         = 17
@@ -58,6 +57,6 @@ Wiki leaves use `wikiBagUri(slug) = bagUri(slug)` as catalog keys (`packages/lar
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;JTuWEWtxUGz3JGjt1Ibm3jAOT_csvoxFkGAqSbK6ucw
+<<^ code=`&#x0003;`>>ni:///sha-256;nmbNjrGrKJtzvuQ-lchrcVJ4KLW8EkCJUV2MfRX3USc
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k17-realm-lease-lane.mem"
 l-space   = "adjacent"
 role      = "the K17-R lane's kit: one lease law on the realm boards: every lease epoch rises only on a signed advance, a realm's advance signs as a quorum under each epoch's roster, and the realm boards' frontiers widen K17 as the fleet board's do"
 status    = "draft"
@@ -57,6 +56,6 @@ Reds: an unsigned advance on a realm raises nothing and a threshold hand raises 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ZFFBeyUCTybnWkwYPKBo4Jcb_oqZLIaYe9GfKT9prXk
+<<^ code=`&#x0003;`>>ni:///sha-256;UULwKTv2phtYi3ocw1gEYXHoNDq4886Yjt5ox4Leri4
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/kumu.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/kumu"
@@ -58,6 +57,6 @@ An unresolved name renders `<span class="lar-kau-hole">` at the placement site, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;sjjT4GeGxpGhuEnl5C0e_xlNm7CbUM3SS67B8eiaUwM
+<<^ code=`&#x0003;`>>ni:///sha-256;vBj1vJf-eh_WKQzgVkXOj5Efbnjr_q-AMs3om81i6m4
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/cache-stable.mem"
 mana      = 10
 manao     = 10
 manaoio   = 10
@@ -100,6 +99,6 @@ Cache-Stable-compliant memes MUST fill the OODA-HA phase line with their own pre
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;AsuJ0nw_rZ-qv3XMhg_s8nXXSDLLecEmyu_FdbXbx7w
+<<^ code=`&#x0003;`>>ni:///sha-256;Kl2n9qJUf9kVmzEB26kyTJ6FlNXgL-7oUOeTHIJdlB8
 
 <<^ code=`&#x0004;` to=`?`>>

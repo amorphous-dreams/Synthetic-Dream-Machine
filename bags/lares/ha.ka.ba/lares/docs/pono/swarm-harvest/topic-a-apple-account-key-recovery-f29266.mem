@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-apple-account-key-recovery-f29266.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -169,6 +168,6 @@ Source: [signal.org/blog/secure-value-recovery/](https://signal.org/blog/secure-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;1OBMhou7-QBCzikRyEvb3a0xHrfPDEWP0VnLY2OCJsE
+<<^ code=`&#x0003;`>>ni:///sha-256;O5g-Cw3Zbkmc8YqqEgQ5EFquF6KEFWFqyMfplq7tHgc
 
 <<^ code=`&#x0004;` to=`?`>>

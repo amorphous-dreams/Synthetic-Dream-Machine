@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/projections/powers/ftls-card/shield-ward.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -57,6 +56,6 @@ A barrier less than an inch from your skin, moving with you. Strong cover agains
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;WHrQrHCOf_z0OtALZ6asTtWlmwJ1nwX8lVaY7rtQhMQ
+<<^ code=`&#x0003;`>>ni:///sha-256;0GsxOXDMKNcTrBggU6HxoFz7Z9KU1JbXi894AkeBbvM
 
 <<^ code=`&#x0004;` to=`?`>>

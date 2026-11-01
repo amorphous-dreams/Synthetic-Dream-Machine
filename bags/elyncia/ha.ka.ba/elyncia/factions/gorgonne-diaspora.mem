@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/factions/gorgonne-diaspora.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
@@ -55,6 +54,6 @@ rigged with cloth, and a crew's toasts run in rounds, in sequence, by rank.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;nTzWI65d0SlGVYemT61T_UywfcaMNud3umnhd3tCy9A
+<<^ code=`&#x0003;`>>ni:///sha-256;zCj75_Piwj7lVEIgPoc-NrxpC1-uOei16GlvEIEHqgk
 
 <<^ code=`&#x0004;` to=`?`>>

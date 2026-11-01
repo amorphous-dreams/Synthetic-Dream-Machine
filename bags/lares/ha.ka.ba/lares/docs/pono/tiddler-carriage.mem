@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/tiddler-carriage.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 13
@@ -136,6 +135,6 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;kQkuJ1mlVVJyo8PajvAbxyVnO6GZRjeFr4XE7MMAuDw
+<<^ code=`&#x0003;`>>ni:///sha-256;7GC5PH6dSLNpMVuXLYINKYpBsBar3TF7IByE6L1IoUc
 
 <<^ code=`&#x0004;` to=`?`>>

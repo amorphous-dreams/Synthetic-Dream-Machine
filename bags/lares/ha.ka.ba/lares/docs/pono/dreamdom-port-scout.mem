@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-port-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -95,6 +94,6 @@ I could not write a `-o` file: no output path appeared in the request, and this 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9W5PUekWVHNW3R8cF90ddRf2ThH-HrJheR1HPWu7N5g
+<<^ code=`&#x0003;`>>ni:///sha-256;GISxDFTPId6wcB4uuOdz7nA_dYbA-7BFkrWMenl7tlo
 
 <<^ code=`&#x0004;` to=`?`>>

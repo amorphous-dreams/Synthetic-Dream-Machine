@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/device-capabilities-2026.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 12
@@ -244,6 +243,6 @@ Owed measurements: owner-kill, one-tab lock fallback, long background, PRF deriv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;smL-SK5MS2zlQl1KyT9qzx8obpTwBFHuXCmWY4g0hrE
+<<^ code=`&#x0003;`>>ni:///sha-256;o1zdJZH8JIIyG91rLzc-Kyn4YW-LcKTeF-0CorZt-7E
 
 <<^ code=`&#x0004;` to=`?`>>

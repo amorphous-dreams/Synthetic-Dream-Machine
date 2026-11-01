@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/RFC-2119.mem"
 role      = "docs companion for RFC-2119: online references, verb definitions, and IETF provenance"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/RFC-2119"
@@ -75,6 +74,6 @@ The stack does not import the full IETF RFC format — only the modal-force voca
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;gjYUxDxFVVqydjuocwpMGK_6t1EMHOr0ok5g0nff6Ns
+<<^ code=`&#x0003;`>>ni:///sha-256;HAzOnwPqak3teCJZ9aWPKbQGa4wWvH7rSr6QDmHBCrc
 
 <<^ code=`&#x0004;` to=`?`>>

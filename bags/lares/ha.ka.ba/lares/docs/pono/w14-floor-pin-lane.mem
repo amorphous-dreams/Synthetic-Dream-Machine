@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/w14-floor-pin-lane.mem"
 l-space   = "adjacent"
 role      = "the W14 to W16 lane's kit: the floor pin claim a place signs at one head of its own KEL, the pair index that orders pins by KEL descent as a set, the floor card that carries the claim and never anchors itself, and the carry that lands act and claim in one write"
 status    = "draft"
@@ -67,6 +66,6 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;I7qPRMomQcFi5lkcE39EYkwnshP6q1oBOz_8u2UiiEQ
+<<^ code=`&#x0003;`>>ni:///sha-256;9Ejtf5nQBDxD7V3fUJODOpUaYqMQx36kQUyaxhvxp6g
 
 <<^ code=`&#x0004;` to=`?`>>

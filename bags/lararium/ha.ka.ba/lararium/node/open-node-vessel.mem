@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/node/open-node-vessel.mem"
 l-space     = "lararium"
 mana        = 15
 role        = "invariant law: the Node vessel factory — a thin opener over the composable keel. ONE preparation, TWO doors: a HEARTH lifting the caps a face carries, and a CROSSROADS serving an HTTP floor with no wiki and no pool. The node vessel holds NO semantic privilege — roads, docks and sync only; live VM state lives in sovereign islands."
@@ -56,6 +55,6 @@ second Node into code that claims isomorphism.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/open-vessel`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/causal-island`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;dQ46Q6UohG3yoVHgTb29TzCsFtJ_FCCe95hylloNNSs
+<<^ code=`&#x0003;`>>ni:///sha-256;1CXDt2kmvhppayMqaBq1jOVWg8qHPSFQvLncTGrDHiE
 
 <<^ code=`&#x0004;` to=`?`>>

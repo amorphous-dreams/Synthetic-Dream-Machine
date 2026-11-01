@@ -4,7 +4,6 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path   = "bags/lares/ha.ka.ba/lares/docs/graph/artifacts.mem"
 l-space     = "stable"
 mana        = 17
 manao       = 17
@@ -305,6 +304,6 @@ Full boot may trigger compaction once the relation expansion reaches larger grap
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;P15pKnzjWmEOMXkRqez5WUAAENeEvEqOAzgczt2ukbQ
+<<^ code=`&#x0003;`>>ni:///sha-256;E3vD0Rht_vPFAGSDXpxBaKf9aG0MhoDfe0R-00BogSE
 
 <<^ code=`&#x0004;` to=`?`>>

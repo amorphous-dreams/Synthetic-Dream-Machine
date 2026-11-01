@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout.mem"
 hydrate    = true
 l-space    = "lararium"
 mana       = 14
@@ -208,6 +207,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;a3I1i3oQ_ZORCwkNXJxE_NyQK1OvleuggNjuTbhv66s
+<<^ code=`&#x0003;`>>ni:///sha-256;6WLQQfl5-qZQlFaL4W2rmnPRMwBq-vk_MfSEUwiTijw
 
 <<^ code=`&#x0004;` to=`?`>>

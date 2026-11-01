@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -231,6 +230,6 @@ Current answer: yes, provisionally.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;AOHfuTbfa265cRdRbdpev9PUYHOKx0dsET-eRk62B38
+<<^ code=`&#x0003;`>>ni:///sha-256;9dEysvloi7D5hOQ2v7dO3dfXHEnRoZukEBwuYvu_8Cc
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable      = false
-file-path      = "bags/lares/ha.ka.ba/lares/docs/the-lares-protocols.mem"
 l-space        = "stable"
 last-reviewed  = "2026-05-27"
 mana           = 14
@@ -182,6 +181,6 @@ These questions don't get answered by adding more architecture. They get answere
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;1oWW-3WCBZZNWwXtvoaSwTc4-ZH6gdW3J9qwNgOxhHw
+<<^ code=`&#x0003;`>>ni:///sha-256;tbmhEyfSo0dIR33AlbszuA7bRx67GsGY5NsV6M05R1A
 
 <<^ code=`&#x0004;` to=`?`>>

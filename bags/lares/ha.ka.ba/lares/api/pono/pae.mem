@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/pae.mem"
 mana      = 18
 manao     = 17
 manaoio   = 16
@@ -129,6 +128,6 @@ EOT pushes off — the carrier releases the channel and the current takes it.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3mC5N4VE89cX2rvD2ZHDQEFfCTS4qJ43VDcJr3aFlJE
+<<^ code=`&#x0003;`>>ni:///sha-256;eM_Pzq2soKbQcll2htXkRR5nhukeP6X26YKLxJOrUUA
 
 <<^ code=`&#x0004;` to=`?`>>

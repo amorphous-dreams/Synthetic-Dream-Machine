@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/daemon-surface.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -174,6 +173,6 @@ Later that day the hearth-wiki itself boots with one dead module. The island kee
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;jE4sUXK10SmmUQrc-1M7n5UIlTqtmApCnU7vwH1aROI
+<<^ code=`&#x0003;`>>ni:///sha-256;-q8DlO3SvrII_GdtyMl00lHiezVrpu2VVE4YWsB7K6g
 
 <<^ code=`&#x0004;` to=`?`>>

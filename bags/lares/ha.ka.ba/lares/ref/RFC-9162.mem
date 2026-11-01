@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable      = true
-file-path      = "bags/lares/ha.ka.ba/lares/ref/RFC-9162.mem"
 mana           = 14
 manao          = 14
 manaoio        = 13
@@ -43,6 +42,6 @@ Obsoletes `lar:///ha.ka.ba/lares/ref/RFC-6962`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;fqgwJl0AWqUra6eL2hIO-_FohDjrJ95p35Dj3AcLlpQ
+<<^ code=`&#x0003;`>>ni:///sha-256;vPGiRCvCIpDDqig2CQ33NPSvHbOThqxZ6cK9Q_N0jQ8
 
 <<^ code=`&#x0004;` to=`?`>>

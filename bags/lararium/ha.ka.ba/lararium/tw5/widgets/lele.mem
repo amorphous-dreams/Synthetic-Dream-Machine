@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/lele.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/lele"
@@ -57,6 +56,6 @@ The declaration rides in `packages/lararium-tw5/tiddlers/sigil-lele.tid` with `l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;DIjpzh0BXFr4_fO-tnO8EpBM43zQigMh2YhKP3RdMNM
+<<^ code=`&#x0003;`>>ni:///sha-256;gUIHLo973CLPQ4FELP0wql6lR7qZ6pJ74IlPpMz_FWQ
 
 <<^ code=`&#x0004;` to=`?`>>

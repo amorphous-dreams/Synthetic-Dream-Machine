@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/pronaos.mem"
 hydrate    = true
 l-space    = "lararium"
 mana       = 15
@@ -406,6 +405,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Za_DlfVHvV1RxBR-6l-iAUrgqWUjo9AZhoH5MIrqg0g
+<<^ code=`&#x0003;`>>ni:///sha-256;r-noTS2bwHSBi1IkE6BGfPdMRSyHLIVN5ZYsnW3QeOw
 
 <<^ code=`&#x0004;` to=`?`>>

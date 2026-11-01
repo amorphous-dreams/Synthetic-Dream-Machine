@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/witness/abilities/uvg-bestiary/neural-whip.mem"
 l-space   = "sdm"
 mana      = 11
 manao     = 16
@@ -66,6 +65,6 @@ The v0.1 ''Neural Whip'' module abstracts the creature's signature tentacle into
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Hg5bsfNyAyqhHUt3hPTaSEDv-Vpf3KI7Nbi4OSaHr2I
+<<^ code=`&#x0003;`>>ni:///sha-256;6IMLB6_dMFXUWnLJ8McG_fzPUXkwMIgTaiKyjokyWiU
 
 <<^ code=`&#x0004;` to=`?`>>

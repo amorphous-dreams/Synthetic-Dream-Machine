@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/for.mem"
 mana      = 18
 manao     = 17
 manaoio   = 17
@@ -30,6 +29,6 @@ rendering a body template once per result. Use whichever reads more naturally in
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;4GMxLtBLsveqY3DmTjDs9HGUYGgI5zwBKiKRL47CWqw
+<<^ code=`&#x0003;`>>ni:///sha-256;qmP97J_NGF5msaS_gYun5HQTW6BdE9nxcofSgLAjvYs
 
 <<^ code=`&#x0004;` to=`?`>>

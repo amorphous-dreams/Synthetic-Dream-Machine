@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/witness/powers/osr-spells/read-magic.mem"
 l-space   = "sdm"
 mana      = 11
 manao     = 16
@@ -91,6 +90,6 @@ The spellcaster may read — not speak — magical words or runes on scrolls and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Ap0H9wn7qlK4I6C4aI2zJu8GebpvlqGpHQ36GnUjwEU
+<<^ code=`&#x0003;`>>ni:///sha-256;Tf5fQ1ewFPg0Jp1V15b-smfp0Z_f1oqwcuGQhdtaQb4
 
 <<^ code=`&#x0004;` to=`?`>>

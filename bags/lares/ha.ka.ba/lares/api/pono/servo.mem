@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/servo.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 17
@@ -188,6 +187,6 @@ TS/py shore; the polarity law and the two-loop shape hold identically wherever t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;gFer3_-UD-PwyqP2g0qA-UbFYnrmJFz9rHkzrSiHnBA
+<<^ code=`&#x0003;`>>ni:///sha-256;P_2TMeqpJ039gIoGqzL8auK3s0WcIBLV0Co1lujjqPk
 
 <<^ code=`&#x0004;` to=`?`>>

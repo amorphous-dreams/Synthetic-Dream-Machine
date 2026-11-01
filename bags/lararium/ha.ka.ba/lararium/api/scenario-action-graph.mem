@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/scenario-action-graph.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 16
@@ -64,6 +63,6 @@ Mandate, activity and result stand as distinct records. Human, agent and workloa
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;hhqP627VfLmHIIuZ8lzTTN23w7ocrMUz4FYluQWz6AI
+<<^ code=`&#x0003;`>>ni:///sha-256;q8g-0UAsf5JMqDiZzuRGO7y6lI3-BArxz7pG2xEDX0Y
 
 <<^ code=`&#x0004;` to=`?`>>

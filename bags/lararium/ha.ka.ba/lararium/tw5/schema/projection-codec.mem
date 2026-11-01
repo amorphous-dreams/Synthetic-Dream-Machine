@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/schema/projection-codec.mem"
 l-space     = "invariant"
 mana        = 18
 manao       = 18
@@ -108,6 +107,6 @@ composeCarrierSlotBody(fields: Record<string, string>, text: string): string
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;eA33fFZYgeqcBkST7sYtzyjj7Y_xZJvcakDlCrrmDcg
+<<^ code=`&#x0003;`>>ni:///sha-256;lsrydtqHoCIt8shzBgZE5ZJ-xhQy0r-a38rLzZ5bxAM
 
 <<^ code=`&#x0004;` to=`?`>>

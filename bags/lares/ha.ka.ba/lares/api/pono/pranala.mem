@@ -6,7 +6,6 @@
 ```toml meta
 cacheable       = true
 canonical-forms = ["inline"]
-file-path       = "bags/lares/ha.ka.ba/lares/api/pono/pranala.mem"
 mana            = 15
 manao           = 16
 manaoio         = 14
@@ -80,6 +79,6 @@ The typed-edge law divides in three: ''composition'' rides the meta `tags` field
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;o8MlNMckqRy7gRsJeN2OAXnUgST_IMSOkZdFE29eUHI
+<<^ code=`&#x0003;`>>ni:///sha-256;iNKGMhS0DJHbUkt0kmG9bFiUZ0eNPUqlx3UXuD-Q4yU
 
 <<^ code=`&#x0004;` to=`?`>>

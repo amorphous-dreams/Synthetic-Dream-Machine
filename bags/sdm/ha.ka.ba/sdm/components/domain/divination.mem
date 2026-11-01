@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "divination"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/domain/divination.mem"
 l-space   = "sdm"
 mana      = 13
 manao     = 16
@@ -71,6 +70,6 @@ Pairs with `function/ecm-scan`, `function/magic-decode`, and `function/archive`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Tti22RqZRm4bEkO6oAb-EuLYNlSNqaNAj9x3m1aM-S0
+<<^ code=`&#x0003;`>>ni:///sha-256;yb3V6iWJ8fm8MWt_psl_5XXTyiZLhC2fdJ4bQO3xItU
 
 <<^ code=`&#x0004;` to=`?`>>

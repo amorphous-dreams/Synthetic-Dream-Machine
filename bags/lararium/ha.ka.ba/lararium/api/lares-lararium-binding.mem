@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/lares-lararium-binding.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 17
@@ -168,6 +167,6 @@ the `status` residency probe passes a non-did `requestedBy` and cap-errors quiet
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;IfZXkikI5f3WT5zSj3Ph6gKQnyXSM1Xu2WeSyuhvuFA
+<<^ code=`&#x0003;`>>ni:///sha-256;zoTELFimDJj-eAKDWD93dkAa4shzpjrZ_aOwUcOqilw
 
 <<^ code=`&#x0004;` to=`?`>>

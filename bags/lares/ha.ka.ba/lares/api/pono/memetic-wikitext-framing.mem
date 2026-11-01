@@ -9,7 +9,6 @@ cacheable     = true
 cat           = "info"
 date          = "2026-10-03"
 docname       = "draft-fontany-memetic-wikitext-framing-00"
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext-framing.mem"
 ipr           = "trust200902"
 l-space       = "stable"
 mana          = 19
@@ -1291,6 +1290,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;PMz9Jt66-s1YGSnlseVNRh_KfMyOlnw09i9_Jhj_TpQ
+<<^ code=`&#x0003;`>>ni:///sha-256;kEdAU4BsWNj5WvlA-LJXfe2jDTdugxlyfofF2Oze3AY
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/verse-event-lattice.mem"
 l-space     = "stable"
 mana        = 18
 manao       = 18
@@ -367,6 +366,6 @@ via TW5's own event bus.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;N_v1IL-u8Ovek9bd3YbzSEut5gA5G2DudJTvzlu7UaU
+<<^ code=`&#x0003;`>>ni:///sha-256;eyUjGd4W9hc9LA_0K_Mt3QGInpAVYcvATYhjePFxS4s
 
 <<^ code=`&#x0004;` to=`?`>>

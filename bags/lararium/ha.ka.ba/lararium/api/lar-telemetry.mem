@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/lar-telemetry.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 18
@@ -231,6 +230,6 @@ readings AND the form-capture both drain the one emitted-marker stream, no disco
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;oKwGG0XqdWHyZxqaCwLOjz79mtmXauKLBcgMVraBC6Y
+<<^ code=`&#x0003;`>>ni:///sha-256;tAcotlYJk5S94vfkci4aiYcOVj5QoIH3J8W40CGyCHk
 
 <<^ code=`&#x0004;` to=`?`>>

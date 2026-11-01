@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/a-android-53d76a.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -459,6 +458,6 @@ Two further asymmetries worth stating separately. **On Android the owner's power
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;PseI03SJtcPMm7orfS5he03QsNExq8I2tfc5H5D_9Xc
+<<^ code=`&#x0003;`>>ni:///sha-256;a0bSg37xTWkZDeLwgl8XLyMpf2_EUia2AYhO1M44N_s
 
 <<^ code=`&#x0004;` to=`?`>>

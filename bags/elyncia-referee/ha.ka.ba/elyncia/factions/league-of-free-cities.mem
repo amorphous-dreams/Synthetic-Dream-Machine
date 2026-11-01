@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/factions/league-of-free-cities.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
@@ -82,6 +81,6 @@ have defined each other's borders ever since.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;dMxxoh7NZLFfTTFg-6K8XFnQ1uw_QlqVPTmRSenuKa4
+<<^ code=`&#x0003;`>>ni:///sha-256;LMfqIzcfLsppUYufqVPVzbRpCU662JKHBW36pDkRl-A
 
 <<^ code=`&#x0004;` to=`?`>>

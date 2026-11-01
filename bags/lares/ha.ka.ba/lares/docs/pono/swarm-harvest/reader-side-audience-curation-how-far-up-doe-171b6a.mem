@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/reader-side-audience-curation-how-far-up-doe-171b6a.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -451,6 +450,6 @@ Confidence overall on the addendum: **medium-high** — most quotes came from op
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;T1yqj2LLecAPCKRa6WwoJjHqcy5UApJet5SAvxjumv0
+<<^ code=`&#x0003;`>>ni:///sha-256;59SrBPAho5LngkPt4OnF62AuRqLdVFx6ULmer4CQpe4
 
 <<^ code=`&#x0004;` to=`?`>>

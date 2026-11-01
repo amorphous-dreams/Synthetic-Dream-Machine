@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = false
-file-path   = "bags/lares/ha.ka.ba/lares/docs/pono/research-streams/adversarial-testing.mem"
 l-space     = "stable"
 mana        = 16
 manao       = 16
@@ -79,6 +78,6 @@ Source: https://github.com/tlaplus/Examples
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;lRlVBJilBXRZfBmb6eeSFPT0dZ-EbVjzA-HSQBmlUwk
+<<^ code=`&#x0003;`>>ni:///sha-256;pAgvZwAZGL2RE9jaFHNJIKSUY65clka7j0-CCuyL7oM
 
 <<^ code=`&#x0004;` to=`?`>>

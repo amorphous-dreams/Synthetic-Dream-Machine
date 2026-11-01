@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/aniani.mem"
 l-space     = "stable"
 mana        = 16
 manao       = 16
@@ -119,6 +118,6 @@ Leave one corner honestly open and seen. A set that sweeps every corner clean ha
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;IuOLYUxNrKDVg3RA4l5LZ7UN5pTck7QiX5y5aDXyvKU
+<<^ code=`&#x0003;`>>ni:///sha-256;ptM9K7BLdDqHDvWNyOIwGAolO5vF4YxL2gDURvKWYL0
 
 <<^ code=`&#x0004;` to=`?`>>

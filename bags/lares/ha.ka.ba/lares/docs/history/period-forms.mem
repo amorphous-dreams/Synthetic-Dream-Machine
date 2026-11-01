@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/history/period-forms.mem"
 l-space   = "archive"
 mana      = 16
 manao     = 15
@@ -70,6 +69,6 @@ glyph-definition drafts and the `lares-*.instructions` files.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;EcbOwnNJ7XxeCsRF8k1XLiy_3nvDhRrHVuB3n2e4MmA
+<<^ code=`&#x0003;`>>ni:///sha-256;VsYNkjkQHgtiOIrQeBfEckldHIK0SAWGa-s3gwGHv4s
 
 <<^ code=`&#x0004;` to=`?`>>

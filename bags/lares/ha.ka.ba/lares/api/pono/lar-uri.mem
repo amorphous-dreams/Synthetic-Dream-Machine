@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/api/pono/lar-uri.mem"
 l-space    = "stable"
 mana       = 18
 manao      = 17
@@ -546,6 +545,6 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;CbrRcHVX5vyBRoey5IP5qrtWGr84QQb0l2IbPLLRjTc
+<<^ code=`&#x0003;`>>ni:///sha-256;b2a56YDsAXWXcJ_5xVwVKDqMF0Ikt4xDkXdVz88ZtCo
 
 <<^ code=`&#x0004;` to=`?`>>

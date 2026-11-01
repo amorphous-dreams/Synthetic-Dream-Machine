@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/meme.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -126,6 +125,6 @@ Research backlog and subtype-specific detail should deepen into their own outwar
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;gsyJjQu_UUpOt43R5nUPZNlKi5nIB6NmOhJVJWfgDqY
+<<^ code=`&#x0003;`>>ni:///sha-256;5-fznZBN_JJCY8Q6MLhw8ZekXHI8TG0ZoY5yEHNNfMk
 
 <<^ code=`&#x0004;` to=`?`>>

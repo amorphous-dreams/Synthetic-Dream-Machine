@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/session-contract.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 17
@@ -339,6 +338,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;kNyqBT1vhxxpbzXe0NMBMIpzW7hXHYTE_aDlhssUvYE
+<<^ code=`&#x0003;`>>ni:///sha-256;wWF_eZJT8H1ErNnivy-bpval-b3l-cGbaFlFJvN7tTE
 
 <<^ code=`&#x0004;` to=`?`>>

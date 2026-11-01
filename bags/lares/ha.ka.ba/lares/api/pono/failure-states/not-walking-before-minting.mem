@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting.mem"
 mana      = 14
 manao     = 15
 manaoio   = 13
@@ -71,6 +70,6 @@ If the graph's version reads WORSE than the derivation, that reads as a genuine 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;wBpma44A2yEDKX_j6RohWl2oOX5E6dIaC5yZ5tei--c
+<<^ code=`&#x0003;`>>ni:///sha-256;2uoZUHnnpL_zEPiwCf2rU5RN8dWB305TH1WFH-md6C0
 
 <<^ code=`&#x0004;` to=`?`>>

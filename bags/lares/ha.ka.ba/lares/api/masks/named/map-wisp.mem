@@ -9,7 +9,6 @@ cacheable         = false
 corpus            = "[STUB — pending-talk-story]"
 created           = "Invalid Date"
 encroach          = false
-file-path         = "bags/lares/ha.ka.ba/lares/api/masks/named/map-wisp.mem"
 foreground-voices = ["Scryer", "Gatekeeper", "Council", "Liminal", "Stranger"]
 fourth-wall       = false
 ha-ka-ba          = "Ha → Ba"
@@ -169,6 +168,6 @@ How Map-Wisp colors each Voice register when they speak through her structural-f
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;4FvBW_H5uH56sOPX0vvaBR4Sjkoq-afZ1IdGnGMXjak
+<<^ code=`&#x0003;`>>ni:///sha-256;RaMDf3t3dmLd68djXc9WDCF1tRfOKDxJn7-bmi6hUks
 
 <<^ code=`&#x0004;` to=`?`>>

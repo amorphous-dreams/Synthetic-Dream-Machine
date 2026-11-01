@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/wire.mem"
 mana      = 13
 manao     = 15
 manaoio   = 12
@@ -89,6 +88,6 @@ Co-projection applied to wires: the operator's mind originates; the carrier body
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ZvmKfnL8_SlURKDoXhJ28kFH_ejBhQXQGdF7ib8rW0o
+<<^ code=`&#x0003;`>>ni:///sha-256;MBsSLvo93URfJUkSatmZCV-8TnEbKRlK9siTrfLBG9I
 
 <<^ code=`&#x0004;` to=`?`>>

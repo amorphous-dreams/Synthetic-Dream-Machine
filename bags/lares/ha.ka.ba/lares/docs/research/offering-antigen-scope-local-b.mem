@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b.mem"
 l-space    = "lares"
 mana       = 15
 manao      = 15
@@ -209,6 +208,6 @@ those movements silently changes which Nexus the record speaks for.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;jfWWT1-QwhYWnJdGIii4BFcTbEjOBYLzKyBR94H-GVQ
+<<^ code=`&#x0003;`>>ni:///sha-256;AX-LivrCTSdtwMoPgCIUbjUXLVCPRts23xPmcwoKY5U
 
 <<^ code=`&#x0004;` to=`?`>>

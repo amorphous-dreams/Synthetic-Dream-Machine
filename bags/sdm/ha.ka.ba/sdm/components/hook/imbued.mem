@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "imbued"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/hook/imbued.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 16
@@ -70,6 +69,6 @@ Common on `domain/abjuration` wards and standing barriers. Distinct from `item` 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;CEvxSKPSy7oXCxcmBCwp2W3CYbSV0AkkTgJngoq0KqM
+<<^ code=`&#x0003;`>>ni:///sha-256;87ZHhsItd_396mhwYisAxKaKs5B2xzIPBKY-yJISglo
 
 <<^ code=`&#x0004;` to=`?`>>

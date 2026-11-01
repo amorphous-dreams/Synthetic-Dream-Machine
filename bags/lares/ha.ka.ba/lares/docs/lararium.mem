@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/lararium.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -73,6 +72,6 @@ The rooms may deepen later without moving the seat again.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3a2tCadZIQ-mFE23mghIgolEbNgxbhyPUbqEmEn7l_8
+<<^ code=`&#x0003;`>>ni:///sha-256;2QAPLbWjO1RymbEeuotUXhDDish8ajqdsgFLskO2QCw
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -8,7 +8,6 @@ cacheable     = false
 l-space       = "adjacent"
 render-target = "docs"
 role          = "VERBATIM evergreen-sweep wave-two handbacks (YIN and YANG, Luna-6, 2026-10-18) — Markdown transliterated only; source wording retained; the Sol reader refuted ten claims, recorded in research/evergreen-sweep-2026"
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep.mem"
 title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep"
@@ -200,6 +199,6 @@ Measured here: 13 clock classifications (9 suspect, 3 lawful own-liveness groups
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;t1vig9vR4OaQAK2S6wl3Yy14hC3j0hqorJbQpXeVMgA
+<<^ code=`&#x0003;`>>ni:///sha-256;CiAGff3sIlsWn3SgFiHL8fiS_h9rPMDjN5OjJWIMksg
 
 <<^ code=`&#x0004;` to=`?`>>

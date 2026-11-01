@@ -6,7 +6,6 @@
 ```toml meta
 cacheable      = true
 docs           = "lar:///ha.ka.ba/lares/api/pono/nalu"
-file-path      = "bags/lararium/ha.ka.ba/lararium/api/nalu-engine.mem"
 implementation = "packages/lararium-tw5/src/modules/nalu-engine.ts"
 mana           = 18
 manao          = 18
@@ -151,6 +150,6 @@ gates (`mesh/meme-provider.ts`, `mesh/projection-nalu.ts`).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;LYS4dn7NAJRBFdeEAApFc_4B13cjq-au2BZfOc5HWTU
+<<^ code=`&#x0003;`>>ni:///sha-256;q0sWaeuSX7wXMBAZHzWF7aLAbOqRFgYdnCfLA6WYXz0
 
 <<^ code=`&#x0004;` to=`?`>>

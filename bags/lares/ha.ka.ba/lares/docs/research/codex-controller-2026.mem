@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/codex-controller-2026.mem"
 l-space   = "lares"
 mana      = 13
 manao     = 13
@@ -99,6 +98,6 @@ WORDS=1082
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;MIY9FwgyLZ-X8lAldRNcpmCX-zGc-PD0Fwfy3b6PhBA
+<<^ code=`&#x0003;`>>ni:///sha-256;rmX4r6r_-PmQsSIU209yCKG-UYYckNi_mP8JaFjm2Ls
 
 <<^ code=`&#x0004;` to=`?`>>

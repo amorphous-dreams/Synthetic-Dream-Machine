@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/corpus-conformance.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -210,6 +209,6 @@ moved.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;e8P02S_TIUQaOG1yvgt70JWsJYY-6j5cS01amwdSBLE
+<<^ code=`&#x0003;`>>ni:///sha-256;qgRcr4BwLlJTvaBp_157FY6LEU3xfQh1zArX_-xA3EI
 
 <<^ code=`&#x0004;` to=`?`>>

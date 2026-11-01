@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/bounded-reach-contract.mem"
 l-space    = "lararium"
 mana       = 14
 manao      = 14
@@ -261,6 +260,6 @@ before any deployment path opens.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;RHQKHiP-AjC2CMZmHgonIOnwR2NgFoGo8N_B8UkfoZ4
+<<^ code=`&#x0003;`>>ni:///sha-256;jHLqRVfH6ripPMgyOu5cdz4a6j4U9CR4vYH4IywCHbc
 
 <<^ code=`&#x0004;` to=`?`>>

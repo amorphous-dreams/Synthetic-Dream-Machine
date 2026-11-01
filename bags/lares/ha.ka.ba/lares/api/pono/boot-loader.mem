@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/boot-loader.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 16
@@ -121,6 +120,6 @@ does the question mean anything.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;v58sPf0b4VDLPF9Tql4B_DgnTU8KrJHxRWwuPfcA_po
+<<^ code=`&#x0003;`>>ni:///sha-256;_zueyD7V0pDMpgj32GLTd0lUWNseCoDTBA4GovGzEJI
 
 <<^ code=`&#x0004;` to=`?`>>

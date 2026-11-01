@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/i2-relay-lane.mem"
 l-space   = "adjacent"
 role      = "the I2 lane's kit: the far agent's relay seat built, a delegation grammar on the intent plane, a relay door off the local socket that admits the agent's own entry unchanged beside a signed receipt, and a reader that trusts the relay for nothing"
 status    = "draft"
@@ -64,6 +63,6 @@ The hands spine's session files, K15's seed, identity, custody and carriage-key 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;VFbP8ylx-YiEriY1-5xUdHr0YGjI2h47tCACV1VcgOg
+<<^ code=`&#x0003;`>>ni:///sha-256;7TihswdiemBUAm0FpaZyAaSZXM2cGOw8dM6WLqeNBgY
 
 <<^ code=`&#x0004;` to=`?`>>

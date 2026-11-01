@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/mesh/dreamnet-prior-art.mem"
 l-space       = "lararium"
 mana          = 16
 manao         = 15
@@ -670,6 +669,6 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;c9PF10tPfwLxFScwLknVi3enhzEodFTI3CGb2uN9q2U
+<<^ code=`&#x0003;`>>ni:///sha-256;bX9TlP7Px1HNBngX0_qMDwxdo_hejGWa5ZVdRJe0W8E
 
 <<^ code=`&#x0004;` to=`?`>>

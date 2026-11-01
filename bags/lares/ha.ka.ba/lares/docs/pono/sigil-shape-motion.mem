@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/sigil-shape-motion.mem"
 l-space   = "stable"
 mana      = 17
 manao     = 16
@@ -112,6 +111,6 @@ This differs from the technical render posture in `render-pipeline#/render-postu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;pbbd_Q5Tg_8AqVUd5xcuNnv8ikGBvnJedzUtmBpIdN8
+<<^ code=`&#x0003;`>>ni:///sha-256;nI2OBVqXaeVb3wXT5IT9kjhm5jYO4pcnAHZ2oGGeRYI
 
 <<^ code=`&#x0004;` to=`?`>>

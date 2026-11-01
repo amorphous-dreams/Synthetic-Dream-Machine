@@ -5,7 +5,6 @@
 
 ```toml meta
 content-type = "text/memetic-wikitext+tiddlywiki"
-file-path    = "bags/lararium/ha.ka.ba/lararium/api/bag-wiki-uri-split.mem"
 mana         = 17
 role         = "the bag / wiki / cid kind-plane law — the three surfaces a lar: URI names, the edit/publish shore, and the isomorphic wiki core"
 status-why   = "the minters carry the split (bagUri · wikiUri · cidUri · wikiSlotUri); the per-wiki slot binding stands half-enacted — the island keys draft per (PersonaGroup × fingerprint), the host keys it per vessel DID (recipe-layer-model#/the-blur)"
@@ -92,6 +91,6 @@ Two maps, cleanly separated — each the operator's own, never a registry of oth
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — separates floor rows from vessel pointers
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model`>> — places system floor beneath writable recipe layers
 
-<<^ code=`&#x0003;`>>ni:///sha-256;8apQ2kza959rvV79M9tycumh-M58RROiWrysoueF8tc
+<<^ code=`&#x0003;`>>ni:///sha-256;43T_JZFU9BpWg1OwjEFfwB0H51wTh_Iucg9Y1s2JJoM
 
 <<^ code=`&#x0004;` to=`?`>>

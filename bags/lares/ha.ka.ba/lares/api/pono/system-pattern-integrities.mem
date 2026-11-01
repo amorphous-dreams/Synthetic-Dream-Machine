@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/system-pattern-integrities.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 19
@@ -413,6 +412,6 @@ desc  = "A rejection confesses that something understood the question (siege-res
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;US5DsrOvA7OuSkiLN7oXkcqLkaJc04gJXjqqNNx0_go
+<<^ code=`&#x0003;`>>ni:///sha-256;HBB5qaidXap8MyW3tawgRZYLnyxmMfV2pKVs73NNA1c
 
 <<^ code=`&#x0004;` to=`?`>>

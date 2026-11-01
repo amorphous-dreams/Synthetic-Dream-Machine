@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/steward-doctrine.mem"
 l-space   = "lararium"
 mana      = 15
 manao     = 14
@@ -108,6 +107,6 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;1XcGn2dgSi1aihCi63JbxiiOmbuQuBI-mduoJZkwsvc
+<<^ code=`&#x0003;`>>ni:///sha-256;CB0ojsYgfiiIplImqt40vruYQJ-tGRCT88kUtX-qQwk
 
 <<^ code=`&#x0004;` to=`?`>>

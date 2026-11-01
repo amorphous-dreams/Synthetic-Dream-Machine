@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/pranala.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/pranala"
@@ -68,6 +67,6 @@ The shipped template renders a `<span class="lar-pranala">` carrying `data-from`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;27vOO0D1na-ad0h-JbjNr7dYqn4wXXFIDz_5_Hifb1I
+<<^ code=`&#x0003;`>>ni:///sha-256;kB5Cro8K6sC90fwoIGsFSeBzNGyl2zBuAAr4BGwScyo
 
 <<^ code=`&#x0004;` to=`?`>>

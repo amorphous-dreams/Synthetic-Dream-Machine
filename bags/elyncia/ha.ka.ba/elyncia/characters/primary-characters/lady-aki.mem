@@ -4,7 +4,6 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path                              = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki.mem"
 l-space                                = "stable:@elyncia"
 mana                                   = 17
 manao                                  = 16
@@ -718,6 +717,6 @@ Do not collapse these roles.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0NcOW3H4Yv0vVwTLN1KIGTJYD4dXXb6O817k_WjGaJs
+<<^ code=`&#x0003;`>>ni:///sha-256;1d02hNJcLa1wZt-elUt3-KodLPsQS6yXvQwt-y353DA
 
 <<^ code=`&#x0004;` to=`?`>>

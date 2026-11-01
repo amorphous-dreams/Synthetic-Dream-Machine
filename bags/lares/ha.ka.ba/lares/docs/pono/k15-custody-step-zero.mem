@@ -9,7 +9,6 @@ l-space   = "lares"
 role      = "kit: K15 step 0, the custody contract before bytes move — the node and browser row census sorted D, F or S, the face custody key, the carrier binding, the overwrite contract, the one-face bundle, the reds per vessel, the build order and the open joints; drafted by a Sol-6 spirit over four research rounds, verified against code"
 status    = "kit; drafted 2026-10-19; K15 step 0 builds against it; the place signer open"
 tags      = ["kit", "k15", "custody", "persona-group", "face-custody-key"]
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k15-custody-step-zero.mem"
 title     = "lar:///ha.ka.ba/lares/docs/pono/k15-custody-step-zero"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/k15-custody-step-zero"
@@ -276,6 +275,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;YLTLT8XDaGwEXQV8sqctbWRy4b3xG5LZlp-be6SowCg
+<<^ code=`&#x0003;`>>ni:///sha-256;hczZcoBbDDMMnWt7PfFt60TujmEIambWofh_35vcWl4
 
 <<^ code=`&#x0004;` to=`?`>>

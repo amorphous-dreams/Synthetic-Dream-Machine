@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/node/handler-args.mem"
 heleuma   = "ba"
 mana      = 17
 manao     = 17
@@ -37,6 +36,6 @@ These helpers carry no side effects or platform assumptions. They could become a
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;gTE8XZhmR3kkxOANKxWcbmdur-SLCbBt9_YZ1i6j3yI
+<<^ code=`&#x0003;`>>ni:///sha-256;ASnMPOUClgWo4oXOOQjbVLdigCmZ0fsL3j5CQHCkTD0
 
 <<^ code=`&#x0004;` to=`?`>>

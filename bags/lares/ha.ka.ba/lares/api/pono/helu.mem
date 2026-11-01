@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/helu.mem"
 namespace = "&#x2299;"
 role      = "filter-function declaration pragma — helu as enumeration/calculation; TW5 function equivalent; English alias: function"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-helu"]
@@ -70,6 +69,6 @@ TW5 equivalent:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0_G2neZ6coBVfTMf4l6lx99iXcV3SAQ9Pavt7Snr6K4
+<<^ code=`&#x0003;`>>ni:///sha-256;g7cVjeM4xqGr9i6ldkQf1-gEGYXUxtpJz1lY7xzIh1w
 
 <<^ code=`&#x0004;` to=`?`>>

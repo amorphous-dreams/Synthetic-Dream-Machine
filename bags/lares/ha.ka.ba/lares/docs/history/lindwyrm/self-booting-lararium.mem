@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable       = false
-file-path       = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/self-booting-lararium.mem"
 l-space         = "adjacent"
 mana            = 15
 manao           = 14
@@ -286,6 +285,6 @@ It hums.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HtVT8X3QDR9D5DfJjI7On9BMp3hkX082vWIXsMjVIXM
+<<^ code=`&#x0003;`>>ni:///sha-256;XUxIi851JlC7d8kcEhOKnk9tSxqr8k_9-caMohWEkEk
 
 <<^ code=`&#x0004;` to=`?`>>

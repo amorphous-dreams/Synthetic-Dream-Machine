@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/ownership-ea02d9.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -224,6 +223,6 @@ Three structural observations the evidence supports:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Wg8xNTjftATccVXzt2HrNYWxU_EZu2keN08QfCN6S9I
+<<^ code=`&#x0003;`>>ni:///sha-256;7b96PtcF59CHItFGP7XGVgchvLmYuZwTd4aSpjYC198
 
 <<^ code=`&#x0004;` to=`?`>>

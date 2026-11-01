@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/docs/readiness-keys.mem"
 l-space       = "stable"
 mana          = 18
 manao         = 17
@@ -96,6 +95,6 @@ dynamic-forms = ["corpus:<id>", "projection:<id>"]
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;MMW-Ystskbu7pQVqb_YT6sP2HPduG2jtynoqbgnVdhU
+<<^ code=`&#x0003;`>>ni:///sha-256;Up8NmSVatJIHAKp7gsqxn0eu23BhsPkf-mt3_MXfnVg
 
 <<^ code=`&#x0004;` to=`?`>>

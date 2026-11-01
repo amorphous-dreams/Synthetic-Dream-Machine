@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states.mem"
 mana      = 16
 manao     = 16
 manaoio   = 14
@@ -76,6 +75,6 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;lRfbUtoJZt2D81Bta2vNVFT5iupvm6XVUvKQWgQ9_2M
+<<^ code=`&#x0003;`>>ni:///sha-256;boQ4p79v5glK5UMifKV-Ihooo9KW-8NdXSXExm5nNTA
 
 <<^ code=`&#x0004;` to=`?`>>

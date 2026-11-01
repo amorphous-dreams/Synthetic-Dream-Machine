@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/outbound-bridge.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 13
@@ -204,6 +203,6 @@ CONTROLS standing green beside them: an explicit `--recipe default` put lands in
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iJzJ8gP8chcvVLJmDQcUfmXSLL_0bRlMWkalNXYnaRY
+<<^ code=`&#x0003;`>>ni:///sha-256;T3JcMxbKrDf2fyz-2prCvrdk-U66J_MV3ihqByofee8
 
 <<^ code=`&#x0004;` to=`?`>>

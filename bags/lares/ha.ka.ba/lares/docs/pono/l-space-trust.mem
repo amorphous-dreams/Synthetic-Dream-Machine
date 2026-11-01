@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/l-space-trust.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -151,6 +150,6 @@ Speaker role and truth tier must stay separate.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;DFPCyAOa8mKPIoiVx9ohAxjHGj8LiRacKA6wJehdJCc
+<<^ code=`&#x0003;`>>ni:///sha-256;g_oHbAS4Chx0tcF8nBlgaHvRcNC9YzdXMz0qphYR2uU
 
 <<^ code=`&#x0004;` to=`?`>>

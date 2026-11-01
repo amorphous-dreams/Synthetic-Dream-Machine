@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/projections/powers/ftls-card/read-magic.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -58,6 +57,6 @@ Tune to the writing and read its magical interface layer. The referee gives the 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;twe67r8chXNF9Lyh5-O2Bcddj4I52cxC1ktXaeJapNg
+<<^ code=`&#x0003;`>>ni:///sha-256;k5AhH3lnjPmplfWj_0Z3d-YrcxaqBy7pu3czcUIq52Y
 
 <<^ code=`&#x0004;` to=`?`>>

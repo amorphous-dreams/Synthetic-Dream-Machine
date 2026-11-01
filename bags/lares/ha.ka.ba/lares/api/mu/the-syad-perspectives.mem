@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/mu/the-syad-perspectives.mem"
 hydrate       = true
 l-space       = "stable"
 mana          = 18
@@ -306,6 +305,6 @@ satirist-operational = "nasti-avaktavya"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3E3awDa6HZNnmmpkFiUz-FLmmyVgtLCMxWUHw6mvZcI
+<<^ code=`&#x0003;`>>ni:///sha-256;JvqzSmt3DtIo-emHycs6HU84Pg6GD-eoHvJ0y2IX_uk
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/attention-scale.mem"
 l-space     = "stable"
 mana        = 18
 manao       = 17
@@ -337,6 +336,6 @@ Envelope: <<~ँ₃ ...>>   Arc-scale
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;evzMSBEMxAR4Yi3shzUaK2TB0PyiO9tdjDiW2G3IIGc
+<<^ code=`&#x0003;`>>ni:///sha-256;qf2vYCYh31_pWCRSTf7QhfYLy1e1QnTAVREy8lZ8aq4
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/7-nostr-bluesky-matrix-multi-account-yes-mut-98501d.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -307,6 +306,6 @@ Briar's FAQ is the only place any of these projects writes the general law down,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Pye7_GhBFDeqN17h3DfKbUVP-eaneQOYU1OlOkIOCXE
+<<^ code=`&#x0003;`>>ni:///sha-256;m9_ZgJtYVNrEkcTNsi1PyeRmqJDBbKqPmiUo6Lu4sZg
 
 <<^ code=`&#x0004;` to=`?`>>

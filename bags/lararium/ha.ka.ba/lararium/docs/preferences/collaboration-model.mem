@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences/collaboration-model.mem"
 l-space   = "stable"
 mana      = 18
 manao     = 17
@@ -83,6 +82,6 @@ This room leans toward future deeper articulation in:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;XGP8jT7X3jmo7I7rUhFO8JlS6sv0SE5mMQIvRYnOL7g
+<<^ code=`&#x0003;`>>ni:///sha-256;7_UVGiDJHk2KD2EdSMJ6k1CgSIdDw4UVhrZyeuQGjjo
 
 <<^ code=`&#x0004;` to=`?`>>

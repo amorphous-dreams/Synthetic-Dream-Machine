@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/two-way-interaction-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 13
@@ -488,6 +487,6 @@ Each row names a (root template, document sink) over the one engine. **Capabilit
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Uc8MNJgwH_dQ3JiTAAMx-XBHZIvmQveCPC0tkbbwv4A
+<<^ code=`&#x0003;`>>ni:///sha-256;aEZVFqExdccRKFJXki7wjmDyhc9o4IiNm48R21uQ6dQ
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/operations-review.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -293,6 +292,6 @@ After the extraction pass closes, these questions remain for a future consolidat
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;aJ9cSHQ3N1AjBDsU9kpVnfkdhO6gp9l99aRInDqvoQk
+<<^ code=`&#x0003;`>>ni:///sha-256;Zz8gxbYPDHrLh6QozHuoI3RTnVpguXhrvp8lZYDqkYI
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/kapu.mem"
 mana      = 18
 manao     = 18
 manaoio   = 16
@@ -133,6 +132,6 @@ This meme governs the kapu rating and above-namespace trust law.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;U-9qU7bTqT-0y1i7vc43QvWD-hUxcS7iM42_zDA05Z0
+<<^ code=`&#x0003;`>>ni:///sha-256;C713SJ20vbBo9G4oDTpvWTs2wtYwPzNbKmC8WXuvPqY
 
 <<^ code=`&#x0004;` to=`?`>>

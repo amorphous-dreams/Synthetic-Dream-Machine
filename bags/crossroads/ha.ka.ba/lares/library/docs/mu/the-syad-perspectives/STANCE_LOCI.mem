@@ -6,7 +6,6 @@
 ```toml meta
 cacheable         = false
 dependencies      = ["confidence"]
-file-path         = "bags/crossroads/ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/STANCE_LOCI.mem"
 grammar           = true
 l-space           = "stable"
 phase-map-act     = "#procedures"
@@ -163,6 +162,6 @@ If the reader still has to guess what `0.65` means here, stance has not yet done
 
 ---
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ExlFJkRKbuFTfjkI8b2DRmlZ0PQioJGYBDX_c-maNI8
+<<^ code=`&#x0003;`>>ni:///sha-256;qwZjPMtW-wsU-Qkb-ZYP1QjLKSX_6wx7Um0r2axtRFY
 
 <<^ code=`&#x0004;` to=`?`>>

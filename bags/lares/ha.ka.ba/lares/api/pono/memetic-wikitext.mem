@@ -9,7 +9,6 @@ cacheable     = true
 cat           = "info"
 date          = "2026-10-03"
 docname       = "draft-fontany-memetic-wikitext-00"
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext.mem"
 ipr           = "trust200902"
 l-space       = "stable"
 mana          = 19
@@ -749,6 +748,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;qiD5Ppk1_gyH5lGlVyy5OQT2GrX35o-RR_zgS8Lm_yc
+<<^ code=`&#x0003;`>>ni:///sha-256;9GN_PxWnToXLXO-D6bF-fAeMdI9xtdS5CjBHBZTDyEg
 
 <<^ code=`&#x0004;` to=`?`>>

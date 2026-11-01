@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/tw5-browser-surface.mem"
 l-space     = "lararium"
 mana        = 17
 role        = "Named TW5 projection adapter: the file holding TW5 DOM/RootTemplate references at the browser shore"
@@ -54,6 +53,6 @@ engine. No worker-side TW5 authority may import these types without an explicit 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;c_D6ewMM4n25yNcA62oZARXBC1ij6jK9KeM3TzWBnsU
+<<^ code=`&#x0003;`>>ni:///sha-256;AkPEsy4snw_hQlGMJFfWTOSmvxWmy50h6qkRq9g1nLA
 
 <<^ code=`&#x0004;` to=`?`>>

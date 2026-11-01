@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/key-recovery-custody-fork-outside-research-r-620622.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -655,6 +654,6 @@ Across five research streams, **not one documented failure in the entire public 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_uFECD-2eEmH_8FB-yrrtujyHXNHyQsr-cRWMH-74pM
+<<^ code=`&#x0003;`>>ni:///sha-256;8tXLO_WwVwMyOt0cbk7dNtLkR6GxlgOC8v89SsQAJVQ
 
 <<^ code=`&#x0004;` to=`?`>>

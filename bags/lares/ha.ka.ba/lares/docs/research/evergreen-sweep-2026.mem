@@ -9,7 +9,6 @@ l-space   = "lares"
 role      = "field research, two traded Luna-6 waves and a Sol-6 code reader (2026-10-18), on lifting shared shapes into their packages and yanking authored version numbers and deciding wall clocks; the six rulings the operator approved; the Sol plan verbatim, Markdown transliterated only"
 status    = "research; read 2026-10-18; no code changed; row G37 carries the build"
 tags      = ["research", "evergreen", "aftermath", "no-global-now", "isomorphism"]
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/evergreen-sweep-2026.mem"
 title     = "lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/evergreen-sweep-2026"
@@ -149,6 +148,6 @@ The inventory's 68 cross-package-name rows are search leads, not 68 isomorphisms
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FuHA3TQ69cExhFXuexOdb9sDWHoIpb9ssigZ5hHP8jU
+<<^ code=`&#x0003;`>>ni:///sha-256;1nS_5iP3a-E94ls_czEQ6lOw1Nn5rOTHuhR2JnAOIlM
 
 <<^ code=`&#x0004;` to=`?`>>

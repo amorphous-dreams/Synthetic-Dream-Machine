@@ -6,7 +6,6 @@
 ```toml meta
 approved-on = "2026-06-01"
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/api/personal-slot.mem"
 l-space     = "stable"
 mana        = 16
 manao       = 15
@@ -497,6 +496,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ntAWjJJkc0xKXe_Iv9SIpP18kdexVco6lKBcvx9W36g
+<<^ code=`&#x0003;`>>ni:///sha-256;09BNPvrWxZy0kbBJVJxwn_wFEtn_DLJ-zLqjumxxiNs
 
 <<^ code=`&#x0004;` to=`?`>>

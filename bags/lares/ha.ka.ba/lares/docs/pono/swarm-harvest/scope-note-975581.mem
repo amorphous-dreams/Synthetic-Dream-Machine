@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/scope-note-975581.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -357,6 +356,6 @@ From `src/app/config/auth_dirs.inc` and confirmed against the live consensus:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;1gaMiCPQQWyU62hQnPdqcjJoCLt8UtY7ufdM_war9yM
+<<^ code=`&#x0003;`>>ni:///sha-256;DzE0lmwCbLwJcWmiwU_lKBWBT3bzo8qJoUHSlpC2hm8
 
 <<^ code=`&#x0004;` to=`?`>>

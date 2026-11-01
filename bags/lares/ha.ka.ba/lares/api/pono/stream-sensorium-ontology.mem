@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/api/pono/stream-sensorium-ontology.mem"
 hydrate    = true
 l-space    = "stable"
 mana       = 15
@@ -74,6 +73,6 @@ One recursion — ''ki &rarr; li &rarr; ki &rarr; li'' — repeating at every sc
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;nwXavawcwMrBcXh1OFwgWSy0wCjlqEsTXbMZtZjF5s8
+<<^ code=`&#x0003;`>>ni:///sha-256;weR0oLgfx8Ot5y987VoD2gklt6sQRIO2KoRlZ0-QipA
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/history/the-bridge-takes-shape.mem"
 l-space   = "adjacent"
 mana      = 13
 manao     = 13
@@ -78,6 +77,6 @@ So this carrier marks a smaller morning than the founding: ''the read-leg took s
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;8Su3E0y9sYYQcfGqobebQTBSHHPeg7whiS111wBSn6M
+<<^ code=`&#x0003;`>>ni:///sha-256;bu1Uk7JYY5OExuw8qICqwbcuqKr8UAR1_ULlWrEmlfI
 
 <<^ code=`&#x0004;` to=`?`>>

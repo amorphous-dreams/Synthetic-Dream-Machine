@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/what-actually-happened-dated-sourced-4e741e.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -126,6 +125,6 @@ Why this is survivable, per Ayer: clients require SCTs from **multiple logs acro
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;PGA4tOl2T9An0AP5lozE6FDabcfykkqhV-Zq-HCNeUw
+<<^ code=`&#x0003;`>>ni:///sha-256;1Idun274EcyHpKqmElQfPvc0-RvfL8Mo6VReGRxo_q0
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,7 +6,6 @@
 ```toml meta
 approved-on   = "2026-06-01"
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/api/residency-tiers.mem"
 hydrate       = true
 l-space       = "stable"
 mana          = 17
@@ -152,6 +151,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;8e_iLqB0eH7NJVyAmDJc738J7OYwnba0KfpAXWSTIUg
+<<^ code=`&#x0003;`>>ni:///sha-256;C5xwzJ49KBXSefrZ19-Zp_sqPqBTsy5KlYrkeVq4qkk
 
 <<^ code=`&#x0004;` to=`?`>>

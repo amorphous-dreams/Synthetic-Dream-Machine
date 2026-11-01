@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/table-hides-a-plane.mem"
 mana      = 14
 manao     = 15
 manaoio   = 13
@@ -73,6 +72,6 @@ If the entities share a plane but differ in degree, that reads as an ordinary ta
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;v6IzixrJQjmO19M-qSGvdElehvQ0HPK8VKru-9TnXKc
+<<^ code=`&#x0003;`>>ni:///sha-256;50YNkvnmQaxJ_gXapq8tD8xCFO8SB1FMTBlToglP5oE
 
 <<^ code=`&#x0004;` to=`?`>>

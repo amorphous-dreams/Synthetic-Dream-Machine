@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/ea.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 15
@@ -113,6 +112,6 @@ The web2 concept of a "heartbeat" (a server-side liveness ping) shares the //liv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;nXz_DRi4C3eCZjLhlEAPTUZL143MZgYfbLpvPuOC_YM
+<<^ code=`&#x0003;`>>ni:///sha-256;Ot2I9t03DEjTF6YHOEOSsEywbrQDf44W5jMpLCpIZE4
 
 <<^ code=`&#x0004;` to=`?`>>

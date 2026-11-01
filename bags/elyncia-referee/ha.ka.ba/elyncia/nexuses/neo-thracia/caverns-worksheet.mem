@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -255,6 +254,6 @@ Each result yields: ''texture'' (3–5 sensory lines) · ''movement modifier'' �
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9w-NS_Wt7nrTxqczkD5-cRVZKXeCyHbZhmoJh19nZG4
+<<^ code=`&#x0003;`>>ni:///sha-256;KSPOcYJ_6PbJE4Qnd_oksUAVY5wHnDZSGrJKA2I86QE
 
 <<^ code=`&#x0004;` to=`?`>>

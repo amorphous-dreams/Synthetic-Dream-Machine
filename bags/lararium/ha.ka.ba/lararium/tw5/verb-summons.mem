@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/verb-summons.mem"
 l-space     = "lararium"
 mana        = 12
 role        = "the summons relay — CRDT verb-summons tiddler (@daemon/summons/<id>) → volatile local invocation; edge transport, not durable coordination"
@@ -27,6 +26,6 @@ Naming note: "signal" names a DIFFERENT layer — the Agent↔Operator HUD/legib
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;SNChh9duAUxk7HZ437DjBA_KPOCyyyDXMH7BkAWaZxQ
+<<^ code=`&#x0003;`>>ni:///sha-256;ZrS7KCr0NWSpjpWTZqrRpwmT9AZSlN4ZvyOTzTe5Ibk
 
 <<^ code=`&#x0004;` to=`?`>>

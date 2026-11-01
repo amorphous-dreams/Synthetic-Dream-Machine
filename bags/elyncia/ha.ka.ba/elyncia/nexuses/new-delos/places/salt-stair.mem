@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/salt-stair.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -40,6 +39,6 @@ who have never met — the Salt-Stair declines to say, and MUG-SMOKE has never b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Q5o9HraUJyOZlL-WVugvSCrAiu2iLW5TAzEWWBYMwzo
+<<^ code=`&#x0003;`>>ni:///sha-256;E-iKWcVMzaqRkpyhJWE0dkoveUh0qqKpeqEKIxwLtsk
 
 <<^ code=`&#x0004;` to=`?`>>

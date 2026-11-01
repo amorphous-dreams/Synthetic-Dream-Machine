@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/pono-sigil.mem"
 namespace = "&#x2299;"
 role      = "correctness-asserting edge sigil — pono as alignment/constraint annotation; English alias: constraint"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pono"]
@@ -65,6 +64,6 @@ An optional `role:` qualifier further specifies the constraint kind.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;AGVNNHXKnEe0sOqdNuKYx3EhhEfl8crPvlOnmBFFDgU
+<<^ code=`&#x0003;`>>ni:///sha-256;ETwxQQGu3ytkhMGy9laHTCSQM8MvXYC3YWRRK9-re-g
 
 <<^ code=`&#x0004;` to=`?`>>

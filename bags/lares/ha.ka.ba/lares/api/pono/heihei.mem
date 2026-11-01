@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/heihei.mem"
 mana      = 16
 manao     = 16
 manaoio   = 15
@@ -106,6 +105,6 @@ arm-wire       = "reaction"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;20TpD718LOMtHLTsUfePaPi4gk3BOh00EvQzuR7LQ9E
+<<^ code=`&#x0003;`>>ni:///sha-256;Qoblnak9YEA7_xvg3hCU8aGFXLQrY20lfynEFSFV6pE
 
 <<^ code=`&#x0004;` to=`?`>>

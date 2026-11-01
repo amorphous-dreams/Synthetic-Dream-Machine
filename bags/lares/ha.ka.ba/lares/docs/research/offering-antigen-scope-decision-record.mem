@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-record.mem"
 l-space    = "lares"
 mana       = 15
 manao      = 15
@@ -152,6 +151,6 @@ This record prepares a decision; it does not make it. No production field, fold,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;O-HrW_yzjhSMM0YdUytu89nrhB1zBvd3RhQbK-MUp5k
+<<^ code=`&#x0003;`>>ni:///sha-256;yEqtnIJ_loHXUGCuvpMsgOKXInbatSQB4O-mGk6zs6c
 
 <<^ code=`&#x0004;` to=`?`>>

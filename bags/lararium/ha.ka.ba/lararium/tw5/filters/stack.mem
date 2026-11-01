@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/tw5/filters/stack.mem"
 mana       = 14
 module-ref = "lar:///ha.ka.ba/lararium/tw5/filters/stack"
 role       = "filter operator: the has-stack query surface — stack[] emits qualified component URIs; stack:has[X] filters by holding (per-carrier relative-name qualification)"
@@ -43,6 +42,6 @@ Pure core: `qualifyStackTag` / `stackOf` (`packages/lararium-tw5/src/has-stack.t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;og0rO_2XIYgwaPw7i2EiHBVBj1POg_aHnHUruFNrWDs
+<<^ code=`&#x0003;`>>ni:///sha-256;rKWcQP39gTryYQbVHfz2jf27w9Xho3m5jOg848Mlsss
 
 <<^ code=`&#x0004;` to=`?`>>

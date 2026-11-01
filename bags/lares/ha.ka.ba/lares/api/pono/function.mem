@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/function.mem"
 mana      = 17
 manao     = 17
 manaoio   = 17
@@ -69,6 +68,6 @@ TW5 native equivalent:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tP-dUB67bZwj7FQ-zrd3rl0RtTkyp3ly3TQ_dijukuM
+<<^ code=`&#x0003;`>>ni:///sha-256;jErDSEP0Kg0UaJxY6TZFQ7QbpbHQXwl9mxtY_GZ6rRE
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/sigil-grammar-research.mem"
 l-space   = "stable"
 mana      = 17
 manao     = 16
@@ -415,6 +414,6 @@ When editing grammar meme or parser:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;C7TupFQ7nq1j6CHx1lfXihVWKF_rKDwq7KRedp2X2TU
+<<^ code=`&#x0003;`>>ni:///sha-256;vB9eeBkdKZQ1I0c4wUCaaJhfucnunVPmo3YF6aqZ_i0
 
 <<^ code=`&#x0004;` to=`?`>>

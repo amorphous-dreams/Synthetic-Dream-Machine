@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/index.mem"
 l-space   = "archive"
 mana      = 16
 manao     = 16
@@ -64,6 +63,6 @@ Acts I, II, VI, and VII stand here as discrete narrative loci. The arc's middle 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Vk9fkgDppIVicVYIqWkcR-U1zPZWQB4En3OI08o5MT4
+<<^ code=`&#x0003;`>>ni:///sha-256;CscSY05rwx_X_KcXJVFHstiZRIHpNOLuY-Kv1g9m0Sw
 
 <<^ code=`&#x0004;` to=`?`>>

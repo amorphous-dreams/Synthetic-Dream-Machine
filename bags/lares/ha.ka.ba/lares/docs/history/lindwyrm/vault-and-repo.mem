@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo.mem"
 l-space       = "adjacent"
 mana          = 14
 manao         = 14
@@ -201,6 +200,6 @@ Act II receives:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Fbo8qHBZsdC64urbSklv9ViZAeXJjw6lpOaS34izUrA
+<<^ code=`&#x0003;`>>ni:///sha-256;PolBnQk5WfIy-G6SzfX4ngHDn01H4ngFgNjmVDhKdzw
 
 <<^ code=`&#x0004;` to=`?`>>

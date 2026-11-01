@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/grammar-watch.mem"
 hydrate   = true
 l-space   = "stable"
 role      = "grammar watch — what a hand reads before it touches the highlighting grammars: the law a verdict stands on, how to rebuild the host corpus, the instruments of grammar testing that read green while they report something false, and the paths that stay open"
@@ -118,6 +117,6 @@ The cut has landed as one lane, merged once. The seed, the law memes, the tiddle
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3CVqImAerf_9LcAXnpfwYNI8ZZ6orOZ_xigdWMdR8QU
+<<^ code=`&#x0003;`>>ni:///sha-256;-LG2IX3qwVpGLxXJSpSWDf-X98sSfIBVLYBS4VT1M0k
 
 <<^ code=`&#x0004;` to=`?`>>

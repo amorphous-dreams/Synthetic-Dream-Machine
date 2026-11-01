@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "cargo"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/function/cargo.mem"
 l-space   = "sdm"
 mana      = 13
 manao     = 16
@@ -70,6 +69,6 @@ Pairs with `domain/stuckforce` (the force that lifts) and often `hook/sustained`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-FrVpFIexWDPGPCqBuv-vJfPuLdxX4jMYstWB7FrtFw
+<<^ code=`&#x0003;`>>ni:///sha-256;e-iBTyjELCzGDhYQozBq0w9ubgOtPomVObohz5aKX8M
 
 <<^ code=`&#x0004;` to=`?`>>

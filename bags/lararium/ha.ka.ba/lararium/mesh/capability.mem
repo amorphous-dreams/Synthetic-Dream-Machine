@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/capability.mem"
 l-space     = "lararium"
 mana        = 13
 role        = "invariant law: the capability protocol — a provider-neutral authority shore. Mesh owns the SHAPE, adapters prove it. Names the binary gate, the opaque presenter, the refusal that explains itself, and what this interface deliberately does NOT decide."
@@ -68,6 +67,6 @@ reader a check they could then fail to find.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/keyhive-provider`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;jlPRLC5otTTxtlMZydCEN0h3KLY0b45PuWjNJ_9VIiY
+<<^ code=`&#x0003;`>>ni:///sha-256;rSKvx37VI4FA98ywcPrvk6IrnwlHUagED9JqJdW5Mk0
 
 <<^ code=`&#x0004;` to=`?`>>

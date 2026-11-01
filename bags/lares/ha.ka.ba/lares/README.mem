@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/README.mem"
 l-space   = "adjacent"
 mana      = 17
 manao     = 16
@@ -136,6 +135,6 @@ file, a browser agent takes the carrier pasted in.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;dCJ4H0fXAIYiULLYCzzN-j6J8HqZ61-9bcr7TaoF6OA
+<<^ code=`&#x0003;`>>ni:///sha-256;bzxbpP07Uig97bXYMSZTEt8jvpj6UvxllLjTyLkhcFw
 
 <<^ code=`&#x0004;` to=`?`>>

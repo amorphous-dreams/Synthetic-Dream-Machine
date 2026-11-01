@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/content-resolution.mem"
 l-space    = "lararium"
 mana       = 16
 manao      = 16
@@ -310,6 +309,6 @@ fork ④ stays open: the operator's priors decide it, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;QFvAtGmwb8lQcSDMCf8Ny4vDGu1tBM2p22P1WE3oq3M
+<<^ code=`&#x0003;`>>ni:///sha-256;sIUFKE2o_e2aSGPwP4AENjAKhPyM1E3l7e9F3QDywZ8
 
 <<^ code=`&#x0004;` to=`?`>>

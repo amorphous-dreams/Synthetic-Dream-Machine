@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 created   = "Invalid Date"
-file-path = "bags/lares/ha.ka.ba/lares/api/masks.mem"
 hydrate   = false
 l-space   = "stable"
 mana      = 16
@@ -139,6 +138,6 @@ gates, so masks share the apron and no collision rule arbitrates them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;zU44qvTKozaNQ7S2mKGfCwU1Lq_PP-R4rJ8_hMrFqYw
+<<^ code=`&#x0003;`>>ni:///sha-256;VclmsBVFDLCde2eGX2Yiu_1B54TMnzB8_6YfX3mtM4Y
 
 <<^ code=`&#x0004;` to=`?`>>

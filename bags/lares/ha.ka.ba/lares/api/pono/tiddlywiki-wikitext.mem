@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/tiddlywiki-wikitext.mem"
 l-space       = "stable"
 mana          = 15
 manao         = 16
@@ -373,6 +372,6 @@ rather than minting sibling types.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;owJCJIWNL06IhHVysgOKb4kCorgks0yn-f4mGa-X0mk
+<<^ code=`&#x0003;`>>ni:///sha-256;KMyaRK6s6FVCNLwsaCCeuvRQTI7_8RkFRy5j3arBF8I
 
 <<^ code=`&#x0004;` to=`?`>>

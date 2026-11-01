@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "Floating Disc"
-file-path = "bags/sdm/ha.ka.ba/sdm/modules/powers/floating-disc.mem"
 l-space   = "sdm"
 mana      = 15
 manao     = 17
@@ -90,6 +89,6 @@ On a botched or interfered read, choose one: the disc drops its load; locks into
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;D8jSqtK33ubl0SvaLFuCYVVJH6GMhsK1R65louRyjuQ
+<<^ code=`&#x0003;`>>ni:///sha-256;GmXraHiSXZvRJAqTqNuIZLLn5YFLU_2ysKptIgMzcYc
 
 <<^ code=`&#x0004;` to=`?`>>

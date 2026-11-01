@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/message-routing.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 16
@@ -94,6 +93,6 @@ Filters inside `wai` / `huli` / `ui` evaluate against the ''explicit current mem
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Tm42sBrftT5Yfo7pb1Cm5W5K_aCxiPjU8NLF8KFSd7U
+<<^ code=`&#x0003;`>>ni:///sha-256;S7r2meguXXstDJWqpHqu-2h2v20QjwDTZWOlBAfmUSs
 
 <<^ code=`&#x0004;` to=`?`>>

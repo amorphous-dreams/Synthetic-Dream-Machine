@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/host-attractors-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 13
@@ -493,6 +492,6 @@ Marks as in the header. Only `github.com` URLs were fetched; all others were con
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7btfN5a2ppe15mvvhwr1HQN7QphIqZoSjaT6fHruhng
+<<^ code=`&#x0003;`>>ni:///sha-256;dKc3Hy-GDyM3lyoPouTHDABgZKj8hhvut-T_SPUm_y4
 
 <<^ code=`&#x0004;` to=`?`>>

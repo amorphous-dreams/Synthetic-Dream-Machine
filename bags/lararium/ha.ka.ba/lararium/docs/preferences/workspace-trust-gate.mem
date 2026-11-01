@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences/workspace-trust-gate.mem"
 l-space   = "stable"
 mana      = 17
 manao     = 17
@@ -68,6 +67,6 @@ The workspace trust gate explains when the node must pause anyway.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HC-7CWxas744cbXKZLpPmNMjJk8m49_I0udBuIzwn8c
+<<^ code=`&#x0003;`>>ni:///sha-256;Vdqaw6la_WJNU96oMeimV3dPEoy-YXqKZGvdiS4nsUo
 
 <<^ code=`&#x0004;` to=`?`>>

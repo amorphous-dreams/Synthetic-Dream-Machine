@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/mu.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -73,6 +72,6 @@ AST reader: read the sockets, then route.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;33-nJVWJR1qNCaPKfRovlxk2rIquUq5yKfB-sp9qr1M
+<<^ code=`&#x0003;`>>ni:///sha-256;ffMJJda2kpMn4oHbMFXox8KDQZ3PTLx8ZwdBguciXRU
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/child-grade-decision.mem"
 hydrate    = true
 l-space    = "stable"
 mana       = 12
@@ -399,6 +398,6 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9oQvxdCPCLxI66SrPq8IkQMXMWGdD-RBjbe1vuKCWvk
+<<^ code=`&#x0003;`>>ni:///sha-256;vBULM_22dc-4LqTpRvfjKwFl2sRB4k4ftGgJlm1o2-8
 
 <<^ code=`&#x0004;` to=`?`>>

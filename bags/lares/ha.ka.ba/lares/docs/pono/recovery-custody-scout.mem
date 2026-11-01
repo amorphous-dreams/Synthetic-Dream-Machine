@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/recovery-custody-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 16
@@ -209,6 +208,6 @@ Read from `persona-kel.ts` and `recovery-keel-core.ts` at their current heads. â
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9ExJt2VSLJXqV8G1uc4AyjwKrPgANavUoT6ycZ2exq4
+<<^ code=`&#x0003;`>>ni:///sha-256;3NpxxNeYQjJztHZA0cRYny6LDL5JWyD0bzVayM1tEns
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -9,7 +9,6 @@ l-space   = "lares"
 role      = "field and code research, a two-wave traded Codex and Copilot pass (2026-10-20), on where a face's identity invariants rest: what the Binding Gate verifies and what it takes on trust, which pins read as invariant, local or shared, and why sync carries while verification decides"
 status    = "research; read 2026-10-20; the operator approved its recommendation the same day"
 tags      = ["research", "identity", "crdt", "custody", "kel", "persona-group", "no-global-now"]
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/identity-invariants-2026.mem"
 title     = "lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/identity-invariants-2026"
@@ -60,6 +59,6 @@ A sealed anchor per face per device; signed records carried by sync under immuta
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;QOuZLYHRl0cAxOOyPaGxlv2i99uCbt7J1nj-6lysFUc
+<<^ code=`&#x0003;`>>ni:///sha-256;uKegRZ8mQQumjbEerJSWGxs1rnG9HUC8qenMcCSP8FQ
 
 <<^ code=`&#x0004;` to=`?`>>

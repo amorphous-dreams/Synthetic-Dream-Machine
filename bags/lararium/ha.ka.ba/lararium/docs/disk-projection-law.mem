@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/docs/disk-projection-law.mem"
 l-space       = "stable"
 last-reviewed = "2026-07-18"
 mana          = 10
@@ -31,6 +30,6 @@ The full, load-bearing statement — surfaces, bag roles, projection routing, th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HvIDYHuNCML8yzvDj-owicQImiDxvXz6fRC8ZkeS7-Q
+<<^ code=`&#x0003;`>>ni:///sha-256;q9UcjxPzpdLcbLYORZ_EJZGlJWon-eHRaynPJAssj_8
 
 <<^ code=`&#x0004;` to=`?`>>

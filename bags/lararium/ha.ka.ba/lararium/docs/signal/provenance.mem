@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal/provenance.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -139,6 +138,6 @@ Three-word attitude root `w1.w2.w3`: heading · angle · carried dynamic; noun �
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;I0PDJ1j5z0iIoH4o9z1lReoXXJr-2AangSxOm4ktB5A
+<<^ code=`&#x0003;`>>ni:///sha-256;TeZNmrX6NdBsBu4QaV7M-iOqGVlJ40-wTzxy9caE5OA
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/1-diaspora-aspects-9aa7ae.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -256,6 +255,6 @@ Across all four systems, **the same measurement gap recurs**: every one ships th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Lqm5ikL9TRSCGAIlkdhUCVu_SReFJu5vdzkoVDGgmHc
+<<^ code=`&#x0003;`>>ni:///sha-256;4P1BAZHaEu9ddx8CcZVvTCM9SPp7xV7sA3VPf-ei62I
 
 <<^ code=`&#x0004;` to=`?`>>

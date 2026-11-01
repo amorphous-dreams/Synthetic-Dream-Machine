@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/async-flows.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 17
@@ -180,6 +179,6 @@ write toward; it describes no current emission.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;GXfMwOr-lRpfIjf--WkBa3AO0slxbASPZQT_F1VXr9k
+<<^ code=`&#x0003;`>>ni:///sha-256;EigD2c3lugffl9Bl4eg1-zNmlXMYgy2YG4J6_SAOYsA
 
 <<^ code=`&#x0004;` to=`?`>>

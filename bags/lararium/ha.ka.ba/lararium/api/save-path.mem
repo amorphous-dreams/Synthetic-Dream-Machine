@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/save-path.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 18
@@ -180,6 +179,6 @@ title on the console.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;dqDpgTdEUsprh9NJBOK-cQFeMt6APYny_ABuK4nDmi4
+<<^ code=`&#x0003;`>>ni:///sha-256;tRMcp_lyacdNYIrAD03xZ4vDiV-DV8H5Vvpuhrx4aKw
 
 <<^ code=`&#x0004;` to=`?`>>

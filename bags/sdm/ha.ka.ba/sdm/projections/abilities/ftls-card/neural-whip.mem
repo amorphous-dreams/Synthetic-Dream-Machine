@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -57,6 +56,6 @@ A neural tentacle of stuckforce lashes out and strikes ''against Defense'' — n
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;L8YYx8AQmPal126qQ55rwibFC_klbgDIW83Y_lGp8XI
+<<^ code=`&#x0003;`>>ni:///sha-256;9nL8t0rq5ZtZeyPEWpR-9PVo-U3NGu8FGwUaB9aK8SM
 
 <<^ code=`&#x0004;` to=`?`>>

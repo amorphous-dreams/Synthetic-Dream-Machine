@@ -6,7 +6,6 @@
 ```toml meta
 cacheable  = true
 drafted-on = "2026-07-27"
-file-path  = "bags/lararium/ha.ka.ba/lararium/api/hydration-grain.mem"
 hydrate    = true
 l-space    = "stable"
 mana       = 13
@@ -117,6 +116,6 @@ Any snapshot design MUST satisfy these; none of them awaits research.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_8krmM129rS2XLORNEmgZvkpfxewhB9hQVzos9Gf-Yg
+<<^ code=`&#x0003;`>>ni:///sha-256;gD5RqLpUEfrY1xdFu4RsVgYhfsS2JrY1LH5ZiuOsXDQ
 
 <<^ code=`&#x0004;` to=`?`>>

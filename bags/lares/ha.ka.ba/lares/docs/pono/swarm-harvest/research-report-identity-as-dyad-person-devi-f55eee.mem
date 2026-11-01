@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/research-report-identity-as-dyad-person-devi-f55eee.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -153,6 +152,6 @@ Both of these, if correct, would suggest the **dyad is the wrong unit** — the 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;excbVg3tGApsOykuAhNIkz8tPX_qcI_HJyUKSxMZPEc
+<<^ code=`&#x0003;`>>ni:///sha-256;4XTb3H7iY_h0kpUUx91KZZPCxYXNFC-axRCLIjXZrX4
 
 <<^ code=`&#x0004;` to=`?`>>

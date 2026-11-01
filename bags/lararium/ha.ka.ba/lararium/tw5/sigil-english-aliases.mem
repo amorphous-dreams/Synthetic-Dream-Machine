@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/sigil-english-aliases.mem"
 mana      = 17
 manao     = 17
 manaoio   = 16
@@ -75,6 +74,6 @@ the canonical dispatch through the Hawaiian implementation.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;QfGkV4sMzqe6ifh4P-aSim6VSZxNn6bGXz82bmIkHRc
+<<^ code=`&#x0003;`>>ni:///sha-256;0bcpnra2z-i1uOAaq6qMeNqaQCT5ijKQxlaKYqxocXc
 
 <<^ code=`&#x0004;` to=`?`>>

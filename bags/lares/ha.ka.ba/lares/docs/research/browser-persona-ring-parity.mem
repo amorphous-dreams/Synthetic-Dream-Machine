@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/browser-persona-ring-parity.mem"
 l-space   = "lares"
 mana      = 17
 manao     = 17
@@ -144,5 +143,5 @@ No code deletion, browser import, inbound transport, grant format change, or enf
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;6UEb2Ibrk_Mmox3iBYM02_sTf72tU_m_VK53KC9y7dg
+<<^ code=`&#x0003;`>>ni:///sha-256;KrjEo-1E6Hdbp5ABAHLjPS9P3jINedaiud_MPDXx2RU
 <<^ code=`&#x0004;` to=`?`>>

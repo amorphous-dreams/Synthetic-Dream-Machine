@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/what-a-nexus-wants.mem"
 l-space       = "stable"
 mana          = 6
 manao         = 6
@@ -62,6 +61,6 @@ The conversion act (`the-thing-event`) runs on an assembly standing as the third
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;c-OC27fNyNsNs4NQnLJa_iVqVgJEVBjVVPMANZvkCZQ
+<<^ code=`&#x0003;`>>ni:///sha-256;iHnVstq2UKdO0PyaAVcr0OoPb2JQIGEX8KMBg_9d-tA
 
 <<^ code=`&#x0004;` to=`?`>>

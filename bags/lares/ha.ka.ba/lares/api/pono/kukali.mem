@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/kukali.mem"
 mana      = 17
 manao     = 16
 manaoio   = 16
@@ -148,6 +147,6 @@ sigilName = "kukali"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Fmfa54OYDep_6upokYkBs9360gjYNAj-QZk7J5rZ_Fs
+<<^ code=`&#x0003;`>>ni:///sha-256;ZdFErnPHufZvAO2PWH9jIRmh2WkSrEUNQ4frZa88jxQ
 
 <<^ code=`&#x0004;` to=`?`>>

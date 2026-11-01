@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/nalu.mem"
 l-space     = "stable"
 mana        = 18
 manao       = 17
@@ -335,6 +334,6 @@ lands and what refuses follow from state alone (`lar:///ha.ka.ba/lares/docs/pono
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ImE1GyDrvKXQBXFNrJrSfOg1zI0tE5dLzq5CdVJFt9Q
+<<^ code=`&#x0003;`>>ni:///sha-256;GTjG7-dU1wH3MTx5ZgzmVz92_obLBw7TRqLedV94t8g
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/sharktooth-sigils.mem"
 mana      = 18
 manao     = 18
 manaoio   = 18
@@ -46,6 +45,6 @@ discovered sigil set.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;OBKB8_FfD1zNsocbhIuf37_O8MitU2WvfMO1IymGO58
+<<^ code=`&#x0003;`>>ni:///sha-256;IiD3yTAIyO40WuAylrQg-rXt4rn-80PXleHy2xkmPU0
 
 <<^ code=`&#x0004;` to=`?`>>

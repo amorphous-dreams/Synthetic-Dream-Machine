@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/tw5-calls-colon-caveat.mem"
 l-space    = "stable"
 mana       = 12
 manao      = 14
@@ -103,6 +102,6 @@ A time of day trips the case a URI trips, so the warning leads with the general 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;vorRxZNyrWoFgQZWvODrxf-WrLDkzIEgrW0tECzacTs
+<<^ code=`&#x0003;`>>ni:///sha-256;L9mx5mhhEvgCmMnMl_GdEvaw4-1DVUk4qJsj4-ztDfg
 
 <<^ code=`&#x0004;` to=`?`>>

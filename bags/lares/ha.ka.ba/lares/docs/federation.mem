@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/federation.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
@@ -149,6 +148,6 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;xymD_yHDQR0yrsP9jhnYAMK8wBQ4Dbb0wKnaEM25pvo
+<<^ code=`&#x0003;`>>ni:///sha-256;YJ7asvU56ybhsoEjmFn1fKlvKtPz0rblA0oDNImLw9M
 
 <<^ code=`&#x0004;` to=`?`>>

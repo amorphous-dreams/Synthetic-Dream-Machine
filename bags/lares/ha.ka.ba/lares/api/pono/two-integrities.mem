@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/two-integrities.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 16
@@ -132,6 +131,6 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;uKUxpNI4Op_xLfHNuKYaJJo5dGHFd6kHdkLlqa7L4_E
+<<^ code=`&#x0003;`>>ni:///sha-256;evFixu_vTSTXX6lfT5qlBYHhfs1i14poDo8AgjkwlbM
 
 <<^ code=`&#x0004;` to=`?`>>

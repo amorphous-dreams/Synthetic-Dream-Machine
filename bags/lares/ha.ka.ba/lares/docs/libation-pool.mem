@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/libation-pool.mem"
 l-space   = "unstable"
 mana      = 10
 manao     = 10
@@ -690,6 +689,6 @@ Each stands as a proposal; the operator's mind originates and none binds until r
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/infrastructure-as-myth`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/federation`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;kVcJnThPC45sqwzpXp_73bQjhc2v7NwhvCF_AKZjdow
+<<^ code=`&#x0003;`>>ni:///sha-256;mHpCSXzfq67cqO3bMFeCV6E7Iy6JQd88OnLaWX9EgZo
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/projection-registry.mem"
 l-space     = "lararium"
 mana        = 3
 role        = "self-documentation: TODO describe projection-registry.ts"
@@ -21,6 +20,6 @@ TODO: describe the load-bearing surface this file owns.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-1XukRbiTDzRi2T6_26oBBazDJak3kS-yEh2zMiyeZo
+<<^ code=`&#x0003;`>>ni:///sha-256;LXxKY9MJ2ytc2Fm0juOhf1RSRU37uB6DjGZHVCCVLPs
 
 <<^ code=`&#x0004;` to=`?`>>

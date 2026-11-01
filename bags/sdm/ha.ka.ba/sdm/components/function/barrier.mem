@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "barrier"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/function/barrier.mem"
 l-space   = "sdm"
 mana      = 13
 manao     = 16
@@ -70,6 +69,6 @@ Pairs with `domain/abjuration` (defensive intent) and `domain/stuckforce` (a wal
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;27GxhAz5FeHFIimEK4poa3KSlrAhaaWQNDSqaetT0vk
+<<^ code=`&#x0003;`>>ni:///sha-256;91YPmCOCeHixFZMTn-KtyPk381aq2-90hC3YqdtNxxg
 
 <<^ code=`&#x0004;` to=`?`>>

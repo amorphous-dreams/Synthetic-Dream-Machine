@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "burden"
-file-path = "bags/sdm/ha.ka.ba/sdm/mount-points/burden.mem"
 l-space   = "sdm"
 mana      = 15
 manao     = 17
@@ -87,6 +86,6 @@ Burden is itself the overflow sink for Trait and Item. Past 20, the character is
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;wT-RULp9Y70hY-NbqfVWaYOhDEDsNnpRc9P-7Nwe1Pk
+<<^ code=`&#x0003;`>>ni:///sha-256;0eHl17SaFRpD-F06rKlgGxcfb-w3cRHXxz3U5Vp6ApE
 
 <<^ code=`&#x0004;` to=`?`>>

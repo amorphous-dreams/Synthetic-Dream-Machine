@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "Porter's Pebble"
-file-path = "bags/sdm/ha.ka.ba/sdm/modules/items/porters-pebble.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -88,6 +87,6 @@ A botched activation or a sundered pebble follows the `item` mount-point's failu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Mv155OWIvrU7bgcgxtk2C5KT2rpueNxcnl6Uxw2wzIg
+<<^ code=`&#x0003;`>>ni:///sha-256;2WWN7wLdK09LCErrPwX2YOhDnZkFNtWRkhuAYcNp14E
 
 <<^ code=`&#x0004;` to=`?`>>

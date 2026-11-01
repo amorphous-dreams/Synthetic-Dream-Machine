@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/matrix-homeserver-economics-centralization-m-e95a71.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -266,6 +265,6 @@ Findings from this series:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;a6kQOcWWrFteugcgfU5H7a8gWgLCor2IdzihTrukOcM
+<<^ code=`&#x0003;`>>ni:///sha-256;ADcJK7y9X__2nCAkISZIt1FryAEdwRLlP2GPii7Z_bw
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -180,6 +179,6 @@ Bring three agreements to the first session:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ptoJNIILio27WgEzTDAGrwLmdyqm8tpe76uzXppWSEc
+<<^ code=`&#x0003;`>>ni:///sha-256;rlMLr-gxHnm3gSLk5mtqdZM4CMKZQ988o8y-0vlUZjk
 
 <<^ code=`&#x0004;` to=`?`>>

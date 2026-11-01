@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/books/a-broken-world/spine.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -66,6 +65,6 @@ comes only after all source text reads as moved.)//
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;auRD8zenDQCDADHeUqPsLUnhg8_xi69NC4fhr2fD97A
+<<^ code=`&#x0003;`>>ni:///sha-256;xOz9iyIImucIf0XOpzLLlyZgKEmGUrxoM3ZyPvu6vnQ
 
 <<^ code=`&#x0004;` to=`?`>>

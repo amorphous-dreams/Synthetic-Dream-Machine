@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/recipe-watch.mem"
 l-space     = "lararium"
 mana        = 11
 manao       = 11
@@ -86,6 +85,6 @@ CRDT slot the oracles point at.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;sGXe4-ZL3DY_Gsj51R6jjbSxDjOA_2SJQ8UmBX8QAPs
+<<^ code=`&#x0003;`>>ni:///sha-256;-vgKTet-HeORscVWzF_zUDHucc2tiKWC-A0kOlo1CiU
 
 <<^ code=`&#x0004;` to=`?`>>

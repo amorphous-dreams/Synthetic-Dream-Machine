@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/lib-smol-toml.mem"
 mana      = 17
 manao     = 16
 manaoio   = 16
@@ -71,6 +70,6 @@ component properties, and tick-scoped state in a WYSIWYG-friendly field structur
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;OaB8HX38520--usNWzBkl5auHfp5fZueS6tJV3o1KN0
+<<^ code=`&#x0003;`>>ni:///sha-256;iJQiFz7MtSCS0VbKUZKl-ULtFnU9TYHj4bR5-Qf0CL4
 
 <<^ code=`&#x0004;` to=`?`>>

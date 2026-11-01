@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/hud.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
@@ -192,6 +191,6 @@ The opening header declares the state that //governs// a span (prospective). In-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;5kYMqegO7PlWovJYNX9VwPTbucB1rhCahz7fxCCdDtY
+<<^ code=`&#x0003;`>>ni:///sha-256;BlFviHI9R4DAiU-BKrC_8GkDjeOpT9vdasboZ_GZznI
 
 <<^ code=`&#x0004;` to=`?`>>

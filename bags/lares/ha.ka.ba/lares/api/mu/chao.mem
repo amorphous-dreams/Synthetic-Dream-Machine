@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/mu/chao.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 17
@@ -156,6 +155,6 @@ A lar URI with all three slots aligned reads the address back at the Chao's rota
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;EQxSZTpt7PEyf8K_CwZdAJLLmkOORsTxb3-iU416Igg
+<<^ code=`&#x0003;`>>ni:///sha-256;JhurZ_q4sn9E6ag19FEzd4O9Ehps6_ImEQTLLE8kciQ
 
 <<^ code=`&#x0004;` to=`?`>>

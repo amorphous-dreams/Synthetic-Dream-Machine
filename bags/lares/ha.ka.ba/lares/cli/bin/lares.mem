@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/cli/bin/lares.mem"
 l-space   = "lararium"
 mana      = 10
 role      = "operator-CLI dispatch entry — every operator-facing ceremony routes through this binary"
@@ -27,6 +26,6 @@ Architecture invariants this entry preserves: web2 smell test (no HTTP/RPC dispa
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;NhAKGA2WQTqwcllffflW-5sxGANkQbze6dTWgtDspYw
+<<^ code=`&#x0003;`>>ni:///sha-256;4yFcKDAfke5KcQEiGZAVDod_4pJYpdYp8zXPXXUgDvI
 
 <<^ code=`&#x0004;` to=`?`>>

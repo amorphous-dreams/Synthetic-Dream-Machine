@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal/render-targets.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -410,6 +409,6 @@ Before emitting any stance block on any surface:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9nezMGUysqMi9MqfFPR54Mu_ZTrjszvKeEFyEOkS2-k
+<<^ code=`&#x0003;`>>ni:///sha-256;qTjk8ymV1459xk77SbwaQb3JxO3XcNxJ4qq2ZsQTB24
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/gold-anchor.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 18
@@ -382,6 +381,6 @@ spirit's lane); this meme states the design they enact.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;NAUHmMbu0uHzSQWfYYrMAED2V2s0QMsqD3dnCk--lWo
+<<^ code=`&#x0003;`>>ni:///sha-256;C0yI6CDw905jkOSdDACk_aDl_j0ZhsxzVXqZBb6e-ZE
 
 <<^ code=`&#x0004;` to=`?`>>

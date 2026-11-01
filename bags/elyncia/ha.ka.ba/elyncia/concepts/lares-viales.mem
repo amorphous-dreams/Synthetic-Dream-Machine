@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/lares-viales.mem"
 l-space   = "stable:@elyncia"
 mana      = 14
 manao     = 14
@@ -63,6 +62,6 @@ The cap-model names this minimal stack exactly — the ''same keel as the temple
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;N1Aj-OkQsSXJnRXkHDRqkWEXIQHZ7yZWuNw61n5rVFY
+<<^ code=`&#x0003;`>>ni:///sha-256;empk_fKBFxFsMaSqUmeevWUM9Tk9nVMTCXUjUn9xyBc
 
 <<^ code=`&#x0004;` to=`?`>>

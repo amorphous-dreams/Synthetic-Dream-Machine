@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/face-proof.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 17
@@ -398,6 +397,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;heWSSLUqFu4HxfsbC3voLNa90cDlS9rGVg-RYM6dELE
+<<^ code=`&#x0003;`>>ni:///sha-256;xE9gMPBPBKDrIcF_2J0OSxHo1b1n63itei--qEJQe40
 
 <<^ code=`&#x0004;` to=`?`>>

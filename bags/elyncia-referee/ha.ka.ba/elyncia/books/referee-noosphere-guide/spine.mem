@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/books/referee-noosphere-guide/spine.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -64,6 +63,6 @@ comes only after all source text reads as moved.)//
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;xW33smWRXYAssIu3fn-gzyYu7L-aoFqlT2MsptOQFkY
+<<^ code=`&#x0003;`>>ni:///sha-256;ijqSMg-KhdCNglW4Do6RQEg82GT0A-VuCDedgIDYRQY
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/part-a-keybase-1f2d42.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -145,6 +144,6 @@ All three systems that market themselves as "no single key" arrive at the *same*
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;gJeUTp21TD08V_p-PPFlHTPw9Bqx8XKLDNW0W0CeQDQ
+<<^ code=`&#x0003;`>>ni:///sha-256;H_hv5tWd2SHj5RS1vpU0GCX14zDZnKIHlOrdPmatrKw
 
 <<^ code=`&#x0004;` to=`?`>>

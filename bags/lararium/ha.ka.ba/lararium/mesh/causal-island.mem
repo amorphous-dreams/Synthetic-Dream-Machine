@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/causal-island.mem"
 hydrate     = true
 l-space     = "lararium"
 mana        = 18
@@ -167,6 +166,6 @@ Related (project tiddlers): [[project_no_vm_on_main_thread]], [[feedback_isomorp
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;s04h7DP0BngQWcxjiBfG0Ro0gMRD89U_3vScGN17uCM
+<<^ code=`&#x0003;`>>ni:///sha-256;6E75vm5Ctf2KDRPASKDyUOeeiAf3QKRW1nurlHXpjRQ
 
 <<^ code=`&#x0004;` to=`?`>>

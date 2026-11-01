@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/the-lifts.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -35,6 +34,6 @@ politics.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;T8pPUHMbdOrHC3zB1jo67Tyn8zxgzYikKvPtlxkd-fo
+<<^ code=`&#x0003;`>>ni:///sha-256;ZYGM6fVPPYwMqmsKyY3PJ_kgyq32sNz3hIEBjAI_mSU
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/island-adaptor.mem"
 l-space     = "lararium"
 mana        = 3
 role        = "self-documentation: TODO describe island-adaptor.ts"
@@ -21,6 +20,6 @@ TODO: describe the load-bearing surface this file owns.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;DnxB8q-gFkjs1mIW8Cu0ub_aJQ1G3dz7ZpgYHY1E434
+<<^ code=`&#x0003;`>>ni:///sha-256;p6MQsm-Xots3kZ6kW3HC2xcWxIYcubPx5R15ibxeukk
 
 <<^ code=`&#x0004;` to=`?`>>

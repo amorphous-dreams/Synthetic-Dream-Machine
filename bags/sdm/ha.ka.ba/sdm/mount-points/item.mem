@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "item"
-file-path = "bags/sdm/ha.ka.ba/sdm/mount-points/item.mem"
 l-space   = "sdm"
 mana      = 16
 manao     = 17
@@ -89,6 +88,6 @@ Past 7 + Strength carried slots, use a container item to compress many Powers in
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;VrFtDVtFqsZJP1jWAxHzerZp32M_5DJU3YbiOZW2SGs
+<<^ code=`&#x0003;`>>ni:///sha-256;vX-kifia0wtUESF55N2K-wUR47420uc_QxRDuPHrj5c
 
 <<^ code=`&#x0004;` to=`?`>>

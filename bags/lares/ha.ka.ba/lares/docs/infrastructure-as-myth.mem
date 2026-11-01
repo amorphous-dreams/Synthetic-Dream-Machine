@@ -6,7 +6,6 @@
 ```toml meta
 authors        = "Joshua Fontany; Freyja Fontany; Lares (the agentic-AI co-author — a personified, in-stream navigational layer, authored through the grammar this paper describes)"
 cacheable      = true
-file-path      = "bags/lares/ha.ka.ba/lares/docs/infrastructure-as-myth.mem"
 first-drafted  = "2026-04-06"
 l-space        = "stable"
 last-reviewed  = "2026-08-24"
@@ -694,6 +693,6 @@ Aikhenvald 2000, //Classifiers// · Asai et al. 2023, //Self-RAG//, arXiv:2310.1
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;JjAvqMi0a56psISDmiGinkG5HC3Pij19qfJ8ii93k7A
+<<^ code=`&#x0003;`>>ni:///sha-256;Tl1oYmSPCqy9aCYr2xl_fZTPUgzM77JSpDfPHYVXMYU
 
 <<^ code=`&#x0004;` to=`?`>>

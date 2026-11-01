@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k15-bonds-lane.mem"
 l-space   = "adjacent"
 role      = "the K15 bonds lane's kit: no seed reaches past the floor. The place mints no Keyhive identity, every face operation signs by the selected face's atom, the relay key is a random relay-only S row, cadence reads a public id, every floor edge signs through the scoped place signer, and the seed census follows renamed carriers"
 status    = "draft"
@@ -57,6 +56,6 @@ No CRDT document survives until X0, so re-genesis replaces migration. The node, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;jgf_FHxnreZ3rw4oXlwqFTyIxJKzPpQdfYIWeGR35_U
+<<^ code=`&#x0003;`>>ni:///sha-256;A2f8G3W5WXCRI8zCYy33lyF2F3sKKSA5sjTXQBs-fvU
 
 <<^ code=`&#x0004;` to=`?`>>

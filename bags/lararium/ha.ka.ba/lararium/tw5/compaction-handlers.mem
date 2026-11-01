@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/compaction-handlers.mem"
 l-space     = "lararium"
 mana        = 12
 manao       = 12
@@ -130,6 +129,6 @@ is free recovery until growth on a long-lived high-churn bag actually bites
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;cIEx_clmWLScjb05Rq3WRF7s9mYhogzV-goQMDMTmvY
+<<^ code=`&#x0003;`>>ni:///sha-256;RnDAAw5mXleFU5oTc0kq7zeo0LGAzFrxVfd6HFOmf1Y
 
 <<^ code=`&#x0004;` to=`?`>>

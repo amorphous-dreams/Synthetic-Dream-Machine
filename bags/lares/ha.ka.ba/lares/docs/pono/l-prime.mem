@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/l-prime.mem"
 role      = "docs companion for l-prime: research provenance, braid notes, and binary-ward guidance"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/l-prime"
@@ -91,6 +90,6 @@ The ward governs grammar alone. Every `${copula}` that passes under the lit ward
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;WBcDOabma_U-G2wkkEfuyunbErHcufiLUjpMpGTQEFo
+<<^ code=`&#x0003;`>>ni:///sha-256;tC_QQPcu0qfMnz0LdhwdntxQcPpx65UT5--_A8tfJHQ
 
 <<^ code=`&#x0004;` to=`?`>>

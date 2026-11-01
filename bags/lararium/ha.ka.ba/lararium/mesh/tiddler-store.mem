@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/tiddler-store.mem"
 l-space     = "lararium"
 mana        = 14
 role        = "invariant law: LarTiddlerStore — the TW5-NEUTRAL store contract. Five layers with a stated priority, and four hard rules: the live view may override canon and MUST NOT mutate it, the session layer must not leak drafts or temp into shared state, canon promotion stays closed until a receipt graph stands, and deletion marks rather than removes."
@@ -67,6 +66,6 @@ rather than an absence it must guess at.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/meme-provider`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;cEIvxJLNKtHwcK5qJdLOXAOsMnnoQK5Ke6P-Do33RK8
+<<^ code=`&#x0003;`>>ni:///sha-256;QxZGNZKy8PKV8IZ0TOk9S-8l-JKxomHTGUjc_j6rjuY
 
 <<^ code=`&#x0004;` to=`?`>>

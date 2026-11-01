@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/peer-discovery.mem"
 mana      = 18
 manao     = 18
 manaoio   = 17
@@ -277,6 +276,6 @@ state stays local-first, no-global-now enacted rather than breached.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;awvQKByAEq1vMSu3bWJ3YxOCgfXjPQs8F4B5maSZaV8
+<<^ code=`&#x0003;`>>ni:///sha-256;yPa1iZg5KM7tfgWZrEK1Ui45drr04wdYq4IenUyFS5Y
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/node/carry-bundle.mem"
 l-space     = "lararium"
 mana        = 13
 role        = "invariant law: a herm's EXPLICIT JOIN, carried by hand — the quorum's counted `carry` over the herm's own vessel key, its counted causal past, and the place floor pin claims (with their KEL rows) the issuing hearth's board carries. The herm's take writes them onto its OWN replica of that Nexus's carriage board, so its own fold counts it carried there and its floor gate stands at that Nexus and only there. The admit bundle's twin for a place: the herm membership relay ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings), so the quorum's act travels by hand."
@@ -81,6 +80,6 @@ act, the claim and the rows in one write, and emits this bundle from there. A pa
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/place-floor-pin`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3DXWB2t671le5AB0wthrX8Q21ts4CzXCZSbUtnO-C7o
+<<^ code=`&#x0003;`>>ni:///sha-256;uvMY6fEZek-gcQCHDD6bzsXB3fgD94OZAMUhudujqLc
 
 <<^ code=`&#x0004;` to=`?`>>

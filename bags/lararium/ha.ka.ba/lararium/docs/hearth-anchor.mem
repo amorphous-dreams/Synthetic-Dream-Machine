@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/hearth-anchor.mem"
 l-space   = "adjacent"
 role      = "freshness anchors for unattended ember raises: what a disk copy can carry; what hardware proves per ask; what each household pays in setup, upkeep and recovery; the confirm-only floor and the WSL2 ruling"
 status    = "draft"
@@ -129,6 +128,6 @@ For the operator's WSL2 hearth, keep every ember confirm-only today. The measure
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;OVrmxRRKlHC8X4keWbHRgo5t9zMhYxes-eDi6PCzOfY
+<<^ code=`&#x0003;`>>ni:///sha-256;OAt_6byZKQH3krj7XuC3ajK1d-yM2SCHg6WPKLNxHZ0
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/ingest-canon.mem"
 hydrate   = true
 l-space   = "lararium"
 mana      = 18
@@ -224,6 +223,6 @@ linonetwo's tw-react + TidGi):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;1okAW6qlI92Oz34O15-hkwm_Ka7AA7REO8yVL72LOf8
+<<^ code=`&#x0003;`>>ni:///sha-256;pIh35pmHxt6eo2NvqTD9wWwKQOntdbr-lXjwXQ32vd8
 
 <<^ code=`&#x0004;` to=`?`>>

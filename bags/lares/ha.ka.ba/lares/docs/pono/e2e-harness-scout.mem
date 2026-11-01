@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/e2e-harness-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -221,6 +220,6 @@ Finally, two housekeeping notes worth the operator's ear: add a named `test:e2e:
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;RZtRVHud3FO6s05DdEI0Cb8mIklriWzl74VXVdt9f84
+<<^ code=`&#x0003;`>>ni:///sha-256;C8O_wgziZKX0uRDiGazPMioG-4usyeAts9so9SQU_Lk
 
 <<^ code=`&#x0004;` to=`?`>>

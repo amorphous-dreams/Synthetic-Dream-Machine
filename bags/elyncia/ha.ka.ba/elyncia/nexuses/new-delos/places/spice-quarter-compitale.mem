@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/spice-quarter-compitale.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -49,6 +48,6 @@ Undermarket behind the Cistern Wall, the East Gate warehouses.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;RfIkv71lEwcW2S_mgMpdencNjoCJVmIZYhgK0rgz3-s
+<<^ code=`&#x0003;`>>ni:///sha-256;rboC_CDpPMhNouyXGT-E95XHjja_HglQOXIFw_z1svo
 
 <<^ code=`&#x0004;` to=`?`>>

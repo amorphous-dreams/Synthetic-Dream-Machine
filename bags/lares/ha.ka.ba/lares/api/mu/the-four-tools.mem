@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/mu/the-four-tools.mem"
 hydrate       = true
 l-space       = "stable"
 mana          = 17
@@ -306,6 +305,6 @@ arcana   = "release"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;cAzkS1alsn57NOg9_YhSxfg6EfiruMs5lmnoz7Vsf9U
+<<^ code=`&#x0003;`>>ni:///sha-256;c804GxiRLNc1wpIeptnanwk1UcwjcHlakW7WJum2PSU
 
 <<^ code=`&#x0004;` to=`?`>>

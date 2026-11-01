@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/mu/the-four-tools.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -88,6 +87,6 @@ one clean preference for model agnosticism over paranoia.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;xSO7pl7FYAHeuW224dJi_-q5GKy95iHFuilnJZumcSY
+<<^ code=`&#x0003;`>>ni:///sha-256;TPPXiy0mswhYbB1lDgU_dWhpwLsArju0310IuHwmD0E
 
 <<^ code=`&#x0004;` to=`?`>>

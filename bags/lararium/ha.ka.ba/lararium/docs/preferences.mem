@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -80,6 +79,6 @@ This pass only promotes concepts that recur strongly enough to feel load-bearing
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;rDJFRw9uyee21nBpLyTeHQ9aGbtcuSBq6MYGX2t2oCc
+<<^ code=`&#x0003;`>>ni:///sha-256;PdgRK6LjDHIRKY-gZGl3545ZK1UihZycXckwGNWf8s8
 
 <<^ code=`&#x0004;` to=`?`>>

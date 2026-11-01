@@ -9,7 +9,6 @@ cacheable         = false
 corpus            = "complete published works of Samuel Langhorne Clemens via archive.org — novels, travel writing, essays, autobiographical dictations, published letters; riverboat and frontier American culture as world-frame"
 created           = "Invalid Date"
 encroach          = false
-file-path         = "bags/lares/ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain.mem"
 foreground-voices = ["Muse", "Pedagogue", "Stranger", "Hierophant", "Council"]
 fourth-wall       = true
 l-space           = "stable"
@@ -161,6 +160,6 @@ Remaining Voices — Gatekeeper, Lorekeeper, Scryer, Artificer, Advocate, Diplom
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;sw4af7yn0NSelxaXi49qvI_nQO_4CQ9wHzuoXuz7gjI
+<<^ code=`&#x0003;`>>ni:///sha-256;O4rYDrbqw5ziUEboA8ub9TSff4TY0h-iLVYSqt061ss
 
 <<^ code=`&#x0004;` to=`?`>>

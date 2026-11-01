@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/verse-type-lattice.mem"
 l-space     = "stable"
 mana        = 17
 manao       = 17
@@ -190,6 +189,6 @@ See `uefn-scene` for the `reaction:subscribable` edge format and `KumuSubscribab
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Q3Iig9XWfrKtfx3NCymUdaqscljLYW_G6J2zd5Z0zAQ
+<<^ code=`&#x0003;`>>ni:///sha-256;pYCPG4zHpdC0uTBN4Cq1DpPQJqgYhiEG-HddrJcjE7c
 
 <<^ code=`&#x0004;` to=`?`>>

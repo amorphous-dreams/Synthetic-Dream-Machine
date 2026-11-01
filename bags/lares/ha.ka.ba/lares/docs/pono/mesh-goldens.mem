@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/mesh-goldens.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
@@ -72,6 +71,6 @@ The Muse drafted the model; a Copilot Chao pair read it against the tree. Hodge 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;PoO6D4AJNXVBcaBnqlAQIXpLJXejUsqrrgstXnWxYT8
+<<^ code=`&#x0003;`>>ni:///sha-256;oniE7V3AP6eZfx_Qc2BT7rRHjwzk5Y9kMGuyrgvo3SE
 
 <<^ code=`&#x0004;` to=`?`>>

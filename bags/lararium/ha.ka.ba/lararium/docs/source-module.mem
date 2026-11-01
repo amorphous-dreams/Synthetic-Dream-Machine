@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/source-module.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 16
@@ -107,6 +106,6 @@ The `write-source-memes.ts` script MUST:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;TiWT7Q0Ey_9TAo-bHMXojLQ28Ob9ZskwP5sRYpZrcg4
+<<^ code=`&#x0003;`>>ni:///sha-256;6Nx6cv-_YT5iRfqTaWi4VmBgxWyysTNBSqhCF1NtL9A
 
 <<^ code=`&#x0004;` to=`?`>>

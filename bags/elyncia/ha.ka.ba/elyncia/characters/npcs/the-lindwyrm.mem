@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 15
@@ -85,6 +84,6 @@ only as much as suits her.''
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;cIOdf7ocdloFK0Qd1hM-y1J7sYst6fSInMdi-DY3Y50
+<<^ code=`&#x0003;`>>ni:///sha-256;zZQ9Kvets7phgtD2Bmoxcknv2XJfOlNk9QO5tPauHuU
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/wsl2/incident-2026-09-18.mem"
 l-space    = "stable"
 mana       = 12
 manao      = 14
@@ -80,6 +79,6 @@ The fault sits in the regenerated parser with the new external scanner, fed a br
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;WJVmBO3Dv79GfpkbSBTxpZ3msOtryLo23qpsTAnOpgo
+<<^ code=`&#x0003;`>>ni:///sha-256;NApi-mle0tlPv9pKWQPT0-iGeUYoDuwhsu2HGCFTdTY
 
 <<^ code=`&#x0004;` to=`?`>>

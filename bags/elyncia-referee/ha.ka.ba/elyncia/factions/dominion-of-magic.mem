@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/factions/dominion-of-magic.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 15
@@ -67,6 +66,6 @@ on an answer their founder knows was a lie.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iVhN4Sq_8PH3Um-KuWum-0o8GfesOaN8QKbzCpHApN0
+<<^ code=`&#x0003;`>>ni:///sha-256;e3hUlMupvPUZbHiNQS4uDU3OVnyhRZ-JPXPEIM27IXg
 
 <<^ code=`&#x0004;` to=`?`>>

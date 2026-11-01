@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/api/vendor/claude-code-harness.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -196,6 +195,6 @@ built against them tests behaviour, never a schema.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Zp5ZtmDz49h08msCp1lzdKk1iaQTPRuKl7iohZthUOE
+<<^ code=`&#x0003;`>>ni:///sha-256;mGQsQCPG_cwV-1cSvLFl18qA7fYBJxN5nXb5RUnFlEs
 
 <<^ code=`&#x0004;` to=`?`>>

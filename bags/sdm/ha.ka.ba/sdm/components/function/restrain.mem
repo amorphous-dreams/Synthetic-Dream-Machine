@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "restrain"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/function/restrain.mem"
 l-space   = "sdm"
 mana      = 13
 manao     = 16
@@ -71,6 +70,6 @@ Carries `hook/attack` (the grip resolves against Defense). Pairs with `domain/st
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;RGe2WrtwiLIUTtKbNUFlI7GB6UkHgbCHC8gH9Ac9BPA
+<<^ code=`&#x0003;`>>ni:///sha-256;ayIERKbeiT9NVr4enyFHf-gVeIVCv5KLfoGvRm5vI-M
 
 <<^ code=`&#x0004;` to=`?`>>

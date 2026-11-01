@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/illyria/region-worksheet.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -85,6 +84,6 @@ lowest tide.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;5ueaoLzbJE7Z1g4RiugovCx3NfIXAaFk8SGjEDsx_ZA
+<<^ code=`&#x0003;`>>ni:///sha-256;CYpeIgMz05eyK0a8Kthef1NJoYQ1QaRkDCPfnQYH2JE
 
 <<^ code=`&#x0004;` to=`?`>>

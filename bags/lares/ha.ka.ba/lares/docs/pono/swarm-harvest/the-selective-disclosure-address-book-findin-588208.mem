@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/the-selective-disclosure-address-book-findin-588208.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -200,6 +199,6 @@ Cwtch does ship multiple profiles, one Tor v3 onion each — but **nowhere claim
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;MD06Gw5aKDmc0godWoJnrnnxDbZkLZvmWrlX9IUNdE8
+<<^ code=`&#x0003;`>>ni:///sha-256;_CONBXNwiRFaBQRycuCHBjb_9q9h8WXy0W_AxH2Wdro
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/hud.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 17
@@ -122,6 +121,6 @@ The docs room carries the full line-composition examples, the stance and tool gl
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;r3w6F4XI4nKo_DVYQ-lHWztWpL3V_gpU1Lrc8C6wXxo
+<<^ code=`&#x0003;`>>ni:///sha-256;vOK1sUGYEGZ5pDWRH9SgdRHkZLhu7bJop4U--6Ni9Yo
 
 <<^ code=`&#x0004;` to=`?`>>

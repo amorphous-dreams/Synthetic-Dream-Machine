@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/mudlet-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -372,6 +371,6 @@ All work outside the tracked tree under a scratch `LAR_ROOT`; e2e vessels per th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;UFCEmGGtSvR35HPvMGkW-eBvKRy1PBQuy-MsyvyAtk4
+<<^ code=`&#x0003;`>>ni:///sha-256;rLh-JIFGyUCI9B88eM8okt02_n491xhEb8lbbk6Kuhw
 
 <<^ code=`&#x0004;` to=`?`>>

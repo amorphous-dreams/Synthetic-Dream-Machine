@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger.mem"
 l-space   = "adjacent"
 mana      = 14
 manao     = 15
@@ -110,6 +109,6 @@ Likely next slices:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;p9EfOar5CdB_XF4-XRMIh9REVsy_Za8Q_amqAwAVObA
+<<^ code=`&#x0003;`>>ni:///sha-256;sPgH1ATCJhXLWy7-CRAomtB9Gfb1rgII49G04SvtGCw
 
 <<^ code=`&#x0004;` to=`?`>>

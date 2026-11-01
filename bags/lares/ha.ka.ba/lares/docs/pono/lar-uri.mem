@@ -9,7 +9,6 @@ cacheable = false
 cat       = "info"
 date      = "2026-10-03"
 docname   = "draft-fontany-lar-uri-scheme-00"
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/lar-uri.mem"
 ipr       = "trust200902"
 l-space   = "stable"
 mana      = 18
@@ -462,6 +461,6 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;W3em9qyA6tC6XfnjwW8DnSS8GnwFPQAZJU1THM6YWck
+<<^ code=`&#x0003;`>>ni:///sha-256;O_XiDP_GchXnkIfKaz_7OBK3yYz7NB3JdN_febloMig
 
 <<^ code=`&#x0004;` to=`?`>>

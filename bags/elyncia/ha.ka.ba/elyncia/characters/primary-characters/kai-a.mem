@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/kai-a.mem"
 l-space   = "adjacent"
 mana      = 12
 manao     = 12
@@ -85,6 +84,6 @@ stays a table question.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;4DbssQy-2Q2_q8Ha-x_ubCXcrkIimztOwwnpYc27KmI
+<<^ code=`&#x0003;`>>ni:///sha-256;vz7ptz4MSgUxOCVe3GxHtOeYBR3s858Qr6lAy6HyKu8
 
 <<^ code=`&#x0004;` to=`?`>>

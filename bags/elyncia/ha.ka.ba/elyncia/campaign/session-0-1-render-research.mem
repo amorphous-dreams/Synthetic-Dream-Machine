@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/elyncia/ha.ka.ba/elyncia/campaign/session-0-1-render-research.mem"
 l-space   = "adjacent"
 mana      = 14
 manao     = 14
@@ -613,6 +612,6 @@ Finding: Corpus yields strong *object* and *tag* vocabulary (Wild Mage item tabl
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;jYxTrU66fQBISnuEX4x9Y3m4mTDFFrLMaY4Iz21MKkg
+<<^ code=`&#x0003;`>>ni:///sha-256;XuTu_pRRk_xdyjpwyCjI8aUlAz2tWRmnV01CTr7oQds
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/history/consume-archive.mem"
 l-space   = "archive"
 mana      = 15
 manao     = 15
@@ -162,6 +161,6 @@ Every file below was read before it burned. Where a row names living carriers, t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;i04mtTtn4lB_FDDvV61XsVHm91SEJiuG8NrC1HJg0cc
+<<^ code=`&#x0003;`>>ni:///sha-256;8HxJwU8130512iOj5FWaqtzSQoHLc5X6s8d6VG5GPec
 
 <<^ code=`&#x0004;` to=`?`>>

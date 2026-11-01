@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/social-guardian-key-recovery-as-actually-pra-e9aa59.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -557,6 +556,6 @@ Krombholz et al., *"The Other Side of the Coin"* (Financial Cryptography 2016, D
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;GP9lHDX-7lSAGfXKkQSpV_wtXxGdlwm79RQ0zJmwdlU
+<<^ code=`&#x0003;`>>ni:///sha-256;CwxVex4lfZos453zLWWBviaaMrIafpXpDn1mBfjEfog
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/sigil-aka.mem"
 mana      = 16
 manao     = 16
 manaoio   = 15
@@ -114,6 +113,6 @@ could include thumbnail + og-title in the handshake). Hold open.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;BI6ehsvA6OfzDRM2RNb8Zqr9n4szl49K3PKuj6CokAo
+<<^ code=`&#x0003;`>>ni:///sha-256;11zkLiNoZR00lp1R7SKJKAEdOI5kCyQs6mx3ieTfb60
 
 <<^ code=`&#x0004;` to=`?`>>

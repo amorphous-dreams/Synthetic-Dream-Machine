@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/x-tiddlywiki-filter.mem"
 grammar-key = "x-tiddlywiki-filter"
 guest-mime  = "text/x-tiddlywiki-filter"
 mana        = 18
@@ -130,6 +129,6 @@ interchangeable in `hana` blocks. Prefer `"wikitext-filter"` for new authoring.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;aOM7io5RBC41Y2kvrYAu6r2EgCSyUQGMeOlpaff0Alc
+<<^ code=`&#x0003;`>>ni:///sha-256;Id1AIjzo-gb7IOVUmrX7zzV6zHGmw7DHCfyRaOm5zTU
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -4,7 +4,6 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path  = "bags/lares/ha.ka.ba/lares/docs/history/dreamnet-memewiki.mem"
 l-space    = "archive"
 mana       = 15
 manao      = 16
@@ -463,6 +462,6 @@ Leave the unresolved items visible and bounded. Hidden residue is how architectu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;E2KkYLeeZV1lbauJ-o5uXG6BaUS1kX-65xGoH1qIefk
+<<^ code=`&#x0003;`>>ni:///sha-256;KCwP4BbLVFvlxCQBXvduQ1qfoGVYFxUR9bbMs_3XzZ0
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -4,7 +4,6 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path   = "bags/lararium/ha.ka.ba/lararium/docs/tw5-widget-module.mem"
 mana        = 17
 manao       = 17
 manaoio     = 16
@@ -44,6 +43,6 @@ When the boot gate passes at least one corpus meme, `tw5-modules` is loaded as a
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;F4-B_0A9TApfB7D8ReSpEX7hg_V095455Bae3-utw7A
+<<^ code=`&#x0003;`>>ni:///sha-256;UpzxwfJLbBNKIKRn2WpozZnQQ3zZkjZP43aHIbR7px8
 
 <<^ code=`&#x0004;` to=`?`>>

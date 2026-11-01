@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/peer-coordination.mem"
 mana      = 18
 manao     = 18
 manaoio   = 17
@@ -227,6 +226,6 @@ doc bundle to new nodes.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;eoyoNnpAEKaCpS6q29zkX2gbSOuTRhTawPuFAkiTxhw
+<<^ code=`&#x0003;`>>ni:///sha-256;taDGAawpED-hkloW8gs5ulzOMcyCHHQ_e32AtqNDHO4
 
 <<^ code=`&#x0004;` to=`?`>>

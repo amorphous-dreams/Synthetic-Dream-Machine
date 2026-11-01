@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable       = false
-file-path       = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture.mem"
 l-space         = "adjacent"
 mana            = 15
 manao           = 15
@@ -242,6 +241,6 @@ Address precedes infrastructure. Later, if the work succeeds, infrastructure cat
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;bO5R9dIOu_ZSQIq5nlR-NQ31JptT7lnf7ANNiJoE4kU
+<<^ code=`&#x0003;`>>ni:///sha-256;nbTImpuoZCltFCjP3DLeKZeA-1bmsfj4RFSR3cfW5eU
 
 <<^ code=`&#x0004;` to=`?`>>

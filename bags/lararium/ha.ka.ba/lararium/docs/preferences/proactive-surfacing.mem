@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences/proactive-surfacing.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -69,6 +68,6 @@ KAIROS reads less like a separate personality than like a timing reflex distribu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;annHSQlhPoxIXvsmLne2NTAJTmsodq2EfzQxE2WzgOM
+<<^ code=`&#x0003;`>>ni:///sha-256;QOxmZU8ffHU5NMRI2OjPUUerFIWZclY3eEgMcz9Skuo
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/tw5/ui/meta-viewtemplate-tab.mem"
 list-after = "$:/core/ui/ViewTemplate/body"
 mana       = 18
 manao      = 18
@@ -29,6 +28,6 @@ uri-path   = "ha.ka.ba/lararium/tw5/ui/meta-viewtemplate-tab"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;MMB5MrjIyrRGvfaYAHqLKp4OdOz3yEy6E6uQT9fKfIo
+<<^ code=`&#x0003;`>>ni:///sha-256;WaYfHQuvYNpRmzUj8IgNKLF25kMihycg5ypRQFGx3pM
 
 <<^ code=`&#x0004;` to=`?`>>

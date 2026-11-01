@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/mu/pattern-integrity.mem"
 l-space     = "stable"
 mana        = 18
 manao       = 18
@@ -220,6 +219,6 @@ Run this against any new code before merging:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-UpjEHauJ-FO3QP7Y5NXhq9kjFfV5AUFOi0byAChQb0
+<<^ code=`&#x0003;`>>ni:///sha-256;1_-4WurKzo9jfbo970YGpZI8lQnAB54WRzdk2Hc0YAg
 
 <<^ code=`&#x0004;` to=`?`>>

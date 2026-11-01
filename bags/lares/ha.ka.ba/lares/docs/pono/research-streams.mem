@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = false
-file-path   = "bags/lares/ha.ka.ba/lares/docs/pono/research-streams.mem"
 l-space     = "stable"
 mana        = 16
 manao       = 16
@@ -63,6 +62,6 @@ executable adversarial tests -> receipt-backed trust
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;kpnPkrtG-6NWoIJuUJna1RnBBv6dePzHcN4YKsU4QQc
+<<^ code=`&#x0003;`>>ni:///sha-256;RA0WdGiVWNgrLj4dU9XPk1wvP_vu3J2pU86SyZ7w7lE
 
 <<^ code=`&#x0004;` to=`?`>>

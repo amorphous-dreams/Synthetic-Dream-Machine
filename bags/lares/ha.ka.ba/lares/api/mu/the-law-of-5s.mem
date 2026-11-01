@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/mu/the-law-of-5s.mem"
 heleuma   = "ba"
 hydrate   = true
 l-space   = "stable"
@@ -215,6 +214,6 @@ export const RATING_COLOR: Record<Rating5, string> = {
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;kenT1KnxPo2CeGQ5y48QSozEIh_MbOWZtnBgKZlQA84
+<<^ code=`&#x0003;`>>ni:///sha-256;kxLNh6vfAcPGuRxKmA9pHjaJOYmdsMTaU7_y0wE3cVY
 
 <<^ code=`&#x0004;` to=`?`>>

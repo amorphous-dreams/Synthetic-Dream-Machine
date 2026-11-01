@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/capability-provider.mem"
 l-space     = "lararium"
 mana        = 14
 role        = "invariant law: CapabilityProvider — the narrow interface over Keyhive's pre-alpha API. States exactly WHAT the gate answers and what it declines to, the archive restore a joinee owes itself, the torn-tolerant boot replay, and the lazy island materialization. The four-verb access axis stands as a MODEL, never a second gate."
@@ -85,6 +84,6 @@ already sits resident, so an access shore may call it every time without cost.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/event-store`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Wc_b_5kKiJtzb317vYxPJ1raU3K12xg_rlOsykS9zFo
+<<^ code=`&#x0003;`>>ni:///sha-256;4d9bJzWHPvMezY3EX1DeIreP4Tgn3naC-QQX8QuQNhs
 
 <<^ code=`&#x0004;` to=`?`>>

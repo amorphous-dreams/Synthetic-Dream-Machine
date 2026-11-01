@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/oracle.mem"
 hydrate       = true
 l-space       = "stable"
 mana          = 16
@@ -210,6 +209,6 @@ certifies  = "nothing"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iwZRodZ8VMSOM1F5C9C0ZcAjdizZklxsLGnSFDu9BlM
+<<^ code=`&#x0003;`>>ni:///sha-256;jOR8IAgjn60hRcbJJk7BCMp0fitxRp2nff5hV_tE1g8
 
 <<^ code=`&#x0004;` to=`?`>>

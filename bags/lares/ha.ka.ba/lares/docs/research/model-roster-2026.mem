@@ -9,7 +9,6 @@ l-space   = "lares"
 role      = "field research on the model roster and operating economics (2026-10-28): per-provider ids and prices, how each plan meters, what this crew measured from its own logs, the roster per role, three experiments, and the operator's rulings with their words"
 status    = "research; read 2026-10-28; the rulings stand, the roster runs on trial until E1-E3 read, the open questions wait for the operator"
 tags      = ["research", "models", "swarm", "economics", "roster"]
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/model-roster-2026.mem"
 title     = "lar:///ha.ka.ba/lares/docs/research/model-roster-2026"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/model-roster-2026"
@@ -150,6 +149,6 @@ Pools: Claude Max 20x (five-hour and weekly, subagents included), Codex team (we
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/codex-controller-2026`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Oi5I8gefaU7ANHT0AJhkyWwASSoGKOLeOXJh5fkS8s0
+<<^ code=`&#x0003;`>>ni:///sha-256;66Ej-y9PSASJlpnm7Ce7dsJTLlPg5e9cflZk_0o1GCc
 
 <<^ code=`&#x0004;` to=`?`>>

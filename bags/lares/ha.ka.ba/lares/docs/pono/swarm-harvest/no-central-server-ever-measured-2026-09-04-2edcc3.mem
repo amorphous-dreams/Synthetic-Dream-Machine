@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/no-central-server-ever-measured-2026-09-04-2edcc3.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -317,6 +316,6 @@ Individual instances: **Hachyderm took 30,000 users in 30 days** on four donated
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;bv2WCHUdKgjsXKSFOTLxUF6qNQVkSgzBX1eZ-bYg_Cg
+<<^ code=`&#x0003;`>>ni:///sha-256;ArOkSb3RGfj8i3B4XozH3wmoheBP6jXfKvgCS3LKNqU
 
 <<^ code=`&#x0004;` to=`?`>>

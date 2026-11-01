@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/kumu-device.mem"
 l-space     = "lararium"
 mana        = 17
 manao       = 17
@@ -194,6 +193,6 @@ See: `lar:///ha.ka.ba/lares/api/pono/nalu#/yin-collapse-law`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;KB0slabul9PDeVNMFzOnEwKf3gT6Xb3xAHMpFvX72-4
+<<^ code=`&#x0003;`>>ni:///sha-256;bqqLXmf9mJL7031_I0CuB2N3DNkS1ONlargpIhdctsA
 
 <<^ code=`&#x0004;` to=`?`>>

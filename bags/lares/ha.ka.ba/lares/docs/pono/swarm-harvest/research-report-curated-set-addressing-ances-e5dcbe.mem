@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/research-report-curated-set-addressing-ances-e5dcbe.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -416,6 +415,6 @@ This is the sharpest finding in the whole brief: **in a federated design, the co
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;GRnYIxOp0Hj3P1sQcligFALIV4UqC5WTv1wxa8jmi7A
+<<^ code=`&#x0003;`>>ni:///sha-256;GTRh0tMX5lCa2f0OylFp7SlIW0iuE5_Tvozg7y8l1jg
 
 <<^ code=`&#x0004;` to=`?`>>

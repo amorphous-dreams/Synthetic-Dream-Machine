@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/tiddler-record.mem"
 l-space       = "stable"
 mana          = 18
 manao         = 18
@@ -100,6 +99,6 @@ ahu-slot-children     = "independent records — not embedded in parent record"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FSCUQKg3m5RjWAq6XdzPBhaH4acxnun709A2_UHA3YI
+<<^ code=`&#x0003;`>>ni:///sha-256;c90nRTE2nvt8g2lBXfTX1WADNpxrmsdhZxuPwanAgKQ
 
 <<^ code=`&#x0004;` to=`?`>>

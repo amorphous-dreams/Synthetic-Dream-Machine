@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/drift-ward.mem"
 heleuma   = "ba"
 mana      = 17
 manao     = 17
@@ -127,6 +126,6 @@ yesterday's hazard recurring unchanged deserves its own suspicion.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Tx84XP4VXtO039MSz9Y1bs1sfloa_cIjXs4H5Zt5N0A
+<<^ code=`&#x0003;`>>ni:///sha-256;0kXBc-KCdkWoI4twJx5-6uu38CXsx-kJJnklPYg-blU
 
 <<^ code=`&#x0004;` to=`?`>>

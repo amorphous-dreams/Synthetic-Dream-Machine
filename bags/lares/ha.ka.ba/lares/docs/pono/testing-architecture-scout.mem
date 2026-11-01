@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/testing-architecture-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -275,6 +274,6 @@ The canonical vocabulary and failure-state mapping live in [[mandate-activity-pr
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;GIHEM1RdpjNRa8ubw3O6ZdZa5L_VljPNhau9L0xrMOc
+<<^ code=`&#x0003;`>>ni:///sha-256;KPlejxjz7SSD4RoeC3esewPAtiENwgJEDEPKuwj_ZAI
 
 <<^ code=`&#x0004;` to=`?`>>

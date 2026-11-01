@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/findings-ce0595.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -234,6 +233,6 @@ The AI Act names the *system* as a machine but every accountable role — all se
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-ivf7rZga5yj5lBz11gtX004-rMSkRcACK8fU42_vpk
+<<^ code=`&#x0003;`>>ni:///sha-256;nDADUodxHzgK93wN7Sh1WO3H8vkkP_vcm3sDi0oLz7s
 
 <<^ code=`&#x0004;` to=`?`>>

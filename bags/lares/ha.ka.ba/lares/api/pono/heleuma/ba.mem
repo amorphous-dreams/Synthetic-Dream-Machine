@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/heleuma/ba.mem"
 mana      = 18
 manao     = 17
 manaoio   = 17
@@ -59,6 +58,6 @@ It SHALL NOT declare `source-sha256` without `source-symbol`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;fPpJs-AQdVPwTtxNo_9VQcKvf3OkE7TEiS-T8SwzenA
+<<^ code=`&#x0003;`>>ni:///sha-256;NjOlqNek8TinzorybJXBi0q_Ofx_3aBvfSeYxPSNizg
 
 <<^ code=`&#x0004;` to=`?`>>

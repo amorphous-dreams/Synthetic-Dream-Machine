@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem"
 hydrate    = true
 l-space    = "stable"
 revised-on = "2026-11-01"
@@ -1144,6 +1143,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;or4Zlkb8Oc-N3P2MTRcwZgZcgQ5t5gJU0Ytn9lxNHfw
+<<^ code=`&#x0003;`>>ni:///sha-256;dlMGoUqCCgxrzS4uq9eZVUMYgjMwe78l4ACZctbroHE
 
 <<^ code=`&#x0004;` to=`?`>>

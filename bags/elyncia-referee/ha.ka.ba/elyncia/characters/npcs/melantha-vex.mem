@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/melantha-vex.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -293,6 +292,6 @@ Use Melantha when the table needs:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;SHVFO77HrGHdjhPa0_OB1zAaIpZvFkmezVQW79vd7hM
+<<^ code=`&#x0003;`>>ni:///sha-256;HIc6dxRHhZrhMt4B7M9bpUwes7a-7yvW2ZVDgQKX2kQ
 
 <<^ code=`&#x0004;` to=`?`>>

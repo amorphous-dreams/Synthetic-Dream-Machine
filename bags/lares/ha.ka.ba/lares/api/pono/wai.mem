@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/wai.mem"
 mana      = 16
 manao     = 16
 manaoio   = 16
@@ -119,6 +118,6 @@ close-pattern = '<<~\/wai\s*>>'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;f4rHMoPuc0ajlx31g-s4xS-0-NFodRrtTavY41_jd_w
+<<^ code=`&#x0003;`>>ni:///sha-256;CXUc_tzpL40Fbu0tAolykByzsUMf3Lt5hgu4y7X3fus
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/invented-ripple.mem"
 mana      = 14
 manao     = 15
 manaoio   = 13
@@ -67,6 +66,6 @@ If the node took the change and the footprint was genuinely large, that reads as
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7jxL7UeRRJKkWwb4iQBSAnGKFLXvPD7rAyBJLPfRDtE
+<<^ code=`&#x0003;`>>ni:///sha-256;NBJSKK6HoSVmzTB4NsSLy-414w-_neRcGrPSllzP6n8
 
 <<^ code=`&#x0004;` to=`?`>>

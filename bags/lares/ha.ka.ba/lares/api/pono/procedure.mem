@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/procedure.mem"
 mana      = 18
 manao     = 17
 manaoio   = 17
@@ -30,6 +29,6 @@ Use whichever reads more naturally in context.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0ZI37ItOj7woUhTL_Ao189wTPUV-e7gNG4yd04vBw7U
+<<^ code=`&#x0003;`>>ni:///sha-256;XMJyASAi27DQifWfYQSv9H1rmdgKjgVm7sgOMUwsKso
 
 <<^ code=`&#x0004;` to=`?`>>

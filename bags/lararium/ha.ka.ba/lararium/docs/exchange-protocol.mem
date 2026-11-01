@@ -4,12 +4,11 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/exchange-protocol.mem"
-l-space   = "stable"
-role      = "agent-facing exchange flow meme: bearing-vector/HUD bracket and HA handoff"
-title     = "lar:///ha.ka.ba/lararium/docs/exchange-protocol"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lararium/docs/exchange-protocol"
+l-space  = "stable"
+role     = "agent-facing exchange flow meme: bearing-vector/HUD bracket and HA handoff"
+title    = "lar:///ha.ka.ba/lararium/docs/exchange-protocol"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lararium/docs/exchange-protocol"
 ```
 
 <<~ ahu slot=`#/exchange-flow`>>
@@ -59,6 +58,6 @@ emit fenced CLOSE: ward-slide + HUD-slide + aftermath-vector -> ?
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9-w7sF9tfQd3uC-Uc65bpkYWZJJXexSVOfxvLfOWSCg
+<<^ code=`&#x0003;`>>ni:///sha-256;aI5Mqe6pOeApBPvuwgmcDEM5MJm9mcUMkxx0eYR7xf0
 
 <<^ code=`&#x0004;` to=`?`>>

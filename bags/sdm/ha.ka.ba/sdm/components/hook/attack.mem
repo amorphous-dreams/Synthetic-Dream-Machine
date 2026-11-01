@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "attack"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/hook/attack.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 16
@@ -70,6 +69,6 @@ Composes with offensive functions and any domain. Rarely sits on `domain/divinat
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;GiMg6QwQwP5Jv1nj4RvzOyZvVJUaIdjpkGqT1ypYFFU
+<<^ code=`&#x0003;`>>ni:///sha-256;MXKum-MEGjG9hiGhyPSN1wYkUedRkY7AYItmnVysLUg
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/tw5/tw5-fields-flat.mem"
 heleuma    = "ka"
 mana       = 17
 manao      = 17
@@ -45,6 +44,6 @@ Before this file, `wiki-handlers.ts` owned `flattenRuntimeTiddlerFields()` (skip
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3NmpNztqjb94J_lSmb-S45cuW60EuPFJoN8r79EkbFU
+<<^ code=`&#x0003;`>>ni:///sha-256;6KzekG3b3pmqE568bSIiDDgPUFjGsgP1pP7ORN8acug
 
 <<^ code=`&#x0004;` to=`?`>>

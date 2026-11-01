@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 docs      = "lar:///ha.ka.ba/lararium/docs/verse-mesh"
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/verse-mesh.mem"
 mana      = 18
 manao     = 18
 manaoio   = 17
@@ -263,6 +262,6 @@ The host-task seat changes; the landing contract does not. The nalu engine holds
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ITDy-OSiPrOE05kX52ouLVxIWjcTRvuwCEgIct8hpIg
+<<^ code=`&#x0003;`>>ni:///sha-256;vomH_XXESh8PlZ9s9G-3ClJg7gG9FsUJsRqy32_MiRk
 
 <<^ code=`&#x0004;` to=`?`>>

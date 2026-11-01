@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/w28-gate-lane.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 15
@@ -68,6 +67,6 @@ Both rows touch the sealed channel's dial bytes, so each settles before the X0 b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Dp6jz8g_Dacjo_rSa1zq6jQb2HX7OTdmjfWDE1gSWw4
+<<^ code=`&#x0003;`>>ni:///sha-256;Ps5zrER5oy1Lbw1OpmbHa3kDElvheGqjQaE4MCJmGV4
 
 <<^ code=`&#x0004;` to=`?`>>

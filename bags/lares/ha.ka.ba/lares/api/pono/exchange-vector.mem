@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/exchange-vector.mem"
 mana      = 16
 manao     = 16
 manaoio   = 16
@@ -101,6 +100,6 @@ The sigils carry the panel inline. Each renders as a SharktoothSigil (``<<~ word
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;QX6G-nQSFjHyLHeAWvX8zOwS2HH5bVIrxeAQMSr327M
+<<^ code=`&#x0003;`>>ni:///sha-256;916C7c57ITpw-JVwIVucK2jqeRzmpJcENXiMR1eQ7Wc
 
 <<^ code=`&#x0004;` to=`?`>>

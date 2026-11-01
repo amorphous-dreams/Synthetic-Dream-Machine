@@ -1,7 +1,7 @@
 ---
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
-source-check: "ni:///sha-256;owJCJIWNL06IhHVysgOKb4kCorgks0yn-f4mGa-X0mk"
+source-check: "ni:///sha-256;KMyaRK6s6FVCNLwsaCCeuvRQTI7_8RkFRy5j3arBF8I"
 title: "lar:///ha.ka.ba/lares/api/pono/submissions/tiddlywiki-wikitext"
 tongue: "x-lares>en"
 variant: "GFM"

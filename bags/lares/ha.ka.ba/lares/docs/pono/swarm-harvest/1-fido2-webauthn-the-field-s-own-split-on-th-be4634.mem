@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/1-fido2-webauthn-the-field-s-own-split-on-th-be4634.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -153,6 +152,6 @@ This second pass **strengthens, not overturns**, my original report: the deviceP
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;XofA-AavjVgiAivmZqBQXtTalW8B-vGtqolHLXJck1k
+<<^ code=`&#x0003;`>>ni:///sha-256;PiBS4R0lYlcSng80JfFmc_rAJCB47HlcRsP0kOwco6M
 
 <<^ code=`&#x0004;` to=`?`>>

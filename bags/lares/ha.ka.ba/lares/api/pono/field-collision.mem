@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/field-collision.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 16
@@ -125,6 +124,6 @@ The identity roadmap thrown at the deployed federated / p2p field. Each survivor
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;QyU97M1hr25waQK3aNMRbyndN-eb16W2KpHJtpwsxkQ
+<<^ code=`&#x0003;`>>ni:///sha-256;bks2diGN_REckUpV6BTxTaqXGGne_XBSO5Kx7i01mUM
 
 <<^ code=`&#x0004;` to=`?`>>

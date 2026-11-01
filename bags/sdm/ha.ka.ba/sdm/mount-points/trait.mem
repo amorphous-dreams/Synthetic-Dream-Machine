@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "trait"
-file-path = "bags/sdm/ha.ka.ba/sdm/mount-points/trait.mem"
 l-space   = "sdm"
 mana      = 16
 manao     = 17
@@ -87,6 +86,6 @@ Past capacity, additional patterns become Burdens (−1 to all rolls each) or wa
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FkDnaKv7dnQGJi9_MZxAn5CteGnTK2iGyIG0BT_rVxI
+<<^ code=`&#x0003;`>>ni:///sha-256;J97DBd5iumg9dm_sj9CmpmDiefkN67zmz7pu0SvlEBM
 
 <<^ code=`&#x0004;` to=`?`>>

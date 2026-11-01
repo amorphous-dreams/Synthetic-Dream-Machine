@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/g15-refold-lane.mem"
 l-space   = "adjacent"
 role      = "the G15 lane's kit: the after-roll refold stands as a module a vector runs, its queue bounded by a causal rule, and the pack transcript names the TW5 binary the build read"
 status    = "draft"
@@ -65,6 +64,6 @@ The lane's re-bake carries the plugin bundle `genesis/unbaked.json` declared, th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;zba3UaoKHRcFte36RQERsNzRsAL_klPMmDNai3pcmOE
+<<^ code=`&#x0003;`>>ni:///sha-256;GhJdMdLSxy6vpj6NCs9tKpAd5qcfv2jrQ0IJA5Ov-yU
 
 <<^ code=`&#x0004;` to=`?`>>

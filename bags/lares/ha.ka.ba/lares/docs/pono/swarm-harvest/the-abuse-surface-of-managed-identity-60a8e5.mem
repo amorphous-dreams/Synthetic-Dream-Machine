@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/the-abuse-surface-of-managed-identity-60a8e5.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -726,6 +725,6 @@ The supervised party can *discover* the relation in Google and Apple, and is tol
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;z70GUexOQ6ZPDn4zO2b3eVDSzSg3UGVmbE90Ni0hyFA
+<<^ code=`&#x0003;`>>ni:///sha-256;ckt-GRJmukJ3oHnndO78nfixH7l-SjrJMqToE4kiAs4
 
 <<^ code=`&#x0004;` to=`?`>>

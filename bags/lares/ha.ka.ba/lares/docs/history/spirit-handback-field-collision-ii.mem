@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii.mem"
 l-space       = "adjacent"
 mana          = 17
 manao         = 17
@@ -289,6 +288,6 @@ Crucially, Sedimentree states the forward-secrecy interaction plainly: because "
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;wdJPtyJGFP5Jcf73C1RtMPPo2Qoly_vFdz3hB4_xUOo
+<<^ code=`&#x0003;`>>ni:///sha-256;M9nHcR9C_UymYtgRnNldfOdpAufggAyohBk90ASP57Q
 
 <<^ code=`&#x0004;` to=`?`>>

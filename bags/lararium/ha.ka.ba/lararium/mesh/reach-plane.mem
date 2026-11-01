@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem"
 hydrate    = true
 l-space    = "lararium"
 mana       = 16
@@ -283,6 +282,6 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;i94BZemsRzVDDtOti5MUjpl-zJ3dyzse-O-Y-NTDzbQ
+<<^ code=`&#x0003;`>>ni:///sha-256;jJqTblKxEZfdD2SUBx1e3HcnoXyaXj_waalN2LrG7nE
 
 <<^ code=`&#x0004;` to=`?`>>

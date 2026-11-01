@@ -9,7 +9,6 @@ l-space   = "lares"
 role      = "field research, four ratcheted Luna-6 YIN and YANG rounds (2026-10-19), on browser and vessel custody: the asker seals, each face seals under its own key, and a shared act never makes a shared secret; the per-vessel table and the open joints"
 status    = "research; read 2026-10-19; rulings landed; the place signer open"
 tags      = ["research", "custody", "browser", "keyhive", "persona-group", "no-global-now"]
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/custody-per-face-2026.mem"
 title     = "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/custody-per-face-2026"
@@ -65,6 +64,6 @@ A YANG scout read the code and a YIN scout read the field, then they traded. The
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/session-unlock-2026`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7DHviMbelIE8q0pQcDohDu0hO2f7lPiP07LEW7UAh1c
+<<^ code=`&#x0003;`>>ni:///sha-256;JfRoeUbqbGF8p-yaB1j-KoFTkHbC3HrI00T_qOOFs4s
 
 <<^ code=`&#x0004;` to=`?`>>

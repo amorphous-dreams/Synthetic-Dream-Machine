@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/agent-worldline.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 19
@@ -426,6 +425,6 @@ attribute to the spirit that moved them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-IMDHeJaT8Eq61iRVwNZGjaEgKdS4CXFcXqbFsWYo5U
+<<^ code=`&#x0003;`>>ni:///sha-256;M7g6TEOK6Lz4VOiR5J1pnImfr8ODlFPqZextMeRCJdQ
 
 <<^ code=`&#x0004;` to=`?`>>

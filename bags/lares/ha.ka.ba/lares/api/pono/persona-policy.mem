@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/persona-policy.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 17
@@ -265,6 +264,6 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;eGZT6uEx74Kb6RsOUxBpjNx7ff2A7CUwdbw1uIwjAEo
+<<^ code=`&#x0003;`>>ni:///sha-256;lltSvU77JxfptBpl6boemcz9Pwva8c4iWxFjq5RCjTw
 
 <<^ code=`&#x0004;` to=`?`>>

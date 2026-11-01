@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/siege-resilience.mem"
 l-space   = "lararium"
 mana      = 15
 manao     = 14
@@ -268,6 +267,6 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;OlvSHiVw5PwVQPeXTKjymOQfkolGf_f_D7f0jwEzxOc
+<<^ code=`&#x0003;`>>ni:///sha-256;KMNfNkXwOIMGszEbFPxfyCoJsGHmnH1yihlqF8OwU-g
 
 <<^ code=`&#x0004;` to=`?`>>

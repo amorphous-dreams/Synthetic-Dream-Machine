@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/sigil.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/sigil"
@@ -80,6 +79,6 @@ A sigil form the rule cannot recognize renders as `<span class="lar-sigil-degrad
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Jc0M-cuDGn3e3fgJQfftFDxaTYWYjZKGe22mYXCcIaQ
+<<^ code=`&#x0003;`>>ni:///sha-256;ajF2vP8Mfmnak5E3ad1IkNbY2TxvTG2SxV4BagrfsXU
 
 <<^ code=`&#x0004;` to=`?`>>

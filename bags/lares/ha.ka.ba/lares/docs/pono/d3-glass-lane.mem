@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/d3-glass-lane.mem"
 l-space   = "adjacent"
 role      = "the D3 lane's kit: the glass engine on the record port, through the mirror door: the port adaptor, the glass boot and mount, the service doors, the multi-tab topology, the draft prompt, the full-width walk and the three-boot width spike"
 status    = "draft"
@@ -96,6 +95,6 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9kDfi-XNTv5z4aJ95dvtZFxIH_M7toCQv8kTjzmeldQ
+<<^ code=`&#x0003;`>>ni:///sha-256;1IgiCbQGSIck1GRGSFhNFjWSxqbs0ksNWXWKND_WVKs
 
 <<^ code=`&#x0004;` to=`?`>>

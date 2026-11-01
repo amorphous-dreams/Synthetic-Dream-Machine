@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/waiho.mem"
 mana      = 18
 manao     = 17
 manaoio   = 17
@@ -93,6 +92,6 @@ In the Kumulipo creation chant, //waiho// appears in the context of primal mater
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;eWfNZVlgMo0wKZC-bGXKBSjO8ly8pt7Y-5_csfTbjwI
+<<^ code=`&#x0003;`>>ni:///sha-256;Hu3IYUqmHANk7C-93MAOqOQK_lCZ1JbTcDdCkYAuOPE
 
 <<^ code=`&#x0004;` to=`?`>>

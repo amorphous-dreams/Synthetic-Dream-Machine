@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/worker-message-protocol.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -138,6 +137,6 @@ A browser camera renders inside the island and crosses the boundary twice, under
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;IMQ9ik8lM_ihe69rBXHi1U-je9IAtQbbgUz6fLFbMVU
+<<^ code=`&#x0003;`>>ni:///sha-256;TPFhfJONTOjUgcCFZvuZUmmeUWkdHiG2XRowlUeTQtE
 
 <<^ code=`&#x0004;` to=`?`>>

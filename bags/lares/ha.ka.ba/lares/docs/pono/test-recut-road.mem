@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/test-recut-road.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -182,6 +181,6 @@ Train T's complete rows move to the road's own #/o-takiage at each land. This ki
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;K4aTVIwApZqjyo5EXHigY6nsMb6Aab-62EBALlOD-Zk
+<<^ code=`&#x0003;`>>ni:///sha-256;rGiIPY1YMXzybe6A8R1Fk9yJ20KdaToNsmYdWpKtE8g
 
 <<^ code=`&#x0004;` to=`?`>>

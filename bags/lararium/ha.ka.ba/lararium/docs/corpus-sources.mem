@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/docs/corpus-sources.mem"
 l-space       = "stable"
 mana          = 18
 manao         = 18
@@ -112,6 +111,6 @@ A setting-only table composes: lares + elyncia + room.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;8tMV32yrksMUMJptb3SZkmdQIH6NVf1UDOpzXvdlmHk
+<<^ code=`&#x0003;`>>ni:///sha-256;xAOXfV__AouUZ6Qrz5k5X1FoG5n6qZGOSVUaftK3csY
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,7 +6,6 @@
 ```toml meta
 cacheable      = true
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
-file-path      = "bags/lares/ha.ka.ba/lares/api/pono/meme.mem"
 mana           = 17
 manao          = 17
 manaoio        = 14
@@ -177,6 +176,6 @@ its own ceremony.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;1uYeXTvdhCYt3SPWhSm3ICuMi6shkzgdM3_zcJ5eI9E
+<<^ code=`&#x0003;`>>ni:///sha-256;-Fz8wvdFMOUbSD9GFzx-fSvpwInmLbmdv4mRKMZXgpk
 
 <<^ code=`&#x0004;` to=`?`>>

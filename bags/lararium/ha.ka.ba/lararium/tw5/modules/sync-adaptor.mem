@@ -4,7 +4,6 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/sync-adaptor.mem"
 heleuma       = "ha"
 mana          = 18
 manao         = 17
@@ -98,6 +97,6 @@ The ledger stays volatile: one adaptor, one session. A stopped adaptor clears it
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;VRwMPWhBxexOKv_5ljtxp6MP1K8eBpvj9hJNNcRytj8
+<<^ code=`&#x0003;`>>ni:///sha-256;ksXjx-anI7rylOeyCB8rEDhma7kW9HK_MGxJTSwaIXw
 
 <<^ code=`&#x0004;` to=`?`>>

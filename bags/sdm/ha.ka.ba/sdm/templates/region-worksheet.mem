@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/templates/region-worksheet.mem"
 l-space   = "adjacent"
 mana      = 12
 manao     = 13
@@ -128,6 +127,6 @@ grain, blessed before moving:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FNDRiMrptK8CLtJc-hmItnTe-IFXBs-yDT6256NCDbw
+<<^ code=`&#x0003;`>>ni:///sha-256;JdnUaUNr-mcTBAgGborTWmAPiLbWghmGEGCxdV6FcAY
 
 <<^ code=`&#x0004;` to=`?`>>

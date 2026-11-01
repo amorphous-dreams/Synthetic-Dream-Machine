@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery.mem"
 l-space       = "adjacent"
 mana          = 16
 manao         = 16
@@ -111,6 +110,6 @@ A later engine+grammar scout (2026-09-11) verified this recovery's claims agains
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;BUB-skJ4Xg3lG2jzMYqWSDq90zFytWq35JOIUSfkLT0
+<<^ code=`&#x0003;`>>ni:///sha-256;oo_B62IL2fh8kEGhFnLMXEUXpk_1ANZVItwg9C1WHB4
 
 <<^ code=`&#x0004;` to=`?`>>

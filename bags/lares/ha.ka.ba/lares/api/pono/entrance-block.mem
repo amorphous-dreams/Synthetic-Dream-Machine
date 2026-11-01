@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/entrance-block.mem"
 l-space     = "stable"
 mana        = 18
 manao       = 17
@@ -170,6 +169,6 @@ Every shared resource in the py fleet owes the same test: `content_io` · `struc
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Rwzzc1Mmz72cO_6GN4DZdoCXHy4lA3mzOc7e5j9aD-U
+<<^ code=`&#x0003;`>>ni:///sha-256;hdVk5gtp_IyOOu_6lAfQgYGQB9F63Q_oIu_W-YqJguE
 
 <<^ code=`&#x0004;` to=`?`>>

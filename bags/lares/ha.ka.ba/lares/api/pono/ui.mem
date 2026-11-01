@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/ui.mem"
 namespace = "&#x2299;"
 role      = "query surface sigil — evaluates TW5 filter and renders result list; English alias: query"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ui"]
@@ -63,6 +62,6 @@ TW5 filter expansion:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;zvMjRf0SToCV-cL22Z1JC9hyHlaHh7bHAqNuoZDVTcg
+<<^ code=`&#x0003;`>>ni:///sha-256;FGC7A7km0IE5vmV7eYXG4_R4jGFXkt99C3qAiIPvYNA
 
 <<^ code=`&#x0004;` to=`?`>>

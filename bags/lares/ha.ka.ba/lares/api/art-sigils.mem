@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/api/art-sigils"
-title     = "lar:///ha.ka.ba/lares/api/art-sigils"
-file-path = "bags/lares/ha.ka.ba/lares/api/art-sigils.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "Art Sigils API index"
-status    = "stable"
-retain    = true
+uri-path = "ha.ka.ba/lares/api/art-sigils"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "Art Sigils API index"
+status   = "stable"
+retain   = true
 ```
 
 <<~ ahu slot=`#/index`>>
@@ -29,6 +28,6 @@ Eight artistic dimensions: worktype, subject, read, imagery, treatment, composit
 The grammar governs expression, not an artwork's subject, medium or style.
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;sdyuFDHFET6ig5fktioz1M8-wSAHt9S2LzpNw8BjEpw
+<<^ code=`&#x0003;`>>ni:///sha-256;SAegB6TjQnRwNeywPIKw5rlKT_aAueqAmaoXQgIGaLY
 
 <<^ code=`&#x0004;` to=`?`>>

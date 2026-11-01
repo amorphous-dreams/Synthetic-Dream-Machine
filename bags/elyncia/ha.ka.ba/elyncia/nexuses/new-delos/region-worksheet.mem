@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -195,6 +194,6 @@ First-Breaking cult fragment? Where do the smuggling wars actually land their ca
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;nDffT2ytn60YDniK6q-rGRJuZupaHFPtBEG9GeKaTbM
+<<^ code=`&#x0003;`>>ni:///sha-256;BJhforvEYqtPJH6lpTk2JQNERuj2RqZ_idJhmQ0uYvA
 
 <<^ code=`&#x0004;` to=`?`>>

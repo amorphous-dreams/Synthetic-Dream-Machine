@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/the-veil-ladder.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 17
@@ -141,6 +140,6 @@ For the citizen with ''no quorum yet'', the floor rests on a ''standalone record
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;AtAu-OJ1J6SqjP2qwgyKTaV3_u-YRj6tUpYc0oMUkFY
+<<^ code=`&#x0003;`>>ni:///sha-256;Jtv0RFMDCMJQ_6lWj-zOmPU0SdpuiS_GLUOqL5eD4rk
 
 <<^ code=`&#x0004;` to=`?`>>

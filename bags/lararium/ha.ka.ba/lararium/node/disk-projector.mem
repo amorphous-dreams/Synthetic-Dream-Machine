@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/node/disk-projector.mem"
 l-space     = "lararium"
 mana        = 8
 role        = "self-documentation: LarDiskProjector — the node-side enactment of the disk-projection law. Carries what the FILE owns and the law carrier does not: the one render shore, the holding gate that fences a cross-mirror unlink, what the in-flight write set does and does not guarantee, and the level-triggered reconcile gate. Surface law, granularity and routing live at api/disk-projection."
@@ -83,6 +82,6 @@ This section, anchored `#/the-servo`, holds the disk shore's level-triggered rec
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu#/guards`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/servo`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;vgYCWJ1cwej6LFa7-JcqrEh5IRlZesZVXDlGR_m3osg
+<<^ code=`&#x0003;`>>ni:///sha-256;_L_Zm-FfWB9HoJJHCGOf9YGzzV_ggDvRDutDmnf9bDY
 
 <<^ code=`&#x0004;` to=`?`>>

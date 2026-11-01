@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/network-edge.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 18
@@ -142,6 +141,6 @@ The network ring stands UNBUILT; the mapping and the wire-answers below read as 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;mQeE_eZb6L2L0GwAcylTvzhTnd-CO6Zs8gkatbSOHRo
+<<^ code=`&#x0003;`>>ni:///sha-256;EpTu7Knd7s5jEKaXkVoZp7jRdbWl2D7oQermvnMmuHs
 
 <<^ code=`&#x0004;` to=`?`>>

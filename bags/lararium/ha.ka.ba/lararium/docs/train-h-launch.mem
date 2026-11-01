@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/train-h-launch.mem"
 l-space   = "adjacent"
 role      = "train H launch kit: delegated hosting act, three dials, answer door and public-half walker grant"
 status    = "draft"
@@ -82,6 +81,6 @@ The hosting-key and worn-face rulings already stand at the roadmap's `#/rulings`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;AFBzX3H6nR91t83cWkUCyxMpD5hbdS5JHy49GxJK9bY
+<<^ code=`&#x0003;`>>ni:///sha-256;qozWeG16Pqtxz68G0J4u8YCNfrHyZqNoVo3krQc1h_M
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/capture-annotation-model.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 19
@@ -355,6 +354,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iownztBIa9OjsTwY5kjn8IQZjkd-SHYHBTuy_5cvuPo
+<<^ code=`&#x0003;`>>ni:///sha-256;2LBtQAYhr7N89Sa59aOaEJyzcUcBUD_WGQn2Ng4_3ag
 
 <<^ code=`&#x0004;` to=`?`>>

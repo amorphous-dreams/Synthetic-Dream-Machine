@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/ffz-mesh-timing.mem"
 hydrate   = true
 l-space   = "lararium"
 mana      = 17
@@ -134,6 +133,6 @@ Eight independent domains converge on a single shape — ''three axes, no global
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FOH5u6wIcKyWcOeVo-5e_hInxSZHzc7ibceDH1cUwYo
+<<^ code=`&#x0003;`>>ni:///sha-256;Z_-xtJwVSZmdQlgTlvOrUdcHO5sH4kjg6-kt23hf3x8
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/voices.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 17
@@ -394,6 +393,6 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;yGVPN8AYSWDDuuIUkiNm5_b4C_kI1GsGciWpGVxVhR0
+<<^ code=`&#x0003;`>>ni:///sha-256;ee8-7k5iYV4W3N4XCo19fD4wEjA3vguuJrNiE3smLbA
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/ahu.mem"
 mana      = 18
 manao     = 18
 manaoio   = 18
@@ -179,6 +178,6 @@ This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3HXg_eXUyRLoS4cAlFRaUbdqTZpbqI-vYnCLOX-Wn8g
+<<^ code=`&#x0003;`>>ni:///sha-256;FikPLXdO0N3ZtD5FhXFddY56mukJErc3Z4WBOwLgOrg
 
 <<^ code=`&#x0004;` to=`?`>>

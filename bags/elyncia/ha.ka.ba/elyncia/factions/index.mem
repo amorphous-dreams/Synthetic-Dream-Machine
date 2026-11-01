@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/factions/index.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
@@ -89,6 +88,6 @@ Derived from the court-dragon alignment canon, never invented whole:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3xu-RybHljyThmGmViA86baN396ucVQxUyUqp4ZTpYg
+<<^ code=`&#x0003;`>>ni:///sha-256;e_wwnV6ocp5MVEz9ZcL3Cs29dAyK0ALWcOtC0cCxIUQ
 
 <<^ code=`&#x0004;` to=`?`>>

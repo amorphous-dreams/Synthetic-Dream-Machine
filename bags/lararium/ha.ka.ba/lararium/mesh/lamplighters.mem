@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/lamplighters.mem"
 l-space   = "lararium"
 mana      = 15
 manao     = 15
@@ -455,6 +454,6 @@ An operator contracts their OWN herm with one signature, scoped to one place and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;2mmO-9dKifS4BN77K18jLtX0wRN5z_k_ZoNl5UwQaR4
+<<^ code=`&#x0003;`>>ni:///sha-256;KXzUgLvY1dmHbnUrGQ6yS-dzx8ozOLQWPL0sHV3sQpc
 
 <<^ code=`&#x0004;` to=`?`>>

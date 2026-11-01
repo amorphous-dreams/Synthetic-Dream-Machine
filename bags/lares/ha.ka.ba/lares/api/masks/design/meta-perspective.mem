@@ -7,7 +7,6 @@
 cacheable = true
 created   = "Invalid Date"
 family    = "design"
-file-path = "bags/lares/ha.ka.ba/lares/api/masks/design/meta-perspective.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 14
@@ -67,6 +66,6 @@ step-in licenses standpoints of ''place''; one discipline, two axes.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;oS-UiHw9hYjYwF1tssLZwvjbRHdGYqgIHrCKyJk9Fqw
+<<^ code=`&#x0003;`>>ni:///sha-256;YResK-34joS3udYTYlqberC9mUd9h-Ar9VP1PJ36alo
 
 <<^ code=`&#x0004;` to=`?`>>

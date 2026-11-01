@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/the-grimalkin.mem"
 l-space   = "adjacent"
 mana      = 11
 manao     = 11
@@ -77,6 +76,6 @@ walking. Whether hers reads as familiar, mount, partner, or all three at once be
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;eNKtRw1Ym6D7top4xhqzqKa-EmtXfYp0OeabB9pi-Kg
+<<^ code=`&#x0003;`>>ni:///sha-256;NEvcb3IjTKB8Blaim-BPSTHO0YQUbNZ_6A3-EUL1wxw
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/house-of-masks.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -43,6 +42,6 @@ place's seat on the map; that locus keeps its life.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7FP2jIHUXqagpFXoBZb7I4Km9RJeUAnlE6X6xZNcu98
+<<^ code=`&#x0003;`>>ni:///sha-256;UOFG2kTic1tPlWmioZKNLOBFbtIAeREuK3vtnChp4Fs
 
 <<^ code=`&#x0004;` to=`?`>>

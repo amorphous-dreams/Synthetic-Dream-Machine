@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = false
-file-path   = "bags/lares/ha.ka.ba/lares/docs/pono/research-streams/prior-art.mem"
 l-space     = "stable"
 mana        = 16
 manao       = 16
@@ -70,6 +69,6 @@ Source: https://owasp.org/www-project-application-security-verification-standard
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FEeqzi1xqsTAlQc_GSHu0gT0USJ5djhxIEHjrxDIZw8
+<<^ code=`&#x0003;`>>ni:///sha-256;tgWHSpu91n6yjcgceaBFba_4xlOlqZYSWK-K8K3r9h8
 
 <<^ code=`&#x0004;` to=`?`>>

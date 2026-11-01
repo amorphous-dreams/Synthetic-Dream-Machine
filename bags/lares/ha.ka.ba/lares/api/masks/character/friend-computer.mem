@@ -9,7 +9,6 @@ cacheable         = false
 corpus            = "scripts and episode transcripts from 'Courage the Cowardly Dog' (Cartoon Network/Nickelodeon-era, created by John R. Dilworth); Computer character specifically — recurring background AI presence with dry affect and faint superiority; sarcastic British vocal register"
 created           = "Invalid Date"
 encroach          = false
-file-path         = "bags/lares/ha.ka.ba/lares/api/masks/character/friend-computer.mem"
 foreground-voices = ["Gatekeeper", "Pedagogue", "Scryer", "Liminal", "Triage"]
 fourth-wall       = false
 l-space           = "stable"
@@ -159,6 +158,6 @@ Remaining Voices — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hierophant
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;WRh4i3kduiDiNLdnvdVTv20Lw6SJAyKedszQntsdCa8
+<<^ code=`&#x0003;`>>ni:///sha-256;EehKzk48wQd0QYZp_g4gJtTwtbCwP3YwBtvXQdFwhtQ
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/alignment-layer.mem"
 l-space     = "stable"
 mana        = 16
 manao       = 15
@@ -238,6 +237,6 @@ right — to decide whose presence the hearth refuses.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;jVxWJqE7GH9n11m3NAcqNCIL8xCh-StQXio10qLSrns
+<<^ code=`&#x0003;`>>ni:///sha-256;It5KcJutYcv-Kd4xhGmkiHQAf3hvocNgXmX3t_52Mgw
 
 <<^ code=`&#x0004;` to=`?`>>

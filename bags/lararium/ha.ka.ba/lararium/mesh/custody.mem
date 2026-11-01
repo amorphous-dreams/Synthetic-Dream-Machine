@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/custody.mem"
 hydrate   = true
 l-space   = "stable"
 role      = "custody at rest as law — the carrier table that names every private file a vessel keeps, its six custody classes, the law each row outside every key rests bare under, the outbox's seal and its crash law, the census that names any private file outside the table, and the readers that derive from it; the per-face backup bundle as a record (one face, one fresh key, one human route, a standing section and a memory section, and what it never carries); the cut and its refusals; the restore as a recovery act in five steps, each with its named refusals, and the provisional standing a restored face holds until a party to its relation confirms its head; what a thief of the medium learns and what a thief who opens a bundle learns; what the code holds and what stays owed"
@@ -354,6 +353,6 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;nnNPpX8qJHVXoN2zEbHA73qoxu0OvgMK5erGKeeo25c
+<<^ code=`&#x0003;`>>ni:///sha-256;2rDyHOqTIhnsy_RQwI4gErA3woF-x-tSLiyVqtIYmeM
 
 <<^ code=`&#x0004;` to=`?`>>

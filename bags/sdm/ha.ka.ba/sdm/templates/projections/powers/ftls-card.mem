@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/templates/projections/powers/ftls-card.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -79,6 +78,6 @@ That procedure reads the current tiddler's `@`-prefixed tags and renders each as
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3Rr69ZumVGcxWCCH8W2ksBrhWk8xZ4AV9QpJKti07r8
+<<^ code=`&#x0003;`>>ni:///sha-256;khRu6FDXTez0diuGvgv1HU2w3m5-AMOrtTZxuQB9oD4
 
 <<^ code=`&#x0004;` to=`?`>>

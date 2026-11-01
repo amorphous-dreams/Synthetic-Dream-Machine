@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/structure-shaped-convention.mem"
 mana      = 14
 manao     = 15
 manaoio   = 14
@@ -79,6 +78,6 @@ That makes this a ''sibling of Confabulation-as-Canon'' rather than a variant: t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;sw2ML3SDeTjIWWEKTSzty_H4PaXdJdjpDbRUjHH8C-w
+<<^ code=`&#x0003;`>>ni:///sha-256;4i7QO_ZyMcUvhF5sUrL37dd2GZ82JYgwWiBwK0ozyuw
 
 <<^ code=`&#x0004;` to=`?`>>

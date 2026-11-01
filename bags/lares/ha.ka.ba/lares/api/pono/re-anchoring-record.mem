@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/re-anchoring-record.mem"
 l-space       = "stable"
 mana          = 12
 manao         = 12
@@ -135,6 +134,6 @@ And the EROSION half needs a rate nobody has seated. Two candidate shapes stand 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;rzpsu4-LOSSm2NOqav99QH4F5ZVStqoUONN1RQfovIM
+<<^ code=`&#x0003;`>>ni:///sha-256;6ELM3RnYaQ4sb0wz74bWU--sdAgYiAB0IRGhh35bR2M
 
 <<^ code=`&#x0004;` to=`?`>>

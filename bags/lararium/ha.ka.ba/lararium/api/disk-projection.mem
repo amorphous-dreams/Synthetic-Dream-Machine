@@ -6,7 +6,6 @@
 ```toml meta
 approved-on   = "2026-06-02"
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/api/disk-projection.mem"
 hydrate       = true
 l-space       = "stable"
 mana          = 17
@@ -225,6 +224,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;XjMjPoxxkkNtaZhyGXnXrbwCCYMM1XjgLMPu8ozoxF0
+<<^ code=`&#x0003;`>>ni:///sha-256;hHMlGN02AvFpbYLzmCRi_bzEm-KvAOq8dww6cDsAEKY
 
 <<^ code=`&#x0004;` to=`?`>>

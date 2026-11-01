@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/api/art-sigils/formal-analysis"
-title     = "lar:///ha.ka.ba/lares/api/art-sigils/formal-analysis"
-file-path = "bags/lares/ha.ka.ba/lares/api/art-sigils/formal-analysis.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "evergreen inscription-first visual analysis and evidence-grounded interpretation"
-status    = "stable"
-retain    = true
+uri-path = "ha.ka.ba/lares/api/art-sigils/formal-analysis"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/formal-analysis"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "evergreen inscription-first visual analysis and evidence-grounded interpretation"
+status   = "stable"
+retain   = true
 ```
 
 <<~ ahu slot=`#/orientation`>>
@@ -104,6 +103,6 @@ Across painting, print, photography, installation, abstraction and pictures with
 Getty CDWA subject analysis, material and facture; Harvard Project Zero's See, Think, Wonder and What Makes You Say That?; Panofsky, Arnheim, Baxandall, Kress/van Leeuwen, Mitchell and Warburg; Feldman's descriptive/interpretive/critical moves. See the Art Sigils Specification's research ahu for source paths and authority boundaries. No reference source alone settles the intention of an unknown artist.
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;M9TiorPiI79EDk2xwFlIROhKmD-YnKzYhdmfJsCK2qM
+<<^ code=`&#x0003;`>>ni:///sha-256;0LBEbKMkc3wAfg785E2VJfZ7g3d5v8q4xePw-30flAc
 
 <<^ code=`&#x0004;` to=`?`>>

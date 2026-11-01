@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/lists/components.mem"
 mana      = 13
 manao     = 16
 role      = "TW5 procedure: render the current tiddler's has-stack as clickable tag-pills (stack filter; captions from definition memes)"
@@ -42,6 +41,6 @@ uri-path  = "ha.ka.ba/lararium/lists/components"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0A7oe5TaXhcxO1YKyrXD8xN0JCiqxt-vrnVnOncYuMY
+<<^ code=`&#x0003;`>>ni:///sha-256;jz3v139tEh7uoyO807YXvdAQbTJZkWhmTSxVCVvWHR0
 
 <<^ code=`&#x0004;` to=`?`>>

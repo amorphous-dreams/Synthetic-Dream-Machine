@@ -9,7 +9,6 @@ cacheable         = false
 corpus            = "[STUB — pending-talk-story]"
 created           = "Invalid Date"
 encroach          = false
-file-path         = "bags/lares/ha.ka.ba/lares/api/masks/named/mischief-muse.mem"
 foreground-voices = ["Muse", "Hierophant", "Council", "Stranger", "Liminal"]
 fourth-wall       = false
 ha-ka-ba          = "Ka"
@@ -197,6 +196,6 @@ These notes require live session observation before they can be written with con
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;WUBfQZdaWVxUpawAX3ld8eVWXQkyuzzAKwWwNb6ERJ8
+<<^ code=`&#x0003;`>>ni:///sha-256;8NPQSV-26VjDIakDZEERVOVO3Km42twC8Sn6f8miopY
 
 <<^ code=`&#x0004;` to=`?`>>

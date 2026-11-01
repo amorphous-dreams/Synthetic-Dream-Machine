@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/rhea-the-moon-elf.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -57,6 +56,6 @@ Since her arrival she has ''trained a cadre of agents'' and runs a ''small intel
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;oGx2QxCP4PhN2jWXUwPCUMIvU2Hc6Vt0Mq0uXto3XVQ
+<<^ code=`&#x0003;`>>ni:///sha-256;eR9iRxCoTJd_Yga_FOrQbSWALKAttDLB_qLsJOvACno
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -4,7 +4,6 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path     = "bags/lararium/ha.ka.ba/lararium/docs/tw5-boot-gate.mem"
 last-reviewed = "2026-07-18"
 mana          = 17
 manao         = 17
@@ -75,6 +74,6 @@ The distinction makes the whole gate. ''Authority rides on what a carrier holds 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;rhDK3fci-MTxwUuOm7_9AcjYKtn4VaFismYHlSP6dvo
+<<^ code=`&#x0003;`>>ni:///sha-256;hrk0WmFPvgDUgvIeRATkObECsPQYfAC_1FswyEyh-iE
 
 <<^ code=`&#x0004;` to=`?`>>

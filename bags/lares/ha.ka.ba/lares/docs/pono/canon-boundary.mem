@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/canon-boundary.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -205,6 +204,6 @@ If the answers remain vague, the claim should stay as session pressure.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;K_66UGnQznAt4Sa4o8r6dz_LZJBt0ESAS3vlPwqE2no
+<<^ code=`&#x0003;`>>ni:///sha-256;Mfp_cAvUu9-9u8qLtiYZ3n1Ddyffxd3fqJxv2qf70FU
 
 <<^ code=`&#x0004;` to=`?`>>

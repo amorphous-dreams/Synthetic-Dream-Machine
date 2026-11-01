@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/membership-doctrine.mem"
 l-space    = "lararium"
 mana       = 16
 manao      = 16
@@ -550,6 +549,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7TMYhhi8Tc0P2HZ4atGTisRsKMZC_0GnfHS65CWm_1g
+<<^ code=`&#x0003;`>>ni:///sha-256;gezs4yO-Ibc5UkOnT3F0XYnpG2iEOe2nAs84h8qSBBU
 
 <<^ code=`&#x0004;` to=`?`>>

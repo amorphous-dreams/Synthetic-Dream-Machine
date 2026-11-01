@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences/frame-uncertainty.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -67,6 +66,6 @@ Where the branch matters, the fork must surface.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7HnZvh6mVdC-MusDcy0wTgl5LhKlv3lMFmLtlMX8oaU
+<<^ code=`&#x0003;`>>ni:///sha-256;beo4ps76a7fWKiSBjLzdk7Yqa9dGaFTyZxxAxSOiJ0Y
 
 <<^ code=`&#x0004;` to=`?`>>

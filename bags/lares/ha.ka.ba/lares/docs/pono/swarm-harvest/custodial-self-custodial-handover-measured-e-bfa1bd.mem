@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/custodial-self-custodial-handover-measured-e-bfa1bd.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -262,6 +261,6 @@ The two independent systems that expose the answer agree on the order of magnitu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tiZttMVzwNatqRk2yfL-TeA3cs50fJCM7bPoiwHCNOI
+<<^ code=`&#x0003;`>>ni:///sha-256;EfRXeUk__yh8BHn26w8PKmTLGOL--PD2VmKu4NvKvwk
 
 <<^ code=`&#x0004;` to=`?`>>

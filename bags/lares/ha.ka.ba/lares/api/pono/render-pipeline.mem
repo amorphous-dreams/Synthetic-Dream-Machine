@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/render-pipeline.mem"
 l-space       = "stable"
 mana          = 17
 manao         = 17
@@ -250,6 +249,6 @@ Trace continuity across the causal island boundary:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iWEAqq-nw4YYvIpkL-plfAjlkqwKBHFCrcIgnjTZQRE
+<<^ code=`&#x0003;`>>ni:///sha-256;q1mxq9UvoaZVyljXA1MvPKdiX6YIzp_79VDP4fUYaKo
 
 <<^ code=`&#x0004;` to=`?`>>

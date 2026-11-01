@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "ritual"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/posture/ritual.mem"
 l-space   = "sdm"
 mana      = 13
 manao     = 16
@@ -70,6 +69,6 @@ A posture, not a hook — it gates //how// a module is reached, akin to Sera's b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;W9UqZ3IUpEPRt9rTBUDRQYfGsgqPYbiZQ4jlRHXyen0
+<<^ code=`&#x0003;`>>ni:///sha-256;zSg3KEXbpaL-JsMe-62ykdK8KuCWz_3kZGJZfej8q2s
 
 <<^ code=`&#x0004;` to=`?`>>

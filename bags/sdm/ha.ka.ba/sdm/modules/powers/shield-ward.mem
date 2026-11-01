@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "Shield Ward"
-file-path = "bags/sdm/ha.ka.ba/sdm/modules/powers/shield-ward.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -92,6 +91,6 @@ On a botched or breached ward, choose one: it flares and reveals the operator; g
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;pK1DBq11_0PIwOvFEZ5Z-YyioQkOtX1j9Y9S2FDWmz4
+<<^ code=`&#x0003;`>>ni:///sha-256;HvtmkL7s7_dBHQ7ZEL4o0T2dqEug0wXaMGaQDze1ED4
 
 <<^ code=`&#x0004;` to=`?`>>

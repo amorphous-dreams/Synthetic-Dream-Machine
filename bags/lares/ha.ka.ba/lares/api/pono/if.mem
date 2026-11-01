@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/if.mem"
 mana      = 18
 manao     = 17
 manaoio   = 17
@@ -32,6 +31,6 @@ Verse `if`/`case` on the flow surface — lives at `heihei`.)
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;DGSDxPujEz6yNRelMlYQTNNp-7lDbX2MAISIaGhyvvs
+<<^ code=`&#x0003;`>>ni:///sha-256;eLRs3I5ne1WWAdW_3SBh-LU-FysS-DjIS-Aoc5mtW78
 
 <<^ code=`&#x0004;` to=`?`>>

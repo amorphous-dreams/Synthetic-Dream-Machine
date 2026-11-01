@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/shelter-against-empire.mem"
 hydrate       = true
 l-space       = "stable"
 mana          = 16
@@ -169,6 +168,6 @@ on the ordering as a judgement across the cases; the individual attributions hol
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;EuepPyjP1BLtRfpYWovpJljCdCcKLnDqWgHXoYsi2eE
+<<^ code=`&#x0003;`>>ni:///sha-256;AB-6kWFR59gcdcp8kDoqmEPEi0Ln4DkRhxA6ATgR_8M
 
 <<^ code=`&#x0004;` to=`?`>>

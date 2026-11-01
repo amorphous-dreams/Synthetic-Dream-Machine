@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable       = false
-file-path       = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture.mem"
 l-space         = "adjacent"
 mana            = 15
 manao           = 15
@@ -275,6 +274,6 @@ The Lindwyrm did not build the DreamNet from destiny. She wanted to watch //The 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;LhQ8sx9c88GwWjneyVAC5pd_MUi9YrV9LNQJ9vi1gvk
+<<^ code=`&#x0003;`>>ni:///sha-256;0j-OYQpfP3ISA2SDnAId0rPsRvOs8HtoiR2NHIoDQE4
 
 <<^ code=`&#x0004;` to=`?`>>

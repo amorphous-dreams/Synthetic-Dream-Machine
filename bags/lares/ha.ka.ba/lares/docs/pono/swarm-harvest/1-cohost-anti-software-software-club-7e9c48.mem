@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/1-cohost-anti-software-software-club-7e9c48.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -362,6 +361,6 @@ I'm making no recommendation, per the brief. One caveat to carry forward: my con
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;QuUzmsTzkS6AX-l-f2rLzBVTQoAu_QjBH-sasmnAFPM
+<<^ code=`&#x0003;`>>ni:///sha-256;FjYugb7mbMOIUd7k0O0oiH59-TB473CXDT6J3h9bvx0
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/syncer-seams-roundtable.mem"
 hydrate    = true
 l-space    = "stable"
 mana       = 12
@@ -411,6 +410,6 @@ When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;O-XcdlzZcDS76CKf-fILCARQ2CeSMgtFDBuBKpl9qYE
+<<^ code=`&#x0003;`>>ni:///sha-256;zvg_5KfpGVv6XJS23z02GV4nEwBXsYBzdkjAj0aqw9c
 
 <<^ code=`&#x0004;` to=`?`>>

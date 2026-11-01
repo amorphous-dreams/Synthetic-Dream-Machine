@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lararium/ha.ka.ba/lararium/mesh/first-realm-arc.mem"
 l-space       = "stable"
 mana          = 12
 manao         = 12
@@ -134,6 +133,6 @@ The runbook stands ''Synthesis-Canon and complete for what it covers''. These si
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tPdrXlX88dVB3OWc_estsHVrSGlAOkOWuziSiPwwNPk
+<<^ code=`&#x0003;`>>ni:///sha-256;h6s--R9S1OsPpI9ZFqCUHZdnfloMzxGbgluQg5_qBYU
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/witness/architecture/v0.0-transition.mem"
 l-space   = "sdm"
 mana      = 12
 manao     = 17
@@ -67,6 +66,6 @@ The edge taxonomy collapsed to one flat verb (`#has`, no family/role) for compos
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FqV5rfGWrQaxOPGRgFt6c6Tul-6cUGi92gKVkLEclLE
+<<^ code=`&#x0003;`>>ni:///sha-256;Go3Q18TQ1NtZkOe4Ggf9DB8ry1-YPYU_OnETMsdv6uk
 
 <<^ code=`&#x0004;` to=`?`>>

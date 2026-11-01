@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/aka.mem"
 mana      = 17
 manao     = 17
 manaoio   = 16
@@ -171,6 +170,6 @@ confidence-bounded = true
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tiPxbUCjOfdaYUcVfH_zE-wCmLpVyazc5LB08WqRRSc
+<<^ code=`&#x0003;`>>ni:///sha-256;dp6uact8TMoqWX_OxEBhhNXdUude5hjhovFaDHIAnI4
 
 <<^ code=`&#x0004;` to=`?`>>

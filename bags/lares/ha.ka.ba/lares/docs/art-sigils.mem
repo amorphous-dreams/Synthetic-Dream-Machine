@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/docs/art-sigils"
-title     = "lar:///ha.ka.ba/lares/docs/art-sigils"
-file-path = "bags/lares/ha.ka.ba/lares/docs/art-sigils.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "Art Sigils examples index"
-status    = "stable"
-retain    = true
+uri-path = "ha.ka.ba/lares/docs/art-sigils"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "Art Sigils examples index"
+status   = "stable"
+retain   = true
 ```
 
 <<~ ahu slot=`#/index`>>
@@ -27,6 +26,6 @@ retain    = true
 Examples demonstrate the grammar without defining its defaults.
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;MAXvJiNnxgMjrraV8HWSXB_EYZB5PwNbkMprGscRryo
+<<^ code=`&#x0003;`>>ni:///sha-256;IMwlS0_E__g5gghDH2CGSBFs5j9USR4e_DcJpwvtCLo
 
 <<^ code=`&#x0004;` to=`?`>>

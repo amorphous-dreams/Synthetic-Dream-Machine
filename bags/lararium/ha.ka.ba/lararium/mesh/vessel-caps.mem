@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/vessel-caps.mem"
 l-space   = "lararium"
 mana      = 16
 manao     = 15
@@ -198,6 +197,6 @@ What stays to ''write'' runs narrow and named — the cap //vocabulary// itself 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;P2mAY8i7EGOhB-geu8TRWdU7b9T-j30gwr26nuZciLg
+<<^ code=`&#x0003;`>>ni:///sha-256;ja-dPqqFPHcES_HKCqYmXoSwp7emnPPc7yKp3zX5bkQ
 
 <<^ code=`&#x0004;` to=`?`>>

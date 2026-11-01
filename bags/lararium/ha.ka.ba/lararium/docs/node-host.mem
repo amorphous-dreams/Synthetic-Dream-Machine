@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/docs/node-host.mem"
 l-space       = "stable"
 last-reviewed = "2026-07-18"
 mana          = 17
@@ -128,6 +127,6 @@ export interface CorpusSource {
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;feeD_jk-bmd8PbrWJzLwjQLehtO7WzDQEDGLrzT47IA
+<<^ code=`&#x0003;`>>ni:///sha-256;YZ_f5cdrukmzi_RuRny4Ca986cCsg6nrqF2zsoPN5Bo
 
 <<^ code=`&#x0004;` to=`?`>>

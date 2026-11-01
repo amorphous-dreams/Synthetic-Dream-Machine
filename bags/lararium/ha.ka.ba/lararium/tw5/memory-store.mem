@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/memory-store.mem"
 l-space     = "lararium"
 mana        = 17
 manao       = 17
@@ -141,6 +140,6 @@ same change record any AutomergeDocStore would emit.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;2X9aGQPDyZxIsKJmTjfQsIIU9cGhLTEWaM7kpCMmJ1s
+<<^ code=`&#x0003;`>>ni:///sha-256;HR7BFlVEoAF4DtQhNSV0pcOzLaqNC0Fopbf-qKH0SVU
 
 <<^ code=`&#x0004;` to=`?`>>

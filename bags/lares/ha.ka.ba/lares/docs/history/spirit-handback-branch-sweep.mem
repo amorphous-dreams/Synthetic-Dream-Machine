@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-branch-sweep.mem"
 l-space       = "adjacent"
 render-target = "docs"
 role          = "VERBATIM Branch-Scout and Sweep-Reader handback (2026-10-18) — Markdown transliterated only; source wording retained. Controller note: the scout’s table A named `origin/main` and the span for deletion against its brief; the controller re-sorted by measurement. The cold reader’s verdict “not pono as written” drove a rewrite (class-proven targets, one atomic leased push, restore lines). The operator ran the rewritten sweep on 2026-10-18 and every one of its 39 deletes landed. Name: the lens law’s own example, `lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm#/the-lens-law`."
@@ -256,6 +255,6 @@ Sources: `in/branch-scout-luna.md; in/sweep-cold-reader.md`. Persona: Branch-Sco
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ObhQ1z8ORfqAJjQUkwWwGzXEY67UbiwBvi5b89baq4I
+<<^ code=`&#x0003;`>>ni:///sha-256;ATYXDarEGpGxKzD_RUFXHgL04_U-4k-eFacRBd8ec60
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/scale-architecture.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 16
@@ -144,6 +143,6 @@ Established algorithms carrying the descent and the escape, 2026 fusion research
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;DNQOs1Mc49PPv_K_VsGV7qlVQ0bxDxRvL3Z2Gap87Zw
+<<^ code=`&#x0003;`>>ni:///sha-256;7ILUjuCk4ntS_t5BaJAYslx5j0fMjghR7fQBPvbFRU4
 
 <<^ code=`&#x0004;` to=`?`>>

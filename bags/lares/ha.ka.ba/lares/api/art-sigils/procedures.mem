@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/api/art-sigils/procedures"
-title     = "lar:///ha.ka.ba/lares/api/art-sigils/procedures"
-file-path = "bags/lares/ha.ka.ba/lares/api/art-sigils/procedures.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "evergreen TW5 art grammar, canonical inscription procedure, optional scoped extensions"
-status    = "stable"
-retain    = true
+uri-path = "ha.ka.ba/lares/api/art-sigils/procedures"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/procedures"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "evergreen TW5 art grammar, canonical inscription procedure, optional scoped extensions"
+status   = "stable"
+retain   = true
 ```
 
 <<~ ahu slot=`#/bearing`>>
@@ -115,6 +114,6 @@ A support, motif, genre, material convention, named artist or depicted subject b
 These references describe native TW5 syntax. Hand-derived literal expansions express lexical expectations without claiming execution in a live runtime. An image-producing AI may read wikitext semantically without executing TW5.
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;OGnszzq9uAuxnmahe1ce-52yA7Kdm6hRYDsAl38kL3k
+<<^ code=`&#x0003;`>>ni:///sha-256;fhTP45-q7pugegObQ3oIXHnrmQTkoyBLNv12KdGu69c
 
 <<^ code=`&#x0004;` to=`?`>>

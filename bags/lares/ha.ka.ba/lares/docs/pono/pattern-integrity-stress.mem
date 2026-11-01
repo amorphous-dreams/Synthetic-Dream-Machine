@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/pattern-integrity-stress.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 18
@@ -194,6 +193,6 @@ And the competitive complement: waist protocols become ''evolutionary kernels'' 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;2KE2P8p4-AleLZP2FW83zWy54krCbt4yPB16oyxZ9l8
+<<^ code=`&#x0003;`>>ni:///sha-256;tifaL-en1MsG5KM3pC2oc8rXV_a0yH5jjHOR9DQhWT0
 
 <<^ code=`&#x0004;` to=`?`>>

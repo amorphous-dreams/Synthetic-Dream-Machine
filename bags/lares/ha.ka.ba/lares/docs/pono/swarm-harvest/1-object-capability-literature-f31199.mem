@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/1-object-capability-literature-f31199.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -240,6 +239,6 @@ req.Header.Del(authenticationv1.ImpersonateUIDHeader)
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;2petygVVnb4JVJZV6rlarLHITAMbvDnDaIFpDYBhl2g
+<<^ code=`&#x0003;`>>ni:///sha-256;3k-ddT1AzhYtmwTKkRTQrYu6LVSzugsYZX1UhktTLm4
 
 <<^ code=`&#x0004;` to=`?`>>

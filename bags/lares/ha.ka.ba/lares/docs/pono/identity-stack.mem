@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/pono/identity-stack.mem"
 l-space       = "stable"
 mana          = 15
 revision-note = "minted 2026-06-07 — holds the lar: scheme's identity-addressing surfaces (who-speaks, distinct from bearing); provenance docs/pono/lar-uri §3.3.1"
@@ -112,6 +111,6 @@ See `the-four-tools` and `the-syad-perspectives` for the tool and standpoint gra
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HaVm8TlGtoMP_xUafbIt0qw2wEV1IGG1bEbDrPWr3_c
+<<^ code=`&#x0003;`>>ni:///sha-256;fMvGmOXDVgTzCqx1GleOlqPLOoPzk27YzAoEvDh9WmA
 
 <<^ code=`&#x0004;` to=`?`>>

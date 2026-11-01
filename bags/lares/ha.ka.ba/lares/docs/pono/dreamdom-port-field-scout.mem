@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -95,6 +94,6 @@ Firestore listeners send an initial snapshot and subsequent updates; local-cache
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;F6fNfch7gTa-smuNTfXq99_n9UMLcIy6q0p8Hqy-Ing
+<<^ code=`&#x0003;`>>ni:///sha-256;OkuYNlv8Ijgb7klHobT7S_6ozjQ9ohIIXlNNwLXsSQQ
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/puka.mem"
 namespace = "&#x2299;"
 role      = "first-through-the-opening sigil — puka as the gap; Verse rush: first wins, losers continue until enclosing scope exits (NOT cancelled by winner); English alias: \\rush; async-first concurrency sprint pending"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-puka"]
@@ -78,6 +77,6 @@ A puka block MUST NOT appear directly inside a `huli` (`\for`) iteration body.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;pZsgebmtYJsrYoFruekTneFw8jhir5kd_8PJ1xYHB3Q
+<<^ code=`&#x0003;`>>ni:///sha-256;JrAWKJO0LcFHz8TTwXyBDkqXrvnEOwEGSJn00EGwxk8
 
 <<^ code=`&#x0004;` to=`?`>>

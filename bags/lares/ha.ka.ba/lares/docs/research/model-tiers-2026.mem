@@ -9,7 +9,6 @@ l-space   = "lares"
 role      = "field research on model-tier placement (2026-10-30): what each Claude and Codex tier cost and yielded across one lane-day with three Fable lane leads beside Opus and Sonnet leads, collided with the providers' positioning and published orchestration studies, and the placement each tier's nature earns"
 status    = "research; read 2026-10-30; leans run LEAN-verify until a second lane-day reads; `mixed-model-swarm#/the-tiers` carries the placement as law"
 tags      = ["research", "models", "swarm", "economics", "tiers", "fable"]
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/model-tiers-2026.mem"
 title     = "lar:///ha.ka.ba/lares/docs/research/model-tiers-2026"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/model-tiers-2026"
@@ -92,6 +91,6 @@ A walled Codex seat writes and stops; the lead commits at each red and fix bound
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/model-roster-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;WjKbui5OslRMdULkV0RMCUhqJxS9eM4wDOPDHD94uoU
+<<^ code=`&#x0003;`>>ni:///sha-256;mcYmVpvaUWSFpJOpuoPgf8oVUpkIM0kbhqSI_CaKer4
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/strandbeests.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
@@ -99,6 +98,6 @@ Full event: [[strandbeest-shrine|lar:///ha.ka.ba/elyncia/characters/companions/s
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;o1ZMaYbDA9_rNjhgdE5uNqIKjY6oPn5cUIhkeIib3bE
+<<^ code=`&#x0003;`>>ni:///sha-256;7sI4JTBXUiGQGx3N7N9IkyiSTkyuSyVQhCpfslEpueA
 
 <<^ code=`&#x0004;` to=`?`>>

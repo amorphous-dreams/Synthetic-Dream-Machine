@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/grandmother-spider.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 15
@@ -84,6 +83,6 @@ debts do not reduce to one.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7QARAlAP-4ZuhDDxJ81ZdJ8ZORDQplP0ZIToU2vMldI
+<<^ code=`&#x0003;`>>ni:///sha-256;q2_kfYPwzs4OJQ2n6eglxRt7ykvBoQbyU-C4eCqi5ZI
 
 <<^ code=`&#x0004;` to=`?`>>

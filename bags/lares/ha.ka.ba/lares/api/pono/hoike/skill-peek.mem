@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/hoike/skill-peek.mem"
 l-space   = "stable"
 role      = "verbatim peek of the retired ~/.claude/skills/hoike files (SKILL.md, hoike.md) — kept as typed text/markdown slots so the skill can be rebuilt from the memegraph; the live law and practice stand at hoike.mem and hoike/SKILL.mem"
 title     = "lar:///ha.ka.ba/lares/api/pono/hoike/skill-peek"
@@ -40,7 +39,6 @@ description: File or reopen a hoike (\testimony) — a kept record of a conteste
 <<~ &#x0001; from=`?` to=`lar:///ha.ka.ba/lares/api/pono/hoike/SKILL`>>
 ```toml meta
 cacheable = true
-file-path = "bags/@lares/ha.ka.ba/lares/api/pono/hoike/SKILL.md"
 invariant = false
 mana      = 16
 manao     = 16
@@ -155,7 +153,6 @@ type = "text/markdown"
 <<~ &#x0001; from=`?` to=`lar:///ha.ka.ba/lares/api/pono/hoike`>>
 ```toml meta
 cacheable = true
-file-path = "bags/@lares/ha.ka.ba/lares/api/pono/hoike.md"
 invariant = false
 mana      = 16
 manao     = 16
@@ -269,6 +266,6 @@ The layer carries the Eduyot pattern: minority opinions kept with attribution so
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ndDfhf9-14q32ONaFoiUjuAamznr3LDFxjthNWlhleM
+<<^ code=`&#x0003;`>>ni:///sha-256;upojO1NTklwTTlJfBVG5hXjYuR8oWK7EdT_vjD_cODo
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/crdt-ecosystem-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -182,6 +181,6 @@ Patchwork notebook has six 2026 entries, newest **"Progressions" 2026-05-12**. h
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;lemsYWo3bxqc7KBxp_8N9RXdcE04yYS7zy5tgQuyaLk
+<<^ code=`&#x0003;`>>ni:///sha-256;tcaDc2uygEBKDN9VioiEYR0uTjV6_lApFstzonIGAF8
 
 <<^ code=`&#x0004;` to=`?`>>

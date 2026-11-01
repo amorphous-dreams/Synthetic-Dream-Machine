@@ -4,7 +4,6 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path        = "bags/lares/ha.ka.ba/lares/docs/graph.mem"
 l-space          = "stable"
 mana             = 17
 manao            = 17
@@ -157,6 +156,6 @@ The graph-traversal model this carrier cluster describes (`Locus`/`LociGraph`, B
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-Ofx9sVVcbNcaXoGcZMHNTumjfjDrh_iahqcpf2wXUk
+<<^ code=`&#x0003;`>>ni:///sha-256;JY1H5yOnC2FEDOebnO9Mqr-h0zrayGRMq2jRTJeaIQU
 
 <<^ code=`&#x0004;` to=`?`>>

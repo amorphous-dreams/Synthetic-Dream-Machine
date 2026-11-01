@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/mukuwai.mem"
 namespace = "&#x2299;"
 role      = "conditional fallback sigil — else form; Hawaiian alias for else; the cut-off water, the path when all streams closed"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-mukuwai"]
@@ -69,6 +68,6 @@ English alias form:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;aElLi-eHZbq3kuK3o0f0jsPsK094jRuSxMHNwgtW5Cc
+<<^ code=`&#x0003;`>>ni:///sha-256;imSRM3HB_Cnu15c9-6wPOVfNZvB0JA7iUFMlxTYuqQg
 
 <<^ code=`&#x0004;` to=`?`>>

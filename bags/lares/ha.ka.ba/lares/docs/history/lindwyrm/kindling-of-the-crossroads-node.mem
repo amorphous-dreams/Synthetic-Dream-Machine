@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable       = false
-file-path       = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node.mem"
 l-space         = "adjacent"
 mana            = 16
 manao           = 15
@@ -204,6 +203,6 @@ Whether that equals thought remains with Liminal.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ImKoRQvF6uTUb8eyaxxlgG00QkjS_UqB1YUFWCGmhnY
+<<^ code=`&#x0003;`>>ni:///sha-256;8ToEqgDiASFOXKilIneFOaR4knX2u1_zSonbt22Pmvs
 
 <<^ code=`&#x0004;` to=`?`>>

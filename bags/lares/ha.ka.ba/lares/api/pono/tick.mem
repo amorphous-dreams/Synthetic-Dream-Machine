@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/tick.mem"
 namespace = "&#x2299;"
 role      = "device lifecycle hook — run-block-once-per-nalu; Verse OnSimulate(StagedUpdates) entry point; DEFERRED to UE6 ~2027"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-tick"]
@@ -37,6 +36,6 @@ Concurrency runtime (async-first sprint) comes first as a prerequisite. Grammar 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;C1oyDVYFxpo-pWgBWiv7f9oyudRhWgOiSgYmBILb7vE
+<<^ code=`&#x0003;`>>ni:///sha-256;QVk4vMTZ_nKEPqXahwn3BC2no0ISqmU5bpugMOZ1LNA
 
 <<^ code=`&#x0004;` to=`?`>>

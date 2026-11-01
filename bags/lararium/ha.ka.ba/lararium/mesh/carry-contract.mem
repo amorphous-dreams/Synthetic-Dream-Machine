@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/carry-contract.mem"
 l-space    = "lararium"
 mana       = 15
 manao      = 15
@@ -196,6 +195,6 @@ cannot.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;jAaRRmErVxJsHw9xXybCQk9kIPQXjCwZTpqN5fAYUGI
+<<^ code=`&#x0003;`>>ni:///sha-256;SiLYc1zMxSBroTTPUGLVwFpsy96dcQjOIe6FK6gwTBk
 
 <<^ code=`&#x0004;` to=`?`>>

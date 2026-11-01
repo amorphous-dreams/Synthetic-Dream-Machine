@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "magic-decode"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/function/magic-decode.mem"
 l-space   = "sdm"
 mana      = 13
 manao     = 16
@@ -70,6 +69,6 @@ Depends on `domain/divination`; pairs with `function/archive` for the handshake 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;h4cc0omE9SferwRVOBYdAxSsXtTf-22nEvONU_I78zE
+<<^ code=`&#x0003;`>>ni:///sha-256;5N7VhhLNJXQSJtBq_TYeEUWwXkEiMZpZHx49jlcg7m8
 
 <<^ code=`&#x0004;` to=`?`>>

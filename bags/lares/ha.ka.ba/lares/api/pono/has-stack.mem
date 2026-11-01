@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/has-stack.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 15
@@ -113,6 +112,6 @@ the py caps consume.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;2laIyy8MbNfvkWJpmvgT3vtZBxie8qhiGXD_GFxw0I0
+<<^ code=`&#x0003;`>>ni:///sha-256;5kYwo1Zrx5cPVLHznUTHPs0002Sc11Xcrt2MGyWvzgY
 
 <<^ code=`&#x0004;` to=`?`>>

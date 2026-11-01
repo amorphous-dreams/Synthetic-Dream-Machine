@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/2-apple-screen-time-partially-reached-e03518.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -113,6 +112,6 @@ The only enforceable, quotable rule that the supervised party be *shown* they ar
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;GEQ7v7_aijGshrPqfQ9WtMwgU0R_YPaGQXr3thVsCp4
+<<^ code=`&#x0003;`>>ni:///sha-256;-vMBE6kYFNF2ThCLyGqkuGOh45Pl_mBsK4c43PP5lZk
 
 <<^ code=`&#x0004;` to=`?`>>

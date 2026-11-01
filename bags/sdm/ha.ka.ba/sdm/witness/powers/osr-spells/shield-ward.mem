@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/witness/powers/osr-spells/shield-ward.mem"
 l-space   = "sdm"
 mana      = 12
 manao     = 16
@@ -102,6 +101,6 @@ As Basic: a barrier an inch from the body, moving with the caster, AC 2 vs missi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;er8f65nkU7lBrHkTgHk9J6Bm1T420dpU0JHr2Xk7Ld4
+<<^ code=`&#x0003;`>>ni:///sha-256;a9f0gD4zj4xHlXdH3ZMxkQMehU-0XmmZpq1eKFsy1ks
 
 <<^ code=`&#x0004;` to=`?`>>

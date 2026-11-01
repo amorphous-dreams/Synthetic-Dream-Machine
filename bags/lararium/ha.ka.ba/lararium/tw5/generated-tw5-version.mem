@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/generated-tw5-version.mem"
 l-space     = "lararium"
 mana        = 3
 role        = "self-documentation: TODO describe generated-tw5-version.ts"
@@ -21,6 +20,6 @@ TODO: describe the load-bearing surface this file owns.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;aY91McwIDgPB6178qptIuc4iSKngd7i_APETNcp3Bw8
+<<^ code=`&#x0003;`>>ni:///sha-256;EqJ7e0uXRyRLNSZMv_oOayRIObkuo1GpGKO9LQeq09I
 
 <<^ code=`&#x0004;` to=`?`>>

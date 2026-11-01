@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/subduction-onomancy-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -307,6 +306,6 @@ Subduction relays learn the `SedimentreeId`, the full causal DAG shape, per-comm
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;RdzP-janQaQx9yEjy6RrAFD0DtJdUO8RFlaGL6aue9U
+<<^ code=`&#x0003;`>>ni:///sha-256;kqMCiAdGB3YnZ44rzCD0tc5HZyUc5VHGeJus8u0qofY
 
 <<^ code=`&#x0004;` to=`?`>>

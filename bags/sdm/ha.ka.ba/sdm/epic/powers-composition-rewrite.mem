@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/epic/powers-composition-rewrite.mem"
 l-space   = "sdm"
 mana      = 19
 manao     = 19
@@ -778,6 +777,6 @@ history if ever needed.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;abeZ50TGC7CwldpPyGWjKCv3QsW3q22CbWf674Tzlew
+<<^ code=`&#x0003;`>>ni:///sha-256;iVbwNkG_1XYlU9DpI1k0aXYnmh06-8eBk-rR-adxj1w
 
 <<^ code=`&#x0004;` to=`?`>>

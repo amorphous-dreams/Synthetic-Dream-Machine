@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/wehe.mem"
 mana      = 17
 manao     = 16
 manaoio   = 16
@@ -119,6 +118,6 @@ close-pattern = '<<~\/wehe\s*>>'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;a-wmT71KwlAVQrj9x7mwcJ21Ni5RqLCrJwvABZdcDMI
+<<^ code=`&#x0003;`>>ni:///sha-256;jZbxV_8Qi3HLGIi4FHcYI49RbN4lTpUq5csSHlmzF90
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-reachable-worlds.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 15
@@ -151,6 +150,6 @@ settled pet-name for the tideline of worlds yet.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Z0fudKfOnDXGcICXvglgnLxdSeaUnwkpAGpfPEdMOgs
+<<^ code=`&#x0003;`>>ni:///sha-256;u2zXxAnzHbcoR-9Ck4bLld1TygEs7UtZugpNIMzLfLs
 
 <<^ code=`&#x0004;` to=`?`>>

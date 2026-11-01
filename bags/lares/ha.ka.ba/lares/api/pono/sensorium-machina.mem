@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/sensorium-machina.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 18
@@ -549,6 +548,6 @@ five-plane count (#owed, the-five-plane-count).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;sCHtfncyHBhVqIuY3CGrDgVCVGckZb-aEDwck1HtLAg
+<<^ code=`&#x0003;`>>ni:///sha-256;rfbD_Q14C2eFe2qacD400zeE0-dgUSaFfvQwKVpX9qU
 
 <<^ code=`&#x0004;` to=`?`>>

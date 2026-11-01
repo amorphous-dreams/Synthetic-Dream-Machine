@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/node/vessel-gates.mem"
 l-space     = "lararium"
 mana        = 14
 role        = "invariant law: ONE face gate per (Nexus, route), every one a node vessel stands assembled from the same readers — the held root of the gate's own Nexus, the D4 shadow ring, the PersonaGroup grant ring, the one sorter over that Nexus's posture, and the withdrawal memory a sovereign gate keeps across a restart. The bundle comes from the composer under the tier's own root door; the session table from the route's own consumer."
@@ -64,6 +63,6 @@ vessel's own log through `onRefuse`; the wire never carries it.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/socket-sorter`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/open-node-vessel`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Df5lzGECrSW8HDX6JFa0sgMI6cIYLTi9bGjTbPIgoAs
+<<^ code=`&#x0003;`>>ni:///sha-256;crhLMwyCKjsmM8TM4-E3eEQghSmNSdOoK7NALhFsN3s
 
 <<^ code=`&#x0004;` to=`?`>>

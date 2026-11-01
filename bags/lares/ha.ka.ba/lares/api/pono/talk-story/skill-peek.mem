@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/talk-story/skill-peek.mem"
 l-space   = "stable"
 role      = "verbatim peek of the retired ~/.claude/skills/talk-story files (SKILL.md, talk-story.md) — kept as typed text/markdown slots so the skill can be rebuilt from the memegraph; the live law and practice stand at talk-story.mem and talk-story/SKILL.mem"
 title     = "lar:///ha.ka.ba/lares/api/pono/talk-story/skill-peek"
@@ -43,7 +42,6 @@ description: Convene a talk-story floor (kūkākūkā, talanoa) — co-narrated
 <<~ &#x0001; from=`?` to=`lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL`>>
 ```toml meta
 cacheable = true
-file-path = "bags/@lares/ha.ka.ba/lares/api/pono/talk-story/SKILL.md"
 invariant = false
 mana      = 16
 manao     = 16
@@ -169,7 +167,6 @@ type = "text/markdown"
 <<~ &#x0001; from=`?` to=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>
 ```toml meta
 cacheable = true
-file-path = "bags/@lares/ha.ka.ba/lares/api/pono/talk-story.md"
 invariant = false
 mana      = 16
 manao     = 16
@@ -300,6 +297,6 @@ Beneath the triad two grounds rhyme: **kapwa** (Filipino — the other met as sh
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;O9hNZjEZ3Pr5G7jQkhwGEPnphDFHPjhULXoPbrLS_ng
+<<^ code=`&#x0003;`>>ni:///sha-256;h4cKgZIKsozLde8BArB9533Rib2siWiVzRQBnG9JkEo
 
 <<^ code=`&#x0004;` to=`?`>>

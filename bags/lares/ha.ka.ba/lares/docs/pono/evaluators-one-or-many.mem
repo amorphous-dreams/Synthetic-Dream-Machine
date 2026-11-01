@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/evaluators-one-or-many.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 15
@@ -217,6 +216,6 @@ The full survey with its prior-art table rests in the project's shared reports a
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_UgAIUinrQQyf-fSshvL9O_Dm5ovtiunKvuoSlzZ4nw
+<<^ code=`&#x0003;`>>ni:///sha-256;ni05rvzrdsAljW-Ogitx21xS4Kpb7xY246v-tCFpe2Q
 
 <<^ code=`&#x0004;` to=`?`>>

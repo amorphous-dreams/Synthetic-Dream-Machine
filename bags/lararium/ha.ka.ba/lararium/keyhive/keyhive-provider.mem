@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/keyhive-provider.mem"
 l-space     = "lararium"
 mana        = 17
 manao       = 16
@@ -131,6 +130,6 @@ would turn admission into cloning, and every admitted vessel would hold the huma
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9KXplx2bFZdgyKPSEHJd7ViZoitJFP1xkJWClLqY_As
+<<^ code=`&#x0003;`>>ni:///sha-256;d6sTgP_BKdldmTXH8KB_72lDWdRCvuebgXPt7c2FdUc
 
 <<^ code=`&#x0004;` to=`?`>>

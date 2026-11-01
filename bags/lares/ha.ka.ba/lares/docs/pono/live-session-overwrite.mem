@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/live-session-overwrite.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -101,6 +100,6 @@ A passing test records the jello claim as session evidence and refuses silent ca
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ULNus3Vsz9j7saEvGAYXIDGyY2aox3JSWZoyG6l2bzQ
+<<^ code=`&#x0003;`>>ni:///sha-256;-u3AuNh8jO3IIxR4wcqbVnE5f9TXO-shulYDCWlOHMg
 
 <<^ code=`&#x0004;` to=`?`>>

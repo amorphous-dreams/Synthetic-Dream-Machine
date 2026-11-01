@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/identity-classes.mem"
 l-space    = "lararium"
 mana       = 15
 manao      = 15
@@ -698,6 +697,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3Lpcq5K5RHrVifm8GZsyWWJL_XlP6rQxmbTcXYSUbtA
+<<^ code=`&#x0003;`>>ni:///sha-256;YNPIlmS_UkhEaOUnZAoOtbImQ7eeDpLDG1s5JniBQ2M
 
 <<^ code=`&#x0004;` to=`?`>>

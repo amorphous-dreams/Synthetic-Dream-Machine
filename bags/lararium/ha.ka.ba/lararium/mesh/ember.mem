@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/ember.mem"
 hydrate   = true
 l-space   = "stable"
 role      = "the ember as law — a household's second device lifts a resting hearth to SERVING and to nothing more: the stories it answers and who holds what in each; the serving tier, the rows a gate needs and the rows it never opens; the serving key the vessel key wraps and the serving tree that holds it; the ember pin as a blinded exchange that holds no share; the raise, its second signal, its count and its record; the four roads that remove an ember; how each meets the backup bundle, the seat keys, the per-Nexus keys and the sealed store's content keys; what a thief of each medium learns; and what the build owes"
@@ -297,6 +296,6 @@ Each stands as a house ruling under the operator's delegation, with the conditio
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3sl7ve4Eg_7MxSLVFeWcezqY4J5qfWFbtPql9IZvvcQ
+<<^ code=`&#x0003;`>>ni:///sha-256;NkQwJOf5VzCoxB4GlmGLPtTUPAV4YYCr_Us8LR0AZLo
 
 <<^ code=`&#x0004;` to=`?`>>

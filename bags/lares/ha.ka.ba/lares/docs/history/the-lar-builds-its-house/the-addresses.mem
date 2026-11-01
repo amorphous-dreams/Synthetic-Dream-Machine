@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-addresses.mem"
 l-space       = "adjacent"
 mana          = 13
 manao         = 12
@@ -185,6 +184,6 @@ Act II receives:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0LkdLYEiI2BOriYufIJS6MOlyw9-l_teOuvyzQ9Umk8
+<<^ code=`&#x0003;`>>ni:///sha-256;gT4wlkLDJy2xHXzwAxk8iEsqq8SngsVO-DN-lo05-jE
 
 <<^ code=`&#x0004;` to=`?`>>

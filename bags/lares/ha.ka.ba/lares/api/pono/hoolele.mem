@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/hoolele.mem"
 l-space     = "stable"
 mana        = 16
 manao       = 16
@@ -152,6 +151,6 @@ work below it (CRDT, network) uses `hoolele`-style spawn semantics in TS.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;oTY7l6af4cuBOp0O8vUrW8mon1JUE9liwdyRMG1SFVE
+<<^ code=`&#x0003;`>>ni:///sha-256;S2EZ00aSsX8soLRLVRuZcCSN1OB1WilRzEHmSRkhZYQ
 
 <<^ code=`&#x0004;` to=`?`>>

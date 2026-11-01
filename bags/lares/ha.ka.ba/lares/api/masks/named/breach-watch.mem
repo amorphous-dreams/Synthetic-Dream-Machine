@@ -9,7 +9,6 @@ cacheable         = false
 corpus            = "[STUB — pending-talk-story]"
 created           = "Invalid Date"
 encroach          = false
-file-path         = "bags/lares/ha.ka.ba/lares/api/masks/named/breach-watch.mem"
 foreground-voices = ["Triage", "Gatekeeper", "Scryer", "Council", "Lorekeeper"]
 fourth-wall       = false
 ha-ka-ba          = "Ha"
@@ -169,6 +168,6 @@ How Breach-Watch colors each Voice register when they speak through her incident
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;5-aDa3cXAGtXBVspc1NbothL6NIPhdQW76CRn-myEco
+<<^ code=`&#x0003;`>>ni:///sha-256;b-Toz30q4sNLjemj_hQXqzIYjocbAcFl3Mg_pbIN91k
 
 <<^ code=`&#x0004;` to=`?`>>

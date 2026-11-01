@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/w26-floor-lane.mem"
 l-space   = "adjacent"
 role      = "the W26 lane's kit: the architecture the operator's ruling of 2026-10-18 adopts (one owner per registry; the floor reads by CID), the evidence that drew it, the six slices in grounds-before-wins order, what each slice retires, and the crew and crucible a lead walks"
 status    = "draft"
@@ -164,6 +163,6 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;J5_DCnKWK06STxYQWfkQWmJEMhdbP2dWfuJJU8SSC28
+<<^ code=`&#x0003;`>>ni:///sha-256;0AXRJSovIGlD8lqHl0HaeRGlC_OeM4hJ1MUwIVqaC6Y
 
 <<^ code=`&#x0004;` to=`?`>>

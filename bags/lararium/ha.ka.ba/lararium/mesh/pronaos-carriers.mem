@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/pronaos-carriers.mem"
 hydrate    = true
 l-space    = "lararium"
 mana       = 15
@@ -473,6 +472,6 @@ deferred and does not enter this carrier meme by implication.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ap5rqpHn813RJJPh4Mt7_5Yr-NlzgelvcY1KZDKDebU
+<<^ code=`&#x0003;`>>ni:///sha-256;JMseabXBzhXedAbH4Eq3EXpBIqnl_HUfNvR5HU3e3sk
 
 <<^ code=`&#x0004;` to=`?`>>

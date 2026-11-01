@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/books/the-lares-dreamnet/spine.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -66,6 +65,6 @@ comes only after all source text reads as moved.)//
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;CHDGNSCsK1Dikn-U_FWWeMFBhEmT6nxU1GJQe_W8U44
+<<^ code=`&#x0003;`>>ni:///sha-256;JLAV0eWYCTi-T0SqslK4m7MuLdEvJa_wPzebY3sy1F8
 
 <<^ code=`&#x0004;` to=`?`>>

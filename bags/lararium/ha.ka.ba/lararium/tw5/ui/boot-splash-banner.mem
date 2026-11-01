@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/ui/boot-splash-banner.mem"
 mana      = 18
 manao     = 17
 manaoio   = 16
@@ -20,6 +19,6 @@ uri-path  = "ha.ka.ba/lararium/tw5/ui/boot-splash-banner"
 <div class="lar-boot-banner">⬡ lararium — warming causal islands…</div>
 </$reveal>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Q_3TRtzP5Si9tPv4Ec4P2uadrzMUIJJ3mCy0-FLPjro
+<<^ code=`&#x0003;`>>ni:///sha-256;IXOIYcCAJPTUrFalC4eDKIke2PjXcXLuZFGggoSNVS0
 
 <<^ code=`&#x0004;` to=`?`>>

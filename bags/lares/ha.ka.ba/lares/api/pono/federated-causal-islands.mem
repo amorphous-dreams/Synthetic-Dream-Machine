@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/federated-causal-islands.mem"
 l-space   = "stable"
 mana      = 17
 manao     = 16
@@ -382,6 +381,6 @@ causal-island-may = [
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;vDn-JgQA-j7teveonh8xtZ_kt6LW2vlw5x9yv8uU2FM
+<<^ code=`&#x0003;`>>ni:///sha-256;4sQ923YDxwktQMZAq6KUQfRllta8js0L_eF1leGD6Lc
 
 <<^ code=`&#x0004;` to=`?`>>

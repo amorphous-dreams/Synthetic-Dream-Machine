@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/recipe.mem"
 l-space     = "lararium"
 mana        = 12
 manao       = 12
@@ -78,6 +77,6 @@ class, where the alert stays the permanent mechanism.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Z1KisqwHBbVVHBZpynLlkoCx5K3BMIutDzBNhcxNdtE
+<<^ code=`&#x0003;`>>ni:///sha-256;BHoPgkDp5pKQMj-5sFj-_Xmk1D0drycmXi6ZyaooBLg
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/realm-bag-brief.mem"
 hydrate    = true
 l-space    = "stable"
 mana       = 12
@@ -90,6 +89,6 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;B89X2YfhUItIpgHNkVIMwNUWLB0BsybzYUsncCQkn9A
+<<^ code=`&#x0003;`>>ni:///sha-256;a_hUE8rx8C59_uK-Gi0v884nllnrTxCCVW3SmSrji8Q
 
 <<^ code=`&#x0004;` to=`?`>>

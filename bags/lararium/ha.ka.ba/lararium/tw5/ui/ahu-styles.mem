@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/ui/ahu-styles.mem"
 mana      = 18
 manao     = 17
 manaoio   = 16
@@ -162,6 +161,6 @@ span[data-lar-kind="worksite"]:not([data-lar-slot="#body"]) {
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;gAKvJ3pZh7RyX_11ppTJfF2uqPBSzJ2dtkmRBViz1q4
+<<^ code=`&#x0003;`>>ni:///sha-256;sKhPTs9KdXZQ6dgTK5KVPWUPuxXqaU0rKCJr9iFruoo
 
 <<^ code=`&#x0004;` to=`?`>>

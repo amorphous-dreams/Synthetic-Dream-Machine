@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/memetic-wikitext.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -193,6 +192,6 @@ The submission-grade specification at `lar:///ha.ka.ba/lares/api/pono/memetic-wi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;RTOBl82FT2TOhNjUujAT0Y8tRuM_iCquhbzfwhq022k
+<<^ code=`&#x0003;`>>ni:///sha-256;_JL6mxcOtGvWuQP9Tgy5NDrK_KFHNykVIbh25sZfbCk
 
 <<^ code=`&#x0004;` to=`?`>>

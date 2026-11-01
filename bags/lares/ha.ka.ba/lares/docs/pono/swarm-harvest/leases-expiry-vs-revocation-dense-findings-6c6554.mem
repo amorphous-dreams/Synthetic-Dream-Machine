@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/leases-expiry-vs-revocation-dense-findings-6c6554.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -337,6 +336,6 @@ All MEASURED, RIPE Atlas + authoritative-side traffic:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7HvqmMaXBVnx-no0wElCkVGuf4OJHXVve8gb7q6n_QM
+<<^ code=`&#x0003;`>>ni:///sha-256;8AqfdXwSmvJAK0qSHGLj-r8Xt00RPo-Ei5otqwnxh1Y
 
 <<^ code=`&#x0004;` to=`?`>>

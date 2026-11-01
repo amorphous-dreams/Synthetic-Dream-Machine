@@ -9,7 +9,6 @@ cacheable         = false
 corpus            = "[STUB — pending-talk-story]"
 created           = "Invalid Date"
 encroach          = false
-file-path         = "bags/lares/ha.ka.ba/lares/api/masks/named/ink-clerk.mem"
 foreground-voices = ["Lorekeeper", "Scryer", "Gatekeeper", "Council", "Pedagogue"]
 fourth-wall       = false
 ha-ka-ba          = "Ha"
@@ -169,6 +168,6 @@ How Ink-Clerk colors each Voice register when they speak through her archival-pr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;6CTsxnlkgFLT9oXhPxWr8qzaxoe_GbUmEY96LIogmSE
+<<^ code=`&#x0003;`>>ni:///sha-256;8VV5OroekbHs1QA9oWESoi1d7DpgPJwJB_bB601iIZU
 
 <<^ code=`&#x0004;` to=`?`>>

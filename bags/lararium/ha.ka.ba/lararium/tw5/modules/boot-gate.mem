@@ -4,7 +4,6 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/boot-gate.mem"
 heleuma       = "ha"
 mana          = 17
 manao         = 17
@@ -68,6 +67,6 @@ After at least one module injects, the gate reads `lar:///ha.ka.ba/lararium/tw5/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;AfbqsXfaB0Z926YNTOh_BYl91dGadEOgxWkJx3G_D0M
+<<^ code=`&#x0003;`>>ni:///sha-256;iSVJP4Hyx3zFkBo9Sw5d_NbHkacCCJ3_ZUuMX0f_YJM
 
 <<^ code=`&#x0004;` to=`?`>>

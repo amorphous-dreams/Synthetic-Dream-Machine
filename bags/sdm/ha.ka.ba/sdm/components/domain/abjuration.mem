@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "abjuration"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/domain/abjuration.mem"
 l-space   = "sdm"
 mana      = 13
 manao     = 16
@@ -70,6 +69,6 @@ Pairs with `function/barrier` and `function/ward`. Counters offensive crossings;
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3P3J0uKfnk2ogDb-rPYHDX6ib9uHY9VhbHfuGQA2UEA
+<<^ code=`&#x0003;`>>ni:///sha-256;_pm-qolqyYs1wVIXXFKYMXt3RXq32MVS-7u8r8N_Dwg
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/tiddler-fields.mem"
 mana      = 18
 manao     = 18
 manaoio   = 18
@@ -94,6 +93,6 @@ This split removes the old flat-record ambiguity where TW5 content fields and ho
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;hizyyEG6b_1mHYbdXapYOkpSc4qmW66k18yBa6D8zpA
+<<^ code=`&#x0003;`>>ni:///sha-256;GBXF1JqPCvFEewi-iPzF0uChC1XxAlm7cPttjwZx7x0
 
 <<^ code=`&#x0004;` to=`?`>>

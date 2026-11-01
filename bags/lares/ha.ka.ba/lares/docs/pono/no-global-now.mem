@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/no-global-now.mem"
 hydrate    = true
 l-space    = "stable"
 mana       = 14
@@ -353,6 +352,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;SS-iPcDPdMwqghaLkSwhNjLQIn4inT0MgbKQwcMn5P0
+<<^ code=`&#x0003;`>>ni:///sha-256;lKQD_cwL00QhKy-G5q9LLDR7y4FtdgKLkkL85-9ewho
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/elyncia/ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts.mem"
 l-space   = "adjacent"
 mana      = 13
 manao     = 13
@@ -116,6 +115,6 @@ its island's red for the rest.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;m3YVEfZmBDbkoTtzjwhyT4qnYRjpaaKs7K37LmOk3oc
+<<^ code=`&#x0003;`>>ni:///sha-256;6Y3eMBiQOgivKmbYEfyqDEJ7EYDS2KK_GGe2mMrPLjE
 
 <<^ code=`&#x0004;` to=`?`>>

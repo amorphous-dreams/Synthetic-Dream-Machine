@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/index.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -50,6 +49,6 @@ miles (near the Izmir-coast) — constellation members hanging over other Realms
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;bm4Of__UDvJmcrTop721KZHuFwQWMGoK7kz003GzMhg
+<<^ code=`&#x0003;`>>ni:///sha-256;KTGIWGmRHbB7AC5nFmEPdKZDSSnBhdI1HvvuZM3gE_0
 
 <<^ code=`&#x0004;` to=`?`>>

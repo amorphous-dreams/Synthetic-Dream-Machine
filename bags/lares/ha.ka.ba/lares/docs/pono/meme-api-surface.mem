@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/meme-api-surface.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 12
@@ -228,6 +227,6 @@ The CLI walk names its container on each store verb: `lares meme put lar:///t/x 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;CE8N3b3ah4RgEz4UxUs7QGbVGbpVhgcbsznqgDq-XlE
+<<^ code=`&#x0003;`>>ni:///sha-256;tRuuw2r6nm-9WUHWGLxbGz8e4Ut1tQj_5phizAd5khQ
 
 <<^ code=`&#x0004;` to=`?`>>

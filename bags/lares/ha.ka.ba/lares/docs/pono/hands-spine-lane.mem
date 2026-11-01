@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/hands-spine-lane.mem"
 l-space   = "adjacent"
 role      = "the hands room's first lane, the session spine: a socket binds an owner epoch, a session id, a generation, a verified face and a fixed hand profile; a receipt rests under the face's proof subject and settles on disk before a terminal answer leaves; a face's working document sits at a face-secret address; the live switch and the openers' session hunks follow K15 bonds"
 status    = "draft"
@@ -106,6 +105,6 @@ The face supplier and the signer stand behind `UdsSessionDoor.open({ faceRef, ha
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;6jyFOxoEWJQYkduPXiISkpg_d6_xRp1QlO2ksoy5IoM
+<<^ code=`&#x0003;`>>ni:///sha-256;PeKvQybNwO-UcQNUGG26HcQBTV7jf-B2lcdI5aqu8AA
 
 <<^ code=`&#x0004;` to=`?`>>

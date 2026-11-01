@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-burned-library.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 15
@@ -89,6 +88,6 @@ your exits memorized.// Some information they hold stays locked — not by the f
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;eDhcVRzaDrtoHRPZdTZ9MTyU5tkw7EZj95n6dR46FnA
+<<^ code=`&#x0003;`>>ni:///sha-256;wp_d82Ec_kTLU9cSHZOznsw1MlbDhB8Zs5AUVOkEWE4
 
 <<^ code=`&#x0004;` to=`?`>>

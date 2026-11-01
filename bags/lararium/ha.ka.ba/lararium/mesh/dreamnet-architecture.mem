@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/dreamnet-architecture.mem"
 l-space    = "lararium"
 mana       = 17
 manao      = 16
@@ -639,6 +638,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;xz7ABfMq-kOX6XdW69BEp6CjhXp5NCSvLD6qLbsQKzE
+<<^ code=`&#x0003;`>>ni:///sha-256;AahFk44u4_oWHLRyb1diprzVMheocTy18tdrFAYJ60A
 
 <<^ code=`&#x0004;` to=`?`>>

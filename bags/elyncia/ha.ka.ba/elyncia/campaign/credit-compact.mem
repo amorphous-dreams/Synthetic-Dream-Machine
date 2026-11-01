@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/campaign/credit-compact.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -64,6 +63,6 @@ They may:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;uUzlwocUTbVLneqkRaAKPb98KWZgkzPppfKgTJURaMs
+<<^ code=`&#x0003;`>>ni:///sha-256;6AgBZTvWmah62rAcCTzZyMofOoCJRPSuT7AGBnFmNkI
 
 <<^ code=`&#x0004;` to=`?`>>

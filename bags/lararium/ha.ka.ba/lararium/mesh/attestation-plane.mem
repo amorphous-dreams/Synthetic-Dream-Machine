@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/attestation-plane.mem"
 l-space   = "lararium"
 mana      = 14
 manao     = 14
@@ -300,6 +299,6 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;6uYb-aZ5yOH6w95WGvIrRxAYlC0pvSs1W2m_msq4f10
+<<^ code=`&#x0003;`>>ni:///sha-256;irRse99m9YP1mKfYC1vU0LXFF_T_GpONq2UhNGXB-dc
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/uefn-scene.mem"
 namespace = "&#x2299;"
 role      = "UEFN scene decomposition model — Verse scene file → Lararium wiki graph → TW5 filtered views; web3 / NOT Blueprint"
 tags      = ["lar:///ha.ka.ba/lararium/mesh/kumu-device"]
@@ -210,6 +209,6 @@ pranala edge payloads. They feed future Verse code generation from the graph.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;A3PnrcPaDaBt4LqlMpVKZU3pjuycpytQ4z38Jboruws
+<<^ code=`&#x0003;`>>ni:///sha-256;GrsHC__Zde2xeEeMvreol29XbWWkNctbNhCMhyex6h4
 
 <<^ code=`&#x0004;` to=`?`>>

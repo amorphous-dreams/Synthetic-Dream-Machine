@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -53,6 +52,6 @@ Use this branch for:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;du9LH5HXSiTvE3f60aXSWGUBH9_31TkySYLFye3CkoE
+<<^ code=`&#x0003;`>>ni:///sha-256;VLJIzfDADkIG4139URE3k89tqkdsF2H6RrBbWM-hr-o
 
 <<^ code=`&#x0004;` to=`?`>>

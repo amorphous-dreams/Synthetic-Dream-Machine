@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/the-managed-custodial-sub-identity-measured--d58191.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -247,6 +246,6 @@ Miller's *Robust Composition* is genuinely rootless **in the model**. §9.2.5: *
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;vKK9AKHNzdypcRNJFvnVQb2CT-ZQapRCPsogs1NM0es
+<<^ code=`&#x0003;`>>ni:///sha-256;vQw7yJFz98sruqqFj2TexKtTg_tijOemf1tYmpL4N4k
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/lararium-memory.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 16
@@ -270,6 +269,6 @@ conflict press a `hoike`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;VJpI9_6siGrRprH0mWBxFEVO7e4bOirXMLijSzSmoYs
+<<^ code=`&#x0003;`>>ni:///sha-256;voF08JoByMnLxNWMDfktLEyLWo_tQAHy6SVuzrZREMc
 
 <<^ code=`&#x0004;` to=`?`>>

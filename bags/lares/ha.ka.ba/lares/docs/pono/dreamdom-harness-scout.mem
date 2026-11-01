@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-harness-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -201,6 +200,6 @@ Nothing in any src, test, script, vite config or tsconfig imports it. Its schema
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;zKazuWMlml7RoVwemS48rY9SmVam1pIKrd0Pz1Jxvdc
+<<^ code=`&#x0003;`>>ni:///sha-256;Zizu1RuB4C-eztWpCarkRAutEvDp1jzUT65moSRtDkQ
 
 <<^ code=`&#x0004;` to=`?`>>

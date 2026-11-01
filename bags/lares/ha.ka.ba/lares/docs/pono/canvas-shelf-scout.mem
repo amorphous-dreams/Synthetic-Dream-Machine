@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/canvas-shelf-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -329,6 +328,6 @@ I read the source. `FolkSpace` is a **plain Web Component** — `folk-space` —
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;OnXVN1GP-SuZnTwOR-C29Ojrh6X7T0VSnei5dWP-5JY
+<<^ code=`&#x0003;`>>ni:///sha-256;udNGXLJH9j5CuC_uzQSQvP27RX1Ccu646CzOk_mougU
 
 <<^ code=`&#x0004;` to=`?`>>

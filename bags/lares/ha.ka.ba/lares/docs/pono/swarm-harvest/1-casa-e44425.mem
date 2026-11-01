@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/1-casa-e44425.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -157,6 +156,6 @@ This is a real, recent, cross-confirmed postmortem-class event, corroborated ind
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_bIb2Cl4wNL2Pb9iyDgPpW_KbkJGbCXR6ESby-KIL4M
+<<^ code=`&#x0003;`>>ni:///sha-256;9JV9ZGHGoslq0YRiMdbpT0jTZw2bmP38UiCghzRfcXE
 
 <<^ code=`&#x0004;` to=`?`>>

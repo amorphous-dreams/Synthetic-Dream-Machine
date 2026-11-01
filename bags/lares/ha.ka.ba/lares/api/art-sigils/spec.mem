@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/api/art-sigils/spec"
-title     = "lar:///ha.ka.ba/lares/api/art-sigils/spec"
-file-path = "bags/lares/ha.ka.ba/lares/api/art-sigils/spec.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "evergreen Art Sigils ontology, interpretive bounds, and art-house lexicons"
-status    = "stable"
-retain    = true
+uri-path = "ha.ka.ba/lares/api/art-sigils/spec"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/spec"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "evergreen Art Sigils ontology, interpretive bounds, and art-house lexicons"
+status   = "stable"
+retain   = true
 ```
 
 <<~ ahu slot=`#/purpose`>>
@@ -223,6 +222,6 @@ The grammar accommodates portraits, abstract fields, textiles, photographs, inst
 <<~/ahu>>
 
 
-<<^ code=`&#x0003;`>>ni:///sha-256;TfU5AVMYlIGhEzznBvTGpDsdZ8wJRSUe28AyDMKUIc0
+<<^ code=`&#x0003;`>>ni:///sha-256;NiXz97qO6sfiFSdCOOewX-oCdJpw5_6Ig86CIOzOoPw
 
 <<^ code=`&#x0004;` to=`?`>>

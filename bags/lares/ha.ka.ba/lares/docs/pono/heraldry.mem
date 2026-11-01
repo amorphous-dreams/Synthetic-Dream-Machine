@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/heraldry.mem"
 hydrate    = true
 l-space    = "stable"
 mana       = 13
@@ -249,6 +248,6 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;6ml670pU340lFKiw5x3WcNWhNQkaVha_doAa00UlLDw
+<<^ code=`&#x0003;`>>ni:///sha-256;RKqr-BgucD3mxyu7Nq2y6dZsLAFRgPhl4FU5lM9-RGU
 
 <<^ code=`&#x0004;` to=`?`>>

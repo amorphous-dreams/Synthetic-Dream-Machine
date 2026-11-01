@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k15-wave-b-lane.mem"
 l-space   = "adjacent"
 role      = "the Wave B lane's kit and the controller's forward plan: K15 step 3 with F6 slice three and B1's admit guard as one joint lane, the stories that draw it, the reds in grounds-before-wins order, the crew in very large work chunks under the mixed-model-swarm protocols, the house's talk-story style, and the road past it"
 status    = "draft"
@@ -117,6 +116,6 @@ The lane law stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controlle
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iz6xWheijHET2YbxM_kBD-4vzHqQLfAdkLFBJqK9vek
+<<^ code=`&#x0003;`>>ni:///sha-256;zdG84MsbVjJzkkw_MpS5-VwVHVrSa8UoJrPSHUe-6Aw
 
 <<^ code=`&#x0004;` to=`?`>>

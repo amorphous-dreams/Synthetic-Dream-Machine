@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -52,6 +51,6 @@ No spider legs on Ichi. No tall ritual hat. No generic witch hat. No polished fi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;dAo8XWclUkSs8T6u2rBlpW_olhOai5v45rLmjlJQ_cQ
+<<^ code=`&#x0003;`>>ni:///sha-256;X92nAJ5KWQa_spzxVUyuvLrTDacVzxiszfvpAYigzKg
 
 <<^ code=`&#x0004;` to=`?`>>

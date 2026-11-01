@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-ftls-powers-read.mem"
 l-space       = "adjacent"
 render-target = "docs"
 role          = "VERBATIM FTLS-Reader handback (2026-10-18) — Markdown transliterated only; source wording retained. Controller note: the branch left in the operator’s sweep; every file stands on the span. The unfinished-thread list stands for the operator’s return to the powers epic (the operator’s own solo work)."
@@ -77,6 +76,6 @@ Sources: `in/ftls-powers-reader.md`. Persona: FTLS-Reader. Date: 2026-10-18.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0bP6JLHurvQBLMp8xSs3hGAezFNP9g3lC2-IVe3bGtU
+<<^ code=`&#x0003;`>>ni:///sha-256;epTfszJ0JYPhkr_3OwzvCJABFo_ylrCX1-zgCMFIw3M
 
 <<^ code=`&#x0004;` to=`?`>>

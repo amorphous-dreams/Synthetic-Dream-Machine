@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/carriage-pull.mem"
 l-space     = "lararium"
 mana        = 14
 role        = "invariant law: the GATE-NATIVE pull a carriage is handed (`carriageCap` `pullFlow`) — one dial per (peer, Nexus) on the floor tier, at the floor pin the reader's own pair index holds for that peer at that Nexus, presenting what this vessel stands as there, verified against the publisher key the carried dial names. The pin never comes off the wire or the dial entry. A peer this vessel holds no pin for is not dialed at all; a Nexus it can present nothing at is skipped by name. This is the proven gate-native caller that flips carriage peering open (the shut-routes house ruling, stable-founding-road #/rulings)."
@@ -69,6 +68,6 @@ is tried at most once per pull; nothing throws. The last refusal names itself wh
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/place-floor-pin`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;y0dCnZcjWIkn2-NgekkR9pXeTY-V00XYbkFUhNDE8Mo
+<<^ code=`&#x0003;`>>ni:///sha-256;Bb3WCSwruTg7ma9C2PoWKOja1HFHMvMnX8T2DQ9ONjs
 
 <<^ code=`&#x0004;` to=`?`>>

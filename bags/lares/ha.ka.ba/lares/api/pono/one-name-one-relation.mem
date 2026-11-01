@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/one-name-one-relation.mem"
 hydrate   = true
 l-space   = "lares"
 mana      = 17
@@ -152,6 +151,6 @@ Three moves, smallest first, each standing on its own.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/open-vessel`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-uris`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;LYk93N9wi5tdbQLz9eujOyKG_iHfwdLR7JMMuTF_2sg
+<<^ code=`&#x0003;`>>ni:///sha-256;iXoq1bdsMA1qju66AfADTjyidT-Z8itYUb3bIwomyCM
 
 <<^ code=`&#x0004;` to=`?`>>

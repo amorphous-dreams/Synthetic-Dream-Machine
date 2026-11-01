@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/registry-filter.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 16
@@ -102,6 +101,6 @@ Two deployed systems compile the registry this law forbids, and their measured p
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7fGsFCokyNBZwfENtUHJy_JfzVrOWn-snezczNnzQzM
+<<^ code=`&#x0003;`>>ni:///sha-256;99HZ0Q3SCbHi4fKIUN4MD3LZzE1WW3miVMd5yO9J2Vc
 
 <<^ code=`&#x0004;` to=`?`>>

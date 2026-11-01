@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono.mem"
 mana      = 13
 manao     = 14
 manaoio   = 12
@@ -45,6 +44,6 @@ This folder already shows the family shape around it: `meme`, `invariant`, `meme
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;gzf1kczyy7Hww2i8V_fblq-SDLavM_PKi5aNa0PjFdI
+<<^ code=`&#x0003;`>>ni:///sha-256;ziVn03OqoNm7DvAi8ari1CxbTqHL-2MUAvv-ILRjxJc
 
 <<^ code=`&#x0004;` to=`?`>>

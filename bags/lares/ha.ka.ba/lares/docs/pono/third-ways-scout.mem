@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/third-ways-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 13
@@ -378,6 +377,6 @@ Held here as **draft**; the thread's telling wins over this copy where they diff
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;86A-XPWdf9ZYb9vsSBYS1c7PHB3vI-Hc9DABKhtB6Gc
+<<^ code=`&#x0003;`>>ni:///sha-256;4KTmS0Wt2AThyylKt3BtrYmePYU9gTb6QGWiFDR_l-g
 
 <<^ code=`&#x0004;` to=`?`>>

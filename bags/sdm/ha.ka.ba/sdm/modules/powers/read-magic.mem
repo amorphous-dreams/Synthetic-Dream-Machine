@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "Read Magic"
-file-path = "bags/sdm/ha.ka.ba/sdm/modules/powers/read-magic.mem"
 l-space   = "sdm"
 mana      = 15
 manao     = 17
@@ -94,6 +93,6 @@ A botched read mis-recognizes: the operator marks the wrong meaning as trusted, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ic5iwTKMhGaAoysV89yidPNmYj7HekzgHTlkeY4bF38
+<<^ code=`&#x0003;`>>ni:///sha-256;zzGn1p2aOSfxCItKPvIdQ-HILjV3S0yi7MkRzFtChvA
 
 <<^ code=`&#x0004;` to=`?`>>

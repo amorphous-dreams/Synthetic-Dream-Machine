@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/guest-grammar.mem"
 mana      = 15
 manao     = 16
 manaoio   = 14
@@ -134,6 +133,6 @@ Schema detail, fixture families, and execution procedure belong in the companion
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;lxSBmGU5__4AawPTzLrCpm34G6iez86D30IGVy6vVgI
+<<^ code=`&#x0003;`>>ni:///sha-256;9RBOZBadesPlc7zf1geFMU6z30YhbLQ9T6_8Ry2N9RA
 
 <<^ code=`&#x0004;` to=`?`>>

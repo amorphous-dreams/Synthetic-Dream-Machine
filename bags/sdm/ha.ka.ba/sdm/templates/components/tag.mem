@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/templates/components/tag.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -71,6 +70,6 @@ A component earns its address by serving a filter query. Tags start as TOML head
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;JdSPTTBCXZ-_ACO6mkIgfVB-gUH9y3Ut5-PifxeRAVk
+<<^ code=`&#x0003;`>>ni:///sha-256;4DUd_FVX5gw_KEoXJdM62xqnSfgFj3b7-y2_Pfwzk8w
 
 <<^ code=`&#x0004;` to=`?`>>

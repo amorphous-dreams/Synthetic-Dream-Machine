@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/companions/strandbeest-shrine.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -335,6 +334,6 @@ The strandbeest legs lock into aggressive posture — stabbing, sweeping, and tr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Y_UMeEceM6ziRL0xBUyOqYCDveRwb1ZjMb0zLGJ5q8c
+<<^ code=`&#x0003;`>>ni:///sha-256;Dt_9P4dR4N3mmzAY1qpna909gdftlEvdL61MOW7Hv3M
 
 <<^ code=`&#x0004;` to=`?`>>

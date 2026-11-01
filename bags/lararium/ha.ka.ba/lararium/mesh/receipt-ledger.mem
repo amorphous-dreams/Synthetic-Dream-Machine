@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/receipt-ledger.mem"
 l-space     = "lararium"
 role        = "the receipt ledger as law — one durable fact per request id, written by one writer; one winner per id, with every refusal named; abandonment by a causal event alone, never by a timer; the three receipts of a cancel (the caller's abandonment, the relay's delivery, the vessel's outcome), none standing in for another; a ring that bounds what the vessel keeps and answers `retention-gap` past it; what the direct leg holds, and what a leg across a herm adds and still owes"
 source-file = "packages/lararium-node/src/uds-channel.ts"
@@ -192,6 +191,6 @@ A herm carries sealed frames between keys it proved, reads none of them, and hol
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Gu5jbBnIQIa78OhdCzBa70evAUxdXzopFyOoAVF_kSA
+<<^ code=`&#x0003;`>>ni:///sha-256;HKybUJiK917OnTXpCXD59h1f4HbnLgqF085GUWeybGg
 
 <<^ code=`&#x0004;` to=`?`>>

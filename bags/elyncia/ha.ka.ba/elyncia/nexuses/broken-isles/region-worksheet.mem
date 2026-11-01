@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/broken-isles/region-worksheet.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
@@ -160,6 +159,6 @@ not to say about it.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;J8-UKISep0BHONffq3ZMJIkCrvF-R3fCclK1wrZ_aSw
+<<^ code=`&#x0003;`>>ni:///sha-256;c2-b5c8xMce0ZF5L6rrXIFcZirTDtsv9IA5NbT4m49g
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/dreamnet-rhizome.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 15
@@ -75,6 +74,6 @@ The identity-privacy hardening (per-handle vessel credential · scope-exclusive 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;M_yAlObyp2w2ICrazY03YesDAEGWeMD7O3-Qqru27q8
+<<^ code=`&#x0003;`>>ni:///sha-256;lU-Ck5nHgHqadvMm0H1XjTw_o9NsBgqcBeuyal__dvc
 
 <<^ code=`&#x0004;` to=`?`>>

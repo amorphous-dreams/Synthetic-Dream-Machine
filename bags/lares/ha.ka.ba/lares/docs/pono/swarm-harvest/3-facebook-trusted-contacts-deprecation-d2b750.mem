@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/3-facebook-trusted-contacts-deprecation-d2b750.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -171,6 +170,6 @@ No local files were read; all sources above were fetched live from the web (arxi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;I9GcVCWTuBN8V_v1_FPimVkEgrR0hWZtF5BqTYhxLuA
+<<^ code=`&#x0003;`>>ni:///sha-256;-XKIPZR6gMMWVmeLVcu5TxGjCC7IeM3UodGaILt1kwM
 
 <<^ code=`&#x0004;` to=`?`>>

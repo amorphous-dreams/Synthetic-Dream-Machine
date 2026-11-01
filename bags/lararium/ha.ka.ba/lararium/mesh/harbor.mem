@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/harbor.mem"
 hydrate   = true
 l-space   = "stable"
 role      = "the container boundary as law — one image that carries code and nothing of a household; two mounts, /workspace for bags and wikis and /state for vessel homes and custody; the local socket kept inside the container with the host CLI entering through `docker compose exec`; engine control kept on the host and no docker socket for the app; LAN discovery that offers unauthoritative candidates while a pinned admission alone grants authority; a TLS terminator in front of a vessel that names its reach face from one setting; harnesses that run the image by digest; a release manifest that binds the image digest to the genesis, engine and grammar CIDs; no pave or wipe command"
@@ -175,6 +174,6 @@ No verb of the host shim and no service of the compose file removes a state dire
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;sj8YbidB1SuxeuB-J3ts3jQ9Hpfc1CMq250Fcmn3k6o
+<<^ code=`&#x0003;`>>ni:///sha-256;rMa-NgZezq-VomkyGBATvJyQHwxx0kwg23yXCsT9q2c
 
 <<^ code=`&#x0004;` to=`?`>>

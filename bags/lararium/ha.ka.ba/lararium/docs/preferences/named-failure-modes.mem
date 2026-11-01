@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences/named-failure-modes.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 16
@@ -79,6 +78,6 @@ A fuller future recovery may sort the old failure lexicon by domain.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;mezwyFkj1f-v_ZgRBWsNV6U6LbdBzSdHC2Oje6shAtE
+<<^ code=`&#x0003;`>>ni:///sha-256;u50s_BOvlYMf-8C8PA__NI_SBMUuauvd4_Lo8IG8wlE
 
 <<^ code=`&#x0004;` to=`?`>>

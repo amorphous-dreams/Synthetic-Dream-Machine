@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/hooponopono.mem"
 mana      = 17
 manao     = 17
 manaoio   = 15
@@ -114,6 +113,6 @@ Boundary event fields:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;wczkGQvcy98o6E4h1abLFTL6EdUos3nWCFxJDP2RVrQ
+<<^ code=`&#x0003;`>>ni:///sha-256;RXDQdW7ZrUuQPGFshpHXoeH3qCSm1rYbkV86VtquKZI
 
 <<^ code=`&#x0004;` to=`?`>>

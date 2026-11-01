@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "structure"
-file-path = "bags/sdm/ha.ka.ba/sdm/mount-points/structure.mem"
 l-space   = "sdm"
 mana      = 8
 manao     = 17
@@ -94,6 +93,6 @@ A Site does not overflow to Burden; it simply lacks capacity until upgraded. Buy
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;67pVOvzEhlC4r_q0FoPval5fSnJ0ROBExqIdwATSDdA
+<<^ code=`&#x0003;`>>ni:///sha-256;gLrBWtVjLd5nFFnkhg8bCK0KEyqpE7Ol8mNKeebRbbY
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/docs/art-sigils/example-one-inscription"
-title     = "lar:///ha.ka.ba/lares/docs/art-sigils/example-one-inscription"
-file-path = "bags/lares/ha.ka.ba/lares/docs/art-sigils/example-one-inscription.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "Example One portable invocation-only art inscription"
-status    = "stable"
-retain    = true
+uri-path = "ha.ka.ba/lares/docs/art-sigils/example-one-inscription"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils/example-one-inscription"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "Example One portable invocation-only art inscription"
+status   = "stable"
+retain   = true
 ```
 
 <<~ ahu slot=`#/inscription`>>
@@ -48,6 +47,6 @@ The dominant sea-stack painting presents a navigable sanctuary whose lower stair
 The monastery's astronomers claim predictable cycles; floodwater contradicts dependable access. The Black Lens suggests a watcher without identifying one. These narrative tensions belong to the imagined artwork, not to observed marine archaeology or astronomical evidence.
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;vfalCNMrU8w1MruiMGW1Kwtbm6kR74aE5RMLz3gF2hE
+<<^ code=`&#x0003;`>>ni:///sha-256;K3ArY8PnbEnawcqWLdU5EmcyIhpAqZdvq6ZqDOQk2C0
 
 <<^ code=`&#x0004;` to=`?`>>

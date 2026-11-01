@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/alignment-architecture.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 15
@@ -214,6 +213,6 @@ The general pattern: N operators on N nodes sharing M bags across K federation e
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;cQLKr13eHZJV2ZvycnXQ989CFCHRFqwEAQp9fEXVw14
+<<^ code=`&#x0003;`>>ni:///sha-256;pfGpnKXJ8QDO4bnCKhyZWM0kAdVMC_WHB98lgiHeGD0
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/1-iroh-n0-number-zero-n0-inc-the-central-cas-7ffcf2.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -291,6 +290,6 @@ So the honest range: **$34/mo (non-archiving, 2-hour window) → ~$152/mo (archi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;TeunZ2iLhVw2wyrxqLpnPt4GzDAEvUfuTrAuUSk9DIk
+<<^ code=`&#x0003;`>>ni:///sha-256;X0WqqMbcXuFo03tcgKIh2h4-HFRaSXiZGa-achJybvI
 
 <<^ code=`&#x0004;` to=`?`>>

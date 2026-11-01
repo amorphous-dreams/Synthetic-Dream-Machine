@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/crystal.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -52,6 +51,6 @@ Use this branch for:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-5LCyg9kttYcM_aVHRRdsHoAXeJVTj-hIw_uS0PN15w
+<<^ code=`&#x0003;`>>ni:///sha-256;q-VxnERNpxUKhFZbruWyrSx0W6zKn8JcHy-HqvLtDiE
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 15
@@ -100,6 +99,6 @@ dragon builds meshes. These live referee-side of even this bag — the operator'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;H2_jkdukcFwbDGkEfjI3NyxvvMG0yMK1AMYNuc_VF_8
+<<^ code=`&#x0003;`>>ni:///sha-256;xameVKYmjIfuxRd9C8A7XY86UoIcXd6f_KGGyvAvYWQ
 
 <<^ code=`&#x0004;` to=`?`>>

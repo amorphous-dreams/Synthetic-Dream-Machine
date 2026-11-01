@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls.mem"
 l-space       = "adjacent"
 mana          = 14
 manao         = 14
@@ -198,6 +197,6 @@ Act III receives:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;XlH5Er_GZ-idZbvLQf2SeJd55SPUiLpaoz5baji6UeQ
+<<^ code=`&#x0003;`>>ni:///sha-256;NZrtZs5OIzXHnmUMPxNijMxvyBu5BTJeeuN5EYmfM_I
 
 <<^ code=`&#x0004;` to=`?`>>

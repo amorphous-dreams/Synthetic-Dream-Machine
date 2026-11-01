@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k19-hive-lane.mem"
 l-space   = "adjacent"
 role      = "the K19 hive lane's kit: one Keyhive provider per joined face at the daemon, each booted from that face's own hive and routed by the session's face, so a second joined face reads as itself and never as a stranger"
 status    = "draft"
@@ -70,6 +69,6 @@ Every face-acting row rides a session of its face (the hands spine). The daemon 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tEYQhElsSyRJ59jRDEkF5bNLAERbXLX7NDY23Bn9x2g
+<<^ code=`&#x0003;`>>ni:///sha-256;jraKmud1ca81QYRarduAjKZg-DTIkeOP63Pq2jAlj58
 
 <<^ code=`&#x0004;` to=`?`>>

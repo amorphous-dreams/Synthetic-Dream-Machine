@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/docs/three-lineage-convergence.mem"
 l-space   = "adjacent"
 mana      = 13
 manao     = 14
@@ -91,6 +90,6 @@ Three magic-system designs, independently derived across four decades, factor ma
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;wNT9KHSeNWwGCnQ5Q8wn-6E_6bXOmKIW8EoGdB3ix80
+<<^ code=`&#x0003;`>>ni:///sha-256;qo5jtIvzHHRqJVLFtqG3JvtqR2iC6zymurVYFj42r_8
 
 <<^ code=`&#x0004;` to=`?`>>

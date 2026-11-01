@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 15
@@ -272,6 +271,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;I0Qv8bzG9rejrCK90ZNEgEBKsBaWlCMUXi81V32RSgU
+<<^ code=`&#x0003;`>>ni:///sha-256;BVMsQQOtcTJTx31p4CMop9SIkSwCmoPmodzkwVOO48g
 
 <<^ code=`&#x0004;` to=`?`>>

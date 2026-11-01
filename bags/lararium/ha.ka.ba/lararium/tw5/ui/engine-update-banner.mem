@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/ui/engine-update-banner.mem"
 mana      = 18
 manao     = 17
 manaoio   = 16
@@ -22,6 +21,6 @@ uri-path  = "ha.ka.ba/lararium/tw5/ui/engine-update-banner"
 </div>
 </$reveal>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;4Z2JK0bS8R9s1dhsYqECfkgdHaeIjpTHQ2vbEnmh9tc
+<<^ code=`&#x0003;`>>ni:///sha-256;8toJOYsrhV_sLkrAA0qiWFX4qsNfOR6LW-BFIMlc8-A
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-prior-art.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 15
@@ -252,6 +251,6 @@ Every delta-based system in the corpus must queue; you can drop precisely becaus
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/two-integrities`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;DUc4uLQWjqKXxi19msrEZZdNUW8NgPDYuqEuCUJQyxY
+<<^ code=`&#x0003;`>>ni:///sha-256;2Nb5FGpMS2qJ86W-yVt2QlFjwEV6e8UfKqBgpapo0sU
 
 <<^ code=`&#x0004;` to=`?`>>

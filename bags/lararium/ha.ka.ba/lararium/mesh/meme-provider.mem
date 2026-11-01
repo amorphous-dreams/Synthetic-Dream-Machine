@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/meme-provider.mem"
 l-space   = "lararium"
 mana      = 5
 role      = "pointer: the MemeProvider law lives at docs/meme-provider — one room owns the source"
@@ -31,6 +30,6 @@ one place to go stale. The full statement lives at:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;XOMjuUu7OoYmddwjNOIJGxyv_zA_SOMy08QN0Bn_Ukg
+<<^ code=`&#x0003;`>>ni:///sha-256;40vij71u4aiHHri2Yuu4cZAIjSt6YsiINVrwOnh2mgs
 
 <<^ code=`&#x0004;` to=`?`>>

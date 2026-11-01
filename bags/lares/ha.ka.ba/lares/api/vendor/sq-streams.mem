@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable          = true
-file-path          = "bags/lares/ha.ka.ba/lares/api/vendor/sq-streams.mem"
 mana               = 18
 manao              = 18
 manaoio            = 17
@@ -77,6 +76,6 @@ record saying one thing and the offering carrying another.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Y-8xKlWVayKdcxyOC69nfuZMaIkVUnj9_J0s-vJDPK8
+<<^ code=`&#x0003;`>>ni:///sha-256;ffpc1vfGgInX-i_cjYSN1dHlp08WIG5lhPLq_FdT8es
 
 <<^ code=`&#x0004;` to=`?`>>

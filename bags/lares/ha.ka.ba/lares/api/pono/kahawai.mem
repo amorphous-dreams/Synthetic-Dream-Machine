@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/kahawai.mem"
 namespace = "&#x2299;"
 role      = "conditional branch-continuation sigil — elif form; Hawaiian alias for elif; a second stream joining the flow"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kahawai"]
@@ -73,6 +72,6 @@ English alias forms:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;XNWhfRRu5YsN_v973GxAmJDwKjVG7XWygpG52sgjxLs
+<<^ code=`&#x0003;`>>ni:///sha-256;7yyAoGAE91NIkOc5TD7IqCSS4tb-Zz2qgKkM-g9o3Ek
 
 <<^ code=`&#x0004;` to=`?`>>

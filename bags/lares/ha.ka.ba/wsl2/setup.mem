@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/wsl2/setup.mem"
 l-space    = "stable"
 mana       = 14
 manao      = 15
@@ -315,5 +314,5 @@ Two shapes a household also meets that carry no error text: the Linux password p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Rk2EtZNac1ATISk_eKVwpFu2gRkwRAypILkOao2oh-U
+<<^ code=`&#x0003;`>>ni:///sha-256;yY5eNxx6ev4-Ud1E3_oFH3K_oMkGP0mBOA7lM3QkNRE
 <<^ code=`&#x0004;` to=`?`>>

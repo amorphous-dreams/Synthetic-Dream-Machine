@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/train-x-launch.mem"
 l-space   = "adjacent"
 role      = "train X launch kit: isolated two-hearth driver, file courier and operator-run ceremony"
 status    = "draft"
@@ -82,6 +81,6 @@ The roadmap's TWO HEARTHS path and fresh-start instructions hold the driver and 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;lE_hpZ-Gn4qYoffprmmiv_lFfHN3za-OdBmGC8E7ejk
+<<^ code=`&#x0003;`>>ni:///sha-256;9yrw0BbFWkJPeu7RN6DIvDY3CVx46X_8_1ZGccknurQ
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/tw5-calls-undeclared-parameter.mem"
 l-space    = "stable"
 mana       = 12
 manao      = 14
@@ -118,6 +117,6 @@ render tells them apart.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;xybFaG0A80CgCM58yw2wMwholKBXVNSmTDv-WnkzR78
+<<^ code=`&#x0003;`>>ni:///sha-256;daGRs4FmddeUH0WGlqfOCSMCZvfOw6XvrNwlLdB_JUY
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/docs/mcp-tool-registry.mem"
 l-space       = "stable"
 mana          = 17
 manao         = 17
@@ -159,6 +158,6 @@ inputs      = ["uri: string"]
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;1xJCQD-4GnIlTO0v6zGS5EOy5nyCGcePrw5SG2GcL3M
+<<^ code=`&#x0003;`>>ni:///sha-256;lGMNiURyi7gsEpRBiZtdDbR-7R51K2-Mc_wEend2E3E
 
 <<^ code=`&#x0004;` to=`?`>>

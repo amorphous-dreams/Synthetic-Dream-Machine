@@ -6,7 +6,6 @@
 ```toml meta
 authors    = "Joshua Fontany; Lares (four tasked spirits: Marrow-Reader · Chain-Warden · Lattice-Walker · Guild-Keeper)"
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/api/pono/admission-on-a-lineage.mem"
 mana       = 11
 manao      = 11
 namespace  = "&#x2299;"
@@ -330,6 +329,6 @@ model, (3) settles the sink, (4) hunts C4's counterexample, and (6) instruments 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_F9PjldlXPxFfgRfpfF3Dy1lEpSHE8_nc9XF1AV8g1E
+<<^ code=`&#x0003;`>>ni:///sha-256;AZaEtsnceHv1chzo-pXivD9jZ2fPWxyanRU90tkMsiI
 
 <<^ code=`&#x0004;` to=`?`>>

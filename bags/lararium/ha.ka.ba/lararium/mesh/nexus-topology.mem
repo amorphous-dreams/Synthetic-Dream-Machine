@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/nexus-topology.mem"
 hydrate    = true
 l-space    = "lararium"
 mana       = 15
@@ -239,6 +238,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_3f7fHH1-an3jo7zcQNAB9oJoklXCZfRbIMw0-C5gSM
+<<^ code=`&#x0003;`>>ni:///sha-256;9Dx_N9pAobA-o2ZPPVKBsYt_0QYjU14FWWa8IK5jCUw
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-port-contract.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 15
@@ -178,6 +177,6 @@ What stays owed, each by name:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;SUCUUsIWH3j3SB5_sofFzD6j8w0Fql3cf5p0xu0lq7A
+<<^ code=`&#x0003;`>>ni:///sha-256;2WpyGk8xFdGBbT3tagFwvyZTeqRYJlEMA3bUEqvLJas
 
 <<^ code=`&#x0004;` to=`?`>>

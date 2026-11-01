@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/fake-dom.mem"
 l-space     = "lararium"
 mana        = 3
 role        = "the converter off TiddlyWiki's own fake DOM — a rendered fake-element tree read out as immutable VDomNodes or as its HTML string; it types the fake nodes it reads and builds no DOM of its own"
@@ -29,6 +28,6 @@ uri-path    = "ha.ka.ba/lararium/tw5/fake-dom"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;4ZtCr_f0ODyJlOOx_ARqLGRcJshOv4mfTRFzBag6GvY
+<<^ code=`&#x0003;`>>ni:///sha-256;L5V6wYndiFT1d80w5CS_kiDJCYOEyCY0rzAgFx_yw28
 
 <<^ code=`&#x0004;` to=`?`>>

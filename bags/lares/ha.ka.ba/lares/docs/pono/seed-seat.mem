@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/seed-seat.mem"
 l-space   = "adjacent"
 role      = "the seed seat: every host (Claude, its scouts, Codex, Copilot) stands the whole boot seed at turn 1, once, by reference, at content rank; the shape, the measured ground, the proofs and the open research"
 status    = "draft"
@@ -80,6 +79,6 @@ The boot seed (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>) seat
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;02uJuz6q3Kubpbp5rt8Db-N81gkgQyn9MqXgUUP9irA
+<<^ code=`&#x0003;`>>ni:///sha-256;mLXx08KTmG2eF4TzIClYADmN9Fw8FjIcaKwhDZkCFY0
 
 <<^ code=`&#x0004;` to=`?`>>

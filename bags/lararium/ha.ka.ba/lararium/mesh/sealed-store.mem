@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/sealed-store.mem"
 hydrate   = true
 l-space   = "stable"
 role      = "the sealed store's one private-byte format as law — the household promise and its limits; the key table (who holds each key, what it seals, where it rests, what unlock needs, what a carrier holds, what removal and recovery do); the sealed value's bytes, its associated data and its named refusals; the address rule; the key version, lockbox, manifest, checkpoint, hand-over and memory-import records; the lockbox store, the chunk index and the content-key holder with its memory section and its import door; the epoch rule at removal and at admission, and the same-face reading at a recovery; the sibling-branch rule; what a blind carrier holds and learns; what the code holds and what the later steps owe"
@@ -383,6 +382,6 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Maznh8VO_fxJS8bq7_3171rf_0sfAD7a0wPaUMneCts
+<<^ code=`&#x0003;`>>ni:///sha-256;gB_32lTJAHAa6_nK2Tnr18CaSTnid7NsQzsdWkIFVvo
 
 <<^ code=`&#x0004;` to=`?`>>

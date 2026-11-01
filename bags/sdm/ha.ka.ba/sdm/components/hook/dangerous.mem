@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "dangerous"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/hook/dangerous.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 16
@@ -70,6 +69,6 @@ Composes with any domain or function. ''Vertical-vs-flat pressure lives here:'' 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;WqWIiqqoL96n9tut8x-in1XOFrs0x4zJvScJ-Egdzd4
+<<^ code=`&#x0003;`>>ni:///sha-256;awAVFWNIf-jK5DBeDzzleH0knk8JFrUyXKqXtCCl_mg
 
 <<^ code=`&#x0004;` to=`?`>>

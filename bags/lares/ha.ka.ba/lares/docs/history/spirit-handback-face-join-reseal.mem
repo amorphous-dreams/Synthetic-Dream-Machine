@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal.mem"
 l-space       = "adjacent"
 mana          = 15
 manao         = 15
@@ -114,6 +113,6 @@ I did not commit.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;yhEoQgp2P3KzgC4ZN89aHwDssmZ7rsn-AK9GDag7lok
+<<^ code=`&#x0003;`>>ni:///sha-256;b6SVWcR6q1-IJTdyXZwvxOBY4cg12JQ9PhQBVcyIG5g
 
 <<^ code=`&#x0004;` to=`?`>>

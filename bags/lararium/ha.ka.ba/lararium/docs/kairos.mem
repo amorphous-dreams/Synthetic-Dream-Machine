@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/kairos.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -321,6 +320,6 @@ free coarse breakpoint; a scheduled sweep needs its own justification.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HlXJR_Ao6ewm4GYzIOFjODx4KvbJOEK4TgCtvztyOpI
+<<^ code=`&#x0003;`>>ni:///sha-256;tHCnv0O9EAJnE7JkP4ly7PIP2I_ecvkWUuUFA4oeXh0
 
 <<^ code=`&#x0004;` to=`?`>>

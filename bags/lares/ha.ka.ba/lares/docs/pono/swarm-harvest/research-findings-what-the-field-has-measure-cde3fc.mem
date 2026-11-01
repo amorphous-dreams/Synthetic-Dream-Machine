@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/research-findings-what-the-field-has-measure-cde3fc.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -191,6 +190,6 @@ This is consistent with — though not sufficient on its own to prove — your h
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_K_S6ODVNZvw4tCT4Dhx4v6XsZVLX0oFEk3j1e6fgxg
+<<^ code=`&#x0003;`>>ni:///sha-256;g5qzFQwUYEc3OQhd9qbGAkWy9clB6ad2LcEJjl1X0_8
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/templates/mount-points/storage-class.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -64,6 +63,6 @@ A mount-point meme names ''where a module seats on an entity'' and the contract 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HbnBIeoXxuDDW3LgwrLZKAV_hHmtCdPgZ17HzXJV5WU
+<<^ code=`&#x0003;`>>ni:///sha-256;Nm8gkBgUeKyDX8hmn8U0fIElC5tn1Qnn-9t1lkM5osY
 
 <<^ code=`&#x0004;` to=`?`>>

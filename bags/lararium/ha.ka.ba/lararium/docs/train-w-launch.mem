@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/train-w-launch.mem"
 l-space   = "adjacent"
 role      = "train W launch kit: signed face admit, six cutover module contracts, assembled socket commit and built-image witness"
 status    = "draft"
@@ -117,6 +116,6 @@ Done when every enabled production dial emits Noise IK first, follows one typed 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tTkM2ZQEhATE97kGtjowzJb2JXijOc4BxxvA0oGoM7w
+<<^ code=`&#x0003;`>>ni:///sha-256;cR0KBAS7GSmjSkY2VkYFZzeDA0OkrWhVC1_PTR-47ew
 
 <<^ code=`&#x0004;` to=`?`>>

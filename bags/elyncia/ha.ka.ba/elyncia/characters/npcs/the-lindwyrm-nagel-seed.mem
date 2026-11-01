@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
@@ -123,6 +122,6 @@ column of small unreadable type down the left margin.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;j0CDfr3RfWPXnxL0EwT4mOOmhwjRneT1eSsYmG9INEc
+<<^ code=`&#x0003;`>>ni:///sha-256;wFYSd9cLtjDZ-qZznYsGdYyjK3mIf8FEJ_OZn8A4FXM
 
 <<^ code=`&#x0004;` to=`?`>>

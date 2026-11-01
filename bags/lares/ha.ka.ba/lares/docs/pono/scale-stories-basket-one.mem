@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/scale-stories-basket-one.mem"
 hydrate    = true
 l-space    = "stable"
 mana       = 12
@@ -447,6 +446,6 @@ Six code sites cite this carrier: `packages/lararium-mesh/src/realm-bag.ts:4` an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iOTkDJmEsMou4-WNB1bINJXfGeEmKX65Xlc2mDrJ5f8
+<<^ code=`&#x0003;`>>ni:///sha-256;HFku8XGoILRSOESUBj9Hw6KGx88enqBbPBg0SMvV6u4
 
 <<^ code=`&#x0004;` to=`?`>>

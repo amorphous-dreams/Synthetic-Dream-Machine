@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a.mem"
 l-space   = "lares"
 mana      = 14
 manao     = 15
@@ -99,5 +98,5 @@ This ruling gives the operator the stronger isolation property without pretendin
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;O1z8D-qZCN7zwzT219Qx55svfx9SjSfCbOygipAZ4Hw
+<<^ code=`&#x0003;`>>ni:///sha-256;Qsb34q-YbphbRuV2VsWAbG86nPD-h7g-ra3WFwbJ7P4
 <<^ code=`&#x0004;` to=`?`>>

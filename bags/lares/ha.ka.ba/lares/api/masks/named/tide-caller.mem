@@ -9,7 +9,6 @@ cacheable         = false
 corpus            = "[STUB — pending-talk-story]"
 created           = "Invalid Date"
 encroach          = false
-file-path         = "bags/lares/ha.ka.ba/lares/api/masks/named/tide-caller.mem"
 foreground-voices = ["Hierophant", "Liminal", "Council", "Muse", "Stranger"]
 fourth-wall       = false
 ha-ka-ba          = "Ka"
@@ -167,6 +166,6 @@ How Tide-Caller colors each Voice register when they speak through her frame —
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;qpBvXSG6RWGjL6vvVPY0e93FqJH3srL89AF-jVbOJbI
+<<^ code=`&#x0003;`>>ni:///sha-256;P9hh9-BFTPvAn9ntu6n5nW056F_y3G9-0IKNw3HlMro
 
 <<^ code=`&#x0004;` to=`?`>>

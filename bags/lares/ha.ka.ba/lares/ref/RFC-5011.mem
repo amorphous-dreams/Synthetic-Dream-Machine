@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable      = true
-file-path      = "bags/lares/ha.ka.ba/lares/ref/RFC-5011.mem"
 mana           = 14
 manao          = 14
 manaoio        = 13
@@ -40,6 +39,6 @@ never invented — in `[reference]` above, so a pin at this address cites the wo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;kutnznLgeX7jNvo4BOLNJ4YjJsx6QLVZxHQur2XHup0
+<<^ code=`&#x0003;`>>ni:///sha-256;-cXM2zOBWtwFyma15tCvHettHGs0LMvXOQwRhK-kt54
 
 <<^ code=`&#x0004;` to=`?`>>

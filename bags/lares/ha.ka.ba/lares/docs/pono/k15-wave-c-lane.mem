@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k15-wave-c-lane.mem"
 l-space   = "adjacent"
 role      = "the Wave C lane's kit: K15 step 6, the fence, under the identity model the operator approved on 2026-10-20 (sync carries; verification decides): the sealed identity anchor, the signed persona-plane log, verified projections, each face's D rows sealed under its own key, the daemon's last singletons split by face, and the browser's per-face planes"
 status    = "draft"
@@ -106,6 +105,6 @@ One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ZYJflqE-mw6Diq5jBY_-lM8hrtypYg0xdCGpSB-oMq8
+<<^ code=`&#x0003;`>>ni:///sha-256;0KPvbwGL_6P2pV59Otq5WXti8nd5VHdxps8GQa-DiY4
 
 <<^ code=`&#x0004;` to=`?`>>

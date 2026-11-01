@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/docs/art-sigils/example-one-folio"
-title     = "lar:///ha.ka.ba/lares/docs/art-sigils/example-one-folio"
-file-path = "bags/lares/ha.ka.ba/lares/docs/art-sigils/example-one-folio.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "Example One expanded art-sigil folio and maritime research bearings"
-status    = "stable"
-retain    = true
+uri-path = "ha.ka.ba/lares/docs/art-sigils/example-one-folio"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils/example-one-folio"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "Example One expanded art-sigil folio and maritime research bearings"
+status   = "stable"
+retain   = true
 ```
 
 <<~ ahu slot=`#/invitation`>>
@@ -74,6 +73,6 @@ The clock describes a plausible cycle without guaranteeing safe crossing. Mirror
 The tide-clock provides order while its stairs lose access; the beacon studies outward while the central aperture appears to answer; gardens and repairs persist alongside peril. Each contrast draws meaning through visible relationships. An implied leviathan does not require a confirmed leviathan, and a reflected light need not settle the Black Lens's identity.
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;DNeX3lU8SXlS-EzLKo5X0MFb_1xbQGPHxBRToOd7xfc
+<<^ code=`&#x0003;`>>ni:///sha-256;D9LJd0dxR6ftwUf-ExVu_oG22gjvl4MtfqvHkp-Mt8g
 
 <<^ code=`&#x0004;` to=`?`>>

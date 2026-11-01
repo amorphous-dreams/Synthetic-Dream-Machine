@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/who-paid-for-volunteer-run-relay-infrastruct-aa2e60.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -335,6 +334,6 @@ The server count is *shrinking* while account count grows — i.e. consolidation
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;uzel4t8QvTjSa-5d2amRZrP1pf2jyRhtP1IBJ3EAtpw
+<<^ code=`&#x0003;`>>ni:///sha-256;dssH52GHssu9usLfA3OAvQLxJkQWdwCThTF34qb15GM
 
 <<^ code=`&#x0004;` to=`?`>>

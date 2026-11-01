@@ -13,7 +13,6 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 cacheable          = true
 constraints        = ["any copula left standing owns its warrant in the sentence", "smallest lawful intervention; never widen a local fix into a rewrite", "quotations, code, and literal examples never normalize silently", "has runs free --- never policed"]
 covers             = ["lar:///ha.ka.ba/lares/api/mu/l-prime"]
-file-path          = "bags/lares/ha.ka.ba/lares/api/mu/l-prime/SKILL.mem"
 mana               = 14
 manao              = 15
 manaoio            = 13
@@ -96,6 +95,6 @@ A sentence turn beats a lecture. Output stays compact: location, bucket, reason,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-cdDmQdyZdNEyTxbFDjgo5w_A0bfTFIRoP_BQlNYqSY
+<<^ code=`&#x0003;`>>ni:///sha-256;78OKdxpWj8Q8tNM2dZ1tgFhkXUxrKVvhU0ckgUan3w0
 
 <<^ code=`&#x0004;` to=`?`>>

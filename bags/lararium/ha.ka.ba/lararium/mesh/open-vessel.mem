@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/open-vessel.mem"
 hydrate     = true
 l-space     = "lararium"
 mana        = 17
@@ -167,6 +166,6 @@ argument. What stays open sits one level out: a live-daemon exercise of the full
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/island-protocol`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-vessel`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Nl6islZmqG0NHW8EVLx6On5ynJhJcvlDJiIpBWAKCdk
+<<^ code=`&#x0003;`>>ni:///sha-256;xu8-cdAr9DdAnr0DBT1Drra6e9P8GJF4frx_wm0kuCA
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -36,6 +35,6 @@ and the Painter's establishing boards stands noted).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3JfXY6hTOM0ZLUrCv0QdmiQbbN5Mma7TSC77jjl6nJQ
+<<^ code=`&#x0003;`>>ni:///sha-256;rdEcQC6XAuRqtU-7Tr1C2H7Tf-01tyGU8GKETVPtwE0
 
 <<^ code=`&#x0004;` to=`?`>>

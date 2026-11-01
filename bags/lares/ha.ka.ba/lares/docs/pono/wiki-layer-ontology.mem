@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/wiki-layer-ontology.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
@@ -347,6 +346,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;xyHfC4wiIimnhGbm7IjhrNwdoN8aBMMtLL6XdQkB7os
+<<^ code=`&#x0003;`>>ni:///sha-256;F0t9nMbmId1-JWU-k_2-NcVfMjIDYjShRxj_mr4p108
 
 <<^ code=`&#x0004;` to=`?`>>

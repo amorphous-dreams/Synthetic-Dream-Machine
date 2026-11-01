@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/conformance.mem"
 mana      = 12
 manao     = 13
 manaoio   = 12
@@ -121,6 +120,6 @@ By the speech-act test the invocation reads as a first-person present-tense act 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;4dezJ_4hDV4Z37ZEFcZuQiCFaUkPCPrHEcNd_GixeZM
+<<^ code=`&#x0003;`>>ni:///sha-256;kRJifJZdbbUB2LG6vCAalmoMbIafoWc-q-SzoqSg8LM
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/exchange-vector.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -113,6 +112,6 @@ Long-term, the server should validate the vector and render the panel from the p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;hu_ziITxBmSoMk0jZj7onb0BzYLa5toto8HDbbWGNtQ
+<<^ code=`&#x0003;`>>ni:///sha-256;UB34uixutk1fMaH5tdr-VQI8dvRie2nlo2wvRFMXgHk
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/browser/deletion-map.mem"
 l-space   = "lararium"
 mana      = 18
 manao     = 18
@@ -125,6 +124,6 @@ These patterns stay out of the package and out of worker-side authority.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FEZkB-NqTQqVNUUofx9ydc5KjWH8U8dX2q6Xi6NxKNI
+<<^ code=`&#x0003;`>>ni:///sha-256;82Rk96ui1-ShOHlV6eWsVCAbDuW8A2n6C5eYZZxkErA
 
 <<^ code=`&#x0004;` to=`?`>>

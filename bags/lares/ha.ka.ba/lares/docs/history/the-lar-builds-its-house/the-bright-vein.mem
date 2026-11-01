@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein.mem"
 l-space       = "adjacent"
 mana          = 12
 manao         = 11
@@ -118,6 +117,6 @@ Act V receives:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;nGIpmgBed_53MSGhZQAOqsFqkS3SZBUAFUBGHKsFDhU
+<<^ code=`&#x0003;`>>ni:///sha-256;NiALjUHiIrLhdSA0NObIZZ5MzEq1ZAa5PuLSTpiPTRI
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/keyhive-per-persona-group-2026.mem"
 l-space   = "lares"
 mana      = 14
 manao     = 14
@@ -224,6 +223,6 @@ Sources below are repository paths under `/home/joshu/Synthetic-Dream-Machine`; 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9G3w2sRjsMoGXFbBXLlEQDIpvXe6Yk048YJYW8QdDpw
+<<^ code=`&#x0003;`>>ni:///sha-256;AzBsRkeW9KxGG06DV33FpGsnLwGsBYprtSRoBsJgT-M
 
 <<^ code=`&#x0004;` to=`?`>>

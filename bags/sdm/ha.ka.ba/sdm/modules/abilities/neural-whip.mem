@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "Neural Whip"
-file-path = "bags/sdm/ha.ka.ba/sdm/modules/abilities/neural-whip.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -90,6 +89,6 @@ On a botched strike or interfered control, choose one: the tentacle grips the wr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;a74gpcdsjgyW5xUCpLnf-sKBu-nY8E66vUTeLHfEhk0
+<<^ code=`&#x0003;`>>ni:///sha-256;OuiAVoQ0cm4P7fpoW-EIKUiik80ptxsGfDKvGzq87iE
 
 <<^ code=`&#x0004;` to=`?`>>

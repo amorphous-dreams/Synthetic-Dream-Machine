@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences/register-stance-complementarity.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -75,6 +74,6 @@ Current comparison surfaces:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;NIpk-ML_TLM-AuY8T0BFccUfhO4Pt3olmhKE_AcptEw
+<<^ code=`&#x0003;`>>ni:///sha-256;4q_ZFq5MpDuLfB5nOIpwBfQD90TX1hAgaklRmKi9umg
 
 <<^ code=`&#x0004;` to=`?`>>

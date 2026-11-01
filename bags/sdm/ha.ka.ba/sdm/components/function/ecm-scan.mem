@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 caption   = "ecm-scan"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/function/ecm-scan.mem"
 l-space   = "sdm"
 mana      = 13
 manao     = 16
@@ -70,6 +69,6 @@ Feeds `function/magic-decode` and `function/archive`. The `ecm` counter-set — 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;BtSa1nkl-RfAl0rw54J7_BCZ7BCe12wf574UTaXNL8w
+<<^ code=`&#x0003;`>>ni:///sha-256;1_YWLDMhskbWrjfYePz1BvoL9A4rpGdDXTHxe2f6oso
 
 <<^ code=`&#x0004;` to=`?`>>

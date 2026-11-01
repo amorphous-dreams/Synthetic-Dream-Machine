@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/ui/lar-hud.mem"
 mana      = 18
 manao     = 18
 manaoio   = 18
@@ -125,6 +124,6 @@ as a flex sibling unaffected by tldraw's internal layout changes.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;yS47NwSSGYGojcME08uT4bv1wMkHX3Jgn8a7_6LKXLk
+<<^ code=`&#x0003;`>>ni:///sha-256;-H5uTAoitZg3a_MQca5o1KJMs3KRzM4OoFLCBGG_plc
 
 <<^ code=`&#x0004;` to=`?`>>

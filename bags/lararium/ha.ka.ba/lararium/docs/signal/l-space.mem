@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal/l-space.mem"
 l-space   = "stable"
 mana      = 17
 manao     = 17
@@ -71,6 +70,6 @@ Working definition:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;6ZSE_CB3dTsZnqvKGrVmrkYC74etdCmSNUlckxot0j0
+<<^ code=`&#x0003;`>>ni:///sha-256;b9rTaQE32q3h7hcV6a5vQeTUYuNDmJv9qKighZPwvHI
 
 <<^ code=`&#x0004;` to=`?`>>

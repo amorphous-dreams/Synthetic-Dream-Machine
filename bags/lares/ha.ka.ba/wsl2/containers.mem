@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/wsl2/containers.mem"
 l-space    = "stable"
 mana       = 13
 manao      = 14
@@ -129,6 +128,6 @@ Community, most rigorous first: [[endjin — Trying out WSL containers|https://e
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;AXU3nAQdD2whzjJD7gbcehGj6lVP57sBKNPvglh2PzE
+<<^ code=`&#x0003;`>>ni:///sha-256;LmJwD6nnTj86UWUVHD02QgVttjJF8qJ7jYWOXf1Vlmg
 
 <<^ code=`&#x0004;` to=`?`>>

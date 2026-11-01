@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/templates/modules/power.mem"
 l-space   = "sdm"
 mana      = 15
 manao     = 17
@@ -89,6 +88,6 @@ tags = ["@sdm/tags/function/ecm-scan", "@sdm/tags/domain/divination", "@sdm/tags
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_4GEVX0UJ99MRu-1NC5XGTil7b-vp_kGaGxCqke-aoA
+<<^ code=`&#x0003;`>>ni:///sha-256;nfEi9grEJjkR9qQbE9wd94hDr-a54o0lojdbEIKQIG4
 
 <<^ code=`&#x0004;` to=`?`>>

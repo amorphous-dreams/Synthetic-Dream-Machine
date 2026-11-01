@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/1-facebook-people-you-may-know-the-canonical-764d56.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -188,6 +187,6 @@ Two strong measured cases, both about **the unguessable handle turning out to be
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ZHqYV5g_nItC2rGa5SNSMYRf4_ENUz218HslshX-6FY
+<<^ code=`&#x0003;`>>ni:///sha-256;58jI-yj1gUFA6fR-utHO0UKO2YTEgY69fddZGVOuhv0
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/ahu.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/ahu"
@@ -84,6 +83,6 @@ A section with nothing under it says the same nothing for three different facts,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;OOgqdC8kBm85lUztRoEv8zKSn7_4DYEjWL2wRZDtN9k
+<<^ code=`&#x0003;`>>ni:///sha-256;qnhcK07XHPMJjuRG6J59GOCghkqkFJWFW4TZG_ygGwQ
 
 <<^ code=`&#x0004;` to=`?`>>

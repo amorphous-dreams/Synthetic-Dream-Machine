@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/causal-island-pattern.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 19
@@ -125,6 +124,6 @@ The high-confidence bearings for the build (when the forks unblock):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;2Q4oG4gNt2LL4Q1v2ZGpOJ6KbhQbHxIs7WR_xBbTt3o
+<<^ code=`&#x0003;`>>ni:///sha-256;cJctEoMNhqIEHbTaN0IQOdcMRBhTj_kJYlUJDQ8jOs4
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/circles-kowloon.mem"
 mana      = 16
 role      = "reference model: Kowloon circle data structure and social graph inversion; authoritative design reference for the per-face CirclesDoc that answers to circles-plane-<tag>"
 title     = "lar:///ha.ka.ba/lares/docs/pono/circles-kowloon"
@@ -193,6 +192,6 @@ The question //how far up does the inversion scale?// has a mechanical answer he
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;DBn4oraZn_-nscNAnv0mb5wFGI6Be_jTYPxRa2q1R30
+<<^ code=`&#x0003;`>>ni:///sha-256;-DZybkxrhN3FhuOAXI83dmYMV5R6fQ-4W86EDQNvO90
 
 <<^ code=`&#x0004;` to=`?`>>

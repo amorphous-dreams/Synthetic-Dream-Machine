@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/voices/masks.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 16
@@ -393,6 +392,6 @@ The mask layer spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST impleme
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;lhbrnXIuKbtFxgQBDWMg-MaeznRCIbCkS1HbMTzOylA
+<<^ code=`&#x0003;`>>ni:///sha-256;KMm7mM77b3KBgRYqnjMejicQsTyqT-KO3Osu6nH7geQ
 
 <<^ code=`&#x0004;` to=`?`>>

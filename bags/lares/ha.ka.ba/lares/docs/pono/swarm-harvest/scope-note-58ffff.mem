@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/scope-note-58ffff.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -367,6 +366,6 @@ Every "Dunbar ceiling online" number in this brief traces back through a small n
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ZoEs0PGjlsc1ojh3PFl2F2BzSs2aWjrohtV3-dTZVNg
+<<^ code=`&#x0003;`>>ni:///sha-256;jjeBUNTeuMv1s2wozLyFRhWM_X0ZV42rUCw2JMRvH6w
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-necrospire.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 15
@@ -66,6 +65,6 @@ sinking.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_TcYiqqrijBi0LvPnLtkzazkryiJZRoVF6bC4H1V6lg
+<<^ code=`&#x0003;`>>ni:///sha-256;a3i5iuwwePSNORSWbxqJfXSY-KLZQVKrJiDGUtIRUj4
 
 <<^ code=`&#x0004;` to=`?`>>

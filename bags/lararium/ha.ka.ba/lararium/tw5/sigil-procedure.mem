@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/sigil-procedure.mem"
 mana      = 16
 manao     = 16
 manaoio   = 16
@@ -73,6 +72,6 @@ the body runs through the pragma handler (TW5 parse-time, not render-time).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;OuHnhiwbDhJtXlvuicBmHAAxSdPWQiBwuGSggfOf40Y
+<<^ code=`&#x0003;`>>ni:///sha-256;cAzAAlXI9z5n6SEJoqUzEU1sIEXbtDLgIfOlKT2L_Pc
 
 <<^ code=`&#x0004;` to=`?`>>

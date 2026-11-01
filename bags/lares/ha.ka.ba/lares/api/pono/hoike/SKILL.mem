@@ -16,7 +16,6 @@ description: File or reopen a hoike (\testimony) — a kept record of a conteste
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/api/pono/hoike/SKILL.mem"
 l-space    = "stable"
 mana       = 16
 manao      = 16
@@ -110,6 +109,6 @@ Read the three together and the grammar teaches itself: dissent gets a name and 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;X5ZOFOEZX_XYzz2edVXlTTQe03QsXZi_MNdDM6Iv5vs
+<<^ code=`&#x0003;`>>ni:///sha-256;ylUYSgt0EpwyPbyGUypudr-JS0ct5IjK26CtzU_QVmQ
 
 <<^ code=`&#x0004;` to=`?`>>

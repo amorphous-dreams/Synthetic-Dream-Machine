@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/2-dns-root-system-41-years-measured-resolver-c48256.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -221,6 +220,6 @@ Its conclusions: federation is **necessary but insufficient**; technical measure
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;K_r8GTzsOEc6lCdyO7Ksy6Ykgf5T6Vo2DDufUVEIksw
+<<^ code=`&#x0003;`>>ni:///sha-256;nqH-HBWRv04-e17Y08CY93csUYMPbwjIoF2Cb_3d2o0
 
 <<^ code=`&#x0004;` to=`?`>>

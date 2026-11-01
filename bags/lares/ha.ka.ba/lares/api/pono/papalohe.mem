@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/papalohe.mem"
 mana      = 17
 manao     = 17
 manaoio   = 16
@@ -133,6 +132,6 @@ Two values, distinct Verse-side origins:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;lrkLkgP1Gx9Yr8ykSJQofOLTn7OS-oCzu12xE6T75JI
+<<^ code=`&#x0003;`>>ni:///sha-256;K0y6tbFOewz2FO_2ICji9lXgR64miZopFzmYAq1rXcY
 
 <<^ code=`&#x0004;` to=`?`>>
