@@ -332,12 +332,15 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     if (!Array.isArray(args.slots) || args.slots.length === 0) {
       throw new Error("[custody-holder] a face founding seals its custody from birth and needs a human route to bind; none was given");
     }
+    // The slot tree derives BEFORE the face's index entry lands: a passphrase pin's derivation runs ~0.3 s off the event
+    // loop, and a writer that reads the index between the entry and `faces.set` finds the face standing yet unopened
+    // (FaceLocked). Deriving first keeps that window to the commit's own writes, and holds no exclusive lock while it derives.
+    const fck = mintFck();
+    let tree = null as import("@lararium/mesh").SlotTree | null;
+    for (const spec of args.slots) tree = await bindSlot(tree, fck, spec, nativeKdf);
     return a.io.exclusive(async () => {
       const held = heldPort(a.io);
       const { ordinal, fcid } = await appendFaceEntry(held, a.homes.identity, { ask: args.ask ?? null, group: args.group ?? null, ...(args.ordinal !== undefined ? { ordinal: args.ordinal } : {}), ...(args.fillRetired ? { fillRetired: true } : {}) });
-      const fck = mintFck();
-      let tree = null as import("@lararium/mesh").SlotTree | null;
-      for (const spec of args.slots) tree = await bindSlot(tree, fck, spec, nativeKdf);
       await commitFaceTree({ io: held, path: faceTreePath(a.homes.identity, fcid), expected: null, key: fck, tree: tree!, carriers: [] });
       await writeFaceCarrier({ io: held, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: ownerCarrier(fcid), plaintext: encodeOwner({ fcid, group: args.group ?? null }) });
       faces.set(fcid, { fck, slot: null, ordinal });
