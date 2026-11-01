@@ -54,7 +54,7 @@
  * stays the controller's own (an operator-scoped standing permission), outside this tool.
  */
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statfsSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, linkSync, mkdirSync, readdirSync, readFileSync, renameSync, statfsSync, unlinkSync, writeFileSync } from "node:fs";
 import { userInfo } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -255,7 +255,8 @@ function door({ span, cwd }, ops) {
 
 /** Read every lane against origin: head, common base, message marker, its own green, the security class and its SHIP.
  *  A named lane that fails refuses the whole land. A queued entry that fails (its lane moved on, went red, lost its message
- *  or its SHIP) is marked `reject` and drops by name, so one stale entry never strands the queue; UNREADABLE stops all. */
+ *  or its SHIP, or read a positive red) is marked `reject` and drops by name, so one stale entry never strands the queue;
+ *  UNREADABLE, and a lane whose CI reads no verdict yet, stop all with every entry kept. */
 async function validate(lanes, { span, SP, shipDir, git, say, stop }, ops) {
   let table = null;
   try { table = JSON.parse(git(["show", `${SP}:tools/security-class-paths.json`])); } catch { return { refusal: stop(2, `NO SECURITY TABLE at the span head ${short(SP)} (tools/security-class-paths.json)`) }; }
@@ -278,7 +279,8 @@ async function validate(lanes, { span, SP, shipDir, git, say, stop }, ops) {
       if (anchor) { say(`lane ${l.suffix} head ${short(LH)} touches ignored paths only; no CI run stands; carried by green ancestor ${short(anchor)}`); k = "green"; }
     }
     if (k === "unreadable") return [10, `UNREADABLE: lane ${l.suffix}'s CI verdict could not be read (${v.ci}); read again later, it is no red`];
-    if (k !== "green") return [8, `LANE NOT GREEN: ${l.suffix}`, `  ci ${v.ci} · held-out ${heldOutNote(v)}`];
+    // Only a positive red drops a queued entry; an unread lane (a run in flight, a hard read error) keeps the queue whole.
+    if (k !== "green") { l.notRed = v.ci !== "red"; return [8, `LANE NOT GREEN: ${l.suffix}`, `  ci ${v.ci} · held-out ${heldOutNote(v)}`]; }
     l.paths = rawPaths(git(["diff", "--no-renames", "--raw", "-z", `${l.base}..${LH}`]));
     const hits = securityHits(table, l.paths);
     if (hits.length) {
@@ -293,7 +295,7 @@ async function validate(lanes, { span, SP, shipDir, git, say, stop }, ops) {
     const f = await read(l);
     if (!f) continue;
     const [code, ...lines] = f;
-    if (code === 10 || !l.entry) { if (code === 12) { noShip.push(...lines); continue; } return { refusal: stop(code, ...lines) }; }
+    if (code === 10 || !l.entry || (code === 8 && l.notRed)) { if (code === 12) { noShip.push(...lines); continue; } return { refusal: stop(code, ...lines) }; }
     l.reject = lines.join(" ");
   }
   if (noShip.length) return { refusal: stop(12, ...noShip) };
@@ -308,19 +310,24 @@ function settleEntry(queueDir, lane, to) {
 const readEntries = (dir) => (existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".json")).sort() : []);
 function takeLock(queueDir, say) {
   mkdirSync(queueDir, { recursive: true });
-  const lock = join(queueDir, "lock");
-  // An exclusive create decides between two runs; a lock whose process has exited is removed and created again.
-  for (let tries = 0; ; tries++) {
-    try { writeFileSync(lock, `${process.pid}\n`, { flag: "wx" }); break; }
-    catch (e) {
-      if (e?.code !== "EEXIST" || tries > 0) { if (e?.code === "EEXIST") return { held: Number(readFileSync(lock, "utf8").trim()) || "unknown" }; throw e; }
-      const pid = Number(readFileSync(lock, "utf8").trim());
-      if (pid && pidAlive(pid)) return { held: pid };
-      say(`took over the queue lock of process ${pid || "(unreadable)"}, which has exited`);
-      unlinkSync(lock);
+  const lock = join(queueDir, "lock"), tmp = join(queueDir, `lock.${process.pid}`);
+  const holder = () => { try { return Number(readFileSync(lock, "utf8").trim()) || null; } catch { return null; } };
+  // The pid goes into a private file first and links into place: a link either creates the lock whole or fails, so the
+  // lock never stands empty. A lock whose process has exited is removed and linked again, once. Two runs that both find
+  // the same dead lock in the same instant can each take it: a narrow window the controller's one-run habit closes.
+  writeFileSync(tmp, `${process.pid}\n`);
+  try {
+    for (let tries = 0; tries < 2; tries++) {
+      try { linkSync(tmp, lock); return { release: () => { if (holder() === process.pid) { try { unlinkSync(lock); } catch { /* gone */ } } } }; }
+      catch (e) {
+        if (e?.code !== "EEXIST") throw e;
+        const pid = holder();
+        if (pid && pidAlive(pid)) return { held: pid };
+        if (tries === 0) { say(`took over the queue lock of process ${pid ?? "(unreadable)"}, which has exited`); try { unlinkSync(lock); } catch { /* gone */ } }
+      }
     }
-  }
-  return { release: () => { try { if (readFileSync(lock, "utf8").trim() === String(process.pid)) unlinkSync(lock); } catch { /* gone */ } } };
+    return { held: holder() ?? "unknown" };
+  } finally { try { unlinkSync(tmp); } catch { /* gone */ } }
 }
 
 /**
