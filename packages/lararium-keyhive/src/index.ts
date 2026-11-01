@@ -17,6 +17,8 @@ export { keyhiveLockboxShore, encodeLockboxBox, readLockboxBox } from "./keyhive
 export type { LockboxProvider } from "./keyhive-lockbox.js";
 export { seatContentKeys } from "./content-key-seat.js";
 export type { ContentKeySeat, ContentKeySeatInput, ContentKeyProvider, SessionProof } from "./content-key-seat.js";
+export { certificateUnderChain, ownChainStanding } from "./island-session-proof.js";
+export type { IslandSessionProof, SessionAsk, SessionReading } from "./island-session-proof.js";
 export type { ProviderChunkRest } from "./capability-provider.js";
 export { memoryProviderChunkRest } from "./capability-provider.js";
 // `KeyhiveIdentitySlot` stays out of this barrel: it stands specified in code, and no production path constructs it

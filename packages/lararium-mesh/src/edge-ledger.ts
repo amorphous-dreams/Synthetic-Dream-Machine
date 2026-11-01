@@ -248,6 +248,15 @@ export function raisesSeenThrough(ledger: LarDoc | undefined | null, scope: stri
 }
 
 /**
+ * The raises this vessel marked answered on the key side for one board, however the seat answered, under its own
+ * signed mark alone (road `T33`): a subscriber took the roll for each. A counted raise outside this set still owes its
+ * roll (kapae#/keys), and a mark a hand planted answers nothing.
+ */
+export function raisesMarkedAnswered(ledger: LarDoc | undefined | null, scope: string, vesselKey: string): Set<string> {
+  return new Set(verifiedRollMarks(ledger, scope, vesselKey).keys());
+}
+
+/**
  * Every roll this vessel kept and signed for one board, one per raise, sorted by raise, each with its receipt. THE
  * CONTENT-KEY SEAM'S DURABLE HALF (kapae#/keys): a subscriber catches up from here and verifies each receipt again.
  */
