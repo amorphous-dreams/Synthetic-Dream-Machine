@@ -8,5 +8,5 @@ lar-example: <<~ kahawai filter=`[tag[x]]`>>
 type: text/vnd.tiddlywiki
 
 \procedure ~kahawai(filter:"" sigil:"")
-<%if [<filter>]%><$transclude $variable="~" name=<<sigil>>/><%endif%>
+<%if [subfilter<filter>]%><$transclude $variable="~" name=<<sigil>>/><%endif%>
 \end

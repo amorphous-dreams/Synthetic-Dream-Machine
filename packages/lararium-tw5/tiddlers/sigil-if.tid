@@ -21,7 +21,7 @@ type: text/vnd.tiddlywiki
      No mode= param — control flow has no projection posture. -->
 
 \procedure ~if(filter:"" sigil:"")
-<%if [<filter>]%>
+<%if [subfilter<filter>]%>
 <$transclude $variable="~" name=<<sigil>>/>
 <%endif%>
 \end
