@@ -246,6 +246,16 @@ export function telemetryProviderCap(impl: TelemetryProvider): CapModule {
  */
 const BURNED_RECALL_ARGS: readonly string[] = ["voice", "band", "drift", "agent-handle", "agent_handle", "agentHandle"];
 
+/**
+ * The recall filters (provenance agent and surface, the taxonomy axes speaker, channel and function) and the
+ * exchange view `pair` have ONE home: the coordinator's recall signature, reached on the search path. The
+ * list path pages drawers by wing and limit, the imago path fetches one entry by id, and the dual fuse
+ * assembles its own content-leg args, so none of them can honour one, and the coordinator holds no
+ * query-less filtered search. The verb refuses a present one by name off the search path rather than answer
+ * unfiltered; the filters never get a second home in TypeScript.
+ */
+const SEARCH_ONLY_RECALL_ARGS: readonly string[] = ["agent", "surface", "speaker", "channel", "function", "pair"];
+
 /** recall — the mempalace READ shore (semantic-search | list | get | multi-graph fuse). Requires
  *  the mempalace read-client + the form store (the dual fuse). */
 export function recallVerbCap(): CapModule {
@@ -263,6 +273,12 @@ export function recallVerbCap(): CapModule {
           }
           const imagoId = typeof args["imago"] === "string" ? (args["imago"] as string) : "";
           const query    = typeof args["query"]  === "string" ? (args["query"]  as string) : "";
+          const dual     = args["dual"] === true || args["dual"] === "true" || args["multi"] === true || args["multi"] === "true";
+          const searchOnly = SEARCH_ONLY_RECALL_ARGS.filter((name) => Object.hasOwn(args, name) && args[name] !== undefined);
+          if (searchOnly.length && (imagoId || !query || dual)) {
+            const path = imagoId ? "the imago fetch" : !query ? "the drawer list" : "the dual fuse";
+            throw new Error(`recall: ${searchOnly.join(", ")} ${searchOnly.length === 1 ? "narrows" : "narrow"} only the coordinator's search, and ${path} cannot honour ${searchOnly.length === 1 ? "it" : "them"} — pass a query, without imago or dual/multi`);
+          }
           const wing     = typeof args["wing"]   === "string" ? (args["wing"]   as string) : undefined;
           const limitRaw = args["limit"];
           const limit    = typeof limitRaw === "number" ? limitRaw : typeof limitRaw === "string" ? Number(limitRaw) : undefined;
@@ -270,8 +286,6 @@ export function recallVerbCap(): CapModule {
           // later graphs by reciprocal rank fusion on the verbatim_sha. Opt-in (`dual`/`multi`) — the FORM
           // leg stands as a placeholder answering [] (Train Q), so the fuse reads content + structure.
           // The `dual` arg name stays accepted for callers; `multi` reads the same.
-          const dual         = args["dual"] === true || args["dual"] === "true"
-                            || args["multi"] === true || args["multi"] === "true";
           const register     = typeof args["register"]     === "string" ? (args["register"]     as string) : undefined;
           const grammarLayer = typeof args["grammarLayer"] === "string" ? (args["grammarLayer"] as string)
                              : typeof args["grammar_layer"] === "string" ? (args["grammar_layer"] as string) : undefined;

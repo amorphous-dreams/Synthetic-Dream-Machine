@@ -358,7 +358,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--lens <plane>  content | structure | form | persistence (default content) — READ verbs",
       "--wing <w>      scope to one project wing",
-      "--agent/--surface/--speaker/--channel/--function   recall filters (compose AND)",
+      "--agent/--surface/--speaker/--channel/--function   recall filters (compose AND; need a query)",
       "--imago <id>    (recall) fetch one imago verbatim; --list lists imagines",
       "--all           (pour) sweep every transcript source",
       "--trial-root <absolute named root>  frozen Claude serving operation; trial-run/search/status only",

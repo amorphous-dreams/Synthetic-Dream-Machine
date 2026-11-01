@@ -19,7 +19,8 @@
  *
  * FILTERS — `--agent` · `--surface` (stream provenance) and `--speaker` · `--channel` · `--function`
  * (the block taxonomy) ride the verb verbatim to the recall coordinator, whose signature is the one
- * filter home; a filter alone implies `--list`.
+ * filter home. A filter narrows only the coordinator's search, which needs a query: with no query (or
+ * beside `--imago`) a filter, like `--pair`, refuses with a usage pointer, never an unfiltered list.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/lararium-memory#/shared-mesh
  */
@@ -47,15 +48,24 @@ export async function cmdRecall(args: ParsedArgs): Promise<number> {
   const limit   = args.options["k"] ?? args.options["limit"];
   const wantList = args.flags["list"];
   // The provenance filters (agent · surface) + the block-taxonomy filters (speaker · channel · function)
-  // — a filter alone implies --list. speaker="operator" surfaces the operator's steering as its own
-  // stratum; channel="speech" the loud voices; function names one role. The CLI stays isomorphic with the
-  // /mcp recall tool, both carrying the same filter set.
+  // — each narrows the coordinator's search, so each needs a query. speaker="operator" surfaces the
+  // operator's steering as its own stratum; channel="speech" the loud voices; function names one role. The
+  // CLI stays isomorphic with the /mcp recall tool, both carrying the same filter set.
   const filterKeys = ["agent", "surface", "speaker", "channel", "function"] as const;
-  const hasFilters = filterKeys.some((k) => args.options[k] !== undefined);
+  const presentFilters = filterKeys.filter((k) => args.options[k] !== undefined);
 
-  if (!query && !imago && !wantList && !hasFilters) {
+  // A filter (and the --pair view) narrows only the coordinator's search: the list pages drawers by wing,
+  // the imago fetch reads one entry, and no query-less filtered search stands. Refuse rather than answer
+  // unfiltered.
+  const searchOnly: string[] = [...presentFilters, ...(args.flags["pair"] ? ["pair"] : [])];
+  if (searchOnly.length && (!query || imago)) {
+    console.error(`lares sense recall: ${searchOnly.map((k) => `--${k}`).join(" ")} ${searchOnly.length === 1 ? "narrows" : "narrow"} only the search, which needs a query — usage: lares sense recall <keywords...> ${searchOnly.map((k) => `--${k}${k === "pair" ? "" : " <v>"}`).join(" ")}`);
+    return 2;
+  }
+
+  if (!query && !imago && !wantList) {
     console.error("usage: lares sense recall <keywords...> | --imago <id> | --list [--wing <w>] [--k <n>]");
-    console.error("  filters: --agent <id> --surface <claude|codex|copilot-cli|copilot-vscode>");
+    console.error("  filters (with a query): --agent <id> --surface <claude|codex|copilot-cli|copilot-vscode>");
     console.error("           --speaker <operator|agent|harness> --channel <speech|thought|tool> --function <steering|surface|scaffold|thinking|action|result>");
     return 2;
   }
