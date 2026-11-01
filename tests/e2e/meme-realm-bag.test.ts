@@ -637,7 +637,11 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   // B, a contracted member, names that id on her OWN catalog, registers it on A's realm by her own seal alone, and asks
   // for it. Before the class, A's realm lane counted the registration and served the ledger to B (unit L0 measured the
   // lane). A's vessel classes the ledger `vessel-private` under the `device` owner: the fold refuses the registration and
-  // the guard withholds it, so A's own share verdict never answers B `true` for it. CONTROL: the ford still crosses.
+  // the guard withholds it, so B's own store never holds the ledger. CONTROL: the ford still crosses.
+  // A REGRESSION GUARD, NEVER RED: on the parent (no class, run 41269697445) B's lone registration landed, yet A's wire
+  // peers drew `false` for the ledger and B's store held none of it, so no live member reaches the lane today. A's own
+  // in-process islands read the ledger `true` by design (the house full-syncs), so the step reads B's store, never A's
+  // verdict count. The MEASURE lines report whether A's fold counts the alias and every verdict A answered for it.
   test("⑮b A's edge ledger never crosses to B, whatever B registers on A's realm; the ford still crosses", async () => {
     expect(contracted, "the relation's doors stood (③): ⑮b walks only on a contracted member").toBe(true);
     // A's atom key, off her daemon document's device edge (read from a COPY of her store: her daemon keeps running).
@@ -647,11 +651,20 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     cpSync(vesselStorageDir(A!), copyA, { recursive: true });
     const repoCopy = new Repo({ storage: new NodeFSStorageAdapter(copyA) });
     let atomKeyA = "";
+    let ownLedgerA = "";
     try {
       const daemon = (await repoCopy.find<LarDoc>(daemonUrl as AutomergeUrl)).doc();
       atomKeyA = JSON.stringify(daemon?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER] ?? {}).match(/deviceVerifyingKey\\?"\s*:\s*\\?"(?:0x)?([0-9a-fA-F]{64})/)?.[1]?.toLowerCase() ?? "";
+      // CONTROL for the store check below: A's own ledger holds rows under the ledger's prefix, so their absence on B reads.
+      if (atomKeyA) {
+        ownLedgerA = await Promise.race([
+          repoCopy.find<LarDoc>(edgeLedgerDocUrl(atomKeyA)).then((h) => JSON.stringify(h.doc() ?? {}), () => "(unavailable)"),
+          new Promise<string>((res) => setTimeout(() => res("(unavailable)"), 10_000)),
+        ]);
+      }
     } finally { await repoCopy.shutdown().catch(() => {}); rmSync(copyA, { recursive: true, force: true }); }
     expect(atomKeyA, "A's device edge names her atom key").toMatch(/^[0-9a-f]{64}$/);
+    expect(ownLedgerA.includes("dreamnet/edge-ledger/"), `CONTROL — A's own store holds rows of her ledger: ${ownLedgerA.slice(0, 200)}`).toBe(true);
     const ledgerUrlA = edgeLedgerDocUrl(atomKeyA);
     const ledgerIdA = ledgerUrlA.slice("automerge:".length);
     // B names A's ledger on her own catalog (her daemon down for the write), then stands again on the same root.
@@ -678,12 +691,25 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       console.error(`meme-realm-bag ⑮b MEASURE B meme get --bag ${ALIAS} → ${said(ask).trim().slice(0, 200)}`);
       await new Promise((r) => setTimeout(r, 5_000));
     }
+    const aBags = await A!.cli(["nexus", "realm-bags", "--json"]);
+    console.error(`meme-realm-bag ⑮b MEASURE A's realm counts the alias: ${bagsOf(aBags).includes(ALIAS)}`);
     const lines = A!.bootLog().split("\n").map((l) => l.trim()).filter((l) => l.startsWith("[wire] verdict") && l.includes(ledgerIdA));
     console.error(`meme-realm-bag ⑮b MEASURE A's verdicts for her ledger ${ledgerIdA}:\n  ${lines.join("\n  ") || "(none)"}`);
-    expect(lines.filter((l) => l.endsWith("→ true")), "A's share verdict never answers a peer true for her own edge ledger").toEqual([]);
     // CONTROL: the ford still crosses to B.
     const ford = await pollB(60_000);
     expect(ford.json?.["ok"], `CONTROL — B still reads A's ford through the realm: ${said(ford)}`).toBe(true);
+    // B's own store, read from a COPY (her daemon keeps running for the steps after): no row of A's ledger stands there.
+    const copyB = mkdtempSync(join(stageDir(), "lares-ledger-copyB-"));
+    cpSync(vesselStorageDir(B), copyB, { recursive: true });
+    const repoCopyB = new Repo({ storage: new NodeFSStorageAdapter(copyB) });
+    try {
+      const body = await Promise.race([
+        repoCopyB.find<LarDoc>(ledgerUrlA as AutomergeUrl).then((h) => JSON.stringify(h.doc() ?? {}), () => "(unavailable)"),
+        new Promise<string>((res) => setTimeout(() => res("(unavailable)"), 10_000)),
+      ]);
+      console.error(`meme-realm-bag ⑮b MEASURE B's store for A's ledger: ${body.slice(0, 160)}`);
+      expect(body.includes("dreamnet/edge-ledger/"), `B's store holds A's edge ledger: ${body.slice(0, 200)}`).toBe(false);
+    } finally { await repoCopyB.shutdown().catch(() => {}); rmSync(copyB, { recursive: true, force: true }); }
   }, 360_000);
 
   // ── ⑬ THE MEASURE: WHERE THE RETURN LANE STOPS ──────────────────────────────────────────────────
