@@ -877,3 +877,19 @@ test("RED: a stale queue entry (its lane moved on) drops by name and the run dra
   assert.equal(named.code, 3, named.out);
   assert.match(named.out, /HEAD MOVED: a/);
 });
+
+test("RED: a queued entry whose CI reads no verdict (unread, a hard read error) stops the run and stays queued; only a positive red drops it", async () => {
+  const w = world(["a", "b"]);
+  const { ops } = opsQ(w); const lines = []; ops.log = (l) => lines.push(l);
+  const o = { span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") };
+  assert.equal((await LT.enqueue({ ...o, specs: specsOf(w) }, ops)).code, 0);
+  ops.verdict = async (branch) => (branch.endsWith("--a") ? { ci: "unread", heldOut: "unread" } : { ci: "green", heldOut: "green" });
+  const r = await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops);
+  assert.equal(r.code, 8, lines.join("\n"));
+  assert.equal(readdirSync(join(w.dir, "q", "entries")).length, 2, "nothing left the queue");
+  // CONTROL: a positive red drops that entry and the run drains the rest.
+  ops.verdict = async (branch) => (branch.endsWith("--a") ? { ci: "red", heldOut: "unread" } : { ci: "green", heldOut: "green" });
+  const r2 = await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops);
+  assert.equal(r2.code, 11, lines.join("\n"));
+  assert.match(lines.join("\n"), /DROPPED a: LANE NOT GREEN/);
+});
