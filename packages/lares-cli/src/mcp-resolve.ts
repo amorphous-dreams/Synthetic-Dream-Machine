@@ -46,6 +46,20 @@ export const SURFACE_COMPOSE = "docker-compose.surface.yml";
 /** The seat inside the product image: the image's working root (`WORKDIR /app`) plus the repo-relative path. */
 export const IMAGE_SEAT = "/app/packages/lararium-sensorium/scripts/lares_mcp.py";
 
+/** The hearth's surface env when the hearth stands in the surface container, else null. The ONE signal the
+ *  resolver and the catalog's refusal both read (`tools/lares-container.sh` reads the same file). */
+export function hearthSurfaceEnv(): string | null {
+  const file = join(larHome(), SURFACE_ENV);
+  return existsSync(file) ? file : null;
+}
+
+/** Why no seat resolves, in the form the hearth stands in: the refusal a missing seat reads. */
+export function seatAbsentCause(): string {
+  return hearthSurfaceEnv() !== null
+    ? `the hearth stands in the surface container (${SURFACE_ENV}), and the clone's ${SURFACE_COMPOSE} stands absent or names no LAR_ROOT`
+    : "lares_mcp.py, python or the sensorium stands absent; `lares mempalace install` and `lares sense setup` lay them down";
+}
+
 /** The vessel's root inside the surface container, as the compose file's environment names it. */
 function containerRoot(compose: string): string | null {
   if (!existsSync(compose)) return null;
@@ -75,8 +89,8 @@ function containerRoot(compose: string): string | null {
  */
 export function resolveLaresMcp(clone: string): LaresMcpCommand | null {
   const hearth = larHome();
-  const surfaceEnv = join(hearth, SURFACE_ENV);
-  if (existsSync(surfaceEnv)) {
+  const surfaceEnv = hearthSurfaceEnv();
+  if (surfaceEnv !== null) {
     const compose = join(clone, SURFACE_COMPOSE);
     const root = containerRoot(compose);
     if (root === null) return null;

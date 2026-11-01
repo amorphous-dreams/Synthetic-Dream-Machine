@@ -15,7 +15,7 @@ import {
   tomlHook, tomlHookForeign, tomlMcpServer, tomlShapeForeign, tomlTableForeign, tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "./kinds.js";
 import { homesOf, type Homes } from "./homes.js";
-import { resolveLaresMcp, type LaresMcpCommand } from "../mcp-resolve.js";
+import { resolveLaresMcp, seatAbsentCause, type LaresMcpCommand } from "../mcp-resolve.js";
 
 export const CARRIER = "bags/lares/ha.ka.ba/lares/cli/reality-tunnel.mem";
 export const RULE_MARKER = "<!-- written by lares";
@@ -178,7 +178,7 @@ export function homeItems(ctx: HomeContext, d: Declared = declared(ctx.repo)): I
           : dir && !existsSync(join(h.dir, dir)) ? `${join(h.dir, dir)} absent; ${s.host} stands unset in this home` : null;
         const script = join(clone, str(s, "script")).replace(/\\/g, "/");
         const needsScript = s["script"] !== undefined && !existsSync(script) ? `${script} absent in the main clone` : null;
-        const needsMcp = /mcp/.test(s.kind) && mcp === null ? "lares_mcp.py, python or the sensorium stands absent (`lares mempalace install` and `lares sense setup` lay them down), or the hearth's surface env stands beside a compose file that names no LAR_ROOT" : null;
+        const needsMcp = /mcp/.test(s.kind) && mcp === null ? seatAbsentCause() : null;
         const common = { absent, unreachable: needsScript ?? needsMcp };
         out.push(homeItem(base, path, h.dir, clone, d, script, mcp, common, ctx));
       }
