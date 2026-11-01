@@ -246,3 +246,56 @@ test('Cut 5: every file-path meta line leaves, a quoted fence included; prose na
   assert.equal(cut(src, { envelopeOnly: true }).counts.filePath, 2);
   assert.equal(cut(r.text).changes, 0);
 });
+
+// ── The cold sweep's blind spots (Sweep-Wright, 2026-11-01) ──────────────────────────────────────
+// A peer read the cut bags through VSCode and found calls the census had filed as hand-pass residue:
+// a quoted value CITING a sigil (`<<~`) refused as a nested call, a retired head (`ranks`, folded to
+// `scale`) filed as an unsigned placeholder, a whitespace-led bare `@` the at-name census never read,
+// and inline code spans whose tick runs TiddlyWiki cannot pair. Each shape stands here with its control.
+
+test('a `<<` inside a quoted value cites, never calls: the call cuts; a call fed a macro still refuses', () => {
+  assert.equal(one('<<~ has Lock 1b "with our `<<~` overlay loaded">>\n'),
+    '<<~ has entity=`Lock` name=`1b` params=```with our `<<~` overlay loaded```>>\n');
+  assert.equal(one('<<~ scale ceiling "a ~ x -> b << c ~ y">>\n'), '<<~ scale name=`ceiling` ranks=`a ~ x -> b << c ~ y`>>\n');
+  // CONTROL: a macro fed as a value is a call inside the call, and still lists.
+  const nested = cut('<<~ kue voice=<<x>> key="k">>\n');
+  assert.equal(nested.text, '<<~ kue voice=<<x>> key="k">>\n');
+  assert.deepEqual(kinds(nested), ['nested']);
+});
+
+test('a renamed head (ranks, folded to scale) reds, never files as unsigned; a cited one in a code span stays out', () => {
+  const r = cut('<<~ranks domain a ~ x -> b ~ y>>\n');
+  assert.equal(r.text, '<<~ranks domain a ~ x -> b ~ y>>\n');
+  assert.deepEqual(kinds(r), ['renamed']);
+  assert.equal(censusText('<<~ranks domain a ~ x -> b ~ y>>\n', ctx).renamedHead, 1);
+  const cited = 'the `<<~ranks` carrier, then <<~ ahu slot=`#/x`>>\n';
+  assert.ok(!kinds(cut(cited)).includes('renamed'));
+  assert.equal(censusText(cited, ctx).renamedHead, 0);
+});
+
+test('the census reads every whitespace-led at-sign, a bare one included; a code literal stays out', () => {
+  const src = 'Loom-grounded @ 100+ turns; imago @ locus; a `x @ y` span\n\n```\n@<domain> members\n```\n';
+  assert.equal(censusText(src, ctx).spacedAt, 2);
+  assert.equal(censusText('Loom-grounded at 100+ turns; imago at locus\n', ctx).spacedAt, 0);
+});
+
+test('the tick law: an inline span opens and closes on one run of one or two ticks (TiddlyWiki pairs no other)', () => {
+  const law = (s) => { const c = censusText(s, ctx); return { tickMismatch: c.tickMismatch, wideInline: c.wideInline }; };
+  assert.deepEqual(law("# ''`lares kairos``'' against check set one\n"), { tickMismatch: 1, wideInline: 0 });
+  assert.deepEqual(law("''And two faults reach `error''' (row 7): `a` and `b`.\n"), { tickMismatch: 1, wideInline: 0 });
+  assert.deepEqual(law('a bare `` ```toml meta `` fence\n'), { tickMismatch: 1, wideInline: 0 });
+  assert.deepEqual(law('A labelled ```` ```toml meta ```` fence\n'), { tickMismatch: 0, wideInline: 1 });
+  assert.deepEqual(law('| `codeblock` | ``` fenced block |\n'), { tickMismatch: 0, wideInline: 1 });
+  // CONTROLS: paired spans, a held tick in a double span, a span across a wrapped line, a sigil's
+  // ticked values, and a four-tick block fence all read clean.
+  assert.deepEqual(law('`a` and ``b ` c`` and ``<<~ kue key=`k`>>`` here\n'), { tickMismatch: 0, wideInline: 0 });
+  assert.deepEqual(law('a span `wraps\nacross` a line\n'), { tickMismatch: 0, wideInline: 0 });
+  assert.deepEqual(law('x <<~ has entity=`L` name=`n` params=```a `b` c```>> y\n'), { tickMismatch: 0, wideInline: 0 });
+  assert.deepEqual(law('````text\n```toml meta\nx = 1\n```\n````\n'), { tickMismatch: 0, wideInline: 0 });
+});
+
+test('a cut that would widen an inline span past two ticks refuses: TiddlyWiki reads no wider delimiter', () => {
+  const r = cut('see ``<<~ kue voice="a `b` c">>`` here\n');
+  assert.equal(r.text, 'see ``<<~ kue voice="a `b` c">>`` here\n');
+  assert.deepEqual(kinds(r), ['wide-span']);
+});
