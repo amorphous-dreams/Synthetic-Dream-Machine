@@ -195,11 +195,23 @@ export function verifiedRollMarks(ledger: LarDoc | undefined | null, scope: stri
   const out = new Map<string, SignedSeatRoll>();
   const board = scope.trim().toLowerCase();
   for (const [raiseCid, text] of marksOf(ledger, scope, "rolled")) {
-    const roll = signedRollOf(text, vesselKey);
-    if (roll === null || roll.scope.trim().toLowerCase() !== board || !roll.raiseCids.some((c) => c.toLowerCase() === raiseCid.toLowerCase())) continue;
-    out.set(raiseCid, roll);
+    const roll = rowRollOf(text, board, raiseCid, vesselKey);
+    if (roll !== null) out.set(raiseCid, roll);
   }
   return out;
+}
+
+/**
+ * THE ONE ROW-VALIDITY PREDICATE, read by every reader and by the writer alike (train t4's Sol read): a row's text counts
+ * as this vessel's mark for `raiseCid` on board `scope` only where its receipt verifies under `vesselKey`, its scope names
+ * that board, and its raises name that raise. This vessel's own receipt replayed from another scope or raise holds
+ * nothing here, so it neither answers the raise nor keeps the genuine mark out.
+ */
+function rowRollOf(text: string, scope: string, raiseCid: string, vesselKey: string): SignedSeatRoll | null {
+  const roll = signedRollOf(text, vesselKey);
+  if (roll === null) return null;
+  if (roll.scope.trim().toLowerCase() !== scope.trim().toLowerCase()) return null;
+  return roll.raiseCids.some((c) => c.toLowerCase() === raiseCid.toLowerCase()) ? roll : null;
 }
 
 /** One row's text as a roll this vessel signed, or null. */
@@ -222,17 +234,20 @@ export function rolledRaises(ledger: LarDoc | undefined | null, scope: string, v
  * with a roll whose receipt the caller already verified under this vessel's key (`verifiedSeatRoll`).
  *
  * The first SIGNED answer stands, with one step up: a seat this vessel could not revoke may leave later under the hand
- * that seated it, and the row then takes that later answer. A row standing there that verifies under no key of this
- * vessel holds nothing, so the genuine answer lands over it.
+ * that seated it, and the row then takes that later answer. A row standing there that fails the readers' predicate
+ * (`rowRollOf`: another key's receipt, or this vessel's own replayed from another scope or raise) holds nothing, so the
+ * genuine answer lands over it.
  */
 export function markRaiseRolled(draft: LarDoc, scope: string, raiseCid: string, roll: SignedSeatRoll, vesselKey: string): void {
   const key = rowKey(scope, "rolled", raiseCid);
-  const had = draft.tiddlers[key] !== undefined ? signedRollOf(tiddlerText(draft.tiddlers[key]!) ?? "", vesselKey) : null;
-  if (had !== null && (had.how !== "no-authority" || roll.how === "no-authority")) return;
   const text = JSON.stringify({
     kind: roll.kind, scope: roll.scope, edgeId: roll.edgeId, raiseCids: [...roll.raiseCids], how: roll.how,
     ...(roll.seat ? { seat: { group: roll.seat.group, member: roll.seat.member } } : {}), receipt: roll.receipt,
   });
+  // The incoming roll passes the readers' own predicate for this row, or nothing is written (it would read as no mark).
+  if (rowRollOf(text, scope, raiseCid, vesselKey) === null) return;
+  const had = draft.tiddlers[key] !== undefined ? rowRollOf(tiddlerText(draft.tiddlers[key]!) ?? "", scope, raiseCid, vesselKey) : null;
+  if (had !== null && (had.how !== "no-authority" || roll.how === "no-authority")) return;
   draft.tiddlers[key] = storedLarRecord(key, { text }, scope);
 }
 
