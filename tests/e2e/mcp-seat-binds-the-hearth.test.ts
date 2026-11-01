@@ -26,8 +26,8 @@ const NODE_DIST = join(REPO_ROOT, "packages/lararium-node/dist/src/index.js");
 const PATH = "t.witness.seat/hearth";
 const URI = `lar:///${PATH}`;
 const MEME =
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\n\`\`\`\n\n` +
-  `<<~ ahu #/seat>>\n\n! the seat reached the hearth\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\n\`\`\`\n\n` +
+  `<<~ ahu slot=\`#/seat\`>>\n\n! the seat reached the hearth\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 const gaps = [CLI_BIN, RESOLVER, NODE_DIST].filter((p) => !existsSync(p)).map((p) => `built ${p} (pnpm build)`);
 if (process.env["LAR_TARGET"] === "live") gaps.push("a STAGED target — this walk writes, and never writes to a live hearth");
