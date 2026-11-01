@@ -590,7 +590,9 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, shipDir, ta
       // A land that changes ignored paths alone raises no run either (its code already stands): it drops by name.
       if (onlyIgnoredPaths(landed)) { drop(l, `its land over ${short(prev)} changes ignored paths alone, so no run would come`); continue; }
       // The class reads what LANDS (merge-tree follows renames), unioned with the lane's own diff.
+      // A queued entry drops by name (and its carriers with it); a named lane refuses the whole land.
       const noShip = landShipRefusal(table, shipDir, l, landed, ops);
+      if (noShip && l.entry) { drop(l, noShip); gone.push(l); continue; }
       if (noShip) throw Object.assign(new Error(noShip), { ship: true });
       const land = git(["commit-tree", tree, "-p", prev, "-p", l.head, "-F", l.msg], { env });
       out.push({ lane: l, land }); prev = land;
@@ -602,26 +604,36 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, shipDir, ta
   const trains = [];
   for (const t of trainRefs(git, span)) {
     if (isAncestor(git, t.sha, SP)) { deleteRef(t.branch, t.sha); continue; }
-    const base = trains.at(-1)?.head ?? SP, pending = lanes.filter((l) => !trains.some((x) => x.links.some((y) => y.lane === l)));
+    const base = trains.at(-1)?.head ?? SP, pending = lanes.filter((l) => !dropped.includes(l) && !trains.some((x) => x.links.some((y) => y.lane === l)));
     const firsts = isAncestor(git, base, t.sha) ? git(["rev-list", "--first-parent", "--reverse", `${base}..${t.sha}`]).split("\n").filter(Boolean) : [];
-    let prev = base, ok = firsts.length > 0 && firsts.length <= pending.length;
+    let prev = base, ok = firsts.length > 0 && firsts.length <= pending.length, refusal = null;
     const links = [];
     for (const [i, c] of firsts.entries()) {
       if (!ok) break;
       const l = pending[i];
+      // A resumed link meets the table and the SHIP as a fresh one does: a SHIP revoked since the push refuses it.
+      const noShip = ok && git(["rev-parse", `${c}^`]) === prev ? landShipRefusal(table, shipDir, l, rawPaths(git(["diff", "--no-renames", "--raw", "-z", prev, c])), ops) : null;
+      if (noShip) { refusal = { lane: l, why: noShip }; ok = false; break; }
       ok = git(["rev-parse", `${c}^`]) === prev && git(["rev-parse", `${c}^2`]) === l.head && git(["log", "-1", "--format=%s", c]) === l.subject
         && git(["rev-parse", `${c}^{tree}`]) === git(["merge-tree", "--write-tree", "--no-messages", prev, l.head]).split("\n")[0];
       links.push({ lane: l, land: c }); prev = c;
     }
     // A standing train resumes only when a run names its sha; one with none would wait on a run that never comes.
     if (ok) { const runs = await ops.ciRuns(t.sha).catch(() => []); ok = readRunAt(runs, t.sha, trainOk).state !== "none"; }
+    if (refusal) {
+      for (const r of await ops.ciRuns(t.sha).catch(() => [])) if (r.status !== "completed" && trainOk(r.headBranch)) await ops.cancelRun(r.databaseId).catch(() => {});
+      deleteRef(t.branch, t.sha); say(`train ref ${t.branch} torn down: its land meets the table with no SHIP standing`);
+      if (!refusal.lane.entry) return finish(12, refusal.why);
+      drop(refusal.lane, refusal.why);
+      continue;
+    }
     if (ok) { trains.push({ branch: t.branch, head: t.sha, links }); say(`RESUMED ${t.branch} at ${short(t.sha)}: ${links.map((x) => x.lane.suffix).join(" ")}`); }
     else {
       for (const r of await ops.ciRuns(t.sha).catch(() => [])) if (r.status !== "completed" && trainOk(r.headBranch)) await ops.cancelRun(r.databaseId).catch(() => {});
       deleteRef(t.branch, t.sha); say(`stale train ref ${t.branch} (it chains no queued lane over the span): removed, its live runs cancelled`);
     }
   }
-  let queue = lanes.filter((l) => !trains.some((x) => x.links.some((y) => y.lane === l)));
+  let queue = lanes.filter((l) => !dropped.includes(l) && !trains.some((x) => x.links.some((y) => y.lane === l)));
 
   if (plan) {
     let links;

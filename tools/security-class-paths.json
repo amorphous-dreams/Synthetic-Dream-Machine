@@ -22,7 +22,8 @@
     "tools/stamp-build.mjs",
     "tools/disk-guard.mjs",
     "**/package.json",
-    "**/vitest.config.*"
+    "**/vitest.config.*",
+    "**/tsconfig*.json"
   ],
   "tokens": [
     "custody",
