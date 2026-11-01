@@ -913,3 +913,13 @@ test("RED: the class reads what LANDS: a lane editing a path the span renamed in
   writeFileSync(join(w.dir, "ship", `a-${w.heads.a}.md`), `sha: ${w.heads.a}\nread: controller read of the landed tree\n`);
   assert.equal((await runQ(w)).code, 0);
 });
+
+test("RED: the repo's security table classes the code that decides CI's verdict: cells, shards, witnesses, the build stamp, disk guard, every package manifest and vitest config", () => {
+  const table = JSON.parse(readFileSync(new URL("./security-class-paths.json", import.meta.url), "utf8"));
+  for (const p of ["tools/ci-cells.mjs", "tools/e2e-shards.mjs", "tools/typecheck-witness.sh", "tools/exact-deps-witness.sh", "tools/stamp-build.mjs", "tools/disk-guard.mjs",
+    "packages/lararium-mesh/package.json", "packages/lararium-tw5/vitest.config.ts", "vitest.config.mjs", "tools/witness-all.sh", ".github/workflows/ci.yml"]) {
+    assert.deepEqual(LT.securityHits(table, [p]), [p], `${p} reads security-class`);
+  }
+  // CONTROL: an ordinary source path stays out of the class.
+  assert.deepEqual(LT.securityHits(table, ["packages/lararium-tw5/src/wiki-shore.ts"]), []);
+});
