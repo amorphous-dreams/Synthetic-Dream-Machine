@@ -1,6 +1,6 @@
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/library/oracles/doa/index">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/index`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
@@ -17,7 +17,7 @@ type       = "{CARRIER_TYPE}"
 uri-path   = "ha.ka.ba/lares/library/oracles/doa/index"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Discordian Oracle AppleKation ~ reliquary handle
 
@@ -35,7 +35,7 @@ opening the DOA.html blob in any browser, offline, forever.
 
 <<~/ahu>>
 
-<<~ ahu #/holdings>>
+<<~ ahu slot=`#/holdings`>>
 
 !! Holdings ~ name → cid
 
@@ -48,7 +48,7 @@ opening the DOA.html blob in any browser, offline, forever.
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance & Rites
 
@@ -72,6 +72,6 @@ opening the DOA.html blob in any browser, offline, forever.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CbTCL-UTCxG3-2XL0Yrv1uwQgQ_jrIGnRxfG9k6GW0Q
+<<^ code=`&#x0003;`>>ni:///sha-256;UkZJl8bk-SC5GO2KCqkfMB0syoSFxHJcjTYdbYDNS78
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>
