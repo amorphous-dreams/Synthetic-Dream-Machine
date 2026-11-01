@@ -8,6 +8,9 @@
  *   W1  RED: on a vessel that holds no persona root, the worn fleet's facts name the counted raise, and the fold reads it
  *       owed; CONTROL: a fleet the vessel neither wears nor serves still refuses by name.
  *   W2  RED: the joinee keeps its own receipt-signed roll (under its atom), and the fold then reads the raise answered.
+ *   W3  RED (road `T35`): a vessel that wears a face whose fleet root or atom stands unread never reads a silent zero: the
+ *       fold refuses by name, so the session sign door refuses and nothing seals on a pre-removal head. CONTROL: a vessel
+ *       that wears no face reads `read: false`, and the island judges it.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -29,7 +32,7 @@ const REMOVED = "c4".repeat(32);
 type Worn = { readonly fleetRoot: string; readonly atomKey: string };
 type WornFacts = (o: { repo: unknown; worn?: Worn; fleetRoot?: string }) => ReturnType<typeof runEdgeSeatFacts>;
 type WornMarks = (o: { repo: unknown; worn?: Worn; fleetRoot?: string; rolls: readonly unknown[] }) => ReturnType<typeof runEdgeSeatMarks>;
-type WornFold = (o: { repo: unknown; worn?: Worn | null; fleetRoot?: string | null }) => ReturnType<typeof fleetRaisesOf>;
+type WornFold = (o: { repo: unknown; worn?: { fleetRoot: string | null; atomKey: string | null } | null; fleetRoot?: string | null }) => ReturnType<typeof fleetRaisesOf>;
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -89,6 +92,18 @@ describe("a joinee reads the fleet it wears (T34)", () => {
       const marked = await (runEdgeSeatMarks as unknown as WornMarks)({ repo, worn, rolls: [roll] });
       expect(marked.marked).toEqual([raise.actCid]);
       expect((await (fleetRaisesOf as unknown as WornFold)({ repo, worn })).unanswered).toEqual([]);
+    } finally { await repo.rest(); }
+  });
+
+  it("W3 — RED (T35): a worn face with no root or no atom refuses by name; CONTROL: a faceless vessel reads unread", async () => {
+    const worn = await wornOf();
+    await raiseOnBoard(worn.fleetRoot);
+    const repo = restingRepo(larDataDir());
+    try {
+      const fold = fleetRaisesOf as unknown as WornFold;
+      await expect(fold({ repo, worn: { fleetRoot: null, atomKey: worn.atomKey } }), "no root read yet").rejects.toThrow(EdgeSeatError);
+      await expect(fold({ repo, worn: { fleetRoot: worn.fleetRoot, atomKey: null } }), "no atom opened yet").rejects.toThrow(EdgeSeatError);
+      expect(await fold({ repo, worn: null }), "CONTROL: a faceless vessel").toEqual({ read: false, counted: [], unanswered: [] });
     } finally { await repo.rest(); }
   });
 });
