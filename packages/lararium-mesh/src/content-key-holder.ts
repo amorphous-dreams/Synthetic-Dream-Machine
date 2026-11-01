@@ -104,6 +104,7 @@ export const HOLDER_REFUSALS = [
   "seat-not-standing",        // this vessel's own seat stands in no key group of its face: an import wraps for nobody
   "memory-malformed",         // a memory section does not open, or opens to no whole entries
   "roll-owed",                // a counted raise still owes this bag its removal roll: nothing seals under a head that precedes it
+  "chain-absent",             // no chain stands (no session asked, no dial composed): the holder reads no record
 ] as const;
 export type HolderRefusalName = (typeof HOLDER_REFUSALS)[number];
 /** A refusal names what stopped the act. `cause` carries another module's own refusal name, never a key. */
@@ -264,7 +265,7 @@ export class ContentKeyHolder {
         const answer = await act();
         // A lock that landed while the act ran ends it: nothing it learned leaves.
         return this.#locked ? refuse("holder-locked") : answer;
-      } catch (err) { return this.#locked ? refuse("holder-locked") : refuse("store-failed", said(err)); }
+      } catch (err) { return this.#locked ? refuse("holder-locked") : err instanceof ChainAbsent ? refuse("chain-absent") : refuse("store-failed", said(err)); }
     });
     this.#turn = run.catch(() => undefined);
     return run;
@@ -289,6 +290,17 @@ export class ContentKeyHolder {
 
   /** Does the standing read writers under a chain now? A holder whose standing names none takes no reading. */
   #chainStands(): boolean { return this.#ports.standing.chainOf?.() !== null; }
+
+  /** Does any lockbox at rest open for this seat? It reads no record, so it needs no chain; each key it opens it
+   *  overwrites at once. A seat that opens none holds no key under any chain. */
+  async #opensAnyLockbox(): Promise<boolean> {
+    const { store, shore } = this.#ports;
+    for (const lockbox of await store.lockboxes()) {
+      const opened = await openLockbox({ lockbox, shore });
+      if ("payload" in opened) { opened.payload.key.fill(0); return true; }
+    }
+    return false;
+  }
 
   /** Read rest afresh: open every lockbox this seat opens, then count every record under the key it delivered. */
   async #reload(): Promise<Map<string, Bag>> {
@@ -794,7 +806,9 @@ export class ContentKeyHolder {
       const named = [...new Set(args.bags)].sort(ascending);
       if (!named.every((bagId) => isWellFormedText(bagId))) return refuse("bag-malformed");
       if (args.shadowRead !== true) for (const bagId of named) if (await this.#ports.ownEdgeShadowed(bagId)) return refuse("own-edge-shadowed");
-      const bags = await this.#loaded();
+      // A SEAT THAT OPENS NO LOCKBOX HOLDS NOTHING UNDER ANY CHAIN (a vessel that dials no hearth composes none):
+      // its section carries no entry, and no reading caches. One that opens a lockbox counts under the chain alone.
+      const bags = !this.#chainStands() && !(await this.#opensAnyLockbox()) ? new Map<string, Bag>() : await this.#loaded();
       const entries: MemoryEntry[] = [];
       const holds: MemoryHolding[] = [];
       for (const bagId of named) for (const line of [...(bags.get(bagId)?.lines.values() ?? [])].sort((a, b) => ascending(a.locator, b.locator))) {
