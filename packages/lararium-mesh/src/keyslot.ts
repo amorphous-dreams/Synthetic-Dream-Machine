@@ -359,7 +359,8 @@ export function openPasskeyPin(slot: SlotRecord, pinIndex: number, prfOutput: Ui
   } catch { return { reading: "slot-refused" }; }
 }
 
-/** Open the tree key with whatever credentials the operator presents. Any one slot whose threshold they meet opens it. */
+/** Open the tree key with whatever credentials the operator presents. Any one slot whose threshold they meet opens it.
+ *  A passphrase derives only when a pin tries it, so a right route costs the derivations before it and no more. */
 export async function openTreeKey(tree: SlotTree, credentials: readonly Credential[], kdf: KdfPort): Promise<TreeKeyUnlock> {
   const derive = deriveOf(kdf);
   const notes: string[] = [];
@@ -368,11 +369,14 @@ export async function openTreeKey(tree: SlotTree, credentials: readonly Credenti
     if (c.kind !== "paper") continue;
     try { paperSecrets.push(combineMnemonics(c.sheets)); } catch { notes.push("a paper credential reads no secret: its sheets fail their own check (a mistyped word, a missing sheet, or sheets of two sets)"); }
   }
-  const passphrases = credentials.flatMap((c) => (c.kind === "passphrase" ? [c.passphrase] : []));
+  // NFKC-equal spellings derive the same material, so each distinct route rides once.
+  const passphrases = [...new Set(credentials.flatMap((c) => (c.kind === "passphrase" ? [c.passphrase.normalize("NFKC")] : [])))];
 
   for (const slot of tree.slots) {
     const slotId = fromHex(slot.id, SLOT_ID_LENGTH, "slot id");
     const shares: ShareBytes[] = [];
+    // ONE ROUTE, ONE PIN: a passphrase that opened one pin of this slot cannot open another, so it never derives again here.
+    const spent = new Set<number>();
     for (const [i, pin] of slot.pins.entries()) {
       if (shares.length >= slot.t) break;
       const nonce = fromHex(pin.nonce, NONCE_LENGTH, "pin nonce");
@@ -386,12 +390,17 @@ export async function openTreeKey(tree: SlotTree, credentials: readonly Credenti
         }
         continue;
       }
-      const materials: Uint8Array[] = [];
       if (pin.kind === "passphrase") {
+        // THE LAZY OPEN: derive one offered passphrase at a time, only when this pin tries it, and stop at the first share.
         const salt = fromHex(pin.salt, SALT_LENGTH, "pin salt");
-        for (const p of passphrases) materials.push(await passphraseMaterial(p, salt, derive));
-      } else materials.push(...paperSecrets);
-      for (const m of materials) {
+        for (const [j, p] of passphrases.entries()) {
+          if (spent.has(j)) continue;
+          const share = tryUnwrap(wrapKey(await passphraseMaterial(p, salt, derive), slotId), nonce, aad, wrapped);
+          if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); spent.add(j); break; }
+        }
+        continue;
+      }
+      for (const m of paperSecrets) {
         const share = tryUnwrap(wrapKey(m, slotId), nonce, aad, wrapped);
         if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); break; }
       }
