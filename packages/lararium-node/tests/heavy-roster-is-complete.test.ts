@@ -45,6 +45,9 @@ const ALLOWED_LIGHT: Record<string, string> = {
   "tests/e2e/fleet-join-dial.test.ts":
     "binds a real HTTP listener for the hearth's sealed sync gate, but runs ONLY under the separate " +
     "`vitest.e2e.config.ts` (CI's `node` e2e shard) — see EXCLUDED_BY_DESIGN below.",
+  "tests/e2e/carried-nexus-posture.test.ts":
+    "binds a real HTTP listener for a carried Nexus's sealed sync gate, but runs ONLY under the separate " +
+    "`vitest.e2e.config.ts` (CI's `node` e2e shard) — see EXCLUDED_BY_DESIGN below.",
 };
 
 /** The roster the config declares — read from the module, so the two cannot disagree. */
@@ -91,6 +94,9 @@ const EXCLUDED_BY_DESIGN: Record<string, string> = {
   "tests/e2e/nexus-rekey-full-boot.test.ts":
     "excluded from `main`, absent from `heavy` — a full `openNodeVessel` boot that calls the registered `nexus-rekey` verb through the " +
     "island. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
+  "tests/e2e/carried-nexus-posture.test.ts":
+    "excluded from `main`, absent from `heavy` — a full `openNodeVessel` boot carrying a second Nexus, a stranger seated at " +
+    "its sealed gate (test-recut-road T19/T27). Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
 };
 
 describe("the serial heavy roster detects its own staleness", () => {

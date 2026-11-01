@@ -21,6 +21,8 @@
 //   T5  every teardown completes on its daemon island's ack: the composition reaches the island's shutdown by two
 //       roads, the handshake runs once, and no road waits out its bound on a worker already terminated.
 //                                                                 control: the capture reads this process's warnings
+//   T6  a composition that refuses after it opened the fetch door, and before its teardown entry for it, leaves no door:
+//       a worker's later `cas:want` reads a miss (T27, test-recut-road).   control: a whole teardown leaves no door either
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs, { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from "node:fs";
@@ -243,7 +245,7 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     assert.ok(sovereignly.seen.includes(veilAt), `T2 control: the sovereign composition reads the face's archive row (${veilAt})`);
     assert.notEqual(one.repo, zero.repo, "T1: a fresh Repo");
     assert.notEqual(one.daemon, zero.daemon, "T1: a fresh daemon island");
-    // A herm stands a gate knock only at a Nexus whose carriage board counts a carry for it (`gateNexuses`), and this
+    // A herm stands a gate knock only at a Nexus whose carriage board counts a carry for it (`gateNexusesOf`), and this
     // one is carried nowhere: what it holds on the server is its bulb read face.
     assert.ok(live.faces.size + live.knocks.size > baseline.faces + baseline.knocks,
       `T4 control: a standing composition holds a face on the server (${JSON.stringify(held())})`);
@@ -256,6 +258,18 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     assert.deepEqual(held(), baseline, "T4: the teardown removes every listener it added");
     assert.equal(existsSync(floor.storeClaim.socketPath), true, "T1: the floor's name stands between compositions");
     assert.equal(await nameAnswers(floor.storeClaim.socketPath), true, "T1: the floor's name answers between compositions");
+
+    // ── T6: a refusal past the fetch door leaves no door behind (T27) ─────────────────────────────────────────
+    const workerHandle = await import(pathToFileURL(join(repo, "packages/lararium-node/dist/src/worker-handle.js")).href);
+    const blob = node.listCasBlobs(node.casDirForStorage(storageDir))[0];
+    assert.ok(blob, "T6 control: the founded store holds a cas blob the door could answer");
+    // The door's answer reads as a word: an inspected multi-megabyte buffer would stall the assertion's own message.
+    const doorSays = async () => { const got = await workerHandle.fetchThroughCasDoor(blob.cid); return got === null ? "a miss" : `${got.length} bytes`; };
+    assert.equal(await doorSays(), "a miss", "T6 control: a whole teardown leaves no fetch door");
+    const refusing = { ...first.readers, walkRecords: async () => { throw new Error("t6: a walk row it cannot read"); } };
+    await assert.rejects(open({ floor, sovereign: refusing }), /t6: a walk row it cannot read/, "T6: the walk read refuses the boot");
+    assert.equal(await doorSays(), "a miss", "T6: the refused composition's fetch door still answers");
+    assert.deepEqual(held(), baseline, "T6: the refused boot leaves no listener behind");
 
     // A third composition stands on the same floor: the teardown left nothing a later stand trips on.
     const three = await open({ floor, sovereign: null });

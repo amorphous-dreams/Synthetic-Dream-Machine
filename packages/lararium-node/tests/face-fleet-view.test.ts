@@ -17,7 +17,7 @@ import { describe, expect, test } from "vitest";
 import { generateAutomergeUrl, interpretAsDocumentId, type DocumentId } from "@automerge/automerge-repo";
 import { DAEMON_BAG_ID, DeterministicFederationGate, PERSONA_GROUP_ID_TIDDLER, personaBagIdFor, personaMembershipEntries, personaSiblingBagIds, type FaceGrantReading , type LarDoc } from "@lararium/mesh";
 import { faceFleetFacets, faceFleetViews, bridgeBooks } from "../src/face-fleet-view.js";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 const G1 = "0x" + "11".repeat(16), G2 = "0x" + "22".repeat(16);
 const urls = (g: string) => ({ persona: generateAutomergeUrl(), identities: generateAutomergeUrl(), circles: generateAutomergeUrl(), sessions: generateAutomergeUrl(), intents: generateAutomergeUrl(), group: g });
@@ -55,8 +55,9 @@ describe("a same-operator session reads its own face's documents", () => {
     const views = faceFleetViews(() => bootstrap(ONE, TWO));
     views.seat("device-two", grant(G1));
     const verdict = (documentId: DocumentId, sessionFace = views.gateFor("device-two")) => selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: shelf, antigenRing: null, membership: null, planeSeal: null,
+      hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: shelf, antigenRing: NO_BANS, membership: null, planeSeal: null,
       federationPosture: "private", peerId: "device-two", documentId, sessionFace,
+      shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
     });
     expect(await verdict(idOf(ONE.circles))).toBe(true);
     expect(await verdict(idOf(ONE.intents))).toBe(true);

@@ -43,7 +43,7 @@ import {
   type FaceGrantReading, type FederationGate, type LarDoc, type ProtectedDocClass,
 } from "@lararium/mesh";
 import { faceFleetViews, bridgeBooks } from "../src/face-fleet-view.js";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 type RelationInput = {
   owner?: string | null; wornFace?: string | null; peerFace?: string | null;
@@ -111,9 +111,10 @@ const verdict = (o: {
   guard: ReturnType<typeof protectedDocGuard> | null; fed: FederationGate | null; peerClass: "contracted" | "same-operator";
   documentId: string; sessionFace?: FederationGate | null; peerId?: string; sibling?: boolean; siblingGate?: FederationGate | null; hasWsSocket?: boolean;
 }) => selfSlotShareDecision({
-  hasWsSocket: o.hasWsSocket ?? true, peerClass: o.peerClass, selfSlotFedGate: o.fed, antigenRing: null, membership: null, planeSeal: null,
+  hasWsSocket: o.hasWsSocket ?? true, peerClass: o.peerClass, selfSlotFedGate: o.fed, antigenRing: NO_BANS, membership: null, planeSeal: null,
   peerId: o.peerId ?? "peer-B", documentId: o.documentId as DocumentId, sessionFace: o.sessionFace ?? null, protectedDocs: o.guard,
   ...(o.sibling ? { sibling: true, siblingGate: o.siblingGate ?? null } : {}),
+  shadow: NOBODY_ASIDE,
 });
 
 /** The owner the composer reads for a fixture id: each face's planes by its group, the daemon doc and catalog by the vessel. */

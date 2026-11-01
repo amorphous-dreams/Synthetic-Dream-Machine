@@ -15,14 +15,20 @@ export interface IntentRelayService {
   disable(group: string): Promise<void>;
   close(): void;
 }
-export async function standIntentRelay(ports: {
+/**
+ * The per-face relay service, built with NO sweep run: the caller holds it, and so owns its cleanup, before its first route
+ * stands, then runs the first sweep itself (`await service.refresh()`). A close while any sweep awaits a face stands down
+ * what that sweep stood (train t3's Sol read: a service handed over only after its first sweep left a stalled sweep's route
+ * owned past the teardown). One shape; the after-the-sweep hand-over burns whole.
+ */
+export function intentRelayService(ports: {
   readonly gateServer: FaceGateServer;
   readonly dispatcher?: HttpFaceDispatcher;
   readonly rootDoor: CustodyRootDoor;
   readonly deadlines: GateDeadlines;
   readonly faces: (group: string) => Promise<IntentRelayFace | null>;
   readonly log: (message: string) => void;
-}): Promise<IntentRelayService> {
+}): IntentRelayService {
   const stood = new Map<string, { bundle: GateBundle; at: StoodGate; unregister?: () => void }>();
   const ring = intentRelayRing();
   let closed = false;
@@ -81,6 +87,5 @@ export async function standIntentRelay(ports: {
       }
     }
   }
-  await service.refresh();
   return service;
 }

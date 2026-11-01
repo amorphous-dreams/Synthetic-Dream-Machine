@@ -17,7 +17,7 @@ import { randomBytes } from "node:crypto";
 import { interpretAsDocumentId, type BinaryDocumentId, type DocumentId } from "@automerge/automerge-repo";
 import type { EdgeShadowRing } from "../src/edge-shadow-ring.js";
 import { floorShadowRing } from "../src/floor-fleet-lanes.js";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 const docId = (): DocumentId => interpretAsDocumentId(new Uint8Array(randomBytes(16)) as BinaryDocumentId);
 const FACE_PLANE = docId();
@@ -42,7 +42,8 @@ const floor = floorShadowRing(built, (peerId) => peerId === SIBLING);
 const siblingGate = { mayFederate: async (documentId: DocumentId, peerId?: string) => documentId === FACE_PLANE && peerId === SIBLING };
 const asSibling = (shadow: EdgeShadowRing) => selfSlotShareDecision({
   hasWsSocket: false, sibling: true, siblingGate, peerClass: undefined, selfSlotFedGate: null,
-  antigenRing: null, membership: null, planeSeal: null, peerId: SIBLING, documentId: FACE_PLANE, shadow,
+  antigenRing: NO_BANS, membership: null, planeSeal: null, peerId: SIBLING, documentId: FACE_PLANE, shadow,
+  protectedDocs: NOTHING_CLASSED,
 });
 
 describe("at the floor every fleet lane stays shut", () => {
@@ -61,8 +62,9 @@ describe("at the floor every fleet lane stays shut", () => {
     expect(floor.aside("island")).toBe(false);
     expect(floor.aside(SET_ASIDE)).toBe(true);
     expect(await selfSlotShareDecision({
-      hasWsSocket: false, peerClass: undefined, selfSlotFedGate: null, antigenRing: null, membership: null,
+      hasWsSocket: false, peerClass: undefined, selfSlotFedGate: null, antigenRing: NO_BANS, membership: null,
       planeSeal: null, peerId: "island", documentId: FACE_PLANE, shadow: floor,
+      protectedDocs: NOTHING_CLASSED,
     })).toBe(true);
   });
 

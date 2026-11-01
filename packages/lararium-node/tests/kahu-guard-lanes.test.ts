@@ -30,7 +30,7 @@ import {
 } from "@lararium/mesh";
 import * as kahuRealm from "../src/kahu-realm.js";
 import { kahuProtectedDocIds } from "../src/kahu-realm.js";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 vi.setConfig({ testTimeout: 60_000 });
 const roots: string[] = [];
@@ -62,8 +62,9 @@ async function rig(inProcess: (repo: Repo, peerId: string) => boolean) {
     shareConfig: shareConfigOf(async (peerId, documentId) => {
       const wire = !inProcess(house, peerId);
       return selfSlotShareDecision({
-        hasWsSocket: wire, peerClass: undefined, selfSlotFedGate: deny, antigenRing: null, membership: null, planeSeal: null,
+        hasWsSocket: wire, peerClass: undefined, selfSlotFedGate: deny, antigenRing: NO_BANS, membership: null, planeSeal: null,
         peerId, documentId: documentId as DocumentId | undefined, protectedDocs: guard,
+        shadow: NOBODY_ASIDE,
       } as Parameters<typeof selfSlotShareDecision>[0]);
     }),
   });
