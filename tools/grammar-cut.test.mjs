@@ -71,8 +71,13 @@ const CARRIER = [
   '',
 ].join('\n');
 
+// The carrier as the corpus holds it: its check verifies over the bytes it wraps. The raw fixture's
+// `AAAA` stands for a foot only (a text that declares no carrier keeps it as written).
+const SEALED = ctx.frame.stampCarrier(CARRIER);
+const reseal = (text) => ctx.frame.stampCarrier(text);
+
 test('the envelope cuts: DOCTYPE names, ticked marks, arrows out, the toml block untouched, the seal re-minted', () => {
-  const r = cut(CARRIER);
+  const r = cut(SEALED);
   const lines = r.text.split('\n');
   assert.equal(lines[0], '<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>');
   assert.equal(lines[2], '<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/x/y`>>');
@@ -84,12 +89,31 @@ test('the envelope cuts: DOCTYPE names, ticked marks, arrows out, the toml block
   assert.equal(r.seal, 'ok');
 });
 
+test('a broken seal refuses: a body line planted under an old check never re-seals, and the file stays as it stood', () => {
+  assert.equal(ctx.frame.verifyBcc(SEALED), 'ok');
+  const planted = SEALED.replace('body\n', 'body\nINJECTED unsealed line\n');
+  assert.equal(ctx.frame.verifyBcc(planted), 'mismatch');
+  const r = cut(planted);
+  assert.equal(r.text, planted, 'the cut writes nothing over a broken seal');
+  assert.equal(r.seal, 'mismatch');
+  assert.deepEqual(kinds(r), ['seal-broken']);
+  assert.notEqual(ctx.frame.verifyBcc(r.text), 'ok', 'the plant never comes out sealed');
+});
+
+test('CONTROL: a clean sealed carrier still cuts and re-seals', () => {
+  const r = cut(SEALED);
+  assert.notEqual(r.text, SEALED);
+  assert.equal(r.seal, 'ok');
+  assert.equal(ctx.frame.verifyBcc(r.text), 'ok');
+  assert.deepEqual(kinds(r), []);
+});
+
 test('Canon envelope-only: the head and foot cut, the body stays, and a body change counts as a red', () => {
-  const r = cut(CARRIER, { envelopeOnly: true });
+  const r = cut(SEALED, { envelopeOnly: true });
   assert.ok(r.text.includes('<<~ ahu #/head>>'));
   assert.ok(r.text.startsWith('<<!DOCTYPE type=`'));
   assert.equal(r.bodyChanges, 1);
-  const clean = cut(CARRIER.replace('<<~ ahu #/head>>', '<<~ ahu slot=`#/head`>>'), { envelopeOnly: true });
+  const clean = cut(reseal(SEALED.replace('<<~ ahu #/head>>', '<<~ ahu slot=`#/head`>>')), { envelopeOnly: true });
   assert.equal(clean.bodyChanges, 0);
 });
 
@@ -191,7 +215,7 @@ test('Cut 2: an unmapped at-name reds and names itself', () => {
 });
 
 test('idempotence: a second run writes nothing', () => {
-  const first = cut(CARRIER + '\nsee `<<~ ahu #/x>>` and the @daemon\n');
+  const first = cut(SEALED + '\nsee `<<~ ahu #/x>>` and the @daemon\n');
   const second = cut(first.text);
   assert.equal(second.text, first.text);
   assert.equal(second.changes, 0);
