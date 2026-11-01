@@ -272,7 +272,7 @@ describe("a planted roll mark answers no raise (road T33)", () => {
     await plant(fleetRoot, raise.actCid, JSON.stringify({ edgeId: raise.edgeId, how: "revoked" }));
     const repo = restingRepo(larDataDir());
     try {
-      const fold = await fleetRaisesOf({ repo, fleetRoot });
+      const fold = await fleetRaisesOf({ repo, worn: { fleetRoot, atomKey: await atomKeyOf() } });
       expect(fold.read).toBe(true);
       expect(fold.counted).toContain(raise.actCid);
       expect(fold.unanswered, "a planted mark leaves the raise owed").toContain(raise.actCid);
@@ -280,7 +280,7 @@ describe("a planted roll mark answers no raise (road T33)", () => {
     // CONTROL: the vessel's own signed roll answers it.
     await direct(runEdgeSeatMarks)({ fleetRoot, rolls: [await rollOf(fleetRoot, raise.edgeId, raise.actCid)] });
     const again = restingRepo(larDataDir());
-    try { expect((await fleetRaisesOf({ repo: again, fleetRoot })).unanswered).not.toContain(raise.actCid); }
+    try { expect((await fleetRaisesOf({ repo: again, worn: { fleetRoot, atomKey: await atomKeyOf() } })).unanswered).not.toContain(raise.actCid); }
     finally { await again.rest(); }
   });
 

@@ -117,27 +117,25 @@ export async function runEdgeSeatFacts(opts: { readonly repo: Repo; readonly fle
 }
 
 /**
- * The raises this vessel counts on one fleet's board, and those no subscriber has taken yet (no ledger mark): what
- * the content-key holder counts a removal version by, and what it owes a roll for, a restart included. The read runs
- * through the ledger, as `runEdgeSeatFacts` does, so a raise deleted from the board still counts.
+ * The raises this vessel counts on the fleet it WEARS, and those no subscriber has taken yet (no signed mark): what the
+ * content-key holder counts a removal version by, and what it owes a roll for, a restart included. The read runs through
+ * the ledger, as `runEdgeSeatFacts` does, so a raise deleted from the board still counts.
+ *
+ * THE WORN FACE DECIDES, NEVER THE ROSTER (roads `T34`, `T35`): `worn` names the root the vessel's device edge pins and
+ * its own atom key, a joinee's as a founder's. Only a vessel that wears no face (`worn: null`) answers `read: false`,
+ * and the island judges that. A worn face whose root or atom stands unread refuses by name, so the sign door refuses
+ * and nothing seals on a head an owed removal should have moved; it never answers a silent zero.
  */
-export async function fleetRaisesOf(opts: { readonly repo: Repo; readonly fleetRoot?: string | null; readonly worn?: WornFleet | null }): Promise<{ readonly read: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }> {
-  // THE WORN FLEET READS FIRST (road `T34`): a joinee holds no root, yet its device edge names the fleet and its atom its ledger.
-  if (opts.worn) {
-    const { fleetRoot, vesselKey } = await seatOf(bare(opts.worn.fleetRoot), opts.worn, "the worn fleet reads no board here.");
-    const read = await readVesselEdgeBoard({
-      repo: opts.repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
-      vesselKey, authorityFor: fleetEdgeAuthority(fleetRoot),
-    });
-    const counted = [...new Set([...read.readings.values()].flatMap((r) => [...r.raiseCids]))].sort();
-    const answered = raisesMarkedAnswered(read.ledger.doc(), fleetRoot, vesselKey);
-    return { read: true, counted, unanswered: counted.filter((cid) => !answered.has(cid)) };
+export async function fleetRaisesOf(opts: {
+  readonly repo: Repo; readonly worn: { readonly fleetRoot: string | null; readonly atomKey: string | null } | null;
+}): Promise<{ readonly read: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }> {
+  if (opts.worn === null) return { read: false, counted: [], unanswered: [] };
+  const { fleetRoot: wornRoot, atomKey } = opts.worn;
+  if (wornRoot === null || atomKey === null) {
+    throw new EdgeSeatError(`the worn face reads no fold yet: its ${wornRoot === null ? "fleet root" : "atom"} stands unread, and a fold never reads a silent zero.`);
   }
-  // AN UNREAD FOLD SAYS SO: a vessel that wears no face, or serves no fleet under the root it wears (a joinee holds
-  // no root), reads no board here. It answers `read: false`, never a silent zero, and the island judges it.
-  const fleetRoot = opts.fleetRoot === null || opts.fleetRoot === undefined ? "" : bare(opts.fleetRoot);
-  if (!HEX64.test(fleetRoot) || !(await servedFleetRoots()).includes(fleetRoot)) return { read: false, counted: [], unanswered: [] };
-  const vesselKey = await atomKeyForFleet(fleetRoot);
+  const worn: WornFleet = { fleetRoot: wornRoot, atomKey };
+  const { fleetRoot, vesselKey } = await seatOf(bare(wornRoot), worn, "the worn fleet reads no board here.");
   const read = await readVesselEdgeBoard({
     repo: opts.repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
     vesselKey, authorityFor: fleetEdgeAuthority(fleetRoot),

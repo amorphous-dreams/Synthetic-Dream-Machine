@@ -1747,7 +1747,11 @@ async function prepareNodeBootOn(
   const sessionSigns = new SessionSignBook();
   // Each read carries the vessel's own fold of the face's fleet board: the raises it counts and those no subscriber
   // took yet, so the holder counts removal versions and owed rolls across a restart.
-  setSessionSignDoor(sessionSigns.door(() => dialAnchor.chain(), async () => fleetRaisesOf({ repo, fleetRoot: wornFleetRoot, ...wornFleetOf() })));
+  // A vessel that wears a face folds that face's fleet off its device edge's root and its own atom; a piece still unread
+  // refuses the fold by name (road `T35`). Only a faceless vessel reads unread.
+  setSessionSignDoor(sessionSigns.door(() => dialAnchor.chain(), async () => fleetRaisesOf({
+    repo, worn: custodyGroup ? { fleetRoot: wornFleetRoot, atomKey: activeAtom?.key ?? null } : null,
+  })));
   stood.push({ what: "the session sign door", down: () => { setSessionSignDoor(null); } });
   // Set when the vessel stands its dial down: a late dial still in flight then stands nothing.
   let dialStoodDown = false;
