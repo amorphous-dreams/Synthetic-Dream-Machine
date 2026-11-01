@@ -157,6 +157,7 @@ A target adapter may replace the default template by tagging a custom tiddler wi
 ''kau'' — device instance slot. URI = `parentUri + "#" + deviceName`. In HTML mode the `~kau` widget renders the device instance or a placeholder hole if the definition tiddler is absent.
 
 ''Compound forms:''
+
 ```
 <<~ ahu slot=`#/slot`>>            → bare child-slot; ~ahu widget
 <<~ kahea ahu slot=`#/slot`>>      → live transclusion of child slot; ~kahea~ahu procedure
@@ -196,6 +197,7 @@ This path serves:
 * ''external mesh nodes'' — non-TW5 processes that read meme structure
 
 Produced types:
+
 ```typescript
 MemeAstNode    // structural node in the parse tree
 MemeNode       // named identity node (meme boundary)
@@ -249,6 +251,6 @@ Trace continuity across the causal island boundary:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;q1mxq9UvoaZVyljXA1MvPKdiX6YIzp_79VDP4fUYaKo
+<<^ code=`&#x0003;`>>ni:///sha-256;LqGF3qWDL0xC6XEEdi7av3d2dRcOIdFBROmgp1Bkfy8
 
 <<^ code=`&#x0004;` to=`?`>>

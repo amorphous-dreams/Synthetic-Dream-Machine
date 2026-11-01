@@ -72,6 +72,7 @@ A papalohe MUST NOT carry `traversal:both`; reciprocal wires MUST use two parall
 `from=` MAY drop when enclosing pressure carries the source socket. The pair `from=` and `to=` carries the relation, `from` written first; a reader takes either order.
 
 Regex (canonical):
+
 ```
 /<<~\s*papalohe(?:\s+slot=`(#[\w-]+)`)?\s+from=`([^`]+)`\s+to=`([^`]+)`(?:\s+listenable=`([\w.-]+)`)?(?:\s+subscribable=`([\w.-]+)`)?\s*>>/
 ```
@@ -132,6 +133,6 @@ Two values, distinct Verse-side origins:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;K0y6tbFOewz2FO_2ICji9lXgR64miZopFzmYAq1rXcY
+<<^ code=`&#x0003;`>>ni:///sha-256;4lVq3-6zoPekWXy_A4IIi0EYO23VKLJu8eDggwgzLvk
 
 <<^ code=`&#x0004;` to=`?`>>

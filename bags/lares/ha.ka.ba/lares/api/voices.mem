@@ -283,11 +283,13 @@ The override block is optional. An empty kahea invokes at definition defaults wi
 !!! Output Header Forms
 
 When mask active and character surfaces:
+
 ```
 Ghost of Mark Twain (Muse) —
 ```
 
 Unmasked resident cast (default Voices) surface in their own names:
+
 ```
 Mischief-Muse (Muse) —
 ```
@@ -353,6 +355,7 @@ One compact turn --- ``<<~ set lares=`aim` from=`lar:///operator.intent.lands` t
 The three spec rooms carry rationale, examples, and depth. The invariant points to them for extension.
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices#/voice-house`>>
+
 ```toml
 family = "reference"
 lifecycle = "template"
@@ -393,6 +396,6 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;pUxqA5zlGEUuCITUnP-iWz0bfgEbIDFyhIxWMQAtJas
+<<^ code=`&#x0003;`>>ni:///sha-256;PQBQ2Q8AYoBLorUytGU0egHF15vcgKpMRZBlO7A16qA
 
 <<^ code=`&#x0004;` to=`?`>>

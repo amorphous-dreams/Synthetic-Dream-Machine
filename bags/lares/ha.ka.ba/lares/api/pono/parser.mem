@@ -87,6 +87,7 @@ Module-type: `startup`. Runs after TW5 startup, before first parse.
 * Cache invalidates on any change to a SharktoothSigil-tagged tiddler
 
 ''Boot-critical static closers (pre-grammar):''
+
 ```
 ahu     → <<~/ahu
 pranala → <<~/pranala
@@ -197,6 +198,7 @@ Parser MUST reject ad-hoc closure spellings as canonical. A noncanonical closer 
 The root identity block carries the canonical identity payload for a meme — a bare `` ```toml meta `` fence immediately after the STX body opener, not an `<<~ ahu>>` wrapper and not a named slot (see `memetic-wikitext-framing#/carrier-spine`).
 
 Canonical form:
+
 ````text
 <<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/path/to/meme`>>
 <<^ code=`&#x0002;`>>
@@ -227,6 +229,7 @@ One further ahu control slot dissolves rather than projecting as a child: `#body
 Implementation: `packages/lararium-tw5/src/meme-ast-entry.ts` → `packages/lararium-tw5/tiddlers/src/meme-ast.js`
 
 Exported surface:
+
 ```typescript
 parseMemeText(text: string): ParseMemeResult
 parseMemeNodes(text: string): MemeNode[]
@@ -255,6 +258,6 @@ Consumers: island adaptor (`island-adaptor.ts`), deserializer (`deserializer.ts`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3oQSQ-7NCBtwLZ5En0xC5P9B2Ayz4fseWd8_SUUiGnw
+<<^ code=`&#x0003;`>>ni:///sha-256;5tCCVvl59_pGKkpoIJ-avRPA9vtVYd0_MEc-T-k7i2w
 
 <<^ code=`&#x0004;` to=`?`>>

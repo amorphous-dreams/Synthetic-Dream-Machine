@@ -62,6 +62,7 @@ TW5 filter semantics: `[<variable>match[value]]` for equality, `[has[field]]` fo
 !! Syntax
 
 Hawaiian form:
+
 ```text
 <<~ wai filter=`[filter-expression]`>>
 body rendered when filter passes
@@ -69,6 +70,7 @@ body rendered when filter passes
 ```
 
 English alias form (identical semantics):
+
 ```text
 <<~ if filter=`[filter-expression]`>>
 body
@@ -76,6 +78,7 @@ body
 ```
 
 Full water cascade:
+
 ```text
 <<~ wai filter=`[filter-a]`>>first<<~ kahawai filter=`[filter-b]`>>second<<~ mukuwai>>default<<~/wai>>
 ```
@@ -118,6 +121,6 @@ close-pattern = '<<~\/wai\s*>>'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;CXUc_tzpL40Fbu0tAolykByzsUMf3Lt5hgu4y7X3fus
+<<^ code=`&#x0003;`>>ni:///sha-256;N9GdSfWxiS13ALSZAbsbABEfarYmIzJiZE_oQB2st1g
 
 <<^ code=`&#x0004;` to=`?`>>

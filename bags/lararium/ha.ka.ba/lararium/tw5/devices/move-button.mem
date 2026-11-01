@@ -55,6 +55,7 @@ the activating `agent`. In the Lares graph this pin declares as a `reaction:list
 with `payload.verb = "MOVE"` — the ACTION verb the VerbDispatcher routes on receipt.
 
 ''`reaction-router.ts`'' reads this edge's `payload.verb` on nalu and fires:
+
 ```
 tm-verse-event { uri, listenable: "InteractedWithEvent", verb: "MOVE", fromUri: uri }
 ```
@@ -80,6 +81,6 @@ the vessel. The vessel's M.1 subscriber calls `adminVm.placeVerb({ verb: "MOVE",
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;MOr4rUd3V4-JeE5mvOChz6_unR4eAzRVtHuw_5VHwos
+<<^ code=`&#x0003;`>>ni:///sha-256;So73tAhQQwBKxa4iHXkY6FwHDW32sdp9HFjnmyiuvPs
 
 <<^ code=`&#x0004;` to=`?`>>

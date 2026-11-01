@@ -67,6 +67,7 @@ A request to scan, flag, compare before/after, or correct ''already-settled'' wo
 !! Output Surfaces
 
 ''Mark-only'' (inspection, no mutation):
+
 ```text
 [mark-only]
 location: <line | sentence | local quote>
@@ -75,6 +76,7 @@ reason:   <short reason>
 ```
 
 ''Hoʻoko'' (correction):
+
 ```text
 [hooko]
 before: <original>
@@ -95,6 +97,6 @@ A sentence turn beats a lecture. Output stays compact: location, bucket, reason,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;78OKdxpWj8Q8tNM2dZ1tgFhkXUxrKVvhU0ckgUan3w0
+<<^ code=`&#x0003;`>>ni:///sha-256;uLs71B33mOroEgDjnGKbP231h-HqXqZ86QJyo9gnAoY
 
 <<^ code=`&#x0004;` to=`?`>>

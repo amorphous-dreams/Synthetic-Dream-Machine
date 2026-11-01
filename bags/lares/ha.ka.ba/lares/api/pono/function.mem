@@ -52,6 +52,7 @@ return wikitext. Do not use interchangeably.
 ```
 
 TW5 native equivalent:
+
 ```
 \function myFilter(param:"")
 [<param>match[value]]
@@ -68,6 +69,6 @@ TW5 native equivalent:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;jErDSEP0Kg0UaJxY6TZFQ7QbpbHQXwl9mxtY_GZ6rRE
+<<^ code=`&#x0003;`>>ni:///sha-256;8Me9Jf9EGq-W8DG1O8Xr6F2rFlTl4RR-cRpKT2xcd1Q
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -77,11 +77,13 @@ content body
 ```
 
 Compound kahea-ahu summons form (in parent tiddler body after decomposition):
+
 ```text
 <<~ kahea ahu slot=`#/slot-name`>>
 ```
 
 Regex (open, canonical):
+
 ```
 /<<~[^>]*\bahu\s+(#\/[\w-]+(?:\/[\w-]+)*)\s*>>/
 ```
@@ -178,6 +180,6 @@ This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FikPLXdO0N3ZtD5FhXFddY56mukJErc3Z4WBOwLgOrg
+<<^ code=`&#x0003;`>>ni:///sha-256;ORXPfOSYb4aAhLJoZLx4x5N2Yn_XPIO6T9ZWA6bifuI
 
 <<^ code=`&#x0004;` to=`?`>>

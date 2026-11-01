@@ -80,6 +80,7 @@ Undefined names resolve to empty output (TW5 missing-variable behavior) — MUST
 ```
 
 TW5 wikitext body:
+
 ```
 \widget ~(name args:"" src:"")
 <$transclude $variable={{{ [<name>!is[blank]addprefix[~]] }}} args=<<args>>><$text text=<<src>>/></$transclude>
@@ -94,6 +95,6 @@ TW5 wikitext body:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;YXr3mxfSEU9rR5bHDbEyi4ZRK09CN2bsHjWCOHYql0c
+<<^ code=`&#x0003;`>>ni:///sha-256;FoUJielOWuYsUyMGnSwZac9RFPj4aOoVH_cLv9ocrrc
 
 <<^ code=`&#x0004;` to=`?`>>

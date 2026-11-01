@@ -73,6 +73,7 @@ The `~crossroads` tilde prefix denotes a nomadic/crossroads node — no fixed ho
 The `chat-log:post-header` render target carries the in-chat-log, timestamped projection for post headers.
 
 ''DreamDeck post header format (canonical):''
+
 ```
 handle@node — timestamp — //ha.ka.ba/lares/{optional/path/} [confidence] 🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc}
 ```
@@ -111,6 +112,6 @@ See `the-four-tools` and `the-syad-perspectives` for the tool and standpoint gra
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;fMvGmOXDVgTzCqx1GleOlqPLOoPzk27YzAoEvDh9WmA
+<<^ code=`&#x0003;`>>ni:///sha-256;QV-mVWAmtaC8-JLbkaMrKrrWBPlDSkQWOIlt1TUcGbc
 
 <<^ code=`&#x0004;` to=`?`>>

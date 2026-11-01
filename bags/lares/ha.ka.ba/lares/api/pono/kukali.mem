@@ -71,6 +71,7 @@ A kukali that cancels MUST reject its suspension Promise cleanly without leaking
 `suspends` carries the canonical English name — it emits the same `SigilNode { sigilName: "kukali" }`.
 
 Regex (canonical):
+
 ```
 /<<~\s*kukali(?:\s+trigger:([\w.-]+))?\s*>>/
 /<<~\s*suspends(?:\s+trigger[=:]"?([\w.-]+)"?)?\s*>>/
@@ -147,6 +148,6 @@ sigilName = "kukali"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ZdFErnPHufZvAO2PWH9jIRmh2WkSrEUNQ4frZa88jxQ
+<<^ code=`&#x0003;`>>ni:///sha-256;0goZbhjSRsOyfElio7rMi-1007OPylvht9AXmk9zvvc
 
 <<^ code=`&#x0004;` to=`?`>>

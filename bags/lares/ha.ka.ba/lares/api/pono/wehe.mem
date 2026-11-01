@@ -64,6 +64,7 @@ English alias `\procedure` means the identical thing. Either form MAY appear in 
 !! Syntax
 
 Hawaiian form:
+
 ```text
 <<~ wehe name=`name` params=`param1:"default" param2:""`>>
 procedure body
@@ -71,6 +72,7 @@ procedure body
 ```
 
 English alias form (identical semantics):
+
 ```text
 <<~ procedure name=`name` params=`param1:"default" param2:""`>>
 procedure body
@@ -78,6 +80,7 @@ procedure body
 ```
 
 `~`-dispatched convention (operator-extension sigils):
+
 ```text
 <<~ procedure name=`~mysigil` params=`uri:"" p1:""`>>
 <$tiddler tiddler=<<uri>>>...
@@ -118,6 +121,6 @@ close-pattern = '<<~\/wehe\s*>>'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;jZbxV_8Qi3HLGIi4FHcYI49RbN4lTpUq5csSHlmzF90
+<<^ code=`&#x0003;`>>ni:///sha-256;MSigaa5neKkX4hiGn9RwXJhN8JZzjhuxCtpb3a9Vu-Y
 
 <<^ code=`&#x0004;` to=`?`>>

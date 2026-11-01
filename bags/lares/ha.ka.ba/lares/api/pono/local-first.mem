@@ -164,6 +164,7 @@ cleartext, and the sealed store's later steps seal it
   (`packages/lararium-browser/src/seed-wrap-prf.ts`) with no production caller.
 
 ''Keyhive target stack (design; BeeKEM content keying stays outside the built path):''
+
 ```
 Layer 1 — Convergent Capabilities (concap tokens):
   Self-certifying capability chains. "Documents identify themselves via public
@@ -312,6 +313,6 @@ transparent to the meme layer — so Beelay would slot in beneath it, where
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_N-TkaCJunuNUL7aOpvcsyYjs9yERrcdBGG6KDjxXcc
+<<^ code=`&#x0003;`>>ni:///sha-256;UgJRWlNnLaR2NtBDlVNBQnXhzK0BB9jokf9d_4o4_Hk
 
 <<^ code=`&#x0004;` to=`?`>>

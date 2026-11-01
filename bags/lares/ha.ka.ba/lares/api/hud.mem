@@ -103,6 +103,7 @@ The seed and slide stay distinct fields — the seed governs generation, the sli
 !! Source Shelf
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/hud`>>
+
 ```toml
 when = ["need panel line composition detail", "need the stance / tool / confidence-syadasti tables", "need field-annotation thresholds"]
 ```
@@ -121,6 +122,6 @@ The docs room carries the full line-composition examples, the stance and tool gl
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;vOK1sUGYEGZ5pDWRH9SgdRHkZLhu7bJop4U--6Ni9Yo
+<<^ code=`&#x0003;`>>ni:///sha-256;AVyvG2v4adyd8qgrVGdOZ2_FPeiN3kBx5Ivr1WUHJzs
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -138,6 +138,7 @@ progress. A TypeScript file with a `heleuma = "ka/ba"` anchor and a `source-symb
 in its `#source` ahu MAY be a candidate for ephemeralization once the meme is stable.
 
 ''Progression:''
+
 ```
 Stage 0: logic in external TypeScript only (no meme representation)
 Stage 1: TypeScript file has a Heleuma anchor; meme exists with source-sha256
@@ -219,6 +220,6 @@ Run this against any new code before merging:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;1_-4WurKzo9jfbo970YGpZI8lQnAB54WRzdk2Hc0YAg
+<<^ code=`&#x0003;`>>ni:///sha-256;3hslbB-7Jg9aZfc6Q7ny0cDr7lLCLUNhmUzkFYF_0II
 
 <<^ code=`&#x0004;` to=`?`>>

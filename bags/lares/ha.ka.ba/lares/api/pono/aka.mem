@@ -118,12 +118,14 @@ that lack a confidence rating when the source-side context signals uncertainty.
 Fragment `#slot-name` addresses a named ahu child directly.
 
 Regex (canonical):
+
 ```
 /<<~\s*aka\s+(\S+)\s*>>/
 ```
 Groups: `[full, target-uri]`
 
 Full pranala expansion:
+
 ```text
 <<~ pranala from=`?` to=`URI` family=`transclusion` lifecycle=`instance` traversal=`source-to-target` propagation=`none`>>
 ```
@@ -170,6 +172,6 @@ confidence-bounded = true
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;dp6uact8TMoqWX_OxEBhhNXdUude5hjhovFaDHIAnI4
+<<^ code=`&#x0003;`>>ni:///sha-256;UpXtXOw6lFGpmRpCeg9AOCeo9YY08OrSI0mGfuT-aa8
 
 <<^ code=`&#x0004;` to=`?`>>

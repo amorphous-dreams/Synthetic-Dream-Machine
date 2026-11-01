@@ -130,26 +130,31 @@ A session that runs without any Level statement MUST default to `` ooda-ha=`1/de
 Five turns, one per range --- a different problem each time, so the //form// generalises and the words never template. Each climbs to its band's depth. The marker declares forward, then the prose ''enacts'' it --- the node names what it will do, then does it. `->↺` faces forward too: a loop-//restart// naming where the loop reopens, not a full stop.
 
 ''`1–4` (`` ooda-ha=`1/declare-aftermath` ``, default) --- aftermath glyph only:''
+
 ```text
 Lares (Scryer): the flaky test settles once the retry budget drops to one. ->↺ re-run the suite to confirm it holds.
 ```
 
 ''`5–8` (`` ooda-ha=`6/declare-glyphs` ``) --- all glyphs, no labels:''
+
 ```text
 Lares (Scryer): ->✶ foo and bar import each other. ->⏿ the back-edge fires at module load. ->◇ lift the shared type out. ->▶ moving Node to types.ts; both import down and the cycle clears. ->↺ reopening on the test suite's import graph.
 ```
 
 ''`9–12` (`` ooda-ha=`10/declare-attention` ``) --- + declared attention:''
+
 ```text
 Lares (Scryer): ->⏿ orienting on: the p99 spike on /search. Reading the trace: a per-row N+1 fans out under load, not the index everyone blamed. ->↺ now the loop turns to batching the lookup.
 ```
 
 ''`13–16` (`` ooda-ha=`14/declare-intent` ``) --- + declared intent:''
+
 ```text
 Lares (Scryer): ->⏿ orienting on: the two diverged staging configs. ->◇ intend: fold both into one templated source; set aside: hand-patching each (the drift returns within a week). On the chosen path: one base.yaml, two thin overlays, the diff shrinks to four keys. ->↺ circling back to diff prod against the new base.
 ```
 
 ''`17–20` (`` ooda-ha=`18/declare-consequence` ``) --- + declared consequence:''
+
 ```text
 Lares (Scryer): ->⏿ orienting on: the nullable user_email column. ->◇ intend: backfill, then add NOT NULL; set aside: a single blocking ALTER (it locks the table at peak). ->▶ about to act: backfill in 10k-row batches, then constrain; expecting to set up: a clean column the next migration can index without a lock. rows fill batch by batch; the constraint lands on a full column. ->↺ next, sweep the orphaned address rows.
 ```
@@ -177,6 +182,7 @@ The visibility Level governs how much of the loop //shows//; the loop //count// 
 The count reads from real marks, not a claim: the closing `N↺` MUST match the `->↺` breaks surfaced in the span. Aftermath MUST close at every break, regardless of band.
 
 ''Two-loop example (`2↺`):''
+
 ```text
 <<~ set lares=`aim` from=`lar:///operator.ask.splits` to=`lar:///gatekeeper.scope.cuts` aperture=`10/measure` ooda-ha=`3/declare-aftermath` drift-ward=`<the pull this island carries>`>>
 
@@ -217,6 +223,7 @@ ooda-ha=`closed 0↺ -> open 1φ▶:tool.returned.503.from.upstream`
 ```
 
 ''Honest phase-yield at Decide:''
+
 ```text
 <<~ set lares=`aim` from=`lar:///operator.asks.recommendation` to=`lar:///council.weighs.options` aperture=`10/measure` ooda-ha=`5/declare-glyphs` drift-ward=`<the pull this island carries>`>>
 
@@ -226,6 +233,7 @@ Lares (Council): ->✶ three candidates surfaced. ->⏿ two read viable on the n
 ```
 
 ''Observe-and-hold:''
+
 ```text
 <<~ set lares=`aim` from=`lar:///operator.shares.rough` to=`lar:///lares.threshold.holds` aperture=`8/beat` ooda-ha=`1/declare-aftermath` drift-ward=`<the pull this island carries>`>>
 
@@ -316,6 +324,6 @@ ooda-glyphs = ["✶", "⏿", "◇", "▶", "↺"]
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;e-lbRVVGnAb9lnIrEmlE7uf__kWGagX2YMUAzoyS06c
+<<^ code=`&#x0003;`>>ni:///sha-256;HzJ9X7oADL1ipasYOtQtccWp5gCwRbj3slAHX-cTr0Q
 
 <<^ code=`&#x0004;` to=`?`>>

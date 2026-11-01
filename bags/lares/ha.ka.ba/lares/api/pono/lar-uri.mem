@@ -150,12 +150,14 @@ the spelling that abbreviates one losslessly waits on the siting question (#/rea
 !! Path Taxonomy
 
 ''Stable'' — literal `ha.ka.ba` root, permanent API surfaces (bare meme namespace at `child[1]`):
+
 ```
 lar:///ha.ka.ba/lares/api/pono/meme
 lar:///ha.ka.ba/lares/api/pono/lar-uri
 ```
 
 A CRDT surface names its kind-plane at `child[1]`, the `@`-slug at `child[2]`:
+
 ```
 lar:///ha.ka.ba/bags/lares       a bag (mutable content surface)
 lar:///ha.ka.ba/wikis/lares      a wiki (a #has bag-stack)
@@ -163,6 +165,7 @@ lar:///ha.ka.ba/cid/bafy…         an immutable content-addressed artifact
 ```
 
 ''Unstable'' — arbitrary three-term attitude root, session-specific bearing:
+
 ```
 lar:///threshold.uncertain.opens
 ```
@@ -462,21 +465,25 @@ A ''hostful'' title carries none of the three. A host names an attribution and a
 !! Worked Examples (Non-Normative)
 
 A stable API address with a fragment:
+
 ```
 lar:///ha.ka.ba/lares/api/pono/meme#/law
 ```
 
 An unstable session territory:
+
 ```
 lar:///threshold.uncertain.opens/notes/first-pass
 ```
 
 A session-form speaker (exchange span only — never a title):
+
 ```
 lar://mischief-muse:agent@host/ha.ka.ba/lares/turn/current
 ```
 
 A hostful storage title, where the domain separates two namespaces sharing a path:
+
 ```
 lar://amorphousdream.com/ha.ka.ba/lares/api/pono/meme
 ```
@@ -491,6 +498,7 @@ never because a present one compels it; an author who reaches for the local form
 stays conforming in every case.
 
 A registry entry pointing at another bag:
+
 ```
 lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///ha.ka.ba/bags/elyncia
 ```
@@ -545,6 +553,6 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;b2a56YDsAXWXcJ_5xVwVKDqMF0Ikt4xDkXdVz88ZtCo
+<<^ code=`&#x0003;`>>ni:///sha-256;bB1OrWJIRuyQvXZTbzCMm6NF_VHa4m1DFYDKKNxcDgY
 
 <<^ code=`&#x0004;` to=`?`>>

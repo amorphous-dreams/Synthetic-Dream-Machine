@@ -50,6 +50,7 @@ Cross-ref: `lar-see-also: wehe`. When `sigil-wehe.tid` ships (Path G.SharktoothS
 ```
 
 Equivalent native TW5:
+
 ```
 \procedure greet(name:"world")
 Hello <<name>>!
@@ -72,6 +73,6 @@ the body runs through the pragma handler (TW5 parse-time, not render-time).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;cAzAAlXI9z5n6SEJoqUzEU1sIEXbtDLgIfOlKT2L_Pc
+<<^ code=`&#x0003;`>>ni:///sha-256;MjWqHfdPiyoejJnrSCZYscF17A0k7R28rtabnf258LQ
 
 <<^ code=`&#x0004;` to=`?`>>

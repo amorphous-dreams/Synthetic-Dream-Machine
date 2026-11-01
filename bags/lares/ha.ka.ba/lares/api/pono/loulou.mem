@@ -71,12 +71,14 @@ no propagation runs. The edge says what holds between the sockets, not what runs
 A named `#fragment` anchor SHOULD win socket resolution before the enclosing meme URI.
 
 Regex (canonical):
+
 ```
 /<<~\s*loulou\s+(\S+)\s*>>/
 ```
 Groups: `[full, target-uri]`
 
 Full pranala expansion:
+
 ```text
 <<~ pranala from=`?` to=`URI` family=`relation` lifecycle=`instance` traversal=`source-to-target` propagation=`none`>>
 ```
@@ -122,6 +124,6 @@ confidence-bounded = false
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;NA5hrK2EQlhjpuv8E4JOxEcQEHFB8UmEQuGcARB8qyo
+<<^ code=`&#x0003;`>>ni:///sha-256;wa1Yg43q-UlabcA8Mc9WPI2b_tCdsRD5fN7pCmP6nWI
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
-source-check: "ni:///sha-256;nJ8qUdgJ-zheJ-N4AEMAqvu7ACL21F1uU9DXn0KwhKA"
+source-check: "ni:///sha-256;SPdmrR0DEzpUFiSGwIrQPwgCZO4d95ejy5V2MIVJxwM"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -599,6 +599,7 @@ lineage; the degradation property states the warrant.
 
 A carrier with an identity block, a worksite, and a typed edge — opening on the declaration every
 carrier states first ([FRAMING] #declaration-register):
+
 ````
 <<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
@@ -623,18 +624,21 @@ Body text, with a live embed: <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/meme
 **The identity block names content, never residency.** No meta key names the file a carrier rests in: residency rides the envelope, the bag, and a meme travels to hosts that keep no files. `lares meme normalize` drops a `file-path` line, and no reader takes it back.
 
 A definition summoned by name:
+
 ```
 <<~! wehe greeting(name "World")>>Hello, <<~ kahea uri=`name`>>!<<~/wehe>>
 <<~ kahea name=`greeting` params=`Operator`>>
 ```
 
 A conditional over a guest filter, and an iteration:
+
 ```
 <<~ heihei filter=`[tag[ready-for-canon]]`>>ready<<~ mukuwai>>holding<<~/heihei>>
 <<~ huli filter=`[tag[invariant]sort[title]]` as=`item`>><<~ kahea uri=`item`>><<~/huli>>
 ```
 
 A canvas reaction wire (flow surface):
+
 ```
 <<~ papalohe from=`DeviceA` to=`DeviceB` listenable=`OnEliminated` subscribable=`ShowScore`>>
 ```

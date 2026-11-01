@@ -37,6 +37,7 @@ Grammar and stacking law defined in `lar:///ha.ka.ba/lares/docs/voices/masks`.
 <<~ ahu slot=`#/entry`>>
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/mask-layer`>>
+
 ```toml
 family = "hydration"
 lifecycle = "template"
@@ -138,6 +139,6 @@ gates, so masks share the apron and no collision rule arbitrates them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;SKGAlw6UchEIpC98I5j1_vto1WUzlhILNeDT3s-pcjE
+<<^ code=`&#x0003;`>>ni:///sha-256;f41DFS2f8XrZoXBUz2RVMDwtop_8dlG_VuZbxdCaAzw
 
 <<^ code=`&#x0004;` to=`?`>>

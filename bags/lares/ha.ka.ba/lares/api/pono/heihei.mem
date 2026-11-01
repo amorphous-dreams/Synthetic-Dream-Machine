@@ -61,11 +61,13 @@ The condition names a failure context, not a boolean test: the `then` arm fires 
 !! Syntax
 
 Verse `if` form (failable condition → one arm):
+
 ```text
 <<~ heihei filter=`(Condition)`>>then-flow<<~ mukuwai>>else-flow<<~/heihei>>
 ```
 
 Verse `case` form (value-match → one arm):
+
 ```text
 <<~ heihei filter=`case(Value)`>>
   MatchA => arm-a
@@ -105,6 +107,6 @@ arm-wire       = "reaction"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Qoblnak9YEA7_xvg3hCU8aGFXLQrY20lfynEFSFV6pE
+<<^ code=`&#x0003;`>>ni:///sha-256;2BF0l3ydU9-s_0JVABkJaXcrIT99gJg2OYBIYB3CSdQ
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -141,6 +141,7 @@ uuidFragment  — crypto.randomUUID() stable wiring address
 ```
 
 Both fragments produce tiddler title URIs:
+
 ```
 lar:///type-path#/nameFragment   — human-readable wiki-local label
 lar:///type-path#/uuidFragment   — stable UUID address for papalohe wiring
@@ -193,6 +194,6 @@ See: `lar:///ha.ka.ba/lares/api/pono/nalu#/yin-collapse-law`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;bqqLXmf9mJL7031_I0CuB2N3DNkS1ONlargpIhdctsA
+<<^ code=`&#x0003;`>>ni:///sha-256;BF1WvLJTbazLA9Gp9HoR2Cjoi5g43fmiUfFiohgjY6Q
 
 <<^ code=`&#x0004;` to=`?`>>

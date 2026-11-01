@@ -200,6 +200,7 @@ Context-dependent. No combinatorial limit defined.
 !! Category 9 — SEMANTIC (Geometric + Misc Symbols: &#9632;–&#9983;)
 
 ''Geometric sub-block (state indicators):''
+
 ```
   ■ (&#9632;)  active/present     (also Act OODA-HA HUD sigil)
   □ (&#9633;)  inactive/absent
@@ -209,6 +210,7 @@ Context-dependent. No combinatorial limit defined.
 ```
 
 ''Miscellaneous Symbols sub-block (planetary / geomantic domain markers):''
+
 ```
   ☉ (&#9737;)  Sun       Fortuna Major/Minor
   ☽ (&#9789;)  Moon      Populus/Via
@@ -277,6 +279,7 @@ function parseGlyphSet(stream, offset):
 ```
 
 ''Validation rules per category:''
+
 ```
 PROTOCOL:   ≤1 lifecycle glyph (SOH|STX|ETX|EOT|ENQ|ACK|NAK)
             separators + mode switches may co-occur
@@ -291,6 +294,7 @@ SEMANTIC:   no limit; multiple domain markers = tag union
 ```
 
 ''Strictness modes:''
+
 ```
 boot-mode:  strict. Unknown glyphs → error. All memes fully validated.
 run-mode:   permissive. Unknown glyphs → warning, treated as body.
@@ -328,6 +332,6 @@ Round-trip fidelity: Storage → Interchange → Storage MUST produce identical 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;pwlceIFhiMWvsep03X44cXvM1iABmKlzIt-eFCaysEg
+<<^ code=`&#x0003;`>>ni:///sha-256;TFH6Rmk-kFmpfAOdY05vl7i32ERwEZxrDYs8gSWZPU0
 
 <<^ code=`&#x0004;` to=`?`>>

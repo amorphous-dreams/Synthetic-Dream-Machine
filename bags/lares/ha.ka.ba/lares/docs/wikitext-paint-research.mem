@@ -110,6 +110,7 @@ per file: python 77 · ts 42 · tsx 42 · rust 9 · latex 6 · handlebars 5
 ```
 
 ''MagicPython'' — VS Code's own bundled Python grammar, 12 occurrences:
+
 ```json
 "beginCaptures": {
   "2": { "name": "string.interpolated.python string.quoted.single.python storage.type.string.python" },
@@ -120,6 +121,7 @@ The quote character carries ''both'' `punctuation.definition.string.begin.python
 `string.quoted.single.python`.
 
 ''VS Code TypeScript'' — the same device for backticks, and it says why:
+
 ```json
 "contentName": "string.template.ts",
 "beginCaptures": {
@@ -134,6 +136,7 @@ colour — so they stack it explicitly. Also present in ts/tsx:
 
 A second, non-name mechanism appears in html.json — ''overlapping captures'', where capture 0 and
 capture 1 cover the same closing quote:
+
 ```json
 "end": "(\")",
 "endCaptures": { "0": { "name": "punctuation.definition.string.end.html" },
@@ -175,6 +178,7 @@ Both names sit in Sublime's ''Minimal Scope Coverage'' set, so any decent theme 
 |Jinja |no named-arg scope at all |`keyword.operator.assignment.jinja` |
 
 ''MediaWiki's template call — the closest analogue this grammar has'':
+
 ```yaml
 - match: (?<=\|)\s*(?:([-\w.]+)(:))?([-\w\s\.:]+)\s*(=)
   captures:
@@ -192,6 +196,7 @@ matter.
 
 ''And TiddlyWiki's own parser marks the distinction this house nearly erased.''
 `core/modules/parsers/parseutils.js:339-352`, `parseMacroParameterAsAttribute`:
+
 ```js
 separatorToken = nameToken && $tw.utils.parseTokenRegExp(source,namePos,/=|:/y),
 node.assignmentOperator = separatorToken.match[0];
@@ -227,6 +232,7 @@ code. The VS Code guide has zero. ''Neither blesses it and neither forbids it'' 
 stands as a vscode-textmate extension over the 1.x spec.
 
 ''MEASURED — real grammars do it'':
+
 ```
 "name" values carrying $n          TOTAL / UNIQUE
   html.json      79 / 53
@@ -238,6 +244,7 @@ stands as a vscode-textmate extension over the 1.x spec.
 
 VS Code html, 52 of 53 unique interpolated names under `meta.`, and one DEMONSTRABLY UNBOUNDED —
 `$1` here is any attribute name, matched by a pure exclusion class:
+
 ```json
 "begin": "([^\\x{0020}\"'<>/=\\x{0000}-\\x{001F}…]+)",
 "name": "meta.attribute.unrecognized.$1.html"
@@ -292,6 +299,7 @@ little to declare and much to emit.''
 |Creole |yes |`punctuation.*`, ''and the pipe too'' |`punctuation.definition.link.creole` |unscoped |
 
 ''reStructuredText ships the SWALLOW defect.'' Measured on `**bold**`:
+
 ```
 "**b"  markup.bold      <- delimiter and first letter are ONE token
 "old"  markup.bold
@@ -354,6 +362,7 @@ about colours or overriding user configuration. There stands no policy to violat
 ''WHAT AUTHORS SHIP INSTEAD — three real shapes.''
 
 ''(1) A README snippet the reader pastes'' — `sveltejs/language-tools`:
+
 ```json
 "editor.tokenColorCustomizations": {
     "[<Name of your theme>]": {
@@ -365,6 +374,7 @@ exactly what an extension-shipped default cannot responsibly use, since it does 
 
 ''(2) Semantic tokens with a scope-map fallback and zero colour opinion'' — `rust-analyzer` declares
 38 custom semantic token types and 17 modifiers, 15 of them subtypes of `punctuation`/`operator`:
+
 ```json
 { "id": "brace", "description": "Style for { or }", "superType": "punctuation" },
 { "id": "attributeBracket", "description": "Style for attribute invocation brackets…",
@@ -399,6 +409,7 @@ documentation defaultLibrary`).
 `onDidChangeSemanticTokens` and `workspace/semanticTokens/refresh` make it flippable with no reload.
 
 ''tree-sitter's capture split, and what colorschemes do with it.''
+
 ```
 @punctuation.delimiter  delimiters (e.g. `;`, `.`, `,`)
 @punctuation.bracket    brackets (e.g. `()`, `{}`, `[]`)
@@ -732,6 +743,6 @@ decisions this shelf settles for the base first.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;s3e0rxg72sZni6Xh2LDkf0FgdE9ng-6b2Nix9bq-hYs
+<<^ code=`&#x0003;`>>ni:///sha-256;U0iz3tsS4mVdmKyQYwnrQzk2xWrFMzUsMGufkAWXMCg
 
 <<^ code=`&#x0004;` to=`?`>>

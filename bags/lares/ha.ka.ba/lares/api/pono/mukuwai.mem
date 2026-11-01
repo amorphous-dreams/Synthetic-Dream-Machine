@@ -52,6 +52,7 @@ A wai chain MUST NOT contain more than one mukuwai block.
 ```
 
 English alias form:
+
 ```text
 <<~ if filter=`[filter]`>>  ...  <<~ else>>  ...
 ```
@@ -68,6 +69,6 @@ English alias form:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;imSRM3HB_Cnu15c9-6wPOVfNZvB0JA7iUFMlxTYuqQg
+<<^ code=`&#x0003;`>>ni:///sha-256;QW26LhWDuggwYIf1TF4s3PTYWXiv-DWo-9vYqFrISjY
 
 <<^ code=`&#x0004;` to=`?`>>

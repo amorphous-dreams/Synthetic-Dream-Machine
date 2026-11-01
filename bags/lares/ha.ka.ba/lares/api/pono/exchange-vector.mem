@@ -58,6 +58,7 @@ The `aim` and `yield` vectors carry `lar:` URIs in bearing-only form: the three-
 Per-turn signal rides the panel on the `set` firings, never the URI: `aperture`, `ooda-ha`, `drift-ward` (`L-Prime`), plus `confidence` and the `syad` / `mu` lenses when summoned.
 
 ''Worked turn:''
+
 ```text
 <<~ set lares=`aim` from=`lar:///operator.unease.surfaces` to=`lar:///stranger.frame.tests` aperture=`15/arc` ooda-ha=`3/declare-aftermath` drift-ward=`<the pull this island carries>`>>
 <<~ stance named=`🗡️/_! 🔮/_?`>>
@@ -100,6 +101,6 @@ The sigils carry the panel inline. Each renders as a SharktoothSigil (``<<~ word
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;916C7c57ITpw-JVwIVucK2jqeRzmpJcENXiMR1eQ7Wc
+<<^ code=`&#x0003;`>>ni:///sha-256;hQXh5rX4WuPTn0RYwz6hpwttGj2y3q65zx-2IbAvoYc
 
 <<^ code=`&#x0004;` to=`?`>>
