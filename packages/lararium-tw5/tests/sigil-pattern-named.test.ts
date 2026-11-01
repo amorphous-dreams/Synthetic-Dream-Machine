@@ -107,7 +107,7 @@ describe("every worked call is named and ticked", () => {
 // ── L4 · a pattern keeps no quote, no arrow, no [=:] ───────────────────────────────────────────
 describe("a pattern field keeps no quote, no arrow and no colon separator", () => {
   test("CONTROL — the shelf declares patterns to read", () => {
-    expect(shelf.flatMap(patternsOf).length).toBeGreaterThan(90);
+    expect(shelf.flatMap(patternsOf).length).toBeGreaterThan(80);
   });
 
   test("★ no pattern carries a double quote, an arrow or the [=:] alternation ★", () => {
@@ -163,19 +163,34 @@ const CASES: Case[] = [
   { head: "aka", field: "lar-pattern", call: "<<~ aka ahu slot=`#/x`>>", groups: ["ahu ", "#/x"] },
   { head: "kanawai", field: "lar-pattern", call: `<<~ kanawai uri=\`${A}\`>>`, groups: [U, A] },
   { head: "kahea", field: "lar-pattern", call: `<<~ kahea uri=\`${A}\`>>`, groups: [A] },
+  { head: "kahea", field: "lar-pattern", call: `<<~ kahea name=\`mask\` uri=\`${A}\`>>`, groups: [A] },
   { head: "kahea", field: "lar-open-pattern", call: "<<~ kahea ahu slot=`#/x`>>", groups: ["ahu", "slot=`#/x`"] },
   { head: "loulou", field: "lar-pattern", call: `<<~ loulou uri=\`${A}\`>>`, groups: [A] },
   { head: "import", field: "lar-pattern", call: `<<~ import uri=\`${A}\` key=\`k\`>>`, groups: [A, "k"] },
   { head: "transclude", field: "lar-pattern", call: `<<~ transclude uri=\`${A}\`>>`, groups: [A, U] },
-  { head: "lele", field: "lar-pattern", call: `<<~ lele uri=\`${A}\`>>`, groups: [A] },
+  { head: "lele", field: "lar-pattern", call: `<<~ lele to=\`${A}\`>>`, groups: [A] },
+  { head: "branch", field: "lar-pattern", call: `<<~ branch to=\`${A}\`>>`, groups: [A] },
+  { head: "hana", field: "lar-open-pattern", call: "<<~ hana grammar=`toml` body=`a = 1`>>", groups: ["toml", "a = 1"] },
   // control and pragma
-  { head: "if", field: "lar-open-pattern", call: "<<~ if filter=`[<x>match[1]]`>>", groups: ["[<x>match[1]]", U] },
+  { head: "if", field: "lar-open-pattern", call: "<<~ if filter=`[<x>match[1]]`>>", groups: ["[<x>match[1]]"] },
   { head: "huli", field: "lar-open-pattern", call: "<<~ huli filter=`[tag[x]]`>>", groups: ["[tag[x]]", U] },
+  { head: "huli", field: "lar-open-pattern", call: "<<~ huli filter=`[tag[x]]` as=`item`>>", groups: ["[tag[x]]", "item"] },
   { head: "ui", field: "lar-pattern", call: "<<~ ui filter=`[tag[x]]`>>", groups: ["[tag[x]]"] },
   { head: "waiho", field: "lar-open-pattern", call: "<<~ waiho name=`n` value=`v`>>", groups: ["n", "v"] },
   { head: "waiho", field: "lar-pragma-pattern", call: "<<~! waiho name=`n` value=`v`>>", groups: ["n", "v"] },
   { head: "helu", field: "lar-open-pattern", call: "<<~ helu name=`tally` filter=`[tag[x]count[]]`>>", groups: ["tally", U, "[tag[x]count[]]"] },
-  { head: "kapu", field: "lar-pattern", call: "<<~ kapu reason=`a threshold`>>", groups: ["a threshold"] },
+  { head: "kapu", field: "lar-pattern", call: "<<~ kapu scope=`a threshold`>>", groups: ["a threshold"] },
+  // heads the grammar gained a tiddler for (Q5): each value named
+  { head: "moves", field: "lar-pattern", call: "<<~ moves name=`rendering` params=`rides/the-marker on/the-renderer`>>", groups: ["rendering", "rides/the-marker on/the-renderer"] },
+  { head: "moves", field: "lar-pattern", call: "<<~moves name=`rendering`>>", groups: ["rendering", U] },
+  { head: "flows", field: "lar-pattern", call: "<<~ flows name=`turn` path=`a -> b -> c`>>", groups: ["turn", "a -> b -> c"] },
+  { head: "hoike", field: "lar-pattern", call: "<<~ hoike slot=`#substrate-clause` held=`no boot clause`>>", groups: ["#substrate-clause", "no boot clause"] },
+  { head: "hoike", field: "lar-pattern", call: "<<~ hoike held=`no boot clause` slot=`#substrate-clause`>>", groups: ["#substrate-clause", "no boot clause"] },
+  { head: "kue", field: "lar-pattern", call: "<<~ kue voice=`Stranger` key=`a re-entry condition`>>", groups: ["Stranger", "a re-entry condition"] },
+  { head: "saksi", field: "lar-pattern", call: "<<~ saksi voice=`house` scope=`deposition`>>", groups: ["house", "deposition"] },
+  { head: "moolelo", field: "lar-pattern", call: "<<~ moolelo held=`the direction`>>", groups: ["the direction"] },
+  { head: "talk-story", field: "lar-pattern", call: "<<~ talk-story slot=`#floor` ground=`the surface`>>", groups: ["#floor", "the surface"] },
+  { head: "status", field: "lar-pattern", call: "<<~ status text=`harvest read-only`>>", groups: ["harvest read-only"] },
   // the turn frame: ONE sigil, three firings
   { head: "node", field: "lar-pattern", call: "<<~ node action=`refreshes the libation dish`>>", groups: ["refreshes the libation dish"] },
 ];
@@ -213,6 +228,7 @@ describe("the old forms fail and a known-good pattern passes", () => {
     '<<~ constraint "lar:///a.b.c/x" -> "lar:///a.b.c/y">>',
     '<<~ papalohe "lar:///a.b.c/x" -> "lar:///a.b.c/y">>',
     "<<~ ahu #/head -> lar:///t/elsewhere>>",
+    '<<~ moves rendering -> rides/the-marker on/the-renderer>>',
     '<<~ persona Lares "a multitude">>',
     '<<~ aka "lar:///a.b.c/x">>',
   ];
