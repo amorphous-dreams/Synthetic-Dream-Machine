@@ -17,6 +17,14 @@
  *        from and to last); a lone `~aperture`/`~ooda-ha`/`~drift-ward` becomes a steer.
  * Cut 5: the `file-path` meta key retires (operator ruling, 2026-11-01): residency rides the
  *        envelope, so every `file-path = …` line leaves every meta fence, a quoted one included.
+ * Cut 6: the foot and the fences (Train R, operator approved 2026-11-01). (a) The retired trailer
+ *        ``<<^ code=`&#x0003;`>>ni:///…`` moves, byte for byte, into the ETX mark's slot:
+ *        ``<<^ code=`&#x0003;` bcc=`ni:///…`>>``. The digest reads the span with that run deleted,
+ *        so a seal that verified before the move verifies after it, value unchanged; one that did
+ *        not reads stale and refuses (`seal-broken`), never re-sealed. (b) A backtick fence whose
+ *        run does not exceed the longest tick run inside it widens, opener and closer both, to one
+ *        past that run (TiddlyWiki's codeblock opens on a run of three or more and closes on a
+ *        line holding only a run at least as long). A `toml meta` fence never widens; it lists.
  *
  * ── WHAT IT NEVER GUESSES ───────────────────────────────────────────────────────────────────────
  * It REFUSES and lists, leaving the sigil byte-for-byte: a head with no tiddler (`unsigned`), a
@@ -69,6 +77,66 @@ const ELLIPSIS = /^(…|\.\.\.)$/;
 const SIGIL = /<<(?:[~^!][ \t]*)?[A-Za-z&#][\w&#;-]*(?:[^>]|>(?!>))*>>/g;
 const SUBSTITUTION = /\$\([^)]*\)\$|\$\{[\s\S]*?\}\$/;
 const DEFINITION_LINE = /^\s*\\(?:procedure|define|widget|function|end)\b/;
+/** Cut 6a: the retired trailer foot, as its own line. */
+export const TRAILER_FOOT = /^<<\^ code=`&#x0003;`>>(ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+)[ \t]*$/;
+
+/**
+ * Cut 6a: the closing ETX's trailer moves into its `bcc` slot. Reads the closing ETX through the frame's
+ * one span reader, so a quoted foot inside a fence never moves.
+ */
+export function cutFoot(text, frame) {
+  const etx = frame.readFrame(text).etx;
+  if (!etx || (etx.index > 0 && text[etx.index - 1] !== "\n")) return { text, moved: 0 };
+  const le = text.indexOf("\n", etx.index) < 0 ? text.length : text.indexOf("\n", etx.index);
+  const m = TRAILER_FOOT.exec(text.slice(etx.index, le));
+  if (!m) return { text, moved: 0 };
+  return { text: text.slice(0, etx.index) + "<<^ code=`&#x0003;` bcc=`" + m[1] + "`>>" + text.slice(le), moved: 1 };
+}
+
+const FENCE_OPEN = /^( {0,3})(`{3,})([^`]*)$/;
+/** The longest backtick run in `line`. */
+const longestTicks = (line) => Math.max(0, ...[...line.matchAll(/`+/g)].map((r) => r[0].length));
+
+/**
+ * Cut 6b: every backtick fence whose run does not exceed the longest tick run inside it, with the
+ * line it opens on, the line it closes on and the width it needs. A `toml meta` fence reports as
+ * `meta` and never widens (its opener stands canonical); an unclosed fence reports nothing.
+ */
+export function narrowFences(text) {
+  const lines = text.split("\n");
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    const o = FENCE_OPEN.exec(lines[i]);
+    if (!o) continue;
+    const len = o[2].length;
+    let max = 0, j = i + 1;
+    for (; j < lines.length; j++) {
+      const c = /^ {0,3}(`+)[ \t]*$/.exec(lines[j]);
+      if (c && c[1].length >= len) break;
+      max = Math.max(max, longestTicks(lines[j]));
+    }
+    if (j >= lines.length) break;
+    if (max >= len) out.push({ open: i, close: j, len, need: max + 1, meta: /^toml[ \t]+meta[ \t]*$/.test(o[3]) });
+    i = j;
+  }
+  return out;
+}
+
+/** Cut 6b: widen each narrow fence, opener and closer, keeping indent and info string. */
+export function cutFences(text) {
+  const lines = text.split("\n");
+  let widened = 0;
+  const meta = [];
+  for (const f of narrowFences(text)) {
+    if (f.meta) { meta.push(f.open + 1); continue; }
+    const run = "`".repeat(f.need);
+    lines[f.open] = lines[f.open].replace(/`{3,}/, run);
+    lines[f.close] = lines[f.close].replace(/`+/, run);
+    widened++;
+  }
+  return { text: lines.join("\n"), widened, meta };
+}
+
 /** Cut 5: a retired `file-path` meta line, whole. */
 export const FILE_PATH_LINE = /^file-path[ \t]*=[^\n]*\n/gm;
 
@@ -512,8 +580,11 @@ const spanAt = (spans, i) => spans.find((s) => i >= s.start && i < s.end) ?? nul
  * Cut a text. opts: { rel, disable, handReviewed }.
  * Returns { text, changes, refusals, unmapped, seal, counts, foreign }.
  */
-export function cutText(text, ctx, opts = {}) {
+export function cutText(arriving, ctx, opts = {}) {
   const rel = opts.rel ?? "(text)";
+  // ── Cut 6a first: the foot moves into its slot, so every later reading meets the slot law ──
+  const foot = opts.disable?.includes("foot") || !/^<<!DOCTYPE\b/m.test(arriving) ? { text: arriving, moved: 0 } : cutFoot(arriving, ctx.frame);
+  const text = foot.text;
   const spans = spansOf(ctx, text);
   const matches = [...text.matchAll(SIGIL)].map((m) => ({ start: m.index, end: m.index + m[0].length, src: m[0] }));
   const edits = [];
@@ -634,6 +705,11 @@ export function cutText(text, ctx, opts = {}) {
   let filePath = 0;
   if (!opts.disable?.includes("file-path")) next = next.replace(FILE_PATH_LINE, () => { filePath++; return ""; });
 
+  // ── Cut 6b: the narrow fences widen ──
+  const fences = opts.disable?.includes("fences") ? { text: next, widened: 0, meta: [] } : cutFences(next);
+  next = fences.text;
+  for (const line of fences.meta) refusals.push({ rel, line, kind: "narrow-meta-fence", why: "a toml meta fence holds a tick run as long as its own; widen it by hand", src: "" });
+
   // ── The seal ──
   let seal = "none";
   const standing = ctx.frame.verifyBcc(text);
@@ -644,14 +720,14 @@ export function cutText(text, ctx, opts = {}) {
     // name and the file stays exactly as it stood.
     if (standing !== "ok" && standing !== "unchecked") {
       refusals.push({ rel, line: 1, kind: "seal-broken", why: `the arriving check reads ${standing}: re-seal by hand after reading the body`, src: "" });
-      return { text, changes: 0, refusals, unmapped, seal: standing, lists, counts: { ...counts, phase: 0, renamed: 0, filePath: 0 } };
+      return { text: arriving, changes: 0, refusals, unmapped, seal: standing, lists, counts: { ...counts, phase: 0, renamed: 0, filePath: 0, foot: 0, fences: 0 } };
     }
     const stamped = next === text ? next : ctx.frame.stampCarrier(next);
     seal = ctx.frame.verifyBcc(stamped);
     if (seal === "ok") next = stamped;
   }
-  const changes = flat.length + filePath + at.phase + at.renamed;
-  return { text: next, changes, refusals, unmapped, seal, lists, counts: { ...counts, phase: at.phase, renamed: at.renamed, filePath } };
+  const changes = flat.length + filePath + at.phase + at.renamed + foot.moved + fences.widened;
+  return { text: next, changes, refusals, unmapped, seal, lists, counts: { ...counts, phase: at.phase, renamed: at.renamed, filePath, foot: foot.moved, fences: fences.widened } };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -660,7 +736,9 @@ export function cutText(text, ctx, opts = {}) {
 
 export function censusText(text, ctx) {
   const spans = spansOf(ctx, text);
-  const c = { sigils: 0, arrows: 0, quotedNamed: 0, positional: 0, spacedAt: 0, phase: 0, turnFrame: 0, filePath: 0, renamedHead: 0, tickMismatch: 0, wideInline: 0 };
+  const c = { sigils: 0, arrows: 0, quotedNamed: 0, positional: 0, spacedAt: 0, phase: 0, turnFrame: 0, filePath: 0, renamedHead: 0, tickMismatch: 0, wideInline: 0, trailer: 0, narrowFence: 0 };
+  c.trailer = cutFoot(text, ctx.frame).moved;
+  c.narrowFence = narrowFences(text).length;
   for (const m of text.matchAll(SIGIL)) {
     if (spanAt(spans, m.index)?.kind === "toml") continue;
     const h = readHead(m[0]);
@@ -774,7 +852,7 @@ async function main(argv) {
     return 0;
   }
 
-  const report = { files: files.length, touched: [], changes: 0, turns: 0, cut: 0, phase: 0, renamed: 0, filePath: 0, refusals: [], unmapped: {}, sealBlocked: [], partialTurns: [] };
+  const report = { files: files.length, touched: [], changes: 0, turns: 0, cut: 0, phase: 0, renamed: 0, filePath: 0, foot: 0, fences: 0, refusals: [], unmapped: {}, sealBlocked: [], partialTurns: [] };
   const outputs = [];
   for (const rel of files) {
     const before = readFileSync(join(repo, rel), "utf8");
@@ -788,6 +866,7 @@ async function main(argv) {
     report.touched.push(rel);
     report.changes += r.changes; report.turns += r.counts.turns; report.cut += r.counts.cut;
     report.phase += r.counts.phase; report.renamed += r.counts.renamed; report.filePath += r.counts.filePath;
+    report.foot += r.counts.foot; report.fences += r.counts.fences;
     outputs.push({ rel, before, after: r.text });
   }
   const byKind = {};
