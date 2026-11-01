@@ -75,9 +75,9 @@ import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands } from "./node-
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
 import { larDataDir }                   from "./vessel-paths.js";
-import { join } from "path";
 import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
+import { resolveGenesis, checkGenesisPin, type GenesisResolution } from "./genesis-resolve.js";
 import { mountReachFaceWatch, reachFaceBootNotice } from "./reach-face-watch.js";
 import { loadLaresConfig, originDeclaration, hermWaymarkDeclared } from "./lares-config.js";
 import { composePronaosFromEnv, pronaosShoreBootNotice } from "./pronaos-composition.js";
@@ -94,7 +94,7 @@ import { createLanAnnouncement, createLanAnnouncer, dgramLanSocket, type LanData
 // CLI / env config
 // ---------------------------------------------------------------------------
 
-function parseArgs(): { port: number; storageDir: string; genesisDir: string; wikiId: string; rootDir: string; catalogUrl: string | null; askedStanding: AskedStanding; origins: ExplicitOriginComposition } {
+function parseArgs(): { port: number; storageDir: string; genesisDir: string; genesis: GenesisResolution; wikiId: string; rootDir: string; catalogUrl: string | null; askedStanding: AskedStanding; origins: ExplicitOriginComposition } {
   const args = process.argv.slice(2);
   const named = new Set<string>();
   const get  = (flag: string, env: string, fallback: string) => {
@@ -114,7 +114,11 @@ function parseArgs(): { port: number; storageDir: string; genesisDir: string; wi
   // The composable genesis cap: --genesis flag → LAR_GENESIS env → ~/.lares/config.json → repo-relative
   // <rootDir>/genesis. Genesis stays checked-in by default, so a no-config boot lands on the repo's
   // tracked seed exactly as before; an operator sites it under ~ via config.resources.genesis.
-  const genesisDir = resolve(get("--genesis", "LAR_GENESIS", cfg.resources?.genesis ?? join(rootDir, "genesis")));
+  const genesis = resolveGenesis({
+    explicit: get("--genesis", "LAR_GENESIS", "") || undefined, configured: cfg.resources?.genesis,
+    corpusRoot: rootDir, shippedRoot: REPO_ROOT,
+  });
+  const genesisDir = resolve(genesis.dir);
   // `--recipe` names the operator-facing flag; what it carries is a STANDING this vessel asks to
   // stand as, never a kind it is. "Recipe" belongs to the pinned wiki's composition alone.
   const askedStanding = (get("--recipe", "LAR_RECIPE", "lararium") === "herm" ? "herm" : "lararium") as AskedStanding;
@@ -130,6 +134,7 @@ function parseArgs(): { port: number; storageDir: string; genesisDir: string; wi
     port,
     storageDir,
     genesisDir,
+    genesis,
     wikiId,
     rootDir,
     catalogUrl: process.env["LAR_CATALOG"] ?? null,
@@ -203,7 +208,9 @@ function logPendingPlanes(prefix: string, manifest: MountManifest): void {
 interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly ratePerMin?: number; readonly horizonDays?: number; readonly burst?: number; readonly bytesPerOutcome?: number } } }
 
 async function main(): Promise<void> {
-  const { port, storageDir, genesisDir, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
+  const { port, storageDir, genesisDir, genesis, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
+  // A vessel founded on the build's shipped seed refuses a boot that resolves another (genesis-resolve, the pin).
+  checkGenesisPin(storageDir, genesis);
   // LAN discovery stays OFF unless the operator turns it. An empty value reads as unset, so a compose file may
   // pass the variable through; any other word refuses by name before a face listens.
   const lanDiscoveryMode = process.env["LAR_LAN_DISCOVERY"] || undefined;

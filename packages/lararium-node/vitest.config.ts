@@ -26,6 +26,8 @@ export const THRASHERS = [
 
 /** The suites the serial project takes. Kept complete by the reader that imports {@link THRASHERS}. */
 export const heavy = [
+  // binds a real HTTP listener to prove the desk-named Web root serves GET / as 200
+  "tests/pronaos-desk.test.ts",
   // real WebSocketServer + Repo + sealed-gate crossings
   "tests/browser-crossing.test.ts",
   // real face gates + FLOW-map read-faces on four listeners: the gate-native herm relay

@@ -34,7 +34,7 @@ import { standPageMirror } from "./page-mirror.js";
 import { standTabTopology } from "./glass/topology.js";
 import type { Lend } from "./glass/tab-bus.js";
 import { makePortTransport } from "./port-transport.js";
-import { defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
+import { defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl, arrivalRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
 // (node-parity). Boot imports this plain-data seed alone — no Automerge binary.
@@ -362,7 +362,8 @@ async function bootVessel(): Promise<void> {
   set("status", "booting…");
   // ?relay=ws://host:port/ws → the node↔browser spore crossing (opt-in; absent = pure local boot).
   const relayParams = new URLSearchParams(location.search);
-  const relayUrl = resolveRelayUrl(relayParams);
+  // No `?relay=`: an origin that answers as a lararium's Pronaos is dialled at its own relay; any other origin keeps the local boot.
+  const relayUrl = resolveRelayUrl(relayParams) ?? await arrivalRelayUrl(location, (input) => fetch(input));
   // #floor=<card> → the hearth's flow floor card, carried by hand off its banner: what a device at the floor reads under.
   const floor = floorCardOf(location.hash, readHearthFloorCard);
   // #anchor=<aid> → the place AID handed across apart from the card (a deliberate transfer), kept for the next arrival; the card
