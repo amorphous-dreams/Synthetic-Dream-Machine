@@ -1085,3 +1085,8 @@ test("RED: a queued entry refused for its SHIP at chain time drops by name and t
   assert.deepEqual(readdirSync(join(w.dir, "q", "entries")), []);
   assert.ok(hasFile(w, originRef(w, SPAN), "packages/p-b/f.txt"), "lane b landed");
 });
+
+test("RED: the table classes every tsconfig (`pnpm -r typecheck` reads them)", () => {
+  const table = JSON.parse(readFileSync(new URL("./security-class-paths.json", import.meta.url), "utf8"));
+  for (const p of ["tsconfig.json", "tsconfig.base.json", "packages/lararium-mesh/tsconfig.json", "packages/lararium-tw5/tsconfig.build.json"]) assert.deepEqual(LT.securityHits(table, [p]), [p], p);
+});
