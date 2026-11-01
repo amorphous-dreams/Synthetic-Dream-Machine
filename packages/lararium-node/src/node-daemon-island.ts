@@ -6,7 +6,7 @@
  */
 
 import { parentPort } from "worker_threads";
-import { runSovereignWorker, vesselRestAsker, vesselCustodyWriter, vesselDyadAsker } from "./sovereign-island-model.js";
+import { runSovereignWorker, vesselRestAsker, vesselCustodyWriter, vesselDyadAsker, vesselSessionDoor } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
 import { mountDiskProjection, mountedDiskProjector } from "./island-behaviors.js";
 import { answerShore } from "./shore-verb.js";
@@ -32,6 +32,9 @@ const restOnVessel = parentPort ? vesselRestAsker(parentPort) : null;
 const sealOnVessel = parentPort ? vesselCustodyWriter(parentPort) : null;
 // The vessel keeps the live fleet reading on its main thread and answers the daemon through this door.
 const dyadOnVessel = parentPort ? vesselDyadAsker(parentPort) : null;
+// THE SESSION SIGN DOOR: this island holds no session key. It names the invocation a session placed, and the vessel's
+// main thread answers from that session: its certificate, its proof subject, the vessel's own chain, each signature.
+const sessionsOnVessel = parentPort ? vesselSessionDoor(parentPort) : null;
 
 const JOURNAL_KINDS: ReadonlySet<JournalKind> = new Set(["bag-projected"]);
 
@@ -78,6 +81,7 @@ runSovereignWorker((manifest) => {
     // the vessel's own `sealed/`, `cad/` and cleartext-local tiers. An island with no directory of its own gets
     // none, and its `sealed-*` verbs refuse by name.
     ...(islandStorageDir !== null ? { sealedStore: nodeSealedStoreShore(islandStorageDir) } : {}),
+    ...(sessionsOnVessel ? { sessionProof: sessionsOnVessel } : {}),
     ...(sealOnVessel ? {
       persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),
     } : {}),

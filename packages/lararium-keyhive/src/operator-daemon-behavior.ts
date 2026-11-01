@@ -78,10 +78,12 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  the content-key holder stands beside this island's Keyhive identities and its roll subscribes to this
    *  island's seat rolls. Absent → no holder stands, and the `sealed-*` verbs refuse by name. */
   sealedStore?: SealedStoreShore;
-  /** `sessionProof` — the signer of the session whose act asks, and this vessel's own reading of who may write a
-   *  bag (the face proof's chain check). Absent → no session open stands composed: every mint refuses
-   *  `signer-unavailable`, and the holder counts no record. No vessel key and no daemon key signs in its place. */
-  sessionProof?: SessionProof;
+  /** `sessionProof` — the vessel's answer for the session that placed one ask: its signer (which signs on the
+   *  vessel's main thread alone), its proof subject and the vessel's own verified face chain, from which this island
+   *  reads who may write a bag (`island-session-proof.ts`). Absent → no session reaches this island: every sealed
+   *  verb a session places refuses `signer-unavailable`, and the holder counts no record. No vessel key and no daemon
+   *  key signs in its place. */
+  sessionProof?: IslandSessionProof;
   /** `countedRaises` — the raises the vessel's own ledger counts on one fleet's board, asked of the vessel's own
    *  fold. Absent → a raise counts where this island's own count answered it (each roll its seat took, each
    *  kept roll handed back under the vessel's receipt). */
@@ -150,7 +152,10 @@ import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemory
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import { makeFaceBagDoor, faceOwnerVerifier } from "./face-bag-door.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
-import { seatContentKeys, type ContentKeySeat, type SessionProof } from "./content-key-seat.js";
+import { seatContentKeys, type ContentKeySeat } from "./content-key-seat.js";
+import { ownChainStanding, type IslandSessionProof } from "./island-session-proof.js";
+import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
+import type { RecordSigner, SessionOwnChain } from "@lararium/mesh";
 import { SealedStore, readKeyParcel, readOutboxKey, readCarriedRecord, encodeKeyParcel, readKeyVersionId, utf8Bytes, type ContentKeyHolderPorts, type KeyParcel, type SealedRecord, type SealedStoreRest } from "@lararium/mesh";
 import { unboundMints, restingMinter } from "./resolve-binding.js";
 import { kahuReachSourceOf, withKahuReach } from "./kahu-reach-source.js";
@@ -297,6 +302,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // THE CONTENT-KEY HOLDER, seated beside the face identity (sealed-store#/the-store). Bare
   // content keys live in it, in this island's memory alone: no verb answers one, and none crosses the port.
   let contentKeys: ContentKeySeat | null = null;
+  /** The vessel's own verified face chain, as the last session reading carried it; null before any session asked. */
+  let ownChain: SessionOwnChain | null = null;
+  /** The vessel's counted raises and its unanswered ones on the face's fleet board, as the last session reading
+   *  carried them (the vessel's own fold): a removal version counts by the first, an owed roll stands by the second. */
+  let ownCounted: ReadonlySet<string> = new Set();
+  let ownUnanswered: readonly string[] = [];
   const faceDoor = () => kh && daemonAuth.personaGroupId
     ? makeFaceBagDoor({ face: kh, groupId: daemonAuth.personaGroupId, ...(faceLedger ? { ledger: faceLedger } : {}) }) : null;
   const faceAtom = () => {
@@ -769,7 +780,51 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (!contentKeys) throw new SealedStoreUnavailable(verb);
         return contentKeys;
       };
-      const signerNow = () => sessionProof?.signer() ?? null;
+      // THE SESSION THAT PLACED THE ASK (island-session-proof.ts). Only an ask the vessel's own channel placed names
+      // one; the vessel answers from that session alone, and refuses a place session `session-anchor-place`. The
+      // session must wear this island's own face, the subject of the vessel's own chain, or nothing seals and nothing
+      // opens (`session-face-foreign`). The chain the reading carries is what the seat's standing reads.
+      // AN UNREAD FOLD REFUSES WHERE A ROLL STANDS. A vessel that read no fold of the face's fleet board hands no
+      // counted raise: a seat that once minted a removal version would count no evidence for it and ride the
+      // pre-removal head, so it refuses (`fold-unread`). A seat that never rolled has no removal to count, as a
+      // joinee's seat (its fold always reads empty), and goes on.
+      const foldOrRefuse = async (verb: string, foldRead: boolean): Promise<void> => {
+        if (foldRead || !contentKeys) return;
+        const rolled = await contentKeys.holder.holdsRemoval();
+        if (rolled === false) return;
+        throw new VerbRefusal("fold-unread", `[daemon] ${verb}: fold-unread — this vessel read no fold of the face's fleet board, and this seat once rolled; nothing sealed, nothing opened.`);
+      };
+      const sessionOf = async (verb: string, context: { readonly invocation?: { readonly requestId?: string }; readonly local?: boolean }): Promise<RecordSigner> => {
+        const requestId = context.invocation?.requestId;
+        const ask = context.local === true && typeof requestId === "string" && requestId.length > 0 ? { requestId, verb } : null;
+        const reading = sessionProof && ask ? await sessionProof.signer(ask) : { refusal: "signer-unavailable" } as const;
+        if ("refusal" in reading) throw new VerbRefusal(reading.refusal, `[daemon] ${verb}: ${reading.refusal} — nothing sealed, nothing opened.`);
+        ownChain = reading.chain;
+        ownCounted = new Set(reading.counted);
+        ownUnanswered = [...reading.unanswered];
+        await foldOrRefuse(verb, reading.foldRead);
+        if (reading.subject !== faceProofSubjectRef(reading.chain.scope as never)) {
+          throw new VerbRefusal("session-face-foreign", `[daemon] ${verb}: session-face-foreign — the session wears another face than this island holds; nothing sealed, nothing opened.`);
+        }
+        return reading.signer;
+      };
+      /** The vessel's own chain and fold for an act no session asked (the memory section's cut and import): the
+       *  holder reads records under them. A vessel that names none leaves the island as it stood, and the holder
+       *  refuses to read without a chain. */
+      const ownReading = async (verb: string): Promise<void> => {
+        const read = await sessionProof?.own?.();
+        if (!read || "refusal" in read) return;
+        ownChain = read.chain;
+        ownCounted = new Set(read.counted);
+        ownUnanswered = [...read.unanswered];
+        await foldOrRefuse(verb, read.foldRead);
+      };
+      /** The memory import's signer: the import judges its own door whole (`signer-unavailable` first), so a reading
+       *  that refuses hands it none rather than refusing ahead of that door. The face gate holds all the same. */
+      const signerOrNone = async (verb: string, context: Parameters<typeof sessionOf>[1]): Promise<RecordSigner | null> => {
+        try { return await sessionOf(verb, context); }
+        catch (error) { if (error instanceof VerbRefusal && error.reason === "session-face-foreign") throw error; return null; }
+      };
       const refusedBy = (verb: string, r: { readonly refusal: string; readonly cause?: string }): never => {
         throw new VerbRefusal(r.refusal, `[daemon] ${verb}: ${r.refusal}${r.cause ? ` (${r.cause})` : ""} — nothing sealed, nothing opened.`);
       };
@@ -778,34 +833,41 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (typeof bag !== "string" || bag.length === 0) throw new Error(`[daemon] ${verb}: \`bag\` required — a private body seals under its own bag's content key.`);
         return bag;
       };
-      registry.register("sealed-seal", async (args) => {
+      registry.register("sealed-seal", async (args, context) => {
         const seat = holderFor("sealed-seal");
         const bag = bagOf("sealed-seal", args);
+        // The session reads first: a place, foreign or absent session learns nothing of the cleartext-local tier.
+        const signer = await sessionOf("sealed-seal", context);
         const cid = typeof args["cid"] === "string" ? args["cid"] : "";
         const text = typeof args["text"] === "string" ? args["text"] : "";
         const plaintext = cid ? await sealedStore!.staged.read(cid) : text ? utf8Bytes(text) : null;
         if (plaintext === null) throw new Error(cid ? `[daemon] sealed-seal: no staged body at ${cid} in the cleartext-local tier.` : "[daemon] sealed-seal: `cid` (a staged body) or `text` (an inline body) required.");
         const history = args["history"] === "shareable" || args["history"] === "closed" ? args["history"] : undefined;
-        const sealed = await seat.holder.sealBlob({ bagId: bag, plaintext, signer: signerNow(), ...(history ? { founding: { history } } : {}) });
+        const sealed = await seat.seal({ bagId: bag, plaintext, signer, ...(history ? { founding: { history } } : {}) });
         if ("refusal" in sealed) return refusedBy("sealed-seal", sealed);
         return {
           verb: "sealed-seal", cid: sealed.body.cid, keyVersion: sealed.body.keyVersion, ref: sealed.body.ref, founding: sealed.founding, manifest: sealed.manifest,
           ...(sealed.founded ? { founded: true, unserved: sealed.founded.unserved.length } : {}), ...(sealed.joined ? { joined: sealed.joined.keyVersion } : {}),
         };
       }, { summary: "Seal one private body under its bag's content key; answers the sealed address, the key version and the body's digest.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("sealed-open", async (args) => {
+      registry.register("sealed-open", async (args, context) => {
         const seat = holderFor("sealed-open");
+        await sessionOf("sealed-open", context);
         const opened = await seat.holder.openBlob({ bagId: bagOf("sealed-open", args), ref: typeof args["ref"] === "string" ? args["ref"] : "" });
         if ("refusal" in opened) return refusedBy("sealed-open", opened);
         // The body lands in the cleartext-local tier; the outcome names its address and its length alone.
         return { verb: "sealed-open", cid: await sealedStore!.staged.write(opened.plaintext), bytes: opened.plaintext.length, keyVersion: opened.keyVersion };
       }, { summary: "Open one private body by the digest its pointer names, into the cleartext-local tier.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("sealed-reading", async (args) => {
+      registry.register("sealed-reading", async (args, context) => {
+        holderFor("sealed-reading");
+        await sessionOf("sealed-reading", context);
         const reading = await holderFor("sealed-reading").holder.reading(bagOf("sealed-reading", args));
         if ("refusal" in reading) return refusedBy("sealed-reading", reading);
         return { verb: "sealed-reading", ...reading };
       }, { summary: "Read one bag's key lineage: each founding, its heads, forks, rival foundings and unserved readers.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("sealed-choose-head", async (args) => {
+      registry.register("sealed-choose-head", async (args, context) => {
+        holderFor("sealed-choose-head");
+        await sessionOf("sealed-choose-head", context);
         const head = readKeyVersionId(args["head"]);
         if (head === null) throw new Error("[daemon] sealed-choose-head: `head` (a key version id) required.");
         const chose = await holderFor("sealed-choose-head").holder.chooseHead({ bagId: bagOf("sealed-choose-head", args), head });
@@ -827,34 +889,42 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         for (const parcel of parcels) names.push(await outbox.putOutbox(reader ?? "every-reader", encodeKeyParcel(parcel)));
         return names;
       };
-      registry.register("sealed-hand-over", async (args) => {
+      registry.register("sealed-hand-over", async (args, context) => {
         const reader = typeof args["reader"] === "string" ? args["reader"] : "";
         if (!reader) throw new Error("[daemon] sealed-hand-over: `reader` (a seat's identifier on the key shore) required.");
         const from = args["from"] === undefined ? undefined : readKeyVersionId(args["from"]);
         if (from === null) throw new Error("[daemon] sealed-hand-over: `from` reads as no key version id.");
         const holder = holderFor("sealed-hand-over").holder;
         const outbox = outboxFor("sealed-hand-over");
-        const handed = await holder.handOver({ bagId: bagOf("sealed-hand-over", args), reader, signer: signerNow(), ...(from ? { from } : {}) });
+        const signer = await sessionOf("sealed-hand-over", context);
+        await holderFor("sealed-hand-over").settle(signer);
+        const handed = await holder.handOver({ bagId: bagOf("sealed-hand-over", args), reader, signer, ...(from ? { from } : {}) });
         if ("refusal" in handed) return refusedBy("sealed-hand-over", handed);
         // The hand-over record rests with the other records; the parcels rest in the outbox for the member lane.
         return { verb: "sealed-hand-over", outbox: await parcelsOut(outbox, reader, handed.parcels), versions: handed.record.body.versions, missing: handed.missing };
       });
-      registry.register("sealed-admit", async (args) => {
+      registry.register("sealed-admit", async (args, context) => {
         const act = typeof args["act"] === "string" ? args["act"] : "";
         const history = args["history"] === "shareable" ? "shareable" as const : "closed" as const;
-        const admitted = await holderFor("sealed-admit").holder.admitFromNow({ bagId: bagOf("sealed-admit", args), act, history, signer: signerNow() });
+        const holder = holderFor("sealed-admit").holder;
+        const signer = await sessionOf("sealed-admit", context);
+        await holderFor("sealed-admit").settle(signer);
+        const admitted = await holder.admitFromNow({ bagId: bagOf("sealed-admit", args), act, history, signer });
         if ("refusal" in admitted) return refusedBy("sealed-admit", admitted);
         return { verb: "sealed-admit", minted: admitted.map((one) => ({ keyVersion: one.keyVersion, founding: one.founding, unserved: one.unserved.length })) };
       });
-      registry.register("sealed-parcels", async (args) => {
+      registry.register("sealed-parcels", async (args, context) => {
         const reader = typeof args["reader"] === "string" ? args["reader"] : "";
         const holder = holderFor("sealed-parcels").holder;
+        await sessionOf("sealed-parcels", context);
         const outbox = outboxFor("sealed-parcels");
         const parcels = await holder.parcelsFor({ bagId: bagOf("sealed-parcels", args), reader });
         if ("refusal" in parcels) return refusedBy("sealed-parcels", parcels as { refusal: string });
         return { verb: "sealed-parcels", outbox: await parcelsOut(outbox, reader, parcels as readonly KeyParcel[]) };
       });
-      registry.register("sealed-receive", async (args) => {
+      registry.register("sealed-receive", async (args, context) => {
+        holderFor("sealed-receive");
+        await sessionOf("sealed-receive", context);
         const read = <T>(list: unknown, one: (bytes: Uint8Array) => T | null): T[] =>
           (Array.isArray(list) ? list : []).map((entry) => (typeof entry === "string" ? one(base64ToBytes(entry)) : null)).filter((x): x is T => x !== null);
         const parcels = read(args["parcels"], readKeyParcel);
@@ -863,8 +933,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if ("refusal" in took) return refusedBy("sealed-receive", took);
         return { verb: "sealed-receive", parcels: parcels.length, records: records.length, bags: took.bags.length };
       });
-      registry.register("sealed-serve", async () => {
+      registry.register("sealed-serve", async (_args, context) => {
         const holder = holderFor("sealed-serve").holder;
+        await sessionOf("sealed-serve", context);
         const outbox = outboxFor("sealed-serve");
         const served = await holder.serveUnserved();
         if ("refusal" in served) return refusedBy("sealed-serve", served);
@@ -896,6 +967,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const shadowRead = args["shadow"] === MEMORY_CUT_SHADOW_READ;
         memoryAsk("sealed-memory-cut", "cut", shadowRead ? { to, shadow: MEMORY_CUT_SHADOW_READ } : { to }, args, context.invocation.requestId);
         if (to === null) throw new Error("[daemon] sealed-memory-cut: `to` (the section pair's public half, 64 lower hex) required.");
+        await ownReading("sealed-memory-cut");
         const cut = await holderFor("sealed-memory-cut").holder.cutMemory({ bags: daemonAuth.registerBags, to: meshHexToBytes(to), ...(shadowRead ? { shadowRead: true } : {}) });
         if ("refusal" in cut) return refusedBy("sealed-memory-cut", cut);
         return { verb: "sealed-memory-cut", section: bytesToBase64(cut.section), holds: cut.holds.map((one) => ({ ...one })) };
@@ -912,6 +984,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const sealedSecret = typeof args["secret"] === "string" ? args["secret"] : null;
         memoryAsk("sealed-memory-import", "import", { section, secret: sealedSecret }, args, context.invocation.requestId);
         const seat = holderFor("sealed-memory-import");
+        await ownReading("sealed-memory-import");
         if (section === null || sealedSecret === null) throw new Error("[daemon] sealed-memory-import: `section` and `secret` (each base64) required.");
         const door = memoryDoor;
         memoryDoor = null;   // one door, one import
@@ -920,7 +993,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         try {
           secret = openMemorySecret(base64ToBytes(sealedSecret), door.secret);
           if (secret === null) throw new VerbRefusal("memory-malformed", "[daemon] sealed-memory-import: the section's key did not open under this import's door — nothing imported.");
-          const imported = await seat.holder.importMemory({ section: base64ToBytes(section), secret, signer: signerNow() });
+          const imported = await seat.holder.importMemory({ section: base64ToBytes(section), secret, signer: await signerOrNone("sealed-memory-import", context) });
           if ("refusal" in imported) return refusedBy("sealed-memory-import", imported);
           return { verb: "sealed-memory-import", results: imported.results.map((one) => ({ ...one })) };
         } finally { secret?.fill(0); door.secret.fill(0); }
@@ -1135,8 +1208,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             standingOf: async (member: string) => requireDyadReader(dyadReader(ctx), "the content-key seat")(fleetRoot, bareId(member)),
             ownEdgeShadowed: async () => (await requireDyadReader(dyadReader(ctx), "the content-key seat")(fleetRoot, faceAtom().key)) === "aside",
           } : {}),
-          ...(countedRaises && fleetRoot ? { countedRaises: () => countedRaises(fleetRoot) } : {}),
-          ...(sessionProof ? { session: sessionProof } : {}),
+          // THE VESSEL'S OWN FOLD: a shore that injects `countedRaises` names them; else the last session reading's.
+          countedRaises: countedRaises && fleetRoot ? () => countedRaises(fleetRoot) : () => ownCounted,
+          unansweredRaises: () => ownUnanswered,
+          // THE SEAT'S STANDING READS THE VESSEL'S OWN CHAIN, as the last session reading carried it: before any
+          // session asked, no writer stands. A seat roll names no session, so it takes no signer and stays owed by
+          // name; a session's own act signs through the door its verb reads (`sessionOf`, below).
+          session: { signer: () => null, standing: ownChainStanding(() => ownChain, () => daemonAuth.registerBags) },
           // A report names a result, a founding's opaque locator and a key version: no key, and no bag's name.
           report: (o) => console.log(`[daemon] content-key roll: ${o.result}${o.founding ? ` founding ${o.founding.slice(0, 12)}…` : ""}${o.keyVersion ? ` → version ${o.keyVersion.slice(0, 12)}…` : ""} (${o.raises.length} raise(s))`),
         });

@@ -102,7 +102,7 @@ import {
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
-import { setCasDoor, setRestDoor, setCustodyWriteDoor, setDyadDoor } from "./worker-handle.js";
+import { setCasDoor, setRestDoor, setCustodyWriteDoor, setDyadDoor, setSessionSignDoor } from "./worker-handle.js";
 import { writeCasEntriesFs } from "./node-cas.js";
 import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass, PersonaGroupIdentityRing, ProtectedDocClass } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
@@ -142,6 +142,7 @@ import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
 import { dialAnchorCell, nodeSessionDoor } from "./uds-session-door.js";
+import { SessionSignBook } from "./session-sign-door.js";
 import type { UdsSessionDoor } from "./uds-channel.js";
 import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type FlowPullResult } from "@lararium/mesh";
 import { gateReadingsFor, layStatementOn, flowFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
@@ -179,7 +180,7 @@ import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
-import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
+import { runEdgeSeatFacts, runEdgeSeatMarks, fleetRaisesOf, EdgeSeatError } from "./commands/edge-seats.js";
 import type { PersonaSelvesPlane, SealedActContext } from "./sealed-acts.js";
 
 /** The hearth dial a custody act reads: `SealedActContext.walk`, lent by the standing composition. */
@@ -557,6 +558,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   mountManifest: MountManifest;
   /** The session socket's door: each face this vessel holds opens its own session at the Nexus the vessel dials. */
   sessionDoor: UdsSessionDoor;
+  /** The session sign door's book: the UDS seat books each session call, and the daemon island signs through it. */
+  sessionSigns: SessionSignBook;
 }
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
@@ -626,6 +629,9 @@ interface NodeBootPrep {
   /** What this composition lends a backup bundle's cut: the mounted face, its own edge's shadow, the island's memory section and the board's key history. */
   backupDoor:      BackupDoor;
   sessionDoor:     UdsSessionDoor;
+  /** The session sign door's book: each session call books the session that placed it, so the daemon island signs a
+   *  sealed record through that session's signer, on this thread (`session-sign-door.ts`). */
+  sessionSigns:    SessionSignBook;
   /** This place's scoped five-duty signer at the standing KEL head. */
   placeSigner:    PlaceSigner;
   /** This vessel's own gate key — the node ANCHORS its confederation, so its gate key doubles as the Nexus
@@ -1732,6 +1738,13 @@ async function prepareNodeBootOn(
   let nexusDial: NexusClientDial | null = null;
   /** The pin the face dial stands at, once its own presentation composed there; none means the place anchor. */
   const dialAnchor = dialAnchorCell();
+  // THE SESSION SIGN DOOR (sealed-store#/the-store): the daemon island holds no session key. A session call books its
+  // signer here, and the island's ask signs through it, under the vessel's own chain at the pin its dial composed at.
+  const sessionSigns = new SessionSignBook();
+  // Each read carries the vessel's own fold of the face's fleet board: the raises it counts and those no subscriber
+  // took yet, so the holder counts removal versions and owed rolls across a restart.
+  setSessionSignDoor(sessionSigns.door(() => dialAnchor.chain(), async () => fleetRaisesOf({ repo, fleetRoot: wornFleetRoot })));
+  stood.push({ what: "the session sign door", down: () => { setSessionSignDoor(null); } });
   // Set when the vessel stands its dial down: a late dial still in flight then stands nothing.
   let dialStoodDown = false;
   // The dial itself fires in `openDaemon`, once the daemon doc is read — the identity it presents carries this vessel's OWN
@@ -3507,6 +3520,7 @@ async function prepareNodeBootOn(
     // lit, this vessel's own edge on that face's fleet board (the reading the dyad door serves the island), the
     // island's memory section under the vessel's own signed ask, and the face's key history off the local board.
     sessionDoor: nodeSessionDoor({ pin: dialAnchor.pin, sealHome, onLog: (line) => console.log(`[session] ${line}`) }),
+    sessionSigns,
     backupDoor: {
       wornFace: () => litFace,
       ownEdgeShadowed: async () => {
@@ -3671,6 +3685,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     walkDial:         p.walkDial,
     hostingDoor:      p.hostingDoor,
     sessionDoor:     p.sessionDoor,
+    sessionSigns:    p.sessionSigns,
     backupDoor:      p.backupDoor,
     oracleDocUrl:     result.assembly.islandHandle.url,
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,

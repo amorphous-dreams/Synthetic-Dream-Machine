@@ -73,6 +73,7 @@
     "packages/lararium-node/src/worker-handle.ts: Worker",
     "packages/lararium-node/src/worker-handle.ts: answerCustodyWrite",
     "packages/lararium-node/src/worker-handle.ts: Worker",
+    "packages/lararium-node/src/worker-handle.ts: Worker",
     "packages/lararium-node/src/worker-handle.ts: answerDocRest",
     "packages/lararium-node/src/worker-handle.ts: Worker",
     "packages/lararium-node/src/worker-handle.ts: Worker",

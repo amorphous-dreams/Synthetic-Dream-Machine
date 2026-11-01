@@ -103,6 +103,8 @@ export const HOLDER_REFUSALS = [
   "fresh-base-unavailable",   // a new span opens on a fresh base, and no hand here cuts one
   "seat-not-standing",        // this vessel's own seat stands in no key group of its face: an import wraps for nobody
   "memory-malformed",         // a memory section does not open, or opens to no whole entries
+  "roll-owed",                // a counted raise still owes this bag its removal roll: nothing seals under a head that precedes it
+  "chain-absent",             // no chain stands (no session asked, no dial composed): the holder reads no record
 ] as const;
 export type HolderRefusalName = (typeof HOLDER_REFUSALS)[number];
 /** A refusal names what stopped the act. `cause` carries another module's own refusal name, never a key. */
@@ -203,8 +205,17 @@ interface Line {
   readonly carried:  Map<KeyVersionId, SealedRecord<"key-version">>;
   readonly why:      Map<KeyVersionId, string>;
   readonly manifests: Map<RecordId, VerifiedRecord<"manifest">>;
+  /** A removal version stands in this founding's rest, verified under its own key, whether or not this reader's
+   *  evidence counted it: the seat rolled here once (`holdsRemoval`). */
+  rolled?: boolean;
 }
 interface Bag { readonly bagId: string; readonly lines: Map<BagLocator, Line> }
+
+/** The holder took no reading: its standing names no chain yet (no session asked). Nothing read, nothing settled. */
+export class ChainAbsent extends Error {
+  override readonly name = "ChainAbsent";
+  constructor() { super("content-key holder: no chain stands yet (no session asked), so the holder reads no record and settles no roll"); }
+}
 
 const ascending = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 const refuse = (refusal: HolderRefusalName, cause?: string): HolderRefusal => (cause === undefined ? { refusal } : { refusal, cause });
@@ -226,6 +237,8 @@ const digestsOf = (note: Uint8Array | null): string[] => {
 export class ContentKeyHolder {
   readonly #ports: ContentKeyHolderPorts;
   #bags: Map<string, Bag> | null = null;
+  /** The chain the cached reading was taken under (`WriterStanding.chainOf`). */
+  #bagsChain: string | null | undefined = undefined;
   #locked = false;
   #turn: Promise<unknown> = Promise.resolve();
 
@@ -252,7 +265,7 @@ export class ContentKeyHolder {
         const answer = await act();
         // A lock that landed while the act ran ends it: nothing it learned leaves.
         return this.#locked ? refuse("holder-locked") : answer;
-      } catch (err) { return this.#locked ? refuse("holder-locked") : refuse("store-failed", said(err)); }
+      } catch (err) { return this.#locked ? refuse("holder-locked") : err instanceof ChainAbsent ? refuse("chain-absent") : refuse("store-failed", said(err)); }
     });
     this.#turn = run.catch(() => undefined);
     return run;
@@ -266,13 +279,35 @@ export class ContentKeyHolder {
 
   // ── The reading: lockboxes, then records ──────────────────────────────────────────────────────
   async #loaded(): Promise<Map<string, Bag>> {
-    if (this.#bags !== null) return this.#bags;
+    // NO CHAIN, NO READING. Under a standing whose chain does not stand yet, every record reads as no writer's, so a
+    // reading taken then would found rivals and settle rolls as unfounded. The holder refuses to read, and a reading
+    // taken under one chain gives way when another stands.
+    const chain = this.#ports.standing.chainOf?.();
+    if (chain === null) throw new ChainAbsent();
+    if (this.#bags !== null && this.#bagsChain === chain) return this.#bags;
     return this.#reload();
+  }
+
+  /** Does the standing read writers under a chain now? A holder whose standing names none takes no reading. */
+  #chainStands(): boolean { return this.#ports.standing.chainOf?.() !== null; }
+
+  /** Does any lockbox at rest open for this seat? It reads no record, so it needs no chain; each key it opens it
+   *  overwrites at once. A seat that opens none holds no key under any chain. */
+  async #opensAnyLockbox(): Promise<boolean> {
+    const { store, shore } = this.#ports;
+    for (const lockbox of await store.lockboxes()) {
+      const opened = await openLockbox({ lockbox, shore });
+      if ("payload" in opened) { opened.payload.key.fill(0); return true; }
+    }
+    return false;
   }
 
   /** Read rest afresh: open every lockbox this seat opens, then count every record under the key it delivered. */
   async #reload(): Promise<Map<string, Bag>> {
     const { store, shore } = this.#ports;
+    // The chain this reading is taken under: a reading taken under none (a vessel ask before any session) gives way
+    // at the first `#loaded` once a chain stands.
+    const chain = this.#ports.standing.chainOf?.();
     const bags = new Map<string, Bag>();
     const forget = (): void => { for (const bag of bags.values()) for (const line of bag.lines.values()) for (const key of line.keys.values()) key.fill(0); };
     try {
@@ -296,6 +331,7 @@ export class ContentKeyHolder {
     // Keys the earlier reading held leave with it.
     for (const bag of this.#bags?.values() ?? []) for (const line of bag.lines.values()) for (const key of line.keys.values()) key.fill(0);
     this.#bags = bags;
+    this.#bagsChain = chain;
     return bags;
   }
 
@@ -312,6 +348,7 @@ export class ContentKeyHolder {
       if (!("record" in read)) { line.why.set(carried.body.keyVersion, read.cause ? `${read.refusal}:${read.cause}` : read.refusal); continue; }
       // A founding's locator must recompute from the founding key: no founding borrows another's name.
       if (read.record.private.cause.kind === "founding" && bagLocatorOf(key, bag.bagId) !== line.locator) { line.why.set(carried.body.keyVersion, "founding-locator-mismatch"); continue; }
+      if (read.record.private.cause.kind === "removal") line.rolled = true;
       pending.push({ carried, verified: read.record });
     }
     // Two unlike verified facts under one id refuse both BEFORE any transition counts. A record that fails this
@@ -417,6 +454,7 @@ export class ContentKeyHolder {
       if (this.#locked) return refuse("holder-locked");
       line.lineage = counted.lineage;
       line.keys.set(keyVersion, key); kept = true;
+      if (plan.cause.kind === "removal") line.rolled = true;
       line.records.set(keyVersion, signed.verified); line.carried.set(keyVersion, signed.carried);
       return { keyVersion, founding: line.locator, unserved: secret.unserved };
     } finally {
@@ -476,7 +514,14 @@ export class ContentKeyHolder {
    * span's history, and a founding with no declaration stands closed. The sealed value rests, then the
    * manifest that names it, then the index rows.
    */
-  sealBlob(args: { readonly bagId: string; readonly plaintext: Uint8Array; readonly signer: RecordSigner | null; readonly founding?: { readonly history: HistoryDeclaration } }): Promise<SealedBlob | HolderRefusal> {
+  sealBlob(args: { readonly bagId: string; readonly plaintext: Uint8Array; readonly signer: RecordSigner | null; readonly founding?: { readonly history: HistoryDeclaration };
+    /** The raises the vessel counted whose removal roll still owes this bag (sealed-store road, step 2: a removed
+     *  device opens nothing a vessel seals after it counts the raise). The head this seal writes under must follow
+     *  every one, or the seal refuses `roll-owed` and seals nothing. A founding takes no exemption: its first version
+     *  follows no removal, so no bag founds while a raise in its scope stays owed. Read twice inside the holder's
+     *  turn: before any key mints, and again at the commit point, after every signature and before the first byte
+     *  rests, so a raise counted while the seal signed still refuses it. */
+    readonly owedActs?: () => readonly string[] }): Promise<SealedBlob | HolderRefusal> {
     return this.#inTurn<SealedBlob>(async () => {
       if (!isWellFormedText(args.bagId)) return refuse("bag-malformed");
       if (args.signer === null) return refuse("signer-unavailable");
@@ -486,6 +531,8 @@ export class ContentKeyHolder {
       let line = await this.#writeLine(bags.get(args.bagId));
       if (isRefusal(line)) {
         if (line.refusal !== "bag-unfounded") return line;
+        // A founding follows no removal: while a raise in the bag's scope stays owed, no first version mints.
+        if ((args.owedActs?.() ?? []).length > 0) return refuse("roll-owed");
         const made = await this.#found(bags, args.bagId, args.founding?.history ?? "closed", args.signer);
         if (isRefusal(made)) return made;
         line = made.line; founded = made.minted;
@@ -493,6 +540,8 @@ export class ContentKeyHolder {
       const bag = bags.get(args.bagId)!;
       const at = await this.#head(bag, line, args.signer);
       if (isRefusal(at)) return at;
+      const owesRoll = (): boolean => (args.owedActs?.() ?? []).some((act) => !line.lineage.followsRemoval(at.head, act));
+      if (owesRoll()) return refuse("roll-owed");
       const key = line.keys.get(at.head)!;
       const sealed = sealPrivateBody(args.plaintext, { bagId: args.bagId, key }, random);
       if (!("body" in sealed)) return refuse("seal-refused", sealed.refusal);
@@ -505,6 +554,9 @@ export class ContentKeyHolder {
       };
       const signed = await this.#sign("manifest", manifest, {}, args.bagId, line.locator, key, args.signer);
       if (isRefusal(signed)) return signed;
+      // THE COMMIT POINT. Every signature this seal waited on has landed; nothing of the value rests yet. A raise the
+      // vessel counted meanwhile binds it here: the head must still follow every owed raise, or nothing rests.
+      if (owesRoll()) return refuse("roll-owed");
       // A lock that landed while the manifest signed overwrote the key, so the record above never read back.
       await this.#rest(() => this.#ports.values.write(body.cid, body.ciphertext));
       const id = await this.#rest(() => store.putRecord(signed.carried));
@@ -571,7 +623,8 @@ export class ContentKeyHolder {
     return {
       bagsOf: (scope) => vessel.bagsOf(scope),
       lineagesOf: async (bagId) => {
-        if (this.#locked) return null;
+        // No chain standing: the holder reads nothing, so the roll reads `unknown-bag` and comes again.
+        if (this.#locked || !this.#chainStands()) return null;
         const bag = (await this.#inTurn(async () => (await this.#loaded()).get(bagId) ?? { bagId, lines: new Map<BagLocator, Line>() })) as Bag | HolderRefusal;
         if (isRefusal(bag)) return null;
         return [...bag.lines.values()].filter((line) => !line.lineage.unfounded).map((line) => ({ founding: line.locator, lineage: line.lineage, held: this.#usable(line) }));
@@ -753,7 +806,9 @@ export class ContentKeyHolder {
       const named = [...new Set(args.bags)].sort(ascending);
       if (!named.every((bagId) => isWellFormedText(bagId))) return refuse("bag-malformed");
       if (args.shadowRead !== true) for (const bagId of named) if (await this.#ports.ownEdgeShadowed(bagId)) return refuse("own-edge-shadowed");
-      const bags = await this.#loaded();
+      // A SEAT THAT OPENS NO LOCKBOX HOLDS NOTHING UNDER ANY CHAIN (a vessel that dials no hearth composes none):
+      // its section carries no entry, and no reading caches. One that opens a lockbox counts under the chain alone.
+      const bags = !this.#chainStands() && !(await this.#opensAnyLockbox()) ? new Map<string, Bag>() : await this.#loaded();
       const entries: MemoryEntry[] = [];
       const holds: MemoryHolding[] = [];
       for (const bagId of named) for (const line of [...(bags.get(bagId)?.lines.values() ?? [])].sort((a, b) => ascending(a.locator, b.locator))) {
@@ -945,6 +1000,14 @@ export class ContentKeyHolder {
       uncounted: [...line.why].filter(([version]) => !line.lineage.has(version)).map(([keyVersion, why]) => ({ keyVersion, why })).sort((a, b) => ascending(a.keyVersion, b.keyVersion)),
     }));
     return { bagId: bag.bagId, foundings, rival: foundings.filter((founding) => founding.heads.length > 0).length > 1 };
+  }
+
+  /**
+   * Does any founding this seat holds keep a removal version in its rest, counted or not? A seat that rolled once
+   * reads a removal's evidence from the vessel's fold; one that never rolled has none to read, as a joinee's seat.
+   */
+  holdsRemoval(): Promise<boolean | HolderRefusal> {
+    return this.#inTurn<boolean>(async () => [...(await this.#loaded()).values()].some((bag) => [...bag.lines.values()].some((line) => line.rolled === true)));
   }
 
   /** What this vessel reads for one bag: each founding, its heads, what it holds, and what a door must show. */

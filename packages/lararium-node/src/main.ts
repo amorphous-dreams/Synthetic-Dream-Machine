@@ -791,6 +791,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     claim:        floor.storeClaim,
     repo:         result.repo,
     sessions:     result.sessionDoor,
+    signers:      result.sessionSigns,
     switchActs:   nodeSwitchActLog,
     sessionVerbs: STORE_DOOR_FACE_ROWS,
     socketVerbs:  new Set([...STORE_DOOR_FACE_ROWS, ...REALM_KEY_VERBS]),
