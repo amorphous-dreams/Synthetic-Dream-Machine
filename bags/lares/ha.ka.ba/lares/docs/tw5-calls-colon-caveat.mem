@@ -102,6 +102,6 @@ A time of day trips the case a URI trips, so the warning leads with the general 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;L9mx5mhhEvgCmMnMl_GdEvaw4-1DVUk4qJsj4-ztDfg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;L9mx5mhhEvgCmMnMl_GdEvaw4-1DVUk4qJsj4-ztDfg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

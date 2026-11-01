@@ -63,6 +63,6 @@ Mandate, activity and result stand as distinct records. Human, agent and workloa
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;q8g-0UAsf5JMqDiZzuRGO7y6lI3-BArxz7pG2xEDX0Y
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;q8g-0UAsf5JMqDiZzuRGO7y6lI3-BArxz7pG2xEDX0Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

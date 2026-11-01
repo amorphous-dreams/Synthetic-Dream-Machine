@@ -78,6 +78,6 @@ Source: https://github.com/tlaplus/Examples
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;pAgvZwAZGL2RE9jaFHNJIKSUY65clka7j0-CCuyL7oM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pAgvZwAZGL2RE9jaFHNJIKSUY65clka7j0-CCuyL7oM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

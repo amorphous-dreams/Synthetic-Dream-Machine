@@ -106,6 +106,6 @@ Mu does not hold:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;WN2emspLXNYJcOvwmGwy8lI_ZYjixTYUichHkF6B008
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WN2emspLXNYJcOvwmGwy8lI_ZYjixTYUichHkF6B008`>>
 
 <<^ code=`&#x0004;` to=`?`>>

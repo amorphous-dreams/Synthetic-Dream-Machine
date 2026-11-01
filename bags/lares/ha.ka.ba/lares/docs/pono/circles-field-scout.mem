@@ -168,6 +168,6 @@ The spirit retracts these outright after failing to re-fetch them:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;PjFYGKkr_9xxBmcgg3werVYIkOBUD0bCMS1C1Oxqf7g
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PjFYGKkr_9xxBmcgg3werVYIkOBUD0bCMS1C1Oxqf7g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

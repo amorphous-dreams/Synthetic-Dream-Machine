@@ -189,6 +189,6 @@ See `uefn-scene` for the `reaction:subscribable` edge format and `KumuSubscribab
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;pYCPG4zHpdC0uTBN4Cq1DpPQJqgYhiEG-HddrJcjE7c
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pYCPG4zHpdC0uTBN4Cq1DpPQJqgYhiEG-HddrJcjE7c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

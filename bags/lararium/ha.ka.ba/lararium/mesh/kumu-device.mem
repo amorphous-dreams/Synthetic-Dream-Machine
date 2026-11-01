@@ -194,6 +194,6 @@ See: `lar:///ha.ka.ba/lares/api/pono/nalu#/yin-collapse-law`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;BF1WvLJTbazLA9Gp9HoR2Cjoi5g43fmiUfFiohgjY6Q
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BF1WvLJTbazLA9Gp9HoR2Cjoi5g43fmiUfFiohgjY6Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

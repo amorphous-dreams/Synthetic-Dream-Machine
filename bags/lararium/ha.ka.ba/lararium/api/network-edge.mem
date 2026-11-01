@@ -141,6 +141,6 @@ The network ring stands UNBUILT; the mapping and the wire-answers below read as 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;EpTu7Knd7s5jEKaXkVoZp7jRdbWl2D7oQermvnMmuHs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EpTu7Knd7s5jEKaXkVoZp7jRdbWl2D7oQermvnMmuHs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

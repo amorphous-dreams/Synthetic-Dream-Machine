@@ -181,6 +181,6 @@ These questions don't get answered by adding more architecture. They get answere
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tbmhEyfSo0dIR33AlbszuA7bRx67GsGY5NsV6M05R1A
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tbmhEyfSo0dIR33AlbszuA7bRx67GsGY5NsV6M05R1A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

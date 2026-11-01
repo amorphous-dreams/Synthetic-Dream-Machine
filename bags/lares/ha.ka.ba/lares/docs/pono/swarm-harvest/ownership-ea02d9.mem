@@ -223,6 +223,6 @@ Three structural observations the evidence supports:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7b96PtcF59CHItFGP7XGVgchvLmYuZwTd4aSpjYC198
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7b96PtcF59CHItFGP7XGVgchvLmYuZwTd4aSpjYC198`>>
 
 <<^ code=`&#x0004;` to=`?`>>

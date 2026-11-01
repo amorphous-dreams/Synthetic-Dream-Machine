@@ -69,6 +69,6 @@ glyph-definition drafts and the `lares-*.instructions` files.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;VsYNkjkQHgtiOIrQeBfEckldHIK0SAWGa-s3gwGHv4s
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VsYNkjkQHgtiOIrQeBfEckldHIK0SAWGa-s3gwGHv4s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

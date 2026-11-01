@@ -64,6 +64,6 @@ machinery-written fields would admit anything the machinery could produce.
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/one-name-one-relation`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;833GTYe6U9idQvep6-e9LT3N6633ycy64cA2ehiK5cE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;833GTYe6U9idQvep6-e9LT3N6633ycy64cA2ehiK5cE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -412,6 +412,6 @@ desc  = "A rejection confesses that something understood the question (siege-res
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HBB5qaidXap8MyW3tawgRZYLnyxmMfV2pKVs73NNA1c
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HBB5qaidXap8MyW3tawgRZYLnyxmMfV2pKVs73NNA1c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

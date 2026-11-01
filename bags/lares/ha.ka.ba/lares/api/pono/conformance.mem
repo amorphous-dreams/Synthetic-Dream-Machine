@@ -120,6 +120,6 @@ By the speech-act test the invocation reads as a first-person present-tense act 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;kRJifJZdbbUB2LG6vCAalmoMbIafoWc-q-SzoqSg8LM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kRJifJZdbbUB2LG6vCAalmoMbIafoWc-q-SzoqSg8LM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -63,6 +63,6 @@ The worker half stood since PR #87: the port log, the wire, the island handler, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0ZpmdYeU-B4NP-ZtJBkX5p9qBOnJAdM5gP1v7HcV4Nk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0ZpmdYeU-B4NP-ZtJBkX5p9qBOnJAdM5gP1v7HcV4Nk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

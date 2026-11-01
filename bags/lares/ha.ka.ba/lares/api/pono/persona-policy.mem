@@ -264,6 +264,6 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;lltSvU77JxfptBpl6boemcz9Pwva8c4iWxFjq5RCjTw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lltSvU77JxfptBpl6boemcz9Pwva8c4iWxFjq5RCjTw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

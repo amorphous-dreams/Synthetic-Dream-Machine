@@ -274,6 +274,6 @@ The canonical vocabulary and failure-state mapping live in [[mandate-activity-pr
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;KPlejxjz7SSD4RoeC3esewPAtiENwgJEDEPKuwj_ZAI
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KPlejxjz7SSD4RoeC3esewPAtiENwgJEDEPKuwj_ZAI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

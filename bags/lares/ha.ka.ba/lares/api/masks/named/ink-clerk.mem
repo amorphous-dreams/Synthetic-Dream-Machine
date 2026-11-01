@@ -168,6 +168,6 @@ How Ink-Clerk colors each Voice register when they speak through her archival-pr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;8VV5OroekbHs1QA9oWESoi1d7DpgPJwJB_bB601iIZU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8VV5OroekbHs1QA9oWESoi1d7DpgPJwJB_bB601iIZU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -271,6 +271,6 @@ async-aware, deterministic semantics with the concurrency operators.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;h5-8P6BV_bvWa9m2ulTIMhDXh2fId0vjt8P0LDFohCc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;h5-8P6BV_bvWa9m2ulTIMhDXh2fId0vjt8P0LDFohCc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -76,6 +76,6 @@ record saying one thing and the offering carrying another.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ffpc1vfGgInX-i_cjYSN1dHlp08WIG5lhPLq_FdT8es
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ffpc1vfGgInX-i_cjYSN1dHlp08WIG5lhPLq_FdT8es`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -135,6 +135,6 @@ file, a browser agent takes the carrier pasted in.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;bzxbpP07Uig97bXYMSZTEt8jvpj6UvxllLjTyLkhcFw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bzxbpP07Uig97bXYMSZTEt8jvpj6UvxllLjTyLkhcFw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

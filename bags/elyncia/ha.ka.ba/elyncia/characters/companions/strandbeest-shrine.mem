@@ -334,6 +334,6 @@ The strandbeest legs lock into aggressive posture — stabbing, sweeping, and tr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Dt_9P4dR4N3mmzAY1qpna909gdftlEvdL61MOW7Hv3M
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Dt_9P4dR4N3mmzAY1qpna909gdftlEvdL61MOW7Hv3M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

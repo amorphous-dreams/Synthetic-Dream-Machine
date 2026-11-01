@@ -121,6 +121,6 @@ close-pattern = '<<~\/wai\s*>>'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;N9GdSfWxiS13ALSZAbsbABEfarYmIzJiZE_oQB2st1g
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;N9GdSfWxiS13ALSZAbsbABEfarYmIzJiZE_oQB2st1g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

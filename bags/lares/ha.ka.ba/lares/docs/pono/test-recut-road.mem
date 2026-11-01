@@ -181,6 +181,6 @@ Train T's complete rows move to the road's own #/o-takiage at each land. This ki
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;rGiIPY1YMXzybe6A8R1Fk9yJ20KdaToNsmYdWpKtE8g
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rGiIPY1YMXzybe6A8R1Fk9yJ20KdaToNsmYdWpKtE8g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

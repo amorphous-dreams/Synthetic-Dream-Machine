@@ -203,6 +203,6 @@ CONTROLS standing green beside them: an explicit `--recipe default` put lands in
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;T3JcMxbKrDf2fyz-2prCvrdk-U66J_MV3ihqByofee8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;T3JcMxbKrDf2fyz-2prCvrdk-U66J_MV3ihqByofee8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

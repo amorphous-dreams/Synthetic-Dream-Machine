@@ -140,6 +140,6 @@ The greeting decides; no step reads a clock, and `shared-holder.ts` states the l
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/browser-trust-line-2026`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9qClC9B7loRV9qVM57eJ4AmYqZQnkYZ1dWR2bHPVQ_Q
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9qClC9B7loRV9qVM57eJ4AmYqZQnkYZ1dWR2bHPVQ_Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

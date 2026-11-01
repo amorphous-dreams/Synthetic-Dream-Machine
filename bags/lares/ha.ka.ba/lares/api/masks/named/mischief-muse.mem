@@ -196,6 +196,6 @@ These notes require live session observation before they can be written with con
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;8NPQSV-26VjDIakDZEERVOVO3Km42twC8Sn6f8miopY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8NPQSV-26VjDIakDZEERVOVO3Km42twC8Sn6f8miopY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

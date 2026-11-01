@@ -67,6 +67,6 @@ The shipped template renders a `<span class="lar-pranala">` carrying `data-from`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;kB5Cro8K6sC90fwoIGsFSeBzNGyl2zBuAAr4BGwScyo
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kB5Cro8K6sC90fwoIGsFSeBzNGyl2zBuAAr4BGwScyo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

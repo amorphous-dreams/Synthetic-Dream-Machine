@@ -216,6 +216,6 @@ The full survey with its prior-art table rests in the project's shared reports a
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ni05rvzrdsAljW-Ogitx21xS4Kpb7xY246v-tCFpe2Q
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ni05rvzrdsAljW-Ogitx21xS4Kpb7xY246v-tCFpe2Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

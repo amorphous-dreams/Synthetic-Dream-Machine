@@ -56,6 +56,6 @@ The declaration rides in `packages/lararium-tw5/tiddlers/sigil-lele.tid` with `l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;gUIHLo973CLPQ4FELP0wql6lR7qZ6pJ74IlPpMz_FWQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gUIHLo973CLPQ4FELP0wql6lR7qZ6pJ74IlPpMz_FWQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

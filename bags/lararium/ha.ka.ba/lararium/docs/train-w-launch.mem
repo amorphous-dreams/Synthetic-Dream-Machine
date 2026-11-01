@@ -116,6 +116,6 @@ Done when every enabled production dial emits Noise IK first, follows one typed 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;cR0KBAS7GSmjSkY2VkYFZzeDA0OkrWhVC1_PTR-47ew
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cR0KBAS7GSmjSkY2VkYFZzeDA0OkrWhVC1_PTR-47ew`>>
 
 <<^ code=`&#x0004;` to=`?`>>

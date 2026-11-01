@@ -30,6 +30,6 @@ one place to go stale. The full statement lives at:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;40vij71u4aiHHri2Yuu4cZAIjSt6YsiINVrwOnh2mgs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;40vij71u4aiHHri2Yuu4cZAIjSt6YsiINVrwOnh2mgs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

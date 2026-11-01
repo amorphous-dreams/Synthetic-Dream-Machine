@@ -57,6 +57,6 @@ Tune to the writing and read its magical interface layer. The referee gives the 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;k5AhH3lnjPmplfWj_0Z3d-YrcxaqBy7pu3czcUIq52Y
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;k5AhH3lnjPmplfWj_0Z3d-YrcxaqBy7pu3czcUIq52Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

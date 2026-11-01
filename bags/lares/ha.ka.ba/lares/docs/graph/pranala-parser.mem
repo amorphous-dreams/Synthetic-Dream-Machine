@@ -77,9 +77,9 @@ BLOCK_RE = re.compile(
 
 ''TOML fence extraction:''
 
-```python
+````python
 TOML_RE = re.compile(r'```toml\s*(.*?)```', re.DOTALL)
-```
+````
 
 Same regex the carrier ingress already uses. The result gets parsed with `tomllib.loads()`.
 
@@ -220,6 +220,6 @@ Unresolvable TO expressions produce a `DeclaredUnresolved` record rather than an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tiMEFLbWC1ViKU0XVMA5uVIM5HXYANMNN4CS3qhkRNg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MxQaOD3a4oqmppIosiV7-jv5B5iEoreEMH7uPuwkeKo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

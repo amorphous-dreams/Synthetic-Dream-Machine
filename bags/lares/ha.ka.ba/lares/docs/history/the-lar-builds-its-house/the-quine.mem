@@ -168,6 +168,6 @@ Act III receives:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;YnSdefr1JwXGyh-CS7r3VX7PepmfzatvGOADdYSxsQg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YnSdefr1JwXGyh-CS7r3VX7PepmfzatvGOADdYSxsQg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

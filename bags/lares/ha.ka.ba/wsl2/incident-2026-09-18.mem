@@ -79,6 +79,6 @@ The fault sits in the regenerated parser with the new external scanner, fed a br
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;NApi-mle0tlPv9pKWQPT0-iGeUYoDuwhsu2HGCFTdTY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NApi-mle0tlPv9pKWQPT0-iGeUYoDuwhsu2HGCFTdTY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

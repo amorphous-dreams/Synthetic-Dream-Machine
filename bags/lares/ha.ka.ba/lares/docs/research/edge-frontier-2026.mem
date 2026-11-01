@@ -35,6 +35,6 @@ A fifth fresh read of `K15` Wave B found that reading an empty edge board's abse
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ChcJCJMzo7NgghtCaJbQoHHz2nK0p_0-yixK3UYA_Is
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ChcJCJMzo7NgghtCaJbQoHHz2nK0p_0-yixK3UYA_Is`>>
 
 <<^ code=`&#x0004;` to=`?`>>

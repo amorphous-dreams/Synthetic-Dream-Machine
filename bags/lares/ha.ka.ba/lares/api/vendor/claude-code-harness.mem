@@ -195,6 +195,6 @@ built against them tests behaviour, never a schema.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;mGQsQCPG_cwV-1cSvLFl18qA7fYBJxN5nXb5RUnFlEs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mGQsQCPG_cwV-1cSvLFl18qA7fYBJxN5nXb5RUnFlEs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

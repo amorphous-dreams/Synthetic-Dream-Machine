@@ -262,6 +262,6 @@ Purpose: turn metaphysics into handles: rift types, necro-fog effects, iron-curs
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Ujt9bInDNOaSKFV8R3ptbfXzv4iCRHJoKA7IgnxUlbY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ujt9bInDNOaSKFV8R3ptbfXzv4iCRHJoKA7IgnxUlbY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

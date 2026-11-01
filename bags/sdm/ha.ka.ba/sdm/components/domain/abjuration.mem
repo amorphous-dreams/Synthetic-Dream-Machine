@@ -69,6 +69,6 @@ Pairs with `function/barrier` and `function/ward`. Counters offensive crossings;
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_pm-qolqyYs1wVIXXFKYMXt3RXq32MVS-7u8r8N_Dwg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_pm-qolqyYs1wVIXXFKYMXt3RXq32MVS-7u8r8N_Dwg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -59,6 +59,6 @@ A sealed anchor per face per device; signed records carried by sync under immuta
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;uKegRZ8mQQumjbEerJSWGxs1rnG9HUC8qenMcCSP8FQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uKegRZ8mQQumjbEerJSWGxs1rnG9HUC8qenMcCSP8FQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -91,6 +91,6 @@ On a botched or breached ward, choose one: it flares and reveals the operator; g
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HvtmkL7s7_dBHQ7ZEL4o0T2dqEug0wXaMGaQDze1ED4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HvtmkL7s7_dBHQ7ZEL4o0T2dqEug0wXaMGaQDze1ED4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

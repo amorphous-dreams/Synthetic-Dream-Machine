@@ -123,6 +123,6 @@ Read the three together and the grammar teaches itself: the floor opens on a rea
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;rg8dAWOrtHSCUGwdXbiKGFRAF74-SE20MG-fJjROuE4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rg8dAWOrtHSCUGwdXbiKGFRAF74-SE20MG-fJjROuE4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

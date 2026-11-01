@@ -74,6 +74,6 @@ The identity-privacy hardening (per-handle vessel credential · scope-exclusive 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;lU-Ck5nHgHqadvMm0H1XjTw_o9NsBgqcBeuyal__dvc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lU-Ck5nHgHqadvMm0H1XjTw_o9NsBgqcBeuyal__dvc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

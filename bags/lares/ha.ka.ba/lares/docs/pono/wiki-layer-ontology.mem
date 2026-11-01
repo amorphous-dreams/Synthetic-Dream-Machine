@@ -346,6 +346,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;F0t9nMbmId1-JWU-k_2-NcVfMjIDYjShRxj_mr4p108
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;F0t9nMbmId1-JWU-k_2-NcVfMjIDYjShRxj_mr4p108`>>
 
 <<^ code=`&#x0004;` to=`?`>>

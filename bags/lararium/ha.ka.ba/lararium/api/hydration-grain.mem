@@ -116,6 +116,6 @@ Any snapshot design MUST satisfy these; none of them awaits research.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;gD5RqLpUEfrY1xdFu4RsVgYhfsS2JrY1LH5ZiuOsXDQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gD5RqLpUEfrY1xdFu4RsVgYhfsS2JrY1LH5ZiuOsXDQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

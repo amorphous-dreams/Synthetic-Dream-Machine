@@ -92,6 +92,6 @@ In the Kumulipo creation chant, //waiho// appears in the context of primal mater
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Hu3IYUqmHANk7C-93MAOqOQK_lCZ1JbTcDdCkYAuOPE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Hu3IYUqmHANk7C-93MAOqOQK_lCZ1JbTcDdCkYAuOPE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

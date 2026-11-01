@@ -113,6 +113,6 @@ could include thumbnail + og-title in the handshake). Hold open.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;11zkLiNoZR00lp1R7SKJKAEdOI5kCyQs6mx3ieTfb60
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;11zkLiNoZR00lp1R7SKJKAEdOI5kCyQs6mx3ieTfb60`>>
 
 <<^ code=`&#x0004;` to=`?`>>

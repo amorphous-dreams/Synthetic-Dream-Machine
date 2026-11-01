@@ -58,6 +58,6 @@ The declaration rides in `packages/lararium-tw5/tiddlers/sigil-kukali.tid` with 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0MUahYS7poX0fHjcdLq8S5TeIBrPVK0jbgmTIOmQ_uI
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0MUahYS7poX0fHjcdLq8S5TeIBrPVK0jbgmTIOmQ_uI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

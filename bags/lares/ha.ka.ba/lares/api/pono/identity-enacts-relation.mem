@@ -386,6 +386,6 @@ Provisional (operator, 2026-07-28): `pili` — cling/adhere/''pertain'', one ver
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;TwQyCT5RTrLFm39TbKG-T2qCCXUbbJskukmWKoRoKpY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TwQyCT5RTrLFm39TbKG-T2qCCXUbbJskukmWKoRoKpY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

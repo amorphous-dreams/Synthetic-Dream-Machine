@@ -47,6 +47,6 @@ shelf reads plainly:)//
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;5k0fDt3Gqt1Zdht4QatBUifngDopejbwgz8EnBSbXGM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5k0fDt3Gqt1Zdht4QatBUifngDopejbwgz8EnBSbXGM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -140,6 +140,6 @@ For the citizen with ''no quorum yet'', the floor rests on a ''standalone record
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Jtv0RFMDCMJQ_6lWj-zOmPU0SdpuiS_GLUOqL5eD4rk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jtv0RFMDCMJQ_6lWj-zOmPU0SdpuiS_GLUOqL5eD4rk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

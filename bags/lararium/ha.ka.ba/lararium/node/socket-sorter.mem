@@ -88,6 +88,6 @@ drops each one the way the gate drops a refused one: no frame, no reason.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/vessel-gates`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;nKNV1T_aGZ5mmd5v_br-wgXEK4M-SjYMwIPTTC_xb_s
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nKNV1T_aGZ5mmd5v_br-wgXEK4M-SjYMwIPTTC_xb_s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

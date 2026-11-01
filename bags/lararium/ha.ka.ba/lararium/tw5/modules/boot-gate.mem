@@ -67,6 +67,6 @@ After at least one module injects, the gate reads `lar:///ha.ka.ba/lararium/tw5/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iSVJP4Hyx3zFkBo9Sw5d_NbHkacCCJ3_ZUuMX0f_YJM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iSVJP4Hyx3zFkBo9Sw5d_NbHkacCCJ3_ZUuMX0f_YJM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -105,6 +105,6 @@ research stream <confidence:0.6 — design resolved, implementation pending>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;dAc1xg0Gqc26Q8auBbE-1f4F9Btz-uSJ6Jl4Zo2D-eE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dAc1xg0Gqc26Q8auBbE-1f4F9Btz-uSJ6Jl4Zo2D-eE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

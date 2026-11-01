@@ -299,6 +299,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;siXNn2GnLbTDAQIdF5oTNE4qW-LYVi1E4zMKWiZFDLw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;siXNn2GnLbTDAQIdF5oTNE4qW-LYVi1E4zMKWiZFDLw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

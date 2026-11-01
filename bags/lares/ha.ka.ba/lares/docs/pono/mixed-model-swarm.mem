@@ -271,6 +271,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;BVMsQQOtcTJTx31p4CMop9SIkSwCmoPmodzkwVOO48g
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BVMsQQOtcTJTx31p4CMop9SIkSwCmoPmodzkwVOO48g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

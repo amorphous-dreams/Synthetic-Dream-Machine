@@ -117,6 +117,6 @@ render tells them apart.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;daGRs4FmddeUH0WGlqfOCSMCZvfOw6XvrNwlLdB_JUY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;daGRs4FmddeUH0WGlqfOCSMCZvfOw6XvrNwlLdB_JUY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -63,6 +63,6 @@ The hands spine's session files, K15's seed, identity, custody and carriage-key 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7TihswdiemBUAm0FpaZyAaSZXM2cGOw8dM6WLqeNBgY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7TihswdiemBUAm0FpaZyAaSZXM2cGOw8dM6WLqeNBgY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

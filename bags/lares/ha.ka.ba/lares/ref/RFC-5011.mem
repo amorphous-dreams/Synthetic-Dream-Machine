@@ -39,6 +39,6 @@ never invented — in `[reference]` above, so a pin at this address cites the wo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-cXM2zOBWtwFyma15tCvHettHGs0LMvXOQwRhK-kt54
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-cXM2zOBWtwFyma15tCvHettHGs0LMvXOQwRhK-kt54`>>
 
 <<^ code=`&#x0004;` to=`?`>>

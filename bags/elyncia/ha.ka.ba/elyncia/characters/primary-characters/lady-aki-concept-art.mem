@@ -218,6 +218,6 @@ When Aki walks into a settlement:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tp9orXvzXHJqklH-92VI4p0fkDjxGdz0KNWuRhf8hfE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tp9orXvzXHJqklH-92VI4p0fkDjxGdz0KNWuRhf8hfE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

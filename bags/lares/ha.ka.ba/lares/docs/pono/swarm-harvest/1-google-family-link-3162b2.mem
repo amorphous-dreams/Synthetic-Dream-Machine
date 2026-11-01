@@ -340,6 +340,6 @@ The platforms wrote the persistent-notification rule for everyone but themselves
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3PIzr556_CEoq-e1_1lsshNoRDic0JARpiKdg4kdl0c
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3PIzr556_CEoq-e1_1lsshNoRDic0JARpiKdg4kdl0c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -209,6 +209,6 @@ The reaction dispatch layer runs as a ''Scope-1'' CRDT-wave surface under the tw
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;wtxIhcs5Md5G6VxLB8mlL42sj-jJEi1MLL9QDZNPugU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wtxIhcs5Md5G6VxLB8mlL42sj-jJEi1MLL9QDZNPugU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

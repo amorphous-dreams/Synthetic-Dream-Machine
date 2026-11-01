@@ -59,6 +59,6 @@ The declaration rides in `packages/lararium-tw5/tiddlers/sigil-papalohe.tid` wit
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;h_2qmDUr9JfTTMh_2AYyPWYBVVfP97nfN9zMcC-YtoE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;h_2qmDUr9JfTTMh_2AYyPWYBVVfP97nfN9zMcC-YtoE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -81,6 +81,6 @@ The roadmap's TWO HEARTHS path and fresh-start instructions hold the driver and 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9yrw0BbFWkJPeu7RN6DIvDY3CVx46X_8_1ZGccknurQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9yrw0BbFWkJPeu7RN6DIvDY3CVx46X_8_1ZGccknurQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

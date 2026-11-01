@@ -208,6 +208,6 @@ Read from `persona-kel.ts` and `recovery-keel-core.ts` at their current heads. â
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3NpxxNeYQjJztHZA0cRYny6LDL5JWyD0bzVayM1tEns
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3NpxxNeYQjJztHZA0cRYny6LDL5JWyD0bzVayM1tEns`>>
 
 <<^ code=`&#x0004;` to=`?`>>

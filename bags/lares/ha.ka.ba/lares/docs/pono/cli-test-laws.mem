@@ -103,6 +103,6 @@ Generated laws draw from `fast-check` through `@fast-check/vitest`, the literal 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tqXIpNi8k7_JvHwM4VkgtG9owDa6ZNkGAHABQ6QCtWI
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tqXIpNi8k7_JvHwM4VkgtG9owDa6ZNkGAHABQ6QCtWI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

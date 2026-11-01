@@ -106,6 +106,6 @@ The `write-source-memes.ts` script MUST:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;6Nx6cv-_YT5iRfqTaWi4VmBgxWyysTNBSqhCF1NtL9A
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6Nx6cv-_YT5iRfqTaWi4VmBgxWyysTNBSqhCF1NtL9A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

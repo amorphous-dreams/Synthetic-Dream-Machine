@@ -99,6 +99,6 @@ One latent product note (not the flake, out of scope to change): the ''productio
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;IHmfWQOwXiDGkRapV-B9c8zk4HI6TQxvgN7sF6zX1Js
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IHmfWQOwXiDGkRapV-B9c8zk4HI6TQxvgN7sF6zX1Js`>>
 
 <<^ code=`&#x0004;` to=`?`>>

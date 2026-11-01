@@ -110,6 +110,6 @@ A later engine+grammar scout (2026-09-11) verified this recovery's claims agains
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;oo_B62IL2fh8kEGhFnLMXEUXpk_1ANZVItwg9C1WHB4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oo_B62IL2fh8kEGhFnLMXEUXpk_1ANZVItwg9C1WHB4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

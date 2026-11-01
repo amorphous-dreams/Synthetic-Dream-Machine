@@ -114,6 +114,6 @@ Prism keeps the worthwhile half --- //reference a piece of content and read its 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;qYHJnC_DhgsfvFenBfhCtsUkcYF-v7urJqNZe33cyDM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qYHJnC_DhgsfvFenBfhCtsUkcYF-v7urJqNZe33cyDM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -238,6 +238,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9Dx_N9pAobA-o2ZPPVKBsYt_0QYjU14FWWa8IK5jCUw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9Dx_N9pAobA-o2ZPPVKBsYt_0QYjU14FWWa8IK5jCUw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

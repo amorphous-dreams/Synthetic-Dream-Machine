@@ -140,6 +140,6 @@ verb × capability saturation × capability totality. One word, three owners, no
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;XNmpZmy8I-Ag9zHZMHqbQ_Yl5kug74lv-bX447sFxU4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XNmpZmy8I-Ag9zHZMHqbQ_Yl5kug74lv-bX447sFxU4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

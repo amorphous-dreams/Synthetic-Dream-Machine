@@ -306,6 +306,6 @@ Briar's FAQ is the only place any of these projects writes the general law down,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;m9_ZgJtYVNrEkcTNsi1PyeRmqJDBbKqPmiUo6Lu4sZg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;m9_ZgJtYVNrEkcTNsi1PyeRmqJDBbKqPmiUo6Lu4sZg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

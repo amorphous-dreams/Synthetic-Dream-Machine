@@ -145,6 +145,6 @@ The worker swarm spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST imple
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;f6MKm1wyVLMiLO8tLK53k6DkfoodSyee96_h2lFYQko
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;f6MKm1wyVLMiLO8tLK53k6DkfoodSyee96_h2lFYQko`>>
 
 <<^ code=`&#x0004;` to=`?`>>

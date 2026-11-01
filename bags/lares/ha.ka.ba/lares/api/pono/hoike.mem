@@ -112,6 +112,6 @@ The layer carries the Eduyot pattern: minority opinions kept with attribution so
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;58hPCcuyJRFzcBrlfKkhVpucjrhyivOy1z3N9TyHri8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;58hPCcuyJRFzcBrlfKkhVpucjrhyivOy1z3N9TyHri8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -109,6 +109,6 @@ agrees-with    = "uri-path"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Abv7Pjdyn0Mc5PLE-w9BLz7j8dbE054HCDZlaVdyygo
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Abv7Pjdyn0Mc5PLE-w9BLz7j8dbE054HCDZlaVdyygo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

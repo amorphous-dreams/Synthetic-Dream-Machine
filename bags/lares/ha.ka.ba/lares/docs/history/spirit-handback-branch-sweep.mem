@@ -255,6 +255,6 @@ Sources: `in/branch-scout-luna.md; in/sweep-cold-reader.md`. Persona: Branch-Sco
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ATYXDarEGpGxKzD_RUFXHgL04_U-4k-eFacRBd8ec60
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ATYXDarEGpGxKzD_RUFXHgL04_U-4k-eFacRBd8ec60`>>
 
 <<^ code=`&#x0004;` to=`?`>>

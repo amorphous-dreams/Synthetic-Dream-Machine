@@ -118,6 +118,6 @@ never a default; a `REPO_ROOT` default would resolve `larHome()` to the repo and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7_1rsLW5xqy4aQ3gS-fH5avPyO0Q5bKe9qb5rthw_uM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7_1rsLW5xqy4aQ3gS-fH5avPyO0Q5bKe9qb5rthw_uM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -54,6 +54,6 @@ A canon crossing into `@crossroads` passes `lares meme promote --approval <file>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0KzD5DMSqBJDEo_uvKxbgNowkP3F_tIjy3cehoIMmcc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0KzD5DMSqBJDEo_uvKxbgNowkP3F_tIjy3cehoIMmcc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

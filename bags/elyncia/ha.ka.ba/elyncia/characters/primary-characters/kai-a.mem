@@ -84,6 +84,6 @@ stays a table question.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;vz7ptz4MSgUxOCVe3GxHtOeYBR3s858Qr6lAy6HyKu8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vz7ptz4MSgUxOCVe3GxHtOeYBR3s858Qr6lAy6HyKu8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

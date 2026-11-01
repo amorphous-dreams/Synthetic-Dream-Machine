@@ -79,6 +79,6 @@ A sigil form the rule cannot recognize renders as `<span class="lar-sigil-degrad
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ajF2vP8Mfmnak5E3ad1IkNbY2TxvTG2SxV4BagrfsXU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ajF2vP8Mfmnak5E3ad1IkNbY2TxvTG2SxV4BagrfsXU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

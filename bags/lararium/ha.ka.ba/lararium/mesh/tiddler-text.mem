@@ -29,6 +29,6 @@ One helper holds the guard on an oracle tiddler's text: a caller reads `tiddlerT
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;6EeX7VoMWM3tonL5NtvOvpOfZhAryVYH1-KgwWDQzds
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6EeX7VoMWM3tonL5NtvOvpOfZhAryVYH1-KgwWDQzds`>>
 
 <<^ code=`&#x0004;` to=`?`>>

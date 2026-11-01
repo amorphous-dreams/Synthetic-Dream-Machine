@@ -59,6 +59,6 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;077OZ7DQq8-6eobjqe-y8ZV3Td44c5gWznuTJKQrbn8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;077OZ7DQq8-6eobjqe-y8ZV3Td44c5gWznuTJKQrbn8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

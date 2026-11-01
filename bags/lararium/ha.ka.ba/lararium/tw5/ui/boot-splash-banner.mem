@@ -19,6 +19,6 @@ uri-path  = "ha.ka.ba/lararium/tw5/ui/boot-splash-banner"
 <div class="lar-boot-banner">⬡ lararium — warming causal islands…</div>
 </$reveal>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;IXOIYcCAJPTUrFalC4eDKIke2PjXcXLuZFGggoSNVS0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IXOIYcCAJPTUrFalC4eDKIke2PjXcXLuZFGggoSNVS0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

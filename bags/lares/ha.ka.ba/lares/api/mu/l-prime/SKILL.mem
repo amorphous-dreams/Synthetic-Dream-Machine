@@ -97,6 +97,6 @@ A sentence turn beats a lecture. Output stays compact: location, bucket, reason,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;uLs71B33mOroEgDjnGKbP231h-HqXqZ86QJyo9gnAoY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uLs71B33mOroEgDjnGKbP231h-HqXqZ86QJyo9gnAoY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

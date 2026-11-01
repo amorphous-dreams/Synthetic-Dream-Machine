@@ -71,6 +71,6 @@ The invocation alone can provide meaningful artistic direction to an image model
 The compact invocation names the primary visual intention; the accompanying Folio expands distinct questions, material behaviors, viewpoints and sources. Source URLs and artist names guide visual interpretation but need not enter the rendered picture as labels. Neither the invocation nor its prose expansion certifies traversability, relic identity or fictional canon.
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;5TQBdWXeNCp1GskGy1Un3KHaC49R-vRsX0YtyMRx03I
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5TQBdWXeNCp1GskGy1Un3KHaC49R-vRsX0YtyMRx03I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

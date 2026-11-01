@@ -173,6 +173,6 @@ Later that day the hearth-wiki itself boots with one dead module. The island kee
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-q8DlO3SvrII_GdtyMl00lHiezVrpu2VVE4YWsB7K6g
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-q8DlO3SvrII_GdtyMl00lHiezVrpu2VVE4YWsB7K6g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

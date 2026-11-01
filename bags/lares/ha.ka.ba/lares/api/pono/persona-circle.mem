@@ -222,6 +222,6 @@ And the substrate itself, by canon, has ''no forward-secrecy and no retroactive 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/mookuauhau`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Ub7AGvLHEtq16FltbBUphBH7KdgVlw7fCwqlrOCaTJw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ub7AGvLHEtq16FltbBUphBH7KdgVlw7fCwqlrOCaTJw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

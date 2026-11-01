@@ -149,6 +149,6 @@ Four domains converging on one shape reads as a real pattern integrity, not a lo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0UOhooeGmUrTgp0r7Y_TDrnE_jL4KelbhTTKbITuMnk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0UOhooeGmUrTgp0r7Y_TDrnE_jL4KelbhTTKbITuMnk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

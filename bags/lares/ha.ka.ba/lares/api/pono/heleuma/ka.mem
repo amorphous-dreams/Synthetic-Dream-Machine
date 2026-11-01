@@ -81,6 +81,6 @@ When `source-sha256` stands present and the signals meet every threshold, `_boot
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7ioy3ZgOCfW4Og7Hh9LxarYQA1gIKlQBaQdHyh8jdJA
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7ioy3ZgOCfW4Og7Hh9LxarYQA1gIKlQBaQdHyh8jdJA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

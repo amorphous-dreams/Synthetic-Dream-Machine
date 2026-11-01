@@ -57,6 +57,6 @@ Wiki leaves use `wikiBagUri(slug) = bagUri(slug)` as catalog keys (`packages/lar
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;nmbNjrGrKJtzvuQ-lchrcVJ4KLW8EkCJUV2MfRX3USc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nmbNjrGrKJtzvuQ-lchrcVJ4KLW8EkCJUV2MfRX3USc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

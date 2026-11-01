@@ -56,6 +56,6 @@ A concave disc of stuckforce, 1m across, hovering at waist height. It bears a lo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;R01d-1U6hKYc2KYA-GAdZUEhA7siNdEJz__FJENrR6c
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;R01d-1U6hKYc2KYA-GAdZUEhA7siNdEJz__FJENrR6c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

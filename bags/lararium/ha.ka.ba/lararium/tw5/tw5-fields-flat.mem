@@ -44,6 +44,6 @@ Before this file, `wiki-handlers.ts` owned `flattenRuntimeTiddlerFields()` (skip
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;6KzekG3b3pmqE568bSIiDDgPUFjGsgP1pP7ORN8acug
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6KzekG3b3pmqE568bSIiDDgPUFjGsgP1pP7ORN8acug`>>
 
 <<^ code=`&#x0004;` to=`?`>>

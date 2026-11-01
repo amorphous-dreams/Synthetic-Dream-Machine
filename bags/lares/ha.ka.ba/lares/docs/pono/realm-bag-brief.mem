@@ -89,6 +89,6 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;a_hUE8rx8C59_uK-Gi0v884nllnrTxCCVW3SmSrji8Q
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;a_hUE8rx8C59_uK-Gi0v884nllnrTxCCVW3SmSrji8Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

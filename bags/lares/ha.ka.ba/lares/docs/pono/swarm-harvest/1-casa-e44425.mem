@@ -156,6 +156,6 @@ This is a real, recent, cross-confirmed postmortem-class event, corroborated ind
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9JV9ZGHGoslq0YRiMdbpT0jTZw2bmP38UiCghzRfcXE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9JV9ZGHGoslq0YRiMdbpT0jTZw2bmP38UiCghzRfcXE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

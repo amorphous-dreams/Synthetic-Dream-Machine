@@ -26,6 +26,6 @@ Naming note: "signal" names a DIFFERENT layer — the Agent↔Operator HUD/legib
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ZrS7KCr0NWSpjpWTZqrRpwmT9AZSlN4ZvyOTzTe5Ibk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZrS7KCr0NWSpjpWTZqrRpwmT9AZSlN4ZvyOTzTe5Ibk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -251,6 +251,6 @@ Trace continuity across the causal island boundary:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;LqGF3qWDL0xC6XEEdi7av3d2dRcOIdFBROmgp1Bkfy8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LqGF3qWDL0xC6XEEdi7av3d2dRcOIdFBROmgp1Bkfy8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -87,6 +87,6 @@ A botched activation or a sundered pebble follows the `item` mount-point's failu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;2WWN7wLdK09LCErrPwX2YOhDnZkFNtWRkhuAYcNp14E
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2WWN7wLdK09LCErrPwX2YOhDnZkFNtWRkhuAYcNp14E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

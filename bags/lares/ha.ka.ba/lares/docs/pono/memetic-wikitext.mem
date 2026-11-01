@@ -192,6 +192,6 @@ The submission-grade specification at `lar:///ha.ka.ba/lares/api/pono/memetic-wi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_JL6mxcOtGvWuQP9Tgy5NDrK_KFHNykVIbh25sZfbCk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_JL6mxcOtGvWuQP9Tgy5NDrK_KFHNykVIbh25sZfbCk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

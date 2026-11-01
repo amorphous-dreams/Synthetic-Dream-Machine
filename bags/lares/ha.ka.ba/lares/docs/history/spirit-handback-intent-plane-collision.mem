@@ -75,6 +75,6 @@ The entry image and its domain split; signature coverage of audience, bound and 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;E0fPoy1kE0-hFTpA4xpNz0PmFZjbW523288dXtyELQY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;E0fPoy1kE0-hFTpA4xpNz0PmFZjbW523288dXtyELQY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

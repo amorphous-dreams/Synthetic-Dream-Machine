@@ -140,6 +140,6 @@ same change record any AutomergeDocStore would emit.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HR7BFlVEoAF4DtQhNSV0pcOzLaqNC0Fopbf-qKH0SVU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HR7BFlVEoAF4DtQhNSV0pcOzLaqNC0Fopbf-qKH0SVU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

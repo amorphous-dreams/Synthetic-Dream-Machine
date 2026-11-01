@@ -90,6 +90,6 @@ Three magic-system designs, independently derived across four decades, factor ma
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;qo5jtIvzHHRqJVLFtqG3JvtqR2iC6zymurVYFj42r_8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qo5jtIvzHHRqJVLFtqG3JvtqR2iC6zymurVYFj42r_8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

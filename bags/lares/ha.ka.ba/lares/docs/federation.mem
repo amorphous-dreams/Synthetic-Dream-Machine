@@ -148,6 +148,6 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;YJ7asvU56ybhsoEjmFn1fKlvKtPz0rblA0oDNImLw9M
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YJ7asvU56ybhsoEjmFn1fKlvKtPz0rblA0oDNImLw9M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

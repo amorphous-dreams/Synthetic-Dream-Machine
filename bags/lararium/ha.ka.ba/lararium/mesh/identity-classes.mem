@@ -697,6 +697,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;YNPIlmS_UkhEaOUnZAoOtbImQ7eeDpLDG1s5JniBQ2M
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YNPIlmS_UkhEaOUnZAoOtbImQ7eeDpLDG1s5JniBQ2M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

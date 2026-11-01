@@ -97,6 +97,6 @@ The ledger stays volatile: one adaptor, one session. A stopped adaptor clears it
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ksXjx-anI7rylOeyCB8rEDhma7kW9HK_MGxJTSwaIXw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ksXjx-anI7rylOeyCB8rEDhma7kW9HK_MGxJTSwaIXw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

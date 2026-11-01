@@ -89,6 +89,6 @@ On a botched strike or interfered control, choose one: the tentacle grips the wr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;OuiAVoQ0cm4P7fpoW-EIKUiik80ptxsGfDKvGzq87iE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OuiAVoQ0cm4P7fpoW-EIKUiik80ptxsGfDKvGzq87iE`>>
 
 <<^ code=`&#x0004;` to=`?`>>
