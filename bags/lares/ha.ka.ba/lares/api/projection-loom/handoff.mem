@@ -47,7 +47,7 @@ Read `tools/projection-loom/README.md`, `tools/projection-loom/docs/HANDOFF.md` 
 
 !! Research re-entry and root-bag crew meme
 
-The operator-supplied `deep-research-report.md` recommends complete admitted-route mutation first, semantic reconstruction second. This reopens the earlier reconstruction-first design priority without erasing its testimony. The complete crew handoff lives at `lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff` under repository-root `bags/lares/`. Its source-derived family descriptor and separately native-observed admission receipt preserve one geometric truth and one OODA-HA helm. The full report attachment remains conversation testimony, not a verbatim Git archive. The Pair A carrier now sits at root `bags/lares/ha.ka.ba/lares/api/projection-loom-pair-a.mem` with unchanged bytes.
+The operator-supplied `deep-research-report.md` recommends complete admitted-route mutation first, semantic reconstruction second. This reopens the earlier reconstruction-first design priority without erasing its testimony. The complete crew handoff lives at `lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff` under repository-root `bags/lares/`. Its source-derived family descriptor and separately native-observed admission receipt preserve one geometric truth and one OODA-HA helm. The full report attachment remains conversation testimony, not a verbatim Git archive. The Pair A carrier now lives at `bags/lares/ha.ka.ba/lares/api/projection-loom/pair-a.mem` with its new site-derived `lar:` identity; predecessor bytes remain on the pinned pre-move archive branch.
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff">>
 
@@ -134,6 +134,24 @@ winner, Elyncia promotion or merge was authorized.
 
 <<~/ahu>>
 
+<<~ ahu #/post-move-engineering-roadmap>>
+
+!! Projection Loom · after o-takiage, next OODA-HA program
+
+''Provenance.'' PR #84 is the working home. The operator directed both code-scope correction and nested carrier siting. Commit `9f16a30b` returned the sole unrelated browser-code delta to the PR merge-base wording. Commit `0bdfb782` moved 13 API memes into `bags/lares/ha.ka.ba/lares/api/projection-loom/` and two docs into `bags/lares/ha.ka.ba/lares/docs/projection-loom/`, readdressed and checksum-sealed; later bridge edits adjusted the README, checks and dedicated CI. The original bytes/identity stand on `archive/pr84-before-projection-loom-carrier-move-20261031`. New identity is source-sited; no old URI compatibility alias was minted.
+
+''Next waves, in working order.''
+
+# First earn the exact-head green gate. Check native CAD/evidence, general CI, held-out witnesses, scene/blender workflow and the new carrier-siting/link gate at the same final commit. Repair actual regressions without claiming older heads certify newer ones.
+# Produce one independent three-epoch STEP heredity witness in the existing `fractal_ooda_ha.OODAHAJournal`. Freeze the source `PlaceGenome + SpatialIntent` and original connect/shelter/ascend/bear obligations; mutate a complete, already native-admitted parent route region into a distinct child, independently reimport STEP on each admitted generation, verify provenance/digest/equal budgets, and prove deterministic replay. A route-family descriptor remains a derived witness, never a second mutable helm. Construction refusal, native rejection, deferral and admission remain distinct.
+# Add adversarial and held-out source-conditioned route tests: obstruction refusal before output roots exist, body preservation, test fixed-source two-/three-hop alternatives, camera digest stability, gallery regeneration and no automatic aesthetic winner. Run feature then Aftermath/L-prime on each completed tranche.
+# Only after native heredity proof consider semantic reconstruction as a second strategy under the same derived descriptor and receipt contract. Compare with direct parent-region mutation on equal native budgets; preserve the earlier reconstruction-first dissent as testimony.
+# Tackle real source-image/DEM orientation, actual Unreal Editor roundtrip, load/accessibility claims and human aesthetic selection separately, with explicit operator review. Their absence cannot be healed by narration or CI green on unrelated instrumentation.
+
+''Release boundary.'' No implicit Elyncia canon promotion, PR merge, second OODA-HA controller, automatic winner or physical safety certification. No resurrection of recursively embedded Markdown or .mem ashes; Git preserves historical testimony and the source/test artifacts preserve engineering evidence.
+
+<<~/ahu>>
+
 <<~ ahu #/ooda-ha>>
 ✶ Observe the live boot and branch, current CI, source/recipe fingerprints and
   the actual candidate's material and surface receipts.
@@ -165,6 +183,6 @@ The operator released this carrier's displaced historical ahu from the living te
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/reference-ci">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4tugESpgomvHQJOdcb2kiHlFvs-GkjMj5m-500kzRZo
+<<^ code="&#x0003;">>ni:///sha-256;e6_bL_DK7z63f-kfoy0jcQ9IdZVS_fegoERT6eT5sNA
 
 <<^ code="&#x0004;" -> to="?">>
