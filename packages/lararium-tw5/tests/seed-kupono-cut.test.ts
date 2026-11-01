@@ -268,7 +268,32 @@ const frameLaw = (text: string): string[] => {
   return found;
 };
 
-const LAWS = { arrowsBetweenValues, spacedAtSigns, unnamedOrQuotedValues, procedureValues, valueHazards, entityTicks, muCallsNameTools, envelopeAndRetired, retiredSurface, slashedCites, oracleCrossCheck, bandLaw, frameLaw };
+/**
+ * A fence opens on a block boundary: TiddlyWiki opens a code block only where the opener follows a blank
+ * line, so a fence written straight under a paragraph line renders as prose. An opener may also open its
+ * slot body (the line under an ahu opener) or the carrier's root meta (the line under STX).
+ */
+const fenceOpeners = (text: string): string[] => {
+  const found: string[] = [];
+  const lines = text.split("\n");
+  let open: { ch: string; len: number } | null = null;
+  lines.forEach((l, i) => {
+    const m = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(l);
+    if (!m) return;
+    const run = m[1]!;
+    if (open) {
+      if (run[0] === open.ch && run.length >= open.len && /^\s*$/.test(m[2]!)) open = null;
+      return;
+    }
+    open = { ch: run[0]!, len: run.length };
+    const prev = i > 0 ? lines[i - 1]! : "";
+    if (i === 0 || /^\s*$/.test(prev) || /^<<~ ahu slot=`[^`]*`>>$/.test(prev) || /^<<\^ code=`&#x0002;`>>$/.test(prev)) return;
+    found.push(`${i + 1}: a fence opens under a paragraph line · ${prev.trim().slice(0, 60)}`);
+  });
+  return found;
+};
+
+const LAWS = { arrowsBetweenValues, spacedAtSigns, unnamedOrQuotedValues, procedureValues, valueHazards, entityTicks, muCallsNameTools, envelopeAndRetired, retiredSurface, slashedCites, oracleCrossCheck, bandLaw, frameLaw, fenceOpeners };
 
 // ── CONTROLS: a planted fault each law MUST name ───────────────────────────────────────────────────────
 const PLANTED: Record<keyof typeof LAWS, string> = {
@@ -284,6 +309,7 @@ const PLANTED: Record<keyof typeof LAWS, string> = {
   slashedCites: "<<~ ahu slot=`#/ooda-ha`>>\nthe tally lives at #ooda-ha.\n<<~/ahu>>",
   oracleCrossCheck: "<<~ oracle throw=`↯7 ✲ ⚂(3) ⁂:⌗🜄`>>",
   bandLaw: "<<scale name=`aperture` ranks=`measure@9..12 -> arc@13..16`>>\n<<scale name=`ooda-ha` ranks=`declare-glyphs@5..8 -> declare-attention@9..12`>>\naperture=`10/measure -> 13/measure` ooda-ha=`9/declare-glyphs`",
+  fenceOpeners: "''Local form'' - authority-less:\n```\nlar:///t1.t2.t3/path\n```",
   frameLaw: [
     "\\procedure set-aim() lares from to mode ooda-ha drift-ward",
     "\\procedure set-steer() lares to from mode drift-ward",
@@ -341,6 +367,10 @@ describe("controls: each law names its planted fault", () => {
     const scales = "<<scale name=`aperture` ranks=`measure@9..12 -> arc@13..16`>>\n<<scale name=`ooda-ha` ranks=`declare-glyphs@5..8`>>\n";
     expect(bandLaw(scales + "aperture=`10/measure -> 14/arc` ooda-ha=`7/declare-glyphs` ooda-ha=`closed 1↺`")).toEqual([]);
     expect(procedureValues("\\procedure ~season(name params) ~ <<has entity=`season` name=`$(name)$` params=`$(params)$`>>\n\\procedure hello(who) Hello <<who>>!")).toEqual([]);
+  });
+  test("fenceOpeners reads blank-line fences, a slot-body fence and a fence shown inside a fence clean", () => {
+    const clean = "''Local form'' - authority-less:\n\n```\nlar:///t1.t2.t3/path\n```\n<<~ ahu slot=`#/a`>>\n```toml meta\nk = 1\n```\n\n````text\nprose\n```toml meta\n```\n````";
+    expect(fenceOpeners(clean)).toEqual([]);
   });
   test("the laws read a clean carrier clean (the control cuts both ways)", () => {
     const clean = "<<!DOCTYPE type=`t` spec=`s`>>\n<<~ ahu slot=`#/a`>>\n<<~ oracle throw=`↯7 ✲ ⚁(2) ⁂:⌗🜄`>>\n<<~/ahu>>";
