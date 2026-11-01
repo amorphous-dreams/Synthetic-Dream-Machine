@@ -534,13 +534,23 @@ test("readShardReports reads a named set's artifacts under e2e-shard-<set>-<k>",
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test("e2e-shards.yml carries exactly one matrix row per (set, shard) of E2E_SETS", () => {
+test("e2e-shards.yml carries exactly one matrix row per (set, shard) of E2E_SETS, a companion set riding the row its table names", () => {
   const yml = readFileSync(fileURLToPath(new URL("../.github/workflows/e2e-shards.yml", import.meta.url)), "utf8");
-  const rows = [...yml.matchAll(/- \{ set: (\w+), dir: ([^,]+), config: ([^,]+), shard: (\d+), count: (\d+) \}/g)]
-    .map((m) => `${m[1]} ${m[2]} ${m[3]} ${m[4]}/${m[5]}`).sort();
-  const want = E2E_SETS.flatMap((s) =>
-    Array.from({ length: s.shards }, (_, i) => `${s.name} ${s.dir} ${s.config} ${i + 1}/${s.shards}`)).sort();
+  const rows = [...yml.matchAll(/- \{ set: (\w+), dir: ([^,]+), config: ([^,]+), shard: (\d+), count: (\d+)(?:, companion: (\w+))? \}/g)]
+    .map((m) => `${m[1]} ${m[2]} ${m[3]} ${m[4]}/${m[5]}${m[6] ? ` +${m[6]}` : ""}`).sort();
+  const rider = (s) => E2E_SETS.find((o) => o.companion?.of === s.name);
+  const want = E2E_SETS.filter((s) => !s.companion).flatMap((s) =>
+    Array.from({ length: s.shards }, (_, i) => `${s.name} ${s.dir} ${s.config} ${i + 1}/${s.shards}${rider(s)?.companion.shard === i + 1 ? ` +${rider(s).name}` : ""}`)).sort();
   assert.deepEqual(rows, want);
+});
+
+test("E2E_SETS: the node set rides a tests shard as a companion (a shard of its own would spend one of the ten jobs), and its gate artifact keeps its own name", () => {
+  const node = E2E_SETS.find((s) => s.name === "node");
+  assert.deepEqual(node.companion, { of: "tests", shard: 3 });
+  assert.equal(node.shards, 1);
+  const yml = readFileSync(fileURLToPath(new URL("../.github/workflows/e2e-shards.yml", import.meta.url)), "utf8");
+  assert.match(yml, /name: e2e-shard-node-1$/m, "the companion run uploads no e2e-shard-node-1 artifact for the merge gate");
+  assert.doesNotMatch(yml, /- \{ set: node,/, "the node set still has a shard row of its own");
 });
 
 // ── ONE E2E VERDICT PER PUSH: the full CI workflow CALLS the shard workflow ──────────────────────────────────
