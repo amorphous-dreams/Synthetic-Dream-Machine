@@ -859,3 +859,21 @@ test("RED: a lane whose change already stands on the span adds nothing to the ch
   assert.match(r.out, /DROPPED a: its change already stands on the span/);
   assert.equal(sh(w.work, "rev-parse", `${originRef(w, SPAN)}^2`), w.heads.b);
 });
+
+test("RED: a stale queue entry (its lane moved on) drops by name and the run drains the rest; CONTROL: named lanes still refuse whole (3)", async () => {
+  const w = world(["a", "b"]);
+  const { ops } = opsQ(w); const lines = []; ops.log = (l) => lines.push(l);
+  const o = { span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") };
+  assert.equal((await LT.enqueue({ ...o, specs: specsOf(w) }, ops)).code, 0);
+  sh(w.work, "checkout", "-q", `${SPAN}--a`); w.commit(w.work, "packages/p-a/g.txt", "g\n", "lane a moved on"); sh(w.work, "push", "-q", "origin", `${SPAN}--a`); sh(w.work, "checkout", "-q", SPAN);
+  const r = await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops);
+  assert.equal(r.code, 11, lines.join("\n"));
+  assert.match(lines.join("\n"), /DROPPED a: HEAD MOVED/);
+  assert.equal(readdirSync(join(w.dir, "q", "dropped")).length, 1);
+  assert.equal(sh(w.work, "rev-parse", `${originRef(w, SPAN)}^2`), w.heads.b);
+  const w2 = world(["a", "b"]);
+  sh(w2.work, "checkout", "-q", `${SPAN}--a`); w2.commit(w2.work, "packages/p-a/g.txt", "g\n", "lane a moved on"); sh(w2.work, "push", "-q", "origin", `${SPAN}--a`); sh(w2.work, "checkout", "-q", SPAN);
+  const named = await runQ(w2);
+  assert.equal(named.code, 3, named.out);
+  assert.match(named.out, /HEAD MOVED: a/);
+});
