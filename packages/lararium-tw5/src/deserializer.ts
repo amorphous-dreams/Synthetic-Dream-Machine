@@ -554,7 +554,7 @@ function splitRecursive(
       "$slot":            slot,
     });
     // MINT ON DIFFERENCE, NEVER ON DEFAULT. The render (expandRefs below) already falls back to the
-    // canonical spelling — ``<<~ ahu slot=`${slot}`>>`` / `<<~/ahu>>` — whenever no worksite carriage record
+    // canonical spelling — the ahu opener naming the slot and its plain closer — whenever no worksite carriage record
     // exists for a slot. So the split side must NOT mint one when the authored bytes already ARE that
     // canonical spelling: a record there would be a derived value stored, re-deriving the same bytes
     // the render would have emitted for free. Only authored bytes that DIFFER from the canonical
@@ -1002,7 +1002,8 @@ function expandRefs(reader: FieldsReader, rootUri: string, text: string, parentF
     const spelt = slot;
     const open = carriageText(reader, rootUri + slotPath, "worksite-open");
     const close = carriageText(reader, rootUri + slotPath, "worksite-close");
-    return `${open || `<<~ ahu slot=\`${spelt}\`>>`}${opened}\n\n${close || "<<~/ahu>>"}`;
+    const canonicalOpen = "<<~ ahu slot=`" + spelt + "`>>";
+    return `${open || canonicalOpen}${opened}\n\n${close || "<<~/ahu>>"}`;
   });
 }
 
