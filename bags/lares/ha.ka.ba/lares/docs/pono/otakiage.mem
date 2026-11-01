@@ -115,7 +115,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 ''What each value carries in practice,'' read off the shelf's own `status-why` lines:
 
 |! value |! what the carrier holds |! what `status-why` actually writes |
-| ''`designed`'' | a shape argued whole, nothing enacted | `relational-parameter.mem:15` — "every call path traced from wikirule to binding widget and the radius measured against core, plugins, themes, editions and corpus; ''nothing built''" · `aniani.mem:15` — "doctrine; no source carries it yet" · `infrastructure-as-myth.mem:23` — "a research paper rather than a build subject" |
+| ''`designed`'' | a shape argued whole, nothing enacted | `aniani.mem:15` — "doctrine; no source carries it yet" · `infrastructure-as-myth.mem:23` — "a research paper rather than a build subject" |
 | ''`standing`'' | ruled and enacted, with the witness named | `blob-carriage.mem:18` — "ruled 2026-09-11 and ENACTED — all seven clauses … stand in code with a red-first witness each" · `vessel-door.mem:15` — "the door stands … walked by the founding + contract witnesses" · `admission-on-a-lineage.mem:14` — "MEASURED IN PART — experiments 2 + 5 RUN and green …; 1, 3, 4, 6 unrun" |
 | ''`rite`'' | a practice invoked, never built | `talk-story.mem:14` — "the talk-story floor, ''convened rather than built''" · `hoike/SKILL.mem:25` — "a skill definition — ''a procedure invoked, never a thing built''" |
 
@@ -473,6 +473,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zhiVRnDhahDP24LK5aYmBWrVDVN9NaedjJyBI3yyYK8
+<<^ code="&#x0003;">>ni:///sha-256;bDhdBlVuA8k5U1svf2MACYsBkpAR_qZBvY7oL0wY6Rk
 
 <<^ code="&#x0004;" -> to="?">>

@@ -12,8 +12,8 @@ manao      = 16
 manaoio    = 14
 namespace  = "&#x2299;"
 role       = "the design law for the RELATIONAL PARAMETER — a bare arrow between macro parameters that the parser MARKS and the binder READS. Names the two parameter parsers TW5 actually runs, the mark-at-parse/decide-at-bind split that keeps the change additive, the independent URI-scheme fix that frees a `lar:` URI from quotes, the measured blast radius, and the boundary the sigil path keeps"
-status-why = "every call path traced from wikirule to binding widget and the radius measured against core, plugins, themes, editions and corpus; nothing built"
-tags       = ["api/pono/meme", "api/pono/tiddlywiki-wikitext", "api/pono/memetic-wikitext", "lifecycle/designed"]
+status-why = "RETIRING: the operator's ruling of 2026-10-31 retires the bare arrow from every sigil call, so the design has no seat left to build. Folded to `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/lexical-structure` (its one measured trace of the host's two parameter parsers, with the strict-identifier guard) and to `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/bearing-pair` (the pair that carries the relation), welded, no carrier points here"
+tags       = ["api/pono/meme", "api/pono/tiddlywiki-wikitext", "api/pono/memetic-wikitext", "lifecycle/retiring"]
 title      = "lar:///ha.ka.ba/lares/docs/relational-parameter"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/relational-parameter"
@@ -240,6 +240,6 @@ wikitext hits, matches a guard already in the source, and needs no agreement abo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZaC2SivzoZVJTwptjG6b5pH0DWJW6l3VySXnOsLoSM0
+<<^ code="&#x0003;">>ni:///sha-256;efjPvyuyCHGg8sOnAliQuBwHK4sf7VCHbforKHycluU
 
 <<^ code="&#x0004;" -> to="?">>

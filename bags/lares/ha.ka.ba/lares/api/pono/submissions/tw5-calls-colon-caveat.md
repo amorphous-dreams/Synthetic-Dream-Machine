@@ -1,7 +1,7 @@
 ---
 lang: "en"
 source: "lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat"
-source-check: "ni:///sha-256;blhDIv00o7C5JrUs5cul_i_Q7dJeirWK8n9pFZgItyM"
+source-check: "ni:///sha-256;Tkgx-_P-ok-Aq_8HwaQJvux0V9Folwq-OdaGP6gAtEQ"
 title: "lar:///ha.ka.ba/lares/api/pono/submissions/tw5-calls-colon-caveat"
 tongue: "x-lares>en"
 variant: "GFM"
@@ -78,5 +78,5 @@ A time of day trips the case a URI trips, so the warning leads with the general 
 
 <<~ ahu slot=`#/edges`>>
 
-- `loulou uri=`lar:///ha.ka.ba/lares/docs/relational-parameter``
+- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/lexical-structure``
 - `loulou uri=`lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext``
