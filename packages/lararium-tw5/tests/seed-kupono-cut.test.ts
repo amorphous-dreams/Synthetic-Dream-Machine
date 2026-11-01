@@ -127,6 +127,7 @@ const oracleCrossCheck = (text: string): string[] => {
   return callsOf(text)
     .filter((c) => c.head === "oracle")
     .flatMap((c) => {
+      if (c.rest === "throw=`…`") return []; // the turn-order line cites the firing's shape, not a throw
       const m = /^throw=`↯(\d+) ✲ ([⚀-⚅])\((\d)\) ⁂:([^`]+)`$/.exec(c.rest);
       if (!m) return [at(c, "oracle throw unreadable")];
       const [spend, die, face, tail] = [Number(m[1]), faces[m[2]!], Number(m[3]), [...seg.segment(m[4]!)].length];
@@ -191,8 +192,11 @@ const bandLaw = (text: string): string[] => {
 
 /**
  * Cut 4: the worked turns obey the frame the seed states. Each turn opens on one aim, may steer, throws the
- * oracle, and closes on one yield; lares= leads each firing; keys sit in the seed's own seat order (the ward
- * last at aim, first at yield); every bearing names a three-term root; the yield hands off to ?. A steer
+ * oracle, and closes on one yield. The law fixes the bracket keys only: lares= leads each firing; the aim seats
+ * from= and to= next and the ward last; the yield seats the ward next and from= and to= last; a steer seats any
+ * to= next and any ward last; the middle keys (the set-aim procedure's, past the brackets) ride in any order, and
+ * note trails at the very end. Every bearing names a three-term root; the yield hands off to ?. The turn-order
+ * line cites each firing in full sigil form. A steer
  * records a change and never rewrites the aim: it carries no from= (the brackets own the vector's ends), and a to= it casts names a
  * new bearing. Across the seed the turns show both steer uses and both loop endings.
  */
@@ -202,6 +206,11 @@ const frameLaw = (text: string): string[] => {
   for (const [k, v] of Object.entries(order)) if (!v) found.push(`no \\procedure set-${k}() seat order`);
   const turns = fencedBlocks(text).filter((b) => b.includes("<<~ set lares=`aim`"));
   if (turns.length < 2) found.push(`worked turns in the new frame: ${turns.length} (want 2 or more)`);
+  const turnOrder = text.split("\n").find((l) => l.startsWith("''Turn order:''")) ?? "";
+  for (const f of ["<<~ set lares=`aim`", "<<~ set lares=`steer`", "<<~ oracle throw=`", "<<~ set lares=`yield`"])
+    if (!turnOrder.includes(f)) found.push(`the turn-order line lacks the full firing ${f}…>>`);
+  const BRACKET = new Set(["lares", "from", "to", "drift-ward"]);
+  const middle = new Set((order.aim ?? []).filter((k) => !BRACKET.has(k)));
   let steerTo = 0, steerKeys = 0, steerWard = 0, suspended = 0, closed = 0;
   turns.forEach((block, t) => {
     const lines = block.split("\n").filter((l) => /^<<~ (set|oracle) /.test(l));
@@ -217,11 +226,14 @@ const frameLaw = (text: string): string[] => {
       const keys = keysOf(l).map(([k]) => k).filter((k) => k !== "note");
       const vals = Object.fromEntries(keysOf(l));
       if (keys[0] !== "lares") found.push(`turn ${t + 1} ${kind}: lares= does not lead`);
-      const seat = order[kind as keyof typeof order];
-      if (seat) {
-        const idx = keys.map((k) => seat.indexOf(k));
-        if (idx.some((x) => x < 0) || idx.some((x, j) => j > 0 && x < idx[j - 1]!)) found.push(`turn ${t + 1} ${kind}: keys «${keys.join(" ")}» break the seat order`);
-      }
+      const all = keysOf(l).map(([k]) => k);
+      if (all.includes("note") && all[all.length - 1] !== "note") found.push(`turn ${t + 1} ${kind}: note does not trail at the very end`);
+      for (const k of keys) if (!BRACKET.has(k) && !middle.has(k)) found.push(`turn ${t + 1} ${kind}: key «${k}» stands outside the set's keys`);
+      const last = keys[keys.length - 1];
+      if (kind === "aim" && (keys[1] !== "from" || keys[2] !== "to")) found.push(`turn ${t + 1} aim: from= and to= do not follow lares=`);
+      if (kind === "yield" && (keys[keys.length - 2] !== "from" || last !== "to")) found.push(`turn ${t + 1} yield: from= and to= do not ride last`);
+      if (kind === "steer" && vals.to && keys[1] !== "to") found.push(`turn ${t + 1} steer: to= does not follow lares=`);
+      if (kind === "steer" && vals["drift-ward"] && last !== "drift-ward") found.push(`turn ${t + 1} steer: the ward does not ride last`);
       for (const k of ["from", "to"]) if (vals[k] && vals[k] !== "?" && !rootOk(vals[k]!)) found.push(`turn ${t + 1} ${kind}: ${k}= root not three terms`);
       if (kind === "aim") {
         if (!vals.from || !vals.to) found.push(`turn ${t + 1} aim: lacks from= or to=`);
@@ -293,7 +305,7 @@ describe("controls: each law names its planted fault", () => {
   }
   test("frameLaw names each planted frame fault, not merely one", () => {
     const f = frameLaw(PLANTED.frameLaw).join("\n");
-    for (const want of ["firing order", "steer: carries from=", "records no change", "root not three terms", "no worked steer casts", "band above 0", "aim: ward in close form", "lacks the ooda-ha tally", "no worked steer carries a ward"])
+    for (const want of ["firing order", "steer: carries from=", "records no change", "root not three terms", "no worked steer casts", "the turn-order line lacks", "steer: to= does not follow lares=", "band above 0", "aim: ward in close form", "lacks the ooda-ha tally", "no worked steer carries a ward"])
       expect(f).toContain(want);
   });
   test("bandLaw names both planted gauges, procedureValues each unticked value", () => {
@@ -306,6 +318,20 @@ describe("controls: each law names its planted fault", () => {
     for (const name of ["ooda-ha", "drift-ward", "frame"]) expect(f).toContain(`a <<~ ${name} …>> call still stands`);
     expect(retiredSurface("<<~ season name=`Bureaucracy` params=`patron/Zarathud`>>\n<<~ stance named=`poet`>> · <<~ mu name=`*?`>>")).toEqual([]);
     expect(slashedCites("<<~ ahu slot=`#/ooda-ha`>>\nthe tally lives at #/ooda-ha; `#section` stays a placeholder; &#x0001;\n<<~/ahu>>")).toEqual([]);
+  });
+  test("a middle-key shuffle reads green: the law fixes only the bracket keys", () => {
+    const shuffled = [
+      "\\procedure set-aim() lares from to mode mood mu stance aperture ooda-ha drift-ward",
+      "\\procedure set-steer() lares to mode mood mu stance aperture ooda-ha drift-ward",
+      "\\procedure set-yield() lares drift-ward aperture ooda-ha mode mood mu stance from to",
+      "```",
+      "<<~ set lares=`aim` from=`lar://a:b@c/x.y.z` to=`lar://a:b@c/p.q.r` ooda-ha=`7/g` stance=`poet` aperture=`10/measure` mode=`draft` drift-ward=`w` note=`n`>>",
+      "<<~ set lares=`steer` to=`lar://a:b@c/k.l.m` aperture=`12/measure` mu=`*!` mode=`hold` drift-ward=`w2`>>",
+      "<<~ oracle throw=`↯1 ✲ ⚀(1) ⁂:x`>>",
+      "<<~ set lares=`yield` drift-ward=`c · ↻ L-Prime` mode=`seal` ooda-ha=`closed 1↺` aperture=`12/measure -> 13/arc` from=`lar://a:b@c/d.e.f` to=`?` note=`n`>>",
+      "```",
+    ].join("\n");
+    expect(frameLaw(shuffled).filter((f) => /^turn 1 /.test(f))).toEqual([]);
   });
   test("entityTicks and muCallsNameTools read clean forms clean", () => {
     expect(entityTicks("\\procedure ~oracle(throw) <$text text=```~ oracle throw=`$(throw)$` ```/>")).toEqual([]);
