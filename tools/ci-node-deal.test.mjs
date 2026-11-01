@@ -32,6 +32,13 @@ test("D1 RED: the live tracked set deals into two parts, each file once, every h
   assert.ok(Math.abs(load(a) - load(b)) / Math.max(load(a), load(b)) < 0.15, `parts weigh ${load(a)} and ${load(b)}`);
 });
 
+test("D1c RED: the node-unit weights name only tracked files (a stale row would weigh nothing)", () => {
+  const { files, weights } = live();
+  const tracked = new Set(files);
+  assert.ok(Object.keys(weights).length > 400, "the node-unit weights are missing");
+  for (const f of Object.keys(weights)) assert.ok(tracked.has(f), `weight row ${f} names no tracked node suite`);
+});
+
 test("D1b CONTROL: the deal is pure and order-free, and a file with no weight lands lawfully", () => {
   const w = { "tests/a.test.ts": 50, "tests/b.test.ts": 40 };
   const one = cells.nodeUnitFiles({ ...toy, weights: w, part: 1, parts: 2 });

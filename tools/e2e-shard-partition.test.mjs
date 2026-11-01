@@ -53,7 +53,7 @@ test("P3 CONTROL: the real weights deal every tracked e2e file once, within 15% 
 
 test("P4 RED: the weights name only tracked files (a stale row would weigh nothing)", () => {
   for (const [name, rows] of Object.entries(WEIGHTS)) {
-    if (name.startsWith("_")) continue;
+    if (name.startsWith("_") || name === "node-unit") continue; // node-unit weighs the node package's unit suites (tools/ci-node-deal.test.mjs)
     const set = E2E_SETS.find((s) => s.name === name);
     assert.ok(set, `weights name the set ${name}, which E2E_SETS does not carry`);
     const tracked = new Set(trackedE2eFiles(ROOT, set.trackedGlob).map((f) => f.split("e2e/").pop()));
