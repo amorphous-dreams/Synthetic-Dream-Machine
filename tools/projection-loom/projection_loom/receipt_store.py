@@ -1,4 +1,15 @@
-"""Atomic immutable JSON receipt publication; pure IO below campaign authority.\n\nNo evolutionary, geometry, or admission decision belongs to this module.\nIdentical content and collision refusal retain their established byte contract.\n"""\nfrom pathlib import Path\nimport json\nimport os\nimport tempfile\n\n\ndef save_once(path, payload):
+"""Atomic immutable JSON receipt publication; pure IO below campaign authority.
+
+No evolutionary, geometry, or admission decision belongs to this module.
+Identical content and collision refusal retain their established byte contract.
+"""
+from pathlib import Path
+import json
+import os
+import tempfile
+
+
+def save_once(path, payload):
     """Publish one immutable JSON receipt without replacing competing writers.
 
     Unique scratch files and hard-link publication make the final name atomic:
