@@ -184,7 +184,7 @@ export function readCarrierShape(text: string): CarrierShape {
   }
   // The slot after ETX carries the check alone (memetic-frame `check.ts`); payload there reaches no reader.
   if (frame.etx && frame.eot && classifyPostamble(text.slice(frame.etx.end, frame.eot.index)).kind === "foreign") {
-    faults.push("content stands between ETX and EOT — the text ends at ETX; that slot carries the block check alone");
+    faults.push("content stands between ETX and EOT — the text ends at ETX, whose `bcc` slot carries the block check; nothing stands after it");
   }
 
   if (!marks.meta) {

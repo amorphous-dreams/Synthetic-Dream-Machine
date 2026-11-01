@@ -138,6 +138,7 @@ const TORN_CODE: Readonly<Record<FrameFault["kind"], string>> = {
   "etx-before-stx":    "frame-malformed",
   "eot-out-of-order":  "frame-malformed",
   "second-soh":        "frame-malformed",
+  "retired-trailer":   "retired-trailer",
 };
 
 /**
@@ -147,7 +148,7 @@ const TORN_CODE: Readonly<Record<FrameFault["kind"], string>> = {
  *             an honest edit. A missing close keeps its own code (`block-check-torn`), a meta fence
  *             above STX its own (`meta-before-stx`); a mark the rule passed over reads `frame-malformed`.
  *   · stale → WARNING, both digests in the message. A stale check on a human's disk edit is an EDIT,
- *             never tampering: the check is a trailer the writer re-stamps on every emit, so the gate
+ *             never tampering: the check rides the ETX `bcc` slot, re-stamped on every emit, so the gate
  *             still owes the edit a real decision (noop/ingest/conflict), never a blanket refuse. The
  *             pre-commit hook (`tools/meme-check-staged.sh` via `lares meme check`) still refuses a
  *             staged stale check.

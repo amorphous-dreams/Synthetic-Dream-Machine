@@ -148,7 +148,7 @@ export interface SubmissionProjection {
   meta: string;
   /** The carrier's own address, read off its SOH heading (or supplied). */
   uri: string;
-  /** The block check found adjacent to ETX, or "unchecked". */
+  /** The block check the ETX mark's `bcc` slot carries, or "unchecked". */
   check: string;
   /**
    * RFC 7763: true when the file ALSO carries YAML frontmatter for standalone travel (GFM,
@@ -273,13 +273,13 @@ export function resolveWeaveTarget(opts: {
  */
 const FRAME_LINE = new RegExp(`^<<\\^ code=\`${frameAlt()}\`(?:[^>\\n]|>(?!>))*>>.*$`);
 /**
- * The ETX closer with its adjacent check.
+ * The ETX closer with the check its `bcc` slot carries.
  *
  * THE CODE SET COMES FROM THE DECLARATION; THIS SHAPE STAYS THIS READER'S OWN (@lararium/memetic-frame marks.ts). The
- * line-anchored canonical spelling is what a transpose meets, and the trailing capture takes the BCC
- * that rides the closer with nothing between.
+ * line-anchored canonical spelling is what a transpose meets, and the capture takes the BCC the
+ * closer's final `bcc` value names (the frame's lawful spelling, one space and one tick each side).
  */
-const ETX_LINE = new RegExp(`^<<\\^ code=\`${frameAlt("ETX")}\`[^\\n]*>>(\\S+)?`);
+const ETX_LINE = new RegExp(`^<<\\^ code=\`${frameAlt("ETX")}\`(?: bcc=\`([^\`\\n]+)\`)?>>`);
 const DOCTYPE_LINE = /^<<!DOCTYPE (?:[^>\n]|>(?!>))*>>\s*$/;
 // The tooth stands at one dispatch position: `<<~` then LWSP then the command word, and a close
 // word carries its own slash (`ahu`, `/ahu`). Both spacings reach the same word, matching the
