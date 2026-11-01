@@ -982,8 +982,8 @@ export interface SessionOwnChain {
 
 /** Vessel → island: the session sign door's answer, or one refusal by name. */
 export type IslandMsg_SessionSigned =
-  | { type: "session:signed"; requestId: string; certificate: unknown; subject: string; chain: SessionOwnChain; counted: readonly string[]; unanswered: readonly string[] }
-  | { type: "session:signed"; requestId: string; own: true; chain: SessionOwnChain; counted: readonly string[]; unanswered: readonly string[] }
+  | { type: "session:signed"; requestId: string; certificate: unknown; subject: string; chain: SessionOwnChain; foldRead: boolean; counted: readonly string[]; unanswered: readonly string[] }
+  | { type: "session:signed"; requestId: string; own: true; chain: SessionOwnChain; foldRead: boolean; counted: readonly string[]; unanswered: readonly string[] }
   | { type: "session:signed"; requestId: string; signature: string }
   | { type: "session:signed"; requestId: string; refusal: string };
 

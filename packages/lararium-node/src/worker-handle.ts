@@ -124,8 +124,8 @@ function attachCustodyWriteDoor(w: Worker): void {
 // the vessel's book answers from that session's signer, which signs here, behind its owner's table. The DAEMON island's
 // channel alone carries the ask: a wiki island's refuses by name.
 export type SessionSignDoor = (ask: Pick<IslandMsg_SessionSign, "op" | "ask" | "verb" | "payload">) => Promise<
-  { readonly certificate: unknown; readonly subject: string; readonly chain: import("@lararium/mesh").SessionOwnChain; readonly counted: readonly string[]; readonly unanswered: readonly string[] }
-  | { readonly own: true; readonly chain: import("@lararium/mesh").SessionOwnChain; readonly counted: readonly string[]; readonly unanswered: readonly string[] }
+  { readonly certificate: unknown; readonly subject: string; readonly chain: import("@lararium/mesh").SessionOwnChain; readonly foldRead: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }
+  | { readonly own: true; readonly chain: import("@lararium/mesh").SessionOwnChain; readonly foldRead: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }
   | { readonly signature: string } | { readonly refusal: string }>;
 let sessionSignDoor: SessionSignDoor | null = null;
 

@@ -1699,7 +1699,7 @@ async function prepareNodeBootOn(
   const sessionSigns = new SessionSignBook();
   // Each read carries the vessel's own fold of the face's fleet board: the raises it counts and those no subscriber
   // took yet, so the holder counts removal versions and owed rolls across a restart.
-  setSessionSignDoor(sessionSigns.door(() => dialAnchor.chain(), async () => (wornFleetRoot ? fleetRaisesOf({ repo, fleetRoot: wornFleetRoot }) : { counted: [], unanswered: [] })));
+  setSessionSignDoor(sessionSigns.door(() => dialAnchor.chain(), async () => fleetRaisesOf({ repo, fleetRoot: wornFleetRoot })));
   stood.push({ what: "the session sign door", down: () => { setSessionSignDoor(null); } });
   // Set when the vessel stands its dial down: a late dial still in flight then stands nothing.
   let dialStoodDown = false;

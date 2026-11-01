@@ -99,9 +99,11 @@ export async function runEdgeSeatFacts(opts: { readonly repo: Repo; readonly fle
  * the content-key holder counts a removal version by, and what it owes a roll for, a restart included. The read runs
  * through the ledger, as `runEdgeSeatFacts` does, so a raise deleted from the board still counts.
  */
-export async function fleetRaisesOf(opts: { readonly repo: Repo; readonly fleetRoot: string }): Promise<{ readonly counted: readonly string[]; readonly unanswered: readonly string[] }> {
-  const fleetRoot = bare(opts.fleetRoot);
-  if (!HEX64.test(fleetRoot) || !(await servedFleetRoots()).includes(fleetRoot)) return { counted: [], unanswered: [] };
+export async function fleetRaisesOf(opts: { readonly repo: Repo; readonly fleetRoot: string | null }): Promise<{ readonly read: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }> {
+  // AN UNREAD FOLD SAYS SO: a vessel that wears no face, or serves no fleet under the root it wears (a joinee holds
+  // no root), reads no board here. It answers `read: false`, never a silent zero, and the island judges it.
+  const fleetRoot = opts.fleetRoot === null ? "" : bare(opts.fleetRoot);
+  if (!HEX64.test(fleetRoot) || !(await servedFleetRoots()).includes(fleetRoot)) return { read: false, counted: [], unanswered: [] };
   const vesselKey = await atomKeyForFleet(fleetRoot);
   const read = await readVesselEdgeBoard({
     repo: opts.repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
@@ -109,7 +111,7 @@ export async function fleetRaisesOf(opts: { readonly repo: Repo; readonly fleetR
   });
   const counted = [...new Set([...read.readings.values()].flatMap((r) => [...r.raiseCids]))].sort();
   const answered = raisesMarkedAnswered(read.ledger.doc(), fleetRoot);
-  return { counted, unanswered: counted.filter((cid) => !answered.has(cid)) };
+  return { read: true, counted, unanswered: counted.filter((cid) => !answered.has(cid)) };
 }
 
 /**

@@ -204,6 +204,9 @@ interface Line {
   readonly carried:  Map<KeyVersionId, SealedRecord<"key-version">>;
   readonly why:      Map<KeyVersionId, string>;
   readonly manifests: Map<RecordId, VerifiedRecord<"manifest">>;
+  /** A removal version stands in this founding's rest, verified under its own key, whether or not this reader's
+   *  evidence counted it: the seat rolled here once (`holdsRemoval`). */
+  rolled?: boolean;
 }
 interface Bag { readonly bagId: string; readonly lines: Map<BagLocator, Line> }
 
@@ -333,6 +336,7 @@ export class ContentKeyHolder {
       if (!("record" in read)) { line.why.set(carried.body.keyVersion, read.cause ? `${read.refusal}:${read.cause}` : read.refusal); continue; }
       // A founding's locator must recompute from the founding key: no founding borrows another's name.
       if (read.record.private.cause.kind === "founding" && bagLocatorOf(key, bag.bagId) !== line.locator) { line.why.set(carried.body.keyVersion, "founding-locator-mismatch"); continue; }
+      if (read.record.private.cause.kind === "removal") line.rolled = true;
       pending.push({ carried, verified: read.record });
     }
     // Two unlike verified facts under one id refuse both BEFORE any transition counts. A record that fails this
@@ -438,6 +442,7 @@ export class ContentKeyHolder {
       if (this.#locked) return refuse("holder-locked");
       line.lineage = counted.lineage;
       line.keys.set(keyVersion, key); kept = true;
+      if (plan.cause.kind === "removal") line.rolled = true;
       line.records.set(keyVersion, signed.verified); line.carried.set(keyVersion, signed.carried);
       return { keyVersion, founding: line.locator, unserved: secret.unserved };
     } finally {
@@ -981,6 +986,14 @@ export class ContentKeyHolder {
       uncounted: [...line.why].filter(([version]) => !line.lineage.has(version)).map(([keyVersion, why]) => ({ keyVersion, why })).sort((a, b) => ascending(a.keyVersion, b.keyVersion)),
     }));
     return { bagId: bag.bagId, foundings, rival: foundings.filter((founding) => founding.heads.length > 0).length > 1 };
+  }
+
+  /**
+   * Does any founding this seat holds keep a removal version in its rest, counted or not? A seat that rolled once
+   * reads a removal's evidence from the vessel's fold; one that never rolled has none to read, as a joinee's seat.
+   */
+  holdsRemoval(): Promise<boolean | HolderRefusal> {
+    return this.#inTurn<boolean>(async () => [...(await this.#loaded()).values()].some((bag) => [...bag.lines.values()].some((line) => line.rolled === true)));
   }
 
   /** What this vessel reads for one bag: each founding, its heads, what it holds, and what a door must show. */

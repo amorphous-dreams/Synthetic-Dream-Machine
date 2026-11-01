@@ -784,6 +784,16 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // one; the vessel answers from that session alone, and refuses a place session `session-anchor-place`. The
       // session must wear this island's own face, the subject of the vessel's own chain, or nothing seals and nothing
       // opens (`session-face-foreign`). The chain the reading carries is what the seat's standing reads.
+      // AN UNREAD FOLD REFUSES WHERE A ROLL STANDS. A vessel that read no fold of the face's fleet board hands no
+      // counted raise: a seat that once minted a removal version would count no evidence for it and ride the
+      // pre-removal head, so it refuses (`fold-unread`). A seat that never rolled has no removal to count, as a
+      // joinee's seat (its fold always reads empty), and goes on.
+      const foldOrRefuse = async (verb: string, foldRead: boolean): Promise<void> => {
+        if (foldRead || !contentKeys) return;
+        const rolled = await contentKeys.holder.holdsRemoval();
+        if (rolled === false) return;
+        throw new VerbRefusal("fold-unread", `[daemon] ${verb}: fold-unread — this vessel read no fold of the face's fleet board, and this seat once rolled; nothing sealed, nothing opened.`);
+      };
       const sessionOf = async (verb: string, context: { readonly invocation?: { readonly requestId?: string }; readonly local?: boolean }): Promise<RecordSigner> => {
         const requestId = context.invocation?.requestId;
         const ask = context.local === true && typeof requestId === "string" && requestId.length > 0 ? { requestId, verb } : null;
@@ -792,6 +802,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         ownChain = reading.chain;
         ownCounted = new Set(reading.counted);
         ownUnanswered = [...reading.unanswered];
+        await foldOrRefuse(verb, reading.foldRead);
         if (reading.subject !== faceProofSubjectRef(reading.chain.scope as never)) {
           throw new VerbRefusal("session-face-foreign", `[daemon] ${verb}: session-face-foreign — the session wears another face than this island holds; nothing sealed, nothing opened.`);
         }
@@ -800,12 +811,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       /** The vessel's own chain and fold for an act no session asked (the memory section's cut and import): the
        *  holder reads records under them. A vessel that names none leaves the island as it stood, and the holder
        *  refuses to read without a chain. */
-      const ownReading = async (): Promise<void> => {
+      const ownReading = async (verb: string): Promise<void> => {
         const read = await sessionProof?.own?.();
         if (!read || "refusal" in read) return;
         ownChain = read.chain;
         ownCounted = new Set(read.counted);
         ownUnanswered = [...read.unanswered];
+        await foldOrRefuse(verb, read.foldRead);
       };
       /** The memory import's signer: the import judges its own door whole (`signer-unavailable` first), so a reading
        *  that refuses hands it none rather than refusing ahead of that door. The face gate holds all the same. */
@@ -955,7 +967,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const shadowRead = args["shadow"] === MEMORY_CUT_SHADOW_READ;
         memoryAsk("sealed-memory-cut", "cut", shadowRead ? { to, shadow: MEMORY_CUT_SHADOW_READ } : { to }, args, context.invocation.requestId);
         if (to === null) throw new Error("[daemon] sealed-memory-cut: `to` (the section pair's public half, 64 lower hex) required.");
-        await ownReading();
+        await ownReading("sealed-memory-cut");
         const cut = await holderFor("sealed-memory-cut").holder.cutMemory({ bags: daemonAuth.registerBags, to: meshHexToBytes(to), ...(shadowRead ? { shadowRead: true } : {}) });
         if ("refusal" in cut) return refusedBy("sealed-memory-cut", cut);
         return { verb: "sealed-memory-cut", section: bytesToBase64(cut.section), holds: cut.holds.map((one) => ({ ...one })) };
@@ -972,7 +984,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const sealedSecret = typeof args["secret"] === "string" ? args["secret"] : null;
         memoryAsk("sealed-memory-import", "import", { section, secret: sealedSecret }, args, context.invocation.requestId);
         const seat = holderFor("sealed-memory-import");
-        await ownReading();
+        await ownReading("sealed-memory-import");
         if (section === null || sealedSecret === null) throw new Error("[daemon] sealed-memory-import: `section` and `secret` (each base64) required.");
         const door = memoryDoor;
         memoryDoor = null;   // one door, one import

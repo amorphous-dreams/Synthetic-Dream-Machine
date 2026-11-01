@@ -32,6 +32,9 @@ export interface SessionAsk {
 export type SessionReading =
   | {
     readonly signer: RecordSigner; readonly subject: string; readonly chain: SessionOwnChain;
+    /** Did the vessel read its fold of the face's fleet board? False where it wears no face or serves no fleet under
+     *  the root it wears (a joinee): the counted and unanswered lists then say nothing, and a seat that rolled refuses. */
+    readonly foldRead: boolean;
     /** The raises the vessel counts on its face's fleet board (its own fold): the evidence a removal version counts by. */
     readonly counted: readonly string[];
     /** The counted raises no subscriber has taken yet (no mark in the vessel's ledger): owed, a restart included. */
@@ -45,7 +48,7 @@ export interface IslandSessionProof {
   signer(ask: SessionAsk | null): Promise<SessionReading>;
   /** The vessel's own chain and fold with no session behind the ask (a backup's cut, a restore's import): the island
    *  counts records by them and signs nothing. Absent, or a refusal: the island reads as before. */
-  own?(): Promise<{ readonly chain: SessionOwnChain; readonly counted: readonly string[]; readonly unanswered: readonly string[] } | { readonly refusal: string }>;
+  own?(): Promise<{ readonly chain: SessionOwnChain; readonly foldRead: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] } | { readonly refusal: string }>;
 }
 
 const bare = (s: string): string => s.trim().toLowerCase().replace(/^0x/, "");

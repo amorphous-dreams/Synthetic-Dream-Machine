@@ -50,8 +50,8 @@ export class SessionSignBook {
 
   /** The door the daemon island's asks reach. `chain` answers this vessel's own verified face chain, or null;
    *  `raises` answers what the vessel counts on the face's fleet board and what no subscriber has taken yet. */
-  door(chain: () => SessionOwnChain | null, raises: () => Promise<{ readonly counted: readonly string[]; readonly unanswered: readonly string[] }> = async () => ({ counted: [], unanswered: [] })): SessionSignDoor {
-    const fold = async (): Promise<{ readonly counted: readonly string[]; readonly unanswered: readonly string[] } | null> => {
+  door(chain: () => SessionOwnChain | null, raises: () => Promise<{ readonly read: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }> = async () => ({ read: false, counted: [], unanswered: [] })): SessionSignDoor {
+    const fold = async (): Promise<{ readonly read: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] } | null> => {
       try { return await raises(); } catch { return null; }
     };
     return async (ask) => {
@@ -60,7 +60,7 @@ export class SessionSignBook {
       if (ask.op === "own") {
         const own = chain();
         const read = own === null ? null : await fold();
-        return own === null || read === null ? { refusal: "chain-absent" } : { own: true, chain: own, counted: [...read.counted], unanswered: [...read.unanswered] };
+        return own === null || read === null ? { refusal: "chain-absent" } : { own: true, chain: own, foldRead: read.read, counted: [...read.counted], unanswered: [...read.unanswered] };
       }
       const booking = this.#held.get(ask.ask);
       if (booking === undefined || booking.verb !== ask.verb) return { refusal: "signer-unavailable" };
@@ -73,7 +73,7 @@ export class SessionSignBook {
         // A fold that fails reads as nothing counted and nothing unanswered never: it refuses, and nothing seals.
         const read = await fold();
         if (read === null) return { refusal: "signer-unavailable" };
-        return { certificate: signer.certificate, subject, chain: own, counted: [...read.counted], unanswered: [...read.unanswered] };
+        return { certificate: signer.certificate, subject, chain: own, foldRead: read.read, counted: [...read.counted], unanswered: [...read.unanswered] };
       }
       if (!(ask.payload instanceof Uint8Array)) return { refusal: "signer-refused" };
       const signed = await signer.sign("act", ask.payload);

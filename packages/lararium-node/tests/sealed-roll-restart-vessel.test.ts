@@ -37,7 +37,7 @@ async function proof(bend: (own: Exclude<SessionReading, { refusal: string }>) =
     certificate: c.sessionCertificate,
     sign: async (purpose, payload) => ({ signature: await signHex(sessionSignatureImage(purpose, c.scope, c.sessionCertificate.sessionKey, payload), c.session) }),
   };
-  const own = { signer, subject: faceProofSubjectRef(c.scope), chain: { scope: c.scope, vesselFaceKey: c.sessionCertificate.vesselFaceKey }, counted: [] as readonly string[], unanswered: [] as readonly string[] };
+  const own = { signer, subject: faceProofSubjectRef(c.scope), chain: { scope: c.scope, vesselFaceKey: c.sessionCertificate.vesselFaceKey }, foldRead: true, counted: [] as readonly string[], unanswered: [] as readonly string[] };
   const asks: Proof["asks"] = [];
   return { asks, signer: async (ask) => { asks.push(ask); return ask === null ? { refusal: "signer-unavailable" } : bend(own); } };
 }

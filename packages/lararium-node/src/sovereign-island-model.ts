@@ -150,7 +150,7 @@ export function vesselSessionDoor(port: { postMessage(msg: unknown): void; on(ev
     async own() {
       const read = await askVessel("own", { requestId: "", verb: "" });
       if (read === null || !("own" in read)) return { refusal: read !== null && "refusal" in read ? read.refusal : "chain-absent" };
-      return { chain: read.chain, counted: strings(read.counted), unanswered: strings(read.unanswered) };
+      return { chain: read.chain, foldRead: read.foldRead === true, counted: strings(read.counted), unanswered: strings(read.unanswered) };
     },
     async signer(ask): Promise<SessionReading> {
       if (ask === null) return { refusal: "signer-unavailable" };
@@ -160,7 +160,7 @@ export function vesselSessionDoor(port: { postMessage(msg: unknown): void; on(ev
       if (!("certificate" in read)) return { refusal: "signer-unavailable" };
       const certificate = read.certificate as never;
       return {
-        subject: read.subject, chain: read.chain,
+        subject: read.subject, chain: read.chain, foldRead: read.foldRead === true,
         counted: Array.isArray(read.counted) ? read.counted.filter((c): c is string => typeof c === "string") : [],
         unanswered: Array.isArray(read.unanswered) ? read.unanswered.filter((c): c is string => typeof c === "string") : [],
         signer: {
