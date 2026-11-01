@@ -2,38 +2,69 @@
 a bare sharktooth sigil
 ==================
 
-<<~ confidence Synthesis 12/20 >>
+<<~ confidence value=`Synthesis 12/20` >>
 
 ---
 
 (source_file
   (sharktooth_sigil
     (sigil_name)
-    (arg)
-    (arg)))
+    (attr
+      (attr_name)
+      (tick_value))))
 
 ==================
-the turn frame — a sigil row
+the turn frame — a set row with three firings
 ==================
 
-<<~ lares aim lar:///operator.intent.lands -> lar:///council.options.cuts >>
-<<~ hud Aperture(11) OODA-HA(9) >>
-<<~ ward * L-Prime >>
+<<~ set lares=`aim` from=`lar:///operator.intent.lands` to=`lar:///council.options.cuts` drift-ward=`a pull` >>
+<<~ set lares=`steer` to=`lar:///clerk.marks.the-gap` >>
+<<~ oracle throw=`↯8 ✲ ⚀(1) ⁂:🗡️` >>
+<<~ set lares=`yield` drift-ward=`a clue · ↻ L-Prime` aperture=`10/measure -> 12/measure` from=`lar:///close.named.the-gap` to=`?` >>
 
 ---
 
 (source_file
-  (sharktooth_sigil (sigil_name) (arg) (arg) (arg) (arg))
-  (sharktooth_sigil (sigil_name) (arg) (arg))
-  (sharktooth_sigil (sigil_name) (arg) (arg)))
+  (sharktooth_sigil (sigil_name) (attr (attr_name) (tick_value)) (attr (attr_name) (tick_value)) (attr (attr_name) (tick_value)) (attr (attr_name) (tick_value)))
+  (sharktooth_sigil (sigil_name) (attr (attr_name) (tick_value)) (attr (attr_name) (tick_value)))
+  (sharktooth_sigil (sigil_name) (attr (attr_name) (tick_value)))
+  (sharktooth_sigil (sigil_name) (attr (attr_name) (tick_value)) (attr (attr_name) (tick_value)) (attr (attr_name) (tick_value)) (attr (attr_name) (tick_value)) (attr (attr_name) (tick_value))))
+
+==================
+a value holding spaces, an arrow and a closing angle stays one value
+==================
+
+<<~ scale name=`organ` ranks=`a ~ one -> b ~ two >> three` >>
+
+---
+
+(source_file
+  (sharktooth_sigil
+    (sigil_name)
+    (attr (attr_name) (tick_value))
+    (attr (attr_name) (tick_value))))
+
+==================
+a value holding a backtick takes the triple form
+==================
+
+<<~ persona name=`Lares` params=```a `tick` inside``` >>
+
+---
+
+(source_file
+  (sharktooth_sigil
+    (sigil_name)
+    (attr (attr_name) (tick_value))
+    (attr (attr_name) (tick_value))))
 
 ==================
 an ahu block nests inner sigils
 ==================
 
-<<~ ahu #entry >>
+<<~ ahu slot=`#/entry` >>
 prose under the section
-<<~ confidence Canon 18/20 >>
+<<~ confidence value=`Canon 18/20` >>
 <<~/ahu >>
 
 ---
@@ -41,44 +72,68 @@ prose under the section
 (source_file
   (ahu_block
     (sigil_name)
+    (attr (attr_name) (tick_value))
     (text)
-    (sharktooth_sigil (sigil_name) (arg) (arg))))
+    (sharktooth_sigil (sigil_name) (attr (attr_name) (tick_value)))))
 
 ==================
 the pranala-header edge
 ==================
 
-<<~ ? -> lar:///ha.ka.ba/lares/api/corpus >>
+<<~ ? to=`lar:///ha.ka.ba/lares/api/corpus` >>
 
 ---
 
 (source_file
   (pranala_header
-    (sigil_name)))
+    (sigil_name)
+    (attr (attr_name) (tick_value))))
 
 ==================
-a pranala edge sigil
+a pranala edge sigil carries its ends as from and to, in either order
 ==================
 
-<<~ pranala #link operator.intent.lands -> council.options.cuts >>
+<<~ pranala slot=`#link` from=`operator.intent.lands` to=`council.options.cuts` >>
+<<~ pranala to=`council.options.cuts` from=`operator.intent.lands` >>
 
 ---
 
 (source_file
   (pranala
-    (sigil_name)))
+    (sigil_name)
+    (attr (attr_name) (tick_value))
+    (attr (attr_name) (tick_value))
+    (attr (attr_name) (tick_value)))
+  (pranala
+    (sigil_name)
+    (attr (attr_name) (tick_value))
+    (attr (attr_name) (tick_value))))
 
 ==================
 the doctype declaration
 ==================
 
-<<!DOCTYPE "a-grammar" "lar:///a/grammar/spec">>
-<<~ ? -> lar:///ha.ka.ba/lares/api/corpus >>
+<<!DOCTYPE type=`a-grammar` spec=`lar:///a/grammar/spec`>>
+<<~ ? to=`lar:///ha.ka.ba/lares/api/corpus` >>
 
 ---
 
 (source_file
   (doctype
-    (sigil_name))
+    (sigil_name)
+    (attr (attr_name) (tick_value))
+    (attr (attr_name) (tick_value)))
   (pranala_header
-    (sigil_name)))
+    (sigil_name)
+    (attr (attr_name) (tick_value))))
+
+==================
+the retired arrow between two values is an error
+:error
+==================
+
+<<~ pranala from=`A` -> to=`B` >>
+
+---
+
+(source_file)
