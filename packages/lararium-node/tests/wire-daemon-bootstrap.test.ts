@@ -42,6 +42,10 @@ vi.mock("../src/doc-load-probe.js", async (orig) => ({
   makeChildProcessDocLoadProbe: () => ({ probe: async (documentId: string) => ({ documentId, status: "ok" as const }) }),
 }));
 
+import { FsCustodyIo } from "../src/custody-io.js";
+import { makeCustodyHolder, type CustodyHolder } from "../src/custody-holder.js";
+import { seatCustody, unseatCustody } from "../src/custody-seat.js";
+import { vesselCustodyHomes } from "../src/vault-carriers.js";
 import { openNodeVessel } from "../src/open-node-vessel.js";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { larBootstrapPath } from "../src/vessel-paths.js";
@@ -54,8 +58,11 @@ const ORACLE_ADDRESS = "automerge:wire-oracle-daemon";
 const AMBIENT = ["LAR_HERM_RELAY_PORT"] as const;
 const TIMEOUT_MS = 180_000;
 
+/** The published test route a staged root's custody answers (`tools/test-custody-route.mjs`). */
+const STAGED_ROUTE = "test-founding-passphrase";
 let root: string;
 let priorRoot: string | undefined;
+let stagedHolder: CustodyHolder | undefined;
 const priorAmbient = new Map<string, string | undefined>();
 let boots = 0;
 let seeds = 0;
@@ -68,12 +75,20 @@ beforeAll(async () => {
     execFileSync("node", [join(repoRoot, "tools", tool), root], { env: { ...process.env, LAR_ROOT: root }, stdio: "pipe" });
   }
   process.env["LAR_ROOT"] = root;
+  // The seeding founded the node tree under the published test route, so this harness opens its custody by that route
+  // (the scratch custody opens only what the scratch route founded) and seats the holder for the root.
+  const homes = vesselCustodyHomes();
+  stagedHolder = makeCustodyHolder({ io: new FsCustodyIo(homes), homes });
+  const opened = await stagedHolder.unlock([{ kind: "passphrase", passphrase: STAGED_ROUTE }]);
+  if (opened.reading !== "opens") throw new Error(`the staged custody reads ${opened.reading}`);
+  seatCustody(stagedHolder);
   // A boot loads its vessel key and never mints one, so the staged root gets its key here, inside the custody the
-  // seeding founded (the suites' scratch custody opens it under the published test route).
+  // seeding founded.
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
 }, TIMEOUT_MS);
 
 afterAll(async () => {
+  if (stagedHolder) { await stagedHolder.lock(); unseatCustody(stagedHolder); }
   for (const claim of held.claims) await claim.release();
   for (const [name, value] of priorAmbient) { if (value === undefined) delete process.env[name]; else process.env[name] = value; }
   if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
