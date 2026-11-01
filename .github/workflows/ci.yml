@@ -1,28 +1,27 @@
 name: CI
 
 # Golden-principle gates for the Lararium monorepo, mapped to the project's
-# domains + models (web3 local-first · causal-islands · the meme graph):
-#   typecheck       — every package's types hold
-#   build-freshness — `build` is deterministic AND emits no stale tracked source:
-#                     the checked-in generated plugin artifacts — the lar:// canonical copy AND
-#                     the `$:/` standalone distribution (plugins/standalone/) — must match a fresh
-#                     build (the canonical "regenerate + git diff --exit-code" gate;
-#                     catches a hand-edited / forgotten-regen generated file)
-#   test            — every package's suite, incl. the meme round-trip laws
-#                     (meme-corpus-roundtrip) and the two plugin-artifact parity gates (lar:// +
-#                     the standalone `$:/` distribution)
-#   witnesses       — the whole `tools/*witness*.sh` fleet through `witness-all`, under its own
-#                     name so a red suite cannot swallow it; the docker/browser hold-outs are
-#                     named with their reasons in the job's log; beside it, every
-#                     `tools/*.test.mjs` self-test the instruments carry
-#   e2e             — every e2e set through the real CLI + vessels, sharded: this workflow calls
-#                     `e2e-shards.yml` and takes its merge gate's verdict
-#   boot-budget     — the cache-stable boot stays under its char ceiling
-#   pristine-upstream — the meme routes AND a stock single-file build meet a PUBLISHED tiddlywiki
-#                     (npm), not only the fork, against the COMMITTED standalone artifact (never a
-#                     fresh dist-plugin rebuild) — the plugin drops into stock, and the log names
-#                     the version it met
+# domains + models (web3 local-first · causal-islands · the meme graph).
 #
+# A FULL RUN RAISES AT MOST TEN JOBS AT ONCE (tools/ci-graph.test.mjs reads this file and the called e2e workflow), so a
+# second full run starts beside it inside the account's twenty running jobs:
+#   quick           — build + generated-artifact freshness (the checked-in plugin artifacts — the lar:// canonical copy AND
+#                     the `$:/` standalone distribution — must match a fresh build), typecheck, the exact-deps witness, the
+#                     boot budget (the cache-stable boot stays under its char ceiling), the grammar artifact gates, the
+#                     browser floor crossing, pristine upstream (the meme routes AND a stock single-file build meet a
+#                     PUBLISHED tiddlywiki, against the COMMITTED standalone artifact), then the contract witness cell
+#   test            — every package's suite as four cells (node dealt across two by file weight), incl. the meme
+#                     round-trip laws and the two plugin-artifact parity gates (lar:// + the standalone `$:/` distribution)
+#   witnesses       — the whole `tools/*witness*.sh` fleet through `witness-all`, under its own name so a red suite cannot
+#                     swallow it; the docker/browser hold-outs are named with their reasons in the job's log; beside it,
+#                     every `tools/*.test.mjs` self-test the instruments carry
+#   e2e             — every e2e set through the real CLI + vessels, sharded: this workflow calls `e2e-shards.yml` and takes
+#                     its merge gate's verdict
+#
+# ONE RUN PER SHA. A push to a branch and a pull request from the same repository name one sha, so the push owns it and
+# every job stands guarded off on the same-repository `pull_request` event; a fork's pull request has no push here and runs
+# whole. `merge_group` is the hook for a native merge queue: no job guards it off, so the queue's merge-ref run raises the
+# same ten jobs.
 # Defense-in-depth, not a single flag: build-freshness (CI, authoritative) is
 # backed by the always-on plugin-artifact-parity unit test in `test` (local-first,
 # runs in every `pnpm test`). Dropping one gate does not open the hole.
@@ -47,6 +46,8 @@ on:
       - "CHANGELOG.md"
   pull_request:
     branches: [main]
+  # The hook for a native merge queue: the queue raises this event on its merge ref, and no job guards it off.
+  merge_group:
   # A controller runs CI by hand on a lane head whose own push the ignore list skipped: a meme-only head never
   # raises a run of its own, and the land guard reads a head's verdict, not its ancestor's alone.
   workflow_dispatch:
@@ -65,11 +66,19 @@ env:
   TW5_PRISTINE: "5.4.1"
 
 jobs:
-  # ─── typecheck ────────────────────────────────────────────────────────────
-  typecheck:
-    name: Typecheck
+  # ─── quick (six small gates and the contract witness, ONE runner) ─────────────────────────
+  # THE ACCOUNT RUNS ABOUT TWENTY JOBS AT ONCE, and a full run raises at most TEN (tools/ci-graph.test.mjs holds this file to
+  # it), so a second full run starts beside the first. The six small gates that each held a runner of their own (build +
+  # freshness 1 min, typecheck 1, pristine upstream 1.4, boot budget 0.5, grammar artifact gates 1.1, floor crossing 2.7: run
+  # 41280151942) now share ONE checkout, install and build, and the contract witness rides behind them. Every step keeps its
+  # own name and runs whatever the steps before it answered (`!cancelled()`), so one red gate never hides another and the job
+  # reads red by step name. The contract witness uploads `witness-cell-contract-witness` as its own cell, so the Witnesses
+  # gate keys on that name wherever the cell runs.
+  quick:
+    name: Quick gates
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -84,42 +93,37 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      # THE NODE FLOOR, NAMED. A plain TW5 server evaluates modules in a sandbox carrying none of
+      # TextEncoder/TextDecoder/crypto; `host-globals-lend.ts` lends the host's own copies through
+      # `process.getBuiltinModule` (Node >=24) and silently no-ops without it. Absent, the meme laws' hashing dies
+      # deep inside the contact as a bare "TextEncoder is not defined"; this step names the real floor first.
+      - name: Node floor — process.getBuiltinModule must be present
+        run: |
+          node -e '
+            if (typeof process.getBuiltinModule !== "function") {
+              console.error("::error::Node " + process.version + " lacks process.getBuiltinModule — the plugin cannot lend TextEncoder/TextDecoder/crypto into the stock TW5 sandbox (host-globals-lend.ts). Pin Node >=24 (root package.json engines); below that floor the hashing paths fail deep in the contact as a bare \"TextEncoder is not defined\".");
+              process.exit(1);
+            }
+            console.log("process.getBuiltinModule present on " + process.version);
+          '
       - run: pnpm install --frozen-lockfile
-      # `@lararium/mesh` publishes its subpaths (`./lar-uris`, `./harvest`, …) into a GITIGNORED
-      # dist/, so `tsc` cannot resolve a single one of them on an unbuilt tree. Locally the tree is
-      # always built, which is why this passed on every desk and failed on every runner.
-      - name: Build (typecheck resolves workspace subpaths through dist/)
-        run: pnpm -r build
-      # A range in a manifest is a version nobody chose. This costs no build, so it rides the cheapest
-      # job and fails before anything downstream spends time on a tree whose bytes are not pinned.
-      - name: Every dependency names ONE version
-        run: tools/exact-deps-witness.sh
-      - name: Typecheck all packages
-        run: pnpm -r typecheck
-
-  # ─── build + generated-artifact freshness ─────────────────────────────────
-  build-freshness:
-    name: Build + generated freshness
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
-          # root. Without them the tw5 build cannot run, so every downstream job fails on an
-          # artifact the repo never had a chance to produce.
-          submodules: recursive
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      # `@lararium/mesh` publishes its subpaths into a GITIGNORED dist/, so `tsc` resolves none of them on an unbuilt tree.
+      # THE ENGINE BLOB IS A DELIBERATE RENDER, NEVER A BUILD SIDE EFFECT: tw5-core/ stays gitignored because its sha256 IS the
+      # hearth's true name, so `build` refuses to render it. The root `build` stamps the source digest after `pnpm -r build`.
+      - name: Render the TW5 core blob
+        run: pnpm --filter @lararium/tw5 build:tw5-vendor
       - name: Build all packages
-        run: pnpm -r build
+        id: build
+        run: pnpm build
+      # A range in a manifest is a version nobody chose. This costs no build.
+      - name: Every dependency names ONE version
+        if: ${{ !cancelled() }}
+        run: tools/exact-deps-witness.sh
       - name: Generated artifacts must be fresh (build emits no tracked diff)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
           if ! git diff --quiet; then
             echo "::error::A fresh build changed tracked files — committed generated artifacts are stale."
@@ -129,16 +133,157 @@ jobs:
             exit 1
           fi
           echo "Generated artifacts are fresh."
+      - name: Typecheck all packages
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: pnpm -r typecheck
+      - name: noosphere-boot.mem must stay under the 40000-char ceiling
+        if: ${{ !cancelled() }}
+        run: |
+          # The single quotes hold a node program whole: its backticks are JavaScript, never the shell's.
+          # shellcheck disable=SC2016
+          node -e '
+            const fs = require("node:fs");
+            const p = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem";
+            // A MISSING SEED IS ITS OWN FAULT, NEVER A BUDGET ONE.
+            if (!fs.existsSync(p)) {
+              console.error("::error::" + p + " does not exist — the budget gate cannot measure a seed it cannot find.");
+              process.exit(1);
+            }
+            // CODE POINTS, never bytes: the seed carries sigils, Hawaiian and Devanagari.
+            const n = [...fs.readFileSync(p, "utf8")].length;
+            console.log("boot code points:", n, "/ 40000");
+            if (n >= 40000) {
+              console.error("::error::" + p + " is " + n + " chars — over the cache-stable boot budget (40000). Reclaim before editing.");
+              process.exit(1);
+            }
+          '
+      # ── grammar artifact (ship step 0: the quad-pinned carrier stays truth) ──
+      # The py host's three imports, each at the version the house venv runs, so this gate measures the same runtime the operator does.
+      - name: Install py host deps
+        if: ${{ !cancelled() }}
+        run: pip install tree-sitter==0.26.0 pytest==9.1.1 pygls==2.1.1
+      - name: generate-parity — the committed parser.c stays the truth
+        if: ${{ !cancelled() }}
+        working-directory: packages/tree-sitter-memetic-wikitext
+        run: pnpm run gate:generate-parity
+      - name: fold + golden manifest gates (py host)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        working-directory: packages/tree-sitter-memetic-wikitext
+        run: pnpm run gate:fold
+      # THE TS HOST LOADS THE WASM, SO THE WASM BUILDS FIRST. `*.wasm` is gitignored; a runner holds none until `build:wasm`
+      # emits it. The contract witness below needs the same wasm and the stamp this strikes.
+      - name: wasm builds under the pinned CLI
+        id: wasm
+        if: ${{ !cancelled() }}
+        working-directory: packages/tree-sitter-memetic-wikitext
+        run: pnpm run build:wasm
+      - name: fold + parity gates (ts host)
+        if: ${{ !cancelled() && steps.wasm.outcome == 'success' }}
+        working-directory: packages/tree-sitter-memetic-wikitext
+        run: pnpm run gate:fold-ts
+      # ── the browser engines: one Chromium for the floor crossing and the pristine suites ──
+      - name: Name the Playwright version (the engine cache key)
+        id: pw-version
+        if: ${{ !cancelled() }}
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      # The engine directory restores by the pinned Playwright version; a bump re-downloads. The install below
+      # still runs apt for the system libraries, so it carries its own timeout and a stall there fails fast.
+      - name: Cache the Playwright engines (chromium)
+        if: ${{ !cancelled() }}
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium
+      - name: Install the Chromium engine
+        id: chromium
+        if: ${{ !cancelled() }}
+        timeout-minutes: 10
+        run: pnpm exec playwright install --with-deps chromium
+      # ── the browser floor crossing (W23) ──
+      # A real Chromium on the page a staged hearth serves, crossing that hearth's gates
+      # (`packages/lararium-web/tests/e2e/floor-crossing.e2e.test.ts`). It rides its own config
+      # (`vitest.crossing.config.ts`) and no package suite collects it. A scratch HOME, LAR_ROOT and LAR_STAGE_DIR keep the
+      # staged vessels off any real home; Playwright's engine cache stays where the install put it.
+      - name: Run the floor crossing under a scratch home
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.chromium.outcome == 'success' }}
+        run: |
+          scratch="$RUNNER_TEMP/crossing"
+          mkdir -p "$scratch/home" "$scratch/root" "$scratch/stage"
+          cd packages/lararium-web
+          env PLAYWRIGHT_BROWSERS_PATH="$HOME/.cache/ms-playwright" HOME="$scratch/home" LAR_ROOT="$scratch/root" LAR_STAGE_DIR="$scratch/stage" \
+            npx vitest run --config vitest.crossing.config.ts
+      # ── pristine upstream (the plugin drops into a PUBLISHED tiddlywiki) ──
+      # THE INSTRUMENT AND ITS INVOKER. `meme-routes.e2e` takes `LARES_TW5_JS` and runs the whole contact against any
+      # `tiddlywiki.js`; the package suites run it against the FORK. THE SUITE SKIPS LOUDLY WHEN ITS ENGINE IS MISSING, AND A
+      # SKIP READS GREEN, so the step greps the contact line for the pinned version.
+      # THE COMMITTED ARTIFACT, NOT A FRESH REBUILD: the pristine engine meets the TRACKED `$:/` distribution. This block runs
+      # after the freshness gate, which already proved a fresh build and the tracked copy agree.
+      - name: Stamp the dependency build for the pristine suites
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: node tools/stamp-build.mjs .
+      - name: Point dist-plugin at the committed standalone artifact
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
+      # ONE VERSION, ONE PLACE. The tarball caches by the pinned version; a bump re-packs.
+      - name: Cache the published tiddlywiki
+        id: pristine-cache
+        if: ${{ !cancelled() }}
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/lares-pristine/tiddlywiki-${{ env.TW5_PRISTINE }}
+          key: pristine-tiddlywiki-${{ env.TW5_PRISTINE }}
+      - name: Pack tiddlywiki@${{ env.TW5_PRISTINE }} from npm
+        if: ${{ !cancelled() && steps.pristine-cache.outputs.cache-hit != 'true' }}
+        run: |
+          dir=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE
+          mkdir -p "$dir" && cd "$dir"
+          npm pack "tiddlywiki@$TW5_PRISTINE" --silent
+          tar xzf "tiddlywiki-$TW5_PRISTINE.tgz"
+      - name: Witness the engine is the one pinned
+        if: ${{ !cancelled() }}
+        run: |
+          pkg=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package
+          test -f "$pkg/tiddlywiki.js"
+          node -e 'const v=require(process.argv[1]+"/package.json").version; console.log("pristine engine: tiddlywiki@"+v); if(v!==process.env.TW5_PRISTINE){console.error("::error::packed "+v+", pinned "+process.env.TW5_PRISTINE);process.exit(1)}' "$pkg"
+      - name: meme-routes + standalone single-file contact against the pristine engine
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.chromium.outcome == 'success' }}
+        run: |
+          export LARES_TW5_JS=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package/tiddlywiki.js
+          export LARES_E2E_TMP="$RUNNER_TEMP/pristine-e2e"
+          pnpm --filter @lararium/tw5 exec vitest run tests/meme-routes.e2e.test.ts tests/standalone-single-file.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
+          test "${PIPESTATUS[0]}" -eq 0
+      - name: The log names the engine it met
+        if: ${{ !cancelled() }}
+        run: |
+          line=$(grep -a "meme-routes.e2e: contact with TiddlyWiki" "$RUNNER_TEMP/pristine.log" || true)
+          echo "$line"
+          if ! grep -aq "contact with TiddlyWiki $TW5_PRISTINE " "$RUNNER_TEMP/pristine.log"; then
+            echo "::error::the contact never named tiddlywiki@$TW5_PRISTINE — the suite skipped or met another engine"
+            exit 1
+          fi
+      # ── the contract witness (the hosted witness cell `contract-witness`; WITNESS_CELLS in tools/ci-cells.mjs) ──
+      - name: Run the hosted witness cell contract-witness
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.wasm.outcome == 'success' }}
+        run: node tools/ci-cells.mjs run-witness contract-witness --out "$RUNNER_TEMP/cell"
+      - name: Upload the hosted cell's log (always, even on a red cell)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: witness-cell-contract-witness
+          path: ${{ runner.temp }}/cell/
+          retention-days: 14
+          if-no-files-found: warn
 
   # ─── test (all package suites, as cells) ───────────────────────────────────
   # EACH CELL IS A SLICE OF THE SUITES ON A RUNNER OF ITS OWN, and the slowest cell sets the wall clock. The slices are
-  # the table `TEST_CELLS` in tools/ci-cells.mjs: node in one cell (sharding it costs more run time than it saves; see TEST_CELLS), the other
+  # the table `TEST_CELLS` in tools/ci-cells.mjs: node dealt across two cells by file weight (vitest's own shard measured worse; see TEST_CELLS), the other
   # packages grouped into two cells by weight. FEW CELLS: every cell repeats checkout, install and build, and the lanes share one capped
   # runner pool, so total job-minutes decides, with each run's critical path held near the slowest e2e shard. Every cell is self-contained (its own checkout, install, build, holder venv and engines) and uploads
   # one JSON report per package; the reports double as the per-file timings that name the slowest files. The job
   # named `Test` below is the gate: it fails closed on any missing, empty, red or unexpected cell.
   test-cells:
     name: Test cell ${{ matrix.cell }}
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -147,9 +292,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - cell: node
-          - cell: web-cli
-          - cell: mesh-tw5
+          - cell: node-a
+          - cell: node-b
+          - cell: web-tw5
+          - cell: cli-mesh
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -254,7 +400,7 @@ jobs:
     name: Test
     needs: test-cells
     # Runs whatever the cells answered: a gate skipped by one red cell would read as nothing to report.
-    if: always()
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -281,54 +427,6 @@ jobs:
             exit 1
           fi
 
-  # ─── the browser floor crossing (W23) ───────────────────────────────────────────
-  # A real Chromium on the page a staged hearth serves, crossing that hearth's gates
-  # (`packages/lararium-web/tests/e2e/floor-crossing.e2e.test.ts`). It stands a node vessel and a browser together, so it
-  # rides its own config (`vitest.crossing.config.ts`) and no package suite collects it; before this cell nothing in CI
-  # named that config (`tools/vitest-config-callers.test.mjs` reads every named config for a caller). A scratch HOME,
-  # LAR_ROOT and LAR_STAGE_DIR keep the staged vessels off any real home; Playwright's engine cache stays where the
-  # install put it.
-  floor-crossing:
-    name: Floor crossing (browser)
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          submodules: recursive
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Render the TW5 core blob
-        run: pnpm --filter @lararium/tw5 build:tw5-vendor
-      - name: Build
-        run: pnpm build
-      - name: Name the Playwright version (the engine cache key)
-        id: pw-version
-        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-      # The engine directory restores by the pinned Playwright version; a bump re-downloads. The install below
-      # still runs apt for the system libraries, so it carries its own timeout and a stall there fails fast.
-      - name: Cache the Playwright engines (chromium)
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium
-      - name: Install the Chromium engine
-        timeout-minutes: 10
-        run: pnpm exec playwright install --with-deps chromium
-      - name: Run the floor crossing under a scratch home
-        run: |
-          scratch="$RUNNER_TEMP/crossing"
-          mkdir -p "$scratch/home" "$scratch/root" "$scratch/stage"
-          cd packages/lararium-web
-          env PLAYWRIGHT_BROWSERS_PATH="$HOME/.cache/ms-playwright" HOME="$scratch/home" LAR_ROOT="$scratch/root" LAR_STAGE_DIR="$scratch/stage" \
-            npx vitest run --config vitest.crossing.config.ts
-
   # ─── witnesses (the whole fleet, under its own name) ───────────────────────
   # THE FLEET RODE INSIDE `test`, WHICH IS A PLACE IT CAN BE HIDDEN. `witness-all` exists because
   # chaining gates with `&&` lets the first red swallow every one after it; a step that runs AFTER
@@ -354,13 +452,13 @@ jobs:
   # them and fails closed on any missing, red or unexpected cell log.
   witness-cells:
     name: Witness cell ${{ matrix.cell }}
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
         include:
-          - cell: contract-witness
           - cell: rest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -415,8 +513,8 @@ jobs:
 
   witnesses:
     name: Witnesses
-    needs: witness-cells
-    if: always()
+    needs: [quick, witness-cells]
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -437,9 +535,14 @@ jobs:
         if: always()
         env:
           CELLS_RESULT: ${{ needs.witness-cells.result }}
+          QUICK_RESULT: ${{ needs.quick.result }}
         run: |
           if [ "$CELLS_RESULT" != "success" ]; then
             echo "::error::the witness cells ended $CELLS_RESULT, not success"
+            exit 1
+          fi
+          if [ "$QUICK_RESULT" != "success" ]; then
+            echo "::error::the quick job (it hosts the contract witness) ended $QUICK_RESULT, not success"
             exit 1
           fi
 
@@ -458,196 +561,6 @@ jobs:
   # The called jobs read on the run as `E2E / Shard <set> <k>/<n>` and `E2E / Merge shard reports`.
   e2e:
     name: E2E
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
     uses: ./.github/workflows/e2e-shards.yml
 
-  # ─── boot budget (cache-stable boot ceiling) ───────────────────────────────
-  boot-budget:
-    name: Boot budget
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
-          # root. Without them the tw5 build cannot run, so every downstream job fails on an
-          # artifact the repo never had a chance to produce.
-          submodules: recursive
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - name: noosphere-boot.mem must stay under the 40000-char ceiling
-        run: |
-          # The single quotes hold a node program whole: its backticks are JavaScript, never the shell's.
-          # shellcheck disable=SC2016
-          node -e '
-            const fs = require("node:fs");
-            const p = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem";
-            // A MISSING SEED IS ITS OWN FAULT, NEVER A BUDGET ONE. This gate read a path with a doubled
-            // `lares/` segment — left behind by the ha.ka.ba reshuffle — so it threw ENOENT and reported
-            // as a budget failure for two days while the seed sat 34 code points UNDER the ceiling.
-            if (!fs.existsSync(p)) {
-              console.error("::error::" + p + " does not exist — the budget gate cannot measure a seed it cannot find.");
-              process.exit(1);
-            }
-            // CODE POINTS, never bytes: the seed carries sigils, Hawaiian and Devanagari, so a byte count
-            // reads ~480 high and would send a reader trimming prose that was never over.
-            const n = [...fs.readFileSync(p, "utf8")].length;
-            console.log("boot code points:", n, "/ 40000");
-            if (n >= 40000) {
-              console.error("::error::" + p + " is " + n + " chars — over the cache-stable boot budget (40000). Reclaim before editing.");
-              process.exit(1);
-            }
-          '
-
-  # ─── pristine upstream (the plugin drops into a PUBLISHED tiddlywiki) ──────
-  # THE INSTRUMENT AND ITS INVOKER. `meme-routes.e2e` takes `LARES_TW5_JS` and runs the whole
-  # contact — PUT · GET · DELETE · memes.json · the native door · the readers/writers case · the
-  # `--render` door — against any `tiddlywiki.js`. The `test` job runs it against the FORK
-  # (the submodule); nothing ran it against the published line, so "the plugin drops into stock"
-  # stood as an operator's local measurement. This job is its invoker, and it stands ALONE so the
-  # verdict reads on the PR under its own name rather than inside a job that measures the fork.
-  #
-  # THE SUITE SKIPS LOUDLY WHEN ITS ENGINE IS MISSING, AND A SKIP READS GREEN. So the job greps the
-  # contact line for the pinned version: a run that met no engine, or met the wrong one, fails here
-  # even though vitest exited 0.
-  pristine-upstream:
-    name: Pristine upstream (stock tiddlywiki from npm)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # The packed plugin builds from the vendored core; the contact itself runs against npm's.
-          submodules: recursive
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-      # THE NODE FLOOR, NAMED. A plain TW5 server evaluates modules in a sandbox carrying none of
-      # TextEncoder/TextDecoder/crypto; `host-globals-lend.ts` lends the host's own copies through
-      # `process.getBuiltinModule` (Node >=24) and silently no-ops without it (a browser or older
-      # Node is a legitimate no-op case elsewhere — here it is a floor violation). Absent, the meme
-      # laws' hashing dies deep inside the contact as a bare "TextEncoder is not defined", naming
-      # nothing about why; this step names the real floor before that cryptic failure ever fires.
-      - name: Node floor — process.getBuiltinModule must be present
-        run: |
-          node -e '
-            if (typeof process.getBuiltinModule !== "function") {
-              console.error("::error::Node " + process.version + " lacks process.getBuiltinModule — the plugin cannot lend TextEncoder/TextDecoder/crypto into the stock TW5 sandbox (host-globals-lend.ts). Pin Node >=24 (root package.json engines); below that floor the hashing paths fail deep in the contact as a bare \"TextEncoder is not defined\".");
-              process.exit(1);
-            }
-            console.log("process.getBuiltinModule present on " + process.version);
-          '
-      - run: pnpm install --frozen-lockfile
-      - name: Build (dependency packages; the tw5 plugin build also runs here)
-        run: pnpm -r build
-      # THE COMMITTED ARTIFACT, NOT A FRESH REBUILD. `pnpm -r build` above regenerates
-      # dist-plugin/ as the tw5 package's own side effect; this job's whole point is to prove
-      # what SHIPS, so the pristine engine meets the TRACKED `$:/` distribution — the sibling
-      # `build-freshness` job is what already proves a fresh build and the tracked copy agree.
-      # The package suites read dist stamps; this build emits dist without stamping it.
-      - name: Stamp the dependency build for the pristine suites
-        run: node tools/stamp-build.mjs .
-      - name: Point dist-plugin at the committed standalone artifact
-        run: cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
-      - name: Name the Playwright version (the engine cache key)
-        id: pw-version
-        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-      # The engine directory restores by the pinned Playwright version; a bump re-downloads. The install below
-      # still runs apt for the system libraries, so it carries its own timeout and a stall there fails fast.
-      - name: Cache the Playwright engines (chromium)
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium
-      - name: Install Playwright Chromium (standalone single-file suite)
-        timeout-minutes: 10
-        run: pnpm exec playwright install --with-deps chromium
-      # ONE VERSION, ONE PLACE. The tarball caches by the pinned version; a bump re-packs.
-      - name: Cache the published tiddlywiki
-        id: pristine-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/lares-pristine/tiddlywiki-${{ env.TW5_PRISTINE }}
-          key: pristine-tiddlywiki-${{ env.TW5_PRISTINE }}
-      - name: Pack tiddlywiki@${{ env.TW5_PRISTINE }} from npm
-        if: steps.pristine-cache.outputs.cache-hit != 'true'
-        run: |
-          dir=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE
-          mkdir -p "$dir" && cd "$dir"
-          npm pack "tiddlywiki@$TW5_PRISTINE" --silent
-          tar xzf "tiddlywiki-$TW5_PRISTINE.tgz"
-      - name: Witness the engine is the one pinned
-        run: |
-          pkg=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package
-          test -f "$pkg/tiddlywiki.js"
-          node -e 'const v=require(process.argv[1]+"/package.json").version; console.log("pristine engine: tiddlywiki@"+v); if(v!==process.env.TW5_PRISTINE){console.error("::error::packed "+v+", pinned "+process.env.TW5_PRISTINE);process.exit(1)}' "$pkg"
-      - name: meme-routes + standalone single-file contact against the pristine engine
-        run: |
-          export LARES_TW5_JS=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package/tiddlywiki.js
-          export LARES_E2E_TMP="$RUNNER_TEMP/pristine-e2e"
-          pnpm --filter @lararium/tw5 exec vitest run tests/meme-routes.e2e.test.ts tests/standalone-single-file.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
-          test "${PIPESTATUS[0]}" -eq 0
-      - name: The log names the engine it met
-        run: |
-          line=$(grep -a "meme-routes.e2e: contact with TiddlyWiki" "$RUNNER_TEMP/pristine.log" || true)
-          echo "$line"
-          if ! grep -aq "contact with TiddlyWiki $TW5_PRISTINE " "$RUNNER_TEMP/pristine.log"; then
-            echo "::error::the contact never named tiddlywiki@$TW5_PRISTINE — the suite skipped or met another engine"
-            exit 1
-          fi
-
-  # ─── grammar artifact (ship step 0: the quad-pinned carrier stays truth) ───
-  grammar-artifact:
-    name: Grammar artifact gates
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
-          # root. Without them the tw5 build cannot run, so every downstream job fails on an
-          # artifact the repo never had a chance to produce.
-          submodules: recursive
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: "3.12"
-      - run: pnpm install --frozen-lockfile
-      # The py host's three imports, each at the version the house venv runs (tree-sitter and pytest
-      # as `packages/lararium-sensorium/requirements.txt` pins them, pygls as the root
-      # manifest pins it), so this gate measures the same runtime the operator does.
-      - name: Install py host deps
-        run: pip install tree-sitter==0.26.0 pytest==9.1.1 pygls==2.1.1
-      - name: generate-parity — the committed parser.c stays the truth
-        working-directory: packages/tree-sitter-memetic-wikitext
-        run: pnpm run gate:generate-parity
-      # The py host's cross-language weld frame-checks a carrier through `lares meme normalize`. The
-      # bin shim stands from install, so `lares` is on PATH either way; unbuilt, it exits 1.
-      - name: Build (the weld runs the lares CLI from dist)
-        run: pnpm build
-      - name: fold + golden manifest gates (py host)
-        working-directory: packages/tree-sitter-memetic-wikitext
-        run: pnpm run gate:fold
-      # THE TS HOST LOADS THE WASM, SO THE WASM BUILDS FIRST. `*.wasm` is gitignored in this package;
-      # a runner holds none until `build:wasm` emits it. The pinned tree-sitter CLI fetches its own
-      # wasi-sdk clang and wasm-opt on first use, so the build needs neither emscripten nor docker.
-      # The same script builds it for the Witnesses job, and strikes the wasm stamp on both.
-      - name: wasm builds under the pinned CLI
-        working-directory: packages/tree-sitter-memetic-wikitext
-        run: pnpm run build:wasm
-      # TWO HOSTS, TWO GATES. `gates` chains all three with `&&`; this job named two of them and the
-      # TS host's fold + parity ran nowhere. Kept as its own step rather than folded into the chain,
-      # so a red in the py host cannot hide a red here.
-      - name: fold + parity gates (ts host)
-        working-directory: packages/tree-sitter-memetic-wikitext
-        run: pnpm run gate:fold-ts

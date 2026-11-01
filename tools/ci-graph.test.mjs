@@ -69,7 +69,7 @@ test("G2b CONTROL: a workflow with no fork guard raises a run per event, a guard
   assert.equal(runsPerLanePush("on:\n  schedule:\n"), 0);
 });
 
-test("G2c RED: a merge queue has a hook: ci.yml and e2e-shards.yml accept a merge_group run, and no job guards it off", () => {
+test("G2c RED: a merge queue has a hook: ci.yml lists a merge_group trigger, and no job guards it off", () => {
   const files = liveFiles(ROOT);
   assert.ok(triggers(files["ci.yml"]).includes("merge_group"), "ci.yml lists no merge_group trigger");
   for (const j of readJobs(files["ci.yml"])) if (j.ifText) assert.doesNotMatch(j.ifText, /merge_group/, `${j.id} guards merge_group off`);
@@ -87,4 +87,26 @@ test("G3 RED: a span push, CI beside held-out, stays inside the account's twenty
   const parallel = Number(/^ {6}max-parallel:\s*(\d+)\s*$/m.exec(text)?.[1]);
   const n = graphNumbers("ci.yml", liveFiles(ROOT));
   assert.ok(n.concurrent + parallel <= 20, `CI ${n.concurrent} + held-out ${parallel} overflows twenty`);
+});
+
+test("G4 RED: the quick job keeps every folded gate as a named step that runs whatever the steps before it answered", () => {
+  const yml = liveFiles(ROOT)["ci.yml"];
+  const at = yml.search(/^  quick:\n/m);
+  assert.ok(at >= 0, "ci.yml has no quick job");
+  const rest = yml.slice(at + 1);
+  const block = rest.slice(0, rest.search(/^  [a-z][\w-]*:\n/m));
+  const steps = [...block.matchAll(/^      - (?:name: (.+)|uses: (\S+)|run: .*)$[\s\S]*?(?=^      - |(?![\s\S]))/gm)];
+  const named = new Map();
+  for (const m of steps) if (m[1]) named.set(m[1], m[0]);
+  for (const want of [
+    "Every dependency names ONE version", "Generated artifacts must be fresh (build emits no tracked diff)", "Typecheck all packages",
+    "noosphere-boot.mem must stay under the 40000-char ceiling", "generate-parity — the committed parser.c stays the truth",
+    "fold + golden manifest gates (py host)", "wasm builds under the pinned CLI", "fold + parity gates (ts host)",
+    "Run the floor crossing under a scratch home", "meme-routes + standalone single-file contact against the pristine engine",
+    "The log names the engine it met", "Run the hosted witness cell contract-witness",
+  ]) {
+    assert.ok(named.has(want), `the quick job lost the step "${want}"`);
+    assert.match(named.get(want), /^        if: \$\{\{ !cancelled\(\)/m, `"${want}" stops behind a red step: one red gate would hide the rest`);
+  }
+  assert.match(block, /name: witness-cell-contract-witness$/m, "the hosted cell uploads no log under its own name");
 });
