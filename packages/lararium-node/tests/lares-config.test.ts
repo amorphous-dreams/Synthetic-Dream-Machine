@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
@@ -124,9 +124,15 @@ describe("lares-config — the per-daemon resource-override reader", () => {
   });
 
   test("LAR_ROOT re-bases the corpus root, and derived dirs follow it", () => {
-    process.env["LAR_ROOT"] = "/isolated/instance";
-    expect(daemonCorpusRoot()).toBe("/isolated/instance");
-    expect(daemonGenesisDir({})).toBe(join("/isolated/instance", "genesis"));
-    expect(daemonBagsDir({})).toBe(join("/isolated/instance", "bags"));
+    // The instance holds its own seed (a root holding none reaches the build's shipped genesis: genesis-resolve.test.ts).
+    const instance = mkdtempSync("/tmp/lares-config-instance-");
+    try {
+      mkdirSync(join(instance, "genesis"), { recursive: true });
+      writeFileSync(join(instance, "genesis", "seed.json"), "{}");
+      process.env["LAR_ROOT"] = instance;
+      expect(daemonCorpusRoot()).toBe(instance);
+      expect(daemonGenesisDir({})).toBe(join(instance, "genesis"));
+      expect(daemonBagsDir({})).toBe(join(instance, "bags"));
+    } finally { rmSync(instance, { recursive: true, force: true }); }
   });
 });
