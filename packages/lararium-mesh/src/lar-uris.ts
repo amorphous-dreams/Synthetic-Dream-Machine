@@ -234,6 +234,9 @@ export const LARES_DOC_URI     = bagUri("lares");
 // names a generous grant to an anonymous principal, never an absence of the gate
 // (pull ≠ read). The per-Nexus WHO board sits at a derived address (`whoBoardDocUrl`); its bag id = nexusHandlesUri.
 export const CROSSROADS_DOC_URI = bagUri("crossroads");
+// The face's kahua bag — the fleet stage a signed lift writes and no hand edits in place; a recipe library bag the
+// face's own plane serves, mounted read-only (kahua-memory-stage#/the-recipe).
+export const KAHUA_DOC_URI = bagUri("kahua");
 // The memetic-wikitext engine plugin — a named blob CARRIED IN the oracle island's blobs. Its
 // title lives in the lararium MEME NAMESPACE (not the bag doc): a meme/module address
 // the disk projector discards-from-bag, keyed on by plugin.info + the TW5 pack pipeline.

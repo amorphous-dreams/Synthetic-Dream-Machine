@@ -36,7 +36,7 @@
 
 import type { Heads } from "@automerge/automerge";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
-import { ORACLE_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, bagUri, wikiUri } from "./lar-uris.js";
+import { ORACLE_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, KAHUA_DOC_URI, bagUri, wikiUri } from "./lar-uris.js";
 import { bagStackFromRec } from "./bag-stack-from-rec.js";
 import { requireLarDid, type LarDid } from "./lar-did.js";
 
@@ -71,6 +71,9 @@ export const LARARIUM_BAG = LARARIUM_DOC_URI;
 export const ORACLE_BAG   = ORACLE_DOC_URI;
 /** crossroads — the public oracle plane; a recipe library bag whose pointer the oracle plane serves (public infra). */
 export const CROSSROADS_BAG = CROSSROADS_DOC_URI;
+/** kahua — the face's lift-only fleet stage; a library bag a recipe mounts read-only, so a hand write aimed at it
+ *  copies UP into the default writable and only a signed lift lands in it. */
+export const KAHUA_BAG = KAHUA_DOC_URI;
 
 /** The SYSTEM bags — their doc pointers ride the oracle plane's well-known tiddlers, never the catalog
  *  registry. Every other bag resolves from the catalog. The one spelling the island kernel, recipe-watch
@@ -359,20 +362,31 @@ export function expandRecipe(r: WikiRecipe): readonly SlotUri[] {
   ])];
 }
 
+/**
+ * The kahua stack over a recipe: the face's kahua bag leads the library bags, so the layers read TOP-DOWN as the
+ * wiki's private slots (working on top), its own bag, the kahua bag, any other library, then the oracle floor
+ * (the lares canon). A recipe already carrying the kahua bag returns as it stands. A device whose face holds no
+ * registered kahua bag mounts the stack without that layer: the slot resolver skips an unregistered library bag.
+ */
+export function kahuaRecipe(r: WikiRecipe): WikiRecipe {
+  if ((r.libraryBags ?? []).includes(KAHUA_BAG)) return r;
+  return { ...r, libraryBags: [KAHUA_BAG, ...(r.libraryBags ?? [])] };
+}
+
 /** The working slot is the only default writable; an absent handle leaves no default writable. */
 export function defaultWritableSlot(slug: string): SlotUri {
   return wikiSlotUri(slug, "working");
 }
 
 /**
- * The layer flags a slot registers with. Every slot is writable except the oracle floor: the floor is
+ * The layer flags a slot registers with. Every slot is writable except the oracle floor and the kahua bag (lift-only): the floor is
  * the system island every vessel shares, so a wiki mounts it read-only and an edit aimed at it copies
  * UP into the wiki's default writable (Law 4) — the floor's one writer is the node home, by handle.
  * `defaultWritable` marks `defaultWritableSlot` alone; every other layer registers `false` so the
  * last-registered temp store never takes the office.
  */
 export function slotLayerFlags(slot: SlotUri, slug: string): { writable: boolean; defaultWritable: boolean } {
-  return { writable: slot !== ORACLE_BAG, defaultWritable: slot === defaultWritableSlot(slug) };
+  return { writable: slot !== ORACLE_BAG && slot !== KAHUA_BAG, defaultWritable: slot === defaultWritableSlot(slug) };
 }
 
 /** The four INSTANCE slots — minted per (PersonaGroup × fingerprint) by the resolver, threaded
