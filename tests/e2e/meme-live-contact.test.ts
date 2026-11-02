@@ -28,7 +28,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { join } from "node:path";
-import { targetInstance, awaitRendezvous, type LarInstance } from "../harness/instance.js";
+import { targetInstance, awaitRendezvous, daemonWikiDir, type LarInstance } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -257,7 +257,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     const MOVE_PATH = "ha.ka.ba/t/witness/move";
     const landed = join(lar.root, "bags", "crossroads", `${MOVE_PATH}.mem`);
     expect(await awaitFileState(landed, true, 15_000), `the MOVE never published under ${landed}`).toBe(true);
-    expect(existsSync(join(lar.root, "wikis", "daemon", `${MOVE_PATH}.mem`))).toBe(false);
+    expect(existsSync(join(daemonWikiDir(lar.root), `${MOVE_PATH}.mem`))).toBe(false);
   });
 
   /**
@@ -277,7 +277,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     // it and the pair would stand off for a person (`disk-projection#/projection-law`, no base and a real
     // difference). This witness measures what the daemon's mirror WRITES and then unlinks, so the hand
     // lays its files in a holding tree shaped as a wiki's own (LOAD derives the loci title from the path)
-    // and the projector lays every file fresh under `wikis/daemon/`.
+    // and the projector lays every file fresh under the daemon wiki's folder (`wikis/kahua-<tag>/`).
     const HAND_META = "type: image/png\ntags: witness\n";
     const holding = join(scratch, "wikis", "holding", "ha.ka.ba/t/witness");
     mkdirSync(holding, { recursive: true });
@@ -286,7 +286,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     const ld = await lar.cli(["act", "LOAD", "--source-uri", holding, "--to", DAEMON_WORKING, "--yes", "--json"]);
     expect(ld.json?.["ok"], `the LOAD refused — ${said(ld)}`).toBe(true);
     // the pointer landed: the CID over the RAW bytes, the projected sidecar carries it
-    const srcDir  = join(lar.root, "wikis", "daemon", "ha.ka.ba/t/witness");
+    const srcDir  = join(daemonWikiDir(lar.root), "ha.ka.ba/t/witness");
     const srcMeta = join(srcDir, "photo.png.meta");
     const projected = (): string => (existsSync(srcMeta) ? readFileSync(srcMeta, "utf8") : "");
     const deadline = Date.now() + 30_000;
@@ -310,7 +310,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     expect(meta).toContain(`_integrity: ${NI}`);
     expect(meta).toContain("tags: witness");
     expect(meta).not.toContain("_canonical_uri");
-    expect(await awaitFileState(join(srcDir, "photo.png"), false, 30_000), "wikis/daemon/ kept the moved photo.png").toBe(true);
+    expect(await awaitFileState(join(srcDir, "photo.png"), false, 30_000), "the daemon wiki folder kept the moved photo.png").toBe(true);
     expect(existsSync(srcMeta)).toBe(false);
   }, 120_000);
 
