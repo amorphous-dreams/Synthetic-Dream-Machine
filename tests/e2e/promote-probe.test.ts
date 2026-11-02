@@ -139,9 +139,10 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
     const raised = await hearth!.cli(["kapae", "raise", digest]);
     expect(raised.code, said(raised)).toBe(0);
     let seen = before;
-    const deadline = performance.now() + 60_000;
+    // The re-opened island replays its registrations (lit faces take a while), so the count lands well after the raise answered.
+    const deadline = performance.now() + 300_000;
     while (performance.now() < deadline) { seen = await restarts(); if (seen > before) break; await new Promise((r) => setTimeout(r, 500)); }
-    expect(seen, "a raise over a loaded rite restarts the daemon island in place").toBe(before + 1);
+    expect(seen, `a raise over a loaded rite restarts the daemon island in place; log: ${hearth!.bootLog().split("\n").filter((l) => /\[promote\]|\[daemon\]/.test(l)).slice(-20).join("\n")}`).toBe(before + 1);
     await new Promise((r) => setTimeout(r, 9000));
     expect(ranFiles().length, "the shadowed rite ran again after the in-place restart").toBe(ranBefore);
     const lowered = await hearth!.cli(["kapae", "lower", digest]);

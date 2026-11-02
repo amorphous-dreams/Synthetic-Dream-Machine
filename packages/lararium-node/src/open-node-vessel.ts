@@ -1804,8 +1804,11 @@ async function prepareNodeBootOn(
     if (wiki === "daemon") {
       // On the raising device the arrival lands before the raise's own reply leaves: that act answers first, then the island restarts.
       // Every other arrival finds no promote act in flight and restarts at once; the holder itself never waits on a call.
+      console.log("[promote] the daemon island restarts: a shadow meets a loaded rite");
       await promoteActs.settled();
-      await daemonHolder.restart("promote: kapae raised over a loaded rite");
+      console.log("[promote] no promote act stands in front of the daemon island restart");
+      const done = await daemonHolder.restart("promote: kapae raised over a loaded rite");
+      console.log(`[promote] the daemon island restarted (${done.restarts})`);
     } else {
       await vmManager.unmountWiki(wiki);
       await wikiActivation.ensureActive(wiki);
