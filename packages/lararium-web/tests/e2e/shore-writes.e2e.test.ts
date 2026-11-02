@@ -88,8 +88,8 @@ test("served wiki saves a draft tiddler without worker errors", async () => {
     await page.waitForFunction(() => [...document.querySelectorAll("#phases .phase")]
       .some((phase) => phase.textContent === "live"), undefined, { timeout: 60_000 });
     const reloadedWiki = page.locator("#mirror");
+    // The fill's focus opens the dropdown; a click on the count button would toggle it shut.
     await reloadedWiki.locator('input[type="search"]').fill("Shore Write Probe");
-    await reloadedWiki.locator("button").filter({ hasText: "matches" }).first().click();
     await reloadedWiki.locator(".tc-search-drop-down").waitFor({ state: "visible", timeout: 20_000 });
     await page.waitForFunction(() => document.querySelector("#mirror")?.shadowRoot
       ?.querySelector(".tc-search-drop-down")?.innerText.includes("Shore Write Probe") ?? false,
@@ -153,8 +153,8 @@ test("served wiki opens the TW5 search dropdown without worker errors", async ()
   await page.goto(baseUrl);
   await waitForLivePage();
   const wiki = page.locator("#mirror");
+  // Typing focuses the search input, and TW5 opens the dropdown on that focus (`focusPopup`): the person needs no click.
   await wiki.locator('input[type="search"]').fill("no-such-shore-result");
-  await wiki.locator("button").filter({ hasText: "matches" }).first().click();
   const dropdown = wiki.locator(".tc-search-drop-down");
   await dropdown.waitFor({ state: "visible", timeout: 20_000 });
   // TW5 lays the popup out itself (in flow, beneath the search box): it stands open with a real extent.
@@ -181,8 +181,15 @@ test("a tab held at skinny opens the TW5 search dropdown without worker errors",
     assert.equal(await page.locator("#mirror").getAttribute("data-lar-mirror"), "skinny", "the held tab stands at skinny");
     const wiki = page.locator("#mirror");
     await wiki.locator('input[type="search"]').fill("no-such-shore-result");
-    await wiki.locator("button").filter({ hasText: "matches" }).first().click();
-    await wiki.locator(".tc-search-drop-down").waitFor({ state: "visible", timeout: 20_000 });
+    const dropdown = wiki.locator(".tc-search-drop-down");
+    await dropdown.waitFor({ state: "visible", timeout: 20_000 });
+    // The count button carries `popup=` and the popup-handle class, so it toggles the dropdown the focus opened: its first
+    // click shuts it and its second opens it. A held tab lands no promotion snapshot to re-render the sidebar, so each read holds.
+    const count = wiki.locator("button").filter({ hasText: "matches" }).first();
+    await count.click();
+    await dropdown.waitFor({ state: "hidden", timeout: 20_000 });
+    await count.click();
+    await dropdown.waitFor({ state: "visible", timeout: 20_000 });
     assert.deepEqual(wikiWorkerErrors, [], "the held popup walk emits zero [wiki-worker] error lines");
   } finally {
     await page.evaluate(() => { for (const key of Object.keys(sessionStorage)) if (key.startsWith("mirror:")) sessionStorage.removeItem(key); });
