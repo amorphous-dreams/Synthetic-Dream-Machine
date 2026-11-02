@@ -57,6 +57,7 @@ import { bytesToHex } from "@noble/hashes/utils.js";
 import { fencedSpans, maskedExec } from "./fence-mask.js";
 import { FRAME_MARKS, frameAlt } from "./marks.js";
 import { checkSpan, frameStanding, readFrame, type FrameFault, type MarkHit } from "./span.js";
+import { headBinding } from "./head-bind.js";
 
 /** UTF-8 hex digest. TextEncoder stands in every context the frame runs in (a sandbox lends one). */
 function sha256Hex(text: string): string {
@@ -210,17 +211,24 @@ export function etxFaultsOf(text: string): FrameFault[] {
  * A carrier holding NO check reads `unchecked` rather than `false` — absence of a check and a failed
  * check are different facts, and collapsing them would make the reading useless exactly where it
  * matters. The caller decides what an unchecked carrier may do; graceful parsing says it still parses.
+ *
+ * `head-unbound` reads where the check verifies and the head names an end the sealed meta never names;
+ * a head that SPLITS from its sealed meta reads `torn` (head-bind.ts), exactly as the verdict tears it.
  */
-export function verifyBcc(text: string): "ok" | "mismatch" | "unchecked" | "torn" {
+export function verifyBcc(text: string): "ok" | "head-unbound" | "mismatch" | "unchecked" | "torn" {
   const st = frameStanding(text);
   if (st.kind === "absent") return "unchecked";
   if (st.kind === "torn") return "torn";
   // ONE READING OF A FAULT: the frame faults the span reader names (a second ETX, an ETX after EOT, a
   // release out of order …) tear here exactly as they tear the verdict, so the two never disagree.
   if (st.faults.length > 0 || etxFaultsOf(text).length > 0) return "torn";
+  // THE SEAL BINDS THE HEAD (head-bind.ts): a head split from its sealed meta tears here as in the verdict.
+  const binding = headBinding(text);
+  if (binding.kind === "split") return "torn";
   const check = standingCheck(text, st);
   if (!check) return "unchecked";
-  return check.verifies ? "ok" : "mismatch";
+  if (!check.verifies) return "mismatch";
+  return binding.kind === "unbound" ? "head-unbound" : "ok";
 }
 
 /**

@@ -546,6 +546,14 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
       continue;
     }
 
+    // THE SEAL NEVER REACHES AN UNBOUND HEAD (head-bind.ts). The check verifies and the head names an end
+    // the sealed root meta never names — a reading named aloud on both seats, never a fault: no gesture
+    // can choose the address the meta should have sealed.
+    if (frame.kind === "head-unbound") {
+      console.log(`head-unbound: ${f}`);
+      console.log(`  ⚠ the head names ${frame.unbound.map((e) => `\`${e}=\``).join(" and ")} where the sealed root meta names none — the block check never reaches it; seal a \`title\`${frame.unbound.includes("namespace") ? " and `namespace`" : ""} in the root meta`);
+    }
+
     // EOT closes the carrier. Bytes after it are outside every recoverable frame boundary and may
     // be prose, a second control mark, or a truncated neighboring carrier. A check over the earlier
     // span cannot attest to them, so both seats refuse to call the source canonical; normalization

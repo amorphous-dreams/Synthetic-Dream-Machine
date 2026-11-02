@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;8nums4F2VTrcCVbVNiJNvg39wvH497eIVk_GyDffdnI"
+source-check: "ni:///sha-256;ZwlT8rSVRp2rInU-EDhoA3KpOkvz8sBLRIDysGrHtpw"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -804,7 +804,7 @@ a check published wherever the artifact lives proves nothing against anyone who 
 
 ### What a verdict obliges
 
-The reading names five verdicts (`packages/lararium-memetic-frame/src/verdict.ts`, the `FrameVerdict`
+The reading names six verdicts (`packages/lararium-memetic-frame/src/verdict.ts`, the `FrameVerdict`
 union), and each carries its consequence — a check whose failure obliges nothing decorates rather than
 protects, the standing RFC 9580 demoted OpenPGP's CRC-24 out of:
 
@@ -818,11 +818,16 @@ protects, the standing RFC 9580 demoted OpenPGP's CRC-24 out of:
   parses, as graceful parsing requires, as a carrier in fault.
 - **torn** — the frame cannot divide without choosing: STX without ETX, a second live STX or ETX, an
   ETX ahead of STX, a meta fence above STX, a head or release in a torn spelling, a release standing
-  before the text closes (#/carrier-spine), or a second heading anywhere in the file (one file frames
-  one carrier) — each fault named. A torn
+  before the text closes (#/carrier-spine), a second heading anywhere in the file (one file frames
+  one carrier), or a head split from its sealed root meta (`head-meta-split`, below) — each fault named. A torn
   carrier reads as a truncated or broken transmission and MUST NOT read as `absent`: conflating the two
   hands an adversary the cheapest strip on offer — cut a file ahead of its closer and a missing check
   would read as lawful absence. A consumer refuses a torn carrier, and its bytes stay where they stand.
+- **head-unbound** — the bytes match their check, and the head names an end the sealed root meta never
+  names: a `to=` address over a meta carrying neither `title` nor `uri-path`, or a `namespace=` over a
+  meta carrying no `namespace`. The verdict carries the check and names each unbound end. A verifier
+  MUST NOT report it as `match`, since the check never reaches that end of the head, and a consumer MUST
+  surface it; it reads as no tear, and the carrier admits.
 - **absent** — a frame stands and carries no check. The check stays optional and absence stays legal. A
   consumer MAY hold a policy requiring one, and under such a policy absence reads as refusal to admit —
   the only defense a bare digest affords against stripping, since whoever can rewrite a carrier can
@@ -832,9 +837,25 @@ protects, the standing RFC 9580 demoted OpenPGP's CRC-24 out of:
   meme, and reading it as one would invent a carrier nobody wrote.
 
 **What the check cannot answer.** The span opens at STX, so the declaration and SOH routing heading stand
-OUTSIDE it: a carrier's grammar selector and transport bearing can move while the check holds. The root
-TOML metadata sits inside the span, so the check covers it. The verdict answers one question — did the
-document bytes survive carriage — and a reader MUST NOT take a `match` as covering bytes the span excludes.
+OUTSIDE it: a carrier's grammar selector can move while the check holds. The root TOML metadata sits
+inside the span, so the check covers it. The verdict answers one question — did the document bytes
+survive carriage — and a reader MUST NOT take a `match` as covering bytes the span excludes.
+
+**The seal binds the head through the meta** (`packages/lararium-memetic-frame/src/head-bind.ts`). The
+head's address and namespace stand outside the span, and the sealed root meta mirrors both, so the verdict
+compares them and the check reaches the head with no byte added to it. The head's `to=` binds against the
+meta `title` where one stands, else against `lar:///` + `uri-path`; a `title` and a `uri-path` that
+disagree with each other name two places. The head's `namespace=` binds against the meta `namespace` where
+one stands, both read through their numeric character references (a head writes `ॐ ँ`, a meta
+`&#x0950; &#x0901;`). An unaddressed head (``to=`?` ``) binds only over a meta naming no address, and a
+carrier with no head binds nothing. Any split reads `torn`, fault `head-meta-split`; an end the meta never
+names reads `head-unbound`. The root meta here reads as the body reader's own: the first live labelled
+meta fence at or past STX, closing before ETX. The frame parses no TOML, so it reads the three keys in the
+one spelling every emitter writes — a bare key, a basic string with no escape, nothing after the closing
+quote, keys before the first `[table]` header — and a binding key in any other spelling tears rather than
+binds, because a TOML parser might read it otherwise. The binding names what an UNKEYED check can name: a
+head rewritten alone no longer reads `match`, while a hand that rewrites head, meta and check together
+still authors a new carrier, and only a signature names who did.
 
 ### What stands, and what waits
 

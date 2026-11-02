@@ -60,7 +60,7 @@ import { closeSync, fsyncSync, openSync, readFileSync, renameSync, unlinkSync, w
 import { randomUUID } from "node:crypto";
 import { dirname, isAbsolute, join } from "node:path";
 import { CROSSROADS_BAG, mintPromotionReceipt, promotionReceiptPath } from "../promotion-receipt.js";
-import { bccOf } from "@lararium/memetic-frame";
+import { bccOf, verdict } from "@lararium/memetic-frame";
 import { exactBytesHash, promotionApprovalBytes, readPromotionApproval, type PromotionApprovalVerdict } from "@lararium/mesh";
 
 /** The residency MOVE this door asks for — `executeMove`'s own shape. The title never changes. */
@@ -172,6 +172,13 @@ export async function promoteCarrier(plan: PromotionPlan, seat: PromotionSeat): 
   let bytes: Uint8Array;
   try { bytes = readFileSync(abs); src = Buffer.from(bytes).toString("utf8"); } catch { return { ok: false, reason: `cannot read ${plan.file}` }; }
 
+  // A TORN FRAME CROSSES NOTHING. The receipt's `carrierHash` is the block check, which reaches the head
+  // only through the sealed meta (head-bind.ts); a head split from that meta, or any other tear, would
+  // put one address on the receipt and another on the head, so the door refuses it by name.
+  const frame = verdict(src);
+  if (frame.kind === "torn") {
+    return { ok: false, reason: `${plan.file} reads torn — ${frame.faults.map((f) => `${f.kind}: ${f.message}`).join("; ")}` };
+  }
   const uriPath = declaredUriPath(src);
   if (!uriPath) return { ok: false, reason: `${plan.file} declares no uri-path — a carrier with no address crosses nothing` };
   // The record's title IS its hostless address. The crossing never changes it; it changes who holds it.

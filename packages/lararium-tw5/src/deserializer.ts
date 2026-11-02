@@ -149,7 +149,7 @@ export function deserializeCarrier(
   const arrived = text;
   const floor = shape.kind === "bare"
     ? null
-    : layFloor(baseUri, text, read, () => verdictOf(arrived, shape).kind === "match");
+    : layFloor(baseUri, text, read, () => { const k = verdictOf(arrived, shape).kind; return k === "match" || k === "head-unbound"; });
   if (floor) {
     text = floor.text;
     stream = readStream(text);

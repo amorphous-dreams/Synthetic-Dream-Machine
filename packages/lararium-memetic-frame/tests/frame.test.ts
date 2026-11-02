@@ -41,7 +41,9 @@ describe("the writer", () => {
 
   test("namespace, Kapu head, prologue and postamble all land in their positions — no ETB, no attestation slot stands", () => {
     const full = frameCarrier({
-      head: { uri: URI, namespace: "⊙", kapu: true }, body: "b",
+      head: { uri: URI, namespace: "⊙", kapu: true },
+      // The sealed meta names what the head names, so the seal binds it (head-bind.ts) and the check reads ok.
+      body: `${META_OPEN_CANON}\ntitle = "${URI}"\nnamespace = "⊙"\n\`\`\`\n\nb`,
       prologue: "above\n\n", postamble: "\n\nbelow\n",
     });
     expect(full.startsWith(`above\n\n${CARRIER_DECLARATION}`)).toBe(true);

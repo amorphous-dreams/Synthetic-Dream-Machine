@@ -178,6 +178,8 @@ function buildCases(): readonly Case[] {
 
 const CASES = buildCases();
 
+const BOUND_META = "```toml meta\ntitle = \"lar:///t/fuzz\"\n```";
+
 describe("fence-edge fuzz — the one span reader at every fence boundary", () => {
   test(`generated ${CASES.length} cases (sanity floor)`, () => {
     expect(CASES.length).toBeGreaterThanOrEqual(300);
@@ -186,7 +188,9 @@ describe("fence-edge fuzz — the one span reader at every fence boundary", () =
   for (const c of CASES) {
     test(c.name, () => {
       const body = bodyFor(c);
-      const carrier = frameCarrier({ head: { uri: "lar:///t/fuzz" }, body });
+      // The root meta names the head's address, so the seal binds the head (head-bind.ts) and a lawful
+      // case still reads `ok`; the fuzzed fence edge follows it.
+      const carrier = frameCarrier({ head: { uri: "lar:///t/fuzz" }, body: `${BOUND_META}\n\n${body}` });
       const standing = frameStanding(carrier);
       const read = readFrame(carrier);
       const check = verifyBcc(carrier);

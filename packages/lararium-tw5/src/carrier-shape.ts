@@ -46,7 +46,7 @@ export interface CarrierMarks {
   readonly stx:     boolean;
   readonly etx:     boolean;
   readonly eot:     boolean;
-  readonly check:   "ok" | "mismatch" | "unchecked" | "torn";
+  readonly check:   "ok" | "head-unbound" | "mismatch" | "unchecked" | "torn";
 }
 
 export interface CarrierShape {

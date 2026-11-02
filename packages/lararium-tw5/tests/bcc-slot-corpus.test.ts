@@ -10,7 +10,10 @@
  *   · match     — the stated check verifies.
  *   · unsealed  — a frame with no check (legal: the check stays optional; counted, never failed).
  *   · stale     — a lawful slot whose value no longer computes: a body rewritten without a re-stamp.
- *   · torn      — the frame divides only by choosing (a retired trailer, an ETX outside the grammar …).
+ *   · unbound   — the check verifies and the head names an end the sealed meta never names
+ *                 (`head-unbound`: legal, visible, counted; never `match`).
+ *   · torn      — the frame divides only by choosing (a retired trailer, an ETX outside the grammar, a
+ *                 head split from its sealed meta — `head-meta-split` …).
  *
  * Stale and torn fail BY NAME, save the declared rows below (each with its reason and owner). A planted
  * mismatch reads 1, so a census reading 0 stale stands on a known positive, never a silent zero.
@@ -62,11 +65,12 @@ function framedFiles(): Reading[] {
 
 /** The census: each reading sorted, stale and torn named with their evidence. */
 function census(readings: readonly Reading[]) {
-  const c = { match: 0, unsealed: 0, frozen: [] as string[], stale: [] as string[], torn: [] as string[] };
+  const c = { match: 0, unsealed: 0, unbound: [] as string[], frozen: [] as string[], stale: [] as string[], torn: [] as string[] };
   for (const { path, v } of readings) {
     if (inFrozenSpecimen(path)) { c.frozen.push(path); continue; }
     if (v.kind === "match") c.match++;
     else if (v.kind === "absent" || v.kind === "bare") c.unsealed++;
+    else if (v.kind === "head-unbound") c.unbound.push(`${path}: ${v.unbound.join(", ")}`);
     else if (v.kind === "stale") c.stale.push(`${path}: stored ${v.stored} ≠ computed ${v.computed}`);
     else c.torn.push(`${path}: ${v.faults.map((f) => f.kind).join(", ")}`);
   }
@@ -104,5 +108,32 @@ describe("★ the seal census reads every framed file in the tree, and names eac
     const p = census([{ path: sealed.path, v: verdict(planted) }]);
     expect(p.stale).toHaveLength(1);
     expect(p.stale[0]).toContain(sealed.path);
+  });
+});
+
+/**
+ * THE HEAD-BINDING CENSUS — the seal binds the head address (head-bind.ts): every sealed carrier's head
+ * `to=` against its meta `title` (else `lar:///` + `uri-path`), its `namespace=` against the meta's.
+ * Counted per class — match, split, unbound — over the same whole-tree reading, and a planted retarget
+ * reads exactly 1 split, so the 0 stands on a known positive.
+ */
+describe("★ the head-binding census: every sealed head names what its sealed meta names ★", () => {
+  const readings = framedFiles();
+  const split = (rows: readonly Reading[]) =>
+    rows.filter((r) => r.v.kind === "torn" && r.v.faults.some((f) => f.kind === "head-meta-split")).map((r) => r.path);
+
+  test("per class: match over 780, split 0, every unbound carrier named", () => {
+    const c = census(readings);
+    console.log(`head-binding census: match ${c.match} · split ${split(readings).length} · unbound ${c.unbound.length}${c.unbound.length ? "\n  " + c.unbound.join("\n  ") : ""}`);
+    expect(c.match).toBeGreaterThan(780);
+    expect(split(readings)).toEqual([]);
+  });
+
+  test("CONTROL (known positive): one planted head retarget reads exactly 1 split, named", () => {
+    const sealed = readings.find((r) => r.v.kind === "match" && r.path.startsWith("bags/"))!;
+    const text = readFileSync(join(REPO, sealed.path), "utf8");
+    const planted = text.replace(/(<<\^ code=`&#x0001;`[^\n]*?to=`)lar:\/\/\/[^`]*`/, "$1lar:///ha.ka.ba/planted/elsewhere`");
+    expect(planted).not.toBe(text);
+    expect(split([{ path: sealed.path, v: verdict(planted) }])).toEqual([sealed.path]);
   });
 });

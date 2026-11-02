@@ -291,6 +291,20 @@ describe("lares meme promote — the crossing moves residency, and the address h
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
+  test("RED: a head moved outside its sealed uri-path crosses nothing — the receipt would name one address, the head another", async () => {
+    const root = tree();
+    try {
+      const path = join(root, SUBJECT_REL);
+      writeFileSync(path, readFileSync(path, "utf8").replace(`to=\`lar:///${SUBJECT_URI}\``, "to=`lar:///ha.ka.ba/elsewhere`"));
+      const { seat, moves } = await seated();
+      const r = await promoteCarrier(plan(root), seat);
+      expect(r.ok).toBe(false);
+      expect(!r.ok && r.reason).toMatch(/torn — head-meta-split/);
+      expect(moves).toEqual([]);
+      expect(existsSync(promotionReceiptPath(path))).toBe(false);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
   test("CONTROL: an ungoverned carrier, and one off `lifecycle/standing`, are each refused", async () => {
     for (const tags of ['"docs/pono/design"', '"docs/pono/design", "lifecycle/lean"']) {
       const root = tree(tags);

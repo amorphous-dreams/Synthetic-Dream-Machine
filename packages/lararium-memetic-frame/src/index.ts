@@ -32,6 +32,7 @@ export {
   CHECK_ALG, bccOfSpan, canonicalSpan, nihOfSpan, bccOf, verifyBcc, BCC_RE, classifyPostamble, classifyPostEot,
   type Postamble,
 } from "./check.js";
+export { headBinding, type HeadBinding, type UnboundEnd } from "./head-bind.js";
 export { verdict, verdictOf, frameShape, type FrameVerdict, type FrameShape } from "./verdict.js";
 export {
   CARRIER_DECLARATION, markCode, headSigil, markSigil, sealSigil, releaseSigil, frameCarrier, stampCarrier,

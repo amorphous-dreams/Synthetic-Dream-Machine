@@ -11,7 +11,9 @@ import { stampCarrier, verdict } from "@lararium/memetic-frame";
 
 const carrier = (etx: string): string =>
   "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>\n\n"
-  + "<<^ code=`&#x0001;` from=`?` to=`lar:///t.t.t/weave-slot`>>\n<<^ code=`&#x0002;`>>\n\n! Head\n\nbody.\n\n"
+  + "<<^ code=`&#x0001;` from=`?` to=`lar:///t.t.t/weave-slot`>>\n<<^ code=`&#x0002;`>>\n\n"
+  // The sealed root meta names the head's address, so the seal binds the head (head-bind.ts).
+  + "```toml meta\ntitle = \"lar:///t.t.t/weave-slot\"\n```\n\n! Head\n\nbody.\n\n"
   + `${etx}\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 describe("★ the weave's check comes from the slot, in the check's own shape ★", () => {
