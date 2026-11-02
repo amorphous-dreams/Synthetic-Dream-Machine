@@ -10,7 +10,7 @@ import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, t
 import {
   DAEMON_BAG_ID, KAHUA_BAG, KAHUA_PLANE, isFaceScopedBag, personaMembershipEntries, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, emptyLarDoc, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
   faceIntentVerbs, intentEntryRecordsOfGroup, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
-  personaSiblingBagIds, projectPersonaLog, signFoundingLog, signPersonaAct, signsAtEpoch, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
+  personaSiblingBagIds, projectPersonaLog, signFoundingLog, signPersonaAct, signsAtEpoch, buildKahuaProposal, intentId, writeIntentEntry, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
 } from "@lararium/mesh";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../src/kahua-door.js";
 import { bridgeBooks, faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
@@ -189,6 +189,23 @@ describe("the proposal", () => {
     expect(kahuaBodyDigest("proposed body")).toMatch(/^[0-9a-f]{64}$/);
     const entries = intentEntryRecordsOfGroup(f.intents.doc(), GROUP) as { body: Record<string, unknown> }[];
     expect(entries.filter((e) => e.body["entry"] === "outcome" && e.body["cause"] === proposed.id)).toHaveLength(1);
+  });
+});
+
+describe("the proposal replay guard", () => {
+  test("RED: a lift citing a proposal whose issuer the face never admitted refuses, even with a matching digest; CONTROL: the admitted atom's proposal lifts", async () => {
+    const f = await face();
+    const door = kahuaDoor(f.ports());
+    await door.mint();
+    const stranger = await who(42);
+    const entry = await buildKahuaProposal({ group: GROUP, signer: stranger, session: "s-x", nonce: "n-x", verbs: faceIntentVerbs(),
+      proposals: [{ title: "t", revision: "r1", digest: kahuaBodyDigest("body"), taint: [] }] });
+    f.intents.change((d) => writeIntentEntry(d, entry));
+    const foreign = intentId(entry.body as never);
+    await expect(door.lift({ title: "t", text: "body", taint: [], sources: [{ title: "t", revision: "r1" }], proposal: foreign })).rejects.toThrow(/proposal-unknown/);
+    expect(await door.list()).toEqual([]);
+    const own = await door.propose({ proposals: [{ title: "t", revision: "r1", text: "body", taint: [] }] });
+    await expect(door.lift({ title: "t", text: "body", taint: [], sources: [{ title: "t", revision: "r1" }], proposal: own.id })).resolves.toMatchObject({ cid: expect.any(String) });
   });
 });
 
