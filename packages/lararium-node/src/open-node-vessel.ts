@@ -54,7 +54,7 @@ import {
   faceAtomKeyFromSeed, type FaceAtomKey,
   carriageFloorDutyOf, type PlaceSigner,
   genesisCasCidsFromOracle, provenVesselKeyOf,
-  wikiSlugOfBag, gateSweep, type GateSweepSeat,
+  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, type GateSweepSeat,
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
@@ -65,6 +65,7 @@ import { floorShadowRing } from "./floor-fleet-lanes.js";
 import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
+import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
 import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest, ownEntry } from "@lararium/mesh";
@@ -78,7 +79,7 @@ import {
   composeVerbPlane,
   mempalaceProviderCap, formPalaceProviderCap, daemonVerbProviderCap, telemetryProviderCap,
   recallVerbCap, telemetryVerbCap, captureVerbCap, worldlineVerbCap,
-  makeCatalogAccessor,
+  makeCatalogAccessor, liveKahuaFace,
 } from "@lararium/tw5";
 import type {
   VesselWikiSlot, DaemonVmCore, VesselDaemonVm, VesselOrchestration,
@@ -334,6 +335,8 @@ export type NodeOpenPhase = LarOpenPhase;
 export type AskedStanding = "lararium" | "herm";
 
 export interface NodeVesselOptions extends LarariumVesselOptions {
+  /** Re-open the in-process daemon; absent, promotion reports restart-required without restarting. */
+  restartDaemonIsland?: (reason: string) => Promise<void>;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   storageDir: string;
@@ -900,6 +903,8 @@ async function prepareNodeBootOn(
   // face's `kahua` facet and the daemon island's `bags/kahua` grant read this, never a catalog row.
   let wornKahua: { readonly group: string; readonly url: string } | null = null;
   let wornPromote: string | null = null;
+  let promoteWiringRef: ReturnType<typeof promoteWiring> | null = null;
+  let rebuildPromoteWiring: () => void = () => {};
   let wornPromoteGroup: string | null = null;
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
     () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()),
@@ -1779,6 +1784,15 @@ async function prepareNodeBootOn(
   //    mechanism here). onEvict commands the pool via the forward `vmManager` ref. ──
   let vmManager!: VesselIslandPool;        // set in makePool
   let wikiActivation!: WikiActivationCap;  // set in makePool — the activation-on-reference cap
+  const restartWikiIsland = async (wiki: string) => {
+    if (wiki === "daemon") {
+      if (opts.restartDaemonIsland) await opts.restartDaemonIsland("promote: kapae raised over a loaded rite");
+      else console.warn("[promote] restart-required: the daemon island holds a shadowed rite");
+    } else {
+      await vmManager.unmountWiki(wiki);
+      await wikiActivation.ensureActive(wiki);
+    }
+  };
   let mailbox!: DurableMailbox;            // set in makePool — the durable park/drain lane (node-only capability)
   let lightFace: (ordinal: number) => Promise<void> = async () => {};
   const dropFace = async (ordinal: number) => {
@@ -2262,6 +2276,21 @@ async function prepareNodeBootOn(
         wornKahua = kahuaUrl ? { group: personaGroupId, url: kahuaUrl } : null;
         wornPromote = adoptedPromoteUrl(adoptPromotePlane(proof.projection, personaGroupId));
         wornPromoteGroup = personaGroupId;
+        const promoteFace = liveKahuaFace({ group: personaGroupId, prefix: personaKelPrefix, bootChain: personaKelChain, anchor: faceAnchor, board: repo.find(personaKelBoardDocUrl(nexusPubkey)) });
+        const devices = new Set(proof.projection.devices);
+        const promoteHolder = activeAtom.key;
+        rebuildPromoteWiring = () => {
+          promoteWiringRef = wornPromote ? promoteWiring({
+            repo, group: personaGroupId, boardUrl: wornPromote, stageUrl: wornKahua?.url ?? null,
+            foldFace: () => { const f = promoteFace.read(); return { group: personaGroupId, grant: f ? f.grant : () => false }; },
+            boardFace: () => { const f = promoteFace.read(); return { group: personaGroupId, grant: f ? f.grant : () => false, device: (k) => devices.has(k) }; },
+            stores: nodePromoteStores(personaGroupId), cas: nodePromoteCas(casDirForStorage(storageDir), promoteHolder),
+            wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
+            onFault: (reason) => console.warn(`[promote] ${reason}`),
+            onReport: (wiki, r) => { if (r.orphans.length || r.updateWaits.length || r.voided.length) console.warn(`[promote] ${wiki}: orphans=${r.orphans.join(",")} updateWaits=${r.updateWaits.join(",")} voided=${r.voided.map(v => v.digest).join(",")}`); },
+          }) : null;
+        };
+        rebuildPromoteWiring();
         wornFaceProven = true;
         provenPlanes.set(personaGroupId, bootstrap.personaUrl);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
@@ -2567,6 +2596,7 @@ async function prepareNodeBootOn(
       const url = await adoptKahuaStage({ repo, group: personaGroupId, projection: wornFaceProjection, register: registerInCatalog });
       wornKahua = url ? { group: personaGroupId, url } : null;
       wornPromote = await adoptPromoteBoard({ repo, group: personaGroupId, projection: wornFaceProjection });
+      rebuildPromoteWiring();
       console.log(url ? `[kahua] the face's stage stands adopted: ${url}` : "[kahua] the face pins no stage yet; the layer stands absent until its pin syncs");
     }
     // The selected face's custody standing decides whether its veil archive may leave this
@@ -2679,6 +2709,7 @@ async function prepareNodeBootOn(
       recipe:      { wikiSlug: "daemon" },
       lookup:      nodeOfferingLookup(crossroadsOfferingsHandle.doc()),
       readBytes:   (cid) => readCasBlobFromFs(cid, casDirForStorage(storageDir)),
+      promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
     });
     if (!daemonPluginResolution.ok) {
       throw new Error(`[openNodeVessel] the daemon island's plugin resolution refused: ${daemonPluginResolution.error}`);
@@ -3504,6 +3535,7 @@ async function prepareNodeBootOn(
         recipe,
         lookup:      nodeOfferingLookup(crossroadsOfferingsHandle?.doc()),
         readBytes:   (cid) => readCasBlobFromFs(cid, casDir),
+        promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
       }),
       diskMirrorGrant,
       onWorkerEvent: (wikiId, msg) => {
@@ -3540,6 +3572,8 @@ async function prepareNodeBootOn(
     // exempt from collection. Everything else activates on reference through the cap.
     // mountPrimaryWiki already mounted + spec-retained it, so onHydrate → ensureWiki
     // sees it live and no-ops (idempotent). Rotation = unpin the old, pin the new.
+    const stopPromoteWatch = promoteWiringRef?.watch();
+    if (stopPromoteWatch) stood.push({ what: "the promote watcher", down: stopPromoteWatch });
     if (slotActiveWikiId) void residency.pin(slotActiveWikiId, "boot:home-wiki", "wiki");
   };
 

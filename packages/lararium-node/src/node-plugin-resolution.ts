@@ -37,6 +37,7 @@ export type NodePluginResolutionVerdict =
 export interface ResolveNodeIslandPluginCidsOpts {
   readonly islandBlobs: Record<string, { readonly id?: string; readonly sha256?: string; readonly mimeType?: string }> | undefined;
   readonly recipe: WikiRecipe;
+  readonly promoted?: (wikiSlug: string) => Promise<readonly string[]>;
   readonly lookup: OfferingLookup;
   readonly readBytes: (cid: string) => Uint8Array | null;
 }
@@ -50,7 +51,7 @@ export interface ResolveNodeIslandPluginCidsOpts {
 export function resolveNodeIslandPluginCids(
   opts: ResolveNodeIslandPluginCidsOpts,
 ): Promise<NodePluginResolutionVerdict> {
-  return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: opts.readBytes });
+  return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: opts.readBytes, ...(opts.promoted ? { promoted: opts.promoted } : {}) });
 }
 
 /** @see the module docblock. */
