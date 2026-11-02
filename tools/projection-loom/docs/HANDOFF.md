@@ -1,6 +1,6 @@
 # Projection Loom · Evergreen O-takiage handoff
 
-**Working PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · `feature/green-jello-dinosaur-5--projection-loom` · **2026-11-01**. Inspect the current branch head, exact-head Actions, and the complete [Lares boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) from `feature/green-jello-dinosaur-5` before claiming current evidence. This is the only human-facing Loom handoff; the root [README](../README.md) is its entrance, and the live Lares operational carrier owns intent.
+**Working PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · `feature/green-jello-dinosaur-5--projection-loom` · **2026-11-02**. Inspect the current branch head, exact-head Actions, and the complete [Lares boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) from `feature/green-jello-dinosaur-5` before claiming current evidence. This is the only human-facing Loom handoff; the root [README](../README.md) is its entrance, and the live Lares operational carrier owns intent.
 
 ## Current operator direction · YIN-only consolidation
 
@@ -16,12 +16,15 @@
 | YIN IV · seed input isomorphism | `3f188e19` | Added reversal-of-adapter-order metamorphic experiment comparing normalized source, typed construction and bounded native campaign receipts |
 | YIN aftermath repair | `8141d8dc` | Replaced malformed literal backslash-n escapes in the new receipt module header with actual Python line breaks; preserved the writer body |
 | YIN V · exact-head acceptance repair | `53de0597` | Compared actually selected native receipts in the seed-order isomorphism test; cured a Loom fairness comment's narration without changing code semantics or the evergreen ceiling |
+| YIN VI · exact-head CI continuity | `bf980c3c` | Enabled read-only working-branch push triggers in the three existing native CAD, generalized and Fire workflows; no new workflow or automatic study execution |
 
-**Latest OODA-HA repair evidence (2026-11-01 Pacific):** On `52198c14`, native CAD reported **732 passed, 1 failed**: the seed-order isomorphism test assumed the selected receipt was `e00c00`, while the fair audition can select a different candidate. Repository CI's Witnesses job reported evergreen narration **200/199**. Generalized integration, AI Fire, and held-out witnesses passed on that earlier head. `53de0597` compares actual `epoch_000.json` candidate IDs and existing receipts, and rewrites the in-scope historical fairness comment to present tense. Native geometry and the 199 ceiling remain unchanged.
+**Verified predecessor acceptance (2026-11-02 Pacific):** Commit `a18bd61c` completed [repository-wide CI](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/41387411094) and [held-out witnesses](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/41387410859) successfully. The earlier failing Loom seed-order test no longer assumes candidate `e00c00`; it inspects audited `epoch_000.json` selected IDs. The evergreen narration debt no longer exceeds the 199 ceiling. These successes do not certify the separate native CAD, generalized and AI Fire workflows.
 
-**Acceptance still open:** Repository CI [run 41387037990](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/41387037990) and held-out [run 41387038013](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/41387038013) were in progress on the repair code head when observed. No dedicated CAD/generalized/Fire workflow had yet appeared on that exact SHA. Any later handoff commit requires its own exact-head acceptance; no borrowed green.
+**Exact-head native-CI repair:** GitHub connector pushes had not produced `pull_request` runs on `53de0597` or `a18bd61c`. The three existing native workflows listened primarily to PR events, with no matching working-branch push trigger. Commit `bf980c3c` adds narrowly scoped `push` triggers for the active Loom branch, preserves `pull_request` and manual dispatch, read-only permissions and the fourth studies workflow's operator-only dispatch. All five workflow runs actually appeared against `bf980c3c` on inspection: native CAD [41428714623](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/41428714623), generalized [41428714596](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/41428714596), Fire [41428714711](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/41428714711), repository CI [41428714884](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/41428714884) and held-out [41428714697](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/41428714697). They were running/queued at recording, not accepted.
 
-**Next YIN Aftermath:** inspect all final-head workflows, recover missing PR-native checks or mark them unread, repair only evidence-backed failures, then reconfirm two Markdown fronts, 15 carriers, receipt ownership and native adversarial replay. CLI-domain extraction and deeper study refactors remain deferred behind verification. No speculative new features.
+**Acceptance gate:** New handoff/documentation commits also move the SHA and may cancel predecessor jobs under workflow concurrency. Check **all five runs for the final checked-out SHA** before declaring acceptance. Keep the two Markdown fronts, 15 sealed carriers, single OODA-HA helm, unchanged source/native authority, four living read-only workflows and all negative refusal evidence. No merge or new features.
+
+**Next YIN Aftermath:** inspect final exact-head job conclusions and logs, repair only demonstrated failures, and update the PR body as external metadata without gratuitous commits. Once accepted, next optional modularity work concerns CLI command-domain boundaries and study receipt readers; do not treat older new-feature plans as active authority.
 
 ## O-takiage · completed, Git keeps the ledger
 
@@ -86,10 +89,10 @@ python -m pytest -q tests
 ✶ **Observe:** live exact head, source import seams, deterministic receipts and all native witnesses.  
 ⏿ **Orient:** shared mechanics belong below campaigns, but independent source/STEP verifiers remain separate authorities.  
 ◇ **Decide (operator):** YIN consolidation only; later native heredity and image/grammar expansion are held, not authorized work.  
-▶ **Act:** the five committed waves above, including the receipt-header repair; do not report an unrun test as green.  
+▶ **Act:** the committed YIN batches plus exact-head CI trigger repair; never report an unrun test as green.  
 ↺ **Aftermath:** read current CI outcomes, preserve old research in Git, keep only README + HANDOFF as living Markdown, and recheck `scripts/check_living_docs.py`.
 
-**Still open:** final-head acceptance; investigation of repository-wide Witnesses failures; remaining CLI monolith and partial study I/O duplication; no authorized deletions. An exact native STEP/geometry verifier may share pure utility code but must not self-certify a producer's claims.
+**Still open:** final-head acceptance of all five workflows; remaining CLI monolith and partial study I/O duplication; no authorized deletions. An exact native STEP/geometry verifier may share pure utility code but must not self-certify a producer's claims.
 
 **Local repeatable gates** (CAD-capable environment):
 
