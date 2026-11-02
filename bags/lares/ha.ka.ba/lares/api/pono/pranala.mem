@@ -79,6 +79,6 @@ The typed-edge law divides in three: ''composition'' rides the meta `tags` field
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iNKGMhS0DJHbUkt0kmG9bFiUZ0eNPUqlx3UXuD-Q4yU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iNKGMhS0DJHbUkt0kmG9bFiUZ0eNPUqlx3UXuD-Q4yU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

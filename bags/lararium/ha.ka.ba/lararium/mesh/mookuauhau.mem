@@ -112,6 +112,6 @@ No one has made ''one composition primitive serve simultaneously as the code-wir
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;w1KlLL4B_qcM0s2-ztqmRGdnfv6RyZX7O4RByn0dqys
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;w1KlLL4B_qcM0s2-ztqmRGdnfv6RyZX7O4RByn0dqys`>>
 
 <<^ code=`&#x0004;` to=`?`>>

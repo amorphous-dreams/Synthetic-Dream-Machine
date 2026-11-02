@@ -135,6 +135,6 @@ So, MUST:
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/two-integrities`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;szsUAUqzTobN0z1aLIWKwu7B6rUnWT4NFtqI_3uNSMg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;szsUAUqzTobN0z1aLIWKwu7B6rUnWT4NFtqI_3uNSMg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

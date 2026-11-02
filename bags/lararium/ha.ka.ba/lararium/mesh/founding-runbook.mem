@@ -373,6 +373,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;mY9T4lISZJd9eiTdtoaBdqEoDh0ZwxJpayzPM-I456Q
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mY9T4lISZJd9eiTdtoaBdqEoDh0ZwxJpayzPM-I456Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

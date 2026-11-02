@@ -168,6 +168,6 @@ How Map-Wisp colors each Voice register when they speak through her structural-f
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;RaMDf3t3dmLd68djXc9WDCF1tRfOKDxJn7-bmi6hUks
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RaMDf3t3dmLd68djXc9WDCF1tRfOKDxJn7-bmi6hUks`>>
 
 <<^ code=`&#x0004;` to=`?`>>

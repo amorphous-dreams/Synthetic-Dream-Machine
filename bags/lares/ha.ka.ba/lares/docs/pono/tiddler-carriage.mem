@@ -135,6 +135,6 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7GC5PH6dSLNpMVuXLYINKYpBsBar3TF7IByE6L1IoUc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7GC5PH6dSLNpMVuXLYINKYpBsBar3TF7IByE6L1IoUc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

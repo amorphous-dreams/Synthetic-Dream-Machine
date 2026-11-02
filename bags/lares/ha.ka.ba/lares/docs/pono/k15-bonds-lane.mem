@@ -56,6 +56,6 @@ No CRDT document survives until X0, so re-genesis replaces migration. The node, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;A2f8G3W5WXCRI8zCYy33lyF2F3sKKSA5sjTXQBs-fvU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;A2f8G3W5WXCRI8zCYy33lyF2F3sKKSA5sjTXQBs-fvU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -302,6 +302,6 @@ CVE-2005-2509 (Mac OS X ≤10.4.2, loginwindow, "allows attackers to log into ot
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;uAU5Wbi_1FSYImGmpmz_QFJyP2Jjg8tVDA7ZktU9OVc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uAU5Wbi_1FSYImGmpmz_QFJyP2Jjg8tVDA7ZktU9OVc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

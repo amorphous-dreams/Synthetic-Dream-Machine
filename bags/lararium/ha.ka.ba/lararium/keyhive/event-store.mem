@@ -54,6 +54,6 @@ caller that has not reasoned about slices gets the whole record rather than a si
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/keyhive-provider`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;h_L12BaFwntLhvoNgRX8MjSDf8mFHwqCXGClJCBEiZM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;h_L12BaFwntLhvoNgRX8MjSDf8mFHwqCXGClJCBEiZM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -405,7 +405,7 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
     + `uri-path  = "ha.ka.ba/lares/api/pono/example"\n`
     + '```\n\n'
     + `! Entry\n\nthe body stands here.\n\n`
-    + `<<^ code=\`${etx}\`>>ni:///sha-256;probe\n\n`
+    + `<<^ code=\`${etx}\` bcc=\`ni:///sha-256;probe\`>>\n\n`
     + `<<^ code=\`${eot}\` to=\`?\`>>\n`;
 
   const probed  = carrier(PROBE_SOH, PROBE_STX, PROBE_ETX, PROBE_EOT);
@@ -434,7 +434,7 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
 
   test("★ the deserializer's division closes a carrier on a probed ETX ★", async () => {
     await withProbes(({ deser }) => {
-      expect(deser.carrierText(probed, "probe")?.text.endsWith(`<<^ code=\`${PROBE_ETX}\`>>`)).toBe(true);
+      expect(deser.carrierText(probed, "probe")?.text).toMatch(new RegExp(`<<\\^ code=\`${PROBE_ETX}\`( bcc=\`[^\`]*\`)?>>$`));
     });
   });
 
@@ -456,7 +456,7 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
       expect(frame.frameStanding(canon).kind).toBe("framed");
       expect(frame.checkSpan(canon)).not.toBeNull();
       expect(markdown.transposeMarkdown(canon).check).toBe("ni:///sha-256;probe");
-      expect(deser.carrierText(canon, "canon")?.text.endsWith('<<^ code=`&#x0003;`>>')).toBe(true);
+      expect(deser.carrierText(canon, "canon")?.text).toMatch(/<<\^ code=`&#x0003;`( bcc=`[^`]*`)?>>$/);
       const text = String(deser.memeticWikitextDeserializer(canon, { title: "canon" })[0]?.["text"] ?? "");
       expect(text).toContain("the body stands here.");
     });

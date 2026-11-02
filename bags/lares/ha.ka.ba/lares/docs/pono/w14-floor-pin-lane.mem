@@ -66,6 +66,6 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9Ejtf5nQBDxD7V3fUJODOpUaYqMQx36kQUyaxhvxp6g
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9Ejtf5nQBDxD7V3fUJODOpUaYqMQx36kQUyaxhvxp6g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

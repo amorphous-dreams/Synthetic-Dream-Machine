@@ -36,9 +36,15 @@ describe("★ content past ETX refuses instead of vanishing ★", () => {
     expect(stranded(frame("\n<<~ ahu slot=`#edges`>>\n\n* a link\n\n<<~/ahu>>\n"))).toEqual(["error"]);
   });
 
-  test("a well-formed block check is legal in that slot", () => {
+  test("a well-formed block check rides the ETX mark's bcc slot, and leaves the postamble empty", () => {
     const t = frame("");
-    expect(stranded(frame("\n" + digestOf(t) + "\n"))).toEqual([]);
+    const slotted = t.replace("<<^ code=`&#x0003;`>>", `<<^ code=\`&#x0003;\` bcc=\`${digestOf(t)}\`>>`);
+    expect(stranded(slotted)).toEqual([]);
+  });
+
+  test("a check left after the ETX sigil is foreign content now, never a legal slot", () => {
+    const t = frame("");
+    expect(stranded(frame("\n" + digestOf(t) + "\n"))).toEqual(["error"]);
   });
 });
 

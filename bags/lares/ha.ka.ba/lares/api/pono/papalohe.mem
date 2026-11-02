@@ -133,6 +133,6 @@ Two values, distinct Verse-side origins:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;4lVq3-6zoPekWXy_A4IIi0EYO23VKLJu8eDggwgzLvk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4lVq3-6zoPekWXy_A4IIi0EYO23VKLJu8eDggwgzLvk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

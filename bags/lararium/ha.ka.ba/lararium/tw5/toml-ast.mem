@@ -69,6 +69,6 @@ fields stay its projection.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/lib-smol-toml`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Wo7UUmdozJmYDXZL7iRzVNtwWWa38kZtSXPnZ_rHw1M
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wo7UUmdozJmYDXZL7iRzVNtwWWa38kZtSXPnZ_rHw1M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

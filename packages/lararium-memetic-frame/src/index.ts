@@ -29,11 +29,11 @@ export {
   type MarkHit, type FrameMarks, type FrameRead, type FrameFault, type FrameStanding,
 } from "./span.js";
 export {
-  CHECK_ALG, bccOfSpan, nihOfSpan, bccOf, verifyBcc, BCC_RE, classifyPostamble, classifyPostEot,
+  CHECK_ALG, bccOfSpan, canonicalSpan, nihOfSpan, bccOf, verifyBcc, BCC_RE, classifyPostamble, classifyPostEot,
   type Postamble,
 } from "./check.js";
 export { verdict, verdictOf, frameShape, type FrameVerdict, type FrameShape } from "./verdict.js";
 export {
-  CARRIER_DECLARATION, markCode, headSigil, markSigil, releaseSigil, frameCarrier, stampCarrier,
+  CARRIER_DECLARATION, markCode, headSigil, markSigil, sealSigil, releaseSigil, frameCarrier, stampCarrier,
   type FrameHeadSpec, type FrameCarrierInput,
 } from "./write.js";

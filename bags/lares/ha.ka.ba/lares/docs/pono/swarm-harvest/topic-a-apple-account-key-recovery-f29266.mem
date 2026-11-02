@@ -168,6 +168,6 @@ Source: [signal.org/blog/secure-value-recovery/](https://signal.org/blog/secure-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;O5g-Cw3Zbkmc8YqqEgQ5EFquF6KEFWFqyMfplq7tHgc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;O5g-Cw3Zbkmc8YqqEgQ5EFquF6KEFWFqyMfplq7tHgc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

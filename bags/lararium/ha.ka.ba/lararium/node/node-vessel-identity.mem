@@ -79,6 +79,6 @@ network call, so opening a vessel asks nobody's permission to know what to call 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-slot`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/one-name-one-relation`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;CG1qbSoSv9HSPPcD18EpwECeHGJQHDeJbxEn9C-SJHQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CG1qbSoSv9HSPPcD18EpwECeHGJQHDeJbxEn9C-SJHQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -148,6 +148,6 @@ sigilName = "kukali"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0goZbhjSRsOyfElio7rMi-1007OPylvht9AXmk9zvvc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0goZbhjSRsOyfElio7rMi-1007OPylvht9AXmk9zvvc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

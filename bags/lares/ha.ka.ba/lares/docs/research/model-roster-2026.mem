@@ -149,6 +149,6 @@ Pools: Claude Max 20x (five-hour and weekly, subagents included), Codex team (we
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/codex-controller-2026`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;66Ej-y9PSASJlpnm7Ce7dsJTLlPg5e9cflZk_0o1GCc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;66Ej-y9PSASJlpnm7Ce7dsJTLlPg5e9cflZk_0o1GCc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

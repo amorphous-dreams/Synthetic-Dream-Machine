@@ -184,6 +184,6 @@ Act II receives:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;gT4wlkLDJy2xHXzwAxk8iEsqq8SngsVO-DN-lo05-jE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gT4wlkLDJy2xHXzwAxk8iEsqq8SngsVO-DN-lo05-jE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

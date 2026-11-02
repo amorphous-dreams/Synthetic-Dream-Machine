@@ -124,6 +124,6 @@ The high-confidence bearings for the build (when the forks unblock):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;cJctEoMNhqIEHbTaN0IQOdcMRBhTj_kJYlUJDQ8jOs4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cJctEoMNhqIEHbTaN0IQOdcMRBhTj_kJYlUJDQ8jOs4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

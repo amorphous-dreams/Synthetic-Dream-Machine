@@ -158,6 +158,6 @@ canonical-roles = []   # held — transclusion role vocab deferred with the pono
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iq8i-QodcbS8x50r3F77tokEAoCgo8M7VMnsy6cRU5k
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iq8i-QodcbS8x50r3F77tokEAoCgo8M7VMnsy6cRU5k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

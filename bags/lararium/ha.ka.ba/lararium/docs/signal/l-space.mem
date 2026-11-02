@@ -70,6 +70,6 @@ Working definition:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;b9rTaQE32q3h7hcV6a5vQeTUYuNDmJv9qKighZPwvHI
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;b9rTaQE32q3h7hcV6a5vQeTUYuNDmJv9qKighZPwvHI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

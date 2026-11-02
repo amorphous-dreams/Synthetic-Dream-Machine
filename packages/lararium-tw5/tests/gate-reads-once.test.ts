@@ -66,13 +66,13 @@ describe("★ the gate threads its reading ★", () => {
   });
 
   test("CONTROL — content stranded past ETX is still reported, read off the reading", () => {
-    const stranded = SOUND.replace(/(ni:\/\/\/sha-256;[A-Za-z0-9_-]+)\n/, "$1\nstray line one\nstray line two\n");
+    const stranded = SOUND.replace(/(<<\^ code=`&#x0003;` bcc=`[^`]*`>>)\n/, "$1\nstray line one\nstray line two\n");
     const codes = memeticIngestOps.deserialize(URI, stranded, verdict(stranded)).diagnostics.map((d) => d.code);
     expect(codes).toContain("postamble-content");
   });
 
   test("CONTROL — a torn carrier still refuses at error grade", () => {
-    const torn = SOUND.replace('<<^ code=`&#x0003;`>>', "");
+    const torn = SOUND.replace(/<<\^ code=`&#x0003;`[^\n]*>>/, "");
     const decision = decideIngest({ uri: URI, diskText: torn, diskHash: sha(torn), syncedHash: null, currentRenderHash: sha("x"), hash: sha });
     expect(decision.kind).toBe("refuse");
     expect(memeticIngestOps.grade(memeticIngestOps.deserialize(URI, torn, verdict(torn)).diagnostics)).toBe("error");

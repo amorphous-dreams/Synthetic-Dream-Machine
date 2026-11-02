@@ -238,6 +238,6 @@ The boot receipt hash changes to reflect the newly resolved carrier.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;LizCovgUr6J6cWJQ_Uq1TClUkxwWhP01maK1wZwKF3o
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LizCovgUr6J6cWJQ_Uq1TClUkxwWhP01maK1wZwKF3o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

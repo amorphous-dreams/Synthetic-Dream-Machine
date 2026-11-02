@@ -35,7 +35,7 @@ const refMeme = (uri: string): string =>
   `uri-path             = "${uri.replace(/^lar:\/\/\//, "")}"\n` +
   "```\n\n" +
   "! Target body heading — must not render\n\n" +
-  '<<^ code=`&#x0003;`>>ni:///sha-256;REFCHECK\n' +
+  '<<^ code=`&#x0003;` bcc=`ni:///sha-256;REFCHECK`>>\n' +
   '<<^ code=`&#x0004;` to=`?`>>\n';
 
 // A reference meme carrying no `reference-seriesinfo`/`reference-target` — the absent-field case:
@@ -50,7 +50,7 @@ const bareRefMeme = (uri: string): string =>
   `uri-path         = "${uri.replace(/^lar:\/\/\//, "")}"\n` +
   "```\n\n" +
   "! Target body heading — must not render\n\n" +
-  '<<^ code=`&#x0003;`>>ni:///sha-256;BARECHECK\n' +
+  '<<^ code=`&#x0003;` bcc=`ni:///sha-256;BARECHECK`>>\n' +
   '<<^ code=`&#x0004;` to=`?`>>\n';
 
 const contentMeme = (uri: string, slotText: string): string =>
@@ -59,7 +59,7 @@ const contentMeme = (uri: string, slotText: string): string =>
   `uri-path = "${uri.replace(/^lar:\/\/\//, "")}"\n` +
   "```\n\n" +
   `<<~ ahu slot=\`#/s\`>>\n\n! Slot S\n\n${slotText}\n\n<<~/ahu>>\n\n` +
-  '<<^ code=`&#x0003;`>>ni:///sha-256;WHOLECHECK\n' +
+  '<<^ code=`&#x0003;` bcc=`ni:///sha-256;WHOLECHECK`>>\n' +
   '<<^ code=`&#x0004;` to=`?`>>\n';
 
 describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or frozen image${skipNote}`, () => {

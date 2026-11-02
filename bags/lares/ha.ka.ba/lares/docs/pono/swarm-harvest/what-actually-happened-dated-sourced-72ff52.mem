@@ -182,6 +182,6 @@ https://www.iana.org/dnssec/procedures/ksk-operator/KSK_Key_Management_Procedure
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7rmGjwOUykWNIylBmyFznlrkYlHjnuPsmsD76yIbVEM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7rmGjwOUykWNIylBmyFznlrkYlHjnuPsmsD76yIbVEM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

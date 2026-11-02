@@ -28,6 +28,6 @@ Eight artistic dimensions: worktype, subject, read, imagery, treatment, composit
 The grammar governs expression, not an artwork's subject, medium or style.
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;SAegB6TjQnRwNeywPIKw5rlKT_aAueqAmaoXQgIGaLY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SAegB6TjQnRwNeywPIKw5rlKT_aAueqAmaoXQgIGaLY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

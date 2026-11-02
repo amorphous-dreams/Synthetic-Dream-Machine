@@ -64,6 +64,6 @@ The lane's re-bake carries the plugin bundle `genesis/unbaked.json` declared, th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;GhJdMdLSxy6vpj6NCs9tKpAd5qcfv2jrQ0IJA5Ov-yU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GhJdMdLSxy6vpj6NCs9tKpAd5qcfv2jrQ0IJA5Ov-yU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

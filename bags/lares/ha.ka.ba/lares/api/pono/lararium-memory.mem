@@ -269,6 +269,6 @@ conflict press a `hoike`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;voF08JoByMnLxNWMDfktLEyLWo_tQAHy6SVuzrZREMc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;voF08JoByMnLxNWMDfktLEyLWo_tQAHy6SVuzrZREMc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

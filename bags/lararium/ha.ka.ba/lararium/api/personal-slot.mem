@@ -496,6 +496,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;09BNPvrWxZy0kbBJVJxwn_wFEtn_DLJ-zLqjumxxiNs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;09BNPvrWxZy0kbBJVJxwn_wFEtn_DLJ-zLqjumxxiNs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

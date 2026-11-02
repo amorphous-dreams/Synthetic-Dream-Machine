@@ -149,6 +149,6 @@ The HUD tag is therefore a ''memory prosthetic'' — it carries calibration forw
 
 //Syād — perhaps, from a certain standpoint. The emoji are the syād.//
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0SkW7Q5djHhWtEAAs_2tUfqYjzt1X0rG8wRd1L2W8GU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0SkW7Q5djHhWtEAAs_2tUfqYjzt1X0rG8wRd1L2W8GU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

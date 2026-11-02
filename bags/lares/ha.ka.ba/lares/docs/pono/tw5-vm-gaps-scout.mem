@@ -264,6 +264,6 @@ These scratch files die with this container; the probes are described well enoug
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;y2TqjiFAAnMk4RMmDyyGQ3f1AxUNflQyCy7dhDwtpZQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y2TqjiFAAnMk4RMmDyyGQ3f1AxUNflQyCy7dhDwtpZQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

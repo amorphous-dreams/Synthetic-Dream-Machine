@@ -29,6 +29,6 @@ Use whichever reads more naturally in context.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;XMJyASAi27DQifWfYQSv9H1rmdgKjgVm7sgOMUwsKso
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XMJyASAi27DQifWfYQSv9H1rmdgKjgVm7sgOMUwsKso`>>
 
 <<^ code=`&#x0004;` to=`?`>>

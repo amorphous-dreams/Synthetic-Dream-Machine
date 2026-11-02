@@ -352,6 +352,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;lKQD_cwL00QhKy-G5q9LLDR7y4FtdgKLkkL85-9ewho
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lKQD_cwL00QhKy-G5q9LLDR7y4FtdgKLkkL85-9ewho`>>
 
 <<^ code=`&#x0004;` to=`?`>>

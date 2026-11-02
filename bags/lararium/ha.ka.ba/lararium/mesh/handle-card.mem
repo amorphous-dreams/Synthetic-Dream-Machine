@@ -296,6 +296,6 @@ forgery rides it too and dies at the recogniser, and the writer's arity itself s
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;QW2PsUe2gTBliDx5FQHIjfDJ6AORKm3N2Z3PivH-SDw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QW2PsUe2gTBliDx5FQHIjfDJ6AORKm3N2Z3PivH-SDw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

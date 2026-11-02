@@ -329,6 +329,6 @@ model, (3) settles the sink, (4) hunts C4's counterexample, and (6) instruments 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;AZaEtsnceHv1chzo-pXivD9jZ2fPWxyanRU90tkMsiI
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AZaEtsnceHv1chzo-pXivD9jZ2fPWxyanRU90tkMsiI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

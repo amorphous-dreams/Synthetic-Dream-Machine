@@ -111,6 +111,6 @@ A setting-only table composes: lares + elyncia + room.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;xAOXfV__AouUZ6Qrz5k5X1FoG5n6qZGOSVUaftK3csY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xAOXfV__AouUZ6Qrz5k5X1FoG5n6qZGOSVUaftK3csY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

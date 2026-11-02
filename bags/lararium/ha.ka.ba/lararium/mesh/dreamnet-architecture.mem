@@ -638,6 +638,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;AahFk44u4_oWHLRyb1diprzVMheocTy18tdrFAYJ60A
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AahFk44u4_oWHLRyb1diprzVMheocTy18tdrFAYJ60A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

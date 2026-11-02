@@ -152,6 +152,6 @@ This second pass **strengthens, not overturns**, my original report: the deviceP
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;PiBS4R0lYlcSng80JfFmc_rAJCB47HlcRsP0kOwco6M
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PiBS4R0lYlcSng80JfFmc_rAJCB47HlcRsP0kOwco6M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

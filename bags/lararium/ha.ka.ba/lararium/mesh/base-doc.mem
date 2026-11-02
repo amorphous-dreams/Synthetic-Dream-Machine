@@ -53,6 +53,6 @@ island document is the floor's read-face (`wiki-layer-ontology#oracle-planes`).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;UPQakWwBK0pago6VKfVg_xNQF_JUkEDr23EEuqU-KTo
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UPQakWwBK0pago6VKfVg_xNQF_JUkEDr23EEuqU-KTo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -70,6 +70,6 @@ component properties, and tick-scoped state in a WYSIWYG-friendly field structur
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iJQiFz7MtSCS0VbKUZKl-ULtFnU9TYHj4bR5-Qf0CL4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iJQiFz7MtSCS0VbKUZKl-ULtFnU9TYHj4bR5-Qf0CL4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

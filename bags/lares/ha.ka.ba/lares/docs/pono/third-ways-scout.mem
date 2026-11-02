@@ -377,6 +377,6 @@ Held here as **draft**; the thread's telling wins over this copy where they diff
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;4KTmS0Wt2AThyylKt3BtrYmePYU9gTb6QGWiFDR_l-g
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4KTmS0Wt2AThyylKt3BtrYmePYU9gTb6QGWiFDR_l-g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

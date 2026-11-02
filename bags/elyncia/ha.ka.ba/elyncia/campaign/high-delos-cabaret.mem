@@ -325,6 +325,6 @@ The played record lands in this locus using the shelf's witness pattern
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;g_Zpy_6XQeGnymhJiH_EWFkpokBtOM6PIyVvugh47-A
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;g_Zpy_6XQeGnymhJiH_EWFkpokBtOM6PIyVvugh47-A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

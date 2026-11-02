@@ -112,6 +112,6 @@ Long-term, the server should validate the vector and render the panel from the p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;UB34uixutk1fMaH5tdr-VQI8dvRie2nlo2wvRFMXgHk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UB34uixutk1fMaH5tdr-VQI8dvRie2nlo2wvRFMXgHk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

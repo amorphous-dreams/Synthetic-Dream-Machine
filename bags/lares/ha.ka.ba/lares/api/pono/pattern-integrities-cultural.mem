@@ -251,6 +251,6 @@ Feed the node. Run the bench whole. Grade on the chain. Keep the cliff independe
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Y30Bx2E5NoKRyDKeg4cnJyK6mgoyFR2SA3ZdMaCZRX4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y30Bx2E5NoKRyDKeg4cnJyK6mgoyFR2SA3ZdMaCZRX4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

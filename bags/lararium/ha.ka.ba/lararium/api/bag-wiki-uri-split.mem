@@ -91,6 +91,6 @@ Two maps, cleanly separated — each the operator's own, never a registry of oth
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — separates floor rows from vessel pointers
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model`>> — places system floor beneath writable recipe layers
 
-<<^ code=`&#x0003;`>>ni:///sha-256;43T_JZFU9BpWg1OwjEFfwB0H51wTh_Iucg9Y1s2JJoM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;43T_JZFU9BpWg1OwjEFfwB0H51wTh_Iucg9Y1s2JJoM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

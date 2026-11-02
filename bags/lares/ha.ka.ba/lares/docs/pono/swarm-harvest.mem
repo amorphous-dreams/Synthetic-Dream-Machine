@@ -105,6 +105,6 @@ Four research waves went out and ran three levels deep. ''55 spirits wrote somet
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;zjc9pVcDN5QVS8Wi3l6u_kzfeWjqR6rhFCBfh4YTc4c
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zjc9pVcDN5QVS8Wi3l6u_kzfeWjqR6rhFCBfh4YTc4c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -484,6 +484,6 @@ as loss and the Arcane stays self-reported-and-unwitnessed.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;MvwBTDCwS_X24LmGgJel_J063PoFYiPkmlwAzTjL5r8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MvwBTDCwS_X24LmGgJel_J063PoFYiPkmlwAzTjL5r8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

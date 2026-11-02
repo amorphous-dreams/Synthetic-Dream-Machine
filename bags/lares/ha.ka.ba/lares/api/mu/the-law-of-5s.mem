@@ -214,6 +214,6 @@ export const RATING_COLOR: Record<Rating5, string> = {
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;kxLNh6vfAcPGuRxKmA9pHjaJOYmdsMTaU7_y0wE3cVY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kxLNh6vfAcPGuRxKmA9pHjaJOYmdsMTaU7_y0wE3cVY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

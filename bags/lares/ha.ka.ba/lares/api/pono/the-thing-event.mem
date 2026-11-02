@@ -100,6 +100,6 @@ That reads as the same law as //the naming layer performs, so it must never cert
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Yx1e5psT5zk_JbZbbfEaZ3jJNXjJeRuus9BSOiw9Frw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Yx1e5psT5zk_JbZbbfEaZ3jJNXjJeRuus9BSOiw9Frw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

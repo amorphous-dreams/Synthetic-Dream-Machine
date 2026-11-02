@@ -37,6 +37,6 @@ their host Realms; host-region worksheets may cross-reference.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;8ivQ8qDlmkHuagmLhq8cRYGDEPQKOrIYCm2TbXCXU9E
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8ivQ8qDlmkHuagmLhq8cRYGDEPQKOrIYCm2TbXCXU9E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

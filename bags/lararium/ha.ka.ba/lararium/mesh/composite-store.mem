@@ -64,6 +64,6 @@ empty bag rather than as a missed window'' — the failure this note exists to n
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/tiddler-store`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/lararium-doc-stack`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;kLHCkI-wlR7ND1QmMCS4M5u7B0CQuQhEUBCaMzh0pik
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kLHCkI-wlR7ND1QmMCS4M5u7B0CQuQhEUBCaMzh0pik`>>
 
 <<^ code=`&#x0004;` to=`?`>>

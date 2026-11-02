@@ -127,6 +127,6 @@ Simple transclusion `{{Title}}` maps to ``<<~ kahea uri=`lar:///uri`>>``. Templa
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;nkLZiv6G6Ph797hRaIAOsAWqERfqdJQvuNdHDBe5doQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nkLZiv6G6Ph797hRaIAOsAWqERfqdJQvuNdHDBe5doQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

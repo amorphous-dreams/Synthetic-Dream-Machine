@@ -354,6 +354,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;2LBtQAYhr7N89Sa59aOaEJyzcUcBUD_WGQn2Ng4_3ag
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2LBtQAYhr7N89Sa59aOaEJyzcUcBUD_WGQn2Ng4_3ag`>>
 
 <<^ code=`&#x0004;` to=`?`>>

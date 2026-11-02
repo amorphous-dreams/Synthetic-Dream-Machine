@@ -209,6 +209,6 @@ pranala edge payloads. They feed future Verse code generation from the graph.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;GrsHC__Zde2xeEeMvreol29XbWWkNctbNhCMhyex6h4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GrsHC__Zde2xeEeMvreol29XbWWkNctbNhCMhyex6h4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

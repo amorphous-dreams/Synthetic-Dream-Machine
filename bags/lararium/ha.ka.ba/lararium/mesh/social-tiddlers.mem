@@ -60,6 +60,6 @@ and a map of FFZ clocks. It names live attention rather than durable membership.
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/automerge-tiga`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/circles-kowloon`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;O8cK0S99q56gIR_8T287CvijadmQIPrmi44ws918COs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;O8cK0S99q56gIR_8T287CvijadmQIPrmi44ws918COs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -246,6 +246,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ziVpDq19OWB6qLpK2tAWmIvnpuNTPKZVGcWf0RW2n_g
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ziVpDq19OWB6qLpK2tAWmIvnpuNTPKZVGcWf0RW2n_g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

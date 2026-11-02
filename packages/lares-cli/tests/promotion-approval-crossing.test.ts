@@ -23,7 +23,7 @@ const source = [
   'tags = ["lifecycle/standing"]',
   '```',
   'body',
-  '<<^ code=`&#x0003;`>>ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+  '<<^ code=`&#x0003;` bcc=`ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`>>',
   '<<^ code=`&#x0004;` to=`?`>>',
 ].join("\n");
 

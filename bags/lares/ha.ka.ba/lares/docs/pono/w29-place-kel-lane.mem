@@ -67,6 +67,6 @@ The floor trust chain orders its pin claims by place-KEL descent, so the place K
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;kXw3ybHIG9bSmm6eNvOS25xNP0t-OLQQXt3ty6F6g8o
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kXw3ybHIG9bSmm6eNvOS25xNP0t-OLQQXt3ty6F6g8o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

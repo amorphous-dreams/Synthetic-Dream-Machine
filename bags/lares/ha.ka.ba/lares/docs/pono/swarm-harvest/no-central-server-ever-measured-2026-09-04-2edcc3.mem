@@ -316,6 +316,6 @@ Individual instances: **Hachyderm took 30,000 users in 30 days** on four donated
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ArOkSb3RGfj8i3B4XozH3wmoheBP6jXfKvgCS3LKNqU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ArOkSb3RGfj8i3B4XozH3wmoheBP6jXfKvgCS3LKNqU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

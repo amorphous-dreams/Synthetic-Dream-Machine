@@ -26,6 +26,6 @@ retain   = true
 Examples demonstrate the grammar without defining its defaults.
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;IMwlS0_E__g5gghDH2CGSBFs5j9USR4e_DcJpwvtCLo
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IMwlS0_E__g5gghDH2CGSBFs5j9USR4e_DcJpwvtCLo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

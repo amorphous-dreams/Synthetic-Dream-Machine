@@ -77,6 +77,6 @@ class, where the alert stays the permanent mechanism.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;BHoPgkDp5pKQMj-5sFj-_Xmk1D0drycmXi6ZyaooBLg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BHoPgkDp5pKQMj-5sFj-_Xmk1D0drycmXi6ZyaooBLg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

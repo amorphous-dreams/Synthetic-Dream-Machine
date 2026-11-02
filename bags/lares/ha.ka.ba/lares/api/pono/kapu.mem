@@ -132,6 +132,6 @@ This meme governs the kapu rating and above-namespace trust law.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;C713SJ20vbBo9G4oDTpvWTs2wtYwPzNbKmC8WXuvPqY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C713SJ20vbBo9G4oDTpvWTs2wtYwPzNbKmC8WXuvPqY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

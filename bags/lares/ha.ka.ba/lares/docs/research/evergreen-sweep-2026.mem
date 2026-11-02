@@ -148,6 +148,6 @@ The inventory's 68 cross-package-name rows are search leads, not 68 isomorphisms
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;1nS_5iP3a-E94ls_czEQ6lOw1Nn5rOTHuhR2JnAOIlM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1nS_5iP3a-E94ls_czEQ6lOw1Nn5rOTHuhR2JnAOIlM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

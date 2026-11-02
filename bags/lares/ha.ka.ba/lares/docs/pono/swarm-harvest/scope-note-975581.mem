@@ -356,6 +356,6 @@ From `src/app/config/auth_dirs.inc` and confirmed against the live consensus:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;DzE0lmwCbLwJcWmiwU_lKBWBT3bzo8qJoUHSlpC2hm8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DzE0lmwCbLwJcWmiwU_lKBWBT3bzo8qJoUHSlpC2hm8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

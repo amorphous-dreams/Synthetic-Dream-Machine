@@ -110,6 +110,6 @@ counted `uncarry` that descends from it leaves the place with no arm to present.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/carry-bundle`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;d9j00zkrPYA2cW4SccT3Pqu0QCte44OcCx9wt2pTbD4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;d9j00zkrPYA2cW4SccT3Pqu0QCte44OcCx9wt2pTbD4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

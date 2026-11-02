@@ -71,6 +71,6 @@ opening the DOA.html blob in any browser, offline, forever.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;lX5U81JVsDhRV23IPGR8EygHxVeu3tsWC9W1Y3_kBdA
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lX5U81JVsDhRV23IPGR8EygHxVeu3tsWC9W1Y3_kBdA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

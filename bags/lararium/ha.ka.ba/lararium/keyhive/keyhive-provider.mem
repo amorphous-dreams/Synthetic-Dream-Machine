@@ -130,6 +130,6 @@ would turn admission into cloning, and every admitted vessel would hold the huma
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;d6sTgP_BKdldmTXH8KB_72lDWdRCvuebgXPt7c2FdUc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;d6sTgP_BKdldmTXH8KB_72lDWdRCvuebgXPt7c2FdUc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

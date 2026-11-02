@@ -42,6 +42,6 @@ A write merges a record field by field at its base. A field whose value did not 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;OpwTXpV5SlK0gIsqpbYIzcm1lwhf11_kAjcFjHBG9Tk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OpwTXpV5SlK0gIsqpbYIzcm1lwhf11_kAjcFjHBG9Tk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

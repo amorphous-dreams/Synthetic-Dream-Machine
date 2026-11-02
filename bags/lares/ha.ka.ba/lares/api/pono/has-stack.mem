@@ -112,6 +112,6 @@ the py caps consume.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;5kYwo1Zrx5cPVLHznUTHPs0002Sc11Xcrt2MGyWvzgY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5kYwo1Zrx5cPVLHznUTHPs0002Sc11Xcrt2MGyWvzgY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

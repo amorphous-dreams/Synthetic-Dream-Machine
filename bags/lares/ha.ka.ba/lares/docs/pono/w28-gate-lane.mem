@@ -67,6 +67,6 @@ Both rows touch the sealed channel's dial bytes, so each settles before the X0 b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Ps5zrER5oy1Lbw1OpmbHa3kDElvheGqjQaE4MCJmGV4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ps5zrER5oy1Lbw1OpmbHa3kDElvheGqjQaE4MCJmGV4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

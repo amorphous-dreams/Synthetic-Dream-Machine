@@ -144,6 +144,6 @@ All three systems that market themselves as "no single key" arrive at the *same*
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;H_hv5tWd2SHj5RS1vpU0GCX14zDZnKIHlOrdPmatrKw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H_hv5tWd2SHj5RS1vpU0GCX14zDZnKIHlOrdPmatrKw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

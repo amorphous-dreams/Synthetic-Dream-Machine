@@ -66,6 +66,6 @@ rather than an absence it must guess at.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/meme-provider`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;QxZGNZKy8PKV8IZ0TOk9S-8l-JKxomHTGUjc_j6rjuY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QxZGNZKy8PKV8IZ0TOk9S-8l-JKxomHTGUjc_j6rjuY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

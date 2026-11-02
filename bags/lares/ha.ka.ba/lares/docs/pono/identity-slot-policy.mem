@@ -186,6 +186,6 @@ The asked-for red — //a stranger asking an identity-slot doc is refused; a mem
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;TBjE3cszU1mI0XiWozwYyS4RrjA5AFUtjc4T6iZU_Ek
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TBjE3cszU1mI0XiWozwYyS4RrjA5AFUtjc4T6iZU_Ek`>>
 
 <<^ code=`&#x0004;` to=`?`>>

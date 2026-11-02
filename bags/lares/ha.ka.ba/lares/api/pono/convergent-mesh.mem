@@ -138,6 +138,6 @@ The Scope-1 CAD-blob pipe carries a ''concrete design'' (`content-resolution`, d
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;l4CCgTFYclKvMRgXXT3rbZPeuSjbquwbRfbkV_cDyY0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;l4CCgTFYclKvMRgXXT3rbZPeuSjbquwbRfbkV_cDyY0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

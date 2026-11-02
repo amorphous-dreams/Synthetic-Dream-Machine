@@ -71,7 +71,7 @@ describe("genesis floor carrier cut", () => {
 
   test("refuses a torn carrier by path", () => {
     // No end-of-text mark: the frame tears (`verdict` reads it torn).
-    const torn = realA.replace(/<<\^ code=`&#x0003;`>>[\s\S]*$/, "");
+    const torn = realA.replace(/<<\^ code=`&#x0003;`[\s\S]*$/, "");
     const [path] = fixture([torn], []);
     expect(() => cutGenesisFloor(opts(root))).toThrow(`carrier frame torn ${path}`);
   });

@@ -200,6 +200,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7y_OLwOE-88IBF0zq7PnJ2i99QSjfHdOMwSKjgfvB2s
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7y_OLwOE-88IBF0zq7PnJ2i99QSjfHdOMwSKjgfvB2s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

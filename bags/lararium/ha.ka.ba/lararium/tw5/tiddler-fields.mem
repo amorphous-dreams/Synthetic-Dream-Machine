@@ -93,6 +93,6 @@ This split removes the old flat-record ambiguity where TW5 content fields and ho
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;GBXF1JqPCvFEewi-iPzF0uChC1XxAlm7cPttjwZx7x0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GBXF1JqPCvFEewi-iPzF0uChC1XxAlm7cPttjwZx7x0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

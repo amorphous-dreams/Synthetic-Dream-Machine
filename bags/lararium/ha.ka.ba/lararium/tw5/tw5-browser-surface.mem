@@ -53,6 +53,6 @@ engine. No worker-side TW5 authority may import these types without an explicit 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;AkPEsy4snw_hQlGMJFfWTOSmvxWmy50h6qkRq9g1nLA
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AkPEsy4snw_hQlGMJFfWTOSmvxWmy50h6qkRq9g1nLA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

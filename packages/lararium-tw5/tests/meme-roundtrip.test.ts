@@ -117,7 +117,7 @@ mana = 99
 
 After the fence, the carrier still runs.
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;2QQF5B5ALWF0IqHMDGgLx_gjH5AOmjJEjXjIzBOFzmw
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;2QQF5B5ALWF0IqHMDGgLx_gjH5AOmjJEjXjIzBOFzmw\`>>
 
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;

@@ -99,6 +99,6 @@ dragon builds meshes. These live referee-side of even this bag — the operator'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;xameVKYmjIfuxRd9C8A7XY86UoIcXd6f_KGGyvAvYWQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xameVKYmjIfuxRd9C8A7XY86UoIcXd6f_KGGyvAvYWQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

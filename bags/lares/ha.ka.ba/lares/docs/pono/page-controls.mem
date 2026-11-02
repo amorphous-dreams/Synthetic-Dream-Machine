@@ -251,6 +251,6 @@ The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projectio
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7sJf2Ug_ATpRpBNNNoY8oYmYw4IXyztp6NT-mJRgguE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7sJf2Ug_ATpRpBNNNoY8oYmYw4IXyztp6NT-mJRgguE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

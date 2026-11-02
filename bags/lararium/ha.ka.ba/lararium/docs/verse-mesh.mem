@@ -262,6 +262,6 @@ The host-task seat changes; the landing contract does not. The nalu engine holds
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;vomH_XXESh8PlZ9s9G-3ClJg7gG9FsUJsRqy32_MiRk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vomH_XXESh8PlZ9s9G-3ClJg7gG9FsUJsRqy32_MiRk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

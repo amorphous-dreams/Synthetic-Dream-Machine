@@ -88,6 +88,6 @@ tags = ["@sdm/tags/function/ecm-scan", "@sdm/tags/domain/divination", "@sdm/tags
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;nfEi9grEJjkR9qQbE9wd94hDr-a54o0lojdbEIKQIG4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nfEi9grEJjkR9qQbE9wd94hDr-a54o0lojdbEIKQIG4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -15,6 +15,8 @@
 import type { GrammarRules, SigilRule } from "./types.js";
 import { fencedSpans, maskedExecAll } from "@lararium/memetic-frame";
 import { GENERATED_SIGILS } from "./grammar-table.generated.js";
+import { SIGIL_TRAILING_TEXT_CODE } from "./diagnostics.js";
+import type { ParseFailure } from "./types.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -205,4 +207,36 @@ export function collectEvents(text: string, grammar?: GrammarRules): ParseEvent[
   }
 
   return events.sort((a, b) => a.pos - b.pos || a.end - b.end);
+}
+
+// ---------------------------------------------------------------------------
+// trailingTextFailures — the graceful floor under the block law
+// ---------------------------------------------------------------------------
+
+/**
+ * A sigil is a block only when its `>>` ends the line (`\r?\n` or the end of the source) — TW5's own
+ * split of `<<m>>` from `<<m>>;abc`. A line that opens on a sigil and leaves text behind reads as a
+ * paragraph holding the sigil inline, every byte kept.
+ *
+ * For a head that rides inline (a link, a citation, a call — loulou, saksi, kahea, …) that IS the
+ * reading, and it draws nothing. The floor speaks only for a BLOCK-ONLY head (`lar-flow: block` on its
+ * sigil tiddler: the frame marks and the child-slot opener and closer), whose meaning needs its own
+ * line: one warning per such sigil, so the text stands rendered AND the author hears about it. The set
+ * comes from the grammar, never a list here; a frame mark answers by the `lar-code` its rule carries.
+ * The events arrive fence-masked, so a quoted lesson raises nothing.
+ */
+export function trailingTextFailures(text: string, events: readonly ParseEvent[], sigils: readonly SigilRule[] = GENERATED_SIGILS): ParseFailure[] {
+  const blockNames = new Set(sigils.filter((s) => s.flow === "block").map((s) => s.name));
+  const blockCodes = sigils.filter((s) => s.flow === "block" && s.code).map((s) => s.code!);
+  const blockOnly = (e: ParseEvent): boolean =>
+    blockNames.has(e.sigilName) || (e.raw.startsWith("<<^") && blockCodes.some((c) => e.raw.includes(c)));
+  const out: ParseFailure[] = [];
+  for (const e of events) {
+    if (!e.raw.startsWith("<<") || e.raw.includes("\n") || !blockOnly(e)) continue;
+    const lineStart = text.lastIndexOf("\n", e.pos - 1) + 1;
+    if (!/^[ \t]*$/.test(text.slice(lineStart, e.pos))) continue;
+    if (e.end >= text.length || text[e.end] === "\n" || (text[e.end] === "\r" && text[e.end + 1] === "\n")) continue;
+    out.push({ pos: e.pos, raw: e.raw, reason: SIGIL_TRAILING_TEXT_CODE, recoveredAs: "repaired", sigilName: e.sigilName });
+  }
+  return out;
 }

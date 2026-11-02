@@ -305,6 +305,6 @@ satirist-operational = "nasti-avaktavya"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;JvqzSmt3DtIo-emHycs6HU84Pg6GD-eoHvJ0y2IX_uk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JvqzSmt3DtIo-emHycs6HU84Pg6GD-eoHvJ0y2IX_uk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -516,6 +516,6 @@ A 3-research-scout synthesis, grounded on:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;vdPq0YV6TmuHrbIJlRZAo7cHAH279b4u7dtSXA2re5c
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vdPq0YV6TmuHrbIJlRZAo7cHAH279b4u7dtSXA2re5c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

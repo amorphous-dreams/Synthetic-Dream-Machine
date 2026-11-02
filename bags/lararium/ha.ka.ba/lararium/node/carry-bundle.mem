@@ -80,6 +80,6 @@ act, the claim and the rows in one write, and emits this bundle from there. A pa
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/place-floor-pin`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;uvMY6fEZek-gcQCHDD6bzsXB3fgD94OZAMUhudujqLc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uvMY6fEZek-gcQCHDD6bzsXB3fgD94OZAMUhudujqLc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

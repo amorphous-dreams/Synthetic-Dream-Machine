@@ -191,6 +191,6 @@ A herm carries sealed frames between keys it proved, reads none of them, and hol
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HKybUJiK917OnTXpCXD59h1f4HbnLgqF085GUWeybGg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HKybUJiK917OnTXpCXD59h1f4HbnLgqF085GUWeybGg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

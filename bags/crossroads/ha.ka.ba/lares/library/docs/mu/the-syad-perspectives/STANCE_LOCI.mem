@@ -162,6 +162,6 @@ If the reader still has to guess what `0.65` means here, stance has not yet done
 
 ---
 
-<<^ code=`&#x0003;`>>ni:///sha-256;qwZjPMtW-wsU-Qkb-ZYP1QjLKSX_6wx7Um0r2axtRFY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qwZjPMtW-wsU-Qkb-ZYP1QjLKSX_6wx7Um0r2axtRFY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

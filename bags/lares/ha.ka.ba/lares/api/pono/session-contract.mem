@@ -338,6 +338,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;wWF_eZJT8H1ErNnivy-bpval-b3l-cGbaFlFJvN7tTE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wWF_eZJT8H1ErNnivy-bpval-b3l-cGbaFlFJvN7tTE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

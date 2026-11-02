@@ -79,6 +79,6 @@ The boot seed (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>) seat
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;mLXx08KTmG2eF4TzIClYADmN9Fw8FjIcaKwhDZkCFY0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mLXx08KTmG2eF4TzIClYADmN9Fw8FjIcaKwhDZkCFY0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

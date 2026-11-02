@@ -62,6 +62,6 @@ The cap-model names this minimal stack exactly — the ''same keel as the temple
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;empk_fKBFxFsMaSqUmeevWUM9Tk9nVMTCXUjUn9xyBc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;empk_fKBFxFsMaSqUmeevWUM9Tk9nVMTCXUjUn9xyBc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -223,6 +223,6 @@ after welded to the before. The trigger does the work the dead water would have 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;qyNU1ouHLGbPAGQLyIZjdgElUXA9yvvdqSJrtKydCOk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qyNU1ouHLGbPAGQLyIZjdgElUXA9yvvdqSJrtKydCOk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

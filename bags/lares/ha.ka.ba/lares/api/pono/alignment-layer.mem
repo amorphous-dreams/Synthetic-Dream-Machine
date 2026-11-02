@@ -237,6 +237,6 @@ right — to decide whose presence the hearth refuses.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;It5KcJutYcv-Kd4xhGmkiHQAf3hvocNgXmX3t_52Mgw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;It5KcJutYcv-Kd4xhGmkiHQAf3hvocNgXmX3t_52Mgw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

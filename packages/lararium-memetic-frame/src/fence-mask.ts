@@ -8,31 +8,28 @@
  * mask landed, a fenced ETX mention truncated everything
  * after it at ingest — silent content loss on real corpus files.
  *
- * Two span kinds, CommonMark-shaped, conservative:
- *   - fenced code blocks: a line opening with 0–3 spaces then 3+ backticks OR 3+ tildes closes at
- *     the next line with a same-or-longer run of the SAME character (or end-of-text when unclosed —
- *     the open tail stays masked);
+ * Two span kinds, at TiddlyWiki's own law:
+ *   - fenced code blocks: a line opening with 0–3 spaces then 3+ BACKTICKS closes at the next line
+ *     holding only a same-or-longer backtick run (or end-of-text when unclosed — the open tail stays
+ *     masked). TW5's codeblock rule opens on `/(`{3,})/` alone;
  *   - inline code spans: equal-length backtick runs paired within a line, outside fenced blocks.
  *
- * TILDE FENCES, FOUND BY FUZZING (lararium-memetic-frame/tests/fence-edge-fuzz.test.ts). CommonMark
- * §4.5 admits a tilde fence (`~~~`) as a full peer of a backtick fence — a corpus author quoting a
- * frame mark inside one is exactly the "conformant corpus quotes every mark in a fence" case
- * #/the-touchstone promises. `fencedSpans` (this module's own scan, which the ONE span reader in
- * `span.ts` reads through) now masks both; a quoted ETX the fuzz generated inside a `~~~` fence used
- * to read as LIVE, closing the carrier's real span early at the quoted mark and naming it a
- * `second-etx` fault over a carrier that was, in fact, well-formed.
+ * TILDES FENCE NOTHING. CommonMark admits a `~~~` fence, but the grammar this mask serves reads as
+ * TiddlyWiki reads, and TiddlyWiki opens no fence on tildes: a frame mark under `~~~` renders, frames
+ * and parses live in every reader (TW5 decides every parity question — controller ruling, 2026-11-01).
+ * A mask that hid it would close a carrier where no reader sees a quotation. The `ch` field stays on
+ * the answer so a walker keeps one shape; it only ever reads a backtick.
  *
- * ONE FAMILY, BOTH CHARACTERS. `fenceLineOpen` answers the run a line opens — its length and its
- * character — and `fenceLineClose` closes only against that same character; `fencedSpans` and every
- * line-at-a-time walk (weave's transposer, its slot extractor) read the same pair, so no reader can
- * mask a tilde fence while another reads through it.
+ * ONE FAMILY. `fenceLineOpen` answers the run a line opens and `fenceLineClose` closes only against
+ * it; `fencedSpans` and every line-at-a-time walk (weave's transposer, its slot extractor) read the
+ * same pair, so no reader can mask a fence while another reads through it.
  *
  * Isomorphic; no TW5/fs/DOM dependencies — same law in every caller.
  */
 
 export interface MaskSpan { readonly start: number; readonly end: number }
 
-const FENCE_OPEN_RE = /^ {0,3}(`{3,}|~{3,})/;
+const FENCE_OPEN_RE = /^ {0,3}(`{3,})/;
 const FENCE_RUN_RE: Readonly<Record<FenceChar, RegExp>> = { "`": /^ {0,3}(`{3,})/, "~": /^ {0,3}(~{3,})/ };
 
 /** A fence character this module recognises — the two CommonMark §4.5 admits. */

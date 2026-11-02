@@ -169,6 +169,6 @@ Every shared resource in the py fleet owes the same test: `content_io` · `struc
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;hdVk5gtp_IyOOu_6lAfQgYGQB9F63Q_oIu_W-YqJguE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hdVk5gtp_IyOOu_6lAfQgYGQB9F63Q_oIu_W-YqJguE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

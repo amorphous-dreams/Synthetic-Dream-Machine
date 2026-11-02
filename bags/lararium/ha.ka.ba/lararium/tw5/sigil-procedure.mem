@@ -73,6 +73,6 @@ the body runs through the pragma handler (TW5 parse-time, not render-time).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;MjWqHfdPiyoejJnrSCZYscF17A0k7R28rtabnf258LQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MjWqHfdPiyoejJnrSCZYscF17A0k7R28rtabnf258LQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

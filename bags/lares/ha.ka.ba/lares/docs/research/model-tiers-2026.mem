@@ -91,6 +91,6 @@ A walled Codex seat writes and stops; the lead commits at each red and fix bound
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/model-roster-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;mcYmVpvaUWSFpJOpuoPgf8oVUpkIM0kbhqSI_CaKer4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mcYmVpvaUWSFpJOpuoPgf8oVUpkIM0kbhqSI_CaKer4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

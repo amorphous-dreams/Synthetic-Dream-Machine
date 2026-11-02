@@ -90,6 +90,6 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;i_jttFlG6YMXoK3uTs8N374JGu2erX5XIrTjBZARDDc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;i_jttFlG6YMXoK3uTs8N374JGu2erX5XIrTjBZARDDc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

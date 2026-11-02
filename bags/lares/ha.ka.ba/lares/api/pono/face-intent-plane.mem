@@ -152,6 +152,6 @@ Row `I1` at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> c
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_d26l-Er4TnKqLA0ieRez4fii0XG7U5rU8s2xprflhE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_d26l-Er4TnKqLA0ieRez4fii0XG7U5rU8s2xprflhE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

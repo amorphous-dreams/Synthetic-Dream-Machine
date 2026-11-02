@@ -95,6 +95,6 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;1IgiCbQGSIck1GRGSFhNFjWSxqbs0ksNWXWKND_WVKs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1IgiCbQGSIck1GRGSFhNFjWSxqbs0ksNWXWKND_WVKs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

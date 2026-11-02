@@ -12,7 +12,8 @@ import { frameCarrier, bccOf, verdict, META_OPEN_CANON } from "../src/index.js";
 const URI = "lar:///t/verdict";
 const carrier = frameCarrier({ head: { uri: URI }, body: `${META_OPEN_CANON}\ntitle = "${URI}"\n\`\`\`\n\nProse.` });
 const STX = '<<^ code=`&#x0002;`>>';
-const ETX = '<<^ code=`&#x0003;`>>';
+/** The sealed close the writer mints: ETX carrying the check in its `bcc` slot. */
+const ETX = /<<\^ code=`&#x0003;`[^\n]*/.exec(carrier)![0];
 const CHECK = /ni:\/\/\/sha-256;[A-Za-z0-9_-]+/;
 const STALE = "ni:///sha-256;0000000000000000000000000000000000000000000";
 
@@ -31,7 +32,7 @@ describe("★ verdict(text) ★", () => {
   });
 
   test("a framed carrier holding no check reads absent", () => {
-    expect(verdict(carrier.replace(CHECK, ""))).toEqual({ kind: "absent" });
+    expect(verdict(carrier.replace(/ bcc=`[^`]*`/, ""))).toEqual({ kind: "absent" });
   });
 
   test("a head-only carrier (no text frame) reads absent — it carries a frame, never a check", () => {

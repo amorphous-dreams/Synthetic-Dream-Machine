@@ -68,6 +68,6 @@ is tried at most once per pull; nothing throws. The last refusal names itself wh
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/place-floor-pin`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Bb3WCSwruTg7ma9C2PoWKOja1HFHMvMnX8T2DQ9ONjs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bb3WCSwruTg7ma9C2PoWKOja1HFHMvMnX8T2DQ9ONjs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

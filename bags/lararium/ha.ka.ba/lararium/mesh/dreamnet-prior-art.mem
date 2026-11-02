@@ -669,6 +669,6 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;bX9TlP7Px1HNBngX0_qMDwxdo_hejGWa5ZVdRJe0W8E
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bX9TlP7Px1HNBngX0_qMDwxdo_hejGWa5ZVdRJe0W8E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -101,6 +101,6 @@ wikilist-item: #ebdbb2
 wikilist-toolbar-background: #f2e5bc
 wikilist-toolbar-foreground: #3c3836
 
-<<^ code=`&#x0003;`>>ni:///sha-256;DVp681AJCdf6r-YiVmzWini2uoA4DcK4rLRKGuufr4Y
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DVp681AJCdf6r-YiVmzWini2uoA4DcK4rLRKGuufr4Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

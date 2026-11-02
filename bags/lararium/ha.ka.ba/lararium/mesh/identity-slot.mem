@@ -92,6 +92,6 @@ island's store), and on the browser shore admitting a relay peer at all.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-vessel`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/keyhive-provider`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;QsYtoNJtTiP4BQsfOobvcTqSfqbgVNpXNIVKWyjq6FA
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QsYtoNJtTiP4BQsfOobvcTqSfqbgVNpXNIVKWyjq6FA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

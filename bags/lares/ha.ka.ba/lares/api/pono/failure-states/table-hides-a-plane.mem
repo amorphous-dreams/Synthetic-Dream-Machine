@@ -72,6 +72,6 @@ If the entities share a plane but differ in degree, that reads as an ordinary ta
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;50YNkvnmQaxJ_gXapq8tD8xCFO8SB1FMTBlToglP5oE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;50YNkvnmQaxJ_gXapq8tD8xCFO8SB1FMTBlToglP5oE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

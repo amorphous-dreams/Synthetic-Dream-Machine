@@ -29,6 +29,6 @@ rendering a body template once per result. Use whichever reads more naturally in
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;qmP97J_NGF5msaS_gYun5HQTW6BdE9nxcofSgLAjvYs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qmP97J_NGF5msaS_gYun5HQTW6BdE9nxcofSgLAjvYs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -118,6 +118,6 @@ Leave one corner honestly open and seen. A set that sweeps every corner clean ha
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ptM9K7BLdDqHDvWNyOIwGAolO5vF4YxL2gDURvKWYL0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ptM9K7BLdDqHDvWNyOIwGAolO5vF4YxL2gDURvKWYL0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

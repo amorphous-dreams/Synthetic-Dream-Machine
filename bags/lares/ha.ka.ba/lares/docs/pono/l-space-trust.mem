@@ -150,6 +150,6 @@ Speaker role and truth tier must stay separate.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;g_oHbAS4Chx0tcF8nBlgaHvRcNC9YzdXMz0qphYR2uU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;g_oHbAS4Chx0tcF8nBlgaHvRcNC9YzdXMz0qphYR2uU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

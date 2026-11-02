@@ -118,7 +118,7 @@ By the end a mark could ''name'' a thing, ''hold'' it, and ''reach'' it across t
 > `@aki@shattered-isles: so the grammar finished itself, argued with itself, performed its own birth, and then just… waited. for a tenant.`
 > `@grandmother-spider@voidlanes: A web hangs empty until the first thing walks it. After that it never was empty — only waiting.`
 
-<<~/ahu>>:1ab16197a96ce176
+<<~/ahu>>
 
 <<~ ahu slot=`#/provenance`>>
 
@@ -171,6 +171,6 @@ MUST NOT:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;GUnXq7NYOiqTTGXjIrYn0FuNwQnGIxSCcM3QUfbt_tE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5wWNteiycG4dSNpTCl41i7jPsoH1gtZapHX_MLz3HO8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

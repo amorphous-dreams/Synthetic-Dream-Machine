@@ -16,8 +16,8 @@ const CHECK = /ni:\/\/\/sha-256;[A-Za-z0-9_-]+/;
 const FIVE: Record<string, string> = {
   match:  carrier,
   stale:  carrier.replace(CHECK, "ni:///sha-256;0000000000000000000000000000000000000000000"),
-  absent: carrier.replace(CHECK, ""),
-  torn:   carrier.replace('<<^ code=`&#x0003;`>>', ""),
+  absent: carrier.replace(/ bcc=`[^`]*`/, ""),
+  torn:   carrier.replace(/<<\^ code=`&#x0003;`[^\n]*/, ""),
   bare:   "plain prose with no frame at all\n",
 };
 
@@ -34,7 +34,7 @@ describe("★ frameShape · verdictOf — one reader, two depths ★", () => {
     expect(shape.kind).toBe("framed");
     if (shape.kind !== "framed") return;
     expect(carrier.slice(shape.span.start, shape.span.start + 3)).toBe("<<^");
-    expect(carrier.slice(0, shape.span.end).endsWith('<<^ code=`&#x0003;`>>')).toBe(true);
+    expect(carrier.slice(0, shape.span.end)).toMatch(/<<\^ code=`&#x0003;` bcc=`ni:\/\/\/sha-256;[A-Za-z0-9_-]+`>>$/);
   });
 
   test("the shape never reads the check: a match and a stale share one shape", () => {

@@ -42,6 +42,6 @@ Pure core: `qualifyStackTag` / `stackOf` (`packages/lararium-tw5/src/has-stack.t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;rKWcQP39gTryYQbVHfz2jf27w9Xho3m5jOg848Mlsss
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rKWcQP39gTryYQbVHfz2jf27w9Xho3m5jOg848Mlsss`>>
 
 <<^ code=`&#x0004;` to=`?`>>

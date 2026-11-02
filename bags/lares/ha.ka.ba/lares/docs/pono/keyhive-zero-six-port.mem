@@ -195,6 +195,6 @@ The port reopens on any of three keys:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;MhVZI0WW53577NsS9-OdqkQGxBvhNs5QAoFonyI6VOk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MhVZI0WW53577NsS9-OdqkQGxBvhNs5QAoFonyI6VOk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

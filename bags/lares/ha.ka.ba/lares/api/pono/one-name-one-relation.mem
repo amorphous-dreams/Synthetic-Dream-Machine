@@ -151,6 +151,6 @@ Three moves, smallest first, each standing on its own.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/open-vessel`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-uris`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iXoq1bdsMA1qju66AfADTjyidT-Z8itYUb3bIwomyCM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iXoq1bdsMA1qju66AfADTjyidT-Z8itYUb3bIwomyCM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

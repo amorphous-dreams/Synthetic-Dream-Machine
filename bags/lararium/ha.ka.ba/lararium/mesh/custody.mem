@@ -353,6 +353,6 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;2rDyHOqTIhnsy_RQwI4gErA3woF-x-tSLiyVqtIYmeM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2rDyHOqTIhnsy_RQwI4gErA3woF-x-tSLiyVqtIYmeM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

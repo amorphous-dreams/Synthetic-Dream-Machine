@@ -55,6 +55,6 @@ The register split rides as a ''hypothesis the harness itself tests'': liturgica
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;hTrxAL5Fs694YouvePtZeb9198E857-mqI7LRh3P1p8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hTrxAL5Fs694YouvePtZeb9198E857-mqI7LRh3P1p8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

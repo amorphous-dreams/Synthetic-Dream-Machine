@@ -368,6 +368,6 @@ meant to escape):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_GEtb6ldhjlMmk14U8cZRLppQrcwzY2ZJzHdfWTIXF0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_GEtb6ldhjlMmk14U8cZRLppQrcwzY2ZJzHdfWTIXF0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

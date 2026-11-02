@@ -51,6 +51,6 @@ The module header inside the source carries the registration triple TW5 reads at
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tAi4vjMb-P90iHcdqP-rVMIwduJx7WXOZ55O9PU5a14
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tAi4vjMb-P90iHcdqP-rVMIwduJx7WXOZ55O9PU5a14`>>
 
 <<^ code=`&#x0004;` to=`?`>>

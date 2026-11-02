@@ -187,6 +187,6 @@ Two strong measured cases, both about **the unguessable handle turning out to be
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;58jI-yj1gUFA6fR-utHO0UKO2YTEgY69fddZGVOuhv0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;58jI-yj1gUFA6fR-utHO0UKO2YTEgY69fddZGVOuhv0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

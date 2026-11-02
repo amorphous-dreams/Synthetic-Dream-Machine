@@ -28,6 +28,6 @@ uri-path    = "ha.ka.ba/lararium/tw5/fake-dom"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;L5V6wYndiFT1d80w5CS_kiDJCYOEyCY0rzAgFx_yw28
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;L5V6wYndiFT1d80w5CS_kiDJCYOEyCY0rzAgFx_yw28`>>
 
 <<^ code=`&#x0004;` to=`?`>>

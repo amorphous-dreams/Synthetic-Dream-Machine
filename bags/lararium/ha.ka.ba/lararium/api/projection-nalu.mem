@@ -184,6 +184,6 @@ The DOM nalu (`tw5-projection.ts`) draws `CoalesceGate`; the Automerge-boundary 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;NKeKilzN1TVi97NbcAu15Ov6yyGmDxiYHQbXTBCAq1c
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NKeKilzN1TVi97NbcAu15Ov6yyGmDxiYHQbXTBCAq1c`>>
 
 <<^ code=`&#x0004;` to=`?`>>
