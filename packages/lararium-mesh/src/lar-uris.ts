@@ -346,6 +346,12 @@ export function parseMeshScale(s: string | null | undefined): MeshScale | undefi
  *  SOVEREIGN-per-vessel: this vessel's own control-plane, never shared across vessels. */
 export const DAEMON_BAG_ID    = bagUri("daemon");
 
+/** A title the daemon's control plane owns (`bags/daemon/**`: verb outcomes, effects, flows, cap events). It lands in the
+ *  daemon doc alone and never projects: the daemon stays CRDT only (operator, 2026-11-01). */
+export function isControlPlaneUri(title: string): boolean {
+  return title.startsWith(`${DAEMON_BAG_ID}/`);
+}
+
 /** e.g. flowUri("crystal") → "lar:///ha.ka.ba/lararium/daemon/flows/crystal" — a Flow's
  *  pet-name IS its address: a callable, composed cap-stack tiddler in the daemon bag. */
 export function flowUri(petname: string): string {

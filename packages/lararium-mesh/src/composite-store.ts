@@ -35,6 +35,7 @@ function sameFields(a: Record<string, unknown>, b: Record<string, unknown>): boo
   if (keys.length !== Object.keys(b).length) return false;
   return keys.every((k) => Object.prototype.hasOwnProperty.call(b, k) && String(a[k]) === String(b[k]));
 }
+import { DAEMON_BAG_ID, isControlPlaneUri } from "./lar-uris.js";
 import { VerbRefusal } from "./verb-refusal.js";
 import type { WikiRecipe, BagPinState } from "./wiki-recipe.js";
 
@@ -243,7 +244,7 @@ export class CompositeStore implements LarTiddlerStore {
 
   async put(record: LarTiddlerRecord, origin: ChangeOrigin, options?: LarWriteOptions): Promise<void> {
     this._requireBagForBase(options, "put");
-    const store = this._writeTargetFor(options?.bag, "put");
+    const store = this._writeTargetFor(options?.bag, "put", [record.tiddler.title]);
     const retired = this._refuseRetired(store, [record], "put");
     if (retired) await retired;
     return store.put(record, origin, this._writeOptionsFor(options, store, "put"));
@@ -291,7 +292,7 @@ export class CompositeStore implements LarTiddlerStore {
   /** The checks `writeFamily` and `precheckFamily` share, synchronous so a layer's write begins inside the call. */
   private _familyChecks(puts: readonly LarTiddlerRecord[], tombstones: readonly string[], options?: LarWriteOptions): { store: LarTiddlerStore; retired: Promise<void> | void } {
     this._requireBagForBase(options, "writeFamily");
-    const store = this._writeTargetFor(options?.bag, "writeFamily");
+    const store = this._writeTargetFor(options?.bag, "writeFamily", [...puts.map((r) => r.tiddler.title), ...tombstones]);
     for (const record of puts) assertStorableTitle(record.tiddler.title);
     for (const title of tombstones) assertStorableTitle(title);
     return { store, retired: this._refuseRetired(store, puts, "writeFamily", tombstones) };
@@ -310,8 +311,11 @@ export class CompositeStore implements LarTiddlerStore {
    *     confused-deputy / silent-misroute bug. Fail loud; the caller must reach the bag by access
    *     (registry) first (overlayfs EROFS / git pathspec-did-not-match).
    * Without a target, the default writable.
+   * A CONTROL-PLANE title (`bags/daemon/**`) never takes the default writable, by either road (bagless or copy-up): it lands
+   * in the daemon's writable layer, or refuses `control-plane-title` where none stands. The default writable projects as flat
+   * files; the daemon stays CRDT only.
    */
-  private _writeTargetFor(bag: string | undefined, verb: string): LarTiddlerStore {
+  private _writeTargetFor(bag: string | undefined, verb: string, titles: readonly string[] = []): LarTiddlerStore {
     if (bag) {
       const writableLayer = this.layers.find((l) => l.bagId === bag && l.writable);
       if (writableLayer) return writableLayer.store;
@@ -322,6 +326,11 @@ export class CompositeStore implements LarTiddlerStore {
           `Refusing to fall through to the default writable (no silent misroute).`,
         );
       }
+    }
+    if (titles.some(isControlPlaneUri)) {
+      const control = this.layers.find((l) => l.bagId === DAEMON_BAG_ID && l.writable);
+      if (control) return control.store;
+      throw new VerbRefusal("control-plane-title", `control-plane-title: CompositeStore.${verb}: a control-plane title (${titles.find(isControlPlaneUri)}) lands in the daemon doc alone, and no writable daemon layer stands here`);
     }
     if (!this.writableStore) throw new NoWorkingLayerRefusal(`The bagless ${verb}`);
     return this.writableStore;

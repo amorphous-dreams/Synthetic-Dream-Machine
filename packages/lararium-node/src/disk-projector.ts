@@ -71,7 +71,7 @@ import { confineMirrorWrite, carrierBaseRelPath, titleRelPath } from "./bag-path
 import { contentHash, syncedTreeKey, SyncedTree } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
-import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, isRealmBagAnnounceUri, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual } from "@lararium/mesh";
+import { isEffectRecordUri, isControlPlaneUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, isRealmBagAnnounceUri, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap, VesselJournal } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
@@ -1375,6 +1375,9 @@ export class LarDiskProjector {
     // carrier surface. (The general type-filter — project only
     // text/memetic-wikitext+tiddlywiki — arrives with the migration wave.)
     if (isEffectRecordUri(tiddlerUri)) return;
+    // The daemon stays the control plane, CRDT only: a `bags/daemon/**` title writes no file from any mirror, whichever layer
+    // holds it (a verb outcome, a flow, a cap event).
+    if (isControlPlaneUri(tiddlerUri)) return;
     // A realm-bag announce pointer comes from the house, minted into the live crossroads document on each
     // registration. The crossroads mirror roots in the canon tree, so writing it would leave a house-minted
     // record beside the curated library; the pointer rests in the document alone.
