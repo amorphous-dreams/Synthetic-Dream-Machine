@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { KAHUA_BAG, personaBagIdFor, personaSiblingBagIds, PERSONA_GROUP_ID_TIDDLER, type LarDoc } from "@lararium/mesh";
+import { KAHUA_BAG, personaBagIdFor, personaSiblingBagIds, PERSONA_GROUP_ID_TIDDLER, tiddlerText, type LarDoc } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/index.js";
 import { ownedStore } from "../src/owned-store.js";
 import { storeDoorDirect, storeDoorReactors } from "../src/store-door-verbs.js";
@@ -70,7 +70,7 @@ describe("lares kahua over a founded face", () => {
     expect(await row("kahua-mint", {})).toMatchObject({ url: first.url, minted: false });
     const registered = await ownedStore(storage, async (repo) => {
       const catalog = (await repo.find<LarDoc>(readFileSync(join(storage, "catalog-url"), "utf8").trim() as never)).doc()!;
-      return (catalog.tiddlers[KAHUA_BAG] as { tiddler?: { text?: string } } | undefined)?.tiddler?.text ?? null;
+      return tiddlerText(catalog.tiddlers[KAHUA_BAG]);
     });
     expect(registered).toBe(first.url);
   }, 240_000);
