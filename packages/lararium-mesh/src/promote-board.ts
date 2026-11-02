@@ -11,6 +11,7 @@ import { deterministicDocUrl } from "./deterministic-doc.js";
 import { storedLarRecord } from "./stored-record.js";
 import { foldCausalHeads, type EdgeKapaeVerdict } from "./edge-kapae.js";
 import { promoteEdgeKey } from "./promote.js";
+import { KapaeRefused } from "./promote-kapae.js";
 export { promoteEdgeKey } from "./promote.js";
 export const PROMOTE_ACT_PREFIX = "lar:///ha.ka.ba/dreamnet/promote-act/";
 const PROMOTE_BOARD_URI = "lar:///ha.ka.ba/bags/promote-board";
@@ -58,4 +59,12 @@ export function readPromoteBoard(records: readonly unknown[], face: PromoteFace)
  const verdict = (wiki: string, digest: string): EdgeKapaeVerdict | undefined => { const line = lines.get(promoteEdgeKey(wiki, digest)); return line ? foldCausalHeads(line) : undefined; };
  const edges = () => new Set([...lines].filter(([, line]) => foldCausalHeads(line) !== "withdrawn").map(([key]) => key).sort());
  return { kapae: verdict, kapaeHeads: (wiki: string, digest: string) => { const line = lines.get(promoteEdgeKey(wiki, digest)) ?? [], cited = new Set(line.flatMap(a => a.parents)); return line.map(a => a.actCid).filter(cid => !cited.has(cid)).sort(); }, shadowed: (wiki: string) => new Set([...edges()].filter(e => e.startsWith(`${wiki}\n`)).map(e => e.slice(wiki.length + 1))), edges, prepared: (wiki: string) => [...prepares.values()].filter(p => p.wiki === wiki), refused };
+}
+
+export type PromoteBoardReading = ReturnType<typeof readPromoteBoard>;
+export const PROMOTE_PLANE = "promote";
+export function promoteBoardMint(projection: { readonly planes: Readonly<Record<string, string | undefined>> }, group: string): string {
+ const url = promoteBoardDocUrl(group);
+ if (projection.planes[PROMOTE_PLANE] !== url) throw new KapaeRefused("promote-mint-outside-founding", "the face's founding act pins the board");
+ return url;
 }

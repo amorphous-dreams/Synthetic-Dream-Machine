@@ -517,3 +517,6 @@ export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";
 // The verb socket's front, named here for a suite that stands a custody door as the vessel's main thread does.
 export { serveUdsFront, makeUdsSeat, type UdsFront, type UdsSessionDoor, type UdsSessionSupply, type SessionAnchor } from "./uds-channel.js";
 export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-frames.js";
+export { promotions, type PromoteItem, type PromotionPorts } from "./promotions.js";
+export { promoteBoardDoor, type PromoteBoardDoorPorts } from "./promote-board-door.js";
+export { nodePromoteStores, nodePromoteCas, promotedFile, kapaeFile, PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
