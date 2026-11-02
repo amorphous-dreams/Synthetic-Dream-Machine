@@ -105,6 +105,20 @@ describe("★ the retired trailer refuses by name ★", () => {
     expect(f?.message).toMatch(/grammar-cut/);
   });
 
+  test("a check one space after the >> tears as retired-trailer too — never a second check beside a minted slot", () => {
+    const t = bareCarrier(); const spaced = t.replace(ETX, `${ETX} ${bareDigest(t)}`);
+    const v = verdict(spaced);
+    expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toContain("retired-trailer");
+    expect(stampCarrier(spaced)).toBe(spaced);
+  });
+
+  test("a sigil smuggled inside the bcc value tears; the reader anchors on the span reader's ETX", () => {
+    const t = bareCarrier(); const value = bareDigest(t);
+    const smuggled = t.replace(ETX, `<<^ code=\`&#x0003;\` bcc=\`x<<^ code=\`&#x0003;\` bcc=\`${value}\`>>`);
+    expect(verdict(smuggled).kind).toBe("torn");
+    expect(verifyBcc(smuggled)).toBe("torn");
+  });
+
   test("nothing stands between ETX and EOT: a bare check there reads foreign", () => {
     expect(classifyPostamble(`\n${bareDigest(bareCarrier())}\n`).kind).toBe("foreign");
     expect(TRAILER_RE.test(trailer())).toBe(true);
