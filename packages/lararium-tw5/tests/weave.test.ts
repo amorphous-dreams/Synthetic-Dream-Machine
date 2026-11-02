@@ -77,6 +77,16 @@ describe("the submission projection", () => {
     expect(p.meta).toContain("source-check: ni:///sha-256;AAAA_probe_check");
   });
 
+  test("the sidecar rests in TW5's own field-block form, so the disk projection re-renders it byte for byte", () => {
+    // The projector writes a `.meta` through TW5's field block: fields in sorted order, one line each,
+    // no trailing newline. A sidecar the weave writes in any other layout re-projects as churn.
+    for (const q of [p, projectSubmission(CARRIER, { profile: PROFILES.GFM, tongue: "en" })]) {
+      const keys = q.meta.split("\n").map((l) => l.slice(0, l.indexOf(":")));
+      expect(q.meta.endsWith("\n")).toBe(false);
+      expect(keys).toEqual([...keys].sort());
+    }
+  });
+
   test("headings, lists, emphasis transpose total", () => {
     expect(p.markdown).toContain("# Probe — a worked example");
     expect(p.markdown).toContain("## The **bold** law and the *italic* one");

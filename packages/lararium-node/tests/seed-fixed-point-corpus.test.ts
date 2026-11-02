@@ -350,6 +350,32 @@ describe.skipIf(coreBlobSkip)(
     console.info(`[seed-fixed-point] ${differing} carrier(s) stand in a framing their render would normalize: ${JSON.stringify(Object.fromEntries(byClass))}`);
   });
 
+  test("every native carrier and its .meta render byte for byte: a non-memetic file stands in no framing class", () => {
+    // A framing class licenses a memetic carrier to rest in a layout its render would normalize. A native
+    // carrier (a table, a stylesheet, a markdown or text file) and its sidecar carry no fence, check or margin
+    // to normalize, so its render equals its bytes, the sidecar's field order included: a seed over a
+    // fresh state, which pins no base first, writes the render and so rewrites any carrier that differs.
+    const moved: string[] = [];
+    let native = 0;
+    for (const bag of HOUSE_BAGS) {
+      for (const f of tracked.get(bag)!) {
+        if (f.endsWith(".meta") || f.endsWith(".mem")) continue;
+        const rel = f.slice(`bags/${bag}/`.length);
+        if (rel === BAG_MANIFEST_FILE) continue;
+        const file = exportCarrierFile(engine, `lar:///${rel.replace(/\.[^/.]+$/, "")}`);
+        if (file === null || file.encoding === "base64" || file.pointerCid !== undefined) continue;
+        native++;
+        const metaAt = path.join(REPO, `${f}.meta`);
+        const diskMeta = existsSync(metaAt) ? readFileSync(metaAt, "utf8") : undefined;
+        if (!f.endsWith(file.ext)) moved.push(`${f}: leaves as ${file.ext}`);
+        if (file.body !== readFileSync(path.join(REPO, f), "utf8")) moved.push(`${f}: body`);
+        if (file.metaBody !== diskMeta) moved.push(`${f}.meta: ${JSON.stringify(diskMeta)} renders ${JSON.stringify(file.metaBody)}`);
+      }
+    }
+    expect(native, "the corpus presents native carriers").toBeGreaterThan(5);
+    expect(moved).toEqual([]);
+  });
+
   test("CONTROL: the classifier refuses a moved body, a lost sidecar field and a changed meta value", () => {
     const body = "<<^ code=`&#x0002;`>>\n\n```toml meta\na = 1\n```\n\nprose\n\n<<^ code=`&#x0003;` bcc=`ni:///sha-256;AAAA`>>\n";
     expect(framingClassesOf({ body }, { body })).toEqual([]);
