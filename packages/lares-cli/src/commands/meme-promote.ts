@@ -183,7 +183,7 @@ export async function promoteCarrier(plan: PromotionPlan, seat: PromotionSeat): 
     return { ok: false, reason: `${plan.file} frames no sealed text (STX..ETX) — a canon crossing takes only a head its seal names` };
   }
   if (shape.unbound.length > 0) {
-    return { ok: false, reason: `${plan.file} reads head-unbound — the head names ${shape.unbound.map((e) => `\`${e}=\``).join(" and ")} where the sealed root meta names none; a canon crossing takes only a head its seal names` };
+    return { ok: false, reason: `${plan.file} reads head-unbound — the head names ${shape.unbound.map((e) => "`" + e + "=`").join(" and ")} where the sealed root meta names none; a canon crossing takes only a head its seal names` };
   }
   const head = matchCarrierHead(src);
   if (!head || !head.uri.startsWith("lar:///")) return { ok: false, reason: `${plan.file} names no address in its head — a carrier with no address crosses nothing` };

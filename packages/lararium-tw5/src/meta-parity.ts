@@ -18,6 +18,7 @@ import { parse as smolParse } from "smol-toml";
 import { rootMetaFence, sealedBindingKeys, verdict, type FrameFault, type FrameVerdict } from "@lararium/memetic-frame";
 
 const KEYS = ["title", "uri-path", "namespace"] as const;
+const TICK = "`";
 
 /** Each binding key the frame and smol-toml read differently, named; empty where they agree. */
 export function metaParityFaults(text: string): FrameFault[] {
@@ -35,7 +36,8 @@ export function metaParityFaults(text: string): FrameFault[] {
     const read = Object.hasOwn(parsed, key) ? parsed[key] : undefined;
     const smol = typeof read === "string" ? read : read === undefined ? undefined : String(read);
     if (smol !== frameKeys[key]) {
-      faults.push({ kind: "head-meta-split", message: `the frame reads \`${key}\` as ${frameKeys[key] === undefined ? "absent" : `\`${frameKeys[key]}\``} where TOML reads ${smol === undefined ? "absent" : `\`${smol}\``} — two readings of one sealed meta` });
+      const shown = (v: string | undefined): string => (v === undefined ? "absent" : TICK + v + TICK);
+      faults.push({ kind: "head-meta-split", message: "the frame reads " + TICK + key + TICK + " as " + shown(frameKeys[key]) + " where TOML reads " + shown(smol) + " — two readings of one sealed meta" });
     }
   }
   return faults;
