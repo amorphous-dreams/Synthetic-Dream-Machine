@@ -5,8 +5,11 @@
  *   S1 — the node half: a CLI `meme put --recipe default` lands in the daemon wiki's working layer, its carrier projects
  *        under `<root>/wikis/kahua/` (the kahua tree the operator works in), and `meme get --recipe default` reads the same bytes; the repo's tree takes no write.
  *        It doubles as the KNOWN POSITIVE for S3's disk instrument: a write under the root reads as a write.
- *   S2 — a fresh browser joins the hearth's face (offer → request → answer → land) and crosses connected.
- *   S3 — the save route: a NEW tiddler saved in the joined page's active wiki paints in the page, and nothing reaches the
+ *   S2 — a fresh browser joins the hearth's face (offer → request → answer → land), crosses connected, and SUMMONS its own
+ *        daemon surface: the one wiki whose recipe stacks this device's working top over the face's kahua stage over canon
+ *        (`kahuaRecipe`, daemon-vm-core). The pinned `lares` wiki carries neither `bags/daemon` (where a verb's outcome
+ *        lands) nor `bags/kahua` (the twin a shadow needs), so every later step authors into the daemon surface.
+ *   S3 — the save route: a NEW tiddler saved in the joined page's daemon surface paints in the page, and nothing reaches the
  *        hearth: no file under `<root>/bags` or `<root>/wikis` moves, and the hearth's canon `bags/lares` holds no such
  *        title. LOAD never lands in canon; a page save that reached the hearth's canon would read red here.
  *
@@ -130,10 +133,10 @@ const PROPOSE_BODY = [
   `<$list filter="[[${DRAFT.title}]kahua-shadow[]]" variable="hit"><span class="walk-shadow"><<hit>></span></$list>`,
 ].join("\n\n");
 
-/** Every proposal id the pane's outcome dump shows, in document order. */
+/** Every DISTINCT proposal id the pane's outcome dumps show, in document order: the pane may paint one outcome twice. */
 const proposalIds = async (page: Page): Promise<string[]> => {
   const dumps = await page.evaluate(() => [...(document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.querySelectorAll("div.walk-outcome") ?? [])].map((d) => d.textContent ?? ""));
-  return dumps.flatMap((d) => [...d.matchAll(/"id":"([0-9a-f]{64})"/g)].map((m) => m[1]!));
+  return [...new Set(dumps.flatMap((d) => [...d.matchAll(/"id":"([0-9a-f]{64})"/g)].map((m) => m[1]!)))];
 };
 /** Whether a RENDERED element matches `sel` in the pane: the edit textarea serialises its source, so a substring read lies. */
 const paneHas = (page: Page, sel: string) => page.evaluate((s) => !!document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.querySelector(s), sel);
@@ -307,6 +310,10 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     const standing = await page.waitForFunction(() => document.querySelector('[data-live-status="connection"]')?.getAttribute("data-standing") === "connected",
       undefined, { timeout: WAIT }).then(() => "connected").catch(() => "not connected");
     expect(standing, tail()).toBe("connected");
+    // THE DAEMON SURFACE: the app shell's universal summon flips #projection to this device's daemon wiki (both surfaces
+    // stand mounted; a pure gate flip). The daemon's working-surface wrapper paints above its story as the proof.
+    await page.locator("#summon-daemon").click();
+    expect(await waitPane(page, "data-lares-surface="), `the daemon surface never painted after the summon\n${tail()}`).toBe(true);
     joined = page;
   });
 

@@ -72,6 +72,8 @@ export interface RigOptions {
   readonly upperSlots?: boolean;
   /** Leave the working layer unmounted, though the recipe pointers still name it. */
   readonly noWorking?: boolean;
+  /** Leave the draft layer unmounted, as the daemon wiki stands (one writable top), though the draft pointer still names it. */
+  readonly noDraft?: boolean;
   /** Saved docs to import, so a second shore stands over the same history as a first. */
   readonly docs?: { canon?: Uint8Array; working?: Uint8Array; draft?: Uint8Array; personal?: Uint8Array };
 }
@@ -108,7 +110,7 @@ export async function shoreRig(opts: RigOptions = {}) {
   composite.addLayer({ bagId: opts.canonId ?? canonBag, store: canon, writable: opts.canonWritable === true, defaultWritable: false });
   if (opts.noWorking !== true) composite.addLayer({ bagId: workingBag, store: working, writable: true });
   if (opts.upperSlots === true) composite.addLayer({ bagId: personalBag, store: personal, writable: true, defaultWritable: false });
-  composite.addLayer({ bagId: draftBag, store: draft, writable: true, defaultWritable: false });
+  if (opts.noDraft !== true) composite.addLayer({ bagId: draftBag, store: draft, writable: true, defaultWritable: false });
   if (opts.upperSlots === true) composite.addLayer({ bagId: tempBag, store: temp, writable: true, defaultWritable: false });
 
   const calls: StoreCall[] = [];
