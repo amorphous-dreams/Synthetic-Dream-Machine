@@ -48,7 +48,7 @@ describe("projectionRoots — the mirror root splits by origin", () => {
     expect(roots.bagRoot("daemon")).toBe(join(state, "bags", "daemon"));
     expect(roots.wikisRootFor("kahua")).toBe(join(state, "wikis"));
     expect(roots.sourcedSlugs()).toEqual([]);
-    expect(daemonWorkingMirror(state).mirrorRoot).toBe(join(state, "wikis", "daemon"));
+    expect(daemonWorkingMirror(state).mirrorRoot).toBe(join(state, "wikis", "kahua"));
   });
   test("an absent canon source sources nothing: every root stays under state", () => {
     dir = mkdtempSync(join(tmpdir(), "proj-split-"));

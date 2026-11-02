@@ -3,7 +3,7 @@
  * `LAR_ROOT`, founded and unlocked through the test door) and a real Chromium joined to its face through the fleet-join door.
  *
  *   S1 — the node half: a CLI `meme put --recipe default` lands in the daemon wiki's working layer, its carrier projects
- *        under `<root>/wikis/daemon/`, and `meme get --recipe default` reads the same bytes; the repo's tree takes no write.
+ *        under `<root>/wikis/kahua/` (the kahua tree the operator works in), and `meme get --recipe default` reads the same bytes; the repo's tree takes no write.
  *        It doubles as the KNOWN POSITIVE for S3's disk instrument: a write under the root reads as a write.
  *   S2 — a fresh browser joins the hearth's face (offer → request → answer → land) and crosses connected.
  *   S3 — the save route: a NEW tiddler saved in the joined page's active wiki paints in the page, and nothing reaches the
@@ -104,14 +104,14 @@ afterAll(async () => {
 });
 
 describe("the stage walk: the node half, the join, and the page's save route", () => {
-  test("S1 — a CLI put to recipe default projects under <root>/wikis/daemon and reads back the same bytes", async () => {
+  test("S1 — a CLI put to recipe default projects under <root>/wikis/kahua and reads back the same bytes", async () => {
     const uri = "lar:///t.stage.walk/cli-put";
     const file = join(scratch, "cli.txt");
     writeFileSync(file, "hello from the CLI\n");
     const repoBefore = filesUnder(join(REPO, "wikis")).length;
     const put = await hearth!.cli(["meme", "put", uri, "--recipe", "default", "--file", file, "--json"]);
     expect(put.code, `${put.stdout.slice(-400)}\n${put.stderr.slice(-400)}`).toBe(0);
-    const carrier = join(hearth!.root, "wikis/daemon/t.stage.walk/cli-put.txt");
+    const carrier = join(hearth!.root, "wikis/kahua/t.stage.walk/cli-put.txt");
     const deadline = performance.now() + 30_000;
     while (!existsSync(carrier) && performance.now() < deadline) await new Promise((r) => setTimeout(r, 250));
     expect(existsSync(carrier), filesUnder(join(hearth!.root, "wikis")).join("\n")).toBe(true);
