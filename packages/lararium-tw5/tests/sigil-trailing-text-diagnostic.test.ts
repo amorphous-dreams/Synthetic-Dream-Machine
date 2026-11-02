@@ -10,20 +10,21 @@
  * opener raise nothing, so a diagnostic that fired on every sigil could not pass.
  */
 import { describe, expect, test, beforeAll } from "vitest";
-import { parseMemeText } from "../src/meme-ast/parse.js";
-import { failuresToDiagnostics } from "../src/meme-ast/diagnostics.js";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 
 const CODE = "sigil-trailing-text";
-const URI  = "lar:///t.t.t/sigil-trailing";
+const MEMETIC = "text/memetic-wikitext+tiddlywiki";
 
-const diagnose = (text: string) => {
-  const { failures } = parseMemeText(URI, text);
-  return failuresToDiagnostics(failures, text.length).filter((d) => d.code === CODE);
-};
+// The floor rides its PUBLIC surface: the memetic parser's own `diagnostics` contract, read off the
+// booted wiki's parse (the door core's `[parse-diagnostics[]]` reads), never the compile layer's source.
+type Diagnostic = { from: number; to: number; severity: string; code?: string };
+let engine: TW5Engine;
+beforeAll(async () => { if (!wikiSkip) engine = await bootTestWiki(); }, 60_000);
+const diagnose = (text: string): Diagnostic[] =>
+  (((engine.wiki as any).parseText(MEMETIC, text).diagnostics ?? []) as Diagnostic[]).filter((d) => d.code === CODE);
 
-describe("★ a BLOCK-ONLY head with text after its >> carries one warning ★", () => {
+describe.skipIf(wikiSkip)(`★ a BLOCK-ONLY head with text after its >> carries one warning ★${skipNote}`, () => {
   // The block-only set comes from the sigil tiddlers (`lar-flow: block`), never a list in the reader:
   // the frame marks (SOH · STX · ETX · EOT) and the child-slot opener and closer (ahu, with its fragment mirror).
   test("★ RED: an ahu opener with prose after its >> warns, keyed to the opener's span ★", () => {
@@ -48,7 +49,7 @@ describe("★ a BLOCK-ONLY head with text after its >> carries one warning ★",
   });
 });
 
-describe("★ an INLINE head with text after its >> reads inline in its paragraph, and draws no warning ★", () => {
+describe.skipIf(wikiSkip)(`★ an INLINE head with text after its >> reads inline in its paragraph, and draws no warning ★${skipNote}`, () => {
   test("★ RED: a loulou line with prose reads inline, no warning ★", () => {
     expect(diagnose("<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/aka`>> — the frozen inline.\n")).toEqual([]);
   });
@@ -60,7 +61,7 @@ describe("★ an INLINE head with text after its >> reads inline in its paragrap
   });
 });
 
-describe("★ CONTROLS ★", () => {
+describe.skipIf(wikiSkip)(`★ CONTROLS ★${skipNote}`, () => {
   test("a block-only mark alone on its line raises nothing", () => {
     expect(diagnose("<<^ code=`&#x0003;` bcc=`ni:///sha-256;abc`>>\n")).toEqual([]);
     expect(diagnose("<<^ code=`&#x0002;`>>\r\nprose\r\n")).toEqual([]);
@@ -77,12 +78,10 @@ describe("★ CONTROLS ★", () => {
 });
 
 describe.skipIf(wikiSkip)(`the warning rides the wiki's parse-diagnostics channel${skipNote}`, () => {
-  let engine: TW5Engine;
-  beforeAll(async () => {
-    engine = await bootTestWiki();
+  beforeAll(() => {
     engine.setTiddler({ title: "trailing", type: "text/memetic-wikitext+tiddlywiki", text: "<<~ ahu slot=`#/a`>>;abc\nbody\n<<~/ahu>>\n" });
     engine.setTiddler({ title: "lone",     type: "text/memetic-wikitext+tiddlywiki", text: "<<~ loulou uri=`lar:///a.b.c`>> rides inline.\n" });
-  }, 60_000);
+  });
 
   test("★ RED: [parse-diagnostics:codes[]] names sigil-trailing-text, and the text still renders inline ★", () => {
     expect(engine.wiki.filterTiddlers("[[trailing]parse-diagnostics:codes[]]")).toContain(CODE);

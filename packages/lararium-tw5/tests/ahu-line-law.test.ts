@@ -11,12 +11,22 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/ahu
  */
 import { describe, test, expect, beforeAll } from "vitest";
-import { scanAhu } from "../src/meme-ast/ahu-scan.js";
 import { memeticIngestOps } from "../src/ingest-gate.js";
 import { verdict, frameCarrier } from "@lararium/memetic-frame";
-import { GENERATED_SIGILS } from "../src/meme-ast/grammar-table.generated.js";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
+
+// Every reader rides its PUBLIC surface: the decomposer through the meme-ast library module the booted
+// VM loads (the door the deserializer takes), the vocabulary through the live sigil tiddlers, the
+// render through the wiki's own parse. Never the compile layer's source.
+type AhuScan = (text: string) => { blocks: readonly unknown[] };
+let engine: TW5Engine;
+let scanAhu: AhuScan;
+beforeAll(async () => {
+  if (wikiSkip) return;
+  engine = await bootTestWiki();
+  ({ scanAhu } = engine.$tw.modules.execute("lar:///ha.ka.ba/lararium/tw5/modules/meme-ast") as { scanAhu: AhuScan });
+}, 60_000);
 
 const PROBES = {
   closerTail: "root\n\n<<~ ahu slot=`#/a`>>\nCHILD\n<<~/ahu>> tail\n\nafter\n",
@@ -25,7 +35,7 @@ const PROBES = {
   oneLine:    "root\n\n<<~ ahu slot=`#/a`>>CHILD<<~/ahu>>\n\nafter\n",
 };
 
-describe("★ scanAhu cuts a child only from a pair that stands under the line law ★", () => {
+describe.skipIf(wikiSkip)(`★ scanAhu cuts a child only from a pair that stands under the line law ★${skipNote}`, () => {
   test("RED: a closer with a tail and an opener with a lead cut no child", () => {
     expect(scanAhu(PROBES.closerTail).blocks).toEqual([]);
     expect(scanAhu(PROBES.openerLead).blocks).toEqual([]);
@@ -37,7 +47,8 @@ describe("★ scanAhu cuts a child only from a pair that stands under the line l
   });
 
   test("WELD: the heads scanAhu decomposes (ahu, fragment) are exactly the child-slot heads carrying `lar-flow: block`", () => {
-    const welded = GENERATED_SIGILS.filter((s) => s.kind === "child-slot" && s.flow === "block").map((s) => s.name).sort();
+    const welded = engine.wiki.filterTiddlers("[all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/SharktoothSigil]field:lar-kind[child-slot]field:lar-flow[block]]")
+      .map((t) => t.replace(/^.*\/sigil-/, "")).sort();
     expect(welded).toEqual(["ahu", "fragment"]);
   });
 });
@@ -71,8 +82,6 @@ const pairs = (engine: TW5Engine, src: string): boolean => {
 };
 
 describe.skipIf(wikiSkip)(`★ the plugin pairs exactly what scanAhu pairs ★${skipNote}`, () => {
-  let engine: TW5Engine;
-  beforeAll(async () => { engine = await bootTestWiki(); }, 60_000);
 
   test("RED: the opener with a lead pairs in no reader (the inline phase takes the line law for block-only heads)", () => {
     expect(pairs(engine, PROBES.openerLead)).toBe(false);
