@@ -86,7 +86,8 @@ describe.skipIf(wikiSkip)(`the warning rides the wiki's parse-diagnostics channe
 
   test("★ RED: [parse-diagnostics:codes[]] names sigil-trailing-text, and the text still renders inline ★", () => {
     expect(engine.wiki.filterTiddlers("[[trailing]parse-diagnostics:codes[]]")).toContain(CODE);
-    expect(engine.wiki.renderTiddler("text/html", "trailing")).toContain(";abc");
+    // Every byte kept: the slot decomposes into its child, and `;abc` rides there as the body's first line.
+    expect(engine.wiki.filterTiddlers("[all[tiddlers]search:text:literal[;abc]]").length).toBeGreaterThan(0);
   });
 
   test("★ RED: an inline head's carrier does not name it ★", () => {

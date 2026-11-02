@@ -52,7 +52,7 @@ export function parseMemeText(
   const events   = collectEvents(text, grammar);
   const failures: ParseFailure[] = [];
   const nodes    = buildMemeAst(events, uri, grammar, text, failures);
-  failures.push(...trailingTextFailures(text, events));
+  failures.push(...trailingTextFailures(text, events, grammar?.sigils));
   const edges    = edgesFromMemeAst(nodes, uri);
   const meme: MemeNode = { kind: "Meme", uri, body: nodes };
   return { meme, nodes, edges, failures };

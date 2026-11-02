@@ -74,6 +74,11 @@ export interface SigilRule {
   // frame) vs the default "repaired" (force-close marked, recovered). The resilient driver reads it;
   // the structure still never breaks. (First rung of the #has recovery cap-stack.)
   recoverAs?: "water" | "repaired";
+  // `lar-flow: block` — a block-only head: its meaning needs its own line (the frame marks, the
+  // child-slot opener/closer). The graceful floor warns on text after its `>>`; no other head's does.
+  flow?: "block";
+  // `lar-code` — the control entity a frame mark carries (`&#x0003;` for ETX).
+  code?: string;
   // Weave name per tongue (sigil-mirror-flip ruling item 3): when a canonical sigil carries
   // several mirrors (Hawaiian headword + English alias(es)), at most ONE mirror per tongue
   // carries `weave: "primary"` — the name that tongue's authors are steered toward. A mirror
