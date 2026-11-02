@@ -5,14 +5,15 @@
  * Each red stands beside a CONTROL through the same door. Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test } from "vitest";
+import * as Automerge from "@automerge/automerge";
 import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocHandle } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, KAHUA_BAG, KAHUA_PLANE, isFaceScopedBag, personaMembershipEntries, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, emptyLarDoc, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  faceIntentVerbs, intentEntryRecordsOfGroup, kahuaBodyDigest, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
-  personaSiblingBagIds, projectPersonaLog, signFoundingLog, writePersonaAct, type LarDoc,
+  faceIntentVerbs, intentEntryRecordsOfGroup, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
+  personaSiblingBagIds, projectPersonaLog, signFoundingLog, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
 } from "@lararium/mesh";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../src/kahua-door.js";
-import { faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
+import { bridgeBooks, faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
 
 const who = async (n: number) => {
   const seed = new Uint8Array(32).fill(n);
@@ -37,7 +38,7 @@ async function face() {
     register: (bagId, url) => { catalog[bagId] = url; }, session: () => "cli-session-1",
     ...over,
   });
-  return { repo, root, atomA, atomB, persona, intents, catalog, ports };
+  return { repo, root, atomA, atomB, persona, intents, catalog, ports, lineage };
 }
 const planeActs = (persona: DocHandle<LarDoc>, url: string) =>
   personaActRecordsOfGroup(persona.doc(), GROUP).filter((r) => (r as { body: Record<string, unknown> }).body["plane"] === KAHUA_PLANE && (r as { body: Record<string, unknown> }).body["url"] === url);
@@ -55,6 +56,26 @@ describe("the stage pin", () => {
     const deviceB = await kahuaDoor(f.ports({ atom: f.atomB })).mint();
     expect(deviceB).toEqual({ url: first.url, minted: false });
     expect(planeActs(f.persona, first.url)).toHaveLength(1);
+  });
+
+  test("RED: two hearths that mint at once, each offline, sign one pin and never fork the face log; CONTROL: the pin names the face's derived stage", async () => {
+    const f = await face();
+    // Hearth B holds the same face: a replica of its persona plane and the same root in custody.
+    const repoB = new Repo({ network: [] });
+    const personaB = repoB.import<LarDoc>(Automerge.save(f.persona.doc()), { docId: f.persona.documentId });
+    const intentsB = repoB.import<LarDoc>(Automerge.save(f.intents.doc()), { docId: f.intents.documentId });
+    const [a, b] = await Promise.all([
+      kahuaDoor(f.ports()).mint(),
+      kahuaDoor(f.ports({ repo: repoB, persona: personaB, intents: intentsB, atom: f.atomB,
+        projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }) })).mint(),
+    ]);
+    f.persona.merge(personaB); personaB.merge(f.persona);
+    const projection = f.ports().projection();
+    expect(projection.fork).toBeNull();
+    expect(a.url).toBe(kahuaStageDocUrl(GROUP));
+    expect(b.url).toBe(a.url);
+    expect(planeActs(f.persona, a.url)).toHaveLength(1);
+    expect(kahuaPlaneUrl(projection, GROUP)).toBe(a.url);
   });
 
   test("RED: a mint with no root in hand refuses by name and pins nothing; CONTROL: an unpinned face lists nothing and refuses a lift by naming the mint", async () => {
@@ -187,8 +208,12 @@ describe("the facet", () => {
     const boot: Record<string, { text?: string }> = { [DAEMON_BAG_ID]: { text: generateAutomergeUrl() }, [PERSONA_GROUP_ID_TIDDLER]: { text: groupA } };
     for (const group of [groupA, groupB]) for (const e of personaMembershipEntries({ personaGroupId: group, url: generateAutomergeUrl() })) boot[e.title] = { text: e.text ?? undefined };
     let worn = groupA;
-    // The face switches on the vessel: the stage pinned by face A stays A's; B's session, worn or not, never fetches it.
-    const views = faceFleetViews(() => boot, () => worn, () => new Set(), (g) => (g === groupA ? stage.url : null));
+    // The face switches on the vessel: the stage pinned by face A stays A's; B's session, worn or not, never fetches it,
+    // even with A's catalog row still standing among the vessel's books (the bridge the worn face reads).
+    const catalog = { tiddlers: { [KAHUA_BAG]: storedLarRecord(KAHUA_BAG, { text: stage.url }, "kahua-pin"), "lar:///ha.ka.ba/wikis/notes": storedLarRecord("lar:///ha.ka.ba/wikis/notes", { text: generateAutomergeUrl() }, "x") } } as unknown as LarDoc;
+    const books = bridgeBooks(catalog);
+    expect(books.has(String(interpretAsDocumentId(tiddlerText(catalog.tiddlers["lar:///ha.ka.ba/wikis/notes"]) as AutomergeUrl)))).toBe(true);
+    const views = faceFleetViews(() => boot, () => worn, () => books, (g) => (g === groupA ? stage.url : null));
     const stageId = interpretAsDocumentId(stage.url as AutomergeUrl);
     worn = groupB;
     views.seat("peer-b", { personaGroup: groupB });

@@ -4,7 +4,8 @@
  * Canonical assembly:
  *   1) `expandRecipe(recipe)` → ordered slot URIs (top of array = highest priority)
  *   2) addLayer for each slot in cascade order (bottom-up): oracle floor first, temp last
- *   3) temp uses memory, oracle wraps its seed store with the floor read-face, and other slots use AutomergeDocStore
+ *   3) temp uses memory, oracle wraps its seed store with the floor read-face, the kahua slot reads the stage's fold under
+ *      the face (`kahuaStageStore`), and other slots use AutomergeDocStore
  *   4) IslandAdaptor projection registers
  *   5) initial replay enters the shore landing queue; its checkpoint resolves when that queue empties
  *
@@ -21,6 +22,9 @@ import {
   wikiSlotUri,
   ORACLE_BAG,
   floorReadFace,
+  kahuaStageStore,
+  KAHUA_BAG,
+  type KahuaStageFace,
   type LarDoc,
   type DocHandle,
   type WikiRecipe,
@@ -46,6 +50,8 @@ export interface BuildIslandRecipeInput {
   ready: readonly RecipeReadyBinding[];
   /** Pinned system snapshots beneath the live oracle seed. */
   floorRows?: readonly Readonly<Record<string, LarTiddlerRecord>>[];
+  /** The face the kahua stage reads under; absent or null, the kahua layer stands empty. */
+  kahuaFace?: () => KahuaStageFace | null;
 }
 
 /**
@@ -82,8 +88,11 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     }
     const handle = handleBySlot.get(slot);
     if (!handle) continue; // CRDT slot not provided — skip (cold or unmapped)
-    const base = new AutomergeDocStore(handle, slot);
-    const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRows ?? [], base }) : base;
+    // THE KAHUA SLOT READS THE FOLD: any member of the face writes any tiddler into the stage doc, so the layer serves the
+    // verified standing items alone (`kahuaStageStore`) and never the doc's titles.
+    const store: LarTiddlerStore = slot === KAHUA_BAG
+      ? kahuaStageStore({ handle, bagId: slot, face: input.kahuaFace ?? (() => null) })
+      : slot === ORACLE_BAG ? floorReadFace({ rows: floorRows ?? [], base: new AutomergeDocStore(handle, slot) }) : new AutomergeDocStore(handle, slot);
     // Oracle takes no writes; other CRDT slots accept writes through the in-wiki bag-paths cascade
     // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
     // slot's store directly, carrying the bag on the put option — never a field on the record. The
@@ -127,9 +136,10 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
 
   // Drive existing CRDT state through the projection bus → adaptor → shore queue.
   for (const { store } of stores) {
-    if (store instanceof AutomergeDocStore) {
-      store.emitInitialReplay();
-      store.markSyncComplete();
+    const replays = store as LarTiddlerStore & { emitInitialReplay?: () => void; markSyncComplete?: () => void };
+    if (store instanceof AutomergeDocStore || typeof replays.emitInitialReplay === "function") {
+      replays.emitInitialReplay?.();
+      replays.markSyncComplete?.();
     }
   }
 

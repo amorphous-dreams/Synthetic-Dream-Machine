@@ -98,7 +98,7 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, readFace, proveFaceFromLog, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
+  leaseEpochPrefix, readFace, proveFaceFromLog, adoptKahuaStage, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
   type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
@@ -894,8 +894,11 @@ async function prepareNodeBootOn(
   });
   // The mounted face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
   let catalogForViews: (() => LarDoc | undefined) | null = null;
+  // The worn face's kahua stage, adopted from its proven projection below: it rides that face's facet and nobody else's.
+  let wornKahua: { readonly group: string; readonly url: string } | null = null;
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
-    () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()));
+    () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()),
+    (group) => (wornKahua?.group === group ? wornKahua.url : null));
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
@@ -2542,6 +2545,12 @@ async function prepareNodeBootOn(
       // face's signed log names it (a sessions url no act names, as on a joined device, stays out of the catalog).
       const named = wornFaceProjection ? provenPlaneUrls(wornFaceProjection, { circles: bootstrap.circlesUrl ?? null, identities: bootstrap.identitiesUrl ?? null, sessions: bootstrap.sessionsUrl ?? null, intents: bootstrap.intentsUrl ?? null }) : null;
       if (named) for (const key of ["circles", "identities", "sessions", "intents"] as const) { const url = named[key]; if (url) registerInCatalog(wornFace[key], url); }
+    }
+    // THE KAHUA STAGE ADOPTS FROM THE PROVEN PROJECTION: where the face's signed log pins its derived stage, the doc stands here
+    // and the catalog row names it for the daemon wiki's recipe (a mount hint; the layer trusts the fold alone).
+    if (wornFaceProved && wornFaceProjection && personaGroupId) {
+      const url = await adoptKahuaStage({ repo, group: personaGroupId, projection: wornFaceProjection, register: registerInCatalog });
+      wornKahua = url ? { group: personaGroupId, url } : null;
     }
     // The selected face's custody standing decides whether its veil archive may leave this
     // composition and whether the island may rest a later export through the same door.

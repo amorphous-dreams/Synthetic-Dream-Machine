@@ -75,6 +75,12 @@ const CLI_FORMS = {
   meme_list:    "meme list",
   meme_delete:  "meme delete",
   meme_project: "meme project",
+  // The KAHUA seat verbs — an AI seat proposes and reads its face's kahua stage; each mirrors `lares kahua <sub>`
+  // (the host `kahua` is a real top-level CLI command). `lares kahua lift|withdraw|mint` stay the operator's hand and
+  // hold no MCP tool, the way the LOCAL seats hold none: no tool spells them.
+  kahua_propose: "kahua propose",
+  kahua_list:    "kahua list",
+  kahua_get:     "kahua get",
   // The DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` (the one `sense` door),
   // routed over the @daemon wire to the pure manifest.json reducer. Reads + reversible re-settle seat HOTL;
   // promote·retire·purge carry HITL (the operator-approval capability, the twin of the CLI's `--approve`).

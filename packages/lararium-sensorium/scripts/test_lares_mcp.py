@@ -11,7 +11,7 @@ import os
 import pytest
 
 from lares_mcp import (LIFECYCLE_VERBS, PLANE_VERBS, WIKI_VERBS, SENSE_LIFECYCLE_VERBS,
-                       MEME_VERBS,
+                       MEME_VERBS, KAHUA_VERBS,
                        VERB_SEATS, DaemonCoordinator,
                        LaresCoordinator, build_mcp, guard_hitl, seat_of)
 from worldline_veil import veiled_root
@@ -227,7 +227,7 @@ def test_mcp_tools_mirror_the_cli_lifecycle_verbs(tmp_path):
     # DURABLE sensorium-lifecycle sub-verbs, and the meme placement pair — name-for-name (the growth floor).
     assert _mcp_tool_names(tmp_path) == (set(LIFECYCLE_VERBS) | set(PLANE_VERBS) | set(WIKI_VERBS)
                                          | set(SENSE_LIFECYCLE_VERBS)
-                                         | set(MEME_VERBS))
+                                         | set(MEME_VERBS) | set(KAHUA_VERBS))
 
 
 def test_recall_tool_args_are_isomorphic_with_the_recall_api(tmp_path):

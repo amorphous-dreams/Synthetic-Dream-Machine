@@ -5,7 +5,8 @@
  * lands, and every read folds through `readKahuaStage`. What the door adds is the order of the hands:
  *
  *   mint      — once per face: the verified projection already naming a stage returns that url and signs nothing (a second
- *               mint, a second device); otherwise the operator's grant mints the doc and pins it by a root-signed `plane` act.
+ *               mint, a second device); otherwise the operator's grant stands the doc at the face's derived address
+ *               (`kahuaStageDocUrl`) and pins it by a root-signed `plane` act.
  *   propose   — the device's atom signs ONE batch on the face's intents plane (any seat may; it grants nothing).
  *   lift      — the lōkahi CAP first (Keyhive: does this device's face hold the stage), then the operator's GRANT (a current
  *               root key in hand), each refused by its own name; an AI seat's hand (the atom) never stands in for the grant.
@@ -16,8 +17,8 @@
 import { randomBytes } from "node:crypto";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  KAHUA_BAG, KAHUA_PLANE, buildKahuaProposal, buildOutcome, emptyLarDoc, intentEntryCid, intentEntryRecordsOfGroup, intentId,
-  kahuaActRecords, kahuaBodyDigest, kahuaPlaneUrl, projectKahuaItems, readIntentEntry, readKahuaAct, readKahuaProposal,
+  KAHUA_BAG, KAHUA_PLANE, buildKahuaProposal, buildOutcome, intentEntryCid, intentEntryRecordsOfGroup, intentId,
+  kahuaActRecords, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, materializeSharedLarDoc, readIntentEntry, readKahuaAct, readKahuaProposal,
   readKahuaStage, signKahuaLift, signKahuaWithdraw, signPersonaAct, writeIntentEntry, writeKahuaAct, writePersonaAct,
   type IntentVerbRegistry, type KahuaItem, type KahuaRevision, type KahuaSource, type LarDoc, type PersonaProjection,
 } from "@lararium/mesh";
@@ -71,7 +72,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     return p;
   };
   const stageUrl = (): string => {
-    const url = kahuaPlaneUrl(projection());
+    const url = kahuaPlaneUrl(projection(), group);
     if (!url) throw new KahuaRefused("kahua-unpinned: the face pins no stage; run `lares kahua mint` on the root's hearth");
     return url;
   };
@@ -89,15 +90,12 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     const read = await ports.cap(ports.atom.key);
     if (!read.held) throw new KahuaRefused(`lokahi-cap-absent: this device's face holds no cap on ${KAHUA_BAG}${read.reason ? ` (${read.reason})` : ""}`);
   };
-  /** Sign-checked landing: the act passes the reader before it touches the doc, and the item tiddlers follow the reading. */
+  /** Sign-checked landing: the act passes the reader before it touches the doc. The doc carries acts alone; every reader folds them. */
   const land = async (act: Awaited<ReturnType<typeof signKahuaLift>>): Promise<string> => {
     const read = readKahuaAct(act, { group, grant: ports.currentSigner });
     if (!read.ok) throw new KahuaRefused(`kahua-act-refused: ${read.refusal}`);
     const handle = await stage();
-    handle.change((d) => {
-      writeKahuaAct(d, act);
-      projectKahuaItems(d, readKahuaStage(kahuaActRecords(d, group), { group, grant: ports.currentSigner }));
-    });
+    handle.change((d) => writeKahuaAct(d, act));
     return read.cid;
   };
   const proposalOf = (id: string) => {
@@ -115,13 +113,15 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
 
   return {
     async mint(): Promise<{ readonly url: string; readonly minted: boolean }> {
-      const held = kahuaPlaneUrl(projection());
+      const held = kahuaPlaneUrl(projection(), group);
       if (held) { ports.register(KAHUA_BAG, held); return { url: held, minted: false }; }
       const root = await grant();
-      const doc = ports.repo.create<LarDoc>(emptyLarDoc());
+      // THE ADDRESS DERIVES FROM THE FACE: two hearths that mint at once stand the same doc and, from one head, sign the
+      // same pin byte for byte (ed25519 signs deterministically), so the merged log reads one act and never a fork.
+      const doc = await materializeSharedLarDoc(ports.repo, kahuaStageDocUrl(group), "kahua:stage");
       const act = await signPersonaAct(projection().head, { group, act: "plane", epoch: ports.epoch(), fields: { plane: KAHUA_PLANE, url: doc.url } }, root);
       ports.persona.change((d) => writePersonaAct(d, act));
-      if (kahuaPlaneUrl(projection()) !== doc.url) throw new KahuaRefused("kahua-pin-unverified: the plane act did not fold into the face's log");
+      if (kahuaPlaneUrl(projection(), group) !== doc.url) throw new KahuaRefused("kahua-pin-unverified: the plane act did not fold into the face's log");
       ports.register(KAHUA_BAG, doc.url);
       await ports.repo.flush();
       return { url: doc.url, minted: true };
