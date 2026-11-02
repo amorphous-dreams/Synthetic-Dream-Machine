@@ -191,3 +191,16 @@ export function wikiLandedCovers(tw5: TW5Engine, bag: string, named: readonly st
 export function wikiHandBoundary(tw5: TW5Engine): void {
   void adaptors.get(tw5)?.boundary().catch(() => {});
 }
+
+/**
+ * The boundary an act closes on: the hands it made land with it. The act's owner applies it to the wiki after the cap
+ * that called this returns (the turn the signal rides), and the wiki raises its change on the next tick; the bridge marks
+ * each hand inside that dispatch. So this waits out the turn, then the wiki's dispatch, then takes the boundary.
+ */
+export function wikiHandBoundaryAfterAct(tw5: TW5Engine): void {
+  const adaptor = adaptors.get(tw5);
+  if (!adaptor) return;
+  queueMicrotask(() => {
+    void adaptor.awaitWikiDispatch().then(() => adaptor.boundary()).catch(() => {});
+  });
+}
