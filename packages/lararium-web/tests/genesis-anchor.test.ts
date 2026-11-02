@@ -73,8 +73,22 @@ describe("the crossing verdict", () => {
     expect(verdict.text).not.toMatch(/verif/);
   });
 
-  test("a missing descriptor crosses uncompared and names itself", () => {
-    const verdict = genesisCrossingVerdict("d".repeat(64), { kind: "missing", at: "http://h/.well-known/lar", why: "404" });
+  test("a missing descriptor on another origin (a dev page dialling a relay elsewhere) crosses uncompared and names itself", () => {
+    const verdict = genesisCrossingVerdict("d".repeat(64), { kind: "missing", at: "http://h/.well-known/lar", why: "404" }, { pageOrigin: "http://dev:5173" });
     expect(verdict).toEqual({ kind: "uncompared", text: `arrival-descriptor-missing: http://h/.well-known/lar (404) · page seed ${"d".repeat(64)} crosses uncompared` });
+  });
+
+  test("RED: a page the hearth serves itself (same origin) refuses a missing descriptor by name: the Pronaos serves it there, so its absence reads as a fault", () => {
+    const verdict = genesisCrossingVerdict("d".repeat(64), { kind: "missing", at: "http://h/.well-known/lar", why: "404" }, { pageOrigin: "http://h" });
+    expect(verdict.kind).toBe("refuse");
+    if (verdict.kind !== "refuse") return;
+    expect(verdict.text.startsWith("arrival-descriptor-missing: http://h/.well-known/lar (404)")).toBe(true);
+    expect(verdict.text).toContain("same origin");
+    expect(verdict.text).not.toMatch(/verif/);
+  });
+
+  test("CONTROL: a same-origin page whose descriptor names its seed crosses clean", async () => {
+    const cid = await hex(seedText);
+    expect(genesisCrossingVerdict(cid, { kind: "descriptor", seedCid: cid, at: "http://h/.well-known/lar" }, { pageOrigin: "http://h" })).toEqual({ kind: "cross" });
   });
 });
