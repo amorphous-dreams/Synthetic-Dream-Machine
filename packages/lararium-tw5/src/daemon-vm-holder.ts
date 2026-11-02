@@ -13,7 +13,9 @@ export class DaemonRestarting extends Error {
   }
 }
 
-export function holdDaemonVm(o: { vm: DaemonVmCore; reopen: (reason: string) => Promise<DaemonVmCore> }): DaemonVmHolder {
+/** Hold a stable facade; prepare boot inputs before disrupting the current VM. A refused
+ * preparation leaves its state and pending calls untouched. */
+export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason: string) => Promise<P>; reopen: (reason: string, prepared: P) => Promise<DaemonVmCore> }): DaemonVmHolder {
   let inner = o.vm;
   let state: "ready" | "restarting" | "down" = "ready";
   const pending = new Set<(err: Error) => void>();   // the settle doors of calls standing on the current VM
@@ -88,15 +90,16 @@ export function holdDaemonVm(o: { vm: DaemonVmCore; reopen: (reason: string) => 
     get restarts() { return restarts; },
     restart(reason) {
       if (restarting) return restarting;
-      const wasReady = state === "ready";
-      state = "restarting";
-      restarting = (async () => {
+      const run = async () => {
+        const prepared = o.prepare ? await o.prepare(reason) : undefined as P;
+        const wasReady = state === "ready";
+        state = "restarting";
         try {
           // No wait: a call still pending settles by name, so one that never settles cannot stall the restart.
           for (const settle of [...pending]) settle(new DaemonRestarting("daemon-restarting"));
           pending.clear();
           if (wasReady) await inner.shutdown();
-          const next = await o.reopen(reason);
+          const next = await o.reopen(reason, prepared);
           inner = next;
           shutdown = undefined;
           for (const replay of registrations.values()) await replay(next);
@@ -106,10 +109,15 @@ export function holdDaemonVm(o: { vm: DaemonVmCore; reopen: (reason: string) => 
         } catch (err) {
           state = "down";
           throw err;
-        } finally {
-          restarting = undefined;
         }
-      })();
+      };
+      // Install the coalescing promise before prepare can run, including synchronous refusals.
+      if (!o.prepare) {
+        // The no-prepare path keeps its existing immediate refusal behavior.
+        restarting = run().finally(() => { restarting = undefined; });
+      } else {
+        restarting = Promise.resolve().then(run).finally(() => { restarting = undefined; });
+      }
       return restarting;
     },
   };
