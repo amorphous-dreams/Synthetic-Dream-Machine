@@ -10,10 +10,10 @@ import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, t
 import {
   DAEMON_BAG_ID, KAHUA_BAG, KAHUA_PLANE, isFaceScopedBag, personaMembershipEntries, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, emptyLarDoc, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
   faceIntentVerbs, intentEntryRecordsOfGroup, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
-  personaSiblingBagIds, projectPersonaLog, signFoundingLog, writePersonaAct, type LarDoc,
+  personaSiblingBagIds, projectPersonaLog, signFoundingLog, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
 } from "@lararium/mesh";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../src/kahua-door.js";
-import { faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
+import { bridgeBooks, faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
 
 const who = async (n: number) => {
   const seed = new Uint8Array(32).fill(n);
@@ -208,8 +208,12 @@ describe("the facet", () => {
     const boot: Record<string, { text?: string }> = { [DAEMON_BAG_ID]: { text: generateAutomergeUrl() }, [PERSONA_GROUP_ID_TIDDLER]: { text: groupA } };
     for (const group of [groupA, groupB]) for (const e of personaMembershipEntries({ personaGroupId: group, url: generateAutomergeUrl() })) boot[e.title] = { text: e.text ?? undefined };
     let worn = groupA;
-    // The face switches on the vessel: the stage pinned by face A stays A's; B's session, worn or not, never fetches it.
-    const views = faceFleetViews(() => boot, () => worn, () => new Set(), (g) => (g === groupA ? stage.url : null));
+    // The face switches on the vessel: the stage pinned by face A stays A's; B's session, worn or not, never fetches it,
+    // even with A's catalog row still standing among the vessel's books (the bridge the worn face reads).
+    const catalog = { tiddlers: { [KAHUA_BAG]: storedLarRecord(KAHUA_BAG, { text: stage.url }, "kahua-pin"), "lar:///ha.ka.ba/wikis/notes": storedLarRecord("lar:///ha.ka.ba/wikis/notes", { text: generateAutomergeUrl() }, "x") } } as unknown as LarDoc;
+    const books = bridgeBooks(catalog);
+    expect(books.has(String(interpretAsDocumentId(tiddlerText(catalog.tiddlers["lar:///ha.ka.ba/wikis/notes"]) as AutomergeUrl)))).toBe(true);
+    const views = faceFleetViews(() => boot, () => worn, () => books, (g) => (g === groupA ? stage.url : null));
     const stageId = interpretAsDocumentId(stage.url as AutomergeUrl);
     worn = groupB;
     views.seat("peer-b", { personaGroup: groupB });

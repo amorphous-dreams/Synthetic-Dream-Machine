@@ -13,7 +13,8 @@ import { materializeSharedLarDoc } from "../src/deterministic-doc.js";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { storedLarRecord } from "../src/stored-record.js";
 import type { LarTiddlerChange } from "../src/tiddler-store.js";
-import { KAHUA_PLANE, kahuaActCid, kahuaPlaneUrl, kahuaStageDocUrl, signKahuaLift, writeKahuaAct } from "../src/kahua-stage.js";
+import { KAHUA_PLANE, adoptKahuaStage, kahuaActCid, kahuaPlaneUrl, kahuaStageDocUrl, signKahuaLift, writeKahuaAct } from "../src/kahua-stage.js";
+import { KAHUA_BAG } from "../src/wiki-recipe.js";
 import { kahuaStageStore } from "../src/kahua-stage-store.js";
 
 const GROUP = "0x" + "5a".repeat(16);
@@ -107,5 +108,20 @@ describe("the stage address", () => {
     expect(kahuaPlaneUrl({ planes: { [KAHUA_PLANE]: "automerge:2j9knpCseyhnK8izDmLpGP5WMdZQ" } }, GROUP)).toBeNull();
     expect(kahuaPlaneUrl({ planes: { [KAHUA_PLANE]: url } }, "0x" + "77".repeat(16))).toBeNull();
     expect(kahuaPlaneUrl({ planes: {} }, GROUP)).toBeNull();
+  });
+});
+
+describe("adoption at boot", () => {
+  test("RED: a device of the face adopts the stage its verified projection pins: the doc stands locally and the catalog row names it; CONTROL: an unpinned face or a pin naming another doc registers nothing", async () => {
+    const repo = new Repo({ network: [] });
+    const rows: Record<string, string> = {};
+    const register = (bag: string, url: string) => { rows[bag] = url; };
+    expect(await adoptKahuaStage({ repo, group: GROUP, projection: { planes: {} }, register })).toBeNull();
+    expect(await adoptKahuaStage({ repo, group: GROUP, projection: { planes: { [KAHUA_PLANE]: "automerge:2j9knpCseyhnK8izDmLpGP5WMdZQ" } }, register })).toBeNull();
+    expect(rows).toEqual({});
+    const url = await adoptKahuaStage({ repo, group: GROUP, projection: { planes: { [KAHUA_PLANE]: kahuaStageDocUrl(GROUP) } }, register });
+    expect(url).toBe(kahuaStageDocUrl(GROUP));
+    expect(rows).toEqual({ [KAHUA_BAG]: url });
+    expect(repo.handles[(await repo.find<LarDoc>(url!)).documentId]).toBeDefined();
   });
 });
