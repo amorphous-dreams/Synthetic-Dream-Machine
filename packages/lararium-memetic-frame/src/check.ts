@@ -215,7 +215,9 @@ export function verifyBcc(text: string): "ok" | "mismatch" | "unchecked" | "torn
   const st = frameStanding(text);
   if (st.kind === "absent") return "unchecked";
   if (st.kind === "torn") return "torn";
-  if (etxFaultsOf(text).length > 0) return "torn";
+  // ONE READING OF A FAULT: the frame faults the span reader names (a second ETX, an ETX after EOT, a
+  // release out of order …) tear here exactly as they tear the verdict, so the two never disagree.
+  if (st.faults.length > 0 || etxFaultsOf(text).length > 0) return "torn";
   const check = standingCheck(text, st);
   if (!check) return "unchecked";
   return check.verifies ? "ok" : "mismatch";
