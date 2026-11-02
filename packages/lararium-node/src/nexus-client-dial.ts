@@ -36,6 +36,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { LarWSClientAdapter, DAEMON_BAG_ID } from "@lararium/mesh";
 import { nodeDialSocket } from "./node-dial-socket.js";
 import type { LarWSClientOptions } from "@lararium/mesh";
+import { shoreInbound } from "@lararium/mesh";
 
 /** What a dial presents: the face's certificate, the session's signer, at most one arm and the withdrawal history. */
 export type DialFacePresentation = LarWSClientOptions["presentation"];
@@ -153,7 +154,7 @@ export function startNexusClientDial(cfg: NexusClientDialConfig): NexusClientDia
     dialSocket: () => nodeDialSocket(cfg.syncUrl), onLog: (line) => console.warn(line),
   });
   cfg.beforeJoin?.(adapter);
-  cfg.repo.networkSubsystem.addNetworkAdapter(adapter);
+  cfg.repo.networkSubsystem.addNetworkAdapter(shoreInbound(adapter));
   log(`nexus dial-out up → ${cfg.syncUrl} (aud=${cfg.aud ?? DAEMON_BAG_ID})`);
 
   // Pull the peer's named doc, when one rides the config. A denial reads as "never resolved" (the adapter

@@ -15,6 +15,7 @@ import { getHeads } from "@automerge/automerge";
 import type { PeerId, StorageAdapterInterface } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { peerArrivals } from "./peer-arrivals.js";
+import { shoreInbound } from "./prototype-key-shore.js";
 
 export interface IslandRepoConfig {
   /** Platform storage adapter (NodeFS / IndexedDB); undefined = in-memory. */
@@ -97,7 +98,7 @@ export function makeIslandRepo(cfg: IslandRepoConfig): Repo {
   return new Repo({
     ...(cfg.storage ? { storage: cfg.storage } : {}),
     ...(cfg.peerId ? { peerId: cfg.peerId as PeerId } : {}),
-    network: [new MessageChannelNetworkAdapter(hardenedSyncPort(cfg.syncPort))],
+    network: [shoreInbound(new MessageChannelNetworkAdapter(hardenedSyncPort(cfg.syncPort)))],
     ...((cfg.documentScope || cfg.denyDocument) ? { shareConfig: {
           announce: async (_peerId, documentId) => cfg.documentScope
             ? documentId === documentIdOf(cfg.documentScope)
@@ -150,6 +151,6 @@ export function attachMessageChannelSync(repo: Repo, mainPort: MessagePort, onPe
   // adapter's strong port reference forwards no `close`, so the vessel's network subsystem never reads the peer as
   // gone. The port's own close event is the fact.
   mainPort.addEventListener("close", () => { for (const peerId of standing) { unseat(peerId); adapter.emit("peer-disconnected", { peerId: peerId as never }); } standing.clear(); });
-  repo.networkSubsystem.addNetworkAdapter(adapter);
+  repo.networkSubsystem.addNetworkAdapter(shoreInbound(adapter));
   return () => adapter.disconnect();
 }

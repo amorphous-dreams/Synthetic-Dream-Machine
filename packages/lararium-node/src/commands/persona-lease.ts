@@ -12,7 +12,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/persona-lease
  */
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, raiseFaceFrontier, type LarDoc } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, raiseFaceFrontier, type LarDoc, ownEntry } from "@lararium/mesh";
 import { DAEMON_BAG_ID } from "@lararium/mesh";
 import { readFileSync } from "node:fs";
 import { loadIdentityAnchors } from "../identity-anchors.js";
@@ -46,7 +46,7 @@ function daemonUrlOfBootstrap(): string {
   try { text = readFileSync(larBootstrapPath(), "utf8"); } catch { throw new PersonaLeaseError("this vessel has no bootstrap: found the place first"); }
   const plugin = JSON.parse(text) as { text?: string };
   const tiddlers = (JSON.parse(plugin.text ?? "{}") as { tiddlers?: Record<string, { text?: string }> }).tiddlers ?? {};
-  const url = tiddlers[DAEMON_BAG_ID]?.text;
+  const url = ownEntry(tiddlers, DAEMON_BAG_ID)?.text;
   if (!url) throw new PersonaLeaseError("the bootstrap names no daemon doc");
   return url;
 }

@@ -18,8 +18,7 @@ import {
   PLUGIN_OFFERING_ANNOUNCE_DOMAIN,
   type LarDoc,
   type PluginOfferingAnnounce,
-  resolveBootDoc,
-} from "@lararium/mesh";
+  resolveBootDoc, ownEntry} from "@lararium/mesh";
 import { tiddlerText, type StoredLarRecord } from "@lararium/mesh";
 import { larDataDir } from "../vessel-paths.js";
 import { casDirForStorage, readCasBlobFromFs } from "../node-cas.js";
@@ -116,7 +115,7 @@ export async function runNexusInspectOffering(
   } catch {
     throw new NexusOfferingInspectError(`offering ${opts.offeringCid} is not present on the local Crossroads board`);
   }
-  const record = board.doc()?.tiddlers?.[offeringAnnounceKey(opts.offeringCid)];
+  const record = ownEntry(board.doc()?.tiddlers, offeringAnnounceKey(opts.offeringCid));
   if (record === undefined) {
     throw new NexusOfferingInspectError(`offering ${opts.offeringCid} is not present on the local Crossroads board`);
   }

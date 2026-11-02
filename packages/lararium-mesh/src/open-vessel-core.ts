@@ -33,6 +33,7 @@ import { isCondemned, isUnresolved, type DocLoadProbe, type ProbeResult } from "
 import { storedLarRecord } from "./stored-record.js";
 import { resolveCatalogRow } from "./catalog-row.js";
 import { PLANE_LABELS } from "./plane-labels.js";
+import { ownEntry } from "./stored-value.js";
 
 /**
  * The doc URLs a vessel's bootstrap resolves.
@@ -211,7 +212,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
       addSubstrateLayer(composite, BAG_IDS.lararium, larariumHandle);
     }
   }
-  const existingRef = tiddlerText(catalogHandle.doc()?.tiddlers?.[ORACLE_DOC_URI]) ?? null;
+  const existingRef = tiddlerText(ownEntry(catalogHandle.doc()?.tiddlers, ORACLE_DOC_URI)) ?? null;
   if (existingRef !== islandHandle.url) {
     catalogHandle.change((doc) => {
       doc.tiddlers[ORACLE_DOC_URI] = storedLarRecord(ORACLE_DOC_URI, { text: islandHandle.url }, "vessel-boot");

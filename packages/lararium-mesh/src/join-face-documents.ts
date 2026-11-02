@@ -17,7 +17,7 @@ import { IDENTITIES_NAMESPACE } from "./lar-uris.js";
 import { MEMBER_ADD_PREFIX } from "./social-tiddlers.js";
 import { heldDocOf } from "./persona-act-board.js";
 import { storedRecord } from "./stored-record.js";
-import { plainRecordOrNull } from "./stored-value.js";
+import { plainRecordOrNull, ownEntry } from "./stored-value.js";
 import { parseAutomergeUrl, type AutomergeUrl } from "@automerge/automerge-repo";
 
 type DocHandle = import("@automerge/automerge-repo").DocHandle<LarDoc>;
@@ -28,7 +28,7 @@ function writeOwnEntries(handle: DocHandle, which: "identities" | "circles", ato
   handle.change((doc: LarDoc) => {
     for (const t of buildCeremonyTiddlers(atomKey, displayName)) {
       if ((t.bag === IDENTITIES_NAMESPACE) !== (which === "identities")) continue;
-      const standing = plainRecordOrNull(doc.tiddlers[t.title]);
+      const standing = plainRecordOrNull(ownEntry(doc.tiddlers, t.title));
       if (standing) {
         // A circle the face already holds (the founder's `operators`) gains THIS device's own membership dot, add-only: the joinee's
         // dot is a replica-keyed key no other device writes, so the merge never overwrites or removes another member. The record

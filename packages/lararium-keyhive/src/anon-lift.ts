@@ -34,8 +34,7 @@
 import {
   DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
   mutableLarRecord, tiddlerText, sha256HexBytesSync, utf8Bytes, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord, storedLarRecord,
-  floorAnchorSegment, type WorkingFloorAnchor, type ChangeOrigin, type CompositeStore, type LarDoc,
-} from "@lararium/mesh";
+  floorAnchorSegment, type WorkingFloorAnchor, type ChangeOrigin, type CompositeStore, type LarDoc, ownEntry} from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { FaceBagDoor } from "./face-bag-door.js";
 
@@ -85,7 +84,7 @@ function carryTiddlers(from: LarDoc | undefined, into: { change(fn: (doc: LarDoc
   if (source.length === 0) return;
   into.change((doc) => {
     for (const [title, record] of source) {
-      if (doc.tiddlers[title] === undefined) doc.tiddlers[title] = storedRecord(record);
+      if (ownEntry(doc.tiddlers, title) === undefined) doc.tiddlers[title] = storedRecord(record);
     }
   });
 }
@@ -232,7 +231,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
           await args.faceDoor.mint(url, "admin");
           // MARK, BURN, THEN DELETE: the key keeps the lift's mark until the floor document burns.
           handle.change((doc) => {
-            if (doc.tiddlers[floorKey]) doc.tiddlers[floorKey] = storedLarRecord(floorKey, { ...carried(fields), "lifted-from": digestOf(floorKey) }, "anon-lift:working-floor");
+            if (ownEntry(doc.tiddlers, floorKey)) doc.tiddlers[floorKey] = storedLarRecord(floorKey, { ...carried(fields), "lifted-from": digestOf(floorKey) }, "anon-lift:working-floor");
           });
         }
         await burn(args, oldUrl);

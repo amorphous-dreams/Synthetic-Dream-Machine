@@ -19,7 +19,7 @@ import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import { load as automergeLoad } from "@automerge/automerge";
 import type { LarDoc } from "./base-doc.js";
 import { ENGINE_CORE_ID } from "./base-doc.js";
-import { plainField } from "./stored-value.js";
+import { plainField, ownEntry } from "./stored-value.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
 import {
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
@@ -27,10 +27,11 @@ import {
 } from "./genesis-doc.js";
 import { resolveBootDoc } from "./boot-resolver.js";
 import { storedLarRecord } from "./stored-record.js";
+import { assertNoPrototypeKeys } from "./prototype-key-shore.js";
 
 /** Read a region content-CID recorded in a live/incoming island doc, or null when absent. */
 function regionCid(handle: DocHandle<LarDoc>, title: string): string | null {
-  const cid = plainField(handle.doc()?.tiddlers?.[title], "cid");
+  const cid = plainField(ownEntry(handle.doc()?.tiddlers, title), "cid");
   return typeof cid === "string" ? cid : null;
 }
 const short = (c: string | null): string => c?.slice(0, 12) ?? "none";
@@ -47,6 +48,8 @@ export function validateGenesisBytes(bytes: Uint8Array, label: string): LarDoc {
   } catch (err) {
     throw new Error(`[${label}] genesis bytes failed Automerge.load() validation: ${err}`);
   }
+  // Every by-key read below (`blobs`, `tiddlers`) stands on own keys only: a prototype key refuses by name.
+  assertNoPrototypeKeys(preview, `${label}: genesis bytes`);
   if (!preview.blobs?.[ENGINE_CORE_ID]) {
     throw new Error(
       `[${label}] genesis artifact missing TW5 core blob (${ENGINE_CORE_ID}) — ` +

@@ -64,8 +64,7 @@ import {
   type IslandMsg_Manifest,
   type IslandToVesselMsg,
   type SlotUri,
-  type LarTiddlerRecord,
-} from "@lararium/mesh";
+  type LarTiddlerRecord, ownEntry} from "@lararium/mesh";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
@@ -427,7 +426,7 @@ export function runSovereignKernel(
     }
 
     const tw5 = handler.tw5()!;
-    const floorCidField = plainRecordOrNull(laraiumHandle.doc()?.tiddlers?.[GENESIS_FLOOR_TIDDLER])?.tiddler.cid;
+    const floorCidField = plainRecordOrNull(ownEntry(laraiumHandle.doc()?.tiddlers, GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
     let floorRows: readonly Readonly<Record<string, LarTiddlerRecord>>[] = [];
     if (typeof floorCidField === "string" && floorCidField.length > 0) {
       const floor = await resolveFloor(floorCidField, resolveByCid);

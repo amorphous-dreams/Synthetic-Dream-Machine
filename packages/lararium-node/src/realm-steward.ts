@@ -35,8 +35,7 @@
 import {
   ed25519SignerFromSeed, signerClass, stewardClassOf, tiddlerText,
   CABAL_REALM_RE, realmStewardMap,
-  type CapTier, type HeldKeys, type LarDoc, type RealmBagFoldOptions, type StewardSigner,
-} from "@lararium/mesh";
+  type CapTier, type HeldKeys, type LarDoc, type RealmBagFoldOptions, type StewardSigner, ownEntry} from "@lararium/mesh";
 import { heldNexusLeaves, mintFaceNexusLeaf } from "./nexus-leaf.js";
 import { loadNodeHandleBook } from "./node-circle-store.js";
 import { unlockedFaceOrdinals } from "./custody-seat.js";
@@ -195,7 +194,7 @@ export async function runRealmBag(opts: {
   const cosign = args["cosign"] === true;
   const join = args["join"] === true;
   if (cosign && join) throw new Error("realm-bag: `join` asks to keep and `cosign` consents — one act per call");
-  const docUrl = opts.registryDocs().map((doc) => tiddlerText(doc?.tiddlers?.[bagUri])).find((text): text is string => !!text) ?? "";
+  const docUrl = opts.registryDocs().map((doc) => tiddlerText(ownEntry(doc?.tiddlers, bagUri))).find((text): text is string => !!text) ?? "";
   if (!docUrl && !cosign && !join) throw new Error(`realm-bag: "${bagUri}" names no doc on this vessel's registry planes — nothing to register`);
   const aid = target.nexusAid()!;
   const held = await readVault("own keys", () => vault.heldKeys(aid));

@@ -36,6 +36,7 @@ import type { PlaceArm } from "./gate-exchange.js";
 import { dialedChannel, type GateSessionChannel } from "./gate-session-channel.js";
 import type { FacePresentation } from "./lar-ws-client-adapter.js";
 import { wsDialSocket } from "./ws-dial-socket.js";
+import { prototypeKeyFault } from "./stored-value.js";
 
 /**
  * THE FLOW SOCKET ROUTE AND FRAME, SPELLED ONCE.
@@ -200,6 +201,9 @@ async function pullOverChannel<T>(channel: GateSessionChannel, opts: FlowPullOpt
   } catch (e) {
     return { ok: false, reason: `automerge load failed: ${e instanceof Error ? e.message : String(e)}`, pointer };
   }
+  // A prototype key refuses by name before any by-key read (`prototype-key-shore.ts`; KEEP: a live hostile form).
+  const poisoned = prototypeKeyFault(doc);
+  if (poisoned) return { ok: false, reason: `prototype-key: ${poisoned}`, pointer };
 
   const loadedHeads = [...new Set(getHeads(doc) as string[])].sort();
   const signedHeads = [...new Set(pointer.heads)].sort();

@@ -56,6 +56,71 @@ export function isPlainMap(value: unknown): value is Record<string, unknown> {
     && !(value instanceof Uint8Array) && !(value instanceof Date) && !isWrappedString(value);
 }
 
+// ── THE KEY DOOR ─────────────────────────────────────────────────────────────────────────────────
+//
+// A map the house reads BY KEY (a doc's `tiddlers`, a record's fields, a board's rows) answers its OWN
+// properties only. Automerge materializes a key spelled `__proto__` as the object's PROTOTYPE, so a hostile
+// writer's `tiddlers.__proto__ = { t: … }` makes a bare `tiddlers[t]` and `t in tiddlers` answer a phantom
+// record while `Object.keys` stays empty; and `constructor` answers every plain object's inherited function.
+// A doc carrying such a key loads under every engine version (only a LOCAL write throws, from 3.5.0), so
+// the read door cannot lean on the write side: it reads `Object.hasOwn`, and a prototype key never answers.
+// The ingest shore (`prototype-key-shore.ts`) refuses the bytes by name; the write door (`title-law.ts`,
+// `stored-record.ts`) refuses a local key by name. KEEP: these refuse a LIVE hostile form, never a retired
+// spelling, so no pyre burns them.
+
+/** The keys a by-key map never answers or stores: the names the object prototype chain owns. */
+export const PROTOTYPE_KEYS: ReadonlySet<string> = new Set(["__proto__", "constructor", "prototype"]);
+
+/** Whether a key names the prototype chain rather than an entry. */
+export function isPrototypeKey(key: string): boolean {
+  return PROTOTYPE_KEYS.has(key);
+}
+
+/** The entry a by-key map holds AS ITS OWN under `key`, or undefined: never an inherited or phantom value. */
+export function ownEntry<T>(map: Readonly<Record<string, T>> | null | undefined, key: string): T | undefined {
+  if (map === null || map === undefined || isPrototypeKey(key)) return undefined;
+  return Object.hasOwn(map, key) ? map[key] : undefined;
+}
+
+/** Whether a by-key map holds `key` as its own entry: the `in` a reader asks, with no prototype answering. */
+export function hasOwnEntry(map: object | null | undefined, key: string): boolean {
+  return map !== null && map !== undefined && !isPrototypeKey(key) && Object.hasOwn(map, key);
+}
+
+/** True for a class's own prototype (`ImmutableString`, `Date`, `Uint8Array` …): a value, never a forged map. */
+function isClassPrototype(proto: object): boolean {
+  const ctor = (proto as { constructor?: unknown }).constructor;
+  return typeof ctor === "function" && (ctor as { prototype?: unknown }).prototype === proto;
+}
+
+/**
+ * Where a MATERIALIZED doc carries a prototype key, or null where it carries none. A map whose prototype is
+ * neither `Object.prototype`, null, nor a class's own prototype holds a `__proto__` key (the engine seated
+ * it as the prototype, so no own-key listing ever shows it); a `tiddlers` map naming `constructor` or
+ * `prototype` as a title holds a key no record may take. A field named `constructor` stands: an own key
+ * reads as itself through the read door, and refusing it would refuse a user's field name.
+ */
+export function prototypeKeyFault(value: unknown, path = "doc", depth = 0): string | null {
+  if (typeof value !== "object" || value === null || depth > 64) return null;
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      const f = prototypeKeyFault(value[i], `${path}[${i}]`, depth + 1);
+      if (f) return f;
+    }
+    return null;
+  }
+  const proto = Object.getPrototypeOf(value) as object | null;
+  if (proto !== null && proto !== Object.prototype) {
+    return isClassPrototype(proto) ? null : `${path} carries a \`__proto__\` key`;
+  }
+  for (const key of Object.keys(value)) {
+    if (isPrototypeKey(key) && (key === "__proto__" || path.endsWith(".tiddlers"))) return `${path} carries a \`${key}\` key`;
+    const f = prototypeKeyFault((value as Record<string, unknown>)[key], `${path}.${key}`, depth + 1);
+    if (f) return f;
+  }
+  return null;
+}
+
 // ── THE READ DOOR ────────────────────────────────────────────────────────────────────────────────
 
 /** A stored value as a hand reads it: every immutable scalar becomes its string, at any depth. */
@@ -110,7 +175,8 @@ export function plainRecordOrNull(record: StoredLarRecord | null | undefined): L
 export function plainEntries(tiddlers: StoredTiddlers | null | undefined): Array<[string, LarTiddlerRecord]> {
   const out: Array<[string, LarTiddlerRecord]> = [];
   for (const [title, record] of Object.entries(tiddlers ?? {})) {
-    if (record) out.push([title, plainRecord(record)]);
+    // Inside a change the proxy lists a `__proto__` key as its own; it names no record (THE KEY DOOR below).
+    if (record && !isPrototypeKey(title)) out.push([title, plainRecord(record)]);
   }
   return out;
 }
