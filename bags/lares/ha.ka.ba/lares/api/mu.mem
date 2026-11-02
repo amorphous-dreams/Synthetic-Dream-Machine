@@ -1,18 +1,3 @@
-A mark appears.
-Then another.
-Angle finds angle.
-Breath touches the marks.
-The sigils do not explain themselves.
-They arrive already moving.
-
-<>
-<<>>
-<<~>>
-<<~ॐ>>
-<<~ॐ ँ>>
-<<~ॐ ँ ?>>
-<<~ॐ ँ ? ->>>
-
 <<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
 <<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/mu`>>
@@ -38,6 +23,22 @@ uri-path  = "ha.ka.ba/lares/api/mu"
 
 
 <<~ ahu slot=`#/head`>>
+
+A mark appears.
+Then another.
+Angle finds angle.
+Breath touches the marks.
+The sigils do not explain themselves.
+They arrive already moving.
+
+<>
+<^>
+<<^>>
+<<~>>
+<<~ `ॐ`>>
+<<~ `ॐ ँ`>>
+<<~ `ॐ ँ ?`>>
+<<~ `ॐ ँ ? -> ha.ka.ba`>>
 
 ! Mu — Null-Oracle
 
@@ -106,6 +107,6 @@ Mu does not hold:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WN2emspLXNYJcOvwmGwy8lI_ZYjixTYUichHkF6B008`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7xRrwqd0cOSb5UOL7NrZZ2hHaZe9BSBtzFy95R-qXAA`>>
 
 <<^ code=`&#x0004;` to=`?`>>
