@@ -469,81 +469,23 @@ describe("the new island may be read for readiness while its registrations repla
   });
 });
 
-describe("a drained restart lets the call that asked for it answer first (the kapae arrival lands inside the raise's own ask)", () => {
-  const ask = <T,>() => {
-    const gate = deferred<T>();
-    let abandoned = 0;
-    return { gate, ask: { answer: gate.promise, abandon: () => { abandoned += 1; } }, abandoned: () => abandoned };
-  };
-
-  test("a pending ask answers, THEN the island swaps; a pending call never holds the swap and rejects by name; the plain restart rejects the ask (CONTROL)", async () => {
-    log.length = 0;
-    const first = fakeVm(); first.gate = deferred<unknown>();   // a readiness-style call that stands a long time
-    const next = fakeVm();
-    const held = holdDaemonVm({ vm: first, reopen: async () => { log.push("reopen"); return next; } });
-    const call = held.vm.resolveBinding("f", { wikiDocId: "w", libraryBagDocIds: [] }, "s");
-    const callOutcome = call.then(() => "resolved", (e: Error) => e.message);
-    const a = ask<string>();
-    const guarded = held.guardAsk(a.ask);
-    const askOutcome = guarded.answer.then((v) => v, (e: Error) => e.message);
-    const restarting = held.restart("kapae-raise", { drain: true });
-    await Promise.resolve(); await Promise.resolve();
-    expect(log, "the island must stand while its asker still waits").toEqual([]);
-    a.gate.resolve("answered");
-    await restarting;
-    expect(await askOutcome).toBe("answered");
-    expect(a.abandoned()).toBe(0);
-    expect(await callOutcome, "a call that stands never holds the brake").toBe("daemon-restarting");
-    expect(log).toEqual([`vm${first.id}:shutdown`, "reopen"]);
+describe("the kapae arrival restart keeps the no-wait law (a promote act in flight waits in FRONT of the restart, never inside it)", () => {
+  test("a call and an ask that never answer both reject daemon-restarting at once and the restart completes; CONTROL: the same pair, answered first, keeps its answers", async () => {
+    const first = fakeVm(); first.gate = deferred<unknown>();
+    const held = holdDaemonVm({ vm: first, reopen: async () => fakeVm() });
+    const call = held.vm.resolveBinding("f", { wikiDocId: "w", libraryBagDocIds: [] }, "s").then(() => "resolved", (e: Error) => e.message);
+    const gate = deferred<string>();
+    const guarded = held.guardAsk({ answer: gate.promise, abandon: () => undefined });
+    const ask = guarded.answer.then((v) => v, (e: Error) => e.message);
+    await held.restart("kapae-raise");
+    expect(await call).toBe("daemon-restarting");
+    expect(await ask).toBe("daemon-restarting");
     expect(held.restarts).toBe(1);
-    // CONTROL: the same ask under a plain restart rejects by name.
-    const plain = holdDaemonVm({ vm: fakeVm(), reopen: async () => fakeVm() });
-    const b = ask<string>();
-    const g2 = plain.guardAsk(b.ask);
-    const k2 = g2.answer.then((v) => v, (e: Error) => e.message);
-    await plain.restart("kapae-raise");
-    expect(await k2).toBe("daemon-restarting");
-  });
-
-  test("with nothing pending the drained restart swaps at once; a call that begins after the request does not extend the wait", async () => {
-    const first = fakeVm();
-    const next = fakeVm();
-    const held = holdDaemonVm({ vm: first, reopen: async () => next });
-    await held.restart("idle", { drain: true });
-    expect(held.restarts).toBe(1);
-    const second = fakeVm(); second.gate = deferred<unknown>();
-    const third = fakeVm();
-    const held2 = holdDaemonVm({ vm: second, reopen: async () => third });
-    const early = held2.guardAsk(ask<string>().ask);
-    void early.answer.catch(() => undefined);
-    const gateA = ask<string>();
-    const a = held2.guardAsk(gateA.ask);
-    const restarting = held2.restart("snap", { drain: true });
-    const lateGate = ask<string>();
-    const late = held2.guardAsk(lateGate.ask);
-    const lateOutcome = late.answer.then((v) => v, (e: Error) => e.message);
-    void a.answer.catch(() => undefined);
-    // the snapshot holds the two asks that stood at the request; only they gate the swap
-    gateA.gate.resolve("a");
-    await Promise.resolve(); await Promise.resolve();
-    expect(held2.restarts, "the early ask still stands, so the swap waits").toBe(0);
-    void early;
-    // settle the early ask by its caller's own abandon, which takes it out of the wait
-    early.abandon();
-    await restarting;
-    expect(held2.restarts).toBe(1);
-    expect(await lateOutcome).toBe("daemon-restarting");
-  });
-
-  test("a plain restart asked while a drain waits forces it: the stuck call rejects by name and the island swaps", async () => {
-    const held = holdDaemonVm({ vm: fakeVm(), reopen: async () => fakeVm() });
-    const stuck = held.guardAsk(ask<string>().ask).answer.then((v) => v, (e: Error) => e.message);   // never answered: a stuck ask
-    const draining = held.restart("kapae-raise", { drain: true });
-    await Promise.resolve();
-    expect(held.restarts).toBe(0);
-    const forced = held.restart("operator");
-    await Promise.all([draining, forced]);
-    expect(held.restarts).toBe(1);
-    expect(await stuck).toBe("daemon-restarting");
+    const second = fakeVm();
+    const control = holdDaemonVm({ vm: second, reopen: async () => fakeVm() });
+    const ok = control.guardAsk({ answer: Promise.resolve("kept"), abandon: () => undefined });
+    expect(await ok.answer).toBe("kept");
+    await control.restart("kapae-raise");
+    expect(control.restarts).toBe(1);
   });
 });
