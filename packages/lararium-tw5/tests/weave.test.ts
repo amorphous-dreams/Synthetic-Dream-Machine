@@ -131,18 +131,17 @@ describe("the submission projection", () => {
     expect(p.markdown).toContain("''unrendered''");
   });
 
-  test("★ a TILDE fence seals its interior too — CommonMark §4.5 admits it as a peer ★", () => {
+  test("★ a TILDE run fences nothing — TiddlyWiki opens no fence on tildes, so the walk transposes beneath it ★", () => {
     const src = "prose\n\n~~~\n''unrendered''\n<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/RFC-2119`>>\n~~~\n\nafter ''bold''\n";
     const md = transposeMarkdown(src).markdown;
-    expect(md).toContain("~~~\n''unrendered''\n<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/RFC-2119`>>\n~~~");
-    expect(md).not.toContain("- `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119`");
-    // CONTROL: past the closing tilde run the walk transposes again.
+    expect(md).toContain("**unrendered**");
+    expect(md).not.toContain("~~~\n''unrendered''");
     expect(md).toContain("after **bold**");
   });
 
-  test("CONTROL: a backtick run never closes a tilde fence", () => {
-    const src = "~~~\n```\n''inside''\n~~~\n";
-    expect(transposeMarkdown(src).markdown).toContain("```\n''inside''\n~~~");
+  test("CONTROL: a backtick fence opened beneath a tilde line seals its own interior", () => {
+    const src = "~~~\n```\n''inside''\n```\n";
+    expect(transposeMarkdown(src).markdown).toContain("```\n''inside''\n```");
   });
 
   test("a sigil spanning lines travels whole, fenced", () => {

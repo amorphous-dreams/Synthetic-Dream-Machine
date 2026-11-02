@@ -920,7 +920,7 @@ export function transposeMarkdown(
     if (fence === null && metaFenceDone === undefined && META_OPEN_LINE_RE.test(line)) { inMetaFence = true; metaFence = []; continue; }
 
     // ── fence tracking: OPEN and CLOSE both read through fence-mask's own rules (CommonMark §4.5) —
-    // `fenceLineOpen` (backtick or tilde; a fence's info string may carry no run of its own
+    // `fenceLineOpen` (backticks only, TiddlyWiki's law; a fence's info string may carry no run of its own
     // character) and `fenceLineClose` (a closer needs a run of the SAME character ≥ the opener AND
     // nothing else on the line — a content line that happens to start with a shorter or trailed run,
     // "```` example of `backticks`" inside a fence opened at four, never closes early; it is body).
