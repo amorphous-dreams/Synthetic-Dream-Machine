@@ -81,8 +81,8 @@ const SOWN: Record<string, string> = {
   [`identity/faces/${FCID}/face-atom-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/face-anchor-g${"a".repeat(64)}.json`]: "x",
   [`identity/faces/${FCID}/face-atom-ask-${"b".repeat(64)}.bin`]: "x",
-  [`identity/faces/${FCID}/kahua-promoted-g${"a".repeat(64)}.bin`]: "x",
-  [`identity/faces/${FCID}/kahua-kapae-g${"a".repeat(64)}.bin`]: "x",
+  [`identity/faces/${FCID}/promoted-g${"a".repeat(64)}.bin`]: "x",
+  [`identity/faces/${FCID}/kapae-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/face-owner.bin`]: "x",
   [`identity/faces/${FCID}/fk-slots.bin`]: "tree",
   "identity/face-index.json":                    "{}",
@@ -137,7 +137,7 @@ const RULED: Record<string, CustodyClass> = {
   "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-chunk": "floor-plain",
   // The outbox's parcels rest under the outbox key, which its face key seals in a face-hot row.
   "sealed-outbox": "outbox", "outbox-key": "face-hot",
-  "gate-root": "hot", "veil-archive": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "kahua-promoted": "face-hot", "kahua-kapae-local": "face-hot", "face-owner": "face-hot",
+  "gate-root": "hot", "veil-archive": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "promoted": "face-hot", "kapae-local": "face-hot", "face-owner": "face-hot",
   "fk-slots": "floor", "face-index": "floor-plain",
   // A session switch's acts name two faces together, so they rest sealed on this vessel and in no document.
   "switch-acts": "hot", "enroll-pending": "hot", "grant-pending": "hot", "recovery-contact-set": "face-hot", "admissions": "hot", "anchors": "face-hot",
