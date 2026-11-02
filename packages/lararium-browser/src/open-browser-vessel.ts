@@ -79,7 +79,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  promotePanelApi, type PromotePanelApi, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
+  promotePanelApi, claimablePromoteApi, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
   readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
   type WideningRead,
 } from "@lararium/mesh";
@@ -342,7 +342,7 @@ export type ProjectionSurfaceFrame = LarMsg_Frame & { readonly surface: string }
 /** The ONE shared VesselResult (no vessel-by-type) + browser's one substrate extra. */
 export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPool, DaemonVmCore> {
   /** The public identity receipt composed by this vessel. Private signing material never leaves the vessel. */
-  promote: { api: PromotePanelApi & { subscribe(fn: () => void): () => void } } | null;
+  promote: ReturnType<typeof claimablePromoteApi> | null;
   identity: BrowserVesselIdentity;
   /**
    * Has this vessel crossed? True once the hearth it dials answered with a verdict signed by the pinned gate key
@@ -1403,10 +1403,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
               loaded: () => wiring.loadedFor(wiki), restart: () => wiring.restart(wiki) }), boardDoor,
           });
           const after = async <T>(action: () => Promise<T>): Promise<T> => { const result = await action(); notify(); return result; };
-          promotePanel = { api: { ...core, subscribe: fn => { listeners.add(fn); return () => { listeners.delete(fn); }; },
+          promotePanel = claimablePromoteApi({ ...core, subscribe: fn => { listeners.add(fn); return () => { listeners.delete(fn); }; },
             commit: (w, d) => after(() => core.commit(w, d)), drop: (w, d) => after(() => core.drop(w, d)),
             orphan: (w, d, x) => after(() => core.orphan(w, d, x)), raise: (w, d) => after(() => core.raise(w, d)), lower: (w, d) => after(() => core.lower(w, d)),
-          } };
+          });
         }
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
         if (foundingFace && social.identitiesUrl && social.circlesUrl) {

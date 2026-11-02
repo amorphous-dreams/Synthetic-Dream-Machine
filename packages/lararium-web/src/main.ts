@@ -506,11 +506,12 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
       ...(admit ? { admit } : {}),
       ...(meshLeaf ? { meshLeaf } : {}),
     });
-    vesselOpened = true;
-    if (result.promote) {
-      const panel = mountPromotePanel(document.getElementById("promote-panel")!, result.promote.api);
+    const promoteActions = result.promote?.claim() ?? null;
+    if (promoteActions) {
+      const panel = mountPromotePanel(document.getElementById("promote-panel")!, promoteActions);
       void panel.refresh();
     }
+    vesselOpened = true;
     pendingAdmit = null;
     // Identity custody stays in the browser vessel. The web surface renders the public receipt returned
     // by that opening instead of opening the key store a second time just to paint it.

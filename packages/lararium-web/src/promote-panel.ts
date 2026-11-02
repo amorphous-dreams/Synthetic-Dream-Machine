@@ -12,6 +12,7 @@ export interface PromotePanelApi {
 
 /** Render the vessel's promotion snapshot and route gestures back to it. */
 export function mountPromotePanel(host: HTMLElement, api: PromotePanelApi): { refresh(): Promise<void>; unmount(): void } {
+  const root = host.attachShadow({ mode: "closed" });
   let mounted = true, generation = 0;
   host.hidden = true;
   async function refresh(): Promise<void> {
@@ -27,7 +28,11 @@ export function mountPromotePanel(host: HTMLElement, api: PromotePanelApi): { re
       if (!entry.rows.length && !entry.waiting.length) section.append(document.createTextNode("no rites waiting"));
       const button = (row: HTMLElement, act: string, digest: string, label: string, run: () => Promise<unknown>) => {
         const b = document.createElement("button"); b.dataset.act = act; b.dataset.digest = digest; b.textContent = label;
-        b.addEventListener("click", () => {
+        b.addEventListener("click", (event) => {
+          if (event.isTrusted !== true || event.type !== "click") {
+            const message = document.createElement("span"); message.textContent = "promote-needs-hand"; row.append(message);
+            return;
+          }
           b.disabled = true;
           void (async () => { try { await run(); await refresh(); } catch (error) { const message = document.createElement("span"); message.textContent = error instanceof Error ? error.message : String(error); row.append(message); b.disabled = false; } })();
         }); row.append(b);
@@ -53,8 +58,8 @@ export function mountPromotePanel(host: HTMLElement, api: PromotePanelApi): { re
       }
       content.push(section);
     }
-    host.replaceChildren(...content); host.hidden = false;
+    root.replaceChildren(...content); host.hidden = false;
   }
   const unsubscribe = api.subscribe?.(() => { void refresh(); });
-  return { refresh, unmount() { mounted = false; generation++; unsubscribe?.(); host.replaceChildren(); host.hidden = true; } };
+  return { refresh, unmount() { mounted = false; generation++; unsubscribe?.(); root.replaceChildren(); host.hidden = true; } };
 }
