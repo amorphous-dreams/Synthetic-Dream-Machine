@@ -80,6 +80,19 @@ describe("kahua lift and withdraw acts", () => {
     expect(readKahuaAct(await signKahuaLift({ ...base, fields: { type: "text/vnd.tiddlywiki", tags: "notes" } }, root), { group: GROUP, grant }).ok).toBe(true);
   });
 
+  test("RED (LOW-3): an executable type with mime parameters refuses shape; CONTROL: a stylesheet and a tagged raw-markup item lift", async () => {
+    const { root, grant, origin } = await fixture();
+    const base = { group: GROUP, epoch: 0, title: "notes/a", text: "x", parent: null, origin, taint: [] as string[], sources: [{ title: "d", revision: "r" }] };
+    for (const type of ["application/javascript; charset=utf-8", " Text/JavaScript "]) {
+      await expect(signKahuaLift({ ...base, fields: { type } }, root), type).rejects.toThrow(/shape/);
+      const signed = await signKahuaLift({ ...base, fields: {} }, root);
+      expect(readKahuaAct({ ...signed, body: { ...signed.body, fields: { type } } }, { group: GROUP, grant }), type).toEqual({ ok: false, refusal: "shape" });
+    }
+    for (const fields of [{ type: "text/css", tags: "$:/tags/Stylesheet" }, { type: "text/vnd.tiddlywiki", tags: "$:/tags/RawMarkup" }]) {
+      expect(readKahuaAct(await signKahuaLift({ ...base, fields }, root), { group: GROUP, grant }), JSON.stringify(fields)).toMatchObject({ ok: true });
+    }
+  });
+
   test("RED (security read L1): a lift title carrying a dot segment refuses by name before any prefix reads it", async () => {
     const { grant, lift } = await fixture();
     await expect(lift("lar:///ha.ka.ba/bags/./daemon/flows/x", "x", null)).rejects.toThrow(/control-plane-title|shape/);
