@@ -351,7 +351,7 @@ describe.skipIf(coreBlobSkip)(
   });
 
   test("CONTROL: the classifier refuses a moved body, a lost sidecar field and a changed meta value", () => {
-    const body = "<<^ code=`&#x0002;`>>\n\n```toml meta\na = 1\n```\n\nprose\n\n<<^ code=`&#x0003;`>>ni:///sha-256;AAAA\n";
+    const body = "<<^ code=`&#x0002;`>>\n\n```toml meta\na = 1\n```\n\nprose\n\n<<^ code=`&#x0003;` bcc=`ni:///sha-256;AAAA`>>\n";
     expect(framingClassesOf({ body }, { body })).toEqual([]);
     expect(framingClassesOf({ body }, { body: body.replace("prose", "other prose") })).toBeNull();
     expect(framingClassesOf({ body, meta: "title: x\ntype: text/markdown\nsource: y\n" }, { body, meta: "title: x\ntype: text/plain" })).toBeNull();

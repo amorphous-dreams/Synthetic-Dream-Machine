@@ -52,7 +52,7 @@ a teaching frame stays byte-identical, ''unrendered''
 
 <<~/ahu>>
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;AAAA_probe_check
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;AAAA_probe_check\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
 
@@ -314,7 +314,7 @@ uri-path = "ha.ka.ba/lares/api/pono/probe2"
 
 ! A heading
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;PROBE2
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;PROBE2\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
 
@@ -419,7 +419,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/draft-probe"
 
 ! A draft
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;PROBE3
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;PROBE3\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const p = projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"] });
@@ -523,7 +523,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
 
 ! Target content
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;TARGET_CHECK
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;TARGET_CHECK\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
@@ -563,7 +563,7 @@ This is the slot the fragment names.
 
 <<~/ahu>>
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;WHOLE_CHECK
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;WHOLE_CHECK\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
@@ -595,7 +595,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
 
 <<~/ahu>>
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;WHOLE_CHECK
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;WHOLE_CHECK\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
@@ -614,7 +614,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
 
 ! No slots here
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;TARGET_CHECK
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;TARGET_CHECK\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
@@ -674,7 +674,7 @@ Real slot content, outside any fence.
 
 <<~/ahu>>
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;FENCED_CHECK
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;FENCED_CHECK\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/fenced-target" ? target : null);
@@ -703,7 +703,7 @@ Real slot content, no fence anywhere.
 
 <<~/ahu>>
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;UNFENCED_CHECK
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;UNFENCED_CHECK\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/unfenced-target" ? target : null);
@@ -750,7 +750,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
 
 ! Target content
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;TARGET_CHECK
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;TARGET_CHECK\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
 
@@ -775,7 +775,7 @@ title      = "The GNU Name System"
 
 ! GNU Name System reference meme
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;REF9498_CHECK
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;REF9498_CHECK\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
 
@@ -799,7 +799,7 @@ title      = "Key words for use in RFCs to Indicate Requirement Levels"
 
 ! RFC 2119 — Key Words
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;BCP14_CHECK
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;BCP14_CHECK\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
 
@@ -917,7 +917,7 @@ title      = "DOM Standard"
 
 ! DOM reference meme
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;DOM_CHECK
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;DOM_CHECK\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolveDom = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/ref/w3c-dom" ? nonStandard : null);
@@ -955,7 +955,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/draft-probe"
 
 <<~/ahu>>
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;PROBE3
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;PROBE3\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const p = projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"], resolve });
@@ -1118,7 +1118,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
 
 <<~ kahea uri=\`lar:///ha.ka.ba/lares/api/pono/lar-uri\`>>
 
-<<^ code=\`&#x0003;\`>>ni:///sha-256;TARGET_CHECK
+<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;TARGET_CHECK\`>>
 <<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);

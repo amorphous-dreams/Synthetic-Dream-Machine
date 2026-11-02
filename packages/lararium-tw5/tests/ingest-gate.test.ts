@@ -136,7 +136,7 @@ describe("ingest-gate — the Confluence triangle decides", () => {
   test("unparseable carrier → refuse, loudly", () => {
     // a closer swallowed by a TRULY unclosed fence (opened at the tail,
     // nothing after it to close on) — the doubling hazard
-    const broken = source.replace("\n<<^ code=`&#x0003;`>>", "\n```text\n<<^ code=`&#x0003;`>>");
+    const broken = source.replace("\n<<^ code=`&#x0003;`", "\n```text\n<<^ code=`&#x0003;`");
     expect(broken).not.toBe(source);
     const d = decideIngest({
       uri: URI, diskText: broken, diskHash: sha(broken),
@@ -158,10 +158,10 @@ describe("ingest-gate — the Confluence triangle decides", () => {
     test("a stale block check (mismatch) warns, never refuses — the body is unchanged, so it's framing-only", () => {
       // Re-stamp the disk text with a check that no longer covers the (unedited) span below it —
       // the exact shape `stampCarrier` repairs and `tools/meme-check-staged.sh` still refuses staged.
-      // The BCC slot sits OUTSIDE the STX..ETX span it checks, so the render through the shore comes
+      // The BCC value rides the ETX slot and the digest deletes it from the span it checks, so the render through the shore comes
       // back canonically identical — a stale check alone is the purest framing-only edit there is.
       const staleChecked = source.replace(
-        /ni:\/\/\/sha-256;[A-Za-z0-9_-]+(?=\n)/,
+        /ni:\/\/\/sha-256;[A-Za-z0-9_-]+(?=`>>\n)/,
         "ni:///sha-256;0000000000000000000000000000000000000000000",
       );
       expect(staleChecked).not.toBe(source);
@@ -179,7 +179,7 @@ describe("ingest-gate — the Confluence triangle decides", () => {
     test("a stale block check still warns when it DOES carry a real content edit — ingest, not refuse", () => {
       const staleAndEdited = source
         .replace("! Entry ~ Lararium Hearth", "! Entry ~ Lararium Hearth (edited)")
-        .replace(/ni:\/\/\/sha-256;[A-Za-z0-9_-]+(?=\n)/, "ni:///sha-256;0000000000000000000000000000000000000000000");
+        .replace(/ni:\/\/\/sha-256;[A-Za-z0-9_-]+(?=`>>\n)/, "ni:///sha-256;0000000000000000000000000000000000000000000");
       expect(staleAndEdited).not.toBe(source);
       const d = decideIngest({
         uri: URI, diskText: staleAndEdited, diskHash: sha(staleAndEdited),
@@ -193,7 +193,7 @@ describe("ingest-gate — the Confluence triangle decides", () => {
     });
 
     test("a TORN frame (STX, no ETX) still refuses — never an honest edit", () => {
-      const torn = source.slice(0, source.indexOf("<<^ code=`&#x0003;`>>"));
+      const torn = source.slice(0, source.indexOf("<<^ code=`&#x0003;`"));
       expect(torn).not.toBe(source);
       const d = decideIngest({
         uri: URI, diskText: torn, diskHash: sha(torn),
@@ -205,8 +205,8 @@ describe("ingest-gate — the Confluence triangle decides", () => {
 
     test("a SECOND live ETX (frame-malformed) still refuses — unchanged by the mismatch fix", () => {
       const doubled = source.replace(
-        "<<^ code=`&#x0003;`>>",
-        "<<^ code=`&#x0003;`>>\n\nstray trailing body\n\n<<^ code=`&#x0003;`>>",
+        /<<\^ code=`&#x0003;`[^\n]*>>/,
+        "$&\n\nstray trailing body\n\n$&",
       );
       expect(doubled).not.toBe(source);
       const d = decideIngest({

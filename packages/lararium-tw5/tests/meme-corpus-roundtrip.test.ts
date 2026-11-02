@@ -48,7 +48,7 @@ const squeeze = (s: string) =>
  * trailer is out of the comparison.
  */
 const sigilNorm = (s: string) => s
-  .replace(/<<\^ code=`&#x0002;`>>\n*/g, "").replace(/<<\^ code=`&#x0003;`>>[^\n]*\n*/g, "")
+  .replace(/<<\^ code=`&#x0002;`>>\n*/g, "").replace(/<<\^ code=`&#x0003;`[^\n]*\n*/g, "")
   .replace(/<<\^ code=`&#x0004;`[^\n]*>>\n*/g, "")
   .replace(/<<~\s*/g, "<<~ ").replace(/\s*>>/g, " >>")
   .replace(/<<\^ code=`&#x(0001|0011);`[^>\n]*?( from=`\?`)/g, "<<^ code=`&#x$1;`$2");  // the namespace re-homes (framing)
@@ -87,7 +87,7 @@ describe("liveClosers — a closer reads by its whole mark, never by its ticked 
     // The kupono cut ticks every named value, so the code rides inside a backtick pair the mask
     // reads as an inline code span. A bare `&#x0003;` match lands inside that span and masks;
     // the shore's own readers anchor at the mark's `<<^`, which stands outside it.
-    expect(liveClosers("<<^ code=`&#x0002;`>>\nbody\n<<^ code=`&#x0003;`>>ni:///sha-256;AAAA\n")).toBe(1);
+    expect(liveClosers("<<^ code=`&#x0002;`>>\nbody\n<<^ code=`&#x0003;` bcc=`ni:///sha-256;AAAA`>>\n")).toBe(1);
   });
 
   test("CONTROL — a closer QUOTED in inline code stays content and counts zero", () => {

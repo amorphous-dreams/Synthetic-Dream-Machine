@@ -26,8 +26,9 @@ type  = "text/memetic-wikitext+tiddlywiki"'
 BODY='```toml meta
 '"$META"'
 ```'
-BCC="ni:///sha-256;$(printf '%s' "$BODY" | sha256sum | cut -d' ' -f1)"
-printf '<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>\n\n<<^ code=`&#x0001;` from=`?` to=`lar:///x/y/z`>>\n<<^ code=`&#x0002;`>>\n\n%s\n\n<<^ code=`&#x0003;`>>%s\n\n<<^ code=`&#x0004;` to=`?`>>\n' "$BODY" "$BCC" > "$scratch/control.mem"
+# The check reads the span (STX sigil through the bare ETX sigil), base64url, and rides the ETX bcc slot.
+BCC="ni:///sha-256;$(printf '<<^ code=`&#x0002;`>>\n\n%s\n\n<<^ code=`&#x0003;`>>' "$BODY" | openssl dgst -sha256 -binary | basenc --base64url | tr -d '=\n')"
+printf '<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>\n\n<<^ code=`&#x0001;` from=`?` to=`lar:///x/y/z`>>\n<<^ code=`&#x0002;`>>\n\n%s\n\n<<^ code=`&#x0003;` bcc=`%s`>>\n\n<<^ code=`&#x0004;` to=`?`>>\n' "$BODY" "$BCC" > "$scratch/control.mem"
 git -C "$scratch" add -A
 
 # CONTROL: a carrier declaring bare, at the one address, passes.

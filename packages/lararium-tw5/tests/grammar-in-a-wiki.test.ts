@@ -176,13 +176,13 @@ describe.skipIf(wikiSkip)(
   test("CONTROL: the walk's probe reads a planted carrier with content past ETX as stranded", () => {
     const f = carrierFiles(REPO).find((c) => {
       const disk = readFileSync(path.join(REPO, c), "utf8");
-      return /^uri-path\s*=/m.test(disk) && /^<<\^ code=`&#x0003;`>>.*$/m.test(disk);
+      return /^uri-path\s*=/m.test(disk) && /^<<\^ code=`&#x0003;`.*>>$/m.test(disk);
     });
     expect(f).toBeDefined();
     const disk = readFileSync(path.join(REPO, f!), "utf8");
     const uri = /^uri-path\s*=\s*"([^"]+)"/m.exec(disk)![1]!;
     expect(strandsPastEtx(uri, disk)).toBe(false);
-    const planted = disk.replace(/^(<<\^ code=`&#x0003;`>>.*)$/m, "$1\n\nProse an author wrote below the close.");
+    const planted = disk.replace(/^(<<\^ code=`&#x0003;`.*>>)$/m, "$1\n\nProse an author wrote below the close.");
     expect(planted).not.toBe(disk);
     expect(strandsPastEtx(uri, planted)).toBe(true);
   });
@@ -219,7 +219,7 @@ describe.skipIf(wikiSkip)(
       if (!/^<<!DOCTYPE type=`memetic-wikitext\+tiddlywiki` spec=`lar:\/\/\/[^`]+`>>$/.test(head[0] ?? "")) faults.push(`${name}: no declaration`);
       if (!/^<<\^ code=`&#x(?:0001|0011);`[^>\n]*? from=`\?` to=`[^`\s]+`>>/m.test(first.out)) faults.push(`${name}: SOH states no bearing`);
       for (const [claim, mark] of [["STX", "0002"], ["ETX", "0003"]] as const) {
-        if (!first.out.includes(`<<^ code=\`&#x${mark};\`>>`)) faults.push(`${name}: no ${claim}`);
+        if (!first.out.includes(`<<^ code=\`&#x${mark};\``)) faults.push(`${name}: no ${claim}`);
       }
       if (!/^<<\^ code=`&#x(?:0004|0014);`[^>\n]*? to=`\?`>>/m.test(first.out)) faults.push(`${name}: EOT releases nothing`);
       const gotNs = /^<<\^ code=`&#x(?:0001|0011);` namespace=`([^`]*)`/m.exec(first.out)?.[1] ?? "";

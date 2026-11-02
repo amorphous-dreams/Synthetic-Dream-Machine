@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
-import { bccOfSpan, checkSpan, verdict } from "@lararium/memetic-frame";
+import { bccOfSpan, canonicalSpan, checkSpan, verdict } from "@lararium/memetic-frame";
 import { expandMemeRefs, memeticWikitextDeserializer, type TiddlerFields } from "../src/deserializer.js";
 import { memeticIngestOps } from "../src/ingest-gate.js";
 
@@ -43,8 +43,8 @@ describe("root metadata is authored body", () => {
     const rendered = expandMemeRefs(reader(map), URI)!;
     const span = checkSpan(rendered)!;
     const good = rendered.slice(span.start, span.end);
-    // ADJACENT: the check follows the ETX sigil with nothing between.
-    expect(rendered.slice(span.end).startsWith(bccOfSpan(good))).toBe(true);
+    // SEATED: the check rides the ETX mark's bcc slot, over the span with that run deleted.
+    expect(good.endsWith(`bcc=\`${bccOfSpan(canonicalSpan(good))}\`>>`)).toBe(true);
     const mutated = rendered.replace("root-authority", "root-mutated");
     const diagnostic = memeticIngestOps.deserialize(URI, mutated, verdict(mutated)).diagnostics;
     // GRADED A WARNING, never an error: a stale check on a human's disk edit is an edit, never

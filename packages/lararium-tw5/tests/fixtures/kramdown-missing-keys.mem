@@ -14,5 +14,5 @@ uri-path = "ha.ka.ba/lares/api/pono/draft-probe-missing-keys"
 Fixture for the REFUSAL control: title stands, but docname/cat/ipr/author/date do not — this must
 never weave under kramdown-rfc2629, whatever the live corpus carries on any given day.
 
-<<^ code=`&#x0003;`>>ni:///sha-256;4xaVF3pT5Iur08qsSk6Y6LYGsNwPQpJTlqG5btBz8uw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4xaVF3pT5Iur08qsSk6Y6LYGsNwPQpJTlqG5btBz8uw`>>
 <<^ code=`&#x0004;` to=`?`>>

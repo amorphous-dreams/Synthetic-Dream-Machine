@@ -50,7 +50,7 @@ DECL='<<!DOC''TYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lare
 
 	<<~/ahu>>
 
-	<<^ code=`&#x0003;`>>ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+	<<^ code=`&#x0003;` bcc=`ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`>>
 
 	<<^ code=`&#x0004;` to=`?`>>
 	MEM
