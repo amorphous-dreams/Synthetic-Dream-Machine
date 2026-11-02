@@ -61,17 +61,23 @@ export function isPlainMap(value: unknown): value is Record<string, unknown> {
 // A map the house reads BY KEY (a doc's `tiddlers`, a record's fields, a board's rows) answers its OWN
 // properties only. Automerge materializes a key spelled `__proto__` as the object's PROTOTYPE, so a hostile
 // writer's `tiddlers.__proto__ = { t: … }` makes a bare `tiddlers[t]` and `t in tiddlers` answer a phantom
-// record while `Object.keys` stays empty; and `constructor` answers every plain object's inherited function.
-// A doc carrying such a key loads under every engine version (only a LOCAL write throws, from 3.5.0), so
-// the read door cannot lean on the write side: it reads `Object.hasOwn`, and a prototype key never answers.
-// The ingest shore (`prototype-key-shore.ts`) refuses the bytes by name; the write door (`title-law.ts`,
-// `stored-record.ts`) refuses a local key by name. KEEP: these refuse a LIVE hostile form, never a retired
-// spelling, so no pyre burns them.
+// record while `Object.keys` stays empty; and a bare lookup of `constructor` answers every plain object's
+// inherited function. A doc carrying a `__proto__` key loads under every engine version (only a LOCAL write
+// throws, from 3.5.0), so the read door cannot lean on the write side: it reads `Object.hasOwn`, and
+// `__proto__` never answers. The ingest shore (`prototype-key-shore.ts`) refuses those bytes by name; the
+// write door (`title-law.ts`, `stored-record.ts`) refuses a local `__proto__` key by name. KEEP: these refuse
+// a LIVE hostile form that no format cut retires, so no pyre burns them.
+//
+// ONE KEY REFUSES, `__proto__` (operator ruling 2026-11-02: no guard blocks a legitimate user choice).
+// Assigning it rewires a prototype; that rewiring forges the phantom record. `constructor` and `prototype`
+// stand as ordinary titles and field names: assigning either seats an own key and rewires nothing, and
+// the door answers an own entry only, so an absent `constructor` reads absent, never an inherited function.
+// The scan in `prototype-key-maps.test.ts` holds every by-key read of `tiddlers` and `blobs` to this door.
 
-/** The keys a by-key map never answers or stores: the names the object prototype chain owns. */
-export const PROTOTYPE_KEYS: ReadonlySet<string> = new Set(["__proto__", "constructor", "prototype"]);
+/** The key a by-key map never answers or stores: the one name whose assignment rewires a prototype. */
+export const PROTOTYPE_KEYS: ReadonlySet<string> = new Set(["__proto__"]);
 
-/** Whether a key names the prototype chain rather than an entry. */
+/** Whether a key rewires the prototype chain rather than naming an entry. */
 export function isPrototypeKey(key: string): boolean {
   return PROTOTYPE_KEYS.has(key);
 }
@@ -80,8 +86,8 @@ export function isPrototypeKey(key: string): boolean {
  * The entry a by-key map holds AS ITS OWN under `key`, or undefined: never an inherited or phantom value.
  * ONE DOOR FOR EVERY MAP: a doc's `tiddlers` and `blobs`, a record's fields and its `meta`, a floor's rows.
  * `__proto__` never answers (inside a change the proxy reports it own, and it names the prototype); a
- * `constructor` or `prototype` key answers only where the map holds it as its own, which a field may (user
- * space) and a title never does (the title law and the ingest shore refuse it by name).
+ * `constructor` or `prototype` key answers only where the map holds it as its own, as a title or a field
+ * may (user space), and an inherited one answers nothing.
  */
 export function ownEntry<T>(map: Readonly<Record<string, T>> | null | undefined, key: string): T | undefined {
   if (map === null || map === undefined || key === "__proto__") return undefined;
@@ -100,12 +106,12 @@ function isClassPrototype(proto: object): boolean {
 }
 
 /**
- * Where a MATERIALIZED doc carries a prototype key, or null where it carries none. A map whose prototype is
+ * Where a MATERIALIZED doc carries a `__proto__` key, or null where it carries none. A map whose prototype is
  * neither `Object.prototype`, null, nor a class's own prototype holds a `__proto__` key (the engine seated
- * it as the prototype, so no own-key listing ever shows it); a map naming `constructor` or `prototype` at
- * any depth holds a key no write door lets the house make. ONE KEY SET ON EVERY PATH (blind security read
- * B1): the change path, the load path and the write doors refuse the same three keys, so no record a peer
- * lands is one the house could never write, and none it writes is one a peer refuses.
+ * it as the prototype, so no own-key listing ever shows it); a plain view (a `JSON.parse`d body, a change
+ * proxy) may list it as an own key. ONE KEY SET ON EVERY PATH (blind security read B1): the change path, the
+ * load path and the write doors refuse the same one key, so no record a peer lands is one the house could
+ * never write, and none it writes is one a peer refuses.
  */
 export function prototypeKeyFault(value: unknown, path = "doc", depth = 0): string | null {
   if (typeof value !== "object" || value === null || depth > 64) return null;

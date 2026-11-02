@@ -39,7 +39,7 @@
 
 import { getConflicts } from "@automerge/automerge";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
-import { plainValue } from "./stored-value.js";
+import { ownEntry, plainValue } from "./stored-value.js";
 
 /** What a doc store raises when a change leaves concurrent values standing on a record. */
 export interface ParallelDraftsChange {
@@ -109,7 +109,8 @@ function same(a: unknown, b: unknown): boolean {
 export function readParallelDrafts(tiddlers: unknown, title: string): LarTiddlerRecord[] {
   if (!tiddlers || typeof tiddlers !== "object") return [];
   const map = tiddlers as Record<string, { tiddler?: Record<string, unknown>; meta?: Record<string, unknown> } | undefined>;
-  const record = map[title];
+  // THE KEY DOOR: a title the map does not hold as its own answers nothing, never an inherited `constructor`.
+  const record = ownEntry(map, title);
   if (!record) return [];
 
   type Draft = { actor: string; opIds: string[]; fields: Record<string, unknown>; conflicted: string[]; live: string[] };

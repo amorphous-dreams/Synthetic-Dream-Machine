@@ -11,7 +11,10 @@
  *   · a record's own maps  — `tiddler` (its fields) and `meta` (`tiddler.__proto__.text` forges a field).
  *   · floor rows           — a rows map handed to the floor read face (`rows.__proto__` forges a row).
  *
- * And the scan: no source file reads `blobs` by key but through the one door (`ownEntry` · `hasOwnEntry`).
+ * And the scan: no source file reads `blobs` or `tiddlers` (or a `tiddlers…` alias) by key, or asks `in`
+ * of a `tiddlers` map, but through the one door (`ownEntry` · `hasOwnEntry`). The door holds the narrowed law
+ * (operator ruling 2026-11-02): `__proto__` alone refuses by name, and `constructor` / `prototype` stand as
+ * ordinary names, safe only because no bare lookup ever answers an inherited `constructor`.
  * A record's maps need no scan of their own: a raw record exposes no field to the type, the stored-value
  * census reads every cast past it red, and the door's readers (`plainField` · `plainMeta` · `plainRecord`)
  * copy own entries into a fresh object, so a plain record downstream holds no prototype to forge.
@@ -98,32 +101,28 @@ describe("floor rows: the rows map the floor read face answers from", () => {
 /** `tiddlers.real` and `tiddlers.__proto__.["lar:///phantom"]` (prototype-key.test.ts's fixture). */
 const POISONED_B64 = "hW9KgxtHT78AoQIBEJG2bhA4/3CkEdPXXPS2Z3IBz7Rh8PLy5jblA7EAQQEWi/18WNVB8pHwYPxn4LT79QIHAQIDAhMDIwdAA0MCVgIMAQQCEBEMExMVPiECIwo0BEIMVghXGIABAgIAAgF+Bxh+07Wg1wYAfgABfwACBwABHgAAAQIBfwIEA38IAgkGCg4LAAUDAAAEBQAAAQ0AAAR+AAQCAQADfnoMBAF+cBIMAXwIdGlkZGxlcnMJX19wcm90b19fBHJlYWwFdGl0bGUABH0ObGFyOi8vL3BoYW50b20EdGV4dAV0aXRsZQAUHwB9AQd6BQF/AhYBBAQDFAMAfwQEAX8AAgQUAQQABBYDABQWcmVhbGZvcmdlZGxhcjovLy9waGFudG9tHwAB";
 
-describe("B1: one key set on every inbound path", () => {
-  /** A HAND-BUILT sync message whose raw change writes `tiddlers["constructor"]` — the reader's probe. */
+describe("B1: one key on every inbound path", () => {
+  /** A HAND-BUILT sync message whose raw change writes `tiddlers[key]` — the reader's probe. */
   const handBuilt = (key: string): Uint8Array => {
     const doc = change(change(init<{ tiddlers: Record<string, unknown> }>(), (d) => { d.tiddlers = {}; }), (d) => { d.tiddlers[key] = { tiddler: { title: key } }; });
     return encodeSyncMessage({ heads: [], need: [], have: [], changes: getChanges(init(), doc) } as never);
   };
-  test.each(["constructor", "prototype"])("RED: a raw change writing tiddlers[%s] names it, at the shore and the gated leg", (key) => {
+  test.each(["constructor", "prototype", "lar:///ordinary"])("a raw change writing tiddlers[%s] passes the shore and the gated leg: an ordinary name", (key) => {
     const msg = handBuilt(key);
-    expect(syncMessagePrototypeKey(msg)).toMatch(new RegExp(key));
-    expect(carriesPrototypeKeyReason({ type: "sync", senderId: "p", targetId: "q", documentId: "d", data: msg } as never)).toBe("prototype-key");
+    expect(syncMessagePrototypeKey(msg)).toBeNull();
+    expect(carriesPrototypeKeyReason({ type: "sync", senderId: "p", targetId: "q", documentId: "d", data: msg } as never)).toBeNull();
     const adapter = new EventEmitter();
     const seen: unknown[] = [];
     shoreInbound(adapter);
     adapter.on("message", (m) => seen.push(m));
     adapter.emit("message", { type: "sync", senderId: "p", targetId: "q", documentId: "d", data: msg });
-    expect(seen).toEqual([]);
+    expect(seen).toHaveLength(1);
   });
-  test("CONTROL: a raw change writing an ordinary title passes", () => {
-    expect(syncMessagePrototypeKey(handBuilt("lar:///ordinary"))).toBeNull();
-  });
-  test("the write door refuses the same three keys as a field, at any depth", () => {
-    for (const key of ["__proto__", "constructor", "prototype"]) {
-      let thrown: unknown;
-      try { storedValue(JSON.parse(`{"${key}": "v"}`)); } catch (e) { thrown = e; }
-      expect(isVerbRefusal(thrown) && (thrown as { reason: string }).reason).toBe("prototype-key");
-    }
+  test("the write door refuses `__proto__` as a field, at any depth, and lets the ordinary names stand", () => {
+    let thrown: unknown;
+    try { storedValue(JSON.parse(`{"__proto__": "v"}`)); } catch (e) { thrown = e; }
+    expect(isVerbRefusal(thrown) && (thrown as { reason: string }).reason).toBe("prototype-key");
+    for (const key of ["constructor", "prototype"]) expect(() => storedValue(JSON.parse(`{"${key}": "v"}`)), key).not.toThrow();
   });
 });
 
@@ -131,7 +130,6 @@ describe("B2: a merge over an existing record refuses a prototype key by name, n
   test.each([
     ["a field", '{"tiddler":{"title":"lar:///t/b2","text":"x","__proto__":"v"}}'],
     ["a meta key", '{"tiddler":{"title":"lar:///t/b2","text":"x"},"meta":{"__proto__":"v"}}'],
-    ["a constructor field", '{"tiddler":{"title":"lar:///t/b2","text":"x","constructor":"v"}}'],
   ])("RED: %s on a put over an existing record", async (_n, json) => {
     const repo = new Repo();
     const store = new AutomergeDocStore(repo.create<LarDoc>({ schemaVersion: "0.1", tiddlers: {} }));
@@ -140,6 +138,15 @@ describe("B2: a merge over an existing record refuses a prototype key by name, n
     try { await store.put(JSON.parse(json)); } catch (e) { thrown = e; }
     expect(thrown).not.toBeInstanceOf(RangeError);
     expect(isVerbRefusal(thrown) && (thrown as { reason: string }).reason).toBe("prototype-key");
+  });
+  test("CONTROL: a `constructor` field and a `prototype` meta key merge over an existing record and stand", async () => {
+    const repo = new Repo();
+    const store = new AutomergeDocStore(repo.create<LarDoc>({ schemaVersion: "0.1", tiddlers: {} }));
+    await store.put({ tiddler: { title: "lar:///t/b2", text: "first" } });
+    await store.put(JSON.parse('{"tiddler":{"title":"lar:///t/b2","text":"x","constructor":"v"},"meta":{"prototype":"m"}}'));
+    const got = (await store.get("lar:///t/b2"))!;
+    expect(Object.hasOwn(got.tiddler, "constructor") && (got.tiddler as Record<string, unknown>)["constructor"]).toBe("v");
+    expect(Object.hasOwn(got.meta ?? {}, "prototype") && (got.meta as Record<string, unknown>)["prototype"]).toBe("m");
   });
 });
 
@@ -175,7 +182,16 @@ const REPO = join(import.meta.dirname, "..", "..", "..");
 /** The door itself reads raw; every other file asks it. */
 const DOOR = "packages/lararium-mesh/src/stored-value.ts";
 
-/** Raw by-key reads of a document's `blobs` map. */
+/**
+ * A file whose flagged reads stand outside the door, with the reason and the exact count: a count that
+ * moves in either direction reads red, so the list never rots into a blanket.
+ */
+const EXEMPT: Readonly<Record<string, { readonly count: number; readonly reason: string }>> = {
+  "packages/lararium-tw5/src/deserializer.ts": { count: 2, reason: "indexes the deserialized ARRAY of a carrier's records (`tiddlers[0]`, its root), never a by-key map" },
+  "packages/lararium-tw5/src/modules/import-floor-upgrader.ts": { count: 1, reason: "TiddlyWiki's upgrader contract: the navigator sets every incoming title as an OWN key of the map before it calls, so the lookup answers only an own entry; the module ships inside the genesis plugin, which this lane leaves unbaked" },
+};
+
+/** Raw by-key reads of a document's `blobs` or `tiddlers` map, and `in` asked of a `tiddlers` map. */
 export function findRawMapReads(path: string, source: string): string[] {
   const code = source
     .replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, ""))
@@ -183,8 +199,13 @@ export function findRawMapReads(path: string, source: string): string[] {
   const found: string[] = [];
   code.split("\n").forEach((line, i) => {
     const at = `${path}:${i + 1}`;
-    // A read, never a write: `blobs[k] = …` builds a plain seed object.
-    for (const m of line.matchAll(/\bblobs\??\.?\[[^\]]+\](?!\s*=(?!=))/g)) found.push(`${at}: reads blobs by key (${m[0]})`);
+    // A read, never a write: `blobs[k] = …` builds a plain seed object, `tiddlers[t] = storedRecord(…)` writes
+    // through the write door, and `delete tiddlers[t]` removes an own key or nothing.
+    for (const m of line.matchAll(/\b(blobs|tiddlers\w*)\??\.?\[[^\]]+\](?!\s*=(?!=))/g)) {
+      if (/\bdelete\s+[\w.?]*$/.test(line.slice(0, m.index))) continue;
+      found.push(`${at}: reads ${m[1]} by key (${m[0]})`);
+    }
+    for (const m of line.matchAll(/\bin\s+[\w.?]*\btiddlers\w*\b/g)) found.push(`${at}: asks \`in\` of a tiddlers map (${m[0]})`);
   });
   return found;
 }
@@ -199,7 +220,7 @@ function walk(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-describe("the scan: no by-key read of blobs but through the door", () => {
+describe("the scan: no by-key read of blobs or tiddlers but through the door", () => {
   const ground = readdirSync(join(REPO, "packages")).flatMap((pkg) => {
     try { return walk(join(REPO, "packages", pkg, "src")); } catch { return []; }
   }).map((f) => relative(REPO, f)).sort();
@@ -209,14 +230,25 @@ describe("the scan: no by-key read of blobs but through the door", () => {
     expect(ground.length).toBeGreaterThan(500);
   });
 
-  test("★ every by-key read of blobs rides the door ★", () => {
-    const found = ground.filter((f) => f !== DOOR).flatMap((f) => findRawMapReads(f, readFileSync(join(REPO, f), "utf8")));
+  test("★ every by-key read of blobs and tiddlers rides the door ★", () => {
+    const found = ground.filter((f) => f !== DOOR && !(f in EXEMPT)).flatMap((f) => findRawMapReads(f, readFileSync(join(REPO, f), "utf8")));
     expect(found).toEqual([]);
+  });
+
+  test("every exemption still names exactly the reads it covers", () => {
+    for (const [file, { count, reason }] of Object.entries(EXEMPT)) {
+      expect(reason.length, file).toBeGreaterThan(20);
+      expect(findRawMapReads(file, readFileSync(join(REPO, file), "utf8")), file).toHaveLength(count);
+    }
   });
 
   test("CONTROL: the scanner names a planted raw read, and passes the door's spelling and a seed write", () => {
     expect(findRawMapReads("x.ts", "const c = doc.blobs?.[ENGINE_CORE_ID];")).toHaveLength(1);
     expect(findRawMapReads("x.ts", "const c = doc.blobs[id].sha256;")).toHaveLength(1);
     expect(findRawMapReads("x.ts", "const c = ownEntry(doc.blobs, ENGINE_CORE_ID);\nblobs[k] = v;")).toEqual([]);
+    expect(findRawMapReads("x.ts", "const r = doc.tiddlers[title];")).toHaveLength(1);
+    expect(findRawMapReads("x.ts", "const r = tiddlersNow?.[title] ? a : b;")).toHaveLength(1);
+    expect(findRawMapReads("x.ts", "if (title in doc.tiddlers) go();")).toHaveLength(1);
+    expect(findRawMapReads("x.ts", "doc.tiddlers[t] = storedRecord(r);\ndelete doc.tiddlers[t];\nconst r = ownEntry(doc.tiddlers, t);")).toEqual([]);
   });
 });

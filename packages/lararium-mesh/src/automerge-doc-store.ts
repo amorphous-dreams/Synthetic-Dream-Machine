@@ -87,13 +87,13 @@ function _sameValue(stored: unknown, next: unknown): boolean {
  */
 function _mergeRecord(target: MutableLarTiddlerRecord, record: LarTiddlerRecord): void {
   const nextMeta = record.meta ?? {};
-  // A KEY NAMING THE PROTOTYPE CHAIN REFUSES BY NAME, before the merge touches the document: a parsed
+  // A `__proto__` KEY REFUSES BY NAME, before the merge touches the document: a parsed
   // record's own `__proto__` field or meta key would reach the change proxy, where automerge 3.5.0 throws a
   // bare RangeError (blind security read B2). KEEP: a live hostile form.
   for (const [where, map] of [["field", record.tiddler], ["meta key", nextMeta]] as const) {
     for (const key of Object.keys(map)) {
       if (isPrototypeKey(key)) {
-        throw new VerbRefusal(PROTOTYPE_KEY_CODE, `${PROTOTYPE_KEY_CODE}: a record's ${where} \`${key}\` names the prototype chain, never an entry — the write refuses`);
+        throw new VerbRefusal(PROTOTYPE_KEY_CODE, `${PROTOTYPE_KEY_CODE}: a record's ${where} \`${key}\` rewires the prototype chain, never names an entry — the write refuses`);
       }
     }
   }
@@ -460,11 +460,17 @@ export class AutomergeDocStore implements LarTiddlerStore {
     // queue never hands a turn to the host between a root and its children.
     const tiddlersNow = this.handle.doc()?.tiddlers;
     const fired: LarTiddlerChange[] = [];
-    for (const record of moved) fired.push({ title: record.tiddler.title, record: tiddlersNow?.[record.tiddler.title] ? _freezeRecord(tiddlersNow[record.tiddler.title]!) : null, ...envelope });
-    for (const title of movedTombstones) fired.push({ title, record: tiddlersNow?.[title] ? _freezeRecord(tiddlersNow[title]!) : _tombstoneRecord(title), ...envelope });
+    for (const record of moved) {
+      const standing = ownEntry(tiddlersNow, record.tiddler.title);
+      fired.push({ title: record.tiddler.title, record: standing ? _freezeRecord(standing) : null, ...envelope });
+    }
+    for (const title of movedTombstones) {
+      const standing = ownEntry(tiddlersNow, title);
+      fired.push({ title, record: standing ? _freezeRecord(standing) : _tombstoneRecord(title), ...envelope });
+    }
     this.provider.fireFamily(fired);
     for (const [title, { record, fields }] of removing) {
-      const standing = tiddlersNow?.[title];
+      const standing = ownEntry(tiddlersNow, title);
       if (!standing || storedDeleted(standing)) continue;
       const kept = fields.filter((field) => plainField(standing, field) !== undefined && !surfaced.get(title)?.has(field));
       if (kept.length > 0) await this._surfaceRemoval(title, record, kept, origin, madeAt);
