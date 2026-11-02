@@ -2,7 +2,7 @@ import type { DaemonVmCore } from "./daemon-vm-core.js";
 
 export interface DaemonVmHolder {
   readonly vm: DaemonVmCore;
-  restart(reason: string): Promise<{ restarts: number }>;
+  restart(reason: string, opts?: { drain?: boolean }): Promise<{ restarts: number }>;
   guardAsk<T>(ask: { answer: Promise<T>; abandon: () => void }): { answer: Promise<T>; abandon: () => void };
   onRestarted(fn: (info: { reason: string; restarts: number }) => void | Promise<void>): () => void;
   readonly restarts: number;
@@ -27,6 +27,19 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
   let replaying = false;   // true while a re-opened island takes its registrations
   let restarting: Promise<{ restarts: number }> | undefined;
   let shutdown: Promise<{ acked: boolean }> | undefined;
+  // A drained restart waits for the calls and asks standing when it was asked; a call that begins later never extends the wait.
+  const drainers = new Set<{ left: Set<unknown>; done: () => void }>();
+  const leave = (settled: unknown) => {
+    for (const d of [...drainers]) { d.left.delete(settled); if (!d.left.size) d.done(); }
+  };
+  const drain = (): Promise<void> => {
+    const left = new Set<unknown>([...pending, ...pendingAsks]);
+    if (!left.size) return Promise.resolve();
+    return new Promise<void>((done) => {
+      const d = { left, done: () => { drainers.delete(d); done(); } };
+      drainers.add(d);
+    });
+  };
   const registrations = new Map<string, (vm: DaemonVmCore) => void | Promise<void>>();
   const asyncMethods = new Set(["mountHostWorkingLayer", "syncLegReady", "runAsFace", "lightFace", "dropFace", "worldlineCompare", "worldlineTrajectory", "resolveBinding"]);
   const registrationMethods = new Set(["mountMainVerbs", "onEvictRequest", "onResidencyOp", "onWikiAlert", "onFrame", "onControlResult", "onVerbEvent"]);
@@ -68,6 +81,7 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
           pending.add(reject);
           Promise.resolve(invoke(key, args)).then((result) => {
             if (!pending.delete(reject)) return;        // a restart already settled this call by name
+            queueMicrotask(() => leave(reject));
             if (generation === restarts && state === "ready") {
               if (key === "mountHostWorkingLayer") {
                 // The working layer mounts once per island: the vessel mounts it after boot, so a re-opened island needs it too.
@@ -79,7 +93,7 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
             }
             resolve(result);
           }, (err) => {
-            if (pending.delete(reject)) reject(err);
+            if (pending.delete(reject)) { reject(err); queueMicrotask(() => leave(reject)); }
           });
         });
       };
@@ -105,7 +119,7 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
       }
       let abandoned = false;
       const abandon = () => {
-        pendingAsks.delete(restartAsk);
+        if (pendingAsks.delete(restartAsk)) queueMicrotask(() => leave(restartAsk));
         if (!abandoned) { abandoned = true; ask.abandon(); }
       };
       let rejectAnswer!: (err: Error) => void;
@@ -114,7 +128,10 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
       };
       const answer = new Promise<T>((resolve, reject) => {
         rejectAnswer = reject;
-        ask.answer.then(value => { pendingAsks.delete(restartAsk); resolve(value); }, err => { pendingAsks.delete(restartAsk); reject(err); });
+        ask.answer.then(
+          value => { if (pendingAsks.delete(restartAsk)) queueMicrotask(() => leave(restartAsk)); resolve(value); },
+          err => { if (pendingAsks.delete(restartAsk)) queueMicrotask(() => leave(restartAsk)); reject(err); },
+        );
       });
       // The caller may deliberately discard an ask; its guarded rejection still remains observable.
       void answer.catch(() => undefined);
@@ -125,10 +142,16 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
       listeners.add(fn);
       return () => { listeners.delete(fn); };
     },
-    restart(reason) {
-      if (restarting) return restarting;
+    restart(reason, opts) {
+      if (restarting) {
+        // A plain restart asked while a drain waits ends the wait: what is still standing rejects by name.
+        if (!opts?.drain) for (const d of [...drainers]) d.done();
+        return restarting;
+      }
       const run = async () => {
         const prepared = o.prepare ? await o.prepare(reason) : undefined as P;
+        // A kapae arrival lands inside the very call that raised it: that call answers on the old island first, then the island swaps.
+        if (opts?.drain) await drain();
         // A direct shutdown that started while prepare awaited ends the restart: no replacement opens beside a closing island.
         if (state === "down" && shutdown) throw new DaemonRestarting("daemon-down");
         const wasReady = state === "ready";
