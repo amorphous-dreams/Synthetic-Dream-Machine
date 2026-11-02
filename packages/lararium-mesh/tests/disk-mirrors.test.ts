@@ -103,3 +103,22 @@ describe("resolveDiskMirrors — authority ∩ designation + per-wiki slug expan
     });
   });
 });
+
+// THE MIRROR ROOT SPLITS BY ORIGIN (operator ruling, 2026-11-01): a wiki whose bag stands in the canon source projects back
+// beside that source (the checkout, for source control); a wiki the house minted for itself projects under the state root.
+describe("resolveDiskMirrors — a per-wiki grant's root splits by the slug's origin", () => {
+  const split: DiskMirrorGrant = [
+    { bagId: "working", mirrorRoot: "/state/wikis", scope: "working", wikiSlot: "working", sourcedRoots: { elyncia: "/workspace/wikis" } },
+    { bagId: "self", mirrorRoot: "/state/bags", scope: "self", perWikiSlug: true, selfCanon: true, sourcedRoots: { elyncia: "/workspace/bags" } },
+  ];
+  test("RED: a sourced slug's working layer and canon project under the source's roots", () => {
+    const out = resolveDiskMirrors(split, [wikiSlotUri("elyncia", "working"), wikiBagUri("elyncia")], "elyncia");
+    expect(out.find((m) => m.bagId === wikiSlotUri("elyncia", "working"))?.mirrorRoot).toBe("/workspace/wikis/elyncia");
+    expect(out.find((m) => m.bagId === wikiBagUri("elyncia"))?.mirrorRoot).toBe("/workspace/bags/elyncia");
+  });
+  test("CONTROL: a slug with no source stays under the state roots", () => {
+    const out = resolveDiskMirrors(split, [wikiSlotUri("notes", "working"), wikiBagUri("notes")], "notes");
+    expect(out.find((m) => m.bagId === wikiSlotUri("notes", "working"))?.mirrorRoot).toBe("/state/wikis/notes");
+    expect(out.find((m) => m.bagId === wikiBagUri("notes"))?.mirrorRoot).toBe("/state/bags/notes");
+  });
+});

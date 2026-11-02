@@ -8,8 +8,12 @@
  *
  *   · every service command that names `--root` names `/state`, the per-vessel state mount, which equals its `LAR_ROOT`;
  *   · no service command names `/workspace` (or a path under it) as its root;
- *   · the canon SOURCE still reads the checkout through `LAR_BAGS=/workspace/bags`, and genesis rides the image
- *     (`LAR_GENESIS=/app/genesis`), so moving the root moves the projection alone.
+ *   · the canon SOURCE reads the checkout through `LAR_BAGS=/workspace/bags`, and genesis rides the image
+ *     (`LAR_GENESIS=/app/genesis`);
+ *   · the mirrors split by origin (operator ruling, 2026-11-01): a bag whose source stands under `LAR_BAGS` projects back
+ *     there, and the wiki it composes to `/workspace/wikis` (the tree `LAR_WIKIS` names for the CLI's ingest and cas
+ *     reads); the house's private planes (the daemon, the kahua) and every bag with no source project under `/state`
+ *     (`lararium-node` `projectionRoots`).
  *
  * A text scan over the compose file (no YAML parser stands in the workspace); the control below plants the /workspace wiring
  * and reads it red, so the scan cannot pass by finding nothing.
@@ -47,6 +51,7 @@ export function readComposeRoots(text) {
   }
   if (!/^\s*LAR_ROOT:\s*\/state\s*$/m.test(text)) refusals.push("LAR_ROOT does not read /state");
   if (!/^\s*LAR_BAGS:\s*\/workspace\/bags\s*$/m.test(text)) refusals.push("LAR_BAGS does not read /workspace/bags (the canon source)");
+  if (!/^\s*LAR_WIKIS:\s*\/workspace\/wikis\s*$/m.test(text)) refusals.push("LAR_WIKIS does not read /workspace/wikis (the canon-composed wikis' projection)");
   if (!/^\s*LAR_GENESIS:\s*\/app\/genesis\s*$/m.test(text)) refusals.push("LAR_GENESIS does not read /app/genesis");
   return { roots, refusals };
 }
