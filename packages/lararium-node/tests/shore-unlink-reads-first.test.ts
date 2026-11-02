@@ -358,4 +358,34 @@ describe("a carrier left one mirror for another", () => {
     expect(existsSync(clean.at("a/note.md"))).toBe(false);
     expect(clean.conflicts).toEqual([]);
   });
+
+  test("the mirror it moved into already holds its bytes: nothing writes there, and the untouched file it left still leaves", async () => {
+    // The seed's road for a leaf bag: LOAD onto the wiki's working layer (whose mirror writes the file), then
+    // MOVE the layer into canon, whose mirror already holds the same bytes. The canon flush writes nothing,
+    // and the file in the working layer's mirror must leave all the same, or a copy of canon rests there.
+    const s = stand();
+    await s.projector.idle();
+    expect(read(s.at("a/note.md"))).toBe(BODY);
+    mkdirSync(dirname(s.at("a/note.md", OTHER)), { recursive: true });
+    writeFileSync(s.at("a/note.md", OTHER), BODY, "utf-8");
+    writeFileSync(s.at("a/note.md.meta", OTHER), META, "utf-8");
+    s.owner.bag = OTHER; s.holding.clear(); s.holding.add(OTHER);
+    await s.projector.sense([URI]);
+    expect(read(s.at("a/note.md", OTHER))).toBe(BODY);
+    expect(existsSync(s.at("a/note.md"))).toBe(false);
+    expect(existsSync(s.at("a/note.md.meta"))).toBe(false);
+    expect(s.conflicts).toEqual([]);
+  });
+
+  test("CONTROL: the bag it shadows still holds it: the file in that mirror stays when the other flush writes nothing", async () => {
+    const s = stand();
+    await s.projector.idle();
+    mkdirSync(dirname(s.at("a/note.md", OTHER)), { recursive: true });
+    writeFileSync(s.at("a/note.md", OTHER), BODY, "utf-8");
+    writeFileSync(s.at("a/note.md.meta", OTHER), META, "utf-8");
+    s.owner.bag = OTHER; s.holding.add(OTHER);
+    await s.projector.sense([URI]);
+    expect(read(s.at("a/note.md"))).toBe(BODY);
+    expect(s.conflicts).toEqual([]);
+  });
 });
