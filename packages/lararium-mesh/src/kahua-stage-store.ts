@@ -17,14 +17,11 @@
  */
 import type { DocHandle } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
-import { kahuaActRecords, kahuaItemTiddlers, kahuaStageDocUrl, readKahuaStage } from "./kahua-stage.js";
+import { kahuaActRecords, kahuaItemTiddlers, kahuaStageDocUrl, readKahuaStage, type KahuaFoldFace } from "./kahua-stage.js";
 import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
 
-/** The face a stage reads under: its group and the grant every act's signer must hold. */
-export interface KahuaStageFace {
-  readonly group: string;
-  readonly grant: (signer: string) => boolean;
-}
+/** The face a stage reads under: its group, the current roster every standing act's signer holds, the epoch rosters history reads. */
+export type KahuaStageFace = KahuaFoldFace;
 
 export class KahuaStageWriteRefusal extends Error {
   override name = "KahuaStageWriteRefusal";

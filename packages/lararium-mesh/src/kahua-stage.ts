@@ -14,6 +14,14 @@
  *   lift      — an item's revision: its title, body and fields, its parent revision (null for a first lift), its
  *               origin {seat, device, session}, its taint list and the daemon sources it distils. Supersede, never edit.
  *   withdraw  — tombstones one named revision: recall drops it on every reader; history keeps it.
+ *   carry     — names earlier acts (by cid) that keep standing under the current root: a batch re-lift after a rotation.
+ *
+ * STANDING READS CURRENT-ONLY. Acts carry no sequence, so a root the KEL rotated past could sign an act naming its own old
+ * epoch at any later time, and no reader could tell it from one signed before the rotation. So an act STANDS where its
+ * signer sits in the current roster (`grant`), or where a carry the current root signed names its cid; a carry stands by
+ * the same rule, so each rotation drops the earlier items until the new root carries them again. An act whose signer sat
+ * in the roster of the epoch it names (`signedAt`) but stands no more reads in HISTORY (`history`, `revision`), never as a
+ * head and never deleted; an act no roster of its epoch seats refuses at `grant`.
  *
  * THE FOLD reads no arrival order and no clock: a descendant replaces its parent; two lifts naming one parent (or two
  * first lifts of one title) stand as siblings, both visible; a parent the reader does not hold reads `orphan`, never a
@@ -58,7 +66,23 @@ export interface KahuaLiftBody {
 export interface KahuaWithdrawBody {
   readonly kind: typeof KAHUA_ACT_DOMAIN; readonly group: string; readonly act: "withdraw"; readonly epoch: number; readonly target: string;
 }
-export type KahuaActBody = KahuaLiftBody | KahuaWithdrawBody;
+export interface KahuaCarryBody {
+  readonly kind: typeof KAHUA_ACT_DOMAIN; readonly group: string; readonly act: "carry"; readonly epoch: number;
+  /** The earlier acts' cids that keep standing, each named once. */
+  readonly carries: readonly string[];
+}
+export type KahuaActBody = KahuaLiftBody | KahuaWithdrawBody | KahuaCarryBody;
+/** The most cids one carry names; a larger stage carries in several acts. */
+export const KAHUA_CARRY_MAX = 4096;
+/**
+ * The face a fold reads under: its group, the CURRENT roster (`grant`), and, where the caller holds the lineage, the roster
+ * of each earlier epoch (`signedAt`), which seats an earlier act in history. Without `signedAt` history holds what stands.
+ */
+export interface KahuaFoldFace {
+  readonly group: string;
+  readonly grant: (signer: string) => boolean;
+  readonly signedAt?: (epoch: number, signer: string) => boolean;
+}
 export interface SignedKahuaAct { readonly body: KahuaActBody; readonly signer: string; readonly sig: string }
 export type KahuaActRefusal = "shape" | "domain" | "group" | "signature" | "grant" | "origin" | "taint" | "sources" | "parent";
 type Signer = { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> };
@@ -83,6 +107,10 @@ function bodyFault(b: Record<string, unknown>): KahuaActRefusal | null {
   if (!string(b.group) || !Number.isSafeInteger(b.epoch) || (b.epoch as number) < 0) return "shape";
   if (b.act === "lift") return liftFault(b);
   if (b.act === "withdraw") return hex64(b.target) ? null : "shape";
+  if (b.act === "carry") {
+    const c = b.carries;
+    return Array.isArray(c) && c.length > 0 && c.length <= KAHUA_CARRY_MAX && c.every(hex64) && new Set(c).size === c.length ? null : "shape";
+  }
   return "shape";
 }
 
@@ -103,26 +131,47 @@ export function signKahuaWithdraw(parts: Omit<KahuaWithdrawBody, "kind" | "act">
   return sign({ ...parts, kind: KAHUA_ACT_DOMAIN, act: "withdraw" }, signer);
 }
 
-/** Judge one carried record: shape, domain, face, signature, then the operator's grant over its signer. */
-export function readKahuaAct(raw: unknown, opts: { readonly group: string; readonly grant: (signer: string) => boolean }):
-  { readonly ok: true; readonly act: SignedKahuaAct; readonly cid: string } | { readonly ok: false; readonly refusal: KahuaActRefusal } {
+export function signKahuaCarry(parts: Omit<KahuaCarryBody, "kind" | "act">, signer: Signer): Promise<SignedKahuaAct> {
+  return sign({ ...parts, carries: [...parts.carries], kind: KAHUA_ACT_DOMAIN, act: "carry" }, signer);
+}
+
+type Judged = { readonly ok: true; readonly act: SignedKahuaAct; readonly cid: string; readonly current: boolean } | { readonly ok: false; readonly refusal: KahuaActRefusal };
+
+/** Judge one record against the face: shape, domain, group, signature, then which roster seats its signer. */
+function judgeKahuaAct(raw: unknown, face: KahuaFoldFace): Judged {
   if (!object(raw) || !object(raw.body) || !hex64(raw.signer) || !string(raw.sig)) return { ok: false, refusal: "shape" };
   const body = raw.body;
   if (body.kind !== KAHUA_ACT_DOMAIN) return { ok: false, refusal: "domain" };
-  if (body.group !== opts.group) return { ok: false, refusal: "group" };
+  if (body.group !== face.group) return { ok: false, refusal: "group" };
   const fault = bodyFault(body);
   if (fault) return { ok: false, refusal: fault };
   try { if (!verifyEd25519(raw.sig, canonicalJsonBytes(body), raw.signer)) return { ok: false, refusal: "signature" }; }
   catch { return { ok: false, refusal: "signature" }; }
-  if (!opts.grant(raw.signer)) return { ok: false, refusal: "grant" };
+  // Where the lineage reads, the signer must sit in the roster of the epoch the act names; the current roster decides standing.
+  const seatedAtEpoch = face.signedAt ? face.signedAt(body.epoch as number, raw.signer) : null;
+  const current = face.grant(raw.signer) && seatedAtEpoch !== false;
+  if (!current && seatedAtEpoch !== true) return { ok: false, refusal: "grant" };
   const act: SignedKahuaAct = { body: body as unknown as KahuaActBody, signer: raw.signer, sig: raw.sig };
-  return { ok: true, act, cid: kahuaActCid(act) };
+  return { ok: true, act, cid: kahuaActCid(act), current };
+}
+
+/** Judge one carried record for landing: shape, domain, face, signature, then the operator's CURRENT grant over its signer. */
+export function readKahuaAct(raw: unknown, opts: KahuaFoldFace):
+  { readonly ok: true; readonly act: SignedKahuaAct; readonly cid: string } | { readonly ok: false; readonly refusal: KahuaActRefusal } {
+  const read = judgeKahuaAct(raw, opts);
+  if (!read.ok) return read;
+  if (!read.current) return { ok: false, refusal: "grant" };
+  return { ok: true, act: read.act, cid: read.cid };
 }
 
 export interface KahuaRevision {
   readonly cid: string; readonly title: string; readonly text: string; readonly fields: Readonly<Record<string, string>>;
   readonly parent: string | null; readonly origin: KahuaOrigin; readonly taint: readonly string[]; readonly sources: readonly KahuaSource[];
   readonly proposal: string | null; readonly signer: string; readonly withdrawn: boolean;
+  /** The root epoch the lift names. */
+  readonly epoch: number;
+  /** Whether the revision stands under the current root (its own signer, or a standing carry); false: history alone. */
+  readonly standing: boolean;
 }
 export interface KahuaItem { readonly title: string; readonly status: "standing" | "siblings"; readonly heads: readonly KahuaRevision[] }
 export interface KahuaStageReading {
@@ -130,7 +179,7 @@ export interface KahuaStageReading {
   list(): KahuaItem[];
   /** One title's standing item, or null where none stands (never lifted, or every head withdrawn). */
   get(title: string): KahuaItem | null;
-  /** Every verified revision of a title, withdrawn ones included. */
+  /** Every verified revision of a title, withdrawn ones and those no current root stands behind included. */
   history(title: string): KahuaRevision[];
   /** A verified revision by cid. */
   revision(cid: string): KahuaRevision | null;
@@ -139,32 +188,42 @@ export interface KahuaStageReading {
 }
 
 /** Fold a stage's carried records. Pure: the same records read the same on every device, in any order. */
-export function readKahuaStage(records: readonly unknown[], opts: { readonly group: string; readonly grant: (signer: string) => boolean }): KahuaStageReading {
-  const lifts = new Map<string, { act: SignedKahuaAct; body: KahuaLiftBody }>();
-  const withdrawn = new Set<string>();
+export function readKahuaStage(records: readonly unknown[], opts: KahuaFoldFace): KahuaStageReading {
+  const acts = new Map<string, { act: SignedKahuaAct; current: boolean }>();
   const refused: { cid: string | null; refusal: KahuaActRefusal }[] = [];
-  const withdraws: string[] = [];
   for (const raw of records) {
-    const read = readKahuaAct(raw, opts);
+    const read = judgeKahuaAct(raw, opts);
     if (!read.ok) {
       let cid: string | null = null;
       try { cid = object(raw) && object(raw.body) && string(raw.signer) ? kahuaActCid(raw as unknown as SignedKahuaAct) : null; } catch { cid = null; }
       refused.push({ cid, refusal: read.refusal });
       continue;
     }
-    if (read.act.body.act === "lift") lifts.set(read.cid, { act: read.act, body: read.act.body });
-    else withdraws.push(read.act.body.target);
+    acts.set(read.cid, { act: read.act, current: read.current });
   }
-  for (const target of withdraws) if (lifts.has(target)) withdrawn.add(target);
+  // STANDING: a current act, or one a current carry names. Carries never chain: only a carry the current roster signed names.
+  const standing = new Set<string>();
+  for (const [cid, { current }] of acts) if (current) standing.add(cid);
+  for (const cid of [...standing]) {
+    const body = acts.get(cid)!.act.body;
+    if (body.act === "carry") for (const named of body.carries) if (acts.has(named)) standing.add(named);
+  }
+  const lifts = new Map<string, { act: SignedKahuaAct; body: KahuaLiftBody }>();
+  for (const [cid, { act }] of acts) if (act.body.act === "lift") lifts.set(cid, { act, body: act.body });
+  const withdrawn = new Set<string>();
+  for (const cid of standing) {
+    const body = acts.get(cid)!.act.body;
+    if (body.act === "withdraw" && lifts.has(body.target)) withdrawn.add(body.target);
+  }
   const rev = (cid: string): KahuaRevision => {
     const { act, body } = lifts.get(cid)!;
     return { cid, title: body.title, text: body.text, fields: body.fields, parent: body.parent, origin: body.origin, taint: body.taint,
-      sources: body.sources, proposal: body.proposal ?? null, signer: act.signer, withdrawn: withdrawn.has(cid) };
+      sources: body.sources, proposal: body.proposal ?? null, signer: act.signer, withdrawn: withdrawn.has(cid), epoch: body.epoch, standing: standing.has(cid) };
   };
-  // A parent counts only as a held, verified revision of the SAME title.
+  // A parent counts only as a held, verified revision of the SAME title; only a standing child supersedes it.
   const orphanCids = new Set<string>(), superseded = new Set<string>();
   for (const [cid, { body }] of lifts) {
-    if (body.parent === null) continue;
+    if (body.parent === null || !standing.has(cid)) continue;
     const parent = lifts.get(body.parent);
     if (!parent || parent.body.title !== body.title) orphanCids.add(cid);
     else superseded.add(body.parent);
@@ -172,7 +231,7 @@ export function readKahuaStage(records: readonly unknown[], opts: { readonly gro
   const byTitle = new Map<string, string[]>();
   for (const [cid, { body }] of lifts) byTitle.set(body.title, [...(byTitle.get(body.title) ?? []), cid]);
   const itemOf = (title: string): KahuaItem | null => {
-    const heads = (byTitle.get(title) ?? []).filter((cid) => !superseded.has(cid) && !orphanCids.has(cid) && !withdrawn.has(cid)).sort().map(rev);
+    const heads = (byTitle.get(title) ?? []).filter((cid) => standing.has(cid) && !superseded.has(cid) && !orphanCids.has(cid) && !withdrawn.has(cid)).sort().map(rev);
     if (heads.length === 0) return null;
     return { title, status: heads.length === 1 ? "standing" : "siblings", heads };
   };
@@ -184,6 +243,18 @@ export function readKahuaStage(records: readonly unknown[], opts: { readonly gro
     orphans: [...orphanCids].sort().map(rev),
     refused,
   };
+}
+
+/**
+ * The cids a `carry` restores when the operator carries the whole stage: each title's head as the history would read had
+ * every earlier root kept standing (a revision a later verified lift superseded, or a verified withdraw tombstoned, stays
+ * down), less what already stands. The operator's hand signs the carry; this names what it would carry.
+ */
+export function kahuaCarryCandidates(records: readonly unknown[], face: KahuaFoldFace): string[] {
+  if (!face.signedAt) return [];
+  const now = readKahuaStage(records, face);
+  const kept = readKahuaStage(records, { group: face.group, grant: () => true, signedAt: face.signedAt });
+  return kept.list().flatMap((item) => item.heads.map((h) => h.cid)).filter((cid) => now.revision(cid)?.standing !== true).sort();
 }
 
 export function kahuaActKey(group: string, cid: string): string { return `${KAHUA_ACT_PREFIX}${encodeURIComponent(group)}/${cid}`; }
