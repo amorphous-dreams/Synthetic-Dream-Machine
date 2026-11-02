@@ -51,6 +51,7 @@ import {
   mkTeardown,
   isIslandToVesselMsg,
   CROSSROADS_DOC_URI,
+  kahuaRecipe,
   verbArgsFromPayload,
   mkLarResend,
   readLarControlResult,
@@ -662,10 +663,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // pointer, or skips gracefully when a vessel hasn't registered it) + registerBags (so keyhive can access it).
   // Writing the catalog pointer rides the vessel boot (registerCrossroadsPointer), keyed by the nexus the
   // vessel belongs to — that value differs (a node's own key vs a browser's relay key), the daemon code does not.
-  const daemonRecipe: WikiRecipe = {
+  // The daemon wiki IS the kahua stack: the face's kahua bag rides above the other library bags, read-only.
+  const daemonRecipe: WikiRecipe = kahuaRecipe({
     ...recipe,
     libraryBags: [...(recipe.libraryBags ?? []), CROSSROADS_DOC_URI],
-  };
+  });
   const daemonAuthWithCrossroads = daemonAuth
     ? { ...daemonAuth, registerBags: [...new Set([...daemonAuth.registerBags, CROSSROADS_DOC_URI])] }
     : daemonAuth;
