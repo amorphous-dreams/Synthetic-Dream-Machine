@@ -52,6 +52,8 @@ export interface BuildIslandRecipeInput {
   floorRows?: readonly Readonly<Record<string, LarTiddlerRecord>>[];
   /** The face the kahua stage reads under; absent or null, the kahua layer stands empty. */
   kahuaFace?: () => KahuaStageFace | null;
+  /** Wakes the kahua layer's re-fold when the face's lineage moves (`liveKahuaFace`). */
+  kahuaFaceWatch?: (fn: () => void) => () => void;
 }
 
 /**
@@ -91,7 +93,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     // THE KAHUA SLOT READS THE FOLD: any member of the face writes any tiddler into the stage doc, so the layer serves the
     // verified standing items alone, through the one seam (`kahuaLayerStore`), and never the doc's titles.
     const base: LarTiddlerStore = slot === KAHUA_BAG
-      ? kahuaLayerStore(handle, input.kahuaFace ?? (() => null))
+      ? kahuaLayerStore(handle, input.kahuaFace ?? (() => null), input.kahuaFaceWatch)
       : new AutomergeDocStore(handle, slot);
     const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRows ?? [], base }) : base;
     // Oracle takes no writes; other CRDT slots accept writes through the in-wiki bag-paths cascade

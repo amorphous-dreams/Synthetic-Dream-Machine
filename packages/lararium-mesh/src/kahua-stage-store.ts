@@ -11,20 +11,20 @@
  * names where to mount, never what to trust, so a row pointing at a copy that drops a withdraw reads nothing. And the
  * face must read (`face()` answers its group and grant): no face, no stage.
  *
+ * The face can move under a running reader (a rotation merged into the KEL board replica): `faceChanges` wakes the same
+ * re-fold the doc's changes run, so subscribers hear the items a new roster drops or a carry restores.
+ *
  * The store takes no write: a lift lands through the kahua door alone, as a signed act.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import type { DocHandle } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
-import { kahuaActRecords, kahuaItemTiddlers, kahuaStageDocUrl, readKahuaStage } from "./kahua-stage.js";
+import { kahuaActRecords, kahuaItemTiddlers, kahuaStageDocUrl, readKahuaStage, type KahuaFoldFace } from "./kahua-stage.js";
 import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
 
-/** The face a stage reads under: its group and the grant every act's signer must hold. */
-export interface KahuaStageFace {
-  readonly group: string;
-  readonly grant: (signer: string) => boolean;
-}
+/** The face a stage reads under: its group, the current roster every standing act's signer holds, the epoch rosters history reads. */
+export type KahuaStageFace = KahuaFoldFace;
 
 export class KahuaStageWriteRefusal extends Error {
   override name = "KahuaStageWriteRefusal";
@@ -47,6 +47,8 @@ export function kahuaStageStore(opts: {
   readonly bagId?: string;
   /** The face this stage reads under, read at each fold; null where no face stands. */
   readonly face: () => KahuaStageFace | null;
+  /** Wake a re-fold when the face may have moved; returns the unsubscribe. */
+  readonly faceChanges?: (fn: () => void) => () => void;
 }): KahuaStageStore {
   const { handle } = opts;
   const items = (): Items => {
@@ -75,6 +77,7 @@ export function kahuaStageStore(opts: {
     told = next;
   };
   handle.on("change", onChange);
+  opts.faceChanges?.(onChange);
   const refuse = async (title: string): Promise<never> => { throw new KahuaStageWriteRefusal(title); };
 
   return {

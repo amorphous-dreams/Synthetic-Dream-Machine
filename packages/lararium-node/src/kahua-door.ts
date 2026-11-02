@@ -7,19 +7,28 @@
  *   mint      — once per face: the verified projection already naming a stage returns that url and signs nothing (a second
  *               mint, a second device); otherwise the operator's grant stands the doc at the face's derived address
  *               (`kahuaStageDocUrl`) and pins it by a root-signed `plane` act.
+ *               ONE EXECUTOR: the pin appends to the face's linear `@persona` chain at the replica's head, so two hearths whose
+ *               replicas stand even one act apart would sign two pins at one seq and fork the whole log; the derived url
+ *               fences the address, never the head. So the mint runs on the face's FOUNDING HEARTH alone (the verified
+ *               projection's first admission, `foundingHearthOf`); every other device refuses `kahua-mint-founder-hearth`,
+ *               signs nothing, and adopts the pin once its replica holds it. The cost: a face whose founding hearth is lost
+ *               pins no stage until an operator act names another executor.
  *   propose   — the device's atom signs ONE batch on the face's intents plane (any seat may; it grants nothing).
  *   lift      — the lōkahi CAP first (Keyhive: does this device's face hold the stage), then the operator's GRANT (a current
  *               root key in hand), each refused by its own name; an AI seat's hand (the atom) never stands in for the grant.
  *   withdraw  — the same two gates, naming a held revision.
+ *   carry     — the same two gates, then ONE root-signed act at the current epoch naming the earlier revisions that keep
+ *               standing after a rotation (`--all`: each title's head as the history reads it); a batch re-lift.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { randomBytes } from "node:crypto";
+import { foundingHearthOf } from "@lararium/keyhive";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  KAHUA_BAG, KAHUA_PLANE, buildKahuaProposal, buildOutcome, intentEntryCid, intentEntryRecordsOfGroup, intentId,
-  kahuaActRecords, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, materializeSharedLarDoc, readIntentEntry, readKahuaAct, readKahuaProposal,
-  readKahuaStage, signKahuaLift, signKahuaWithdraw, signPersonaAct, writeIntentEntry, writeKahuaAct, writePersonaAct,
+  KAHUA_BAG, KAHUA_PLANE, buildKahuaProposal, buildOutcome, intentEntryCid, intentId,
+  KAHUA_CARRY_MAX, kahuaActRecords, kahuaBodyDigest, kahuaCarryCandidates, kahuaPlaneUrl, kahuaStageDocUrl, materializeSharedLarDoc, findKahuaProposal, readKahuaAct,
+  readKahuaStage, signKahuaCarry, signKahuaLift, signKahuaWithdraw, signPersonaAct, writeIntentEntry, writeKahuaAct, writePersonaAct,
   type IntentVerbRegistry, type KahuaItem, type KahuaRevision, type KahuaSource, type LarDoc, type PersonaProjection,
 } from "@lararium/mesh";
 
@@ -37,6 +46,8 @@ export interface KahuaDoorPorts {
   readonly epoch: () => number;
   /** Whether a key stands in the face's CURRENT root roster: the operator's grant. */
   readonly currentSigner: (key: string) => boolean;
+  /** Whether a key sat in the roster of an earlier epoch: seats an earlier act in history, never lets it stand. */
+  readonly signedAt?: (epoch: number, key: string) => boolean;
   /** This device's atom: it signs proposals and outcomes, never an act that folds on the stage. */
   readonly atom: Signer;
   readonly persona: DocHandle<LarDoc>;
@@ -77,7 +88,9 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     return url;
   };
   const stage = async (): Promise<DocHandle<LarDoc>> => ports.repo.find<LarDoc>(stageUrl() as never);
-  const reading = async () => readKahuaStage(kahuaActRecords((await stage()).doc(), group), { group, grant: ports.currentSigner });
+  const foldFace = () => ({ group, grant: ports.currentSigner, ...(ports.signedAt ? { signedAt: ports.signedAt } : {}) });
+  const records = async () => kahuaActRecords((await stage()).doc(), group);
+  const reading = async () => readKahuaStage(await records(), foldFace());
   const grant = async (): Promise<Signer> => {
     let signer: Signer;
     try { signer = await ports.rootSigner(); }
@@ -99,22 +112,19 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     return read.cid;
   };
   const proposalOf = (id: string) => {
-    const devices = new Set(projection().devices);
-    for (const raw of intentEntryRecordsOfGroup(ports.intents.doc(), group)) {
-      const read = readIntentEntry(raw, { group, authorize: (signer) => devices.has(signer) });
-      if (!read.ok || read.entry.body.entry !== "intent") continue;
-      const body = read.entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string };
-      if (intentId(body) !== id) continue;
-      const batch = readKahuaProposal(read.entry);
-      if (batch) return { batch, issuer: body.issuer, cid: read.cid };
-    }
-    throw new KahuaRefused(`proposal-unknown: no verified kahua proposal ${id} stands on the face's intents plane`);
+    const found = findKahuaProposal(ports.intents.doc(), group, projection().devices, id);
+    if (!found) throw new KahuaRefused(`proposal-unknown: no verified kahua proposal ${id} stands on the face's intents plane`);
+    return found;
   };
 
   return {
     async mint(): Promise<{ readonly url: string; readonly minted: boolean }> {
       const held = kahuaPlaneUrl(projection(), group);
       if (held) { ports.register(KAHUA_BAG, held); return { url: held, minted: false }; }
+      const founder = foundingHearthOf(projection());
+      if (founder !== ports.atom.key) {
+        throw new KahuaRefused(`kahua-mint-founder-hearth: the face's founding hearth${founder ? ` (${founder.slice(0, 12)}…)` : ""} mints its stage; this device adopts the pin once its replica holds it`);
+      }
       const root = await grant();
       // THE ADDRESS DERIVES FROM THE FACE: two hearths that mint at once stand the same doc and, from one head, sign the
       // same pin byte for byte (ed25519 signs deterministically), so the merged log reads one act and never a fork.
@@ -192,6 +202,27 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
       const cid = await land(await signKahuaWithdraw({ group, epoch: ports.epoch(), target }, root));
       await ports.repo.flush();
       return { cid };
+    },
+
+    async carry(input: { readonly cids?: readonly string[]; readonly all?: boolean }): Promise<{ readonly cids: readonly string[]; readonly carried: readonly string[] }> {
+      stageUrl();
+      await cap();
+      const root = await grant();
+      const read = await reading();
+      let carried: string[];
+      if (input.all) carried = kahuaCarryCandidates(await records(), foldFace());
+      else {
+        carried = [...new Set(input.cids ?? [])];
+        for (const cid of carried) if (!/^[0-9a-f]{64}$/.test(cid) || !read.revision(cid)) throw new KahuaRefused(`carry-unknown: no verified revision ${cid} stands in the stage's history`);
+        carried = carried.filter((cid) => read.revision(cid)?.standing !== true).sort();
+      }
+      if (carried.length === 0) throw new KahuaRefused("carry-nothing: every verified revision named already stands under the current root");
+      const cids: string[] = [];
+      for (let i = 0; i < carried.length; i += KAHUA_CARRY_MAX) {
+        cids.push(await land(await signKahuaCarry({ group, epoch: ports.epoch(), carries: carried.slice(i, i + KAHUA_CARRY_MAX) }, root)));
+      }
+      await ports.repo.flush();
+      return { cids, carried };
     },
 
     async list(): Promise<KahuaItem[]> { return (await reading()).list(); },

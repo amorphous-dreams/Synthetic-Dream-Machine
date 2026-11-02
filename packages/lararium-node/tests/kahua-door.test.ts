@@ -10,7 +10,7 @@ import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, t
 import {
   DAEMON_BAG_ID, KAHUA_BAG, KAHUA_PLANE, isFaceScopedBag, personaMembershipEntries, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, emptyLarDoc, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
   faceIntentVerbs, intentEntryRecordsOfGroup, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
-  personaSiblingBagIds, projectPersonaLog, signFoundingLog, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
+  personaSiblingBagIds, projectPersonaLog, signFoundingLog, signPersonaAct, signsAtEpoch, buildKahuaProposal, intentId, writeIntentEntry, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
 } from "@lararium/mesh";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../src/kahua-door.js";
 import { bridgeBooks, faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
@@ -58,18 +58,19 @@ describe("the stage pin", () => {
     expect(planeActs(f.persona, first.url)).toHaveLength(1);
   });
 
-  test("RED: two hearths that mint at once, each offline, sign one pin and never fork the face log; CONTROL: the pin names the face's derived stage", async () => {
+  test("RED: two hearths that mint at once, each offline at one head, never fork the face log: the founding hearth pins and the other adopts; CONTROL: the pin names the face's derived stage", async () => {
     const f = await face();
     // Hearth B holds the same face: a replica of its persona plane and the same root in custody.
     const repoB = new Repo({ network: [] });
     const personaB = repoB.import<LarDoc>(Automerge.save(f.persona.doc()), { docId: f.persona.documentId });
     const intentsB = repoB.import<LarDoc>(Automerge.save(f.intents.doc()), { docId: f.intents.documentId });
-    const [a, b] = await Promise.all([
-      kahuaDoor(f.ports()).mint(),
-      kahuaDoor(f.ports({ repo: repoB, persona: personaB, intents: intentsB, atom: f.atomB,
-        projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }) })).mint(),
-    ]);
+    const doorB = kahuaDoor(f.ports({ repo: repoB, persona: personaB, intents: intentsB, atom: f.atomB,
+      projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }) }));
+    const [a, refused] = await Promise.all([kahuaDoor(f.ports()).mint(), doorB.mint().then(() => null, (e: Error) => e.message)]);
+    expect(refused).toMatch(/kahua-mint-founder-hearth/);
     f.persona.merge(personaB); personaB.merge(f.persona);
+    const b = await doorB.mint();
+    expect(b.minted).toBe(false);
     const projection = f.ports().projection();
     expect(projection.fork).toBeNull();
     expect(a.url).toBe(kahuaStageDocUrl(GROUP));
@@ -83,6 +84,34 @@ describe("the stage pin", () => {
     await expect(kahuaDoor(f.ports({ rootSigner: async () => { throw new Error("locked"); } })).mint()).rejects.toThrow(/operator-grant-absent/);
     expect(f.catalog[KAHUA_BAG]).toBeUndefined();
     await expect(kahuaDoor(f.ports()).lift({ title: "t", text: "x", taint: [], sources: [{ title: "d", revision: "r" }] })).rejects.toThrow(/kahua-unpinned/);
+  });
+});
+
+describe("the mint fence", () => {
+  test("RED: two replicas of one face one act apart (one holds an admission the other lacks) both holding the root mint offline, then merge: the log never forks and reads ONE pin; CONTROL: the non-founding device adopts that pin once synced, and sequential mints no-op", async () => {
+    const f = await face();
+    // Device B's replica of the face's log, offline from A until the merge; A's replica takes one admission B never sees.
+    const repoB = new Repo({ network: [] });
+    const personaB = repoB.import<LarDoc>(Automerge.save(f.persona.doc()), { docId: f.persona.documentId });
+    const intentsB = repoB.import<LarDoc>(Automerge.save(f.intents.doc()), { docId: f.intents.documentId });
+    const third = await who(10);
+    const headA = f.ports().projection().head;
+    const admissionAct = await signPersonaAct(headA, { group: GROUP, act: "admission", epoch: 0, fields: { deviceKey: third.key } }, f.root);
+    f.persona.change((d) => writePersonaAct(d, admissionAct));
+    const catalogB: Record<string, string> = {};
+    const deviceB = kahuaDoor(f.ports({ repo: repoB, persona: personaB, intents: intentsB, atom: f.atomB,
+      projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }),
+      register: (bagId, url) => { catalogB[bagId] = url; } }));
+    const [onA, onB] = await Promise.allSettled([kahuaDoor(f.ports()).mint(), deviceB.mint()]);
+    f.persona.merge(personaB); personaB.merge(f.persona);
+    const projection = f.ports().projection();
+    expect(projection.fork).toBeNull();
+    expect(planeActs(f.persona, kahuaStageDocUrl(GROUP))).toHaveLength(1);
+    expect(onA).toMatchObject({ status: "fulfilled", value: { url: kahuaStageDocUrl(GROUP), minted: true } });
+    expect(onB).toMatchObject({ status: "rejected", reason: { message: expect.stringMatching(/kahua-mint-founder-hearth/) } });
+    expect(await deviceB.mint()).toEqual({ url: kahuaStageDocUrl(GROUP), minted: false });
+    expect(catalogB[KAHUA_BAG]).toBe(kahuaStageDocUrl(GROUP));
+    expect(await kahuaDoor(f.ports()).mint()).toEqual({ url: kahuaStageDocUrl(GROUP), minted: false });
   });
 });
 
@@ -163,6 +192,23 @@ describe("the proposal", () => {
   });
 });
 
+describe("the proposal replay guard", () => {
+  test("RED: a lift citing a proposal whose issuer the face never admitted refuses, even with a matching digest; CONTROL: the admitted atom's proposal lifts", async () => {
+    const f = await face();
+    const door = kahuaDoor(f.ports());
+    await door.mint();
+    const stranger = await who(42);
+    const entry = await buildKahuaProposal({ group: GROUP, signer: stranger, session: "s-x", nonce: "n-x", verbs: faceIntentVerbs(),
+      proposals: [{ title: "t", revision: "r1", digest: kahuaBodyDigest("body"), taint: [] }] });
+    f.intents.change((d) => writeIntentEntry(d, entry));
+    const foreign = intentId(entry.body as never);
+    await expect(door.lift({ title: "t", text: "body", taint: [], sources: [{ title: "t", revision: "r1" }], proposal: foreign })).rejects.toThrow(/proposal-unknown/);
+    expect(await door.list()).toEqual([]);
+    const own = await door.propose({ proposals: [{ title: "t", revision: "r1", text: "body", taint: [] }] });
+    await expect(door.lift({ title: "t", text: "body", taint: [], sources: [{ title: "t", revision: "r1" }], proposal: own.id })).resolves.toMatchObject({ cid: expect.any(String) });
+  });
+});
+
 describe("the facet", () => {
   test("RED: the stage rides its own facet to its face's sessions; another face's session never fetches it; CONTROL: the daemon doc rides apart", async () => {
     const f = await face();
@@ -221,6 +267,55 @@ describe("the facet", () => {
     views.seat("peer-a", { personaGroup: groupA });
     expect(views.gateFor("peer-a")?.mayFederate(stageId)).toBe(true);
     views.close();
+  });
+});
+
+describe("the carry door", () => {
+  const src = [{ title: "daemon/t", revision: "r1" }];
+  /** The face after its root rotates: epoch 1 seats `next`; the history view reads epoch 0's roster. */
+  async function rotated() {
+    const f = await face();
+    const next = await who(17);
+    const lineage = makeHandLineage([{ epoch: 0, signers: [f.root.key], threshold: 1 }, { epoch: 1, signers: [next.key], threshold: 1 }])!;
+    const after = (over: Partial<KahuaDoorPorts> = {}) => f.ports({
+      projection: () => projectPersonaLog(personaActRecordsOfGroup(f.persona.doc(), GROUP), { group: GROUP, lineage, authorize: () => true }),
+      epoch: () => 1, currentSigner: (key) => key === next.key, signedAt: (epoch, key) => signsAtEpoch(lineage, epoch, key),
+      rootSigner: async () => next, ...over,
+    });
+    return { ...f, next, after };
+  }
+
+  test("RED: after a rotation the earlier items read in history and not standing, and the new root's carry restores them; CONTROL: before the rotation they stand", async () => {
+    const f = await rotated();
+    const door = kahuaDoor(f.ports({ signedAt: (epoch, key) => epoch === 0 && key === f.root.key }));
+    await door.mint();
+    const a = await door.lift({ title: "a", text: "alpha", taint: [], sources: src });
+    const b = await door.lift({ title: "b", text: "beta", taint: [], sources: src });
+    expect((await door.list()).map((i) => i.title)).toEqual(["a", "b"]);
+    const now = kahuaDoor(f.after());
+    expect(await now.list()).toEqual([]);
+    expect((await now.history("a")).map((r) => [r.cid, r.standing])).toEqual([[a.cid, false]]);
+    const carried = await now.carry({ cids: [a.cid] });
+    expect(carried.carried).toEqual([a.cid]);
+    expect((await now.list()).map((i) => i.title)).toEqual(["a"]);
+    const all = await now.carry({ all: true });
+    expect(all.carried).toEqual([b.cid]);
+    expect((await now.list()).map((i) => i.title)).toEqual(["a", "b"]);
+    await expect(now.carry({ all: true })).rejects.toThrow(/carry-nothing/);
+  });
+
+  test("RED: a carry without the current root in hand, without the cap, or naming no held revision refuses by name and lands nothing; CONTROL: the rotated-out root's hand never carries", async () => {
+    const f = await rotated();
+    const door = kahuaDoor(f.ports());
+    await door.mint();
+    const a = await door.lift({ title: "a", text: "alpha", taint: [], sources: src });
+    await expect(kahuaDoor(f.after({ rootSigner: async () => { throw new Error("custody locked"); } })).carry({ cids: [a.cid] })).rejects.toThrow(/operator-grant-absent/);
+    await expect(kahuaDoor(f.after({ rootSigner: async () => f.root })).carry({ cids: [a.cid] })).rejects.toThrow(/operator-grant-absent/);
+    await expect(kahuaDoor(f.after({ rootSigner: async () => f.atomA })).carry({ cids: [a.cid] })).rejects.toThrow(/operator-grant-absent/);
+    await expect(kahuaDoor(f.after({ cap: async () => ({ held: false }) })).carry({ cids: [a.cid] })).rejects.toThrow(/lokahi-cap-absent/);
+    await expect(kahuaDoor(f.after()).carry({ cids: ["e".repeat(64)] })).rejects.toThrow(/carry-unknown/);
+    await expect(kahuaDoor(f.after()).carry({})).rejects.toThrow(/carry-nothing/);
+    expect(await kahuaDoor(f.after()).list()).toEqual([]);
   });
 });
 

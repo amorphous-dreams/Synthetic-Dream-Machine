@@ -4,7 +4,7 @@
  * standing vessel's reactor the island's cap answer gates apart from the grant; the root's grant lifts and withdraws.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -16,6 +16,18 @@ import { larBootstrapPath, larSealHome } from "../src/vessel-paths.js";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, openTestCustody, seatSeedCharter } from "./found-route.js";
+
+/** THE HAND THE CLI OPENS: pass-through to sealed custody, or (per test) a custody holding the device atom alone. */
+const hand = vi.hoisted(() => ({ mode: "custody" as "custody" | "atom-only" | "atom-hand", reads: 0 }));
+vi.mock("../src/node-vessel-identity.js", async (original) => {
+  const real = await original<typeof import("../src/node-vessel-identity.js")>();
+  return { ...real, loadPersonaGroupRootSeed: async (index?: number) => {
+    hand.reads++;
+    if (hand.mode === "atom-only") throw new Error("[persona-vault] this custody holds the device atom alone");
+    if (hand.mode === "atom-hand") return new Uint8Array(32).fill(0x5a);
+    return real.loadPersonaGroupRootSeed(index);
+  } };
+});
 
 const ROOT = join(tmpdir(), `lar-kahua-live-${Date.now()}`);
 const storage = join(ROOT, "data", "lares", "vessel"), genesis = join(ROOT, "genesis");
@@ -88,6 +100,20 @@ describe("lares kahua over a founded face", () => {
     const got = await row("kahua-read", { action: "get", title: "note", history: true }) as { item: unknown; history: Array<{ withdrawn: boolean }> };
     expect(got.item).toBeNull();
     expect(got.history).toMatchObject([{ withdrawn: true }]);
+  }, 240_000);
+
+  test("RED: the CLI re-reads sealed custody on every lift, and a hand holding only the atom (an AI seat) refuses operator-grant-absent; CONTROL: the root's custody lifts", async () => {
+    try {
+      hand.mode = "atom-only"; hand.reads = 0;
+      expect(JSON.stringify(await standing("kahua-lift", { title: "seat", text: "x", taint: [], sources: src }, true))).toMatch(/operator-grant-absent/);
+      hand.mode = "atom-hand";
+      expect(JSON.stringify(await standing("kahua-lift", { title: "seat", text: "x", taint: [], sources: src }, true))).toMatch(/operator-grant-absent/);
+      expect(hand.reads).toBe(2);
+      expect(((await row("kahua-read", { action: "get", title: "seat" })) as { item: unknown }).item).toBeNull();
+      hand.mode = "custody";
+      expect(await standing("kahua-lift", { title: "seat", text: "x", taint: [], sources: src }, true)).toMatchObject({ cid: expect.stringMatching(/^[0-9a-f]{64}$/) });
+      expect(hand.reads).toBe(3);
+    } finally { hand.mode = "custody"; }
   }, 240_000);
 
   test("CONTROL: a proposal issues under the atom with no grant in play", async () => {

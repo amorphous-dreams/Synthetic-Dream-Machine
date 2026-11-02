@@ -1,5 +1,5 @@
 /**
- * kahua — the store holder's rows for a face's kahua stage (`lares kahua mint|propose|lift|withdraw|list|get`).
+ * kahua — the store holder's rows for a face's kahua stage (`lares kahua mint|propose|lift|withdraw|carry|list|get`).
  *
  * Each row names its face per invocation (`face`), proves it through the intent door's face load (anchor, verified KEL,
  * the signed log naming the intents plane), and runs `kahuaDoor` over that face. The lōkahi cap reads off the standing
@@ -19,7 +19,7 @@ import { loadPersonaGroupRootSeed } from "../node-vessel-identity.js";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../kahua-door.js";
 
 export { KahuaRefused };
-export type KahuaAction = "mint" | "propose" | "lift" | "withdraw" | "list" | "get";
+export type KahuaAction = "mint" | "propose" | "lift" | "withdraw" | "carry" | "list" | "get";
 export type KahuaCapPort = (presenter: string) => Promise<{ readonly held: boolean; readonly reason?: string }>;
 
 export interface KahuaCommandOptions {
@@ -35,6 +35,9 @@ export interface KahuaCommandOptions {
   readonly parent?: string | null;
   readonly proposal?: string;
   readonly target?: string;
+  /** The earlier revisions a carry names; `all` carries each title's head as the history reads it. */
+  readonly cids?: readonly string[];
+  readonly all?: boolean;
   readonly proposals?: unknown;
   readonly session?: string;
   readonly history?: boolean;
@@ -55,6 +58,7 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
     projection: () => face.project(faceRecordsOf([personaPlane.doc()], group), group),
     epoch: () => face.lineage[face.lineage.length - 1]!.epoch,
     currentSigner: (key) => face.currentSigner(key),
+    signedAt: (epoch, key) => face.signsAt(epoch, key),
     atom: signer, persona: personaPlane as DocHandle<LarDoc>, intents: plane as DocHandle<LarDoc>,
     rootSigner: async () => {
       const seed = await loadPersonaGroupRootSeed(index);
@@ -82,6 +86,10 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
       })) };
     }
     case "withdraw": return { ...(await door.withdraw(need(opts.target, "a revision cid"))) };
+    case "carry": {
+      if (!opts.all && (opts.cids ?? []).length === 0) throw new KahuaRefused("carry: name the revision cids that keep standing, or `all`");
+      return { ...(await door.carry(opts.all ? { all: true } : { cids: opts.cids ?? [] })) };
+    }
     case "list": return { items: await door.list() };
     case "get": {
       const title = need(opts.title, "a title");

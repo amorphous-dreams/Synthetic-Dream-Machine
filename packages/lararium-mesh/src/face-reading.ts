@@ -17,7 +17,7 @@
 
 import type { LarDoc } from "./base-doc.js";
 import { leaseEpochUnderAnchor, type FaceAnchor } from "./face-anchor.js";
-import { currentSignerOf, type HandLineage } from "./hand-lineage.js";
+import { currentSignerOf, signsAtEpoch, type HandLineage } from "./hand-lineage.js";
 import { signedLeaseEpoch } from "./lease-advance.js";
 import { personaActRecordsOfGroup, personaLineageFromKel } from "./persona-act-board.js";
 import { projectPersonaLog, type PersonaProjection } from "./persona-act.js";
@@ -28,6 +28,8 @@ export interface FaceReading {
   readonly lineage: HandLineage;
   /** May this key sign a lease advance or a current-epoch act now: it stands in the lineage's CURRENT roster. */
   readonly currentSigner: (writerHex: string) => boolean;
+  /** Whether this key sat in the roster of `epoch`: what seats an earlier signed act in a history view, never what lets it act now. */
+  readonly signsAt: (epoch: number, writerHex: string) => boolean;
   /** The lease epoch the verified advances carry (current roster only), unfloored: what an anchor may RAISE to. */
   readonly observedLease: (group: string, slotTexts: Iterable<unknown>) => number;
   /** The lease epoch a door acts under: the observed epoch, never below what the anchor this reading holds accepted. */
@@ -46,6 +48,7 @@ export function readFace(chain: readonly PersonaKelEvent[] | null | undefined, a
   const observedLease = (group: string, slotTexts: Iterable<unknown>): number => signedLeaseEpoch(group, slotTexts, currentSigner);
   return {
     lineage, currentSigner, observedLease,
+    signsAt: (epoch, writer) => signsAtEpoch(lineage, epoch, writer),
     floor: (observed) => anchor ? leaseEpochUnderAnchor(anchor, observed).epoch : observed,
     leaseEpoch: (group, slotTexts) => {
       const observed = observedLease(group, slotTexts);

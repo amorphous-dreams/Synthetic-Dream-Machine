@@ -68,4 +68,15 @@ describe("lares kahua", () => {
     expect(await run("lift", "T", "--taint", "none", "--sources", "[oops")).toBe(1);
     expect(seam.calls).toEqual([]);
   });
+
+  test("RED: `carry` reaches the carry row with the cids it names, or `--all` for every earlier head; CONTROL: a carry naming neither, or both, refuses before the door", async () => {
+    const CID2 = "d".repeat(64);
+    expect(await run("carry", CID, CID2, "--face", "1")).toBe(0);
+    expect(await run("carry", "--all")).toBe(0);
+    expect(seam.calls).toEqual([["kahua-carry", { face: 1, cids: [CID, CID2] }], ["kahua-carry", { all: true }]]);
+    seam.calls = [];
+    expect(await run("carry")).toBe(1);
+    expect(await run("carry", CID, "--all")).toBe(1);
+    expect(seam.calls).toEqual([]);
+  });
 });

@@ -56,7 +56,7 @@ import {
   GENESIS_FLOOR_TIDDLER,
   plainRecordOrNull,
   resolveFloor,
-  readFace,
+  type KahuaStageFace,
   type Repo,
   type DocHandle,
   type AutomergeUrl,
@@ -71,7 +71,7 @@ import { waitForSlotDocument } from "./slot-wait.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
 import { preloadsFromCasBlob } from "./cas-preloads.js";
 import { makeCatalogAccessor, libraryDocUrl } from "./catalog-accessor.js";
-import { librarySlotUrl } from "./kahua-layer.js";
+import { librarySlotUrl, liveKahuaFace } from "./kahua-layer.js";
 import { installLazyResolver } from "./lazy-resolver.js";
 import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
 import { makeViewChannel, type ViewChannel } from "./view-channel.js";
@@ -446,17 +446,24 @@ export function runSovereignKernel(
     // the seed replay on the shore's quota-bounded host-task queue.
     tick("recipe");
     // THE KAHUA LAYER READS UNDER THE FACE THIS MANIFEST WEARS: its group names the stage, its verified KEL roster the grant
-    // every lift's signer must hold. A manifest wearing no face reads an empty stage.
+    // every lift's signer must hold. A manifest wearing no face reads an empty stage. The lineage reads LIVE off the
+    // island's replica of the KEL board the manifest names, so a rotation merged after boot re-folds the layer.
     const auth = msg.daemonAuth;
-    const kahuaReading = auth?.personaGroupId ? readFace(auth.personaKel?.chain, auth.faceAnchor ?? null) : null;
-    const kahuaFace = kahuaReading && auth?.personaGroupId ? { group: auth.personaGroupId, grant: kahuaReading.currentSigner } : null;
+    const kel = auth?.personaKel;
+    const liveFace = auth?.personaGroupId && kel ? liveKahuaFace({
+      group: auth.personaGroupId, prefix: kel.prefix, bootChain: kel.chain, anchor: auth.faceAnchor ?? null,
+      board: kel.board ? _repo!.find<LarDoc>(kel.board as never) : null,
+    }) : null;
+    const kahuaFace = (): KahuaStageFace | null => liveFace?.read() ?? null;
+    const kahuaFaceWatch = (fn: () => void): (() => void) => liveFace?.watch(fn) ?? (() => {});
     const { adaptor } = buildIslandRecipe({
       tw5,
       composite: _composite,
       recipe: msg.recipe,
       ready,
       floorRows,
-      kahuaFace: () => kahuaFace,
+      kahuaFace,
+      kahuaFaceWatch,
     });
     _adaptor = adaptor;
     // THE REST DOOR, for a host whose vessel answers it. A save act's result waits for the vessel to hold and flush
@@ -479,7 +486,7 @@ export function runSovereignKernel(
     // reconciling the SAME path boot just walked.
     // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
     // behaviors: a residency handler resolves a carrier body a verb rode by reference.
-    _ctx = { wikiUri: msg.wikiUri, composite: _composite, tw5, handles: _handles, post: _post, repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace: () => kahuaFace, ...(_rest ? { rest: _rest } : {}), catalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
+    _ctx = { wikiUri: msg.wikiUri, composite: _composite, tw5, handles: _handles, post: _post, repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_rest ? { rest: _rest } : {}), catalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
     // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
     // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
     // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The
