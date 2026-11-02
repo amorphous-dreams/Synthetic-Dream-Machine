@@ -70,6 +70,7 @@ export interface SurfacePluginInputs {
   readonly islandBlobs: Record<string, CasBlobLike> | undefined;
   readonly lookup:      OfferingLookup;
   readBytes(cid: string): Uint8Array | null | Promise<Uint8Array | null>;
+  promoted?: (wikiSlug: string) => Promise<readonly string[]>;
 }
 
 export interface SurfaceRecipeInput {
@@ -154,10 +155,11 @@ function documentIdOf(document: string): string | null {
 /**
  * The plugin CIDs one recipe selects: the fixed floor's own, then the recipe's verified offerings whose bytes
  * the local content store holds whole. The one selection both platforms run.
+ * A promoted hook adds the wiki’s verified promoted digests.
  */
 export async function resolveRecipePluginCids(
   recipe: Pick<WikiRecipe, "wikiSlug" | "pluginOfferings" | "pluginOfferingsFault">,
-  inputs: Pick<SurfacePluginInputs, "islandBlobs" | "lookup" | "readBytes">,
+  inputs: Pick<SurfacePluginInputs, "islandBlobs" | "lookup" | "readBytes" | "promoted">,
 ): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
   if (recipe.pluginOfferingsFault) {
     return { ok: false, error: `${recipe.wikiSlug}: malformed-offerings-field: ${recipe.pluginOfferingsFault}` };
@@ -168,7 +170,10 @@ export async function resolveRecipePluginCids(
   const selectedCids = selectedPluginCids(selection.blobs);
   const bytes = await verifyCasBytesAsync(selectedCids, async (cid) => inputs.readBytes(cid), (b) => sha256HexBytesSync(b));
   if (!bytes.ok) return { ok: false, error: `${recipe.wikiSlug}: ${JSON.stringify(bytes.failure)}` };
-  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids])] };
+  const promoted = [...new Set(await inputs.promoted?.(recipe.wikiSlug) ?? [])];
+  const promotedBytes = await verifyCasBytesAsync(promoted, async (cid) => inputs.readBytes(cid), (b) => sha256HexBytesSync(b));
+  if (!promotedBytes.ok) return { ok: false, error: `${recipe.wikiSlug}: promoted ${JSON.stringify(promotedBytes.failure)}` };
+  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids, ...promoted])] };
 }
 
 /** Resolve a session's effective recipe for one surface mount. */

@@ -1,9 +1,10 @@
 import {
   PromoteRefused, promoteClass, promoteDigest, promoteEdgeKey, promotePreloadBytes,
   ledgerCommit, ledgerUnpromote, ledgerDecideOrphan, reconcilePromotions, verifyPromotionRows,
-  kapaeNoteArrival, kapaeBootSet, encodeKapaeLocal,
-  type PromoteBoardReading, type PromoteWho, type PromotionLedger, type KapaeLocal,
-} from "@lararium/mesh";
+  type PromoteWho, type PromotionLedger,
+} from "./promote.js";
+import { kapaeNoteArrival, kapaeBootSet, encodeKapaeLocal, type KapaeLocal } from "./promote-kapae.js";
+import type { PromoteBoardReading } from "./promote-board.js";
 
 export type PromoteItem = { title: string; text: string; fields: Readonly<Record<string, string>>; revision: string; origin: { seat: string; device: string; session: string } };
 type Store<T> = { read(): Promise<T>; write(value: T): Promise<void> };

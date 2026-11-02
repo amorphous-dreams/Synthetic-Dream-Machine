@@ -1,4 +1,6 @@
-import { assertKapaeHand, KapaeRefused, promoteBoardMint, readPromoteAct, readPromoteBoard, signPromoteKapae, signPromotePrepare, type PromoteFace, type PromoteWho, type SignedPromoteAct } from "@lararium/mesh";
+import { assertKapaeHand, KapaeRefused } from "./promote-kapae.js";
+import { promoteBoardMint, readPromoteAct, readPromoteBoard, signPromoteKapae, signPromotePrepare, type PromoteFace, type SignedPromoteAct } from "./promote-board.js";
+import type { PromoteWho } from "./promote.js";
 
 type Signer = { readonly key: string; sign(bytes: Uint8Array): Promise<string> };
 export type PromoteBoardDoorPorts = {
