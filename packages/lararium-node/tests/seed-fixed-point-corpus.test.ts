@@ -2,7 +2,7 @@
  * seed-fixed-point-corpus — the seed finds its fixed point over the WHOLE house corpus.
  *
  * A fixture pins the grammar; only the corpus pins the reader. This vector copies every tracked file
- * of both house bags into a scratch workspace, walks the seed's own gesture over it (the scan, the
+ * of the house bags into a scratch workspace, walks the seed's own gesture over it (the scan, the
  * INGEST reactor through a booted wiki behind the daemon's own outcome bound, the settling gesture
  * that asks again under the row cap and pins what landed), mounts the records in
  * that wiki, and runs the disk projector over the scratch mirrors with the congruences the island
@@ -51,8 +51,8 @@ const coreBlobSkip = existsSync(CORE)
   ? false
   : `TW5 core blob absent at ${CORE} — run: pnpm --filter @lararium/tw5 build:tw5-vendor`;
 
-/** The house bags the seed carries. */
-const HOUSE_BAGS = ["lares", "lararium"] as const;
+/** The house bags the seed carries: the two large ones and the leaf bags whose non-`.mem` carriers (a csv table, a stylesheet) stand beside them. */
+const HOUSE_BAGS = ["lares", "lararium", "elyncia", "sdm"] as const;
 
 /** Every tracked file under one bag, repo-relative. */
 function trackedFiles(bag: string): string[] {
@@ -139,7 +139,7 @@ function restingRows(dir: string): Record<string, unknown> {
 }
 
 describe.skipIf(coreBlobSkip)(
-  `the seed's fixed point over both house bags${coreBlobSkip ? ` [SKIPPED: ${coreBlobSkip}]` : ""}`,
+  `the seed's fixed point over the house bags${coreBlobSkip ? ` [SKIPPED: ${coreBlobSkip}]` : ""}`,
 () => {
   let scratch = "";
   let engine: TW5Engine;
@@ -223,14 +223,14 @@ describe.skipIf(coreBlobSkip)(
 
   afterAll(() => { if (scratch) rmSync(scratch, { recursive: true, force: true }); });
 
-  test("the corpus presents both bags, and the seed lands every carrier", () => {
+  test("the corpus presents every house bag, and the seed lands every carrier", () => {
     for (const bag of HOUSE_BAGS) {
       const carriers = tracked.get(bag)!.filter((f) => !f.endsWith(".meta"));
-      expect(carriers.length, `bags/${bag} presents carriers`).toBeGreaterThan(150);
+      expect(carriers.length, `bags/${bag} presents carriers`).toBeGreaterThan(10);
       const rows = firstWaveRows.get(bag)!;
       const notLanded = rows.filter((r) => r["decision"] !== "ingest").map((r) => `${String(r["uri"])}: ${String(r["decision"])} ${JSON.stringify(r["warnings"] ?? r["reason"] ?? "")}`);
       expect(notLanded, `bags/${bag}: every carrier lands`).toEqual([]);
-      expect(rows.length).toBeGreaterThan(150);
+      expect(rows.length).toBeGreaterThan(10);
       // The wave crossed the outcome's row cap, and the gesture still pinned a base for every carrier.
       const settled = settlements.get(bag)!;
       expect(settled.submitted).toBe(rows.length);
@@ -278,7 +278,7 @@ describe.skipIf(coreBlobSkip)(
       const scan = scanSource(scratch, path.join(scratch, "bags", bag), bagUri(bag), reopened)!;
       const unsettled = scan.rows.filter((r) => r.status !== "unchanged").map((r) => `${r.uri}: ${r.status}`);
       expect(unsettled, `bags/${bag}: the second seed submits nothing`).toEqual([]);
-      expect(scan.rows.length).toBeGreaterThan(150);
+      expect(scan.rows.length).toBeGreaterThan(10);
     }
     const before = new Map<string, number>();
     for (const bag of HOUSE_BAGS) for (const f of tracked.get(bag)!) before.set(f, statSync(path.join(scratch, f)).mtimeMs);
