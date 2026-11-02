@@ -6,9 +6,10 @@
  * The door answers `{ restarts }` once the new island stands.
  *
  *   D0 CONTROL  the page reaches live, the daemon worker stands, and the door is installed.
- *   D1 RED      a restart closes the old daemon worker and spawns a new one (Playwright's worker events), the mirror stays shown
+ *   D1 RED      a restart answers a NEW island (its leg, the sync peer id of its own Repo; a shared-holder island is no page Worker, so
+ *               Playwright's worker events cannot see it), the mirror stays shown
  *               (the page port reattached), and a tiddler written AFTER the restart paints through the new island.
- *   D2          four restarts in a row keep answering, and the live daemon worker count returns to one each time.
+ *   D2          four restarts in a row each stand a never-held leg, and the mirror stays shown after each.
  *   D3 CONTROL  the default build's served page carries no door: the same probe reads `undefined` there.
  */
 import assert from "node:assert/strict";
@@ -56,16 +57,12 @@ afterAll(async () => { await browser?.close(); preview?.kill("SIGTERM"); preview
 type Page = Awaited<ReturnType<Awaited<ReturnType<typeof chromium.launch>>["newPage"]>>;
 const live = (page: Page) => page.waitForFunction(() => [...document.querySelectorAll("#phases .phase")].some((p) => p.textContent === "live"), undefined, { timeout: 60_000 });
 const restart = (page: Page, reason: string) =>
-  page.evaluate((r) => (window as unknown as { __larRestartDaemonIsland: (r: string) => Promise<{ restarts: number }> }).__larRestartDaemonIsland(r), reason);
+  page.evaluate((r) => (window as unknown as { __larRestartDaemonIsland: (r: string) => Promise<{ restarts: number; leg: string }> }).__larRestartDaemonIsland(r), reason);
 
 test("D0-D2 — the worker respawns and the page port reattaches; CONTROL: the door and the first worker stand", { timeout: 300_000 }, async () => {
   const context = await browser.newContext();
   await armTestCustody(context, "daemon-island-reopen");
   const page = await context.newPage();
-  const workers = new Set<ReturnType<Page["workers"]>[number]>();
-  const closed: string[] = [];
-  const opened: string[] = [];
-  page.on("worker", (w) => { workers.add(w); opened.push(w.url()); w.on("close", () => { workers.delete(w); closed.push(w.url()); }); });
   const faults: string[] = [];
   page.on("pageerror", (e) => faults.push(`[page] ${e.message}`));
   try {
@@ -73,14 +70,10 @@ test("D0-D2 — the worker respawns and the page port reattaches; CONTROL: the d
     await live(page);
     await page.waitForFunction(() => document.querySelector("#mirror")?.getAttribute("data-lar-shown") === "mirror", undefined, { timeout: 60_000 });
     assert.equal(await page.evaluate(() => typeof (window as unknown as Record<string, unknown>)["__larRestartDaemonIsland"]), "function", "D0: the loopback page installs the door");
-    const daemonUrls = () => opened.filter((u) => /daemon/i.test(u));
-    const before = daemonUrls().length;
-    assert.ok(before >= 1, "D0: the first daemon worker stood");
-
     const one = await restart(page, "e2e");
     assert.equal(one.restarts, 1);
-    assert.ok(daemonUrls().length > before, "D1: a NEW daemon worker spawned");
-    assert.ok(closed.some((u) => /daemon/i.test(u)), "D1: the old daemon worker closed");
+    assert.ok(typeof one.leg === "string" && one.leg.length > 0, "D1: the new island answers its leg (the sync peer id of its own Repo)");
+    const legs = new Set<string>([one.leg]);
     assert.equal(await page.locator("#mirror").getAttribute("data-lar-shown"), "mirror", "D1: the page port reattached, the mirror stays shown");
     const wiki = page.locator("#mirror");
     await wiki.evaluate((host) => (host.shadowRoot!.querySelector('button[title="Create a new tiddler"]') as HTMLElement).click());
@@ -92,8 +85,9 @@ test("D0-D2 — the worker respawns and the page port reattaches; CONTROL: the d
     for (let i = 2; i <= 5; i++) {
       const r = await restart(page, `loop-${i}`);
       assert.equal(r.restarts, i);
-      const daemons = [...workers].filter((w) => /daemon/i.test(w.url()));
-      assert.equal(daemons.length, 1, `D2: exactly one daemon worker stands after restart ${i}`);
+      assert.ok(!legs.has(r.leg), `D2: restart ${i} stands a NEW island (a leg never held before)`);
+      legs.add(r.leg);
+      assert.equal(await page.locator("#mirror").getAttribute("data-lar-shown"), "mirror", `D2: the page port stays attached after restart ${i}`);
     }
     assert.deepEqual(faults, [], "no page error across the restarts");
   } finally { await context.close(); }

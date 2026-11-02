@@ -45,9 +45,11 @@ function serveGenesisInDev(): Plugin {
 function emitPronaosArtifactRecord(): Plugin {
   const routes: Array<{ path: string; file: string; contentType: string; cache: "immutable" | "no-store"; sha256: string }> = [];
   const digest = (source: string | Uint8Array): string => createHash("sha256").update(source).digest("hex");
+  let outDir = resolve(import.meta.dirname, "dist");
   return {
     name: "lararium:pronaos-artifact-record",
     apply: "build",
+    configResolved(config) { outDir = resolve(config.root, config.build.outDir); },
     generateBundle(_options, bundle) {
       routes.length = 0;
       for (const output of Object.values(bundle)) {
@@ -59,12 +61,14 @@ function emitPronaosArtifactRecord(): Plugin {
       }
     },
     closeBundle() {
+      // A walk bundle (the harness-only restart door) is no shipped artifact: it records nothing, and the shipped build's record stands.
+      if (process.env["LAR_WALK_DOOR"] === "1") return;
       // Vite writes the HTML/public copy after generateBundle; these are the
       // two known non-Rollup files, never a directory enumeration.
-      for (const route of routes) if (route.sha256 === "") route.sha256 = digest(readFileSync(resolve(import.meta.dirname, "dist", route.file)));
-      const index = resolve(import.meta.dirname, "dist/index.html");
+      for (const route of routes) if (route.sha256 === "") route.sha256 = digest(readFileSync(resolve(outDir, route.file)));
+      const index = resolve(outDir, "index.html");
       if (existsSync(index)) routes.push({ path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "no-store", sha256: digest(readFileSync(index)) });
-      const manifest = resolve(import.meta.dirname, "dist/manifest.webmanifest");
+      const manifest = resolve(outDir, "manifest.webmanifest");
       if (existsSync(manifest)) {
         const source = readFileSync(manifest);
         routes.push({ path: "/manifest.webmanifest", file: "manifest.webmanifest", contentType: "application/manifest+json", cache: "no-store", sha256: digest(source) });
