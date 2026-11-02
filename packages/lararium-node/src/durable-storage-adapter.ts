@@ -41,6 +41,7 @@ import { mkdir } from "node:fs/promises";
 import { dirname, join, sep } from "node:path";
 
 import { atomicWriteFile } from "./fs-atomic.js";
+import { shoreStorage } from "@lararium/mesh";
 
 /** The temp spellings `fs-atomic` stages beside a target: `<target>.<pid>.<suffix>.tmp` and `<target>.<pid>.tmp`. */
 const STAGED_TEMP = /^(.+)\.(\d+)\.(?:[^./]+\.)?tmp$/;
@@ -67,6 +68,8 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
     this.#root = baseDirectory;
     this.#onStranded = opts.onStrandedTemp
       ?? ((path) => console.warn(`[store] a stranded temp stands at ${path} — a writer died before its rename; ignored, never read as a chunk`));
+    // THE LOCAL STORAGE SHORE: a stored chunk carrying a prototype key refuses by name before it materializes.
+    shoreStorage(this);
   }
 
   /** The base's shard path (getFilePath is private): dir / id[:2] / id[2:] / …rest. */

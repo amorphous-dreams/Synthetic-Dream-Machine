@@ -274,7 +274,7 @@ export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, 
 export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
 export { answerRestWithHeads, REST_STALL_ROUNDS } from "./rest-with-heads.js";
 export { GatedSyncLeg, oneWayDocumentsGate, carriesPrototypeKeyReason } from "./gated-sync-leg.js";
-export { shoreInbound, syncMessagePrototypeKey, chunkPrototypeKey, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
+export { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
 export type { SyncLegGate, LegRefusal } from "./gated-sync-leg.js";
 export type { IslandRepoConfig } from "./island-repo.js";
 export { assembleVessel, mountWikiSlot } from "./open-vessel-core.js";

@@ -66,7 +66,8 @@ import { parseMemeText } from "./meme-ast/parse.js";
 import { failuresToDiagnostics, gradeOf, MEMETIC_SOURCE } from "./meme-ast/diagnostics.js";
 import type { MemeDiagnostic, DiagnosticSeverity } from "./meme-ast/diagnostics.js";
 import { getGrammar } from "./grammar-cache.js";
-import { headUriOf, verdict, type FrameFault, type FrameVerdict } from "@lararium/memetic-frame";
+import { headUriOf, type FrameFault, type FrameVerdict } from "@lararium/memetic-frame";
+import { memeticVerdict } from "./meta-parity.js";
 import { checkCarrier } from "./carrier-check.js";
 import { metaKeyRedefinitions } from "./root-meta.js";
 
@@ -230,7 +231,8 @@ export const memeticIngestOps: IngestOps<TiddlerFields> = {
   grade(diagnostics) {
     return gradeOf(diagnostics);
   },
-  frame: verdict,
+  // The house verdict: the frame's, torn where its meta read and smol-toml's part (meta-parity.ts).
+  frame: memeticVerdict,
 };
 
 export interface IngestGateInput {

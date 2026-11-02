@@ -30,7 +30,9 @@ describe("★ the weave's check comes from the slot, in the check's own shape �
 describe("★ the weave never drops text the seal covers ★", () => {
   test("RED: text after the STX mark (inside the checked span, rendered inline by the plugin) survives the weave", () => {
     const t = stampCarrier(carrier("<<^ code=`&#x0003;`>>").replace("<<^ code=`&#x0002;`>>", "<<^ code=`&#x0002;`>> HIDDEN-IN-WEAVE"));
-    expect(verdict(t).kind).toBe("match");
+    // The text now stands between STX and the root meta, so that meta no longer OPENS the body and binds
+    // nothing (the fence-opens-the-body rule): the head reads unbound, and the check still verifies.
+    expect(verdict(t).kind).toBe("head-unbound");
     expect(transposeMarkdown(t).markdown).toContain("HIDDEN-IN-WEAVE");
   });
 

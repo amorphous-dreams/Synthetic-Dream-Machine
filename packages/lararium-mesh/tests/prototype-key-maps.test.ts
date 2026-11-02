@@ -19,7 +19,15 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, expect, test } from "vitest";
-import { load } from "@automerge/automerge";
+import { load, init, change, getChanges, encodeSyncMessage, save } from "@automerge/automerge";
+import { Repo } from "@automerge/automerge-repo";
+import { EventEmitter } from "node:events";
+import { AutomergeDocStore } from "../src/automerge-doc-store.js";
+import { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey } from "../src/prototype-key-shore.js";
+import { carriesPrototypeKeyReason } from "../src/gated-sync-leg.js";
+import { isVerbRefusal } from "../src/verb-refusal.js";
+import { storedValue } from "../src/stored-record.js";
+import type { LarDoc } from "../src/base-doc.js";
 import { ownEntry, hasOwnEntry, plainField, plainMeta, plainRecord, type StoredTiddlers } from "../src/stored-value.js";
 import { floorReadFace } from "../src/floor-manifest.js";
 import type { LarBlobEntry } from "../src/base-doc.js";
@@ -82,6 +90,82 @@ describe("floor rows: the rows map the floor read face answers from", () => {
     const face = floorReadFace({ rows: [doc.rows] });
     expect(await face.get("lar:///phantom")).toBeNull();
     expect(await face.get("real")).not.toBeNull();
+  });
+});
+
+// ── THE BLIND READER'S B PROBES (2026-11-01) ───────────────────────────────────────────────────
+
+/** `tiddlers.real` and `tiddlers.__proto__.["lar:///phantom"]` (prototype-key.test.ts's fixture). */
+const POISONED_B64 = "hW9KgxtHT78AoQIBEJG2bhA4/3CkEdPXXPS2Z3IBz7Rh8PLy5jblA7EAQQEWi/18WNVB8pHwYPxn4LT79QIHAQIDAhMDIwdAA0MCVgIMAQQCEBEMExMVPiECIwo0BEIMVghXGIABAgIAAgF+Bxh+07Wg1wYAfgABfwACBwABHgAAAQIBfwIEA38IAgkGCg4LAAUDAAAEBQAAAQ0AAAR+AAQCAQADfnoMBAF+cBIMAXwIdGlkZGxlcnMJX19wcm90b19fBHJlYWwFdGl0bGUABH0ObGFyOi8vL3BoYW50b20EdGV4dAV0aXRsZQAUHwB9AQd6BQF/AhYBBAQDFAMAfwQEAX8AAgQUAQQABBYDABQWcmVhbGZvcmdlZGxhcjovLy9waGFudG9tHwAB";
+
+describe("B1: one key set on every inbound path", () => {
+  /** A HAND-BUILT sync message whose raw change writes `tiddlers["constructor"]` — the reader's probe. */
+  const handBuilt = (key: string): Uint8Array => {
+    const doc = change(change(init<{ tiddlers: Record<string, unknown> }>(), (d) => { d.tiddlers = {}; }), (d) => { d.tiddlers[key] = { tiddler: { title: key } }; });
+    return encodeSyncMessage({ heads: [], need: [], have: [], changes: getChanges(init(), doc) } as never);
+  };
+  test.each(["constructor", "prototype"])("RED: a raw change writing tiddlers[%s] names it, at the shore and the gated leg", (key) => {
+    const msg = handBuilt(key);
+    expect(syncMessagePrototypeKey(msg)).toMatch(new RegExp(key));
+    expect(carriesPrototypeKeyReason({ type: "sync", senderId: "p", targetId: "q", documentId: "d", data: msg } as never)).toBe("prototype-key");
+    const adapter = new EventEmitter();
+    const seen: unknown[] = [];
+    shoreInbound(adapter);
+    adapter.on("message", (m) => seen.push(m));
+    adapter.emit("message", { type: "sync", senderId: "p", targetId: "q", documentId: "d", data: msg });
+    expect(seen).toEqual([]);
+  });
+  test("CONTROL: a raw change writing an ordinary title passes", () => {
+    expect(syncMessagePrototypeKey(handBuilt("lar:///ordinary"))).toBeNull();
+  });
+  test("the write door refuses the same three keys as a field, at any depth", () => {
+    for (const key of ["__proto__", "constructor", "prototype"]) {
+      let thrown: unknown;
+      try { storedValue(JSON.parse(`{"${key}": "v"}`)); } catch (e) { thrown = e; }
+      expect(isVerbRefusal(thrown) && (thrown as { reason: string }).reason).toBe("prototype-key");
+    }
+  });
+});
+
+describe("B2: a merge over an existing record refuses a prototype key by name, never a bare RangeError", () => {
+  test.each([
+    ["a field", '{"tiddler":{"title":"lar:///t/b2","text":"x","__proto__":"v"}}'],
+    ["a meta key", '{"tiddler":{"title":"lar:///t/b2","text":"x"},"meta":{"__proto__":"v"}}'],
+    ["a constructor field", '{"tiddler":{"title":"lar:///t/b2","text":"x","constructor":"v"}}'],
+  ])("RED: %s on a put over an existing record", async (_n, json) => {
+    const repo = new Repo();
+    const store = new AutomergeDocStore(repo.create<LarDoc>({ schemaVersion: "0.1", tiddlers: {} }));
+    await store.put({ tiddler: { title: "lar:///t/b2", text: "first" } });
+    let thrown: unknown;
+    try { await store.put(JSON.parse(json)); } catch (e) { thrown = e; }
+    expect(thrown).not.toBeInstanceOf(RangeError);
+    expect(isVerbRefusal(thrown) && (thrown as { reason: string }).reason).toBe("prototype-key");
+  });
+});
+
+describe("B3: a document that never crossed a shore", () => {
+  test("RED: a put of the phantom title over a loaded poisoned doc lands as its own record, never a TypeError", async () => {
+    const repo = new Repo();
+    const store = new AutomergeDocStore(repo.import<LarDoc>(bytes(POISONED_B64)));
+    expect(await store.get("lar:///phantom")).toBeNull();
+    await store.put({ tiddler: { title: "lar:///phantom", text: "mine" } });
+    expect((await store.get("lar:///phantom"))?.tiddler.text).toBe("mine");
+  });
+  test("RED: the local storage shore refuses a stored chunk carrying a prototype key, by name", async () => {
+    const chunks = new Map<string, Uint8Array>([["doc/snapshot/x", bytes(POISONED_B64)], ["doc/sync-state/peer", new Uint8Array([1, 2, 3])]]);
+    const adapter = shoreStorage({
+      async load(key: string[]) { return chunks.get(key.join("/")); },
+      async loadRange(prefix: string[]) { return [...chunks].filter(([k]) => k.startsWith(prefix.join("/"))).map(([k, data]) => ({ key: k.split("/"), data })); },
+    });
+    await expect(adapter.load(["doc", "snapshot", "x"])).rejects.toMatchObject({ reason: "prototype-key" });
+    await expect(adapter.loadRange(["doc"])).rejects.toMatchObject({ reason: "prototype-key" });
+    expect(await adapter.load(["doc", "sync-state", "peer"])).toEqual(new Uint8Array([1, 2, 3]));
+  });
+  test("CONTROL: a clean stored doc passes the storage shore", async () => {
+    const clean = save(change(init<{ tiddlers: Record<string, unknown> }>(), (d) => { d.tiddlers = { real: { tiddler: { title: "real" } } }; }));
+    expect(chunkPrototypeKey(clean)).toBeNull();
+    const adapter = shoreStorage({ async load() { return clean; }, async loadRange() { return [{ key: ["d", "snapshot", "c"], data: clean }]; } });
+    expect(await adapter.load(["d", "snapshot", "c"])).toBe(clean);
   });
 });
 

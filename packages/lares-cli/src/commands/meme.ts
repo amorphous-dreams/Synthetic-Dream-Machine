@@ -88,8 +88,8 @@ import { basename, dirname, isAbsolute, join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission, PROFILES, profileOf, recordedTargetOf, resolveWeaveTarget, type WeaveProfile } from "@lararium/tw5/weave";
-import { readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle } from "@lararium/tw5";
-import { verifyBcc, verdict, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
+import { readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle, memeticVerdict } from "@lararium/tw5";
+import { verifyBcc, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
 import { newChangeId } from "@lararium/mesh";
 import { faceSigningSeat, listFaceOrdinals, runPromoteCheckBytes } from "@lararium/node";
 import { vesselDid, larSealHome } from "../env.js";
@@ -477,7 +477,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // BARE DATA IS NOT A MEME. No head, no text frame, no release: normalizing it would frame bytes
     // nobody framed, so both seats NAME it and move none of its bytes. A reading, never a fault — the
     // stage law below still reads whatever meta it declares.
-    const frame = verdict(src);
+    const frame = memeticVerdict(src);   // the house verdict: torn where the frame's meta read and TOML's part
     if (frame.kind === "bare") {
       console.log(`bare: ${f}`);
       console.log("  ⚠ bare data — no frame stands (no head, no STX/ETX, no release); not a meme. WARNING: UNSTABLE");

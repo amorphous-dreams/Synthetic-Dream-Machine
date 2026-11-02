@@ -19,6 +19,7 @@ import type { PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
+import { shoreStorage } from "@lararium/mesh";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
 import {
   emptyLarDoc, storedLarRecord,
@@ -564,7 +565,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     return fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, key))?.stands === true;
   };
   const repo = new Repo({
-    storage:     new IndexedDBStorageAdapter(`${idbName}:repo`),
+    storage:     shoreStorage(new IndexedDBStorageAdapter(`${idbName}:repo`)),
     // The verdict seats on announce AND access (the announce-only lie the node measured in
     // share-policy-is-access.test.ts); `browserShareConfig` composes it through mesh's one law.
     // The gate rides by READER: it arms at the spore crossing below, after this Repo stands.

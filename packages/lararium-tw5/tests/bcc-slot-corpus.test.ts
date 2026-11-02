@@ -54,6 +54,10 @@ function framedFiles(): Reading[] {
     let text: string;
     try { text = readFileSync(join(REPO, rel), "utf8"); } catch { continue; }
     if (!text.includes("&#x0002;") && !text.includes("&#x0003;")) continue;
+    // A `.tid` DECLARING `type: application/json` holds a JSON bundle (the standalone plugin), never a carrier
+    // frame: its marks sit inside string literals, and a frame read over it measures only how many tick runs
+    // the bundled code happens to hold (it read `bare` until a source edit moved that count's parity).
+    if (/\.tid$/.test(rel) && /^type:[ \t]*application\/json[ \t]*$/m.test(text.slice(0, text.indexOf("\n\n") >>> 0))) continue;
     const opensFrame = /^\s*<<(?:!DOCTYPE|\^)/.test(text);
     if (!(/\.(mem|tid|body)$/.test(rel) || opensFrame || declaresCarrier(text))) continue;
     const m = frameMarks(text);

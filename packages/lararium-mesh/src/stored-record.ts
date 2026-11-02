@@ -14,7 +14,7 @@
 import { ImmutableString } from "@automerge/automerge";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { mutableLarRecord } from "./base-doc.js";
-import { isPlainMap, isWrappedString, type StoredLarRecord, type WrappedLarRecord } from "./stored-value.js";
+import { isPlainMap, isPrototypeKey, isWrappedString, type StoredLarRecord, type WrappedLarRecord } from "./stored-value.js";
 import { assertStorableTitle } from "./title-law.js";
 import { VerbRefusal } from "./verb-refusal.js";
 
@@ -34,12 +34,12 @@ export function storedValue(value: unknown): unknown {
   if (isPlainMap(value)) {
     const out: Record<string, unknown> = {};
     for (const [key, inner] of Object.entries(value)) {
-      // A `__proto__` own key (a `JSON.parse`d body carries one) would re-seat `out`'s prototype here and
-      // throw a bare RangeError inside the engine's `change()` from 3.5.0. It refuses by name instead.
-      // KEEP: a live hostile form. `constructor` and `prototype` stand as field names: own keys read as
-      // themselves through the read door.
-      if (key === "__proto__") {
-        throw new VerbRefusal(PROTOTYPE_KEY_CODE, `${PROTOTYPE_KEY_CODE}: a stored map never carries a \`__proto__\` key — it names the prototype chain, never a field`);
+      // A key naming the prototype chain refuses by name: a `__proto__` own key (a `JSON.parse`d body carries
+      // one) would re-seat `out`'s prototype and throw a bare RangeError inside the engine's `change()` from
+      // 3.5.0, and `constructor` / `prototype` refuse beside it, ONE KEY SET ON EVERY PATH (the shore refuses
+      // all three from a peer, so a write the house made would never sync). KEEP: a live hostile form.
+      if (isPrototypeKey(key)) {
+        throw new VerbRefusal(PROTOTYPE_KEY_CODE, `${PROTOTYPE_KEY_CODE}: a stored map never carries a \`${key}\` key — it names the prototype chain, never a field`);
       }
       if (inner !== undefined) out[key] = storedValue(inner);
     }

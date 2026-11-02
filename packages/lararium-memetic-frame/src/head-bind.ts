@@ -13,38 +13,50 @@
  *     title and a uri-path that disagree with each other tear as well: the seal would name two places.
  *   · `namespace=` binds only where the meta carries `namespace`; both sides read through their numeric
  *     character references, so the head's glyphs (`ॐ ँ`) meet the meta's entities (`&#x0950; &#x0901;`).
+ *     A head namespace over a meta carrying none reads `head-unbound`: the seal never reaches it.
  *   · A split reads TORN, fault `head-meta-split`. A head naming what the sealed meta never names reads
  *     `unbound` — the verdict `head-unbound`, visible, never `match` and never a tear.
  *   · An unaddressed head (``to=`?` ``) claims no address: it binds only where the meta names none,
  *     and over a sealed title or uri-path it reads split — the head dropped the address the seal names.
  *   · No head at all claims nothing, and binds trivially.
  *
- * ── ONE SPELLING, BY A LEXICAL READ ──────────────────────────────────────────────────────────────
- * The frame parses no TOML (ruled: the meta rides the body, and the body reader owns its fields). It
- * needs three root keys, and reads them in the one spelling every emitter writes —
+ * ── THE ROOT META: THE FENCE OPENS THE BODY ──────────────────────────────────────────────────────
+ * The meta the head binds against comes from `rootMetaFence` (root-meta.ts): the first live meta fence
+ * after STX with nothing but spacing before it, closed at its first tick run — the deserializer's own
+ * rule, so the frame binds against exactly the fields the record holds, and a slot's meta never names the
+ * carrier.
+ *
+ * ── ONE GRAMMAR, READ ONE LINE AT A TIME ─────────────────────────────────────────────────────────
+ * The frame parses no TOML (ruled: one dependency, no parser). So it reads the sealed meta only where
+ * every line stands whole by itself, where a line read and a TOML read cannot part (blind security read
+ * A1, 2026-11-01: a multi-line string tracked by a line read fell out of step with TOML's, and the two read
+ * different titles under one `match`). The body binds only when it holds no `"""` or `'''` anywhere, no
+ * character but tab and newline below U+0020, no byte-order mark, and every line reads as one of
+ *
+ *     a blank line · a `#` comment · a `[table]` or `[[table]]` header · `key = value  # comment`
+ *
+ * where the key is bare (dotted segments allowed) and the value closes on its own line: a basic or literal
+ * string, a bare scalar (a number, a boolean, a date with no space), or a one-line array or inline table of
+ * those. Anything else tears. The three binding keys read in the one spelling every emitter writes —
  *
  *     title = "…"          uri-path = "…"          namespace = "…"
  *
- * — a bare key, a basic string with no escape, nothing after the closing quote. A binding key in ANY
- * other spelling (quoted, dotted, doubled, a literal or multi-line string, an escape, a trailing
- * comment) tears rather than binds, because a TOML parser might read it otherwise, and a frame that
- * read one value while the body read another would hand an author two addresses for one carrier.
- * The tear costs nothing honest: the whole corpus writes the one spelling (measured, 2026-11-01).
+ * — a bare key, a basic string with no escape, nothing after the closing quote, each at most once, before
+ * the first header. Inside that grammar a line means what TOML says it means, so the frame and the body
+ * reader read one value; the tw5 gate also compares the frame's keys with smol-toml's and tears on any
+ * difference (meta-parity.ts), the belt beside these braces. The whole corpus fits the grammar (measured,
+ * 2026-11-01: 804 root metas, no multi-line string, no stray line).
  *
- * PYRE LEDGER: KEEP, both refusals here. `head-meta-split` refuses a live hostile form, a head that
- * names another place than its seal, and the one-spelling tear guards a parser differential (the
- * frame's read against a TOML read). Each guards a live invariant, so the pyre leaves both standing.
- *
- * The root meta is the body reader's own: the first live ```` ```toml meta ```` opener at or past STX's
- * end, through the fence mask, closed at its `\n```. It binds only when it closes before the ETX —
- * inside the span the check covers. Keys past the first `[table]` header are no root keys.
+ * PYRE LEDGER: KEEP, every refusal here. `head-meta-split` refuses a live hostile form, a head that names
+ * another place than its seal, and the grammar tears guard a parser differential (the frame's read
+ * against a TOML read). Each guards a live invariant, so the pyre leaves them standing.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing
  */
 
-import { fencedSpans, maskedExecAll, type MaskSpan } from "./fence-mask.js";
-import { META_OPEN_RE } from "./meta-fence.js";
+import { fencedSpans, type MaskSpan } from "./fence-mask.js";
 import { matchCarrierHead } from "./head.js";
+import { rootMetaFence } from "./root-meta.js";
 import { readFrame, type FrameFault } from "./span.js";
 
 /** An end the sealed meta never names: the head's address, or its namespace. */
@@ -55,16 +67,22 @@ export type HeadBinding =
   | { readonly kind: "split"; readonly faults: readonly FrameFault[] }
   | { readonly kind: "unbound"; readonly unbound: readonly UnboundEnd[] };
 
-const BINDING_KEYS = ["title", "uri-path", "namespace"] as const;
-type BindingKey = (typeof BINDING_KEYS)[number];
+type BindingKey = "title" | "uri-path" | "namespace";
+
+/** What the sealed root meta names for the head, as the frame reads it. */
+export type SealedBindingKeys = Readonly<Partial<Record<BindingKey, string>>>;
 
 /** The one spelling a binding key binds in. */
 const CANON_LINE_RE = /^(title|uri-path|namespace)[ \t]*=[ \t]*"([^"\\\n]*)"[ \t]*$/;
-/** Whether a line's key part names a binding key in any spelling: bare, quoted, or dotted. */
-const NAMES_KEY_RE = /^[ \t]*["']?[ \t]*(title|uri-path|namespace)[ \t]*["']?[ \t]*[.=]/;
-/** A quoted key carrying an escape could spell any key at all; it never reads as "not a binding key". */
-const ESCAPED_KEY_RE = /^[ \t]*["'][^=]*\\[^=]*=/;
-const TABLE_RE = /^[ \t]*\[/;
+/** A bare key, dotted segments allowed, then `=`. Capture 1 holds the key. */
+const KEY_RE = /^[ \t]*([A-Za-z0-9_-]+(?:[ \t]*\.[ \t]*[A-Za-z0-9_-]+)*)[ \t]*=[ \t]*/;
+const BLANK_OR_COMMENT_RE = /^[ \t]*(?:#[^\n]*)?$/;
+const HEADER_RE = /^[ \t]*\[\[?[ \t]*[A-Za-z0-9_.-]+(?:[ \t]*\.[ \t]*[A-Za-z0-9_-]+)*[ \t]*\]\]?[ \t]*(?:#[^\n]*)?$/;
+/** No multi-line string, no byte-order mark, no control character but tab and newline. */
+// eslint-disable-next-line no-control-regex
+const OUTSIDE_RE = /"""|'''|﻿|[\u0000-\u0008\u000B-\u001F\u007F]/;
+/** A bare scalar: a number, a boolean, a date or time with no space. */
+const BARE_RE = /^[A-Za-z0-9_+.:-]+/;
 
 const split = (message: string): FrameFault => ({ kind: "head-meta-split", message });
 
@@ -75,43 +93,98 @@ function decodeRefs(s: string): string {
     .replace(/&#([0-9]{1,7});/g, (_, d: string) => String.fromCodePoint(parseInt(d, 10)));
 }
 
-/** The sealed root meta's body, or null where none closes inside the span. */
-function sealedMetaBody(text: string, spans: readonly MaskSpan[], from: number, to: number): string | null {
-  const open = maskedExecAll(text, META_OPEN_RE, spans, true).find((m) => m.index >= from);
-  if (!open) return null;
-  const bodyStart = open.index + open[0].length;
-  const closeAt = text.indexOf("\n```", bodyStart);
-  if (closeAt < 0 || closeAt + 4 > to) return null;
-  return text.slice(bodyStart, closeAt);
+/**
+ * Where one value that starts at `at` ends on its line, or -1 where it does not close there: a basic or
+ * literal string, a bare scalar, or a one-line array or inline table of values.
+ */
+function valueEnd(line: string, at: number, depth = 0): number {
+  if (depth > 8) return -1;
+  const c = line[at];
+  if (c === '"') {
+    for (let i = at + 1; i < line.length; i++) {
+      if (line[i] === "\\") { i++; continue; }
+      if (line[i] === '"') return i + 1;
+    }
+    return -1;
+  }
+  if (c === "'") {
+    const close = line.indexOf("'", at + 1);
+    return close < 0 ? -1 : close + 1;
+  }
+  if (c === "[" || c === "{") {
+    const end = c === "[" ? "]" : "}";
+    let i = skipSpace(line, at + 1);
+    if (line[i] === end) return i + 1;
+    for (;;) {
+      if (c === "{") {
+        const key = KEY_RE.exec(line.slice(i));
+        if (!key) return -1;
+        i += key[0].length;
+      }
+      i = valueEnd(line, i, depth + 1);
+      if (i < 0) return -1;
+      i = skipSpace(line, i);
+      if (line[i] === ",") {
+        i = skipSpace(line, i + 1);
+        if (line[i] === end && c === "[") return i + 1;
+        continue;
+      }
+      return line[i] === end ? i + 1 : -1;
+    }
+  }
+  const bare = BARE_RE.exec(line.slice(at));
+  return bare ? at + bare[0].length : -1;
 }
 
-/** The three binding keys, read in their one spelling — or the faults a deviant spelling carries. */
+function skipSpace(line: string, i: number): number {
+  while (line[i] === " " || line[i] === "\t") i++;
+  return i;
+}
+
+/** The three binding keys of a sealed meta body, read in the one grammar — or the faults it tears on. */
 function readBindingKeys(body: string): { keys: Partial<Record<BindingKey, string>>; faults: FrameFault[] } {
   const keys: Partial<Record<BindingKey, string>> = {};
+  const outside = OUTSIDE_RE.exec(body);
+  if (outside) {
+    const what = outside[0] === "﻿" ? "a byte-order mark" : outside[0].length === 3 ? `a multi-line string (\`${outside[0]}\`)` : "a control character";
+    return { keys, faults: [split(`the sealed meta holds ${what} — the head binds only a meta whose every line reads whole by itself; nothing repairs it`)] };
+  }
   const faults: FrameFault[] = [];
-  let inMulti: '"""' | "'''" | null = null;
+  let root = true;
   for (const line of body.split("\n")) {
-    // A multi-line string's interior holds no key, whatever it spells.
-    if (inMulti) {
-      if (line.split(inMulti).length % 2 === 0) inMulti = null;
+    if (BLANK_OR_COMMENT_RE.test(line)) continue;
+    if (HEADER_RE.test(line)) { root = false; continue; }
+    const key = KEY_RE.exec(line);
+    const end = key ? valueEnd(line, key[0].length) : -1;
+    if (!key || end < 0 || !BLANK_OR_COMMENT_RE.test(line.slice(end))) {
+      faults.push(split(`\`${line.trim()}\` — the head binds only a meta whose every line reads whole by itself (a blank, a comment, a header, or a bare \`key = value\` closing on its line); nothing repairs it`));
       continue;
     }
-    if (TABLE_RE.test(line)) break;
-    const names = NAMES_KEY_RE.exec(line);
-    if (names || ESCAPED_KEY_RE.test(line)) {
-      const canon = CANON_LINE_RE.exec(line);
-      const key = (canon?.[1] ?? names?.[1]) as BindingKey | undefined;
-      if (!canon) {
-        faults.push(split(`\`${line.trim()}\` — a ${key ? `\`${key}\`` : "binding"} key binds the head only as \`${key ?? "title"} = "…"\` (a bare key, a basic string, no escape, nothing after it); nothing repairs it`));
-      } else if (keys[key!] !== undefined) {
-        faults.push(split(`\`${key}\` stands twice in the sealed meta — the head binds against one`));
-      } else {
-        keys[key!] = canon[2]!;
-      }
+    if (!root) continue;
+    const name = key[1]!.replace(/[ \t]/g, "");
+    const head = name.split(".")[0]!;
+    if (head !== "title" && head !== "uri-path" && head !== "namespace") continue;
+    const canon = CANON_LINE_RE.exec(line);
+    if (!canon || name !== head) {
+      faults.push(split(`\`${line.trim()}\` — a \`${head}\` key binds the head only as \`${head} = "…"\` (a bare key, a basic string, no escape, nothing after it); nothing repairs it`));
+    } else if (keys[head] !== undefined) {
+      faults.push(split(`\`${head}\` stands twice in the sealed meta — the head binds against one`));
+    } else {
+      keys[head] = canon[2]!;
     }
-    for (const q of ['"""', "'''"] as const) if (line.split(q).length % 2 === 0) { inMulti = q; break; }
   }
   return { keys, faults };
+}
+
+/**
+ * The binding keys the sealed root meta names, as the frame reads them — `null` where no sealed root meta
+ * stands, or where it reads outside the one grammar. The tw5 gate compares this with smol-toml's read.
+ */
+export function sealedBindingKeys(text: string, spans: readonly MaskSpan[] = fencedSpans(text)): SealedBindingKeys | null {
+  const fence = rootMetaFence(text, spans);
+  if (!fence) return null;
+  const { keys, faults } = readBindingKeys(fence.body);
+  return faults.length > 0 ? null : keys;
 }
 
 /**
@@ -123,8 +196,8 @@ export function headBinding(text: string, spans: readonly MaskSpan[] = fencedSpa
   const head = matchCarrierHead(text);
   if (!head || !frame.stx || !frame.etx) return { kind: "bound" };
 
-  const body = sealedMetaBody(text, spans, frame.stx.end, frame.etx.index);
-  const { keys, faults } = body === null ? { keys: {} as Partial<Record<BindingKey, string>>, faults: [] } : readBindingKeys(body);
+  const fence = rootMetaFence(text, spans);
+  const { keys, faults } = fence === null ? { keys: {} as Partial<Record<BindingKey, string>>, faults: [] } : readBindingKeys(fence.body);
   if (faults.length > 0) return { kind: "split", faults };
 
   const { title, "uri-path": uriPath, namespace } = keys;

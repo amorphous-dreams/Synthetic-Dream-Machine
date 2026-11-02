@@ -32,6 +32,7 @@ import {
   META_OPEN_RE,
   META_OPEN_CANON,
   isCanonicalMetaOpen,
+  rootMetaFence,
 } from "@lararium/memetic-frame";
 import { metaFenceAt, metaValueRaw } from "./root-meta.js";
 
@@ -157,7 +158,11 @@ export function readCarrierShape(text: string): CarrierShape {
   // but spacing stands between STX and it — a later block belongs to the slot it sits in.
   const firstMeta = metaOpenFrom(text, spans, 0);
   const bodyMeta = metaOpenFrom(text, spans, bodyFrom);
-  const rootMeta = bodyMeta !== null && (!frame.stx || text.slice(frame.stx.end, bodyMeta.index).trim() === "");
+  // THE FENCE OPENS THE BODY, by the frame's one rule where a text frame stands (`rootMetaFence`), the rule
+  // the deserializer splits by and the head binds by.
+  const rootMeta = frame.stx && frame.etx
+    ? rootMetaFence(text, spans) !== null
+    : bodyMeta !== null && (!frame.stx || text.slice(frame.stx.end, bodyMeta.index).trim() === "");
   const metaAboveStx = frame.stx !== null && firstMeta !== null && firstMeta.index < frame.stx.index;
   // THE ROOT META AGREES WITH THE HEAD. The head is the address; a root `title` or `uri-path` naming
   // another one states two identities, and the carrier check refuses the pair until a hand settles it.

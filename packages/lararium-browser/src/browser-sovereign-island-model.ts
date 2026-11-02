@@ -24,6 +24,7 @@
  */
 
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
+import { shoreStorage } from "@lararium/mesh";
 import {
   runSovereignKernel,
   type IslandHostShore,
@@ -36,9 +37,9 @@ import { readCasBlobFromOpfs } from "./browser-genesis.js";
 /** Browser storage composition: preserve ordinary wiki durability while the
  * D-VR daemon primary crossing stays ephemeral. */
 export function browserIslandStorage(msg: IslandMsg_Manifest) {
-  if (msg.storage?.type === "idb") return new IndexedDBStorageAdapter(msg.storage.dbName);
+  if (msg.storage?.type === "idb") return shoreStorage(new IndexedDBStorageAdapter(msg.storage.dbName));
   if (msg.storage?.type === "memory" || msg.ownedDocument) return undefined;
-  return new IndexedDBStorageAdapter(msg.wikiUri);
+  return shoreStorage(new IndexedDBStorageAdapter(msg.wikiUri));
 }
 
 export interface BrowserIslandScope {

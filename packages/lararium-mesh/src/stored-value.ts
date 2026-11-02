@@ -102,9 +102,10 @@ function isClassPrototype(proto: object): boolean {
 /**
  * Where a MATERIALIZED doc carries a prototype key, or null where it carries none. A map whose prototype is
  * neither `Object.prototype`, null, nor a class's own prototype holds a `__proto__` key (the engine seated
- * it as the prototype, so no own-key listing ever shows it); a `tiddlers` map naming `constructor` or
- * `prototype` as a title holds a key no record may take. A field named `constructor` stands: an own key
- * reads as itself through the read door, and refusing it would refuse a user's field name.
+ * it as the prototype, so no own-key listing ever shows it); a map naming `constructor` or `prototype` at
+ * any depth holds a key no write door lets the house make. ONE KEY SET ON EVERY PATH (blind security read
+ * B1): the change path, the load path and the write doors refuse the same three keys, so no record a peer
+ * lands is one the house could never write, and none it writes is one a peer refuses.
  */
 export function prototypeKeyFault(value: unknown, path = "doc", depth = 0): string | null {
   if (typeof value !== "object" || value === null || depth > 64) return null;
@@ -120,7 +121,7 @@ export function prototypeKeyFault(value: unknown, path = "doc", depth = 0): stri
     return isClassPrototype(proto) ? null : `${path} carries a \`__proto__\` key`;
   }
   for (const key of Object.keys(value)) {
-    if (isPrototypeKey(key) && (key === "__proto__" || path.endsWith(".tiddlers"))) return `${path} carries a \`${key}\` key`;
+    if (isPrototypeKey(key)) return `${path} carries a \`${key}\` key`;
     const f = prototypeKeyFault((value as Record<string, unknown>)[key], `${path}.${key}`, depth + 1);
     if (f) return f;
   }

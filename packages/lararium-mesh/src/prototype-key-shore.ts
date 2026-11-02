@@ -19,7 +19,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/stored-value
  */
 import { decodeChange, decodeSyncMessage, load } from "@automerge/automerge";
-import { prototypeKeyFault } from "./stored-value.js";
+import { isPrototypeKey, prototypeKeyFault } from "./stored-value.js";
 import { PROTOTYPE_KEY_CODE } from "./stored-record.js";
 import { VerbRefusal } from "./verb-refusal.js";
 
@@ -29,7 +29,9 @@ export { PROTOTYPE_KEY_CODE } from "./stored-record.js";
 export function chunkPrototypeKey(bytes: Uint8Array): string | null {
   try {
     const change = decodeChange(bytes);
-    return change.ops.some((op) => op.key === "__proto__") ? `change ${change.hash} writes a \`__proto__\` key` : null;
+    // ONE KEY SET ON EVERY PATH: the change path refuses the three keys the load path and the write doors do.
+    const op = change.ops.find((o) => typeof o.key === "string" && isPrototypeKey(o.key));
+    return op ? `change ${change.hash} writes a \`${String(op.key)}\` key` : null;
   } catch { /* not a raw change: a document chunk, read below */ }
   try {
     return prototypeKeyFault(load(bytes), "chunk");
@@ -96,5 +98,36 @@ export function shoreInbound<T extends object>(adapter: T, onRefusal?: (refusal:
     }
     return emit(event, ...args);
   };
+  return adapter;
+}
+
+/**
+ * THE LOCAL STORAGE SHORE (blind security read B3). A peer's bytes cross `shoreInbound`; a store's own
+ * bytes never crossed any shore, and a store written under automerge 3.4.1 (whose LOCAL write seats a
+ * `__proto__` key) may hold such a document. So the storage adapter every Repo loads from rides this
+ * wrapper: each document chunk it hands back (`load`, `loadRange`) reads through `chunkPrototypeKey`, and a
+ * chunk carrying one of the three keys refuses by name (`prototype-key`) rather than materializing. Sync
+ * state and other non-document chunks read null and pass. Saves and removes pass untouched. KEEP: a live
+ * hostile form. Answers the same adapter shape; idempotent per adapter.
+ */
+interface StorageLike {
+  load(key: string[]): Promise<Uint8Array | undefined>;
+  loadRange(keyPrefix: string[]): Promise<Array<{ key: string[]; data: Uint8Array | undefined }>>;
+}
+const SHORED_STORAGE = new WeakSet<object>();
+
+function refuseChunk(key: readonly string[], data: Uint8Array | undefined): void {
+  if (!data || key[1] === "sync-state") return;
+  const fault = chunkPrototypeKey(data);
+  if (fault) throw new VerbRefusal(PROTOTYPE_KEY_CODE, `${PROTOTYPE_KEY_CODE}: stored chunk ${key.join("/")}: ${fault} — a by-key map never holds one; the store's bytes refuse`);
+}
+
+export function shoreStorage<T extends StorageLike>(adapter: T): T {
+  if (SHORED_STORAGE.has(adapter)) return adapter;
+  const load = adapter.load.bind(adapter);
+  const loadRange = adapter.loadRange.bind(adapter);
+  adapter.load = async (key) => { const data = await load(key); refuseChunk(key, data); return data; };
+  adapter.loadRange = async (prefix) => { const chunks = await loadRange(prefix); for (const c of chunks) refuseChunk(c.key, c.data); return chunks; };
+  SHORED_STORAGE.add(adapter);
   return adapter;
 }

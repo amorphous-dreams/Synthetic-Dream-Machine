@@ -886,11 +886,17 @@ disagree with each other name two places. The head's `namespace=` binds against 
 one stands, both read through their numeric character references (a head writes `ॐ ँ`, a meta
 `&#x0950; &#x0901;`). An unaddressed head (``to=`?` ``) binds only over a meta naming no address, and a
 carrier with no head binds nothing. Any split reads `torn`, fault `head-meta-split`; an end the meta never
-names reads `head-unbound`. The root meta here reads as the body reader's own: the first live labelled
-meta fence at or past STX, closing before ETX. The frame parses no TOML, so it reads the three keys in the
-one spelling every emitter writes — a bare key, a basic string with no escape, nothing after the closing
-quote, keys before the first `[table]` header — and a binding key in any other spelling tears rather than
-binds, because a TOML parser might read it otherwise. The binding names what an UNKEYED check can name: a
+names reads `head-unbound`. ''The fence opens the body'' (`root-meta.ts`): the root meta names the carrier
+only where it is the first live labelled meta fence after STX with nothing but spacing before it, closed at
+its first tick run, the rule the deserializer splits the root fields by; every later meta fence heads its
+slot and never names the carrier. The frame parses no TOML, so it binds only a sealed meta whose every line
+stands whole by itself: no `"""` or `'''`, no byte-order mark, no control character but tab, and each line a
+blank, a comment, a `[table]` header, or a bare `key = value` whose value closes on that line. Inside that
+grammar a line read and a TOML read cannot part. The three keys read in the one spelling every emitter
+writes (a bare key, a basic string with no escape, nothing after the closing quote, before the first header),
+and anything else tears. Every house reader that holds the TOML parser (the ingest gate, `lares meme check`,
+promotion) also compares the frame's keys with the parser's and tears, `head-meta-split`, on any difference.
+A canon crossing takes its address from the head and refuses a `head-unbound` head by name. The binding names what an UNKEYED check can name: a
 head rewritten alone reads `torn`, never `match`, while a hand that rewrites head, meta and check together
 still authors a new carrier, and only a signature names who did.
 
@@ -1327,6 +1333,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nNj-MmD2HnlHI3xpW7wpXYSSOciefbJTHkKAJWnG73s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pySLQyQB0TjCZM3KlLAcJ59lS503-pY76hELPBExy3Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

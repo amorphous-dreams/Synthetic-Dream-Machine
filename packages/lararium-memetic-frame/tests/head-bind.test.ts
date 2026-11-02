@@ -68,10 +68,14 @@ describe("★ the seal binds the head address ★", () => {
     test("a head over a body carrying no meta at all reads head-unbound", () => {
       expect(verdict(frameCarrier({ head: { uri: URI }, body: "Prose." })).kind).toBe("head-unbound");
     });
-    test("a meta past the first does not bind: only the root meta, the body's own, names the carrier", () => {
-      const body = `Prose first.\n\n${meta(`title = "${URI}"`)}`;
-      // the root meta locator takes the first live meta after STX, wherever it stands — so this binds
-      expect(verdict(sealed(body)).kind).toBe("match");
+    test("A3 (the reader's probe): a meta that does not OPEN the body binds nothing — it heads its slot, never the carrier", () => {
+      const body = `Root prose names nothing.\n\n<<~ ahu slot=\`#/s\`>>\n\n${meta(`title = "${URI}"`)}\n\n<<~/ahu>>`;
+      expect(verdict(sealed(body)).kind).toBe("head-unbound");
+    });
+    test("A3 (the reader's probe): the meta closes where the deserializer closes it, at its first tick run", () => {
+      // The deserializer closes at the first ``` (mid-line too), so its root fields fail to parse here; the
+      // frame reads the same truncated body and tears rather than binding a title the record never holds.
+      expect(verdict(sealed(meta('x = "a```b"', `title = "${URI}"`, `uri-path = "ha.ka.ba/t/head-bind"`))).kind).toBe("torn");
     });
     test("a title keyed under a table binds nothing — only a ROOT key names the carrier", () => {
       expect(verdict(sealed(meta(`[slot]`, `title = "${URI}"`))).kind).toBe("head-unbound");
@@ -132,8 +136,33 @@ describe("★ the seal binds the head address ★", () => {
     ])("%s tears, head-meta-split", (_name, line) => {
       expect(faultsOf(sealed(meta(line)))).toEqual(["head-meta-split"]);
     });
-    test("a key-shaped line inside a multi-line string binds nothing — TOML reads it as string content", () => {
-      expect(verdict(sealed(meta(`note = """`, `title = "lar:///ha.ka.ba/t/decoy"`, `"""`, `title = "${URI}"`))).kind).toBe("match");
+    test("a multi-line string anywhere in the sealed meta tears: the line read and TOML's could part there", () => {
+      expect(faultsOf(sealed(meta(`note = """`, `title = "lar:///ha.ka.ba/t/decoy"`, `"""`, `title = "${URI}"`)))).toEqual(["head-meta-split"]);
+    });
+    // A1, the blind reader's five inputs: each read `match` while smol-toml read title `lar:///evil`.
+    const GOOD = "lar:///ha.ka.ba/t/good";
+    const good = (body: string): string => frameCarrier({ head: { uri: GOOD }, body });
+    test.each([
+      ["a comment holding a triple quote", ['# """', 'title="lar:///evil"', "[t]", '# """', `title="${GOOD}"`]],
+      ["a literal string holding a triple quote", ["x = '\"\"\"'", 'title="lar:///evil"', "[t]", "x = '\"\"\"'", `title="${GOOD}"`]],
+      ["a comment pair around the real title", ['# """', 'title="lar:///evil"', '# """', 'uri-path="ha.ka.ba/t/good"']],
+      ["an escaped triple quote inside a multi-line string", ['x = """', 'a \\""" b', `title="${GOOD}"`, '"""', 'title="lar:///evil"']],
+      ["a byte-order mark mid-body", ['\uFEFFtitle = "lar:///evil"', 'uri-path="ha.ka.ba/t/good"']],
+    ])("A1 (the reader's probe): %s tears, never match", (_name, lines) => {
+      const v = verdict(good(meta(...lines)));
+      expect(v.kind).toBe("torn");
+      expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["head-meta-split"]);
+    });
+    test.each([
+      ["a carriage return", 'title = "lar:///ha.ka.ba/t/head-bind"\r'],
+      ["a quoted non-binding key", '"note" = "x"'],
+      ["a value that runs past its line", 'tags = ["a",'],
+      ["a date with a space", "when = 1979-05-27 07:32:00"],
+    ])("the binding grammar reads one line at a time: %s tears", (_name, line) => {
+      expect(faultsOf(sealed(meta(line, `title = "${URI}"`)))).toEqual(["head-meta-split"]);
+    });
+    test("CONTROL: the corpus's own value shapes read match — numbers, booleans, one-line arrays, escapes outside the binding keys", () => {
+      expect(verdict(sealed(meta(`title = "${URI}"`, "mana = 16", "cacheable = true", 'tags = ["a", "b c", "d\\"e"]', 'note = "a \\"quoted\\" word"', "# a comment", "", "[slot]", 'title = "ignored"'))).kind).toBe("match");
     });
     test("CONTROL: aligned spacing (the corpus's own) reads match", () => {
       expect(verdict(sealed(meta(`title     = "${URI}"`, `uri-path  = "ha.ka.ba/t/head-bind"`))).kind).toBe("match");

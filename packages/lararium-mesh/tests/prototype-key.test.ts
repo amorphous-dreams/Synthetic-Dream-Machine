@@ -98,10 +98,11 @@ describe("the ingest shore refuses the bytes by name", () => {
     expect(prototypeKeyFault(from({ tiddlers: { real: { tiddler: { title: "real", text: "x" } } } }))).toBeNull();
   });
 
-  test("a view naming `constructor` or `prototype` as a title refuses; as a field it stands", () => {
+  test("a view naming `constructor` or `prototype` refuses at any depth — one key set on every path (blind read B1)", () => {
     expect(prototypeKeyFault({ tiddlers: { constructor: { tiddler: { title: "constructor" } } } })).toMatch(/constructor/);
     expect(prototypeKeyFault({ tiddlers: { prototype: { tiddler: { title: "prototype" } } } })).toMatch(/prototype/);
-    expect(prototypeKeyFault({ tiddlers: { real: { tiddler: { title: "real", constructor: "field" } } } })).toBeNull();
+    expect(prototypeKeyFault({ tiddlers: { real: { tiddler: { title: "real", constructor: "field" } } } })).toMatch(/constructor/);
+    expect(prototypeKeyFault({ tiddlers: { real: { tiddler: { title: "real", text: "constructor" } } } })).toBeNull();
   });
 
   test("assertNoPrototypeKeys throws a named VerbRefusal", () => {
@@ -176,13 +177,14 @@ describe("the write door refuses a local prototype key by name, before change()"
     expect(() => storedValue(JSON.parse('{"a":{"__proto__":1}}'))).toThrow(/__proto__/);
   });
 
-  test("ordinary titles and fields stand (control), `constructor` as a field included", () => {
+  test("ordinary titles and fields stand (control); a field named `constructor` refuses by name, one key set on every path", () => {
     expect(storableTitleFault("lar:///ha.ka.ba/ordinary")).toBeNull();
     expect(storableTitleFault("__proto__x")).toBeNull();
     expect(storableTitleFault("Constructor")).toBeNull();
     const doc = change(from<Doc>({ tiddlers: {} }), (d) => {
-      (d.tiddlers as Record<string, unknown>)["lar:///ok"] = storedRecord({ tiddler: { title: "lar:///ok", constructor: "a field" } as never });
+      (d.tiddlers as Record<string, unknown>)["lar:///ok"] = storedRecord({ tiddler: { title: "lar:///ok", text: "constructor" } as never });
     });
     expect(hasOwnEntry(doc.tiddlers, "lar:///ok")).toBe(true);
+    expect(() => storedRecord({ tiddler: { title: "lar:///no", constructor: "a field" } as never })).toThrow(/prototype-key/);
   });
 });
