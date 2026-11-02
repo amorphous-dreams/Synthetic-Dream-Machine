@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@automerge/automerge': 3.4.1
+  '@automerge/automerge': 3.5.0
 
 importers:
 
@@ -64,8 +64,8 @@ importers:
   packages/lararium-browser:
     dependencies:
       '@automerge/automerge':
-        specifier: 3.4.1
-        version: 3.4.1
+        specifier: 3.5.0
+        version: 3.5.0
       '@automerge/automerge-repo':
         specifier: 2.6.0-alpha.5
         version: 2.6.0-alpha.5(supports-color@10.2.2)
@@ -117,8 +117,8 @@ importers:
         version: link:../lararium-tw5
     devDependencies:
       '@automerge/automerge':
-        specifier: 3.4.1
-        version: 3.4.1
+        specifier: 3.5.0
+        version: 3.5.0
       vitest:
         specifier: 5.0.3
         version: 5.0.3(@types/node@26.6.4)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(vite@8.3.4(@types/node@26.6.4)(esbuild@0.28.1)(tsx@4.23.15))
@@ -149,8 +149,8 @@ importers:
   packages/lararium-mesh:
     dependencies:
       '@automerge/automerge':
-        specifier: 3.4.1
-        version: 3.4.1
+        specifier: 3.5.0
+        version: 3.5.0
       '@automerge/automerge-repo':
         specifier: 2.6.0-alpha.5
         version: 2.6.0-alpha.5(supports-color@10.2.2)
@@ -183,8 +183,8 @@ importers:
   packages/lararium-node:
     dependencies:
       '@automerge/automerge':
-        specifier: 3.4.1
-        version: 3.4.1
+        specifier: 3.5.0
+        version: 3.5.0
       '@automerge/automerge-repo':
         specifier: 2.6.0-alpha.5
         version: 2.6.0-alpha.5(supports-color@10.2.2)
@@ -300,8 +300,8 @@ importers:
   packages/lararium-web:
     dependencies:
       '@automerge/automerge':
-        specifier: 3.4.1
-        version: 3.4.1
+        specifier: 3.5.0
+        version: 3.5.0
       '@automerge/automerge-repo':
         specifier: 2.6.0-alpha.5
         version: 2.6.0-alpha.5(supports-color@10.2.2)
@@ -434,8 +434,8 @@ packages:
     resolution: {integrity: sha512-ljXRcPdxipr3g7YQOPcs1qM5kTyRw2NBB/RkU8aU7F8TbsrGQKkq8AKqugjg1Nc3iVWOGS1Wf5WZjuB0NQOusg==}
     engines: {node: '>=22.13'}
 
-  '@automerge/automerge@3.4.1':
-    resolution: {integrity: sha512-zsZpbs/iDPvp+ZojIYd+gxmbcPVz2Xbkcx778G8zrt3E0zS+6saHJOm666lOuZyNRlTV4wHw9qzGTKueedeCsQ==}
+  '@automerge/automerge@3.5.0':
+    resolution: {integrity: sha512-ejbqJWfXWM2QbTcUK/5ugYiQiyOP7LYVAp/RuSvthCc07oek0FClMxEuouuhjrLjVPDSI34RP1ftGc45PF7WRA==}
 
   '@blazediff/core@1.10.0':
     resolution: {integrity: sha512-AOQff0zgR7cGsZL+4E7hVkmujoPUpm0J9xzWGWZj5wCjd3gmxESXAPfKyuzs93VdpQNFhHlBhfOjrcZ+XTERtQ==}
@@ -2028,7 +2028,7 @@ snapshots:
 
   '@automerge/automerge-repo@2.6.0-alpha.5(supports-color@10.2.2)':
     dependencies:
-      '@automerge/automerge': 3.4.1
+      '@automerge/automerge': 3.5.0
       bs58check: 4.0.0
       cbor-x: 1.6.4
       debug: 4.4.3(supports-color@10.2.2)
@@ -2039,7 +2039,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@automerge/automerge@3.4.1': {}
+  '@automerge/automerge@3.5.0': {}
 
   '@blazediff/core@1.10.0': {}
 
