@@ -3,6 +3,8 @@ import type { DaemonVmCore } from "./daemon-vm-core.js";
 export interface DaemonVmHolder {
   readonly vm: DaemonVmCore;
   restart(reason: string): Promise<{ restarts: number }>;
+  guardAsk<T>(ask: { answer: Promise<T>; abandon: () => void }): { answer: Promise<T>; abandon: () => void };
+  onRestarted(fn: (info: { reason: string; restarts: number }) => void | Promise<void>): () => void;
   readonly restarts: number;
 }
 
@@ -19,6 +21,8 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
   let inner = o.vm;
   let state: "ready" | "restarting" | "down" = "ready";
   const pending = new Set<(err: Error) => void>();   // the settle doors of calls standing on the current VM
+  const pendingAsks = new Set<() => void>();
+  const listeners = new Set<(info: { reason: string; restarts: number }) => void | Promise<void>>();
   let restarts = 0;
   let restarting: Promise<{ restarts: number }> | undefined;
   let shutdown: Promise<{ acked: boolean }> | undefined;
@@ -88,6 +92,33 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
   return {
     vm: facade,
     get restarts() { return restarts; },
+    guardAsk<T>(ask: { answer: Promise<T>; abandon: () => void }) {
+      if (state !== "ready") {
+        ask.abandon();
+        throw new DaemonRestarting(state === "down" ? "daemon-down" : "daemon-restarting");
+      }
+      let abandoned = false;
+      const abandon = () => {
+        pendingAsks.delete(restartAsk);
+        if (!abandoned) { abandoned = true; ask.abandon(); }
+      };
+      let rejectAnswer!: (err: Error) => void;
+      const restartAsk = () => {
+        try { abandon(); } finally { rejectAnswer(new DaemonRestarting("daemon-restarting")); }
+      };
+      const answer = new Promise<T>((resolve, reject) => {
+        rejectAnswer = reject;
+        ask.answer.then(value => { pendingAsks.delete(restartAsk); resolve(value); }, err => { pendingAsks.delete(restartAsk); reject(err); });
+      });
+      // The caller may deliberately discard an ask; its guarded rejection still remains observable.
+      void answer.catch(() => undefined);
+      pendingAsks.add(restartAsk);
+      return { answer, abandon };
+    },
+    onRestarted(fn) {
+      listeners.add(fn);
+      return () => { listeners.delete(fn); };
+    },
     restart(reason) {
       if (restarting) return restarting;
       const run = async () => {
@@ -98,6 +129,9 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
           // No wait: a call still pending settles by name, so one that never settles cannot stall the restart.
           for (const settle of [...pending]) settle(new DaemonRestarting("daemon-restarting"));
           pending.clear();
+          for (const settle of [...pendingAsks]) {
+            try { settle(); } catch (err) { console.error("[daemon] ask abandon failed", err); }
+          }
           if (wasReady) await inner.shutdown();
           const next = await o.reopen(reason, prepared);
           inner = next;
@@ -105,6 +139,10 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
           for (const replay of registrations.values()) await replay(next);
           restarts += 1;
           state = "ready";
+          for (const listener of listeners) {
+            try { await listener({ reason, restarts }); }
+            catch (err) { console.error("[daemon] restart listener failed", err); }
+          }
           return { restarts };
         } catch (err) {
           state = "down";

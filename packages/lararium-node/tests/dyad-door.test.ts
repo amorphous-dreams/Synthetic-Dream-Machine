@@ -152,7 +152,8 @@ describe("the dyad door", () => {
 
     // The tab attaches a worker handle without hanging a dyad door on it.
     expect(src).not.toMatch(/attachBrowserDyadDoor|dyadDoor/);
-    expect((src.match(/daemon = await openBrowserDaemonVm\(/g) ?? []).length).toBe(1);
+    expect((src.match(/openBrowserDaemonVm\(\{/g) ?? []).length).toBe(1);   // the island opens once, inside the holder's open step
+    expect((src.match(/holdDaemonVm\(/g) ?? []).length).toBe(1);
     const spawnStart = src.indexOf("spawnWorker: (url) => {");
     const spawnEnd = src.indexOf("recipe: { wikiSlug: \"daemon\" }", spawnStart);
     expect(spawnStart).toBeGreaterThan(0);
@@ -168,7 +169,7 @@ describe("the dyad door", () => {
     expect(src).toMatch(/if \(startedAt !== fleetMoves\) return;/);
     expect(src).toMatch(/aside: \(peerId\) => siblingAside\(peerId\)/);
     expect(src).toMatch(/deviceAside: \(vesselKey\) => !fleetShadows \|\| fleetShadows\.frontier\.status !== "known" \|\| fleetShadows\.readings\.get\(deviceEdgeId\(fleetShadows\.root, vesselKey\)\)\?\.stands === true/);
-    const boot = src.indexOf("daemon = await openBrowserDaemonVm(");
+    const boot = src.indexOf("daemonHolder = holdDaemonVm(");
     expect(read).toBeGreaterThan(0);
     expect(read).toBeLessThan(boot);
 

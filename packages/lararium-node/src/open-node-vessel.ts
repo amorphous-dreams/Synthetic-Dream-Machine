@@ -70,7 +70,7 @@ import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow } from "@lararium/mes
 import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest, ownEntry } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
-  ACTIVE_WIKI_URI,
+  DaemonRestarting, ACTIVE_WIKI_URI,
   MemoryTiddlerStore,
   selectActiveWikiSlug,
   seedVesselDefaults,
@@ -180,6 +180,7 @@ import { openDaemonVm }                    from "./open-daemon-vm.js";
 import { standDaemonIsland }               from "./daemon-island-reopen.js";
 import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
 import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
+import { islandAsk } from "./daemon-island-ask.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
@@ -1464,14 +1465,13 @@ async function prepareNodeBootOn(
   // the store door's row for `lares edge settle` share it; no other road reaches the verb with a proof.
   const askSeatDutiesAsVessel = (facts: { readonly fleetRoot: string; readonly acts: readonly unknown[]; readonly rolled: readonly string[] }): IslandAsk => {
     if (!daemonVm) throw new Error("the daemon island does not stand yet");
-    const vm = daemonVm;
-    return askSeatDuties({
-      daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), facts,
+    return islandAsk(daemonHolder)((ports) => askSeatDuties({
+      ...ports, facts,
       vesselKey: activeAtom?.key ?? "", sign: (image) => {
         if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
         return activeAtom.sign(image);
       },
-    });
+    }));
   };
   const seatSettler = sovereign ? makeSeatSettler({
     wornFleetRoot: () => wornFleetRoot,
@@ -2717,6 +2717,7 @@ async function prepareNodeBootOn(
       }),
     });
     daemonVm = daemonHolder.vm;
+    daemonHolder.onRestarted(() => { if (seatSettler) void daemonVm.workerEa.then(() => seatSettler.onFold(), () => undefined); });
     standDaemonVm();
     // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────
     // A cross-operator peer holding a VERIFIED face-join grant on THIS face's plane reaches the face's own
@@ -3196,8 +3197,7 @@ async function prepareNodeBootOn(
       // A feed asks the island's `realm-feed` as the face, from this thread, over the host channel.
       askIsland: (verb, args, requestedBy, requestId) => {
         if (!daemonVm) throw new Error("the daemon island does not stand yet");
-        const vm = daemonVm;
-        return askIslandVerb({ daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), verb, args, requestedBy, requestId }).answer;
+        return islandAsk(daemonHolder)((ports) => askIslandVerb({ ...ports, verb, args, requestedBy, requestId })).answer;
       },
     });
     for (const [verb, reactor] of Object.entries(doors)) registry.register(verb, reactor);
@@ -3414,7 +3414,9 @@ async function prepareNodeBootOn(
       "worker.event",
       ({ listenable, payload }) => {
         const ask = islandEventAsk(listenable, payload);
-        if (ask) daemonVm.placeVerb(ask);
+        if (ask) {
+          try { daemonVm.placeVerb(ask); } catch (err) { if (!(err instanceof DaemonRestarting)) throw err; console.log("[daemon] a worker event dropped: the island restarts"); }
+        }
       },
     );
   };
@@ -3593,17 +3595,16 @@ async function prepareNodeBootOn(
       // Null while no daemon island stands, so a cut there refuses `memory-unavailable` by name.
       get cutMemory() {
         if (!daemonVm) return null;
-        const vm = daemonVm;
         return async (to: Uint8Array) => {
           // The cut read this vessel's shadow at its entry; the ask says so, and the holder reads none of its own.
-          const out = await askIslandMemory({
-            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), act: "cut",
+          const out = await islandAsk(daemonHolder)((ports) => askIslandMemory({
+            ...ports, act: "cut",
             facts: { to: Buffer.from(to).toString("hex"), shadow: MEMORY_CUT_SHADOW_READ },
             vesselKey: activeAtom?.key ?? "", sign: (image) => {
               if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
               return activeAtom.sign(image);
             },
-          }).answer;
+          })).answer;
           const holds = Array.isArray(out["holds"]) ? out["holds"] as Array<{ bagId: string; founding: string; keyVersion: string }> : [];
           if (typeof out["section"] !== "string") throw new Error("the island answered no memory section");
           return { section: out["section"], holds };
@@ -3614,30 +3615,28 @@ async function prepareNodeBootOn(
       // import, then takes the section beside its pair's secret half sealed to that door.
       get memoryDoor() {
         if (!daemonVm) return null;
-        const vm = daemonVm;
         return async () => {
-          const out = await askIslandMemory({
-            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), act: "door", facts: {},
+          const out = await islandAsk(daemonHolder)((ports) => askIslandMemory({
+            ...ports, act: "door", facts: {},
             vesselKey: activeAtom?.key ?? "", sign: (image) => {
               if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
               return activeAtom.sign(image);
             },
-          }).answer;
+          })).answer;
           if (typeof out["door"] !== "string" || !/^[0-9a-f]{64}$/.test(out["door"])) throw new Error("the island named no door");
           return Uint8Array.from(Buffer.from(out["door"], "hex"));
         };
       },
       get importMemory() {
         if (!daemonVm) return null;
-        const vm = daemonVm;
         return async (section: string, sealedSecret: string) => {
-          const out = await askIslandMemory({
-            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), act: "import", facts: { section, secret: sealedSecret },
+          const out = await islandAsk(daemonHolder)((ports) => askIslandMemory({
+            ...ports, act: "import", facts: { section, secret: sealedSecret },
             vesselKey: activeAtom?.key ?? "", sign: (image) => {
               if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
               return activeAtom.sign(image);
             },
-          }).answer;
+          })).answer;
           return Array.isArray(out["results"]) ? out["results"] as Array<{ bagId: string; keyVersion: string; outcome: string; cause?: string }> : [];
         };
       },
