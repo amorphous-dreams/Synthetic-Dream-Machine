@@ -297,3 +297,5 @@ export {
 export type { CarrierLifecycle, LifecycleStage } from "./carrier-lifecycle.js";
 
 export { placedAskIsLocal } from "./daemon-behavior.js";
+
+export { makePromoteStateReactor, seedPromoteUiTiddlers, PROMOTE_PANEL_TITLE, PROMOTE_STATE_TITLE } from "./promote-ui-tiddlers.js";

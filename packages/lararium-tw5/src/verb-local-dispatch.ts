@@ -31,6 +31,7 @@ export interface RunLocalVerbOptions {
   readonly presenterOf?: (invocation: Verb) => string;
   /** True for a verb the vessel's own presence channel took. */
   readonly localOf?: (invocation: Verb) => boolean;
+  readonly surfaceOf?: (invocation: Verb) => boolean;
   /** The face a session wore for this ask, as the vessel's main thread booked it; absent where none. */
   readonly wornOf?: (invocation: Verb) => SessionWorn | undefined;
 }
@@ -172,5 +173,5 @@ export async function runLocalVerb(invocation: Verb, opts: RunLocalVerbOptions):
   const local = opts.localOf?.(invocation) ?? false;
   const cap = makeCapVerify(opts.verifier, presenter, local);
   const worn = opts.wornOf?.(invocation);
-  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, local, ...(worn ? { worn } : {}), ...(opts.signal ? { signal: opts.signal } : {}) });
+  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, local, surface: opts.surfaceOf?.(invocation) === true, ...(worn ? { worn } : {}), ...(opts.signal ? { signal: opts.signal } : {}) });
 }

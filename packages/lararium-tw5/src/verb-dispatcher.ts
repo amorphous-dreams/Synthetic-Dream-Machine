@@ -68,6 +68,7 @@ export interface VerbContext {
   readonly presenter?: string;
   /** True for a verb the vessel's own presence channel took; absent or false for a synced summons. */
   readonly local?: boolean;
+  readonly surface?: boolean;
   /**
    * The face a session wore, as the vessel's main thread booked it when it placed the ask: the face's ordinal on this
    * vessel and the presenter the session door verified. Absent for every ask that rode no session; never read off a
@@ -162,6 +163,17 @@ export class VerbTable {
   private readonly handlers = new Map<string, VerbReactor>();
   private readonly specs    = new Map<string, VerbSpec>();
   private fenceOf: VerbFence | null = null;
+  private handCodes: Readonly<Record<string, string>> | null = null;
+
+  handOnly(codes: Readonly<Record<string, string>>): void {
+    if (this.handCodes) throw new Error("[verb-dispatcher] hand-only codes already set");
+    this.handCodes = { ...codes };
+  }
+
+  private admitHand(verbName: string, context: VerbContext): void {
+    const code = this.handCodes?.[verbName];
+    if (code && context.surface !== true) throw Object.assign(new Error(code), { reason: code });
+  }
 
   /**
    * Register a verb, optionally declaring what the surfaces should know about it.
@@ -196,22 +208,24 @@ export class VerbTable {
 
   /** Run the fence's check for a registered verb on a path that answers without its handler (an effect's replay). */
   admit(verbName: string, context: VerbContext): void {
+    this.admitHand(verbName, context);
     if (this.fenceOf && this.fenced(verbName)) this.fenceOf.check(verbName, context);
   }
 
-  admitRouted(verbName: string, context: VerbContext): void {
-    if (this.fenceOf && !Object.hasOwn(this.fenceOf.open, verbName)) this.fenceOf.check(verbName, context);
+  admitRouted(verbName: string, context: VerbContext, checkFence = true): void {
+    this.admitHand(verbName, context);
+    if (checkFence && this.fenceOf && !Object.hasOwn(this.fenceOf.open, verbName)) this.fenceOf.check(verbName, context);
   }
 
   get(verbName: string): VerbReactor | undefined {
     const inner = this.handlers.get(verbName);
     const fence = this.fenceOf;
-    if (!inner || !fence) return inner;
+    if (!inner) return inner;
     const fenced = this.fenced(verbName);
-    const span = fence.span;
-    if (!fenced && !span) return inner;
+    const span = fence?.span;
     return async (args, context) => {
-      if (fenced) fence.check(verbName, context);
+      this.admitHand(verbName, context);
+      if (fenced) fence!.check(verbName, context);
       return span ? span(context, () => inner(args, context)) : inner(args, context);
     };
   }
@@ -257,6 +271,7 @@ export interface VerbDispatcherOptions {
   readonly presenterOf?: (invocation: Verb) => string;
   /** True for a verb the vessel's own presence channel took; the verifier reads it as `channel: "local"`. */
   readonly localOf?: (invocation: Verb) => boolean;
+  readonly surfaceOf?: (invocation: Verb) => boolean;
   /** Route a verb to main. `signal` aborts when the dispatcher gives up on the ask (a mount that timed out), so the router drops what it holds for it. */
   readonly routeFn?:  (invocation: Verb, signal?: AbortSignal) => Promise<Record<string, unknown>>;
 }
@@ -316,6 +331,7 @@ export class VerbDispatcher {
         ...(this.opts.verifier ? { verifier: this.opts.verifier } : {}),
         ...(this.opts.presenterOf ? { presenterOf: this.opts.presenterOf } : {}),
         ...(this.opts.localOf ? { localOf: this.opts.localOf } : {}),
+        ...(this.opts.surfaceOf ? { surfaceOf: this.opts.surfaceOf } : {}),
       });
     }
     if (this.opts.routeFn) {
@@ -338,9 +354,7 @@ export class VerbDispatcher {
     const local = given?.local ?? this.opts.localOf?.(invocation) === true;
     // A wiki-addressing envelope meets the fence by its presenter. Any other routed ask that did not arrive local (a
     // synced summons, content) names no presenter that can wear a face here, so the fence reads it as naming none.
-    if (routedAddressesWiki(invocation) || !local) {
-      this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, ...(local ? { presenter } : {}), local, cap: makeCapVerify(this.opts.verifier, presenter, local) });
-    }
+    this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, ...(local ? { presenter } : {}), local, surface: !given && this.opts.surfaceOf?.(invocation) === true, cap: makeCapVerify(this.opts.verifier, presenter, local) }, routedAddressesWiki(invocation) || !local);
     // Verify-then-delegate: the keyholder worker gates the cap BEFORE
     // routing to main; main then trusts the worker→main channel as the
     // capability (project_verification_placement). Enforced only when a
@@ -412,11 +426,11 @@ export class VerbDispatcher {
       const local = this.opts.localOf?.(invocation) ?? false;
       const presenter = this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
       const registered = this.opts.registry.has(invocation.action);
-      if (!registered && local && !routedAddressesWiki(invocation)) return true;
+
       const named = registered || local ? { presenter } : {};
       this.opts.registry[registered ? "admit" : "admitRouted"](invocation.action, {
-        daemon: this.opts.daemon, invocation, cap: async () => ({ ok: false, reason: "replay" }), ...named, local,
-      });
+        daemon: this.opts.daemon, invocation, cap: async () => ({ ok: false, reason: "replay" }), ...named, local, surface: this.opts.surfaceOf?.(invocation) === true,
+      }, ...(!registered ? [routedAddressesWiki(invocation) || !local] as const : []));
       return true;
     } catch { return false; }
   }
