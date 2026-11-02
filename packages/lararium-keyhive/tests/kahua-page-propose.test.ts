@@ -70,3 +70,12 @@ describe("the page proposes a draft toward a lift", () => {
     await expect(proposeDraftsToKahua({ ...s.base, plane: null, titles: ["Item"] })).rejects.toThrow(/kahua-proposal-no-plane/);
   });
 });
+
+describe("the page's title list", () => {
+  test("a TW5 title list and an array both read; anything else names none", async () => {
+    const { pageTitleList } = await import("../src/kahua-page-propose.js");
+    expect(pageTitleList("[[Two Words]] One proj/notes/a")).toEqual(["Two Words", "One", "proj/notes/a"]);
+    expect(pageTitleList(["A", "", 3, "B"])).toEqual(["A", "B"]);
+    expect(pageTitleList(undefined)).toEqual([]);
+  });
+});
