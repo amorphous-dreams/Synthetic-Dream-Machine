@@ -198,6 +198,12 @@ export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoo
 ]);
 
 /**
+ * The kahua rows a person's hand alone runs: the stage's pin, a lift and a withdraw. A session the `seat` hand opened (a
+ * spirit) refuses each one at the socket (`handOnlyActs`), so an AI seat proposes and reads and never lifts.
+ */
+export const KAHUA_OPERATOR_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["kahua-mint", "kahua-lift", "kahua-withdraw"]);
+
+/**
  * The face a face row names: `face`, else `handleIndex`; undefined where it names none. The two naming different faces
  * refuse `face-row-other-face` (`FaceNotNamed`): one choice, never split between two spellings.
  */
