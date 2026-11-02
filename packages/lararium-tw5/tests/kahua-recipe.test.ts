@@ -13,6 +13,7 @@ import { buildIslandRecipe } from "../src/island-recipe.js";
 import { openDaemonVmCore, type DaemonVmHost } from "../src/daemon-vm-core.js";
 import {
   CompositeStore, AutomergeDocStore, emptyLarDoc, expandRecipe, kahuaRecipe, slotLayerFlags, wikiBagUri, wikiSlotUri, KAHUA_BAG, ORACLE_BAG,
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kahuaStageDocUrl, materializeSharedLarDoc, signKahuaLift, storedLarRecord, writeKahuaAct,
 } from "@lararium/mesh";
 import type { ChangeOrigin, DocHandle, IslandMsg_Manifest, LarDoc, Repo as RepoType, SlotUri } from "@lararium/mesh";
 import type { TW5Engine } from "../src/tw5-vm.js";
@@ -45,6 +46,55 @@ async function stand(withKahua: boolean) {
   buildIslandRecipe({ tw5: fakeTw5(), composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), ready });
   return { composite, store, repo };
 }
+
+const FACE = "0x" + "6b".repeat(16);
+
+/** The stage stood the way a device holds it: the face's derived doc carrying root-signed lifts, plus whatever a hand wrote. */
+async function standStage() {
+  const repo = new Repo({ sharePolicy: async () => true });
+  const rootSeed = new Uint8Array(32).fill(21), atomSeed = new Uint8Array(32).fill(22);
+  const root = { key: await ed25519VerifyingKeyFromSeed(rootSeed), sign: ed25519SignerFromSeed(rootSeed) };
+  const atom = await ed25519VerifyingKeyFromSeed(atomSeed);
+  const stage = await materializeSharedLarDoc(repo, kahuaStageDocUrl(FACE), "kahua");
+  const lift = async (title: string, text: string) => {
+    const act = await signKahuaLift({ group: FACE, epoch: 0, title, text, fields: {}, parent: null,
+      origin: { seat: atom, device: atom, session: "s" }, taint: [], sources: [{ title: `daemon/${title}`, revision: "r" }] }, root);
+    stage.change((d) => writeKahuaAct(d, act));
+  };
+  const hand = (title: string, text: string) => stage.change((d) => { d.tiddlers[title] = storedLarRecord(title, { title, text }, "hand"); });
+  const face = { group: FACE, grant: (key: string) => key === root.key };
+  return { repo, stage, lift, hand, face };
+}
+
+describe("the kahua layer reads the fold", () => {
+  test("RED: a plain tiddler a synced member writes into the stage never reads through the recipe; CONTROL: a lifted item reads and shadows canon", async () => {
+    const { repo, stage, lift, hand, face } = await standStage();
+    const floor = repo.create<LarDoc>(emptyLarDoc());
+    await new AutomergeDocStore(floor, ORACLE_BAG).put(rec("Lifted", "canon-lifted"), origin);
+    await lift("Lifted", "kahua-lifted");
+    hand("Poison", "a member's raw write");
+    const composite = new CompositeStore();
+    buildIslandRecipe({ tw5: fakeTw5(), composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), kahuaFace: () => face,
+      ready: [{ slot: ORACLE_BAG, handle: floor }, { slot: KAHUA_BAG, handle: stage }] });
+    expect(await composite.get("Poison")).toBeNull();
+    expect((await composite.listVisible()).filter((t) => t.startsWith("lar:///ha.ka.ba/dreamnet/kahua-act/"))).toEqual([]);
+    expect((await composite.get("Lifted"))?.tiddler.text).toBe("kahua-lifted");
+    expect((await composite.resolveTopmost("Lifted"))?.bagId).toBe(KAHUA_BAG);
+    await repo.shutdown();
+  });
+
+  test("GUARD: an island that reads no face mounts the stage empty, and the canon floor still reads", async () => {
+    const { repo, stage, lift } = await standStage();
+    const floor = repo.create<LarDoc>(emptyLarDoc());
+    await new AutomergeDocStore(floor, ORACLE_BAG).put(rec("Lifted", "canon-lifted"), origin);
+    await lift("Lifted", "kahua-lifted");
+    const composite = new CompositeStore();
+    buildIslandRecipe({ tw5: fakeTw5(), composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }),
+      ready: [{ slot: ORACLE_BAG, handle: floor }, { slot: KAHUA_BAG, handle: stage }] });
+    expect((await composite.get("Lifted"))?.tiddler.text).toBe("canon-lifted");
+    await repo.shutdown();
+  });
+});
 
 describe("the kahua recipe stacks top, kahua, canon", () => {
   test("the recipe lays the kahua bag between the daemon bag and the oracle floor", () => {
