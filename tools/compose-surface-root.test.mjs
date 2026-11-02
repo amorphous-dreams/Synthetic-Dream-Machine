@@ -11,7 +11,7 @@
  *   · the canon SOURCE still reads the checkout through `LAR_BAGS=/workspace/bags`, and genesis rides the image
  *     (`LAR_GENESIS=/app/genesis`), so moving the root moves the projection alone.
  *
- * A text scan over the compose file (no YAML parser stands in the workspace); the control below plants the old wiring
+ * A text scan over the compose file (no YAML parser stands in the workspace); the control below plants the /workspace wiring
  * and reads it red, so the scan cannot pass by finding nothing.
  */
 import assert from "node:assert/strict";
@@ -57,8 +57,8 @@ test("every daemon the surface compose stands roots at /state, never the checkou
   assert.deepEqual(refusals, []);
 });
 
-test("CONTROL: the old wiring (--root /workspace) reads red", () => {
-  const old = readFileSync(COMPOSE, "utf8").replace(/"--root", "\/state"/g, '"--root", "/workspace"');
-  const { refusals } = readComposeRoots(old);
+test("CONTROL: a --root /workspace wiring reads red", () => {
+  const planted = readFileSync(COMPOSE, "utf8").replace(/"--root", "\/state"/g, '"--root", "/workspace"');
+  const { refusals } = readComposeRoots(planted);
   assert.ok(refusals.some((r) => /writes the projection into the checkout/.test(r)), JSON.stringify(refusals));
 });
