@@ -534,6 +534,7 @@ async function standDown(stood: Stood): Promise<void> {
 }
 
 export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonVmCore> {
+  restartWiki: (wiki: string) => Promise<void>;
   lightFace: (ordinal: number) => Promise<void>;
   dropFace: (ordinal: number) => Promise<void>;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
@@ -612,6 +613,7 @@ const blankMemeStore = (repo: Repo): (() => DocHandle<LarDoc>) =>
 
 /** The atoms + keel + boot closures both node cap-stacks compose over (built ONCE per boot). */
 interface NodeBootPrep {
+  restartWiki: (wiki: string) => Promise<void>;
   wornFace: () => { readonly face: number; readonly personaGroup: string } | null;
   repo:             Repo;
   /** The store's claim, taken before the Repo opened and held for the vessel's life. */
@@ -3218,6 +3220,7 @@ async function prepareNodeBootOn(
     // rows reach the refold, and no standalone CLI-dialed verb does.
     const doors = storeDoorReactors({
       storageDir, sealHome, repo, catalogUrl: assembly.catalogHandle.url,
+      casDir: casDirForStorage(storageDir), restartWiki: restartWikiIsland,
       onRolled: afterRoll,
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
@@ -3590,6 +3593,7 @@ async function prepareNodeBootOn(
 
   return {
     repo, storeClaim, catalogHandle, placeSigner, nexusPubkey, floorGates, carriagePull, wornFace: wornGateFace,
+    restartWiki: restartWikiIsland,
     vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
@@ -3768,7 +3772,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     },
     store: result.assembly.composite,
     daemon: p.daemonVm(),
-    lightFace: p.lightFace, dropFace: p.dropFace,
+    lightFace: p.lightFace, dropFace: p.dropFace, restartWiki: p.restartWiki,
     wikiDocUrl:       result.wikiHandle.url,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),

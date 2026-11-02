@@ -83,6 +83,8 @@ export interface UdsChannelOptions {
    * seated the `seat` profile (a spirit's hand: an agent, the MCP surface) refuses one `beyond-profile` before it runs.
    */
   readonly handOnlyActs?: ReadonlySet<string>;
+  /** Per-act refusal codes for the hand-only gate; other rows use beyond-profile. */
+  readonly handOnlyCodes?: ReadonlyMap<string, string>;
   /**
    * Verbs whose answer on a session rides its socket alone (`session:act`): the face rows and the realm verbs that name a
    * face's key at a realm's Nexus (`REALM_KEY_VERBS`). A `session:call`, whose outcome body rests in the daemon document
@@ -1124,7 +1126,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (!opts.sessionActs) return sessionRefuse(sock, "no-session-acts", requestId);
     if (!opts.sessionActs.names.has(name)) return sessionRefuse(sock, "act-rides-the-custody-door", requestId);
     // A SPIRIT'S HAND PROPOSES: the seat profile never runs an act the operator's hand alone runs.
-    if (state.supply.profile === "seat" && opts.handOnlyActs?.has(name)) return sessionRefuse(sock, "beyond-profile", requestId);
+    if (state.supply.profile === "seat" && opts.handOnlyActs?.has(name)) return sessionRefuse(sock, opts.handOnlyCodes?.get(name) ?? "beyond-profile", requestId);
     const args = given as Record<string, unknown>;
     // An act names its face by `face` or by `handleIndex`; either naming another face refuses. An act that names none
     // gets the session's face as `face`, which an act keyed by `handleIndex` alone refuses `bad-args`; one that names it
