@@ -361,10 +361,14 @@ export function resolvedTitlePath(title: string): string {
   const scheme = /^[A-Za-z][A-Za-z0-9+.-]*:/.exec(title)?.[0] ?? "";
   let rest = title.slice(scheme.length);
   try { rest = decodeURIComponent(rest); } catch { /* a malformed escape keeps its bytes */ }
-  const out: string[] = [];
-  for (const segment of rest.split("/")) {
+  const segments = rest.split("/");
+  let leading = 0;
+  while (leading < segments.length && segments[leading] === "") leading++;
+  const out: string[] = Array(leading).fill("");
+  for (const segment of segments.slice(leading)) {
+    if (segment === "") continue;
     if (segment === ".") continue;
-    if (segment === ".." && out.length > 0 && out[out.length - 1] !== "") { out.pop(); continue; }
+    if (segment === ".." && out.length > leading && out[out.length - 1] !== "") { out.pop(); continue; }
     out.push(segment);
   }
   return scheme.toLowerCase() + out.join("/");
