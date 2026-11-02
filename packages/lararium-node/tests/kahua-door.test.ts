@@ -7,7 +7,7 @@
 import { describe, expect, test } from "vitest";
 import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocHandle } from "@automerge/automerge-repo";
 import {
-  DAEMON_BAG_ID, KAHUA_BAG, KAHUA_PLANE, personaMembershipEntries, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, emptyLarDoc, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
+  DAEMON_BAG_ID, KAHUA_BAG, KAHUA_PLANE, isFaceScopedBag, personaMembershipEntries, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, emptyLarDoc, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
   faceIntentVerbs, intentEntryRecordsOfGroup, kahuaBodyDigest, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
   personaSiblingBagIds, projectPersonaLog, signFoundingLog, writePersonaAct, type LarDoc,
 } from "@lararium/mesh";
@@ -158,7 +158,11 @@ describe("the facet", () => {
     expect(facets).not.toBeNull();
     {
       const kahua = facets!.documents.filter((d) => d.name === "kahua");
-      expect(kahua).toEqual([{ name: "kahua", document: stage.url, layer: "plane" }]);
+      expect(kahua).toEqual([{ name: "kahua", document: stage.url, layer: "library" }]);
+      // No face session writes the stage through its view: a lift lands only through the door.
+      const view = new SessionDocumentView({ profile: "face", facets: facets! });
+      expect(view.write(stage.url).ok).toBe(false);
+      expect(view.fetch(String(interpretAsDocumentId(stage.url as AutomergeUrl))).ok).toBe(true);
       expect(facets!.documents.filter((d) => d.name === "daemon").every((d) => d.document !== stage.url)).toBe(true);
     }
     const views = faceFleetViews(() => boot, () => groupA, () => new Set(), kahuaOf);
@@ -172,6 +176,25 @@ describe("the facet", () => {
     // The stage's own view, apart from any bootstrap facet: a face-scoped view with the kahua facet fetches it.
     const own = new SessionDocumentView({ profile: "face", facets: { documents: [{ name: "kahua", document: stage.url, layer: "plane" }], content: [] } });
     expect(own.fetch(String(stageId)).ok).toBe(true);
+    views.close();
+  });
+
+  test("RED: the stage bag names no face by shape, so its face scoping rides the pin alone; a session of another face the vessel carries reads no stage", async () => {
+    expect(isFaceScopedBag(KAHUA_BAG)).toBe(false);
+    const f = await face();
+    const stage = await kahuaDoor(f.ports()).mint();
+    const groupA = "0x" + "33".repeat(16), groupB = "0x" + "44".repeat(16);
+    const boot: Record<string, { text?: string }> = { [DAEMON_BAG_ID]: { text: generateAutomergeUrl() }, [PERSONA_GROUP_ID_TIDDLER]: { text: groupA } };
+    for (const group of [groupA, groupB]) for (const e of personaMembershipEntries({ personaGroupId: group, url: generateAutomergeUrl() })) boot[e.title] = { text: e.text ?? undefined };
+    let worn = groupA;
+    // The face switches on the vessel: the stage pinned by face A stays A's; B's session, worn or not, never fetches it.
+    const views = faceFleetViews(() => boot, () => worn, () => new Set(), (g) => (g === groupA ? stage.url : null));
+    const stageId = interpretAsDocumentId(stage.url as AutomergeUrl);
+    worn = groupB;
+    views.seat("peer-b", { personaGroup: groupB });
+    expect(views.gateFor("peer-b")?.mayFederate(stageId) ?? false).toBe(false);
+    views.seat("peer-a", { personaGroup: groupA });
+    expect(views.gateFor("peer-a")?.mayFederate(stageId)).toBe(true);
     views.close();
   });
 });
