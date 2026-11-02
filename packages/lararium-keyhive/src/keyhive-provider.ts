@@ -111,9 +111,12 @@ function eventIsland(e: KH.Event): string | undefined {
   return undefined;
 }
 
-/** 0.6 `getPrincipal` throws on an unknown id where 0.3 `getAgent` answered undefined; the house reads undefined. */
+/** 0.6 `getPrincipal` answers an unknown id with a stub (no flag set) where 0.3 `getAgent` answered undefined;
+ *  the house reads undefined. */
 async function principalOf(kh: KH.Keyhive, id: KH.Identifier): Promise<KH.Principal | undefined> {
-  try { return await kh.getPrincipal(id); } catch { return undefined; }
+  let p: KH.Principal;
+  try { p = await kh.getPrincipal(id); } catch { return undefined; }
+  return p.isActive || p.isIndividual || p.isGroup || p.isDocument ? p : undefined;
 }
 
 function hexToBytes(hex: string): Uint8Array {
@@ -243,7 +246,14 @@ export class KeyhiveProvider implements CapabilityProvider {
       // AN ARCHIVE THAT DOES NOT DECODE REFUSES THE STAND. These bytes opened under the vessel key, so a decode
       // fault means this build cannot read what the vessel keeps; standing a fresh identity in its place would
       // strand every group the kept one created, silently. The fault names itself and nothing mints over it.
-      this.kh = await new KH.Archive(opts.archiveBytes).tryToKeyhive(store, signer, handler);
+      try {
+        this.kh = await new KH.Archive(opts.archiveBytes).tryToKeyhive(store, signer, handler);
+      } catch (err) {
+        // 0.6 refuses another identity's archive itself ("archive of 0x… cannot be loaded with the signer of 0x…").
+        const m = /archive of (0x[0-9a-f]+) cannot be loaded with the signer/i.exec(String((err as Error)?.message ?? err));
+        if (m) throw new ArchiveIdentityMismatch(m[1]!.slice(0, 20), seedIdentity.slice(0, 20));
+        throw err;
+      }
       // A READABLE ARCHIVE OF ANOTHER IDENTITY REFUSES THE STAND. An Individual's identifier IS its signer's
       // verifying key, so an archive that restores any other identity belongs to another seed. Restoring it would
       // split the provider (`whoami` reads the archive's key while the contact card presents the seed's signer),
