@@ -374,3 +374,53 @@ describe("onRestarted runs after the swap, on success alone", () => {
     expect(fired).toBe(0);
   });
 });
+
+describe("restart against a direct shutdown, and against a replay that throws (Luna 1, P1)", () => {
+  test("a shutdown that starts while prepare awaits ends the restart by name: no replacement opens beside the closing island", async () => {
+    const first = fakeVm();
+    const prepared = deferred<void>();
+    let reopened = 0;
+    const held = holdDaemonVm({
+      vm: first,
+      prepare: async () => { await prepared.promise; },
+      reopen: async () => { reopened += 1; return fakeVm(); },
+    });
+    const restarting = held.restart("r");
+    const outcome = restarting.then(() => "restarted", (e: Error) => e.message);
+    await Promise.resolve();
+    await held.vm.shutdown();
+    prepared.resolve();
+    expect(await outcome).toBe("daemon-down");
+    expect(reopened).toBe(0);
+    expect(first.downs).toBe(1);
+  });
+
+  test("CONTROL: with no shutdown standing, the same prepare lets the restart re-open", async () => {
+    const prepared = deferred<void>();
+    let reopened = 0;
+    const held = holdDaemonVm({ vm: fakeVm(), prepare: async () => { await prepared.promise; }, reopen: async () => { reopened += 1; return fakeVm(); } });
+    const restarting = held.restart("r");
+    prepared.resolve();
+    await restarting;
+    expect(reopened).toBe(1);
+  });
+
+  test("a replay that throws shuts the replacement down, leaves the facade down, and a later restart recovers without a leak", async () => {
+    live = 0;
+    const first = fakeVm();
+    const broken = fakeVm();
+    (broken as { onFrame: () => void }).onFrame = () => { throw new Error("replay refused"); };
+    const third = fakeVm();
+    let opens = 0;
+    const held = holdDaemonVm({ vm: first, reopen: async () => (++opens === 1 ? broken : third) });
+    held.vm.onFrame(() => undefined);
+    await expect(held.restart("r")).rejects.toThrow(/replay refused/);
+    expect(broken.downs).toBe(1);
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).toThrow(/daemon-down/);
+    held.vm.dispose();
+    expect(broken.downs).toBe(1);                   // a down facade disposes nothing twice
+    await held.restart("r2");
+    expect(await held.vm.syncLegReady()).toBe(`leg-${third.id}`);
+    expect(live).toBe(1);                           // only the recovered island stands
+  });
+});
