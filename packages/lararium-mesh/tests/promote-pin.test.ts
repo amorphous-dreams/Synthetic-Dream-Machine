@@ -8,7 +8,7 @@
 import { describe, expect, test } from "vitest";
 import { makeIslandRepo } from "../src/index.js";
 import { heldDocOf } from "../src/persona-act-board.js";
-import { PROMOTE_PLANE, adoptPromoteBoard, adoptPromotePlane, promoteBoardDocUrl, promotePlaneUrl } from "../src/promote-board.js";
+import { PROMOTE_PLANE, adoptPromoteBoard, adoptPromotePlane, promoteBoardDocUrl, promoteBoardMint, promotePlaneUrl } from "../src/promote-board.js";
 
 const GROUP = "face-group";
 const pinned = { planes: { [PROMOTE_PLANE]: promoteBoardDocUrl(GROUP) } };
@@ -33,5 +33,11 @@ describe("the board mounts from the verified pin alone", () => {
     expect(heldDocOf(repo, promoteBoardDocUrl(GROUP))).toBeUndefined();
     expect(await adoptPromoteBoard({ repo, group: GROUP, projection: pinned })).toBe(promoteBoardDocUrl(GROUP));
     expect(heldDocOf(repo, promoteBoardDocUrl(GROUP))).toBeDefined();
+  });
+
+  test("RED: a mint outside the founding act refuses `promote-mint-outside-founding` on any vessel class; CONTROL: a pinned face answers its url and signs nothing", () => {
+    expect(promoteBoardMint(pinned, GROUP)).toBe(promoteBoardDocUrl(GROUP));
+    expect(() => promoteBoardMint({ planes: {} }, GROUP)).toThrowError(expect.objectContaining({ code: "promote-mint-outside-founding" }));
+    expect(() => promoteBoardMint({ planes: { [PROMOTE_PLANE]: "automerge:other" } }, GROUP)).toThrowError(expect.objectContaining({ code: "promote-mint-outside-founding" }));
   });
 });
