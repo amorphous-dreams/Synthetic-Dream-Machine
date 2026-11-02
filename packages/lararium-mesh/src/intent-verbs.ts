@@ -20,6 +20,9 @@ export function faceIntentVerbs(): IntentVerbRegistry {
   // Carrier-group MOVE follows the residency action's whole-group law; a replay
   // after its first receipt finds no source group to move and cannot move twice.
   registry.declareIntentVerb("MOVE", "idempotent");
+  // A kahua proposal batch pins the device whose daemon holds the bodies; the door runs no effect for it: the operator's
+  // hand answers it with a lift on the stage (`kahua-stage`).
+  registry.declareIntentVerb("kahua-lift", "per-device");
   return registry;
 }
 /** Test fixtures receive their own registry and never change production declarations. */

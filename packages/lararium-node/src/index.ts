@@ -205,6 +205,8 @@ export type { DeviceAdmitOptions, DeviceAdmitPayload, DeviceAdmitResult } from "
 // and abandons in its own process, with no vessel standing.
 export { runFleetJoinOffer, runFleetJoinAnswer, runFleetJoinRequest, runFleetJoinLand, runFleetJoinAbandon, FleetJoinRefused } from "./commands/fleet-join.js";
 export { runIntentCommand, resolveIntentFaceIndex, intentAudience, IntentRefused } from "./commands/intent.js";
+export { runKahuaCommand, KahuaRefused, type KahuaAction, type KahuaCommandOptions } from "./commands/kahua.js";
+export { kahuaDoor, type KahuaDoorPorts, type KahuaLiftInput, type KahuaProposeInput } from "./kahua-door.js";
 export type { FleetJoinAnswerOptions } from "./commands/fleet-join.js";
 export { readJoinedFaceProof } from "./joined-face-proof.js";
 export type { JoinedFaceProof, JoinedFaceAbsence } from "./joined-face-proof.js";
