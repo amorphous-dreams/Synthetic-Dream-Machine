@@ -16,8 +16,7 @@ export class DaemonRestarting extends Error {
 export function holdDaemonVm(o: { vm: DaemonVmCore; reopen: (reason: string) => Promise<DaemonVmCore> }): DaemonVmHolder {
   let inner = o.vm;
   let state: "ready" | "restarting" | "down" = "ready";
-  let count = 0;
-  let drain: (() => void) | undefined;
+  const pending = new Set<(err: Error) => void>();   // the settle doors of calls standing on the current VM
   let restarts = 0;
   let restarting: Promise<{ restarts: number }> | undefined;
   let shutdown: Promise<{ acked: boolean }> | undefined;
@@ -53,20 +52,24 @@ export function holdDaemonVm(o: { vm: DaemonVmCore; reopen: (reason: string) => 
       };
       const value = Reflect.get(inner, key);
       if (typeof key !== "string" || typeof value !== "function") return value;
-      if (asyncMethods.has(key)) return async (...args: unknown[]) => {
-        check();
-        count += 1;
-        try {
-          const result = await invoke(key, args);
-          if (key === "lightFace") {
-            const entry = args[0] as Parameters<DaemonVmCore["lightFace"]>[0];
-            record(`face:${entry.atom.key}`, vm => vm.lightFace(entry));
-          } else if (key === "dropFace") registrations.delete(`face:${args[0] as string}`);
-          return result;
-        } finally {
-          count -= 1;
-          if (count === 0) { drain?.(); drain = undefined; }
-        }
+      if (asyncMethods.has(key)) return (...args: unknown[]) => {
+        try { check(); } catch (err) { return Promise.reject(err); }   // an async door refuses by rejecting
+        const generation = restarts;
+        return new Promise((resolve, reject) => {
+          pending.add(reject);
+          Promise.resolve(invoke(key, args)).then((result) => {
+            if (!pending.delete(reject)) return;        // a restart already settled this call by name
+            if (generation === restarts && state === "ready") {
+              if (key === "lightFace") {
+                const entry = args[0] as Parameters<DaemonVmCore["lightFace"]>[0];
+                record(`face:${entry.atom.key}`, vm => vm.lightFace(entry));
+              } else if (key === "dropFace") registrations.delete(`face:${args[0] as string}`);
+            }
+            resolve(result);
+          }, (err) => {
+            if (pending.delete(reject)) reject(err);
+          });
+        });
       };
       return (...args: unknown[]) => {
         check();
@@ -89,8 +92,9 @@ export function holdDaemonVm(o: { vm: DaemonVmCore; reopen: (reason: string) => 
       state = "restarting";
       restarting = (async () => {
         try {
-          await Promise.resolve();
-          if (count) await new Promise<void>(resolve => { drain = resolve; });
+          // No wait: a call still pending settles by name, so one that never settles cannot stall the restart.
+          for (const settle of [...pending]) settle(new DaemonRestarting("daemon-restarting"));
+          pending.clear();
           if (wasReady) await inner.shutdown();
           const next = await o.reopen(reason);
           inner = next;

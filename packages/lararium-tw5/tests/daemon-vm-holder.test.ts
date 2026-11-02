@@ -2,7 +2,7 @@
  * daemon-vm-holder — ONE indirection holds the daemon VM, so an in-process re-open reaches every consumer.
  *
  * `holdDaemonVm({ vm, reopen })` returns `{ vm, restart(reason), restarts }`. `vm` stands as a `DaemonVmCore` facade that
- * the vessel hands to every consumer ONCE; `restart` drains the calls in flight on the old VM, shuts it down, asks
+ * the vessel hands to every consumer ONCE; `restart` rejects every call still pending with `daemon-restarting` (a call never stalls it), shuts the old VM down, asks
  * `reopen(reason)` for a fresh VM (which re-resolves its boot inputs itself), replays the registrations the consumers
  * made (verbs, camera and residency doors, lit faces) onto it, and swaps. A call that arrives mid-swap refuses by name
  * (`daemon-restarting`) and never hangs; a failed re-open leaves the facade refusing `daemon-down` until a later
