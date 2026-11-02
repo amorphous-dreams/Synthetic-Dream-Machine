@@ -45,7 +45,7 @@ function fakeVm(pluginCids: readonly string[] = []): Fake {
     composite: { id } as never,
     worker: { id } as never,
     workerEa: Promise.resolve(),
-    mountHostWorkingLayer: async () => { calls.push("mountHostWorkingLayer"); },
+    mountHostWorkingLayer: async () => { registered.push("mountHostWorkingLayer"); },
     syncLegReady: async () => `leg-${id}`,
     mountMainVerbs: () => { registered.push("mountMainVerbs"); },
     placeVerb: (o: { verb: string }) => { calls.push(`placeVerb:${o.verb}`); },
@@ -422,5 +422,31 @@ describe("restart against a direct shutdown, and against a replay that throws (L
     await held.restart("r2");
     expect(await held.vm.syncLegReady()).toBe(`leg-${third.id}`);
     expect(live).toBe(1);                           // only the recovered island stands
+  });
+});
+
+describe("the host working layer mounts on every island (CI e2e: a read after the restart hung)", () => {
+  test("mountHostWorkingLayer replays on the new VM before the facade turns ready; CONTROL: a facade that never mounted replays none", async () => {
+    const first = fakeVm();
+    const next = fakeVm();
+    const held = holdDaemonVm({ vm: first, reopen: async () => next });
+    await held.vm.mountHostWorkingLayer();
+    await held.restart("r");
+    expect(first.registered).toEqual(["mountHostWorkingLayer"]);
+    expect(next.registered).toEqual(["mountHostWorkingLayer"]);
+    const unmounted = fakeVm();
+    const bare = holdDaemonVm({ vm: fakeVm(), reopen: async () => unmounted });
+    await bare.restart("r");
+    expect(unmounted.registered).toEqual([]);
+  });
+
+  test("a mount that throws on the new VM leaves the facade down and closes that VM", async () => {
+    const first = fakeVm();
+    const bad = fakeVm();
+    (bad as { mountHostWorkingLayer: () => Promise<void> }).mountHostWorkingLayer = async () => { throw new Error("no working layer"); };
+    const held = holdDaemonVm({ vm: first, reopen: async () => bad });
+    await held.vm.mountHostWorkingLayer();
+    await expect(held.restart("r")).rejects.toThrow(/no working layer/);
+    expect(bad.downs).toBe(1);
   });
 });

@@ -57,7 +57,7 @@ describe("e2e/daemon-island-reopen", () => {
     expect(result, JSON.stringify(restarted)).toMatchObject({ restarts: 1, leg: expect.any(String) });
     expect(result!.leg, "a boot nonce the first island never held").not.toBe(first.leg);
     const after = await lar.cli(["meme", "get", URI, "--recipe", "default", "--json"]);
-    expect(JSON.stringify(after.json)).toContain("the marker the island carries");
+    expect(JSON.stringify(after.json), `after: ${after.stdout.slice(0, 600)} ${after.stderr.slice(-400)}`).toContain("the marker the island carries");
     const custody = await sendCustodyFrame({ op: "custody" }, dataDir);
     expect(custody?.["unlocked"]).toBe(true);
     expect(custody?.["attemptsLeft"], "no unlock attempt was spent").toBe(custodyBefore?.["attemptsLeft"]);
@@ -70,7 +70,7 @@ describe("e2e/daemon-island-reopen", () => {
       expect(r.restarts).toBe(2 + i);
       legs.add(r.leg);
       const got = await lar.cli(["meme", "get", URI, "--recipe", "default", "--json"]);
-      expect(JSON.stringify(got.json)).toContain("the marker the island carries");
+      expect(JSON.stringify(got.json), `loop ${i}: ${got.stdout.slice(0, 600)} ${got.stderr.slice(-400)}`).toContain("the marker the island carries");
     }
     expect(legs.size).toBe(4);
   }, 300_000);
