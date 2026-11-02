@@ -34,8 +34,9 @@ export type CrossingVerdict =
   | { readonly kind: "uncompared"; readonly text: string }
   | { readonly kind: "refuse"; readonly text: string };
 
-const SEED_FORMAT = "lararium-genesis-seed/v1";
 const CID = /^[0-9a-f]{64}$/;
+/** The seed format's name; the vessel's materializer (`GENESIS_SEED_FORMAT`) refuses any version but its own. */
+const SEED_FORMAT_NAME = "lararium-genesis-seed/";
 
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes as BufferSource));
@@ -51,7 +52,7 @@ export async function readServedSeed(base: string, fetchFn: SeedFetch): Promise<
   let seed: unknown;
   try { seed = JSON.parse(new TextDecoder().decode(bytes)); }
   catch { seed = null; }
-  if (!seed || typeof seed !== "object" || (seed as { format?: unknown }).format !== SEED_FORMAT) {
+  if (!seed || typeof seed !== "object" || !String((seed as { format?: unknown }).format).startsWith(SEED_FORMAT_NAME)) {
     throw new Error(`genesis-unserved: ${url} reads as no genesis seed`);
   }
   return { seed, cid: await sha256Hex(bytes) };
