@@ -70,6 +70,7 @@ import type {
   SlotUri,
 } from "@lararium/mesh";
 import { KAHUA_SHADOW_PREFIX, kahuaShadowOf, kahuaShadowTitle } from "./kahua-shadow.js";
+import { KAHUA_BAG } from "@lararium/mesh";
 import { toLarTiddlerRecord, isVolatileVmUri, draftsOffLive, parallelDraftTitle } from "@lararium/mesh";
 import { maskedExecAll } from "@lararium/memetic-frame";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
@@ -405,6 +406,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    */
   private async _stampKahuaShadow(title: string): Promise<void> {
     if (neverPersists(title)) return;
+    // A shadow stands only where the composition lays the kahua stage: a pool wiki (or any store composing no
+    // `bags/kahua` layer) asks nothing per landing.
+    if (typeof this.store.layerIndexOf !== "function" || this.store.layerIndexOf(KAHUA_BAG) === -1) return;
     const wiki = this.tw5.$tw.wiki;
     const stamp = kahuaShadowTitle(title);
     const shadow = await kahuaShadowOf(this.store, title);

@@ -185,13 +185,13 @@ describe("a page proposes from the daemon surface, never from the pinned canon w
     return composite;
   };
 
-  test("THE SILENCE S4 READ: the `lares` recipe lays neither the daemon bag nor the kahua bag, so an outcome refuses `control-plane-title` and nothing lists under the prefix", async () => {
+  test("THE SILENCE S4 READ: the `lares` recipe lays neither the daemon bag nor the kahua bag, so a dispatcher outcome, written into the daemon bag by name, finds no layer there", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
     const slots = expandRecipe({ wikiSlug: "lares" });
     expect(slots).not.toContain(DAEMON_BAG_ID);
     expect(slots).not.toContain(KAHUA_BAG);
     const lares = standOver({ wikiSlug: "lares" }, repo);
-    await expect(lares.put(outcome, origin)).rejects.toThrow(/control-plane-title/);
+    await expect(lares.put(outcome, origin, { bag: DAEMON_BAG_ID })).rejects.toThrow(/has no layer/);
     expect((await lares.listVisible()).filter((t) => t.startsWith(OUTCOME_URI_PREFIX))).toEqual([]);
     await repo.shutdown();
   });
