@@ -50,13 +50,13 @@ export function validateGenesisBytes(bytes: Uint8Array, label: string): LarDoc {
   }
   // Every by-key read below (`blobs`, `tiddlers`) stands on own keys only: a prototype key refuses by name.
   assertNoPrototypeKeys(preview, `${label}: genesis bytes`);
-  if (!preview.blobs?.[ENGINE_CORE_ID]) {
+  if (!ownEntry(preview.blobs, ENGINE_CORE_ID)) {
     throw new Error(
       `[${label}] genesis artifact missing TW5 core blob (${ENGINE_CORE_ID}) — ` +
       `CID mismatch or corrupt artifact; rebuild genesis`,
     );
   }
-  if (!preview.blobs?.[LARES_MEMETIC_WIKITEXT_PLUGIN_URI]) {
+  if (!ownEntry(preview.blobs, LARES_MEMETIC_WIKITEXT_PLUGIN_URI)) {
     throw new Error(
       `[${label}] genesis artifact missing packed Lares TW5 plugin — rebuild genesis after build:plugin`,
     );
@@ -80,7 +80,7 @@ export async function importGenesisIsland(
   await handle.whenReady();
 
   const doc = handle.doc();
-  if (!doc?.blobs?.[ENGINE_CORE_ID]) {
+  if (!doc || !ownEntry(doc.blobs, ENGINE_CORE_ID)) {
     throw new Error(`[${label}] handle.whenReady() resolved but TW5 core blob absent — import failed silently`);
   }
 
@@ -123,7 +123,7 @@ export async function materializeGenesisIsland(
   } catch {
     existing = null;   // unavailable → first boot, materialize below
   }
-  if (existing?.doc()?.blobs?.[ENGINE_CORE_ID]) {
+  if (existing && ownEntry(existing.doc()?.blobs, ENGINE_CORE_ID)) {
     const d = existing.doc()!;
     console.log(
       `[${label}] oracle doc reloaded (persisted)  url=${existing.url}  ` +
@@ -145,7 +145,7 @@ export async function materializeGenesisIsland(
   await handle.whenReady();
 
   const doc = handle.doc();
-  if (!doc?.blobs?.[ENGINE_CORE_ID]) {
+  if (!doc || !ownEntry(doc.blobs, ENGINE_CORE_ID)) {
     throw new Error(`[${label}] oracle doc materialized but TW5 core blob absent — corrupt genesis seed`);
   }
   if (handle.url !== url) {
@@ -176,7 +176,7 @@ export function genesisCasCidsFromOracle(doc: LarDoc): readonly string[] {
     }
     return entry.sha256;
   });
-  if (!cids.includes(doc.blobs?.[ENGINE_CORE_ID]?.sha256 ?? "")) {
+  if (!cids.includes(ownEntry(doc.blobs, ENGINE_CORE_ID)?.sha256 ?? "")) {
     throw new Error(`[genesis-intake] persisted oracle is missing TW5 core CAS metadata (${ENGINE_CORE_ID})`);
   }
   if (new Set(cids).size !== cids.length) {

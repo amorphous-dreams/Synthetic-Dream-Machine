@@ -372,7 +372,7 @@ export function runSovereignKernel(
     // (blobs[ENGINE_CORE_ID].version on the oracle doc). The engine's identity is the
     // sha256 of the bytes this kernel eval's; the label rides the engine-watch alert text
     // and nothing compares it.
-    const coreVersion = String(laraiumHandle.doc()?.blobs?.[ENGINE_CORE_ID]?.version ?? "");
+    const coreVersion = String(ownEntry(laraiumHandle.doc()?.blobs, ENGINE_CORE_ID)?.version ?? "");
     const pluginTiddlers: Record<string, unknown>[] = [];
 
     if (!resolveByCid || !msg.coreHash) {

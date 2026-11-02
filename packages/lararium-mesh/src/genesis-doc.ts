@@ -39,7 +39,7 @@ import {
 import { recipeRecordFields, type WikiRecipe } from "./wiki-recipe.js";
 import type { LarDoc, LarBlobEntry } from "./base-doc.js";
 import { ENGINE_CORE_ID, blobDescriptorUri } from "./base-doc.js";
-import { plainField, ownEntry } from "./stored-value.js";
+import { plainField, ownEntry, isPrototypeKey } from "./stored-value.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { storedRecord } from "./stored-record.js";
 import type { FloorManifest, FloorSnapshot } from "./floor-manifest.js";
@@ -626,7 +626,7 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
 
   // Blob descriptor tiddlers (sorted by blob id — deterministic).
   for (const blobId of Object.keys(blobs).sort()) {
-    const entry    = blobs[blobId]!;
+    const entry    = ownEntry(blobs, blobId)!;
     const isPlugin = blobId.startsWith("$:/plugins/") || blobId.startsWith("lar:///plugins/");
     const att      = inputs.plugins.find(p => p.id === blobId)?.attestation;
     tiddlers[blobDescriptorUri(blobId)] = {
@@ -692,7 +692,7 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
   };
 
   if (inputs.floor) {
-    const cid = blobs["floor-manifest"]!.sha256;
+    const cid = ownEntry(blobs, "floor-manifest")!.sha256;
     tiddlers[GENESIS_FLOOR_TIDDLER] = { tiddler: { title: GENESIS_FLOOR_TIDDLER, text: "", cid, note: "genesis floor manifest content-CID", "$origin-bag": ORACLE_DOC_URI }, meta: { authority: "genesis" } };
   }
   return { format: GENESIS_SEED_FORMAT, actorSeed: inputs.actorSeed, blobs, tiddlers };
@@ -714,7 +714,11 @@ export function materializeGenesisDoc(seed: GenesisSeed): Uint8Array {
     // The oracle document keeps the shape every lar document carries (`base-doc.ts`); the seed itself names none.
     r["schemaVersion"] = "0.1";
     const blobs: Record<string, unknown> = {};
-    for (const k of Object.keys(seed.blobs).sort()) blobs[k] = seed.blobs[k];
+    // A seed key naming the prototype chain would seat a prototype here: it refuses by name (KEEP: a live hostile form).
+    for (const k of Object.keys(seed.blobs).sort()) {
+      if (isPrototypeKey(k)) throw new Error(`[genesis] prototype-key: the seed's blobs name \`${k}\``);
+      blobs[k] = ownEntry(seed.blobs, k);
+    }
     r["blobs"] = blobs;
     // The seed stands as plain data; the document rests every record's strings as immutable scalars.
     const tiddlers: Record<string, unknown> = {};
@@ -782,7 +786,7 @@ export function verifyGenesisArtifact(
   validateGenesisBundleCoherence(artifact.seed, artifact.casManifest);
   const doc = automergeLoad<LarDoc>(artifact.bytes);
 
-  const core = doc.blobs?.[ENGINE_CORE_ID];
+  const core = ownEntry(doc.blobs, ENGINE_CORE_ID);
   if (!core) {
     throw new Error("[genesis] verify FAILED: TW5 core blob not found after reload");
   }

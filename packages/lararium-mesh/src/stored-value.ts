@@ -76,15 +76,21 @@ export function isPrototypeKey(key: string): boolean {
   return PROTOTYPE_KEYS.has(key);
 }
 
-/** The entry a by-key map holds AS ITS OWN under `key`, or undefined: never an inherited or phantom value. */
+/**
+ * The entry a by-key map holds AS ITS OWN under `key`, or undefined: never an inherited or phantom value.
+ * ONE DOOR FOR EVERY MAP: a doc's `tiddlers` and `blobs`, a record's fields and its `meta`, a floor's rows.
+ * `__proto__` never answers (inside a change the proxy reports it own, and it names the prototype); a
+ * `constructor` or `prototype` key answers only where the map holds it as its own, which a field may (user
+ * space) and a title never does (the title law and the ingest shore refuse it by name).
+ */
 export function ownEntry<T>(map: Readonly<Record<string, T>> | null | undefined, key: string): T | undefined {
-  if (map === null || map === undefined || isPrototypeKey(key)) return undefined;
+  if (map === null || map === undefined || key === "__proto__") return undefined;
   return Object.hasOwn(map, key) ? map[key] : undefined;
 }
 
 /** Whether a by-key map holds `key` as its own entry: the `in` a reader asks, with no prototype answering. */
 export function hasOwnEntry(map: object | null | undefined, key: string): boolean {
-  return map !== null && map !== undefined && !isPrototypeKey(key) && Object.hasOwn(map, key);
+  return map !== null && map !== undefined && key !== "__proto__" && Object.hasOwn(map, key);
 }
 
 /** True for a class's own prototype (`ImmutableString`, `Date`, `Uint8Array` …): a value, never a forged map. */
@@ -134,7 +140,8 @@ export function plainValue(value: unknown): unknown {
   }
   if (isPlainMap(value)) {
     const out: Record<string, unknown> = {};
-    for (const [key, inner] of Object.entries(value)) out[key] = plainValue(inner);
+    // `__proto__` never copies: inside a change the proxy lists it own, and assigning it would seat a prototype.
+    for (const [key, inner] of Object.entries(value)) if (key !== "__proto__") out[key] = plainValue(inner);
     return out;
   }
   return value;
@@ -142,14 +149,14 @@ export function plainValue(value: unknown): unknown {
 
 /** One field of a stored record, unwrapped; `undefined` where the record or the field stands absent. */
 export function plainField(record: StoredLarRecord | null | undefined, field: string): unknown {
-  const tiddler = (record as { tiddler?: Record<string, unknown> } | null | undefined)?.tiddler;
-  return tiddler ? plainValue(tiddler[field]) : undefined;
+  const tiddler = ownEntry(record as Record<string, Record<string, unknown>> | null | undefined, "tiddler");
+  return tiddler ? plainValue(ownEntry(tiddler, field)) : undefined;
 }
 
 /** One `meta` key of a stored record, unwrapped. */
 export function plainMeta(record: StoredLarRecord | null | undefined, key: string): unknown {
-  const meta = (record as { meta?: Record<string, unknown> } | null | undefined)?.meta;
-  return meta ? plainValue(meta[key]) : undefined;
+  const meta = ownEntry(record as Record<string, Record<string, unknown>> | null | undefined, "meta");
+  return meta ? plainValue(ownEntry(meta, key)) : undefined;
 }
 
 /** Does the stored record read as a tombstone? */
@@ -159,10 +166,11 @@ export function storedDeleted(record: StoredLarRecord | null | undefined): boole
 
 /** A stored record as a frozen plain record: what every reader past the shore holds. */
 export function plainRecord(record: StoredLarRecord): LarTiddlerRecord {
-  const raw = record as { tiddler?: Record<string, unknown>; meta?: Record<string, unknown> };
-  const tiddler = Object.freeze(plainValue(raw.tiddler ?? {}) as LarTiddlerRecord["tiddler"]);
-  return Object.freeze(raw.meta !== undefined
-    ? { tiddler, meta: Object.freeze(plainValue(raw.meta) as NonNullable<LarTiddlerRecord["meta"]>) }
+  const raw = record as unknown as Record<string, Record<string, unknown>>;
+  const meta = ownEntry(raw, "meta");
+  const tiddler = Object.freeze(plainValue(ownEntry(raw, "tiddler") ?? {}) as LarTiddlerRecord["tiddler"]);
+  return Object.freeze(meta !== undefined
+    ? { tiddler, meta: Object.freeze(plainValue(meta) as NonNullable<LarTiddlerRecord["meta"]>) }
     : { tiddler });
 }
 

@@ -1114,7 +1114,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             ? `[lararium-browser] hearth canon named by the admit — this leaf mounts ${named.join(", ")}`
             : "[lararium-browser] the admit names no hearth canon — this leaf mounts a wiki document of its own; take a fresh admit from the hearth to open its wiki");
         }
-        const coreHash = islandHandle.doc()?.blobs?.[ENGINE_CORE_ID]?.sha256 ?? null;
+        const coreHash = ownEntry(islandHandle.doc()?.blobs, ENGINE_CORE_ID)?.sha256 ?? null;
         if (!coreHash) throw new Error("[openBrowserVessel] genesis island missing ENGINE_CORE_ID blob metadata");
         // Populate the OPFS CAS — the worker pulls engine + plugin bytes by CID from here
         // (the breath path), never CRDT-syncing the bytes over the port. The genesis CRDT now
