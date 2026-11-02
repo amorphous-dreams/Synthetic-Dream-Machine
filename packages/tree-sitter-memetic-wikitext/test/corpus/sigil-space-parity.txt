@@ -72,6 +72,7 @@ body
 (document
   (sigil
     body: (sigil_body))
+  (blank_line)
   (text_line)
   (text_line))
 

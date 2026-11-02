@@ -225,7 +225,7 @@ static bool finish_sigil(TSLexer *lexer) {
  * closing form `<<~/name>>` of the SAME name, and that close ends the line. On true the close's name
  * stands in the pool at `*close_off` (`len` codepoints) and the lexer sits past the close.
  */
-static bool closes_on_this_line(TSLexer *lexer, Scanner *s, uint32_t len, uint32_t *close_off, bool *has_text) {
+static bool closes_on_this_line(TSLexer *lexer, Scanner *s, uint32_t open_off, uint32_t len, uint32_t *close_off, bool *has_text) {
   // The text between the opener and its close (the pair's inline body) runs to the first tooth; a
   // ticked run inside it rides whole, and any other tooth before the close leaves the line to text.
   *has_text = false;
@@ -246,7 +246,8 @@ static bool closes_on_this_line(TSLexer *lexer, Scanner *s, uint32_t len, uint32
   while (is_ws(lexer->lookahead)) advance(lexer);
   uint32_t off = s->pool_len;
   uint32_t n = read_name(lexer, s);
-  if (n != len || len == 0 || memcmp(s->pool, s->pool + off, len * sizeof(int32_t)) != 0) return false;
+  // The close names the OPENER it was handed (at `open_off`), never whatever name sits first in the pool.
+  if (n != len || len == 0 || memcmp(s->pool + open_off, s->pool + off, len * sizeof(int32_t)) != 0) return false;
   if (!finish_sigil(lexer)) return false;
   if (!line_ends_here(lexer)) return false;
   *close_off = off;
@@ -312,7 +313,7 @@ static void collect_events(TSLexer *lexer, Scanner *s) {
             }
             uint32_t close_off = 0;
             bool has_text = false;
-            if (kind == 0 && len > 0 && closes_on_this_line(lexer, s, len, &close_off, &has_text)) {
+            if (kind == 0 && len > 0 && closes_on_this_line(lexer, s, off, len, &close_off, &has_text)) {
               push_event(s, 0, off, len);
               push_event(s, 1, close_off, len);
               continue;
@@ -561,7 +562,7 @@ static bool scan_tooth(Scanner *s, TSLexer *lexer, const bool *valid_symbols) {
   bool same_line_pair = false, has_text = false;
   if (!line_ends_here(lexer)) {
     uint32_t close_off = 0;
-    if (!(valid_symbols[PAIR_OPEN] && fits && closes_on_this_line(lexer, s, len, &close_off, &has_text))) return false;
+    if (!(valid_symbols[PAIR_OPEN] && fits && closes_on_this_line(lexer, s, 0, len, &close_off, &has_text))) return false;
     same_line_pair = true;
   }
   if (valid_symbols[PAIR_OPEN] && fits) {
