@@ -27,13 +27,14 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
   let replaying = false;   // true while a re-opened island takes its registrations
   let restarting: Promise<{ restarts: number }> | undefined;
   let shutdown: Promise<{ acked: boolean }> | undefined;
-  // A drained restart waits for the calls and asks standing when it was asked; a call that begins later never extends the wait.
+  // A drained restart waits for the ASKS standing when it was asked (a store-door row answers through one, and the kapae arrival lands inside it);
+  // a call that begins later never extends the wait, and a readiness call (`syncLegReady` can wait out a slot cap) never holds a brake.
   const drainers = new Set<{ left: Set<unknown>; done: () => void }>();
   const leave = (settled: unknown) => {
     for (const d of [...drainers]) { d.left.delete(settled); if (!d.left.size) d.done(); }
   };
   const drain = (): Promise<void> => {
-    const left = new Set<unknown>([...pending, ...pendingAsks]);
+    const left = new Set<unknown>(pendingAsks);
     if (!left.size) return Promise.resolve();
     return new Promise<void>((done) => {
       const d = { left, done: () => { drainers.delete(d); done(); } };
@@ -81,7 +82,7 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
           pending.add(reject);
           Promise.resolve(invoke(key, args)).then((result) => {
             if (!pending.delete(reject)) return;        // a restart already settled this call by name
-            queueMicrotask(() => leave(reject));
+
             if (generation === restarts && state === "ready") {
               if (key === "mountHostWorkingLayer") {
                 // The working layer mounts once per island: the vessel mounts it after boot, so a re-opened island needs it too.
@@ -93,7 +94,7 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
             }
             resolve(result);
           }, (err) => {
-            if (pending.delete(reject)) { reject(err); queueMicrotask(() => leave(reject)); }
+            if (pending.delete(reject)) reject(err);
           });
         });
       };

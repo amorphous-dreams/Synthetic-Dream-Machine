@@ -476,9 +476,9 @@ describe("a drained restart lets the call that asked for it answer first (the ka
     return { gate, ask: { answer: gate.promise, abandon: () => { abandoned += 1; } }, abandoned: () => abandoned };
   };
 
-  test("a pending call and a pending ask both answer, THEN the island swaps; the plain restart beside it rejects them (CONTROL)", async () => {
+  test("a pending ask answers, THEN the island swaps; a pending call never holds the swap and rejects by name; the plain restart rejects the ask (CONTROL)", async () => {
     log.length = 0;
-    const first = fakeVm(); first.gate = deferred<unknown>();
+    const first = fakeVm(); first.gate = deferred<unknown>();   // a readiness-style call that stands a long time
     const next = fakeVm();
     const held = holdDaemonVm({ vm: first, reopen: async () => { log.push("reopen"); return next; } });
     const call = held.vm.resolveBinding("f", { wikiDocId: "w", libraryBagDocIds: [] }, "s");
@@ -489,23 +489,19 @@ describe("a drained restart lets the call that asked for it answer first (the ka
     const restarting = held.restart("kapae-raise", { drain: true });
     await Promise.resolve(); await Promise.resolve();
     expect(log, "the island must stand while its asker still waits").toEqual([]);
-    first.gate.resolve(undefined);
     a.gate.resolve("answered");
     await restarting;
-    expect(await callOutcome).toBe("resolved");
     expect(await askOutcome).toBe("answered");
     expect(a.abandoned()).toBe(0);
-    expect(log, "the call ended on the old island BEFORE it shut down").toEqual([`vm${first.id}:resolveBinding:end`, `vm${first.id}:shutdown`, "reopen"]);
+    expect(await callOutcome, "a call that stands never holds the brake").toBe("daemon-restarting");
+    expect(log).toEqual([`vm${first.id}:shutdown`, "reopen"]);
     expect(held.restarts).toBe(1);
-    // CONTROL: the same two calls under a plain restart reject by name.
-    const f2 = fakeVm(); f2.gate = deferred<unknown>();
-    const plain = holdDaemonVm({ vm: f2, reopen: async () => fakeVm() });
-    const c2 = plain.vm.resolveBinding("f", { wikiDocId: "w", libraryBagDocIds: [] }, "s").then(() => "resolved", (e: Error) => e.message);
+    // CONTROL: the same ask under a plain restart rejects by name.
+    const plain = holdDaemonVm({ vm: fakeVm(), reopen: async () => fakeVm() });
     const b = ask<string>();
     const g2 = plain.guardAsk(b.ask);
     const k2 = g2.answer.then((v) => v, (e: Error) => e.message);
     await plain.restart("kapae-raise");
-    expect(await c2).toBe("daemon-restarting");
     expect(await k2).toBe("daemon-restarting");
   });
 
@@ -540,9 +536,8 @@ describe("a drained restart lets the call that asked for it answer first (the ka
   });
 
   test("a plain restart asked while a drain waits forces it: the stuck call rejects by name and the island swaps", async () => {
-    const first = fakeVm(); first.gate = deferred<unknown>();   // never resolved: a stuck call
-    const held = holdDaemonVm({ vm: first, reopen: async () => fakeVm() });
-    const stuck = held.vm.resolveBinding("f", { wikiDocId: "w", libraryBagDocIds: [] }, "s").then(() => "resolved", (e: Error) => e.message);
+    const held = holdDaemonVm({ vm: fakeVm(), reopen: async () => fakeVm() });
+    const stuck = held.guardAsk(ask<string>().ask).answer.then((v) => v, (e: Error) => e.message);   // never answered: a stuck ask
     const draining = held.restart("kapae-raise", { drain: true });
     await Promise.resolve();
     expect(held.restarts).toBe(0);
