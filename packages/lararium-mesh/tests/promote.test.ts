@@ -1,0 +1,127 @@
+/**
+ * promote — the pure law of a promotion, house-wide: the code class a loader would run, the digest, the device-local trust ledger keyed
+ * by (wiki, digest), and who may commit.
+ *
+ * AI prepares, a hand commits: a seat's commit refuses `promote-needs-hand`. A digest mismatch voids a promotion. A later wiki edit never
+ * changes what a promoted row runs. A promoted item the wiki dropped reads orphaned, keeps running and is named until the hand keeps or
+ * drops it. A promotion in one wiki never runs in another. Every red pairs with a CONTROL.
+ * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
+ */
+import { describe, expect, test } from "vitest";
+import {
+  EMPTY_LEDGER, PromoteRefused, decodeLedger, encodeLedger, ledgerCommit, ledgerDecideOrphan, ledgerUnpromote, promoteClass, promoteDigest,
+  promotePreloadBytes, promotedPreloads, reconcilePromotions, verifyPromotionRows, type PromotionLedger,
+} from "../src/promote.js";
+
+const W1 = "lar:///ha.ka.ba/wikis/field-notes", W2 = "lar:///ha.ka.ba/wikis/garden";
+const item = (fields: Record<string, string>, text = "x", title = "rites/a") => ({ title, text, fields });
+const HAND = { kind: "hand", id: "hand-1" } as const;
+const SEAT = { kind: "seat", id: "seat-1" } as const;
+const rite = item({ "module-type": "startup" }, "exports.startup = function(){}");
+const R = "a".repeat(64);
+const commit = (who: typeof HAND | typeof SEAT, l: PromotionLedger = EMPTY_LEDGER, wiki = W1, it = rite, digest = promoteDigest(it)) =>
+  ledgerCommit(l, { wiki, digest, item: it, revision: R }, who);
+
+describe("the code class a loader would run", () => {
+  test("RED: module-type, an executable type, a StartupAction tag, RawMarkup, the module-gate fields, a plugin bundle and wasm each name their class; CONTROL: a plain item, a stylesheet and a wikitext note name none", () => {
+    expect(promoteClass(item({ "module-type": "startup" }))).toEqual(["module-type"]);
+    expect(promoteClass(item({ type: "application/javascript; charset=utf-8" }))).toEqual(["executable-type"]);
+    expect(promoteClass(item({ type: " Text/JavaScript " }))).toEqual(["executable-type"]);
+    expect(promoteClass(item({ tags: "notes $:/tags/StartupAction/Browser" }))).toEqual(["startup-action"]);
+    expect(promoteClass(item({ tags: "$:/tags/RawMarkup" }))).toEqual(["raw-markup"]);
+    expect(promoteClass(item({ stack: "lar:///ha.ka.ba/lararium/tw5/tw5-module" }))).toEqual(["module-gate"]);
+    expect(promoteClass(item({ "source-sha256": "sha256:00" }))).toEqual(["module-gate"]);
+    expect(promoteClass(item({ "plugin-type": "plugin" }))).toEqual(["plugin"]);
+    expect(promoteClass(item({ type: "application/wasm" }))).toEqual(["wasm"]);
+    expect(promoteClass(item({ "module-type": "startup", type: "application/javascript" })).sort()).toEqual(["executable-type", "module-type"]);
+    for (const fields of [{}, { type: "text/vnd.tiddlywiki", tags: "notes" }, { type: "text/css", tags: "$:/tags/Stylesheet" }, { tags: "$:/tags/StartupActionless" }]) {
+      expect(promoteClass(item(fields)), JSON.stringify(fields)).toEqual([]);
+    }
+  });
+});
+
+describe("the digest", () => {
+  test("RED: the digest names the preload bytes whatever order the fields came in; CONTROL: a changed body or field changes it", () => {
+    const a = item({ type: "text/vnd.tiddlywiki", tags: "t" }, "body"), b = item({ tags: "t", type: "text/vnd.tiddlywiki" }, "body");
+    expect(promoteDigest(a)).toMatch(/^[0-9a-f]{64}$/);
+    expect(promoteDigest(a)).toBe(promoteDigest(b));
+    expect(JSON.parse(new TextDecoder().decode(promotePreloadBytes(a)))).toEqual({ type: "text/vnd.tiddlywiki", tags: "t", title: "rites/a", text: "body" });
+    expect(promoteDigest(item({ type: "text/vnd.tiddlywiki", tags: "t" }, "body2"))).not.toBe(promoteDigest(a));
+  });
+});
+
+describe("who commits", () => {
+  test("RED: a seat's commit, unpromote and orphan decision refuse `promote-needs-hand`; CONTROL: the same acts by a hand land", () => {
+    expect(() => commit(SEAT)).toThrowError(expect.objectContaining({ code: "promote-needs-hand" }));
+    const l = commit(HAND), edge = { wiki: W1, digest: promoteDigest(rite) };
+    expect(l.rows[0]).toMatchObject({ wiki: W1, digest: edge.digest, title: "rites/a", revision: R, hand: "hand-1", seq: 1 });
+    expect(() => ledgerUnpromote(l, edge, SEAT)).toThrowError(expect.objectContaining({ code: "promote-needs-hand" }));
+    expect(() => ledgerDecideOrphan(l, edge, "keep", SEAT)).toThrowError(expect.objectContaining({ code: "promote-needs-hand" }));
+    expect(ledgerUnpromote(l, edge, HAND).rows).toEqual([]);
+    expect(PromoteRefused.name).toBe("PromoteRefused");
+  });
+
+  test("RED: a digest that differs from the item's bytes voids the commit `promote-digest-mismatch`; CONTROL: the true digest lands and a second promote of one (wiki, title) replaces its row", () => {
+    expect(() => commit(HAND, EMPTY_LEDGER, W1, rite, "0".repeat(64))).toThrowError(expect.objectContaining({ code: "promote-digest-mismatch" }));
+    const v2 = item({ "module-type": "startup" }, "exports.startup = function(){ /*v2*/ }");
+    const l = ledgerCommit(commit(HAND), { wiki: W1, digest: promoteDigest(v2), item: v2, revision: "b".repeat(64) }, HAND);
+    expect(l.rows).toHaveLength(1);
+    expect(l.rows[0]!.revision).toBe("b".repeat(64));
+  });
+
+  test("RED: the ledger encodes to bytes and back whole; a malformed ledger refuses `ledger-malformed`", () => {
+    const l = commit(HAND);
+    expect(decodeLedger(encodeLedger(l))).toEqual(l);
+    expect(() => decodeLedger(new TextEncoder().encode("{\"rows\":[{\"digest\":1}]}"))).toThrowError(expect.objectContaining({ code: "ledger-malformed" }));
+    expect(() => decodeLedger(new TextEncoder().encode("not json"))).toThrowError(expect.objectContaining({ code: "ledger-malformed" }));
+  });
+});
+
+describe("the edge is (wiki, digest)", () => {
+  test("RED: a promotion in W1 never preloads in W2 though W2 holds the same bytes; CONTROL: W1 preloads it, and promoting the same digest in W2 adds a row of its own", () => {
+    const l1 = commit(HAND);
+    const verified = verifyPromotionRows(l1.rows).verified;
+    expect(promotedPreloads(verified, W2)).toEqual([]);
+    expect(promotedPreloads(verified, W1)).toHaveLength(1);
+    const both = commit(HAND, l1, W2);
+    expect(both.rows.map((r) => r.wiki).sort()).toEqual([W1, W2]);
+    expect(promotedPreloads(verifyPromotionRows(both.rows).verified, W2)).toHaveLength(1);
+    expect(ledgerUnpromote(both, { wiki: W1, digest: promoteDigest(rite) }, HAND).rows.map((r) => r.wiki)).toEqual([W2]);
+  });
+
+  test("RED: a shadowed edge (wiki, digest) is skipped in that wiki alone; CONTROL: the other wiki's row of the same digest still preloads", () => {
+    const both = commit(HAND, commit(HAND), W2);
+    const verified = verifyPromotionRows(both.rows).verified;
+    const shadow = new Set([`${W1}\n${promoteDigest(rite)}`]);
+    expect(promotedPreloads(verified, W1, shadow)).toEqual([]);
+    expect(promotedPreloads(verified, W2, shadow)).toHaveLength(1);
+  });
+});
+
+describe("what runs", () => {
+  test("RED: a row whose copied bytes no longer hash to its digest is voided and never preloads; CONTROL: its sound neighbour preloads", () => {
+    const other = item({}, "plain", "rites/b");
+    const two = commit(HAND, commit(HAND), W1, other);
+    const tampered = two.rows.map((r) => (r.title === "rites/a" ? { ...r, bytes: r.bytes.replace("startup", "evil") } : r));
+    const { verified, voided } = verifyPromotionRows(tampered);
+    expect(voided).toEqual([{ digest: promoteDigest(rite), reason: "digest-mismatch" }]);
+    expect(promotedPreloads(verified, W1)).toEqual([{ title: "rites/b", text: "plain" }]);
+    expect(promotedPreloads(verifyPromotionRows(two.rows).verified, W1).map((e) => e["title"]).sort()).toEqual(["rites/a", "rites/b"]);
+  });
+
+  test("RED: reconcile reads the wiki's current digest per (wiki, title): same -> standing, different -> update-waits (the promoted bytes keep running), absent -> orphaned (still running), kept after the hand keeps it", () => {
+    const l = commit(HAND), d = promoteDigest(rite), rows = l.rows;
+    expect(reconcilePromotions(rows, () => d)[0]).toMatchObject({ state: "standing" });
+    expect(reconcilePromotions(rows, () => "f".repeat(64))[0]).toMatchObject({ state: "update-waits", head: "f".repeat(64) });
+    expect(reconcilePromotions(rows, () => null)[0]).toMatchObject({ state: "orphaned" });
+    const asked: string[] = [];
+    reconcilePromotions(rows, (wiki, title) => { asked.push(`${wiki}|${title}`); return d; });
+    expect(asked).toEqual([`${W1}|rites/a`]);
+    expect(promotedPreloads(verifyPromotionRows(rows).verified, W1)).toHaveLength(1);
+    const kept = ledgerDecideOrphan(l, { wiki: W1, digest: d }, "keep", HAND);
+    expect(reconcilePromotions(kept.rows, () => null)[0]).toMatchObject({ state: "kept" });
+    expect(promotedPreloads(verifyPromotionRows(kept.rows).verified, W1)).toHaveLength(1);
+    expect(ledgerDecideOrphan(l, { wiki: W1, digest: d }, "drop", HAND).rows).toEqual([]);
+    expect(() => ledgerDecideOrphan(EMPTY_LEDGER, { wiki: W1, digest: "f".repeat(64) }, "drop", HAND)).toThrowError(expect.objectContaining({ code: "promote-unknown" }));
+  });
+});
