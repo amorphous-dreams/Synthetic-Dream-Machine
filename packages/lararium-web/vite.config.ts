@@ -1,4 +1,4 @@
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, type Plugin, type Connect } from "vite";
 import wasm from "vite-plugin-wasm";
 import { createHash } from "node:crypto";
 import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -19,7 +19,7 @@ const PRONAOS_RECORD = resolve(import.meta.dirname, "../../.pronaos-build/pronao
  * Blobs carry content addresses, so they stay immutable and cacheable forever; `seed.json` answers no-store.
  */
 function serveGenesisInDev(): Plugin {
-  const route = (req: { url?: string }, res: import("node:http").ServerResponse, next: () => void): void => {
+  const route: Connect.NextHandleFunction = (req, res, next) => {
     const rel = normalize(decodeURIComponent((req.url ?? "/").split("?")[0] ?? "/")).replace(/^(\.\.[/\\])+/, "");
     const file = join(GENESIS_DIR, rel);
     if (!file.startsWith(GENESIS_DIR) || !existsSync(file) || !statSync(file).isFile()) return next();
