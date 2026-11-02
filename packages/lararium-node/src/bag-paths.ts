@@ -35,6 +35,12 @@ export interface BagMirrorConfig {
    * matches ONLY the handles-pointer shape, never the whole bag.
    */
   readonly guardNexusHandles?: boolean;
+  /**
+   * The title-path siting: a title that owns no uri-path sites at its own `/`-separated path inside the mirror (a project
+   * rides as the leading segment), where TW5's flattened default would fold every `/` into `_`. A `lar:` title keeps the
+   * loci law; a `$:/` system title and a `$FileSystemPaths` rule keep their own sitings.
+   */
+  readonly titlePaths?: boolean;
 }
 
 // ── Write confinement — the sovereign-island disk ward ─────────────────────
@@ -141,6 +147,19 @@ export function namedBagMirror(
  */
 export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
   return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(rootDir, "wikis", "kahua") };
+}
+
+/**
+ * The kahua stage's disk mirror: `bags/kahua` projects under the STATE root alone (`<stateRoot>/bags/kahua/`), its items
+ * sited by title with a project as the leading path segment. The stage never projects beside a canon source.
+ */
+export function kahuaStageMirror(stateRoot: string): BagMirrorConfig {
+  throw new Error("kahuaStageMirror: unbuilt");
+}
+
+/** The mirror-relative base a title sites at by its own path, or null for a title that owns none by this rule. */
+export function titleRelPath(title: string): string | null {
+  throw new Error("titleRelPath: unbuilt");
 }
 
 /**
