@@ -23,12 +23,19 @@ describe("promoted digests join a wiki's plugin selection", () => {
     expect(withHook).toEqual({ ok: true, pluginCids: [...(base as { pluginCids: string[] }).pluginCids, digest] });
   });
 
-  test("RED: a promoted digest whose bytes the store lacks or holds corrupt refuses by name; CONTROL: sound bytes pass", async () => {
-    const missing = await resolveRecipePluginCids(recipe("field-notes"), { ...inputs(new Map()), promoted: async () => [digest] });
-    expect(missing.ok).toBe(false);
-    expect(JSON.stringify(missing)).toContain("promoted");
-    const corrupt = await resolveRecipePluginCids(recipe("field-notes"), { ...inputs(new Map([[digest, new TextEncoder().encode("evil")]])), promoted: async () => [digest] });
-    expect(corrupt.ok).toBe(false);
-    expect((await resolveRecipePluginCids(recipe("field-notes"), { ...inputs(new Map([[digest, bytes]])), promoted: async () => [digest] })).ok).toBe(true);
+  test("RED: a promoted digest whose bytes the store lacks or holds corrupt DROPS out of the union and is reported by name, while the rest of the selection still boots; CONTROL: sound bytes pass, and a failing offering selection keeps the whole-recipe refusal", async () => {
+    const voided: Array<{ wiki: string; digests: readonly string[] }> = [];
+    const onPromotedVoided = (wiki: string, digests: readonly string[]) => { voided.push({ wiki, digests }); };
+    const base = (await resolveRecipePluginCids(recipe("field-notes"), inputs(new Map()))) as { ok: true; pluginCids: string[] };
+    const missing = await resolveRecipePluginCids(recipe("field-notes"), { ...inputs(new Map()), promoted: async () => [digest], onPromotedVoided });
+    expect(missing).toEqual({ ok: true, pluginCids: base.pluginCids });
+    const corrupt = await resolveRecipePluginCids(recipe("field-notes"), { ...inputs(new Map([[digest, new TextEncoder().encode("evil")]])), promoted: async () => [digest], onPromotedVoided });
+    expect(corrupt).toEqual({ ok: true, pluginCids: base.pluginCids });
+    expect(voided).toEqual([{ wiki: "field-notes", digests: [digest] }, { wiki: "field-notes", digests: [digest] }]);
+    const sound = await resolveRecipePluginCids(recipe("field-notes"), { ...inputs(new Map([[digest, bytes]])), promoted: async () => [digest], onPromotedVoided });
+    expect(sound).toEqual({ ok: true, pluginCids: [...base.pluginCids, digest] });
+    expect(voided).toHaveLength(2);
+    const offered = await resolveRecipePluginCids({ wikiSlug: "field-notes", pluginOfferings: ["f".repeat(64)] }, { ...inputs(new Map([[digest, bytes]])), promoted: async () => [digest], onPromotedVoided });
+    expect(offered.ok).toBe(false);
   });
 });
