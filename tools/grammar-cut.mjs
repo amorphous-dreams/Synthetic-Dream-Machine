@@ -716,15 +716,20 @@ export function cutText(arriving, ctx, opts = {}) {
   if (/^<<!DOCTYPE\b/m.test(text) && (standing !== "unchecked" || /ni:\/\/\/sha-256;/.test(text))) {
     // A RE-SEAL ATTESTS ONLY WHAT ALREADY VERIFIED. A check that fails over the arriving bytes (a body
     // tampered, a seal gone stale before the cut) would come out re-stamped and read `match`, laundering
-    // whatever broke it. So the cut stamps over `ok` or `unchecked` alone; any other standing refuses by
-    // name and the file stays exactly as it stood.
+    // whatever broke it. So the cut re-stamps over `ok` alone, leaves `unchecked` unsealed, and any other
+    // standing refuses by name, the file exactly as it stood.
     if (standing !== "ok" && standing !== "unchecked") {
       refusals.push({ rel, line: 1, kind: "seal-broken", why: `the arriving check reads ${standing}: re-seal by hand after reading the body`, src: "" });
       return { text: arriving, changes: 0, refusals, unmapped, seal: standing, lists, counts: { ...counts, phase: 0, renamed: 0, filePath: 0, foot: 0, fences: 0 } };
     }
-    const stamped = next === text ? next : ctx.frame.stampCarrier(next);
-    seal = ctx.frame.verifyBcc(stamped);
-    if (seal === "ok") next = stamped;
+    // THE CUT NEVER MINTS. An unchecked carrier stays unchecked: a seal whose run was deleted and whose
+    // body moved after would otherwise come out stamped over bytes no seal ever attested. Only an
+    // arriving `ok` re-stamps, and then over exactly the bytes the cut itself moved.
+    if (standing === "ok") {
+      const stamped = next === text ? next : ctx.frame.stampCarrier(next);
+      seal = ctx.frame.verifyBcc(stamped);
+      if (seal === "ok") next = stamped;
+    }
   }
   const changes = flat.length + filePath + at.phase + at.renamed + foot.moved + fences.widened;
   return { text: next, changes, refusals, unmapped, seal, lists, counts: { ...counts, phase: at.phase, renamed: at.renamed, filePath, foot: foot.moved, fences: fences.widened } };
@@ -737,7 +742,7 @@ export function cutText(arriving, ctx, opts = {}) {
 export function censusText(text, ctx) {
   const spans = spansOf(ctx, text);
   const c = { sigils: 0, arrows: 0, quotedNamed: 0, positional: 0, spacedAt: 0, phase: 0, turnFrame: 0, filePath: 0, renamedHead: 0, tickMismatch: 0, wideInline: 0, trailer: 0, narrowFence: 0 };
-  c.trailer = cutFoot(text, ctx.frame).moved;
+  c.trailer = /^<<!DOCTYPE\b/m.test(text) ? cutFoot(text, ctx.frame).moved : 0;
   c.narrowFence = narrowFences(text).length;
   for (const m of text.matchAll(SIGIL)) {
     if (spanAt(spans, m.index)?.kind === "toml") continue;

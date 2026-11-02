@@ -336,7 +336,8 @@ test('a cut that would widen an inline span past two ticks refuses: TiddlyWiki r
 test('Cut 6a: the trailer moves into the ETX slot byte for byte, and the seal verifies with its value unchanged', () => {
   const value = /ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}/.exec(SEALED)[0];
   const r = cut(SEALED, { disable: ['fences'] });
-  assert.ok(r.text.includes('<<^ code=`&#x0003;` bcc=`' + value + '`>>') || ctx.frame.verifyBcc(r.text) === 'ok');
+  assert.equal(r.seal, 'ok');
+  assert.equal(ctx.frame.verifyBcc(r.text), 'ok');
   assert.equal(r.counts.foot, 1);
   assert.equal(ctx.frame.verifyBcc(slotted(SEALED)), 'ok');
   assert.ok(slotted(SEALED).includes('<<^ code=`&#x0003;` bcc=`' + value + '`>>'), 'the value never changes');
@@ -381,4 +382,11 @@ test('a stripped seal never comes back: an unchecked carrier the cut changes sta
   const r = cut(stripped);
   assert.notEqual(r.text, stripped, 'the cut still widens the fence');
   assert.equal(ctx.frame.verifyBcc(r.text), 'unchecked', 'no check minted over unattested bytes');
+});
+
+test('a STALE trailer never moves: the cut refuses it and leaves every byte as it stood', () => {
+  const stale = SEALED.replace(/ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}/, 'ni:///sha-256;' + 'A'.repeat(43));
+  const r = cut(stale);
+  assert.equal(r.text, stale);
+  assert.deepEqual(kinds(r), ['seal-broken']);
 });
