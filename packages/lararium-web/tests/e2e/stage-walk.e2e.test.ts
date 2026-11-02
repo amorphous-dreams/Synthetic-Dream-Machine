@@ -20,7 +20,7 @@
  *        cross: before any lift, `<root>/bags/kahua` holds no file, `kahua get` answers null, `meme get` misses.
  *   S5 — the OPERATOR'S HAND lifts: `lares kahua lift <title> --proposal <id>` binds the body by digest; the item
  *        projects at `<root>/bags/kahua/<title path>.tid`; `lares kahua get`, `lares meme get --recipe default` and the
- *        MCP seat's `kahua_get` read the same body.
+ *        seat's read (the door the MCP seat's `kahua_get` rides: a `seat`-hand session's `kahua-read`) read the same body.
  *   S6 — the stage reaches the page: the joined page re-edits the draft and the `kahua-shadow` mark casts (a mark needs
  *        the kahua twin beneath the draft); a second propose + lift over the new body clears it (bodies equal).
  *   S7 — CONTROL: a faceless device on the same hearth renders no such title; the hearth's projection carries no
@@ -29,10 +29,8 @@
  * The daemon wiki stays device-local by ruling (each device keeps its own private working wiki), so no step asks the
  * page to mount the hearth's daemon wiki. The node's own reads decide each step; a timeout only bounds a wait.
  */
-import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { createInterface } from "node:readline";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
 import { foundStagedHearth, openStaged, stageDir, stagedHearthGroup, type LarInstance } from "../../../../tests/harness/instance.js";
@@ -150,61 +148,16 @@ const shadowed = (page: Page): Promise<boolean> => paneHas(page, "span.walk-shad
 /** What the shadow span says (the filter's own answer: the title, or an operator's error naming itself). */
 const shadowText = (page: Page) => page.evaluate(() => document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.querySelector("span.walk-shadow")?.textContent ?? "");
 
-// ── the MCP seat, spoken to over stdio as a harness does (the shape of e2e/mcp-seat-binds-the-hearth) ─────────────
-interface SeatEntry { command: string; args: string[]; env: Record<string, string> }
-async function speakToSeat(entry: SeatEntry, call: { name: string; arguments: Record<string, unknown> }): Promise<{ result: unknown; stderr: string }> {
-  const env: NodeJS.ProcessEnv = { ...process.env, ...entry.env };
-  const child = spawn(entry.command, entry.args, { env, stdio: ["pipe", "pipe", "pipe"] });
-  let stderr = "";
-  child.stderr.on("data", (b) => { stderr += String(b); });
-  const pending = new Map<number, (msg: Record<string, unknown>) => void>();
-  createInterface({ input: child.stdout }).on("line", (line) => {
-    let msg: Record<string, unknown>;
-    try { msg = JSON.parse(line) as Record<string, unknown>; } catch { return; }
-    const id = msg["id"];
-    if (typeof id === "number" && pending.has(id)) { pending.get(id)!(msg); pending.delete(id); }
-  });
-  const exited = new Promise<number | null>((resolve) => child.on("exit", (code) => resolve(code)));
-  let next = 1;
-  const request = (method: string, params: Record<string, unknown>): Promise<Record<string, unknown> | null> => {
-    const id = next++;
-    const answer = new Promise<Record<string, unknown>>((resolve) => pending.set(id, resolve));
-    child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id, method, params })}\n`);
-    return Promise.race([answer, exited.then(() => null)]);
+// ── the seat's read, through the door the MCP seat's `kahua_get` rides: a local session under the `seat` hand ─────────
+// The python seat (`lares_mcp.py`) speaks `session:open` then `session:act kahua-read` over the vessel's UDS; the walk speaks
+// the same two frames from node, so the read stands on the house's own door and no host interpreter.
+async function seatRead(title: string): Promise<Record<string, unknown>> {
+  const { openLocalSession } = await import(join(REPO, "packages/lares-cli/dist/src/session-connector.js")) as {
+    openLocalSession: (o: { faceRef: string; hand?: string; dataDir?: string | null }) => Promise<{ act(act: string, args: Record<string, unknown>): Promise<Record<string, unknown>>; close(): Promise<void> }>;
   };
-  let result: unknown = null;
-  const init = await request("initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "stage-walk", version: "0" } });
-  if (init !== null) {
-    child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`);
-    const r = await request("tools/call", call);
-    result = r?.["error"] ?? r?.["result"] ?? null;
-  }
-  child.stdin.end();
-  await Promise.race([exited, new Promise<void>((r) => setTimeout(() => { child.kill("SIGKILL"); r(); }, 15_000))]);
-  return { result, stderr };
-}
-function seatPayload(result: unknown): Record<string, unknown> {
-  const r = result as { structuredContent?: Record<string, unknown>; content?: Array<{ type: string; text?: string }>; isError?: boolean };
-  if (!r || r.isError) throw new Error(`the seat refused: ${JSON.stringify(result)}`);
-  if (r.structuredContent) return (r.structuredContent["result"] ?? r.structuredContent) as Record<string, unknown>;
-  const text = r.content?.find((c) => c.type === "text")?.text;
-  if (!text) throw new Error(`the seat answered no payload: ${JSON.stringify(result)}`);
-  return JSON.parse(text) as Record<string, unknown>;
-}
-/** The seat `lares home tend` would register for THIS hearth, resolved as the resolver does. */
-async function resolveSeat(): Promise<SeatEntry> {
-  const prior = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = hearth!.root;
-  try {
-    const { memorySensoriumDir } = await import(join(REPO, "packages/lararium-node/dist/src/index.js")) as { memorySensoriumDir: () => string };
-    mkdirSync(memorySensoriumDir(), { recursive: true });
-    const { resolveLaresMcp } = await import(join(REPO, "packages/lares-cli/dist/src/mcp-resolve.js")) as { resolveLaresMcp: (clone: string) => SeatEntry | null };
-    const entry = resolveLaresMcp(REPO);
-    if (entry === null) throw new Error("the resolver found no MCP seat (no interpreter holding mcp?)");
-    return entry;
-  } finally {
-    if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
-  }
+  const session = await openLocalSession({ faceRef: "h0", hand: "seat", dataDir: join(hearth!.root, "data/lares/vessel") });
+  try { return await session.act("kahua-read", { action: "get", title }); }
+  finally { await session.close(); }
 }
 
 async function awaitLive(page: Page): Promise<string> {
@@ -368,7 +321,6 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     expect(meme.stdout, meme.stdout.slice(0, 300)).toMatch(/not-found/);
   });
 
-  let seat: SeatEntry | null = null;
 
   test("S5 — the operator's hand lifts the proposal; the item projects under <root>/bags/kahua and the CLI, the recipe and the MCP seat read it", async () => {
     expect(proposal, "S4 handed over no proposal id").toMatch(/^[0-9a-f]{64}$/);
@@ -388,12 +340,10 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     const meme = await hearth!.cli(["meme", "get", DRAFT.title, "--recipe", "default", "--json"]);
     expect(meme.code, `${meme.stdout.slice(0, 400)}\n${meme.stderr.slice(0, 400)}`).toBe(0);
     expect((JSON.parse(meme.stdout) as { data: { text: string } }).data.text).toBe(DRAFT.body);
-    seat = await resolveSeat();
-    expect(seat.env["LAR_ROOT"]).toBe(hearth!.root);
-    const said = await speakToSeat(seat, { name: "kahua_get", arguments: { title: DRAFT.title } });
-    const item = seatPayload(said.result)["item"] as { status?: string; heads?: Array<{ text?: string }> } | null;
-    expect(item?.status, `the seat read ${JSON.stringify(said.result)}`).toBe("standing");
-    expect(item?.heads?.map((h) => h.text), `the seat read ${JSON.stringify(said.result)}\n${said.stderr.slice(-800)}`).toEqual([DRAFT.body]);
+    const said = await seatRead(DRAFT.title);
+    const answer = (said["output"] ?? said) as { item?: { status?: string; heads?: Array<{ text?: string }> } | null };
+    expect(answer.item?.status, `the seat read ${JSON.stringify(said)}`).toBe("standing");
+    expect(answer.item?.heads?.map((h) => h.text), `the seat read ${JSON.stringify(said)}`).toEqual([DRAFT.body]);
   }, 180_000);
 
   test("S6 — the stage reaches the page: a re-edit casts the kahua-shadow mark, and a second propose + lift clears it", async () => {
