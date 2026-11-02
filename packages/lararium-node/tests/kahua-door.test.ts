@@ -12,7 +12,7 @@ import {
   faceIntentVerbs, intentEntryRecordsOfGroup, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
   personaSiblingBagIds, projectPersonaLog, signFoundingLog, signPersonaAct, signsAtEpoch, buildKahuaProposal, intentId, writeIntentEntry, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
 } from "@lararium/mesh";
-import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../src/kahua-door.js";
+import { kahuaDoor, KahuaRefused, pinKahuaAtBoot, type KahuaBootPorts, type KahuaDoorPorts } from "../src/kahua-door.js";
 import { bridgeBooks, faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
 
 const who = async (n: number) => {
@@ -112,6 +112,62 @@ describe("the mint fence", () => {
     expect(await deviceB.mint()).toEqual({ url: kahuaStageDocUrl(GROUP), minted: false });
     expect(catalogB[KAHUA_BAG]).toBe(kahuaStageDocUrl(GROUP));
     expect(await kahuaDoor(f.ports()).mint()).toEqual({ url: kahuaStageDocUrl(GROUP), minted: false });
+  });
+});
+
+describe("the founding hearth's boot pins a face founded before kahua", () => {
+  // The fixture's founding log names the persona and intents planes alone: a face founded before its stage existed.
+  const boot = (f: Awaited<ReturnType<typeof face>>, over: Partial<KahuaBootPorts> & { reads?: { n: number } } = {}): KahuaBootPorts => {
+    const reads = over.reads ?? { n: 0 };
+    const base = f.ports();
+    return {
+      repo: base.repo, group: GROUP, projection: base.projection, epoch: base.epoch, currentSigner: base.currentSigner,
+      atom: f.atomA.key, persona: f.persona,
+      rootSigner: async () => { reads.n++; return f.root; },
+      ...over,
+    };
+  };
+
+  test("RED: the founding hearth's boot mints the stage under the root its custody holds: one plane act at the derived url", async () => {
+    const f = await face();
+    expect(await pinKahuaAtBoot(boot(f))).toEqual({ url: kahuaStageDocUrl(GROUP), minted: true });
+    expect(planeActs(f.persona, kahuaStageDocUrl(GROUP))).toHaveLength(1);
+    expect(kahuaPlaneUrl(f.ports().projection(), GROUP)).toBe(kahuaStageDocUrl(GROUP));
+    expect(f.ports().projection().fork).toBeNull();
+  });
+
+  test("CONTROL: a second boot of the founding hearth no-ops: one plane act, and the root stays sealed", async () => {
+    const f = await face();
+    await pinKahuaAtBoot(boot(f));
+    const reads = { n: 0 };
+    expect(await pinKahuaAtBoot(boot(f, { reads }))).toEqual({ url: kahuaStageDocUrl(GROUP), minted: false });
+    expect(reads.n).toBe(0);
+    expect(planeActs(f.persona, kahuaStageDocUrl(GROUP))).toHaveLength(1);
+  });
+
+  test("CONTROL: a device that is not the founding hearth never mints at boot and never opens a root, then adopts the founder's pin once its replica holds it", async () => {
+    const f = await face();
+    const repoB = new Repo({ network: [] });
+    const personaB = repoB.import<LarDoc>(Automerge.save(f.persona.doc()), { docId: f.persona.documentId });
+    const reads = { n: 0 };
+    const deviceB = boot(f, { reads, repo: repoB, persona: personaB, atom: f.atomB.key,
+      projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }) });
+    expect(await pinKahuaAtBoot(deviceB)).toEqual({ url: null, minted: false });
+    expect(reads.n).toBe(0);
+    expect(planeActs(personaB, kahuaStageDocUrl(GROUP))).toHaveLength(0);
+    await pinKahuaAtBoot(boot(f));
+    personaB.merge(f.persona);
+    expect(await pinKahuaAtBoot(deviceB)).toEqual({ url: kahuaStageDocUrl(GROUP), minted: false });
+    expect(reads.n).toBe(0);
+    expect(planeActs(personaB, kahuaStageDocUrl(GROUP))).toHaveLength(1);
+  });
+
+  test("CONTROL: a founding hearth whose custody holds no root, or a root the face's roster no longer seats, signs nothing and the boot stands", async () => {
+    const f = await face();
+    expect(await pinKahuaAtBoot(boot(f, { rootSigner: async () => null }))).toEqual({ url: null, minted: false });
+    const stranger = await who(11);
+    expect(await pinKahuaAtBoot(boot(f, { rootSigner: async () => stranger }))).toEqual({ url: null, minted: false });
+    expect(planeActs(f.persona, kahuaStageDocUrl(GROUP))).toHaveLength(0);
   });
 });
 
