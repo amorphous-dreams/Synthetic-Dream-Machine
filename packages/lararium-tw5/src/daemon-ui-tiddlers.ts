@@ -27,6 +27,7 @@
 // Leaf subpath (NOT the barrel) — keeps automerge WASM out of any CJS plugin bundle this
 // module's constants get pulled into (the reaction-router leaf-import rule).
 import { LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
+import { KAHUA_SHADOW_PREFIX } from "./kahua-shadow-title.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 
@@ -48,6 +49,8 @@ export const SWITCHER_STATE_TITLE = "$:/temp/lares/switcher";
 const WRAPPER_TITLE   = "$:/lares/ui/surface-switch";
 const WORKING_TITLE   = "$:/lares/ui/working-surface";
 const PAGECTRL_TITLE  = "$:/lares/ui/PageControls/daemon";
+/** The view-template segment that marks a title whose local draft covers its kahua record. */
+export const KAHUA_SHADOW_VIEW_TITLE = "$:/lares/ui/view/kahua-shadow";
 
 // The volatile verb-summon namespace (mirrors mesh/lar-uris laresVerbUri). A button
 // writes a tiddler titled `…/verb/<verb>` (PURE BEARING — the verb NAME, no args) carrying
@@ -124,6 +127,16 @@ project
 
 </div>`;
 
+/** 4. The "local draft over shared" mark: a view-template segment that lists the current title through
+ *  `[kahua-shadow[]]` and renders the draft against the kahua body its stamp carries. */
+const KAHUA_SHADOW_BODY = `\\whitespace trim
+<$list filter="[<currentTiddler>kahua-shadow[]]" variable="_">
+<div class="lares-kahua-shadow" data-lares-kahua-shadow=<<currentTiddler>>>
+<p class="lares-kahua-shadow-label">local draft over shared</p>
+<$diff-text source={{{ [<currentTiddler>addprefix[${KAHUA_SHADOW_PREFIX}]get[text]] }}} dest={{!!text}}/>
+</div>
+</$list>`;
+
 /** The action the sidebar button fires: name the Working Surface as the active panel.
  *  It does NOT $action-navigate — the wrapper already sits open in the daemon story
  *  (seeded at boot), and navigation in a headless Worker references `window`. Toggling
@@ -158,6 +171,7 @@ export const DAEMON_UI_TIDDLERS: readonly TiddlerSpec[] = [
   { title: WRAPPER_TITLE, type: "text/vnd.tiddlywiki", tags: "$:/tags/AboveStory", text: WRAPPER_BODY },
   { title: WORKING_TITLE, type: "text/vnd.tiddlywiki", tags: LARES_SURFACE_TAG, text: WORKING_BODY, caption: "daemon" },
   { title: PAGECTRL_TITLE, type: "text/vnd.tiddlywiki", tags: "$:/tags/PageControls", text: PAGECTRL_BODY },
+  { title: KAHUA_SHADOW_VIEW_TITLE, type: "text/vnd.tiddlywiki", tags: "$:/tags/ViewTemplate", text: KAHUA_SHADOW_BODY },
 ];
 
 /**

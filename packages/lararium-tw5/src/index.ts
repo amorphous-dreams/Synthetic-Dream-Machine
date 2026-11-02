@@ -155,6 +155,7 @@ export type { CapVerify, RunLocalVerbOptions } from "./verb-local-dispatch.js";
 export { makeDaemonBehavior } from "./daemon-behavior.js";
 export type { DaemonBehaviorOptions } from "./daemon-behavior.js";
 export { seedDaemonUiTiddlers, makeSwitcherStateReactor, DAEMON_UI_TIDDLERS, SWITCHER_STATE_TITLE, LARES_SURFACE_STATE, LARES_SURFACE_TAG } from "./daemon-ui-tiddlers.js";
+export { KAHUA_SHADOW_PREFIX, kahuaShadowTitle, kahuaShadowOf, type KahuaShadow } from "./kahua-shadow.js";
 export { seedDaemonPersonaTiddlers, makePersonaStateReactor, DAEMON_PERSONA_TIDDLERS, PERSONA_STATE_TITLE } from "./daemon-persona-tiddlers.js";
 export { seedDaemonCircleTiddlers, makeCircleStateReactor, DAEMON_CIRCLE_TIDDLERS, CIRCLE_STATE_TITLE } from "./daemon-circle-tiddlers.js";
 export { seedDaemonFlowTiddlers } from "./daemon-flow-tiddlers.js";
