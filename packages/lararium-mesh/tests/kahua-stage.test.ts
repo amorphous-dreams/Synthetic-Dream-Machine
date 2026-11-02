@@ -54,6 +54,18 @@ describe("kahua lift and withdraw acts", () => {
     expect(readKahuaAct(signed, { group: "other-face", grant })).toEqual({ ok: false, refusal: "group" });
     expect(readKahuaAct(signed, { group: GROUP, grant }).ok).toBe(true);
   });
+
+  test("RED: a lift of a title the control plane owns (a verb outcome, a summons) refuses `control-plane-title` at the signer and at every reader; CONTROL: an ordinary draft lifts", async () => {
+    // No control record rides the fleet-synced stage: the working top a lift reads from also holds the summons, the
+    // claim tombstones and the ward audit by design, so the lift law refuses every `bags/daemon/**` title by name.
+    const { root, grant, lift } = await fixture();
+    for (const title of ["lar:///ha.ka.ba/bags/daemon/outcomes/req-1", "lar:///ha.ka.ba/bags/daemon/summons/r1"]) {
+      await expect(lift(title, "x", null)).rejects.toThrow(/control-plane-title/);
+      const forged = await lift("draft", "x", null);
+      expect(readKahuaAct({ ...forged, body: { ...forged.body, title } }, { group: GROUP, grant })).toEqual({ ok: false, refusal: "control-plane-title" });
+    }
+    expect(readKahuaAct(await lift("lares-dev/notes/draft", "x", null, root), { group: GROUP, grant }).ok).toBe(true);
+  });
 });
 
 describe("the stage fold", () => {
