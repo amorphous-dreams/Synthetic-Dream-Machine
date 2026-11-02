@@ -1,5 +1,5 @@
 /**
- * daemon-reopen-weld (browser) — the browser vessel stands its daemon island through the holder, once, and offers the re-open (a source weld).
+ * daemon-reopen-browser-weld — the browser vessel stands its daemon island through the holder, once, and offers the re-open (a source weld).
  *
  * Presence first. `daemon` binds once, to the holder's facade; the island's worker script, plugin CIDs and recipe resolve inside the
  * re-open step, so a restart spawns a fresh worker; the result offers `restartDaemonIsland`; the held `down` disposes through the facade.
@@ -8,7 +8,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 
-const SRC = readFileSync(join(__dirname, "..", "src", "open-browser-vessel.ts"), "utf8");
+const SRC = readFileSync(join(__dirname, "..", "..", "lararium-browser", "src", "open-browser-vessel.ts"), "utf8");
 
 describe("the browser vessel's daemon seam", () => {
   test("daemon binds once, to the holder's facade, and the island opens inside the holder's open step", () => {

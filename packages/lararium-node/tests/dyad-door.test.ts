@@ -127,10 +127,10 @@ describe("the dyad door", () => {
     const src = readFileSync(join(__dirname, "..", "src", "open-node-vessel.ts"), "utf8");
     // presence first: an ordering over an absent call passes vacuously
     expect((src.match(/^\s*setDyadDoor\(async \(fleetRoot, deviceKey\) => \{$/gm) ?? []).length).toBe(1);
-    expect((src.match(/daemonVm = await openDaemonVm\(/g) ?? []).length).toBe(1);
+    expect((src.match(/await standDaemonIsland\(\{/g) ?? []).length).toBe(1);
     const fold = src.indexOf("if (activeAtom) await shadowRing.refold();");
     const door = src.indexOf("setDyadDoor(async (fleetRoot, deviceKey) => {");
-    const boot = src.indexOf("daemonVm = await openDaemonVm(");
+    const boot = src.indexOf("await standDaemonIsland({");
     expect(fold).toBeGreaterThan(0);
     expect(fold).toBeLessThan(door);
     expect(door).toBeLessThan(boot);
