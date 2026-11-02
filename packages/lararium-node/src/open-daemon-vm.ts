@@ -18,7 +18,8 @@
  * Meme: lar:///ha.ka.ba/lararium/node/open-daemon-vm
  */
 
-import { daemonWorkingMirror } from "./bag-paths.js";
+import { daemonWorkingMirror, projectionRoots } from "./bag-paths.js";
+import { daemonBagsDir } from "./lares-config.js";
 import { parseAutomergeUrl } from "@automerge/automerge-repo";
 import { CROSSROADS_DOC_URI } from "@lararium/mesh";
 import { join }                                          from "path";
@@ -167,7 +168,8 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     // into crossroads publishes under `<root>/bags/crossroads/` (the node's grant meets a designation).
     ...(rootDir ? { diskMirrors: [
       { ...daemonWorkingMirror(rootDir), scope: "daemon" },
-      { bagId: CROSSROADS_DOC_URI, mirrorRoot: join(rootDir, "bags", "crossroads"), scope: "crossroads",
+      // The daemon wiki is a private plane (state root); crossroads splits by origin, back to its canon source where one stands.
+      { bagId: CROSSROADS_DOC_URI, mirrorRoot: projectionRoots({ stateRoot: rootDir, canonBags: daemonBagsDir() }).bagRoot("crossroads"), scope: "crossroads",
         guardNexusHandles: guardCrossroadsNexusHandles },
     ] } : {}),
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,

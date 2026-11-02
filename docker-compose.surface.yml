@@ -3,11 +3,13 @@
 # everything that belongs to a household arrives as environment and two host mounts. Per-surface differences
 # are ENVIRONMENT, never another file.
 #
-#   /state      one durable per-vessel host directory: the vessel's homes AND its custody (keys), and the disk
-#               projection (wikis/, bags/): the daemon roots here (`--root /state`), so every mirror lands under it.
+#   /state      one durable per-vessel host directory: the vessel's homes AND its custody (keys), and the house's
+#               PRIVATE projection (wikis/daemon, and every bag or wiki with no source in the workspace): the daemon
+#               roots here (`--root /state`).
 #               Back it up separately. It never rides an image layer, a build arg or an env var.
-#   /workspace  the editable corpus: the canon SOURCE a seeding reads (LAR_BAGS=/workspace/bags). The house
-#               writes nothing here (operator ruling 2026-11-01: "projections under ~/.lares/state").
+#   /workspace  the editable corpus: the canon SOURCE a seeding reads (LAR_BAGS=/workspace/bags). A bag whose source
+#               stands here projects back here, and the wiki it composes to wikis/ (source control); no private plane
+#               ever does (operator ruling 2026-11-01; lararium-node `projectionRoots`).
 #
 # Required (no default, so a forgotten one fails loud instead of siting state in the wrong place):
 #   LARES_STATE       host path mounted at /state      (put it on a LOCAL LINUX filesystem; on Win11 keep it
@@ -139,12 +141,12 @@ x-vessel: &vessel
       source: ${LARES_WORKSPACE:?set LARES_WORKSPACE to the corpus directory on the host}
       target: /workspace
   # The explicit roots. The image bakes the same four; they are restated so a reader of THIS file sees the
-  # contract. LAR_BAGS names the canon source alone: the projection mirrors resolve the daemon's --root, never
-  # LAR_BAGS, so the daemon takes --root /state and the mirrors land beside the store (tools/compose-surface-root.test.mjs).
+  # contract. The mirrors split by origin: a bag present under LAR_BAGS projects back to it (its wiki to LAR_WIKIS's
+  # tree), and every private or house-minted layer projects under --root /state (tools/compose-surface-root.test.mjs).
   environment: &roots
     LAR_ROOT: /state
     LAR_BAGS: /workspace/bags
-    LAR_WIKIS: /state/wikis
+    LAR_WIKIS: /workspace/wikis
     LAR_GENESIS: /app/genesis
     LAR_PORT: "4321"
     LAR_ENGINE: host

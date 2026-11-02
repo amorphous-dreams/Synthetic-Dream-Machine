@@ -7,6 +7,7 @@
  */
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
+import { readdirSync } from "fs";
 import { stripMemeExt, wikiSlotUri, isBagManifestUri } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
@@ -136,6 +137,51 @@ export function namedBagMirror(
  */
 export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
   return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(rootDir, "wikis", "daemon") };
+}
+
+/**
+ * THE PRIVATE PLANES: the layers a house mints for itself and never writes beside a canon source, whatever dirs that
+ * source holds. The daemon wiki (each device's own private working wiki) and the kahua plane.
+ */
+export const PRIVATE_PROJECTION_SLUGS: ReadonlySet<string> = new Set(["daemon", "kahua"]);
+
+/** Where a house's disk mirrors root, split by ORIGIN. */
+export interface ProjectionRoots {
+  /** The slugs whose bag source dir stands under the canon source (sorted), the private planes excepted. */
+  sourcedSlugs(): readonly string[];
+  /** The mirror dir of bag `slug`: `<canon>/<slug>` for a sourced bag, else `<state>/bags/<slug>`. */
+  bagRoot(slug: string): string;
+  /** The wikis base the wiki `slug` projects under: `<canon parent>/wikis` for a sourced slug, else `<state>/wikis`. */
+  wikisRootFor(slug: string): string;
+  /** The canon-side bases a per-wiki grant carries by slug (`DiskMirrorGrant` `sourcedRoots`). */
+  sourcedRoots(kind: "bags" | "wikis"): Readonly<Record<string, string>>;
+}
+
+/**
+ * THE MIRROR ROOT SPLITS BY ORIGIN (operator ruling, 2026-11-01: "Are those things that start in bags? then they should
+ * 'end up back in bags/'. Only live edits end up in the wiki layers ... The dirs in the workspace right now (and the wikis
+ * they shall compose) DO need to get written back to the main repo checkout, for source control").
+ *
+ * A bag whose source dir stands under the canon source (`canonBags`, the vessel's `LAR_BAGS`) projects back there, and the
+ * wiki it composes projects to `wikis/` beside that source. Every other bag and wiki (house-minted, a person's own) and every
+ * private plane projects under the state root (`--root`). Membership reads the source tree once, here: no bag is listed.
+ * Where the canon source sits under the state root itself (no `LAR_BAGS`), both sides name the same dirs.
+ */
+export function projectionRoots(opts: { readonly stateRoot: string; readonly canonBags: string }): ProjectionRoots {
+  let held: string[] = [];
+  try {
+    held = readdirSync(opts.canonBags, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && !e.name.startsWith(".") && !PRIVATE_PROJECTION_SLUGS.has(e.name))
+      .map((e) => e.name).sort();
+  } catch { /* an absent canon source sources nothing */ }
+  const sourced = new Set(held);
+  const canonWikis = joinPath(dirname(resolvePath(opts.canonBags)), "wikis");
+  return {
+    sourcedSlugs: () => held,
+    bagRoot: (slug) => sourced.has(slug) ? joinPath(opts.canonBags, slug) : joinPath(opts.stateRoot, "bags", slug),
+    wikisRootFor: (slug) => sourced.has(slug) ? canonWikis : joinPath(opts.stateRoot, "wikis"),
+    sourcedRoots: (kind) => Object.fromEntries(held.map((slug) => [slug, kind === "bags" ? resolvePath(opts.canonBags) : canonWikis])),
+  };
 }
 
 // ── Loci reverse-derivation (the ingest gesture's scan leg) ─────────────────

@@ -91,7 +91,8 @@ import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.
 import { standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
-import { daemonGenesisDir, daemonCorpusRoot } from "./lares-config.js";
+import { daemonGenesisDir, daemonCorpusRoot, daemonBagsDir } from "./lares-config.js";
+import { projectionRoots } from "./bag-paths.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
@@ -3411,11 +3412,14 @@ async function prepareNodeBootOn(
     subscribeWorkerEventsToDaemon();
 
     const workerRootDir = corpusRoot;
+    // THE MIRROR ROOT SPLITS BY ORIGIN (`projectionRoots`): a bag whose source stands under the canon source projects back
+    // there (and its wiki beside it), for source control; every house-minted or private layer projects under `--root`.
+    const projection = projectionRoots({ stateRoot: workerRootDir, canonBags: daemonBagsDir() });
     const diskMirrorGrant: DiskMirrorGrant = [
       // `bags/` PROJECTS ON THE KAHU'S VESSEL ALONE: a vessel the cabal did not admit holds neither live document, so it
       // grants neither mirror and writes nothing under `bags/lares` or `bags/lararium`.
-      ...(kahuCanon.lares    ? [{ bagId: LARES_DOC_URI,    mirrorRoot: join(workerRootDir, "bags/lares"),    scope: "lares" }] : []),
-      ...(kahuCanon.lararium ? [{ bagId: LARARIUM_DOC_URI, mirrorRoot: join(workerRootDir, "bags/lararium"), scope: "lararium" }] : []),
+      ...(kahuCanon.lares    ? [{ bagId: LARES_DOC_URI,    mirrorRoot: projection.bagRoot("lares"),    scope: "lares" }] : []),
+      ...(kahuCanon.lararium ? [{ bagId: LARARIUM_DOC_URI, mirrorRoot: projection.bagRoot("lararium"), scope: "lararium" }] : []),
       // crossroads = the PUBLIC plane's seed/canon bag — it holds the moved public-domain
       // library (raw .txt books + .mem memes with large source ahus). It projects to
       // bags/crossroads like the other seed bags. Safe to project ONLY with the skinny-handle
@@ -3427,7 +3431,7 @@ async function prepareNodeBootOn(
       // alongside the real charter-backed library. Baked from the RESOLVED kind, once, here — never
       // re-derived from the tiddler inside the projector (which crosses a worker boundary and carries
       // no kind of its own).
-      { bagId: CROSSROADS_DOC_URI, mirrorRoot: join(workerRootDir, "bags/crossroads"), scope: "crossroads",
+      { bagId: CROSSROADS_DOC_URI, mirrorRoot: projection.bagRoot("crossroads"), scope: "crossroads",
         guardNexusHandles: nexusStanding.kind !== "charter" },
       // VIRTUAL BAGS. `working` (and `self` below) name LAYER COORDINATES, never bags on disk — a write
       // layer and a per-wiki canon authority the mount expands from the slug. They carry no `@` for the
@@ -3439,12 +3443,12 @@ async function prepareNodeBootOn(
       // the bag `wikis/{slug}/working` and the leaf fill from the slug at mount —
       // wikiSlot). The authority (the wikis base) stays static here; designation
       // rides the recipe's mirrorBags.
-      { bagId: "working",        mirrorRoot: join(workerRootDir, "wikis"),          scope: "working",  wikiSlot: "working" },
+      { bagId: "working",        mirrorRoot: join(workerRootDir, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis") },
       // self-canon = the per-wiki CANON authority: a minted user wiki's own
       // @{slug} bag projects to bags/{slug} (both bagId and leaf fill from the
       // slug at mount). System wikis (lares/lararium) carry literal grants
       // above, so resolveDiskMirrors skips this for them — no double-project.
-      { bagId: "self",          mirrorRoot: join(workerRootDir, "bags"),           scope: "self",    perWikiSlug: true, selfCanon: true },
+      { bagId: "self",          mirrorRoot: join(workerRootDir, "bags"),           scope: "self",    perWikiSlug: true, selfCanon: true, sourcedRoots: projection.sourcedRoots("bags") },
     ];
     // R3 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
     // through the selector + CAS (`resolveNodeIslandPluginCids`), never one vessel-wide floor.
