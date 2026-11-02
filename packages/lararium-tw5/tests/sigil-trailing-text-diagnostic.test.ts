@@ -9,6 +9,7 @@
  * CONTROLS stand beside the reds: a lone sigil, a sigil mid-line, a fenced sigil and a closer-bearing
  * opener raise nothing, so a diagnostic that fired on every sigil could not pass.
  */
+// vm-grammar-boundary: exempt — its subject IS the meme-ast floor (parseMemeText's sigil-trailing-text failure), measured where the ingest gate reads it; no grammar surface is driven.
 import { describe, expect, test, beforeAll } from "vitest";
 import { parseMemeText } from "../src/meme-ast/parse.js";
 import { failuresToDiagnostics } from "../src/meme-ast/diagnostics.js";
