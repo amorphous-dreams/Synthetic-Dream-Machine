@@ -279,7 +279,7 @@ const FRAME_LINE = new RegExp(`^<<\\^ code=\`${frameAlt()}\`(?:[^>\\n]|>(?!>))*>
  * line-anchored canonical spelling is what a transpose meets, and the capture takes the BCC the
  * closer's final `bcc` value names (the frame's lawful spelling, one space and one tick each side).
  */
-const ETX_LINE = new RegExp(`^<<\\^ code=\`${frameAlt("ETX")}\`(?: bcc=\`([^\`\\n]+)\`)?>>`);
+const ETX_LINE = new RegExp(`^<<\\^ code=\`${frameAlt("ETX")}\`(?: bcc=\`(ni:\\/\\/\\/[a-z0-9-]+;[A-Za-z0-9_-]+)\`)?>>`);
 const DOCTYPE_LINE = /^<<!DOCTYPE (?:[^>\n]|>(?!>))*>>\s*$/;
 // The tooth stands at one dispatch position: `<<~` then LWSP then the command word, and a close
 // word carries its own slash (`ahu`, `/ahu`). Both spacings reach the same word, matching the

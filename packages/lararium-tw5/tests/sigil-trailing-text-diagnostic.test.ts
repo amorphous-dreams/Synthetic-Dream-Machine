@@ -25,7 +25,7 @@ const diagnose = (text: string) => {
 
 describe("★ a BLOCK-ONLY head with text after its >> carries one warning ★", () => {
   // The block-only set comes from the sigil tiddlers (`lar-flow: block`), never a list in the reader:
-  // the frame marks (SOH · STX · ETX · EOT) and the child-slot openers and closers (ahu · fragment · kau).
+  // the frame marks (SOH · STX · ETX · EOT) and the child-slot opener and closer (ahu, with its fragment mirror).
   test("★ RED: an ahu opener with prose after its >> warns, keyed to the opener's span ★", () => {
     const text = "<<~ ahu slot=`#/a`>> prose after the opener\nbody\n<<~/ahu>>\n";
     const found = diagnose(text);
@@ -87,7 +87,8 @@ describe.skipIf(wikiSkip)(`the warning rides the wiki's parse-diagnostics channe
   test("★ RED: [parse-diagnostics:codes[]] names sigil-trailing-text, and the text still renders inline ★", () => {
     expect(engine.wiki.filterTiddlers("[[trailing]parse-diagnostics:codes[]]")).toContain(CODE);
     // Every byte kept: the slot decomposes into its child, and `;abc` rides there as the body's first line.
-    expect(engine.wiki.filterTiddlers("[all[tiddlers]search:text:literal[;abc]]").length).toBeGreaterThan(0);
+    // The carrier itself holds `;abc`, so it stands aside: the bytes must ride in a DERIVED record.
+    expect(engine.wiki.filterTiddlers("[all[tiddlers]!title[trailing]search:text:literal[;abc]]").length).toBeGreaterThan(0);
   });
 
   test("★ RED: an inline head's carrier does not name it ★", () => {
