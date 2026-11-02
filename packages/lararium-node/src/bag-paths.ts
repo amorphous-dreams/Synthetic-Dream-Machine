@@ -8,7 +8,7 @@
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
 import { readdirSync } from "fs";
-import { stripMemeExt, wikiSlotUri, isBagManifestUri } from "@lararium/mesh";
+import { stripMemeExt, wikiSlotUri, isBagManifestUri, KAHUA_BAG } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
@@ -129,10 +129,10 @@ export function carrierBaseRelPath(uri: string): string | null {
  * stable name whole; the mirrorRoot = the bag's residency dir.
  */
 export function namedBagMirror(
-  bagId: string, scope: string, mirrorRoot: string, guardNexusHandles?: boolean,
+  bagId: string, scope: string, mirrorRoot: string, guardNexusHandles?: boolean, titlePaths?: boolean,
 ): BagMirrorConfig {
   void scope;
-  return { bagId, mirrorRoot, ...(guardNexusHandles ? { guardNexusHandles } : {}) };
+  return { bagId, mirrorRoot, ...(guardNexusHandles ? { guardNexusHandles } : {}), ...(titlePaths ? { titlePaths } : {}) };
 }
 
 /**
@@ -154,12 +154,15 @@ export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
  * sited by title with a project as the leading path segment. The stage never projects beside a canon source.
  */
 export function kahuaStageMirror(stateRoot: string): BagMirrorConfig {
-  throw new Error("kahuaStageMirror: unbuilt");
+  return { bagId: KAHUA_BAG, mirrorRoot: joinPath(stateRoot, "bags", "kahua"), titlePaths: true };
 }
 
 /** The mirror-relative base a title sites at by its own path, or null for a title that owns none by this rule. */
 export function titleRelPath(title: string): string | null {
-  throw new Error("titleRelPath: unbuilt");
+  if (title.startsWith("lar:") || title.startsWith("$:/") || title.length === 0) return null;
+  const segments = title.split("/");
+  if (segments.some((seg) => seg.length === 0 || seg === "." || seg === ".." || /[\\\0]/.test(seg))) return null;
+  return segments.join("/");
 }
 
 /**

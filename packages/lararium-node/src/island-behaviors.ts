@@ -114,8 +114,8 @@ export function mountDiskProjection(
 ): (() => Promise<void>) | undefined {
   const mirrorDefs = manifest.diskMirrors;
   if (!mirrorDefs?.length) return undefined;
-  const mirrors = mirrorDefs.map(({ bagId, mirrorRoot, scope, guardNexusHandles }) =>
-    namedBagMirror(bagId, scope, mirrorRoot, guardNexusHandles),
+  const mirrors = mirrorDefs.map(({ bagId, mirrorRoot, scope, guardNexusHandles, titlePaths }) =>
+    namedBagMirror(bagId, scope, mirrorRoot, guardNexusHandles, titlePaths),
   );
   // The Synced tree (Confluence merge base) sits at the INSTANCE ROOT (the dir
   // holding bags/) under .lararium-projection/ — observation state,

@@ -173,7 +173,7 @@ export interface DaemonVmCoreOptions {
   /** The daemon wiki's disk mirrors (its working layer → `<root>/wikis/kahua/`); a node host mints
    *  them, a browser passes none. Rides the manifest's `diskMirrors` so the worker's `onBoot` can
    *  mount the same projector a wiki island mounts. */
-  diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string }[];
+  diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean; titlePaths?: boolean }[];
   /** Compiled daemon-island Worker script URL. */
   workerScriptUrl: URL;
   /** Override the ea silence budget in ms (tests). */
