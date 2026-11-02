@@ -98,3 +98,49 @@ a same-line pair inside a target's body pairs, and the target still closes (CONT
     (blank_line)
     close: (sigil_close
       body: (sigil_body))))
+
+========================================
+an ahu closer with a tail pairs nothing: the opener stands alone, as scanAhu and the plugin read it (CONTROL)
+========================================
+root
+
+<<~ ahu slot=`#/a`>>
+CHILD
+<<~/ahu>> tail
+
+after
+---
+
+(document
+  (text_line)
+  (blank_line)
+  (sigil
+    body: (sigil_body))
+  (blank_line)
+  (text_line)
+  (text_line)
+  (blank_line)
+  (text_line))
+
+========================================
+an ahu opener with a lead pairs nothing: the closer stands alone, as scanAhu and the plugin read it (CONTROL)
+========================================
+root
+
+<<~ ahu slot=`#/a`>> lead
+CHILD
+<<~/ahu>>
+
+after
+---
+
+(document
+  (text_line)
+  (blank_line)
+  (text_line)
+  (text_line)
+  (sigil
+    body: (sigil_body))
+  (blank_line)
+  (blank_line)
+  (text_line))
