@@ -34,12 +34,12 @@ export function storedValue(value: unknown): unknown {
   if (isPlainMap(value)) {
     const out: Record<string, unknown> = {};
     for (const [key, inner] of Object.entries(value)) {
-      // A key naming the prototype chain refuses by name: a `__proto__` own key (a `JSON.parse`d body carries
-      // one) would re-seat `out`'s prototype and throw a bare RangeError inside the engine's `change()` from
-      // 3.5.0, and `constructor` / `prototype` refuse beside it, ONE KEY SET ON EVERY PATH (the shore refuses
-      // all three from a peer, so a write the house made would never sync). KEEP: a live hostile form.
+      // A `__proto__` own key (a `JSON.parse`d body carries one) refuses by name: it would re-seat `out`'s
+      // prototype and throw a bare RangeError inside the engine's `change()` from 3.5.0. ONE KEY SET ON EVERY
+      // PATH: the shore refuses the same one key from a peer, so every write the house makes syncs, and a
+      // field a person names `constructor` or `prototype` stands. KEEP: a live hostile form.
       if (isPrototypeKey(key)) {
-        throw new VerbRefusal(PROTOTYPE_KEY_CODE, `${PROTOTYPE_KEY_CODE}: a stored map never carries a \`${key}\` key — it names the prototype chain, never a field`);
+        throw new VerbRefusal(PROTOTYPE_KEY_CODE, `${PROTOTYPE_KEY_CODE}: a stored map never carries a \`${key}\` key — it rewires the prototype chain, never names a field`);
       }
       if (inner !== undefined) out[key] = storedValue(inner);
     }

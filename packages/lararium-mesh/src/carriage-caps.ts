@@ -330,8 +330,8 @@ export function carriageCap(deps: {
           // still costs nothing today, but this also spares that cost outright.
           const stored = mp.handle.doc()?.tiddlers ?? {};
           const changedTitles = titles.filter((t) => {
-            const existing = stored[t];
-            const arriving = incoming[t];
+            const existing = ownEntry(stored, t);
+            const arriving = ownEntry(incoming, t);
             return arriving !== undefined && !sameStoredRecord(existing, arriving);
           });
           if (changedTitles.length > 0) {
