@@ -38,7 +38,7 @@ import { defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsew
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json), read off the genesis base the page's URL names
 // (the hearth's Pronaos serves its own). The page carries no seed of its own, and checks the one it reads against the hearth's
 // arrival descriptor before it crosses (`genesis-anchor.ts`).
-import { arrivalSeedAnchor, genesisBaseVerdict, genesisCrossingVerdict, readServedSeed } from "./genesis-anchor.js";
+import { arrivalSeedAnchor, genesisCrossingVerdict, genesisSeedBase, readServedSeed } from "./genesis-anchor.js";
 // `?worker&url` — Vite builds each worker shim through its worker pipeline and yields the built
 // bundle's URL (a real /assets file). A standalone `new URL("./x.ts", import.meta.url)` passed
 // INDIRECTLY to the vessel got inlined as a `data:` URI, where the worker's dynamic imports
@@ -373,15 +373,8 @@ async function bootVessel(): Promise<void> {
   // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.
   const admit = pendingAdmit ?? takeStashedAdmit();
   pendingAdmit = admit;
-  // ?genesis=<base> → where the hearth serves genesis/ (seed + cas/), on the page's own origin alone (default /genesis):
-  // a base on any other origin refuses by name, and the vessel boots nothing from it.
-  const base = genesisBaseVerdict(new URLSearchParams(location.search).get("genesis"), location.origin);
-  if (base.kind === "refuse") {
-    console.error(`[vessel] ${base.text}`);
-    set("status", base.text, "err");
-    return;
-  }
-  const genesisCasBaseUrl = base.url;
+  // The seed and its CAS blobs come off the hearth's own /genesis alone; no URL key chooses them.
+  const genesisCasBaseUrl = genesisSeedBase(location.origin);
   // THE SEED, then THE ANCHOR, before any crossing: a served seed whose CID differs from the one the hearth's own descriptor
   // names refuses by name, in the vessel's status row and the console, and the relay stays undialled.
   let served: Awaited<ReturnType<typeof readServedSeed>>;
@@ -393,7 +386,7 @@ async function bootVessel(): Promise<void> {
     return;
   }
   if (relayUrl) {
-    const verdict = genesisCrossingVerdict(served.cid, await arrivalSeedAnchor(relayUrl, (input) => fetch(input, { cache: "no-store" })), { pageOrigin: location.origin, seedFromDefault: base.isDefault });
+    const verdict = genesisCrossingVerdict(served.cid, await arrivalSeedAnchor(relayUrl, (input) => fetch(input, { cache: "no-store" })), { pageOrigin: location.origin });
     if (verdict.kind === "refuse") {
       console.error(`[vessel] ${verdict.text}`);
       set("status", verdict.text, "err");
