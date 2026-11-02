@@ -75,6 +75,8 @@ export interface UdsChannelOptions {
   readonly sessionActs?: {
     readonly names: ReadonlySet<string>;
     readonly run: (act: string, args: Record<string, unknown>, worn: { readonly ordinal: number; readonly presenter: string }) => Promise<Record<string, unknown>>;
+    /** Fires once per RUN act after its reply left (or failed to), with the very `args` object `run` took; a refused act fires nothing. */
+    readonly settled?: (act: string, args: Record<string, unknown>) => void;
   };
   /** Verbs that act as a face (`STORE_DOOR_FACE_ROWS`): the maintenance frame refuses one `face-row-rides-a-session`. */
   readonly sessionVerbs?: ReadonlySet<string>;
@@ -1140,6 +1142,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const run = opts.sessionActs.run;
     const worn = { ordinal: state.supply.ordinal, presenter: state.supply.presenter };
     arbitrating += 1;
+    let ran = false;
     try {
       const digest = await verbInputDigest({ verb: action, args: {}, face });
       let verdict: Awaited<ReturnType<typeof ledger.arbitrate>>;
@@ -1154,6 +1157,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       }
       if (verdict.verdict === "refuse") return sessionRefuse(sock, verdict.reason, requestId);
       let answer: Record<string, unknown>;
+      ran = true;
       try {
         answer = await run(name, bound, worn);
       } catch (error) {
@@ -1173,6 +1177,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       }
       sessionReply(sock, { kind: "session:act-result", requestId, answer });
     } finally {
+      if (ran) { try { opts.sessionActs?.settled?.(name, bound); } catch (error) { log(`session act ${name} settle hook failed: ${error instanceof Error ? error.message : String(error)}`); } }
       arbitrating -= 1;
       if (idle()) drained?.();
     }

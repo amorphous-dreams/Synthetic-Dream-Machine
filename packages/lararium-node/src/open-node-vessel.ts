@@ -183,6 +183,7 @@ import { standDaemonIsland }               from "./daemon-island-reopen.js";
 import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
 import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
 import { islandAsk } from "./daemon-island-ask.js";
+import { promoteActGate, type PromoteActGate } from "./promote-act-gate.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
@@ -536,6 +537,8 @@ async function standDown(stood: Stood): Promise<void> {
 
 export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonVmCore> {
   restartWiki: (wiki: string) => Promise<void>;
+  /** The promote and kapae session acts in flight: main begins each one, the channel ends it once the reply left. */
+  promoteActs: PromoteActGate;
   restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
   daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
   lightFace: (ordinal: number) => Promise<void>;
@@ -619,6 +622,7 @@ const blankMemeStore = (repo: Repo): (() => DocHandle<LarDoc>) =>
 /** The atoms + keel + boot closures both node cap-stacks compose over (built ONCE per boot). */
 interface NodeBootPrep {
   restartWiki: (wiki: string) => Promise<void>;
+  promoteActs: PromoteActGate;
   wornFace: () => { readonly face: number; readonly personaGroup: string } | null;
   repo:             Repo;
   /** The store's claim, taken before the Repo opened and held for the vessel's life. */
@@ -1795,17 +1799,20 @@ async function prepareNodeBootOn(
   //    mechanism here). onEvict commands the pool via the forward `vmManager` ref. ──
   let vmManager!: VesselIslandPool;        // set in makePool
   let wikiActivation!: WikiActivationCap;  // set in makePool — the activation-on-reference cap
+  const promoteActs = promoteActGate();
   const restartWikiIsland = async (wiki: string) => {
     if (wiki === "daemon") {
-      // The arrival lands inside the very call that raised it: that call answers on the old island, then the island swaps.
-      await daemonHolder.restart("promote: kapae raised over a loaded rite", { drain: true });
+      // On the raising device the arrival lands before the raise's own reply leaves: that act answers first, then the island restarts.
+      // Every other arrival finds no promote act in flight and restarts at once; the holder itself never waits on a call.
+      await promoteActs.settled();
+      await daemonHolder.restart("promote: kapae raised over a loaded rite");
     } else {
       await vmManager.unmountWiki(wiki);
       await wikiActivation.ensureActive(wiki);
     }
   };
-  // The store door's own verbs (commit, drop) run INSIDE a call the daemon island holds, so they cannot await a drained restart of that
-  // island: the wait would stand on the very call that asks for it. The daemon wiki's reload therefore starts and the verb answers.
+  // The store door's own verbs (commit, drop) run INSIDE a call the daemon island holds, so they cannot await a restart of that
+  // island: the restart waits on the very act that asks for it. The daemon wiki's reload therefore starts and the verb answers.
   const reloadWikiAfterVerb = async (wiki: string) => {
     if (wiki !== "daemon") return restartWikiIsland(wiki);
     void restartWikiIsland(wiki).catch((error) => console.warn(`[promote] restart of the daemon island failed: ${error instanceof Error ? error.message : String(error)}`));
@@ -3645,7 +3652,7 @@ async function prepareNodeBootOn(
 
   return {
     repo, storeClaim, catalogHandle, placeSigner, nexusPubkey, floorGates, carriagePull, wornFace: wornGateFace,
-    restartWiki: reloadWikiAfterVerb,
+    restartWiki: reloadWikiAfterVerb, promoteActs,
     vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
@@ -3825,7 +3832,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     daemon: p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
     daemonIslandState: p.daemonIslandState,
-    lightFace: p.lightFace, dropFace: p.dropFace, restartWiki: p.restartWiki,
+    lightFace: p.lightFace, dropFace: p.dropFace, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
     wikiDocUrl:       result.wikiHandle.url,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),

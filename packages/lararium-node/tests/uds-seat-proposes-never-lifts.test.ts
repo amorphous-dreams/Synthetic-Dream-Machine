@@ -66,7 +66,8 @@ async function stand() {
     anchor: { kind: "nexus", aid: "nexus-one.synthetic" }, mint: async () => ({ ok: true, signer: { drop() {} } }) } }) };
   const placed: Array<{ verb: string; requestId: string }> = [];
   const ran: Array<{ act: string; args: Record<string, unknown>; worn: unknown }> = [];
-  const sessionActs = { names: new Set([...KAHUA_ROWS]), run: async (act: string, args: Record<string, unknown>, worn?: unknown) => {
+  const settled: Array<{ act: string; args: Record<string, unknown> }> = [];
+  const sessionActs = { names: new Set([...KAHUA_ROWS]), settled: (act: string, args: Record<string, unknown>) => { settled.push({ act, args }); }, run: async (act: string, args: Record<string, unknown>, worn?: unknown) => {
     ran.push({ act, args, worn });
     return { verb: act, ran: true };
   } };
@@ -92,7 +93,7 @@ async function stand() {
     const opened = await peer.ask({ op: "session:open", requestId: `open-${hint}-${hand}`, faceRef: hint, hand });
     return { ownerEpoch: opened["ownerEpoch"], sessionId: opened["sessionId"], generation: opened["generation"], faceRef: opened["faceRef"] };
   };
-  return { peer, open, placed, ran, synced };
+  return { peer, open, placed, ran, synced, settled };
 }
 
 
@@ -147,4 +148,18 @@ test("CONTROL: the operator's hand (a cli session) runs the promote commit and t
       .toMatchObject({ kind: "session:act-result", answer: { verb: act, ran: true } });
   }
   expect([...PROMOTE_HAND_CODES]).toEqual([["promote-commit", "promote-needs-hand"], ["promote-drop", "promote-needs-hand"], ["promote-orphan", "promote-needs-hand"], ["kapae-raise", "kapae-needs-hand"], ["kapae-lower", "kapae-needs-hand"]]);
+});
+
+test("RED: the session act's `settled` hook fires once per RUN act, after its reply is written, with the very args `run` took; CONTROL: a refused act runs nothing and settles nothing", async () => {
+  const v = await stand();
+  const env = await v.open("hint-a", "cli");
+  const reply = await v.peer.ask({ op: "session:act", ...env, requestId: "cli-settle", act: "kapae-raise", args: { digest: "d".repeat(64) } });
+  expect(reply).toMatchObject({ kind: "session:act-result" });
+  await new Promise((r) => setTimeout(r, 50));
+  expect(v.settled.map((s) => s.act)).toEqual(["kapae-raise"]);
+  expect(v.settled[0]!.args, "the same object `run` took").toBe(v.ran.find((r) => r.act === "kapae-raise")!.args);
+  const seat = await v.open("hint-a", "seat");
+  await v.peer.ask({ op: "session:act", ...seat, requestId: "seat-settle", act: "kapae-raise", args: { digest: "d".repeat(64) } });
+  await new Promise((r) => setTimeout(r, 50));
+  expect(v.settled.map((s) => s.act), "a refusal ran nothing, so nothing settles").toEqual(["kapae-raise"]);
 });
