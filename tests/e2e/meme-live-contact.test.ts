@@ -312,6 +312,8 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     expect(meta).not.toContain("_canonical_uri");
     expect(await awaitFileState(join(srcDir, "photo.png"), false, 30_000), "the daemon wiki folder kept the moved photo.png").toBe(true);
     expect(existsSync(srcMeta)).toBe(false);
+    // barrier: the photo's projection under the daemon wiki folder settled above (awaitFileState), so the projector has run
+    expect(existsSync(join(lar.root, "wikis", "daemon")), "an untagged daemon folder appeared").toBe(false);
   }, 120_000);
 
   test("★ the staged boot wrote nothing into the shared tree — its genesis baked into its own root ★", () => {

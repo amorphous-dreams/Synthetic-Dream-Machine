@@ -382,5 +382,6 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     expect(controlRecordsOnDisk()).toEqual([]);
     // The daemon stays the control plane, CRDT only: no `bags/daemon` dir ever projects.
     expect(existsSync(join(hearth!.root, "bags/daemon"))).toBe(false);
+    expect(existsSync(join(hearth!.root, "wikis/daemon"))).toBe(false);
   }, 240_000);
 });
