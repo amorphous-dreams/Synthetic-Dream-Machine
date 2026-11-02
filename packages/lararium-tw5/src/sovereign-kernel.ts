@@ -56,6 +56,7 @@ import {
   GENESIS_FLOOR_TIDDLER,
   plainRecordOrNull,
   resolveFloor,
+  readFace,
   type Repo,
   type DocHandle,
   type AutomergeUrl,
@@ -443,12 +444,18 @@ export function runSovereignKernel(
     // wires temp + every resolved CRDT slot, registers the adaptor, and ARMS
     // the seed replay on the shore's quota-bounded host-task queue.
     tick("recipe");
+    // THE KAHUA LAYER READS UNDER THE FACE THIS MANIFEST WEARS: its group names the stage, its verified KEL roster the grant
+    // every lift's signer must hold. A manifest wearing no face reads an empty stage.
+    const auth = msg.daemonAuth;
+    const kahuaReading = auth?.personaGroupId ? readFace(auth.personaKel?.chain, auth.faceAnchor ?? null) : null;
+    const kahuaFace = kahuaReading && auth?.personaGroupId ? { group: auth.personaGroupId, grant: kahuaReading.currentSigner } : null;
     const { adaptor } = buildIslandRecipe({
       tw5,
       composite: _composite,
       recipe: msg.recipe,
       ready,
       floorRows,
+      kahuaFace: () => kahuaFace,
     });
     _adaptor = adaptor;
     // THE REST DOOR, for a host whose vessel answers it. A save act's result waits for the vessel to hold and flush
