@@ -662,9 +662,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // `kahua-cap` — THE LŌKAHI CAP for the face this island wears: its group holds the kahua stage bag in Keyhive's
           // plane (minted through the face door, adopted on every later ask). It answers for the mounted face's own atom,
           // never a presenter the args name; the operator's grant over the lift itself reads on the stage (`kahua-stage`).
-          registry.register("kahua-cap", async () => {
+          registry.register("kahua-cap", async (args) => {
             const door = kh && faceDoor() && await kh.knowsAgent(daemonAuth.personaGroupId!) ? faceDoor() : null;
-            return { verb: "kahua-cap", ...(await answerKahuaCap({ door, verify: (a) => kh!.verify(a), presenter: faceAtom().key })) };
+            return { verb: "kahua-cap", ...(await answerKahuaCap({ door, verify: (a) => kh!.verify(a), presenter: faceAtom().key, ensure: args["ensure"] === true })) };
           });
           registry.register("seat-duties", async (args, context) => {
             const unlicensed = seatDutiesAskRefusal({

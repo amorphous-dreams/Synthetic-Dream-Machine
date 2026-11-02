@@ -289,10 +289,11 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...opt("agent", str(args["agent"])), ...opt("prefix", str(args["prefix"])), ...opt("policy", args["policy"]),
       ...opt("asOf", str(args["asOf"])), ...opt("until", str(args["until"])),
     });
-  /** The lōkahi cap as the standing vessel's island reads it; a direct act stands no island and passes none. */
+  /** The lōkahi cap as the standing vessel's island reads it; a direct act stands no island and passes none. The door asks it
+   *  from its write rows alone (lift, withdraw, carry), so the ask carries `ensure`: a missing grant mints there, never on a read. */
   const kahuaCap = deps.askIsland
     ? async (presenter: string) => {
-      const out = await deps.askIsland!("kahua-cap", {}, presenter, `kahua-cap:${randomBytes(12).toString("hex")}`);
+      const out = await deps.askIsland!("kahua-cap", { ensure: true }, presenter, `kahua-cap:${randomBytes(12).toString("hex")}`);
       return { held: out["held"] === true, ...(typeof out["reason"] === "string" ? { reason: out["reason"] } : {}) };
     }
     : undefined;

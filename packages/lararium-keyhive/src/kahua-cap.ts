@@ -16,10 +16,17 @@ export async function answerKahuaCap(input: {
   readonly door: FaceBagDoor | null;
   readonly verify: (args: CapabilityVerifyArgs) => Promise<CapabilityVerifyResult>;
   readonly presenter: string;
+  /** A write path's ask (lift, withdraw, carry): where the verify misses, mint the stage bag to the face's group, then verify again. */
+  readonly ensure?: boolean;
 }): Promise<{ readonly held: boolean; readonly reason?: string }> {
   if (!input.door) return { held: false, reason: "the island wears no seated face, so no group holds the stage" };
-  // The door's ledger adopts a mint that stands: a second ask grants and writes nothing.
-  await input.door.mint(KAHUA_BAG, "admin");
-  const proof = await input.verify({ presenter: input.presenter, bagUrl: KAHUA_BAG, access: "admin" });
+  // THE READ VERIFIES FIRST AND WRITES NOTHING: a held cap answers at once; only a write path's ensure mints, and only
+  // where the verify missed (the door's ledger adopts a mint that stands).
+  const ask = () => input.verify({ presenter: input.presenter, bagUrl: KAHUA_BAG, access: "admin" });
+  let proof = await ask();
+  if (!proof.ok && input.ensure === true) {
+    await input.door.mint(KAHUA_BAG, "admin");
+    proof = await ask();
+  }
   return proof.ok ? { held: true } : { held: false, reason: proof.reason ?? "no grant" };
 }
