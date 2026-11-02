@@ -428,6 +428,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     expect(await waitSel(stranger, "span.walk-stranger-ready"), `the stranger's list never painted\n${tail()}`).toBe(true);
     await new Promise((r) => setTimeout(r, 5_000));
     expect(await paneHas(stranger, "span.walk-leak")).toBe(false);
+    // barrier: the hearth's projector settled the walk's writes: S5 read the lifted item's file under the stage folder before this test began
     expect(controlRecordsOnDisk()).toEqual([]);
     // The daemon stays the control plane, CRDT only: no `bags/daemon` dir ever projects.
     expect(existsSync(join(hearth!.root, "bags/daemon"))).toBe(false);

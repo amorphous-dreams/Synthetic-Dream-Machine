@@ -85,6 +85,7 @@ describe("the page checks the seed it boots against the hearth's own descriptor"
     const device = await freshDevice();
     await device.goto(bannerUrl);
     expect(await statusOutcome(device), tail(device)).toMatch(/^live/);
+    // barrier: statusOutcome awaited the vessel's settled status row, the crossing's own answer, so the console holds every verdict line it wrote
     expect(tail(device)).not.toMatch(/genesis-mismatch/);
   });
 
@@ -97,6 +98,7 @@ describe("the page checks the seed it boots against the hearth's own descriptor"
     expect(outcome).toMatch(/self-consistency against the hearth's arrival descriptor https?:\/\/\S+\/\.well-known\/lar/);
     expect(tail(device)).toContain(`genesis-mismatch: page ${OTHER_CID} · hearth ${HEARTH_CID}`);
     // Refused BEFORE the crossing: the page never dialled the relay.
+    // barrier: statusOutcome awaited the settled refusal row, which the vessel writes and returns on before any relay dial
     expect(tail(device)).not.toMatch(/\[vessel\] CROSSING →/);
   });
 });
