@@ -136,6 +136,14 @@ export function namedBagMirror(
 }
 
 /**
+ * THE ONE ROOT every private layer projects under (the kahua wiki's working top, the kahua stage). Every private mirror
+ * reads its base here, so a layout that keys private state by face moves one line: this function.
+ */
+export function privateProjectionRoot(stateRoot: string): string {
+  return stateRoot;
+}
+
+/**
  * The daemon wiki's disk mirror: its working layer, the kahua wiki's working top, writes flat files to
  * `<rootDir>/wikis/kahua/`, as every wiki writes its working layer (operator ruling, 2026-11-01: a standalone
  * `wikis/daemon` folds into `wikis/kahua`). The layer keeps its bag; the daemon island mounts outside the pool, so this
@@ -147,7 +155,7 @@ export function namedBagMirror(
  * stands on disk.
  */
 export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
-  return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(rootDir, "wikis", "kahua") };
+  return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(privateProjectionRoot(rootDir), "wikis", "kahua") };
 }
 
 /**
@@ -155,7 +163,7 @@ export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
  * sited by title with a project as the leading path segment. The stage never projects beside a canon source.
  */
 export function kahuaStageMirror(stateRoot: string): BagMirrorConfig {
-  return { bagId: KAHUA_BAG, mirrorRoot: joinPath(stateRoot, "bags", "kahua"), titlePaths: true };
+  return { bagId: KAHUA_BAG, mirrorRoot: joinPath(privateProjectionRoot(stateRoot), "bags", "kahua"), titlePaths: true };
 }
 
 /** A daemon VM disk mirror: the grant plus the scope its island names it by. */
