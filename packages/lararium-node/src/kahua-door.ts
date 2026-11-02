@@ -7,6 +7,12 @@
  *   mint      — once per face: the verified projection already naming a stage returns that url and signs nothing (a second
  *               mint, a second device); otherwise the operator's grant stands the doc at the face's derived address
  *               (`kahuaStageDocUrl`) and pins it by a root-signed `plane` act.
+ *               ONE EXECUTOR: the pin appends to the face's linear `@persona` chain at the replica's head, so two hearths whose
+ *               replicas stand even one act apart would sign two pins at one seq and fork the whole log; the derived url
+ *               fences the address, never the head. So the mint runs on the face's FOUNDING HEARTH alone (the verified
+ *               projection's first admission, `foundingHearthOf`); every other device refuses `kahua-mint-founder-hearth`,
+ *               signs nothing, and adopts the pin once its replica holds it. The cost: a face whose founding hearth is lost
+ *               pins no stage until an operator act names another executor.
  *   propose   — the device's atom signs ONE batch on the face's intents plane (any seat may; it grants nothing).
  *   lift      — the lōkahi CAP first (Keyhive: does this device's face hold the stage), then the operator's GRANT (a current
  *               root key in hand), each refused by its own name; an AI seat's hand (the atom) never stands in for the grant.
@@ -17,6 +23,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { randomBytes } from "node:crypto";
+import { foundingHearthOf } from "@lararium/keyhive";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   KAHUA_BAG, KAHUA_PLANE, buildKahuaProposal, buildOutcome, intentEntryCid, intentEntryRecordsOfGroup, intentId,
@@ -121,6 +128,10 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     async mint(): Promise<{ readonly url: string; readonly minted: boolean }> {
       const held = kahuaPlaneUrl(projection(), group);
       if (held) { ports.register(KAHUA_BAG, held); return { url: held, minted: false }; }
+      const founder = foundingHearthOf(projection());
+      if (founder !== ports.atom.key) {
+        throw new KahuaRefused(`kahua-mint-founder-hearth: the face's founding hearth${founder ? ` (${founder.slice(0, 12)}…)` : ""} mints its stage; this device adopts the pin once its replica holds it`);
+      }
       const root = await grant();
       // THE ADDRESS DERIVES FROM THE FACE: two hearths that mint at once stand the same doc and, from one head, sign the
       // same pin byte for byte (ed25519 signs deterministically), so the merged log reads one act and never a fork.

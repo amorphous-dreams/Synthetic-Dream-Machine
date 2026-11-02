@@ -58,18 +58,19 @@ describe("the stage pin", () => {
     expect(planeActs(f.persona, first.url)).toHaveLength(1);
   });
 
-  test("RED: two hearths that mint at once, each offline, sign one pin and never fork the face log; CONTROL: the pin names the face's derived stage", async () => {
+  test("RED: two hearths that mint at once, each offline at one head, never fork the face log: the founding hearth pins and the other adopts; CONTROL: the pin names the face's derived stage", async () => {
     const f = await face();
     // Hearth B holds the same face: a replica of its persona plane and the same root in custody.
     const repoB = new Repo({ network: [] });
     const personaB = repoB.import<LarDoc>(Automerge.save(f.persona.doc()), { docId: f.persona.documentId });
     const intentsB = repoB.import<LarDoc>(Automerge.save(f.intents.doc()), { docId: f.intents.documentId });
-    const [a, b] = await Promise.all([
-      kahuaDoor(f.ports()).mint(),
-      kahuaDoor(f.ports({ repo: repoB, persona: personaB, intents: intentsB, atom: f.atomB,
-        projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }) })).mint(),
-    ]);
+    const doorB = kahuaDoor(f.ports({ repo: repoB, persona: personaB, intents: intentsB, atom: f.atomB,
+      projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }) }));
+    const [a, refused] = await Promise.all([kahuaDoor(f.ports()).mint(), doorB.mint().then(() => null, (e: Error) => e.message)]);
+    expect(refused).toMatch(/kahua-mint-founder-hearth/);
     f.persona.merge(personaB); personaB.merge(f.persona);
+    const b = await doorB.mint();
+    expect(b.minted).toBe(false);
     const projection = f.ports().projection();
     expect(projection.fork).toBeNull();
     expect(a.url).toBe(kahuaStageDocUrl(GROUP));
