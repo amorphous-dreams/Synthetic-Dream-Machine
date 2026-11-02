@@ -143,3 +143,19 @@ describe("★ the writers mint the slot ★", () => {
     expect(stampCarrier(sealed())).toBe(sealed());
   });
 });
+
+describe("★ verifyBcc and verdict never disagree on a frame fault ★", () => {
+  test("RED: a second live ETX, and an ETX standing after EOT, read torn in verifyBcc as in verdict", () => {
+    const second = sealed().replace("<<^ code=`&#x0004;` to=`?`>>", "<<^ code=`&#x0003;`>>\n\n<<^ code=`&#x0004;` to=`?`>>");
+    const afterEot = sealed() + "\n<<^ code=`&#x0003;`>>\n";
+    for (const t of [second, afterEot]) {
+      expect(verdict(t).kind).toBe("torn");
+      expect(verifyBcc(t)).toBe("torn");
+    }
+  });
+
+  test("CONTROL: a clean sealed carrier reads ok in both", () => {
+    expect(verdict(sealed()).kind).toBe("match");
+    expect(verifyBcc(sealed())).toBe("ok");
+  });
+});
