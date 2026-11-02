@@ -41,4 +41,9 @@ describe("the control-plane title law", () => {
       expect(isControlPlaneUri(title), title).toBe(false);
     }
   });
+
+  test("RED (LOW-2): an empty path segment folds: bags//daemon/x reads as control plane", () => {
+    expect(isControlPlaneUri("lar:///ha.ka.ba/bags//daemon/x")).toBe(true);
+    expect(isControlPlaneUri("lar:///ha.ka.ba/bags//kahua/x")).toBe(false);
+  });
 });
