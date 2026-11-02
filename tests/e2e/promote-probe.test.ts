@@ -16,7 +16,7 @@
  * The node's own reads decide each step. Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { foundStagedHearth, openStaged, stagedTarget, vesselStorageDir, type CliResult, type LarInstance } from "../harness/instance.js";
 import { sendCustodyFrame } from "../../packages/lares-cli/src/custody-door.js";
