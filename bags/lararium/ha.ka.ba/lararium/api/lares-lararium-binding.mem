@@ -21,8 +21,6 @@ written   = "2026-06-25"
 
 <<~ aka uri=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! lares ↔ lararium ~ the true binding
@@ -167,6 +165,6 @@ the `status` residency probe passes a non-did `requestedBy` and cap-errors quiet
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zoTELFimDJj-eAKDWD93dkAa4shzpjrZ_aOwUcOqilw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bnq0ZLgOWpHCEkV-5zuvjMqtreUQkgNUcj2wc1kSg9A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

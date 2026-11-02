@@ -22,8 +22,6 @@ written    = "2026-06-23"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Lararium Identity ~ the vessel key, the bond, and the encrypt-from-start keying
@@ -545,7 +543,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing`>>
 
-
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model`>> — derives board address and scopes steward answer
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split`>> — projects seed rows without oracle document history
@@ -554,6 +551,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eScKAy_LaX6LegJx5xk_uYrIGXrabE3JK2irbBSvezA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bbkplVoq-5sFmNXGLl2kSc1cQM5L6bZubJJha3uRBUk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

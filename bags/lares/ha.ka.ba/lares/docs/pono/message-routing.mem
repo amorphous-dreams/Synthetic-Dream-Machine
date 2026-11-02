@@ -17,8 +17,6 @@ uri-path  = "ha.ka.ba/lares/docs/pono/message-routing"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Message Routing
@@ -93,6 +91,6 @@ Filters inside `wai` / `huli` / `ui` evaluate against the ''explicit current mem
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;S7r2meguXXstDJWqpHqu-2h2v20QjwDTZWOlBAfmUSs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NRQ8q3JaTt8oN2S54zG-rUpHq_p6r0-mDfyFPwtwiiw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

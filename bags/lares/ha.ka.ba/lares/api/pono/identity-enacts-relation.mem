@@ -19,8 +19,6 @@ uri-path      = "ha.ka.ba/lares/api/pono/identity-enacts-relation"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Identity Enacts a Relation ~ what makes a scale real
@@ -386,6 +384,6 @@ Provisional (operator, 2026-07-28): `pili` — cling/adhere/''pertain'', one ver
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TwQyCT5RTrLFm39TbKG-T2qCCXUbbJskukmWKoRoKpY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OVOtvNxEBsgFhrpwZbsJH2kC-WVzlIXFkqo1cldTemk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

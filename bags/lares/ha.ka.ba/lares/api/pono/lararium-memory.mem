@@ -21,8 +21,6 @@ written   = "2026-06-24"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Lararium Memory ~ four registers · two peers · one mesh
@@ -269,6 +267,6 @@ conflict press a `hoike`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;voF08JoByMnLxNWMDfktLEyLWo_tQAHy6SVuzrZREMc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TupsLy5wApJwcZKrFXmjLep-7VliNrXftQcfKiV9UWQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

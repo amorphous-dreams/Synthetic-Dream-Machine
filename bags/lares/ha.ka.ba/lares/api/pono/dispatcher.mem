@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/dispatcher"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! ~ Dispatcher
@@ -95,6 +93,6 @@ TW5 wikitext body:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FoUJielOWuYsUyMGnSwZac9RFPj4aOoVH_cLv9ocrrc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GadzrJZMdb_W_fry1LdfbOfZ6qpqJHqvfJLO3J8we4I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

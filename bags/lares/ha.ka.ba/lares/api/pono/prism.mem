@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/prism"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Prism
@@ -114,6 +112,6 @@ Prism keeps the worthwhile half --- //reference a piece of content and read its 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qYHJnC_DhgsfvFenBfhCtsUkcYF-v7urJqNZe33cyDM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;j5pUirnQGTZGIsZS8E7zWfZb2F-qS-Ly0quVXBk6t6k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

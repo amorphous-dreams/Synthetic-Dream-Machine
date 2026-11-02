@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lararium/docs/worker-message-protocol"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Worker Message Protocol — the StructuredClone Boundary
@@ -138,6 +136,6 @@ A browser camera renders inside the island and crosses the boundary twice, under
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pczC2payeHpeb19aJ5R3kOKLHW4AVkw1jxfkyODZyCQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;g6KR_Ck94T1UYNDTgBK0Muy8DyWlN3qcgzib5Bj67FU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

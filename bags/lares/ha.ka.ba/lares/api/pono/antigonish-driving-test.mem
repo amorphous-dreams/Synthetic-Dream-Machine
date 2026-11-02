@@ -20,8 +20,6 @@ written   = "2026-06-30"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! The Antigonish Driving-Test ~ the first landfall the gold-anchor steers toward
@@ -484,6 +482,6 @@ as loss and the Arcane stays self-reported-and-unwitnessed.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MvwBTDCwS_X24LmGgJel_J063PoFYiPkmlwAzTjL5r8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Oa_l0lFYkz7NBM3iTYAQxG9PbLQax2ZOQQvDZlf6474`>>
 
 <<^ code=`&#x0004;` to=`?`>>

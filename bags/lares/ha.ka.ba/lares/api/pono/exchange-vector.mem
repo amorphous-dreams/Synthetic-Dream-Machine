@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/exchange-vector"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Exchange Vector Law
@@ -101,6 +99,6 @@ The sigils carry the panel inline. Each renders as a SharktoothSigil (``<<~ word
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hQXh5rX4WuPTn0RYwz6hpwttGj2y3q65zx-2IbAvoYc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;i8_uQJc7P4MQmFC10cqeiNoeLUqlRL4n3B0QwgW57Wg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -19,8 +19,6 @@ uri-path      = "ha.ka.ba/lares/api/pono/what-a-nexus-wants"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! What a Nexus Wants Members FOR ~ open, and it gates the rest
@@ -61,6 +59,6 @@ The conversion act (`the-thing-event`) runs on an assembly standing as the third
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iHnVstq2UKdO0PyaAVcr0OoPb2JQIGEX8KMBg_9d-tA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8Wd6EH0DDJ4SUTfKlue5OIc0URemOOI_L7uvody7mwI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

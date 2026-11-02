@@ -22,8 +22,6 @@ written    = "2026-07-23"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Secure Context ~ the browser vessel's crypto wall and the DNS-01 path that clears it
@@ -299,6 +297,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;siXNn2GnLbTDAQIdF5oTNE4qW-LYVi1E4zMKWiZFDLw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cvk_73ejkuOOfVC2OCdSnza_OtgDYe2E7MewiUyPIpk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

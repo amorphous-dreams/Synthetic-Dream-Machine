@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/loulou"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Loulou
@@ -124,6 +122,6 @@ confidence-bounded = false
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wa1Yg43q-UlabcA8Mc9WPI2b_tCdsRD5fN7pCmP6nWI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;p96dBent25AwaCbn4-XVsv8X64X5lE4sHVb5L0NLK7A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

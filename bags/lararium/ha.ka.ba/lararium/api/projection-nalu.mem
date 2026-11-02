@@ -21,8 +21,6 @@ written   = "2026-06-26"
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! Projection-Nalu ~ the wave that carries a sovereign's state to a substrate
@@ -184,6 +182,6 @@ The DOM nalu (`tw5-projection.ts`) draws `CoalesceGate`; the Automerge-boundary 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NKeKilzN1TVi97NbcAu15Ov6yyGmDxiYHQbXTBCAq1c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sKjQievVNeqA9zc59s22i4yWypBxklYqXJ3jsLCzxQQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

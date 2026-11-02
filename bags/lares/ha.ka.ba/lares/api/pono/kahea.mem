@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/kahea"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Kahea
@@ -158,6 +156,6 @@ canonical-roles = []   # held — transclusion role vocab deferred with the pono
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iq8i-QodcbS8x50r3F77tokEAoCgo8M7VMnsy6cRU5k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sB9dqOULE8qlJtaAdy0IdswATTgqWVCWyAG8Kh1cEPI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

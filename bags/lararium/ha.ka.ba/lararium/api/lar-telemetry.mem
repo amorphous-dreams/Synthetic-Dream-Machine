@@ -21,8 +21,6 @@ written   = "2026-06-24"
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory#/capture-before-wire`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! lar-telemetry ~ the turn reports its instruments
@@ -230,6 +228,6 @@ readings AND the form-capture both drain the one emitted-marker stream, no disco
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;E6ALJF1S2ZD2XMoqSO-UCqQlpfnbAlmFXe_VmCQ_VsQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FuJmUYPOgPn1bxPriyhae60hF7BLnucYYfu_DsOudYc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

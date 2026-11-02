@@ -19,8 +19,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/pae"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Pae
@@ -128,6 +126,6 @@ EOT pushes off — the carrier releases the channel and the current takes it.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eM_Pzq2soKbQcll2htXkRR5nhukeP6X26YKLxJOrUUA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eQ-qENw373YgKUuS2fCSrZTwBONl7Ra5klhn-Faiz_E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

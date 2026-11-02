@@ -18,8 +18,6 @@ written   = "2026-06-29"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Functor Discipline — the architectural keel
@@ -339,6 +337,6 @@ This meme draws the one arrow through all of them — ''the house is a functor; 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hbP0aquaRUihIIuOfqoqpozO1C4FL-PQraNXoRMxMuU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wcEF_Q6YFhpx2N2G5G3qx2hE5JX0CxSpze2IAdhqfIc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

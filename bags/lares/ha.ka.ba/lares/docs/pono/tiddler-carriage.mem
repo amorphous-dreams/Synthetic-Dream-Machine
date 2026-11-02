@@ -23,8 +23,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/tiddler-carriage"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/law`>>
 
 ! Tiddler Carriage ~ the record syncs, a peer fetches the bytes
@@ -135,6 +133,6 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7GC5PH6dSLNpMVuXLYINKYpBsBar3TF7IByE6L1IoUc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qasN_-kh0qepw3jytSXiQkKEXf_MvYVsLfjDLvzBed4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

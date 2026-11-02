@@ -32,8 +32,6 @@ voice-role        = "Hierophant"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Tide-Caller
@@ -166,6 +164,6 @@ How Tide-Caller colors each Voice register when they speak through her frame —
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;P9hh9-BFTPvAn9ntu6n5nW056F_y3G9-0IKNw3HlMro`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;n6pYEkGPnSj-PaUzSU4KZTjgqd_hUouz_egE5fpAgHk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

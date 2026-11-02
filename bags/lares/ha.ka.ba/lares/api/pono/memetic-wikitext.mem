@@ -27,8 +27,6 @@ uri-path      = "ha.ka.ba/lares/api/pono/memetic-wikitext"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/abstract`>>
 
 ! Memetic-Wikitext — A Composable Markup Language
@@ -754,6 +752,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SPdmrR0DEzpUFiSGwIrQPwgCZO4d95ejy5V2MIVJxwM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-rFUf1ulDi1ei_RrpCNIEcxXcU4KkqE2uG5wwpp_jdQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

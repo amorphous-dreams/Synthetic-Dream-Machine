@@ -19,8 +19,6 @@ uri-path  = "ha.ka.ba/lares/api/mu/l-prime"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! L-Prime Game Law (Kānāwai)
@@ -141,6 +139,6 @@ L-Prime runs ''binary''. The ward stands ''lit'' (default --- the discipline app
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ebfLQEgRDubqknB5guSFESwBQ41JtnM9rlqB1Tnrmq0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xzT4TB6NI1rPjeHVYAk3vzkKtqePplHZrTIcqsT7hgc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

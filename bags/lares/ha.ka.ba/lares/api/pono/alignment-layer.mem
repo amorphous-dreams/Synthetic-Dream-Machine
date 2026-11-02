@@ -21,8 +21,6 @@ uri-path    = "ha.ka.ba/lares/api/pono/alignment-layer"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Alignment Layer
@@ -237,6 +235,6 @@ right — to decide whose presence the hearth refuses.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;It5KcJutYcv-Kd4xhGmkiHQAf3hvocNgXmX3t_52Mgw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;u6WLUb_RtSyTrY2wfauyKXi5redf2jFfzac-dPKCqgE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

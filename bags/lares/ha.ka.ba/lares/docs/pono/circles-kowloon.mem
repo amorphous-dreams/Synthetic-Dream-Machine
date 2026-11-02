@@ -14,8 +14,6 @@ uri-path  = "ha.ka.ba/lares/docs/pono/circles-kowloon"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/core-inversion`>>
 
 ! Circles — Kowloon Reference Model
@@ -192,6 +190,6 @@ The question //how far up does the inversion scale?// has a mechanical answer he
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-DZybkxrhN3FhuOAXI83dmYMV5R6fQ-4W86EDQNvO90`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jko97rJr6m4XAeYkjTDOH5nwF2K05KkUBM9s2vpG_T4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

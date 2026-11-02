@@ -19,8 +19,6 @@ uri-path      = "ha.ka.ba/lares/api/pono/re-anchoring-record"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Re-Anchoring Record ~ that it happened, never what made it valid
@@ -134,6 +132,6 @@ And the EROSION half needs a rate nobody has seated. Two candidate shapes stand 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6ELM3RnYaQ4sb0wz74bWU--sdAgYiAB0IRGhh35bR2M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wqn6lEtBNcjL1Oi63a1wj-damiY3WUH423X238GtKQU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

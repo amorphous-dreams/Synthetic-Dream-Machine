@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/wai"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Wai
@@ -121,6 +119,6 @@ close-pattern = '<<~\/wai\s*>>'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;N9GdSfWxiS13ALSZAbsbABEfarYmIzJiZE_oQB2st1g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VgQgSGkz3CpP2x1vVld345r2qfQl7arghWb6TlmKsOY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

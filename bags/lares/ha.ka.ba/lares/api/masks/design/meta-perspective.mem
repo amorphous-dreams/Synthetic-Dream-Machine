@@ -24,8 +24,6 @@ uri-path  = "ha.ka.ba/lares/api/masks/design/meta-perspective"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Meta-Perspective ~ the design lens
@@ -66,6 +64,6 @@ step-in licenses standpoints of ''place''; one discipline, two axes.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YResK-34joS3udYTYlqberC9mUd9h-Ar9VP1PJ36alo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Hq2nTOA5wz4wDbUa7iFZ5rWwBYEglQafjvZubkOAzj4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

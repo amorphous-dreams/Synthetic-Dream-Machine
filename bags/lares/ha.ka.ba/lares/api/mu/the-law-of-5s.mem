@@ -21,8 +21,6 @@ uri-path  = "ha.ka.ba/lares/api/mu/the-law-of-5s"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Law of 5s
@@ -214,6 +212,6 @@ export const RATING_COLOR: Record<Rating5, string> = {
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kxLNh6vfAcPGuRxKmA9pHjaJOYmdsMTaU7_y0wE3cVY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;a9b0odwKcDycqBkWne-jgWXsGII9D638AaGyuOZSVok`>>
 
 <<^ code=`&#x0004;` to=`?`>>

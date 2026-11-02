@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/failure-states/reference-fusion"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Reference-Fusion Law
@@ -72,6 +70,6 @@ If the node refuses a true context claim outright rather than re-marking it, sig
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rEGoQzPTbzzeUwFLtd5E2RptlkLFHryi6beoLV8Tfs4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ES0oiZkGNlEpWDXy3k_P-nG-D_7ecijq3ev-WRaGTKY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

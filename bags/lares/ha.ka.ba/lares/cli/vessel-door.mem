@@ -20,8 +20,6 @@ uri-path   = "ha.ka.ba/lares/cli/vessel-door"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/the-record-laws`>>
 
 !! The record laws ~ what a command IS, and where a name lives
@@ -273,6 +271,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6DC5OECpywTHLQ3Xr_U-VpK9T67MAp1UGR6dgAUqqtg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JhtLjVLb-zYYL0lD_YPKRoJQETVntzFTY-UmO4Kg7Mg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

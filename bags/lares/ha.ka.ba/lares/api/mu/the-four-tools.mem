@@ -21,8 +21,6 @@ uri-path      = "ha.ka.ba/lares/api/mu/the-four-tools"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Four Tools of Chapel Perilous
@@ -305,6 +303,6 @@ arcana   = "release"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;c804GxiRLNc1wpIeptnanwk1UcwjcHlakW7WJum2PSU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vIUY6iglB3IdrvmmWmx5hyrFENMarrCmJzr5OJBSjJY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
