@@ -1,0 +1,64 @@
+/**
+ * daemon-island-reopen — the node's daemon island stands through ONE seam, so an in-process re-open re-resolves its boot inputs.
+ *
+ * `standDaemonIsland({ resolvePlugins, open })` resolves the plugin CIDs through the shared resolver, opens the island with
+ * them, and returns the holder (`@lararium/tw5` `holdDaemonVm`) whose `reopen` runs the same two steps again. The resolver
+ * runs in `prepare`, so a refusal leaves the old island standing. Scripted fakes stand in for the resolver and the island.
+ */
+import { describe, expect, test } from "vitest";
+import type { DaemonVmCore } from "@lararium/tw5";
+import { standDaemonIsland } from "../src/daemon-island-reopen.js";
+
+interface Fake extends DaemonVmCore { readonly cids: readonly string[]; readonly auth: object; downs: number }
+function fakeVm(cids: readonly string[], auth: object): Fake {
+  const vm = {
+    cids, auth, downs: 0,
+    syncLegReady: async () => `leg:${cids.join(",")}`,
+    shutdown: async () => { vm.downs += 1; return { acked: true }; },
+    dispose: () => { vm.downs += 1; },
+  };
+  return vm as unknown as Fake;
+}
+
+describe("the node's daemon island re-opens through the shared plugin resolver", () => {
+  test("a plugin CID added before the restart loads after it, and a removed one is gone; the auth object is the same one", async () => {
+    let offered = ["cid-a", "cid-b"];
+    const auth = { unlocked: true };              // the closure the vessel built once: custody stays unlocked, nothing re-prompts
+    let resolutions = 0;
+    const held = await standDaemonIsland({
+      resolvePlugins: async () => { resolutions += 1; return { ok: true as const, pluginCids: [...offered] }; },
+      open: async (inputs) => fakeVm(inputs.pluginCids, auth),
+    });
+    expect((held.vm as unknown as Fake).cids).toEqual(["cid-a", "cid-b"]);
+    offered = ["cid-a", "cid-b", "cid-c"];
+    await held.restart("kapae-add");
+    expect((held.vm as unknown as Fake).cids).toEqual(["cid-a", "cid-b", "cid-c"]);
+    offered = ["cid-a", "cid-c"];
+    await held.restart("kapae-remove");
+    expect((held.vm as unknown as Fake).cids).toEqual(["cid-a", "cid-c"]);
+    expect((held.vm as unknown as Fake).auth).toBe(auth);
+    expect(resolutions).toBe(3);                  // CONTROL: one resolution per open, none memoized
+  });
+
+  test("a resolution that refuses at boot throws the boot error by name; at restart it leaves the old island standing", async () => {
+    await expect(standDaemonIsland({
+      resolvePlugins: async () => ({ ok: false as const, error: "offering absent" }),
+      open: async () => { throw new Error("must not open"); },
+    })).rejects.toThrow(/the daemon island's plugin resolution refused: offering absent/);
+    let refuse = false;
+    const opened: Fake[] = [];
+    const held = await standDaemonIsland({
+      resolvePlugins: async () => (refuse ? { ok: false as const, error: "offering gone" } : { ok: true as const, pluginCids: ["cid-a"] }),
+      open: async (inputs) => { const vm = fakeVm(inputs.pluginCids, {}); opened.push(vm); return vm; },
+    });
+    refuse = true;
+    await expect(held.restart("kapae-raise")).rejects.toThrow(/plugin resolution refused: offering gone/);
+    expect(opened).toHaveLength(1);
+    expect(opened[0]!.downs).toBe(0);
+    expect(await held.vm.syncLegReady()).toBe("leg:cid-a");
+    refuse = false;
+    await held.restart("again");                  // CONTROL: the same seam recovers once the resolver answers
+    expect(opened).toHaveLength(2);
+    expect(opened[0]!.downs).toBe(1);
+  });
+});

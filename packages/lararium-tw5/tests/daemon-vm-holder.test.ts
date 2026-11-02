@@ -246,3 +246,40 @@ describe("the restart loop leaves no leak", () => {
     expect(live).toBe(2);
   });
 });
+
+describe("prepare runs before anything is torn down", () => {
+  test("the prepared boot inputs reach reopen, after prepare and after the old VM's shutdown", async () => {
+    log.length = 0;
+    const first = fakeVm();
+    const next = fakeVm();
+    const held = holdDaemonVm({
+      vm: first,
+      prepare: async (reason) => { log.push(`prepare:${reason}`); return { cids: ["c1"] }; },
+      reopen: async (_reason, prepared) => { log.push(`reopen:${prepared.cids.join(",")}`); return next; },
+    });
+    await held.restart("kapae-raise");
+    expect(log).toEqual(["prepare:kapae-raise", `vm${first.id}:shutdown`, "reopen:c1"]);
+  });
+
+  test("a prepare that refuses leaves the old VM standing, its pending call alive, and the facade ready", async () => {
+    const first = fakeVm();
+    const gate = deferred<unknown>();
+    first.gate = gate;
+    let reopened = 0;
+    const held = holdDaemonVm({
+      vm: first,
+      prepare: async () => { throw new Error("plugin resolution refused"); },
+      reopen: async () => { reopened += 1; return fakeVm(); },
+    });
+    const pending = held.vm.resolveBinding("f", { wikiDocId: "w", libraryBagDocIds: [] }, "s");
+    await expect(held.restart("r")).rejects.toThrow(/plugin resolution refused/);
+    expect(first.downs).toBe(0);
+    expect(reopened).toBe(0);
+    expect(held.restarts).toBe(0);
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).not.toThrow();
+    gate.resolve(undefined);
+    expect((await pending).personalUrl).toBe(`p${first.id}`);   // the pending call was never rejected
+    await held.restart("r2").catch(() => undefined);              // a later restart still tries (prepare refuses again)
+    expect(first.downs).toBe(0);
+  });
+});
