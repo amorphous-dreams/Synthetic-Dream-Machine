@@ -60,7 +60,7 @@ export class TW5Engine {
         try {
           const packed: unknown = JSON.parse(preload["text"]);
           if (packed && typeof packed === "object" && !Array.isArray(packed)) {
-            const tiddlers = (packed as Record<string, unknown>)["tiddlers"];
+            const { tiddlers } = packed as { tiddlers?: unknown };
             if (tiddlers && typeof tiddlers === "object" && !Array.isArray(tiddlers)) {
               for (const title of Object.keys(tiddlers)) preloadedTitles.add(title);
             }

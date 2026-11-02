@@ -15,6 +15,7 @@
  *               origin {seat, device, session}, its taint list and the daemon sources it distils. Supersede, never edit.
  *   withdraw  — tombstones one named revision: recall drops it on every reader; history keeps it.
  *   carry     — names earlier acts (by cid) that keep standing under the current root: a batch re-lift after a rotation.
+ *   kapae     — raises or lowers a causal shadow over a promotion digest.
  *
  * STANDING READS CURRENT-ONLY. Acts carry no sequence, so a root the KEL rotated past could sign an act naming its own old
  * epoch at any later time, and no reader could tell it from one signed before the rotation. So an act STANDS where its
@@ -48,6 +49,7 @@ import { KAHUA_DOC_URI } from "./lar-uris.js";
 import { intentEntryRecordsOfGroup, intentId, readIntentEntry, type SignedIntentEntry } from "./intent-entry.js";
 import type { IntentVerbRegistry } from "./intent-verbs.js";
 import { storedLarRecord } from "./stored-record.js";
+import { foldCausalHeads, type EdgeKapaeVerdict } from "./edge-kapae.js";
 
 /** The name a face's `plane` act carries for its stage. */
 export const KAHUA_PLANE = "kahua";
@@ -72,7 +74,11 @@ export interface KahuaCarryBody {
   /** The earlier acts' cids that keep standing, each named once. */
   readonly carries: readonly string[];
 }
-export type KahuaActBody = KahuaLiftBody | KahuaWithdrawBody | KahuaCarryBody;
+export interface KahuaKapaeBody {
+  readonly kind: typeof KAHUA_ACT_DOMAIN; readonly group: string; readonly act: "kapae"; readonly epoch: number;
+  readonly digest: string; readonly raised: boolean; readonly parents: readonly string[];
+}
+export type KahuaActBody = KahuaLiftBody | KahuaWithdrawBody | KahuaCarryBody | KahuaKapaeBody;
 /** The most cids one carry names; a larger stage carries in several acts. */
 export const KAHUA_CARRY_MAX = 4096;
 /**
@@ -115,6 +121,7 @@ function bodyFault(b: Record<string, unknown>): KahuaActRefusal | null {
   if (!string(b.group) || !Number.isSafeInteger(b.epoch) || (b.epoch as number) < 0) return "shape";
   if (b.act === "lift") return liftFault(b);
   if (b.act === "withdraw") return hex64(b.target) ? null : "shape";
+  if (b.act === "kapae") return hex64(b.digest) && typeof b.raised === "boolean" && Array.isArray(b.parents) && b.parents.every(hex64) && new Set(b.parents).size === b.parents.length ? null : "shape";
   if (b.act === "carry") {
     const c = b.carries;
     return Array.isArray(c) && c.length > 0 && c.length <= KAHUA_CARRY_MAX && c.every(hex64) && new Set(c).size === c.length ? null : "shape";
@@ -137,6 +144,9 @@ export function signKahuaLift(parts: Omit<KahuaLiftBody, "kind" | "act">, signer
 }
 export function signKahuaWithdraw(parts: Omit<KahuaWithdrawBody, "kind" | "act">, signer: Signer): Promise<SignedKahuaAct> {
   return sign({ ...parts, kind: KAHUA_ACT_DOMAIN, act: "withdraw" }, signer);
+}
+export function signKahuaKapae(parts: Omit<KahuaKapaeBody, "kind" | "act">, signer: Signer): Promise<SignedKahuaAct> {
+  return sign({ ...parts, parents: [...parts.parents], kind: KAHUA_ACT_DOMAIN, act: "kapae" }, signer);
 }
 
 export function signKahuaCarry(parts: Omit<KahuaCarryBody, "kind" | "act">, signer: Signer): Promise<SignedKahuaAct> {
@@ -183,6 +193,8 @@ export interface KahuaRevision {
 }
 export interface KahuaItem { readonly title: string; readonly status: "standing" | "siblings"; readonly heads: readonly KahuaRevision[] }
 export interface KahuaStageReading {
+  kapae(digest: string): EdgeKapaeVerdict | undefined;
+  shadowed(): ReadonlySet<string>;
   /** Every standing item, by title (sorted). */
   list(): KahuaItem[];
   /** One title's standing item, or null where none stands (never lifted, or every head withdrawn). */
@@ -219,10 +231,17 @@ export function readKahuaStage(records: readonly unknown[], opts: KahuaFoldFace)
   const lifts = new Map<string, { act: SignedKahuaAct; body: KahuaLiftBody }>();
   for (const [cid, { act }] of acts) if (act.body.act === "lift") lifts.set(cid, { act, body: act.body });
   const withdrawn = new Set<string>();
+  const kapaeGroups = new Map<string, { actCid: string; raised: boolean; parents: readonly string[] }[]>();
   for (const cid of standing) {
     const body = acts.get(cid)!.act.body;
     if (body.act === "withdraw" && lifts.has(body.target)) withdrawn.add(body.target);
+    if (body.act === "kapae") {
+      const group = kapaeGroups.get(body.digest) ?? [];
+      group.push({ actCid: cid, raised: body.raised, parents: body.parents });
+      kapaeGroups.set(body.digest, group);
+    }
   }
+  const kapaeVerdicts = new Map([...kapaeGroups].map(([digest, group]) => [digest, foldCausalHeads(group)]));
   const rev = (cid: string): KahuaRevision => {
     const { act, body } = lifts.get(cid)!;
     return { cid, title: body.title, text: body.text, fields: body.fields, parent: body.parent, origin: body.origin, taint: body.taint,
@@ -244,6 +263,8 @@ export function readKahuaStage(records: readonly unknown[], opts: KahuaFoldFace)
     return { title, status: heads.length === 1 ? "standing" : "siblings", heads };
   };
   return {
+    kapae: (digest) => kapaeVerdicts.get(digest),
+    shadowed: () => new Set([...kapaeVerdicts].filter(([, verdict]) => verdict !== "withdrawn").map(([digest]) => digest)),
     list: () => [...byTitle.keys()].sort().map(itemOf).filter((i): i is KahuaItem => i !== null),
     get: itemOf,
     history: (title) => (byTitle.get(title) ?? []).sort().map(rev),
