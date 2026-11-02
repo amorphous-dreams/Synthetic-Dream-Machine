@@ -28,7 +28,7 @@ const persisted = (r: Record<string, string>): boolean => !String(r["title"]).st
 describe("the daemon protocol seed projects nothing", () => {
   test("control: the seed writes the daemon UI surfaces and every flow a full vessel enacts", () => {
     const titles = seededRecords(HULLS_FULL).map((r) => r["title"]);
-    expect(titles.filter((t) => String(t).startsWith("$:/lares/ui/")).length).toBe(9);
+    expect(titles.filter((t) => String(t).startsWith("$:/lares/ui/")).length).toBe(10);
     expect(titles.filter((t) => String(t).includes("/daemon/flows/")).length).toBe(3);
   });
 

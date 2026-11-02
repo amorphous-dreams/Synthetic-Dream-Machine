@@ -30,5 +30,9 @@ export function asIslandStore<T extends LarTiddlerStore>(store: T, working = "la
     const record = await store.get(title);
     return record ? { bagId: working, record } : null;
   };
+  s.resolveAll ??= async (title: string) => {
+    const record = await store.get(title);
+    return record && !record.meta?.deleted ? [{ bagId: working, record }] : [];
+  };
   return s as T & IslandStore;
 }
