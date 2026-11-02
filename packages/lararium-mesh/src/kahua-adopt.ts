@@ -11,7 +11,7 @@
 
 import { kahuaPlaneUrl } from "./kahua-stage.js";
 import { KAHUA_BAG } from "./wiki-recipe.js";
-import { tiddlerText } from "./base-doc.js";
+import { tiddlerText, type LarDoc } from "./base-doc.js";
 
 export type KahuaAdoption =
   | { readonly mount: string }
@@ -30,7 +30,7 @@ export function adoptedKahuaUrl(adoption: KahuaAdoption): string | null {
 }
 
 /** The catalog's `bags/kahua` row: a mount hint, read as text, never an authority. */
-export function kahuaCatalogRow(catalog: { readonly tiddlers?: Readonly<Record<string, unknown>> } | null | undefined): string | null {
-  const text = tiddlerText(catalog?.tiddlers?.[KAHUA_BAG] as never);
+export function kahuaCatalogRow(catalog: LarDoc | null | undefined): string | null {
+  const text = tiddlerText(catalog?.tiddlers?.[KAHUA_BAG]);
   return typeof text === "string" && text.length > 0 ? text : null;
 }
