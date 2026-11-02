@@ -262,6 +262,13 @@ const hearthCards = new Map<string, string>();
 /** Persona zero's PersonaGroup id by staged root: the group the founding admitted to the Kahu cabal. */
 const hearthGroups = new Map<string, string>();
 
+/** Persona zero's PersonaGroup id on a staged hearth `foundStagedHearth` founded; a root it never founded throws by name. */
+export function stagedHearthGroup(root: string): string {
+  const group = hearthGroups.get(root);
+  if (!group) throw new Error(`no staged hearth founding answered a PersonaGroup id for ${root}`);
+  return group;
+}
+
 /**
  * THE STABLE FOUNDING ACT on a staged root: the place, persona zero under `name`, its one-seat seed charter and the
  * face that binds its AID, in one CLI act. Answers the card's code (the stand-in printed it into the JSON answer).
