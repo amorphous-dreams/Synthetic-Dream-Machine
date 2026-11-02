@@ -343,11 +343,28 @@ function quotedSpansOf(source: string): MaskSpan[] {
  * sections hold an unpaired closer of another name in plain prose, and a walk that stopped at one
  * dropped bodies that render correctly today.
  */
+/** The mark at `at` OPENS its line: nothing but indentation stands before it on that line. */
+export function opensLineAt(source: string, at: number): boolean {
+  return /^[ \t]*$/.test(source.slice(source.lastIndexOf("\n", at - 1) + 1, at));
+}
+
+/**
+ * THE CLOSER'S LINE LAW, for a block-only head (`lar-flow: block`): a closer counts only when its `>>`
+ * ends its line and it either OPENS that line or shares its opener's line (the one-line pair) —
+ * TiddlyWiki builds a block call only from a call that starts its line and ends it at `>>`. A closer
+ * breaking the law reads as text, never as a close, exactly as scanAhu and tree-sitter read it.
+ */
+export function closerHoldsLineLaw(source: string, fromPos: number, closeStart: number, closeEnd: number): boolean {
+  const endsLine = closeEnd >= source.length || source[closeEnd] === "\n" || (source[closeEnd] === "\r" && source[closeEnd + 1] === "\n");
+  return endsLine && (opensLineAt(source, closeStart) || !source.slice(fromPos, closeStart).includes("\n"));
+}
+
 export function findCloseEnd(
   source: string,
   sigil: string,
   fromPos: number,
   closers: Record<string, string> = BLOCK_CLOSERS,
+  lineLaw = false,
 ): number | null {
   const tag = closers[sigil];
   if (!tag) return null;
@@ -365,6 +382,7 @@ export function findCloseEnd(
     // — the same step `maskedExecAll` takes.
     if (inMask(spans, m.index)) { re.lastIndex = m.index + 1; continue; }
     if (m[1] !== undefined) {
+      if (lineLaw && !closerHoldsLineLaw(source, fromPos, m.index, m.index + m[0].length)) continue;
       if (depth === 0) return m.index + m[0].length;
       depth--;
     } else {

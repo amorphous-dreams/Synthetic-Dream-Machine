@@ -148,8 +148,8 @@ const LINE_CLOSE_RE = /<<(?:~\/ahu|\/fragment)\s*>>\r?$/;
 
 /**
  * THE LINE LAW (Train R; the parity every reader holds inside the sigil space). A pair stands only when
- * its closer's `>>` ends a line, and its opener's `>>` ends its own line or shares the line its closer
- * ends. Text after a closer, or after a multi-line pair's opener, leaves that mark as TEXT: it opens or
+ * its closer's `>>` ends a line and the closer OPENS that line (or shares its opener's line), and its
+ * opener's `>>` ends its own line or shares the line its closer ends. Text after a closer, or after a multi-line pair's opener, leaves that mark as TEXT: it opens or
  * closes nothing, so no child record is cut from it, exactly as the plugin's render and tree-sitter read
  * it. The machine keeps its own regexes (the law above): the heads it decomposes are welded to the
  * `lar-flow: block` child-slot heads by `tests/ahu-line-law.test.ts`, never read from the vocabulary.
@@ -164,8 +164,15 @@ export function scanAhu(text: string): AhuScan {
     if (!endsLine(text, end) && !LINE_CLOSE_RE.test(text.slice(end, eol < 0 ? text.length : eol))) continue;
     events.push({ kind: "open", pos: m.index, end, slot: m[1] ?? "#" });
   }
+  // A closer counts only when its `>>` ends its line and it OPENS that line, or follows a counted
+  // opener on the same line (the one-line pair) — TiddlyWiki builds a block call only from a call
+  // that starts its line.
+  const openLines = new Set(events.map((e) => text.lastIndexOf("\n", e.pos - 1)));
   for (const m of maskedExecAll(text, AHU_CLOSE_RE, mask)) {
     if (!endsLine(text, m.index + m[0].length)) continue;
+    const lineStart = text.lastIndexOf("\n", m.index - 1);
+    const opensLine = /^[ \t]*$/.test(text.slice(lineStart + 1, m.index));
+    if (!opensLine && !openLines.has(lineStart)) continue;
     events.push({ kind: "close", pos: m.index, end: m.index + m[0].length, slot: "" });
   }
   events.sort((a, b) => a.pos - b.pos);

@@ -36,6 +36,7 @@ import {
   grammarChildSlotNames,
   matchPranalaOpenAt,
   findCloseEnd,
+  closerHoldsLineLaw,
   findGenericOpenAt,
   buildClosers,
   grammarInlineSigils,
@@ -165,7 +166,11 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       const open = FRAGMENT_OPEN_RE.exec(source.slice(pos));
       if (open) {
         const openEnd = pos + open[0].length;
-        const close = source.indexOf("<</fragment>>", openEnd);
+        // The English closer holds the same line law as every block-only head's (`lar-flow: block`).
+        let close = source.indexOf("<</fragment>>", openEnd);
+        while (close >= 0 && !closerHoldsLineLaw(source, openEnd, close, close + "<</fragment>>".length)) {
+          close = source.indexOf("<</fragment>>", close + 1);
+        }
         const v = verdict(openEnd, close, close >= 0 ? close + "<</fragment>>".length : null, "fragment");
         if (v === "decline") {
           pos = indexOfSigilOpen(source, pos + 3);
@@ -242,7 +247,7 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       // registry answers for the rest, and the matcher keeps its own narrow contract.
       const closeKey = compound.closeKey ?? (closers[compound.name] ? compound.name : null);
       if (closeKey) {
-        const closeEnd = findCloseEnd(source, closeKey, compound.end, closers);
+        const closeEnd = findCloseEnd(source, closeKey, compound.end, closers, blockFlow.has(closeKey));
         const closeTagStart = closeEnd !== null ? source.lastIndexOf(`<<~/${closeKey}`, closeEnd) : -1;
         const v = verdict(compound.end, closeTagStart, closeEnd, closeKey);
         if (v === "decline") {
