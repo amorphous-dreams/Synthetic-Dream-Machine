@@ -25,7 +25,7 @@ describe("the browser vessel's daemon seam", () => {
 
   test("the page door stands behind the loopback check in the web main", () => {
     const main = readFileSync(join(__dirname, "..", "..", "lararium-web", "src", "main.ts"), "utf8");
-    expect(main).toMatch(/if \(isLoopbackOrigin\(location\)\) \(window as [^)]*\)\.__larRestartDaemonIsland = /);
+    expect(main).toMatch(/if \(isLoopbackOrigin\(location\)\) \(window as [^;]*?\)\.__larRestartDaemonIsland = /);
   });
 
   test("CONTROL: the instrument reads an absent seam as red", () => {
