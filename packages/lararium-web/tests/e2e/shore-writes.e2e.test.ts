@@ -163,6 +163,32 @@ test("served wiki opens the TW5 search dropdown without worker errors", async ()
   assert.deepEqual(wikiWorkerErrors, [], "the served popup walk emits zero [wiki-worker] error lines");
 });
 
+// A tab whose earlier full promotion never landed holds its next boot at skinny (`mirror:began:<wiki>` in sessionStorage),
+// so no promotion snapshot lands after the person acts and nothing re-renders the sidebar. CI reached this tab by timing
+// (the stale-target walk left before its promotion landed); the walk here reaches it on purpose.
+test("a tab held at skinny opens the TW5 search dropdown without worker errors", async () => {
+  wikiWorkerErrors.length = 0;
+  await page.goto(baseUrl);
+  await waitForLivePage();
+  await page.evaluate(() => {
+    const wikis = Object.keys(sessionStorage).flatMap((key) => key.match(/^mirror:(?:began|full-standing):(.+)$/)?.slice(1) ?? []);
+    if (wikis.length === 0) throw new Error("no mirror evidence names the wiki this tab shows");
+    for (const wiki of wikis) sessionStorage.setItem(`mirror:began:${wiki}`, "held-by-test");
+  });
+  try {
+    await page.goto(baseUrl);
+    await waitForLivePage();
+    assert.equal(await page.locator("#mirror").getAttribute("data-lar-mirror"), "skinny", "the held tab stands at skinny");
+    const wiki = page.locator("#mirror");
+    await wiki.locator('input[type="search"]').fill("no-such-shore-result");
+    await wiki.locator("button").filter({ hasText: "matches" }).first().click();
+    await wiki.locator(".tc-search-drop-down").waitFor({ state: "visible", timeout: 20_000 });
+    assert.deepEqual(wikiWorkerErrors, [], "the held popup walk emits zero [wiki-worker] error lines");
+  } finally {
+    await page.evaluate(() => { for (const key of Object.keys(sessionStorage)) if (key.startsWith("mirror:")) sessionStorage.removeItem(key); });
+  }
+});
+
 async function waitForLivePage(target = page): Promise<void> {
   try {
     await target.waitForFunction(() => [...document.querySelectorAll("#phases .phase")]
