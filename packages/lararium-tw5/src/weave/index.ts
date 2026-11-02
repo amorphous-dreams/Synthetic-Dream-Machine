@@ -267,11 +267,13 @@ export function resolveWeaveTarget(opts: {
 }
 
 /**
- * Line-standing frame sigil (every mark the frame declares), with whatever rides after the closer.
+ * Line-standing frame sigil (every mark the frame declares), ALONE on its line. A frame mark with text
+ * after its `>>` falls through as prose: that text rides inside the checked span and the plugin renders it
+ * inline, so the weave never drops it in silence.
  * THE SET IS THE DECLARATION'S (`frameAlt()` names every mark): a hand-spelled `&#x00..;` read any C0
  * entity as frame and would have dropped an authored line that merely quoted one.
  */
-const FRAME_LINE = new RegExp(`^<<\\^ code=\`${frameAlt()}\`(?:[^>\\n]|>(?!>))*>>.*$`);
+const FRAME_LINE = new RegExp(`^<<\\^ code=\`${frameAlt()}\`(?:[^>\\n]|>(?!>))*>>\\s*$`);
 /**
  * The ETX closer with the check its `bcc` slot carries.
  *
@@ -279,7 +281,7 @@ const FRAME_LINE = new RegExp(`^<<\\^ code=\`${frameAlt()}\`(?:[^>\\n]|>(?!>))*>
  * line-anchored canonical spelling is what a transpose meets, and the capture takes the BCC the
  * closer's final `bcc` value names (the frame's lawful spelling, one space and one tick each side).
  */
-const ETX_LINE = new RegExp(`^<<\\^ code=\`${frameAlt("ETX")}\`(?: bcc=\`(ni:\\/\\/\\/[a-z0-9-]+;[A-Za-z0-9_-]+)\`)?>>`);
+const ETX_LINE = new RegExp(`^<<\\^ code=\`${frameAlt("ETX")}\`(?: bcc=\`(ni:\\/\\/\\/[a-z0-9-]+;[A-Za-z0-9_-]+)\`)?>>\\s*$`);
 const DOCTYPE_LINE = /^<<!DOCTYPE (?:[^>\n]|>(?!>))*>>\s*$/;
 // The tooth stands at one dispatch position: `<<~` then LWSP then the command word, and a close
 // word carries its own slash (`ahu`, `/ahu`). Both spacings reach the same word, matching the
