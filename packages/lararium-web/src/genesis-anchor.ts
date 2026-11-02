@@ -84,15 +84,46 @@ export async function arrivalSeedAnchor(relayUrl: string, fetchFn: SeedFetch): P
     : { kind: "missing", at, why: "names no genesis-seed route" };
 }
 
+export type BaseVerdict =
+  | { readonly kind: "base"; readonly url: string; readonly isDefault: boolean }
+  | { readonly kind: "refuse"; readonly text: string };
+
+/** The genesis base every page reads when the link names none: the hearth's own Pronaos route. */
+export const DEFAULT_GENESIS_BASE = "/genesis";
+
+/**
+ * Where the page may read its seed: the hearth's own origin alone. A link's `?genesis=` resolves against the page; any
+ * other origin (a full URL, a protocol-relative `//host`, a `javascript:` or `data:` base) refuses by name, since a seed
+ * the link chose would choose the very hashes the page then checks itself against, and those bytes would run on the
+ * hearth's origin beside its custody. Genesis served by another origin or addressed by CID waits for its own verify law.
+ */
+export function genesisBaseVerdict(base: string | null, pageOrigin: string): BaseVerdict {
+  const asked = base ?? DEFAULT_GENESIS_BASE;
+  let url: URL;
+  try { url = new URL(asked, `${pageOrigin}/`); } catch { return { kind: "refuse", text: `genesis-base-foreign: ${asked} reads as no URL; only the hearth's own origin serves genesis` }; }
+  if (url.origin !== pageOrigin || (url.protocol !== "http:" && url.protocol !== "https:")) {
+    return { kind: "refuse", text: `genesis-base-foreign: ${asked} stands on ${url.origin}, not this page's origin ${pageOrigin}; only the hearth's own origin serves genesis, so the page boots nothing from it` };
+  }
+  const href = url.href.replace(/\/+$/, "");
+  return { kind: "base", url: href, isDefault: href === `${pageOrigin}${DEFAULT_GENESIS_BASE}` };
+}
+
 /**
  * Whether the page crosses on the seed it booted, against the anchor it read. A page the hearth serves itself (its
  * origin equals the descriptor's) refuses a missing descriptor: the hearth's own Pronaos serves `/.well-known/lar`, so its
  * absence there reads as a fault. A page dialling a relay on another origin (a dev page, a mesh probe) names the gap and
  * crosses uncompared.
  */
-export function genesisCrossingVerdict(pageSeedCid: string, anchor: SeedAnchor, page: { readonly pageOrigin?: string } = {}): CrossingVerdict {
+export function genesisCrossingVerdict(pageSeedCid: string, anchor: SeedAnchor, page: { readonly pageOrigin?: string; readonly seedFromDefault?: boolean } = {}): CrossingVerdict {
   if (anchor.kind === "missing") {
     const sameOrigin = page.pageOrigin !== undefined && new URL(anchor.at).origin === page.pageOrigin;
+    if (page.seedFromDefault === false) {
+      return {
+        kind: "refuse",
+        text: `arrival-descriptor-missing: ${anchor.at} (${anchor.why}) — the page read its seed off a base the link named, and no descriptor names a seed to compare; ` +
+          "a seed from anywhere but the default route never crosses uncompared.",
+      };
+    }
     if (sameOrigin) {
       return {
         kind: "refuse",
