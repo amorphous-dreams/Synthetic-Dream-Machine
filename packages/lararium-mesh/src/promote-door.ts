@@ -71,10 +71,14 @@ export function promotions(ports: PromotionPorts) {
       return { pluginCids: runnable.map(row => row.digest), voided, orphans: readings.filter(r => r.state === "orphaned").map(r => r.row.digest), updateWaits: readings.filter(r => r.state === "update-waits").map(r => r.row.digest), shadowed: shadows(edges) };
     },
     async arrive() {
-      const board = await ports.board(), local = await ports.local.read();
-      const result = kapaeNoteArrival(local, board.edges(), ports.loaded());
-      await saveLocal(local, result.local); if (result.restart) await ports.restart();
-      return { restarted: result.restart };
+      // The shadow is cached first (an offline boot honors it); the island restarts while it LOADED any shadowed edge, so a restart that
+      // failed is tried again by the next arrive.
+      const board = await ports.board(), local = await ports.local.read(), edges = board.edges();
+      const result = kapaeNoteArrival(local, edges, ports.loaded());
+      await saveLocal(local, result.local);
+      const hit = [...edges].some(edge => ports.loaded().has(edge));
+      if (hit) await ports.restart();
+      return { restarted: hit };
     },
   };
 }

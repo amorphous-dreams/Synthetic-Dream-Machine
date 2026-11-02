@@ -2287,6 +2287,7 @@ async function prepareNodeBootOn(
             stores: nodePromoteStores(personaGroupId), cas: nodePromoteCas(casDirForStorage(storageDir), promoteHolder),
             wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
             onFault: (reason) => console.warn(`[promote] ${reason}`),
+            onRestartFailed: (wiki, error) => console.warn(`[promote] restart of ${wiki} failed (the next board read tries again): ${error instanceof Error ? error.message : String(error)}`),
             onReport: (wiki, r) => { if (r.orphans.length || r.updateWaits.length || r.voided.length) console.warn(`[promote] ${wiki}: orphans=${r.orphans.join(",")} updateWaits=${r.updateWaits.join(",")} voided=${r.voided.map(v => v.digest).join(",")}`); },
           }) : null;
         };

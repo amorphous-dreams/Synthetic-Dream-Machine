@@ -13,11 +13,12 @@ export function promoteWiring(opts: {
   cas: PromotionPorts["cas"]; wikiItems: (wiki: string) => Promise<readonly PromoteItem[]>;
   restart: (wiki: string) => Promise<void>; daemonWiki?: string;
   onReport?: (wiki: string, report: PromoteBootReport) => void;
+  onRestartFailed?: (wiki: string, error: unknown) => void;
   onFault?: (reason: "ledger-unreadable" | "board-unreadable" | "board-unpinned") => void;
 }) {
   const core = promoteBoot({
     stores: opts.stores, cas: opts.cas, restart: opts.restart,
-    ...(opts.onReport ? { onReport: opts.onReport } : {}), ...(opts.onFault ? { onFault: opts.onFault } : {}),
+    ...(opts.onReport ? { onReport: opts.onReport } : {}), ...(opts.onFault ? { onFault: opts.onFault } : {}), ...(opts.onRestartFailed ? { onRestartFailed: opts.onRestartFailed } : {}),
     board: async () => {
       if (opts.boardUrl === null) throw new Error("board-unpinned");
       const handle = await opts.repo.find<LarDoc>(opts.boardUrl as AutomergeUrl);

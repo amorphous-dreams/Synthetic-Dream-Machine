@@ -16,6 +16,7 @@ export function promoteBoot(opts: {
   itemsOf: (wiki: string) => Promise<readonly PromoteItem[]>;
   restart: (wiki: string) => Promise<void>;
   onReport?: (wiki: string, report: PromoteBootReport) => void;
+  onRestartFailed?: (wiki: string, error: unknown) => void;
   onFault?: (reason: "ledger-unreadable" | "board-unreadable" | "board-unpinned") => void;
 }) {
   const loaded = new Map<string, Set<string>>();
@@ -44,16 +45,18 @@ export function promoteBoot(opts: {
       try { board = await opts.board(); } catch { opts.onFault?.("board-unreadable"); return []; }
       let local: Awaited<ReturnType<typeof opts.stores.local.read>>;
       try { local = await opts.stores.local.read(); } catch { opts.onFault?.("ledger-unreadable"); return []; }
-      const edges = board.edges(), previous = new Set(local.shadowed);
-      const newly = new Set([...edges].filter(edge => !previous.has(edge)));
+      const edges = board.edges();
       const allLoaded = new Set([...loaded.values()].flatMap(set => [...set]));
+      // The cache records the whole shadow before any restart: an offline boot honors it whatever a restart did. A wiki restarts while
+      // any edge it LOADED sits in the current shadow, so a restart that failed is tried again by the next arrive.
       const next = kapaeNoteArrival(local, edges, allLoaded).local;
       if (new TextDecoder().decode(encodeKapaeLocal(local)) !== new TextDecoder().decode(encodeKapaeLocal(next))) await opts.stores.local.write(next);
       const restarted: string[] = [];
-      for (const [wiki, held] of loaded) {
-        if (![...held].some(edge => newly.has(edge))) continue;
-        await opts.restart(wiki);
-        for (const edge of newly) held.delete(edge);
+      for (const [wiki, held] of [...loaded]) {
+        const hit = [...held].filter(edge => edges.has(edge));
+        if (hit.length === 0) continue;
+        try { await opts.restart(wiki); } catch (error) { opts.onRestartFailed?.(wiki, error); continue; }
+        for (const edge of hit) held.delete(edge);
         restarted.push(wiki);
       }
       return restarted.sort();
