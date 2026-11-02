@@ -2,7 +2,7 @@
  * kahua-promote — the pure law of a promotion: the code class, the digest, the device-local trust ledger, and who may commit.
  *
  * AI prepares, a hand commits: a seat's commit refuses `promote-needs-hand`. A digest mismatch voids a promotion. A later
- * stage edit never changes what a promoted row runs. A withdrawn promoted item reads orphaned and stays inert until the hand
+ * stage edit never changes what a promoted row runs. A withdrawn promoted item reads orphaned and keeps running and is named until the hand
  * keeps or drops it. Every red pairs with a CONTROL.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
@@ -124,10 +124,10 @@ describe("what runs", () => {
     const v2 = await lift("exports.startup = function(){ evil() }", c1);
     const after = readKahuaStage([v1, v2], { group: GROUP, grant });
     expect(reconcilePromotions(ledger.rows, after)[0]).toMatchObject({ state: "update-waits", head: kahuaActCid(v2) });
-    expect(promotedPreloads(verifyPromotionRows(ledger.rows).verified, reconcilePromotions(ledger.rows, after))[0]!["text"]).toBe(rite.text);
+    expect(promotedPreloads(verifyPromotionRows(ledger.rows).verified)[0]!["text"]).toBe(rite.text);
   });
 
-  test("RED: a withdrawn promoted revision reads `orphaned` and stays inert until the hand keeps it (it runs again) or drops it (the row leaves); CONTROL: a seat decides nothing", async () => {
+  test("RED: a withdrawn promoted revision reads `orphaned` and KEEPS RUNNING (no silent change) until the hand keeps it (it reads `kept`, still runs) or drops it (the row leaves); CONTROL: a seat decides nothing", async () => {
     const root = await signer(1), atom = await signer(2);
     const grant = (k: string) => k === root.key;
     const origin = { seat: atom.key, device: atom.key, session: "s" };
@@ -138,12 +138,12 @@ describe("what runs", () => {
     const reading = readKahuaStage([v1, w], { group: GROUP, grant });
     const states = reconcilePromotions(ledger.rows, reading);
     expect(states[0]).toMatchObject({ state: "orphaned" });
-    expect(promotedPreloads(verifyPromotionRows(ledger.rows).verified, states)).toEqual([]);
+    expect(promotedPreloads(verifyPromotionRows(ledger.rows).verified)).toHaveLength(1);
     expect(() => ledgerDecideOrphan(ledger, ledger.rows[0]!.digest, "keep", SEAT)).toThrowError(expect.objectContaining({ code: "promote-needs-hand" }));
     const kept = ledgerDecideOrphan(ledger, ledger.rows[0]!.digest, "keep", HAND);
     const keptStates = reconcilePromotions(kept.rows, reading);
     expect(keptStates[0]).toMatchObject({ state: "kept" });
-    expect(promotedPreloads(verifyPromotionRows(kept.rows).verified, keptStates)).toHaveLength(1);
+    expect(promotedPreloads(verifyPromotionRows(kept.rows).verified)).toHaveLength(1);
     expect(ledgerDecideOrphan(ledger, ledger.rows[0]!.digest, "drop", HAND).rows).toEqual([]);
     expect(() => ledgerDecideOrphan(EMPTY_LEDGER, "f".repeat(64), "drop", HAND)).toThrowError(expect.objectContaining({ code: "promote-unknown" }));
   });
