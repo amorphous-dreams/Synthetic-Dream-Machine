@@ -460,7 +460,7 @@ async function main(): Promise<void> {
     // what it reads and answers, and the standing composition lends it the board it may read a KEL head from.
     runAct: (act, args) => runSealedAct(act, args, {
       kelHead: composition?.kelHead ?? null, personaSelves: composition?.personaSelves ?? null, walk: composition?.walk ?? null,
-      hosting: composition?.hosting ?? null, backup: composition?.backup ?? null,
+      hosting: composition?.hosting ?? null, backup: composition?.backup ?? null, island: composition?.island ?? null,
     }),
     // A BACKUP'S CUT RUNS HERE TOO, against the same seated holder, once the frame's own route proves: the
     // standing composition lends it the mounted face, its own edge's shadow, the island's memory section and the
@@ -516,6 +516,7 @@ interface ComposedAs { readonly standing: ReturnType<typeof standAs>; readonly f
 /** A composition standing on the floor: everything a boot builds past the store's claim and the listening faces. */
 interface StandingComposition {
   readonly standing: "herm" | "hearth";
+  readonly island: NonNullable<SealedActContext["island"]>;
   readonly lightFace: (ordinal: number) => Promise<void>;
   readonly dropFace: (ordinal: number) => Promise<void>;
   /** Stop the PROCESS gracefully: flush, tear down, exit. */
@@ -688,6 +689,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   };
   return {
     standing: "herm",
+    island: { state: herm.daemonIslandState, restart: async (reason) => ({ ...(await herm.restartDaemonIsland(reason)), leg: (await herm.daemonIslandState()).leg }) },
     lightFace: herm.lightFace, dropFace: herm.dropFace,
     onSignal: (sig) => void hermShutdown(sig),
     teardown: async () => { await front.detach(); await herm.teardown(); },
@@ -958,6 +960,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   };
   return {
     standing: "hearth",
+    island: { state: result.daemonIslandState, restart: async (reason) => ({ ...(await result.restartDaemonIsland(reason)), leg: (await result.daemonIslandState()).leg }) },
     lightFace: result.lightFace, dropFace: result.dropFace,
     onSignal: (sig) => void shutdown(sig),
     teardown: async () => { await front.detach(); await result.teardown(); },

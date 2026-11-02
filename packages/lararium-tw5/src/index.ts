@@ -232,6 +232,8 @@ export type {
   WikiSlotComponent, DaemonCapDeps,
 } from "./core-caps.js";
 export { openDaemonVmCore, HostWorkingBindingRefusal } from "./daemon-vm-core.js";
+export { holdDaemonVm, DaemonRestarting } from "./daemon-vm-holder.js";
+export type { DaemonVmHolder } from "./daemon-vm-holder.js";
 export type {
   DaemonVmHost,
   DaemonVmCore,
