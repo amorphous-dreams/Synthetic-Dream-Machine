@@ -1,6 +1,6 @@
 /**
- * kahua-door — the node's door onto a face's kahua stage: the once-per-face mint and its pin, the cap and the grant
- * before every lift and withdraw, the proposal on the intents plane, and the facet the stage rides to the face's sessions.
+ * kahua-door — the node's door onto a face's kahua stage: the pin the face's founding act signs (the mint adopts it and
+ * mints nothing outside that act), the cap and the grant before every lift and withdraw, the proposal on the intents plane, and the facet the stage rides to the face's sessions.
  *
  * Each red stands beside a CONTROL through the same door. Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
@@ -9,10 +9,10 @@ import * as Automerge from "@automerge/automerge";
 import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocHandle } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, KAHUA_BAG, KAHUA_PLANE, isFaceScopedBag, personaMembershipEntries, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, emptyLarDoc, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  faceIntentVerbs, intentEntryRecordsOfGroup, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
+  faceIntentVerbs, intentEntryRecordsOfGroup, materializeSharedLarDoc, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
   personaSiblingBagIds, projectPersonaLog, signFoundingLog, signPersonaAct, signsAtEpoch, buildKahuaProposal, intentId, writeIntentEntry, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
 } from "@lararium/mesh";
-import { kahuaDoor, KahuaRefused, pinKahuaAtBoot, type KahuaBootPorts, type KahuaDoorPorts } from "../src/kahua-door.js";
+import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../src/kahua-door.js";
 import { bridgeBooks, faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
 
 const who = async (n: number) => {
@@ -21,153 +21,107 @@ const who = async (n: number) => {
 };
 const GROUP = "kahua-scratch-face";
 
-async function face() {
+/**
+ * A face as its founding leaves it: the founding log (`signFoundingLog`) names its planes, and `pinned` (the default) adds the
+ * kahua stage beside the intents plane under the same root, as `landFaceGenesis` signs it for every founding, node or browser.
+ * `pinned: false` stands a log whose founding act named no stage: the shape a mint outside the founding act would have to pin.
+ */
+async function face(opts: { readonly pinned?: boolean } = {}) {
   const repo = new Repo({ network: [] });
   const root = await who(7), atomA = await who(8), atomB = await who(9);
   const lineage = makeHandLineage([{ epoch: 0, signers: [root.key], threshold: 1 }])!;
   const persona = repo.create<LarDoc>(emptyLarDoc()), intents = repo.create<LarDoc>(emptyLarDoc());
+  const pinned = opts.pinned !== false;
   const acts = await signFoundingLog({ group: GROUP, personaKelPrefix: "E".repeat(44), rootCommitment: "c", epoch: 0,
-    planes: { persona: persona.url, intents: intents.url }, deviceKey: atomA.key, edgeDigest: "d" }, root);
+    planes: { persona: persona.url, intents: intents.url, ...(pinned ? { [KAHUA_PLANE]: kahuaStageDocUrl(GROUP) } : {}) }, deviceKey: atomA.key, edgeDigest: "d" }, root);
+  if (pinned) await materializeSharedLarDoc(repo, kahuaStageDocUrl(GROUP), "kahua:stage");
   persona.change((d) => { for (const a of acts) writePersonaAct(d, a); });
   const catalog: Record<string, string> = {};
+  const roots = { n: 0 };
   const ports = (over: Partial<KahuaDoorPorts> = {}): KahuaDoorPorts => ({
     repo, group: GROUP, verbs: faceIntentVerbs(),
     projection: () => projectPersonaLog(personaActRecordsOfGroup(persona.doc(), GROUP), { group: GROUP, lineage, authorize: () => true }),
-    epoch: () => 0, currentSigner: (key) => key === root.key, atom: atomA, persona, intents,
-    rootSigner: async () => root, cap: async () => ({ held: true }),
+    epoch: () => 0, currentSigner: (key) => key === root.key, atom: atomA, intents,
+    rootSigner: async () => { roots.n++; return root; }, cap: async () => ({ held: true }),
     register: (bagId, url) => { catalog[bagId] = url; }, session: () => "cli-session-1",
     ...over,
   });
-  return { repo, root, atomA, atomB, persona, intents, catalog, ports, lineage };
+  return { repo, root, atomA, atomB, persona, intents, catalog, ports, lineage, roots };
 }
-const planeActs = (persona: DocHandle<LarDoc>, url: string) =>
-  personaActRecordsOfGroup(persona.doc(), GROUP).filter((r) => (r as { body: Record<string, unknown> }).body["plane"] === KAHUA_PLANE && (r as { body: Record<string, unknown> }).body["url"] === url);
+const planeActs = (persona: DocHandle<LarDoc>, url?: string) =>
+  personaActRecordsOfGroup(persona.doc(), GROUP).filter((r) => (r as { body: Record<string, unknown> }).body["plane"] === KAHUA_PLANE && (url === undefined || (r as { body: Record<string, unknown> }).body["url"] === url));
+/** Device B's replica of the face's log and intents, offline from A until a test merges them. */
+function replicaB(f: Awaited<ReturnType<typeof face>>, over: Partial<KahuaDoorPorts> = {}) {
+  const repoB = new Repo({ network: [] });
+  const personaB = repoB.import<LarDoc>(Automerge.save(f.persona.doc()), { docId: f.persona.documentId });
+  const intentsB = repoB.import<LarDoc>(Automerge.save(f.intents.doc()), { docId: f.intents.documentId });
+  const catalogB: Record<string, string> = {};
+  const door = kahuaDoor(f.ports({ repo: repoB, intents: intentsB, atom: f.atomB,
+    projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }),
+    register: (bagId, url) => { catalogB[bagId] = url; }, ...over }));
+  return { repoB, personaB, catalogB, door };
+}
 
-describe("the stage pin", () => {
-  test("RED: a second mint no-ops and a second device of the face adopts the same url; CONTROL: the first mint pins one plane act", async () => {
+describe("the stage pin rides the face's founding act", () => {
+  test("CONTROL: the founded face's mint adopts the pin its founding signed, signs nothing and opens no root; the pin names the face's derived stage once and the mint registers bags/kahua", async () => {
     const f = await face();
-    const first = await kahuaDoor(f.ports()).mint();
-    expect(first.minted).toBe(true);
-    expect(planeActs(f.persona, first.url)).toHaveLength(1);
-    expect(f.catalog[KAHUA_BAG]).toBe(first.url);
-    const again = await kahuaDoor(f.ports()).mint();
-    expect(again).toEqual({ url: first.url, minted: false });
-    // Device B reads the same synced persona log: it adopts the url and signs nothing, even holding a root signer.
-    const deviceB = await kahuaDoor(f.ports({ atom: f.atomB })).mint();
-    expect(deviceB).toEqual({ url: first.url, minted: false });
-    expect(planeActs(f.persona, first.url)).toHaveLength(1);
+    expect(planeActs(f.persona, kahuaStageDocUrl(GROUP))).toHaveLength(1);
+    const head = f.ports().projection().head;
+    expect(await kahuaDoor(f.ports()).mint()).toEqual({ url: kahuaStageDocUrl(GROUP), minted: false });
+    expect(f.roots.n).toBe(0);
+    expect(f.ports().projection().head).toEqual(head);
+    expect(planeActs(f.persona)).toHaveLength(1);
+    expect(f.catalog[KAHUA_BAG]).toBe(kahuaStageDocUrl(GROUP));
+    // A mint with no root in hand still adopts: adoption reads the log and needs no grant.
+    expect(await kahuaDoor(f.ports({ rootSigner: async () => { throw new Error("locked"); } })).mint()).toEqual({ url: kahuaStageDocUrl(GROUP), minted: false });
   });
 
-  test("RED: two hearths that mint at once, each offline at one head, never fork the face log: the founding hearth pins and the other adopts; CONTROL: the pin names the face's derived stage", async () => {
-    const f = await face();
-    // Hearth B holds the same face: a replica of its persona plane and the same root in custody.
-    const repoB = new Repo({ network: [] });
-    const personaB = repoB.import<LarDoc>(Automerge.save(f.persona.doc()), { docId: f.persona.documentId });
-    const intentsB = repoB.import<LarDoc>(Automerge.save(f.intents.doc()), { docId: f.intents.documentId });
-    const doorB = kahuaDoor(f.ports({ repo: repoB, persona: personaB, intents: intentsB, atom: f.atomB,
-      projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }) }));
-    const [a, refused] = await Promise.all([kahuaDoor(f.ports()).mint(), doorB.mint().then(() => null, (e: Error) => e.message)]);
-    expect(refused).toMatch(/kahua-mint-founder-hearth/);
-    f.persona.merge(personaB); personaB.merge(f.persona);
-    const b = await doorB.mint();
-    expect(b.minted).toBe(false);
-    const projection = f.ports().projection();
-    expect(projection.fork).toBeNull();
-    expect(a.url).toBe(kahuaStageDocUrl(GROUP));
-    expect(b.url).toBe(a.url);
-    expect(planeActs(f.persona, a.url)).toHaveLength(1);
-    expect(kahuaPlaneUrl(projection, GROUP)).toBe(a.url);
-  });
-
-  test("RED: a mint with no root in hand refuses by name and pins nothing; CONTROL: an unpinned face lists nothing and refuses a lift by naming the mint", async () => {
-    const f = await face();
-    await expect(kahuaDoor(f.ports({ rootSigner: async () => { throw new Error("locked"); } })).mint()).rejects.toThrow(/operator-grant-absent/);
+  test("RED: a mint outside the face's founding act refuses `kahua-mint-outside-founding`, signs nothing and opens no root, even on the device that founded the face; CONTROL: the unpinned face refuses a lift by naming the absent pin", async () => {
+    const f = await face({ pinned: false });
+    const head = f.ports().projection().head;
+    await expect(kahuaDoor(f.ports()).mint()).rejects.toThrow(/^kahua-mint-outside-founding: /);
+    await expect(kahuaDoor(f.ports()).mint()).rejects.toBeInstanceOf(KahuaRefused);
+    expect(f.roots.n).toBe(0);
+    expect(planeActs(f.persona)).toHaveLength(0);
+    expect(f.ports().projection().head).toEqual(head);
     expect(f.catalog[KAHUA_BAG]).toBeUndefined();
     await expect(kahuaDoor(f.ports()).lift({ title: "t", text: "x", taint: [], sources: [{ title: "d", revision: "r" }] })).rejects.toThrow(/kahua-unpinned/);
+  });
+
+  test("CONTROL: a joining device adopts the founding's pin from its replica and never mints: no plane act, no root opened, and its catalog registers the same derived stage", async () => {
+    const f = await face();
+    const b = replicaB(f);
+    expect(await b.door.mint()).toEqual({ url: kahuaStageDocUrl(GROUP), minted: false });
+    expect(f.roots.n).toBe(0);
+    expect(planeActs(b.personaB)).toHaveLength(1);
+    expect(b.catalogB[KAHUA_BAG]).toBe(kahuaStageDocUrl(GROUP));
+  });
+
+  test("RED: the node's door module carries no boot pin: a boot only adopts the pinned plane act; CONTROL: the door itself still exports", async () => {
+    const door = await import("../src/kahua-door.js");
+    expect(Object.keys(door)).not.toContain("pinKahuaAtBoot");
+    expect(typeof door.kahuaDoor).toBe("function");
   });
 });
 
 describe("the mint fence", () => {
-  test("RED: two replicas of one face one act apart (one holds an admission the other lacks) both holding the root mint offline, then merge: the log never forks and reads ONE pin; CONTROL: the non-founding device adopts that pin once synced, and sequential mints no-op", async () => {
-    const f = await face();
-    // Device B's replica of the face's log, offline from A until the merge; A's replica takes one admission B never sees.
-    const repoB = new Repo({ network: [] });
-    const personaB = repoB.import<LarDoc>(Automerge.save(f.persona.doc()), { docId: f.persona.documentId });
-    const intentsB = repoB.import<LarDoc>(Automerge.save(f.intents.doc()), { docId: f.intents.documentId });
+  test("RED: a mint outside the founding act refuses on every replica, so the log never forks: two replicas one act apart, both holding the root, mint offline and merge to ONE log with no pin; CONTROL: the merged log folds", async () => {
+    const f = await face({ pinned: false });
+    const b = replicaB(f);
+    // A's replica takes one admission B never sees: the two stand one act apart.
     const third = await who(10);
-    const headA = f.ports().projection().head;
-    const admissionAct = await signPersonaAct(headA, { group: GROUP, act: "admission", epoch: 0, fields: { deviceKey: third.key } }, f.root);
+    const admissionAct = await signPersonaAct(f.ports().projection().head, { group: GROUP, act: "admission", epoch: 0, fields: { deviceKey: third.key } }, f.root);
     f.persona.change((d) => writePersonaAct(d, admissionAct));
-    const catalogB: Record<string, string> = {};
-    const deviceB = kahuaDoor(f.ports({ repo: repoB, persona: personaB, intents: intentsB, atom: f.atomB,
-      projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }),
-      register: (bagId, url) => { catalogB[bagId] = url; } }));
-    const [onA, onB] = await Promise.allSettled([kahuaDoor(f.ports()).mint(), deviceB.mint()]);
-    f.persona.merge(personaB); personaB.merge(f.persona);
+    const [onA, onB] = await Promise.allSettled([kahuaDoor(f.ports()).mint(), b.door.mint()]);
+    expect(onA).toMatchObject({ status: "rejected", reason: { message: expect.stringMatching(/^kahua-mint-outside-founding: /) } });
+    expect(onB).toMatchObject({ status: "rejected", reason: { message: expect.stringMatching(/^kahua-mint-outside-founding: /) } });
+    f.persona.merge(b.personaB); b.personaB.merge(f.persona);
     const projection = f.ports().projection();
+    expect(projection.founded).toBe(true);
     expect(projection.fork).toBeNull();
-    expect(planeActs(f.persona, kahuaStageDocUrl(GROUP))).toHaveLength(1);
-    expect(onA).toMatchObject({ status: "fulfilled", value: { url: kahuaStageDocUrl(GROUP), minted: true } });
-    expect(onB).toMatchObject({ status: "rejected", reason: { message: expect.stringMatching(/kahua-mint-founder-hearth/) } });
-    expect(await deviceB.mint()).toEqual({ url: kahuaStageDocUrl(GROUP), minted: false });
-    expect(catalogB[KAHUA_BAG]).toBe(kahuaStageDocUrl(GROUP));
-    expect(await kahuaDoor(f.ports()).mint()).toEqual({ url: kahuaStageDocUrl(GROUP), minted: false });
-  });
-});
-
-describe("the founding hearth's boot pins a face founded before kahua", () => {
-  // The fixture's founding log names the persona and intents planes alone: a face founded before its stage existed.
-  const boot = (f: Awaited<ReturnType<typeof face>>, over: Partial<KahuaBootPorts> & { reads?: { n: number } } = {}): KahuaBootPorts => {
-    const reads = over.reads ?? { n: 0 };
-    const base = f.ports();
-    return {
-      repo: base.repo, group: GROUP, projection: base.projection, epoch: base.epoch, currentSigner: base.currentSigner,
-      atom: f.atomA.key, persona: f.persona,
-      rootSigner: async () => { reads.n++; return f.root; },
-      ...over,
-    };
-  };
-
-  test("RED: the founding hearth's boot mints the stage under the root its custody holds: one plane act at the derived url", async () => {
-    const f = await face();
-    expect(await pinKahuaAtBoot(boot(f))).toEqual({ url: kahuaStageDocUrl(GROUP), minted: true });
-    expect(planeActs(f.persona, kahuaStageDocUrl(GROUP))).toHaveLength(1);
-    expect(kahuaPlaneUrl(f.ports().projection(), GROUP)).toBe(kahuaStageDocUrl(GROUP));
-    expect(f.ports().projection().fork).toBeNull();
-  });
-
-  test("CONTROL: a second boot of the founding hearth no-ops: one plane act, and the root stays sealed", async () => {
-    const f = await face();
-    await pinKahuaAtBoot(boot(f));
-    const reads = { n: 0 };
-    expect(await pinKahuaAtBoot(boot(f, { reads }))).toEqual({ url: kahuaStageDocUrl(GROUP), minted: false });
-    expect(reads.n).toBe(0);
-    expect(planeActs(f.persona, kahuaStageDocUrl(GROUP))).toHaveLength(1);
-  });
-
-  test("CONTROL: a device that is not the founding hearth never mints at boot and never opens a root, then adopts the founder's pin once its replica holds it", async () => {
-    const f = await face();
-    const repoB = new Repo({ network: [] });
-    const personaB = repoB.import<LarDoc>(Automerge.save(f.persona.doc()), { docId: f.persona.documentId });
-    const reads = { n: 0 };
-    const deviceB = boot(f, { reads, repo: repoB, persona: personaB, atom: f.atomB.key,
-      projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }) });
-    expect(await pinKahuaAtBoot(deviceB)).toEqual({ url: null, minted: false });
-    expect(reads.n).toBe(0);
-    expect(planeActs(personaB, kahuaStageDocUrl(GROUP))).toHaveLength(0);
-    await pinKahuaAtBoot(boot(f));
-    personaB.merge(f.persona);
-    expect(await pinKahuaAtBoot(deviceB)).toEqual({ url: kahuaStageDocUrl(GROUP), minted: false });
-    expect(reads.n).toBe(0);
-    expect(planeActs(personaB, kahuaStageDocUrl(GROUP))).toHaveLength(1);
-  });
-
-  test("CONTROL: a founding hearth whose custody holds no root, or a root the face's roster no longer seats, signs nothing and the boot stands", async () => {
-    const f = await face();
-    expect(await pinKahuaAtBoot(boot(f, { rootSigner: async () => null }))).toEqual({ url: null, minted: false });
-    const stranger = await who(11);
-    expect(await pinKahuaAtBoot(boot(f, { rootSigner: async () => stranger }))).toEqual({ url: null, minted: false });
-    expect(planeActs(f.persona, kahuaStageDocUrl(GROUP))).toHaveLength(0);
+    expect(planeActs(f.persona)).toHaveLength(0);
+    expect(kahuaPlaneUrl(projection, GROUP)).toBeNull();
+    expect(f.roots.n).toBe(0);
   });
 });
 

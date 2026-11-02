@@ -1,5 +1,6 @@
 /**
- * kahua — the operator's door onto one face's kahua stage: mint its pin, propose, lift and withdraw by hand, read.
+ * kahua — the operator's door onto one face's kahua stage: adopt the pin its founding act signed (`mint`; a face whose
+ * log names none refuses `kahua-mint-outside-founding`), propose, lift and withdraw by hand, read.
  *
  * Each act rides the store door's matching face row (`kahua-mint`, `kahua-propose`, `kahua-lift`, `kahua-withdraw`,
  * `kahua-read`), through the standing vessel's session when one stands, and prints the row's answer as JSON. A lift
