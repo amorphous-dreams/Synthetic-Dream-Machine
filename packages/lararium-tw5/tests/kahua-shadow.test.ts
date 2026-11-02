@@ -10,15 +10,15 @@ import { afterEach, describe, expect, test } from "vitest";
 import { KAHUA_BAG } from "@lararium/mesh";
 import { seedDaemonUiTiddlers } from "../src/daemon-ui-tiddlers.js";
 import { GLOBAL_IMPORT, wikiSkip, skipNote } from "./test-wiki.js";
-import { remote, shoreRig, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
+import { afterDispatch, ManualBoundary, remote, shoreRig, storeText, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
 
 const SHADOW_STAMP = (title: string): string => `$:/temp/lares/kahua-shadow/${title}`;
 
 let rig: Rig | undefined;
 afterEach(async () => { await rig?.stop(); rig = undefined; });
 
-async function stand(): Promise<Rig> {
-  rig = await shoreRig({ canonId: KAHUA_BAG });
+async function stand(boundary?: ManualBoundary): Promise<Rig> {
+  rig = await shoreRig({ canonId: KAHUA_BAG, ...(boundary ? { boundary } : {}) });
   seedDaemonUiTiddlers(rig.engine);
   return rig;
 }
@@ -91,5 +91,42 @@ describe.skipIf(wikiSkip)(`the shadow shows its diff${skipNote}`, () => {
     await settle(r);
     expect(shadowed(r), "a discarded draft clears it").not.toContain("Item");
     expect(workingBag).toBeTruthy();
+  }, 120_000);
+  // THE WALK'S ORDER (stage walk S3 → S5 → S6): the HAND authors the draft, the stage lifts it beneath (bodies equal), the
+  // HAND revises. Every landing above arrives from a store; these arrive from the wiki, through the hand road.
+  test("RED 5: a hand revision over a lifted twin stamps the mark", async () => {
+    const boundary = new ManualBoundary();
+    const r = await stand(boundary);
+    await r.adaptor.armSeedCheckpoint();
+    const hand = async (text: string): Promise<void> => {
+      r.wiki.addTiddler(new r.Tiddler({ ...(r.wiki.getTiddler("Item")?.fields ?? { title: "Item" }), text }));
+      await afterDispatch();
+      boundary.fire();
+      await settle(r);
+    };
+    await hand("first body");
+    expect(storeText(r, workingBag, "Item")).toBe("first body");
+    await r.canon.put({ tiddler: { title: "Item", text: "first body" } }, remote);
+    await settle(r);
+    expect(shadowed(r), "equal bodies cast no mark").not.toContain("Item");
+    await hand("revised body");
+    expect(storeText(r, workingBag, "Item")).toBe("revised body");
+    expect(shadowed(r), "the revised draft casts the mark over the lifted twin").toContain("Item");
+    expect(r.wiki.getTiddler(SHADOW_STAMP("Item"))?.fields.text).toBe("first body");
+  }, 120_000);
+
+  test("RED 6: a twin lifted under a standing hand draft with a differing body stamps the mark", async () => {
+    const boundary = new ManualBoundary();
+    const r = await stand(boundary);
+    await r.adaptor.armSeedCheckpoint();
+    r.wiki.addTiddler(new r.Tiddler({ title: "Item", text: "my hand body" }));
+    await afterDispatch();
+    boundary.fire();
+    await settle(r);
+    expect(storeText(r, workingBag, "Item")).toBe("my hand body");
+    expect(shadowed(r), "no twin, no mark").not.toContain("Item");
+    await r.canon.put({ tiddler: { title: "Item", text: "the shared body" } }, remote);
+    await settle(r);
+    expect(shadowed(r), "the twin landing beneath the draft casts the mark").toContain("Item");
   }, 120_000);
 });
