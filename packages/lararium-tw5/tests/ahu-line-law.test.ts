@@ -31,6 +31,7 @@ beforeAll(async () => {
 const PROBES = {
   closerTail: "root\n\n<<~ ahu slot=`#/a`>>\nCHILD\n<<~/ahu>> tail\n\nafter\n",
   openerLead: "root\n\n<<~ ahu slot=`#/a`>> lead\nCHILD\n<<~/ahu>>\n\nafter\n",
+  closerMid:  "root\n\n<<~ ahu slot=`#/a`>>\nCHILD text <<~/ahu>>\n\nafter\n",
   clean:      "root\n\n<<~ ahu slot=`#/a`>>\nCHILD\n<<~/ahu>>\n\nafter\n",
   oneLine:    "root\n\n<<~ ahu slot=`#/a`>>CHILD<<~/ahu>>\n\nafter\n",
 };
@@ -39,6 +40,10 @@ describe.skipIf(wikiSkip)(`★ scanAhu cuts a child only from a pair that stands
   test("RED: a closer with a tail and an opener with a lead cut no child", () => {
     expect(scanAhu(PROBES.closerTail).blocks).toEqual([]);
     expect(scanAhu(PROBES.openerLead).blocks).toEqual([]);
+  });
+
+  test("RED: a closer that ends its line without opening it cuts no child (TW5 builds a block call only from a call that STARTS its line)", () => {
+    expect(scanAhu(PROBES.closerMid).blocks).toEqual([]);
   });
 
   test("CONTROL: a clean pair and a one-line pair each cut one child", () => {
@@ -61,7 +66,7 @@ describe("★ ingest reads the same: no child cut, one warning naming the fault 
   };
 
   test("a closer with a tail and an opener with a lead: the root alone, held whole by the quoteblock floor at warning grade", () => {
-    for (const p of [PROBES.closerTail, PROBES.openerLead]) {
+    for (const p of [PROBES.closerTail, PROBES.openerLead, PROBES.closerMid]) {
       const r = ingest(p);
       expect(r.titles).toEqual(["lar:///t.t.t/x"]);
       expect(r.diags).toEqual(["warning:quoteblocked"]);
@@ -85,6 +90,10 @@ describe.skipIf(wikiSkip)(`★ the plugin pairs exactly what scanAhu pairs ★${
 
   test("RED: the opener with a lead pairs in no reader (the inline phase takes the line law for block-only heads)", () => {
     expect(pairs(engine, PROBES.openerLead)).toBe(false);
+  });
+
+  test("RED: a closer that does not open its line pairs in no reader", () => {
+    expect(pairs(engine, PROBES.closerMid)).toBe(false);
   });
 
   test("the closer with a tail pairs in no reader", () => {

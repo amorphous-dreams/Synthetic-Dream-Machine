@@ -144,3 +144,24 @@ after
   (blank_line)
   (blank_line)
   (text_line))
+
+========================================
+an ahu closer that ends its line without opening it pairs nothing, as TW5, scanAhu and the plugin read it (CONTROL)
+========================================
+root
+
+<<~ ahu slot=`#/a`>>
+CHILD text <<~/ahu>>
+
+after
+---
+
+(document
+  (text_line)
+  (blank_line)
+  (sigil
+    body: (sigil_body))
+  (blank_line)
+  (text_line)
+  (blank_line)
+  (text_line))
