@@ -88,6 +88,7 @@ export * from "./promote-board.js";
 export * from "./promote-door.js";
 export * from "./promote-board-door.js";
 export * from "./promote-boot.js";
+export * from "./promote-wiring.js";
 export * from "./kahua-stage-store.js";
 export * from "./kahua-adopt.js";
 export * from "./intent-relay-door.js";

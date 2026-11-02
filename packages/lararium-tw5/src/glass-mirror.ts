@@ -16,8 +16,8 @@ const nameOf = (error: unknown): string => error instanceof Error ? error.name :
 
 const HOUSE = "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext";
 /**
- * THE CENSUS AND THE GATE, before any module evaluates. A plugin carrying a `syncadaptor` or a `saver` shadow refuses by that
- * name: the mirror is fed by the port alone. Every other person's plugin (not the house plugin, not the core) evaluates only on
+ * THE CENSUS AND THE GATE, before any module evaluates. A plugin carrying a `syncadaptor` or a `saver` shadow, or a promoted loose module carrying either type, refuses:
+ * the mirror is fed by the port alone. Every other person's plugin (not the house plugin, not the core) evaluates only on
  * a vessel whose boot inputs carry `sealedRest` (the browser store's sealed-rest capability, S's row); until then the gate holds it
  * by its own name and never defaults open. The inputs come from the vessel, never from a page value.
  */
@@ -25,6 +25,10 @@ export function censusPreloads(preloads: Record<string, unknown>[], sealedRest: 
   const refused: { title: string; kind: string }[] = [];
   const accepted = preloads.filter(plugin => {
     const title = String(plugin.title ?? "");
+    if (plugin["plugin-type"] === undefined && ["syncadaptor", "saver"].includes(String(plugin["module-type"]))) {
+      refused.push({ title, kind: "module-syncadaptor" });
+      return false;
+    }
     if (plugin["plugin-type"] !== "plugin") return true;
     let shadows: Record<string, unknown> = {};
     try { shadows = (JSON.parse(String(plugin.text ?? "{}")) as { tiddlers?: Record<string, unknown> }).tiddlers ?? {}; }

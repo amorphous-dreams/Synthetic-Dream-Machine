@@ -16,7 +16,7 @@ export function promoteBoot(opts: {
   itemsOf: (wiki: string) => Promise<readonly PromoteItem[]>;
   restart: (wiki: string) => Promise<void>;
   onReport?: (wiki: string, report: PromoteBootReport) => void;
-  onFault?: (reason: "ledger-unreadable" | "board-unreadable") => void;
+  onFault?: (reason: "ledger-unreadable" | "board-unreadable" | "board-unpinned") => void;
 }) {
   const loaded = new Map<string, Set<string>>();
   return {
