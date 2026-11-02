@@ -151,6 +151,7 @@ import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
 import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import { makeFaceBagDoor, faceOwnerVerifier } from "./face-bag-door.js";
+import { answerKahuaCap } from "./kahua-cap.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat } from "./content-key-seat.js";
 import { ownChainStanding, type IslandSessionProof } from "./island-session-proof.js";
@@ -657,6 +658,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // thread alone: the ask carries the vessel key's signature over this request id and these facts. A
           // wiki island's surface, a session island and a peer's summons hold no such key, whatever requester
           // they name. The check runs before any read of the facts.
+          // `kahua-cap` — THE LŌKAHI CAP for the face this island wears: its group holds the kahua stage bag in Keyhive's
+          // plane (minted through the face door, adopted on every later ask). It answers for the mounted face's own atom,
+          // never a presenter the args name; the operator's grant over the lift itself reads on the stage (`kahua-stage`).
+          registry.register("kahua-cap", async () => {
+            const door = kh && faceDoor() && await kh.knowsAgent(daemonAuth.personaGroupId!) ? faceDoor() : null;
+            return { verb: "kahua-cap", ...(await answerKahuaCap({ door, verify: (a) => kh!.verify(a), presenter: faceAtom().key })) };
+          });
           registry.register("seat-duties", async (args, context) => {
             const unlicensed = seatDutiesAskRefusal({
               requestId: context.invocation.requestId, facts: args["facts"], ask: args["ask"], vesselVerifyingKey: faceAtom().key,
