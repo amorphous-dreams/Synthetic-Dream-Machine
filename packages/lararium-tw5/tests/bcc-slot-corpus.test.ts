@@ -30,8 +30,6 @@ import { REPO } from "./test-wiki.js";
  * whose file reads clean fails too (a stale declaration), so the list only ever shrinks.
  */
 const DECLARED: Readonly<Record<string, string>> = {
-  "packages/AGENTS.md": "a pre-kupono carrier (no DOCTYPE, quoted values, positional pranalas) Train Q left outside its cut (grammar-cut's OUTSIDE list); its re-cut belongs to the controller's Q backlog",
-  "packages/.shelf/TALK-STORY-NEXT.md": "a pre-kupono shelf carrier (quoted marks, positional bearing) outside Q's bags/ cut; its re-cut belongs to the controller's Q backlog",
   "packages/lararium-tw5/tests/fixtures/doa-index.committed.body": "its seal covers the form its test reads (one-column-law fills the {CARRIER_TYPE} placeholder first), so the on-disk placeholder reads stale by construction; a re-stamp of the disk bytes breaks projector === normalize",
 };
 
