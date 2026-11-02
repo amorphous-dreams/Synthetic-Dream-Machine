@@ -130,13 +130,17 @@ export function namedBagMirror(
 }
 
 /**
- * The daemon wiki's disk mirror: its working layer projects to `<rootDir>/wikis/daemon/`, the same
- * shape `resolveDiskMirrors` fills for every wiki's `wikiSlot: "working"` grant from the slug at
- * mount. The daemon island mounts outside the pool, so this mints the grant once, by name. The
- * daemon bag beneath (the control plane) holds no mirror.
+ * The daemon wiki's disk mirror: its working layer projects to `<rootDir>/wikis/kahua/`, the tree of the
+ * wiki the operator works in (operator ruling, 2026-11-01: a standalone `wikis/daemon` folds into
+ * `wikis/kahua`). The layer keeps its bag; the daemon island mounts outside the pool, so this mints the
+ * grant once, by name. The daemon bag beneath (the control plane) holds no mirror.
+ *
+ * SEAM: the kahua recipe (its `bags/daemon` workbench over the fleet-synced, lift-only `bags/kahua`, projects
+ * riding inside as `$(project)$/**` tiddlers) stays design (`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`);
+ * when it lands, its workbench bag takes `<state>/bags/daemon` and this mirror stays the kahua wiki's tree.
  */
 export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
-  return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(rootDir, "wikis", "daemon") };
+  return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(rootDir, "wikis", "kahua") };
 }
 
 /**

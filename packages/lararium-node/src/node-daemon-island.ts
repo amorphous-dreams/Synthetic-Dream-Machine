@@ -68,7 +68,7 @@ runSovereignWorker((manifest) => {
   // ONE cap-gated seedDaemonProtocol (onEa) then seeds this vessel's FULL enactable flow-set (all three)
   // plus the Ui/Persona/Circle seeds, from the single site. This entry seeds nothing of its own. The seeded flow-set IS this vessel's advertised enactable-list a personagroup peer reads.
   const base = makeOperatorDaemonBehavior(manifest, {
-    // The daemon wiki projects to `<root>/wikis/daemon/` through the same projector a wiki island mounts
+    // The daemon wiki projects to `<root>/wikis/kahua/` through the same projector a wiki island mounts
     // (its working layer's carriers reach disk; the control-plane bag beneath holds no mirror); the
     // option also lights the daemon's projection cap.
     onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx, { journal }),

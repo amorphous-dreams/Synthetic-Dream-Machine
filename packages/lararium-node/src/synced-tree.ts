@@ -21,7 +21,7 @@
  * scan + re-diff against this tree; no journal replay.
  *
  * ONE FILE PER ROW, MANY WRITERS. Every projector in the vessel shares this tree: the
- * daemon island mirrors wikis/daemon + bags/crossroads, each wiki island mirrors
+ * daemon island mirrors wikis/kahua + bags/crossroads, each wiki island mirrors
  * its recipe's bags, and the CLI's ingest gesture records what it landed. They live in
  * separate workers and separate processes. The tree rests as a DIRECTORY, one file per
  * row, each named by its carrier and its path and written whole (a temp file in the same

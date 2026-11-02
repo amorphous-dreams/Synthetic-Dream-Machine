@@ -81,7 +81,7 @@ export interface DaemonVmOptions {
   storageDir?:       string;
   /** D-VR-C: persist only the explicit daemon document in its owned scope. */
   ownedDocument?:    boolean;
-  /** The vessel root (`<root>/wikis/daemon/` receives the daemon wiki's working layer). */
+  /** The vessel root (`<root>/wikis/kahua/` receives the daemon wiki's working layer). */
   rootDir?:          string;
   /** Override the daemon island script URL (tests). */
   workerScriptUrl?:  URL;
@@ -163,7 +163,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
       documentUrl: daemonUrl,
       storage: { type: "nodefs" as const, dir: join(storageDir!, "daemon-owned") },
     } } : {}),
-    // The daemon wiki projects to `<root>/wikis/daemon/` — the grant every wiki's working slot gets —
+    // The daemon wiki projects to `<root>/wikis/kahua/` — the grant every wiki's working slot gets —
     // and designates the public system bag it holds, so a residency MOVE out of its working layer
     // into crossroads publishes under `<root>/bags/crossroads/` (the node's grant meets a designation).
     ...(rootDir ? { diskMirrors: [

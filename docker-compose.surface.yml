@@ -4,7 +4,7 @@
 # are ENVIRONMENT, never another file.
 #
 #   /state      one durable per-vessel host directory: the vessel's homes AND its custody (keys), and the house's
-#               PRIVATE projection (wikis/daemon, and every bag or wiki with no source in the workspace): the daemon
+#               PRIVATE projection (wikis/kahua, and every bag or wiki with no source in the workspace): the daemon
 #               roots here (`--root /state`).
 #               Back it up separately. It never rides an image layer, a build arg or an env var.
 #   /workspace  the editable corpus: the canon SOURCE a seeding reads (LAR_BAGS=/workspace/bags). A bag whose source
