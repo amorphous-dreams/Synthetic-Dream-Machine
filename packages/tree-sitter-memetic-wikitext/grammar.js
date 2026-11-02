@@ -52,6 +52,7 @@ module.exports = grammar({
     $._fence_open_tok, $._fence_line_tok, $._fence_close_tok,
     $._sigil_open, $._pair_open, $._pair_close,
     $._control_open, $.macrocall_block,
+    $._pair_inline,
     $._error_sentinel,
   ],
 
@@ -97,6 +98,9 @@ module.exports = grammar({
     // and a close naming another pair stays a lone `sigil` inside the body.
     ahu_block: $ => seq(
       field('open', alias($._paired_sigil, $.sigil)),
+      // A pair opened and closed on one line may carry text between (`<<~ a>>text<<~/a>>`), as the
+      // plugin reads it: the scanner hands that text as one token, ticked runs riding whole.
+      optional(field('inline', alias($._pair_inline, $.inline_body))),
       repeat($._block),
       field('close', $.sigil_close),
     ),
@@ -141,8 +145,10 @@ module.exports = grammar({
     ),
 
     // Everything between the teeth, single token, on one line: no `>>`
-    // inside, and a lone `>` never carries the body across a newline.
-    sigil_body: _ => token(prec(1, /([^>\n]|>[^>\n])+/)),
+    // inside, and a lone `>` never carries the body across a newline. A ticked
+    // value rides whole (the plugin's ATTR_RUN: ```…``` first, then `…`), so a
+    // `>>` it holds never ends the sigil.
+    sigil_body: _ => token(prec(1, /(```([^`\n]|`[^`\n]|``[^`\n])*```|`[^`\n]*`|[^>`\n]|>[^>`\n])+/)),
 
     // ``` fenced blocks — the info string, then lines that never close the
     // fence, then a close whose backtick run is AT LEAST as long as the

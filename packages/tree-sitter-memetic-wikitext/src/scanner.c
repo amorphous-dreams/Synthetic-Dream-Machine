@@ -42,6 +42,7 @@ enum TokenType {
   PAIR_CLOSE,
   CONTROL_OPEN,
   MACROCALL_BLOCK,
+  PAIR_INLINE,
   ERROR_SENTINEL,
 };
 
@@ -66,6 +67,8 @@ typedef struct {
   uint32_t fence_length;  // 0 = not inside a fence
   uint8_t depth;
   Name stack[STACK_CAP];
+  // A one-line pair just opened with text before its close: the next token is that text.
+  uint8_t inline_pending;
   // lookahead scratch — never serialized
   Event *ev;
   uint32_t ev_len, ev_cap;
@@ -98,6 +101,7 @@ unsigned tree_sitter_memetic_wikitext_external_scanner_serialize(void *payload, 
     memcpy(buffer + n, s->stack[i].chars, s->stack[i].len * sizeof(int32_t));
     n += s->stack[i].len * sizeof(int32_t);
   }
+  buffer[n++] = (char)s->inline_pending;
   return n;
 }
 
@@ -105,6 +109,7 @@ void tree_sitter_memetic_wikitext_external_scanner_deserialize(void *payload, co
   Scanner *s = (Scanner *)payload;
   s->fence_length = 0;
   s->depth = 0;
+  s->inline_pending = 0;
   unsigned n = 0;
   if (length < sizeof(s->fence_length) + 1) return;
   memcpy(&s->fence_length, buffer, sizeof(s->fence_length));
@@ -118,6 +123,7 @@ void tree_sitter_memetic_wikitext_external_scanner_deserialize(void *payload, co
     n += len * sizeof(int32_t);
     s->depth = i + 1;
   }
+  if (s->depth == depth && n < length) s->inline_pending = (uint8_t)buffer[n];
 }
 
 static void advance(TSLexer *lexer) {
@@ -155,7 +161,7 @@ static void skip_line(TSLexer *lexer) {
 static unsigned state_size_with(Scanner *s, uint32_t len) {
   unsigned n = sizeof(s->fence_length) + 1;
   for (uint8_t i = 0; i < s->depth; i++) n += 1 + s->stack[i].len * sizeof(int32_t);
-  return n + 1 + len * sizeof(int32_t);
+  return n + 1 + len * sizeof(int32_t) + 1;  // the trailing inline_pending byte
 }
 
 /** A sigil's name: the first word between the teeth, up to whitespace, `>`, or the line's end. */
@@ -176,9 +182,31 @@ static uint32_t read_name(TSLexer *lexer, Scanner *s) {
  * The rest of a sigil, to its `>>`, on one line — the `sigil_body` token's own
  * law (`([^>\n]|>[^>\n])+` then `>>`). False when the line ends first.
  */
+/**
+ * A tick run inside a sigil's attributes, its first tick at the lookahead: the plugin's ATTR_RUN law
+ * (`` ```…``` `` first, then `` `…` ``), so a `>>` a ticked value holds never ends the sigil. A run of
+ * two reads as the empty value. False when the line ends inside the run.
+ */
+static bool skip_tick_run(TSLexer *lexer) {
+  int run = 0;
+  while (lexer->lookahead == '`') { advance(lexer); run++; }
+  if (run == 2) return true;
+  int want = run >= 3 ? 3 : 1, seen = 0;
+  while (seen < want) {
+    if (at_eol(lexer)) return false;
+    if (lexer->lookahead == '`') seen++; else seen = 0;
+    advance(lexer);
+  }
+  return true;
+}
+
 static bool finish_sigil(TSLexer *lexer) {
   for (;;) {
     if (at_eol(lexer)) return false;
+    if (lexer->lookahead == '`') {
+      if (!skip_tick_run(lexer)) return false;
+      continue;
+    }
     if (lexer->lookahead == '>') {
       advance(lexer);
       if (lexer->lookahead == '>') {
@@ -197,12 +225,20 @@ static bool finish_sigil(TSLexer *lexer) {
  * closing form `<<~/name>>` of the SAME name, and that close ends the line. On true the close's name
  * stands in the pool at `*close_off` (`len` codepoints) and the lexer sits past the close.
  */
-static bool closes_on_this_line(TSLexer *lexer, Scanner *s, uint32_t len, uint32_t *close_off) {
-  if (lexer->lookahead != '<') return false;
-  advance(lexer);
-  if (lexer->lookahead != '<') return false;
-  advance(lexer);
-  if (lexer->lookahead != '~') return false;
+static bool closes_on_this_line(TSLexer *lexer, Scanner *s, uint32_t len, uint32_t *close_off, bool *has_text) {
+  // The text between the opener and its close (the pair's inline body) runs to the first tooth; a
+  // ticked run inside it rides whole, and any other tooth before the close leaves the line to text.
+  *has_text = false;
+  for (;;) {
+    if (at_eol(lexer)) return false;
+    if (lexer->lookahead == '`') { if (!skip_tick_run(lexer)) return false; *has_text = true; continue; }
+    if (lexer->lookahead != '<') { advance(lexer); *has_text = true; continue; }
+    advance(lexer);
+    if (lexer->lookahead != '<') { *has_text = true; continue; }
+    advance(lexer);
+    if (lexer->lookahead == '~') break;
+    *has_text = true;
+  }
   advance(lexer);
   while (is_ws(lexer->lookahead)) advance(lexer);
   if (lexer->lookahead != '/') return false;
@@ -275,7 +311,8 @@ static void collect_events(TSLexer *lexer, Scanner *s) {
               continue;
             }
             uint32_t close_off = 0;
-            if (kind == 0 && len > 0 && closes_on_this_line(lexer, s, len, &close_off)) {
+            bool has_text = false;
+            if (kind == 0 && len > 0 && closes_on_this_line(lexer, s, len, &close_off, &has_text)) {
               push_event(s, 0, off, len);
               push_event(s, 1, close_off, len);
               continue;
@@ -521,10 +558,10 @@ static bool scan_tooth(Scanner *s, TSLexer *lexer, const bool *valid_symbols) {
     && state_size_with(s, len) <= TREE_SITTER_SERIALIZATION_BUFFER_SIZE;
   // Text behind the `>>` hands no tooth — except a pair that closes on this very line, which
   // pairs by construction (its close stands right behind it).
-  bool same_line_pair = false;
+  bool same_line_pair = false, has_text = false;
   if (!line_ends_here(lexer)) {
     uint32_t close_off = 0;
-    if (!(valid_symbols[PAIR_OPEN] && fits && closes_on_this_line(lexer, s, len, &close_off))) return false;
+    if (!(valid_symbols[PAIR_OPEN] && fits && closes_on_this_line(lexer, s, len, &close_off, &has_text))) return false;
     same_line_pair = true;
   }
   if (valid_symbols[PAIR_OPEN] && fits) {
@@ -534,6 +571,7 @@ static bool scan_tooth(Scanner *s, TSLexer *lexer, const bool *valid_symbols) {
       Name *slot = &s->stack[s->depth++];
       slot->len = (uint8_t)len;
       memcpy(slot->chars, s->pool, len * sizeof(int32_t));
+      s->inline_pending = same_line_pair && has_text;
       lexer->result_symbol = PAIR_OPEN;
       return true;
     }
@@ -558,12 +596,44 @@ static bool scan_control(TSLexer *lexer) {
  * block only when that `>>` ends the line — two calls, a trailing space, or any text behind it
  * leaves the line to `text_line`. The token carries the line's newline, as the regex it replaces did.
  */
+static bool skip_until(TSLexer *lexer, const char *close) {
+  size_t want = strlen(close), seen = 0;
+  while (seen < want) {
+    if (at_eol(lexer)) return false;
+    seen = lexer->lookahead == close[seen] ? seen + 1 : (lexer->lookahead == close[0] ? 1 : 0);
+    advance(lexer);
+  }
+  return true;
+}
+
 static bool scan_macrocall(TSLexer *lexer) {
   int depth = 1;
+  // A quote opens a value only where TiddlyWiki's macro-parameter reader starts one: after
+  // whitespace, `:` or `=` — so `it's` inside an unquoted value opens nothing.
+  int32_t prev = 'x';
   while (depth > 0) {
     if (at_eol(lexer)) return false;
     int32_t c = lexer->lookahead;
+    if (is_ws(prev) || prev == ':' || prev == '=') {
+      if (c == '`') { if (!skip_tick_run(lexer)) return false; prev = '`'; continue; }
+      if (c == '"' || c == '\'' || c == '[') {
+        advance(lexer);
+        bool ok;
+        if (c == '[') {
+          if (lexer->lookahead != '[') { prev = c; continue; }
+          advance(lexer); ok = skip_until(lexer, "]]");
+        } else if (c == '"' && lexer->lookahead == '"') {
+          advance(lexer);
+          if (lexer->lookahead == '"') { advance(lexer); ok = skip_until(lexer, "\"\"\""); }
+          else ok = true;  // `""`, the empty value
+        } else ok = skip_until(lexer, c == '"' ? "\"" : "'");
+        if (!ok) return false;
+        prev = c;
+        continue;
+      }
+    }
     advance(lexer);
+    prev = c;
     if (c == '<' && lexer->lookahead == '<') {
       advance(lexer);
       depth++;
@@ -596,6 +666,26 @@ bool tree_sitter_memetic_wikitext_external_scanner_scan(void *payload, TSLexer *
 
   // Error recovery marks every external valid at once; the scanner stands aside.
   if (valid_symbols[ERROR_SENTINEL]) return false;
+
+  // A one-line pair's inline body: the text up to the close's tooth, ticked runs riding whole.
+  if (scanner->inline_pending && valid_symbols[PAIR_INLINE]) {
+    scanner->inline_pending = 0;
+    bool any = false;
+    for (;;) {
+      if (at_eol(lexer)) return false;
+      if (lexer->lookahead == '`') { if (!skip_tick_run(lexer)) return false; any = true; lexer->mark_end(lexer); continue; }
+      if (lexer->lookahead == '<') {
+        lexer->mark_end(lexer);
+        advance(lexer);
+        if (lexer->lookahead == '<') { advance(lexer); if (lexer->lookahead == '~') break; }
+        any = true; lexer->mark_end(lexer); continue;
+      }
+      advance(lexer); any = true; lexer->mark_end(lexer);
+    }
+    if (!any) return false;
+    lexer->result_symbol = PAIR_INLINE;
+    return true;
+  }
 
   if ((valid_symbols[SIGIL_OPEN] || valid_symbols[PAIR_OPEN] || valid_symbols[PAIR_CLOSE]
        || valid_symbols[CONTROL_OPEN] || valid_symbols[MACROCALL_BLOCK])

@@ -135,6 +135,27 @@
           }
         },
         {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "inline",
+              "content": {
+                "type": "ALIAS",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_pair_inline"
+                },
+                "named": true,
+                "value": "inline_body"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
           "type": "REPEAT",
           "content": {
             "type": "SYMBOL",
@@ -306,7 +327,7 @@
         "value": 1,
         "content": {
           "type": "PATTERN",
-          "value": "([^>\\n]|>[^>\\n])+"
+          "value": "(```([^`\\n]|`[^`\\n]|``[^`\\n])*```|`[^`\\n]*`|[^>`\\n]|>[^>`\\n])+"
         }
       }
     },
@@ -739,6 +760,10 @@
     {
       "type": "SYMBOL",
       "name": "macrocall_block"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_pair_inline"
     },
     {
       "type": "SYMBOL",
