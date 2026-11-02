@@ -39,7 +39,7 @@ import { foundStagedHearth, openStaged, stageDir, stagedHearthGroup, type LarIns
 import { mintStagedNexusKey } from "../../../../tests/harness/vessel-key.js";
 // The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
 import { armTestCustody } from "../../../lararium-node/dist/probes/browser-test-custody.js";
-import { kahuaFaceFolder, kahuaFaceTag } from "../../../lararium-node/dist/bag-paths.js";
+import { kahuaFaceFolder, kahuaFaceTag } from "../../../lararium-node/dist/src/bag-paths.js";
 
 const REPO = resolve(import.meta.dirname, "../../../..");
 const WEB_ROOT = join(REPO, "packages/lararium-web/dist");
