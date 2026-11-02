@@ -5,10 +5,11 @@
  * Each red stands beside a CONTROL through the same door. Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test } from "vitest";
+import * as Automerge from "@automerge/automerge";
 import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocHandle } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, KAHUA_BAG, KAHUA_PLANE, isFaceScopedBag, personaMembershipEntries, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, emptyLarDoc, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  faceIntentVerbs, intentEntryRecordsOfGroup, kahuaBodyDigest, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
+  faceIntentVerbs, intentEntryRecordsOfGroup, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
   personaSiblingBagIds, projectPersonaLog, signFoundingLog, writePersonaAct, type LarDoc,
 } from "@lararium/mesh";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../src/kahua-door.js";
@@ -37,7 +38,7 @@ async function face() {
     register: (bagId, url) => { catalog[bagId] = url; }, session: () => "cli-session-1",
     ...over,
   });
-  return { repo, root, atomA, atomB, persona, intents, catalog, ports };
+  return { repo, root, atomA, atomB, persona, intents, catalog, ports, lineage };
 }
 const planeActs = (persona: DocHandle<LarDoc>, url: string) =>
   personaActRecordsOfGroup(persona.doc(), GROUP).filter((r) => (r as { body: Record<string, unknown> }).body["plane"] === KAHUA_PLANE && (r as { body: Record<string, unknown> }).body["url"] === url);
@@ -55,6 +56,26 @@ describe("the stage pin", () => {
     const deviceB = await kahuaDoor(f.ports({ atom: f.atomB })).mint();
     expect(deviceB).toEqual({ url: first.url, minted: false });
     expect(planeActs(f.persona, first.url)).toHaveLength(1);
+  });
+
+  test("RED: two hearths that mint at once, each offline, sign one pin and never fork the face log; CONTROL: the pin names the face's derived stage", async () => {
+    const f = await face();
+    // Hearth B holds the same face: a replica of its persona plane and the same root in custody.
+    const repoB = new Repo({ network: [] });
+    const personaB = repoB.import<LarDoc>(Automerge.save(f.persona.doc()), { docId: f.persona.documentId });
+    const intentsB = repoB.import<LarDoc>(Automerge.save(f.intents.doc()), { docId: f.intents.documentId });
+    const [a, b] = await Promise.all([
+      kahuaDoor(f.ports()).mint(),
+      kahuaDoor(f.ports({ repo: repoB, persona: personaB, intents: intentsB, atom: f.atomB,
+        projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }) })).mint(),
+    ]);
+    f.persona.merge(personaB); personaB.merge(f.persona);
+    const projection = f.ports().projection();
+    expect(projection.fork).toBeNull();
+    expect(a.url).toBe(kahuaStageDocUrl(GROUP));
+    expect(b.url).toBe(a.url);
+    expect(planeActs(f.persona, a.url)).toHaveLength(1);
+    expect(kahuaPlaneUrl(projection, GROUP)).toBe(a.url);
   });
 
   test("RED: a mint with no root in hand refuses by name and pins nothing; CONTROL: an unpinned face lists nothing and refuses a lift by naming the mint", async () => {
