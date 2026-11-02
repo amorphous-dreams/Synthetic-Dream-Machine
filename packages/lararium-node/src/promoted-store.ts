@@ -1,28 +1,30 @@
 /**
- * The ledger and kāpae cache belong to this device and rest sealed under the vessel key in the face's folder.
- * Their names carry the PersonaGroup digest; they ride no CRDT document and no face bundle.
+ * The ledger (rows keyed by (wiki, digest)) and the kāpae cache belong to this device and rest sealed under the vessel key in the
+ * face's folder. Their names carry the PersonaGroup digest; they ride no CRDT document and no face bundle.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { EMPTY_LEDGER, EMPTY_KAPAE_LOCAL, decodeLedger, decodeKapaeLocal, encodeLedger, encodeKapaeLocal, sha256HexBytesSync } from "@lararium/mesh";
 import { readCustodyRow, writeCustodyRow } from "./custody-seat.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 import { pinCas, writeCasEntriesFs } from "./node-cas.js";
-import type { PromotionPorts } from "./kahua-promotions.js";
+import type { KapaeLocal, PromotionLedger } from "@lararium/mesh";
 
-export const KAHUA_PROMOTED_FILE = /^kahua-promoted-g([0-9a-f]{64})\.bin$/;
-export const KAHUA_KAPAE_FILE = /^kahua-kapae-g([0-9a-f]{64})\.bin$/;
+type Rows<T> = { read(): Promise<T>; write(value: T): Promise<void> };
 
-export function kahuaPromotedFile(group: string): string {
-  if (!group) throw new Error("kahua promoted row names no PersonaGroup");
-  return `kahua-promoted-g${personaGroupDigest(group)}.bin`;
+export const PROMOTED_FILE = /^promoted-g([0-9a-f]{64})\.bin$/;
+export const KAPAE_FILE = /^kapae-g([0-9a-f]{64})\.bin$/;
+
+export function promotedFile(group: string): string {
+  if (!group) throw new Error("promoted row names no PersonaGroup");
+  return `promoted-g${personaGroupDigest(group)}.bin`;
 }
-export function kahuaKapaeFile(group: string): string {
-  if (!group) throw new Error("kahua kāpae row names no PersonaGroup");
-  return `kahua-kapae-g${personaGroupDigest(group)}.bin`;
+export function kapaeFile(group: string): string {
+  if (!group) throw new Error("kāpae row names no PersonaGroup");
+  return `kapae-g${personaGroupDigest(group)}.bin`;
 }
 
-export function nodeKahuaStores(group: string): { ledger: PromotionPorts["ledger"]; local: PromotionPorts["local"] } {
-  const ledgerFile = kahuaPromotedFile(group), localFile = kahuaKapaeFile(group);
+export function nodePromoteStores(group: string): { ledger: Rows<PromotionLedger>; local: Rows<KapaeLocal> } {
+  const ledgerFile = promotedFile(group), localFile = kapaeFile(group);
   return {
     ledger: {
       async read() { const bytes = await readCustodyRow("identity", ledgerFile); return bytes === null ? EMPTY_LEDGER : decodeLedger(bytes); },
@@ -35,7 +37,7 @@ export function nodeKahuaStores(group: string): { ledger: PromotionPorts["ledger
   };
 }
 
-export function nodeKahuaCas(casDir: string, holder: string): PromotionPorts["cas"] {
+export function nodePromoteCas(casDir: string, holder: string): { put(digest: string, bytes: Uint8Array): void; pin(digest: string): void } {
   return {
     put(digest, bytes) {
       if (sha256HexBytesSync(bytes) !== digest) throw new Error(`cas-digest-mismatch: ${digest}`);
