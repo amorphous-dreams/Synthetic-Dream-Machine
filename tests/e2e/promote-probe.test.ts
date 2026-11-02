@@ -9,6 +9,8 @@
  *   P4  the brake: `lares kapae raise` over the module's digest; a restart runs it NOT (the count holds); `lower` and a restart run it again.
  *   P5  the orphan: the stage withdraws the module's item; the boot names the orphan and the module KEEPS running; `promote orphan --keep`
  *       ends the asking.
+ *   P6  the brake in place: with the module loaded, `lares kapae raise` makes the standing daemon island restart itself (the owner door's
+ *       `island.state` counts one more restart, no process restart) and the shadowed rite does not run again; a `lower` restarts nothing.
  *   CONTROL  the stage's copy never runs: a re-lift with changed bytes changes nothing that boots (`update-waits`).
  *
  * The node's own reads decide each step. Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
@@ -16,7 +18,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { foundStagedHearth, openStaged, stagedTarget, type CliResult, type LarInstance } from "../harness/instance.js";
+import { foundStagedHearth, openStaged, stagedTarget, vesselStorageDir, type CliResult, type LarInstance } from "../harness/instance.js";
+import { sendCustodyFrame } from "../../packages/lares-cli/src/custody-door.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const built = existsSync(join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js")) && existsSync(join(REPO_ROOT, "packages/lararium-node/dist/src/main.js"));
@@ -125,6 +128,27 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
     await restart();
     expect((await settle(ranFiles, (f) => f.length >= 1, 60_000)).length).toBe(1);
   }, 900_000);
+
+  test("P6 — the brake in place: a raise restarts the standing daemon island at once and the shadowed rite stays off; a lower restarts nothing", async () => {
+    const dataDir = vesselStorageDir(hearth!);
+    const restarts = async (): Promise<number> => ((await sendCustodyFrame({ op: "act", act: "island.state", args: {} } as never, dataDir)) as Record<string, any> | null)?.["result"]?.restarts as number;
+    const digest = digestOf(await list(), "rites/probe-module");
+    const ranBefore = ranFiles().length;
+    expect(ranBefore, "the module must stand loaded before the raise").toBeGreaterThanOrEqual(1);
+    const before = await restarts();
+    const raised = await hearth!.cli(["kapae", "raise", digest]);
+    expect(raised.code, said(raised)).toBe(0);
+    let seen = before;
+    const deadline = performance.now() + 60_000;
+    while (performance.now() < deadline) { seen = await restarts(); if (seen > before) break; await new Promise((r) => setTimeout(r, 500)); }
+    expect(seen, "a raise over a loaded rite restarts the daemon island in place").toBe(before + 1);
+    await new Promise((r) => setTimeout(r, 9000));
+    expect(ranFiles().length, "the shadowed rite ran again after the in-place restart").toBe(ranBefore);
+    const lowered = await hearth!.cli(["kapae", "lower", digest]);
+    expect(lowered.code, said(lowered)).toBe(0);
+    await new Promise((r) => setTimeout(r, 6000));
+    expect(await restarts(), "a lower restarts nothing").toBe(before + 1);
+  }, 600_000);
 
   test("CONTROL — a re-lift with changed bytes changes nothing that boots; the row reads `update-waits`", async () => {
     const digest = digestOf(await list(), "rites/probe-module");
