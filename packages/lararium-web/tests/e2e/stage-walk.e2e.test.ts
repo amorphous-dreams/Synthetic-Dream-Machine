@@ -383,15 +383,17 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     expect(file).toContain(DRAFT.body);
     const got = await hearth!.cli(["kahua", "get", DRAFT.title]);
     expect(got.code, got.stderr).toBe(0);
-    expect((JSON.parse(got.stdout) as { item: { text: string; proposal?: string } }).item).toMatchObject({ text: DRAFT.body, proposal });
+    // One standing head: the lift's revision carries the body and the proposal it bound (a fork reads `siblings`).
+    expect((JSON.parse(got.stdout) as { item: unknown }).item).toMatchObject({ title: DRAFT.title, status: "standing", heads: [{ text: DRAFT.body, proposal }] });
     const meme = await hearth!.cli(["meme", "get", DRAFT.title, "--recipe", "default", "--json"]);
     expect(meme.code, `${meme.stdout.slice(0, 400)}\n${meme.stderr.slice(0, 400)}`).toBe(0);
     expect((JSON.parse(meme.stdout) as { data: { text: string } }).data.text).toBe(DRAFT.body);
     seat = await resolveSeat();
     expect(seat.env["LAR_ROOT"]).toBe(hearth!.root);
     const said = await speakToSeat(seat, { name: "kahua_get", arguments: { title: DRAFT.title } });
-    const item = seatPayload(said.result)["item"] as { text?: string } | null;
-    expect(item?.text, `the seat read ${JSON.stringify(said.result)}\n${said.stderr.slice(-800)}`).toBe(DRAFT.body);
+    const item = seatPayload(said.result)["item"] as { status?: string; heads?: Array<{ text?: string }> } | null;
+    expect(item?.status, `the seat read ${JSON.stringify(said.result)}`).toBe("standing");
+    expect(item?.heads?.map((h) => h.text), `the seat read ${JSON.stringify(said.result)}\n${said.stderr.slice(-800)}`).toEqual([DRAFT.body]);
   }, 180_000);
 
   test("S6 — the stage reaches the page: a re-edit casts the kahua-shadow mark, and a second propose + lift clears it", async () => {

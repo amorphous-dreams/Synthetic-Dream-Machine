@@ -35,7 +35,6 @@ import {
   type CapabilityVerifier,
   type CaptureEngine,
   type CapturePost,
-  LARES_VERB_ARGS_WIRE_FIELD,
 } from "@lararium/mesh";
 import { placeVerb } from "./verb-vm.js";
 import { composeIsland } from "./island-caps.js";
@@ -188,35 +187,11 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
       // A local id serves its own invocation alone: it retires once the verb concludes and its tiddler leaves the VM.
       const onVerbsChange = (changes: Record<string, { deleted?: boolean }>) => localAsks.onWikiChange(changes);
       tw5.$tw.wiki.addEventListener("change", onVerbsChange);
-      // The daemon's OWN verb OUT-path (the twin of the pool island-kernel's wiring):
-      // a projected switcher click writes a verb-carrying summon tiddler, whose
-      // reaction-router fires a tm-verse-event. Forward it to main as an IslandMsg_Event
-      // — main's daemon-vm listener routes it to placeVerb (verify-then-delegate → the
-      // main registry, e.g. wiki-switch). Without this, daemon-origin verbs never leave
-      // the worker (projection frames reach main, but verse-events had no bridge).
-      const cancelVerse = tw5.onVerseEvent({
-        handleVerseEvent: (uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>, origin?: "surface" | "content") => {
-          // The reaction-router already gates on the `lares-dispatch` marker, so ONLY a
-          // genuine summon reaches here (the verb machinery's own invocation/outcome
-          // writes never carry the marker → router-inert, the marker alone gating this
-          // bridge, no URI-prefix allowlist). The structured args ride
-          // the GP-2-flat island wire as ONE `verb-args` JSON string; main re-parses.
-          post({
-            type:           "event",
-            wikiUri:        ctx.wikiUri,
-            listenable,
-            payload: {
-              uri,
-              origin: origin ?? "content",
-              ...(verb    !== undefined ? { verb }    : {}),
-              ...(fromUri !== undefined ? { fromUri } : {}),
-              ...(args    !== undefined ? { [LARES_VERB_ARGS_WIRE_FIELD]: JSON.stringify(args) } : {}),
-            },
-          });
-        },
-      });
+      // The daemon's verb OUT-path rides the kernel: `IslandKernel.bootTw5` forwards every `tm-verse-event` the
+      // reaction router fires (a projected switcher click, a summon button) as ONE island `event`, for the daemon as
+      // for every pool wiki; main's daemon-vm listener routes it to placeVerb. A forwarder here posts each summon a
+      // second time and main places the verb twice.
       return () => {
-        cancelVerse();
         _dispatcher?.stop();
         _dispatcher = null;
       };
