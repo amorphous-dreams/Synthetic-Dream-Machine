@@ -4,7 +4,9 @@
  * SELF-CONSISTENCY (pronaos: "the first arrival trusts the lararium's own origin"), never a verification.
  */
 import { describe, expect, test } from "vitest";
-import { arrivalSeedAnchor, genesisBaseVerdict, genesisCrossingVerdict, readServedSeed } from "../src/genesis-anchor.js";
+import { arrivalSeedAnchor, genesisCrossingVerdict, genesisSeedBase, readServedSeed } from "../src/genesis-anchor.js";
+// @ts-expect-error the raw import reads the page source as text (vite `?raw`)
+import MAIN_SOURCE from "../src/main.ts?raw";
 
 const seedText = JSON.stringify({ format: "lararium-genesis-seed/v1", actorSeed: "a".repeat(64), blobs: {}, tiddlers: {} });
 const otherText = JSON.stringify({ format: "lararium-genesis-seed/v1", actorSeed: "b".repeat(64), blobs: {}, tiddlers: {} });
@@ -93,34 +95,20 @@ describe("the crossing verdict", () => {
   });
 });
 
-describe("the genesis base: only the hearth's own origin serves the seed (security read H1)", () => {
-  // `?genesis=` once chose the seed, so a link naming another origin chose the hashes the page then checked itself
-  // against, and ran those engine and plugin bytes on the hearth's origin beside its custody. The base now resolves
-  // against the page and refuses any other origin by name.
-  test("RED: a cross-origin base, a protocol-relative base and a non-http base refuse by name", () => {
-    for (const base of ["https://evil.example/g", "//evil.example/g", "javascript:alert(1)", "data:application/json,{}"]) {
-      const verdict = genesisBaseVerdict(base, "https://hearth.example");
-      expect(verdict.kind, base).toBe("refuse");
-      if (verdict.kind === "refuse") expect(verdict.text.startsWith("genesis-base-foreign:"), base).toBe(true);
-    }
+describe("the seed comes off the hearth's own /genesis alone: the page reads no genesis key (operator ruling, 2026-11-02)", () => {
+  // Query and fragment pass through to the wiki untouched; no URL key may choose the seed, so no link chooses the hashes
+  // the page then checks itself against.
+  test("RED: the seed base reads the page's own origin and /genesis, whatever the URL carries", () => {
+    expect(genesisSeedBase("https://hearth.example")).toBe("https://hearth.example/genesis");
   });
 
-  test("CONTROL: the default and a same-origin base resolve to the page's own origin", () => {
-    expect(genesisBaseVerdict(null, "https://hearth.example")).toEqual({ kind: "base", url: "https://hearth.example/genesis", isDefault: true });
-    expect(genesisBaseVerdict("/genesis", "https://hearth.example")).toEqual({ kind: "base", url: "https://hearth.example/genesis", isDefault: true });
-    expect(genesisBaseVerdict("/other/genesis", "https://hearth.example")).toEqual({ kind: "base", url: "https://hearth.example/other/genesis", isDefault: false });
-    expect(genesisBaseVerdict("https://hearth.example/x", "https://hearth.example")).toEqual({ kind: "base", url: "https://hearth.example/x", isDefault: false });
+  test("RED: the page source reads no `genesis` query or fragment key", () => {
+    expect(String(MAIN_SOURCE)).not.toMatch(/\.get\(\s*["']genesis["']\s*\)/);
+    expect(String(MAIN_SOURCE)).not.toMatch(/genesisBaseVerdict/);
   });
 
-  test("RED: a seed read from any base but the default never crosses uncompared: a relay with no descriptor refuses", () => {
-    const verdict = genesisCrossingVerdict("d".repeat(64), { kind: "missing", at: "http://relay/.well-known/lar", why: "404" }, { pageOrigin: "http://dev:5173", seedFromDefault: false });
-    expect(verdict.kind).toBe("refuse");
-    if (verdict.kind === "refuse") expect(verdict.text.startsWith("arrival-descriptor-missing: http://relay/.well-known/lar (404)")).toBe(true);
-  });
-
-  test("CONTROL: the default seed with a cross-origin dev relay still warns and crosses; a matching descriptor crosses from any base", async () => {
-    expect(genesisCrossingVerdict("d".repeat(64), { kind: "missing", at: "http://relay/.well-known/lar", why: "404" }, { pageOrigin: "http://dev:5173", seedFromDefault: true }).kind).toBe("uncompared");
-    const cid = await hex(seedText);
-    expect(genesisCrossingVerdict(cid, { kind: "descriptor", seedCid: cid, at: "http://h/.well-known/lar" }, { pageOrigin: "http://h", seedFromDefault: false })).toEqual({ kind: "cross" });
+  test("CONTROL: R1 holds on the default path: a same-origin page with no descriptor refuses; a cross-origin dev relay warns and crosses", () => {
+    expect(genesisCrossingVerdict("d".repeat(64), { kind: "missing", at: "http://h/.well-known/lar", why: "404" }, { pageOrigin: "http://h" }).kind).toBe("refuse");
+    expect(genesisCrossingVerdict("d".repeat(64), { kind: "missing", at: "http://relay/.well-known/lar", why: "404" }, { pageOrigin: "http://dev:5173" }).kind).toBe("uncompared");
   });
 });
