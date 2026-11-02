@@ -338,8 +338,6 @@ export type NodeOpenPhase = LarOpenPhase;
 export type AskedStanding = "lararium" | "herm";
 
 export interface NodeVesselOptions extends LarariumVesselOptions {
-  /** Re-open the in-process daemon; absent, promotion reports restart-required without restarting. */
-  restartDaemonIsland?: (reason: string) => Promise<void>;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   storageDir: string;
@@ -1799,8 +1797,7 @@ async function prepareNodeBootOn(
   let wikiActivation!: WikiActivationCap;  // set in makePool — the activation-on-reference cap
   const restartWikiIsland = async (wiki: string) => {
     if (wiki === "daemon") {
-      if (opts.restartDaemonIsland) await opts.restartDaemonIsland("promote: kapae raised over a loaded rite");
-      else console.warn("[promote] restart-required: the daemon island holds a shadowed rite");
+      await daemonHolder.restart("promote: kapae raised over a loaded rite");
     } else {
       await vmManager.unmountWiki(wiki);
       await wikiActivation.ensureActive(wiki);

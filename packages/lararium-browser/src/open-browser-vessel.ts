@@ -205,8 +205,6 @@ async function writeBootKeys(idbName: string, writes: BootKeyWrites): Promise<vo
 // ── Options / Result ────────────────────────────────────────────────────────────
 
 export interface BrowserVesselOptions extends LarariumVesselOptions {
-  /** Re-open the daemon after promotion shadows a loaded rite. */
-  restartDaemonIsland?: (reason: string) => Promise<void>;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   idbName?:        string;
@@ -965,8 +963,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let promoteWiringRef: ReturnType<typeof promoteWiring> | null = null;
   const restartWikiIsland = async (wiki: string) => {
     if (wiki === "daemon") {
-      if (opts.restartDaemonIsland) await opts.restartDaemonIsland("promote: kapae raised over a loaded rite");
-      else console.warn("[promote] restart-required: the daemon island holds a shadowed rite");
+      await daemonHolder.restart("promote: kapae raised over a loaded rite");
     } else {
       await vmManager.unmountWiki(wiki);
       await wikiActivation.ensureActive(wiki);
