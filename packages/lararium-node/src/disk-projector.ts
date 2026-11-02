@@ -71,7 +71,7 @@ import { confineMirrorWrite, carrierBaseRelPath } from "./bag-paths.js";
 import { contentHash, syncedTreeKey, SyncedTree } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
-import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual } from "@lararium/mesh";
+import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, isRealmBagAnnounceUri, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap, VesselJournal } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
@@ -1375,6 +1375,10 @@ export class LarDiskProjector {
     // carrier surface. (The general type-filter — project only
     // text/memetic-wikitext+tiddlywiki — arrives with the migration wave.)
     if (isEffectRecordUri(tiddlerUri)) return;
+    // A realm-bag announce pointer comes from the house, minted into the live crossroads document on each
+    // registration. The crossroads mirror roots in the canon tree, so writing it would leave a house-minted
+    // record beside the curated library; the pointer rests in the document alone.
+    if (isRealmBagAnnounceUri(tiddlerUri)) return;
     // A bag's manifest is a record ABOUT the bag, never a carrier IN it — `meta.mem` at the bag root
     // belongs to the declare verb. Refused before the render, so no rule can site it either.
     if (isBagManifestUri(tiddlerUri)) return;

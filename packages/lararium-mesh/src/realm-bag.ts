@@ -495,6 +495,11 @@ export function realmBagAnnounceKey(bagUri: string): string {
   return `${REALM_BAG_ANNOUNCE_PREFIX}${encodeURIComponent(bagUri)}`;
 }
 
+/** Does this address name a realm-bag announce pointer — a record the house mints into the crossroads document? */
+export function isRealmBagAnnounceUri(uri: string): boolean {
+  return uri.startsWith(REALM_BAG_ANNOUNCE_PREFIX);
+}
+
 /** The announce a registration projects onto crossroads-plane — the exists · kept-by pair, plus the doc for a
  *  PUBLIC-tier book alone; every tighter tier withholds the address exactly as it always did. */
 export function crossroadsAnnounceOf(rec: RealmBagRegistration): RealmBagAnnounce {
