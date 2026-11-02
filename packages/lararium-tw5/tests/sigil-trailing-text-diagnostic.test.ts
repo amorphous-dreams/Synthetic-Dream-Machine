@@ -23,48 +23,56 @@ const diagnose = (text: string) => {
   return failuresToDiagnostics(failures, text.length).filter((d) => d.code === CODE);
 };
 
-describe("a line opening on a sigil whose >> leaves text behind carries one warning", () => {
-  test("★ RED: `<<~ x …>>;abc` raises sigil-trailing-text, keyed to the sigil's span ★", () => {
-    const text = "<<~ x a=`ni:///x`>>;abc after the bare ni:.\n";
+describe("★ a BLOCK-ONLY head with text after its >> carries one warning ★", () => {
+  // The block-only set comes from the sigil tiddlers (`lar-flow: block`), never a list in the reader:
+  // the frame marks (SOH · STX · ETX · EOT) and the child-slot openers and closers (ahu · fragment · kau).
+  test("★ RED: an ahu opener with prose after its >> warns, keyed to the opener's span ★", () => {
+    const text = "<<~ ahu slot=`#/a`>> prose after the opener\nbody\n<<~/ahu>>\n";
     const found = diagnose(text);
     expect(found).toHaveLength(1);
     expect(found[0]!.severity).toBe("warning");
-    expect(text.slice(found[0]!.from, found[0]!.to)).toBe("<<~ x a=`ni:///x`>>");
+    expect(text.slice(found[0]!.from, found[0]!.to)).toBe("<<~ ahu slot=`#/a`>>");
   });
 
-  test("★ RED: the old foot — text after the ETX control sigil — raises it too ★", () => {
-    const text = "prose\n<<^ code=`&#x0003;`>>ni:///sha-256;abc\n";
-    expect(diagnose(text)).toHaveLength(1);
+  test("★ RED: an ahu closer with prose after its >> warns ★", () => {
+    expect(diagnose("<<~ ahu slot=`#/a`>>\nbody\n<<~/ahu>> trailing prose\n")).toHaveLength(1);
   });
 
-  test("★ RED: a pranala with text after its >> raises it ★", () => {
-    expect(diagnose("<<~ pranala from=`lar:///a.b.c` to=`lar:///d.e.f`>>tail\n")).toHaveLength(1);
+  test("★ RED: the old foot — text after the ETX mark — warns ★", () => {
+    expect(diagnose("prose\n<<^ code=`&#x0003;`>>ni:///sha-256;abc\n")).toHaveLength(1);
   });
 
-  test("★ RED: a trailing space counts, as stock reads `<<m>> ` ★", () => {
-    expect(diagnose("<<~ x a=`b`>> \n")).toHaveLength(1);
+  test("★ RED: text after the STX mark warns, and a trailing space counts, as stock reads `<<m>> ` ★", () => {
+    expect(diagnose("<<^ code=`&#x0002;`>>text\n")).toHaveLength(1);
+    expect(diagnose("<<^ code=`&#x0003;`>> \n")).toHaveLength(1);
+  });
+});
+
+describe("★ an INLINE head with text after its >> reads inline in its paragraph, and draws no warning ★", () => {
+  test("★ RED: a loulou line with prose reads inline, no warning ★", () => {
+    expect(diagnose("<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/aka`>> — the frozen inline.\n")).toEqual([]);
   });
 
-  test("★ CONTROL: a sigil alone on its line raises nothing ★", () => {
-    expect(diagnose("<<~ x a=`b`>>\n")).toEqual([]);
-    expect(diagnose("<<~ x a=`b`>>")).toEqual([]);
-    expect(diagnose("<<~ x a=`b`>>\r\nprose\r\n")).toEqual([]);
+  test("★ RED: a saksi citation, a pranala with a tail, and an unknown head draw none ★", () => {
+    expect(diagnose("<<~ saksi uri=`lar:///a.b.c`>> witnessed it.\n")).toEqual([]);
+    expect(diagnose("<<~ pranala from=`lar:///a.b.c` to=`lar:///d.e.f`>>tail\n")).toEqual([]);
+    expect(diagnose("<<~ x a=`ni:///x`>>;abc after the bare ni:.\n")).toEqual([]);
   });
+});
 
-  test("★ CONTROL: the reshaped foot alone on its line raises nothing ★", () => {
+describe("★ CONTROLS ★", () => {
+  test("a block-only mark alone on its line raises nothing", () => {
     expect(diagnose("<<^ code=`&#x0003;` bcc=`ni:///sha-256;abc`>>\n")).toEqual([]);
+    expect(diagnose("<<^ code=`&#x0002;`>>\r\nprose\r\n")).toEqual([]);
+    expect(diagnose("<<~ ahu slot=`#/a`>>\nbody\n<<~/ahu>>\n")).toEqual([]);
   });
 
-  test("★ CONTROL: a sigil that does not OPEN its line raises nothing — it was inline already ★", () => {
-    expect(diagnose("prose <<~ x a=`b`>> more prose\n")).toEqual([]);
+  test("a sigil that does not OPEN its line raises nothing — it was inline already", () => {
+    expect(diagnose("prose <<^ code=`&#x0002;`>> more prose\n")).toEqual([]);
   });
 
-  test("★ CONTROL: a fenced sigil teaches and raises nothing ★", () => {
-    expect(diagnose("```\n<<~ x a=`b`>>;abc\n```\n")).toEqual([]);
-  });
-
-  test("★ CONTROL: a closer-bearing opener raises nothing — its body begins at that >> ★", () => {
-    expect(diagnose("<<~ ahu slot=`#/a`>>body\n<<~/ahu>>\n")).toEqual([]);
+  test("a fenced block-only mark teaches and raises nothing", () => {
+    expect(diagnose("````\n<<^ code=`&#x0003;`>>ni:///sha-256;abc\n````\n")).toEqual([]);
   });
 });
 
@@ -72,18 +80,16 @@ describe.skipIf(wikiSkip)(`the warning rides the wiki's parse-diagnostics channe
   let engine: TW5Engine;
   beforeAll(async () => {
     engine = await bootTestWiki();
-    engine.setTiddler({ title: "trailing", type: "text/memetic-wikitext+tiddlywiki", text: "<<~ x a=`b`>>;abc\n" });
-    engine.setTiddler({ title: "lone",     type: "text/memetic-wikitext+tiddlywiki", text: "<<~ x a=`b`>>\n" });
+    engine.setTiddler({ title: "trailing", type: "text/memetic-wikitext+tiddlywiki", text: "<<~ ahu slot=`#/a`>>;abc\nbody\n<<~/ahu>>\n" });
+    engine.setTiddler({ title: "lone",     type: "text/memetic-wikitext+tiddlywiki", text: "<<~ loulou uri=`lar:///a.b.c`>> rides inline.\n" });
   }, 60_000);
 
   test("★ RED: [parse-diagnostics:codes[]] names sigil-trailing-text, and the text still renders inline ★", () => {
     expect(engine.wiki.filterTiddlers("[[trailing]parse-diagnostics:codes[]]")).toContain(CODE);
-    const html = engine.wiki.renderTiddler("text/html", "trailing");
-    expect(html).toContain(";abc");
-    expect(html).not.toContain("<dl");
+    expect(engine.wiki.renderTiddler("text/html", "trailing")).toContain(";abc");
   });
 
-  test("★ CONTROL: a lone sigil's carrier does not name it ★", () => {
+  test("★ RED: an inline head's carrier does not name it ★", () => {
     expect(engine.wiki.filterTiddlers("[[lone]parse-diagnostics:codes[]]")).not.toContain(CODE);
   });
 });
