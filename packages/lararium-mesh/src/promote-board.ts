@@ -1,13 +1,13 @@
 /** The face-private board carries signed preparation and edge shadows.
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae
  */
-import type { AutomergeUrl } from "@automerge/automerge-repo";
+import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
 import { tiddlerText } from "./base-doc.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { PROMOTE_ACT_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
-import { deterministicDocUrl } from "./deterministic-doc.js";
+import { deterministicDocUrl, materializeSharedLarDoc } from "./deterministic-doc.js";
 import { storedLarRecord } from "./stored-record.js";
 import { foldCausalHeads, type EdgeKapaeVerdict } from "./edge-kapae.js";
 import { promoteEdgeKey } from "./promote.js";
@@ -63,8 +63,30 @@ export function readPromoteBoard(records: readonly unknown[], face: PromoteFace)
 
 export type PromoteBoardReading = ReturnType<typeof readPromoteBoard>;
 export const PROMOTE_PLANE = "promote";
-export function promoteBoardMint(projection: { readonly planes: Readonly<Record<string, string | undefined>> }, group: string): string {
+/** Read only the face's derived board url from its verified plane projection. */
+export function promotePlaneUrl(projection: { readonly planes: Readonly<Record<string, string | undefined>> }, group: string): string | null {
  const url = promoteBoardDocUrl(group);
- if (projection.planes[PROMOTE_PLANE] !== url) throw new KapaeRefused("promote-mint-outside-founding", "the face's founding act pins the board");
+ return projection.planes[PROMOTE_PLANE] === url ? url : null;
+}
+
+export type PromoteAdoption = { readonly mount: string } | { readonly absent: "promote-unpinned" };
+/** Mount the verified pin alone; an unpinned face names its absence without a catalog row. */
+export function adoptPromotePlane(projection: { readonly planes: Readonly<Record<string, string | undefined>> }, group: string): PromoteAdoption {
+ const url = promotePlaneUrl(projection, group);
+ return url ? { mount: url } : { absent: "promote-unpinned" };
+}
+/** Return the mounted url, or null when the pin stands absent. */
+export function adoptedPromoteUrl(adoption: PromoteAdoption): string | null { return "mount" in adoption ? adoption.mount : null; }
+/** Materialize the verified pinned board in the repo, or return null without mounting anything. */
+export async function adoptPromoteBoard(input: { readonly repo: Repo; readonly group: string; readonly projection: { readonly planes: Readonly<Record<string, string | undefined>> } }): Promise<AutomergeUrl | null> {
+ const url = promotePlaneUrl(input.projection, input.group);
+ if (!url) return null;
+ const handle = await materializeSharedLarDoc(input.repo, url as AutomergeUrl, "promote:board");
+ return handle.url;
+}
+/** Return the founding pin; refuse any attempt to mint outside founding. */
+export function promoteBoardMint(projection: { readonly planes: Readonly<Record<string, string | undefined>> }, group: string): string {
+ const url = promotePlaneUrl(projection, group);
+ if (url === null) throw new KapaeRefused("promote-mint-outside-founding", "the face's founding act pins the board");
  return url;
 }

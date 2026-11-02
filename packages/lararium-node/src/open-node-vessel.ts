@@ -66,7 +66,7 @@ import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
-import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow } from "@lararium/mesh";
+import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
 import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest, ownEntry } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
@@ -899,9 +899,12 @@ async function prepareNodeBootOn(
   // THE WORN FACE'S KAHUA STAGE, adopted off its verified projection at the face proof below (`adoptKahuaPlane`): the
   // face's `kahua` facet and the daemon island's `bags/kahua` grant read this, never a catalog row.
   let wornKahua: { readonly group: string; readonly url: string } | null = null;
+  let wornPromote: string | null = null;
+  let wornPromoteGroup: string | null = null;
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
     () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()),
-    (group) => (wornKahua && wornKahua.group === group ? wornKahua.url : null));
+    (group) => (wornKahua && wornKahua.group === group ? wornKahua.url : null),
+    (group) => (wornPromoteGroup === group ? wornPromote : null));
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
@@ -2257,6 +2260,8 @@ async function prepareNodeBootOn(
         if (kahua.staleRow) console.warn(`[lararium] kahua stage: the catalog row names ${kahua.staleRow}, a stale hint (the face pins ${"mount" in kahua ? kahua.mount : "none"}); the pin decides`);
         const kahuaUrl = adoptedKahuaUrl(kahua);
         wornKahua = kahuaUrl ? { group: personaGroupId, url: kahuaUrl } : null;
+        wornPromote = adoptedPromoteUrl(adoptPromotePlane(proof.projection, personaGroupId));
+        wornPromoteGroup = personaGroupId;
         wornFaceProven = true;
         provenPlanes.set(personaGroupId, bootstrap.personaUrl);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
@@ -2561,6 +2566,7 @@ async function prepareNodeBootOn(
     if (wornFaceProved && wornFaceProjection && personaGroupId) {
       const url = await adoptKahuaStage({ repo, group: personaGroupId, projection: wornFaceProjection, register: registerInCatalog });
       wornKahua = url ? { group: personaGroupId, url } : null;
+      wornPromote = await adoptPromoteBoard({ repo, group: personaGroupId, projection: wornFaceProjection });
       console.log(url ? `[kahua] the face's stage stands adopted: ${url}` : "[kahua] the face pins no stage yet; the layer stands absent until its pin syncs");
     }
     // The selected face's custody standing decides whether its veil archive may leave this
