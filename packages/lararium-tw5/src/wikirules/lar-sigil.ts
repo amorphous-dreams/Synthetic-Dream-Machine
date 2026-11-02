@@ -140,10 +140,19 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
    * no closer ends that same line), `pair` when the opener's `>>` ends its line (or the pair shares the
    * closer's line) and the closer's `>>` ends a line, `lone` when the opener ends its line but the pair
    * does not stand — the opener alone, since declining would hand the line to stock TW5's macrocall
-   * block, which reads `<<~` as a macro named `~`. The inline phase has no line law: it pairs as before.
+   * block, which reads `<<~` as a macro named `~`. The inline phase pairs as before, save a block-only
+   * head (`lar-flow: block`), which holds the line law there too.
    */
-  const verdict = (openEnd: number, closeStart: number, closeEnd: number | null): "decline" | "pair" | "lone" => {
-    if (!blockPhase) return closeEnd !== null ? "pair" : "lone";
+  // BLOCK-ONLY heads (`lar-flow: block` on the sigil tiddler) hold the line law in the inline phase too,
+  // so the render pairs exactly what the decomposer cuts (scanAhu) and tree-sitter pairs.
+  const blockFlow = new Set((grammar?.sigils ?? []).filter((s) => (s as { flow?: string }).flow === "block").map((s) => s.name));
+  const verdict = (openEnd: number, closeStart: number, closeEnd: number | null, head?: string): "decline" | "pair" | "lone" => {
+    if (!blockPhase) {
+      if (closeEnd === null) return "lone";
+      if (head === undefined || !blockFlow.has(head)) return "pair";
+      const law = endsLine(source, closeEnd) && (endsLine(source, openEnd) || !source.slice(openEnd, closeStart).includes("\n"));
+      return law ? "pair" : "lone";
+    }
     if (closeEnd !== null && endsLine(source, closeEnd) && !source.slice(openEnd, closeStart).includes("\n")) return "pair";
     if (!endsLine(source, openEnd)) return "decline";
     return closeEnd !== null && endsLine(source, closeEnd) ? "pair" : "lone";
@@ -157,7 +166,7 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       if (open) {
         const openEnd = pos + open[0].length;
         const close = source.indexOf("<</fragment>>", openEnd);
-        const v = verdict(openEnd, close, close >= 0 ? close + "<</fragment>>".length : null);
+        const v = verdict(openEnd, close, close >= 0 ? close + "<</fragment>>".length : null, "fragment");
         if (v === "decline") {
           pos = indexOfSigilOpen(source, pos + 3);
           continue;
@@ -235,7 +244,7 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       if (closeKey) {
         const closeEnd = findCloseEnd(source, closeKey, compound.end, closers);
         const closeTagStart = closeEnd !== null ? source.lastIndexOf(`<<~/${closeKey}`, closeEnd) : -1;
-        const v = verdict(compound.end, closeTagStart, closeEnd);
+        const v = verdict(compound.end, closeTagStart, closeEnd, closeKey);
         if (v === "decline") {
           pos = indexOfSigilOpen(source, pos + 3);
           continue;

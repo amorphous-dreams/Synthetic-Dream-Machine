@@ -12,6 +12,8 @@
  */
 import { describe, test, expect, beforeAll } from "vitest";
 import { scanAhu } from "../src/meme-ast/ahu-scan.js";
+import { memeticIngestOps } from "../src/ingest-gate.js";
+import { verdict, frameCarrier } from "@lararium/memetic-frame";
 import { GENERATED_SIGILS } from "../src/meme-ast/grammar-table.generated.js";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
@@ -37,6 +39,26 @@ describe("★ scanAhu cuts a child only from a pair that stands under the line l
   test("WELD: the heads scanAhu decomposes (ahu, fragment) are exactly the child-slot heads carrying `lar-flow: block`", () => {
     const welded = GENERATED_SIGILS.filter((s) => s.kind === "child-slot" && s.flow === "block").map((s) => s.name).sort();
     expect(welded).toEqual(["ahu", "fragment"]);
+  });
+});
+
+describe("★ ingest reads the same: no child cut, one warning naming the fault ★", () => {
+  const ingest = (body: string) => {
+    const t = frameCarrier({ head: { uri: "lar:///t.t.t/x" }, body: "```toml meta\nuri-path = \"t.t.t/x\"\n```\n\n" + body });
+    const r = memeticIngestOps.deserialize("lar:///t.t.t/x", t, verdict(t));
+    return { titles: r.records.map((x) => String(x.title)), diags: r.diagnostics.map((d) => `${d.severity}:${d.code}`) };
+  };
+
+  test("a closer with a tail and an opener with a lead: the root alone, held whole by the quoteblock floor at warning grade", () => {
+    for (const p of [PROBES.closerTail, PROBES.openerLead]) {
+      const r = ingest(p);
+      expect(r.titles).toEqual(["lar:///t.t.t/x"]);
+      expect(r.diags).toEqual(["warning:quoteblocked"]);
+    }
+  });
+
+  test("CONTROL: a clean pair cuts its child and raises nothing", () => {
+    expect(ingest(PROBES.clean)).toEqual({ titles: ["lar:///t.t.t/x", "lar:///t.t.t/x#/a"], diags: [] });
   });
 });
 
