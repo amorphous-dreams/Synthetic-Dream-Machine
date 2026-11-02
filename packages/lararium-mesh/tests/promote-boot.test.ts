@@ -26,7 +26,7 @@ async function boot(opts: { locked?: boolean } = {}) {
   const st = {
     ledger: [W1, W2].reduce((l, wiki) => ledgerCommit(l, { wiki, digest: D, item: RITE, revision: "r1" }, HAND), EMPTY_LEDGER) as PromotionLedger,
     local: EMPTY_KAPAE_LOCAL as KapaeLocal, acts: [] as unknown[], cas: new Map<string, Uint8Array>(), pinned: new Set<string>(),
-    items: new Map<string, PromoteItem[]>([[W1, [itemOf(RITE)]], [W2, [itemOf(RITE)]]]), restarts: [] as string[], reports: [] as Array<{ wiki: string; report: PromoteBootReport }>, faults: [] as string[],
+    items: new Map<string, PromoteItem[]>([[W1, [itemOf(RITE)]], [W2, [itemOf(RITE)]]]), restarts: [] as string[], failRestart: new Set<string>(), failed: [] as string[], reports: [] as Array<{ wiki: string; report: PromoteBootReport }>, faults: [] as string[],
   };
   const b = promoteBoot({
     stores: {
@@ -36,7 +36,8 @@ async function boot(opts: { locked?: boolean } = {}) {
     cas: { put: (d, bytes) => { st.cas.set(d, bytes); }, pin: (d) => { st.pinned.add(d); } },
     board: async () => readPromoteBoard(st.acts, face),
     itemsOf: async (wiki) => st.items.get(wiki) ?? [],
-    restart: async (wiki) => { st.restarts.push(wiki); },
+    restart: async (wiki) => { if (st.failRestart.has(wiki)) throw new Error(`restart refused: ${wiki}`); st.restarts.push(wiki); },
+    onRestartFailed: (wiki) => { st.failed.push(wiki); },
     onReport: (wiki, report) => { st.reports.push({ wiki, report }); },
     onFault: (reason) => { st.faults.push(reason); },
   });
@@ -130,5 +131,34 @@ describe("a custody read that throws leaves the promoted set empty", () => {
       expect(w.st.faults, broken).toEqual(["ledger-unreadable"]);
     }
     expect(await (await boot()).b.promotedFor(W1)).toEqual([D]);
+  });
+});
+
+describe("a restart that fails converges on the next arrive", () => {
+  test("RED: a restart that throws on the first arrive is named, never skips the other wikis, and the same board restarts that wiki on the next arrive; CONTROL: once restarted, a further arrive restarts nothing", async () => {
+    const { b, st, raise } = await boot();
+    await b.promotedFor(W1); await b.promotedFor(W2);
+    st.acts.push(await raise(W1), await raise(W2));
+    st.failRestart.add(W1);
+    expect(await b.arrive()).toEqual([W2]);
+    expect(st.failed).toEqual([W1]);
+    expect(st.restarts).toEqual([W2]);
+    st.failRestart.clear();
+    expect(await b.arrive()).toEqual([W1]);
+    expect(st.restarts).toEqual([W2, W1]);
+    expect(await b.arrive()).toEqual([]);
+    expect(st.restarts).toEqual([W2, W1]);
+  });
+
+  test("RED: the cache records the shadow even where a restart failed, so an offline boot still honors it; CONTROL: the restarted wiki's edge is cached too", async () => {
+    const { b, st, raise } = await boot();
+    await b.promotedFor(W1); await b.promotedFor(W2);
+    st.acts.push(await raise(W1), await raise(W2));
+    st.failRestart.add(W1);
+    await b.arrive();
+    expect(st.local.shadowed.sort()).toEqual([promoteEdgeKey(W1, D), promoteEdgeKey(W2, D)].sort());
+    st.failRestart.clear();
+    await b.arrive();
+    expect(st.local.shadowed.sort()).toEqual([promoteEdgeKey(W1, D), promoteEdgeKey(W2, D)].sort());
   });
 });

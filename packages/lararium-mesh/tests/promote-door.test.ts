@@ -30,7 +30,7 @@ async function world() {
   const face = { group: GROUP, grant: (k: string) => k === root.key, device: (k: string) => k === atom.key };
   const state = {
     ledger: EMPTY_LEDGER as PromotionLedger, local: EMPTY_KAPAE_LOCAL as KapaeLocal, items: new Map<string, PromoteItem[]>(), acts: [] as unknown[],
-    cas: new Map<string, Uint8Array>(), pinned: new Set<string>(), loaded: new Set<string>(), restarts: 0, boardReadable: true,
+    cas: new Map<string, Uint8Array>(), pinned: new Set<string>(), loaded: new Set<string>(), restarts: 0, failRestart: false, boardReadable: true,
   };
   const ports = (wiki: string, who: PromoteWho): PromotionPorts => ({
     wiki,
@@ -40,7 +40,7 @@ async function world() {
     board: async () => { if (!state.boardReadable) throw new Error("board-unreadable"); return readPromoteBoard(state.acts, face); },
     cas: { put: (d, b) => { state.cas.set(d, b); }, pin: (d) => { state.pinned.add(d); } },
     loaded: () => state.loaded,
-    restart: async () => { state.restarts += 1; },
+    restart: async () => { if (state.failRestart) { state.failRestart = false; throw new Error("restart refused"); } state.restarts += 1; state.loaded = new Set(); },
     who,
   });
   return {
@@ -199,5 +199,20 @@ describe("the kāpae over (wiki, digest)", () => {
     w2.state.loaded = new Set([promoteEdgeKey(W1, D)]);
     expect(await promotions(w2.ports(W1, HAND)).arrive()).toEqual({ restarted: false });
     expect(w2.state.restarts).toBe(0);
+  });
+});
+
+describe("a restart that fails converges", () => {
+  test("RED: a restart that throws leaves the edge loaded (the cache still records the shadow), and the next arrive restarts again; CONTROL: after the restart the island no longer holds the edge and a further arrive restarts nothing", async () => {
+    const w = await world();
+    w.state.items.set(W1, [itemOf(RITE)]);
+    await promotions(w.ports(W1, HAND)).promote({ digest: D });
+    w.state.loaded = new Set([promoteEdgeKey(W1, D)]);
+    w.state.acts.push(await w.kapae(W1, D, true, []));
+    w.state.failRestart = true;
+    await expect(promotions(w.ports(W1, HAND)).arrive()).rejects.toThrow(/restart refused/);
+    expect(w.state.local.shadowed).toEqual([promoteEdgeKey(W1, D)]);
+    expect(await promotions(w.ports(W1, HAND)).arrive()).toEqual({ restarted: true });
+    expect(await promotions(w.ports(W1, HAND)).arrive()).toEqual({ restarted: false });
   });
 });
