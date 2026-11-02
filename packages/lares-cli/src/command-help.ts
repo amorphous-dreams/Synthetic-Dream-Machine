@@ -60,7 +60,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares kahua carry --all --face 1",
       "lares kahua get T --face 1 --history",
     ],
-    flags: ["--face N   face index", "--text <body>   the item's body", "--taint a,b | none   inputs from outside the face", "--sources <json>   the daemon sources the item distils", "--parent <cid> | none   the revision a lift supersedes", "--proposal <id>   the proposal a lift answers", "--fields <json>   the item's fields", "--proposals <json>   a proposal batch", "--history   every revision of a title"],
+    flags: ["--face N   face index", "--text <body>   the item's body", "--taint a,b | none   inputs from outside the face", "--sources <json>   the daemon sources the item distils", "--parent <cid> | none   the revision a lift supersedes", "--proposal <id>   the proposal a lift answers", "--fields <json>   the item's fields", "--proposals <json>   a proposal batch", "--history   every revision of a title", "--all   (carry) every earlier head the history reads"],
   },
   intent: {
     usage: "usage: lares intent issue|show|ask|answer|claim|takeover|release|cancel|supersede|release-root|delegate|delegate-revoke|delegations [verb-or-id] [--face N]",
