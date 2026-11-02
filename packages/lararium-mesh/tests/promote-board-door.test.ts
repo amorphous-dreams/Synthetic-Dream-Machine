@@ -5,7 +5,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae
  */
 import { describe, expect, test } from "vitest";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, promoteBoardDocUrl, readPromoteBoard, PROMOTE_PLANE, type PromoteWho } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, promoteBoardDocUrl, readPromoteBoard, PROMOTE_PLANE, type PromoteWho } from "../src/index.js";
 import { promoteBoardDoor } from "../src/promote-board-door.js";
 
 const GROUP = "face-group", W1 = "lar:///ha.ka.ba/wikis/field-notes", W2 = "lar:///ha.ka.ba/wikis/garden", D = "d".repeat(64);

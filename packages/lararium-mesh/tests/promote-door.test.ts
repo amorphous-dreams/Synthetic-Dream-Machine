@@ -1,5 +1,5 @@
 /**
- * promotions — a device's promotion door for ONE wiki: the rites waiting, the hand's commit, the boot union, the orphan that keeps
+ * promote-door — a device's promotion door for ONE wiki: the rites waiting, the hand's commit, the boot union, the orphan that keeps
  * running and is named, the kāpae that shadows (wiki, digest) and restarts the island.
  *
  * The door takes ports (wiki, ledger, local cache, the wiki's items, the face board, CAS, loaded edges, restart); these reds stand it on
@@ -12,8 +12,8 @@ import {
   EMPTY_KAPAE_LOCAL, EMPTY_LEDGER, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, promoteActCid, promoteDigest, promoteEdgeKey,
   readPromoteBoard, signPromoteKapae, signPromotePrepare,
   type KapaeLocal, type PromoteWho, type PromotionLedger,
-} from "@lararium/mesh";
-import { promotions, type PromoteItem, type PromotionPorts } from "../src/promotions.js";
+} from "../src/index.js";
+import { promotions, type PromoteItem, type PromotionPorts } from "../src/promote-door.js";
 
 const GROUP = "face-group", W1 = "lar:///ha.ka.ba/wikis/field-notes", W2 = "lar:///ha.ka.ba/wikis/garden";
 const HAND: PromoteWho = { kind: "hand", id: "hand-1" };
