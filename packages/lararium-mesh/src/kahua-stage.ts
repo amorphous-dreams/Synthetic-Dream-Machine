@@ -100,6 +100,8 @@ function liftFault(b: Record<string, unknown>): KahuaActRefusal | null {
   if (!Array.isArray(b.sources) || b.sources.length === 0 || !b.sources.every((s) => object(s) && string(s.title) && s.title.length > 0 && string(s.revision))) return "sources";
   if (!(b.parent === null || hex64(b.parent))) return "parent";
   if (!string(b.title) || b.title.length === 0 || b.title.startsWith(KAHUA_ACT_PREFIX) || !string(b.text) || !object(b.fields)) return "shape";
+  // A lift title names its path plainly: a `.` or `..` segment refuses, so no spelling resolves elsewhere than it reads.
+  if (b.title.split("/").some((segment) => segment === "." || segment === "..")) return "shape";
   // No control record rides the fleet-synced stage: a title the daemon's control plane owns never lifts.
   if (isControlPlaneUri(b.title)) return "control-plane-title";
   if (!Object.entries(b.fields).every(([k, v]) => string(v) && !RESERVED_FIELDS.has(k))) return "shape";

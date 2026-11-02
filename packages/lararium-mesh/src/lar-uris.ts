@@ -349,7 +349,25 @@ export const DAEMON_BAG_ID    = bagUri("daemon");
 /** A title the daemon's control plane owns (`bags/daemon/**`: verb outcomes, effects, flows, cap events). It lands in the
  *  daemon doc alone and never projects: the daemon stays CRDT only (operator, 2026-11-01). */
 export function isControlPlaneUri(title: string): boolean {
-  return title.startsWith(`${DAEMON_BAG_ID}/`);
+  return resolvedTitlePath(title).startsWith(`${DAEMON_BAG_ID}/`);
+}
+
+/**
+ * The path a title resolves to, read the way a reader resolves a URL: the scheme lower-cased, each percent escape decoded
+ * (a malformed one keeps its bytes), and the `.` and `..` segments folded. A law that reads a title by prefix reads it
+ * here first, so no spelling of a path slips past the prefix it resolves to.
+ */
+export function resolvedTitlePath(title: string): string {
+  const scheme = /^[A-Za-z][A-Za-z0-9+.-]*:/.exec(title)?.[0] ?? "";
+  let rest = title.slice(scheme.length);
+  try { rest = decodeURIComponent(rest); } catch { /* a malformed escape keeps its bytes */ }
+  const out: string[] = [];
+  for (const segment of rest.split("/")) {
+    if (segment === ".") continue;
+    if (segment === ".." && out.length > 0 && out[out.length - 1] !== "") { out.pop(); continue; }
+    out.push(segment);
+  }
+  return scheme.toLowerCase() + out.join("/");
 }
 
 /** e.g. flowUri("crystal") → "lar:///ha.ka.ba/lararium/daemon/flows/crystal" — a Flow's
