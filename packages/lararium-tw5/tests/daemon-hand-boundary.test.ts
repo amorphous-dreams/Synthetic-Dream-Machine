@@ -14,6 +14,8 @@ import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { makeDaemonBehavior } from "../src/daemon-behavior.js";
 import { makeWikiBehavior } from "../src/wiki-behavior.js";
+import { composeIsland, type IslandCap } from "../src/island-caps.js";
+import { hasHandBoundary } from "../src/has-island-watches.js";
 import type { IslandBehavior, IslandContext } from "../src/island-context.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 
@@ -116,4 +118,30 @@ describe.skipIf(wikiSkip)(`a hand in the daemon surface lands on the island boun
     await r.adaptor.stop();
     r.stop();
   }, 60_000);
+  // THE SAVE RIDES THE ACT ITSELF (stage walk S6): the person's click on the edit frame's save arrives as ONE control
+  // event, and the event's owner applies it to the wiki after the boundary cap has already fired. The hand that act
+  // made lands on that same act, never on the next one, which may never come.
+  const ownerSaves = (engine: { $tw: { wiki: unknown; Tiddler: unknown } }): IslandCap => ({
+    name: "owner-saves",
+    onSignal(type) {
+      if (type !== LAR_CONTROL_EVENT) return false;
+      const Tiddler = engine.$tw.Tiddler as new (f: unknown) => unknown;
+      (engine.$tw.wiki as WikiEvents).addTiddler(new Tiddler({ title: HAND, text: "SAVED BY THE ACT" }));
+      return true;
+    },
+  });
+
+  for (const slug of ["daemon", "lares"]) {
+    test(`RED: a save the control event itself carries lands on that event, with no second act (${slug})`, async () => {
+      let owner: IslandCap | null = null;
+      const r = await rig(slug, () => composeIsland([hasHandBoundary(), { name: "owner", onSignal: (type, raw, ctx) => owner!.onSignal!(type, raw, ctx) }]));
+      owner = ownerSaves(r.engine);
+      expect(gated(r.adaptor)).toEqual([]);
+      await r.signal(LAR_CONTROL_EVENT);
+      expect(held(r.working), "the act's own save waited for a later act").toContain(HAND);
+      expect(gated(r.adaptor)).toEqual([]);
+      await r.adaptor.stop();
+      r.stop();
+    }, 60_000);
+  }
 });
