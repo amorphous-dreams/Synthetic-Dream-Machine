@@ -391,3 +391,20 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
     expect(readCarrierShape(lesson).marks).toMatchObject({ stx: false, etx: false, eot: false });
   });
 });
+
+describe("★ a two-frame smuggle reads as two frames, never as a frame that never closes ★", () => {
+  const HEAD = "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>\n\n<<^ code=`&#x0001;` from=`?` to=`lar:///t/two`>>\n";
+  const META = "```toml meta\nuri-path = \"t/two\"\n```\n\nbody\n\n";
+  const TWO = `${HEAD}<<^ code=\`&#x0002;\`>>\n\n${META}<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0002;\`>>\n\nsmuggled\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
+  const TORN = `${HEAD}<<^ code=\`&#x0002;\`>>\n\n${META}`;
+
+  test("RED: the smuggle's faults name the second frame, and never 'opens and never closes'", () => {
+    const f = readCarrierShape(TWO).faults.join(" | ");
+    expect(f).toMatch(/2 text frames/);
+    expect(f).not.toMatch(/opens and never closes/);
+  });
+
+  test("CONTROL: a frame cut ahead of its ETX still reads 'opens and never closes'", () => {
+    expect(readCarrierShape(TORN).faults.join(" | ")).toMatch(/opens and never closes/);
+  });
+});
