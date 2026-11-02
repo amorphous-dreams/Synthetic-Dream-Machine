@@ -76,6 +76,7 @@ describe("the kahua layer folds under the live lineage", () => {
   test("RED: a rotation that lands mid-run drops the rotated-out root's item and the subscriber hears the drop; CONTROL: before it the item stands", async () => {
     const i = await island({ board: true });
     expect((await i.composite.get("t"))?.tiddler.text).toBe("lifted under the founding root");
+    await settle();
     i.heard.length = 0;
     i.rotate(); await settle();
     expect(await i.composite.get("t")).toBeNull();
@@ -84,6 +85,7 @@ describe("the kahua layer folds under the live lineage", () => {
 
   test("RED: the new root's carry restores the item mid-run; CONTROL: a board change that moves no lineage tells nothing", async () => {
     const i = await island({ board: true });
+    await settle();
     i.heard.length = 0;
     i.board.change((d) => { d.tiddlers["unrelated"] = storedLarRecord("unrelated", { text: "x" }, "hand"); }); await settle();
     expect(i.heard).toEqual([]);

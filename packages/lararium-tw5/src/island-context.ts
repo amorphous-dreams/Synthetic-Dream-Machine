@@ -45,6 +45,8 @@ export interface IslandContext {
   kahuaUrl?: string | null;
   /** The face the kahua stage folds under (its group and its grant); null or absent, the stage reads empty. */
   kahuaFace?: () => import("@lararium/mesh").KahuaStageFace | null;
+  /** Wakes the kahua layer's re-fold when the face's lineage moves under the running island (`liveKahuaFace`). */
+  kahuaFaceWatch?: (fn: () => void) => () => void;
   /**
    * The oracle runtime system-island doc URL (= `grants.islandUrl`). The
    * **system** oracle plane: system bags (the oracle,

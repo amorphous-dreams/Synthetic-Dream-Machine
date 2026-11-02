@@ -103,7 +103,7 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
     }
     // The kahua stage stands read-only on the seam's store; every other library on its document store.
     const kahua = bagId === KAHUA_BAG;
-    const store = kahua ? kahuaLayerStore(handle, ctx.kahuaFace ?? (() => null)) : new AutomergeDocStore(handle, bagId);
+    const store = kahua ? kahuaLayerStore(handle, ctx.kahuaFace ?? (() => null), ctx.kahuaFaceWatch) : new AutomergeDocStore(handle, bagId);
     ctx.composite.addLayer({ bagId, store, writable: !kahua, defaultWritable: false }, at);
     ctx.handles.set(bagId, handle);
     const replays = store as Partial<Pick<AutomergeDocStore, "emitInitialReplay" | "markSyncComplete">>;
