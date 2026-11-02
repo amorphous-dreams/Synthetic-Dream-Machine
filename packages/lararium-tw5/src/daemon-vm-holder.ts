@@ -123,8 +123,11 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
       if (restarting) return restarting;
       const run = async () => {
         const prepared = o.prepare ? await o.prepare(reason) : undefined as P;
+        // A direct shutdown that started while prepare awaited ends the restart: no replacement opens beside a closing island.
+        if (state === "down" && shutdown) throw new DaemonRestarting("daemon-down");
         const wasReady = state === "ready";
         state = "restarting";
+        let next: DaemonVmCore | undefined;
         try {
           // No wait: a call still pending settles by name, so one that never settles cannot stall the restart.
           for (const settle of [...pending]) settle(new DaemonRestarting("daemon-restarting"));
@@ -133,7 +136,7 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
             try { settle(); } catch (err) { console.error("[daemon] ask abandon failed", err); }
           }
           if (wasReady) await inner.shutdown();
-          const next = await o.reopen(reason, prepared);
+          next = await o.reopen(reason, prepared);
           inner = next;
           shutdown = undefined;
           for (const replay of registrations.values()) await replay(next);
@@ -145,6 +148,8 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
           }
           return { restarts };
         } catch (err) {
+          // A replacement already open when replay or a later step fails closes here, so a recovering restart leaks no island.
+          if (next) { try { await next.shutdown(); } catch (down) { console.error("[daemon] replacement shutdown failed", down); } }
           state = "down";
           throw err;
         }

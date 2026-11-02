@@ -1,4 +1,4 @@
-import { holdDaemonVm, type DaemonVmHolder } from "@lararium/tw5";
+import { holdDaemonVm, DaemonRestarting, type DaemonVmHolder } from "@lararium/tw5";
 /**
  * openBrowserVessel — local-first browser vessel factory.
  *
@@ -1834,7 +1834,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             return;
           }
           const ask = islandEventAsk(msg.listenable, msg.payload);
-          if (ask) daemon.placeVerb(ask);
+          if (ask) {
+            try { daemon.placeVerb(ask); } catch (err) { if (!(err instanceof DaemonRestarting)) throw err; console.log("[daemon] a worker event dropped: the island restarts"); }
+          }
         },
         ...(workerScriptUrl ? { workerScriptUrl } : {}),
       });
@@ -1874,11 +1876,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const DAEMON_SURFACE_VERBS_LIVE = true;   // #48 loop-safe dispatch — live
       if (DAEMON_SURFACE_VERBS_LIVE) {
         daemon.onVerbEvent((e) => {
-          void daemon.placeVerb({ 
-            verb: e.verb, args: e.args, requestedBy: "daemon-surface", origin: e.origin,
-            ...(e.fromUri ? { fromUri: e.fromUri } : {}),
-            ...(e.listenable ? { listenable: e.listenable } : {}),
-          });
+          try {
+            void daemon.placeVerb({ 
+              verb: e.verb, args: e.args, requestedBy: "daemon-surface", origin: e.origin,
+              ...(e.fromUri ? { fromUri: e.fromUri } : {}),
+              ...(e.listenable ? { listenable: e.listenable } : {}),
+            });
+          } catch (err) { if (!(err instanceof DaemonRestarting)) throw err; console.log("[daemon] a daemon surface verb dropped: the island restarts"); }
         });
       }
       return vmManager;
