@@ -10,7 +10,7 @@ import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, t
 import {
   DAEMON_BAG_ID, KAHUA_BAG, KAHUA_PLANE, isFaceScopedBag, personaMembershipEntries, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, emptyLarDoc, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
   faceIntentVerbs, intentEntryRecordsOfGroup, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
-  personaSiblingBagIds, projectPersonaLog, signFoundingLog, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
+  personaSiblingBagIds, projectPersonaLog, signFoundingLog, signsAtEpoch, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
 } from "@lararium/mesh";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../src/kahua-door.js";
 import { bridgeBooks, faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
@@ -221,6 +221,55 @@ describe("the facet", () => {
     views.seat("peer-a", { personaGroup: groupA });
     expect(views.gateFor("peer-a")?.mayFederate(stageId)).toBe(true);
     views.close();
+  });
+});
+
+describe("the carry door", () => {
+  const src = [{ title: "daemon/t", revision: "r1" }];
+  /** The face after its root rotates: epoch 1 seats `next`; the history view reads epoch 0's roster. */
+  async function rotated() {
+    const f = await face();
+    const next = await who(17);
+    const lineage = makeHandLineage([{ epoch: 0, signers: [f.root.key], threshold: 1 }, { epoch: 1, signers: [next.key], threshold: 1 }])!;
+    const after = (over: Partial<KahuaDoorPorts> = {}) => f.ports({
+      projection: () => projectPersonaLog(personaActRecordsOfGroup(f.persona.doc(), GROUP), { group: GROUP, lineage, authorize: () => true }),
+      epoch: () => 1, currentSigner: (key) => key === next.key, signedAt: (epoch, key) => signsAtEpoch(lineage, epoch, key),
+      rootSigner: async () => next, ...over,
+    });
+    return { ...f, next, after };
+  }
+
+  test("RED: after a rotation the earlier items read in history and not standing, and the new root's carry restores them; CONTROL: before the rotation they stand", async () => {
+    const f = await rotated();
+    const door = kahuaDoor(f.ports({ signedAt: (epoch, key) => epoch === 0 && key === f.root.key }));
+    await door.mint();
+    const a = await door.lift({ title: "a", text: "alpha", taint: [], sources: src });
+    const b = await door.lift({ title: "b", text: "beta", taint: [], sources: src });
+    expect((await door.list()).map((i) => i.title)).toEqual(["a", "b"]);
+    const now = kahuaDoor(f.after());
+    expect(await now.list()).toEqual([]);
+    expect((await now.history("a")).map((r) => [r.cid, r.standing])).toEqual([[a.cid, false]]);
+    const carried = await now.carry({ cids: [a.cid] });
+    expect(carried.carried).toEqual([a.cid]);
+    expect((await now.list()).map((i) => i.title)).toEqual(["a"]);
+    const all = await now.carry({ all: true });
+    expect(all.carried).toEqual([b.cid]);
+    expect((await now.list()).map((i) => i.title)).toEqual(["a", "b"]);
+    await expect(now.carry({ all: true })).rejects.toThrow(/carry-nothing/);
+  });
+
+  test("RED: a carry without the current root in hand, without the cap, or naming no held revision refuses by name and lands nothing; CONTROL: the rotated-out root's hand never carries", async () => {
+    const f = await rotated();
+    const door = kahuaDoor(f.ports());
+    await door.mint();
+    const a = await door.lift({ title: "a", text: "alpha", taint: [], sources: src });
+    await expect(kahuaDoor(f.after({ rootSigner: async () => { throw new Error("custody locked"); } })).carry({ cids: [a.cid] })).rejects.toThrow(/operator-grant-absent/);
+    await expect(kahuaDoor(f.after({ rootSigner: async () => f.root })).carry({ cids: [a.cid] })).rejects.toThrow(/operator-grant-absent/);
+    await expect(kahuaDoor(f.after({ rootSigner: async () => f.atomA })).carry({ cids: [a.cid] })).rejects.toThrow(/operator-grant-absent/);
+    await expect(kahuaDoor(f.after({ cap: async () => ({ held: false }) })).carry({ cids: [a.cid] })).rejects.toThrow(/lokahi-cap-absent/);
+    await expect(kahuaDoor(f.after()).carry({ cids: ["e".repeat(64)] })).rejects.toThrow(/carry-unknown/);
+    await expect(kahuaDoor(f.after()).carry({})).rejects.toThrow(/carry-nothing/);
+    expect(await kahuaDoor(f.after()).list()).toEqual([]);
   });
 });
 

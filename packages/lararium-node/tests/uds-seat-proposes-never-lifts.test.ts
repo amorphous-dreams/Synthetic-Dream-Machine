@@ -19,7 +19,7 @@ import { KAHUA_OPERATOR_ROWS } from "../src/store-door-verbs.js";
 import { makeUdsSeat, serveUdsFront, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 
-const KAHUA_ROWS = ["kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-read"] as const;
+const KAHUA_ROWS = ["kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read"] as const;
 
 const face = (name: string): SessionFace => ({
   personaGroup: `group-${name}`, proofSubject: `proof-${name}`, admitRef: `admit-${name}`, causalRevision: `revision-${name}`,
@@ -65,7 +65,7 @@ async function stand() {
     anchor: { kind: "nexus", aid: "nexus-one.synthetic" }, mint: async () => ({ ok: true, signer: { drop() {} } }) } }) };
   const placed: Array<{ verb: string; requestId: string }> = [];
   const ran: Array<{ act: string; args: Record<string, unknown>; worn: unknown }> = [];
-  const sessionActs = { names: new Set(["kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-read"]), run: async (act: string, args: Record<string, unknown>, worn?: unknown) => {
+  const sessionActs = { names: new Set(["kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read"]), run: async (act: string, args: Record<string, unknown>, worn?: unknown) => {
     ran.push({ act, args, worn });
     return { verb: act, ran: true };
   } };
@@ -95,10 +95,10 @@ async function stand() {
 }
 
 
-test("RED: a seat session's kahua lift, withdraw and mint refuse beyond-profile and run nothing; CONTROL: the seat proposes and reads", async () => {
+test("RED: a seat session's kahua lift, withdraw, carry and mint refuse beyond-profile and run nothing; CONTROL: the seat proposes and reads", async () => {
   const v = await stand();
   const env = await v.open("hint-a", "seat");
-  for (const act of ["kahua-lift", "kahua-withdraw", "kahua-mint"]) {
+  for (const act of ["kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-mint"]) {
     const reply = await v.peer.ask({ op: "session:act", ...env, requestId: `seat-${act}`, act, args: { title: "t", text: "x", taint: [] } });
     expect(reply).toMatchObject({ kind: "session:refused", refusal: "beyond-profile" });
   }
@@ -115,5 +115,5 @@ test("CONTROL: the operator's hand (a cli session) runs the kahua lift row", asy
   const env = await v.open("hint-a", "cli");
   expect(await v.peer.ask({ op: "session:act", ...env, requestId: "cli-lift", act: "kahua-lift", args: { title: "t", text: "x", taint: [] } }))
     .toMatchObject({ kind: "session:act-result", answer: { verb: "kahua-lift", ran: true } });
-  expect(KAHUA_OPERATOR_ROWS).toEqual(new Set(["kahua-mint", "kahua-lift", "kahua-withdraw"]));
+  expect(KAHUA_OPERATOR_ROWS).toEqual(new Set(["kahua-mint", "kahua-lift", "kahua-withdraw", "kahua-carry"]));
 });
