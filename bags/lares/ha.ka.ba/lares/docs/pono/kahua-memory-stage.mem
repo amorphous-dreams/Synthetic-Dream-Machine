@@ -174,6 +174,7 @@ Each line names what the code does today and where its law lives; the verifier h
 * ''Adoption.'' A device mounts the stage its verified projection pins: the joinee reads it off the admit bundle's verified `personaActs` (`kahuaUrl`), every boot reads it after the face proof (`adoptKahuaPlane`), and the island takes it from its grant (`IslandGrants.kahuaUrl`) alone. A catalog row stays a mount hint that decides nothing: a row naming another doc reads stale by name, and the pin mounts.
 * ''Read through the fold.'' The `bags/kahua` layer serves what `readKahuaStage` folds under the worn face (`kahuaStageStore`, through the seam `kahuaLayerStore`), on node and in the page alike: a plain tiddler any synced member writes into the stage doc reads as nothing, siblings name both cids on every device, a withdrawn item drops, and the layer refuses every write.
 * ''Who CAN, who CHOSE.'' The lōkahi cap: the face door mints the stage bag to the face's group in Keyhive's plane, and the daemon's `kahua-cap` verb answers. The lift and withdraw acts ride the stage doc, signed under the operator's grant (the face root of the current epoch). ''Current-only, with a carry.'' An act stands while its signer sits in the current roster, or while a `carry` act the current root signed names its cid; carries never chain. After a rotation, the earlier items fall back to history (never deleted) until the operator's hand carries them (`lares kahua carry <cid>…|--all`), a batch re-lift and the same deliberate choice as one lift; a backdated lift by a rotated-out root never stands. The layer re-folds live when the face's lineage moves.
+* ''No control record lifts.'' A lift of a title the daemon's control plane owns (`bags/daemon/**`: a verb outcome, a summons, a claim tombstone, the ward audit) refuses `control-plane-title` at the signer, at every reader and at the door; the working top holds such records by design, CRDT only and never projected, and none ever rides the fleet-synced stage.
 * ''Proposals.'' One `kahua-lift` batch per pass on `@intents-<tag>`, digests and taint alone, pinned to the proposing atom; a page proposes its drafts through the daemon verb `kahua-propose`, and `lares kahua lift --proposal <id> --file <body>` binds the body by digest. A proposal whose issuer the face never admitted refuses.
 * ''The hand.'' `lares kahua` carries mint, lift, withdraw and carry on a person's hand alone, re-reading sealed custody per call; a seat session (the AI, MCP) proposes and reads, and a pin, lift or withdraw from it refuses `beyond-profile`.
 * ''The face fence.'' The stage rides its own face's facet on the read-only `library` layer; `bridgeBooks` never bridges `bags/kahua`, so a face switch on one vessel never hands one face's stage to another's sessions.
@@ -259,6 +260,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YxT4tle2-Oio-7n5_0pbNttv1xVb55iY1ZJmB_6D1vI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aA0vQ4qdHHCtV15u5C-01YryhlxTuLTBwiDQJMG0jSI`>>
 
 <<^ code=`&#x0004;` to=`?`>>
