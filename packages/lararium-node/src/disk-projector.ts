@@ -67,7 +67,7 @@
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, renameSync } from "fs";
 import { dirname, basename, extname, relative as relativePath, resolve as resolvePath } from "path";
-import { confineMirrorWrite, carrierBaseRelPath } from "./bag-paths.js";
+import { confineMirrorWrite, carrierBaseRelPath, titleRelPath } from "./bag-paths.js";
 import { contentHash, syncedTreeKey, SyncedTree } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
@@ -1399,7 +1399,8 @@ export class LarDiskProjector {
     const ruledBase = file.relPath !== undefined && file.relPath.endsWith(file.ext)
       ? file.relPath.slice(0, file.relPath.length - file.ext.length)
       : null;
-    let base = ruledBase ?? carrierBaseRelPath(tiddlerUri);
+    // A title-path mirror (the kahua stage) sites a foreign title at its own `/` path before TW5's flatten reaches it.
+    let base = ruledBase ?? carrierBaseRelPath(tiddlerUri) ?? (mirror.titlePaths ? titleRelPath(tiddlerUri) : null);
     // The flatten reaches ONLY a name the address siting rule does not govern. Inside the `lar:` family a null
     // base is a DELIBERATE refusal (a fragment owns no file — its carrier root does; a bag manifest
     // belongs to the declare verb), never a name left un-sited for want of a path, so flattening one

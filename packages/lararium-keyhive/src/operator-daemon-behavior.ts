@@ -152,6 +152,7 @@ import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemory
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import { makeFaceBagDoor, faceOwnerVerifier } from "./face-bag-door.js";
 import { answerKahuaCap } from "./kahua-cap.js";
+import { proposeDraftsToKahua, pageTitleList } from "./kahua-page-propose.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat } from "./content-key-seat.js";
 import { ownChainStanding, type IslandSessionProof } from "./island-session-proof.js";
@@ -1341,6 +1342,16 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             registerIntentView = () => {
               if (intentRegistry && !intentRegistry.has("intent-view"))
                 intentRegistry.register("intent-view", makeIntentViewReactor(ctx.tw5, intentsBag, async () => (await door.describe()).pane));
+              // `kahua-propose` — THE PAGE'S HAND TOWARD A LIFT: this device's atom signs one `kahua-lift` batch over the drafts
+              // the daemon top holds, digests only, on this plane; the operator's `lares kahua lift --proposal` binds each body.
+              if (intentRegistry && !intentRegistry.has("kahua-propose"))
+                intentRegistry.register("kahua-propose", async (args) => {
+                  const nonce = Array.from(globalThis.crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
+                  const out = await proposeDraftsToKahua({ group, atom: { key: atom.key, sign: atom.sign }, plane, composite: ctx.composite,
+                    titles: pageTitleList(args["titles"]), taint: pageTitleList(args["taint"]),
+                    session: typeof args["session"] === "string" && args["session"] ? args["session"] : atom.key, nonce, verbs: faceIntentVerbs() });
+                  return { verb: "kahua-propose", id: out.id, cid: out.cid, proposals: out.proposals.map((p) => ({ ...p })) };
+                });
               if (intentVerifier) void intentVerifier.verify({ presenter: atom.key, bagUrl: intentsBag, access: "read", channel: "local" })
                 .then((proof) => ctx.tw5.setTiddler({ title: INTENT_VIEW_CAP, text: proof.ok ? "1" : "0", ...SEED_OFF_DISK }))
                 .catch(() => ctx.tw5.setTiddler({ title: INTENT_VIEW_CAP, text: "0", ...SEED_OFF_DISK }));

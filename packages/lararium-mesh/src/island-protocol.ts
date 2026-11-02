@@ -164,6 +164,9 @@ export interface IslandGrants {
   /** working — the SAVED live write layer (PersonaGroup×fingerprint-bound, like
    *  personal); normal edits route here, canon publishes on a promotion MOVE. */
   workingUrl?:  string | null;
+  /** The face's kahua stage, the url its VERIFIED `plane` act pins (`adoptKahuaPlane`); `bags/kahua` mounts from this
+   *  grant alone and never from a catalog row. Absent/null: the layer stands absent. */
+  kahuaUrl?:    string | null;
 }
 export interface IslandMsg_Manifest {
   type: "manifest";
@@ -238,7 +241,7 @@ export interface IslandMsg_Manifest {
    * via `namedBagMirror(scope, mirrorRoot)` from `bag-paths`.
    * Absent = no disk projection for this island.
    */
-  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean }[];
+  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean; titlePaths?: boolean }[];
   /**
    * DAEMON-ISLAND ONLY — operator authn/z material for in-worker keyhive boot
    * (isomorphic-vessel epic, Stage 1). The daemon worker's `onEa` calls
@@ -1118,7 +1121,7 @@ export function mkManifest(
   opts?: {
     storage?:        IslandStorageConfig;
     ownedDocument?:  IslandOwnedDocumentScope;
-    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean }[];
+    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean; titlePaths?: boolean }[];
     daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
     pluginCids?:     readonly string[];
     view?:           IslandViewStanding;

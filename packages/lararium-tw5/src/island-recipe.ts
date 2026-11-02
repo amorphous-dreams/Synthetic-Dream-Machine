@@ -21,9 +21,8 @@ import {
   slotLayerFlags,
   wikiSlotUri,
   ORACLE_BAG,
-  floorReadFace,
-  kahuaStageStore,
   KAHUA_BAG,
+  floorReadFace,
   type KahuaStageFace,
   type LarDoc,
   type DocHandle,
@@ -33,6 +32,7 @@ import {
   type LarTiddlerStore,
 } from "@lararium/mesh";
 import { IslandAdaptor } from "./island-adaptor.js";
+import { kahuaLayerStore } from "./kahua-layer.js";
 import { MemoryTiddlerStore } from "./memory-store.js";
 import type { TW5Engine } from "./tw5-vm.js";
 
@@ -89,10 +89,11 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     const handle = handleBySlot.get(slot);
     if (!handle) continue; // CRDT slot not provided — skip (cold or unmapped)
     // THE KAHUA SLOT READS THE FOLD: any member of the face writes any tiddler into the stage doc, so the layer serves the
-    // verified standing items alone (`kahuaStageStore`) and never the doc's titles.
-    const store: LarTiddlerStore = slot === KAHUA_BAG
-      ? kahuaStageStore({ handle, bagId: slot, face: input.kahuaFace ?? (() => null) })
-      : slot === ORACLE_BAG ? floorReadFace({ rows: floorRows ?? [], base: new AutomergeDocStore(handle, slot) }) : new AutomergeDocStore(handle, slot);
+    // verified standing items alone, through the one seam (`kahuaLayerStore`), and never the doc's titles.
+    const base: LarTiddlerStore = slot === KAHUA_BAG
+      ? kahuaLayerStore(handle, input.kahuaFace ?? (() => null))
+      : new AutomergeDocStore(handle, slot);
+    const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRows ?? [], base }) : base;
     // Oracle takes no writes; other CRDT slots accept writes through the in-wiki bag-paths cascade
     // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
     // slot's store directly, carrying the bag on the put option — never a field on the record. The
