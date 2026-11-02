@@ -41,6 +41,14 @@ describe("the browser vessel's daemon seam", () => {
     expect(js.some((t) => t.includes("__LAR_WALK_DOOR__"))).toBe(false);
   });
 
+  test("a walk build writes into its own outDir and leaves the Pronaos artifact record alone (a walk bundle is no shipped artifact)", () => {
+    const vite = readFileSync(join(__dirname, "..", "..", "lararium-web", "vite.config.ts"), "utf8");
+    const close = vite.slice(vite.indexOf("closeBundle()"));
+    expect(close.slice(0, 400)).toMatch(/if \(process\.env\["LAR_WALK_DOOR"\] === "1"\) return;/);
+    expect(vite).toMatch(/configResolved\(/);
+    expect(close.slice(0, 2000)).not.toMatch(/resolve\(import\.meta\.dirname, "dist"/);
+  });
+
   test("CONTROL: the instrument reads an absent seam as red", () => {
     expect("daemon = await openBrowserDaemonVm({".match(/daemon = daemonHolder\.vm;/)).toBeNull();
   });
