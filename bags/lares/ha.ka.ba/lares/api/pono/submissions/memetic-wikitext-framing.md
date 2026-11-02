@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;ZwlT8rSVRp2rInU-EDhoA3KpOkvz8sBLRIDysGrHtpw"
+source-check: "ni:///sha-256;nNj-MmD2HnlHI3xpW7wpXYSSOciefbJTHkKAJWnG73s"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -854,7 +854,7 @@ meta fence at or past STX, closing before ETX. The frame parses no TOML, so it r
 one spelling every emitter writes — a bare key, a basic string with no escape, nothing after the closing
 quote, keys before the first `[table]` header — and a binding key in any other spelling tears rather than
 binds, because a TOML parser might read it otherwise. The binding names what an UNKEYED check can name: a
-head rewritten alone no longer reads `match`, while a hand that rewrites head, meta and check together
+head rewritten alone reads `torn`, never `match`, while a hand that rewrites head, meta and check together
 still authors a new carrier, and only a signature names who did.
 
 ### What stands, and what waits

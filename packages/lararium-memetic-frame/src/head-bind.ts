@@ -31,9 +31,9 @@
  * read one value while the body read another would hand an author two addresses for one carrier.
  * The tear costs nothing honest: the whole corpus writes the one spelling (measured, 2026-11-01).
  *
- * LEGACY LEDGER: KEEP, both refusals here. `head-meta-split` refuses a live hostile form (a head moved
- * outside its seal), and the one-spelling tear guards a parser differential (frame read vs TOML read),
- * never a retired spelling. The pyre leaves them standing.
+ * PYRE LEDGER: KEEP, both refusals here. `head-meta-split` refuses a live hostile form, a head that
+ * names another place than its seal, and the one-spelling tear guards a parser differential (the
+ * frame's read against a TOML read). Each guards a live invariant, so the pyre leaves both standing.
  *
  * The root meta is the body reader's own: the first live ```` ```toml meta ```` opener at or past STX's
  * end, through the fence mask, closed at its `\n```. It binds only when it closes before the ETX —
