@@ -26,6 +26,7 @@
 import {
   AutomergeDocStore,
   LARES_BAG,
+  KAHUA_BAG,
   ORACLE_BAG,
   structuralSlots,
   wikiSlotUri,
@@ -34,6 +35,7 @@ import {
   type LarTiddlerRecord,
 } from "@lararium/mesh";
 import { makeCatalogAccessor, findOrThrow, libraryDocUrl } from "./catalog-accessor.js";
+import { kahuaLayerStore, librarySlotUrl } from "./kahua-layer.js";
 import { effectiveRecipe } from "./recipe-planes.js";
 import { REBOOT_ALERT_TITLE } from "./wiki-behavior.js";
 import type { IslandContext } from "./island-context.js";
@@ -59,8 +61,9 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
   const sysHandle = sysPlane ? await sysPlane.handle() : null;
 
   // Every bag document pointer resolves from the vessel catalog.
+  // `bags/kahua` answers from the island's grant alone (`kahua-layer`): a catalog row any holder rewrites moves no stage.
   const urlOfBag = async (bagId: string): Promise<string | null> =>
-    catalog ? libraryDocUrl(catalog, bagId) : null;
+    librarySlotUrl(bagId, { kahuaUrl: ctx.kahuaUrl ?? null }, catalog ? (s) => libraryDocUrl(catalog, s) : null);
 
   // The island's own recipe record, through the one reader every site shares: the vessel's own
   // composition (catalog) shadows a system wiki's default (oracle), the same two planes, own first.
@@ -98,11 +101,14 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
       });
       return false;
     }
-    const store = new AutomergeDocStore(handle, bagId);
-    ctx.composite.addLayer({ bagId, store, writable: true, defaultWritable: false }, at);
+    // The kahua stage stands read-only on the seam's store; every other library on its document store.
+    const kahua = bagId === KAHUA_BAG;
+    const store = kahua ? kahuaLayerStore(handle) : new AutomergeDocStore(handle, bagId);
+    ctx.composite.addLayer({ bagId, store, writable: !kahua, defaultWritable: false }, at);
     ctx.handles.set(bagId, handle);
-    store.emitInitialReplay();
-    store.markSyncComplete();
+    const replays = store as Partial<Pick<AutomergeDocStore, "emitInitialReplay" | "markSyncComplete">>;
+    replays.emitInitialReplay?.();
+    replays.markSyncComplete?.();
     return true;
   };
 

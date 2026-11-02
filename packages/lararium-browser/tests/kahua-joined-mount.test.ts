@@ -19,7 +19,7 @@ import {
   AutomergeDocStore, KAHUA_BAG, KAHUA_PLANE, ORACLE_BAG, actCid, adoptKahuaPlane, adoptedKahuaUrl, ed25519SignerFromSeed,
   ed25519VerifyingKeyFromSeed, emptyLarDoc, faceRecordsOf, groupSecretOpenerFromSeed, kahuaCatalogRow, kahuaRecipe, makeIslandRepo,
   materializeSharedLarDoc, mintFaceAnchor, personaKelBoardDocUrl, personaKelChainForPrefix, proveFaceFromLog, seedDaemonDoc,
-  signPersonaAct, CompositeStore, wikiSlotUri,
+  signPersonaAct, storedLarRecord, CompositeStore, wikiSlotUri,
   type ChangeOrigin, type DocHandle, type LarDoc, type SlotUri,
 } from "@lararium/mesh";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "@lararium/keyhive";
@@ -35,7 +35,7 @@ const TOP = wikiSlotUri("daemon", "working");
 function fakeTw5(): TW5Engine {
   class FakeTiddler { constructor(readonly fields: Record<string, unknown>) {} getFieldStrings() { return {}; } isEqual() { return false; } }
   return { $tw: { Tiddler: FakeTiddler, rootWidget: { invokeActionsByTag: () => {} },
-    wiki: { getTiddlerText: () => "", getTiddler: () => undefined, filterTiddlers: () => [], addEventListener: () => {}, removeEventListener: () => {}, transact: (fn: () => void) => fn() },
+    wiki: { getTiddlerText: () => "", getTiddler: () => undefined, addTiddler: () => {}, deleteTiddler: () => {}, filterTiddlers: () => [], addEventListener: () => {}, removeEventListener: () => {}, transact: (fn: () => void) => fn() },
     lares: { applyNalu: () => {}, isApplyingNalu: () => false } } } as unknown as TW5Engine;
 }
 
@@ -73,7 +73,7 @@ async function joinedPage(opts: { readonly pin: boolean; readonly catalogRow?: (
     deviceKey: key(joineeAtom), planes: { intents: applied.intentsUrl, kahua: applied.kahuaUrl } });
   if (!proof.ok) throw new Error(`face proof refused: ${proof.refusal.why}`);
   const catalog = emptyLarDoc();
-  if (opts.catalogRow) (catalog.tiddlers as Record<string, unknown>)[KAHUA_BAG] = { title: KAHUA_BAG, text: opts.catalogRow(stage.url) };
+  if (opts.catalogRow) (catalog.tiddlers as Record<string, unknown>)[KAHUA_BAG] = storedLarRecord(KAHUA_BAG, { text: opts.catalogRow(stage.url), kind: "oracle" }, "vessel-boot");
   const adoption = adoptKahuaPlane(proof.projection, kahuaCatalogRow(catalog));
   const asked: string[] = [];
   const kahuaUrl = await librarySlotUrl(KAHUA_BAG, { kahuaUrl: adoptedKahuaUrl(adoption) }, async (slot) => { asked.push(slot); return kahuaCatalogRow(catalog); });

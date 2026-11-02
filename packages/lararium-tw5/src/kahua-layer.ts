@@ -19,7 +19,8 @@ export async function librarySlotUrl(
   grants: { readonly kahuaUrl?: string | null },
   catalog: ((slot: string) => Promise<string | null>) | null,
 ): Promise<string | null> {
-  throw new Error("librarySlotUrl: unbuilt");
+  if (slot === KAHUA_BAG) return grants.kahuaUrl ?? null;
+  return catalog ? catalog(slot) : null;
 }
 
 /** The store the kahua layer stands on. SEAM: the verify-on-read stage adapter replaces this body at merge. */

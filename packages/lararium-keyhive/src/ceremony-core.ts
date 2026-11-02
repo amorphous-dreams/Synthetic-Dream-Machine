@@ -66,7 +66,7 @@ import {
 } from "@lararium/mesh";
 
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
-import { buildCeremonyTiddlers, webDigest, hex as hexEncode, plainEntries, storedRecord, tiddlerText, type StoredTiddlers } from "@lararium/mesh";
+import { buildCeremonyTiddlers, webDigest, hex as hexEncode, plainEntries, storedRecord, tiddlerText, kahuaPlaneUrl, type StoredTiddlers } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import { FacelessKeyhiveRefused } from "./boot-daemon-keyhive.js";
 import { InMemoryEventStore } from "./event-store.js";
@@ -869,6 +869,9 @@ export interface ApplyAdmitResult {
   circlesUrl:    string;
   sessionsUrl:   string;
   intentsUrl:    string;
+  /** The face's kahua stage as the bundle's VERIFIED log pins it (`kahuaPlaneUrl`), or null where the face pinned none
+   *  yet: a stage minted after this admit reaches the device through the persona doc's sync, and its boot proof reads it. */
+  kahuaUrl:      string | null;
   daemonUrl:      string;
   /** The PersonaGroup plane's doc URL the joinee resolves — the founder's shared doc
    *  (membership-sync) when the payload carries it, else a fresh local seed. */
@@ -1017,7 +1020,7 @@ export async function runApplyAdmitPayload(
   const capStore = new InMemoryEventStore();
   if (checkpoint) {
     for (const e of checkpoint.events) await capStore.put({ hash: e.hash, variant: e.variant, bytes: base64ToBytes(e.bytes), ...(e.island ? { island: e.island } : {}) });
-    result = { ...checkpoint.result, archive: base64ToBytes(checkpoint.result.archive) };
+    result = { ...checkpoint.result, kahuaUrl: kahuaPlaneUrl(carriedLog), archive: base64ToBytes(checkpoint.result.archive) };
   } else {
     const keyhive = new KeyhiveProvider();
     await keyhive.init({ seed: atomSeed, eventStore: capStore, ...(input.archiveBytes ? { archiveBytes: input.archiveBytes } : {}) });
@@ -1031,6 +1034,7 @@ export async function runApplyAdmitPayload(
       circlesUrl: sharedCirclesUrl ?? circlesHandle!.url as string,
       sessionsUrl: sessionsHandle.url as string,
       intentsUrl: sharedIntentsUrl,
+      kahuaUrl: kahuaPlaneUrl(carriedLog),
       daemonUrl: daemonHandle.url as string,
       personaUrl, personaBagId,
       hearthDaemonUrl: payload.hearthDaemonUrl,

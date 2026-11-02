@@ -77,7 +77,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
+  faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
   readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
   type WideningRead,
 } from "@lararium/mesh";
@@ -1258,6 +1258,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // WHAT THE FACE PROOF VOUCHED FOR, read by everything below that mounts or authorizes a plane: the worn face's persona plane (the
       // url the proof checked) and the proven persona planes by group. Nothing below reads the founding bootstrap's singular fields.
       let provenWornPlaneUrl: string | null = null;
+      // THE FACE'S KAHUA STAGE, adopted off the same verified projection (`adoptKahuaPlane`): the daemon island mounts
+      // `bags/kahua` from this grant alone, and the catalog row rides as a hint that refuses by name when it disagrees.
+      let provenKahuaUrl: string | null = null;
       const provenPlanes = new Map<string, string>();
       let wornFaceProjection: Parameters<typeof provenPlaneUrls>[0] | null = null;
       {
@@ -1278,6 +1281,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           planes: { persona: wornPlaneUrl, intents: wornIntentsUrl, ...(foundingFace ? { identities: social.identitiesUrl, circles: social.circlesUrl } : {}) },   // the face's shared documents; sessions stay per vessel
         });
         if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
+        const kahua = adoptKahuaPlane(proof.projection, kahuaCatalogRow(assembly.catalogHandle.doc()));
+        if ("refused" in kahua) console.warn(`[lararium-browser] kahua stage: ${kahua.refused} (the catalog names ${kahua.catalog}, the face pins ${kahua.pinned ?? "none"}); the layer stands absent`);
+        provenKahuaUrl = adoptedKahuaUrl(kahua);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
         // The LEASE rises with it, from a VERIFIED observation alone (a signed advance by the KEL's current roster), so a later
         // missing or replayed older slot never lowers the epoch this device already accepted.
@@ -1295,7 +1301,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // THE WORN FACE'S PLANES CROSS AT ITS OWN HEARTH as its signed log names them, and only now: no plane url read off the
         // unsealed bootstrap crossed before this proof. The repo asks the hearth again for what the gate now opens.
         if (crossing.openFacePlanes(provenCrossingPlanes(proof.projection, {
-          persona: wornPlaneUrl, intents: wornIntentsUrl,
+          persona: wornPlaneUrl, intents: wornIntentsUrl, kahua: provenKahuaUrl,
           ...(foundingFace ? { identities: social.identitiesUrl, circles: social.circlesUrl, sessions: social.sessionsUrl } : {}),
         }))) { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } }
         provenWornPlaneUrl = wornPlaneUrl;
@@ -1361,7 +1367,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             personaGroupId,
             catalogNamed: personaGroupId === wornGroup ? catalogNamedBags(catalogHandle.doc()) : [],
           })),
-          wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId],
+          wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId, ...(provenKahuaUrl ? [KAHUA_BAG] : [])],
         }),
         // The WORN persona-root's binding (founder-signed): the gate pins personaKel.prefix and walks the KEL
         // to the current head; deviceEdge is the signed device→hearth edge. From the single bootstrap.
@@ -1451,6 +1457,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           wikiUrl:   social.daemonUrl,
           // ACCESS grant, not a LOAD slot — the worker reaches the catalog registry via the accessor.
           catalogUrl: catalogHandle.url,
+          // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
+          ...(provenKahuaUrl ? { kahuaUrl: provenKahuaUrl } : {}),
         },
         daemonAuth,
       });

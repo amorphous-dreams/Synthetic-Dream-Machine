@@ -41,6 +41,8 @@ export interface IslandContext {
    * manifest's `grants.catalogUrl`; the kernel lifts it here.
    */
   catalogUrl: string | null;
+  /** The face's kahua stage the manifest granted (`IslandGrants.kahuaUrl`); `bags/kahua` mounts from this alone. */
+  kahuaUrl?: string | null;
   /**
    * The oracle runtime system-island doc URL (= `grants.islandUrl`). The
    * **system** oracle plane: system bags (the oracle,

@@ -10,6 +10,8 @@
  */
 
 import { kahuaPlaneUrl } from "./kahua-stage.js";
+import { KAHUA_BAG } from "./wiki-recipe.js";
+import { tiddlerText } from "./base-doc.js";
 
 export type KahuaAdoption =
   | { readonly mount: string }
@@ -17,7 +19,9 @@ export type KahuaAdoption =
   | { readonly refused: "kahua-catalog-mismatch"; readonly catalog: string; readonly pinned: string | null };
 
 export function adoptKahuaPlane(projection: { readonly planes: Readonly<Record<string, string | undefined>> }, catalogRow: string | null | undefined): KahuaAdoption {
-  throw new Error("adoptKahuaPlane: unbuilt");
+  const pinned = kahuaPlaneUrl(projection);
+  if (catalogRow && catalogRow !== pinned) return { refused: "kahua-catalog-mismatch", catalog: catalogRow, pinned };
+  return pinned ? { mount: pinned } : { absent: "kahua-unpinned" };
 }
 
 /** The url a mounted adoption carries, else null: every refusal and every absence mounts nothing. */
@@ -27,5 +31,6 @@ export function adoptedKahuaUrl(adoption: KahuaAdoption): string | null {
 
 /** The catalog's `bags/kahua` row: a mount hint, read as text, never an authority. */
 export function kahuaCatalogRow(catalog: { readonly tiddlers?: Readonly<Record<string, unknown>> } | null | undefined): string | null {
-  throw new Error("kahuaCatalogRow: unbuilt");
+  const text = tiddlerText(catalog?.tiddlers?.[KAHUA_BAG] as never);
+  return typeof text === "string" && text.length > 0 ? text : null;
 }

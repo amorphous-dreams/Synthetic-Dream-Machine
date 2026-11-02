@@ -20,6 +20,7 @@ import {
   slotLayerFlags,
   wikiSlotUri,
   ORACLE_BAG,
+  KAHUA_BAG,
   floorReadFace,
   type LarDoc,
   type DocHandle,
@@ -29,6 +30,7 @@ import {
   type LarTiddlerStore,
 } from "@lararium/mesh";
 import { IslandAdaptor } from "./island-adaptor.js";
+import { kahuaLayerStore } from "./kahua-layer.js";
 import { MemoryTiddlerStore } from "./memory-store.js";
 import type { TW5Engine } from "./tw5-vm.js";
 
@@ -82,7 +84,8 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     }
     const handle = handleBySlot.get(slot);
     if (!handle) continue; // CRDT slot not provided — skip (cold or unmapped)
-    const base = new AutomergeDocStore(handle, slot);
+    // The kahua layer stands on the one seam's store (`kahuaLayerStore`); every other CRDT slot on its document store.
+    const base = slot === KAHUA_BAG ? kahuaLayerStore(handle) : new AutomergeDocStore(handle, slot);
     const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRows ?? [], base }) : base;
     // Oracle takes no writes; other CRDT slots accept writes through the in-wiki bag-paths cascade
     // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
@@ -126,11 +129,12 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   }
 
   // Drive existing CRDT state through the projection bus → adaptor → shore queue.
-  for (const { store } of stores) {
-    if (store instanceof AutomergeDocStore) {
-      store.emitInitialReplay();
-      store.markSyncComplete();
-    }
+  // The kahua seam's store replays the same way when it carries the two document-store calls.
+  for (const { slot, store } of stores) {
+    const replays = store as Partial<Pick<AutomergeDocStore, "emitInitialReplay" | "markSyncComplete">>;
+    if (!(store instanceof AutomergeDocStore) && (slot !== KAHUA_BAG || typeof replays.emitInitialReplay !== "function")) continue;
+    replays.emitInitialReplay?.();
+    replays.markSyncComplete?.();
   }
 
   // TW5 ran `$:/tags/StartupAction` over the preloads alone, before any record landed. The seed carries

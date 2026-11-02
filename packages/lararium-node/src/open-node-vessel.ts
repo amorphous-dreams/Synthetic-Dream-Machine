@@ -66,6 +66,7 @@ import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
+import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow } from "@lararium/mesh";
 import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
@@ -894,8 +895,12 @@ async function prepareNodeBootOn(
   });
   // The mounted face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
   let catalogForViews: (() => LarDoc | undefined) | null = null;
+  // THE WORN FACE'S KAHUA STAGE, adopted off its verified projection at the face proof below (`adoptKahuaPlane`): the
+  // face's `kahua` facet and the daemon island's `bags/kahua` grant read this, never a catalog row.
+  let wornKahua: { readonly group: string; readonly url: string } | null = null;
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
-    () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()));
+    () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()),
+    (group) => (wornKahua && wornKahua.group === group ? wornKahua.url : null));
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
@@ -2244,6 +2249,10 @@ async function prepareNodeBootOn(
         if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
         wornFaceProved = true;
         wornFaceProjection = proof.projection;
+        const kahua = adoptKahuaPlane(proof.projection, kahuaCatalogRow(assembly.catalogHandle.doc()));
+        if ("refused" in kahua) console.warn(`[lararium] kahua stage: ${kahua.refused} (the catalog names ${kahua.catalog}, the face pins ${kahua.pinned ?? "none"}); the layer stands absent`);
+        const kahuaUrl = adoptedKahuaUrl(kahua);
+        wornKahua = kahuaUrl ? { group: personaGroupId, url: kahuaUrl } : null;
         wornFaceProven = true;
         provenPlanes.set(personaGroupId, bootstrap.personaUrl);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
@@ -2678,6 +2687,8 @@ async function prepareNodeBootOn(
         // ACCESS grant, not a LOAD slot — the catalog registry is absent from expandRecipe,
         // so the kernel never layers it; the worker reaches it via the accessor.
         catalogUrl: catalogHandle.url,
+        // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
+        ...(wornKahua ? { kahuaUrl: wornKahua.url } : {}),
       },
       daemonAuth,
       storageDir,

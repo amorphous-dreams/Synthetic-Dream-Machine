@@ -71,6 +71,7 @@ import { waitForSlotDocument } from "./slot-wait.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
 import { preloadsFromCasBlob } from "./cas-preloads.js";
 import { makeCatalogAccessor, libraryDocUrl } from "./catalog-accessor.js";
+import { librarySlotUrl } from "./kahua-layer.js";
 import { installLazyResolver } from "./lazy-resolver.js";
 import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
 import { makeViewChannel, type ViewChannel } from "./view-channel.js";
@@ -343,7 +344,8 @@ export function runSovereignKernel(
       if (slot === wikiSlotUri(slug, "personal")) return msg.grants.personalUrl ?? null;
       if (slot === wikiBagUri(slug))              return msg.ownedDocument?.documentUrl ?? msg.grants.wikiUrl ?? null;
       if (slot === ORACLE_BAG)                 return msg.grants.islandUrl;
-      return catalog ? await libraryDocUrl(catalog, slot) : null;
+      // `bags/kahua` answers from the grant the face proof filled, never from a catalog row (`kahua-layer`).
+      return librarySlotUrl(slot, msg.grants, catalog ? (s) => libraryDocUrl(catalog, s) : null);
     };
 
     const slots = expandRecipe(msg.recipe);
@@ -471,7 +473,7 @@ export function runSovereignKernel(
     // reconciling the SAME path boot just walked.
     // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
     // behaviors: a residency handler resolves a carrier body a verb rode by reference.
-    _ctx = { wikiUri: msg.wikiUri, composite: _composite, tw5, handles: _handles, post: _post, repo: _repo!, ...(_rest ? { rest: _rest } : {}), catalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
+    _ctx = { wikiUri: msg.wikiUri, composite: _composite, tw5, handles: _handles, post: _post, repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, ...(_rest ? { rest: _rest } : {}), catalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
     // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
     // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
     // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The
