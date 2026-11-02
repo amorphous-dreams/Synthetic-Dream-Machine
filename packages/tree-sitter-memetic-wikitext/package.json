@@ -13,8 +13,8 @@
   ],
   "artifact": {
     "grammarAbi": 15,
-    "treeSitterCli": "0.27.0",
-    "webTreeSitter": "0.27.0",
+    "treeSitterCli": "0.27.1",
+    "webTreeSitter": "0.27.1",
     "toolchain": "tree-sitter-cli builds wasm via auto-downloaded wasi-sdk; no emscripten pin. The CLI that generates and the wasm runtime that loads (web-tree-sitter) never drift a minor apart (the pin-pair law); a native binding (py tree-sitter, packages/lararium-sensorium/requirements.txt) answers to the grammar ABI alone, inside its own runtime window.",
     "corpusManifest": "0.1.0"
   },
