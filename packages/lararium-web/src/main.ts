@@ -1,4 +1,3 @@
-import { mountPromotePanel } from "./promote-panel.js";
 /**
  * lararium-web — the Web-surface assembly.
  *
@@ -506,11 +505,6 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
       ...(admit ? { admit } : {}),
       ...(meshLeaf ? { meshLeaf } : {}),
     });
-    const promoteActions = result.promote?.claim() ?? null;
-    if (promoteActions) {
-      const panel = mountPromotePanel(document.getElementById("promote-panel")!, promoteActions);
-      void panel.refresh();
-    }
     vesselOpened = true;
     pendingAdmit = null;
     // Identity custody stays in the browser vessel. The web surface renders the public receipt returned

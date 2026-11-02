@@ -54,7 +54,7 @@ import {
   faceAtomKeyFromSeed, type FaceAtomKey,
   carriageFloorDutyOf, type PlaceSigner,
   genesisCasCidsFromOracle, provenVesselKeyOf,
-  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, type GateSweepSeat,
+  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed, type GateSweepSeat,
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
@@ -195,7 +195,7 @@ import {
   makeVesselResidency, type VesselResidency,
   replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
-import { loadVesselIdentity, vesselPlaceSignerDoor, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
+import { loadPersonaGroupRootSeed, loadVesselIdentity, vesselPlaceSignerDoor, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
 import { socketsNoLongerHeld, ownPlacePosture, sameOperatorStands, seatedDeviceKey, type PlaceClass, type SeatedPresenter } from "./socket-sorter.js";
 import { faceGateServer, gateSessionRegistry, timerGateDeadlines } from "./face-gate-server.js";
 import { gateSyncServer, type GateSyncSocket }    from "./gate-sync-server.js";
@@ -906,6 +906,9 @@ async function prepareNodeBootOn(
   let wornKahua: { readonly group: string; readonly url: string } | null = null;
   let wornPromote: string | null = null;
   let promoteWiringRef: ReturnType<typeof promoteWiring> | null = null;
+  let promoteHandlers: ReturnType<typeof promoteMainVerbs> | null = null;
+  let pushPromoteSnapshot: (() => Promise<void>) | null = null;
+  let setupPromotePanel: (() => Promise<void>) | null = null;
   let rebuildPromoteWiring: () => void = () => {};
   let wornPromoteGroup: string | null = null;
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
@@ -2288,12 +2291,43 @@ async function prepareNodeBootOn(
             boardFace: () => { const f = promoteFace.read(); return { group: personaGroupId, grant: f ? f.grant : () => false, device: (k) => devices.has(k) }; },
             stores: nodePromoteStores(personaGroupId), cas: nodePromoteCas(casDirForStorage(storageDir), promoteHolder),
             wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
+            onArrive: async () => { await pushPromoteSnapshot?.(); },
             onFault: (reason) => console.warn(`[promote] ${reason}`),
-            onRestartFailed: (wiki, error) => console.warn(`[promote] restart of ${wiki} failed (the next board read tries again): ${error instanceof Error ? error.message : String(error)}`),
+            onRestartFailed: (wiki, error) => { console.warn(`[promote] restart of ${wiki} failed: ${error instanceof Error ? error.message : String(error)}`); void pushPromoteSnapshot?.().catch(console.warn); },
             onReport: (wiki, r) => { if (r.orphans.length || r.updateWaits.length || r.voided.length) console.warn(`[promote] ${wiki}: orphans=${r.orphans.join(",")} updateWaits=${r.updateWaits.join(",")} voided=${r.voided.map(v => v.digest).join(",")}`); },
           }) : null;
         };
         rebuildPromoteWiring();
+        const atom = activeAtom;
+        setupPromotePanel = async () => {
+          const wiring = promoteWiringRef;
+          if (!wiring || !wornPromote) return;
+          const handle = await repo.find<LarDoc>(wornPromote as AutomergeUrl);
+          const boardFace = { group: personaGroupId, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
+          const boardDoor = promoteBoardDoor({ group: personaGroupId, face: boardFace, atom,
+            epoch: () => readFace(personaKelChain ?? [], faceAnchor)?.lineage.at(-1)?.epoch ?? 0,
+            rootSigner: async () => {
+              const seed = await loadPersonaGroupRootSeed(wornMount?.handleIndex ?? 0);
+              try { return { key: await ed25519VerifyingKeyFromSeed(seed), sign: async (bytes: Uint8Array) => {
+                const fresh = await loadPersonaGroupRootSeed(wornMount?.handleIndex ?? 0);
+                try { return await ed25519SignerFromSeed(fresh)(bytes); } finally { fresh.fill(0); }
+              } }; }
+              finally { seed.fill(0); }
+            },
+            board: { records: async () => promoteActRecords(handle.doc(), personaGroupId), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
+            projection: () => proof.projection,
+          });
+          const who = { kind: "hand" as const, id: atom.key };
+          const core = promotePanelApi({ who,
+            wikis: async () => ["daemon", ...vmManager.inspect().filter(slot => slot.temperature === "wela" && slot.wikiId !== "daemon").map(slot => slot.wikiId)],
+            promotionsFor: wiki => promotions({ wiki, ...nodePromoteStores(personaGroupId), who,
+              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(casDirForStorage(storageDir), atom.key),
+              loaded: () => wiring.loadedFor(wiki), restart: () => wiring.restart(wiki) }), boardDoor,
+          });
+          const push = async (data: string) => { daemonVm.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
+          pushPromoteSnapshot = async () => { await push(JSON.stringify(await core.snapshot())); };
+          promoteHandlers = promoteMainVerbs({ api: core, push });
+        };
         wornFaceProven = true;
         provenPlanes.set(personaGroupId, bootstrap.personaUrl);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
@@ -2600,6 +2634,7 @@ async function prepareNodeBootOn(
       wornKahua = url ? { group: personaGroupId, url } : null;
       wornPromote = await adoptPromoteBoard({ repo, group: personaGroupId, projection: wornFaceProjection });
       rebuildPromoteWiring();
+      await setupPromotePanel?.();
       console.log(url ? `[kahua] the face's stage stands adopted: ${url}` : "[kahua] the face pins no stage yet; the layer stands absent until its pin syncs");
     }
     // The selected face's custody standing decides whether its veil archive may leave this
@@ -3178,6 +3213,7 @@ async function prepareNodeBootOn(
   // wiki island) and residency stats (a read of the main-resident manager).
   const wireVerbs: VesselOrchestration<VesselIslandPool>["wireVerbs"] = (registry, assembly) => {
     seedVesselDefaults(registry);
+    if (promoteHandlers) for (const [name, handler] of Object.entries(promoteHandlers)) registry.register(name, args => handler(args), { summary: name, surfaces: [] });
     registry.register("sync-wiki", async (args, ctx) => {
       // Resolver-as-activator: a reference wakes a cold grain before the verb lands
       // (the pinned home wiki is already live → a cheap no-op).
@@ -3578,6 +3614,7 @@ async function prepareNodeBootOn(
     // exempt from collection. Everything else activates on reference through the cap.
     // mountPrimaryWiki already mounted + spec-retained it, so onHydrate → ensureWiki
     // sees it live and no-ops (idempotent). Rotation = unpin the old, pin the new.
+    void pushPromoteSnapshot?.().catch(console.warn);
     const stopPromoteWatch = promoteWiringRef?.watch();
     if (stopPromoteWatch) stood.push({ what: "the promote watcher", down: stopPromoteWatch });
     if (slotActiveWikiId) void residency.pin(slotActiveWikiId, "boot:home-wiki", "wiki");

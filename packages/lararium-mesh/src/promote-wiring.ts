@@ -12,6 +12,7 @@ export function promoteWiring(opts: {
   stores: { ledger: PromotionPorts["ledger"]; local: PromotionPorts["local"] };
   cas: PromotionPorts["cas"]; wikiItems: (wiki: string) => Promise<readonly PromoteItem[]>;
   restart: (wiki: string) => Promise<void>; daemonWiki?: string;
+  onArrive?: () => Promise<void>;
   onReport?: (wiki: string, report: PromoteBootReport) => void;
   onRestartFailed?: (wiki: string, error: unknown) => void;
   onFault?: (reason: "ledger-unreadable" | "board-unreadable" | "board-unpinned") => void;
@@ -51,7 +52,7 @@ export function promoteWiring(opts: {
         attach = opts.repo.find<LarDoc>(opts.boardUrl as AutomergeUrl).then(handle => {
           if (stopped) return;
           const onChange = () => {
-            tail = tail.then(async () => { await boot.arrive(); }).catch(() => { opts.onFault?.("board-unreadable"); });
+            tail = tail.then(async () => { await boot.arrive(); await opts.onArrive?.(); }).catch(() => { opts.onFault?.("board-unreadable"); });
           };
           handle.on("change", onChange);
           detach = () => { handle.off("change", onChange); };

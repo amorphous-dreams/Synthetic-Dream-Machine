@@ -79,7 +79,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  promotePanelApi, claimablePromoteApi, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
+  promotePanelApi, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
   readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
   type WideningRead,
 } from "@lararium/mesh";
@@ -342,7 +342,6 @@ export type ProjectionSurfaceFrame = LarMsg_Frame & { readonly surface: string }
 /** The ONE shared VesselResult (no vessel-by-type) + browser's one substrate extra. */
 export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPool, DaemonVmCore> {
   /** The public identity receipt composed by this vessel. Private signing material never leaves the vessel. */
-  promote: ReturnType<typeof claimablePromoteApi> | null;
   identity: BrowserVesselIdentity;
   /**
    * Has this vessel crossed? True once the hearth it dials answered with a verdict signed by the pinned gate key
@@ -959,7 +958,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // ── Residency MECHANISM (parity with node — a tab has finite memory too) ────
   let vmManager!: BrowserVesselIslandPool;   // set in makePool
   let portFaceId: string | null = null;
-  let promotePanel: BrowserVesselResult["promote"] = null;
+  let promoteHandlers: ReturnType<typeof promoteMainVerbs> | null = null;
+  let pushPromoteSnapshot: (() => Promise<void>) | null = null;
   let promoteWiringRef: ReturnType<typeof promoteWiring> | null = null;
   const restartWikiIsland = async (wiki: string) => {
     if (wiki === "daemon") {
@@ -1367,17 +1367,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           boardFace: () => { const f = promoteFace.read(); return { group: wornGroup, grant: f ? f.grant : () => false, device: (k) => devices.has(k) }; },
           stores: browserPromoteStores(idbName, wornGroup), cas: browserPromoteCas(),
           wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
+          onArrive: async () => { await pushPromoteSnapshot?.(); },
           onFault: (reason) => console.warn(`[promote] ${reason}`),
           onReport: (wiki, r) => { if (r.orphans.length || r.updateWaits.length || r.voided.length) console.warn(`[promote] ${wiki}: orphans=${r.orphans.join(",")} updateWaits=${r.updateWaits.join(",")} voided=${r.voided.map(v => v.digest).join(",")}`); },
-          onRestartFailed: (wiki, error) => console.warn(`[promote] restart of ${wiki} failed (the next board read tries again): ${error instanceof Error ? error.message : String(error)}`),
+          onRestartFailed: (wiki, error) => { console.warn(`[promote] restart of ${wiki} failed: ${error instanceof Error ? error.message : String(error)}`); void pushPromoteSnapshot?.().catch(console.warn); },
         }) : null;
         if (promoteWiringRef && provenPromoteUrl) {
           const wiring = promoteWiringRef;
           const handle = await repo.find<LarDoc>(provenPromoteUrl as AutomergeUrl);
-          const listeners = new Set<() => void>();
-          const notify = () => { for (const listener of listeners) listener(); };
-          handle.on("change", notify);
-          held.stood.push({ what: "the promote panel watcher", down: () => handle.off("change", notify) });
           const boardFace = { group: wornGroup, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
           const boardDoor = promoteBoardDoor({ group: wornGroup, face: boardFace, atom: wornAtom,
             epoch: () => readFace(personaKelChain)?.lineage.at(-1)?.epoch ?? 0,
@@ -1402,11 +1399,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
               items: () => wiring.itemsOf(wiki), board: wiring.board, cas: browserPromoteCas(),
               loaded: () => wiring.loadedFor(wiki), restart: () => wiring.restart(wiki) }), boardDoor,
           });
-          const after = async <T>(action: () => Promise<T>): Promise<T> => { const result = await action(); notify(); return result; };
-          promotePanel = claimablePromoteApi({ ...core, subscribe: fn => { listeners.add(fn); return () => { listeners.delete(fn); }; },
-            commit: (w, d) => after(() => core.commit(w, d)), drop: (w, d) => after(() => core.drop(w, d)),
-            orphan: (w, d, x) => after(() => core.orphan(w, d, x)), raise: (w, d) => after(() => core.raise(w, d)), lower: (w, d) => after(() => core.lower(w, d)),
-          });
+          const push = async (data: string) => { daemon.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
+          pushPromoteSnapshot = async () => { await push(JSON.stringify(await core.snapshot())); };
+          promoteHandlers = promoteMainVerbs({ api: core, push });
         }
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
         if (foundingFace && social.identitiesUrl && social.circlesUrl) {
@@ -1609,6 +1604,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
 
     wireVerbs: (registry, _assembly) => {
       seedVesselDefaults(registry);
+      if (promoteHandlers) for (const [name, handler] of Object.entries(promoteHandlers)) registry.register(name, args => handler(args), { summary: name, surfaces: [] });
       // Thin main verb plane (node parity). Every catalog/recipe/residency-mutating
       // daemon verb lives in the worker now (wireWorkerVerbs) — access≠load, write-then-sync.
       // Main keeps only sync-wiki (commands the pool's active wiki) + residency stats (a read).
@@ -1955,6 +1951,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     },
 
     afterLive: ({ wikiHandle }) => {
+      void pushPromoteSnapshot?.().catch(console.warn);
       // Presence — ephemeral, does not travel via CRDT. The PLACE announces itself, never a face:
       // being-as-place costs nothing civic, so a vessel key is the right thing to be seen by here.
       // Carried in the canonical DID form (`0x` + verifying key) so the field holds what it names.
@@ -1978,7 +1975,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   connectionState.setWikiDocUrl(result.wikiHandle.url);
 
   return {
-    promote: promotePanel,
     identity: vesselIdentity,
     pool: result.pool,
     repo,

@@ -643,6 +643,5 @@ export { censusOutcomeLinkage, type OutcomeLinkage } from "./outcome-census.js";
 
 export * from "./promote-panel-api.js";
 
-export * from "./promote-claim.js";
 
 export * from "./promote-main-verbs.js";
