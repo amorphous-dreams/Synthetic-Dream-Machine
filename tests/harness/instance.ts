@@ -29,6 +29,7 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
 import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
+import { kahuaFaceFolder, kahuaFaceTag } from "../../packages/lararium-node/src/bag-paths.js";
 
 /**
  * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
@@ -261,6 +262,21 @@ const UNLOCK_LOOKS = 240;
 const hearthCards = new Map<string, string>();
 /** Persona zero's PersonaGroup id by staged root: the group the founding admitted to the Kahu cabal. */
 const hearthGroups = new Map<string, string>();
+
+/** Persona zero's PersonaGroup id on a staged hearth `foundStagedHearth` founded; a root it never founded throws by name. */
+export function stagedHearthGroup(root: string): string {
+  const group = hearthGroups.get(root);
+  if (!group) throw new Error(`no staged hearth founding answered a PersonaGroup id for ${root}`);
+  return group;
+}
+
+/**
+ * Where a staged hearth's daemon wiki (the kahua wiki's working top, bag `wikis/daemon/working`) projects on disk: the face
+ * rides the folder's name, `<root>/wikis/kahua-<tag>`, the tag the founded face's derived persona tag.
+ */
+export function daemonWikiDir(root: string): string {
+  return join(root, "wikis", kahuaFaceFolder(kahuaFaceTag(stagedHearthGroup(root))));
+}
 
 /**
  * THE STABLE FOUNDING ACT on a staged root: the place, persona zero under `name`, its one-seat seed charter and the

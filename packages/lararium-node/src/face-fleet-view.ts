@@ -31,14 +31,17 @@
  *        lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view
  */
 import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, isFaceScopedBag, tiddlerText, type LarDoc, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets, ownEntry } from "@lararium/mesh";
+import { KAHUA_BAG, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, isFaceScopedBag, tiddlerText, type LarDoc, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets, ownEntry } from "@lararium/mesh";
 import { bootDaemonUrl, bootFacePlanes } from "./boot-face-planes.js";
 import type { KahuCanonDocs } from "./kahu-realm.js";
 
 type BootTiddlers = Readonly<Record<string, { text?: string }>>;
 
-/** The documents `personaGroup` holds on this vessel, read off the bootstrap alone; null where it holds none. */
-export function faceFleetFacets(bootstrapTiddlers: BootTiddlers, personaGroup: string): SessionDocumentFacets | null {
+/**
+ * The documents `personaGroup` holds on this vessel, read off the bootstrap alone; null where it holds none. Its kahua stage
+ * rides its own `kahua` facet, named by `kahuaOf` (the url the face's VERIFIED plane act pins, never a bootstrap value).
+ */
+export function faceFleetFacets(bootstrapTiddlers: BootTiddlers, personaGroup: string, kahuaOf?: (group: string) => string | null): SessionDocumentFacets | null {
   let planes: ReturnType<typeof bootFacePlanes>;
   try { planes = bootFacePlanes(bootstrapTiddlers, personaGroup); } catch { return null; }
   // A bootstrap that carries no plane for the named group mounts none: its url reads null.
@@ -50,13 +53,16 @@ export function faceFleetFacets(bootstrapTiddlers: BootTiddlers, personaGroup: s
   add("circles", planes.circlesUrl);
   add("sessions", planes.sessionsUrl);
   add("intents", planes.intentsUrl);
+  // The stage rides a read-only layer for every profile: a lift lands through the kahua door alone, never a session's write.
+  const kahua = kahuaOf?.(personaGroup) ?? null;
+  if (kahua) documents.push({ name: "kahua", document: kahua, layer: "library" });
   add("daemon", bootDaemonUrl(bootstrapTiddlers));
   return { documents, content: [] };
 }
 
 /**
  * The documents the mounted face's bridge may read beyond its own view: every document the catalog points at (`automerge:` text) under a
- * title that is NOT a face-scoped bag id: the vessel's books (a wiki, a draft, the catalog, the oracle) and the pointers its planes
+ * title that is NOT a face-scoped bag id (nor the kahua stage, which crosses on its own face's facet alone): the vessel's books (a wiki, a draft, the catalog, the oracle) and the pointers its planes
  * stand on (a realm's doc, its steward, its standing), as document IDs. An ALLOW-LIST: a document the catalog does not point at
  * reads nothing across the bridge, so a foreign face's plane whose catalog row is absent, withheld or face-scoped is shut out by
  * default and never let in by an omission. The mounted face's own five planes ride its view. The Kahu canon this vessel
@@ -69,7 +75,8 @@ export function bridgeBooks(catalog: LarDoc | undefined | null, canon: KahuCanon
     try { out.add(interpretAsDocumentId(url as AutomergeUrl)); } catch { /* a malformed url names nothing */ }
   };
   for (const [title, record] of Object.entries(catalog?.tiddlers ?? {})) {
-    if (isFaceScopedBag(title)) continue;
+    // The kahua stage names no face by its bag id, so its scoping rides the pin: it crosses on its own face's facet alone.
+    if (isFaceScopedBag(title) || title === KAHUA_BAG) continue;
     add(tiddlerText(record));
   }
   // THE KAHU CANON IS A BOOK OF THIS VESSEL: the realm registry, never the catalog, names `@lares` and `@lararium` (one
@@ -102,7 +109,7 @@ export interface FaceFleetViews {
  * One view per seated peer, its facets read off `bootstrap()` at the seat. `wornGroup` names the face this vessel
  * wears (the bootstrap's pin where none is named): its sessions also read the vessel's books (the bridge above).
  */
-export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?: () => string | null, books?: () => ReadonlySet<string>): FaceFleetViews {
+export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?: () => string | null, books?: () => ReadonlySet<string>, kahuaOf?: (group: string) => string | null): FaceFleetViews {
   const views = new Map<string, { view: SessionDocumentView; gate: FederationGate; face: string }>();
   const drop = (peerId: string): void => {
     const held = views.get(peerId);
@@ -114,7 +121,7 @@ export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?:
       drop(peerId);
       if (face === null) return;
       const tiddlers = bootstrap();
-      const facets = tiddlers ? faceFleetFacets(tiddlers, face.personaGroup) : null;
+      const facets = tiddlers ? faceFleetFacets(tiddlers, face.personaGroup, kahuaOf) : null;
       if (facets === null || facets.documents.length === 0) return;
       const view = new SessionDocumentView({ profile: "face", facets });
       // The mounted face is the caller's (sealed custody's) when it names one; the bootstrap's group text answers only where no caller does.

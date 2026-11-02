@@ -7,7 +7,8 @@
  */
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
-import { stripMemeExt, wikiSlotUri, isBagManifestUri } from "@lararium/mesh";
+import { readdirSync } from "fs";
+import { stripMemeExt, wikiSlotUri, isBagManifestUri, KAHUA_BAG, CROSSROADS_DOC_URI, personaScopeTag, PERSONA_SCOPE_TAG_HEX } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
@@ -34,6 +35,12 @@ export interface BagMirrorConfig {
    * matches ONLY the handles-pointer shape, never the whole bag.
    */
   readonly guardNexusHandles?: boolean;
+  /**
+   * The title-path siting: a title that owns no uri-path sites at its own `/`-separated path inside the mirror (a project
+   * rides as the leading segment), where TW5's flattened default would fold every `/` into `_`. A `lar:` title keeps the
+   * loci law; a `$:/` system title and a `$FileSystemPaths` rule keep their own sitings.
+   */
+  readonly titlePaths?: boolean;
 }
 
 // ── Write confinement — the sovereign-island disk ward ─────────────────────
@@ -122,20 +129,155 @@ export function carrierBaseRelPath(uri: string): string | null {
  * stable name whole; the mirrorRoot = the bag's residency dir.
  */
 export function namedBagMirror(
-  bagId: string, scope: string, mirrorRoot: string, guardNexusHandles?: boolean,
+  bagId: string, scope: string, mirrorRoot: string, guardNexusHandles?: boolean, titlePaths?: boolean,
 ): BagMirrorConfig {
   void scope;
-  return { bagId, mirrorRoot, ...(guardNexusHandles ? { guardNexusHandles } : {}) };
+  return { bagId, mirrorRoot, ...(guardNexusHandles ? { guardNexusHandles } : {}), ...(titlePaths ? { titlePaths } : {}) };
 }
 
 /**
- * The daemon wiki's disk mirror: its working layer projects to `<rootDir>/wikis/daemon/`, the same
- * shape `resolveDiskMirrors` fills for every wiki's `wikiSlot: "working"` grant from the slug at
- * mount. The daemon island mounts outside the pool, so this mints the grant once, by name. The
- * daemon bag beneath (the control plane) holds no mirror.
+ * THE ONE ROOT every private layer projects under (the kahua wiki's working top, the kahua stage): one tree under the
+ * state root. A face rides the WIKI'S NAME inside it (`kahuaFaceFolder`), never a parent directory.
  */
-export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
-  return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(rootDir, "wikis", "daemon") };
+export function privateProjectionRoot(stateRoot: string): string {
+  return stateRoot;
+}
+
+const KAHUA_FACE_TAG = new RegExp(`^[0-9a-f]{${PERSONA_SCOPE_TAG_HEX}}$`);
+const KAHUA_FACE_FOLDER = new RegExp(`^kahua-[0-9a-f]{${PERSONA_SCOPE_TAG_HEX}}$`);
+
+/**
+ * THE FACE'S TAG on disk: the derived persona tag its persona plane wears (`personaBagIdFor(group)` names
+ * `bags/persona-<tag>`), read off the PersonaGroup id alone. Same face, same tag on every device it stands on; no map
+ * stores it. A Handle, a device-local custody id and a handle ordinal each name no folder.
+ */
+export function kahuaFaceTag(personaGroupId: string): string {
+  return personaScopeTag(personaGroupId);
+}
+
+/** The folder a face's private kahua layers take: `kahua-<tag>`. Anything but a derived tag refuses by name. */
+export function kahuaFaceFolder(faceTag: string): string {
+  if (!KAHUA_FACE_TAG.test(faceTag)) throw new Error(`kahua face folder: ${JSON.stringify(faceTag)} reads as no derived persona tag`);
+  return `kahua-${faceTag}`;
+}
+
+/** Whether a dir name names some face's kahua folder, by the derived shape alone. */
+export function isKahuaFaceFolder(name: string): boolean {
+  return KAHUA_FACE_FOLDER.test(name);
+}
+
+/**
+ * The daemon wiki's disk mirror: its working layer, the worn face's kahua wiki working top, writes flat files to
+ * `<rootDir>/wikis/kahua-<tag>/`, as every wiki writes its working layer. The layer keeps its bag
+ * (`wikis/daemon/working`); only the folder takes the face's tag. The daemon island mounts outside the pool, so this
+ * mints the grant once, by name.
+ *
+ * THE RULED LAYOUT: the working top projects to `<state>/wikis/kahua-<tag>`, the lift-only fleet bag `bags/kahua` to
+ * `<state>/bags/kahua-<tag>` (`kahuaStageMirror`), and the daemon bag (`bags/daemon`) stays the CRDT-only control plane:
+ * sealed checkpoints, persona acts, cap events, group-secret seals and bindings never project, and no `bags/daemon` dir
+ * stands on disk.
+ */
+export function daemonWorkingMirror(rootDir: string, faceTag: string): BagMirrorConfig {
+  return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(privateProjectionRoot(rootDir), "wikis", kahuaFaceFolder(faceTag)) };
+}
+
+/**
+ * The kahua stage's disk mirror: the face's `bags/kahua` projects under the STATE root alone
+ * (`<stateRoot>/bags/kahua-<tag>/`), its items sited by title with a project as the leading path segment. The stage
+ * never projects beside a canon source.
+ */
+export function kahuaStageMirror(stateRoot: string, faceTag: string): BagMirrorConfig {
+  return { bagId: KAHUA_BAG, mirrorRoot: joinPath(privateProjectionRoot(stateRoot), "bags", kahuaFaceFolder(faceTag)), titlePaths: true };
+}
+
+/** A daemon VM disk mirror: the grant plus the scope its island names it by. */
+export type DaemonDiskMirror = BagMirrorConfig & { readonly scope: string };
+
+/**
+ * THE DAEMON VM'S DISK MIRRORS, the one list its island receives: the worn face's working top
+ * (`<root>/wikis/kahua-<tag>`), its kahua stage (`<root>/bags/kahua-<tag>`, items sited by title), and the public
+ * crossroads bag, split by origin back to its canon source where one stands. The daemon bag holds no mirror: the
+ * control plane never reaches disk.
+ *
+ * `faceTag` names the face the composition wears (`kahuaFaceTag`). With no face worn (`null`) the list holds no private
+ * kahua mirror at all, and never an untagged `kahua` folder; a later composition wearing a face mirrors under its tag.
+ *
+ * The crossroads WHO-handles guard stays ON unless the caller names a proven charter (`false`).
+ */
+export function daemonDiskMirrors(opts: {
+  readonly rootDir: string;
+  readonly canonBags: string;
+  readonly faceTag: string | null;
+  readonly guardCrossroadsNexusHandles?: boolean;
+}): readonly DaemonDiskMirror[] {
+  const { rootDir, canonBags, faceTag, guardCrossroadsNexusHandles = true } = opts;
+  return [
+    ...(faceTag === null ? [] : [
+      { ...daemonWorkingMirror(rootDir, faceTag), scope: "daemon" },
+      { ...kahuaStageMirror(rootDir, faceTag), scope: "kahua" },
+    ]),
+    { bagId: CROSSROADS_DOC_URI, mirrorRoot: projectionRoots({ stateRoot: rootDir, canonBags }).bagRoot("crossroads"), scope: "crossroads",
+      guardNexusHandles: guardCrossroadsNexusHandles },
+  ];
+}
+
+/** The mirror-relative base a title sites at by its own path, or null for a title that owns none by this rule. */
+export function titleRelPath(title: string): string | null {
+  if (title.startsWith("lar:") || title.startsWith("$:/") || title.length === 0) return null;
+  const segments = title.split("/");
+  if (segments.some((seg) => seg.length === 0 || seg === "." || seg === ".." || /[\\\0]/.test(seg))) return null;
+  return segments.join("/");
+}
+
+/**
+ * THE PRIVATE PLANES: the layers a house mints for itself and never writes beside a canon source, whatever dirs that
+ * source holds. The daemon wiki (each device's own private working wiki) and the kahua plane; each face's kahua folder
+ * (`kahua-<tag>`) joins them by shape (`isPrivateProjectionSlug`).
+ */
+export const PRIVATE_PROJECTION_SLUGS: ReadonlySet<string> = new Set(["daemon", "kahua"]);
+
+/** Whether a slug names a private plane: a named one, or some face's kahua folder. */
+export function isPrivateProjectionSlug(slug: string): boolean {
+  return PRIVATE_PROJECTION_SLUGS.has(slug) || isKahuaFaceFolder(slug);
+}
+
+/** Where a house's disk mirrors root, split by ORIGIN. */
+export interface ProjectionRoots {
+  /** The slugs whose bag source dir stands under the canon source (sorted), the private planes excepted. */
+  sourcedSlugs(): readonly string[];
+  /** The mirror dir of bag `slug`: `<canon>/<slug>` for a sourced bag, else `<state>/bags/<slug>`. */
+  bagRoot(slug: string): string;
+  /** The wikis base the wiki `slug` projects under: `<canon parent>/wikis` for a sourced slug, else `<state>/wikis`. */
+  wikisRootFor(slug: string): string;
+  /** The canon-side bases a per-wiki grant carries by slug (`DiskMirrorGrant` `sourcedRoots`). */
+  sourcedRoots(kind: "bags" | "wikis"): Readonly<Record<string, string>>;
+}
+
+/**
+ * THE MIRROR ROOT SPLITS BY ORIGIN (operator ruling, 2026-11-01: "Are those things that start in bags? then they should
+ * 'end up back in bags/'. Only live edits end up in the wiki layers ... The dirs in the workspace right now (and the wikis
+ * they shall compose) DO need to get written back to the main repo checkout, for source control").
+ *
+ * A bag whose source dir stands under the canon source (`canonBags`, the vessel's `LAR_BAGS`) projects back there, and the
+ * wiki it composes projects to `wikis/` beside that source. Every other bag and wiki (house-minted, a person's own) and every
+ * private plane projects under the state root (`--root`). Membership reads the source tree once, here: no bag is listed.
+ * Where the canon source sits under the state root itself (no `LAR_BAGS`), both sides name the same dirs.
+ */
+export function projectionRoots(opts: { readonly stateRoot: string; readonly canonBags: string }): ProjectionRoots {
+  let held: string[] = [];
+  try {
+    held = readdirSync(opts.canonBags, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && !e.name.startsWith(".") && !isPrivateProjectionSlug(e.name))
+      .map((e) => e.name).sort();
+  } catch { /* an absent canon source sources nothing */ }
+  const sourced = new Set(held);
+  const canonWikis = joinPath(dirname(resolvePath(opts.canonBags)), "wikis");
+  return {
+    sourcedSlugs: () => held,
+    bagRoot: (slug) => sourced.has(slug) ? joinPath(opts.canonBags, slug) : joinPath(opts.stateRoot, "bags", slug),
+    wikisRootFor: (slug) => sourced.has(slug) ? canonWikis : joinPath(opts.stateRoot, "wikis"),
+    sourcedRoots: (kind) => Object.fromEntries(held.map((slug) => [slug, kind === "bags" ? resolvePath(opts.canonBags) : canonWikis])),
+  };
 }
 
 // ── Loci reverse-derivation (the ingest gesture's scan leg) ─────────────────

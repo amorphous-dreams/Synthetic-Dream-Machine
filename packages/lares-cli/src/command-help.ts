@@ -47,6 +47,21 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: ["lares intent-relay enable --face 1", "lares intent-relay status --face 1", "lares intent-relay rotate"],
     flags: ["--face N   face index", "--json   structured output"],
   },
+  kahua: {
+    usage: "usage: lares kahua mint|propose|lift|withdraw|carry|list|get [title|cid...] [--face N]",
+    synopsis: "Read and write one face's kahua stage, the fleet's working-memory stage. The face's founding act pins the stage, by whichever device founds the face; `mint` adopts that pin and registers it, and a face whose log names none refuses `kahua-mint-outside-founding`. An AI seat proposes; the operator's hand lifts, withdraws and carries (after a root rotation, the earlier items stand again only once carried), each act signed under the face's root out of sealed custody. Every answer prints as JSON.",
+    examples: [
+      "lares kahua mint --face 1",
+      "lares kahua propose --face 1 --proposals '[{\"title\":\"T\",\"revision\":\"r1\",\"text\":\"body\",\"taint\":[]}]'",
+      "lares kahua lift T --face 1 --text body --taint none --sources '[{\"title\":\"daemon/T\",\"revision\":\"r1\"}]'",
+      "lares kahua lift T --face 1 --text body --taint none --proposal <intent-id>",
+      "lares kahua withdraw <cid> --face 1",
+      "lares kahua carry <cid> <cid> --face 1",
+      "lares kahua carry --all --face 1",
+      "lares kahua get T --face 1 --history",
+    ],
+    flags: ["--face N   face index", "--text <body>   the item's body", "--taint a,b | none   inputs from outside the face", "--sources <json>   the daemon sources the item distils", "--parent <cid> | none   the revision a lift supersedes", "--proposal <id>   the proposal a lift answers", "--fields <json>   the item's fields", "--proposals <json>   a proposal batch", "--history   every revision of a title", "--all   (carry) every earlier head the history reads"],
+  },
   intent: {
     usage: "usage: lares intent issue|show|ask|answer|claim|takeover|release|cancel|supersede|release-root|delegate|delegate-revoke|delegations [verb-or-id] [--face N]",
     synopsis: "Read and write one face's signed intent plane. Name --face N on every invocation when this vessel holds several faces; a sole face resolves itself.",

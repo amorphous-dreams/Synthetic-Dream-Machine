@@ -234,6 +234,9 @@ export const LARES_DOC_URI     = bagUri("lares");
 // names a generous grant to an anonymous principal, never an absence of the gate
 // (pull ≠ read). The per-Nexus WHO board sits at a derived address (`whoBoardDocUrl`); its bag id = nexusHandlesUri.
 export const CROSSROADS_DOC_URI = bagUri("crossroads");
+// The face's kahua bag — the fleet stage a signed lift writes and no hand edits in place; a recipe library bag the
+// face's own plane serves, mounted read-only (kahua-memory-stage#/the-recipe).
+export const KAHUA_DOC_URI = bagUri("kahua");
 // The memetic-wikitext engine plugin — a named blob CARRIED IN the oracle island's blobs. Its
 // title lives in the lararium MEME NAMESPACE (not the bag doc): a meme/module address
 // the disk projector discards-from-bag, keyed on by plugin.info + the TW5 pack pipeline.
@@ -342,6 +345,34 @@ export function parseMeshScale(s: string | null | undefined): MeshScale | undefi
 /** Daemon wiki bag id — the lararium's own central daemon `daemon` bag (one-recipe model).
  *  SOVEREIGN-per-vessel: this vessel's own control-plane, never shared across vessels. */
 export const DAEMON_BAG_ID    = bagUri("daemon");
+
+/** A title the daemon's control plane owns (`bags/daemon/**`: verb outcomes, effects, flows, cap events). It lands in the
+ *  daemon doc alone and never projects: the daemon stays CRDT only (operator, 2026-11-01). */
+export function isControlPlaneUri(title: string): boolean {
+  return resolvedTitlePath(title).startsWith(`${DAEMON_BAG_ID}/`);
+}
+
+/**
+ * The path a title resolves to, read the way a reader resolves a URL: the scheme lower-cased, each percent escape decoded
+ * (a malformed one keeps its bytes), and the `.` and `..` segments folded. A law that reads a title by prefix reads it
+ * here first, so no spelling of a path slips past the prefix it resolves to.
+ */
+export function resolvedTitlePath(title: string): string {
+  const scheme = /^[A-Za-z][A-Za-z0-9+.-]*:/.exec(title)?.[0] ?? "";
+  let rest = title.slice(scheme.length);
+  try { rest = decodeURIComponent(rest); } catch { /* a malformed escape keeps its bytes */ }
+  const segments = rest.split("/");
+  let leading = 0;
+  while (leading < segments.length && segments[leading] === "") leading++;
+  const out: string[] = Array(leading).fill("");
+  for (const segment of segments.slice(leading)) {
+    if (segment === "") continue;
+    if (segment === ".") continue;
+    if (segment === ".." && out.length > leading && out[out.length - 1] !== "") { out.pop(); continue; }
+    out.push(segment);
+  }
+  return scheme.toLowerCase() + out.join("/");
+}
 
 /** e.g. flowUri("crystal") → "lar:///ha.ka.ba/lararium/daemon/flows/crystal" — a Flow's
  *  pet-name IS its address: a callable, composed cap-stack tiddler in the daemon bag. */

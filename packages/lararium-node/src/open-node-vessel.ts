@@ -66,6 +66,7 @@ import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
+import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow } from "@lararium/mesh";
 import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest, ownEntry } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
@@ -91,13 +92,14 @@ import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.
 import { standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
-import { daemonGenesisDir, daemonCorpusRoot } from "./lares-config.js";
+import { daemonGenesisDir, daemonCorpusRoot, daemonBagsDir } from "./lares-config.js";
+import { projectionRoots } from "./bag-paths.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, readFace, proveFaceFromLog, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
+  leaseEpochPrefix, readFace, proveFaceFromLog, adoptKahuaStage, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
   type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
@@ -894,8 +896,12 @@ async function prepareNodeBootOn(
   });
   // The mounted face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
   let catalogForViews: (() => LarDoc | undefined) | null = null;
+  // THE WORN FACE'S KAHUA STAGE, adopted off its verified projection at the face proof below (`adoptKahuaPlane`): the
+  // face's `kahua` facet and the daemon island's `bags/kahua` grant read this, never a catalog row.
+  let wornKahua: { readonly group: string; readonly url: string } | null = null;
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
-    () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()));
+    () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()),
+    (group) => (wornKahua && wornKahua.group === group ? wornKahua.url : null));
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
@@ -2243,8 +2249,14 @@ async function prepareNodeBootOn(
           // stay per vessel (motion, never a decision that crosses devices), so no act names them.
           planes: { persona: bootstrap.personaUrl, identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl, intents: bootstrap.intentsUrl } });
         if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
+        // THE BOOT ADOPTS, NEVER PINS: the face's founding act signed the kahua stage's pin, by whichever device founded the
+        // face; every boot, the founding device's among them, reads that pin off the verified projection.
         wornFaceProved = true;
         wornFaceProjection = proof.projection;
+        const kahua = adoptKahuaPlane(proof.projection, personaGroupId, kahuaCatalogRow(assembly.catalogHandle.doc()));
+        if (kahua.staleRow) console.warn(`[lararium] kahua stage: the catalog row names ${kahua.staleRow}, a stale hint (the face pins ${"mount" in kahua ? kahua.mount : "none"}); the pin decides`);
+        const kahuaUrl = adoptedKahuaUrl(kahua);
+        wornKahua = kahuaUrl ? { group: personaGroupId, url: kahuaUrl } : null;
         wornFaceProven = true;
         provenPlanes.set(personaGroupId, bootstrap.personaUrl);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
@@ -2544,6 +2556,13 @@ async function prepareNodeBootOn(
       const named = wornFaceProjection ? provenPlaneUrls(wornFaceProjection, { circles: bootstrap.circlesUrl ?? null, identities: bootstrap.identitiesUrl ?? null, sessions: bootstrap.sessionsUrl ?? null, intents: bootstrap.intentsUrl ?? null }) : null;
       if (named) for (const key of ["circles", "identities", "sessions", "intents"] as const) { const url = named[key]; if (url) registerInCatalog(wornFace[key], url); }
     }
+    // THE KAHUA STAGE ADOPTS FROM THE PROVEN PROJECTION: where the face's signed log pins its derived stage, the doc stands here
+    // and the catalog row names it for the daemon wiki's recipe (a mount hint; the layer trusts the fold alone).
+    if (wornFaceProved && wornFaceProjection && personaGroupId) {
+      const url = await adoptKahuaStage({ repo, group: personaGroupId, projection: wornFaceProjection, register: registerInCatalog });
+      wornKahua = url ? { group: personaGroupId, url } : null;
+      console.log(url ? `[kahua] the face's stage stands adopted: ${url}` : "[kahua] the face pins no stage yet; the layer stands absent until its pin syncs");
+    }
     // The selected face's custody standing decides whether its veil archive may leave this
     // composition and whether the island may rest a later export through the same door.
     const opens = sovereign !== null;
@@ -2679,6 +2698,8 @@ async function prepareNodeBootOn(
         // ACCESS grant, not a LOAD slot — the catalog registry is absent from expandRecipe,
         // so the kernel never layers it; the worker reaches it via the accessor.
         catalogUrl: catalogHandle.url,
+        // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
+        ...(wornKahua ? { kahuaUrl: wornKahua.url } : {}),
       },
       daemonAuth,
       storageDir,
@@ -3413,11 +3434,14 @@ async function prepareNodeBootOn(
     subscribeWorkerEventsToDaemon();
 
     const workerRootDir = corpusRoot;
+    // THE MIRROR ROOT SPLITS BY ORIGIN (`projectionRoots`): a bag whose source stands under the canon source projects back
+    // there (and its wiki beside it), for source control; every house-minted or private layer projects under `--root`.
+    const projection = projectionRoots({ stateRoot: workerRootDir, canonBags: daemonBagsDir() });
     const diskMirrorGrant: DiskMirrorGrant = [
       // `bags/` PROJECTS ON THE KAHU'S VESSEL ALONE: a vessel the cabal did not admit holds neither live document, so it
       // grants neither mirror and writes nothing under `bags/lares` or `bags/lararium`.
-      ...(kahuCanon.lares    ? [{ bagId: LARES_DOC_URI,    mirrorRoot: join(workerRootDir, "bags/lares"),    scope: "lares" }] : []),
-      ...(kahuCanon.lararium ? [{ bagId: LARARIUM_DOC_URI, mirrorRoot: join(workerRootDir, "bags/lararium"), scope: "lararium" }] : []),
+      ...(kahuCanon.lares    ? [{ bagId: LARES_DOC_URI,    mirrorRoot: projection.bagRoot("lares"),    scope: "lares" }] : []),
+      ...(kahuCanon.lararium ? [{ bagId: LARARIUM_DOC_URI, mirrorRoot: projection.bagRoot("lararium"), scope: "lararium" }] : []),
       // crossroads = the PUBLIC plane's seed/canon bag — it holds the moved public-domain
       // library (raw .txt books + .mem memes with large source ahus). It projects to
       // bags/crossroads like the other seed bags. Safe to project ONLY with the skinny-handle
@@ -3429,7 +3453,7 @@ async function prepareNodeBootOn(
       // alongside the real charter-backed library. Baked from the RESOLVED kind, once, here — never
       // re-derived from the tiddler inside the projector (which crosses a worker boundary and carries
       // no kind of its own).
-      { bagId: CROSSROADS_DOC_URI, mirrorRoot: join(workerRootDir, "bags/crossroads"), scope: "crossroads",
+      { bagId: CROSSROADS_DOC_URI, mirrorRoot: projection.bagRoot("crossroads"), scope: "crossroads",
         guardNexusHandles: nexusStanding.kind !== "charter" },
       // VIRTUAL BAGS. `working` (and `self` below) name LAYER COORDINATES, never bags on disk — a write
       // layer and a per-wiki canon authority the mount expands from the slug. They carry no `@` for the
@@ -3441,12 +3465,12 @@ async function prepareNodeBootOn(
       // the bag `wikis/{slug}/working` and the leaf fill from the slug at mount —
       // wikiSlot). The authority (the wikis base) stays static here; designation
       // rides the recipe's mirrorBags.
-      { bagId: "working",        mirrorRoot: join(workerRootDir, "wikis"),          scope: "working",  wikiSlot: "working" },
+      { bagId: "working",        mirrorRoot: join(workerRootDir, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis") },
       // self-canon = the per-wiki CANON authority: a minted user wiki's own
       // @{slug} bag projects to bags/{slug} (both bagId and leaf fill from the
       // slug at mount). System wikis (lares/lararium) carry literal grants
       // above, so resolveDiskMirrors skips this for them — no double-project.
-      { bagId: "self",          mirrorRoot: join(workerRootDir, "bags"),           scope: "self",    perWikiSlug: true, selfCanon: true },
+      { bagId: "self",          mirrorRoot: join(workerRootDir, "bags"),           scope: "self",    perWikiSlug: true, selfCanon: true, sourcedRoots: projection.sourcedRoots("bags") },
     ];
     // R3 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
     // through the selector + CAS (`resolveNodeIslandPluginCids`), never one vessel-wide floor.

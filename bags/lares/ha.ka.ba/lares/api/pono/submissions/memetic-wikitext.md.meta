@@ -1,8 +1,8 @@
-title: lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext
-type: text/markdown
+law: projected artifact — hand edits do not survive re-projection
+projected-by: weave (lares meme project --to md · meme-project)
 source: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
 source-check: ni:///sha-256;-rFUf1ulDi1ei_RrpCNIEcxXcU4KkqE2uG5wwpp_jdQ
-variant: kramdown-rfc2629
+title: lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext
 tongue: en
-projected-by: weave (lares meme project --to md · meme-project)
-law: projected artifact — hand edits do not survive re-projection
+type: text/markdown
+variant: kramdown-rfc2629

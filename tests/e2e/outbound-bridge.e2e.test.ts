@@ -7,7 +7,7 @@
  *       working store never receives it — `meme get --bag wikis/daemon/working` answers not-found.
  *   B2  the DAEMON MIRROR: a record put DIRECTLY into `wikis/daemon/working` (`--bag`, the composite
  *       sink — no bridge needed) reaches the daemon's wiki, but the daemon island mounts no disk
- *       projector and its manifest carries no `diskMirrors`, so `<root>/wikis/daemon/…` never appears.
+ *       projector and its manifest carries no `diskMirrors`, so `<root>/wikis/kahua-<tag>/…` never appears.
  *
  * Each seam reads red for its own reason and flips loud when its wire lands (`test.fails`). The
  * CONTROLS stand green today and MUST stay green under both wires.
@@ -18,7 +18,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { targetInstance, awaitRendezvous, type LarInstance } from "../harness/instance.js";
+import { targetInstance, awaitRendezvous, daemonWikiDir, type LarInstance } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -101,7 +101,7 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
   });
 
   test("★ the daemon wiki projects: a record in wikis/daemon/working lands at <root>/wikis/daemon/<uri-path>.mem ★", async () => {
-    const at = join(lar.root, "wikis", "daemon", REL(PATH_B));
+    const at = join(daemonWikiDir(lar.root), REL(PATH_B));
     expect(await awaitFileState(at, true), `nothing projected at ${at}`).toBe(true);
   });
 

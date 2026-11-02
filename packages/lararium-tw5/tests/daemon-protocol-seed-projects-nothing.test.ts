@@ -2,7 +2,7 @@
  * daemon-protocol-seed-projects-nothing — the daemon's born-from-source tiddlers never reach the workspace.
  *
  * `seedDaemonProtocol` writes the daemon's UI surfaces and its flow set from source at every boot. Those
- * writes route into the daemon wiki's working layer, and that layer projects under `<root>/wikis/daemon/`.
+ * writes route into the daemon wiki's working layer, and that layer projects under `<root>/wikis/kahua/`.
  * A file there would hold nothing the source lacks, and the next boot's seed would write over any hand's
  * edit to it, so each seeded record carries the per-record opt-out (`disk-projection: "no"`) the
  * projector honours, as a receipt, a summons and a ward audit do. A record in the volatile `$:/temp/`
@@ -28,7 +28,7 @@ const persisted = (r: Record<string, string>): boolean => !String(r["title"]).st
 describe("the daemon protocol seed projects nothing", () => {
   test("control: the seed writes the daemon UI surfaces and every flow a full vessel enacts", () => {
     const titles = seededRecords(HULLS_FULL).map((r) => r["title"]);
-    expect(titles.filter((t) => String(t).startsWith("$:/lares/ui/")).length).toBe(9);
+    expect(titles.filter((t) => String(t).startsWith("$:/lares/ui/")).length).toBe(10);
     expect(titles.filter((t) => String(t).includes("/daemon/flows/")).length).toBe(3);
   });
 

@@ -67,11 +67,11 @@
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, renameSync } from "fs";
 import { dirname, basename, extname, relative as relativePath, resolve as resolvePath } from "path";
-import { confineMirrorWrite, carrierBaseRelPath } from "./bag-paths.js";
+import { confineMirrorWrite, carrierBaseRelPath, titleRelPath } from "./bag-paths.js";
 import { contentHash, syncedTreeKey, SyncedTree } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
-import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual } from "@lararium/mesh";
+import { isEffectRecordUri, isControlPlaneUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, isRealmBagAnnounceUri, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap, VesselJournal } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
@@ -1375,6 +1375,13 @@ export class LarDiskProjector {
     // carrier surface. (The general type-filter — project only
     // text/memetic-wikitext+tiddlywiki — arrives with the migration wave.)
     if (isEffectRecordUri(tiddlerUri)) return;
+    // The daemon stays the control plane, CRDT only: a `bags/daemon/**` title writes no file from any mirror, whichever layer
+    // holds it (a verb outcome, a flow, a cap event).
+    if (isControlPlaneUri(tiddlerUri)) return;
+    // A realm-bag announce pointer comes from the house, minted into the live crossroads document on each
+    // registration. The crossroads mirror roots in the canon tree, so writing it would leave a house-minted
+    // record beside the curated library; the pointer rests in the document alone.
+    if (isRealmBagAnnounceUri(tiddlerUri)) return;
     // A bag's manifest is a record ABOUT the bag, never a carrier IN it — `meta.mem` at the bag root
     // belongs to the declare verb. Refused before the render, so no rule can site it either.
     if (isBagManifestUri(tiddlerUri)) return;
@@ -1395,7 +1402,8 @@ export class LarDiskProjector {
     const ruledBase = file.relPath !== undefined && file.relPath.endsWith(file.ext)
       ? file.relPath.slice(0, file.relPath.length - file.ext.length)
       : null;
-    let base = ruledBase ?? carrierBaseRelPath(tiddlerUri);
+    // A title-path mirror (the kahua stage) sites a foreign title at its own `/` path before TW5's flatten reaches it.
+    let base = ruledBase ?? carrierBaseRelPath(tiddlerUri) ?? (mirror.titlePaths ? titleRelPath(tiddlerUri) : null);
     // The flatten reaches ONLY a name the address siting rule does not govern. Inside the `lar:` family a null
     // base is a DELIBERATE refusal (a fragment owns no file — its carrier root does; a bag manifest
     // belongs to the declare verb), never a name left un-sited for want of a path, so flattening one
@@ -1466,6 +1474,7 @@ export class LarDiskProjector {
         this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, obsHash);
         this._leaveStandoff(bagId, tiddlerUri);
         this._leavePending(bagId, tiddlerUri);
+        await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
         return;
       }
     } catch { /* unreadable existing file — fall through to the gate */ }
@@ -1568,6 +1577,7 @@ export class LarDiskProjector {
           this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, diskHash);
         }
         this._leaveStandoff(bagId, tiddlerUri);
+        await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
         return;
       }
       if (decision.kind === "conflict") {
@@ -1636,10 +1646,18 @@ export class LarDiskProjector {
       this.writing.delete(tiddlerUri);
     }
 
-    // After writing the current mirror, unlink stale files from OTHER mirrors —
-    // but ONLY where the carrier has genuinely LEFT that bag (a true MOVE, e.g.
-    // promotion wiki-bag → lares-bag, cleaning the old scratch file). A carrier
-    // that STILL LIVES in a bag — a working edit SHADOWING its canon copy — keeps
+    await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
+  }
+
+  /**
+   * Unlink stale files from OTHER mirrors once this flush settled its own mirror, whether it wrote bytes
+   * or found them already standing, but ONLY where the carrier has genuinely LEFT that bag (a true MOVE,
+   * e.g. promotion wiki-bag → lares-bag, cleaning the old scratch file). The seed's leaf-bag road LOADs onto
+   * a working layer and MOVEs it into canon, whose mirror already holds the bytes: that flush writes nothing
+   * and still clears the working mirror's copy here.
+   */
+  private async sweepLeftMirrors(bagId: string, tiddlerUri: string, candidate: string, settleHash: string | null): Promise<void> {
+    // A carrier that STILL LIVES in a bag — a working edit SHADOWING its canon copy — keeps
     // its file there: `bagsHolding` reports every bag holding it, and a bag on
     // that list never gets its file unlinked. Without the callback, the unlink
     // clears every other mirror by path. One gate, one choke-point: the unlink
@@ -1662,7 +1680,7 @@ export class LarDiskProjector {
       const homes = staleFiles.map((f) => LarDiskProjector.contentOf(f)).filter((home) => home !== candidate);
       // The carrier left this mirror's bag: each file it left there gets read first. One that says what the
       // records render (or stands where its base left it) leaves; one a hand edited stays and stands off.
-      if (this.settleHomes(otherMirror.bagId, tiddlerUri, homes, bodyPending ? null : obsHash, null, `${tiddlerUri} left ${otherMirror.bagId} for ${bagId}`)) {
+      if (this.settleHomes(otherMirror.bagId, tiddlerUri, homes, settleHash, null, `${tiddlerUri} left ${otherMirror.bagId} for ${bagId}`)) {
         this.sited.delete(sitedKey(otherMirror.bagId, tiddlerUri));
         this._leaveStandoff(otherMirror.bagId, tiddlerUri, "home");
       }

@@ -315,3 +315,36 @@ await test("RED: a genesis file git does not track reads red inside a git tree; 
     assert.match(out, new RegExp(`UNTRACKED\\s+genesis/cas/${sha(GRAMMAR)}`));
   }, { git: ["genesis/seed.json", cas[0], cas[1]] });
 });
+
+// ── ONE SERVED SEED: the web dist carries no genesis copy; the hearth's Pronaos serves its own ──────────────────────
+const ACTOR = sha("the fixture actor");
+const seedWithActor = () => JSON.stringify({ ...JSON.parse(seedFixture()), actorSeed: ACTOR });
+
+await test("WEB COPY CONTROL: a web dist that carries no genesis reads green and says so", async () => {
+  await withTree({
+    "genesis/seed.json": seedWithActor(),
+    "packages/lararium-web/dist/index.html": "<!doctype html>",
+    "packages/lararium-web/dist/assets/index-1.js": "export const page = 1;\n",
+  }, (run, out) => {
+    assert.equal(run.status, 0, out);
+    assert.match(out, /web dist carries no genesis copy/);
+    assert.doesNotMatch(out, /WEB COPY/);
+  });
+});
+
+await test("WEB COPY RED: a genesis directory inside the web dist reads red", async () => {
+  await withTree({ "packages/lararium-web/dist/genesis/seed.json": seedFixture() }, (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, /WEB COPY\s+packages\/lararium-web\/dist\/genesis stands/);
+  });
+});
+
+await test("WEB COPY RED: a dist asset that bundles the seed (its actorSeed) reads red", async () => {
+  await withTree({
+    "genesis/seed.json": seedWithActor(),
+    "packages/lararium-web/dist/assets/index-1.js": `const seed = {"actorSeed":"${ACTOR}"};\n`,
+  }, (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, /WEB COPY\s+packages\/lararium-web\/dist\/assets\/index-1\.js carries the genesis seed/);
+  });
+});

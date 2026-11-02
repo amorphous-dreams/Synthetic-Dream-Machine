@@ -95,4 +95,25 @@ describe("a vessel founded on the shipped seed pins the CID it used", () => {
     expect(line).toContain(join(shipped, "genesis"));
     expect(line).toContain(cid);
   });
+
+  test("R4: a LAR_GENESIS override that diverges from the pin refuses by name, naming the pin it compared against as self-consistency", () => {
+    const { root, storage } = stage();
+    const buildA = dirWithSeed("A"); const override = dirWithSeed("B");
+    pinGenesisSeed(storage, resolveGenesis({ corpusRoot: root, shippedRoot: buildA }));
+    const cidA = genesisSeedCid(readGenesisSeedBytes(join(buildA, "genesis"))!);
+    const cidB = genesisSeedCid(readGenesisSeedBytes(join(override, "genesis"))!);
+    expect(() => checkGenesisPin(storage, resolveGenesis({ explicit: join(override, "genesis"), corpusRoot: root, shippedRoot: buildA })))
+      .toThrow(new RegExp(`genesis-mismatch: pinned ${cidA} · boot ${cidB} \\(explicit .*\\) — self-consistency against the founding pin ${join(storage, "genesis-pin.json").replace(/[.]/g, "\\.")}`));
+  });
+
+  test("R4: the pin check reads back pinned or unpinned, and a hearth with no pin says unpinned", () => {
+    const { root, storage } = stage();
+    const buildA = dirWithSeed("A");
+    const cidA = genesisSeedCid(readGenesisSeedBytes(join(buildA, "genesis"))!);
+    const unpinned = checkGenesisPin(storage, resolveGenesis({ corpusRoot: root, shippedRoot: buildA }));
+    expect(unpinned).toBe(`[genesis seed] unpinned — no founding pin at ${join(storage, "genesis-pin.json")}; this boot serves seed ${cidA} (shipped at ${join(buildA, "genesis")}) and holds nothing to compare it against`);
+    pinGenesisSeed(storage, resolveGenesis({ corpusRoot: root, shippedRoot: buildA }));
+    expect(checkGenesisPin(storage, resolveGenesis({ corpusRoot: root, shippedRoot: buildA })))
+      .toBe(`[genesis seed] pinned ${cidA} — this boot's seed matches the founding pin (self-consistency)`);
+  });
 });

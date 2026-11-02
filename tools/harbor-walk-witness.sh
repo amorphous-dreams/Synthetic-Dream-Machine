@@ -4,7 +4,7 @@
 #   LEG 1  the hearth before `up`: found --hearth (the Stable founding act: the place, persona zero, its seed charter,
 #          the face) → up → unlock. The vessel boots once and rests at the floor holding no key; the unlock names
 #          face zero and composes the vessel in place as a Lararium mounting it, with its working layer attached, and the
-#          workspace mount receives a projected carrier.
+#          workspace receives the projected carrier of a canon bag sourced there, while every private plane stays under /state.
 #   LEG 2  a place lifted to a hearth after `up`: found → up → unlock (a faceless vessel stands as a herm) → a face
 #          refuses on a place with no seed charter → stop → found --hearth over the standing place → up. The lifted
 #          boot rests at the floor, and a second unlock composes the Lararium.
@@ -109,8 +109,9 @@ result 'leg 1: the unlocked boot stands as a Lararium'          contains "$log" 
 result 'leg 1: the working layer attaches'                      contains "$log" 'working layer attached'
 result 'leg 1: the unlock restarted no container'               test "$before" = "$(started_at)"
 result 'leg 1: the engine restarted nothing'                    test "$(docker inspect -f '{{.RestartCount}}' "$(compose ps -q lares)")" = 0
-# A carrier ingested into a canon bag projects under the workspace mount.
-mkdir -p "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs"
+# The mirror root splits by origin (operator ruling 2026-11-01): a canon bag whose source stands in the workspace projects
+# back there, while the house's private planes (the daemon wiki, the store, custody) land under the state mount alone.
+mkdir -p "$SCRATCH_WORKSPACE/bags/lares" "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs"
 sed -e 's#ha.ka.ba/lares/docs/stable-founding-road#ha.ka.ba/lares/docs/harbor-walk-probe#g' -e 's#docs/stable-founding-road.mem#docs/harbor-walk-probe.mem#' \
   "$ROOT/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem" > "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
 lares meme normalize /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem >/dev/null
@@ -118,7 +119,8 @@ lares ingest --source /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-pro
 projected="$SCRATCH_WORKSPACE/bags/lares/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
 tries=0
 while [ ! -f "$projected" ] && [ "$tries" -lt 30 ]; do sleep 1; tries=$((tries + 1)); done   # the bound only bounds the wait
-result 'leg 1: a canon ingest projects under /workspace/bags'   test -f "$projected"
+result 'leg 1: a sourced canon bag projects back under /workspace/bags' test -f "$projected"
+result 'leg 1: the house writes no private plane under /workspace' test -z "$(find "$SCRATCH_WORKSPACE" -mindepth 1 \( -path "$SCRATCH_WORKSPACE/bags" -o -path "$SCRATCH_WORKSPACE/wikis" \) -prune -o -print -quit)$(find "$SCRATCH_WORKSPACE/bags" "$SCRATCH_WORKSPACE/wikis" -maxdepth 1 \( -name daemon -o -name kahua \) -print -quit)"
 got=$(lares meme get lar:///ha.ka.ba/lares/docs/harbor-walk-probe --recipe lares 2>&1 || :)
 result "leg 1: the wiki's recipe resolves the carrier"          contains "$got" '"ok":true'
 drop_scratch

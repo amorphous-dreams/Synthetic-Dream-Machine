@@ -11,6 +11,8 @@ export type {
 export { KeyhiveProvider, ArchiveIdentityMismatch, ensureKeyhiveWasm, setKeyhiveWasmBytes, KEYHIVE_TRACE_ENV, keyhiveTraceAsked } from "./keyhive-provider.js";
 export { makeFaceBagDoor, faceOwnerVerifier } from "./face-bag-door.js";
 export type { FaceBagDoor } from "./face-bag-door.js";
+export { answerKahuaCap } from "./kahua-cap.js";
+export { proposeDraftsToKahua, pageTitleList, KahuaProposeRefused, type PageProposeInput } from "./kahua-page-propose.js";
 export { registerBagsDurably, daemonBagDocLedger, planeBagDocLedger } from "./bag-doc-ledger.js";
 export type { BagDocLedger } from "./bag-doc-ledger.js";
 export { keyhiveLockboxShore, encodeLockboxBox, readLockboxBox } from "./keyhive-lockbox.js";

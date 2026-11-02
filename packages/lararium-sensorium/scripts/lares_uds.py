@@ -173,6 +173,109 @@ def output(verb: str, args: "dict | None" = None, **kw) -> dict:
     return payload if isinstance(payload, dict) else out
 
 
+def _lines(sock: socket.socket):
+    """Yield each NDJSON line the vessel writes on `sock`, until it closes."""
+    buf = b""
+    while True:
+        while b"\n" not in buf:
+            chunk = sock.recv(65536)
+            if not chunk:
+                return
+            buf += chunk
+        line, buf = buf.split(b"\n", 1)
+        yield json.loads(line.decode())
+
+
+def resolve_face(*, timeout: float = 30.0) -> int:
+    """The face a sole-face vessel wears: the custody door's `face.resolve` act (one frame, one answer), as the CLI asks it."""
+    path = socket_path()
+    if not os.path.exists(path):
+        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.settimeout(timeout)
+    try:
+        try:
+            s.connect(path)
+        except (ConnectionRefusedError, FileNotFoundError) as e:
+            raise LaresDaemonUnreachable(f"lares daemon not answering at {path}: {e}") from e
+        s.sendall((json.dumps({"op": "act", "act": "face.resolve", "args": {}}) + "\n").encode())
+        answer = next(_lines(s), None)
+    finally:
+        s.close()
+    if not answer or answer.get("op") != "act":
+        raise LaresDaemonUnreachable("the vessel answered no face for `face.resolve`")
+    if answer.get("status") == "error":
+        raise LaresVerbError(str(answer.get("refusal") or answer.get("reason") or "face.resolve refused"))
+    face = (answer.get("result") or {}).get("face")
+    if not isinstance(face, int) or face < 0:
+        raise LaresVerbError("face.resolve named no face")
+    return face
+
+
+def session_act(act: str, args: "dict | None" = None, *, face: "int | None" = None, hand: str = "seat",
+                timeout: float = 30.0) -> dict:
+    """Run ONE face row inside the standing vessel on a SESSION of `face` (`h<N>`), and return the row's answer.
+
+    A face row rides `session:act` alone (the maintenance frame refuses one): the session opens under `hand`, the act
+    rides it, the session closes. The `seat` hand (the default here: a spirit's hand) seats the `seat` profile, so the
+    vessel refuses it every act a person's hand alone runs. A session refusal, an act the vessel could not run and a
+    row's own refusal (`{refused}`) each raise LaresVerbError by name. Never a store: no daemon, no answer.
+    """
+    path = socket_path()
+    if not os.path.exists(path):
+        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
+    if face is None:
+        face = resolve_face(timeout=timeout)
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.settimeout(timeout)
+    try:
+        try:
+            s.connect(path)
+        except (ConnectionRefusedError, FileNotFoundError) as e:
+            raise LaresDaemonUnreachable(f"lares daemon not answering at {path}: {e}") from e
+        lines = _lines(s)
+
+        def ask(frame: dict) -> dict:
+            rid = frame["requestId"]
+            s.sendall((json.dumps(frame) + "\n").encode())
+            for reply in lines:
+                if reply.get("requestId") != rid:
+                    continue
+                if reply.get("kind") == "session:refused":
+                    raise LaresVerbError(f"local session refused: {reply.get('refusal')}")
+                return reply
+            raise LaresDaemonUnreachable("the vessel closed the session without an answer")
+
+        opened = ask({"op": "session:open", "requestId": os.urandom(8).hex(), "faceRef": f"h{face}", "hand": hand})
+        if opened.get("kind") != "session:opened":
+            raise LaresVerbError("malformed session opening from the vessel")
+        envelope = {k: opened[k] for k in ("ownerEpoch", "sessionId", "generation", "faceRef")}
+        try:
+            result = ask({"op": "session:act", "requestId": os.urandom(8).hex(), **envelope, "act": act, "args": args or {}})
+        finally:
+            # The close lands before this returns, as the CLI's `close()` waits the socket out: the vessel ends the
+            # session and hangs up, and the drain reads to that end (bounded by the socket's timeout).
+            try:
+                s.sendall((json.dumps({"op": "session:close", **envelope}) + "\n").encode())
+                s.shutdown(socket.SHUT_WR)
+                for _ in lines:
+                    pass
+            except OSError:
+                pass
+    finally:
+        s.close()
+    if result.get("kind") != "session:act-result" or not isinstance(result.get("answer"), dict):
+        raise LaresVerbError("malformed act result from the vessel")
+    answer = result["answer"]
+    if answer.get("status") == "error":
+        raise LaresVerbError(str(answer.get("errorMessage") or answer.get("reason") or f"{act} failed"))
+    output = answer.get("output")
+    output = output if isinstance(output, dict) else {}
+    if isinstance(output.get("refused"), str):
+        raise LaresVerbError(output["refused"])
+    return {k: v for k, v in output.items() if k != "verb"}
+
+
 if __name__ == "__main__":  # a probe: `python lares_uds.py recall '{"query":"x","limit":2}'`
     import sys
 

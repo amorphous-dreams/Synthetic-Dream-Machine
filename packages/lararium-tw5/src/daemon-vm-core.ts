@@ -51,6 +51,7 @@ import {
   mkTeardown,
   isIslandToVesselMsg,
   CROSSROADS_DOC_URI,
+  kahuaRecipe,
   verbArgsFromPayload,
   mkLarResend,
   readLarControlResult,
@@ -169,10 +170,10 @@ export interface DaemonVmCoreOptions {
   storage?:        IslandStorageConfig;
   /** One bounded D-VR-C worker-owned document; absent, the worker owns no document and its doc syncs over the host's channel alone. */
   ownedDocument?:  { documentUrl: string; storage?: IslandStorageConfig };
-  /** The daemon wiki's disk mirrors (its working layer → `<root>/wikis/daemon/`); a node host mints
+  /** The daemon wiki's disk mirrors (its working layer → `<root>/wikis/kahua/`); a node host mints
    *  them, a browser passes none. Rides the manifest's `diskMirrors` so the worker's `onBoot` can
    *  mount the same projector a wiki island mounts. */
-  diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string }[];
+  diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean; titlePaths?: boolean }[];
   /** Compiled daemon-island Worker script URL. */
   workerScriptUrl: URL;
   /** Override the ea silence budget in ms (tests). */
@@ -662,10 +663,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // pointer, or skips gracefully when a vessel hasn't registered it) + registerBags (so keyhive can access it).
   // Writing the catalog pointer rides the vessel boot (registerCrossroadsPointer), keyed by the nexus the
   // vessel belongs to — that value differs (a node's own key vs a browser's relay key), the daemon code does not.
-  const daemonRecipe: WikiRecipe = {
+  // The daemon wiki IS the kahua stack: the face's kahua bag rides above the other library bags, read-only.
+  const daemonRecipe: WikiRecipe = kahuaRecipe({
     ...recipe,
     libraryBags: [...(recipe.libraryBags ?? []), CROSSROADS_DOC_URI],
-  };
+  });
   const daemonAuthWithCrossroads = daemonAuth
     ? { ...daemonAuth, registerBags: [...new Set([...daemonAuth.registerBags, CROSSROADS_DOC_URI])] }
     : daemonAuth;

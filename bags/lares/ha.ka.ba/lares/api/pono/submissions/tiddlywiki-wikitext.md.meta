@@ -1,8 +1,8 @@
-title: lar:///ha.ka.ba/lares/api/pono/submissions/tiddlywiki-wikitext
-type: text/markdown
+law: projected artifact — hand edits do not survive re-projection
+projected-by: weave (lares meme project --to md · meme-project)
 source: lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext
 source-check: ni:///sha-256;xZamjAV_ySzWL39ahNc4a2ybBAQUHE7of2SWUiSeGIc
-variant: GFM
+title: lar:///ha.ka.ba/lares/api/pono/submissions/tiddlywiki-wikitext
 tongue: en
-projected-by: weave (lares meme project --to md · meme-project)
-law: projected artifact — hand edits do not survive re-projection
+type: text/markdown
+variant: GFM

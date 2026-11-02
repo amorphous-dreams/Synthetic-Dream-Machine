@@ -191,7 +191,10 @@ interface ColdSlot {
 
 type Slot = IslandSlot | ColdSlot;
 
-export type DiskMirrorGrant = readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean; wikiSlot?: WikiSlotKind; guardNexusHandles?: boolean }[];
+/** One held disk-write grant. `sourcedRoots` (per-wiki grants alone) names, by wiki slug, the base a SOURCED slug projects
+ *  under in place of `mirrorRoot`: a wiki whose bag stands in the canon source writes back beside that source, while every
+ *  other slug keeps `mirrorRoot` (the mirror root splits by origin; the host derives the map from its source tree). */
+export type DiskMirrorGrant = readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean; wikiSlot?: WikiSlotKind; guardNexusHandles?: boolean; sourcedRoots?: Readonly<Record<string, string>> }[];
 
 /** Resolve a mount's disk mirrors: intersect the held grant (authority) with the
  *  recipe's `mirrorBags` (designation), then fill a per-wiki grant's bag + leaf
@@ -230,13 +233,16 @@ export function resolveDiskMirrors(
         ? Boolean(mirrorBags?.includes(bag)) && !literalBags.has(bag) && !SYSTEM_BAGS.has(bag)
         : Boolean(mirrorBags?.includes(bag));
     })
-    .map((g) =>
-      (g.selfCanon || g.wikiSlot)
-        ? { ...g, bagId: perWikiBag(g), mirrorRoot: `${g.mirrorRoot}/${wikiSlug}` }
+    .map((g) => {
+      // A sourced slug's per-wiki root writes back beside its source; every other slug keeps the grant's own root.
+      const base = Object.hasOwn(g.sourcedRoots ?? {}, wikiSlug) ? g.sourcedRoots![wikiSlug]! : g.mirrorRoot;
+      const { sourcedRoots: _sourced, ...held } = g;
+      return (g.selfCanon || g.wikiSlot)
+        ? { ...held, bagId: perWikiBag(g), mirrorRoot: `${base}/${wikiSlug}` }
         : g.perWikiSlug
-          ? { ...g, mirrorRoot: `${g.mirrorRoot}/${wikiSlug}` }
-          : g,
-    );
+          ? { ...held, mirrorRoot: `${base}/${wikiSlug}` }
+          : held;
+    });
 }
 
 /** What the vessel itself read of its rest asks: asked, answered rested (its Repo held the heads and flushed), answered stalled. */

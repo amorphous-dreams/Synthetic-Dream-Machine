@@ -24,12 +24,11 @@ import type { CompositeStore } from "@lararium/mesh";
 import { registerActionReactors, makeTw5Deserializer } from "./action-handler.js";
 import { VerbTable } from "./verb-dispatcher.js";
 import { composeIsland } from "./island-caps.js";
-import { hasEngineWatch, hasRecipeWatch, hasProjection } from "./has-island-watches.js";
+import { hasEngineWatch, hasHandBoundary, hasRecipeWatch, hasProjection } from "./has-island-watches.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandBehavior, IslandContext } from "./island-context.js";
 import type { RecordPortOptions } from "./record-port-handler.js";
 import { hasPortLease } from "./record-port-lease.js";
-import { wikiHandBoundary } from "./island-recipe.js";
 
 /** The reboot-pending alert tiddler title. Tagged `$:/tags/Alert` so TW5's NATIVE
  *  alert area renders it (no custom banner needed). Stable title = one coalesced
@@ -177,14 +176,5 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
   // onHooAnu order (recipe · engine · projection-cleanup · registry-null) exactly. hasProjection is
   // the SHARED render cap the daemon also inherits — one VM, one surface path. Caller-supplied caps
   // fold at the tail — added capability, never a re-ordering of the base channels.
-  const handBoundaryCap: IslandCap = {
-    name: "wiki-hand-boundary",
-    onSignal(type, _raw, ctx) {
-      if (type === "lar:control-event" || type === "lar:resend" || type === "wiki:place-verb" || type.startsWith("port:")) {
-        wikiHandBoundary(ctx.tw5);
-      }
-      return false;
-    },
-  };
-  return composeIsland([handBoundaryCap, dispatchCap, hasPortLease(opts.recordPort), hasProjection(opts.onBoot), hasEngineWatch(), hasRecipeWatch(), ...(opts.caps ?? [])]);
+  return composeIsland([hasHandBoundary(), dispatchCap, hasPortLease(opts.recordPort), hasProjection(opts.onBoot), hasEngineWatch(), hasRecipeWatch(), ...(opts.caps ?? [])]);
 }

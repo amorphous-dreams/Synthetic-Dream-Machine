@@ -3,9 +3,13 @@
 # everything that belongs to a household arrives as environment and two host mounts. Per-surface differences
 # are ENVIRONMENT, never another file.
 #
-#   /state      one durable per-vessel host directory: the vessel's homes AND its custody (keys).
+#   /state      one durable per-vessel host directory: the vessel's homes AND its custody (keys), and the house's
+#               PRIVATE projection (wikis/kahua, and every bag or wiki with no source in the workspace): the daemon
+#               roots here (`--root /state`).
 #               Back it up separately. It never rides an image layer, a build arg or an env var.
-#   /workspace  the editable corpus (bags/, wikis/) the disk projection reads and writes.
+#   /workspace  the editable corpus: the canon SOURCE a seeding reads (LAR_BAGS=/workspace/bags). A bag whose source
+#               stands here projects back here, and the wiki it composes to wikis/ (source control); no private plane
+#               ever does (operator ruling 2026-11-01; lararium-node `projectionRoots`).
 #
 # Required (no default, so a forgotten one fails loud instead of siting state in the wrong place):
 #   LARES_STATE       host path mounted at /state      (put it on a LOCAL LINUX filesystem; on Win11 keep it
@@ -137,7 +141,8 @@ x-vessel: &vessel
       source: ${LARES_WORKSPACE:?set LARES_WORKSPACE to the corpus directory on the host}
       target: /workspace
   # The explicit roots. The image bakes the same four; they are restated so a reader of THIS file sees the
-  # contract. LAR_BAGS alone does not isolate the projection mirrors — the daemon also takes --root /workspace.
+  # contract. The mirrors split by origin: a bag present under LAR_BAGS projects back to it (its wiki to LAR_WIKIS's
+  # tree), and every private or house-minted layer projects under --root /state (tools/compose-surface-root.test.mjs).
   environment: &roots
     LAR_ROOT: /state
     LAR_BAGS: /workspace/bags
@@ -167,7 +172,7 @@ services:
       # Node's route ownership. Only a Lararium (a vessel with a lit face) mounts them — see `herm` below.
       LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist
       LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json
-    command: ["--root", "/workspace", "--genesis", "/app/genesis"]
+    command: ["--root", "/state", "--genesis", "/app/genesis"]
     init: true
     restart: unless-stopped
     stop_grace_period: 20s
@@ -204,7 +209,7 @@ services:
       LAR_PEERS: ${LAR_PEERS:-}
       LAR_LAN_DISCOVERY: ${LAR_LAN_DISCOVERY:-}
       LAR_SAME_ORIGIN: "true"
-    command: ["--root", "/workspace", "--genesis", "/app/genesis"]
+    command: ["--root", "/state", "--genesis", "/app/genesis"]
     init: true
     restart: unless-stopped
     stop_grace_period: 20s

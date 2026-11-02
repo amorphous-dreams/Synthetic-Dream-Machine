@@ -59,7 +59,7 @@ import { parseMeshPeer } from "@lararium/mesh";
 import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
 import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront } from "./uds-channel.js";
 import { nodeSwitchActLog } from "./switch-act-log.js";
-import { REALM_KEY_VERBS, REALM_SESSION_ACTS, STORE_DOOR_FACE_ROWS, faceRowAnswer } from "./store-door-verbs.js";
+import { KAHUA_OPERATOR_ROWS, REALM_KEY_VERBS, REALM_SESSION_ACTS, STORE_DOOR_FACE_ROWS, faceRowAnswer } from "./store-door-verbs.js";
 import { makeCustodyHolder } from "./custody-holder.js";
 import { testScratchNotice } from "./test-scratch-notice.js";
 import { seatCustody } from "./custody-seat.js";
@@ -210,7 +210,7 @@ interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly 
 async function main(): Promise<void> {
   const { port, storageDir, genesisDir, genesis, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
   // A vessel founded on the build's shipped seed refuses a boot that resolves another (genesis-resolve, the pin).
-  checkGenesisPin(storageDir, genesis);
+  console.log(checkGenesisPin(storageDir, genesis));
   // LAN discovery stays OFF unless the operator turns it. An empty value reads as unset, so a compose file may
   // pass the variable through; any other word refuses by name before a face listens.
   const lanDiscoveryMode = process.env["LAR_LAN_DISCOVERY"] || undefined;
@@ -794,6 +794,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     signers:      result.sessionSigns,
     switchActs:   nodeSwitchActLog,
     sessionVerbs: STORE_DOOR_FACE_ROWS,
+    handOnlyActs: KAHUA_OPERATOR_ROWS,
     socketVerbs:  new Set([...STORE_DOOR_FACE_ROWS, ...REALM_KEY_VERBS]),
     // A FACE ROW ANSWERS ON THE SOCKET ALONE (K20): the store door's face rows, and the realm verbs a session runs that
     // name a face's key (`REALM_SESSION_ACTS`), ride `session:act` beside the sealed acts, main's handler running as the

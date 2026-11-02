@@ -43,7 +43,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
   HandleBook, attestAndRotate, faceLogViewLine, signFaceLogView, canonicalJsonBytes, coldKeySeedFromCode, sealKeySetHash, deriveSelfRecoveryKey, faceAtomKeyFromSeed, foldPersonaContests, recoveryContactRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
-  faceWorkingDocUrl, openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, sealMemorySection, signHandleCard,
+  faceWorkingDocUrl, personaBagIdFor, openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, sealMemorySection, signHandleCard,
   type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
 } from "@lararium/mesh";
 import * as init from "../src/commands/init.js";
@@ -58,6 +58,7 @@ import { readNexusDoc } from "../src/nexus-doc.js";
 import { readFaceAddressSecret } from "../src/fleet-join-custody.js";
 import { SealedActRefused, runSealedAct } from "../src/sealed-acts.js";
 import { loadIdentityAnchors, persistIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
+import { kahuaFaceFolder, kahuaFaceTag } from "../src/bag-paths.js";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "../src/node-circle-store.js";
 import {
@@ -287,6 +288,27 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("face-already-held");
     expect(homeTree()).toBe(before);
     expect(pendingStands()).toBe(false);
+  });
+
+  // KNOWN RED, strict: face-keyed names, ruled 2026-11-02, next lane. A face's private names (its persona planes, its kahua
+  // stage, its kahua-<tag> folders) key off the FACE, derived from its address secret, never the seat group; a restore keeps
+  // them and a burn stays a new face. `restoreFaceBundle` re-mints the group today and R1 pins that; the next lane re-derives
+  // the names from the face, and this case then flips green, where `test.fails` reads it as the cue to drop the mark.
+  test.fails("R17 — RED (recovery keeps the identifier): the restored face keeps its PersonaGroup, so its derived tag, its persona-plane name and its kahua-<tag> folders stay; CONTROL: the prefix and the working address already stay", async () => {
+    // The recovery law (layered, 2026-09-06): the name rotates under a FIXED identifier. A face's tag derives from its
+    // PersonaGroup id alone (`personaScopeTag`), so a restore that re-mints the group moves the plane name
+    // (`personaBagIdFor`) and every `kahua-<tag>` folder the face projects. This red names the restore's re-mint
+    // (`runFoundTheFace` -> a fresh `createGroup`); R1 pins the opposite today ("another key group"), the fork the
+    // operator's ruling settles.
+    const a = await cutOnDestroyedVessel("a");
+    await foundVessel("b");
+    await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
+    const anchors = (await loadIdentityAnchors(1))!;
+    expect(anchors.personaKelPrefix, "CONTROL: the identifier stays").toBe(a.prefix);
+    expect(await workingUrlOf(anchors.personaGroupId), "CONTROL: the working address stays").toBe(a.workingUrl);
+    expect({ tag: kahuaFaceTag(anchors.personaGroupId), plane: personaBagIdFor(anchors.personaGroupId), folder: kahuaFaceFolder(kahuaFaceTag(anchors.personaGroupId)) },
+      "the restore re-minted the PersonaGroup: the face's tag, plane and kahua folders moved")
+      .toEqual({ tag: kahuaFaceTag(a.group), plane: personaBagIdFor(a.group), folder: kahuaFaceFolder(kahuaFaceTag(a.group)) });
   });
 
   test("R16 — the bundle carries the face's address secret, so the face restored on B derives the working address it derived on A; CONTROL: a second face derives another; a bundle without the secret refuses no-address-secret before any write", async () => {

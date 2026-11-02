@@ -4,7 +4,8 @@
  * Canonical assembly:
  *   1) `expandRecipe(recipe)` → ordered slot URIs (top of array = highest priority)
  *   2) addLayer for each slot in cascade order (bottom-up): oracle floor first, temp last
- *   3) temp uses memory, oracle wraps its seed store with the floor read-face, and other slots use AutomergeDocStore
+ *   3) temp uses memory, oracle wraps its seed store with the floor read-face, the kahua slot reads the stage's fold under
+ *      the face (`kahuaStageStore`), and other slots use AutomergeDocStore
  *   4) IslandAdaptor projection registers
  *   5) initial replay enters the shore landing queue; its checkpoint resolves when that queue empties
  *
@@ -20,7 +21,9 @@ import {
   slotLayerFlags,
   wikiSlotUri,
   ORACLE_BAG,
+  KAHUA_BAG,
   floorReadFace,
+  type KahuaStageFace,
   type LarDoc,
   type DocHandle,
   type WikiRecipe,
@@ -29,6 +32,7 @@ import {
   type LarTiddlerStore,
 } from "@lararium/mesh";
 import { IslandAdaptor } from "./island-adaptor.js";
+import { kahuaLayerStore } from "./kahua-layer.js";
 import { MemoryTiddlerStore } from "./memory-store.js";
 import type { TW5Engine } from "./tw5-vm.js";
 
@@ -46,6 +50,10 @@ export interface BuildIslandRecipeInput {
   ready: readonly RecipeReadyBinding[];
   /** Pinned system snapshots beneath the live oracle seed. */
   floorRows?: readonly Readonly<Record<string, LarTiddlerRecord>>[];
+  /** The face the kahua stage reads under; absent or null, the kahua layer stands empty. */
+  kahuaFace?: () => KahuaStageFace | null;
+  /** Wakes the kahua layer's re-fold when the face's lineage moves (`liveKahuaFace`). */
+  kahuaFaceWatch?: (fn: () => void) => () => void;
 }
 
 /**
@@ -82,7 +90,11 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     }
     const handle = handleBySlot.get(slot);
     if (!handle) continue; // CRDT slot not provided — skip (cold or unmapped)
-    const base = new AutomergeDocStore(handle, slot);
+    // THE KAHUA SLOT READS THE FOLD: any member of the face writes any tiddler into the stage doc, so the layer serves the
+    // verified standing items alone, through the one seam (`kahuaLayerStore`), and never the doc's titles.
+    const base: LarTiddlerStore = slot === KAHUA_BAG
+      ? kahuaLayerStore(handle, input.kahuaFace ?? (() => null), input.kahuaFaceWatch)
+      : new AutomergeDocStore(handle, slot);
     const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRows ?? [], base }) : base;
     // Oracle takes no writes; other CRDT slots accept writes through the in-wiki bag-paths cascade
     // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
@@ -127,9 +139,10 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
 
   // Drive existing CRDT state through the projection bus → adaptor → shore queue.
   for (const { store } of stores) {
-    if (store instanceof AutomergeDocStore) {
-      store.emitInitialReplay();
-      store.markSyncComplete();
+    const replays = store as LarTiddlerStore & { emitInitialReplay?: () => void; markSyncComplete?: () => void };
+    if (store instanceof AutomergeDocStore || typeof replays.emitInitialReplay === "function") {
+      replays.emitInitialReplay?.();
+      replays.markSyncComplete?.();
     }
   }
 
@@ -177,4 +190,17 @@ export function wikiLandedCovers(tw5: TW5Engine, bag: string, named: readonly st
 /** Ask the shore mounted over this engine to take an inbound act boundary. */
 export function wikiHandBoundary(tw5: TW5Engine): void {
   void adaptors.get(tw5)?.boundary().catch(() => {});
+}
+
+/**
+ * The boundary an act closes on: the hands it made land with it. The act's owner applies it to the wiki after the cap
+ * that called this returns (the turn the signal rides), and the wiki raises its change on the next tick; the bridge marks
+ * each hand inside that dispatch. So this waits out the turn, then the wiki's dispatch, then takes the boundary.
+ */
+export function wikiHandBoundaryAfterAct(tw5: TW5Engine): void {
+  const adaptor = adaptors.get(tw5);
+  if (!adaptor) return;
+  queueMicrotask(() => {
+    void adaptor.awaitWikiDispatch().then(() => adaptor.boundary()).catch(() => {});
+  });
 }

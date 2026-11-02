@@ -42,6 +42,8 @@ import { armTestCustody } from "./browser-test-custody.js";
 import { frameCarrier } from "@lararium/memetic-frame";
 
 const WEB_DIR   = process.env["LAR_WEB_DIR"]  ?? resolve("packages/lararium-web/dist");
+/** The genesis root the page reads its seed and CAS off (`/genesis/*`): the web build carries none of its own. */
+const GENESIS_DIR = process.env["LAR_GENESIS"] ?? resolve("genesis");
 const WEB_PORT  = Number.parseInt(process.env["LAR_WEB_PORT"] ?? "5173", 10);
 /** The operator's vessel this browser belongs to — reached over the shared namespace. */
 const VESSEL_WS = process.env["LAR_VESSEL_WS"] ?? "ws://localhost:8080/ws";
@@ -70,7 +72,8 @@ function serveWeb(): Promise<() => void> {
   const handler = (q: IncomingMessage, s: ServerResponse): void => {
     const rel = (q.url ?? "/").split("?")[0]!;
     const file = rel === "/" || rel === "" ? "index.html" : rel.replace(/^\//, "");
-    const path = join(WEB_DIR, file);
+    // `/genesis/*` reads the genesis root, as a hearth's Pronaos serves its own; everything else reads the built surface.
+    const path = file.startsWith("genesis/") ? join(GENESIS_DIR, file.slice("genesis/".length)) : join(WEB_DIR, file);
     // A single-page web surface answers its own routes; anything unfound falls back to the shell.
     const served = existsSync(path) && !path.endsWith("/") ? path : join(WEB_DIR, "index.html");
     try {

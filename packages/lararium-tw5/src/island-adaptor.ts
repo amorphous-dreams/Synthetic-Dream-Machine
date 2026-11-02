@@ -69,6 +69,8 @@ import type {
   ParallelDraftsReader,
   SlotUri,
 } from "@lararium/mesh";
+import { KAHUA_SHADOW_PREFIX, kahuaShadowOf, kahuaShadowTitle } from "./kahua-shadow.js";
+import { KAHUA_BAG } from "@lararium/mesh";
 import { toLarTiddlerRecord, isVolatileVmUri, draftsOffLive, parallelDraftTitle } from "@lararium/mesh";
 import { maskedExecAll } from "@lararium/memetic-frame";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
@@ -108,7 +110,7 @@ export function landingFailedAlertTitle(title: string): string {
 
 /** True for a title that never persists: the volatile VM plane, alert rail, and TW5 core prompts. */
 export function neverPersists(title: string): boolean {
-  return isVolatileVmUri(title) || title.startsWith("$:/temp/lares/alert/") || title.startsWith("$:/temp/confirm/") || title.startsWith("$:/temp/alerts/");
+  return isVolatileVmUri(title) || title.startsWith("$:/temp/lares/alert/") || title.startsWith("$:/temp/confirm/") || title.startsWith("$:/temp/alerts/") || title.startsWith(KAHUA_SHADOW_PREFIX);
 }
 
 /**
@@ -141,7 +143,7 @@ export class UnroutedSaveRefusal extends Error {
  * cascade NAMES. Every production wiring hands it the wiki's `CompositeStore` (`island-recipe`), and a
  * store that could only write to its own default would land a routed save in a bag no rule chose.
  */
-export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" | "tombstoneInBag" | "storeForBag" | "resolveLayered" | "defaultWritableBagId" | "layerIndexOf">;
+export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" | "tombstoneInBag" | "storeForBag" | "resolveLayered" | "resolveAll" | "defaultWritableBagId" | "layerIndexOf">;
 
 export class LandingDoorUnavailableError extends Error {
   override readonly name = "LandingDoorUnavailableError";
@@ -390,11 +392,31 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null, ...(bag !== undefined ? { bag } : {}), ...(heads !== undefined ? { heads } : {}) });
     if (change.bag !== undefined && envelopeHeads !== undefined && envelopeHeads.length > 0) this._noteLanded(change.bag, envelopeHeads);
     this._learnDraft(title, live ? record : null, bag);
+    await this._stampKahuaShadow(title);
     this.sent.delete(title);
     this.handBase.delete(title);
     this.unlanded.delete(title);
     if (applies) this.lastWriteBag.delete(title);
     void this.boundary().catch(() => {});
+  }
+
+  /**
+   * Stamp or clear the "local draft over shared" record for a title the wave just landed: the temp-plane
+   * stamp carries the kahua body the draft covers and exists only while a shadow stands on this device.
+   */
+  private async _stampKahuaShadow(title: string): Promise<void> {
+    if (neverPersists(title)) return;
+    // A shadow stands only where the composition lays the kahua stage: a pool wiki (or any store composing no
+    // `bags/kahua` layer) asks nothing per landing.
+    if (typeof this.store.layerIndexOf !== "function" || this.store.layerIndexOf(KAHUA_BAG) === -1) return;
+    const wiki = this.tw5.$tw.wiki;
+    const stamp = kahuaShadowTitle(title);
+    const shadow = await kahuaShadowOf(this.store, title);
+    if (!shadow) {
+      if (wiki.getTiddler(stamp)) wiki.deleteTiddler(stamp);
+      return;
+    }
+    this._addAlertIfChanged({ title: stamp, text: shadow.shared, "draft-bag": shadow.draftBag, "shadow-of": title });
   }
 
   /**

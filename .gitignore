@@ -56,6 +56,10 @@ packages/lararium-node/playwright-report
 # scratch wiki — operator's live editable surface, never committed.
 # Named wikis (e.g. wikis/lares-history/) are checked in.
 wikis/scratch/
+# Private kahua layers project under the state root, never the checkout; a scratch LAR_ROOT that sets LAR_BAGS at
+# the checkout must still never stage one.
+bags/kahua-*/
+wikis/kahua-*/
 !tests/expected/wikis/
 
 # Integration test isolation root (LAR_ROOT=tests/).

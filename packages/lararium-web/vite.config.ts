@@ -1,53 +1,40 @@
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, type Plugin, type Connect } from "vite";
 import wasm from "vite-plugin-wasm";
 import { createHash } from "node:crypto";
-import { createReadStream, cpSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, normalize, resolve } from "node:path";
 
 const GENESIS_DIR = resolve(import.meta.dirname, "../../genesis");
 const PRONAOS_RECORD = resolve(import.meta.dirname, "../../.pronaos-build/pronaos-artifact.json");
 
 /**
- * Serve `genesis/` at `/genesis` — in the dev server AND into the build.
+ * Serve `genesis/` at `/genesis` in the DEV and PREVIEW servers alone.
  *
- * The seed rides in as a JSON import, so the bundler carries it. The CAS BLOBS do not:
- * the vessel FETCHES them at runtime from `/genesis/cas/<cid>`, and nothing routed that. `server.fs.allow`
- * grants vite permission to READ a path; it does not create a route. So the request fell through to the
- * SPA fallback and the vessel was handed `index.html` — 2.5 KB of HTML where 2.4 MB of TiddlyWiki core
- * belonged.
+ * The page reads `seed.json` and the CAS blobs off `/genesis` at runtime. A built page stands behind a hearth's Pronaos,
+ * which serves both off the genesis root that hearth boots, so the build carries no genesis copy
+ * (`tools/genesis-parity-witness.sh` reads one RED). The dev and preview servers hold no hearth, so they route the tree's own genesis.
+ * `server.fs.allow` grants vite permission to READ a path and creates no route: without this middleware a request falls
+ * through to the SPA fallback and the vessel receives `index.html` where a CAS blob belongs.
  *
- * The TW5 core-integrity gate caught it and faulted the island, which is exactly its job, and the leaf
- * then re-dialled the relay forever. The reconnect loop LOOKED like a transport fault; it was a 404
- * wearing an HTML page. Nothing in the suite saw it, because no test boots a full island against genesis.
- *
- * Blobs are content-addressed, so they are immutable by construction and cacheable forever.
+ * Blobs carry content addresses, so they stay immutable and cacheable forever; `seed.json` answers no-store.
  */
-function serveGenesis(): Plugin {
-  return {
-    name: "lararium:serve-genesis",
-    apply: "build",
-    closeBundle() {
-      // The built vessel fetches the same paths, so the build must carry the same tree.
-      if (existsSync(GENESIS_DIR)) cpSync(GENESIS_DIR, resolve(import.meta.dirname, "dist/genesis"), { recursive: true });
-    },
-  };
-}
-
-/** Keep development CAS reads available without letting a dev-server close rewrite the build receipt. */
 function serveGenesisInDev(): Plugin {
+  const route: Connect.NextHandleFunction = (req, res, next) => {
+    const rel = normalize(decodeURIComponent((req.url ?? "/").split("?")[0] ?? "/")).replace(/^(\.\.[/\\])+/, "");
+    const file = join(GENESIS_DIR, rel);
+    if (!file.startsWith(GENESIS_DIR) || !existsSync(file) || !statSync(file).isFile()) return next();
+    const seedFile = rel.replace(/^[/\\]+/, "") === "seed.json";
+    res.setHeader("Content-Type", seedFile ? "application/json" : "application/octet-stream");
+    res.setHeader("Cache-Control", seedFile ? "no-store" : "public, max-age=31536000, immutable");
+    createReadStream(file).pipe(res);
+  };
   return {
     name: "lararium:serve-genesis-dev",
     apply: "serve",
-    configureServer(server) {
-      server.middlewares.use("/genesis", (req, res, next) => {
-        const rel = normalize(decodeURIComponent((req.url ?? "/").split("?")[0] ?? "/")).replace(/^(\.\.[/\\])+/, "");
-        const file = join(GENESIS_DIR, rel);
-        if (!file.startsWith(GENESIS_DIR) || !existsSync(file) || !statSync(file).isFile()) return next();
-        res.setHeader("Content-Type", "application/octet-stream");
-        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-        createReadStream(file).pipe(res);
-      });
-    },
+    configureServer(server) { server.middlewares.use("/genesis", route); },
+    // `vite preview` serves the built page with no hearth behind it, so it routes the tree's own genesis the same way;
+    // the dist still carries no copy.
+    configurePreviewServer(server) { server.middlewares.use("/genesis", route); },
   };
 }
 
@@ -89,17 +76,15 @@ function emitPronaosArtifactRecord(): Plugin {
   };
 }
 
-// Web-surface capabilities — Automerge WASM + module Web Workers + the genesis seed.
+// Web-surface capabilities — Automerge WASM + module Web Workers.
 // Config follows the Automerge "Vite" recipe (research-grounded 2026-06-25):
 //   - wasm()        : @automerge/automerge ships its core as .wasm
-// The genesis boot artifact is now seed.json (the plain-data oracle seed,
-// materialize-fresh) — a native JSON import, so the old vite-plugin-arraybuffer (which
-// served the retired binary import) is gone.
+// The genesis boot artifact, seed.json, reaches the page at runtime off `/genesis` (the hearth's Pronaos, or the dev route).
 // automerge-wasm's top-level-await is handled by the esnext target (build + dev),
 // so vite-plugin-top-level-await is NOT needed (and dropping it removes the @swc/core
 // native build that snagged pnpm's pre-run deps-check).
 export default defineConfig({
-  plugins: [wasm(), serveGenesisInDev(), serveGenesis(), emitPronaosArtifactRecord()],
+  plugins: [wasm(), serveGenesisInDev(), emitPronaosArtifactRecord()],
 
   // The worker is a SEPARATE rollup build — top-level plugins do NOT inherit, so wasm()
   // must be repeated for the worker to instantiate automerge's wasm. format "es" is
@@ -127,8 +112,7 @@ export default defineConfig({
   server: {
     host: true,        // also bind LAN — the home / intranet serving topology
     port: 5173,
-    // genesis/seed.json lives at the repo root
-    // (outside this package); allow it.
+    // The dev route reads genesis/ at the repo root (outside this package); allow it.
     fs: { allow: [".", "../..", "../../genesis"] },
   },
 });

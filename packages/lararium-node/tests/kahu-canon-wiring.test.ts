@@ -28,8 +28,9 @@ describe("the node boot's Kahu canon wiring", () => {
     expect(code).toMatch(/\.\.\.\(kahuCanon\.lares \|\| kahuCanon\.lararium \? \{ systemCanon: true \} : \{\}\)/);
   });
   test("each bags/ mirror is granted only where the keel named that bag's document", () => {
-    expect(code).toMatch(/\.\.\.\(kahuCanon\.lares\s*\?\s*\[\{ bagId: LARES_DOC_URI,[^\]]*bags\/lares"/);
-    expect(code).toMatch(/\.\.\.\(kahuCanon\.lararium\s*\?\s*\[\{ bagId: LARARIUM_DOC_URI,[^\]]*bags\/lararium"/);
+    // The mirror's root splits by origin (`projectionRoots`): the grant names its bag's root through `bagRoot`.
+    expect(code).toMatch(/\.\.\.\(kahuCanon\.lares\s*\?\s*\[\{ bagId: LARES_DOC_URI,[^\]]*bagRoot\("lares"\)/);
+    expect(code).toMatch(/\.\.\.\(kahuCanon\.lararium\s*\?\s*\[\{ bagId: LARARIUM_DOC_URI,[^\]]*bagRoot\("lararium"\)/);
     expect(code).not.toMatch(/^\s*\{ bagId: LARES_DOC_URI,/m);                   // never a literal grant beside the conditional one
   });
 });

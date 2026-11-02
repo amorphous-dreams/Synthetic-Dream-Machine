@@ -18,9 +18,9 @@
  * Meme: lar:///ha.ka.ba/lararium/node/open-daemon-vm
  */
 
-import { daemonWorkingMirror } from "./bag-paths.js";
+import { daemonDiskMirrors } from "./bag-paths.js";
+import { daemonBagsDir } from "./lares-config.js";
 import { parseAutomergeUrl } from "@automerge/automerge-repo";
-import { CROSSROADS_DOC_URI } from "@lararium/mesh";
 import { join }                                          from "path";
 import {
   type Repo, type AutomergeUrl, type LarDoc, type DocHandle,
@@ -35,7 +35,7 @@ import {
 } from "@lararium/tw5";
 import { isStillJoining, resolveBootDoc } from "./repo-helpers.js";
 import { nodeNewSyncChannel, nodeSpawnDaemonWorker } from "./worker-handle.js";
-import { PLANE_LABELS } from "@lararium/mesh";
+import { PLANE_LABELS, personaTagFromBagId } from "@lararium/mesh";
 
 const DEFAULT_ADMIN_WORKER_URL = new URL("./node-daemon-island.js", import.meta.url);
 
@@ -80,7 +80,7 @@ export interface DaemonVmOptions {
   storageDir?:       string;
   /** D-VR-C: persist only the explicit daemon document in its owned scope. */
   ownedDocument?:    boolean;
-  /** The vessel root (`<root>/wikis/daemon/` receives the daemon wiki's working layer). */
+  /** The vessel root (`<root>/wikis/kahua/` receives the daemon wiki's working layer). */
   rootDir?:          string;
   /** Override the daemon island script URL (tests). */
   workerScriptUrl?:  URL;
@@ -131,6 +131,13 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     console.log(`[daemon] ${PLANE_LABELS.persona} still joining — this composition holds no vessel key, so the plane stands on the hearth until the unlocked composition dials it`);
   }
 
+  // THE WORN FACE NAMES THE PRIVATE FOLDERS: its persona plane `bags/persona-<tag>` lends `<tag>` to `kahua-<tag>`.
+  const faceTag = personaBagId ? personaTagFromBagId(personaBagId) : null;
+  if (personaBagId && faceTag === null) throw new Error(`openDaemonVm: the worn face's plane ${personaBagId} carries no derived persona tag`);
+  if (rootDir && faceTag === null) {
+    console.log("[kahua] no face stands worn in this composition: the daemon VM mirrors no private kahua layer until a face is worn");
+  }
+
   // The daemon holds NO standing system-bag mount: it reaches a deep target bag
   // by ACCESS per residency action (ephemeral mount, released after — the
   // edit/action split, wiki-layer-ontology#write-law). The daemon's own composite
@@ -162,14 +169,11 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
       documentUrl: daemonUrl,
       storage: { type: "nodefs" as const, dir: join(storageDir!, "daemon-owned") },
     } } : {}),
-    // The daemon wiki projects to `<root>/wikis/daemon/` — the grant every wiki's working slot gets —
-    // and designates the public system bag it holds, so a residency MOVE out of its working layer
-    // into crossroads publishes under `<root>/bags/crossroads/` (the node's grant meets a designation).
-    ...(rootDir ? { diskMirrors: [
-      { ...daemonWorkingMirror(rootDir), scope: "daemon" },
-      { bagId: CROSSROADS_DOC_URI, mirrorRoot: join(rootDir, "bags", "crossroads"), scope: "crossroads",
-        guardNexusHandles: guardCrossroadsNexusHandles },
-    ] } : {}),
+    // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the worn face's working top under `<root>/wikis/kahua-<tag>/`,
+    // its kahua stage under `<root>/bags/kahua-<tag>/`, crossroads back to its canon source where one stands; the control
+    // plane holds none. The tag reads off the worn face's persona plane, so it names the folders that face projects on
+    // every device; no worn face projects no private kahua layer.
+    ...(rootDir ? { diskMirrors: daemonDiskMirrors({ rootDir, canonBags: daemonBagsDir(), faceTag, guardCrossroadsNexusHandles }) } : {}),
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
   });
 }

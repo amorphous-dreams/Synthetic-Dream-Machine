@@ -1111,17 +1111,19 @@ export function projectSubmission(
   // WITH when it leaves the shelf alone (source/source-check/lang/tongue/the kramdown identity
   // keys) — what an external reader (an IANA tool, an RFC toolchain) sees with no sidecar beside it.
   // A pair with no recorded variant stays CommonMark, no tongue (the default both channels share).
-  const metaLines = [
-    `title: ${title}`,
-    `type: text/markdown`,
-    `source: ${uri}`,
-    `source-check: ${check}`,
-    ...(profile.dialect !== "CommonMark" ? [`variant: ${profile.dialect}`] : []),
-    ...(opts?.tongue ? [`tongue: ${opts.tongue}`] : []),
-    `projected-by: weave (lares meme project --to md · meme-project)`,
-    `law: projected artifact — hand edits do not survive re-projection`,
-  ];
-  const meta = metaLines.join("\n") + "\n";
+  // The sidecar rests in TW5's own field-block form (fields sorted, one line each, no trailing newline),
+  // the bytes the disk projection renders for the same fields, so a seed re-projects the pair unmoved.
+  const metaFields: Record<string, string> = {
+    title,
+    type: "text/markdown",
+    source: uri,
+    "source-check": check,
+    ...(profile.dialect !== "CommonMark" ? { variant: profile.dialect } : {}),
+    ...(opts?.tongue ? { tongue: opts.tongue } : {}),
+    "projected-by": "weave (lares meme project --to md · meme-project)",
+    law: "projected artifact — hand edits do not survive re-projection",
+  };
+  const meta = Object.keys(metaFields).sort().map((k) => `${k}: ${metaFields[k]}`).join("\n");
 
   if (profile.frontmatter) {
     const fields: Record<string, string> = {

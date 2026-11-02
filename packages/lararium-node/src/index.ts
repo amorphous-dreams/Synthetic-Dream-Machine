@@ -205,6 +205,8 @@ export type { DeviceAdmitOptions, DeviceAdmitPayload, DeviceAdmitResult } from "
 // and abandons in its own process, with no vessel standing.
 export { runFleetJoinOffer, runFleetJoinAnswer, runFleetJoinRequest, runFleetJoinLand, runFleetJoinAbandon, FleetJoinRefused } from "./commands/fleet-join.js";
 export { runIntentCommand, resolveIntentFaceIndex, intentAudience, IntentRefused } from "./commands/intent.js";
+export { runKahuaCommand, KahuaRefused, type KahuaAction, type KahuaCommandOptions } from "./commands/kahua.js";
+export { kahuaDoor, type KahuaDoorPorts, type KahuaLiftInput, type KahuaProposeInput } from "./kahua-door.js";
 export type { FleetJoinAnswerOptions } from "./commands/fleet-join.js";
 export { readJoinedFaceProof } from "./joined-face-proof.js";
 export type { JoinedFaceProof, JoinedFaceAbsence } from "./joined-face-proof.js";
@@ -218,7 +220,7 @@ export type { HostedNexusReading, HostRollResult } from "./commands/host.js";
 export { runWalkState, runWalkTake, runWalkInvite, WalkRefusal } from "./commands/walk.js";
 export type { WalkReading } from "./commands/walk.js";
 // ONE STORE, ONE HOLDER — the door table every store command routes through, and the one direct opener.
-export { storeDoorReactors, storeDoorDirect, storeRowFace, STORE_DOOR_FACE_ROWS, STORE_DOOR_VERBS, type StoreDoorVerb, type StoreDoorDeps } from "./store-door-verbs.js";
+export { storeDoorReactors, storeDoorDirect, storeRowFace, KAHUA_OPERATOR_ROWS, STORE_DOOR_FACE_ROWS, STORE_DOOR_VERBS, type StoreDoorVerb, type StoreDoorDeps } from "./store-door-verbs.js";
 export { ownedStore, claimStore, StoreHeld, StoreHeldElsewhere, type StoreClaim, readBootEpoch, bootEpochPath } from "./owned-store.js";
 export { claimName, anchoredName, NameTooLong, NameHeld, NameReaping, type ClaimedName, type ClaimNameOptions } from "./socket-claim.js";
 export { readHearthDialPin } from "./hearth-dial-pin.js";

@@ -38,6 +38,9 @@
  *   nexus-offering-inspect                       one carried offering, read off the Crossroads board
  *                                                (`commands/nexus-offering-inspect`)
  *   raise-sign                                   a raise grant off the carriage board (`commands/raise-sign`)
+ *   kahua-mint · kahua-propose · kahua-lift · kahua-withdraw · kahua-carry · kahua-read
+ *                                                a face's kahua stage: its pin, a proposal, the operator's lift and
+ *                                                withdraw (cap read off the island, grant out of custody), reads (`commands/kahua`)
  *
  * A REFUSAL is an answer, never a fault: it comes back as `{ refused, refusal }` (the door's words, and the name
  * the row refuses under), so the CLI names it exactly as the direct path does. A row hands back what its command prints; the command's own process prints it, so a row that ran
@@ -63,6 +66,7 @@
 import { parkFaceRoute } from "./face-route.js";
 import type { Repo } from "@automerge/automerge-repo";
 import { readFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 import { join } from "node:path";
 import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
@@ -76,6 +80,7 @@ import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 import { runPersonaLease, PersonaLeaseError } from "./commands/persona-lease.js";
 import { runIntentCommand, IntentRefused, type IntentCommandOptions } from "./commands/intent.js";
 import { runIntentRelayCommand } from "./commands/intent-relay.js";
+import { runKahuaCommand, KahuaRefused, type KahuaAction } from "./commands/kahua.js";
 import { FaceNotNamed, faceRowArgs } from "./face-selector.js";
 import { runEdgeRollAnchors, rollAnchorFace, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError, type WornFleet } from "./commands/edge-seats.js";
@@ -170,6 +175,7 @@ export const STORE_DOOR_VERBS = [
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status", "intent-relay-rotate",
+  "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -188,7 +194,14 @@ export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoo
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-lease", "nexus-publish", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status",
+  "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
 ]);
+
+/**
+ * The kahua rows a person's hand alone runs: the stage's pin, a lift and a withdraw. A session the `seat` hand opened (a
+ * spirit) refuses each one at the socket (`handOnlyActs`), so an AI seat proposes and reads and never lifts.
+ */
+export const KAHUA_OPERATOR_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["kahua-mint", "kahua-lift", "kahua-withdraw", "kahua-carry"]);
 
 /**
  * The face a face row names: `face`, else `handleIndex`; undefined where it names none. The two naming different faces
@@ -214,6 +227,7 @@ const REFUSALS = [
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError, FleetJoinRefused, NexusCabalError,
   CarryBundleError,
   IntentRefused,
+  KahuaRefused,
   FaceRowRefused,
 ] as const;
 
@@ -275,11 +289,42 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...opt("agent", str(args["agent"])), ...opt("prefix", str(args["prefix"])), ...opt("policy", args["policy"]),
       ...opt("asOf", str(args["asOf"])), ...opt("until", str(args["until"])),
     });
+  /** The lōkahi cap as the standing vessel's island reads it; a direct act stands no island and passes none. The door asks it
+   *  from its write rows alone (lift, withdraw, carry), so the ask carries `ensure`: a missing grant mints there, never on a read. */
+  const kahuaCap = deps.askIsland
+    ? async (presenter: string) => {
+      const out = await deps.askIsland!("kahua-cap", { ensure: true }, presenter, `kahua-cap:${randomBytes(12).toString("hex")}`);
+      return { held: out["held"] === true, ...(typeof out["reason"] === "string" ? { reason: out["reason"] } : {}) };
+    }
+    : undefined;
+  const kahua = (action: KahuaAction, args: Readonly<Record<string, unknown>>) => {
+    const list = (v: unknown): string[] | undefined => (Array.isArray(v) && v.every((x) => typeof x === "string") ? v as string[] : undefined);
+    const parent = args["parent"] === null || args["parent"] === "none" ? null : str(args["parent"]);
+    return runKahuaCommand({ repo, ...opt("catalogUrl", deps.catalogUrl), action,
+      ...opt("face", int(args["face"])), ...opt("title", str(args["title"])),
+      ...opt("text", typeof args["text"] === "string" ? args["text"] : undefined),
+      ...opt("fields", args["fields"] && typeof args["fields"] === "object" && !Array.isArray(args["fields"]) ? args["fields"] as Record<string, string> : undefined),
+      ...opt("taint", list(args["taint"])),
+      ...opt("sources", Array.isArray(args["sources"]) ? args["sources"] as { title: string; revision: string }[] : undefined),
+      ...(parent !== undefined ? { parent } : {}),
+      ...opt("proposal", str(args["proposal"])), ...opt("target", str(args["target"])),
+      ...opt("proposals", args["proposals"]), ...opt("session", str(args["session"])),
+      ...opt("history", args["history"] === true ? true : undefined),
+      ...opt("cids", list(args["cids"])), ...opt("all", args["all"] === true ? true : undefined),
+      ...opt("cap", kahuaCap),
+    });
+  };
   return {
     "intent-relay-enable": (args) => answer("intent-relay-enable", async () => { const result = await runIntentRelayCommand({ action: "enable", ...relayFace(args) }); if (deps.onRolled) await awaitOnRolled(deps.onRolled()); return result; }),
     "intent-relay-disable": (args) => answer("intent-relay-disable", async () => { const result = await runIntentRelayCommand({ action: "disable", ...relayFace(args) }); if (deps.onRolled) await awaitOnRolled(deps.onRolled()); return result; }),
     "intent-relay-status": (args) => answer("intent-relay-status", () => runIntentRelayCommand({ action: "status", ...relayFace(args) })),
     "intent-relay-rotate": () => answer("intent-relay-rotate", async () => { const result = await runIntentRelayCommand({ action: "rotate" }); if (deps.onRolled) await awaitOnRolled(deps.onRolled()); return result; }),
+    "kahua-mint": (args) => answer("kahua-mint", () => kahua("mint", args)),
+    "kahua-propose": (args) => answer("kahua-propose", () => kahua("propose", args)),
+    "kahua-lift": (args) => answer("kahua-lift", () => kahua("lift", args)),
+    "kahua-withdraw": (args) => answer("kahua-withdraw", () => kahua("withdraw", args)),
+    "kahua-carry": (args) => answer("kahua-carry", () => kahua("carry", args)),
+    "kahua-read": (args) => answer("kahua-read", () => kahua(args["action"] === "get" ? "get" : "list", args)),
     "intent-issue": (args) => answer("intent-issue", () => intent("issue", args)),
     "intent-show": (args) => answer("intent-show", () => intent(args["action"] === "delegations" ? "delegations" : "show", args)),
     "intent-ask": (args) => answer("intent-ask", () => intent("ask", args)),

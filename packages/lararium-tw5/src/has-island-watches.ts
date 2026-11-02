@@ -12,6 +12,7 @@
 
 import { startEngineWatch } from "./engine-watch.js";
 import { startRecipeWatch } from "./recipe-watch.js";
+import { wikiHandBoundary, wikiHandBoundaryAfterAct } from "./island-recipe.js";
 import { dispatchLarControlEvent, resendLarCamera } from "./tw5-projection.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext } from "./island-context.js";
@@ -21,6 +22,30 @@ import { LAR_CONTROL_EVENT, LAR_RESEND, readLarControlEvent, readLarResend } fro
  *  merges into the live lararium doc under this running island (alert-only; reboot adopts). */
 export function hasEngineWatch(): IslandCap {
   return { name: "engine-watch", onEa: (ctx) => startEngineWatch(ctx) };
+}
+
+/**
+ * `#has` hand-boundary — the shore's hand gate gathers a title's hands until an island boundary or eight marks
+ * (`hand-gate.ts`); this cap fires that boundary on every signal a person's act or a port rides in on: a control
+ * event, a camera resend, a placed verb, a port message. It claims nothing (returns false), so it stands FIRST in a
+ * stack and the signal still reaches its owner. Every TW5 VM island that takes hands composes it — the pool wiki and
+ * the daemon surface alike — or a single saved tiddler stays in the wiki alone and the composite never holds it.
+ *
+ * The boundary fires twice per signal: at arrival, so the hands earlier acts left land ahead of this one, and once the
+ * act's owner has applied it and the wiki has dispatched its change (`wikiHandBoundaryAfterAct`), so the hand the act
+ * itself made (an edit frame's save) lands with that act rather than waiting on a later one.
+ */
+export function hasHandBoundary(): IslandCap {
+  return {
+    name: "wiki-hand-boundary",
+    onSignal(type, _raw, ctx) {
+      if (type === LAR_CONTROL_EVENT || type === LAR_RESEND || type === "wiki:place-verb" || type.startsWith("port:")) {
+        wikiHandBoundary(ctx.tw5);
+        wikiHandBoundaryAfterAct(ctx.tw5);
+      }
+      return false;
+    },
+  };
 }
 
 /** `#has` recipe/composition watch — applies recipe membership + oracle moves live, no reboot. */
