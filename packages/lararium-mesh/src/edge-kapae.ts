@@ -43,6 +43,7 @@ import type { StoredLarRecord } from "./stored-value.js";
 import type { KahuQuorumSeats, QuorumSignature } from "./kapae-antigen.js";
 import { sealKeySetHash, verifySealLineage, type SealEpoch } from "./wax-stamp.js";
 import { verifyEd25519 } from "./ed25519-door.js";
+import { ownEntry } from "./stored-value.js";
 
 export { EDGE_KAPAE_DOMAIN, EDGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
 /** The tiddler-key prefix every kāpae act rides under. */
@@ -213,7 +214,7 @@ function quorumOf(bytes: Uint8Array, signatures: readonly QuorumSignature[], ros
  *  Call INSIDE a `handle.change()` callback. */
 export function writeEdgeKapae(draft: LarDoc, act: EdgeKapae): void {
   const key = edgeKapaeKey(act);
-  const standing = edgeKapaeActsFromRecords(draft.tiddlers[key] !== undefined ? [draft.tiddlers[key]!] : []);
+  const standing = edgeKapaeActsFromRecords(ownEntry(draft.tiddlers, key) !== undefined ? [ownEntry(draft.tiddlers, key)!] : []);
   const [merged] = mergeEdgeActs([...standing.filter((a) => a.actCid === act.actCid), act]);
   draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(merged) }, act.epochCid ?? act.hand);
 }
@@ -368,7 +369,7 @@ export function edgeRollAnchorKey(anchor: EdgeRollAnchor): string {
 /** Land an anchor on a board draft. Call INSIDE a `handle.change()` callback. */
 export function writeEdgeRollAnchor(draft: LarDoc, anchor: EdgeRollAnchor): void {
   const key = edgeRollAnchorKey(anchor);
-  const standing = edgeRollAnchorsFromRecords(draft.tiddlers[key] !== undefined ? [draft.tiddlers[key]!] : []);
+  const standing = edgeRollAnchorsFromRecords(ownEntry(draft.tiddlers, key) !== undefined ? [ownEntry(draft.tiddlers, key)!] : []);
   const [merged] = mergeEdgeRollAnchors([...standing.filter((a) => edgeRollAnchorCid(a) === edgeRollAnchorCid(anchor)), anchor]);
   draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(merged) }, anchor.sealEpochCid);
 }

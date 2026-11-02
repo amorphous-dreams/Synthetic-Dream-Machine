@@ -53,6 +53,7 @@ import type { PlaceClaimStand, PlaceKelForkNote } from "./admit-gate-pin.js";
 import type { KahuQuorumSeats } from "./kapae-antigen.js";
 import { storedLarRecord } from "./stored-record.js";
 import { PLACE_KEL_ROWS_PER_AID, decodePlaceKelEvent, foldPlaceKel, placeKelEventDigest, verifyPlaceKel, type PlaceKelEvent, type PlaceKelHead } from "./vessel-kel.js";
+import { ownEntry } from "./stored-value.js";
 
 /** The statement's domain: a place's floor pin, and nothing any other seal signs (`domains`). */
 export const PLACE_FLOOR_PIN_KIND = PLACE_FLOOR_PIN_DOMAIN;
@@ -255,7 +256,7 @@ export function placeFloorPinsFromBoard(doc: LarDoc | undefined | null): unknown
   const titles = Object.keys(doc?.tiddlers ?? {}).filter((title) => title.startsWith(PLACE_FLOOR_PIN_PREFIX)).sort();
   for (const title of titles) {
     if (out.length >= PLACE_FLOOR_PIN_ROWS) break;
-    const text = tiddlerText(doc!.tiddlers[title]);
+    const text = tiddlerText(ownEntry(doc!.tiddlers, title));
     if (text === null || text.length > PLACE_FLOOR_PIN_ROW_CHARS) continue;
     try { out.push(JSON.parse(text) as unknown); } catch { /* a torn sidecar files nothing */ }
   }

@@ -37,8 +37,7 @@ import {
   realmBagRegistrationCounts, writeRealmBagRegistration, realmBagRegistrationsFromDoc, foldRealmBags,
   realmBagBytes, realmBagSealedBy, stewardSealedHere, hex,
   writeRealmBagAnnounce, type RealmBagRegistration, type RealmCharterConsult, type StewardSigner,
-  type RealmBagFoldOptions,
-} from "@lararium/mesh";
+  type RealmBagFoldOptions, ownEntry} from "@lararium/mesh";
 
 /** Why a seal on this vessel refused. */
 /** One realm the vessel's ledger notes, and the Nexus it stands under there (null where no act named one);
@@ -310,7 +309,7 @@ export function makeRealmPlane(opts: {
      *  here. Written the moment this hand seals, never from a name another hand wrote. */
     const pinSteward = (nym: string): void => {
       const key = realmStewardPointer(realmId);
-      if (tiddlerText(registry.doc()?.tiddlers?.[key]) === nym) return;
+      if (tiddlerText(ownEntry(registry.doc()?.tiddlers, key)) === nym) return;
       registry.change((d) => { d.tiddlers[key] = storedLarRecord(key, { text: nym }, "realm-bag"); });
     };
 
@@ -321,8 +320,8 @@ export function makeRealmPlane(opts: {
     // A STAND THAT FAILS LEAVES NOTHING: no listener, no pin, no verdict.
     try {
       const catalog = registry.doc();
-      const wantsDefault = kind === "charter" && tiddlerText(catalog?.tiddlers?.[REALM_ID_TIDDLER]) !== realmId;
-      if (tiddlerText(catalog?.tiddlers?.[docPointer]) !== realmUrl || wantsDefault) {
+      const wantsDefault = kind === "charter" && tiddlerText(ownEntry(catalog?.tiddlers, REALM_ID_TIDDLER)) !== realmId;
+      if (tiddlerText(ownEntry(catalog?.tiddlers, docPointer)) !== realmUrl || wantsDefault) {
         registry.change((d) => {
           d.tiddlers[docPointer] = storedLarRecord(docPointer, { text: realmUrl }, "vessel-boot");
           if (kind === "charter") d.tiddlers[REALM_ID_TIDDLER] = storedLarRecord(REALM_ID_TIDDLER, { text: realmId }, "vessel-boot");
@@ -457,7 +456,7 @@ export function makeRealmPlane(opts: {
       dispose: () => dispose(),
     };
     const keepsOwn = (documentId: DocumentId): boolean => {
-      const own = tiddlerText(registry.doc()?.tiddlers?.[realmStewardPointer(realmId)]);
+      const own = tiddlerText(ownEntry(registry.doc()?.tiddlers, realmStewardPointer(realmId)));
       if (!own) return false;
       for (const rec of realmGate.registrations().values()) {
         if (rec.keptBy.includes(own) && interpretAsDocumentId(rec.docUrl as AutomergeUrl) === documentId) return true;
@@ -471,7 +470,7 @@ export function makeRealmPlane(opts: {
   /** A realm this vessel left takes its pointers with it: the island reads no verdict of a plane that stands no more. */
   const unpin = (realmId: string): void => {
     const keys = [realmDocPointer(realmId), realmStewardPointer(realmId), realmStandingPointer(realmId)];
-    if (!keys.some((k) => registry.doc()?.tiddlers?.[k] !== undefined)) return;
+    if (!keys.some((k) => ownEntry(registry.doc()?.tiddlers, k) !== undefined)) return;
     registry.change((d) => { for (const k of keys) delete d.tiddlers[k]; });
   };
 

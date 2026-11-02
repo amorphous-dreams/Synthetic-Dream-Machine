@@ -39,7 +39,7 @@ import {
 import { recipeRecordFields, type WikiRecipe } from "./wiki-recipe.js";
 import type { LarDoc, LarBlobEntry } from "./base-doc.js";
 import { ENGINE_CORE_ID, blobDescriptorUri } from "./base-doc.js";
-import { plainField } from "./stored-value.js";
+import { plainField, ownEntry } from "./stored-value.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { storedRecord } from "./stored-record.js";
 import type { FloorManifest, FloorSnapshot } from "./floor-manifest.js";
@@ -312,7 +312,7 @@ export function genesisCasManifestFromSeed(seed: GenesisSeed): GenesisCasManifes
     cids.add(row.cid);
   }
   const regionCid = (name: string, title: string): string => {
-    const record = seed.tiddlers?.[title] as { tiddler?: { cid?: unknown } } | undefined;
+    const record = ownEntry(seed.tiddlers, title) as { tiddler?: { cid?: unknown } } | undefined;
     const cid = record?.tiddler?.cid;
     if (typeof cid !== "string" || cid.length === 0) {
       throw new Error(`[genesis-derive] ${name} region witness is absent or empty: ${title}`);
@@ -405,7 +405,7 @@ export function validateGenesisBundleCoherence(
   }
 
   const seedWitness = (title: string): string => {
-    const record = seed.tiddlers[title] as { tiddler?: { cid?: unknown } } | undefined;
+    const record = ownEntry(seed.tiddlers, title) as { tiddler?: { cid?: unknown } } | undefined;
     const cid = record?.tiddler?.cid;
     if (typeof cid !== "string" || cid.length === 0) {
       throw new Error(`[genesis-coherence] seed region witness is absent or empty: ${title}`);
@@ -718,7 +718,7 @@ export function materializeGenesisDoc(seed: GenesisSeed): Uint8Array {
     r["blobs"] = blobs;
     // The seed stands as plain data; the document rests every record's strings as immutable scalars.
     const tiddlers: Record<string, unknown> = {};
-    for (const k of Object.keys(seed.tiddlers).sort()) tiddlers[k] = storedRecord(seed.tiddlers[k] as LarTiddlerRecord);
+    for (const k of Object.keys(seed.tiddlers).sort()) tiddlers[k] = storedRecord(ownEntry(seed.tiddlers, k) as LarTiddlerRecord);
     r["tiddlers"] = tiddlers;
   });
   return automergeSave(doc);
@@ -788,7 +788,7 @@ export function verifyGenesisArtifact(
   }
 
   const readWitness = (title: string): string => {
-    const cid = plainField(doc.tiddlers?.[title], "cid");
+    const cid = plainField(ownEntry(doc.tiddlers, title), "cid");
     if (typeof cid !== "string" || cid.length < 10) {
       throw new Error(`[genesis] verify FAILED: witness tiddler ${title} absent or empty — stored=${cid}`);
     }

@@ -28,8 +28,7 @@ import {
   type SlotUri,
   type WikiRecipe,
   type WikiMountSpec,
-  type IslandGrants,
-} from "@lararium/mesh";
+  type IslandGrants, ownEntry} from "@lararium/mesh";
 import type { VerbTable } from "./verb-dispatcher.js";
 import { effectiveRecipe } from "./recipe-planes.js";
 
@@ -127,7 +126,7 @@ export function recipeRecordOf(
   slug: string,
 ): LarTiddlerRecord | null {
   return effectiveRecipe(slug, (plane, title) =>
-    (plane === "oracle" ? planes.islandHandle : planes.catalogHandle).doc()?.tiddlers?.[title],
+    ownEntry((plane === "oracle" ? planes.islandHandle : planes.catalogHandle).doc()?.tiddlers, title),
   )?.record ?? null;
 }
 

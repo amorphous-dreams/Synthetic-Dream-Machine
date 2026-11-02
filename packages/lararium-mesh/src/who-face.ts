@@ -24,6 +24,7 @@ import { writeHandleAnnounce } from "./handle-announce.js";
 import { crossroadsDocUrl, materializeSharedLarDoc } from "./deterministic-doc.js";
 import type { HandleCard } from "./handle-card.js";
 import { storedLarRecord } from "./stored-record.js";
+import { ownEntry } from "./stored-value.js";
 
 /**
  * Announce a card onto a resolved WHO board. Each semantic act receives its own key, so concurrent
@@ -48,7 +49,7 @@ export async function registerCrossroadsPointer(
 ): Promise<AutomergeUrl> {
   const url = crossroadsDocUrl(nexusPubkey);
   await materializeSharedLarDoc(repo, url, "board:crossroads");
-  if (tiddlerText(registry.doc()?.tiddlers?.[CROSSROADS_DOC_URI]) !== url) {
+  if (tiddlerText(ownEntry(registry.doc()?.tiddlers, CROSSROADS_DOC_URI)) !== url) {
     registry.change((doc) => {
       doc.tiddlers[CROSSROADS_DOC_URI] = storedLarRecord(CROSSROADS_DOC_URI, { text: url }, "vessel-boot");
     });

@@ -16,6 +16,7 @@ import { tiddlerText } from "./base-doc.js";
 import { CARRIAGE_ENTRY_PREFIX } from "./carriage-board.js";
 import { storedLarRecord } from "./stored-record.js";
 import { acceptPlaceHead, decodePlaceKelEvent, foldPlaceKel, placeKelEventDigest, type PlaceKelEvent, type PlaceKelReading } from "./vessel-kel.js";
+import { ownEntry } from "./stored-value.js";
 
 /** The board prefix one place's KEL events ride under. */
 export const PLACE_KEL_PREFIX = `${CARRIAGE_ENTRY_PREFIX}place-kel/` as const;
@@ -40,7 +41,7 @@ function boundedRows(doc: LarDoc | undefined | null, prefix: string): unknown[] 
   const out: unknown[] = [];
   for (const title of Object.keys(doc?.tiddlers ?? {}).filter((t) => t.startsWith(prefix)).sort()) {
     if (out.length >= PLACE_KEL_BOARD_ROWS) break;
-    const text = tiddlerText(doc!.tiddlers[title]);
+    const text = tiddlerText(ownEntry(doc!.tiddlers, title));
     if (text === null || text.length > PLACE_KEL_ROW_CHARS) continue;
     try { out.push(JSON.parse(text) as unknown); } catch { /* a torn row files nothing */ }
   }

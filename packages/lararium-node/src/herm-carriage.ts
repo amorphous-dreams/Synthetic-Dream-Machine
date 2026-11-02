@@ -26,8 +26,7 @@ import {
   signPlaceFloorPin, tiddlerText, writePlaceFloorPin, carriageDocUrl, FLOW_SOCKET_ROUTE,
   deriveGateBundle, floorGateRoot, floorRoute,
   type DialSocket, type FloorKeyDoor, type FacePresentation, type GateBundlePin, type HearthPinIndex, type LarDoc,
-  type FlowPullResult, type PlaceFloorPinStatement, type PlaceKelEvent,
-} from "@lararium/mesh";
+  type FlowPullResult, type PlaceFloorPinStatement, type PlaceKelEvent, ownEntry} from "@lararium/mesh";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { CarriedNexusReading } from "./nexus-carriage.js";
 import type { PlaceClass } from "./socket-sorter.js";
@@ -78,8 +77,8 @@ export function flowFloorPinAt(nexus: string, door: FloorKeyDoor): GateBundlePin
 export function layStatementOn(handle: { doc(): LarDoc | undefined; change(fn: (d: LarDoc) => void): void }, statement: PlaceFloorPinStatement, kel: readonly PlaceKelEvent[]): boolean {
   const tiddlers = handle.doc()?.tiddlers ?? {};
   const claimKey = placeFloorPinKey(statement);
-  const claimStands = tiddlerText(tiddlers[claimKey]) === JSON.stringify(statement);
-  const rows = kel.filter((event) => tiddlerText(tiddlers[placeKelKey(statement.aid, event)]) === null);
+  const claimStands = tiddlerText(ownEntry(tiddlers, claimKey)) === JSON.stringify(statement);
+  const rows = kel.filter((event) => tiddlerText(ownEntry(tiddlers, placeKelKey(statement.aid, event))) === null);
   if (claimStands && rows.length === 0) return false;
   handle.change((d) => {
     if (!claimStands) writePlaceFloorPin(d, statement);

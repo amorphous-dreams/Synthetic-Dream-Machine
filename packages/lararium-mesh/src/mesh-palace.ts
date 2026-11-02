@@ -35,7 +35,7 @@ import type { DocHandle } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
 import { mutableLarRecord } from "./base-doc.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
-import { plainField, plainRecord, type StoredLarRecord } from "./stored-value.js";
+import { plainField, plainRecord, type StoredLarRecord, ownEntry } from "./stored-value.js";
 import { bagUri, MESH_SCALES, MESH_SCALE_FEDERATES, type MeshScale } from "./lar-uris.js";
 import { isFaceScopedBag } from "./persona-scope.js";
 import {
@@ -591,7 +591,7 @@ export class MeshPalace {
 
   /** Resolve one bearing to its dial-record, or null when unknown. */
   getDial(bearing: string): DialEntry | null {
-    return recordToDialEntry(this.current().tiddlers[dialUri(bearing)]);
+    return recordToDialEntry(ownEntry(this.current().tiddlers, dialUri(bearing)));
   }
 
   dials():   DialEntry[]      { return dialEntries(this.current()); }
