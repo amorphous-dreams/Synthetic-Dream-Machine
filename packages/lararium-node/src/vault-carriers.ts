@@ -84,6 +84,7 @@ import { VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
 import { FACE_ATOM_GROUP_FILE, FACE_ATOM_ASK_FILE } from "./face-atom-store.js";
 import { FACES_DIR, FACE_INDEX_FILE } from "./face-index.js";
 import { FACE_ANCHOR_GROUP_FILE } from "./face-anchor-store.js";
+import { KAHUA_PROMOTED_FILE, KAHUA_KAPAE_FILE } from "./kahua-promoted-store.js";
 import { OUTBOX_KEY_FILE } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 import { RELAY_GATE_SEED_FILE } from "./relay-gate-seed.js";
@@ -376,6 +377,10 @@ function buildTable(): readonly CarrierRow[] {
     // A founding ask holds a seed until its group row keeps it.
     faceRowOf({ row: "face-atom-ask", target: tgt(["D"]), inner: FACE_ATOM_ASK_FILE, select: (m) => ({ ask: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "face-atom-store", name: (m) => `face-atom-ask-${m[1]}`, bundle: "stays" }),
+    faceRowOf({ row: "kahua-promoted", target: tgt(["D"]), inner: KAHUA_PROMOTED_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+         writer: "kahua-promoted-store", name: (m) => `kahua-promoted-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
+    faceRowOf({ row: "kahua-kapae-local", target: tgt(["D"]), inner: KAHUA_KAPAE_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+         writer: "kahua-promoted-store", name: (m) => `kahua-kapae-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
     // The face's own custody label: its fcid and the digest of its PersonaGroup. The holder reads it to check the floor index it unlocked by.
     faceRowOf({ row: "face-owner", target: tgt(["D"]), inner: /face-owner\.bin/, select: () => null, custody: "face-hot", keyClass: null,
          writer: "custody-holder", name: () => "face-owner" }),
