@@ -127,8 +127,8 @@ MEME_VERBS = ("meme_put", "meme_get", "meme_list", "meme_delete", "meme_project"
 # posts ONE batch of proposals on the face's intents plane (titles, daemon revisions, body digests, taint; a proposal
 # grants nothing); `kahua_list` and `kahua_get` read the stage's VERIFIED items (the fold, never a raw tiddler). Each
 # mirrors `lares kahua propose|list|get` and rides a local SESSION under the `seat` hand (`lares_uds.session_act`),
-# whose profile the vessel refuses every kahua pin, lift and withdraw. THE SEAT PROPOSES; THE OPERATOR'S HAND LIFTS:
-# no MCP tool lifts, withdraws or mints (`lares kahua lift|withdraw|mint` stay the operator's).
+# whose profile the vessel refuses every kahua pin, lift, withdraw and carry. THE SEAT PROPOSES; THE OPERATOR'S HAND LIFTS:
+# no MCP tool lifts, withdraws, carries or mints (`lares kahua lift|withdraw|carry|mint` stay the operator's).
 KAHUA_VERBS = ("kahua_propose", "kahua_list", "kahua_get")
 
 # The targets `meme_project` renders — the same list `lares meme project --to` takes.

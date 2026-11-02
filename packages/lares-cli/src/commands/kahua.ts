@@ -5,7 +5,9 @@
  * `kahua-read`), through the standing vessel's session when one stands, and prints the row's answer as JSON. A lift
  * names its taint list (`--taint none` when every input came from inside the face) and its daemon sources; the row
  * reads the lōkahi cap off the vessel's island and the operator's grant out of sealed custody, and refuses by name.
- * An AI seat proposes (`propose`, or the MCP's `kahua_propose`); its session never runs a lift.
+ * After a root rotation the earlier items read in history alone until the operator's hand `carry`s them (named cids,
+ * or `--all`): one root-signed act at the current epoch. An AI seat proposes (`propose`, or the MCP's `kahua_propose`);
+ * its session never runs a lift, a withdraw or a carry, and no MCP tool carries.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
@@ -14,7 +16,7 @@ import { helpLines } from "../command-help.js";
 import { refuseUsage } from "../render.js";
 import { storeVerb, StoreDoorRefusal } from "../store-door.js";
 
-const ACTS = new Set(["mint", "propose", "lift", "withdraw", "list", "get"]);
+const ACTS = new Set(["mint", "propose", "lift", "withdraw", "carry", "list", "get"]);
 
 function faceOf(args: ParsedArgs): { face?: number } {
   const raw = args.options["face"];
@@ -51,7 +53,7 @@ export async function cmdKahua(args: ParsedArgs): Promise<number> {
   try {
     const face = faceOf(args);
     const need = (what: string): string => { if (!target) throw new Error(`${act}: name ${what}`); return target; };
-    let door: "kahua-mint" | "kahua-propose" | "kahua-lift" | "kahua-withdraw" | "kahua-read";
+    let door: "kahua-mint" | "kahua-propose" | "kahua-lift" | "kahua-withdraw" | "kahua-carry" | "kahua-read";
     let payload: Record<string, unknown>;
     switch (act) {
       case "mint": door = "kahua-mint"; payload = {}; break;
@@ -63,6 +65,12 @@ export async function cmdKahua(args: ParsedArgs): Promise<number> {
       }
       case "lift": door = "kahua-lift"; payload = liftArgs(args, need("a title")); break;
       case "withdraw": door = "kahua-withdraw"; payload = { target: need("a revision cid") }; break;
+      case "carry": {
+        const cids = args.positional.slice(1), all = args.flags["all"] === true;
+        if (all === (cids.length > 0)) throw new Error("carry: name the revision cids that keep standing, or --all (never both)");
+        door = "kahua-carry"; payload = all ? { all: true } : { cids };
+        break;
+      }
       case "list": door = "kahua-read"; payload = { action: "list" }; break;
       default: door = "kahua-read"; payload = { action: "get", title: need("a title"), ...(args.flags["history"] === true ? { history: true } : {}) };
     }

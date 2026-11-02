@@ -38,7 +38,7 @@
  *   nexus-offering-inspect                       one carried offering, read off the Crossroads board
  *                                                (`commands/nexus-offering-inspect`)
  *   raise-sign                                   a raise grant off the carriage board (`commands/raise-sign`)
- *   kahua-mint · kahua-propose · kahua-lift · kahua-withdraw · kahua-read
+ *   kahua-mint · kahua-propose · kahua-lift · kahua-withdraw · kahua-carry · kahua-read
  *                                                a face's kahua stage: its pin, a proposal, the operator's lift and
  *                                                withdraw (cap read off the island, grant out of custody), reads (`commands/kahua`)
  *
@@ -175,7 +175,7 @@ export const STORE_DOOR_VERBS = [
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status", "intent-relay-rotate",
-  "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-read",
+  "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -194,14 +194,14 @@ export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoo
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-lease", "nexus-publish", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status",
-  "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-read",
+  "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
 ]);
 
 /**
  * The kahua rows a person's hand alone runs: the stage's pin, a lift and a withdraw. A session the `seat` hand opened (a
  * spirit) refuses each one at the socket (`handOnlyActs`), so an AI seat proposes and reads and never lifts.
  */
-export const KAHUA_OPERATOR_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["kahua-mint", "kahua-lift", "kahua-withdraw"]);
+export const KAHUA_OPERATOR_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["kahua-mint", "kahua-lift", "kahua-withdraw", "kahua-carry"]);
 
 /**
  * The face a face row names: `face`, else `handleIndex`; undefined where it names none. The two naming different faces
@@ -309,6 +309,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...opt("proposal", str(args["proposal"])), ...opt("target", str(args["target"])),
       ...opt("proposals", args["proposals"]), ...opt("session", str(args["session"])),
       ...opt("history", args["history"] === true ? true : undefined),
+      ...opt("cids", list(args["cids"])), ...opt("all", args["all"] === true ? true : undefined),
       ...opt("cap", kahuaCap),
     });
   };
@@ -321,6 +322,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "kahua-propose": (args) => answer("kahua-propose", () => kahua("propose", args)),
     "kahua-lift": (args) => answer("kahua-lift", () => kahua("lift", args)),
     "kahua-withdraw": (args) => answer("kahua-withdraw", () => kahua("withdraw", args)),
+    "kahua-carry": (args) => answer("kahua-carry", () => kahua("carry", args)),
     "kahua-read": (args) => answer("kahua-read", () => kahua(args["action"] === "get" ? "get" : "list", args)),
     "intent-issue": (args) => answer("intent-issue", () => intent("issue", args)),
     "intent-show": (args) => answer("intent-show", () => intent(args["action"] === "delegations" ? "delegations" : "show", args)),
