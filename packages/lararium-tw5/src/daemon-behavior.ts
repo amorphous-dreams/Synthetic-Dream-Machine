@@ -170,7 +170,9 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
       // preserving old behavior for non-operator callers). Idempotent (each seed setTiddler-overwrites).
       if (opts.runnableHulls) seedDaemonProtocol(tw5, opts.runnableHulls, opts.faceIntents === true);
       const registry = new VerbTable();
-      registry.handOnly(PROMOTE_PANEL_HAND_CODES);
+      // The panel's six verbs and the store door's `promote-orphan` row answer an ask that arrived on the surface path alone; every other
+      // origin (a session call, a meme put, a synced verb tiddler) refuses by the verb's own code before anything routes to main.
+      registry.handOnly({ ...PROMOTE_PANEL_HAND_CODES, "promote-orphan": "promote-needs-hand" });
       // Sovereign-worker: the data-plane reactors register HERE, in-worker, over the
       // IslandContext (ctx.composite/ctx.repo) — so they ride the dispatcher's
       // verify-then-delegate gate FOR FREE (a gate a main-thread jobRegistry

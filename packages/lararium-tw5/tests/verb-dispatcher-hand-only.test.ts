@@ -159,4 +159,14 @@ describe("hand-only verbs", () => {
     expect(s.routed).toEqual(["promote-commit", "promote-snapshot", "promote-snapshot"]);
     s.stop();
   });
+
+  test("RED (live e2e): a face row cleared by the session door (given) passes the hand-only gate, since the socket already refused a seat; CONTROL: the same verb PLACED from a channel ask refuses", async () => {
+    const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
+    const registry = new VerbTable();
+    registry.handOnly(HAND_ONLY);
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: makeDaemon(), registry, routeFn: async () => ({}), localOf: () => true, surfaceOf: () => false });
+    const inv = { requestId: "s1", action: "promote-commit", args: { digest: "d" }, requestedBy: "me" } as never;
+    await expect(dispatcher.clearRouted(inv, { local: true, presenter: "me" })).resolves.toBeUndefined();
+    await expect(dispatcher.clearRouted(inv)).rejects.toMatchObject({ reason: "promote-needs-hand" });
+  });
 });

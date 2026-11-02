@@ -28,3 +28,10 @@ export function promoteMainVerbs({ api, push }: { api: PromotePanelApi; push: (d
   handlers["promote-refresh"] = async () => { await refresh(); return { pushed: true }; };
   return handlers;
 }
+
+/**
+ * The store-door rows whose ISLAND route the panel owns: the panel's main-thread handler of this name answers a summoned verb (and pushes
+ * the fresh snapshot), while the door's own reactor of the same name serves its socket and CLI road alone. Any other shared name is a clash
+ * and the verb table refuses it.
+ */
+export const PROMOTE_PANEL_OWNED_ROWS: ReadonlySet<string> = new Set(["promote-commit", "promote-drop", "kapae-raise", "kapae-lower"]);

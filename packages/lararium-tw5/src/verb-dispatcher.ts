@@ -348,13 +348,15 @@ export class VerbDispatcher {
    * the row as the session's face, its answer on the socket.
    */
   async clearRouted(invocation: Verb, given?: { readonly local: boolean; readonly presenter: string }): Promise<void> {
+    // A face row's clearance (`given`) comes from the session door, whose socket already refused a seat's hand-only act, so it carries the
+    // hand mark; a PLACED ask has no `given` and must have arrived on the surface path for a hand-only verb to pass.
     // A face row's clearance names its locality and presenter itself (the session door verified both), so no ask the
     // island holds ever lends or borrows them.
     const presenter = given?.presenter ?? this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
     const local = given?.local ?? this.opts.localOf?.(invocation) === true;
     // A wiki-addressing envelope meets the fence by its presenter. Any other routed ask that did not arrive local (a
     // synced summons, content) names no presenter that can wear a face here, so the fence reads it as naming none.
-    this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, ...(local ? { presenter } : {}), local, surface: !given && this.opts.surfaceOf?.(invocation) === true, cap: makeCapVerify(this.opts.verifier, presenter, local) }, routedAddressesWiki(invocation) || !local);
+    this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, ...(local ? { presenter } : {}), local, surface: given !== undefined || this.opts.surfaceOf?.(invocation) === true, cap: makeCapVerify(this.opts.verifier, presenter, local) }, routedAddressesWiki(invocation) || !local);
     // Verify-then-delegate: the keyholder worker gates the cap BEFORE
     // routing to main; main then trusts the worker→main channel as the
     // capability (project_verification_placement). Enforced only when a
