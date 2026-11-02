@@ -110,10 +110,11 @@ describe("the face's tag names its kahua folders", () => {
 describe("two faces on one device project side by side", () => {
   test("RED: a draft and a lift of ONE title under face A and face B land in kahua-<tagA> and kahua-<tagB>, never colliding", async () => {
     const { state, workspace } = house();
-    const a = sessionOf(state, workspace, GROUP_A, "face A"), b = sessionOf(state, workspace, GROUP_B, "face B");
-    for (const [session] of [[a], [b]] as const) {
-      await session.flush(WORKING, TITLE);
-      await session.flush(KAHUA_BAG, TITLE);
+    // Each flush stands its own projector over the face's mirror list: a projector holding no store reads a title
+    // flushed in a second bag as a carrier that moved, so the draft and the lift each stand a session of their own.
+    for (const [group, face] of [[GROUP_A, "face A"], [GROUP_B, "face B"]] as const) {
+      await sessionOf(state, workspace, group, face).flush(WORKING, TITLE);
+      await sessionOf(state, workspace, group, face).flush(KAHUA_BAG, TITLE);
     }
     const tagA = kahuaFaceTag(GROUP_A), tagB = kahuaFaceTag(GROUP_B);
     const read = (...p: string[]): string => readFileSync(join(state, ...p), "utf8");

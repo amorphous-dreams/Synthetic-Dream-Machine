@@ -35,10 +35,11 @@ import { join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
-import { foundStagedHearth, openStaged, stageDir, type LarInstance } from "../../../../tests/harness/instance.js";
+import { foundStagedHearth, openStaged, stageDir, stagedHearthGroup, type LarInstance } from "../../../../tests/harness/instance.js";
 import { mintStagedNexusKey } from "../../../../tests/harness/vessel-key.js";
 // The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
 import { armTestCustody } from "../../../lararium-node/dist/probes/browser-test-custody.js";
+import { kahuaFaceFolder, kahuaFaceTag } from "../../../lararium-node/dist/bag-paths.js";
 
 const REPO = resolve(import.meta.dirname, "../../../..");
 const WEB_ROOT = join(REPO, "packages/lararium-web/dist");
@@ -66,13 +67,15 @@ const projection = (): Map<string, number> =>
 
 const tail = (): string => lines.filter((l) => !l.startsWith("Warning: Global assignment")).slice(-80).join("\n");
 
+/** The worn face's folder (`kahua-<tag>`), its tag derived from the hearth's founding group as its persona plane derives it. */
+const faceFolder = (): string => kahuaFaceFolder(kahuaFaceTag(stagedHearthGroup(hearth!.root)));
 /**
- * WHERE A NODE-SIDE DRAFT PROJECTS: the daemon wiki's working top under the state root. One helper, so the lane
- * repoints every read when the top moves to its own workbench bag (`<root>/bags/daemon/<title path>`).
+ * WHERE A NODE-SIDE DRAFT PROJECTS: the worn face's kahua working top under the state root (`<root>/wikis/kahua-<tag>`).
+ * One helper, so the lane repoints every read when the top moves.
  */
-const draftPath = (titlePath: string, ext: string): string => join(hearth!.root, "wikis/kahua", `${titlePath}${ext}`);
-/** Where a LIFTED kahua item projects: the fleet stage bag under the state root, sited by title. */
-const stagePath = (titlePath: string): string => join(hearth!.root, "bags/kahua", `${titlePath}.tid`);
+const draftPath = (titlePath: string, ext: string): string => join(hearth!.root, "wikis", faceFolder(), `${titlePath}${ext}`);
+/** Where a LIFTED kahua item projects: the face's stage under the state root (`<root>/bags/kahua-<tag>`), sited by title. */
+const stagePath = (titlePath: string): string => join(hearth!.root, "bags", faceFolder(), `${titlePath}.tid`);
 
 /** Poll a predicate on the hearth's disk or CLI to a bound; answer its last reading. */
 async function settle<T>(read: () => T | Promise<T>, done: (v: T) => boolean, ms = 30_000): Promise<T> {
@@ -357,7 +360,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     proposal = ids[0]!;
     // Digests only crossed: nothing stands on the stage until the operator's hand lifts.
     expect(existsSync(stagePath(DRAFT.title))).toBe(false);
-    expect(filesUnder(join(hearth!.root, "bags/kahua"))).toEqual([]);
+    expect(filesUnder(join(hearth!.root, "bags", faceFolder()))).toEqual([]);
     const got = await hearth!.cli(["kahua", "get", DRAFT.title]);
     expect(got.code, got.stderr).toBe(0);
     expect((JSON.parse(got.stdout) as { item: unknown }).item).toBeNull();
