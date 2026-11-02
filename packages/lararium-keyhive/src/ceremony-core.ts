@@ -390,9 +390,10 @@ function writeGroupSecretSeal(
  * checkpoint lands the same bytes and nothing doubles. A contracted founding holds no root seed and signs none: the
  * contracting operator's records arrive with its edge.
  *
- * THE KAHUA STAGE PINS HERE, beside the intents plane and under the same hand: its `plane` act names the face's derived
- * stage (`kahuaStageDocUrl`), and the blank stage doc stands in the founder's repo, so a face never stands unpinned and no
- * later unlock owes a mint (meme lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage).
+ * THE KAHUA STAGE PINS HERE, inside the face's founding act, by whichever device founds the face (node or browser), beside
+ * the intents plane and under the same hand: its `plane` act names the face's derived stage (`kahuaStageDocUrl`), and the
+ * blank stage doc stands in the founder's repo, so a face never stands unpinned and no act outside the founding mints one
+ * (meme lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage).
  */
 async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; atomSeed: Uint8Array; face: Pick<FaceFoundingResult, "personaGroupId" | "personaKelPrefix" | "personaUrl" | "identitiesUrl" | "circlesUrl" | "sessionsUrl" | "intentsUrl" | "founderEdge" | "signerDid"> }): Promise<void> {
   if (input.binding.mode !== "self-stood") return;

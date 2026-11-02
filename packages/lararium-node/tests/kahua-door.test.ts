@@ -41,7 +41,7 @@ async function face(opts: { readonly pinned?: boolean } = {}) {
   const ports = (over: Partial<KahuaDoorPorts> = {}): KahuaDoorPorts => ({
     repo, group: GROUP, verbs: faceIntentVerbs(),
     projection: () => projectPersonaLog(personaActRecordsOfGroup(persona.doc(), GROUP), { group: GROUP, lineage, authorize: () => true }),
-    epoch: () => 0, currentSigner: (key) => key === root.key, atom: atomA, persona, intents,
+    epoch: () => 0, currentSigner: (key) => key === root.key, atom: atomA, intents,
     rootSigner: async () => { roots.n++; return root; }, cap: async () => ({ held: true }),
     register: (bagId, url) => { catalog[bagId] = url; }, session: () => "cli-session-1",
     ...over,
@@ -56,7 +56,7 @@ function replicaB(f: Awaited<ReturnType<typeof face>>, over: Partial<KahuaDoorPo
   const personaB = repoB.import<LarDoc>(Automerge.save(f.persona.doc()), { docId: f.persona.documentId });
   const intentsB = repoB.import<LarDoc>(Automerge.save(f.intents.doc()), { docId: f.intents.documentId });
   const catalogB: Record<string, string> = {};
-  const door = kahuaDoor(f.ports({ repo: repoB, persona: personaB, intents: intentsB, atom: f.atomB,
+  const door = kahuaDoor(f.ports({ repo: repoB, intents: intentsB, atom: f.atomB,
     projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }),
     register: (bagId, url) => { catalogB[bagId] = url; }, ...over }));
   return { repoB, personaB, catalogB, door };
