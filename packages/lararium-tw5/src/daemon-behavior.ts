@@ -39,7 +39,7 @@ import {
 } from "@lararium/mesh";
 import { placeVerb } from "./verb-vm.js";
 import { composeIsland } from "./island-caps.js";
-import { hasEngineWatch, hasProjection } from "./has-island-watches.js";
+import { hasEngineWatch, hasHandBoundary, hasProjection } from "./has-island-watches.js";
 import { hasCapture } from "./capture/has-capture.js";
 import { VerbDispatcher, VerbTable } from "./verb-dispatcher.js";
 import type { IslandCap } from "./island-caps.js";
@@ -370,6 +370,8 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
   // shore, not the worker. Inert when no sink is wired (makeCaptureEngine absent) — every daemon
   // carries the cap; whether it breathes depends on a wired sink + feed.
   return composeIsland([
+    // A person's hand in the daemon surface lands on the same boundary a pool wiki's does; claims nothing, stands first.
+    hasHandBoundary(),
     dispatchCap,
     // Inherit the wiki's render cap — inert until a worker entry wires onBoot (mountProjection), at which
     // point the daemon surfaces like any pinned wiki (same VM, same path).

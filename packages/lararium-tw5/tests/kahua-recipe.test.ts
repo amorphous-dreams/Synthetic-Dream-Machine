@@ -12,7 +12,7 @@ import { createRequire } from "node:module";
 import { buildIslandRecipe } from "../src/island-recipe.js";
 import { openDaemonVmCore, type DaemonVmHost } from "../src/daemon-vm-core.js";
 import {
-  CompositeStore, AutomergeDocStore, emptyLarDoc, expandRecipe, kahuaRecipe, slotLayerFlags, wikiBagUri, wikiSlotUri, KAHUA_BAG, ORACLE_BAG,
+  CompositeStore, AutomergeDocStore, emptyLarDoc, expandRecipe, kahuaRecipe, slotLayerFlags, wikiBagUri, wikiSlotUri, DAEMON_BAG_ID, KAHUA_BAG, ORACLE_BAG, OUTCOME_URI_PREFIX,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kahuaStageDocUrl, materializeSharedLarDoc, signKahuaLift, storedLarRecord, writeKahuaAct, kahuaStageStore,
 } from "@lararium/mesh";
 import type { ChangeOrigin, DocHandle, IslandMsg_Manifest, LarDoc, Repo as RepoType, SlotUri } from "@lararium/mesh";
@@ -166,5 +166,45 @@ describe("the kahua recipe stacks top, kahua, canon", () => {
       expect(libs[0]).toBe(KAHUA_BAG);
       expect(libs.length).toBeGreaterThan(1);
     } finally { core.dispose(); ports.forEach((p) => p.close()); await repo.shutdown(); }
+  });
+});
+
+/**
+ * WHICH WIKI A PAGE PROPOSES FROM. A verb's outcome lands at `bags/daemon/outcomes/<id>` in the daemon's writable layer
+ * and a draft's shadow needs the kahua twin beneath it, so a page reads both only through the daemon recipe. The pinned
+ * `lares` wiki lays neither bag: a `$list` over the outcome prefix there stays empty for ever, and the stage walk summons
+ * the daemon surface before it authors (lararium-web e2e/stage-walk, S2).
+ */
+describe("a page proposes from the daemon surface, never from the pinned canon wiki", () => {
+  const OUTCOME = `${OUTCOME_URI_PREFIX}walk-1`;
+  const outcome = { tiddler: { title: OUTCOME, verb: "kahua-propose", status: "done" } };
+  const standOver = (recipe: ReturnType<typeof kahuaRecipe>, repo: RepoType) => {
+    const composite = new CompositeStore();
+    const ready = expandRecipe(recipe).filter((slot) => slot !== wikiSlotUri(recipe.wikiSlug, "temp")).map((slot) => ({ slot, handle: repo.create<LarDoc>(emptyLarDoc()) }));
+    buildIslandRecipe({ tw5: fakeTw5(), composite, recipe, ready });
+    return composite;
+  };
+
+  test("THE SILENCE S4 READ: the `lares` recipe lays neither the daemon bag nor the kahua bag, so an outcome refuses `control-plane-title` and nothing lists under the prefix", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const slots = expandRecipe({ wikiSlug: "lares" });
+    expect(slots).not.toContain(DAEMON_BAG_ID);
+    expect(slots).not.toContain(KAHUA_BAG);
+    const lares = standOver({ wikiSlug: "lares" }, repo);
+    await expect(lares.put(outcome, origin)).rejects.toThrow(/control-plane-title/);
+    expect((await lares.listVisible()).filter((t) => t.startsWith(OUTCOME_URI_PREFIX))).toEqual([]);
+    await repo.shutdown();
+  });
+
+  test("CONTROL: the daemon recipe lays both, the outcome lands in the daemon bag and lists under the prefix the page's `$list` reads", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const recipe = kahuaRecipe({ wikiSlug: "daemon" });
+    expect(expandRecipe(recipe)).toContain(DAEMON_BAG_ID);
+    expect(expandRecipe(recipe)).toContain(KAHUA_BAG);
+    const daemon = standOver(recipe, repo);
+    await daemon.put(outcome, origin, { bag: DAEMON_BAG_ID });
+    expect((await daemon.resolveTopmost(OUTCOME))?.bagId).toBe(DAEMON_BAG_ID);
+    expect((await daemon.listVisible()).filter((t) => t.startsWith(OUTCOME_URI_PREFIX))).toEqual([OUTCOME]);
+    await repo.shutdown();
   });
 });
