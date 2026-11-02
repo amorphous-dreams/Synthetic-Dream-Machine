@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lararium/docs/preferences"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Preferences Extraction Shelf
@@ -79,6 +77,6 @@ This pass only promotes concepts that recur strongly enough to feel load-bearing
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PdgRK6LjDHIRKY-gZGl3545ZK1UihZycXckwGNWf8s8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LlOB5WI6ei20J34W38k-f--r3Rxso-XCpTmLGcv55Xk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

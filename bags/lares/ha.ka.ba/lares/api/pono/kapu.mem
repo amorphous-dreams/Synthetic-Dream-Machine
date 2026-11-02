@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/kapu"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Kapu — Above-Namespace Law (Kānāwai)
@@ -132,6 +130,6 @@ This meme governs the kapu rating and above-namespace trust law.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;C713SJ20vbBo9G4oDTpvWTs2wtYwPzNbKmC8WXuvPqY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;clJzQdtumRbBNkY1wVwJ9sDImrd8KDrfuRpMAIQd7Aw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

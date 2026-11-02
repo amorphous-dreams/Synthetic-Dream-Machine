@@ -21,8 +21,6 @@ uri-path   = "ha.ka.ba/lares/api/pono/admission-on-a-lineage"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/the-refusal`>>
 
 ! Admission on a Lineage ~ an OUTLINE, and what would refute it
@@ -329,6 +327,6 @@ model, (3) settles the sink, (4) hunts C4's counterexample, and (6) instruments 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AZaEtsnceHv1chzo-pXivD9jZ2fPWxyanRU90tkMsiI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wzbGjB_CrHi_aBj85oepiZ9yoA4y5AHxQm2qOsQvp7M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

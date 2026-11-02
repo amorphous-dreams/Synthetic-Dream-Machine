@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/conformance"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Conformance
@@ -120,6 +118,6 @@ By the speech-act test the invocation reads as a first-person present-tense act 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kRJifJZdbbUB2LG6vCAalmoMbIafoWc-q-SzoqSg8LM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;l_g89MMdL1MztlQX7n4eio_ze-k2P_RRmSZuEVzaa1U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

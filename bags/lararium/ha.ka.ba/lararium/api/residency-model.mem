@@ -24,8 +24,6 @@ uri-path      = "ha.ka.ba/lararium/api/residency-model"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/core-claim`>>
 
 ! Residency Model — Coordinate Space + Query Plan
@@ -305,6 +303,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vnCv81Gs8c1jN4qKW85xrBEHhXs69mn26lPK03HgIic`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2P4pGPWUxb-Jzmgc9AfTmkd9d_jEE0i6EZrZx1VvdOU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

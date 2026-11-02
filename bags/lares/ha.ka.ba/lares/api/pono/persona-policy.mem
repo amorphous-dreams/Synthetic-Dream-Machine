@@ -22,8 +22,6 @@ written           = "2026-07-20"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Persona-Policy ~ one face out, the multitude within
@@ -264,6 +262,6 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lltSvU77JxfptBpl6boemcz9Pwva8c4iWxFjq5RCjTw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rFIX9TGkEP3zXkweRHvaLj-9j60LiwzdLac69rRfSaI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

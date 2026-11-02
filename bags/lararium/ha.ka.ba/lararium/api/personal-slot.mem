@@ -24,8 +24,6 @@ uri-shape   = "lar:///ha.ka.ba/wikis/{slug}/personal"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/problem`>>
 
 ! The personal-slot slot — slot grammar + binding storage (approved canon)
@@ -496,6 +494,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;09BNPvrWxZy0kbBJVJxwn_wFEtn_DLJ-zLqjumxxiNs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;l3UULxuTNDk3c9Krb9R7wc0gNqOFTba_nKuE2N19SPk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

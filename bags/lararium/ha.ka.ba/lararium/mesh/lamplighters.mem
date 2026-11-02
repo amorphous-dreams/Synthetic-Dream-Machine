@@ -20,8 +20,6 @@ written   = "2026-08-14"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Lamplighters' Union
@@ -454,6 +452,6 @@ An operator contracts their OWN herm with one signature, scoped to one place and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KXzUgLvY1dmHbnUrGQ6yS-dzx8ozOLQWPL0sHV3sQpc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;I9eim3OChrg7XY8kFuSw1xesXIsfnpWxHKz8QPWOGAE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

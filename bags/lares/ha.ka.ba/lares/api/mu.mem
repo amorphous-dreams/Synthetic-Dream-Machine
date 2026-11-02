@@ -20,8 +20,6 @@ uri-path  = "ha.ka.ba/lares/api/mu"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 A mark appears.
@@ -107,6 +105,6 @@ Mu does not hold:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7xRrwqd0cOSb5UOL7NrZZ2hHaZe9BSBtzFy95R-qXAA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cl79u0ib9jCquNoTxOUXr-Y16xTs5W8nMVvbP3d9peA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

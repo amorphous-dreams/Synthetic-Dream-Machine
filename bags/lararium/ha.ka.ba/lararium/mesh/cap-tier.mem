@@ -22,8 +22,6 @@ written    = "2026-07-23"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Cap-Tier ~ the sealing posture the quine declares and the gate tightens
@@ -159,6 +157,6 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;06IQPBr_2AXeDN_ghVVSHUdQkDyRRS4hetvgSK8D0_Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VKHWd3aDbSTNIVDl-Jf0gKI38FiSm73QXfA338Wh7J4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

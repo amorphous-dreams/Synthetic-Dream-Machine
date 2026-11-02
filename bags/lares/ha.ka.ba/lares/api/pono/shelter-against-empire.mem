@@ -20,8 +20,6 @@ uri-path      = "ha.ka.ba/lares/api/pono/shelter-against-empire"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/the-brief`>>
 
 ! Shelter Against Empire ~ the brief the graph reasons toward
@@ -168,6 +166,6 @@ on the ordering as a judgement across the cases; the individual attributions hol
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AB-6kWFR59gcdcp8kDoqmEPEi0Ln4DkRhxA6ATgR_8M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lAoHHqdE44ApVZ9m8Mf2YXnfzYeeumh-qB5rr0TSlZg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

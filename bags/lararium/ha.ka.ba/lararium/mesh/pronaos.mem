@@ -22,8 +22,6 @@ written    = "2026-09-22"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Pronaos ~ the house's first face, without a landlord
@@ -397,7 +395,6 @@ without making any approach keeper of every archive, persona, or causal island i
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/elyncia`>>
 <<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/lares-viales`>>
 
-
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate`>> — serves seed bytes and history-free floor rows
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane`>> — carries answer authority without herm signatures
@@ -405,6 +402,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;r-noTS2bwHSBi1IkE6BGfPdMRSyHLIVN5ZYsnW3QeOw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PK2rrNo6RtrsBYzE0AFp1h0GpYV1VsxV7-0s6WDTBKE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/docs/mu/the-syad-perspectives"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/meme-header`>>
 
 ! Syad Perspectives — Condensed Research
@@ -116,6 +114,6 @@ The archive-derived research bundle lives at:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;V_6J7gB0zZjb6EGJdy5uJIs7RMNYfDdM3I3_SiBNCU4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mwqIiS0ovyto3BSdnz5dwjBUqc572K_H3UlaQpEbghw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

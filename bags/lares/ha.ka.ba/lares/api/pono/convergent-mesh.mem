@@ -21,8 +21,6 @@ written    = "2026-06-24"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Convergent Mesh ~ one shape under revocation, membership, and revision
@@ -138,6 +136,6 @@ The Scope-1 CAD-blob pipe carries a ''concrete design'' (`content-resolution`, d
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;l4CCgTFYclKvMRgXXT3rbZPeuSjbquwbRfbkV_cDyY0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;543R0_LDudm2VwoZBJKfzmvSjEAMKMFMBlFSvFdWBx8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -27,8 +27,6 @@ uri-path      = "ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/abstract`>>
 
 ! Memetic-Wikitext Carrier Framing
@@ -1333,6 +1331,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pySLQyQB0TjCZM3KlLAcJ59lS503-pY76hELPBExy3Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NYdjFBVEsdBT7IAyEhldsEezCIJ5LMBtjOk5hAJZdgo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

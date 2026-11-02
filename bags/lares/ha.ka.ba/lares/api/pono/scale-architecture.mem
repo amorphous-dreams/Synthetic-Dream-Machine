@@ -20,8 +20,6 @@ written   = "2026-07-01"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! The Scale Architecture ~ tractable from the start, quality a dial
@@ -143,6 +141,6 @@ Established algorithms carrying the descent and the escape, 2026 fusion research
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7ILUjuCk4ntS_t5BaJAYslx5j0fMjghR7fQBPvbFRU4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wPs0aAMW4vXtE_4tf6c0Rcx-JDS7YYFSAyhFxmKZmHA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

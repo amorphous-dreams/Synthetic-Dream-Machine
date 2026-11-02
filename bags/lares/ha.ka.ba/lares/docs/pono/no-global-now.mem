@@ -22,8 +22,6 @@ uri-path   = "ha.ka.ba/lares/docs/pono/no-global-now"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/charge`>>
 
 ! No Global Now ~ the clockless lease, mined
@@ -352,6 +350,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lKQD_cwL00QhKy-G5q9LLDR7y4FtdgKLkkL85-9ewho`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;h4cdts-TZJ5jHcBED5lhc-h7lbjeGbLLfji5Qmjy_3A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/docs/lararium"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Docs
@@ -72,6 +70,6 @@ The rooms may deepen later without moving the seat again.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2QAPLbWjO1RymbEeuotUXhDDish8ajqdsgFLskO2QCw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eh5--m8JxZbMoXjIaRyKJ7w7WrVrFbheTpT_QSSwGLU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

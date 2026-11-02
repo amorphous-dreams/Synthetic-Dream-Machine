@@ -22,8 +22,6 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>
 
-
-
 <<~ ahu slot=`#/ground`>>
 
 ! Ground — the ford and its one book
@@ -89,6 +87,6 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;a_hUE8rx8C59_uK-Gi0v884nllnrTxCCVW3SmSrji8Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;slcDZrtQgeVjn9AapKuMZ3Sbu8npL-jxjnk9X6utzDM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

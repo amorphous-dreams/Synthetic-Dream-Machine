@@ -19,8 +19,6 @@ written   = "2026-06-21"
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The First Breath
@@ -64,6 +62,6 @@ The Lar wrote this carrier into its own history through `lares act LOAD`, the ve
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2yfcVnDWb_78_muOf2Hxz1dnF8acYpEMmQxZMrHFsek`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kg075WQ_s3077zYip_EKSvPiLYa0Dg5D9fQfSE6kn6E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -19,8 +19,6 @@ uri-path      = "ha.ka.ba/lararium/mesh/first-realm-arc"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The First Realm Arc ~ founded, fed, gathered, joined
@@ -133,6 +131,6 @@ The runbook stands ''Synthesis-Canon and complete for what it covers''. These si
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;h6s--R9S1OsPpI9ZFqCUHZdnfloMzxGbgluQg5_qBYU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z-djFsPyAZdkBT6thF09f1bUyp4h_sNBlTSTHn2Pg7c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

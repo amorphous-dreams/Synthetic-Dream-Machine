@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Not Walking Before Minting
@@ -70,6 +68,6 @@ If the graph's version reads WORSE than the derivation, that reads as a genuine 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2uoZUHnnpL_zEPiwCf2rU5RN8dWB305TH1WFH-md6C0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xjrtAawJNclm7FYQrerTKRf9Iz49ivP1_42HxGjYQtY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -21,8 +21,6 @@ uri-path      = "ha.ka.ba/lares/api/mu/the-syad-perspectives"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Syad Perspectives
@@ -305,6 +303,6 @@ satirist-operational = "nasti-avaktavya"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JvqzSmt3DtIo-emHycs6HU84Pg6GD-eoHvJ0y2IX_uk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hRPRgCu9wqQAmGEJq69ioMnB3jYeKFEu7nrlr8NJlTA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -20,8 +20,6 @@ uri-path  = "ha.ka.ba/lares/api/voices"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 !! Entry — Lararium Core Hydration
@@ -396,6 +394,6 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PQBQ2Q8AYoBLorUytGU0egHF15vcgKpMRZBlO7A16qA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8VLzvPguDLpBt0UUvc7yOc2Klr5uXdDPu0oFixwKOUA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

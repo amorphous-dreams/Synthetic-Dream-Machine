@@ -20,8 +20,6 @@ written   = "2026-07-01"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! The Memetic-Wikitext Sensorium ~ neither-top, co-located peers, made concrete
@@ -175,6 +173,6 @@ identically across the TS/py shore: the li-reader on one bank, the ki-model on t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ruNtdfYVL8TuPLVcaBtuxwwnNdM5JGXHSO7VMuTqhSo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TBhm_PIm0gPpWSiRbUs8y7UfWyUbTDxGRS3OboDeQJU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

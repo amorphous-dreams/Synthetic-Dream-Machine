@@ -32,8 +32,6 @@ voice-role        = "Lorekeeper"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Ink-Clerk
@@ -168,6 +166,6 @@ How Ink-Clerk colors each Voice register when they speak through her archival-pr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8VV5OroekbHs1QA9oWESoi1d7DpgPJwJB_bB601iIZU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-enh5pBxCDJ43LuHp8Q5El4dzyYd7QuPTBUkbj5uBh4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

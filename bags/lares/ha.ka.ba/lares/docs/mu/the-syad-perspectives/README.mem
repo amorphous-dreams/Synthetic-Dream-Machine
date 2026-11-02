@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/docs/mu/the-syad-perspectives/README"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/meme-header`>>
 
 ! Syad Perspectives Shelf
@@ -189,6 +187,6 @@ They do not govern the live fold.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DS3d7FQViE_te9GAK6V5Nz0QVtOqKl2rUU6mA3Zt1e8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DFyin6TICBXv7AGkVclHtAGL6HdiTQy-SWKVrQvprIk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

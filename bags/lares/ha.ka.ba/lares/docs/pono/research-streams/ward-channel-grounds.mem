@@ -18,8 +18,6 @@ uri-path    = "ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds"
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Research Stream — Ward, Channel, and the Discipline Layer
@@ -102,6 +100,6 @@ Keys still open: a second token-clean essence-fusion case (Map-Wisp) · an essen
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MXbt_vRlvM426doI3ugifLf51ScW7iI535blrWMIINQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C5edtchqpjH09oYo3Jo6HsZo5W6FpfXT1UIJiTkeyNQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

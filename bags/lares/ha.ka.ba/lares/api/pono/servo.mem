@@ -21,8 +21,6 @@ written   = "2026-06-29"
 
 <<~ aka uri=`lar:///ha.ka.ba/lararium/api/projection-nalu#/servo`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! Servo ~ the bound that breathes
@@ -187,6 +185,6 @@ TS/py shore; the polarity law and the two-loop shape hold identically wherever t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;P_2TMeqpJ039gIoGqzL8auK3s0WcIBLV0Co1lujjqPk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1fVMvJ2Q2JAA3z-kO2hl-aRtHOIa4CnuahzrjIY4F1A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

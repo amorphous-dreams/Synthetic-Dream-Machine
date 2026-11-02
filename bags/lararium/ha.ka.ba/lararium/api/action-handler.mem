@@ -22,8 +22,6 @@ uri-path    = "ha.ka.ba/lararium/api/action-handler"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! ACTION Verb Handler Family
@@ -139,6 +137,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KT3xC59RMR_SWVlV3yM9KakwrvHf9TXbaBteeXnursU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CUDKdOS1ognyqR_ojhAUUMOPMA-vMpEgiOHjGUqyPYI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,8 +17,6 @@ uri-path      = "ha.ka.ba/lares/docs/pono/identity-stack"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/identity-stack`>>
 
 ! Identity Stack — DID / Handle / lar: Alias
@@ -112,6 +110,6 @@ See `the-four-tools` and `the-syad-perspectives` for the tool and standpoint gra
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QV-mVWAmtaC8-JLbkaMrKrrWBPlDSkQWOIlt1TUcGbc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uUs8wEgU_C7XujnB8WyU3lVeDi2jQYCYM1NlEbMgvK8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

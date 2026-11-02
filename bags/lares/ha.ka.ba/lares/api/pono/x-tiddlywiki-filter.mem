@@ -18,8 +18,6 @@ uri-path    = "ha.ka.ba/lares/api/pono/x-tiddlywiki-filter"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! x-tiddlywiki-filter
@@ -129,6 +127,6 @@ interchangeable in `hana` blocks. Prefer `"wikitext-filter"` for new authoring.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Id1AIjzo-gb7IOVUmrX7zzV6zHGmw7DHCfyRaOm5zTU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qbf4KumoCPXhNM4YC9sHl0alEL-HizxxPjo5jTptiWY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

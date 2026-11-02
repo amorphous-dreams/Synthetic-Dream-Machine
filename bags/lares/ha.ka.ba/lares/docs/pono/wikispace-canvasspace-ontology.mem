@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Wikispace × Canvasspace Ontology
@@ -247,6 +245,6 @@ When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iDPhZ7XkEGitSkt7JgtWMWglrAX0iNWRWhgE4Hah3Y4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hPKWvp2CT0jaeRzuuuMXHady_nQbYN1pHbDAzB4iNdw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

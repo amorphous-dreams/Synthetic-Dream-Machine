@@ -20,8 +20,6 @@ written   = "2026-07-01"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! The Cohomological Gate ~ the two-tier no-global-now
@@ -185,6 +183,6 @@ Frontier research, 2026 sources, grounded on established classical mathematics (
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QjiyZSGP63ettMNZUogMpwYVHTCZFnbgQw8gxgCEDEs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ivwzckJNPy8YSWqIdKeLHmcN8t7-FPcZDV2oSW1jLkk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

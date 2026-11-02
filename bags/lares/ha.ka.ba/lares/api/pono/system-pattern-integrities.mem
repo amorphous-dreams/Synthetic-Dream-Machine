@@ -21,8 +21,6 @@ uri-path          = "ha.ka.ba/lares/api/pono/system-pattern-integrities"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! System Pattern-Integrities
@@ -412,6 +410,6 @@ desc  = "A rejection confesses that something understood the question (siege-res
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HBB5qaidXap8MyW3tawgRZYLnyxmMfV2pKVs73NNA1c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6bj1SKpwFJ6D49vFwtNkvUJgJNnFWX7n3ioFwFf46xY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

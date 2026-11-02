@@ -22,8 +22,6 @@ written       = "2026-06-16"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Oracle ~ the turn's drift register
@@ -209,6 +207,6 @@ certifies  = "nothing"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jOR8IAgjn60hRcbJJk7BCMp0fitxRp2nff5hV_tE1g8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_qr2Z49uL3Gje13YdYXwjK8iXKSTTr_fQf_qp5FMCCE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

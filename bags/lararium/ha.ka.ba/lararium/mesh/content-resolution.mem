@@ -20,8 +20,6 @@ written    = "2026-07-19"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Content Resolution ~ large bodies leave the CRDT
@@ -309,6 +307,6 @@ fork ④ stays open: the operator's priors decide it, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sIUFKE2o_e2aSGPwP4AENjAKhPyM1E3l7e9F3QDywZ8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SZCNjM1spCELwnl7SBAlH__oVNBvbQtIZiZeNw9LNS0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

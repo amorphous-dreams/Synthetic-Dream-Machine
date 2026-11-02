@@ -21,8 +21,6 @@ uri-path  = "ha.ka.ba/lares/api/masks"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Masks API Tree
@@ -139,6 +137,6 @@ gates, so masks share the apron and no collision rule arbitrates them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;f41DFS2f8XrZoXBUz2RVMDwtop_8dlG_VuZbxdCaAzw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ikxEllIAOiMbo3pqDCz3mqDygrBj_1v8p9aQgOCj7hg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

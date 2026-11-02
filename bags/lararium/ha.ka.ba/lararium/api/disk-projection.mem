@@ -24,8 +24,6 @@ uri-path      = "ha.ka.ba/lararium/api/disk-projection"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/core-claim`>>
 
 ! Disk Projection — Seed and Projection Surfaces
@@ -224,6 +222,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hHMlGN02AvFpbYLzmCRi_bzEm-KvAOq8dww6cDsAEKY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IooYIKbGgKI5VirkeiNPHeKjmobcbPJPtfkwCELoz2M`>>
 
 <<^ code=`&#x0004;` to=`?`>>
