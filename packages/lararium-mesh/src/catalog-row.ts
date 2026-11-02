@@ -7,6 +7,7 @@
 import type { DocHandle } from "@automerge/automerge-repo";
 import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { storedLarRecord } from "./stored-record.js";
+import { ownEntry } from "./stored-value.js";
 
 /**
  * resolveCatalogRow — the catalog-row resolution protocol, in one place.
@@ -32,7 +33,7 @@ export async function resolveCatalogRow(
   resolve:       (rowUrl: string | null) => Promise<DocHandle<LarDoc>> | DocHandle<LarDoc>,
   provenance:    string,
 ): Promise<DocHandle<LarDoc>> {
-  const rowUrl = tiddlerText(catalogHandle.doc()?.tiddlers?.[rowKey]) ?? null;
+  const rowUrl = tiddlerText(ownEntry(catalogHandle.doc()?.tiddlers, rowKey)) ?? null;
   const handle    = await resolve(rowUrl);
   if (!rowUrl) {
     catalogHandle.change((doc) => {

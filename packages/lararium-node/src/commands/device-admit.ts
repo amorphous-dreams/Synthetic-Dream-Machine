@@ -28,8 +28,7 @@ import {
   faceAtomKeyFromSeed,
   leaseEpochPrefix, readFace,
   signPersonaAct, actCid, edgeBodyDigest, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  tiddlerText, FLEET_HAND, type LarDoc,
-} from "@lararium/mesh";
+  tiddlerText, FLEET_HAND, type LarDoc, ownEntry} from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
@@ -232,14 +231,14 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (face !== 0 && faceAnchors === null) {
     throw new Error(`[lares fleet join answer] this vessel holds no face at index ${face} — found one with \`lares persona new ${face}\` first.`);
   }
-  const personaGroupId = faceAnchors?.personaGroupId ?? (face === 0 ? tiddlers[PERSONA_GROUP_ID_TIDDLER]?.text ?? null : null);
-  const meshCabalDocIdHex   = faceAnchors?.meshCabalDocIdHex ?? (face === 0 ? tiddlers[MESH_CABAL_DOC_ID_TIDDLER]?.text ?? null : null);
-  const daemonUrl            = tiddlers[DAEMON_BAG_ID]?.text                 ?? null;
+  const personaGroupId = faceAnchors?.personaGroupId ?? (face === 0 ? ownEntry(tiddlers, PERSONA_GROUP_ID_TIDDLER)?.text ?? null : null);
+  const meshCabalDocIdHex   = faceAnchors?.meshCabalDocIdHex ?? (face === 0 ? ownEntry(tiddlers, MESH_CABAL_DOC_ID_TIDDLER)?.text ?? null : null);
+  const daemonUrl            = ownEntry(tiddlers, DAEMON_BAG_ID)?.text                 ?? null;
   // The founder's PersonaGroup plane — carried into the payload so the joinee SYNCS the shared veiled
   // identity (membership-sync foundation); the daemon bag stays sovereign (the joinee seeds its own). The entry
   // is keyed by the name the group's own id derives, which both devices compute alike.
   const personaUrl           = personaGroupId
-    ? tiddlers[personaBagIdFor(personaGroupId)]?.text ?? null
+    ? ownEntry(tiddlers, personaBagIdFor(personaGroupId))?.text ?? null
     : null;
 
   if (!personaGroupId || !meshCabalDocIdHex) {

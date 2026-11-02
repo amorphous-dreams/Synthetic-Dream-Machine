@@ -25,6 +25,7 @@
 import { NetworkAdapter } from "@automerge/automerge-repo";
 import type { Message, NetworkAdapterInterface, PeerId, PeerMetadata } from "@automerge/automerge-repo";
 import { decodeSyncMessage } from "@automerge/automerge";
+import { PROTOTYPE_KEY_CODE, syncMessagePrototypeKey } from "./prototype-key-shore.js";
 
 /** A message as a gate reads it. */
 export interface LegMessage {
@@ -69,6 +70,17 @@ export function carriesChanges(message: LegMessage): boolean {
   if (message.type !== "sync" && message.type !== "request") return false;
   if (!(message.data instanceof Uint8Array)) return true;
   try { return decodeSyncMessage(message.data).changes.length > 0; } catch { return true; }
+}
+
+/**
+ * THE LEG'S OWN INVARIANT, ahead of any gate: a sync or request message whose changes carry a `__proto__`
+ * key refuses as `prototype-key` (`prototype-key-shore.ts`), whatever the gate would say. KEEP: a live
+ * hostile form. Answers the reason, or null where the message carries no such key.
+ */
+export function carriesPrototypeKeyReason(message: LegMessage): typeof PROTOTYPE_KEY_CODE | null {
+  if (message.type !== "sync" && message.type !== "request") return null;
+  if (!(message.data instanceof Uint8Array)) return null;
+  return syncMessagePrototypeKey(message.data) ? PROTOTYPE_KEY_CODE : null;
 }
 
 function readLegMessage(raw: unknown): LegMessage | null {
@@ -164,6 +176,14 @@ export class GatedSyncLeg extends NetworkAdapter {
     if (read.data !== undefined && read.data.byteLength > this.#maxInboundBytes) {
       this.#refuse({
         direction: "inbound", reason: "message-too-large", type: read.type, peerId: read.senderId,
+        ...(read.documentId !== undefined ? { documentId: read.documentId } : {}),
+      });
+      return;
+    }
+    const poisoned = carriesPrototypeKeyReason(read);
+    if (poisoned) {
+      this.#refuse({
+        direction: "inbound", reason: poisoned, type: read.type, peerId: read.senderId,
         ...(read.documentId !== undefined ? { documentId: read.documentId } : {}),
       });
       return;

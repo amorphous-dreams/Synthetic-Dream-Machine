@@ -19,7 +19,7 @@
  */
 
 import type { Repo, AutomergeUrl } from "@lararium/mesh";
-import { plainEntries, plainRecordOrNull, storedRecord } from "@lararium/mesh";
+import { plainEntries, plainRecordOrNull, storedRecord, ownEntry } from "@lararium/mesh";
 import {
   type LarDoc,
   emptyLarDoc, storedLarRecord, mkDaemonResidencyOp, mkDaemonWikiAlert,
@@ -99,7 +99,7 @@ export function makeCompactBagReactor(opts: EpochHandlerOptions): VerbReactor {
     // same pattern as wiki-init's oracle write.
     const catalogHandle = await opts.catalog.handle();
     catalogHandle.change((doc) => {
-      const existing = plainRecordOrNull(doc.tiddlers[bagUrl]);
+      const existing = plainRecordOrNull(ownEntry(doc.tiddlers, bagUrl));
       doc.tiddlers[bagUrl] = storedRecord({
         tiddler: {
           ...(existing?.tiddler ?? { title: bagUrl }),
@@ -204,7 +204,7 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
     const catalogHandle = await opts.catalog.handle();
     catalogHandle.change((doc) => {
       const tiddlers = doc.tiddlers;
-      const existingWiki = plainRecordOrNull(tiddlers[wikiKey]);
+      const existingWiki = plainRecordOrNull(ownEntry(tiddlers, wikiKey));
       tiddlers[wikiKey] = storedRecord({
         tiddler: {
           ...(existingWiki?.tiddler ?? { title: wikiKey }),

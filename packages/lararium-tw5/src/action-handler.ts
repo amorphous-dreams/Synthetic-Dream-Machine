@@ -43,7 +43,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { isSystemCanonBag, plainRecordOrNull, requireKahuReach } from "@lararium/mesh";
+import { isSystemCanonBag, plainRecordOrNull, requireKahuReach, ownEntry } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -681,7 +681,7 @@ async function resolveCarrierText(
  */
 async function bagRetiredDisposition(repo: Repo, bagUri: string, docUrl: string): Promise<boolean> {
   const handle = await findOrThrow(repo, docUrl, `bag ${bagUri} (retirement check)`).catch(() => null);
-  const raw = plainRecordOrNull(handle?.doc()?.tiddlers?.[effectRecordUri(bagUri, RETIRED_EVENT_ID)]);
+  const raw = plainRecordOrNull(ownEntry(handle?.doc()?.tiddlers, effectRecordUri(bagUri, RETIRED_EVENT_ID)));
   return isRetirementMarker(raw?.tiddler as Record<string, unknown> | undefined, bagUri);
 }
 

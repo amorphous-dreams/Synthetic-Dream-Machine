@@ -26,8 +26,7 @@ import {
   quorumLeaseEpochOnBoard, DAEMON_BAG_ID, charterHandLineage, type HandLineage, type WideningRead,
   DEFAULT_JOIN_POLICY, alphaFromHalfLife, writeEdgeKapae,
   readRealmAdmitBundle, readRealmBoardFrontiers, readFrontierPins, writeFrontierPin, holderHand, type RealmAdmitBundle,
-  type CabalInvite, type CabalJoinPolicy, type AdmissionDials,
-} from "@lararium/mesh";
+  type CabalInvite, type CabalJoinPolicy, type AdmissionDials, ownEntry} from "@lararium/mesh";
 import { type LarDoc } from "@lararium/mesh";
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larBootstrapPath } from "../vessel-paths.js";
@@ -61,7 +60,7 @@ export function daemonDocUrlFromBootstrap(): string | null {
   try {
     const packed = JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text?: string };
     const tiddlers = (JSON.parse(packed.text ?? "{}") as { tiddlers?: Record<string, { text?: string }> }).tiddlers ?? {};
-    return tiddlers[DAEMON_BAG_ID]?.text ?? null;
+    return ownEntry(tiddlers, DAEMON_BAG_ID)?.text ?? null;
   } catch { return null; }
 }
 

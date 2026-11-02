@@ -19,7 +19,7 @@ import type { MemeDiagnostic } from "../meme-ast/diagnostics.js";
  */
 export interface MemeCheck {
   readonly shape: CarrierShape;
-  readonly check: "ok" | "mismatch" | "unchecked" | "torn";
+  readonly check: "ok" | "head-unbound" | "mismatch" | "unchecked" | "torn";
   /** The check the framed body should carry, or null where no framed body stands. */
   readonly bcc: string | null;
   readonly edges: readonly CarrierEdge[];

@@ -37,7 +37,7 @@ import {
   inMask,
   maskedExec,
   maskedExecAll,
-  META_OPEN_RE,
+  META_FENCE_RE,
   PLAIN_OPEN_RE,
   frameHex,
   readFrame,
@@ -149,7 +149,7 @@ export function deserializeCarrier(
   const arrived = text;
   const floor = shape.kind === "bare"
     ? null
-    : layFloor(baseUri, text, read, () => verdictOf(arrived, shape).kind === "match");
+    : layFloor(baseUri, text, read, () => { const k = verdictOf(arrived, shape).kind; return k === "match" || k === "head-unbound"; });
   if (floor) {
     text = floor.text;
     stream = readStream(text);
@@ -579,10 +579,10 @@ function splitRecursive(
 // Used by both header-region and slot-body TOML extraction.
 // ---------------------------------------------------------------------------
 
-// THE OPENER IS SHARED, THE CLOSE IS THIS READER'S OWN. `findMetaFence` hands back `start`/`end` and
-// the render rests on those offsets, so the ```\n? close stays exactly as it stands — a close fused
-// with carrier-shape's `\n``` would move `content` and `end` and byte-exact round-trip with it.
-const META_FENCE_RE  = new RegExp(META_OPEN_RE.source  + "([\\s\\S]*?)```\\n?");
+// THE FENCE IS SHARED, WHOLE: opener and close (`META_FENCE_RE`, memetic-frame). `findMetaFence` hands back
+// `start`/`end` and the render rests on those offsets, so the close stays the first tick run and `\n?`;
+// the frame's head binding, carrier-shape and the root-meta locator read the body by the same close, so no
+// reader binds against bytes this split never parses (blind security read A3).
 const PLAIN_FENCE_RE = new RegExp(PLAIN_OPEN_RE.source + "([\\s\\S]*?)```\\n?");
 
 export function findMetaFence(text: string, allowPlain = false): MetaFence | null {

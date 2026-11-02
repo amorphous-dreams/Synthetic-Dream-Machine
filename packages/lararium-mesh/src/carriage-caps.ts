@@ -23,7 +23,7 @@ import {
   routingSlots, routingSlotToRecord, hyperbolicDistance, radialCoordinate, type Coord, type RoutingSlot,
 } from "./mesh-palace.js";
 import type { FlowPullResult } from "./flow-read-client.js";
-import { plainRecord, sameStoredRecord, type StoredTiddlers } from "./stored-value.js";
+import { plainRecord, sameStoredRecord, type StoredTiddlers, ownEntry } from "./stored-value.js";
 import type { LarDoc } from "./base-doc.js";
 import type { VesselCoreAssembly } from "./open-vessel-core.js";
 import type { BagStowage } from "./bag-residency.js";
@@ -302,7 +302,7 @@ export function carriageCap(deps: {
             // outright when the slot we're about to publish is byte-identical to what's already stored
             // — the deadband already limits HOW OFTEN this fires, but a content check costs nothing and
             // closes the case where damping settles back to a value already on the doc.
-            const existing = mp.handle.doc()?.tiddlers[rec.tiddler.title];
+            const existing = ownEntry(mp.handle.doc()?.tiddlers, rec.tiddler.title);
             if (!sameStoredRecord(existing, rec)) {
               mp.handle.change((d) => { d.tiddlers[rec.tiddler.title] = storedRecord(rec); });
               deps.onLog?.(`carriage: standing → r=${rCurrent.toFixed(2)} (degree ${peers.length}, past the band)`);

@@ -39,8 +39,7 @@ import {
   materializeGenesisDoc, materializeGenesisIsland, validateGenesisBytes,
   buildCeremonyTiddlers, didKeyFromVerifyingKey,
   emptyLarDoc, IDENTITIES_NAMESPACE,
-  type LarDoc,
-} from "@lararium/mesh";
+  type LarDoc, ownEntry} from "@lararium/mesh";
 import { storedRecord } from "@lararium/mesh";
 import { assembleBulb, bulbSeed, bulbSeedInventory, type BulbArtifact } from "./bulb.js";
 import { parseGenesisSeed } from "./genesis-artifact.js";
@@ -190,7 +189,7 @@ export async function kindleFromBulb(args: {
   for (const t of ceremony) {
     const handle = t.bag === IDENTITIES_NAMESPACE ? identitiesHandle : circlesHandle;
     handle.change((doc) => {
-      if (!doc.tiddlers[t.title]) {
+      if (!ownEntry(doc.tiddlers, t.title)) {
         doc.tiddlers[t.title] = storedRecord({ tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } });
       }
     });

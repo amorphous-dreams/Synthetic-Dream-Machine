@@ -18,6 +18,10 @@
  *                reader repairs one in silence. Each fault is named; nothing past the close is folded in.
  *   · `bare`   — NO frame at all: no head, no STX, no ETX, no release. Bare data found on the internet
  *                is not a meme, and reading it as one would invent a carrier nobody wrote.
+ *   · `head-unbound` — the check covers the span, and the head names an end the sealed root meta never
+ *                names (no `title`, no `uri-path`; or a head namespace over a meta with none). The seal
+ *                cannot reach that end, so the reading never says `match`; it is no tear either. A head
+ *                that SPLITS from its sealed meta tears, `head-meta-split` (head-bind.ts).
  *
  * Pure, isomorphic, built on the one span reader and the one check reader — a second reading of the
  * frame here would be the drift `span.ts` exists to end. One file frames ONE carrier, so a second STX
@@ -34,9 +38,11 @@ import { frameHex } from "./marks.js";
 import { CARRIER_DECLARATION } from "./write.js";
 import { readFrame, type FrameFault } from "./span.js";
 import { etxFaults, standingCheck } from "./check.js";
+import { headBinding, type UnboundEnd } from "./head-bind.js";
 
 export type FrameVerdict =
   | { readonly kind: "match"; readonly check: string }
+  | { readonly kind: "head-unbound"; readonly check: string; readonly unbound: readonly UnboundEnd[] }
   | { readonly kind: "stale"; readonly stored: string; readonly computed: string }
   | { readonly kind: "absent" }
   | { readonly kind: "torn"; readonly faults: readonly FrameFault[] }
@@ -98,7 +104,8 @@ function tornSpellings(text: string, spans: ReturnType<typeof fencedSpans>): Fra
  *   · `bare`   — no frame stands.
  *   · `torn`   — the frame cannot be divided without choosing; each fault named.
  *   · `absent` — a frame stands with no text frame (no STX..ETX span).
- *   · `framed` — a text frame stands; `span` is the checked span, STX sigil through ETX sigil.
+ *   · `framed` — a text frame stands; `span` is the checked span, STX sigil through ETX sigil, and
+ *                `unbound` names each head end the sealed meta never names (empty where all bind).
  *
  * A reader that needs only the shape reads it here and never computes a digest; `verdictOf` adds the
  * digest over the same shape, so the two depths are one reading.
@@ -107,7 +114,11 @@ export type FrameShape =
   | { readonly kind: "bare" }
   | { readonly kind: "torn"; readonly faults: readonly FrameFault[] }
   | { readonly kind: "absent" }
-  | { readonly kind: "framed"; readonly span: { readonly start: number; readonly end: number } };
+  | {
+    readonly kind: "framed";
+    readonly span: { readonly start: number; readonly end: number };
+    readonly unbound: readonly UnboundEnd[];
+  };
 
 export function frameShape(text: string): FrameShape {
   const spans = fencedSpans(text);
@@ -127,7 +138,14 @@ export function frameShape(text: string): FrameShape {
   }
   if (faults.length > 0) return { kind: "torn", faults };
   if (!frame.stx || !frame.etx) return { kind: "absent" };
-  return { kind: "framed", span: { start: frame.stx.index, end: frame.etx.end } };
+  // THE SEAL BINDS THE HEAD, read only over a frame that divides: a split tears, an unbound end rides on.
+  const binding = headBinding(text, spans);
+  if (binding.kind === "split") return { kind: "torn", faults: binding.faults };
+  return {
+    kind: "framed",
+    span: { start: frame.stx.index, end: frame.etx.end },
+    unbound: binding.kind === "unbound" ? binding.unbound : [],
+  };
 }
 
 /** The verdict over a shape already read: the digest is the one thing it adds. */
@@ -135,9 +153,10 @@ export function verdictOf(text: string, shape: FrameShape): FrameVerdict {
   if (shape.kind !== "framed") return shape;
   const check = standingCheck(text, shape.span);
   if (!check) return { kind: "absent" };
-  return check.verifies
-    ? { kind: "match", check: check.stored }
-    : { kind: "stale", stored: check.stored, computed: check.computed };
+  if (!check.verifies) return { kind: "stale", stored: check.stored, computed: check.computed };
+  return shape.unbound.length > 0
+    ? { kind: "head-unbound", check: check.stored, unbound: shape.unbound }
+    : { kind: "match", check: check.stored };
 }
 
 export function verdict(text: string): FrameVerdict {

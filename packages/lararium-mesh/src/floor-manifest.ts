@@ -8,8 +8,9 @@ import { getAllChanges, load, save } from "@automerge/automerge";
 import { sha256HexBytesSync } from "./crypto.js";
 import { pinnedDoc } from "./pinned-doc.js";
 import { storedRecord } from "./stored-record.js";
-import { plainRecord, type StoredLarRecord } from "./stored-value.js";
+import { plainRecord, ownEntry, hasOwnEntry, type StoredLarRecord } from "./stored-value.js";
 import type { LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
+import { prototypeKeyFault } from "./stored-value.js";
 
 export const FLOOR_MANIFEST_FORMAT = "lararium-floor/v1";
 /** The seed witness row naming the genesis floor's manifest CID (sha256 hex) in its `cid` field, shaped as the region witnesses stand. */
@@ -106,7 +107,7 @@ function ordered(value: unknown): unknown {
 export function cutFloorSnapshot(rows: Readonly<Record<string, LarTiddlerRecord>>): FloorSnapshot {
   const tiddlers: Record<string, StoredLarRecord> = {};
   for (const title of Object.keys(rows).sort()) {
-    const row = rows[title];
+    const row = ownEntry(rows, title);
     if (!row || row.tiddler?.title !== title) {
       throw new FloorManifestRefusal("floor-snapshot-malformed", `Snapshot title differs from row: ${title}`);
     }
@@ -124,6 +125,9 @@ export function openFloorSnapshot(bytes: Uint8Array, cid: string):
       return { refusal: "floor-snapshot-cid-mismatch", reason: "Snapshot bytes differ from their CID" };
     }
     const doc = load<Record<string, unknown>>(bytes);
+    // A prototype key refuses ahead of every by-key read (`prototype-key-shore.ts`; KEEP: a live hostile form).
+    const poisoned = prototypeKeyFault(doc);
+    if (poisoned) throw new Error(`prototype-key: ${poisoned}`);
     if (getAllChanges(doc).length !== 1 || Object.keys(doc).length !== 1 || !Object.hasOwn(doc, "tiddlers")) {
       throw new Error("Snapshot must hold one pinned change and its tiddlers map");
     }
@@ -182,10 +186,10 @@ export function floorReadFace(opts: {
   readonly base?: LarTiddlerStore;
 }): LarTiddlerStore {
   const rowFor = (title: string): LarTiddlerRecord | null => {
-    for (const rows of opts.rows) if (Object.hasOwn(rows, title)) return rows[title] ?? null;
+    for (const rows of opts.rows) if (hasOwnEntry(rows, title)) return ownEntry(rows, title) ?? null;
     return null;
   };
-  const shadows = (title: string): boolean => opts.rows.some((rows) => Object.hasOwn(rows, title));
+  const shadows = (title: string): boolean => opts.rows.some((rows) => hasOwnEntry(rows, title));
   const baseReader = opts.base as (LarTiddlerStore & { readNow?: (title: string) => { record: LarTiddlerRecord | null; heads?: readonly string[] } }) | undefined;
   return {
     async get(title) { return shadows(title) ? rowFor(title) : (opts.base?.get(title) ?? null); },

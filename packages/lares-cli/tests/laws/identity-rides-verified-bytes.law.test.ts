@@ -177,7 +177,10 @@ const HEAD = '<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/l
 const STX = '<<^ code=`&#x0002;`>>\n';
 const ETX = '<<^ code=`&#x0003;`>>';
 const EOT = '\n\n<<^ code=`&#x0004;` to=`?`>>\n';
-const framed = (b: string): string => `${HEAD}${STX}${b}\n\n${ETX}${EOT}`;
+// The sealed root meta names what the head names, so the seal binds the head and a stamp reads `ok`
+// (memetic-frame head-bind.ts); a head the meta never named would read `head-unbound`.
+const META = '```toml meta\ntitle = "lar:///ha.ka.ba/lares/api/pono/t"\nnamespace = "⊙"\n```\n\n';
+const framed = (b: string): string => `${HEAD}${STX}${META}${b}\n\n${ETX}${EOT}`;
 
 describe("L16 · a stamp attests a bounded, complete span", () => {
   test.prop([body], { examples: [["hello"], ["a\nb\nc"]] })("stamping a framed carrier mints a check that verifies, and a second stamp changes nothing", (b) => {

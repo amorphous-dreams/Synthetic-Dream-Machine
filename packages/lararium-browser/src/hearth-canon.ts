@@ -20,7 +20,7 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/hearth-canon
  */
 import { interpretAsDocumentId, isValidAutomergeUrl, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, storedLarRecord, oracleGenesisDocUrl, tiddlerText, type FederationGate, type LarDoc } from "@lararium/mesh";
+import { DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, storedLarRecord, oracleGenesisDocUrl, tiddlerText, type FederationGate, type LarDoc, ownEntry } from "@lararium/mesh";
 
 /** The canon titles an admit may name: the bags a leaf's wiki reads from its hearth. */
 export const HEARTH_CANON_TITLES: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
@@ -172,7 +172,7 @@ export interface CatalogRegistry {
  */
 export function seatHearthCanon(registry: CatalogRegistry, named: HearthCanonDocs): void {
   const owed = Object.entries(admittedCanonDocs(named))
-    .filter(([title, url]) => tiddlerText(registry.doc()?.tiddlers?.[title]) !== url);
+    .filter(([title, url]) => tiddlerText(ownEntry(registry.doc()?.tiddlers, title)) !== url);
   if (owed.length === 0) return;
   registry.change((doc) => {
     for (const [title, url] of owed) doc.tiddlers[title] = storedLarRecord(title, { text: url }, "hearth-canon");

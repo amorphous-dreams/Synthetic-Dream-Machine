@@ -1,6 +1,7 @@
 import { refuseBufferedPorts, type ConnectBuffer } from "./connect-buffer.js";
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
+import { shoreStorage } from "@lararium/mesh";
 import { attachMessageChannelSync } from "@lararium/mesh";
 import { makeHolderRuntime } from "./shared-holder-runtime.js";
 import type { BrowserIslandScope } from "./browser-sovereign-island-model.js";
@@ -69,7 +70,7 @@ async function startHolderOn(buffer: ConnectBuffer<MessagePort>): Promise<void> 
       };
     },
     openRepo: (storeName) => {
-      const repo = new Repo({ storage: new IndexedDBStorageAdapter(storeName) });
+      const repo = new Repo({ storage: shoreStorage(new IndexedDBStorageAdapter(storeName)) });
       return { shutdown: () => repo.shutdown(), attachSide: (port: MessagePort) => attachMessageChannelSync(repo, port) };
     },
   });

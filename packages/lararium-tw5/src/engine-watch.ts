@@ -27,6 +27,7 @@
 import {
   BAG_IDS,
   ENGINE_CORE_ID,
+  ownEntry,
   wikiSlotUri,
   type ChangeOrigin,
   type DocHandle,
@@ -59,7 +60,7 @@ export function startEngineWatch(ctx: IslandContext): (() => void) | undefined {
   let lastAlertedSha: string | null = null;
 
   const check = (): void => {
-    const entry = handle.doc()?.blobs?.[ENGINE_CORE_ID];
+    const entry = ownEntry(handle.doc()?.blobs, ENGINE_CORE_ID);
     if (!entry?.sha256) return;
     if (entry.sha256 === ctx.engine.sha256) { lastAlertedSha = null; return; }   // the booted engine: a later move alerts afresh
     if (entry.sha256 === lastAlertedSha) return;             // already alerted this engine

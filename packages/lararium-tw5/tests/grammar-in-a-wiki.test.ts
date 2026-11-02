@@ -260,6 +260,9 @@ describe.skipIf(wikiSkip)(
     // in this grammar exactly as in TiddlyWiki's own filetype registry, and never stores it in the bytes
     // — a carrier IS its type, so the value is re-derived on every read rather than carried.
     const HOST_OWNED = new Set(["title", "revision", "type"]);
+    // `uri-path` binds the HEAD (head-bind.ts): the seal reaches the head's `to=` through it, so an edit
+    // that moves it alone names a second address and reads torn, `head-meta-split` — asserted below.
+    const HEAD_BOUND = new Set(["uri-path"]);
     // `$…` NAMES THE HOST'S SHELF, NOT THE OPERATOR'S. TiddlyWiki hands that prefix to whatever stands
     // the wiki, so the grammar's own carriage lives there — the prologue, the preamble, the header
     // text, the slot a fragment fills, the bytes trailing the frame. Those rebuild from the frame on
@@ -269,7 +272,7 @@ describe.skipIf(wikiSkip)(
     const carrier = readFileSync(path.join(REPO, "bags/lares/ha.ka.ba/lares/api/pono/ahu.mem"), "utf8");
     const uri = `lar:///${/^uri-path\s*=\s*"([^"]+)"/m.exec(carrier)![1]!}`;
     const base = deserializeFromSource(carrier, uri);
-    const produced = [...new Set(base.flatMap((r) => Object.keys(r)))].filter((k) => !HOST_OWNED.has(k) && !isCarriage(k));
+    const produced = [...new Set(base.flatMap((r) => Object.keys(r)))].filter((k) => !HOST_OWNED.has(k) && !HEAD_BOUND.has(k) && !isCarriage(k));
 
     const lost: string[] = [];
     for (const key of produced) {
@@ -286,6 +289,18 @@ describe.skipIf(wikiSkip)(
       if (!survived) lost.push(key);
     }
     expect(lost).toEqual([]);
+
+    // THE HEAD-BOUND FIELD: moving `uri-path` alone splits the sealed meta from the head, and tears.
+    for (const key of HEAD_BOUND) {
+      const records = base.map((r) => ({ ...r }));
+      const target  = records.find((r) => r[key] !== undefined);
+      if (!target) continue;
+      target[key] = `EDITED-${key}`;
+      const by  = new Map(records.map((r) => [r["title"] as string, r]));
+      const out = expandMemeRefs((u: string) => (by.get(u) ?? null) as never, uri)!;
+      const v = verdict(out);
+      expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["head-meta-split"]);
+    }
   });
 
   /**
