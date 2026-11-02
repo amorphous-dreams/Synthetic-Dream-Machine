@@ -7,10 +7,14 @@
  * the island resolves `bags/kahua` from the grant alone (`librarySlotUrl`), and the daemon recipe stacks the device's
  * own top over the stage over canon (`kahuaRecipe`, `buildIslandRecipe`, the `kahuaLayerStore` seam).
  *
+ * The stage stands where every device of the face derives it (`kahuaStageDocUrl`, materialized the way
+ * `adoptKahuaStage` does) and carries SIGNED LIFTS alone; the layer reads them through the fold under the worn face
+ * (`readFace` over the chain, handed to `buildIslandRecipe` as `kahuaFace`).
+ *
  * SECURITY CLASS. Reds: the joinee obtains the founder's stage url from the verified bundle and mounts it; a page
  * draft over a stage title casts the shadow mark; a page write lands in the top, never the stage. Controls: a catalog
  * row naming another stage refuses by name and mounts nothing; a face with no pin boots with the layer absent and the
- * page stands on top + canon.
+ * page stands on top + canon; a raw tiddler a member writes into the stage doc never reads in the page.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
@@ -18,8 +22,8 @@ import { describe, expect, test } from "vitest";
 import {
   AutomergeDocStore, KAHUA_BAG, KAHUA_PLANE, ORACLE_BAG, actCid, adoptKahuaPlane, adoptedKahuaUrl, ed25519SignerFromSeed,
   ed25519VerifyingKeyFromSeed, emptyLarDoc, faceRecordsOf, groupSecretOpenerFromSeed, kahuaCatalogRow, kahuaRecipe, makeIslandRepo,
-  materializeSharedLarDoc, mintFaceAnchor, personaKelBoardDocUrl, personaKelChainForPrefix, proveFaceFromLog, seedDaemonDoc,
-  signPersonaAct, storedLarRecord, CompositeStore, wikiSlotUri,
+  kahuaStageDocUrl, materializeSharedLarDoc, mintFaceAnchor, personaKelBoardDocUrl, personaKelChainForPrefix, proveFaceFromLog,
+  readFace, seedDaemonDoc, signKahuaLift, signPersonaAct, storedLarRecord, writeKahuaAct, CompositeStore, wikiSlotUri,
   type ChangeOrigin, type DocHandle, type LarDoc, type SlotUri,
 } from "@lararium/mesh";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "@lararium/keyhive";
@@ -51,15 +55,22 @@ async function joinedPage(opts: { readonly pin: boolean; readonly catalogRow?: (
   });
   const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(founderSeed)), "board:persona-kel");
   const chain = personaKelChainForPrefix(board.doc(), face.personaKelPrefix)!;
-  // The stage as the joinee's replica holds it once synced: one lifted item and one item canon shares.
-  const stage = joineeRepo.create<LarDoc>(emptyLarDoc());
-  await new AutomergeDocStore(stage, KAHUA_BAG).put(rec("Item", "kahua-item"), origin);
-  await new AutomergeDocStore(stage, KAHUA_BAG).put(rec("Both", "kahua-both"), origin);
+  // The stage as the joinee's replica holds it once synced: at the face's derived address, one lifted item and one item
+  // canon shares, each a lift the face's current root signed; beside them a raw tiddler a member wrote, which counts for nothing.
+  const root = { key: await ed25519VerifyingKeyFromSeed(signerSeed), sign: ed25519SignerFromSeed(signerSeed) };
+  const stage = await materializeSharedLarDoc(joineeRepo, kahuaStageDocUrl(face.personaGroupId), "kahua:stage");
+  const atomKey = await ed25519VerifyingKeyFromSeed(atomSeed);
+  for (const [title, text] of [["Item", "kahua-item"], ["Both", "kahua-both"]] as const) {
+    const lift = await signKahuaLift({ group: face.personaGroupId, epoch: chain[chain.length - 1]!.seq, title, text, fields: {}, parent: null,
+      origin: { seat: atomKey, device: atomKey, session: "walk" }, taint: [], sources: [{ title: `daemon/${title}`, revision: "r1" }] }, root);
+    stage.change((d) => writeKahuaAct(d, lift));
+  }
+  await new AutomergeDocStore(stage, KAHUA_BAG).put(rec("Poison", "raw"), origin);
   const base = await founderAndJoineeActs({ face, signerSeed, founderAtomSeed: atomSeed, joineeKey: key(joineeAtom), chain }) as Array<{ body: { seq: number } }>;
   const last = base.reduce((m, a) => (a.body.seq > m.body.seq ? a : m));
   const pinAct = opts.pin ? [await signPersonaAct({ seq: last.body.seq, cid: actCid(last.body as never) },
     { group: face.personaGroupId, act: "plane", epoch: chain[chain.length - 1]!.seq, fields: { plane: KAHUA_PLANE, url: stage.url } },
-    { key: await ed25519VerifyingKeyFromSeed(signerSeed), sign: ed25519SignerFromSeed(signerSeed) })] : [];
+    root)] : [];
   const payload = await runDeviceAdmitEdge({
     signerSeed, joineeVerifyingKey: key(joineeAtom), personaKelPrefix: face.personaKelPrefix, personaKelChain: chain, personaActs: [...base, ...pinAct],
     edgeFrontier: await frontierFromFoundingSeed(signerSeed), hearthTrueName: "hearth", personaGroupId: face.personaGroupId,
@@ -82,8 +93,12 @@ async function joinedPage(opts: { readonly pin: boolean; readonly catalogRow?: (
   await new AutomergeDocStore(handles.get(ORACLE_BAG)!, ORACLE_BAG).put(rec("Both", "canon-both"), origin);
   await new AutomergeDocStore(handles.get(ORACLE_BAG)!, ORACLE_BAG).put(rec("OnlyCanon", "canon"), origin);
   if (kahuaUrl) handles.set(KAHUA_BAG, await joineeRepo.find<LarDoc>(kahuaUrl as never));
+  // The face the layer folds under: the verified chain's reading, its current roster the grant.
+  const reading = readFace(chain, anchor);
+  if (!reading) throw new Error("face reading refused");
+  const kahuaFace = { group: face.personaGroupId, grant: reading.currentSigner };
   const composite = new CompositeStore();
-  buildIslandRecipe({ tw5: fakeTw5(), composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), ready: [...handles].map(([slot, handle]) => ({ slot, handle })) });
+  buildIslandRecipe({ tw5: fakeTw5(), composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), ready: [...handles].map(([slot, handle]) => ({ slot, handle })), kahuaFace: () => kahuaFace });
   return { applied, adoption, kahuaUrl, asked, composite, stage, stageUrl: stage.url, top: new AutomergeDocStore(handles.get(TOP)!, TOP) };
 }
 
@@ -106,9 +121,18 @@ describe("a joined browser mounts the face's kahua stage", () => {
     expect(await kahuaShadowOf(p.composite, "Item")).toEqual({ draftBag: TOP, shared: "kahua-item" });
     expect((await p.top.get("Item"))?.tiddler.text).toBe("page-draft");
     expect((await p.top.get("Both"))?.tiddler.text).toBe("page-edit");
-    const stage = new AutomergeDocStore(p.stage, KAHUA_BAG);
-    expect((await stage.get("Item"))?.tiddler.text).toBe("kahua-item");
-    expect((await stage.get("Both"))?.tiddler.text).toBe("kahua-both");
+    // The stage doc took no tiddler from the page: it carries the signed acts alone, and the fold still reads them.
+    const raw = new AutomergeDocStore(p.stage, KAHUA_BAG);
+    expect(await raw.get("Item")).toBeNull();
+    expect(await raw.get("Both")).toBeNull();
+  });
+
+  test("CONTROL: a raw tiddler a member writes into the stage doc never reads in the page; the signed lifts beside it do", async () => {
+    const p = await joinedPage({ pin: true });
+    expect((await new AutomergeDocStore(p.stage, KAHUA_BAG).get("Poison"))?.tiddler.text).toBe("raw");
+    expect(await p.composite.get("Poison")).toBeNull();
+    await new AutomergeDocStore(p.stage, KAHUA_BAG).put(rec("Item", "hand edit over the lift"), origin);
+    expect((await p.composite.get("Item"))?.tiddler.text).toBe("kahua-item");
   });
 
   test("CONTROL: a catalog row naming another stage than the plane act refuses by name and mounts nothing", async () => {
