@@ -19,6 +19,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
+import { isControlPlaneUri } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
@@ -137,6 +138,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
 
     async lift(input: KahuaLiftInput): Promise<{ readonly cid: string; readonly parent: string | null }> {
       stageUrl();
+      if (isControlPlaneUri(input.title)) throw new KahuaRefused(`control-plane-title: "${input.title}" belongs to the daemon's control plane, and no control record lifts onto the stage`);
       if (!Array.isArray(input.taint)) throw new KahuaRefused("kahua-act-refused: taint: name the lift's taint list (empty when every input came from inside the face)");
       let origin = { seat: "", device: ports.atom.key, session: ports.session() };
       let taint = [...input.taint];
