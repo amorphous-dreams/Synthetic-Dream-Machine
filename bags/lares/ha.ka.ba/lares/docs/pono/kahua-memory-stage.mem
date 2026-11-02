@@ -66,13 +66,13 @@ The Two Organs law binds the quine and the Memory Sensorium as cortex and hippoc
 
 ''The ruled stack'' (operator, 2026-11-01: //"We enact this design now, no 'A now, b later' for the live Lararium standing."//). The `kahua` wiki and recipe stack two layers over the floor, the topmost shadowing those beneath it:
 
-# ''the working top'' — draft and private, writable on this device alone; it projects as flat files to `<state>/wikis/kahua`, as every wiki's working layer projects;
-# ''`bags/kahua`'' — ONE fleet-synced, lift-only bag, projected at `<state>/bags/kahua`; a project rides inside it as `$(project)$/**` tiddler paths, never as a bag of its own; no hand edits it in place;
+# ''the working top'' — draft and private, writable on this device alone; it projects as flat files to `<state>/wikis/kahua-<tag>`, as every wiki's working layer projects;
+# ''`bags/kahua`'' — ONE fleet-synced, lift-only bag, projected at `<state>/bags/kahua-<tag>`; a project rides inside it as `$(project)$/**` tiddler paths, never as a bag of its own; no hand edits it in place;
 # ''the lares canon'' — read-only, the floor.
 
 ''The daemon stays the control plane.'' The daemon doc holds the device's sealed checkpoints, persona acts, cap events, group-secret seals and bindings: CRDT only, never projected, never a layer a hand writes (operator, 2026-11-01: //"Maybe that layer just gets written to the wiki/kahua as all other wikis do (flat files), and the daemon remains the non-projected/crdt only control plane?"//). Nothing lands at `<state>/bags/daemon`.
 
-''No face on disk.'' No path carries a face segment: the face rides sync, one face per device-session, and the stage doc a device mounts comes from its face's verified pin (#/pinning). ''Private layers project under state alone''; workspace canon writes back to `/workspace/bags/<bag>` and `/workspace/wikis/<slug>`, and no private layer writes there.
+''The face rides the wiki's name'' (operator, 2026-11-01, after two scouts collided the multi-face device). One tree, no per-face root: each face's kahua wiki and stage stand in their own folders, `<state>/wikis/kahua-<tag>` and `<state>/bags/kahua-<tag>`, where `<tag>` names the face's DERIVED persona tag, the derivation `persona-<tag>` already rides (`personaBagIdFor`): stable across the face's devices, no stored map, never the Handle, never a device-local custody id, never an ordinal. Two faces on one device project two folders side by side, each session leasing its own wiki; nothing swaps. The bag ids stay; the folders alone carry the tag. ''Private layers project under state alone''; workspace canon writes back to `/workspace/bags/<bag>` and `/workspace/wikis/<slug>`, and no private layer writes there.
 
 One wiki then reads the device's drafts, the fleet's lifted items and the canon in one cascade, and a session opens by reading one index rather than three.
 
@@ -178,7 +178,7 @@ Each line names what the code does today and where its law lives; the verifier h
 * ''The hand.'' `lares kahua` carries mint, lift, withdraw and carry on a person's hand alone, re-reading sealed custody per call; a seat session (the AI, MCP) proposes and reads, and a pin, lift or withdraw from it refuses `beyond-profile`.
 * ''The face fence.'' The stage rides its own face's facet on the read-only `library` layer; `bridgeBooks` never bridges `bags/kahua`, so a face switch on one vessel never hands one face's stage to another's sessions.
 * ''Two layers and a control plane'' (operator, 2026-11-01: //"Maybe that layer just gets written to the wiki/kahua as all other wikis do (flat files), and the daemon remains the non-projected/crdt only control plane?"//). The kahua wiki holds two layers over canon: its ''working top'' (draft and private, writable on this device alone) and `bags/kahua`. The ''daemon'' (`bags/daemon`: sealed checkpoints, persona acts, cap events, group-secret seals, bindings) stays the control plane alone, CRDT only, never projected.
-* ''Disk.'' The working top projects as flat files to `<state>/wikis/kahua`, as every wiki's working layer projects; the stage projects to `<state>/bags/kahua/<title path>`; nothing lands at `<state>/bags/daemon`, and neither layer writes the workspace, even with `LAR_BAGS` at the checkout.
+* ''Disk.'' The working top projects as flat files to `<state>/wikis/kahua-<tag>`, as every wiki's working layer projects; the stage projects to `<state>/bags/kahua-<tag>/<title path>`; every private mirror reads its base through one root (`privateProjectionRoot`); nothing lands at `<state>/bags/daemon`, and neither layer writes the workspace, even with `LAR_BAGS` at the checkout.
 
 ''Pattern integrity: the address derives from a public id.'' Anyone who knows the group computes the stage doc's id, so the facet and the share gate stay its only fence; the fold makes any foreign write read as nothing.
 
@@ -257,6 +257,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Uyo9-DaTvg9wm-JxKZgIiyk79gh0-z9wqljITnI0FAk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BzcWi7We0Cg3NkG00BZJv94yLF8UAznPtbzr0ZXkAwE`>>
 
 <<^ code=`&#x0004;` to=`?`>>
