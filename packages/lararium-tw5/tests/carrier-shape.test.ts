@@ -211,14 +211,15 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
     expect(shape.faults.join(" ")).toContain("2 text frames");
   });
 
-  /** ADJACENT, EXACTLY. A check shifted off its closer by even one space does not verify — slack there
-   *  would let two byte-different files share one verdict, the class the span law exists to close. */
+  /** SEATED, EXACTLY. A check shifted off its seat in the ETX mark by even one space does not verify —
+   *  slack there would let two byte-different files share one verdict, the class the span law exists to close. */
   test("a shifted check does not verify", () => {
-    const base = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code=\`&#x0002;\`>>\n\nbody\n\n<<^ code=\`&#x0003;\`>>`;
-    const good = readCarrierShape(`${base}ni:///sha-256;AAAA\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
-    expect(good.marks.check).toBe("mismatch");   // adjacent but wrong digest — SEEN, judged
-    const shifted = readCarrierShape(`${base} ni:///sha-256;AAAA\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
-    expect(shifted.marks.check).toBe("unchecked"); // one space off — not a check at all
+    const base = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code=\`&#x0002;\`>>\n\nbody\n\n`;
+    const foot = "\n\n<<^ code=`&#x0004;` to=`?`>>\n";
+    const good = readCarrierShape(`${base}<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;AAAA\`>>${foot}`);
+    expect(good.marks.check).toBe("mismatch");   // seated but wrong digest — SEEN, judged
+    const shifted = readCarrierShape(`${base}<<^ code=\`&#x0003;\`  bcc=\`ni:///sha-256;AAAA\`>>${foot}`);
+    expect(shifted.marks.check).toBe("torn");     // one space off — the ETX spelling tears before any digest runs
   });
 
 
@@ -324,7 +325,7 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
     expect(tally.get("&#x0011;") ?? 0, "no carrier writes SOH2 — the SOH family reads as one code").toBeGreaterThanOrEqual(1);
 
     // EOT2's own fixture — no at-rest carrier is ruled to carry this mark, so the floor stands here.
-    const eot2Fixture = '<<^ code=`&#x0003;`>>ni:///sha-256;x\n\n<<^ code=`&#x0014;` to=`?`>>';
+    const eot2Fixture = '<<^ code=`&#x0003;` bcc=`ni:///sha-256;x`>>\n\n<<^ code=`&#x0014;` to=`?`>>';
     const eot2Seen = new Set<string>();
     for (const sig of maskedExecAll(eot2Fixture, SIGIL, fencedSpans(eot2Fixture))) {
       for (const ent of sig[0].matchAll(/&#x[0-9A-Fa-f]{4};/g)) eot2Seen.add(ent[0]);
@@ -388,5 +389,22 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
     const lesson = "```\n<<^ code=`&#x0002;`>>\n<<^ code=`&#x0003;`>>\n<<^ code=`&#x0004;` to=`?`>>\n```\n";
     expect(familiesWritten(lesson)).toEqual({ stx: false, etx: false, eot: false });
     expect(readCarrierShape(lesson).marks).toMatchObject({ stx: false, etx: false, eot: false });
+  });
+});
+
+describe("★ a two-frame smuggle reads as two frames, never as a frame that never closes ★", () => {
+  const HEAD = "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>\n\n<<^ code=`&#x0001;` from=`?` to=`lar:///t/two`>>\n";
+  const META = "```toml meta\nuri-path = \"t/two\"\n```\n\nbody\n\n";
+  const TWO = `${HEAD}<<^ code=\`&#x0002;\`>>\n\n${META}<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0002;\`>>\n\nsmuggled\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
+  const TORN = `${HEAD}<<^ code=\`&#x0002;\`>>\n\n${META}`;
+
+  test("RED: the smuggle's faults name the second frame, and never 'opens and never closes'", () => {
+    const f = readCarrierShape(TWO).faults.join(" | ");
+    expect(f).toMatch(/2 text frames/);
+    expect(f).not.toMatch(/opens and never closes/);
+  });
+
+  test("CONTROL: a frame cut ahead of its ETX still reads 'opens and never closes'", () => {
+    expect(readCarrierShape(TORN).faults.join(" | ")).toMatch(/opens and never closes/);
   });
 });

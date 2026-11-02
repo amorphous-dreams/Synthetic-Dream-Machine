@@ -133,6 +133,6 @@ Eight independent domains converge on a single shape — ''three axes, no global
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Z_-xtJwVSZmdQlgTlvOrUdcHO5sH4kjg6-kt23hf3x8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z_-xtJwVSZmdQlgTlvOrUdcHO5sH4kjg6-kt23hf3x8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -138,6 +138,6 @@ A browser camera renders inside the island and crosses the boundary twice, under
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;pczC2payeHpeb19aJ5R3kOKLHW4AVkw1jxfkyODZyCQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pczC2payeHpeb19aJ5R3kOKLHW4AVkw1jxfkyODZyCQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

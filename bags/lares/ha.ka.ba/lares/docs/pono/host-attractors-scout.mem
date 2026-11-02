@@ -492,6 +492,6 @@ Marks as in the header. Only `github.com` URLs were fetched; all others were con
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;dKc3Hy-GDyM3lyoPouTHDABgZKj8hhvut-T_SPUm_y4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dKc3Hy-GDyM3lyoPouTHDABgZKj8hhvut-T_SPUm_y4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

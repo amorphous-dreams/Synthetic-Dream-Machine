@@ -69,6 +69,6 @@ Feeds `function/magic-decode` and `function/archive`. The `ecm` counter-set — 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;1_YWLDMhskbWrjfYePz1BvoL9A4rpGdDXTHxe2f6oso
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1_YWLDMhskbWrjfYePz1BvoL9A4rpGdDXTHxe2f6oso`>>
 
 <<^ code=`&#x0004;` to=`?`>>

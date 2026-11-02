@@ -101,7 +101,7 @@ test("G4 RED: the quick job keeps every folded gate as a named step that runs wh
   for (const m of steps) if (m[1]) named.set(m[1], m[0]);
   for (const want of [
     "Every dependency names ONE version", "Generated artifacts must be fresh (build emits no tracked diff)", "Typecheck all packages",
-    "noosphere-boot.mem must stay under the 40000-char ceiling", "generate-parity — the committed parser.c stays the truth",
+    "noosphere-boot.mem stands where the hooks load it", "generate-parity — the committed parser.c stays the truth",
     "fold + golden manifest gates (py host)", "wasm builds under the pinned CLI", "fold + parity gates (ts host)",
     "Run the floor crossing under a scratch home", "meme-routes + standalone single-file contact against the pristine engine",
     "The log names the engine it met", "Run the hosted witness cell contract-witness",

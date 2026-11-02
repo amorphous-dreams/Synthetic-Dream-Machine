@@ -67,6 +67,6 @@ reader a check they could then fail to find.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/keyhive-provider`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;rSKvx37VI4FA98ywcPrvk6IrnwlHUagED9JqJdW5Mk0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rSKvx37VI4FA98ywcPrvk6IrnwlHUagED9JqJdW5Mk0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

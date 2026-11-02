@@ -196,6 +196,6 @@ The TypeScript validator `validatePranalaEdge` (in `@lararium/mesh`) enforces th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0mUlZzJE1-y5jvz9Dk941ZIf1-qXXv5TYk342OZjc1s
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0mUlZzJE1-y5jvz9Dk941ZIf1-qXXv5TYk342OZjc1s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

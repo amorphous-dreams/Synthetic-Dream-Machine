@@ -42,6 +42,6 @@ place's seat on the map; that locus keeps its life.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;UOFG2kTic1tPlWmioZKNLOBFbtIAeREuK3vtnChp4Fs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UOFG2kTic1tPlWmioZKNLOBFbtIAeREuK3vtnChp4Fs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

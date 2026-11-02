@@ -23,7 +23,7 @@ export { CARRIER_DECLARATION, frameCarrier, headSigil, markSigil, releaseSigil }
 export const DOCTYPE = CARRIER_DECLARATION;
 /** ``<<^ code=`&#x0002;`>>`` — text begins. */
 export const STX = markSigil("STX");
-/** ``<<^ code=`&#x0003;`>>`` — text ends; the check follows it directly. */
+/** ``<<^ code=`&#x0003;`>>`` — text ends; a sealed close carries the check in its `bcc` slot (``bcc=`ni:///…` ``). */
 export const ETX = markSigil("ETX");
 /** ``<<^ code=`&#x0004;` to=`?`>>`` — the release. */
 export const EOT = releaseSigil();

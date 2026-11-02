@@ -55,6 +55,6 @@ A triple-backtick fence opening with the language token `toml` declares data ins
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Br_7NCY_YsUu-QMGtW1OLOve78H9xbd_b-inTYYCTpg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Br_7NCY_YsUu-QMGtW1OLOve78H9xbd_b-inTYYCTpg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

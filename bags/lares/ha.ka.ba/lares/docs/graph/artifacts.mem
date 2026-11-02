@@ -304,6 +304,6 @@ Full boot may trigger compaction once the relation expansion reaches larger grap
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;efUUXb7BCUzdTV3UnFfgLh3j9-fDusjIxerPubfTFJ0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;efUUXb7BCUzdTV3UnFfgLh3j9-fDusjIxerPubfTFJ0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

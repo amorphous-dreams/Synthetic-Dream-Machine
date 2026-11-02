@@ -98,6 +98,6 @@ Full event: [[strandbeest-shrine|lar:///ha.ka.ba/elyncia/characters/companions/s
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;7sI4JTBXUiGQGx3N7N9IkyiSTkyuSyVQhCpfslEpueA
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7sI4JTBXUiGQGx3N7N9IkyiSTkyuSyVQhCpfslEpueA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

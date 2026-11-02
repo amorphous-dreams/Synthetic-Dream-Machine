@@ -118,6 +118,6 @@ Per-position stance modifier glyph design remains in motion; current record-form
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;mhXDO4lR4y2QQVunmaTU4xqA9HSD3S1cVrUK8PE4Eoc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mhXDO4lR4y2QQVunmaTU4xqA9HSD3S1cVrUK8PE4Eoc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

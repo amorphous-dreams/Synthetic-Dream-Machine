@@ -72,6 +72,6 @@ If the node refuses a true context claim outright rather than re-marking it, sig
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;rEGoQzPTbzzeUwFLtd5E2RptlkLFHryi6beoLV8Tfs4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rEGoQzPTbzzeUwFLtd5E2RptlkLFHryi6beoLV8Tfs4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

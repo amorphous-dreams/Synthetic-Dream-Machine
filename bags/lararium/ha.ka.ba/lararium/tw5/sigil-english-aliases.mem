@@ -74,6 +74,6 @@ the canonical dispatch through the Hawaiian implementation.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0bcpnra2z-i1uOAaq6qMeNqaQCT5ijKQxlaKYqxocXc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0bcpnra2z-i1uOAaq6qMeNqaQCT5ijKQxlaKYqxocXc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -146,6 +146,6 @@ Court Wars carries no default register; it carries the register of the front it 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;MvRGqT1MA6OPD2_3c3CnKS_UriJUOVKRrLOJn-wkPgw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MvRGqT1MA6OPD2_3c3CnKS_UriJUOVKRrLOJn-wkPgw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

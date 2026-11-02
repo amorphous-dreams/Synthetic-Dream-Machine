@@ -71,6 +71,6 @@ The Muse drafted the model; a Copilot Chao pair read it against the tree. Hodge 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;oniE7V3AP6eZfx_Qc2BT7rRHjwzk5Y9kMGuyrgvo3SE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oniE7V3AP6eZfx_Qc2BT7rRHjwzk5Y9kMGuyrgvo3SE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -371,6 +371,6 @@ All work outside the tracked tree under a scratch `LAR_ROOT`; e2e vessels per th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;rLh-JIFGyUCI9B88eM8okt02_n491xhEb8lbbk6Kuhw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rLh-JIFGyUCI9B88eM8okt02_n491xhEb8lbbk6Kuhw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -461,6 +461,6 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;O_XiDP_GchXnkIfKaz_7OBK3yYz7NB3JdN_febloMig
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;O_XiDP_GchXnkIfKaz_7OBK3yYz7NB3JdN_febloMig`>>
 
 <<^ code=`&#x0004;` to=`?`>>

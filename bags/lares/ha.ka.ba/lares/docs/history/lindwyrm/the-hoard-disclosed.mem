@@ -269,6 +269,6 @@ The thread above sealed in the far calendar of New Delos. This annotation speaks
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0HO9394opZsdK5VtkePmNLPFPBgTgsIKoPwV9KQeiyw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0HO9394opZsdK5VtkePmNLPFPBgTgsIKoPwV9KQeiyw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

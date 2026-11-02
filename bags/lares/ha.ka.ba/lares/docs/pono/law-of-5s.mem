@@ -168,6 +168,6 @@ Each dot-separated position corresponds to one band. Reading left to right zooms
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;xc7tcm79fvhADGeabM18E6prs_8sP3gXUdo6B1OMt2M
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xc7tcm79fvhADGeabM18E6prs_8sP3gXUdo6B1OMt2M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -66,6 +66,6 @@ The edge taxonomy collapsed to one flat verb (`#has`, no family/role) for compos
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Go3Q18TQ1NtZkOe4Ggf9DB8ry1-YPYU_OnETMsdv6uk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Go3Q18TQ1NtZkOe4Ggf9DB8ry1-YPYU_OnETMsdv6uk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

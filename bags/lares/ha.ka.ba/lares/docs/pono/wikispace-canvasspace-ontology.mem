@@ -247,6 +247,6 @@ When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iDPhZ7XkEGitSkt7JgtWMWglrAX0iNWRWhgE4Hah3Y4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iDPhZ7XkEGitSkt7JgtWMWglrAX0iNWRWhgE4Hah3Y4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

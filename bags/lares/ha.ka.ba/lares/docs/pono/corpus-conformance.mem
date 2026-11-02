@@ -209,6 +209,6 @@ moved.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;qgRcr4BwLlJTvaBp_157FY6LEU3xfQh1zArX_-xA3EI
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qgRcr4BwLlJTvaBp_157FY6LEU3xfQh1zArX_-xA3EI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

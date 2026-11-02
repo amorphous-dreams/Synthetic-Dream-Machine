@@ -64,6 +64,6 @@ A YANG scout read the code and a YIN scout read the field, then they traded. The
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/session-unlock-2026`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;JfRoeUbqbGF8p-yaB1j-KoFTkHbC3HrI00T_qOOFs4s
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JfRoeUbqbGF8p-yaB1j-KoFTkHbC3HrI00T_qOOFs4s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

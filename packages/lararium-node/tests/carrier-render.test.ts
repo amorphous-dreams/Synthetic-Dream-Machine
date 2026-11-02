@@ -80,7 +80,7 @@ describe("writeBagManifest/readBagManifest — through carrier-render, not a bes
       const wire = readFileSync(join(root, "bag", "meta.mem"), "utf8");
       expect(wire).toContain('from=`?` to=`lar:///ha.ka.ba/bags/crossroads`');
       expect(wire).toContain('<<^ code=`&#x0002;`>>');
-      expect(wire).toMatch(/<<\^ code=`&#x0003;`>>ni:\/\/\/sha-256;/);
+      expect(wire).toMatch(/<<\^ code=`&#x0003;` bcc=`ni:\/\/\/sha-256;/);
       expect(wire).toContain('<<^ code=`&#x0004;` to=`?`>>');
       expect(verifyBcc(wire)).toBe("ok");
       const shape = readCarrierShape(wire);

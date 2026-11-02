@@ -69,6 +69,6 @@ English alias form:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;QW26LhWDuggwYIf1TF4s3PTYWXiv-DWo-9vYqFrISjY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QW26LhWDuggwYIf1TF4s3PTYWXiv-DWo-9vYqFrISjY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

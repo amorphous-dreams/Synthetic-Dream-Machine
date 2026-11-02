@@ -122,6 +122,6 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;KMLl2cTxRvJQY-4-NFGJWyo5E7xncBLx3Eawq3PbzF4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KMLl2cTxRvJQY-4-NFGJWyo5E7xncBLx3Eawq3PbzF4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

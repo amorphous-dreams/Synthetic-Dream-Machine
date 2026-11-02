@@ -259,6 +259,6 @@ Whether that feels like thought remains open. That the loop closed remains recor
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;EgzlYzV64bfCoW4Ro3rgtXM9ANw7Phm1McpfjkT_6PY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EgzlYzV64bfCoW4Ro3rgtXM9ANw7Phm1McpfjkT_6PY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

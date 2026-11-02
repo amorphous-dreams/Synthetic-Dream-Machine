@@ -462,6 +462,6 @@ an ordered announce claim, or a receiver caller by implication.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Laa_3O1bUwbiF4NcpryW3W1ojSQ7jwZ_y42BylE5DMk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Laa_3O1bUwbiF4NcpryW3W1ojSQ7jwZ_y42BylE5DMk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

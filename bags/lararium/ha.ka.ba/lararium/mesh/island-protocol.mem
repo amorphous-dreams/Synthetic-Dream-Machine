@@ -121,6 +121,6 @@ The manifest HANDS the island typed structural capabilities — each field arriv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Bynk7I-EN3PNI5mnUzWRiVcAm2fbTaGWvzxsUMPXXE0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bynk7I-EN3PNI5mnUzWRiVcAm2fbTaGWvzxsUMPXXE0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

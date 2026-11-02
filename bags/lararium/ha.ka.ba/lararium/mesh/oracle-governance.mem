@@ -193,6 +193,6 @@ it through a different door (<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/peer-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;3L8XHXq2X1QK_uLcouUJancDHFtX65OBfK_SznEBslM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3L8XHXq2X1QK_uLcouUJancDHFtX65OBfK_SznEBslM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

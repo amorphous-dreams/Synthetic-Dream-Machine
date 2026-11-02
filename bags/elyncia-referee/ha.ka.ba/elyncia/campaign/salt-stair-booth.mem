@@ -601,6 +601,6 @@ pilgrim or the perfect gathering-vessel, and the masks he meets will have opinio
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;n-UlBkiilqCfHCiY4hYvcms_mYY1kkjwXeB-BS4SEXw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;n-UlBkiilqCfHCiY4hYvcms_mYY1kkjwXeB-BS4SEXw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

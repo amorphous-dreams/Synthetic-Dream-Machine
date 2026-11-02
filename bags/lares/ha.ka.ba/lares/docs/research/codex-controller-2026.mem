@@ -98,6 +98,6 @@ WORDS=1082
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;rmX4r6r_-PmQsSIU209yCKG-UYYckNi_mP8JaFjm2Ls
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rmX4r6r_-PmQsSIU209yCKG-UYYckNi_mP8JaFjm2Ls`>>
 
 <<^ code=`&#x0004;` to=`?`>>

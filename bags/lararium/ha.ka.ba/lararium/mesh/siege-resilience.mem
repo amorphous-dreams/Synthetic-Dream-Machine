@@ -267,6 +267,6 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;KMNfNkXwOIMGszEbFPxfyCoJsGHmnH1yihlqF8OwU-g
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KMNfNkXwOIMGszEbFPxfyCoJsGHmnH1yihlqF8OwU-g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

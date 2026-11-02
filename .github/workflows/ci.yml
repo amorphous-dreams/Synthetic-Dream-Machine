@@ -7,7 +7,7 @@ name: CI
 # second full run starts beside it inside the account's twenty running jobs:
 #   quick           — build + generated-artifact freshness (the checked-in plugin artifacts — the lar:// canonical copy AND
 #                     the `$:/` standalone distribution — must match a fresh build), typecheck, the exact-deps witness, the
-#                     boot budget (the cache-stable boot stays under its char ceiling), the grammar artifact gates, the
+#                     the seed presence check (the hooks load the boot seed whole), the grammar artifact gates, the
 #                     browser floor crossing, pristine upstream (the meme routes AND a stock single-file build meet a
 #                     PUBLISHED tiddlywiki, against the COMMITTED standalone artifact), then the contract witness cell
 #   test            — every package's suite as four cells (node dealt across two by file weight), incl. the meme
@@ -72,7 +72,7 @@ jobs:
   # ─── quick (six small gates and the contract witness, ONE runner) ─────────────────────────
   # THE ACCOUNT RUNS ABOUT TWENTY JOBS AT ONCE, and a full run raises at most TEN (tools/ci-graph.test.mjs holds this file to
   # it), so a second full run starts beside the first. The six small gates that each held a runner of their own (build +
-  # freshness 1 min, typecheck 1, pristine upstream 1.4, boot budget 0.5, grammar artifact gates 1.1, floor crossing 2.7: run
+  # freshness 1 min, typecheck 1, pristine upstream 1.4, seed presence 0.5, grammar artifact gates 1.1, floor crossing 2.7: run
   # 41280151942) now share ONE checkout, install and build, and the contract witness rides behind them. Every step keeps its
   # own name and runs whatever the steps before it answered (`!cancelled()`), so one red gate never hides another and the job
   # reads red by step name. The contract witness uploads `witness-cell-contract-witness` as its own cell, so the Witnesses
@@ -139,7 +139,7 @@ jobs:
       - name: Typecheck all packages
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm -r typecheck
-      - name: noosphere-boot.mem must stay under the 40000-char ceiling
+      - name: noosphere-boot.mem stands where the hooks load it
         if: ${{ !cancelled() }}
         run: |
           # The single quotes hold a node program whole: its backticks are JavaScript, never the shell's.
@@ -149,16 +149,13 @@ jobs:
             const p = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem";
             // A MISSING SEED IS ITS OWN FAULT, NEVER A BUDGET ONE.
             if (!fs.existsSync(p)) {
-              console.error("::error::" + p + " does not exist — the budget gate cannot measure a seed it cannot find.");
+              console.error("::error::" + p + " does not exist — the hooks load the seed from here, and nothing stands to load.");
               process.exit(1);
             }
-            // CODE POINTS, never bytes: the seed carries sigils, Hawaiian and Devanagari.
-            const n = [...fs.readFileSync(p, "utf8")].length;
-            console.log("boot code points:", n, "/ 40000");
-            if (n >= 40000) {
-              console.error("::error::" + p + " is " + n + " chars — over the cache-stable boot budget (40000). Reclaim before editing.");
-              process.exit(1);
-            }
+            // NO BUDGET CLAUSE (operator, 2026-11-01: "We can exceed the 40K ceiling if needed, as we now
+            // deterministically load the boot seed via hooks."). The seed is read whole by the hooks; this
+            // step keeps only the fault a budget never answered: a seed that is not there.
+            console.log("boot code points:", [...fs.readFileSync(p, "utf8")].length);
           '
       # ── grammar artifact (ship step 0: the quad-pinned carrier stays truth) ──
       # The py host's three imports, each at the version the house venv runs, so this gate measures the same runtime the operator does.

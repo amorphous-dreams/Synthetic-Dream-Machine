@@ -65,6 +65,6 @@ The v0.1 ''Neural Whip'' module abstracts the creature's signature tentacle into
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;6IMLB6_dMFXUWnLJ8McG_fzPUXkwMIgTaiKyjokyWiU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6IMLB6_dMFXUWnLJ8McG_fzPUXkwMIgTaiKyjokyWiU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

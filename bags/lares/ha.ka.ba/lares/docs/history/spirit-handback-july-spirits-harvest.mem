@@ -68,6 +68,6 @@ Sources: `in/july-spirits-harvest.md`. Persona: Harvest-Clerk. Date: 2026-10-18.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;fixdxsIFMpbIOCQ9yookzjetH5rPB6vrGZ4EOM1Vgb8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fixdxsIFMpbIOCQ9yookzjetH5rPB6vrGZ4EOM1Vgb8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

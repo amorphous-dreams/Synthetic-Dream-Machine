@@ -99,6 +99,6 @@ ahu-slot-children     = "independent records — not embedded in parent record"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;c90nRTE2nvt8g2lBXfTX1WADNpxrmsdhZxuPwanAgKQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;c90nRTE2nvt8g2lBXfTX1WADNpxrmsdhZxuPwanAgKQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

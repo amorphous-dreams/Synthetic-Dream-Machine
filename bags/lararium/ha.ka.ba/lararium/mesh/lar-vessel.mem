@@ -94,6 +94,6 @@ names.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/vessel-caps`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/island-protocol`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ejzvzq3X8mUnnUBF0fXimIARVOdnzsRyULn4IaUInzs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ejzvzq3X8mUnnUBF0fXimIARVOdnzsRyULn4IaUInzs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

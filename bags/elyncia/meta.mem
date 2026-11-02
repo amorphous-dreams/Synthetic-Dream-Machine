@@ -21,6 +21,6 @@ clone carries it) · `ley` (nowhere durable — it lives while the mesh carries 
 
 A repository home names a REGISTERED id, never a path: the bag names WHAT, each vessel resolves WHERE.
 
-<<^ code=`&#x0003;`>>ni:///sha-256;I92-fPSDEiNMB0H7k6FDYuxXVg3xxdAwYc27Pqf9C-M
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;I92-fPSDEiNMB0H7k6FDYuxXVg3xxdAwYc27Pqf9C-M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

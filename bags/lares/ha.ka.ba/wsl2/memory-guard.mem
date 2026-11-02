@@ -84,6 +84,6 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;hrbswSg6PwDk1V-KM7-p9zbxpCwLZyHGFsTFMF7IQUU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hrbswSg6PwDk1V-KM7-p9zbxpCwLZyHGFsTFMF7IQUU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

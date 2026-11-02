@@ -124,6 +124,6 @@ close-pattern = '<<~\/huli\s*>>'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;IZP2Z6PVju2IU7AZLdPeaphuKtahtZCnxK9boRn6sb0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IZP2Z6PVju2IU7AZLdPeaphuKtahtZCnxK9boRn6sb0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -173,6 +173,6 @@ From `src/idiomorph.js` and `CHANGELOG.md` [reached: fetched]:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;byzxPnkmZzw3Edd5rAG275kJX7ZxuE3l3zVuhno98B0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;byzxPnkmZzw3Edd5rAG275kJX7ZxuE3l3zVuhno98B0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

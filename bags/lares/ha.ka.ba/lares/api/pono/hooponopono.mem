@@ -113,6 +113,6 @@ Boundary event fields:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;RXDQdW7ZrUuQPGFshpHXoeH3qCSm1rYbkV86VtquKZI
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RXDQdW7ZrUuQPGFshpHXoeH3qCSm1rYbkV86VtquKZI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -217,6 +217,6 @@ CloudEvents [source plus id](https://github.com/cloudevents/spec/blob/v1.0.2/clo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Xa-sp-AhpGuexlSCGm50fr-QMyjA6IVEfILuQBEeuq4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xa-sp-AhpGuexlSCGm50fr-QMyjA6IVEfILuQBEeuq4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

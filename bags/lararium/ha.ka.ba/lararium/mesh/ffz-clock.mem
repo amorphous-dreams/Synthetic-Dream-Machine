@@ -473,6 +473,6 @@ targeted revocation MUST ride Keyhive's convergent removal, never the counter
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;xhzib4G4d55wImpChEka1M_I976r0qvxE3W141BZq3w
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xhzib4G4d55wImpChEka1M_I976r0qvxE3W141BZq3w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

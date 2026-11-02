@@ -42,6 +42,6 @@ Obsoletes `lar:///ha.ka.ba/lares/ref/RFC-6962`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;vPGiRCvCIpDDqig2CQ33NPSvHbOThqxZ6cK9Q_N0jQ8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vPGiRCvCIpDDqig2CQ33NPSvHbOThqxZ6cK9Q_N0jQ8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -57,7 +57,7 @@ function carrier(uriPath: string, tags: string): string {
     "",
     "! A fixture that crosses nothing real",
     "",
-    '<<^ code=`&#x0003;`>>ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    '<<^ code=`&#x0003;` bcc=`ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`>>',
     '<<^ code=`&#x0004;` to=`?`>>',
     "",
   ].join("\n");
@@ -75,7 +75,7 @@ function pointer(uriPath: string, at: string): string {
     "",
     `<<~ loulou uri=\`lar:///${at}\`>>`,
     "",
-    '<<^ code=`&#x0003;`>>ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    '<<^ code=`&#x0003;` bcc=`ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`>>',
     '<<^ code=`&#x0004;` to=`?`>>',
     "",
   ].join("\n");

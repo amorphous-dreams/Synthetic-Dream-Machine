@@ -69,6 +69,6 @@ Depends on `domain/divination`; pairs with `function/archive` for the handshake 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;5N7VhhLNJXQSJtBq_TYeEUWwXkEiMZpZHx49jlcg7m8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5N7VhhLNJXQSJtBq_TYeEUWwXkEiMZpZHx49jlcg7m8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -179,6 +179,6 @@ Bring three agreements to the first session:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;rlMLr-gxHnm3gSLk5mtqdZM4CMKZQ988o8y-0vlUZjk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rlMLr-gxHnm3gSLk5mtqdZM4CMKZQ988o8y-0vlUZjk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -689,6 +689,6 @@ Each stands as a proposal; the operator's mind originates and none binds until r
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/infrastructure-as-myth`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/federation`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;mHpCSXzfq67cqO3bMFeCV6E7Iy6JQd88OnLaWX9EgZo
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mHpCSXzfq67cqO3bMFeCV6E7Iy6JQd88OnLaWX9EgZo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

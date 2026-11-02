@@ -69,6 +69,6 @@ Every face-acting row rides a session of its face (the hands spine). The daemon 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;jraKmud1ca81QYRarduAjKZg-DTIkeOP63Pq2jAlj58
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jraKmud1ca81QYRarduAjKZg-DTIkeOP63Pq2jAlj58`>>
 
 <<^ code=`&#x0004;` to=`?`>>

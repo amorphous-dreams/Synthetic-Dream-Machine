@@ -151,6 +151,6 @@ work below it (CRDT, network) uses `hoolele`-style spawn semantics in TS.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;S2EZ00aSsX8soLRLVRuZcCSN1OB1WilRzEHmSRkhZYQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;S2EZ00aSsX8soLRLVRuZcCSN1OB1WilRzEHmSRkhZYQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

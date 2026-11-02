@@ -226,6 +226,6 @@ What moved: decode-before-hash in `cas-stage.ts` (+ `declaredType`); `ridesAsPoi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ZLfG3KyR4BmATJxkOGLdIU2RUVsI8TtUy67vvaxmuA4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZLfG3KyR4BmATJxkOGLdIU2RUVsI8TtUy67vvaxmuA4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -102,6 +102,6 @@ Who writes crossroads-plane (community authority shape), how Nexus-level federat
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;C_JwxjT9HHznMShNi4zoTMxgTF7yMVzmfpcCYiJ0-xk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C_JwxjT9HHznMShNi4zoTMxgTF7yMVzmfpcCYiJ0-xk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

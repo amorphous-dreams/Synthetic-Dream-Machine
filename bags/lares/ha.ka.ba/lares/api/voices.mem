@@ -396,6 +396,6 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;PQBQ2Q8AYoBLorUytGU0egHF15vcgKpMRZBlO7A16qA
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PQBQ2Q8AYoBLorUytGU0egHF15vcgKpMRZBlO7A16qA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

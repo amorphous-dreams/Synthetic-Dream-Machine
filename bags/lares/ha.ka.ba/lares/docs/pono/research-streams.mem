@@ -62,6 +62,6 @@ executable adversarial tests -> receipt-backed trust
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;RA0WdGiVWNgrLj4dU9XPk1wvP_vu3J2pU86SyZ7w7lE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RA0WdGiVWNgrLj4dU9XPk1wvP_vu3J2pU86SyZ7w7lE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

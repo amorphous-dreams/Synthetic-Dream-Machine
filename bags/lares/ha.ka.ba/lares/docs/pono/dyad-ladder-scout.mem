@@ -325,6 +325,6 @@ Confirmed ''unresolved rather than absent'': Khera / Drèze primary sources and 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;0_7jJpMWmj3SpDIJOauKvJdeCCrJC57x6jleypv0MXY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0_7jJpMWmj3SpDIJOauKvJdeCCrJC57x6jleypv0MXY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

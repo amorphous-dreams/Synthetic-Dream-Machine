@@ -105,6 +105,6 @@ The face supplier and the signer stand behind `UdsSessionDoor.open({ faceRef, ha
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;PeKvQybNwO-UcQNUGG26HcQBTV7jf-B2lcdI5aqu8AA
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PeKvQybNwO-UcQNUGG26HcQBTV7jf-B2lcdI5aqu8AA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

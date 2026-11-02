@@ -332,6 +332,6 @@ Round-trip fidelity: Storage → Interchange → Storage MUST produce identical 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;TFH6Rmk-kFmpfAOdY05vl7i32ERwEZxrDYs8gSWZPU0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TFH6Rmk-kFmpfAOdY05vl7i32ERwEZxrDYs8gSWZPU0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

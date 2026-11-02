@@ -339,6 +339,6 @@ This meme draws the one arrow through all of them — ''the house is a functor; 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;hbP0aquaRUihIIuOfqoqpozO1C4FL-PQraNXoRMxMuU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hbP0aquaRUihIIuOfqoqpozO1C4FL-PQraNXoRMxMuU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

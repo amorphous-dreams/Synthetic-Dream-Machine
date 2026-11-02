@@ -292,6 +292,6 @@ Use Melantha when the table needs:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HIc6dxRHhZrhMt4B7M9bpUwes7a-7yvW2ZVDgQKX2kQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HIc6dxRHhZrhMt4B7M9bpUwes7a-7yvW2ZVDgQKX2kQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

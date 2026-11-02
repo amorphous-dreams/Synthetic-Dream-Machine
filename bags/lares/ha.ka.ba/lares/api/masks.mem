@@ -139,6 +139,6 @@ gates, so masks share the apron and no collision rule arbitrates them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;f41DFS2f8XrZoXBUz2RVMDwtop_8dlG_VuZbxdCaAzw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;f41DFS2f8XrZoXBUz2RVMDwtop_8dlG_VuZbxdCaAzw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

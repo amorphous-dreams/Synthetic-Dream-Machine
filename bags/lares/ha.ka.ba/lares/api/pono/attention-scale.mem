@@ -337,6 +337,6 @@ Envelope: <<~ँ₃ ...>>   Arc-scale
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HI3q1LlYK2nmp_6jrhU4_Q5t-BYniWr-AABTiidRqPg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HI3q1LlYK2nmp_6jrhU4_Q5t-BYniWr-AABTiidRqPg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

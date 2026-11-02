@@ -19,6 +19,6 @@ uri-path = "ha.ka.ba/lares/api/pono/draft-lares-probe"
 Body prose for the shelf-corpus CONTROL: a fixture with every RFC identity key kramdown-rfc2629
 requires, woven end-to-end.
 
-<<^ code=`&#x0003;`>>ni:///sha-256;16hXIod7fKqriGl43yJRN3Bj-LPaXAXtvAYbQR5Ryig
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;16hXIod7fKqriGl43yJRN3Bj-LPaXAXtvAYbQR5Ryig`>>
 
 <<^ code=`&#x0004;` to=`?`>>

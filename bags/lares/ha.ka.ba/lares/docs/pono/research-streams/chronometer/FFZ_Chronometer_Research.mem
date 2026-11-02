@@ -1244,6 +1244,6 @@ BoydLoop(PriorArt), PhaseVec(Architect), BridgeKeep(Continuity) — dissolved, f
 
 lar:///research.active.grows/chronometer/?stances=^.^.?.^.-&confidence=S:13&p=10#/O0.O0.O0.Å10.A1 → ?
 
-<<^ code=`&#x0003;`>>ni:///sha-256;OvjgwlQlpIMEUwBxbL6gyv2QzVCG6ILsmPf2TmYhZbg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OvjgwlQlpIMEUwBxbL6gyv2QzVCG6ILsmPf2TmYhZbg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

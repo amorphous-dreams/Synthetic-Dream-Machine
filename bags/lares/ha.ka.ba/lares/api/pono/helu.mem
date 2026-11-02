@@ -70,6 +70,6 @@ TW5 equivalent:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;r-kkGULc5eL8DbwgVt5GpgntMIaviBr4vo6U81xLv00
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;r-kkGULc5eL8DbwgVt5GpgntMIaviBr4vo6U81xLv00`>>
 
 <<^ code=`&#x0004;` to=`?`>>

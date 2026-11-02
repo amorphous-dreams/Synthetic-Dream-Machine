@@ -309,6 +309,6 @@ fork ④ stays open: the operator's priors decide it, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;sIUFKE2o_e2aSGPwP4AENjAKhPyM1E3l7e9F3QDywZ8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sIUFKE2o_e2aSGPwP4AENjAKhPyM1E3l7e9F3QDywZ8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

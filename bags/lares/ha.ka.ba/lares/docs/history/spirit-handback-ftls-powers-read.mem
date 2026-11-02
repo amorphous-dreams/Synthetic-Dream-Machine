@@ -76,6 +76,6 @@ Sources: `in/ftls-powers-reader.md`. Persona: FTLS-Reader. Date: 2026-10-18.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;epTfszJ0JYPhkr_3OwzvCJABFo_ylrCX1-zgCMFIw3M
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;epTfszJ0JYPhkr_3OwzvCJABFo_ylrCX1-zgCMFIw3M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

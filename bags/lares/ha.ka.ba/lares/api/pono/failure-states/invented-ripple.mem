@@ -66,6 +66,6 @@ If the node took the change and the footprint was genuinely large, that reads as
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;NBJSKK6HoSVmzTB4NsSLy-414w-_neRcGrPSllzP6n8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NBJSKK6HoSVmzTB4NsSLy-414w-_neRcGrPSllzP6n8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

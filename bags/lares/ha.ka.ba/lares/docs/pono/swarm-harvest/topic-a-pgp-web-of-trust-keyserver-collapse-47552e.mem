@@ -186,6 +186,6 @@ Brave Search returned HTTP 429 on every attempt across the whole session, and `r
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;TSssU-cAQqeo1cAQeAkoWyP2eiojJ79KM5o11YrdgOc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TSssU-cAQqeo1cAQeAkoWyP2eiojJ79KM5o11YrdgOc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

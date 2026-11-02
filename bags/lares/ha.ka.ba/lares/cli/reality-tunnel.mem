@@ -336,6 +336,6 @@ what = "`lares` answers on the operator's path"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;wB2YUWVZDWkfFl9q61zLLOjJC1pJKRjmGtCa6DX5iVg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wB2YUWVZDWkfFl9q61zLLOjJC1pJKRjmGtCa6DX5iVg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

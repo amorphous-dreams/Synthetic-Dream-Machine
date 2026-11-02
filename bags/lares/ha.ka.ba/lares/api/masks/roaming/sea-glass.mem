@@ -148,6 +148,6 @@ Where sibling masks grow character-notes through talk-story-dev passes, Sea-Glas
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HRTAeyPUYLpQSGYt_T0YJ_e1ctNpWjzL2Gsn4E4eqjM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HRTAeyPUYLpQSGYt_T0YJ_e1ctNpWjzL2Gsn4E4eqjM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -605,6 +605,6 @@ McDaniel & Rubin's rebuttal to Rivest (Springer auth wall; abstract publisher-el
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;SpJnJFPw-Y4joCF6CBBXBzU3z8kTwV-TZpivE0MNQD8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SpJnJFPw-Y4joCF6CBBXBzU3z8kTwV-TZpivE0MNQD8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

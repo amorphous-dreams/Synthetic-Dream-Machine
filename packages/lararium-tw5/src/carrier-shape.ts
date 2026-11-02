@@ -184,7 +184,7 @@ export function readCarrierShape(text: string): CarrierShape {
   }
   // The slot after ETX carries the check alone (memetic-frame `check.ts`); payload there reaches no reader.
   if (frame.etx && frame.eot && classifyPostamble(text.slice(frame.etx.end, frame.eot.index)).kind === "foreign") {
-    faults.push("content stands between ETX and EOT — the text ends at ETX; that slot carries the block check alone");
+    faults.push("content stands between ETX and EOT — the text ends at ETX, whose `bcc` slot carries the block check; nothing stands after it");
   }
 
   if (!marks.meta) {
@@ -200,7 +200,9 @@ export function readCarrierShape(text: string): CarrierShape {
   if (marks.check === "mismatch") faults.push("block check does not match the body it follows");
   // A torn frame reads as a truncated transmission, never as an unchecked one — the conflation would
   // let a file cut ahead of its closer pass as lawful absence-of-check.
-  if (marks.check === "torn") faults.push("the frame opens and never closes — STX stands without ETX; torn reads as truncated, never unchecked");
+  // Keyed on the missing close ITSELF: a torn check also covers the frame faults named just below (a
+  // second frame, an ETX after EOT), and those read in the span reader's own words, never as truncation.
+  if (marks.check === "torn" && marks.stx && !marks.etx) faults.push("the frame opens and never closes — STX stands without ETX; torn reads as truncated, never unchecked");
   // ONE TEXT FRAME PER CARRIER, ONE CLOSE PER FRAME. A second STX, a second live ETX, an ETX ahead of
   // the STX: the span reader names each, and the gradient carries the reader's own words rather than
   // re-deriving them — a second count here would be a second reader.

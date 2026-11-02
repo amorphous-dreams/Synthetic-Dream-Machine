@@ -170,6 +170,6 @@ No local files were read; all sources above were fetched live from the web (arxi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-XKIPZR6gMMWVmeLVcu5TxGjCC7IeM3UodGaILt1kwM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-XKIPZR6gMMWVmeLVcu5TxGjCC7IeM3UodGaILt1kwM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

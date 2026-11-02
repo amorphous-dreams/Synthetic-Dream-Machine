@@ -382,6 +382,6 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;gB_32lTJAHAa6_nK2Tnr18CaSTnid7NsQzsdWkIFVvo
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gB_32lTJAHAa6_nK2Tnr18CaSTnid7NsQzsdWkIFVvo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

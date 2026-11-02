@@ -85,6 +85,6 @@ CRDT slot the oracles point at.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;-vgKTet-HeORscVWzF_zUDHucc2tiKWC-A0kOlo1CiU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-vgKTet-HeORscVWzF_zUDHucc2tiKWC-A0kOlo1CiU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

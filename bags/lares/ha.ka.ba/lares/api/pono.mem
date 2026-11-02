@@ -44,6 +44,6 @@ This folder already shows the family shape around it: `meme`, `invariant`, `meme
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ziVn03OqoNm7DvAi8ari1CxbTqHL-2MUAvv-ILRjxJc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ziVn03OqoNm7DvAi8ari1CxbTqHL-2MUAvv-ILRjxJc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

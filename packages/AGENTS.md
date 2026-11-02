@@ -1,6 +1,6 @@
-<<^ code="&#x0001;" from="?" -> to="lar:///packages/AGENTS">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///packages/AGENTS`>>
 
-<<~ ahu #meta>>
+<<~ ahu slot=`#meta`>>
 
 ```toml
 uri-path     = "packages/AGENTS"
@@ -17,7 +17,7 @@ retain       = true
 
 <<~/ahu>>
 
-<<~ ahu #ooda-ha>>
+<<~ ahu slot=`#ooda-ha`>>
 ✶ scan the operator ask, changed files, open tabs, and package boundary.
 ⏿ orient the task against the spine: mesh contracts, TW5 VM, node host, browser vessel, caps, operator CLI.
 ◇ choose the smallest package surface that can carry the change without crossing canon by accident.
@@ -26,9 +26,9 @@ retain       = true
 ↺ report receipts: files touched, commands run, friction found, next loop.
 <<~/ahu>>
 
-<<^ code="&#x0002;">>
+<<^ code=`&#x0002;`>>
 
-<<~ ahu #network-topology>>
+<<~ ahu slot=`#network-topology`>>
 
 ## Network Topology (canonical)
 
@@ -42,7 +42,7 @@ Within-Nexus sync = Automerge CRDT (reliable). Cross-Nexus = explicit treaty, wi
 
 <<~/ahu>>
 
-<<~ ahu #package-map>>
+<<~ ahu slot=`#package-map`>>
 
 ## Package Map (active)
 
@@ -109,7 +109,7 @@ realm-public controls remain the source-backed red/green witness for the Herm re
 
 <<~/ahu>>
 
-<<~ ahu #spine>>
+<<~ ahu slot=`#spine`>>
 
 ## Quine-Wiki Spine
 
@@ -141,7 +141,7 @@ Residency transitions travel through the ACTION verb surface (`ADD`, `COPY`, `MO
 
 <<~/ahu>>
 
-<<~ ahu #boot-sequence>>
+<<~ ahu slot=`#boot-sequence`>>
 
 ## Boot Sequence — three causal moments
 
@@ -171,7 +171,7 @@ Projections register as kinds with `LarProjectionRegistry`. The node-scoped `dis
 
 <<~/ahu>>
 
-<<~ ahu #boundary-law>>
+<<~ ahu slot=`#boundary-law`>>
 
 ## Boundary Law
 
@@ -191,7 +191,7 @@ Projections register as kinds with `LarProjectionRegistry`. The node-scoped `dis
 
 <<~/ahu>>
 
-<<~ ahu #test-routes>>
+<<~ ahu slot=`#test-routes`>>
 
 ## Test Routes
 
@@ -235,7 +235,7 @@ If sandboxing blocks `tsx` IPC under `/tmp`, request escalation and rerun the sa
 
 <<~/ahu>>
 
-<<~ ahu #friction-watch>>
+<<~ ahu slot=`#friction-watch`>>
 
 ## Friction Watch
 
@@ -255,7 +255,7 @@ Watch these current weak spots:
 
 <<~/ahu>>
 
-<<~ ahu #edit-discipline>>
+<<~ ahu slot=`#edit-discipline`>>
 
 ## Edit Discipline
 
@@ -269,25 +269,25 @@ When reporting back, use OODA-HA receipts: observe facts, orient boundary, decid
 
 <<~/ahu>>
 
-<<~ ahu #edges>>
+<<~ ahu slot=`#edges`>>
 
 ## Edges
 
-<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/lares/api/pono/meme family=control role=implements>>
-<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/lares/api/pono/invariant family=control role=implements>>
-<<~ pranala #implements-lar-uri ? -> lar:///ha.ka.ba/lares/api/pono/lar-uri family=control role=implements>>
-<<~ pranala #implements-parser ? -> lar:///ha.ka.ba/lares/api/pono/parser family=control role=implements>>
-<<~ pranala #implements-render-pipeline ? -> lar:///ha.ka.ba/lares/api/pono/render-pipeline family=control role=implements>>
-<<~ pranala #to-root-agents ? -> lar:///AGENTS family=control role=adjacent>>
-<<~ pranala #to-lares-agents ? -> lar:///ha.ka.ba/lares/AGENTS family=control role=adjacent>>
-<<~ pranala #to-lares ? -> lar:///LARES family=control role=adjacent>>
-<<~ pranala #to-voices ? -> lar:///ha.ka.ba/lares/api/voices family=reference role=governs>>
-<<~ pranala #to-meme-provider ? -> lar:///ha.ka.ba/lares/docs/lararium/meme-provider family=reference role=describes>>
-<<~ pranala #to-dreamnet ? -> lar:///ha.ka.ba/lares/docs/mesh/dreamnet-architecture family=reference role=describes>>
-<<~ pranala #to-mempalace-integration ? -> lar:///ha.ka.ba/lararium/api/mempalace-integration family=reference role=describes>>
+<<~ pranala slot=`#implements-meme` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/meme` family=`control` role=`implements`>>
+<<~ pranala slot=`#implements-invariant` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/invariant` family=`control` role=`implements`>>
+<<~ pranala slot=`#implements-lar-uri` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/lar-uri` family=`control` role=`implements`>>
+<<~ pranala slot=`#implements-parser` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/parser` family=`control` role=`implements`>>
+<<~ pranala slot=`#implements-render-pipeline` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/render-pipeline` family=`control` role=`implements`>>
+<<~ pranala slot=`#to-root-agents` from=`?` to=`lar:///AGENTS` family=`control` role=`adjacent`>>
+<<~ pranala slot=`#to-lares-agents` from=`?` to=`lar:///ha.ka.ba/lares/AGENTS` family=`control` role=`adjacent`>>
+<<~ pranala slot=`#to-lares` from=`?` to=`lar:///LARES` family=`control` role=`adjacent`>>
+<<~ pranala slot=`#to-voices` from=`?` to=`lar:///ha.ka.ba/lares/api/voices` family=`reference` role=`governs`>>
+<<~ pranala slot=`#to-meme-provider` from=`?` to=`lar:///ha.ka.ba/lares/docs/lararium/meme-provider` family=`reference` role=`describes`>>
+<<~ pranala slot=`#to-dreamnet` from=`?` to=`lar:///ha.ka.ba/lares/docs/mesh/dreamnet-architecture` family=`reference` role=`describes`>>
+<<~ pranala slot=`#to-mempalace-integration` from=`?` to=`lar:///ha.ka.ba/lararium/api/mempalace-integration` family=`reference` role=`describes`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yQSwUj7oKEGutaBFGjMaji_JLIq7hT1m84APxDFoYRw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KxEyR98G56kd_je2_YpCG5byqCwFEX2kw6gx7cppVOI`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

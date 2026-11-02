@@ -250,6 +250,6 @@ This lets a client verify the complete minimal-boot prefix byte-for-byte without
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;thVPNo-cKkyg7oEIa5FghyuHiGuQSrdEfLQFYbn7b70
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;thVPNo-cKkyg7oEIa5FghyuHiGuQSrdEfLQFYbn7b70`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -210,6 +210,6 @@ Three postures, and only one of them is the one you're asking about:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FYjZPDVzBQfvY5nbpMuCfLXLZBp4cuxOEJ67zBG4k-c
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FYjZPDVzBQfvY5nbpMuCfLXLZBp4cuxOEJ67zBG4k-c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

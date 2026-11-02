@@ -21,7 +21,7 @@ describe("the writer", () => {
     expect(carrier).toBe(
       `${CARRIER_DECLARATION}\n\n` +
       `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n` +
-      `<<^ code=\`&#x0002;\`>>\n\n${BODY}\n\n<<^ code=\`&#x0003;\`>>${bccOf(carrier)}\n` +
+      `<<^ code=\`&#x0002;\`>>\n\n${BODY}\n\n<<^ code=\`&#x0003;\` bcc=\`${bccOf(carrier)}\`>>\n` +
       `\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`,
     );
   });
@@ -80,19 +80,17 @@ describe("stampCarrier — the body first, the check last", () => {
     expect(stampCarrier(carrier)).toBe(carrier);
   });
 
-  test("a drifted check is REPLACED, never left beside a second", () => {
-    const want = bccOf(carrier)!;
-    const drifted = carrier.replace(`>>${want}`, `>> ${want}`);
-    const stamped = stampCarrier(drifted);
-    expect(stamped.split("ni:///").length - 1).toBe(1);
-    expect(verifyBcc(stamped)).toBe("ok");
+  test("a retired trailer is never stamped over — grammar-cut migrates it, the writer never guesses", () => {
+    const trailer = carrier.replace(/ bcc=`([^`]*)`>>/, ">>$1");
+    expect(verdict(trailer).kind).toBe("torn");
+    expect(stampCarrier(trailer)).toBe(trailer);
   });
 
   test("an unchecked frame gains its check; a torn one gains nothing", () => {
-    const bare = carrier.replace(bccOf(carrier)!, "");
+    const bare = carrier.replace(/ bcc=`[^`]*`/, "");
     expect(verifyBcc(bare)).toBe("unchecked");
     expect(stampCarrier(bare)).toBe(carrier);
-    const torn = carrier.slice(0, carrier.indexOf('<<^ code=`&#x0003;`>>'));
+    const torn = carrier.slice(0, carrier.indexOf("<<^ code=`&#x0003;`"));
     expect(stampCarrier(torn)).toBe(torn);
   });
 });
@@ -141,9 +139,10 @@ describe("the check", () => {
     expect(verifyBcc(c.replace("ni:///sha-256;", "ni:///md5;"))).toBe("mismatch");
   });
 
-  test("the slot classifier: empty, check, foreign", () => {
+  test("the slot classifier: empty or foreign — nothing stands between ETX and EOT", () => {
     expect(classifyPostamble("\n\n")).toEqual({ kind: "empty" });
-    expect(classifyPostamble(`${bccOfSpan("x")}\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`).kind).toBe("bcc");
+    // the check rides the ETX mark's slot now: a bare check between ETX and EOT is the retired trailer
+    expect(classifyPostamble(`${bccOfSpan("x")}\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`).kind).toBe("foreign");
     expect(classifyPostamble("stranded prose\n").kind).toBe("foreign");
   });
 });

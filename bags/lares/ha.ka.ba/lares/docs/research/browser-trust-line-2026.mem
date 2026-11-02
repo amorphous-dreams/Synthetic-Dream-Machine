@@ -34,6 +34,6 @@ Four fresh reads of `K15` Wave B kept finding that other code on the same browse
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;Y-PazGUfc-pKI04zMHprJCSjaURr97sft-TB6YmnKRs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y-PazGUfc-pKI04zMHprJCSjaURr97sft-TB6YmnKRs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -56,6 +56,15 @@ export function severityOf(failure: ParseFailure): DiagnosticSeverity {
  */
 export type RecoveryRung = ParseFailure["recoveredAs"] | "partial";
 
+/**
+ * THE GRACEFUL FLOOR UNDER THE BLOCK LAW. A sigil is a block only when its `>>` ends the line (TW5's
+ * own `macrocallblock` split); a line opening on a sigil with text behind it reads as a paragraph
+ * holding the sigil inline. Nothing is lost, so the rung is `repaired`, and the code names the act so a
+ * wiki lists its exposure with a filter. It grades `warning`, above the `info` a repair usually earns,
+ * because the author's block sigil stopped being one.
+ */
+export const SIGIL_TRAILING_TEXT_CODE = "sigil-trailing-text";
+
 export function severityOfRung(rung: RecoveryRung): DiagnosticSeverity {
   switch (rung) {
     case "missing":  return "warning";
@@ -92,6 +101,16 @@ export function failuresToDiagnostics(
   return failures.map((failure) => {
     const from = clamp(failure.pos, 0, sourceLength);
     const to   = clamp(failure.pos + failure.raw.length, from, sourceLength);
+    if (failure.reason === SIGIL_TRAILING_TEXT_CODE) {
+      return {
+        from,
+        to,
+        severity: "warning" as const,
+        source,
+        code:     SIGIL_TRAILING_TEXT_CODE,
+        message:  `Text follows the ${failure.sigilName ?? "sigil"} sigil's >> on its line, so the line reads as a paragraph with the sigil inline; a block sigil ends its line`,
+      };
+    }
     return {
       from,
       to,

@@ -172,11 +172,11 @@ export function deserializeCarrier(
     const namespace = (/^<<\^[^>\n]*?\bnamespace=`([^`]*)`/.exec(carrier.text)?.[1] ?? "").trim();
     if (namespace.length > 0) for (const t of tiddlers) t["namespace"] = namespace;
     if (SOH_CODE_PARAM_RE.exec(carrier.text)?.[1] === "0011") tiddlers[0]!["$carrier-soh"] = "0011";
-    // WHAT MAY STAND BETWEEN ETX AND EOT — the BCC, and nothing else. ETX ends the text; the slot after
-    // it carries the block check, never payload (@lararium/memetic-frame check.ts holds the why). Foreign
-    // content in that slot is the carrier check's to refuse (`carrier-check.ts`); this reader stamps no
-    // reading onto a record, and an arriving check needs no record — the emitter mints one over every
-    // framed body.
+    // WHAT MAY STAND BETWEEN ETX AND EOT — nothing. ETX ends the text and carries its own check in its
+    // `bcc` slot (@lararium/memetic-frame check.ts holds the why). Content after ETX is the carrier
+    // check's to refuse (`carrier-check.ts`), and a retired trailer check there tears the frame; this
+    // reader stamps no reading onto a record, and an arriving check needs no record — the emitter mints
+    // one over every framed body.
     if (postamble.trim().length > 0 || slotText.trim().length > 0) {
       carriage.push(...carriageRecord(root, "postamble", postamble));
     }

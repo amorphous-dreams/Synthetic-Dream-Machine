@@ -57,6 +57,6 @@ An unresolved name renders `<span class="lar-kau-hole">` at the placement site, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;vBj1vJf-eh_WKQzgVkXOj5Efbnjr_q-AMs3om81i6m4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vBj1vJf-eh_WKQzgVkXOj5Efbnjr_q-AMs3om81i6m4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

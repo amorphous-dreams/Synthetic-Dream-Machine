@@ -69,6 +69,6 @@ Common on `domain/abjuration` wards and standing barriers. Distinct from `item` 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;87ZHhsItd_396mhwYisAxKaKs5B2xzIPBKY-yJISglo
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;87ZHhsItd_396mhwYisAxKaKs5B2xzIPBKY-yJISglo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

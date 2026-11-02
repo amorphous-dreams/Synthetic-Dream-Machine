@@ -275,6 +275,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;hczZcoBbDDMMnWt7PfFt60TujmEIambWofh_35vcWl4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hczZcoBbDDMMnWt7PfFt60TujmEIambWofh_35vcWl4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

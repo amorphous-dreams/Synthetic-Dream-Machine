@@ -141,6 +141,6 @@ Operator, 2026-10-28: the old shapes and shape gates are design-time crud that t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ylk01Eh3a5d70eNOQnHOIPMM4wkAVuv42k8JHoBCwa0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ylk01Eh3a5d70eNOQnHOIPMM4wkAVuv42k8JHoBCwa0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

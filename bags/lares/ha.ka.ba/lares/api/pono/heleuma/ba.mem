@@ -58,6 +58,6 @@ It SHALL NOT declare `source-sha256` without `source-symbol`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;NjOlqNek8TinzorybJXBi0q_Ofx_3aBvfSeYxPSNizg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NjOlqNek8TinzorybJXBi0q_Ofx_3aBvfSeYxPSNizg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

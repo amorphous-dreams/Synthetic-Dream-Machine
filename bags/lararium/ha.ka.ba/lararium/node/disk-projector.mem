@@ -82,6 +82,6 @@ This section, anchored `#/the-servo`, holds the disk shore's level-triggered rec
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu#/guards`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/servo`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;_L_Zm-FfWB9HoJJHCGOf9YGzzV_ggDvRDutDmnf9bDY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_L_Zm-FfWB9HoJJHCGOf9YGzzV_ggDvRDutDmnf9bDY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

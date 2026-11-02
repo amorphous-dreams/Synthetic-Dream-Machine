@@ -133,6 +133,6 @@ Schema detail, fixture families, and execution procedure belong in the companion
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9RBOZBadesPlc7zf1geFMU6z30YhbLQ9T6_8Ry2N9RA
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9RBOZBadesPlc7zf1geFMU6z30YhbLQ9T6_8Ry2N9RA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

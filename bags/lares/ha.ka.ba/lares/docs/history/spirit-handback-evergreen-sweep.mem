@@ -199,6 +199,6 @@ Measured here: 13 clock classifications (9 suspect, 3 lawful own-liveness groups
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;CiAGff3sIlsWn3SgFiHL8fiS_h9rPMDjN5OjJWIMksg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CiAGff3sIlsWn3SgFiHL8fiS_h9rPMDjN5OjJWIMksg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

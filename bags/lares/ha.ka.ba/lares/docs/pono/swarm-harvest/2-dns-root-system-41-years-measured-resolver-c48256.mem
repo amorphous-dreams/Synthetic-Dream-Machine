@@ -220,6 +220,6 @@ Its conclusions: federation is **necessary but insufficient**; technical measure
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;nqH-HBWRv04-e17Y08CY93csUYMPbwjIoF2Cb_3d2o0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nqH-HBWRv04-e17Y08CY93csUYMPbwjIoF2Cb_3d2o0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

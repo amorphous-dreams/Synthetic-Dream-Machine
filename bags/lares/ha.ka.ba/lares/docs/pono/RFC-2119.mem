@@ -74,6 +74,6 @@ The stack does not import the full IETF RFC format — only the modal-force voca
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;HAzOnwPqak3teCJZ9aWPKbQGa4wWvH7rSr6QDmHBCrc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HAzOnwPqak3teCJZ9aWPKbQGa4wWvH7rSr6QDmHBCrc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

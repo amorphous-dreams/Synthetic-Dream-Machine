@@ -255,6 +255,6 @@ Across all four systems, **the same measurement gap recurs**: every one ships th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;4P1BAZHaEu9ddx8CcZVvTCM9SPp7xV7sA3VPf-ei62I
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4P1BAZHaEu9ddx8CcZVvTCM9SPp7xV7sA3VPf-ei62I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

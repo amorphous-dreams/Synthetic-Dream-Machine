@@ -549,6 +549,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;vaJz8mqltgtXmT-sOH3B8jbzC8daYqwPw25KZXQSMPY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vaJz8mqltgtXmT-sOH3B8jbzC8daYqwPw25KZXQSMPY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

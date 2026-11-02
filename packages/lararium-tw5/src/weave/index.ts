@@ -148,7 +148,7 @@ export interface SubmissionProjection {
   meta: string;
   /** The carrier's own address, read off its SOH heading (or supplied). */
   uri: string;
-  /** The block check found adjacent to ETX, or "unchecked". */
+  /** The block check the ETX mark's `bcc` slot carries, or "unchecked". */
   check: string;
   /**
    * RFC 7763: true when the file ALSO carries YAML frontmatter for standalone travel (GFM,
@@ -267,19 +267,21 @@ export function resolveWeaveTarget(opts: {
 }
 
 /**
- * Line-standing frame sigil (every mark the frame declares), with whatever rides after the closer.
+ * Line-standing frame sigil (every mark the frame declares), ALONE on its line. A frame mark with text
+ * after its `>>` falls through as prose: that text rides inside the checked span and the plugin renders it
+ * inline, so the weave never drops it in silence.
  * THE SET IS THE DECLARATION'S (`frameAlt()` names every mark): a hand-spelled `&#x00..;` read any C0
  * entity as frame and would have dropped an authored line that merely quoted one.
  */
-const FRAME_LINE = new RegExp(`^<<\\^ code=\`${frameAlt()}\`(?:[^>\\n]|>(?!>))*>>.*$`);
+const FRAME_LINE = new RegExp(`^<<\\^ code=\`${frameAlt()}\`(?:[^>\\n]|>(?!>))*>>\\s*$`);
 /**
- * The ETX closer with its adjacent check.
+ * The ETX closer with the check its `bcc` slot carries.
  *
  * THE CODE SET COMES FROM THE DECLARATION; THIS SHAPE STAYS THIS READER'S OWN (@lararium/memetic-frame marks.ts). The
- * line-anchored canonical spelling is what a transpose meets, and the trailing capture takes the BCC
- * that rides the closer with nothing between.
+ * line-anchored canonical spelling is what a transpose meets, and the capture takes the BCC the
+ * closer's final `bcc` value names (the frame's lawful spelling, one space and one tick each side).
  */
-const ETX_LINE = new RegExp(`^<<\\^ code=\`${frameAlt("ETX")}\`[^\\n]*>>(\\S+)?`);
+const ETX_LINE = new RegExp(`^<<\\^ code=\`${frameAlt("ETX")}\`(?: bcc=\`(ni:\\/\\/\\/[a-z0-9-]+;[A-Za-z0-9_-]+)\`)?>>\\s*$`);
 const DOCTYPE_LINE = /^<<!DOCTYPE (?:[^>\n]|>(?!>))*>>\s*$/;
 // The tooth stands at one dispatch position: `<<~` then LWSP then the command word, and a close
 // word carries its own slash (`ahu`, `/ahu`). Both spacings reach the same word, matching the
@@ -918,7 +920,7 @@ export function transposeMarkdown(
     if (fence === null && metaFenceDone === undefined && META_OPEN_LINE_RE.test(line)) { inMetaFence = true; metaFence = []; continue; }
 
     // ── fence tracking: OPEN and CLOSE both read through fence-mask's own rules (CommonMark §4.5) —
-    // `fenceLineOpen` (backtick or tilde; a fence's info string may carry no run of its own
+    // `fenceLineOpen` (backticks only, TiddlyWiki's law; a fence's info string may carry no run of its own
     // character) and `fenceLineClose` (a closer needs a run of the SAME character ≥ the opener AND
     // nothing else on the line — a content line that happens to start with a shorter or trailed run,
     // "```` example of `backticks`" inside a fence opened at four, never closes early; it is body).

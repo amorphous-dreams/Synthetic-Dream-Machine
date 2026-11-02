@@ -181,6 +181,6 @@ Patchwork notebook has six 2026 entries, newest **"Progressions" 2026-05-12**. h
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tcaDc2uygEBKDN9VioiEYR0uTjV6_lApFstzonIGAF8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tcaDc2uygEBKDN9VioiEYR0uTjV6_lApFstzonIGAF8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

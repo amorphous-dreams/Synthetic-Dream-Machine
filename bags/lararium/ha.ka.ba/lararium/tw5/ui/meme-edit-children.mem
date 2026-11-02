@@ -57,6 +57,6 @@ uri-path   = "ha.ka.ba/lararium/tw5/ui/meme-edit-children"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;wD44tYg_nuvmO3CKcKtjSOJiGYHmHZtNkrP2ponRNFc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wD44tYg_nuvmO3CKcKtjSOJiGYHmHZtNkrP2ponRNFc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

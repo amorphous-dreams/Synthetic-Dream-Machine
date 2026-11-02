@@ -29,6 +29,6 @@ Each row carries the RFC-6920 anchor a stranger checks with no tooling of ours.
 
 Reference this collection as `library:kumulipo` — a name that travels, never a path.
 
-<<^ code=`&#x0003;`>>ni:///sha-256;gF7J_wm2iCrKnfDbjZTAiEO_NuShC_QCywbul_HsVaQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gF7J_wm2iCrKnfDbjZTAiEO_NuShC_QCywbul_HsVaQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -69,6 +69,6 @@ Common on `function/barrier`, `function/ward`, `function/cargo`, and `domain/stu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;J9_uMW3v-WR1hw-69LFPPnX_4cXBVbPJ4OKn3voUQD4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;J9_uMW3v-WR1hw-69LFPPnX_4cXBVbPJ4OKn3voUQD4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

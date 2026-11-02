@@ -210,6 +210,6 @@ The operator naming a degraded state constitutes correction input, not accusatio
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;RKuSH4s_tBU6o8KtTQj5iTRyNZtksoQyyWUFpoFAASo
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RKuSH4s_tBU6o8KtTQj5iTRyNZtksoQyyWUFpoFAASo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

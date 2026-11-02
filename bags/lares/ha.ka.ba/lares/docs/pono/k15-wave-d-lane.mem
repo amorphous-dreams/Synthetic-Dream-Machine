@@ -49,6 +49,6 @@ Found A and B with independently random FCKs and trees, occupied D carriers for 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;lLOjDy7W_Imd0D1s5wvC7CdVL389YdKzNhx9r9EVzgI
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lLOjDy7W_Imd0D1s5wvC7CdVL389YdKzNhx9r9EVzgI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

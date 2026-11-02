@@ -404,6 +404,6 @@ And one asymmetry worth naming: **the age attribute is the only lever, and on ev
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;B81FtklZ0Zxp-kuiH_85VWFiwuJBuvCPjH8bm915rdM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;B81FtklZ0Zxp-kuiH_85VWFiwuJBuvCPjH8bm915rdM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

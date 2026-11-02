@@ -179,6 +179,6 @@ title on the console.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;tRMcp_lyacdNYIrAD03xZ4vDiV-DV8H5Vvpuhrx4aKw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tRMcp_lyacdNYIrAD03xZ4vDiV-DV8H5Vvpuhrx4aKw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

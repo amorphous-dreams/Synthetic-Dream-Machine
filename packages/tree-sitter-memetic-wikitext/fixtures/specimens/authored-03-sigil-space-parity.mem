@@ -1,0 +1,9 @@
+title: authored-03-sigil-space-parity
+role: specimen — the sigil space read as every reader reads it: a pair opened and closed on one line with text between stays one block pair, and a >> held in a ticked value or a quoted macrocall argument never ends the call
+type: text/x-memetic-wikitext
+
+<<~ heihei name=`x`>>the body rides here<<~/heihei>>
+
+<<~ set note=`a >> b`>>
+
+<<m a:"x >> y">>

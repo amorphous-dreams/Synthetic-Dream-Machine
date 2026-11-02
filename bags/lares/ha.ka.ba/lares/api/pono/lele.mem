@@ -62,6 +62,6 @@ A lele edge MUST NOT wait for a response from the target.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;EE8AjRAP8RmTNBHf3-5z2DhvRm2yEYfqV6GaJe5_of4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EE8AjRAP8RmTNBHf3-5z2DhvRm2yEYfqV6GaJe5_of4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -112,6 +112,6 @@ See `the-four-tools` and `the-syad-perspectives` for the tool and standpoint gra
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;QV-mVWAmtaC8-JLbkaMrKrrWBPlDSkQWOIlt1TUcGbc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QV-mVWAmtaC8-JLbkaMrKrrWBPlDSkQWOIlt1TUcGbc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

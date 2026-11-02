@@ -17,7 +17,9 @@ const URI  = "lar:///t/pin";
 const META = "```toml meta\ntitle    = \"lar:///t/pin\"\ntype     = \"text/memetic-wikitext+tiddlywiki\"\nuri-path = \"t/pin\"\n```";
 const canonical = frameCarrier({ head: { uri: URI }, body: `${META}\n\n! Pin\n\n<<~ ahu slot=\`#/a\`>>\n\nslot a\n\n<<~/ahu>>` });
 const STX = '<<^ code=`&#x0002;`>>';
-const ETX = '<<^ code=`&#x0003;`>>';
+// The canonical carrier's own ETX sigil: the check rides its bcc slot.
+const ETX = /<<\^ code=`&#x0003;`[^\n]*>>/.exec(canonical)![0];
+const CHECK_RUN = / bcc=`ni:\/\/\/sha-256;[A-Za-z0-9_-]+`/;
 const CHECK = /ni:\/\/\/sha-256;[A-Za-z0-9_-]+/;
 const STALE = "ni:///sha-256;0000000000000000000000000000000000000000000";
 
@@ -30,11 +32,11 @@ const ROWS: Record<string, Row> = {
   "a canonical carrier echoes":            { text: canonical, decision: "noop/disk-matches-synced", codes: [] },
   "a stale check alone is framing-only":   { text: canonical.replace(CHECK, STALE), decision: "noop/canonical-equivalent", codes: [] },
   "a stale check over an edit ingests":    { text: canonical.replace("! Pin", "! Pin edited").replace(CHECK, STALE), decision: "ingest", codes: ["block-check-mismatch:warning"] },
-  "an absent check is framing-only":       { text: canonical.replace(CHECK, ""), decision: "noop/canonical-equivalent", codes: [] },
+  "an absent check is framing-only":       { text: canonical.replace(CHECK_RUN, ""), decision: "noop/canonical-equivalent", codes: [] },
   "a torn frame refuses":                  { text: canonical.slice(0, canonical.indexOf(ETX)), decision: "refuse", codes: ["block-check-torn:error"] },
   "a second live ETX refuses":             { text: canonical.replace(ETX, `${ETX}\n\nstray\n\n${ETX}`), decision: "refuse", codes: ["frame-malformed:error", "postamble-content:error"] },
   "an ETX before STX refuses":             { text: canonical.replace(STX, `${ETX}\n${STX}`), decision: "refuse", codes: ["frame-malformed:error"] },
-  "content between ETX and EOT refuses":   { text: canonical.replace(/(ni:\/\/\/sha-256;[A-Za-z0-9_-]+)\n/, "$1\nstranded prose\n"), decision: "refuse", codes: ["postamble-content:error"] },
+  "content between ETX and EOT refuses":   { text: canonical.replace(/(<<\^ code=`&#x0003;` bcc=`[^`]*`>>)\n/, "$1\nstranded prose\n"), decision: "refuse", codes: ["postamble-content:error"] },
   "an ETX swallowed by a fence refuses":   { text: canonical.replace(`\n${ETX}`, `\n\`\`\`text\n${ETX}`), decision: "refuse", codes: ["block-check-torn:error", "shore-round-trip:error"] },
   "root meta before STX refuses":          { text: canonical.replace(`${STX}\n\n${META}\n`, `${META}\n\n${STX}\n`), decision: "refuse", codes: ["meta-before-stx:error"] },
   "duplicate root meta refuses":           { text: canonical.replace(STX, `\`\`\`toml meta\ncustom = "x"\n\`\`\`\n\n${STX}`), decision: "refuse", codes: ["meta-before-stx:error"] },

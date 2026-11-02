@@ -93,6 +93,6 @@ Filters inside `wai` / `huli` / `ui` evaluate against the ''explicit current mem
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;S7r2meguXXstDJWqpHqu-2h2v20QjwDTZWOlBAfmUSs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;S7r2meguXXstDJWqpHqu-2h2v20QjwDTZWOlBAfmUSs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -91,6 +91,6 @@ the reference, and the law below it stays the part a reader needs anyway.
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;nKZiWKXuSthmmdENBJnRNmTOwkKrMCOQC2V-uhFGDlI
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nKZiWKXuSthmmdENBJnRNmTOwkKrMCOQC2V-uhFGDlI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

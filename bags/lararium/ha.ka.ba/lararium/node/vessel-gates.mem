@@ -63,6 +63,6 @@ vessel's own log through `onRefuse`; the wire never carries it.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/socket-sorter`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/open-node-vessel`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;crhLMwyCKjsmM8TM4-E3eEQghSmNSdOoK7NALhFsN3s
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;crhLMwyCKjsmM8TM4-E3eEQghSmNSdOoK7NALhFsN3s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

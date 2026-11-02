@@ -180,6 +180,6 @@ fold, the quorum, the veto — never on the board's liveness.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/handle-card`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;iIPSZlwNCvUeVwYs4dQESNWrIte6a_PrTB0Ethh0KJU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iIPSZlwNCvUeVwYs4dQESNWrIte6a_PrTB0Ethh0KJU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -114,6 +114,6 @@ A support, motif, genre, material convention, named artist or depicted subject b
 These references describe native TW5 syntax. Hand-derived literal expansions express lexical expectations without claiming execution in a live runtime. An image-producing AI may read wikitext semantically without executing TW5.
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;fhTP45-q7pugegObQ3oIXHnrmQTkoyBLNv12KdGu69c
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fhTP45-q7pugegObQ3oIXHnrmQTkoyBLNv12KdGu69c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

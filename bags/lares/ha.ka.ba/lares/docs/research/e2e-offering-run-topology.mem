@@ -125,5 +125,5 @@ This is the minimum **reproducible** preparation established by repository wirin
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;9lPsoQrln2oaASo1t2sU8wa4k1EpgooKA9RTtffIoZo
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9lPsoQrln2oaASo1t2sU8wa4k1EpgooKA9RTtffIoZo`>>
 <<^ code=`&#x0004;` to=`?`>>

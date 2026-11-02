@@ -1470,6 +1470,6 @@ Current seed's direct and derived uses exceed the candidate's “place acts only
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;FoPPeaniFGSMgrSph8pH-Tkr94tCPp2EvBo8r-ByrEk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FoPPeaniFGSMgrSph8pH-Tkr94tCPp2EvBo8r-ByrEk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -129,6 +129,6 @@ One caveat carried sharp: the ''perceptual'' center (where attention rests) may 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;o8TuCQY0o6F5wOuFMP2UutJ4bO7FWz2xbZvPPqzVYLw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;o8TuCQY0o6F5wOuFMP2UutJ4bO7FWz2xbZvPPqzVYLw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

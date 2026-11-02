@@ -160,6 +160,6 @@ Each needs two README verbs: `pan` (a viewport sense) and `place` (a drag gestur
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;oaSxVjcTGGuJViwDedFV2w-XoJ6v6WcCxuOAuNydWgY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oaSxVjcTGGuJViwDedFV2w-XoJ6v6WcCxuOAuNydWgY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

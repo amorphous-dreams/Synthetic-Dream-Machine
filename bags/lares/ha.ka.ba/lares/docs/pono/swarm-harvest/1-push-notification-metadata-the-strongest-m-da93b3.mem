@@ -428,6 +428,6 @@ The requested figure, confirmed at source:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;ooXlG-GaBD5gkckwx49oYUEHGBYz8UlRqYoxnYTCq6U
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ooXlG-GaBD5gkckwx49oYUEHGBYz8UlRqYoxnYTCq6U`>>
 
 <<^ code=`&#x0004;` to=`?`>>
