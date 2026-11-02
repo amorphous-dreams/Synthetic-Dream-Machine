@@ -55,7 +55,7 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 
 import { fencedSpans, maskedExec } from "./fence-mask.js";
-import { frameAlt } from "./marks.js";
+import { FRAME_MARKS, frameAlt } from "./marks.js";
 import { checkSpan, frameStanding, readFrame, type FrameFault, type MarkHit } from "./span.js";
 
 /** UTF-8 hex digest. TextEncoder stands in every context the frame runs in (a sandbox lends one). */
@@ -151,10 +151,16 @@ export function bccOf(text: string): string | null {
  * raw bytes in one scan, with no parser.
  */
 
+// THE CODE SET COMES FROM THE DECLARATION (marks.ts): a mark the family gains reaches this reader too.
+const ETX_ALT = frameAlt("ETX");
+/** The canonical ETX entity, for messages — the declaration's own spelling. */
+const ETX_CODE = FRAME_MARKS.find((m) => m.name === "ETX")!.code;
 /** The ETX sigil in its two lawful spellings: bare, or carrying one final `bcc` run of check shape. */
-const ETX_LAWFUL_RE = /^<<\^ code=`&#x0003;`(?: bcc=`(ni:\/\/\/([a-z0-9-]+);([A-Za-z0-9_-]+))`)?>>$/;
-/** A check standing directly after the ETX `>>` — the trailer form the slot retired. */
-const TRAILER_RE = /^ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/;
+const ETX_LAWFUL_RE = new RegExp(`^<<\\^ code=\`${ETX_ALT}\`(?: bcc=\`(ni:\\/\\/\\/([a-z0-9-]+);([A-Za-z0-9_-]+))\`)?>>$`);
+/** The one deletion: the final `bcc` run, leading space included. */
+const BCC_RUN_RE = / bcc=`[^`]*`>>$/;
+/** A check standing after the ETX `>>` on its line, adjacent or spaced — the trailer form the slot retired. */
+const TRAILER_RE = /^[ \t]*ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/;
 
 /**
  * A checked span's canonical bytes: the closing ETX sigil's ` bcc=`…`` run deleted, nothing else.
@@ -163,8 +169,9 @@ const TRAILER_RE = /^ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/;
 export function canonicalSpan(span: string): string {
   const at = span.lastIndexOf("<<^");
   if (at < 0) return span;
-  const m = ETX_LAWFUL_RE.exec(span.slice(at));
-  return m && m[1] !== undefined ? span.slice(0, at) + "<<^ code=`&#x0003;`>>" : span;
+  const sigil = span.slice(at);
+  const m = ETX_LAWFUL_RE.exec(sigil);
+  return m && m[1] !== undefined ? span.slice(0, at) + sigil.replace(BCC_RUN_RE, ">>") : span;
 }
 
 /**
@@ -177,7 +184,7 @@ export function etxFaults(text: string, etx: MarkHit, closing: boolean): FrameFa
   if (!ETX_LAWFUL_RE.test(sigil)) {
     faults.push({
       kind: "torn-spelling",
-      message: `\`${sigil}\` reads outside the frame grammar — ETX reads \`\`<<^ code=\`&#x0003;\`>>\`\` or carries one final \`\`bcc=\`ni:///…\`\`\` run; nothing repairs it`,
+      message: `\`${sigil}\` reads outside the frame grammar — ETX reads \`\`<<^ code=\`${ETX_CODE}\`>>\`\` or carries one final \`\`bcc=\`ni:///…\`\`\` run; nothing repairs it`,
     });
   }
   // RETIRED-TRAILER — this named refusal lives one commit on the alpha line, then the pyre burns it
@@ -224,8 +231,9 @@ export function standingCheck(
 ): { readonly stored: string; readonly computed: string; readonly verifies: boolean } | null {
   // THE SLOT, exactly: the closing ETX sigil's one lawful `bcc` run. A sigil in any other spelling
   // carries no standing check here; `etxFaults` tears it before a verdict reads this far.
-  const at = text.lastIndexOf("<<^", span.end - 1);
-  const m = at >= span.start ? ETX_LAWFUL_RE.exec(text.slice(at, span.end)) : null;
+  // ANCHORED on the span reader's own ETX hit, never on a scan backward from the span's end.
+  const etx = readFrame(text).etx;
+  const m = etx && etx.end === span.end && etx.index >= span.start ? ETX_LAWFUL_RE.exec(text.slice(etx.index, etx.end)) : null;
   if (!m || m[1] === undefined) return null;
   const stored = m[1];
   const computed = bccOfSpan(canonicalSpan(text.slice(span.start, span.end)));
