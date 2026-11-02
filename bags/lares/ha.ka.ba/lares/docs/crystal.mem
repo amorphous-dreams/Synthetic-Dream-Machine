@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/docs/crystal"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/meme-header`>>
 
 ! Crystal Docs
@@ -51,6 +49,6 @@ Use this branch for:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q-VxnERNpxUKhFZbruWyrSx0W6zKn8JcHy-HqvLtDiE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YMZ-eF0oSxobvLrI95R_P5rQZBxcHHWTKCTzWELCDMo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

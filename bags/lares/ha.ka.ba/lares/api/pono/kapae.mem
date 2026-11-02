@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/kapae"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Kāpae
@@ -299,6 +297,6 @@ The hand that raised lowers, by an act that cites every raise head, and an effec
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rCthvkMP_TAEmk3gG8jKn4m76pIrjNG7S-ej7D_ROGY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rWSEDLedpIwD4VoU2bGuprDBDXsE5CVFbtadZrd3uZs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -20,8 +20,6 @@ written   = "2026-06-30"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! The Gold-Anchor ~ witnessing what the framework only reports of itself
@@ -381,6 +379,6 @@ spirit's lane); this meme states the design they enact.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;C0yI6CDw905jkOSdDACk_aDl_j0ZhsxzVXqZBb6e-ZE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SmTID2LgoqthESZEFe4Fc3r_9SV_oij7XTR_OIKgKwQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -21,8 +21,6 @@ written    = "2026-08-08"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Epoch Binding Surfaces ~ what a dependency bump actually costs
@@ -245,6 +243,6 @@ count as acts, never upgrades''.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ry0LvwJRdB9HXI6YjjcHdnBEkWmFeHTVtQDESswnzIw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;E_32HWu3ZPnKH2cK79QbSgti4bxdhqzQ5dNwW1lnfGA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

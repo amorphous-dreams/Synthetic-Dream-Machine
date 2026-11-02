@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/docs/mu/model-agnosticism"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/meme-header`>>
 
 ! Model Agnosticism — Staging Shelf
@@ -135,6 +133,6 @@ The Kūkā cycle names the OODA-HA phases in Hawaiian, grounding the loop in a c
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;geyOKG8o99l-u6dpA00Azkak7kRGtPR6_pEWl3B2K44`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OyjTSm54sm2IEEDGYKkR-pRlOxx7ycnPBFVN5SwQ2nM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

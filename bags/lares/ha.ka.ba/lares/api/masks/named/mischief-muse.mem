@@ -32,8 +32,6 @@ voice-role        = "Muse"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Mischief-Muse
@@ -196,6 +194,6 @@ These notes require live session observation before they can be written with con
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8NPQSV-26VjDIakDZEERVOVO3Km42twC8Sn6f8miopY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;be_s7s11QjjTJkhAnVpEW-iE1Z_Q_sGnCKr1O10wspY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

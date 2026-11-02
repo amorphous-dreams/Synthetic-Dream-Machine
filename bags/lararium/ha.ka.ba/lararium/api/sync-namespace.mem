@@ -22,8 +22,6 @@ uri-path      = "ha.ka.ba/lararium/api/sync-namespace"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/core-claim`>>
 
 ! Sync Namespace — What Crosses the Boundary, and What the Filters Keep
@@ -99,6 +97,6 @@ This dual-distribution shape names a ''packaging convention, not a namespace exc
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GjkwDDU66STpUbvKiv2oKVDvbEGf8VLjpNdvXghOOHg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tdAPwh83y1iW---wTWDNVVM7udVUUz1syALwYEoEkOU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

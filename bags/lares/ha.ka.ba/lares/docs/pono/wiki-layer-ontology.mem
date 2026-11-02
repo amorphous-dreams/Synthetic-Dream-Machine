@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/docs/pono/wiki-layer-ontology"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Wiki-Layer Ontology
@@ -333,7 +331,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
 
-
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — defines floor projection and corpus residency
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model`>> — separates derived board address from steward answer
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane`>> — sets registry scope and herm answer carriage
@@ -346,6 +343,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;F0t9nMbmId1-JWU-k_2-NcVfMjIDYjShRxj_mr4p108`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uEj5RuWZXs3UvwMqh_iUL34q6O5GoHz8jWxGp8ct6II`>>
 
 <<^ code=`&#x0004;` to=`?`>>

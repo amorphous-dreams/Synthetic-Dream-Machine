@@ -23,8 +23,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/charge`>>
 
 ! Otakiage ~ a carrier lifecycle, designed
@@ -472,6 +470,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6AvwSZe9eG4tUIJkaoqyuPCf6KLGvMkBGAMp8fQo_FY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qtjj_eBWhCBWs5esO7iQgZwR0v-JuFZn0zr69_LEq_o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

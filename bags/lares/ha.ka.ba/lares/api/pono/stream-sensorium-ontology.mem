@@ -21,8 +21,6 @@ uri-path   = "ha.ka.ba/lares/api/pono/stream-sensorium-ontology"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! Entry ~ Stream → Sensorium, the layered unit ontology
@@ -73,6 +71,6 @@ One recursion — ''ki &rarr; li &rarr; ki &rarr; li'' — repeating at every sc
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EpSPj6G_HtbzZ5xCoZPln5DEEOWliQf43WFvN9PLQgY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aBhpsufq8BrAmzYhC04x1tCV2EInBAQuH1L8UC1yHYQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -19,8 +19,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/parser"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Parser Law
@@ -258,6 +256,6 @@ Consumers: island adaptor (`island-adaptor.ts`), deserializer (`deserializer.ts`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VT_wdaoCQpN4qLXX6lNxYkg-mqs3XLznrfi5bQw8lko`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5djYR5F4NnlDWDl4XFXEH7_rddsVD1bs20foKdxKhGc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

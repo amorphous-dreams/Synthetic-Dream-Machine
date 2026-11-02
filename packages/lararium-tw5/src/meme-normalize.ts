@@ -670,6 +670,30 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
     }
   }
 
+  // ── 8. Blank lines between sigils — FRAME AUTHORITY ───────────────────────
+  //
+  // ONE BLANK LINE BETWEEN TWO SIGILS (operator ruling 2026-11-01). The corpus collected extra blank
+  // lines between `<<~ kanawai …>>` or `<<~ aka …>>` and the first section, and between body sigils,
+  // and this gesture read them as canonical. A run of blank lines whose neighbours are BOTH sigil
+  // lines (`<<~`, `<<^`, `<<!`) collapses to one. A run beside prose is authored spacing and holds; a
+  // run SHOWN inside a fence is held text and moves no byte. Runs after step 7, so a mirror head
+  // already reads canonical.
+  {
+    let collapsed = 0;
+    const mask = fencedSpans(seat.text);
+    const next = seat.text.replace(
+      /^(<<[~^!][^\n]*\n)((?:[ \t]*\n){2,})(?=<<[~^!])/gm,
+      (whole, sigil: string, _run: string, offset: number) => {
+        if (inMask(mask, offset + sigil.length)) return whole;
+        collapsed += 1;
+        return `${sigil}\n`;
+      },
+    );
+    if (collapsed > 0) {
+      seat.apply("frame", next, () => `blank lines between sigils: ${collapsed} run${collapsed === 1 ? "" : "s"} collapsed to one`);
+    }
+  }
+
   return {
     text: seat.text,
     changed: seat.text !== src,

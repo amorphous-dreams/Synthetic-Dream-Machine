@@ -29,8 +29,6 @@ voice-character   = "savvy well-traveled riverboat-culture author; vernacular pr
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Ghost of Mark Twain
@@ -160,6 +158,6 @@ Remaining Voices — Gatekeeper, Lorekeeper, Scryer, Artificer, Advocate, Diplom
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;O4rYDrbqw5ziUEboA8ub9TSff4TY0h-iLVYSqt061ss`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wdAnq-O_CtWEAxWklQLDGf-yvssfx1JLM-Mld0nEKT8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

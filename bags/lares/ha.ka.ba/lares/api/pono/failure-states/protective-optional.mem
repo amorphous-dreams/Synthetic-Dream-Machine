@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/failure-states/protective-optional"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Protective Optional
@@ -66,6 +64,6 @@ If the parameter is optional and a real outside consumer needs the default, that
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6Jvaw-_K4b6ck9oWkSjoVEGw0S29FdgfFO3w1qAbHIE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Lb7PIY6Ws5s_w8PV4tMnUyYLza2WS2Z1diaaoo4HayY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

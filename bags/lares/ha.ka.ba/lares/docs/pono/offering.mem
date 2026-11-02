@@ -21,8 +21,6 @@ uri-path   = "ha.ka.ba/lares/docs/pono/offering"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/charge`>>
 
 ! The charge — a gift announces itself, the receiver ratchets
@@ -462,6 +460,6 @@ an ordered announce claim, or a receiver caller by implication.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Laa_3O1bUwbiF4NcpryW3W1ojSQ7jwZ_y42BylE5DMk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;loMcW8dEcps-ZDfGBDnW1JlyMf_CioKgTbQlV-jiTyg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

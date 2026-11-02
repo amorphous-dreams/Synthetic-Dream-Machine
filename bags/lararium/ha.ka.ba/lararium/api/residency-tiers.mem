@@ -24,8 +24,6 @@ uri-path      = "ha.ka.ba/lararium/api/residency-tiers"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/core-claim`>>
 
 ! Residency Tiers — One Island-Owned Thermal Model
@@ -151,6 +149,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;C5xwzJ49KBXSefrZ19-Zp_sqPqBTsy5KlYrkeVq4qkk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hOgMd-sg8pi4A392mbEPttro_bmPbnaWJ4siOT3-LiA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

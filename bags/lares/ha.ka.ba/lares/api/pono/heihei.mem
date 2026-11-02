@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/heihei"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Heihei
@@ -107,6 +105,6 @@ arm-wire       = "reaction"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2BF0l3ydU9-s_0JVABkJaXcrIT99gJg2OYBIYB3CSdQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QL3G7Y8tIjGXxOKL3o3xgMHpmpo39LloH2F5sLdccvA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

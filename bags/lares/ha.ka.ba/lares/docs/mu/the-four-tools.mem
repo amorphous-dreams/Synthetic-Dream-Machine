@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/docs/mu/the-four-tools"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/meme-header`>>
 
 ! The Four Tools Witness Shelf
@@ -87,6 +85,6 @@ one clean preference for model agnosticism over paranoia.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TPPXiy0mswhYbB1lDgU_dWhpwLsArju0310IuHwmD0E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SGnqTNX_UzGona8LqlMQENCJqrjMx07qVxPj2ZvFP7Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

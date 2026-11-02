@@ -20,8 +20,6 @@ uri-path      = "ha.ka.ba/lares/api/pono/render-pipeline"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Render Pipeline Law
@@ -251,6 +249,6 @@ Trace continuity across the causal island boundary:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LqGF3qWDL0xC6XEEdi7av3d2dRcOIdFBROmgp1Bkfy8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tkIk4D667lSiZd1TlB9t46hn2nP2nbMLIcxH5UnDZME`>>
 
 <<^ code=`&#x0004;` to=`?`>>

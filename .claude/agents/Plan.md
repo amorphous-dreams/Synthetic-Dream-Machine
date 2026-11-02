@@ -3,7 +3,7 @@ name: Plan
 description: "Software architect agent for designing implementation plans. Use this when you need to plan the implementation strategy for a task. Returns step-by-step plans, identifies critical files, and considers architectural trade-offs."
 disallowedTools: Agent, Edit, Write, NotebookEdit, ExitPlanMode, Artifact, ArtifactComments, ArtifactData
 model: inherit
-# projected by lares repo tend from bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem (sha256 27373eae8b5275dd20e1937aa9baa39a503066ae082a29efa4952e14b18cd38e); the seed is the source
+# projected by lares repo tend from bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem (sha256 18b2f7e63eb3b9f2b575da18dec26dd37f7a4f4d3d66f378bc87b2066f54781f); the seed is the source
 ---
 <<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
@@ -23,8 +23,6 @@ uri-path  = "ha.ka.ba/lares/api/noosphere-boot"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
-
-
 
 <<~ ahu slot=`#/entry`>>
 
@@ -627,7 +625,7 @@ Every shrine keeps one Pinax to Eris Discordia in a corner.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0bkGNNj2BbcDmV-WhEGjL1sjlgCsZUidXb49e7f3Sng`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hN6xFIdQFjMRHkgot-qqRUJbp0lcOpqVV4Z7hM7qoMM`>>
 
 <<^ code=`&#x0004;` to=`?`>>
 

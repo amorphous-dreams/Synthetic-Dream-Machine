@@ -20,8 +20,6 @@ uri-path  = "ha.ka.ba/lararium/api/mempalace-integration"
 
 <<~ aka uri=`lar:///ha.ka.ba/lararium/api/lararium-canonical-model`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! mempalace ~ the guest comparator and the library shore
@@ -217,6 +215,6 @@ CloudEvents [source plus id](https://github.com/cloudevents/spec/blob/v1.0.2/clo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xa-sp-AhpGuexlSCGm50fr-QMyjA6IVEfILuQBEeuq4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xVaw1_Cwj1-jdqS2EbIYDgZQk4wSg4a0I1JQTBpaCI0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

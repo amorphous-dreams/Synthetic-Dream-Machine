@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/hooponopono"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Hoʻoponopono — To Correct
@@ -113,6 +111,6 @@ Boundary event fields:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RXDQdW7ZrUuQPGFshpHXoeH3qCSm1rYbkV86VtquKZI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TcR6HkD7w4AKwYsAP_2PtNnEqQ_KZjojyjPnT_8pfEo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

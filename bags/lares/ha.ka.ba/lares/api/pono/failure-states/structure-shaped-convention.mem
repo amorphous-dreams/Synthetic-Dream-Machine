@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/failure-states/structure-shaped-convention"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Structure-Shaped Convention
@@ -78,6 +76,6 @@ That makes this a ''sibling of Confabulation-as-Canon'' rather than a variant: t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4i7QO_ZyMcUvhF5sUrL37dd2GZ82JYgwWiBwK0ozyuw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;06iqM6nBuG63R1tffIIfESI9zbVN8KcDjTsrE0_upP0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

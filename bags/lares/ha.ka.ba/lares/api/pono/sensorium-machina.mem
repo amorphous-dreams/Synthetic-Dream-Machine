@@ -20,8 +20,6 @@ written   = "2026-07-13"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! The Sensorium Machina ~ li and ki, the design-of-record
@@ -548,6 +546,6 @@ five-plane count (#owed, the-five-plane-count).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HtCRitmx9X_Cx4-TfCIOEsTZdHBnd1lf4ScCazK--Hc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5P5FF0GbyuBaxH_HxJk1YCuvSgPIvFhcxyKBo8dIPXw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

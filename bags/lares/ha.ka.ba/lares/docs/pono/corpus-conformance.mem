@@ -22,8 +22,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/corpus-conformance"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/the-claim`>>
 
 ! Corpus Conformance ~ a run, not a claim
@@ -209,6 +207,6 @@ moved.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qgRcr4BwLlJTvaBp_157FY6LEU3xfQh1zArX_-xA3EI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;K_uk8mFbioANwH_Ig6LYaQQLH3HRDbvyz12aJCav9FQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

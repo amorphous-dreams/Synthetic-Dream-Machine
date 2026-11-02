@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/kau"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Kau
@@ -120,6 +118,6 @@ This maps directly to the Ink & Switch island model: each automerge object opera
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HNJHg2s7gGLONpd4hLF_QppnPMbYQzD3eWC18x6aJb4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;L5nAdAo1x4Ad1plOdNhggl-gGyrCHYdhBGkLx5Y_q9A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -22,8 +22,6 @@ uri-path   = "ha.ka.ba/lares/docs/pono/syncer-seams-roundtable"
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>
 
-
-
 <<~ ahu slot=`#/ground`>>
 
 ! Ground — three seams, and the floor that reads them aloud
@@ -410,6 +408,6 @@ When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;auuXOE92Triimuyd1I0YoSlnniLmSznFxsq9nmBEOmc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TUn5b7RnGTBNiWQBBrkvIJzt1eHY7PB17SerCUb1CVM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

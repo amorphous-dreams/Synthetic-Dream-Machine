@@ -19,8 +19,6 @@ uri-path    = "ha.ka.ba/lares/api/pono/entrance-block"
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands#/two-clocks`>>
 
-
-
 <<~ ahu slot=`#/the-law`>>
 
 !! The Law ~ the substrate COUPLES
@@ -169,6 +167,6 @@ Every shared resource in the py fleet owes the same test: `content_io` · `struc
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hdVk5gtp_IyOOu_6lAfQgYGQB9F63Q_oIu_W-YqJguE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_6_bVHuA686m5ikws9Mu7-a0FtoPV6YCT-HQ2UfeqpM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

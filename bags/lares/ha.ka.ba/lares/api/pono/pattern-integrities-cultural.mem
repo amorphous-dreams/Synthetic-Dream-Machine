@@ -17,8 +17,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/pattern-integrities-cultural"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! Entry ~ Negentropy Handoff · Sensorium Pattern Integrities
@@ -251,6 +249,6 @@ Feed the node. Run the bench whole. Grade on the chain. Keep the cliff independe
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y30Bx2E5NoKRyDKeg4cnJyK6mgoyFR2SA3ZdMaCZRX4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;r6CsTDVscGw1NfhnvTjq1-kQ7AjlvhM5tOi6_RP_3aw`>>
 
 <<^ code=`&#x0004;` to=`?`>>
