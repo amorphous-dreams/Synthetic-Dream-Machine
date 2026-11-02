@@ -23,15 +23,17 @@ describe("a device adopts the face's kahua stage from its verified pin", () => {
     expect(adoptedKahuaUrl(adoptKahuaPlane(pinned, GROUP, PIN))).toBe(PIN);
   });
 
-  test("CONTROL: a catalog row naming another document than the pin refuses by name and mounts nothing", () => {
+  test("RED: a catalog row naming another document never blocks the pin: the pin mounts and the stale row reads by name", () => {
+    // The row carries a mount hint alone and the mount reads the pin alone, so a row naming another document redirects
+    // nothing; a joinee's floor face leaves exactly such a row before the join, and refusing on it left the page unmounted.
     const r = adoptKahuaPlane(pinned, GROUP, "automerge:forged");
-    expect(r).toEqual({ refused: "kahua-catalog-mismatch", catalog: "automerge:forged", pinned: PIN });
-    expect(adoptedKahuaUrl(r)).toBeNull();
+    expect(r).toEqual({ mount: PIN, staleRow: "automerge:forged" });
+    expect(adoptedKahuaUrl(r)).toBe(PIN);
   });
 
-  test("CONTROL: a catalog row with no pin behind it refuses by name and mounts nothing", () => {
+  test("CONTROL: a catalog row with no pin behind it mounts nothing: the layer stands absent and the row reads stale", () => {
     const r = adoptKahuaPlane(unpinned, GROUP, "automerge:forged");
-    expect(r).toEqual({ refused: "kahua-catalog-mismatch", catalog: "automerge:forged", pinned: null });
+    expect(r).toEqual({ absent: "kahua-unpinned", staleRow: "automerge:forged" });
     expect(adoptedKahuaUrl(r)).toBeNull();
   });
 

@@ -135,12 +135,11 @@ describe("a joined browser mounts the face's kahua stage", () => {
     expect((await p.composite.get("Item"))?.tiddler.text).toBe("kahua-item");
   });
 
-  test("CONTROL: a catalog row naming another stage than the plane act refuses by name and mounts nothing", async () => {
+  test("RED: a stale catalog row (the joinee's floor face named another stage) never blocks the pin: the page mounts the pinned stage", async () => {
     const p = await joinedPage({ pin: true, catalogRow: () => "automerge:2fgQ6TqcYk8m4v8T1oS8kqvW7Lm" });
-    expect(p.adoption).toMatchObject({ refused: "kahua-catalog-mismatch", pinned: p.stageUrl });
-    expect(p.kahuaUrl).toBeNull();
-    expect(p.composite.hasBag(KAHUA_BAG)).toBe(false);
-    expect((await p.composite.get("Item"))).toBeNull();
+    expect(p.adoption).toEqual({ mount: p.stageUrl, staleRow: "automerge:2fgQ6TqcYk8m4v8T1oS8kqvW7Lm" });
+    expect(p.kahuaUrl).toBe(p.stageUrl);
+    expect(p.composite.hasBag(KAHUA_BAG)).toBe(true);
   });
 
   test("CONTROL: a face with no pinned stage boots with the layer absent, by name, and the page stands on top + canon", async () => {
