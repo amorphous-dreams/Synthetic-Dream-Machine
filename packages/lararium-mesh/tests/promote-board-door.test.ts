@@ -70,3 +70,14 @@ describe("prepare and mint", () => {
     expect(unpinned.acts).toEqual([]);
   });
 });
+
+describe("flag", () => {
+  test("RED: a seat flags a kapae under the device atom with a reason and lands nothing that shadows; CONTROL: a blank reason refuses and the shadow set stays empty", async () => {
+    const { d, read } = await door();
+    await d.flag({ wiki: W1, digest: D, title: "rites/a", classes: ["module-type"], why: "the macro leaks the field notes" });
+    expect(read().flagged(W1)).toHaveLength(1);
+    expect(read().shadowed(W1).size).toBe(0);
+    expect(read().prepared(W1)).toEqual([]);
+    await expect(d.flag({ wiki: W1, digest: D, title: "rites/a", classes: [], why: " " })).rejects.toThrow(/shape/);
+  });
+});

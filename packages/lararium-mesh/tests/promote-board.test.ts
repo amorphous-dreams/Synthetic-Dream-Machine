@@ -118,3 +118,14 @@ describe("the prepared queue", () => {
     expect(read([await prepare(W1, D, "again"), await prepare(W1, D, "once more")]).prepared(W1)).toHaveLength(1);
   });
 });
+
+describe("the flagged queue (a kapae the seat asks for)", () => {
+  test("RED: a prepare carrying intent `kapae` lands in `flagged(wiki)` and not in `prepared(wiki)`; CONTROL: a promote prepare stays in `prepared`", async () => {
+    const { read, atom } = await fixture();
+    const flag = await signPromotePrepare({ group: GROUP, epoch: 0, wiki: W1, digest: D, title: "rites/a", classes: ["module-type"], why: "the macro leaks the field notes", intent: "kapae" }, atom);
+    const board = read([flag, await signPromotePrepare({ group: GROUP, epoch: 0, wiki: W1, digest: "e".repeat(64), title: "rites/b", classes: [], why: "x" }, atom)]);
+    expect(board.flagged(W1)).toEqual([{ wiki: W1, digest: D, title: "rites/a", classes: ["module-type"], why: "the macro leaks the field notes", seat: atom.key }]);
+    expect(board.prepared(W1).map((p) => p.digest)).toEqual(["e".repeat(64)]);
+    expect(board.flagged(W2)).toEqual([]);
+  });
+});
