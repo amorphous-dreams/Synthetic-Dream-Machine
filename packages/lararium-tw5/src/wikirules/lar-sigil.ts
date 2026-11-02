@@ -60,6 +60,31 @@ export function init(this: RuleInstance, parser: WikiParser): void {
   this.parser = parser;
 }
 
+/**
+ * ── A BLOCK SIGIL ENDS ITS LINE ────────────────────────────────────────────────────────────────
+ * TiddlyWiki splits `<<m>>` by where the call's `>>` falls: alone on its line (`\r?\n` or the end of
+ * the source follows) it is `macrocallblock`; with anything after it — `<<m>>;abc`, `<<m>>* item`,
+ * `<<a>> <<b>>`, even one trailing space — the line is a paragraph holding `macrocallinline` and then
+ * text. The core instantiates each rule once per phase and marks it (`this.is.block` / `this.is.inline`),
+ * so this rule asks the SAME question in its block phase: every claim — the fragment, pranala, compound
+ * and generic forms alike — stands only when its opener's `>>` ends the line. A claim that fails the
+ * test declines, and the inline phase, which has no such condition, takes the sigil inside the paragraph
+ * with the text after it; the diagnostic floor (`sigil-trailing-text`, meme-ast) leaves its receipt.
+ *
+ * A closer-bearing pair (`ahu` …) answers to BOTH its ends. Stock TW5 has no closer-bearing block call
+ * to measure against, so the ruling reads the same law at each end: the block form stands when the
+ * CLOSER's `>>` ends a line AND the opener's `>>` ends its line — or the pair opens and closes on one
+ * line, where the closer's `>>` ends it. An opener with text after its `>>` is no block opener (its
+ * body begins at that same `>>`), so the pair reads inline. A pair whose OPENER ends its line but whose
+ * closer leaves text behind does not pair: the opener stands alone as a block and the lines after it,
+ * the closer's line among them, read as ordinary text — the tree-sitter grammar's reading too.
+ */
+const LINE_END_RE = /\r?\n|$/y;
+function endsLine(source: string, at: number): boolean {
+  LINE_END_RE.lastIndex = at;
+  return LINE_END_RE.test(source);
+}
+
 // TW5's evalGlobal injects `$tw` as a direct parameter into module code; in the Node VM sandbox
 // globalThis is the empty context, so the injected variable is the only reachable spelling.
 declare const $tw: {
@@ -109,6 +134,20 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       .filter((s) => (s as { kind?: string }).kind === "pragma" || (s as { kind?: string }).kind === "pragma-alias")
       .map((s) => s.name),
   );
+  const blockPhase = !!this.is?.block;
+  /**
+   * The verdict on one claim, in the block phase: `decline` when the opener leaves text on its line (and
+   * no closer ends that same line), `pair` when the opener's `>>` ends its line (or the pair shares the
+   * closer's line) and the closer's `>>` ends a line, `lone` when the opener ends its line but the pair
+   * does not stand — the opener alone, since declining would hand the line to stock TW5's macrocall
+   * block, which reads `<<~` as a macro named `~`. The inline phase has no line law: it pairs as before.
+   */
+  const verdict = (openEnd: number, closeStart: number, closeEnd: number | null): "decline" | "pair" | "lone" => {
+    if (!blockPhase) return closeEnd !== null ? "pair" : "lone";
+    if (closeEnd !== null && endsLine(source, closeEnd) && !source.slice(openEnd, closeStart).includes("\n")) return "pair";
+    if (!endsLine(source, openEnd)) return "decline";
+    return closeEnd !== null && endsLine(source, closeEnd) ? "pair" : "lone";
+  };
   let pos = indexOfSigilOpen(source, startPos);
   while (pos >= 0) {
     // English `fragment` shares the child-slot intent backend with `ahu`. Rendering uses that
@@ -116,10 +155,17 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     if (source.startsWith("<<fragment", pos)) {
       const open = FRAGMENT_OPEN_RE.exec(source.slice(pos));
       if (open) {
-        const close = source.indexOf("<</fragment>>", pos + open[0].length);
+        const openEnd = pos + open[0].length;
+        const close = source.indexOf("<</fragment>>", openEnd);
+        const v = verdict(openEnd, close, close >= 0 ? close + "<</fragment>>".length : null);
+        if (v === "decline") {
+          pos = indexOfSigilOpen(source, pos + 3);
+          continue;
+        }
+        const paired = v === "pair";
         this.matchPos = pos;
-        this.matchEnd = close >= 0 ? close + "<</fragment>>".length : pos + open[0].length;
-        const bodyEnd = close >= 0 ? close : this.matchEnd;
+        this.matchEnd = paired ? close + "<</fragment>>".length : openEnd;
+        const bodyEnd = paired ? close : this.matchEnd;
         this.attrs = { __compound__: "ahu", p1: open[1]!, __body__: source.slice(pos + open[0].length, bodyEnd),
           __verbatim__: source.slice(pos, pos + open[0].length) };
         return pos;
@@ -131,8 +177,14 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     const pranala = matchPranalaOpenAt(source, pos);
     if (pranala) {
       const closeEnd = findCloseEnd(source, "pranala", pranala.end);
-      if (closeEnd !== null) {
-        const closeTagStart = source.lastIndexOf("<<~/pranala", closeEnd);
+      const closeStart = closeEnd !== null ? source.lastIndexOf("<<~/pranala", closeEnd) : -1;
+      const v = verdict(pranala.end, closeStart, closeEnd);
+      if (v === "decline") {
+        pos = indexOfSigilOpen(source, pos + 3);
+        continue;
+      }
+      if (v === "pair" && closeEnd !== null) {
+        const closeTagStart = closeStart;
         const body = source.slice(pranala.end, closeTagStart);
         this.matchPos = pos;
         this.matchEnd = closeEnd;
@@ -182,8 +234,13 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       const closeKey = compound.closeKey ?? (closers[compound.name] ? compound.name : null);
       if (closeKey) {
         const closeEnd = findCloseEnd(source, closeKey, compound.end, closers);
-        if (closeEnd !== null) {
-          const closeTagStart = source.lastIndexOf(`<<~/${closeKey}`, closeEnd);
+        const closeTagStart = closeEnd !== null ? source.lastIndexOf(`<<~/${closeKey}`, closeEnd) : -1;
+        const v = verdict(compound.end, closeTagStart, closeEnd);
+        if (v === "decline") {
+          pos = indexOfSigilOpen(source, pos + 3);
+          continue;
+        }
+        if (v === "pair" && closeEnd !== null) {
           const body = source.slice(compound.end, closeTagStart);
           this.matchPos = pos;
           this.matchEnd = closeEnd;
@@ -191,6 +248,10 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
                             __verbatim__: source.slice(pos, compound.end) };
           return pos;
         }
+      }
+      if (!closeKey && verdict(compound.end, -1, null) === "decline") {
+        pos = indexOfSigilOpen(source, pos + 3);
+        continue;
       }
       this.matchPos = pos;
       this.matchEnd = compound.end;
@@ -216,14 +277,22 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       // REGISTERS the head, the host runs it; where it does not, the floor catches what the host
       // would swallow.
       if (!generic.spaced && generic.sigil && registeredHeads.has(generic.sigil)) return undefined;
+      let genericCloseEnd: number | null = null;
       if (generic.sigil && closers[generic.sigil] && generic.sigil !== "pranala") {
-        const closeEnd = findCloseEnd(source, generic.sigil, generic.end, closers);
-        if (closeEnd !== null) {
-          this.matchPos = pos;
-          this.matchEnd = closeEnd;
-          this.attrs    = { __literal__: source.slice(pos, closeEnd) };
-          return pos;
-        }
+        genericCloseEnd = findCloseEnd(source, generic.sigil, generic.end, closers);
+      }
+      const genericClose = genericCloseEnd;
+      const genericVerdict = verdict(generic.end,
+        genericClose !== null ? source.lastIndexOf(`<<~/${generic.sigil}`, genericClose) : -1, genericClose);
+      if (genericVerdict === "decline") {
+        pos = indexOfSigilOpen(source, pos + 3);
+        continue;
+      }
+      if (genericVerdict === "pair" && genericClose !== null) {
+        this.matchPos = pos;
+        this.matchEnd = genericClose;
+        this.attrs    = { __literal__: source.slice(pos, genericClose) };
+        return pos;
       }
       if (generic.sigil && inlineSigils.has(generic.sigil)) {
         this.matchPos = pos;

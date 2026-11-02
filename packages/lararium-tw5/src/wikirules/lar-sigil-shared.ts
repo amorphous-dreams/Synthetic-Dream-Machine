@@ -48,6 +48,8 @@ export interface WikiParser {
 
 export interface RuleInstance {
   parser:    WikiParser | null;
+  /** The core marks each rule instance with the phase it was instantiated for. */
+  is?:       { block?: boolean; inline?: boolean };
   matchPos?: number;
   matchEnd?: number;
   /** For ahu blocks: parsed attributes. For literal-survival: { __literal__ }. */
