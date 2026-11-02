@@ -47,7 +47,7 @@ import {
   type GenesisSeed, type IslandMsg_Manifest,
   takeInvite, popInvite, hex,
   type WalkRecord, type CarryOutcome,
-  readHearthFloorCard, provenPlaneUrls,
+  readHearthFloorCard, provenPlaneUrls, adoptKahuaStage, kahuaPlaneUrl,
 }                                            from "@lararium/mesh";
 import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCard, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "./browser-gate-pins.js";
 import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
@@ -1294,8 +1294,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         wornFaceProjection = proof.projection;
         // THE WORN FACE'S PLANES CROSS AT ITS OWN HEARTH as its signed log names them, and only now: no plane url read off the
         // unsealed bootstrap crossed before this proof. The repo asks the hearth again for what the gate now opens.
+        // The face's kahua stage crosses with them where its signed log pins the face's derived stage.
         if (crossing.openFacePlanes(provenCrossingPlanes(proof.projection, {
-          persona: wornPlaneUrl, intents: wornIntentsUrl,
+          persona: wornPlaneUrl, intents: wornIntentsUrl, kahua: kahuaPlaneUrl(proof.projection, wornGroup),
           ...(foundingFace ? { identities: social.identitiesUrl, circles: social.circlesUrl, sessions: social.sessionsUrl } : {}),
         }))) { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } }
         provenWornPlaneUrl = wornPlaneUrl;
@@ -1326,6 +1327,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const named = wornFaceProjection ? provenPlaneUrls(wornFaceProjection, { circles: social.circlesUrl ?? null, identities: social.identitiesUrl ?? null, sessions: social.sessionsUrl ?? null, intents: social.intentsUrl ?? null }) : null;
           if (named) for (const key of ["circles", "identities", "sessions", "intents"] as const) { const url = named[key]; if (url) registerInCatalog(wornFace[key], url); }
         }
+        // THE KAHUA STAGE ADOPTS FROM THE PROVEN PROJECTION (node parity): a joined browser of the face stands the derived doc and
+        // its catalog row names it for the daemon wiki's recipe; the layer trusts the fold, never the row.
+        await adoptKahuaStage({ repo, group: wornGroup, projection: proof.projection, register: registerInCatalog });
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
         if (foundingFace && social.identitiesUrl && social.circlesUrl) {
           const joining = joinFaceDocumentsOnArrival(repo, { identities: social.identitiesUrl, circles: social.circlesUrl }, wornAtom.key, displayName);

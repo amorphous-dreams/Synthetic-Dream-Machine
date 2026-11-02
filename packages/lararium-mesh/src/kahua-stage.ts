@@ -27,14 +27,15 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import type { AutomergeUrl } from "@automerge/automerge-repo";
+import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
 import { tiddlerText } from "./base-doc.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { KAHUA_ACT_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { buildIntent, IntentRefusal, type IntentSigner } from "./intent-issue.js";
-import { deterministicDocUrl } from "./deterministic-doc.js";
+import { deterministicDocUrl, materializeSharedLarDoc } from "./deterministic-doc.js";
+import { KAHUA_DOC_URI } from "./lar-uris.js";
 import type { SignedIntentEntry } from "./intent-entry.js";
 import type { IntentVerbRegistry } from "./intent-verbs.js";
 import { storedLarRecord } from "./stored-record.js";
@@ -235,6 +236,24 @@ export function kahuaStageDocUrl(group: string): AutomergeUrl {
 export function kahuaPlaneUrl(projection: { readonly planes: Readonly<Record<string, string | undefined>> }, group: string): string | null {
   const url = kahuaStageDocUrl(group);
   return projection.planes[KAHUA_PLANE] === url ? url : null;
+}
+
+/**
+ * A device of the face ADOPTS its stage at boot: where the face's verified projection pins the derived stage, the doc stands
+ * in this repo (a blank under the derived id merges with every replica) and the catalog row names it, so the recipe knows
+ * where to mount. The row stays a mount hint: the layer trusts the fold, never the row. An unpinned face adopts nothing.
+ */
+export async function adoptKahuaStage(input: {
+  readonly repo: Repo;
+  readonly group: string;
+  /** The face's VERIFIED projection (the boot's face proof). */
+  readonly projection: { readonly planes: Readonly<Record<string, string | undefined>> };
+  readonly register: (bagId: string, url: string) => void;
+}): Promise<AutomergeUrl | null> {
+  if (kahuaPlaneUrl(input.projection, input.group) === null) return null;
+  const handle = await materializeSharedLarDoc(input.repo, kahuaStageDocUrl(input.group), "kahua:stage");
+  input.register(KAHUA_DOC_URI, handle.url);
+  return handle.url;
 }
 
 export interface KahuaProposal { readonly title: string; readonly revision: string; readonly digest: string; readonly taint: readonly string[] }

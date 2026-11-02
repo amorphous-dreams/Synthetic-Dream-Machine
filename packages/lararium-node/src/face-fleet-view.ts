@@ -31,7 +31,7 @@
  *        lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view
  */
 import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, isFaceScopedBag, tiddlerText, type LarDoc, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets } from "@lararium/mesh";
+import { KAHUA_BAG, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, isFaceScopedBag, tiddlerText, type LarDoc, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets } from "@lararium/mesh";
 import { bootDaemonUrl, bootFacePlanes } from "./boot-face-planes.js";
 import type { KahuCanonDocs } from "./kahu-realm.js";
 
@@ -62,7 +62,7 @@ export function faceFleetFacets(bootstrapTiddlers: BootTiddlers, personaGroup: s
 
 /**
  * The documents the mounted face's bridge may read beyond its own view: every document the catalog points at (`automerge:` text) under a
- * title that is NOT a face-scoped bag id: the vessel's books (a wiki, a draft, the catalog, the oracle) and the pointers its planes
+ * title that is NOT a face-scoped bag id (nor the kahua stage, which crosses on its own face's facet alone): the vessel's books (a wiki, a draft, the catalog, the oracle) and the pointers its planes
  * stand on (a realm's doc, its steward, its standing), as document IDs. An ALLOW-LIST: a document the catalog does not point at
  * reads nothing across the bridge, so a foreign face's plane whose catalog row is absent, withheld or face-scoped is shut out by
  * default and never let in by an omission. The mounted face's own five planes ride its view. The Kahu canon this vessel
@@ -75,7 +75,8 @@ export function bridgeBooks(catalog: LarDoc | undefined | null, canon: KahuCanon
     try { out.add(interpretAsDocumentId(url as AutomergeUrl)); } catch { /* a malformed url names nothing */ }
   };
   for (const [title, record] of Object.entries(catalog?.tiddlers ?? {})) {
-    if (isFaceScopedBag(title)) continue;
+    // The kahua stage names no face by its bag id, so its scoping rides the pin: it crosses on its own face's facet alone.
+    if (isFaceScopedBag(title) || title === KAHUA_BAG) continue;
     add(tiddlerText(record));
   }
   // THE KAHU CANON IS A BOOK OF THIS VESSEL: the realm registry, never the catalog, names `@lares` and `@lararium` (one
