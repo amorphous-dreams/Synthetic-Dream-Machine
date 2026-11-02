@@ -1,3 +1,4 @@
+import { mountPromotePanel } from "./promote-panel.js";
 /**
  * lararium-web — the Web-surface assembly.
  *
@@ -506,6 +507,10 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
       ...(meshLeaf ? { meshLeaf } : {}),
     });
     vesselOpened = true;
+    if (result.promote) {
+      const panel = mountPromotePanel(document.getElementById("promote-panel")!, result.promote.api);
+      void panel.refresh();
+    }
     pendingAdmit = null;
     // Identity custody stays in the browser vessel. The web surface renders the public receipt returned
     // by that opening instead of opening the key store a second time just to paint it.

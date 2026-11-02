@@ -640,3 +640,5 @@ export { parseNexusDoc, readNexusDocFence, nexusDocFenceRe, NEXUS_DOC_FENCES } f
 
 export * from "./intent-admission.js";
 export { censusOutcomeLinkage, type OutcomeLinkage } from "./outcome-census.js";
+
+export * from "./promote-panel-api.js";

@@ -16,21 +16,22 @@ export function promoteWiring(opts: {
   onRestartFailed?: (wiki: string, error: unknown) => void;
   onFault?: (reason: "ledger-unreadable" | "board-unreadable" | "board-unpinned") => void;
 }) {
+  const board: PromotionPorts["board"] = async () => {
+    if (opts.boardUrl === null) throw new Error("board-unpinned");
+    const handle = await opts.repo.find<LarDoc>(opts.boardUrl as AutomergeUrl);
+    return readPromoteBoard(promoteActRecords(handle.doc(), opts.group), opts.boardFace());
+  };
+  const itemsOf = async (wiki: string) => {
+    if (wiki !== (opts.daemonWiki ?? "daemon")) return opts.wikiItems(wiki);
+    if (opts.stageUrl === null) return [];
+    const handle = await opts.repo.find<LarDoc>(opts.stageUrl as AutomergeUrl);
+    return readKahuaStage(kahuaActRecords(handle.doc(), opts.group), opts.foldFace()).list()
+      .flatMap(item => item.heads.map(head => ({ title: head.title, text: head.text, fields: head.fields, revision: head.cid, origin: head.origin })));
+  };
   const core = promoteBoot({
     stores: opts.stores, cas: opts.cas, restart: opts.restart,
     ...(opts.onReport ? { onReport: opts.onReport } : {}), ...(opts.onFault ? { onFault: opts.onFault } : {}), ...(opts.onRestartFailed ? { onRestartFailed: opts.onRestartFailed } : {}),
-    board: async () => {
-      if (opts.boardUrl === null) throw new Error("board-unpinned");
-      const handle = await opts.repo.find<LarDoc>(opts.boardUrl as AutomergeUrl);
-      return readPromoteBoard(promoteActRecords(handle.doc(), opts.group), opts.boardFace());
-    },
-    itemsOf: async wiki => {
-      if (wiki !== (opts.daemonWiki ?? "daemon")) return opts.wikiItems(wiki);
-      if (opts.stageUrl === null) return [];
-      const handle = await opts.repo.find<LarDoc>(opts.stageUrl as AutomergeUrl);
-      return readKahuaStage(kahuaActRecords(handle.doc(), opts.group), opts.foldFace()).list()
-        .flatMap(item => item.heads.map(head => ({ title: head.title, text: head.text, fields: head.fields, revision: head.cid, origin: head.origin })));
-    },
+    board, itemsOf,
   });
   const boot = {
     promotedFor: (wiki: string): Promise<readonly string[]> => {
@@ -42,7 +43,7 @@ export function promoteWiring(opts: {
   let tail: Promise<void> = Promise.resolve();
   let attach: Promise<void> = Promise.resolve();
   return {
-    boot,
+    boot, board, itemsOf, loadedFor: core.loadedFor, restart: opts.restart,
     watch(): () => void {
       let stopped = false;
       let detach = () => {};

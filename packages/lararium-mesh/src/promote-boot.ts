@@ -21,6 +21,7 @@ export function promoteBoot(opts: {
 }) {
   const loaded = new Map<string, Set<string>>();
   return {
+    loadedFor: (wiki: string): ReadonlySet<string> => loaded.get(wiki) ?? new Set(),
     async promotedFor(wiki: string): Promise<readonly string[]> {
       let storeFailed = false;
       const wrap = <T>(store: { read(): Promise<T>; write(value: T): Promise<void> }) => ({

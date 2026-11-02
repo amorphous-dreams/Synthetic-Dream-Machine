@@ -79,7 +79,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
+  promotePanelApi, type PromotePanelApi, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
   readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
   type WideningRead,
 } from "@lararium/mesh";
@@ -342,6 +342,7 @@ export type ProjectionSurfaceFrame = LarMsg_Frame & { readonly surface: string }
 /** The ONE shared VesselResult (no vessel-by-type) + browser's one substrate extra. */
 export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPool, DaemonVmCore> {
   /** The public identity receipt composed by this vessel. Private signing material never leaves the vessel. */
+  promote: { api: PromotePanelApi & { subscribe(fn: () => void): () => void } } | null;
   identity: BrowserVesselIdentity;
   /**
    * Has this vessel crossed? True once the hearth it dials answered with a verdict signed by the pinned gate key
@@ -958,6 +959,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // ── Residency MECHANISM (parity with node — a tab has finite memory too) ────
   let vmManager!: BrowserVesselIslandPool;   // set in makePool
   let portFaceId: string | null = null;
+  let promotePanel: BrowserVesselResult["promote"] = null;
   let promoteWiringRef: ReturnType<typeof promoteWiring> | null = null;
   const restartWikiIsland = async (wiki: string) => {
     if (wiki === "daemon") {
@@ -1369,6 +1371,43 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           onReport: (wiki, r) => { if (r.orphans.length || r.updateWaits.length || r.voided.length) console.warn(`[promote] ${wiki}: orphans=${r.orphans.join(",")} updateWaits=${r.updateWaits.join(",")} voided=${r.voided.map(v => v.digest).join(",")}`); },
           onRestartFailed: (wiki, error) => console.warn(`[promote] restart of ${wiki} failed (the next board read tries again): ${error instanceof Error ? error.message : String(error)}`),
         }) : null;
+        if (promoteWiringRef && provenPromoteUrl) {
+          const wiring = promoteWiringRef;
+          const handle = await repo.find<LarDoc>(provenPromoteUrl as AutomergeUrl);
+          const listeners = new Set<() => void>();
+          const notify = () => { for (const listener of listeners) listener(); };
+          handle.on("change", notify);
+          held.stood.push({ what: "the promote panel watcher", down: () => handle.off("change", notify) });
+          const boardFace = { group: wornGroup, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
+          const boardDoor = promoteBoardDoor({ group: wornGroup, face: boardFace, atom: wornAtom,
+            epoch: () => readFace(personaKelChain)?.lineage.at(-1)?.epoch ?? 0,
+            rootSigner: async () => {
+              const seed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX);
+              try {
+                const key = await ed25519VerifyingKeyFromSeed(seed);
+                return { key, sign: async (bytes: Uint8Array) => {
+                  const fresh = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX);
+                  try { return await ed25519SignerFromSeed(fresh)(bytes); } finally { fresh.fill(0); }
+                } };
+              } finally { seed.fill(0); }
+            },
+            board: { records: async () => promoteActRecords(handle.doc(), wornGroup), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
+            projection: () => proof.projection,
+          });
+          // A local process can name its own hand; this device's click carries the operator's gesture.
+          const who = { kind: "hand" as const, id: wornAtom.key };
+          const core = promotePanelApi({ who,
+            wikis: async () => ["daemon", ...vmManager.inspect().filter(slot => slot.temperature === "wela" && slot.wikiId !== "daemon").map(slot => slot.wikiId)],
+            promotionsFor: wiki => promotions({ wiki, ...browserPromoteStores(idbName, wornGroup), who,
+              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: browserPromoteCas(),
+              loaded: () => wiring.loadedFor(wiki), restart: () => wiring.restart(wiki) }), boardDoor,
+          });
+          const after = async <T>(action: () => Promise<T>): Promise<T> => { const result = await action(); notify(); return result; };
+          promotePanel = { api: { ...core, subscribe: fn => { listeners.add(fn); return () => { listeners.delete(fn); }; },
+            commit: (w, d) => after(() => core.commit(w, d)), drop: (w, d) => after(() => core.drop(w, d)),
+            orphan: (w, d, x) => after(() => core.orphan(w, d, x)), raise: (w, d) => after(() => core.raise(w, d)), lower: (w, d) => after(() => core.lower(w, d)),
+          } };
+        }
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
         if (foundingFace && social.identitiesUrl && social.circlesUrl) {
           const joining = joinFaceDocumentsOnArrival(repo, { identities: social.identitiesUrl, circles: social.circlesUrl }, wornAtom.key, displayName);
@@ -1939,6 +1978,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   connectionState.setWikiDocUrl(result.wikiHandle.url);
 
   return {
+    promote: promotePanel,
     identity: vesselIdentity,
     pool: result.pool,
     repo,
