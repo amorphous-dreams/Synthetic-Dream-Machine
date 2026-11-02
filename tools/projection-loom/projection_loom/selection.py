@@ -41,7 +41,7 @@ def schedule_candidates(proposals, *, preview=None, max_exact, reserve_emitter=T
                  for method in methods):
             # Keep family fairness independent of incidental lexical names.
             # With 12 seats and 18 family/method emitters, a flat lexical
-            # prefix used to fill four families and starve the other two.
+            # prefix fills four families and starves the other two.
             # Interleave families first, then rotate their methods across
             # generations. The preview still only ranks candidates *within*
             # each method's reserved audition seat.

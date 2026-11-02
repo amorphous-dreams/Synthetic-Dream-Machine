@@ -1,4 +1,5 @@
 """Identical independent seed sets preserve construction despite adapter ordering."""
+import json
 from projection_loom.generalized_campaign import initial_program, run_cohort
 from projection_loom.intent_seed import IntentContract, SeedBundle
 from projection_loom.seed_adapters import compose_adapters
@@ -28,7 +29,16 @@ def test_seed_order_isomorphism_preserves_composition_and_native_receipts(tmp_pa
     first=run_cohort(forward,contract,original,**options)
     second=run_cohort(reverse,contract,rearranged,**options)
     assert first==second
-    for relative in ("pre_registration.json","epoch_000.json",
-                     "summary.json","receipts/e00c00.json"):
+    for relative in ("pre_registration.json","epoch_000.json","summary.json"):
+        assert (original/relative).read_bytes()==(rearranged/relative).read_bytes()
+    # Compare the actual audited seats, never a guessed candidate ordinal:
+    # fair_auditions can select e00c01 instead of e00c00.
+    audited=json.loads((original/"epoch_000.json").read_text(encoding="utf8"))
+    selected=sorted(row["id"] for row in audited["candidates"])
+    assert len(selected)==options["exact_budget"]==first["native_attempts"]
+    assert selected==sorted(p.stem for p in (original/"receipts").glob("*.json"))
+    assert selected==sorted(p.stem for p in (rearranged/"receipts").glob("*.json"))
+    for candidate_id in selected:
+        relative=f"receipts/{candidate_id}.json"
         assert (original/relative).read_bytes()==(rearranged/relative).read_bytes()
     assert run_cohort(reverse,contract,rearranged,**options)==second
