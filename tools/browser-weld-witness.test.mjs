@@ -185,7 +185,7 @@ async function testC4TraceAnchorsStillStand() {
   for (const [label, source, pattern] of [
     ["corpus-ready", openCore, /emit\("corpus-ready"\);/g],
     ["KEL carry", vessel, /await carryPersonaKelUpTheGradient\(\{/g],
-    ["daemon VM", vessel, /daemon = await openBrowserDaemonVm\(\{/g],
+    ["daemon VM", vessel, /daemonHolder = holdDaemonVm\(\{ vm: await openOnce\(/g],
     ["worker spawn", daemon, /const worker = host\.spawnWorker\(workerScriptUrl\);/g],
     ["ready gate", daemon, /if \(isIslandToVesselMsg\(raw\) && raw\.type === "ready"\) resolve\(\);/g],
     ["manifest post", daemon, /worker\.post\(initialPost\.msg, initialPost\.transfer\);/g],

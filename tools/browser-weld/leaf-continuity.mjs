@@ -156,7 +156,7 @@ function instrumentBootSource(source) {
     (match) => `console.log("[C4 boot] host:kel-board:start");\n    ${match}\n    console.log("[C4 boot] host:kel-board:done");`,
   );
   body = body.replace(
-    /daemon = await openBrowserDaemonVm\(\{/,
+    /daemonHolder = holdDaemonVm\(\{ vm: await openOnce\(/,
     (match) => `console.log("[C4 boot] host:daemon-vm:start");\n      ${match}`,
   );
 

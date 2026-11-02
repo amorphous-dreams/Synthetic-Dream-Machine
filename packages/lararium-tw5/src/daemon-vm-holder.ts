@@ -24,6 +24,7 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
   const pendingAsks = new Set<() => void>();
   const listeners = new Set<(info: { reason: string; restarts: number }) => void | Promise<void>>();
   let restarts = 0;
+  let replaying = false;   // true while a re-opened island takes its registrations
   let restarting: Promise<{ restarts: number }> | undefined;
   let shutdown: Promise<{ acked: boolean }> | undefined;
   const registrations = new Map<string, (vm: DaemonVmCore) => void | Promise<void>>();
@@ -59,6 +60,8 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
       const value = Reflect.get(inner, key);
       if (typeof key !== "string" || typeof value !== "function") return value;
       if (asyncMethods.has(key)) return (...args: unknown[]) => {
+        // The vessel's rest door asks the island's leg while the island mounts its replayed layers: that readiness read answers from the new VM.
+        if (key === "syncLegReady" && replaying) return Promise.resolve(invoke(key, args));
         try { check(); } catch (err) { return Promise.reject(err); }   // an async door refuses by rejecting
         const generation = restarts;
         return new Promise((resolve, reject) => {
@@ -66,7 +69,10 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
           Promise.resolve(invoke(key, args)).then((result) => {
             if (!pending.delete(reject)) return;        // a restart already settled this call by name
             if (generation === restarts && state === "ready") {
-              if (key === "lightFace") {
+              if (key === "mountHostWorkingLayer") {
+                // The working layer mounts once per island: the vessel mounts it after boot, so a re-opened island needs it too.
+                record("mountHostWorkingLayer", vm => vm.mountHostWorkingLayer());
+              } else if (key === "lightFace") {
                 const entry = args[0] as Parameters<DaemonVmCore["lightFace"]>[0];
                 record(`face:${entry.atom.key}`, vm => vm.lightFace(entry));
               } else if (key === "dropFace") registrations.delete(`face:${args[0] as string}`);
@@ -139,7 +145,8 @@ export function holdDaemonVm<P = void>(o: { vm: DaemonVmCore; prepare?: (reason:
           next = await o.reopen(reason, prepared);
           inner = next;
           shutdown = undefined;
-          for (const replay of registrations.values()) await replay(next);
+          replaying = true;
+          try { for (const replay of registrations.values()) await replay(next); } finally { replaying = false; }
           restarts += 1;
           state = "ready";
           for (const listener of listeners) {
