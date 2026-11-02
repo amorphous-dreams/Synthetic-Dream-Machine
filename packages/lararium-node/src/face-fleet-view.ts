@@ -53,7 +53,9 @@ export function faceFleetFacets(bootstrapTiddlers: BootTiddlers, personaGroup: s
   add("circles", planes.circlesUrl);
   add("sessions", planes.sessionsUrl);
   add("intents", planes.intentsUrl);
-  add("kahua", kahuaOf?.(personaGroup) ?? null);
+  // The stage rides a read-only layer for every profile: a lift lands through the kahua door alone, never a session's write.
+  const kahua = kahuaOf?.(personaGroup) ?? null;
+  if (kahua) documents.push({ name: "kahua", document: kahua, layer: "library" });
   add("daemon", bootDaemonUrl(bootstrapTiddlers));
   return { documents, content: [] };
 }
