@@ -189,6 +189,27 @@ Each line names what the code does today and where its law lives; the verifier h
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/promote`>>
+
+!! Promote ~ the end-state for code on the stage
+
+''Approved design'' (operator, 2026-11-02); no code stands for it yet.
+
+* ''Code lifts as inert data.'' Any item may ride the stage, code included, as data the island never runs.
+* ''Each device's own hand promotes.'' A person on a device promotes one digest into that device's local preload set, which never syncs. A digest that no longer matches the item voids the promotion. The island takes it the way TW5 imports a plugin and reloads: one reload per island.
+* ''The floor until then.'' The lift refuses `module-type` and executable types today. That refusal BURNS when promote lands (the alpha line keeps no back-compat).
+* ''The code class.'' `module-type`; the executable types; `$:/tags/StartupAction*`; RawMarkup (on the save path alone); the fields the tw5-module gate reads (a `stack` naming `tw5-module`, beside its mana floor and `source-sha256`).
+* ''The module gate reads genesis and the promoted set alone.'' The gate that defines tw5 modules reads genesis-sourced tiddlers and the device's own preloaded set, never the composite, so no stage or wiki layer seeds a module (the promote lane builds it).
+* ''StartupAction rides inert tonight.'' No refusal: the stage mounts after boot and never preloads, so a startup action on the stage never runs, the same load order that keeps a module inert.
+
+* ''Kāpae, the emergency cap.'' A `kāpae` cap on the edge (face, digest), raised on the stage, shadows every device's promotion of that digest: remove wins, the hand raises it and the AI prepares it, and a device restarts its island when the cap arrives. Withdraw stays a separate act.
+
+''Kept dissent (Stranger).'' A stage that spans more than one person's hands, a household Nexus for one, reopens the fork toward refusing code at the lift (option A), per the TiddlySpace precedent the operator named.
+
+''Owed: the live probe.'' On a scratch `LAR_ROOT`, lift a marked StartupAction and a module-typed tiddler, restart the vessel twice, and confirm neither runs.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/calls-owed`>>
 
 !! Calls owed
@@ -266,6 +287,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eGYQ7pbfa79r0g0UWtHOjaF4QTS6bVIDlakLFX1x4h0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;s7GJTKNwinpz8bfGMfBcWEpu_Tfq91c-NOVVixlzNKw`>>
 
 <<^ code=`&#x0004;` to=`?`>>
