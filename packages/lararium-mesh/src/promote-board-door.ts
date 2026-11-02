@@ -18,6 +18,9 @@ export function promoteBoardDoor(ports: PromoteBoardDoorPorts) {
     async prepare(input: { wiki: string; digest: string; title: string; classes: readonly string[]; why: string }) {
       return land(await signPromotePrepare({ ...input, group: ports.group, epoch: ports.epoch() }, ports.atom));
     },
+    async flag(input: { wiki: string; digest: string; title: string; classes: readonly string[]; why: string }) {
+      return land(await signPromotePrepare({ ...input, intent: "kapae", group: ports.group, epoch: ports.epoch() }, ports.atom));
+    },
     async kapae(input: { action: "raise" | "lower"; wiki: string; digest: string; who: PromoteWho }) {
       assertKapaeHand(input.action, input.who);
       let signer: Signer;

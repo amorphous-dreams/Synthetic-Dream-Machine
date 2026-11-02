@@ -41,6 +41,18 @@ export interface CommandHelp {
 }
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
+  promote: {
+    usage: "usage: lares promote list|prepare|commit|drop|orphan [digest] [--wiki wiki] [--face N]",
+    synopsis: "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises.",
+    examples: ["lares promote list --wiki garden", "lares promote prepare <digest> --why reason", "lares promote commit <digest>", "lares promote orphan <digest> --keep"],
+    flags: ["--wiki <wiki>   wiki name", "--face N   face index", "--why <reason>   preparation reason", "--keep   keep an orphan", "--drop   drop an orphan"],
+  },
+  kapae: {
+    usage: "usage: lares kapae raise|lower|flag <digest> [--wiki wiki] [--face N]",
+    synopsis: "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises.",
+    examples: ["lares kapae flag <digest> --why reason", "lares kapae raise <digest> --wiki garden", "lares kapae lower <digest>"],
+    flags: ["--wiki <wiki>   wiki name", "--face N   face index", "--why <reason>   flag reason", "--keep   keep an orphan", "--drop   drop an orphan"],
+  },
   "intent-relay": {
     usage: "usage: lares intent-relay enable|disable|status|rotate [--face N] [--json]",
     synopsis: "Control a face's sealed intent relay and inspect its public pin and admission key.",

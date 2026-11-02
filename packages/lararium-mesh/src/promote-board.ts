@@ -1,4 +1,5 @@
 /** The face-private board carries signed preparation and edge shadows.
+ * A flag carries a seat request for a kāpae; it shadows nothing.
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae
  */
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
@@ -17,7 +18,7 @@ export const PROMOTE_ACT_PREFIX = "lar:///ha.ka.ba/dreamnet/promote-act/";
 const PROMOTE_BOARD_URI = "lar:///ha.ka.ba/bags/promote-board";
 export function promoteBoardDocUrl(group: string): AutomergeUrl { return deterministicDocUrl(`${PROMOTE_BOARD_URI}/${group.trim().toLowerCase()}`); }
 interface Base { readonly kind: typeof PROMOTE_ACT_DOMAIN; readonly group: string; readonly epoch: number; readonly wiki: string; readonly digest: string }
-export interface PromotePrepareBody extends Base { readonly act: "prepare"; readonly title: string; readonly classes: readonly string[]; readonly why: string }
+export interface PromotePrepareBody extends Base { readonly act: "prepare"; readonly title: string; readonly classes: readonly string[]; readonly why: string; readonly intent?: "promote" | "kapae" }
 export interface PromoteKapaeBody extends Base { readonly act: "kapae"; readonly raised: boolean; readonly parents: readonly string[] }
 export type PromoteActBody = PromotePrepareBody | PromoteKapaeBody;
 export interface SignedPromoteAct { readonly body: PromoteActBody; readonly signer: string; readonly sig: string }
@@ -29,7 +30,7 @@ const str = (x: unknown): x is string => typeof x === "string";
 const hex = (x: unknown): x is string => str(x) && /^[0-9a-f]{64}$/.test(x);
 function shape(b: Record<string, unknown>): boolean {
  if (!str(b.group) || !Number.isSafeInteger(b.epoch) || (b.epoch as number) < 0 || !str(b.wiki) || !b.wiki.length || !hex(b.digest)) return false;
- if (b.act === "prepare") return str(b.title) && b.title.length > 0 && str(b.why) && b.why.trim().length > 0 && Array.isArray(b.classes) && b.classes.every(str);
+ if (b.act === "prepare") return (b.intent === undefined || b.intent === "promote" || b.intent === "kapae") && str(b.title) && b.title.length > 0 && str(b.why) && b.why.trim().length > 0 && Array.isArray(b.classes) && b.classes.every(str);
  if (b.act === "kapae") return typeof b.raised === "boolean" && Array.isArray(b.parents) && b.parents.every(hex) && new Set(b.parents).size === b.parents.length;
  return false;
 }
@@ -54,11 +55,11 @@ export function readPromoteBoard(records: readonly unknown[], face: PromoteFace)
  const acts = new Map<string, SignedPromoteAct>(); const refused: { cid: string | null; refusal: PromoteActRefusal }[] = [];
  for (const raw of records) { const r = readPromoteAct(raw, face); if (r.ok) acts.set(r.cid, r.act); else { let cid: string | null = null; try { if (object(raw) && object(raw.body) && str(raw.signer)) cid = promoteActCid(raw as unknown as SignedPromoteAct); } catch {} refused.push({ cid, refusal: r.refusal }); } }
  refused.sort((a,b) => (a.cid ?? "").localeCompare(b.cid ?? "") || a.refusal.localeCompare(b.refusal));
- const lines = new Map<string, { actCid: string; raised: boolean; parents: readonly string[] }[]>(); const prepares = new Map<string, PromotePrepare>();
- for (const [cid, act] of [...acts].sort(([a], [b]) => a.localeCompare(b))) { const b = act.body, key = promoteEdgeKey(b.wiki, b.digest); if (b.act === "kapae") { const line = lines.get(key) ?? []; line.push({ actCid: cid, raised: b.raised, parents: b.parents }); lines.set(key, line); } else if (!prepares.has(key)) prepares.set(key, { wiki: b.wiki, digest: b.digest, title: b.title, classes: b.classes, why: b.why, seat: act.signer }); }
+ const lines = new Map<string, { actCid: string; raised: boolean; parents: readonly string[] }[]>(); const prepares = new Map<string, PromotePrepare>(), flags = new Map<string, PromotePrepare>();
+ for (const [cid, act] of [...acts].sort(([a], [b]) => a.localeCompare(b))) { const b = act.body, key = promoteEdgeKey(b.wiki, b.digest); if (b.act === "kapae") { const line = lines.get(key) ?? []; line.push({ actCid: cid, raised: b.raised, parents: b.parents }); lines.set(key, line); } else { const queue = b.intent === "kapae" ? flags : prepares; if (!queue.has(key)) queue.set(key, { wiki: b.wiki, digest: b.digest, title: b.title, classes: b.classes, why: b.why, seat: act.signer }); } }
  const verdict = (wiki: string, digest: string): EdgeKapaeVerdict | undefined => { const line = lines.get(promoteEdgeKey(wiki, digest)); return line ? foldCausalHeads(line) : undefined; };
  const edges = () => new Set([...lines].filter(([, line]) => foldCausalHeads(line) !== "withdrawn").map(([key]) => key).sort());
- return { kapae: verdict, kapaeHeads: (wiki: string, digest: string) => { const line = lines.get(promoteEdgeKey(wiki, digest)) ?? [], cited = new Set(line.flatMap(a => a.parents)); return line.map(a => a.actCid).filter(cid => !cited.has(cid)).sort(); }, shadowed: (wiki: string) => new Set([...edges()].filter(e => e.startsWith(`${wiki}\n`)).map(e => e.slice(wiki.length + 1))), edges, prepared: (wiki: string) => [...prepares.values()].filter(p => p.wiki === wiki), refused };
+ return { kapae: verdict, kapaeHeads: (wiki: string, digest: string) => { const line = lines.get(promoteEdgeKey(wiki, digest)) ?? [], cited = new Set(line.flatMap(a => a.parents)); return line.map(a => a.actCid).filter(cid => !cited.has(cid)).sort(); }, shadowed: (wiki: string) => new Set([...edges()].filter(e => e.startsWith(`${wiki}\n`)).map(e => e.slice(wiki.length + 1))), edges, prepared: (wiki: string) => [...prepares.values()].filter(p => p.wiki === wiki), flagged: (wiki: string) => [...flags.values()].filter(p => p.wiki === wiki), refused };
 }
 
 export type PromoteBoardReading = ReturnType<typeof readPromoteBoard>;

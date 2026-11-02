@@ -55,6 +55,8 @@ import { cmdTestQuine } from "../commands/scripted.js";
 import { cmdFleet }                   from "../commands/fleet.js";
 import { cmdIntent }                  from "../commands/intent.js";
 import { cmdIntentRelay }             from "../commands/intent-relay.js";
+import { cmdPromote } from "../commands/promote.js";
+import { cmdKapae } from "../commands/kapae.js";
 import { cmdKahua }                   from "../commands/kahua.js";
 import { cmdHandle }                   from "../commands/handle.js";
 import { cmdVault }                    from "../commands/vault.js";
@@ -186,6 +188,8 @@ export function projectCommands(surface: string, executableOnly = false): readon
 
 export const COMMANDS: readonly Command[] = [
   { name: "intent", summary: "Issue and read a face's signed intents; every invocation names --face N when several faces stand.", handler: cmdIntent, accepts: ["face", "to", "prefer", "class", "every", "args", "nonce", "void-at", "through", "executor", "deny", "agent", "prefix", "policy", "as-of", "until"], signs: true },
+  { name: "promote", summary: "Manage a wiki’s promotions.", handler: cmdPromote, accepts: ["face", "wiki", "why", "keep", "drop"], signs: true },
+  { name: "kapae", summary: "Manage a wiki’s promotion brake.", handler: cmdKapae, accepts: ["face", "wiki", "why", "keep", "drop"], signs: true },
   { name: "kahua", summary: "One face's kahua stage: `mint` its pin, `propose` (any seat), `lift`, `withdraw` and `carry` (the operator's hand: the lōkahi cap and the grant out of sealed custody; a carry stands earlier items again after a root rotation), `list` and `get` its verified items; answers print as JSON.", handler: cmdKahua, accepts: ["face", "text", "taint", "sources", "parent", "proposal", "proposals", "fields", "history", "all"], signs: true },
   { name: "intent-relay", summary: "Enable, disable, inspect or rotate one face's sealed intent relay admission door.", handler: cmdIntentRelay, accepts: ["face", "json"], signs: true },
   { name: "vessel",        summary: "THE VESSEL DOOR \u2014 one namespace over the vessel's own causal island (store, genesis artifact, daemon, corpus). Four primitives and one read: `found` mints identity + bootstrap (`--hearth --name <label>`: the Stable founding act, a hearth with persona zero and its one-seat seed charter; `--hearth --restore <bundle>`: the same act with a restored face as persona zero; bare: a place with no face, which joins a face by `lares fleet join`) \u00b7 `stand` brings the daemon up and reports ([--foreground] [--with-web] [--restart] [--page]) \u00b7 `stop` halts it on the port \u00b7 `seed` plants every bags/* holding back into its doc \u00b7 `read` inspects and starts nothing. Compositions ride `vessel rite <petname>` \u2014 founding \u00b7 refresh \u00b7 rebuild, so a new cap-stack arrives as a rite, never as another top-level verb. A fresh founding composes: found \u00b7 stand \u00b7 seed. Advancing the genesis composition is a MESH act \u2014 `nexus kahuli` \u2014 never a vessel door.", handler: cmdVessel, accepts: ["apply", "bag", "chair", "change-id", "cold-key", "cut", "dry-run", "force", "foreground", "genesis", "hearth", "in-wiki", "init", "name", "observe", "page", "palaces", "port", "restart", "restore", "root", "shadow", "storage", "tag-blobs", "wiki", "with-web"], signs: true /* found mints the vessel key + persona root; seed writes founding material */ },

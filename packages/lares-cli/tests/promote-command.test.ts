@@ -43,7 +43,7 @@ describe("lares promote", () => {
     expect(JSON.parse(lines[0]!)).toEqual({ ok: true });
   });
 
-  test("RED: orphan names `--keep` or `--drop`; CONTROL: neither, both, a malformed digest, a missing reason and a bare act refuse before the door", async () => {
+  test("RED: orphan names `--keep` or `--drop`; CONTROL: neither, both, a malformed digest, a missing reason refuse (1) and a bare or unknown act is a usage refusal (2), all before the door", async () => {
     expect(await promote("orphan", D, "--keep")).toBe(0);
     expect(await promote("orphan", D, "--drop")).toBe(0);
     expect(seam.calls).toEqual([["promote-orphan", { digest: D, decision: "keep" }], ["promote-orphan", { digest: D, decision: "drop" }]]);
@@ -52,8 +52,8 @@ describe("lares promote", () => {
     expect(await promote("orphan", D, "--keep", "--drop")).toBe(1);
     expect(await promote("commit", "nope")).toBe(1);
     expect(await promote("prepare", D)).toBe(1);
-    expect(await promote()).toBe(1);
-    expect(await promote("teleport", D)).toBe(1);
+    expect(await promote()).toBe(2);
+    expect(await promote("teleport", D)).toBe(2);
     expect(seam.calls).toEqual([]);
   });
 });
@@ -65,7 +65,7 @@ describe("lares kapae", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  test("RED: raise, lower and flag reach their rows with the wiki, digest and reason; CONTROL: a flag without a reason, a bad digest and a bare act refuse before the door", async () => {
+  test("RED: raise, lower and flag reach their rows with the wiki, digest and reason; CONTROL: a flag without a reason, a bad digest refuse (1) and a bare or unknown act is a usage refusal (2), all before the door", async () => {
     expect(await kapae("raise", D, "--wiki", "garden")).toBe(0);
     expect(await kapae("lower", D)).toBe(0);
     expect(await kapae("flag", D, "--why", "the macro leaks the field notes")).toBe(0);
@@ -77,7 +77,7 @@ describe("lares kapae", () => {
     seam.calls = [];
     expect(await kapae("flag", D)).toBe(1);
     expect(await kapae("raise", "nope")).toBe(1);
-    expect(await kapae()).toBe(1);
+    expect(await kapae()).toBe(2);
     expect(seam.calls).toEqual([]);
   });
 });
