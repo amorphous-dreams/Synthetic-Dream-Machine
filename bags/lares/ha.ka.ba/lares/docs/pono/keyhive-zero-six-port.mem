@@ -1,0 +1,200 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/keyhive-zero-six-port`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable         = true
+hydrate           = true
+l-space           = "stable"
+mana              = 14
+manao             = 14
+manaoio           = 12
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "keyhive-zero-six-port — the Keyhive 0.3.0-alpha.1 to 0.6.0 upgrade, held for after the founding: what 0.6 brings, the port Trial B measured, the four security laws 0.6 inverts, the rulings the port waits on, and the epoch act that reopens it."
+status-why        = "DESIGNED 2026-11-01: Trial B (a measurement lane that landed nothing) read 0.6.0 red for the founding; the operator asked the upgrade into a design meme (\"Pull the Keyhive 0.6.0 upgrade into a design lares/docs meme.\"). The founding takes 0.3.0-alpha.1, and this design waits for its rulings and an epoch act after the founding."
+tags              = ["api/pono/meme", "lifecycle/designed"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/keyhive-zero-six-port"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/keyhive-zero-six-port"
+written           = "2026-11-01"
+```
+
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
+
+<<~ ahu slot=`#/entry`>>
+
+! The Keyhive 0.6 port ~ the upgrade that waits past the founding
+
+''What this carrier holds.'' The design for moving `@keyhive/keyhive` from 0.3.0-alpha.1 to 0.6.0: where the house stands today, what 0.6 brings, the port a measurement lane ran on 2026-11-01, the four house laws 0.6 inverts, the rulings the port waits on, and the act that reopens it. The road's deps lane (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/side-lanes`>>) set the bar: Keyhive moves before the founding only if the CGKA stands from the Archive ''and'' the port runs one or two days. Trial B read the first half green and the second red, so 0.3.0-alpha.1 carries the founding and this design carries the rest.
+
+''Why it waits, in one line.'' The mechanical port takes half a day; the security model underneath it moves, and four house laws written against 0.3's behaviour stop holding on 0.6 until the operator rules how the house restores or retires each.
+
+''Measured marks.'' A line marked MEASURED cites its date and its source: the fold-trial hand-back, the trial outputs in the controller's scratch (`fold-trial/out/`, runs B and B2), the dep survey (`dep-survey/report.md`), or the trial branch `fold-trial-2026-11-01-b` (commits `4706b71cb` and `432e2f6f1`, never pushed). A line marked INFERRED rests on a changelog or a diff read, never a run.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/where-it-stands`>>
+
+!! Where it stands
+
+* ''The span runs 0.3.0-alpha.1'' since `4e8ca4739` (the provider speaks Keyhive 0.3.0-alpha.1; a stand mints one contact card before its Archive leaves). Both `packages/lararium-keyhive` and `packages/lararium-web` declare it, and the lockfile resolves it. MEASURED 2026-11-01, dep survey.
+* ''The founding takes 0.3.'' Operator ruling 2026-11-01: //"Approve both leans pending the trials"//, with Keyhive moving only if Trial B read green on both counts. Trial B read red on the port's size and its security shift, so the hold stands. MEASURED 2026-11-01, fold-trial hand-back.
+* ''The 0.3 stand rests on the Archive.'' A creator re-stood from seed plus replayed events holds an empty CGKA on 0.3 and cannot seat a member or seal; the house cured that by design, standing a creator from its Archive and minting one contact card per stand so the Archive lineage opens every prekey the identity presented (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`>>, what stands sealed). No upstream issue names the empty-CGKA fault. MEASURED 2026-10-12 (fold preparation) and 2026-11-01 (dep survey's issue read).
+* ''Upstream moves fast.'' Releases 0.4.0-alpha.1 (2026-10-13) and 0.6.0 (2026-10-29); upstream main ran 60 commits past the house's reading-copy pin; Subduction main already tracks Keyhive 0.7 (#323). MEASURED 2026-11-01, dep survey.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-0-6-brings`>>
+
+!! What 0.6 brings
+
+The crypto hardening upstream landed between 0.3.0-alpha.1 and 0.6.0 (MEASURED 2026-11-01 as commit titles and a `.d.ts` diff, 657 to 898 lines, in the dep survey; the behaviour behind each title stays INFERRED):
+
+* ''SIV nonce checks'' on symmetric encryption: a reused or forged nonce refuses.
+* ''Per-derivation key contexts'': each derived key binds the context it serves, so one derivation's key never opens another's material.
+* ''Ancestor-key decrypt'': a decryption names the ancestor key it rides, and `symmetricDecrypt` now takes `associated_data`, `decryptWithKey` a `doc_id`.
+* ''A CGKA op codec'' of its own: serde and bincode leave the wire and archive formats, so every byte 0.3 wrote reads foreign to 0.6.
+* ''Causal encryption'' (`keyhive_content`): `CausalDecryption`, `DecryptedContent`, `DecryptFailure`, `Ancestor`, with `complete()`, `failed()` and `next()` walking a content's causal history, and `setContentHeads` and `retained` beside them.
+
+The cost side of the same delta: `Access` renames to `Power`, `Agent` to `Principal`, `Signed` to `SignedBytes`; `Peer`, `History`, `Invocation`, `SignedInvocation`, `DocContentRefs`, `delegations`, `revocations`, `bestAccessForDoc` and JSON contact cards leave; `pickPrekey` MAY answer undefined.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-measured-port`>>
+
+!! The measured port
+
+Trial B ported the provider only far enough to compile and run the empty-CGKA probe (`tests/fold-trial-06.probe.test.ts` on the trial branch). MEASURED 2026-11-01 throughout this slot, fold-trial hand-back and `fold-trial/out/`.
+
+''Compile.'' 45 errors, every one inside `packages/lararium-keyhive`; `lararium-web` compiled clean.
+
+''The rename map.''
+
+|! 0.3.0-alpha.1 |! 0.6.0 |
+| `getAgent` | `getPrincipal`, which throws on an unknown id |
+| `Access` | `Power` |
+| `Agent` | `Principal` |
+| `addMember(to_add, membered_id, access, other_relevant_docs)` | the fourth argument leaves |
+| `ContactCard.toJson` / `fromJson` | `toBytes` / `fromBytes` |
+| `SignedDelegation.subjectId` | optional |
+| a `Revocation` names its subject | it no longer does |
+| `Capability.who` | an `Identifier` |
+
+''The shims the port carries.''
+
+* An unknown principal: 0.6 answers a flagless stub, so the provider reads it back to absent (`432e2f6f1`).
+* Contact cards travel binary on 0.6, while the house carries them as text in about six places; the provider hands out base64 so the text carriers hold.
+* 0.6's own foreign-archive refusal (`TryFromArchiveError`) maps to the house's `ArchiveIdentityMismatch`.
+
+''The CGKA probe.''
+
+* ''From the Archive: it stands.'' A 0.6-minted Archive (4416 B, against 0.3's 8704 B for the same founding) re-stands the creator, seats a guest, opens content sealed at the founding and seals fresh.
+* ''From seed plus replayed events: it fails, worse than 0.3.'' On 0.3 the document stayed known with the creator's hand gone; on 0.6 the document stays unknown.
+* ''With the prekey secrets imported: it stands.''
+
+''Old bytes.'' A 0.3 Archive refuses on 0.6, and 0.3 events never ingest, so every vessel re-founds on the move.
+
+''Suites on 0.6, against the 0.3 control.''
+
+|! Suite |! Control (0.3) |! Run B (0.6) |! Run B2 (0.6, after the shims) |
+| `lararium-keyhive` | 493 of 493 | 37 red of 497 | 32 red of 497 |
+| `lararium-node` | 3136 pass, 0 red | 5 red | 3 red of the 24 re-run |
+| `lararium-browser` | 0 red of 393 | 2 red | not re-run |
+| `lararium-web` | 0 red of 465 | 1 red | not re-run |
+| `lares-cli` | 1679 of 1679 | 1679 of 1679 | not re-run |
+| e2e | not run | 25 red of 201 | 47 of 47 re-run green |
+
+The B2 keyhive reds beyond the security shift name the substrate probes that read 0.3's exact shape: the face-chain readings 2 to 4 (`W11`'s alarms, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/after-the-seat`>>), the lockbox wrap and its substrate probe W1, the host-enumeration bytes, and the archive-trails and creator-restand probes whose controls named 0.3's replay behaviour.
+
+''Genesis.'' The genesis hashes stay unmoved; the Keyhive web chunks move.
+
+''Size.'' Half a day for the mechanical port; several days beyond it, plus the operator's rulings in #/rulings-owed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-security-shift`>>
+
+!! The security shift ~ four law inversions
+
+Each inversion names what 0.3 did, what 0.6 does, the house law it breaks and the tests that read it. MEASURED 2026-11-01, fold-trial hand-back and runs B and B2.
+
+# ''Revocation authority loosens.''
+#* 0.3: revoke authority follows the seating lineage; a junior revoking its senior, or a peer revoking a seat another hand made, failed with //"Proof missing"//.
+#* 0.6: both land.
+#* The house law it breaks: revoke authority follows the seating lineage, and a founder or a seat whose seating hand left leaves only by a fresh group (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae#/keys`>>; `K12`). The cabal rule that a member never revokes its own delegator rests on it too.
+#* The tests: `cabal-two-human` (a member cannot revoke its own delegator); `seat-roll-substrate` probes 1, 4, 6 and 7; `persona-group-substrate` G2, G3 and G11; `fleet-seat-duties`, three tests (road `T34`); `content-key-seat`, two tests; `creator-self-eviction`.
+# ''The forward-only boundary goes.''
+#* 0.3: a member reads only content encrypted at or after its own add.
+#* 0.6: causal decryption walks a content's ancestors, so a later seat opens content sealed before it.
+#* The house law it breaks: keyhive read runs forward-only, and a fresh seat after a revocation opens nothing from the span it missed (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-price`>>; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store`>>). The pre-seat reach (a device that returns after a lift opens nothing sealed before its fresh seat) rests on it.
+#* The tests: `face-join-pair` (content sealed before the add stays shut); `persona-content-crossing`; `pre-seat-reach`, three tests; `seat-roll-substrate` probe 5; `persona-group-substrate` G5.
+# ''The event-only stand goes.''
+#* 0.3: seed plus replayed events re-stands the name and the document, with the creator's CGKA hand empty.
+#* 0.6: the document stays unknown.
+#* The house law it touches: a creator restores from its Archive, and cap events carry membership, never key-agreement state. The founding already leans on the Archive, so the house loses a fallback, never a route; any path that still re-stands from events alone (a crash between the stand and the Archive's leaving) reads red on 0.6.
+#* The tests: `creator-restand` and `archive-trails-the-act`, whose event-only controls read 0.3's shape.
+# ''Revocations stop naming their subject.''
+#* 0.3: a `Revocation` names the seat it revokes.
+#* 0.6: it names the revoked delegation alone.
+#* The house law it breaks: a REVOKED event stamps the document and the agent it removes, and the content-key roll and the edge-seat ledger key on that subject.
+#* The test: `keyhive-provider-surface` (a sentinel names its document and its agent, and DELEGATED and REVOKED events stamp that document).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rulings-owed`>>
+
+!! Rulings owed
+
+Three rulings stand between this design and a port. Each names the fork, the house lean as a lean only, and what flips it. The operator rules each; the lean never stands in for the ruling.
+
+''1. Forward-only against causal history.'' 0.6 lets a later seat read its document's past. The fork: keep forward-only as house law, sealing each epoch under a key a later seat never receives (a fresh document per epoch, or a lockbox per span the house holds back from the causal walk); or retire forward-only and rewrite the veil-ladder's price, the pre-seat reach and the face join's from-now admission as hand-overs of history. The lean carries forward-only, because a returning device that opens what it missed undoes the removal the house promises. What flips it: an operator story where a joining face must read the household's past, or an upstream knob that bounds the causal walk at the add.
+
+''2. How the house restores its revocation lineage.'' 0.6 lets any seat holder revoke, and its revocations name no subject. The design that answers both: an ''ingest lineage filter'' between the event store and Keyhive's ingest.
+
+* It keeps a map from each delegation's hash to its subject and its issuer, written as each DELEGATED event lands; the house's own records already carry both, so the map derives, never asserts.
+* At each incoming revocation, it resolves the revoked delegation's hash through that map to the subject and the issuer, and admits the revocation only when its signer stands upstream of the seat's issuer in the seating lineage (the 0.3 rule), refusing by name otherwise. A party seated by two hands leaves only under a hand upstream of both.
+* It stamps the resolved subject back onto the house's REVOKED event, so the content-key roll and the edge-seat ledger keep their key.
+* It runs as a pure derivation over the grow-only event set, verdicts computed and never carried on the wire, so two islands holding the same events reach the same verdict with no global now.
+* Open joints: a revocation that arrives before its delegation waits in a pending set, never admits on faith; a delegation hash the map never saw refuses by name; Keyhive's own state after a refused revocation stays unchanged only if the filter runs before ingest, never after.
+
+The fork: build the filter, or accept 0.6's looser model and retire the lineage law with its tests. The lean builds the filter. What flips it: upstream documenting an authority model that restores lineage itself.
+
+''3. A founding route that never leans on the event-only stand.'' The house stands each creator from its Archive and hands every Archive out before the provider leaves; 0.6 makes that the only route. The ruling owed names what the house does when an Archive lags its events (a crash between an act and the Archive's next leaving): re-found the face, or carry the prekey secrets beside the Archive under that face's FCK so a stand imports them. The lean carries the Archive after every act that moves CGKA state, inside the same sealed write, so no window opens. What flips it: a measured cost of an Archive per act on the browser shore.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/when-it-reopens`>>
+
+!! When it reopens
+
+The port reopens on any of three keys:
+
+* upstream documents the 0.6 authority model (who may revoke, and what a causal decryption may reach);
+* Keyhive 0.7 lands, which Subduction main already tracks; or
+* the operator rules the three forks in #/rulings-owed.
+
+''How it runs.'' An epoch act after the founding, never a patch: every vessel re-founds, since a 0.3 Archive refuses on 0.6 and 0.3 events never ingest; every Archive and every fixture gets re-minted; the Keyhive web chunks re-bake beside it. Its order: re-measure the empty-CGKA probe and the four inversions on the release it targets; land the rulings' cures red-first (each inversion's tests stand as the reds, rewritten only where a ruling retires a law); then the mechanical map from `4706b71cb` and `432e2f6f1` as one commit with the provider, the probes, `worker-boot.ts` and the tests, never a manifest-only state; then re-read `W11`'s four alarms.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/side-lanes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/after-the-seat`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/keyhive-provider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/keyhive-per-persona-group-2026`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae#/keys`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-price`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/k15-custody-step-zero`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/subduction-onomancy-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MhVZI0WW53577NsS9-OdqkQGxBvhNs5QAoFonyI6VOk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

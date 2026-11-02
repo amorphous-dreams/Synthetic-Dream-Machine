@@ -10,7 +10,7 @@ mana       = 15
 manao      = 15
 manaoio    = 14
 namespace  = "&#x2695;"
-revised-on = "2026-10-14"
+revised-on = "2026-11-01"
 role       = "a household walk for founding a fresh Dockerized node, establishing custody, and naming the built and owed browser, membership, and aftercare steps"
 status-why = "a fresh household founding walk with explicit built steps and owed reach and browser work"
 tags       = ["mesh/carry-contract", "api/pono/persona-policy", "mesh/siege-resilience", "mesh/kahu", "kind/rite"]
@@ -53,7 +53,7 @@ A fresh founding needs only a fresh state mount and this household's tracked rep
 
 All code runs in Docker. The host keeps the shell shim, hooks, mounts, editor, and custody copies. Use a local filesystem for both mounts; keep `/state` outside the repository and separate from `/workspace`, which points at the household repository checkout. The vessel image carries code and genesis, never household state. The app receives no Docker socket.
 
-Set `LARES_STATE` to the first operator's vessel-home directory and `LARES_WORKSPACE` to the household's git checkout of this repository, which holds tracked `bags/` and receives `wikis/`. Export both paths in this shell before running the host preparation commands; alternatively, create the literal paths named in `lares-surface.env`. On Windows, keep both mounts inside the WSL distro. Keep a terminal attached for founding and custody credentials; the CLI refuses a credential act without a TTY.
+Set `LARES_STATE` to the first operator's vessel-home directory and `LARES_WORKSPACE` to the household's git checkout of this repository, which holds tracked `bags/` and receives `wikis/`. Export both paths in this shell before running the host preparation commands; alternatively, create the literal paths named in your hearth's `lares-surface.env` (`<hearth>/lares-surface.env`, where the hearth reads `LAR_ROOT`, else `~/.lares`; the checkout carries none). On Windows, keep both mounts inside the WSL distro. Keep a terminal attached for founding and custody credentials; the CLI refuses a credential act without a TTY.
 
 ''Do'': build the product image and create the two host directories.
 
@@ -373,6 +373,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;P2FdNjjKvZSPIWlYlwhPQAFLJqcPuurK993bP6FSI0w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mY9T4lISZJd9eiTdtoaBdqEoDh0ZwxJpayzPM-I456Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>
