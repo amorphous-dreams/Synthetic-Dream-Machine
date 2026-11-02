@@ -10,7 +10,6 @@
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/ahu
  */
-// vm-grammar-boundary: exempt — its subject IS the machine ahu scanner (ahu-scan.ts) and its weld to the generated grammar table's `lar-flow: block` heads; no grammar surface is driven.
 import { describe, test, expect, beforeAll } from "vitest";
 import { scanAhu } from "../src/meme-ast/ahu-scan.js";
 import { memeticIngestOps } from "../src/ingest-gate.js";
