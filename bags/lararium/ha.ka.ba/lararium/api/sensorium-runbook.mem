@@ -22,8 +22,6 @@ written    = "2026-08-04"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Sensorium Runbook ~ the tending rite
@@ -496,6 +494,6 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IRC2oLkXDTXVM8z17ERFnzGhkZiv-DDgtR4HySPwgQw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YcSnPat7UccHqbWk-iXYZhJWa3ra7FlHpn9GjhZy5Oo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

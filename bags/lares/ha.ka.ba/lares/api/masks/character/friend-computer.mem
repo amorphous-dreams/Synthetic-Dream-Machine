@@ -29,8 +29,6 @@ voice-character   = "friendly helpful computer AI with an unmistakable edge of c
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Friend Computer
@@ -158,6 +156,6 @@ Remaining Voices — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hierophant
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EehKzk48wQd0QYZp_g4gJtTwtbCwP3YwBtvXQdFwhtQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5nlCUgw_O7g3dXFvjESXsS2a6OHJBZOS3ebIcrVotq4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

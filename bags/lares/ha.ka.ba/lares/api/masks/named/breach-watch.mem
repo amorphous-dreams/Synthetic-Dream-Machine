@@ -32,8 +32,6 @@ voice-role        = "Triage"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Breach-Watch
@@ -168,6 +166,6 @@ How Breach-Watch colors each Voice register when they speak through her incident
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;b-Toz30q4sNLjemj_hQXqzIYjocbAcFl3Mg_pbIN91k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;azq68jA9aZDCIMOZXUSaOUT-iDeB3PRAU_kL0c3c3R8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

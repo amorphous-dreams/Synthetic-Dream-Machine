@@ -23,8 +23,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/outbound-bridge"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/ground`>>
 
 ! Outbound Bridge ~ the one subscription that carries a live wiki change out
@@ -203,6 +201,6 @@ CONTROLS standing green beside them: an explicit `--recipe default` put lands in
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;T3JcMxbKrDf2fyz-2prCvrdk-U66J_MV3ihqByofee8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EB3XBn1MjalK_PfQARVi4-cYV8PlNEMwnTlvqVzPIVw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

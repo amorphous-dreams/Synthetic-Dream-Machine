@@ -184,7 +184,6 @@ it through a different door (<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/peer-
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
 
-
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate`>> — distinguishes floor bytes from porch answer
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc#/the-oracle-pointer`>> — carries the seed CID named by each answer
@@ -193,6 +192,6 @@ it through a different door (<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/peer-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3L8XHXq2X1QK_uLcouUJancDHFtX65OBfK_SznEBslM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eTFnIOemqezQCb4jmGfyIMSxWdQKi_eLS8onj8UGjZk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

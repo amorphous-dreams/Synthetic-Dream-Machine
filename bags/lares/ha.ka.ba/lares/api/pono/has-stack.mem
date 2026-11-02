@@ -18,8 +18,6 @@ written   = "2026-06-12"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Has-Stack — the composition law
@@ -112,6 +110,6 @@ the py caps consume.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5kYwo1Zrx5cPVLHznUTHPs0002Sc11Xcrt2MGyWvzgY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4zolLTWsYG-c0kHVwLneB6R-qR788Fk9KgOUIZ_jFDg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -19,8 +19,6 @@ uri-path      = "ha.ka.ba/lares/api/pono/hookupu-the-flow"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! `hoʻokupu` ~ the flow that cannot become an estate
@@ -117,6 +115,6 @@ Not coincidence: the Handle already reads as ''the only one that ever federates'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Du7zjfSHvqg_jjvfT6rFLHoZ9mTfiwdvOXYXfHSQUwk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zlPs-4xlVWdzDctMR-bD6iLKVc74zmZn0qWgx9wigTk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

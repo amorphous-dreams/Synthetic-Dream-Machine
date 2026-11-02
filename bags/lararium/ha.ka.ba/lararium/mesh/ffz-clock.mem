@@ -19,8 +19,6 @@ uri-path    = "ha.ka.ba/lararium/mesh/ffz-clock"
 
 <<~ aka uri=`lar:///ha.ka.ba/lararium/api/agent-worldline`>>
 
-
-
 <<~ ahu slot=`#/contract`>>
 
 ! FfzClock ~ the rhythmic grain of the whole house (Fuller-Fontany-Zelenka Chronometer)
@@ -473,6 +471,6 @@ targeted revocation MUST ride Keyhive's convergent removal, never the counter
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xhzib4G4d55wImpChEka1M_I976r0qvxE3W141BZq3w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EfIYLsq6X89kA3gjOzUEfH8GuUvwYsMy87GqkEL5Q3w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

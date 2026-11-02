@@ -22,8 +22,6 @@ written    = "2026-09-13"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Realm / Nexus ~ the word-blur, measured
@@ -207,6 +205,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6WLQQfl5-qZQlFaL4W2rmnPRMwBq-vk_MfSEUwiTijw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uJHkDhpF02482RuiXaQPUusyjZ_cIHATMWzuuJQEcVg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

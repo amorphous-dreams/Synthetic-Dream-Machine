@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lararium/docs/signal"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Signal Docs
@@ -171,6 +169,6 @@ Settled child rooms in this branch:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yZ9QvBS0LKzDA2WxNMpievJVPwPhBaENtEiLqPo8ak4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sejIbkiZgdHFbs-zc2om6NMphHyyvRdOGWDONJBoZwU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

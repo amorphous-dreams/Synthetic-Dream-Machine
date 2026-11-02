@@ -629,7 +629,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/grammar-invariants`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
 
-
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane`>> — defines floor projection and scoped answer
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>> — separates bulb delivery from porch carriage
@@ -638,6 +637,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AahFk44u4_oWHLRyb1diprzVMheocTy18tdrFAYJ60A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;g2NQjOeqZWt_wt0JpYHhdO9m3yvbXWTzRsUhKW5Q3FE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

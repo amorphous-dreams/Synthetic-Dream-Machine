@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/l-space-trust"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! l-space Trust Law
@@ -90,6 +88,6 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;i_jttFlG6YMXoK3uTs8N374JGu2erX5XIrTjBZARDDc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6nHyt8LIeQb9K2gGnwgHb-g1EBPca4qjuDXsh_GjDc0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

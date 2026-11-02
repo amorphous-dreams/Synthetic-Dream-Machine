@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/failure-states"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Failure States
@@ -75,6 +73,6 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;boQ4p79v5glK5UMifKV-Ihooo9KW-8NdXSXExm5nNTA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Rker23TdhHN34qBk76jhA5FjoM0D-UaMyH1oGIJbLvc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

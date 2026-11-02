@@ -23,8 +23,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/blob-carriage"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/tension`>>
 
 ! Blob Carriage ~ a scout against the binaries tension
@@ -226,6 +224,6 @@ What moved: decode-before-hash in `cas-stage.ts` (+ `declaredType`); `ridesAsPoi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZLfG3KyR4BmATJxkOGLdIU2RUVsI8TtUy67vvaxmuA4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;a5a_AfaX7rWVyOCPDVqBGpicbMawNROe4aNxFqkvmGQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -21,8 +21,6 @@ written   = "2026-06-29"
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! Composable Keel ~ declare the stack, wire it or refuse
@@ -149,6 +147,6 @@ Four domains converging on one shape reads as a real pattern integrity, not a lo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0UOhooeGmUrTgp0r7Y_TDrnE_jL4KelbhTTKbITuMnk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dFCAVzqEszED1H2oStKAH4Qct_AIJ8bFJtSc_fqu2vs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -21,8 +21,6 @@ written   = "2026-06-25"
 
 <<~ aka uri=`lar:///ha.ka.ba/lararium/mesh/ffz-clock`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! Agent Worldline ~ the binding that names a spirit, attributes its acts, and times its life
@@ -425,6 +423,6 @@ attribute to the spirit that moved them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8IUL9mH0N_mnxdGIbGaVLUm0J9eJR6dHpmzheXHlI8Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jfk7xm-ZBK-qDw4F64r1OBZciZ9YkGFMcwuCGrnVFyY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

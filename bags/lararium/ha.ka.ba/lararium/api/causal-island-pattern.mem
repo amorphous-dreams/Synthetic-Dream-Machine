@@ -21,8 +21,6 @@ written   = "2026-06-26"
 
 <<~ aka uri=`lar:///ha.ka.ba/lararium/api/network-edge`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! The Causal-Island Pattern ~ the map, carried with high confidence
@@ -124,6 +122,6 @@ The high-confidence bearings for the build (when the forks unblock):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cJctEoMNhqIEHbTaN0IQOdcMRBhTj_kJYlUJDQ8jOs4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;M5gGin3urvh9JSowzooQ4RZG3ZzrYGTsjfMd_oEN3Wk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -19,8 +19,6 @@ uri-path   = "ha.ka.ba/lares/api/pono/hoike"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! Hoike — Keeping the Losers
@@ -112,6 +110,6 @@ The layer carries the Eduyot pattern: minority opinions kept with attribution so
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;58hPCcuyJRFzcBrlfKkhVpucjrhyivOy1z3N9TyHri8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tWuk7m048s_3l3ZsSCk0MP7NGdneKI8oIIXOX-7YoFo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Live-Session Overwrite Law
@@ -81,6 +79,6 @@ If the node records the claim and marks promotion pressure separately, boundary 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Nd96ndtT9S52tMxHohX_4X6xUZtZ-yINZQiLwDojuFQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ACizgcsvw4zzamCGxE1rX8It8KnJVtQk4JZenUB1GXc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

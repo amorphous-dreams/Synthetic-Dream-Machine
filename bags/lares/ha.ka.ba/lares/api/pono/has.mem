@@ -20,8 +20,6 @@ written   = "2026-09-09"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Has ~ one relation, three slots, and it fuses nothing
@@ -223,6 +221,6 @@ after welded to the before. The trigger does the work the dead water would have 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qyNU1ouHLGbPAGQLyIZjdgElUXA9yvvdqSJrtKydCOk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IPgrELBTAtranFHCmMB0gXQ0Ilpwh1HSl6Qmx6jFZu4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

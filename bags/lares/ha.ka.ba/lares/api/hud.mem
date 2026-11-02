@@ -20,8 +20,6 @@ uri-path  = "ha.ka.ba/lares/api/hud"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 !! Entry — Lararium Core Hydration
@@ -122,6 +120,6 @@ The docs room carries the full line-composition examples, the stance and tool gl
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AVyvG2v4adyd8qgrVGdOZ2_FPeiN3kBx5Ivr1WUHJzs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wI-hz-Vf6O3riD7FkwCKEWy-3Smg5ZNaGv53pepdo6o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

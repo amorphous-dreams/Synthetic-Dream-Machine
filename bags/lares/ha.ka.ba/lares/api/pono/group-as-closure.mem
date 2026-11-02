@@ -21,8 +21,6 @@ written    = "2026-06-29"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Group as Closure
@@ -199,6 +197,6 @@ group-object, the closure model carries a real pattern integrity, not a stylisti
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6xT4boRfjwoU4_DW02Zu1DTJ3WbRjIzdrcAhyfaqtq4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5jeWT_VsbmtrXiUv82hQiJKykCbb1HNJa6f00MtdoFs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

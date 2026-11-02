@@ -17,8 +17,6 @@ uri-path  = "ha.ka.ba/lararium/tw5/canvas/rooms"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Lararium Canvas Rooms
@@ -135,6 +133,6 @@ label      = "← System"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qauxI2slGpmvJm-ck78heIGoFn_mjLOTgpKobEGNoaQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yuiO_OOt_aecUuRFcs-OBmprUS2Mu6hT0AEOKxT6yXw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

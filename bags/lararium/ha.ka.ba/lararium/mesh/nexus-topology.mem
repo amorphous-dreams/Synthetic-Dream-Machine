@@ -22,8 +22,6 @@ written    = "2026-08-08"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Nexus Topology ~ which name serves which glass
@@ -238,6 +236,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9Dx_N9pAobA-o2ZPPVKBsYt_0QYjU14FWWa8IK5jCUw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UzZecPTue-nt70_a03jVixOjdPMYdnBPq2SkNCEJ_OU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

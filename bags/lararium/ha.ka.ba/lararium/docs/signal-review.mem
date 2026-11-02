@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lararium/docs/signal-review"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Signal Branch Review Memo
@@ -252,6 +250,6 @@ That order should reduce churn and keep the branch from freezing unresolved FFZ 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jj1_cFwZgGiLAR4YQoNClTmtiDG43Cb3Vk1tUuzbzAY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KbOD9qDzNouspK3Cq1WJ-m7K1xXG1bUhu-Hao3gkG7E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

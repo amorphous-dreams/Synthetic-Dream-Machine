@@ -17,8 +17,6 @@ uri-path  = "ha.ka.ba/lares/api/noosphere-boot"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/entry`>>
 
 ! Entry ~ Lararium Hearth
@@ -620,6 +618,6 @@ Every shrine keeps one Pinax to Eris Discordia in a corner.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0bkGNNj2BbcDmV-WhEGjL1sjlgCsZUidXb49e7f3Sng`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hN6xFIdQFjMRHkgot-qqRUJbp0lcOpqVV4Z7hM7qoMM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

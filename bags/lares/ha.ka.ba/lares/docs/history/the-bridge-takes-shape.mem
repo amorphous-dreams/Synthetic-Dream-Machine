@@ -19,8 +19,6 @@ written   = "2026-06-21"
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/docs/history/the-first-breath`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Bridge Takes Shape
@@ -77,6 +75,6 @@ So this carrier marks a smaller morning than the founding: ''the read-leg took s
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bu1Uk7JYY5OExuw8qICqwbcuqKr8UAR1_ULlWrEmlfI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uiZGPUz1H4tqimXRlnF6hKRyM60jk0OurdUaLB56PZQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

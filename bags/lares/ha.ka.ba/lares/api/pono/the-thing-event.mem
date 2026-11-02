@@ -19,8 +19,6 @@ uri-path      = "ha.ka.ba/lares/api/pono/the-thing-event"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Thing-Event ~ how a stranger begins to dwell
@@ -100,6 +98,6 @@ That reads as the same law as //the naming layer performs, so it must never cert
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Yx1e5psT5zk_JbZbbfEaZ3jJNXjJeRuus9BSOiw9Frw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aV-kDUaBliST_7LHbh9YfAs1cqxHOdIcZ2ogf0uz-nI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

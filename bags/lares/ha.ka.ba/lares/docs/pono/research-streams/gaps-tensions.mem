@@ -17,8 +17,6 @@ uri-path  = "ha.ka.ba/lares/docs/pono/research-streams/gaps-tensions"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Gaps, Tensions, and Conflicts — Living Catalogue
@@ -127,6 +125,6 @@ Simple transclusion `{{Title}}` maps to ``<<~ kahea uri=`lar:///uri`>>``. Templa
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nkLZiv6G6Ph797hRaIAOsAWqERfqdJQvuNdHDBe5doQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OD7_3kDMn6K4jlZMz3fGUyYbn6m1SPxo9gm1VGhmYSc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

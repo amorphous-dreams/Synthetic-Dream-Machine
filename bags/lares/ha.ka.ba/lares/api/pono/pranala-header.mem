@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/pranala-header"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! Pranala-Header — the bearing a carrier declares about itself
@@ -109,6 +107,6 @@ agrees-with    = "uri-path"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Abv7Pjdyn0Mc5PLE-w9BLz7j8dbE054HCDZlaVdyygo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;R1tlDfDZGZTwxctF3TMd8KAJOiV5YvaZRhfm4s6CDmU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -18,8 +18,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/failure-states/table-hides-a-plane"
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
 <<~ ahu slot=`#/head`>>
 
 ! The Table That Hides a Plane
@@ -72,6 +70,6 @@ If the entities share a plane but differ in degree, that reads as an ordinary ta
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;50YNkvnmQaxJ_gXapq8tD8xCFO8SB1FMTBlToglP5oE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dD6pmQBBg02uve8OMUeYleH71YT4eJtYZtZjdZCvyEs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
