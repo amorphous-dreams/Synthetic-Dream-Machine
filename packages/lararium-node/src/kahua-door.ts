@@ -149,6 +149,9 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
         const row = found.batch.proposals.find((p) => p.title === input.title);
         if (!row) throw new KahuaRefused(`proposal-title: proposal ${input.proposal} names no item "${input.title}"`);
         if (row.digest !== kahuaBodyDigest(input.text)) throw new KahuaRefused("proposal-digest: the body differs from the one proposed");
+        if ((await reading()).history(input.title).some((revision) => revision.proposal === input.proposal)) {
+          throw new KahuaRefused(`proposal-spent: proposal ${input.proposal} already lifted ${input.title}; lift a fresh proposal`);
+        }
         origin = { seat: found.issuer, device: found.issuer, session: found.batch.session };
         taint = [...new Set([...row.taint, ...taint])];
         if (sources.length === 0) sources = [{ title: row.title, revision: row.revision }];
