@@ -49,7 +49,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
   kahua: {
     usage: "usage: lares kahua mint|propose|lift|withdraw|carry|list|get [title|cid...] [--face N]",
-    synopsis: "Read and write one face's kahua stage, the fleet's working-memory stage. An AI seat proposes; the operator's hand lifts, withdraws and carries (after a root rotation, the earlier items stand again only once carried), each act signed under the face's root out of sealed custody. Every answer prints as JSON.",
+    synopsis: "Read and write one face's kahua stage, the fleet's working-memory stage. The face's founding act pins the stage, by whichever device founds the face; `mint` adopts that pin and registers it, and a face whose log names none refuses `kahua-mint-outside-founding`. An AI seat proposes; the operator's hand lifts, withdraws and carries (after a root rotation, the earlier items stand again only once carried), each act signed under the face's root out of sealed custody. Every answer prints as JSON.",
     examples: [
       "lares kahua mint --face 1",
       "lares kahua propose --face 1 --proposals '[{\"title\":\"T\",\"revision\":\"r1\",\"text\":\"body\",\"taint\":[]}]'",

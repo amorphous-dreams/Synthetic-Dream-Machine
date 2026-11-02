@@ -59,7 +59,7 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
     epoch: () => face.lineage[face.lineage.length - 1]!.epoch,
     currentSigner: (key) => face.currentSigner(key),
     signedAt: (epoch, key) => face.signsAt(epoch, key),
-    atom: signer, persona: personaPlane as DocHandle<LarDoc>, intents: plane as DocHandle<LarDoc>,
+    atom: signer, intents: plane as DocHandle<LarDoc>,
     rootSigner: async () => {
       const seed = await loadPersonaGroupRootSeed(index);
       return { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };

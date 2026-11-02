@@ -62,6 +62,8 @@ vi.mock("../src/fleet-join-custody.js", () => ({
 vi.mock("@noble/ed25519", () => ({ signAsync: async () => new Uint8Array(64) }));
 vi.mock("@lararium/keyhive", () => ({}));
 vi.mock("@lararium/mesh", () => ({
+  // The own-property door, as `stored-value.ts` spells it: the bootstrap read asks it by name.
+  ownEntry: (map: Record<string, unknown> | null | undefined, key: string) => (map && key !== "__proto__" && Object.hasOwn(map, key) ? map[key] : undefined),
   gateBundleDigest: (pin: unknown) => JSON.stringify(pin),
   nexusAidOf: () => "nexus-a",
   heldNexusRoot: () => ({ nexus: "nexus-a" }),

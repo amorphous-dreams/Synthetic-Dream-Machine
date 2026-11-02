@@ -14,7 +14,7 @@ import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import { projectionRoots, daemonWorkingMirror } from "../src/bag-paths.js";
+import { projectionRoots, daemonWorkingMirror, kahuaFaceTag, kahuaFaceFolder } from "../src/bag-paths.js";
 
 let dir = "";
 afterEach(() => { if (dir) rmSync(dir, { recursive: true, force: true }); dir = ""; });
@@ -48,7 +48,8 @@ describe("projectionRoots — the mirror root splits by origin", () => {
     expect(roots.bagRoot("daemon")).toBe(join(state, "bags", "daemon"));
     expect(roots.wikisRootFor("kahua")).toBe(join(state, "wikis"));
     expect(roots.sourcedSlugs()).toEqual([]);
-    expect(daemonWorkingMirror(state).mirrorRoot).toBe(join(state, "wikis", "kahua"));
+    const tag = kahuaFaceTag("5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a");
+    expect(daemonWorkingMirror(state, tag).mirrorRoot).toBe(join(state, "wikis", kahuaFaceFolder(tag)));
   });
   test("an absent canon source sources nothing: every root stays under state", () => {
     dir = mkdtempSync(join(tmpdir(), "proj-split-"));

@@ -239,7 +239,7 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
             (!held || (held.seq ?? 0) <= (record.seq ?? 0)) && !tombstones.has(ask.title)) {
             const fields = { ...(held && !held.deleted ? held.fields : {}), ...record.fields };
             land({ title: ask.title, ...(record.seq === undefined ? {} : { seq: record.seq }), fields,
-              omitted: (omitted.get(ask.title) ?? []).filter(key => !(key in record.fields)) });
+              omitted: (omitted.get(ask.title) ?? []).filter(key => !Object.hasOwn(record.fields, key)) });
           }
           ask.resolve(record.fields.text);
           return;

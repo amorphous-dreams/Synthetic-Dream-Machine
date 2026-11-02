@@ -29,7 +29,7 @@ export { PROTOTYPE_KEY_CODE } from "./stored-record.js";
 export function chunkPrototypeKey(bytes: Uint8Array): string | null {
   try {
     const change = decodeChange(bytes);
-    // ONE KEY SET ON EVERY PATH: the change path refuses the three keys the load path and the write doors do.
+    // ONE KEY SET ON EVERY PATH: the change path refuses the one key the load path and the write doors do.
     const op = change.ops.find((o) => typeof o.key === "string" && isPrototypeKey(o.key));
     return op ? `change ${change.hash} writes a \`${String(op.key)}\` key` : null;
   } catch { /* not a raw change: a document chunk, read below */ }
@@ -106,7 +106,7 @@ export function shoreInbound<T extends object>(adapter: T, onRefusal?: (refusal:
  * bytes never crossed any shore, and a store written under automerge 3.4.1 (whose LOCAL write seats a
  * `__proto__` key) may hold such a document. So the storage adapter every Repo loads from rides this
  * wrapper: each document chunk it hands back (`load`, `loadRange`) reads through `chunkPrototypeKey`, and a
- * chunk carrying one of the three keys refuses by name (`prototype-key`) rather than materializing. Sync
+ * chunk carrying a `__proto__` key refuses by name (`prototype-key`) rather than materializing. Sync
  * state and other non-document chunks read null and pass. Saves and removes pass untouched. KEEP: a live
  * hostile form. Answers the same adapter shape; idempotent per adapter.
  */

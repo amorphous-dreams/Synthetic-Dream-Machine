@@ -4,17 +4,12 @@
  * The door decides nothing the reader would not: every act it signs passes `readKahuaAct` under the same grant before it
  * lands, and every read folds through `readKahuaStage`. What the door adds is the order of the hands:
  *
- *   mint      — once per face: the verified projection already naming a stage returns that url and signs nothing (a second
- *               mint, a second device); otherwise the operator's grant stands the doc at the face's derived address
- *               (`kahuaStageDocUrl`) and pins it by a root-signed `plane` act.
- *               ONE EXECUTOR: the pin appends to the face's linear `@persona` chain at the replica's head, so two hearths whose
- *               replicas stand even one act apart would sign two pins at one seq and fork the whole log; the derived url
- *               fences the address, never the head. So the mint runs on the face's FOUNDING HEARTH alone (the verified
- *               projection's first admission, `foundingHearthOf`); every other device refuses `kahua-mint-founder-hearth`,
- *               signs nothing, and adopts the pin once its replica holds it. The cost: a face whose founding hearth is lost
- *               pins no stage until an operator act names another executor.
- *               The face's founding signs the pin beside its intents plane (`landFaceGenesis`), so the mint door answers a
- *               freshly founded face's pin; a face founded before kahua pins at its founding hearth's boot (`pinKahuaAtBoot`).
+ *   mint      — adoption: the face's FOUNDING ACT signs the stage's pin (`landFaceGenesis` names `kahuaStageDocUrl(group)`
+ *               beside the intents plane under the founding hand), by whichever device founds the face, node or browser,
+ *               so the door answers the pin the verified projection names and signs nothing. A face whose log names no
+ *               pin refuses `kahua-mint-outside-founding` on every device and opens no root: the pin appends to the face's
+ *               linear `@persona` chain, so a pin signed outside the founding act, on two replicas standing even one act
+ *               apart, would sign two acts at one seq and fork the whole log. The founding act stands at seq 0 alone.
  *   propose   — the device's atom signs ONE batch on the face's intents plane (any seat may; it grants nothing).
  *   lift      — the lōkahi CAP first (Keyhive: does this device's face hold the stage), then the operator's GRANT (a current
  *               root key in hand), each refused by its own name; an AI seat's hand (the atom) never stands in for the grant.
@@ -25,12 +20,11 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { randomBytes } from "node:crypto";
-import { foundingHearthOf } from "@lararium/keyhive";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  KAHUA_BAG, KAHUA_PLANE, buildKahuaProposal, buildOutcome, intentEntryCid, intentId,
-  KAHUA_CARRY_MAX, kahuaActRecords, kahuaBodyDigest, kahuaCarryCandidates, kahuaPlaneUrl, kahuaStageDocUrl, materializeSharedLarDoc, findKahuaProposal, readKahuaAct,
-  readKahuaStage, signKahuaCarry, signKahuaLift, signKahuaWithdraw, signPersonaAct, writeIntentEntry, writeKahuaAct, writePersonaAct,
+  KAHUA_BAG, buildKahuaProposal, buildOutcome, intentEntryCid, intentId,
+  KAHUA_CARRY_MAX, kahuaActRecords, kahuaBodyDigest, kahuaCarryCandidates, kahuaPlaneUrl, findKahuaProposal, readKahuaAct,
+  readKahuaStage, signKahuaCarry, signKahuaLift, signKahuaWithdraw, writeIntentEntry, writeKahuaAct,
   type IntentVerbRegistry, type KahuaItem, type KahuaRevision, type KahuaSource, type LarDoc, type PersonaProjection,
 } from "@lararium/mesh";
 
@@ -52,7 +46,6 @@ export interface KahuaDoorPorts {
   readonly signedAt?: (epoch: number, key: string) => boolean;
   /** This device's atom: it signs proposals and outcomes, never an act that folds on the stage. */
   readonly atom: Signer;
-  readonly persona: DocHandle<LarDoc>;
   readonly intents: DocHandle<LarDoc>;
   /** The operator's grant in hand: the face's root signer out of sealed custody; throws where custody holds none. */
   readonly rootSigner: () => Promise<Signer>;
@@ -77,70 +70,6 @@ export interface KahuaProposeInput {
   readonly session?: string;
 }
 
-/**
- * THE PIN'S ONE SIGNING CORE, the mint door's and the founding hearth's boot alike: a projection already naming the stage
- * answers it and signs nothing; otherwise only the face's founding hearth signs, under the grant the caller hands, one root
- * `plane` act at the face's derived stage, and the pin must fold back before it answers.
- */
-async function pinStage(p: {
-  readonly repo: Repo; readonly group: string; readonly projection: () => PersonaProjection; readonly epoch: () => number;
-  readonly atom: string; readonly persona: DocHandle<LarDoc>; readonly grant: () => Promise<Signer>;
-}): Promise<{ readonly url: string; readonly minted: boolean }> {
-  const { group } = p;
-  const held = kahuaPlaneUrl(p.projection(), group);
-  if (held) return { url: held, minted: false };
-  const founder = foundingHearthOf(p.projection());
-  if (founder !== p.atom) {
-    throw new KahuaRefused(`kahua-mint-founder-hearth: the face's founding hearth${founder ? ` (${founder.slice(0, 12)}…)` : ""} mints its stage; this device adopts the pin once its replica holds it`);
-  }
-  const root = await p.grant();
-  // THE ADDRESS DERIVES FROM THE FACE: two hearths that mint at once stand the same doc and, from one head, sign the
-  // same pin byte for byte (ed25519 signs deterministically), so the merged log reads one act and never a fork.
-  const doc = await materializeSharedLarDoc(p.repo, kahuaStageDocUrl(group), "kahua:stage");
-  const act = await signPersonaAct(p.projection().head, { group, act: "plane", epoch: p.epoch(), fields: { plane: KAHUA_PLANE, url: doc.url } }, root);
-  p.persona.change((d) => writePersonaAct(d, act));
-  if (kahuaPlaneUrl(p.projection(), group) !== doc.url) throw new KahuaRefused("kahua-pin-unverified: the plane act did not fold into the face's log");
-  return { url: doc.url, minted: true };
-}
-
-export interface KahuaBootPorts {
-  readonly repo: Repo;
-  readonly group: string;
-  /** The face's VERIFIED `@persona` projection, read fresh at each call (the boot's face proof over the held records). */
-  readonly projection: () => PersonaProjection;
-  readonly epoch: () => number;
-  /** Whether a key stands in the face's CURRENT root roster. */
-  readonly currentSigner: (key: string) => boolean;
-  /** This device's atom key. */
-  readonly atom: string;
-  readonly persona: DocHandle<LarDoc>;
-  /** The operator's founding hand out of the unlocked custody; null where this custody holds no root for the face. */
-  readonly rootSigner: () => Promise<Signer | null>;
-}
-
-/**
- * THE FOUNDING HEARTH'S BOOT PINS A FACE FOUNDED BEFORE KAHUA. The unlocked boot that wears the face reads its verified
- * projection: a pin answers its url (every device adopts it); an unpinned face on any device but its founding hearth answers
- * null and opens no root (the pin arrives by sync); on the founding hearth, the root its custody holds signs the pin through
- * the mint's own core, provided the face's current roster seats that root. A custody holding no current root signs nothing,
- * and the boot stands with the layer absent. Idempotent: a second boot finds the pin and reads no custody.
- */
-export async function pinKahuaAtBoot(ports: KahuaBootPorts): Promise<{ readonly url: string | null; readonly minted: boolean }> {
-  const projection = (): PersonaProjection => {
-    const p = ports.projection();
-    if (!p.founded || p.fork) throw new KahuaRefused("face-log-unreadable: the face's signed log does not fold");
-    return p;
-  };
-  const held = kahuaPlaneUrl(projection(), ports.group);
-  if (held) return { url: held, minted: false };
-  if (foundingHearthOf(projection()) !== ports.atom) return { url: null, minted: false };
-  const root = await ports.rootSigner();
-  if (!root || !ports.currentSigner(root.key)) return { url: null, minted: false };
-  const pinned = await pinStage({ repo: ports.repo, group: ports.group, projection, epoch: ports.epoch, atom: ports.atom, persona: ports.persona, grant: async () => root });
-  await ports.repo.flush();
-  return pinned;
-}
-
 export function kahuaDoor(ports: KahuaDoorPorts) {
   const { group } = ports;
   const projection = (): PersonaProjection => {
@@ -150,7 +79,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
   };
   const stageUrl = (): string => {
     const url = kahuaPlaneUrl(projection(), group);
-    if (!url) throw new KahuaRefused("kahua-unpinned: the face pins no stage; run `lares kahua mint` on the root's hearth");
+    if (!url) throw new KahuaRefused("kahua-unpinned: the face pins no stage; its founding act signs the pin, and this face's log names none");
     return url;
   };
   const stage = async (): Promise<DocHandle<LarDoc>> => ports.repo.find<LarDoc>(stageUrl() as never);
@@ -185,10 +114,10 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
 
   return {
     async mint(): Promise<{ readonly url: string; readonly minted: boolean }> {
-      const pinned = await pinStage({ repo: ports.repo, group, projection, epoch: ports.epoch, atom: ports.atom.key, persona: ports.persona, grant });
-      ports.register(KAHUA_BAG, pinned.url);
-      if (pinned.minted) await ports.repo.flush();
-      return pinned;
+      const url = kahuaPlaneUrl(projection(), group);
+      if (!url) throw new KahuaRefused("kahua-mint-outside-founding: the face's founding act signs its stage's pin and this face's log names none; no act outside the founding mints it");
+      ports.register(KAHUA_BAG, url);
+      return { url, minted: false };
     },
 
     async propose(input: KahuaProposeInput): Promise<{ readonly id: string; readonly cid: string }> {

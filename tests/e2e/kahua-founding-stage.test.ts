@@ -6,9 +6,9 @@
  * --hearth --skip-build`, boot, unlock):
  *   RED      the unlocked hearth reads its stage: `lares kahua list` answers an empty stage (an unpinned face refuses
  *            `kahua-unpinned`), and the boot names the stage it adopted at the face's derived address.
- *            A mint on the founding hearth answers the pin already standing (`minted: false`).
+ *            A mint on the founding device answers the pin already standing (`minted: false`); the boot adopts, never pins.
  *   CONTROL  a mint stands the face's derived url, and after a restart of the same hearth a mint answers that pin and the
- *            boot pins nothing (one plane act).
+ *            boot adopts the same pin and signs nothing.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
@@ -41,7 +41,7 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
   }, 600_000);
   afterAll(async () => { await hearth?.stop(); });
 
-  test("RED: the unlocked founding hearth reads an empty stage, names the stage it adopted at the face's derived address, and a mint finds the pin standing", async () => {
+  test("RED: the unlocked founding device reads an empty stage, names the stage it adopted at the face's derived address, and a mint finds the pin standing", async () => {
     const listed = await hearth!.cli(["kahua", "list"]);
     expect(listed.code, said(listed)).toBe(0);
     expect(answer(listed)).toEqual({ items: [] });
@@ -57,7 +57,8 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
     expect(answer(mint)["url"]).toBe(kahuaStageDocUrl(group));
     await hearth!.stopDaemonOnly();
     hearth = await openStaged({ root: hearth!.root, port: hearth!.port, found: async () => {} });
-    expect(hearth.bootLog()).not.toMatch(/\[kahua\] the founding hearth pins/);
+    expect(hearth.bootLog()).not.toMatch(/\[kahua\] .*pins the face's stage/);
+    expect(adoptedLine(hearth.bootLog()), hearth.bootLog().slice(-3000)).toBe(kahuaStageDocUrl(group));
     const again = await hearth.cli(["kahua", "mint"]);
     expect(answer(again)).toEqual({ url: kahuaStageDocUrl(group), minted: false });
   }, 600_000);

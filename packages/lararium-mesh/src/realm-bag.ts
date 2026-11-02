@@ -169,7 +169,7 @@ export interface RealmBagRegistration {
 
 /** The charter a named hand holds — the record's own `charters` entry, else the realm the record lives in. */
 export function charterOfSteward(rec: Omit<RealmBagRegistration, "signatures">, nym: string): string {
-  return rec.charters?.[nym.toLowerCase()] ?? rec.charters?.[nym] ?? rec.realmId;
+  return ownEntry(rec.charters, nym.toLowerCase()) ?? ownEntry(rec.charters, nym) ?? rec.realmId;
 }
 
 /** Every charter this registration's hands hold — the realm's own, plus each hand that keeps it under another. */
