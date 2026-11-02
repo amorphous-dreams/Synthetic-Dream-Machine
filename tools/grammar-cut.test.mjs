@@ -371,3 +371,14 @@ test('CONTROL: a fence already wider than its ticks, and a toml meta fence, neve
   assert.equal(r.text, meta);
   assert.deepEqual(kinds(r), ['narrow-meta-fence']);
 });
+
+test('a stripped seal never comes back: an unchecked carrier the cut changes stays unchecked (the cut never mints)', () => {
+  // The run deleted, the body edited, a narrow fence planted so Cut 6b moves bytes: the cut must not
+  // stamp a fresh check over bytes no seal ever attested.
+  const stripped = slotted(SEALED).replace(/ bcc=`[^`]*`>>/, '>>')
+    .replace('body\n', 'body edited after the strip; the old seal read ni:///sha-256;AAAA once\n\n```\nx ``` y\n```\n');
+  assert.equal(ctx.frame.verifyBcc(stripped), 'unchecked');
+  const r = cut(stripped);
+  assert.notEqual(r.text, stripped, 'the cut still widens the fence');
+  assert.equal(ctx.frame.verifyBcc(r.text), 'unchecked', 'no check minted over unattested bytes');
+});
