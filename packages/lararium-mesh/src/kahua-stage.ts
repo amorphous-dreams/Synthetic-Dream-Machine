@@ -44,7 +44,7 @@ import { verifyEd25519 } from "./ed25519-door.js";
 import { buildIntent, IntentRefusal, type IntentSigner } from "./intent-issue.js";
 import { deterministicDocUrl, materializeSharedLarDoc } from "./deterministic-doc.js";
 import { KAHUA_DOC_URI } from "./lar-uris.js";
-import type { SignedIntentEntry } from "./intent-entry.js";
+import { intentEntryRecordsOfGroup, intentId, readIntentEntry, type SignedIntentEntry } from "./intent-entry.js";
 import type { IntentVerbRegistry } from "./intent-verbs.js";
 import { storedLarRecord } from "./stored-record.js";
 
@@ -358,6 +358,25 @@ export function readKahuaProposal(entry: SignedIntentEntry): { readonly session:
   const args = b["args"] as Record<string, unknown>;
   if (!string(args.session) || proposalsFault(args.proposals) !== null) return null;
   return { session: args.session, proposals: args.proposals as KahuaProposal[] };
+}
+
+/**
+ * THE ONE PROPOSAL READER, for the node's lift door and a browser reader alike: the verified kahua proposal batch with
+ * intent id `id` on a face's intents plane, signed by a device the face's verified projection admits, or null. A
+ * stranger's well-formed batch reads null whatever digest it names.
+ */
+export function findKahuaProposal(intents: LarDoc | undefined | null, group: string, devices: readonly string[], id: string):
+  { readonly batch: { readonly session: string; readonly proposals: readonly KahuaProposal[] }; readonly issuer: string; readonly cid: string } | null {
+  const admitted = new Set(devices);
+  for (const raw of intentEntryRecordsOfGroup(intents, group)) {
+    const read = readIntentEntry(raw, { group, authorize: (signer) => admitted.has(signer) });
+    if (!read.ok || read.entry.body.entry !== "intent") continue;
+    const body = read.entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string };
+    if (intentId(body) !== id) continue;
+    const batch = readKahuaProposal(read.entry);
+    if (batch) return { batch, issuer: body.issuer, cid: read.cid };
+  }
+  return null;
 }
 
 /** The sha-256 digest a proposal names for a body. */

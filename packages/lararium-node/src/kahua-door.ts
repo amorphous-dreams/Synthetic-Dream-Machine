@@ -26,8 +26,8 @@ import { randomBytes } from "node:crypto";
 import { foundingHearthOf } from "@lararium/keyhive";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  KAHUA_BAG, KAHUA_PLANE, buildKahuaProposal, buildOutcome, intentEntryCid, intentEntryRecordsOfGroup, intentId,
-  KAHUA_CARRY_MAX, kahuaActRecords, kahuaBodyDigest, kahuaCarryCandidates, kahuaPlaneUrl, kahuaStageDocUrl, materializeSharedLarDoc, readIntentEntry, readKahuaAct, readKahuaProposal,
+  KAHUA_BAG, KAHUA_PLANE, buildKahuaProposal, buildOutcome, intentEntryCid, intentId,
+  KAHUA_CARRY_MAX, kahuaActRecords, kahuaBodyDigest, kahuaCarryCandidates, kahuaPlaneUrl, kahuaStageDocUrl, materializeSharedLarDoc, findKahuaProposal, readKahuaAct,
   readKahuaStage, signKahuaCarry, signKahuaLift, signKahuaWithdraw, signPersonaAct, writeIntentEntry, writeKahuaAct, writePersonaAct,
   type IntentVerbRegistry, type KahuaItem, type KahuaRevision, type KahuaSource, type LarDoc, type PersonaProjection,
 } from "@lararium/mesh";
@@ -112,16 +112,9 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     return read.cid;
   };
   const proposalOf = (id: string) => {
-    const devices = new Set(projection().devices);
-    for (const raw of intentEntryRecordsOfGroup(ports.intents.doc(), group)) {
-      const read = readIntentEntry(raw, { group, authorize: (signer) => devices.has(signer) });
-      if (!read.ok || read.entry.body.entry !== "intent") continue;
-      const body = read.entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string };
-      if (intentId(body) !== id) continue;
-      const batch = readKahuaProposal(read.entry);
-      if (batch) return { batch, issuer: body.issuer, cid: read.cid };
-    }
-    throw new KahuaRefused(`proposal-unknown: no verified kahua proposal ${id} stands on the face's intents plane`);
+    const found = findKahuaProposal(ports.intents.doc(), group, projection().devices, id);
+    if (!found) throw new KahuaRefused(`proposal-unknown: no verified kahua proposal ${id} stands on the face's intents plane`);
+    return found;
   };
 
   return {
