@@ -283,3 +283,94 @@ describe("prepare runs before anything is torn down", () => {
     expect(first.downs).toBe(0);
   });
 });
+
+describe("an ask in flight settles by name when the island restarts (guardAsk)", () => {
+  const ask = <T,>() => {
+    const gate = deferred<T>();
+    let abandoned = 0;
+    return { gate, ask: { answer: gate.promise, abandon: () => { abandoned += 1; } }, abandoned: () => abandoned };
+  };
+
+  test("a pending ask rejects daemon-restarting, is abandoned once, and the restart never waits on it", async () => {
+    const held = holdDaemonVm({ vm: fakeVm(), reopen: async () => fakeVm() });
+    const a = ask<string>();
+    const guarded = held.guardAsk(a.ask);
+    const outcome = guarded.answer.then(() => "answered", (e: Error) => e.message);
+    await held.restart("kapae-raise");
+    expect(await outcome).toBe("daemon-restarting");
+    expect(a.abandoned()).toBe(1);
+    a.gate.resolve("late");                         // the old island's late answer lands on nothing
+    await Promise.resolve();
+    expect(await outcome).toBe("daemon-restarting");
+  });
+
+  test("an ask that answered before the restart keeps its answer and is never abandoned by it", async () => {
+    const held = holdDaemonVm({ vm: fakeVm(), reopen: async () => fakeVm() });
+    const a = ask<string>();
+    const guarded = held.guardAsk(a.ask);
+    a.gate.resolve("done");
+    expect(await guarded.answer).toBe("done");
+    await held.restart("r");
+    expect(a.abandoned()).toBe(0);
+  });
+
+  test("the caller's own abandon forwards once and takes the ask out of the restart's reach", async () => {
+    const held = holdDaemonVm({ vm: fakeVm(), reopen: async () => fakeVm() });
+    const a = ask<string>();
+    const guarded = held.guardAsk(a.ask);
+    guarded.answer.catch(() => undefined);
+    guarded.abandon();
+    await held.restart("r");
+    expect(a.abandoned()).toBe(1);
+  });
+
+  test("guarding an ask while the island restarts abandons it and refuses by name", async () => {
+    const first = fakeVm();
+    const reopened = deferred<DaemonVmCore>();
+    const held = holdDaemonVm({ vm: first, reopen: () => reopened.promise });
+    const restarting = held.restart("r");
+    await Promise.resolve(); await Promise.resolve();
+    const a = ask<string>();
+    expect(() => held.guardAsk(a.ask)).toThrow(/daemon-restarting/);
+    expect(a.abandoned()).toBe(1);
+    reopened.resolve(fakeVm());
+    await restarting;
+  });
+
+  test("CONTROL: an ask NOT guarded stays pending across the restart, so the hazard reads real", async () => {
+    const held = holdDaemonVm({ vm: fakeVm(), reopen: async () => fakeVm() });
+    const a = ask<string>();
+    let settled = false;
+    a.ask.answer.then(() => { settled = true; }, () => { settled = true; });
+    await held.restart("r");
+    for (let i = 0; i < 5; i += 1) await Promise.resolve();
+    expect(settled).toBe(false);
+  });
+});
+
+describe("onRestarted runs after the swap, on success alone", () => {
+  test("a listener fires once per completed restart with the new VM serving; unsubscribe stops it; a throwing listener never fails the restart", async () => {
+    const first = fakeVm();
+    const next = fakeVm();
+    const held = holdDaemonVm({ vm: first, reopen: async () => next });
+    const seen: Array<{ reason: string; restarts: number; leg: string }> = [];
+    const off = held.onRestarted(async ({ reason, restarts }) => { seen.push({ reason, restarts, leg: await held.vm.syncLegReady() }); });
+    held.onRestarted(() => { throw new Error("a listener fault"); });
+    await expect(held.restart("kapae-raise")).resolves.toEqual({ restarts: 1 });
+    expect(seen).toEqual([{ reason: "kapae-raise", restarts: 1, leg: `leg-${next.id}` }]);
+    off();
+    await held.restart("again");
+    expect(seen).toHaveLength(1);
+  });
+
+  test("CONTROL: a refused prepare and a failed re-open fire no listener", async () => {
+    let fired = 0;
+    const refusing = holdDaemonVm({ vm: fakeVm(), prepare: async () => { throw new Error("no"); }, reopen: async () => fakeVm() });
+    refusing.onRestarted(() => { fired += 1; });
+    await expect(refusing.restart("r")).rejects.toThrow(/no/);
+    const failing = holdDaemonVm({ vm: fakeVm(), reopen: async () => { throw new Error("boot refused"); } });
+    failing.onRestarted(() => { fired += 1; });
+    await expect(failing.restart("r")).rejects.toThrow(/boot refused/);
+    expect(fired).toBe(0);
+  });
+});
