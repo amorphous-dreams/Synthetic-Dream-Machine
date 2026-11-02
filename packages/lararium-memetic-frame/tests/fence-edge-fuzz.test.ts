@@ -124,7 +124,9 @@ function bodyFor(c: Case): string {
 
 /** Whether the generator's OWN intent for `placement` is a fully-masked (lawful) quoting. */
 function isLawful(placement: Placement, fenceCh: "`" | "~"): boolean {
-  if (placement === "inline-span") return fenceCh === "`"; // a tilde pair never opens an inline span
+  // A TILDE RUN FENCES NOTHING (TiddlyWiki's codeblock opens on backticks alone): the mark it "quotes"
+  // stands live, so the frame must NAME the stray mark, never read the quoting as lawful.
+  if (fenceCh === "~") return false;
   return true; // every fenced-block placement here is designed to mask fully (or, for
                // unclosed-to-eof, to mask by running off the end — also a NAMED outcome: torn)
 }
