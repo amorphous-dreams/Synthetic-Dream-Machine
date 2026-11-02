@@ -213,6 +213,17 @@ describe("the proposal", () => {
     const entries = intentEntryRecordsOfGroup(f.intents.doc(), GROUP) as { body: Record<string, unknown> }[];
     expect(entries.filter((e) => e.body["entry"] === "outcome" && e.body["cause"] === proposed.id)).toHaveLength(1);
   });
+
+  test("RED (L4): a proposal lifts once: a second lift citing the same proposal refuses proposal-spent; CONTROL: a fresh proposal lifts", async () => {
+    const f = await face();
+    const door = kahuaDoor(f.ports());
+    await door.mint();
+    const first = await door.propose({ proposals: [{ title: "t", revision: "r1", text: "body-1", taint: [] }] });
+    await expect(door.lift({ title: "t", text: "body-1", taint: [], sources: [{ title: "t", revision: "r1" }], proposal: first.id })).resolves.toMatchObject({ cid: expect.any(String) });
+    await expect(door.lift({ title: "t", text: "body-1", taint: [], sources: [{ title: "t", revision: "r1" }], proposal: first.id })).rejects.toThrow(/proposal-spent/);
+    const second = await door.propose({ proposals: [{ title: "t", revision: "r2", text: "body-2", taint: [] }] });
+    await expect(door.lift({ title: "t", text: "body-2", taint: [], sources: [{ title: "t", revision: "r2" }], proposal: second.id })).resolves.toMatchObject({ cid: expect.any(String) });
+  });
 });
 
 describe("the proposal replay guard", () => {
