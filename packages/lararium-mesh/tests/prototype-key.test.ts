@@ -8,7 +8,8 @@
  * one); 3.5.0 throws a bare `RangeError` only on a LOCAL write of the key. The fixture below holds the
  * bytes a 3.4.1 local write produced, so the probe reads the same on either engine.
  *
- * Three doors, one key set (`__proto__` · `constructor` · `prototype`):
+ * Three doors, one key (`__proto__`; `constructor` and `prototype` stand as ordinary names by the operator's
+ * ruling of 2026-11-02, `prototype-names-stand.test.ts`):
  *   · THE READ DOOR (`ownEntry` · `hasOwnEntry`) answers own properties only, so no phantom reaches a reader.
  *   · THE INGEST SHORE (`syncMessagePrototypeKey` · `prototypeKeyFault`) refuses the bytes by name before
  *     the house's doc materializes them.
@@ -74,9 +75,9 @@ describe("the read door answers own properties only", () => {
     expect(hasOwnEntry(doc.tiddlers, "real")).toBe(true);
   });
 
-  test("a prototype key never answers, even on a clean map (`constructor` is every object's inherited function)", () => {
+  test("no inherited name answers, even on a clean map (`constructor` is every object's inherited function)", () => {
     const clean = from<Doc>({ tiddlers: { real: { tiddler: { title: "real" } } as never } });
-    for (const key of PROTOTYPE_KEYS) {
+    for (const key of [...PROTOTYPE_KEYS, "constructor", "prototype", "toString"]) {
       expect(ownEntry(clean.tiddlers, key)).toBeUndefined();
       expect(hasOwnEntry(clean.tiddlers, key)).toBe(false);
     }
@@ -98,11 +99,11 @@ describe("the ingest shore refuses the bytes by name", () => {
     expect(prototypeKeyFault(from({ tiddlers: { real: { tiddler: { title: "real", text: "x" } } } }))).toBeNull();
   });
 
-  test("a view naming `constructor` or `prototype` refuses at any depth — one key set on every path (blind read B1)", () => {
-    expect(prototypeKeyFault({ tiddlers: { constructor: { tiddler: { title: "constructor" } } } })).toMatch(/constructor/);
-    expect(prototypeKeyFault({ tiddlers: { prototype: { tiddler: { title: "prototype" } } } })).toMatch(/prototype/);
-    expect(prototypeKeyFault({ tiddlers: { real: { tiddler: { title: "real", constructor: "field" } } } })).toMatch(/constructor/);
-    expect(prototypeKeyFault({ tiddlers: { real: { tiddler: { title: "real", text: "constructor" } } } })).toBeNull();
+  test("a view naming `constructor` or `prototype` reads clean at any depth; an own `__proto__` key names itself — one key on every path (blind read B1)", () => {
+    expect(prototypeKeyFault({ tiddlers: { constructor: { tiddler: { title: "constructor" } } } })).toBeNull();
+    expect(prototypeKeyFault({ tiddlers: { prototype: { tiddler: { title: "prototype" } } } })).toBeNull();
+    expect(prototypeKeyFault({ tiddlers: { real: { tiddler: { title: "real", constructor: "field" } } } })).toBeNull();
+    expect(prototypeKeyFault(JSON.parse('{"tiddlers":{"real":{"tiddler":{"title":"real","__proto__":"field"}}}}'))).toMatch(/__proto__/);
   });
 
   test("assertNoPrototypeKeys throws a named VerbRefusal", () => {
@@ -151,6 +152,12 @@ describe("the ingest shore refuses the bytes by name", () => {
 });
 
 describe("the write door refuses a local prototype key by name, before change()", () => {
+  test("the key set holds `__proto__` alone", () => {
+    expect([...PROTOTYPE_KEYS]).toEqual(["__proto__"]);
+    expect(isPrototypeKey("constructor")).toBe(false);
+    expect(isPrototypeKey("prototype")).toBe(false);
+  });
+
   test.each([...PROTOTYPE_KEYS])("a %s title refuses as prototype-key-title", (title) => {
     expect(isPrototypeKey(title)).toBe(true);
     expect(storableTitleFault(title)).toMatch(new RegExp(`^${PROTOTYPE_KEY_TITLE_CODE}`));
@@ -177,14 +184,18 @@ describe("the write door refuses a local prototype key by name, before change()"
     expect(() => storedValue(JSON.parse('{"a":{"__proto__":1}}'))).toThrow(/__proto__/);
   });
 
-  test("ordinary titles and fields stand (control); a field named `constructor` refuses by name, one key set on every path", () => {
+  test("ordinary titles and fields stand (control), `constructor` and `prototype` among them", () => {
     expect(storableTitleFault("lar:///ha.ka.ba/ordinary")).toBeNull();
     expect(storableTitleFault("__proto__x")).toBeNull();
     expect(storableTitleFault("Constructor")).toBeNull();
+    expect(storableTitleFault("constructor")).toBeNull();
+    expect(storableTitleFault("prototype")).toBeNull();
     const doc = change(from<Doc>({ tiddlers: {} }), (d) => {
       (d.tiddlers as Record<string, unknown>)["lar:///ok"] = storedRecord({ tiddler: { title: "lar:///ok", text: "constructor" } as never });
+      (d.tiddlers as Record<string, unknown>)["constructor"] = storedRecord({ tiddler: { title: "constructor", prototype: "a field" } as never });
     });
     expect(hasOwnEntry(doc.tiddlers, "lar:///ok")).toBe(true);
-    expect(() => storedRecord({ tiddler: { title: "lar:///no", constructor: "a field" } as never })).toThrow(/prototype-key/);
+    expect(hasOwnEntry(doc.tiddlers, "constructor")).toBe(true);
+    expect(() => storedRecord({ tiddler: { title: "lar:///yes", constructor: "a field" } as never })).not.toThrow();
   });
 });

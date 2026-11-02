@@ -42,7 +42,7 @@ import {
   gateBundleDigest, admitGatePinDigest,
   type FaceKeyGrant, type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest,
   type VesselFaceCertificate,
-  faceAtomKeyFromSeed,
+  faceAtomKeyFromSeed, ownEntry,
 } from "@lararium/mesh";
 import { takeAdmitBundle, type AdmitBundle } from "../admit-bundle.js";
 import { importCarriedCharter, primaryNexusAid } from "../carried-set.js";
@@ -109,7 +109,7 @@ function bootstrapPersonaGroup(): string {
   if (!existsSync(path)) throw new FleetJoinRefused("face-absent", `${path} not found — found the hearth first (\`lares vessel found --hearth\`).`);
   const plugin = JSON.parse(readFileSync(path, "utf8")) as { text?: string };
   const tiddlers = (JSON.parse(plugin.text ?? "{}") as { tiddlers?: Record<string, { text?: string }> }).tiddlers ?? {};
-  const group = tiddlers[PERSONA_GROUP_ID_TIDDLER]?.text;
+  const group = ownEntry(tiddlers, PERSONA_GROUP_ID_TIDDLER)?.text;
   if (typeof group !== "string" || group.length === 0) {
     throw new FleetJoinRefused("face-absent", "this vessel's bootstrap names no face; land one with `lares persona new 0` on the hearth.");
   }
@@ -122,7 +122,7 @@ function wornJoinedGroup(): string | null {
   if (!existsSync(path)) return null;
   try {
     const plugin = JSON.parse(readFileSync(path, "utf8")) as { text?: string };
-    const group = (JSON.parse(plugin.text ?? "{}") as { tiddlers?: Record<string, { text?: string }> }).tiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text;
+    const group = ownEntry((JSON.parse(plugin.text ?? "{}") as { tiddlers?: Record<string, { text?: string }> }).tiddlers, PERSONA_GROUP_ID_TIDDLER)?.text;
     return typeof group === "string" && group.length > 0 ? group : null;
   } catch {
     // A torn bootstrap names no face this landing could keep apart from: refuse rather than write over it.
