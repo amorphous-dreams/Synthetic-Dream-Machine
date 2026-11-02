@@ -52,19 +52,19 @@ describe.skipIf(wikiSkip)(`the promote panel as tiddlers${skipNote}`, () => {
     seedPromoteUiTiddlers(engine);
     await makePromoteStateReactor(engine)({ data: JSON.stringify(SNAPSHOT) } as never, undefined as never);
     expect(verbTiddlers(engine)).toEqual([]);
-    const widget = engine.wiki.makeTranscludeWidget(PROMOTE_PANEL_TITLE, { document: (engine.$tw as unknown as { fakeDocument: unknown }).fakeDocument, parentWidget: engine.$tw.rootWidget });
-    const host = (engine.$tw as unknown as { fakeDocument: { createElement(t: string): unknown } }).fakeDocument.createElement("div");
-    (widget as unknown as { render(parent: unknown, next: unknown): void }).render(host, null);
-    type W = { parseTreeNode?: { tag?: string; attributes?: Record<string, { value?: string }> }; children?: W[]; handleClickEvent?: (e: unknown) => unknown };
+    // The fake document's elements take no listeners, so the render hands us each `click` handler the button widget registers.
+    const fake = (engine.$tw as unknown as { fakeDocument: { createElement(t: string): any } }).fakeDocument;
+    const proto = Object.getPrototypeOf(fake.createElement("div")) as { addEventListener: (type: string, fn: (e: unknown) => void) => void };
+    const realAdd = proto.addEventListener;
     const buttons: Array<{ act: string; digest: string; click: () => void }> = [];
-    const walk = (w: W): void => {
-      const attrs = w.parseTreeNode?.attributes ?? {};
-      if (w.parseTreeNode?.tag === "$button" && w.handleClickEvent && attrs["data-act"]) {
-        buttons.push({ act: attrs["data-act"]!.value ?? "", digest: attrs["data-digest"]?.value ?? "", click: () => { w.handleClickEvent!({ type: "click", preventDefault() {}, stopPropagation() {}, isTrusted: false }); } });
-      }
-      for (const c of w.children ?? []) walk(c);
+    proto.addEventListener = function (this: { attributes?: Record<string, string> }, type: string, fn: (e: unknown) => void) {
+      const a = this.attributes ?? {};
+      if (type === "click" && a["data-act"]) buttons.push({ act: String(a["data-act"]), digest: String(a["data-digest"] ?? ""), click: () => { fn({ type: "click", isTrusted: false, preventDefault() {}, stopPropagation() {} }); } });
     };
-    walk(widget as unknown as W);
+    try {
+      const widget = engine.wiki.makeTranscludeWidget(PROMOTE_PANEL_TITLE, { document: fake, parentWidget: engine.$tw.rootWidget });
+      (widget as unknown as { render(parent: unknown, next: unknown): void }).render(fake.createElement("div"), null);
+    } finally { proto.addEventListener = realAdd; }
     const acts = buttons.map((b) => b.act);
     for (const act of ["commit", "orphan-keep", "orphan-drop", "drop", "lower"]) expect(acts, act).toContain(act);
     for (const b of buttons) b.click();
