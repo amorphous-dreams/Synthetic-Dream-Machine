@@ -162,7 +162,11 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     expect(page, "S2 joined no page").not.toBeNull();
     const before = projection();
     const title = "L4/page-new", body = "NEW FROM THE PAGE stage-walk";
-    expect(await clickIn(page!, '[class*="Buttons%2Fnew-tiddler"][data-lar-rid]'), "no new-tiddler button in the pane").toBe(true);
+    // The joined boot re-renders the pane after the crossing stands: wait for the page toolbar's own button to paint.
+    const NEW_TIDDLER = '[class*="Buttons%2Fnew-tiddler"][data-lar-rid]';
+    expect(await page!.waitForFunction((s) => !!document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.querySelector(s),
+      NEW_TIDDLER, { timeout: WAIT }).then(() => true).catch(() => false), `no new-tiddler button painted in the pane\n${tail()}`).toBe(true);
+    expect(await clickIn(page!, NEW_TIDDLER), "the new-tiddler button left the pane before its click").toBe(true);
     expect(await waitPane(page!, "tc-tiddler-edit-frame"), "the new tiddler's edit frame never opened").toBe(true);
     expect(await fillIn(page!, ".tc-tiddler-edit-frame input.tc-titlebar[data-lar-rid]", title)).toBe(true);
     expect(await fillIn(page!, ".tc-tiddler-edit-frame textarea[data-lar-rid]", body)).toBe(true);
