@@ -10,7 +10,7 @@ on:
       - '.github/workflows/projection-loom.yml'
       - '.github/workflows/projection-loom-studies.yml'
   push:
-    branches: [feature/green-jello-dinosaur-5]
+    branches: [feature/green-jello-dinosaur-5, feature/green-jello-dinosaur-5--projection-loom]
     paths:
       - 'tools/projection-loom/**'
       - 'bags/lares/ha.ka.ba/lares/api/projection-loom/**'
