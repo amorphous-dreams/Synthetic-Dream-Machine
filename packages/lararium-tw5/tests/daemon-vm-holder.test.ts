@@ -116,26 +116,42 @@ describe("the holder routes every consumer to the NEW daemon VM", () => {
   });
 });
 
-describe("in-flight calls complete on the old VM or refuse by name, never hang", () => {
-  test("a call in flight completes on the OLD VM before its teardown; a call mid-swap refuses daemon-restarting", async () => {
+describe("a restart never waits on a call in flight: it rejects the pending call by name", () => {
+  test("a call that never settles on the old VM rejects daemon-restarting, the restart completes, the new VM answers", async () => {
     log.length = 0;
     const first = fakeVm();
     const next = fakeVm();
-    first.gate = deferred<unknown>();
-    const reopened = deferred<void>();
-    const held = holdDaemonVm({ vm: first, reopen: async () => { log.push("reopen"); reopened.resolve(); return next; } });
-    const inflight = held.vm.resolveBinding("f", { wikiDocId: "w", libraryBagDocIds: [] }, "s");
+    first.gate = deferred<unknown>();               // never resolved by this test: the call stands forever
+    const held = holdDaemonVm({ vm: first, reopen: async () => { log.push("reopen"); return next; } });
+    const done = await held.vm.syncLegReady();       // a call that COMPLETED before the restart keeps its result
+    const stuck = held.vm.resolveBinding("f", { wikiDocId: "w", libraryBagDocIds: [] }, "s");
+    const stuckOutcome = stuck.then(() => "resolved", (e: Error) => e.message);
     const restarting = held.restart("kapae-raise");
-    await Promise.resolve();
     expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).toThrow(/daemon-restarting/);
     await expect(held.vm.runAsFace({ verb: "x", args: {}, worn: {} as never })).rejects.toThrow(/daemon-restarting/);
-    expect(log).toEqual([]);                          // the drain waits: no teardown, no re-open while a call stands
+    await restarting;                                 // completes with the stuck call still standing on the old VM
+    expect(await stuckOutcome).toBe("daemon-restarting");
+    expect(done).toBe(`leg-${first.id}`);
+    expect(log).toEqual([`vm${first.id}:shutdown`, "reopen"]);
+    expect(await held.vm.runAsFace({ verb: "y", args: {}, worn: {} as never })).toEqual({ vm: next.id });
+    // The old VM's late answer lands on nothing: the settled promise holds and the new VM carries no trace of it.
     first.gate.resolve(undefined);
-    expect((await inflight).personalUrl).toBe(`p${first.id}`);
-    await restarting;
-    expect(log).toEqual([`vm${first.id}:resolveBinding:end`, `vm${first.id}:shutdown`, "reopen"]);
-    expect(first.calls).not.toContain("runAsFace:x");
-    expect((await held.vm.runAsFace({ verb: "y", args: {}, worn: {} as never }))).toEqual({ vm: next.id });
+    await Promise.resolve();
+    expect(await stuckOutcome).toBe("daemon-restarting");
+    expect(next.calls).toEqual(["runAsFace:y"]);
+  });
+
+  test("a call that rejected mid-swap records no lit face on the new VM", async () => {
+    const first = fakeVm();
+    const next = fakeVm();
+    const gate = deferred<void>();
+    (first as { lightFace: Fake["lightFace"] }).lightFace = async () => { await gate.promise; };
+    const held = holdDaemonVm({ vm: first, reopen: async () => next });
+    const lighting = held.vm.lightFace(entry("late")).catch((e: Error) => e.message);
+    await held.restart("r");
+    gate.resolve();
+    expect(await lighting).toBe("daemon-restarting");
+    expect(next.registered).toEqual([]);
   });
 
   test("CONTROL: with no restart standing, the same calls are not refused", async () => {
