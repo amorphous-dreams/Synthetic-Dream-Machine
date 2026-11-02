@@ -2559,6 +2559,7 @@ async function prepareNodeBootOn(
     if (wornFaceProved && wornFaceProjection && personaGroupId) {
       const url = await adoptKahuaStage({ repo, group: personaGroupId, projection: wornFaceProjection, register: registerInCatalog });
       wornKahua = url ? { group: personaGroupId, url } : null;
+      console.log(url ? `[kahua] the face's stage stands adopted: ${url}` : "[kahua] the face pins no stage yet; the layer stands absent until its pin syncs");
     }
     // The selected face's custody standing decides whether its veil archive may leave this
     // composition and whether the island may rest a later export through the same door.
