@@ -8,31 +8,33 @@ const GENESIS_DIR = resolve(import.meta.dirname, "../../genesis");
 const PRONAOS_RECORD = resolve(import.meta.dirname, "../../.pronaos-build/pronaos-artifact.json");
 
 /**
- * Serve `genesis/` at `/genesis` in the DEV SERVER alone.
+ * Serve `genesis/` at `/genesis` in the DEV and PREVIEW servers alone.
  *
  * The page reads `seed.json` and the CAS blobs off `/genesis` at runtime. A built page stands behind a hearth's Pronaos,
  * which serves both off the genesis root that hearth boots, so the build carries no genesis copy
- * (`tools/genesis-parity-witness.sh` reads one RED). The dev server holds no hearth, so it routes the tree's own genesis.
+ * (`tools/genesis-parity-witness.sh` reads one RED). The dev and preview servers hold no hearth, so they route the tree's own genesis.
  * `server.fs.allow` grants vite permission to READ a path and creates no route: without this middleware a request falls
  * through to the SPA fallback and the vessel receives `index.html` where a CAS blob belongs.
  *
  * Blobs carry content addresses, so they stay immutable and cacheable forever; `seed.json` answers no-store.
  */
 function serveGenesisInDev(): Plugin {
+  const route = (req: { url?: string }, res: import("node:http").ServerResponse, next: () => void): void => {
+    const rel = normalize(decodeURIComponent((req.url ?? "/").split("?")[0] ?? "/")).replace(/^(\.\.[/\\])+/, "");
+    const file = join(GENESIS_DIR, rel);
+    if (!file.startsWith(GENESIS_DIR) || !existsSync(file) || !statSync(file).isFile()) return next();
+    const seedFile = rel.replace(/^[/\\]+/, "") === "seed.json";
+    res.setHeader("Content-Type", seedFile ? "application/json" : "application/octet-stream");
+    res.setHeader("Cache-Control", seedFile ? "no-store" : "public, max-age=31536000, immutable");
+    createReadStream(file).pipe(res);
+  };
   return {
     name: "lararium:serve-genesis-dev",
     apply: "serve",
-    configureServer(server) {
-      server.middlewares.use("/genesis", (req, res, next) => {
-        const rel = normalize(decodeURIComponent((req.url ?? "/").split("?")[0] ?? "/")).replace(/^(\.\.[/\\])+/, "");
-        const file = join(GENESIS_DIR, rel);
-        if (!file.startsWith(GENESIS_DIR) || !existsSync(file) || !statSync(file).isFile()) return next();
-        const seedFile = rel.replace(/^[/\\]+/, "") === "seed.json";
-        res.setHeader("Content-Type", seedFile ? "application/json" : "application/octet-stream");
-        res.setHeader("Cache-Control", seedFile ? "no-store" : "public, max-age=31536000, immutable");
-        createReadStream(file).pipe(res);
-      });
-    },
+    configureServer(server) { server.middlewares.use("/genesis", route); },
+    // `vite preview` serves the built page with no hearth behind it, so it routes the tree's own genesis the same way;
+    // the dist still carries no copy.
+    configurePreviewServer(server) { server.middlewares.use("/genesis", route); },
   };
 }
 
