@@ -1,3 +1,4 @@
+import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
 /**
  * openBrowserVessel — local-first browser vessel factory.
  *
@@ -69,7 +70,7 @@ import {
   COHERENCE_FRAME,
   SENSORIUM_FRAME,
   createWikiSenseSupervisor, registerWikiSenseVerbs,
-  makeCatalogAccessor, effectiveRecipe,
+  makeCatalogAccessor, effectiveRecipe, liveKahuaFace,
 }                                            from "@lararium/tw5";
 import type { WikiSenseSupervisor }          from "@lararium/tw5";
 import type { CoherenceStatus } from "@lararium/tw5";
@@ -78,7 +79,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
+  promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
   readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
   type WideningRead,
 } from "@lararium/mesh";
@@ -203,6 +204,8 @@ async function writeBootKeys(idbName: string, writes: BootKeyWrites): Promise<vo
 // ── Options / Result ────────────────────────────────────────────────────────────
 
 export interface BrowserVesselOptions extends LarariumVesselOptions {
+  /** Re-open the daemon after promotion shadows a loaded rite. */
+  restartDaemonIsland?: (reason: string) => Promise<void>;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   idbName?:        string;
@@ -446,12 +449,14 @@ export function warnDroppedBrowserAlert(
 export async function resolveBrowserIslandPluginCids(opts: {
   readonly islandBlobs: Record<string, { readonly id?: string; readonly sha256?: string; readonly mimeType?: string }> | undefined;
   readonly recipe: WikiRecipe;
+  readonly promoted?: (wiki: string) => Promise<readonly string[]>;
+  readonly onPromotedVoided?: (wiki: string, digests: readonly string[]) => void;
   readonly lookup: OfferingLookup;
 }): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
   // The selection itself stands in mesh (`resolveRecipePluginCids`), the one function the node door and the
   // surface mount's resolver read too; this door hands it the browser's own inputs: the island document's
   // blobs, the Crossroads lookup and the origin's OPFS content store.
-  return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: readCasBlobFromOpfs });
+  return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: readCasBlobFromOpfs, ...(opts.promoted ? { promoted: opts.promoted } : {}), ...(opts.onPromotedVoided ? { onPromotedVoided: opts.onPromotedVoided } : {}) });
 }
 
 /** Build the browser Crossroads board's offering lookup (R4): a verified selection re-verifies
@@ -953,6 +958,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // ── Residency MECHANISM (parity with node — a tab has finite memory too) ────
   let vmManager!: BrowserVesselIslandPool;   // set in makePool
   let portFaceId: string | null = null;
+  let promoteWiringRef: ReturnType<typeof promoteWiring> | null = null;
+  const restartWikiIsland = async (wiki: string) => {
+    if (wiki === "daemon") {
+      if (opts.restartDaemonIsland) await opts.restartDaemonIsland("promote: kapae raised over a loaded rite");
+      else console.warn("[promote] restart-required: the daemon island holds a shadowed rite");
+    } else {
+      await vmManager.unmountWiki(wiki);
+      await wikiActivation.ensureActive(wiki);
+    }
+  };
   let wikiActivation!: WikiActivationCap;     // set in makePool — activation-on-reference cap (minimal grant)
   let daemon!:     DaemonVmCore;      // set in openDaemon
   let wikiSense!:  WikiSenseSupervisor;   // set in wireVerbs (post-daemon)
@@ -1340,8 +1355,20 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         }
         // THE KAHUA STAGE ADOPTS FROM THE PROVEN PROJECTION (node parity): a joined browser of the face stands the derived doc and
         // its catalog row names it for the daemon wiki's recipe; the layer trusts the fold, never the row.
-        await adoptKahuaStage({ repo, group: wornGroup, projection: proof.projection, register: registerInCatalog });
-        await adoptPromoteBoard({ repo, group: wornGroup, projection: proof.projection });
+        provenKahuaUrl = await adoptKahuaStage({ repo, group: wornGroup, projection: proof.projection, register: registerInCatalog });
+        provenPromoteUrl = await adoptPromoteBoard({ repo, group: wornGroup, projection: proof.projection });
+        const promoteFace = liveKahuaFace({ group: wornGroup, prefix: personaKelPrefix, bootChain: personaKelChain, anchor: faceAnchor, board: repo.find(personaKelBoardDocUrl(nexusPubkey)) });
+        const devices = new Set(proof.projection.devices);
+        promoteWiringRef = provenPromoteUrl ? promoteWiring({
+          repo, group: wornGroup, boardUrl: provenPromoteUrl, stageUrl: provenKahuaUrl,
+          foldFace: () => { const f = promoteFace.read(); return { group: wornGroup, grant: f ? f.grant : () => false }; },
+          boardFace: () => { const f = promoteFace.read(); return { group: wornGroup, grant: f ? f.grant : () => false, device: (k) => devices.has(k) }; },
+          stores: browserPromoteStores(idbName, wornGroup), cas: browserPromoteCas(),
+          wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
+          onFault: (reason) => console.warn(`[promote] ${reason}`),
+          onReport: (wiki, r) => { if (r.orphans.length || r.updateWaits.length || r.voided.length) console.warn(`[promote] ${wiki}: orphans=${r.orphans.join(",")} updateWaits=${r.updateWaits.join(",")} voided=${r.voided.map(v => v.digest).join(",")}`); },
+          onRestartFailed: (wiki, error) => console.warn(`[promote] restart of ${wiki} failed (the next board read tries again): ${error instanceof Error ? error.message : String(error)}`),
+        }) : null;
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
         if (foundingFace && social.identitiesUrl && social.circlesUrl) {
           const joining = joinFaceDocumentsOnArrival(repo, { identities: social.identitiesUrl, circles: social.circlesUrl }, wornAtom.key, displayName);
@@ -1396,6 +1423,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe:      { wikiSlug: "daemon" },
         lookup:      browserOfferingLookup(crossroadsOfferingsHandle.doc()),
+        promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
+        onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
       });
       if (!daemonPluginResolution.ok) {
         throw new Error(`[openBrowserVessel] the daemon island's plugin resolution refused: ${daemonPluginResolution.error}`);
@@ -1793,6 +1822,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             islandBlobs: assembly.islandHandle.doc()?.blobs,
             recipe,
             lookup: browserOfferingLookup(crossroadsOfferingsHandle.doc()),
+            promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
+            onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
           });
         },
         onWorkerEvent: (_id, msg) => {
@@ -1879,6 +1910,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           });
         });
       }
+      const stopPromoteWatch = promoteWiringRef?.watch();
+      if (stopPromoteWatch) held.stood.push({ what: "the promote watcher", down: stopPromoteWatch });
       return vmManager;
     },
 

@@ -2711,6 +2711,7 @@ async function prepareNodeBootOn(
       lookup:      nodeOfferingLookup(crossroadsOfferingsHandle.doc()),
       readBytes:   (cid) => readCasBlobFromFs(cid, casDirForStorage(storageDir)),
       promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
+      onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
     });
     if (!daemonPluginResolution.ok) {
       throw new Error(`[openNodeVessel] the daemon island's plugin resolution refused: ${daemonPluginResolution.error}`);
@@ -3537,6 +3538,7 @@ async function prepareNodeBootOn(
         lookup:      nodeOfferingLookup(crossroadsOfferingsHandle?.doc()),
         readBytes:   (cid) => readCasBlobFromFs(cid, casDir),
         promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
+        onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
       }),
       diskMirrorGrant,
       onWorkerEvent: (wikiId, msg) => {

@@ -58,7 +58,7 @@ export const SEALED_ROW_PREFIX = "sealed/";
 export const KEYSTORE_CARRIER_PREFIX = "browser-keystore/";
 
 const DEVICE_SEED_ROW = "vessel-key";
-const CUSTODY_ROW = /^(?:vessel-key|veil-archive-g.+|persona-root-h\d+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|face-atom\/.+|face-anchor\/.+|face-address-secret\/.+|fleet-join-pending\/.+|walk\/.+)$/;
+const CUSTODY_ROW = /^(?:vessel-key|veil-archive-g.+|persona-root-h\d+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|face-atom\/.+|face-anchor\/.+|face-address-secret\/.+|promoted\/.+|kapae\/.+|fleet-join-pending\/.+|walk\/.+)$/;
 
 /** Is `row` one the slot tree wraps: the device seed, an Archive, or one of a face's secret rows. */
 export function isCustodyRow(row: string): boolean { return CUSTODY_ROW.test(row); }
@@ -374,6 +374,7 @@ async function readKeystoreRowHeld(idbName: string, row: string): Promise<unknow
     const st = await rowState(idbName, row);
     if (st.tree === undefined) {
       if (st.sealed !== undefined) throw new BrowserCustodyRefused("torn-without-tree", idbName, row);
+      if (row.startsWith("promoted/") || row.startsWith("kapae/")) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
       return st.clear;
     }
     treeOrRefuse(idbName, st.tree, row);
