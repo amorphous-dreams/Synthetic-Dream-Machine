@@ -26,4 +26,19 @@ describe("the control-plane title law", () => {
       expect(isControlPlaneUri(title), title).toBe(false);
     }
   });
+
+  test("RED (security read L1): a spelling that resolves to the daemon bag reads as control plane: a dot segment, a percent escape, an upper-case scheme", () => {
+    for (const title of [
+      "lar:///ha.ka.ba/bags/./daemon/flows/x",
+      "lar:///ha.ka.ba/bags/kahua/../daemon/outcomes/r1",
+      "lar:///ha.ka.ba/bags/%64aemon/summons/r1",
+      "LAR:///ha.ka.ba/bags/daemon/flows/x",
+    ]) expect(isControlPlaneUri(title), title).toBe(true);
+  });
+
+  test("RED (security read L1): a dot segment or an escape that resolves elsewhere reads as none", () => {
+    for (const title of ["lar:///ha.ka.ba/bags/daemon/../kahua/notes/a", "lar:///ha.ka.ba/bags/%6Bahua/notes/a", "lar:///ha.ka.ba/bags/daemonic/x"]) {
+      expect(isControlPlaneUri(title), title).toBe(false);
+    }
+  });
 });

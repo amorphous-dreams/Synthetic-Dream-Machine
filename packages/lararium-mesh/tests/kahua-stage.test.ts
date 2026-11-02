@@ -66,6 +66,14 @@ describe("kahua lift and withdraw acts", () => {
     }
     expect(readKahuaAct(await lift("lares-dev/notes/draft", "x", null, root), { group: GROUP, grant }).ok).toBe(true);
   });
+
+  test("RED (security read L1): a lift title carrying a dot segment refuses by name before any prefix reads it", async () => {
+    const { grant, lift } = await fixture();
+    await expect(lift("lar:///ha.ka.ba/bags/./daemon/flows/x", "x", null)).rejects.toThrow(/control-plane-title|shape/);
+    await expect(lift("notes/../x", "x", null)).rejects.toThrow(/shape/);
+    const forged = await lift("draft", "x", null);
+    expect(readKahuaAct({ ...forged, body: { ...forged.body, title: "notes/./x" } }, { group: GROUP, grant }).ok).toBe(false);
+  });
 });
 
 describe("the stage fold", () => {
