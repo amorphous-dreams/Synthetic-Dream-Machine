@@ -1,6 +1,6 @@
 # Projection Loom · Evergreen O-takiage handoff
 
-**Working PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · `feature/green-jello-dinosaur-5--projection-loom` · **2026-10-31**. Inspect the current branch head, exact-head Actions, and the complete [Lares boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) from `feature/green-jello-dinosaur-5` before claiming current evidence. This is the only human-facing Loom handoff; the root [README](../README.md) is its entrance, and the live Lares operational carrier owns intent.
+**Working PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · `feature/green-jello-dinosaur-5--projection-loom` · **2026-11-01**. Inspect the current branch head, exact-head Actions, and the complete [Lares boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) from `feature/green-jello-dinosaur-5` before claiming current evidence. This is the only human-facing Loom handoff; the root [README](../README.md) is its entrance, and the live Lares operational carrier owns intent.
 
 ## Current operator direction · YIN-only consolidation
 
@@ -15,10 +15,13 @@
 | YIN III · native study idempotence | `e26b203d` | Shared read-only completed-study re-entry across orthogonal, compound, topology and recombination studies; no rebuild on repeat; incomplete and changed-source refusals |
 | YIN IV · seed input isomorphism | `3f188e19` | Added reversal-of-adapter-order metamorphic experiment comparing normalized source, typed construction and bounded native campaign receipts |
 | YIN aftermath repair | `8141d8dc` | Replaced malformed literal backslash-n escapes in the new receipt module header with actual Python line breaks; preserved the writer body |
+| YIN V · exact-head acceptance repair | `53de0597` | Compared actually selected native receipts in the seed-order isomorphism test; cured a Loom fairness comment's narration without changing code semantics or the evergreen ceiling |
 
-**Known red witness:** the CAD workflow at `44c804b8` failed its *Guard alpha architecture, Python syntax and installed packages* step. Inspection found the receipt-header syntax defect, subsequently repaired by `8141d8dc`. No older green head certifies the repair. Latest exact-code-head CAD, generalized and Fire jobs were pending at this recording. The earlier repository-wide CI Witnesses job failure at `9e3fa57b` remains a separate unresolved upstream/repo acceptance issue; do not attribute it to these Loom refactors without individual logs.
+**Latest OODA-HA repair evidence (2026-11-01 Pacific):** On `52198c14`, native CAD reported **732 passed, 1 failed**: the seed-order isomorphism test assumed the selected receipt was `e00c00`, while the fair audition can select a different candidate. Repository CI's Witnesses job reported evergreen narration **200/199**. Generalized integration, AI Fire, and held-out witnesses passed on that earlier head. `53de0597` compares actual `epoch_000.json` candidate IDs and existing receipts, and rewrites the in-scope historical fairness comment to present tense. Native geometry and the 199 ceiling remain unchanged.
 
-**Next YIN Aftermath:** inspect the latest exact-head CAD/generalized/Fire, repository-wide and held-out results; repair evidence-backed regressions; reconfirm the two-front/15-carrier guard, import ownership and all negative native/idempotence witnesses. Only then consider further behavior-preserving CLI-domain extraction or study I/O cleanup. No speculative new features.
+**Acceptance still open:** Repository CI [run 41387037990](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/41387037990) and held-out [run 41387038013](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/41387038013) were in progress on the repair code head when observed. No dedicated CAD/generalized/Fire workflow had yet appeared on that exact SHA. Any later handoff commit requires its own exact-head acceptance; no borrowed green.
+
+**Next YIN Aftermath:** inspect all final-head workflows, recover missing PR-native checks or mark them unread, repair only evidence-backed failures, then reconfirm two Markdown fronts, 15 carriers, receipt ownership and native adversarial replay. CLI-domain extraction and deeper study refactors remain deferred behind verification. No speculative new features.
 
 ## O-takiage · completed, Git keeps the ledger
 
