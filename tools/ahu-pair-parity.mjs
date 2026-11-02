@@ -27,6 +27,7 @@
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { readCarrier, vanishedNote, distCarrierFiles, distModule, assertWasmFresh } from "./corpus-read.mjs";
 
 const TOOL = "ahu-pair-parity";
@@ -36,7 +37,13 @@ const GRAMMAR_DIR = "tree-sitter-memetic-wikitext";
 const GRAMMAR_PKG = join(SHORE, "packages", GRAMMAR_DIR);
 
 const { carrierFiles } = await distCarrierFiles(SHORE, TOOL);
-const { scanAhu } = await distModule(join(SHORE, "packages/lararium-tw5/dist"), "meme-ast/ahu-scan.js", TOOL);
+// THE SELF-TEST'S PLANTED READER. `AHU_PARITY_MUTANT_SCAN` names a module that exports a MUTATED
+// scanAhu, so the witness's own test proves it sees a divergence without keeping a live one in the
+// grammar (as the seal census plants a mismatch). A run under a mutant says so on its first line.
+const MUTANT = process.env["AHU_PARITY_MUTANT_SCAN"];
+const { scanAhu } = MUTANT
+  ? (console.log(`[ahu-pair-parity] MUTANT READER ${MUTANT} — a self-test plant, never a verdict`), await import(pathToFileURL(resolve(MUTANT)).href))
+  : await distModule(join(SHORE, "packages/lararium-tw5/dist"), "meme-ast/ahu-scan.js", TOOL);
 
 const wasmAt = assertWasmFresh(SHORE, GRAMMAR_DIR, "tree-sitter-memetic_wikitext.wasm", TOOL);
 const { Parser, Language } = createRequire(join(GRAMMAR_PKG, "package.json"))("web-tree-sitter");
