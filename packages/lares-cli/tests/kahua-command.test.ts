@@ -64,7 +64,7 @@ describe("lares kahua", () => {
     expect(await run("propose", "--proposals", "{not json")).toBe(1);
     expect(await run("withdraw")).toBe(1);
     expect(await run("get")).toBe(1);
-    expect(await run("burn")).toBe(1);
+    expect(await run("burn")).toBe(2);   // an unknown act answers the usage refusal
     expect(await run("lift", "T", "--taint", "none", "--sources", "[oops")).toBe(1);
     expect(seam.calls).toEqual([]);
   });

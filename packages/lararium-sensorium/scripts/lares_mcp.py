@@ -123,6 +123,14 @@ WIKI_VERBS = ("wiki",)
 # single-writer law).
 MEME_VERBS = ("meme_put", "meme_get", "meme_list", "meme_delete", "meme_project")
 
+# The KAHUA namespace — an AI seat's reach onto its face's kahua stage, the fleet's working-memory stage. `kahua_propose`
+# posts ONE batch of proposals on the face's intents plane (titles, daemon revisions, body digests, taint; a proposal
+# grants nothing); `kahua_list` and `kahua_get` read the stage's VERIFIED items (the fold, never a raw tiddler). Each
+# mirrors `lares kahua propose|list|get` and rides a local SESSION under the `seat` hand (`lares_uds.session_act`),
+# whose profile the vessel refuses every kahua pin, lift and withdraw. THE SEAT PROPOSES; THE OPERATOR'S HAND LIFTS:
+# no MCP tool lifts, withdraws or mints (`lares kahua lift|withdraw|mint` stay the operator's).
+KAHUA_VERBS = ("kahua_propose", "kahua_list", "kahua_get")
+
 # The targets `meme_project` renders — the same list `lares meme project --to` takes.
 PROJECT_TARGETS = ("mem", "md", "html", "tid", "json")
 
@@ -168,6 +176,11 @@ VERB_SEATS = {
     "meme_list": (True, False),         # list the roots a seat holds + their canonical hashes — a read → HOTL
     "meme_delete": (True, False),       # remove a meme's group — a kāpae tombstone a re-put restores; stale base → conflict → HOTL
     "meme_project": (True, False),      # render a meme to a target — a read, deterministic, trusted → HOTL
+    # The kahua seat verbs — a proposal grants nothing (the operator's signed lift decides) and the reads fold the
+    # verified stage; both stay on the face's own fleet → HOTL. The lift itself never seats here: no MCP tool carries it.
+    "kahua_propose": (True, False),     # one proposal batch on the face's intents plane — grants nothing, trusted → HOTL
+    "kahua_list": (True, False),        # the stage's verified standing items — a read → HOTL
+    "kahua_get": (True, False),         # one title's verified item (and its history) — a read → HOTL
     # teardown tears a whole sensorium store DOWN — IRREVERSIBLE → HITL. It rides the CLI today, gated
     # by --confirm (the operator's hand at the door); the grid NAMES its HITL seat so a future MCP mirror
     # inherits the gate rather than crossing the surface ungated.
@@ -1016,6 +1029,49 @@ def build_mcp(coordinator: LaresCoordinator):
             raise ValueError(f"meme_project: `to` must be one of {list(PROJECT_TARGETS)}, got {to!r}")
         args: dict = {**_meme_container("meme_project", recipe, bag), "uri": uri, "to": to}
         return _meme_wire("meme-project", args)
+
+    # ── the KAHUA namespace — an AI seat proposes and reads its face's stage through a `seat` session ──
+
+    def _kahua_face(face: "int | None") -> "int | None":
+        if face is not None and (not isinstance(face, int) or isinstance(face, bool) or face < 0):
+            raise ValueError(f"kahua: `face` takes a whole persona index from 0, got {face!r}")
+        return face
+
+    @mcp.tool()
+    def kahua_propose(proposals: list, face: "int | None" = None, session: "str | None" = None) -> dict:
+        """PROPOSE items for the face's kahua stage — mirrors `lares kahua propose`. `proposals` lists
+        {title, revision, text | digest, taint}: the daemon title and revision the item distils, its body (or the body's
+        sha-256 digest) and every input from outside the face (web page, tool output, pasted text); an AI summary
+        inherits the taint of what it summarised. ONE batch per call rides the face's intents plane, pinned to this
+        device; it carries digests and never a body, and it grants nothing: the operator's hand lifts it with
+        `lares kahua lift <title> --proposal <id>`. `face` names the persona index (absent: the vessel's sole face).
+        Returns {id, cid}. Rides a `seat` session over the @daemon wire; no MCP tool lifts."""
+        if not isinstance(proposals, list) or not proposals:
+            raise ValueError("kahua_propose: name `proposals` as a non-empty list of {title, revision, text|digest, taint}")
+        args: dict = {"proposals": proposals}
+        if session:
+            args["session"] = session
+        return uds.session_act("kahua-propose", args, face=_kahua_face(face))
+
+    @mcp.tool()
+    def kahua_list(face: "int | None" = None) -> dict:
+        """LIST the face's kahua stage — mirrors `lares kahua list`. Every standing item the stage's signed acts
+        verify under the face's grant: {items: [{title, status: standing|siblings, heads: [{cid, text, fields,
+        parent, origin, taint, sources, proposal, signer, withdrawn}]}]}. `siblings` names two lifts on one parent,
+        both kept. A plain tiddler in the stage doc never lists. Rides a `seat` session over the @daemon wire."""
+        return uds.session_act("kahua-read", {"action": "list"}, face=_kahua_face(face))
+
+    @mcp.tool()
+    def kahua_get(title: str, history: bool = False, face: "int | None" = None) -> dict:
+        """GET one title's item on the face's kahua stage — mirrors `lares kahua get <title>`. Returns {item}
+        (null where none stands: never lifted, or every head withdrawn) and, with `history`, every verified revision,
+        withdrawn ones included. Rides a `seat` session over the @daemon wire."""
+        if not isinstance(title, str) or not title:
+            raise ValueError("kahua_get: name a `title`")
+        args: dict = {"action": "get", "title": title}
+        if history:
+            args["history"] = True
+        return uds.session_act("kahua-read", args, face=_kahua_face(face))
 
     # ── the DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` and routes over the
     #    @daemon wire to the pure manifest.json reducer in open-node-vessel.ts. The reads + reversible
