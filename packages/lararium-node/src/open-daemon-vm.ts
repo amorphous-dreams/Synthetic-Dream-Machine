@@ -18,10 +18,9 @@
  * Meme: lar:///ha.ka.ba/lararium/node/open-daemon-vm
  */
 
-import { daemonWorkingMirror, kahuaStageMirror, projectionRoots } from "./bag-paths.js";
+import { daemonDiskMirrors } from "./bag-paths.js";
 import { daemonBagsDir } from "./lares-config.js";
 import { parseAutomergeUrl } from "@automerge/automerge-repo";
-import { CROSSROADS_DOC_URI } from "@lararium/mesh";
 import { join }                                          from "path";
 import {
   type Repo, type AutomergeUrl, type LarDoc, type DocHandle,
@@ -163,17 +162,9 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
       documentUrl: daemonUrl,
       storage: { type: "nodefs" as const, dir: join(storageDir!, "daemon-owned") },
     } } : {}),
-    // The daemon wiki projects to `<root>/wikis/kahua/` — the grant every wiki's working slot gets —
-    // and designates the public system bag it holds, so a residency MOVE out of its working layer
-    // into crossroads publishes under `<root>/bags/crossroads/` (the node's grant meets a designation).
-    ...(rootDir ? { diskMirrors: [
-      { ...daemonWorkingMirror(rootDir), scope: "daemon" },
-      // The face's kahua stage: a private plane, under the state root alone, its items sited by title.
-      { ...kahuaStageMirror(rootDir), scope: "kahua" },
-      // The daemon wiki is a private plane (state root); crossroads splits by origin, back to its canon source where one stands.
-      { bagId: CROSSROADS_DOC_URI, mirrorRoot: projectionRoots({ stateRoot: rootDir, canonBags: daemonBagsDir() }).bagRoot("crossroads"), scope: "crossroads",
-        guardNexusHandles: guardCrossroadsNexusHandles },
-    ] } : {}),
+    // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the working top under `<root>/wikis/kahua/`, the kahua stage
+    // under `<root>/bags/kahua/`, crossroads back to its canon source where one stands; the control plane holds none.
+    ...(rootDir ? { diskMirrors: daemonDiskMirrors({ rootDir, canonBags: daemonBagsDir(), guardCrossroadsNexusHandles }) } : {}),
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
   });
 }
