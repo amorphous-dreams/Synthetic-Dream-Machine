@@ -39,7 +39,7 @@ export const SESSION_FORM_TITLE_CODE = "session-form-title";
  * `__proto__` key as the materialized map's prototype (every phantom record a hostile writer forges rides
  * it), and from 3.5.0 a local write of one throws a bare `RangeError` inside `change()`. The door names it
  * first, so the write refuses by name and the engine's throw never surfaces as a stall. KEEP: a live hostile
- * form, never a retired spelling.
+ * form, guarding a live invariant.
  */
 export const PROTOTYPE_KEY_TITLE_CODE = "prototype-key-title";
 

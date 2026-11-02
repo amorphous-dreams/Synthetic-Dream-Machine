@@ -14,7 +14,7 @@
  *   · `assertNoPrototypeKeys` guards a byte-load door (`load` of a snapshot) over the loaded view.
  *
  * A message the shore cannot decode passes to the doors that judge torn bytes; the shore answers only the
- * question it owns. KEEP: it refuses a live hostile form, never a retired spelling.
+ * question it owns. KEEP: it refuses a live hostile form, guarding a live invariant.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/stored-value
  */
