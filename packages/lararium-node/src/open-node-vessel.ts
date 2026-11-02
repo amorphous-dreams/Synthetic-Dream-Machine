@@ -1797,11 +1797,18 @@ async function prepareNodeBootOn(
   let wikiActivation!: WikiActivationCap;  // set in makePool — the activation-on-reference cap
   const restartWikiIsland = async (wiki: string) => {
     if (wiki === "daemon") {
-      await daemonHolder.restart("promote: kapae raised over a loaded rite");
+      // The arrival lands inside the very call that raised it: that call answers on the old island, then the island swaps.
+      await daemonHolder.restart("promote: kapae raised over a loaded rite", { drain: true });
     } else {
       await vmManager.unmountWiki(wiki);
       await wikiActivation.ensureActive(wiki);
     }
+  };
+  // The store door's own verbs (commit, drop) run INSIDE a call the daemon island holds, so they cannot await a drained restart of that
+  // island: the wait would stand on the very call that asks for it. The daemon wiki's reload therefore starts and the verb answers.
+  const reloadWikiAfterVerb = async (wiki: string) => {
+    if (wiki !== "daemon") return restartWikiIsland(wiki);
+    void restartWikiIsland(wiki).catch((error) => console.warn(`[promote] restart of the daemon island failed: ${error instanceof Error ? error.message : String(error)}`));
   };
   let mailbox!: DurableMailbox;            // set in makePool — the durable park/drain lane (node-only capability)
   let lightFace: (ordinal: number) => Promise<void> = async () => {};
@@ -3263,7 +3270,7 @@ async function prepareNodeBootOn(
     // rows reach the refold, and no standalone CLI-dialed verb does.
     const doors = storeDoorReactors({
       storageDir, sealHome, repo, catalogUrl: assembly.catalogHandle.url,
-      casDir: casDirForStorage(storageDir), restartWiki: restartWikiIsland,
+      casDir: casDirForStorage(storageDir), restartWiki: reloadWikiAfterVerb,
       onRolled: afterRoll,
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
@@ -3638,7 +3645,7 @@ async function prepareNodeBootOn(
 
   return {
     repo, storeClaim, catalogHandle, placeSigner, nexusPubkey, floorGates, carriagePull, wornFace: wornGateFace,
-    restartWiki: restartWikiIsland,
+    restartWiki: reloadWikiAfterVerb,
     vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,

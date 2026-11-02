@@ -963,7 +963,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let promoteWiringRef: ReturnType<typeof promoteWiring> | null = null;
   const restartWikiIsland = async (wiki: string) => {
     if (wiki === "daemon") {
-      await daemonHolder.restart("promote: kapae raised over a loaded rite");
+      // The arrival lands inside the very call that raised it: that call answers on the old island, then the island swaps.
+      await daemonHolder.restart("promote: kapae raised over a loaded rite", { drain: true });
     } else {
       await vmManager.unmountWiki(wiki);
       await wikiActivation.ensureActive(wiki);
