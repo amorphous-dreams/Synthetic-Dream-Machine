@@ -16,8 +16,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { foundStagedHearth, openStaged, stagedHearthGroup, stagedTarget, type CliResult, type LarInstance } from "../harness/instance.js";
-import { kahuaFaceFolder, kahuaFaceTag } from "../../packages/lararium-node/src/bag-paths.js";
+import { foundStagedHearth, openStaged, stagedTarget, type CliResult, type LarInstance } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const built = existsSync(join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js")) && existsSync(join(REPO_ROOT, "packages/lararium-node/dist/src/main.js"));
@@ -33,9 +32,11 @@ const SOURCES = JSON.stringify([{ title: "daemon/probe", revision: "r1" }]);
 let hearth: LarInstance | null = null;
 const said = (r: CliResult): string => `rc ${r.code}; stdout: ${r.stdout.slice(-700)}; stderr: ${r.stderr.slice(-700)}`;
 const answer = (r: CliResult): Record<string, any> => JSON.parse(r.stdout.trim().split("\n").pop() ?? "{}") as Record<string, any>;
-const faceDir = (): string => join(hearth!.root, "wikis", kahuaFaceFolder(kahuaFaceTag(stagedHearthGroup(hearth!.root))));
-const ranFiles = (): string[] => { const d = join(faceDir(), "probe", "ran"); return existsSync(d) ? readdirSync(d) : []; };
-const actionRan = (): boolean => existsSync(join(faceDir(), "probe", "action-seen.tid"));
+// The staged hearth routes no plain title to a bag (its wiki bag holds nothing), so a tiddler the module writes never persists; the island
+// adaptor names each write it could not land (`unrouted-save: "<title>"`) in the daemon's log. That line IS the observable: the module ran
+// (one `probe/ran/<ms>` title per boot) and the StartupAction ran (the module copies its marker into `probe/action-seen`).
+const ranFiles = (): string[] => [...new Set([...hearth!.bootLog().matchAll(/unrouted-save: "(probe\/ran\/\d+)"/g)].map((m) => m[1]!))];
+const actionRan = (): boolean => /unrouted-save: "probe\/action-seen"/.test(hearth!.bootLog());
 async function settle<T>(read: () => T, done: (v: T) => boolean, ms = 30_000): Promise<T> {
   const deadline = performance.now() + ms;
   for (;;) { const v = read(); if (done(v) || performance.now() > deadline) return v; await new Promise((r) => setTimeout(r, 250)); }
@@ -46,7 +47,7 @@ async function restart(): Promise<void> {
 }
 const list = async (): Promise<Record<string, any>> => { const r = await hearth!.cli(["promote", "list"]); expect(r.code, said(r)).toBe(0); return answer(r); };
 const digestOf = (listing: Record<string, any>, title: string): string => {
-  const hit = [...(listing["waiting"] ?? []), ...(listing["rows"] ?? [])].find((r: { title: string }) => r.title === title);
+  const hit = [...(listing["rows"] ?? []), ...(listing["waiting"] ?? [])].find((r: { title: string }) => r.title === title);
   if (!hit) throw new Error(`no ${title} in ${JSON.stringify(listing).slice(0, 800)}`);
   return hit.digest as string;
 };
@@ -115,15 +116,14 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
     const digest = digestOf(await list(), "rites/probe-module");
     const raised = await hearth!.cli(["kapae", "raise", digest]);
     expect(raised.code, said(raised)).toBe(0);
-    const before = ranFiles().length;
     await restart();
     await new Promise((r) => setTimeout(r, 9000));
-    expect(ranFiles().length, "a shadowed rite ran").toBe(before);
+    expect(ranFiles().length, "a shadowed rite ran").toBe(0);
     expect((await list())["shadowed"]).toEqual(expect.arrayContaining([digest]));
     const lowered = await hearth!.cli(["kapae", "lower", digest]);
     expect(lowered.code, said(lowered)).toBe(0);
     await restart();
-    expect((await settle(ranFiles, (f) => f.length > before, 60_000)).length).toBe(before + 1);
+    expect((await settle(ranFiles, (f) => f.length >= 1, 60_000)).length).toBe(1);
   }, 900_000);
 
   test("CONTROL — a re-lift with changed bytes changes nothing that boots; the row reads `update-waits`", async () => {
@@ -133,22 +133,21 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
     expect(relift.code, said(relift)).toBe(0);
     const listing = await list();
     expect((listing["rows"] as Array<{ digest: string; state: string }>).find((r) => r.digest === digest)?.state).toBe("update-waits");
-    const before = ranFiles().length;
     await restart();
-    expect((await settle(ranFiles, (f) => f.length > before, 60_000)).length).toBe(before + 1);
+    expect((await settle(ranFiles, (f) => f.length >= 1, 60_000)).length).toBe(1);
   }, 600_000);
 
   test("P5 — the stage withdraws the item: the boot names the orphan, the module keeps running, and a keep ends the asking", async () => {
     const digest = digestOf(await list(), "rites/probe-module");
     const got = answer(await hearth!.cli(["kahua", "get", "rites/probe-module", "--history"]));
     for (const rev of got["history"] as Array<{ cid: string; withdrawn: boolean }>) if (!rev.withdrawn) await hearth!.cli(["kahua", "withdraw", rev.cid]);
-    const before = ranFiles().length;
     await restart();
-    expect((await settle(ranFiles, (f) => f.length > before, 60_000)).length).toBe(before + 1);
+    expect((await settle(ranFiles, (f) => f.length >= 1, 60_000)).length).toBe(1);
     expect(hearth!.bootLog()).toMatch(new RegExp(`\\[promote\\].*orphan.*${digest.slice(0, 12)}`));
     const kept = await hearth!.cli(["promote", "orphan", digest, "--keep"]);
     expect(kept.code, said(kept)).toBe(0);
     await restart();
     expect(hearth!.bootLog()).not.toMatch(new RegExp(`\\[promote\\].*orphan.*${digest.slice(0, 12)}`));
+    expect((await settle(ranFiles, (f) => f.length >= 1, 60_000)).length, "a kept orphan stopped running").toBe(1);
   }, 900_000);
 });
