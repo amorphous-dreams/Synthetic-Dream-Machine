@@ -91,7 +91,12 @@ type Signer = { readonly key: string; readonly sign: (bytes: Uint8Array) => Prom
 const object = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
 const string = (x: unknown): x is string => typeof x === "string";
 const hex64 = (x: unknown): x is string => string(x) && /^[0-9a-f]{64}$/.test(x);
-const RESERVED_FIELDS = new Set(["title", "text", "kahua-cid"]);
+const RESERVED_FIELDS = new Set(["title", "text", "module-type"]);
+/** Types TW5 executes: a lifted item rides every device of the face, so none of them lifts. */
+const EXECUTABLE_TYPES = new Set(["application/javascript", "text/javascript", "application/x-javascript", "application/ecmascript", "text/ecmascript", "module"]);
+/** A field the stage may carry: no reserved name, no `kahua-*` stamp (the fold writes those), no executable type. */
+const liftField = (k: string, v: unknown): boolean =>
+  string(v) && !RESERVED_FIELDS.has(k) && !k.startsWith("kahua-") && !(k === "type" && EXECUTABLE_TYPES.has(v.trim().toLowerCase()));
 
 /** Which lift field fails its shape, or null; `origin`, `taint` and `sources` refuse by their own names. */
 function liftFault(b: Record<string, unknown>): KahuaActRefusal | null {
@@ -104,7 +109,7 @@ function liftFault(b: Record<string, unknown>): KahuaActRefusal | null {
   if (b.title.split("/").some((segment) => segment === "." || segment === "..")) return "shape";
   // No control record rides the fleet-synced stage: a title the daemon's control plane owns never lifts.
   if (isControlPlaneUri(b.title)) return "control-plane-title";
-  if (!Object.entries(b.fields).every(([k, v]) => string(v) && !RESERVED_FIELDS.has(k))) return "shape";
+  if (!Object.entries(b.fields).every(([k, v]) => liftField(k, v))) return "shape";
   if (b.proposal !== undefined && !hex64(b.proposal)) return "shape";
   return null;
 }
