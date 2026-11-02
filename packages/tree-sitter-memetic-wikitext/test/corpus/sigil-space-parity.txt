@@ -60,3 +60,40 @@ an apostrophe inside an unquoted value opens no quote, and text after the >> sti
 (document
   (text_line)
   (text_line))
+
+========================================
+a same-line pair of ANOTHER name never closes an open target, even when the names share a length (RED)
+========================================
+<<~ ahu slot=`#/a`>>
+body
+<<~ xyz>>t<<~/ahu>>
+---
+
+(document
+  (sigil
+    body: (sigil_body))
+  (text_line)
+  (text_line))
+
+========================================
+a same-line pair inside a target's body pairs, and the target still closes (CONTROL)
+========================================
+<<~ ahu slot=`#/a`>>
+<<~ heihei name=`x`>>t<<~/heihei>>
+<<~/ahu>>
+---
+
+(document
+  (ahu_block
+    open: (sigil
+      body: (sigil_body))
+    (blank_line)
+    (ahu_block
+      open: (sigil
+        body: (sigil_body))
+      inline: (inline_body)
+      close: (sigil_close
+        body: (sigil_body)))
+    (blank_line)
+    close: (sigil_close
+      body: (sigil_body))))
