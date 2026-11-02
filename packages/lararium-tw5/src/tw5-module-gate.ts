@@ -11,12 +11,14 @@ const MODULE_MANAOIO_THRESHOLD = 17;
 // tw5-module component in its stack (tags), never "implements an interface".
 const MODULE_COMPONENT_URI = "lar:///ha.ka.ba/lararium/tw5/tw5-module";
 
-export async function bootTrustedModules(tw: TW5Instance): Promise<void> {
+/** Read genesis and promoted preloads alone, never the composite a stage item joins after boot. */
+export async function bootTrustedModules(tw: TW5Instance, preloaded: ReadonlySet<string>): Promise<void> {
   const wiki = tw.wiki;
 
   try {
     const titles: string[] = wiki.filterTiddlers(`[all[tiddlers]stack:has[${MODULE_COMPONENT_URI}]]`) ?? [];
     for (const title of titles) {
+      if (!preloaded.has(title)) continue;
       const t = wiki.getTiddler(title);
       if (!t) continue;
       const f = t.fields as Record<string, string>;

@@ -82,6 +82,7 @@ export * from "./intent-read.js";
 export * from "./intent-view.js";
 export * from "./intent-issue.js";
 export * from "./kahua-stage.js";
+export * from "./kahua-promote.js";
 export * from "./kahua-stage-store.js";
 export * from "./kahua-adopt.js";
 export * from "./intent-relay-door.js";
