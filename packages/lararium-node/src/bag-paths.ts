@@ -8,7 +8,7 @@
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
 import { readdirSync } from "fs";
-import { stripMemeExt, wikiSlotUri, isBagManifestUri, KAHUA_BAG } from "@lararium/mesh";
+import { stripMemeExt, wikiSlotUri, isBagManifestUri, KAHUA_BAG, CROSSROADS_DOC_URI } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
@@ -136,14 +136,15 @@ export function namedBagMirror(
 }
 
 /**
- * The daemon wiki's disk mirror: its working layer projects to `<rootDir>/wikis/kahua/`, the tree of the
- * wiki the operator works in (operator ruling, 2026-11-01: a standalone `wikis/daemon` folds into
- * `wikis/kahua`). The layer keeps its bag; the daemon island mounts outside the pool, so this mints the
- * grant once, by name. The daemon bag beneath (the control plane) holds no mirror.
+ * The daemon wiki's disk mirror: its working layer, the kahua wiki's working top, writes flat files to
+ * `<rootDir>/wikis/kahua/`, as every wiki writes its working layer (operator ruling, 2026-11-01: a standalone
+ * `wikis/daemon` folds into `wikis/kahua`). The layer keeps its bag; the daemon island mounts outside the pool, so this
+ * mints the grant once, by name.
  *
- * SEAM: the kahua recipe (its `bags/daemon` workbench over the fleet-synced, lift-only `bags/kahua`, projects
- * riding inside as `$(project)$/**` tiddlers) stays design (`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`);
- * when it lands, its workbench bag takes `<state>/bags/daemon` and this mirror stays the kahua wiki's tree.
+ * THE RULED LAYOUT: the working top projects to `<state>/wikis/kahua`, the lift-only fleet bag `bags/kahua` to
+ * `<state>/bags/kahua` (`kahuaStageMirror`), and the daemon bag (`bags/daemon`) stays the CRDT-only control plane:
+ * sealed checkpoints, persona acts, cap events, group-secret seals and bindings never project, and no `bags/daemon` dir
+ * stands on disk.
  */
 export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
   return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(rootDir, "wikis", "kahua") };
@@ -155,6 +156,30 @@ export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
  */
 export function kahuaStageMirror(stateRoot: string): BagMirrorConfig {
   return { bagId: KAHUA_BAG, mirrorRoot: joinPath(stateRoot, "bags", "kahua"), titlePaths: true };
+}
+
+/** A daemon VM disk mirror: the grant plus the scope its island names it by. */
+export type DaemonDiskMirror = BagMirrorConfig & { readonly scope: string };
+
+/**
+ * THE DAEMON VM'S DISK MIRRORS, the one list its island receives: the working top (`<root>/wikis/kahua`), the face's
+ * kahua stage (`<root>/bags/kahua`, items sited by title), and the public crossroads bag, split by origin back to its
+ * canon source where one stands. The daemon bag holds no mirror: the control plane never reaches disk.
+ *
+ * The crossroads WHO-handles guard stays ON unless the caller names a proven charter (`false`).
+ */
+export function daemonDiskMirrors(opts: {
+  readonly rootDir: string;
+  readonly canonBags: string;
+  readonly guardCrossroadsNexusHandles?: boolean;
+}): readonly DaemonDiskMirror[] {
+  const { rootDir, canonBags, guardCrossroadsNexusHandles = true } = opts;
+  return [
+    { ...daemonWorkingMirror(rootDir), scope: "daemon" },
+    { ...kahuaStageMirror(rootDir), scope: "kahua" },
+    { bagId: CROSSROADS_DOC_URI, mirrorRoot: projectionRoots({ stateRoot: rootDir, canonBags }).bagRoot("crossroads"), scope: "crossroads",
+      guardNexusHandles: guardCrossroadsNexusHandles },
+  ];
 }
 
 /** The mirror-relative base a title sites at by its own path, or null for a title that owns none by this rule. */
