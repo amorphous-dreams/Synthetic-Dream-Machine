@@ -96,3 +96,39 @@ describe("a board change", () => {
     expect(promoteActCid).toBeTypeOf("function");
   });
 });
+
+describe("the local trust record decides, never the stage copy", () => {
+  test("RED: a stage item edited after the promotion changes nothing: the digest answered and the bytes written are the ledger's own; CONTROL: a ledger row whose bytes no longer hash is voided, never swapped for the stage copy", async () => {
+    const { b, st } = await boot();
+    st.items.set(W1, [itemOf({ ...RITE, text: "exports.startup = function(){ evil() }" })]);
+    expect(await b.promotedFor(W1)).toEqual([D]);
+    expect([...st.cas.keys()]).toEqual([D]);
+    expect(new TextDecoder().decode(st.cas.get(D)!)).toContain("exports.startup = function(){}");
+    expect(new TextDecoder().decode(st.cas.get(D)!)).not.toContain("evil");
+    st.cas.clear();
+    st.ledger = { ...st.ledger, rows: st.ledger.rows.map((r) => (r.wiki === W1 ? { ...r, bytes: r.bytes.replace("startup", "evil") } : r)) };
+    expect(await b.promotedFor(W1)).toEqual([]);
+    expect(st.cas.size).toBe(0);
+    expect(st.reports.at(-1)!.report.voided).toEqual([{ digest: D, reason: "digest-mismatch" }]);
+  });
+});
+
+describe("a custody read that throws leaves the promoted set empty", () => {
+  test("RED: a locked vessel, a torn ledger row and a torn cache each answer EMPTY with the stage holding the item, write nothing and name the fault; CONTROL: the sound stores load", async () => {
+    for (const broken of ["ledger", "local"] as const) {
+      const w = await boot();
+      const bad = async () => { throw new Error("torn row"); };
+      const wired = promoteBoot({
+        stores: { ledger: broken === "ledger" ? { read: bad, write: async () => {} } : { read: async () => w.st.ledger, write: async () => {} },
+                  local: broken === "local" ? { read: bad, write: async () => {} } : { read: async () => w.st.local, write: async () => {} } },
+        cas: { put: (d, bytes) => { w.st.cas.set(d, bytes); }, pin: (d) => { w.st.pinned.add(d); } },
+        board: async () => readPromoteBoard(w.st.acts, { group: GROUP, grant: () => false, device: () => false }),
+        itemsOf: async (wiki) => w.st.items.get(wiki) ?? [], restart: async () => {}, onFault: (r) => { w.st.faults.push(r); },
+      });
+      expect(await wired.promotedFor(W1), broken).toEqual([]);
+      expect(w.st.cas.size, broken).toBe(0);
+      expect(w.st.faults, broken).toEqual(["ledger-unreadable"]);
+    }
+    expect(await (await boot()).b.promotedFor(W1)).toEqual([D]);
+  });
+});

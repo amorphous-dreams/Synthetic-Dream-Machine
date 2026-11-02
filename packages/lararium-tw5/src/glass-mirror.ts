@@ -21,7 +21,7 @@ const HOUSE = "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext";
  * a vessel whose boot inputs carry `sealedRest` (the browser store's sealed-rest capability, S's row); until then the gate holds it
  * by its own name and never defaults open. The inputs come from the vessel, never from a page value.
  */
-function censusPreloads(preloads: Record<string, unknown>[], sealedRest: boolean) {
+export function censusPreloads(preloads: Record<string, unknown>[], sealedRest: boolean) {
   const refused: { title: string; kind: string }[] = [];
   const accepted = preloads.filter(plugin => {
     const title = String(plugin.title ?? "");
