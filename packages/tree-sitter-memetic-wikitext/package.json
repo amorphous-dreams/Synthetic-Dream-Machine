@@ -28,9 +28,9 @@
     "gate:fold-ts": "node --test host-ts/fold.test.mjs host-ts/held-text.test.mjs host-ts/artifact-pin.test.mjs host-ts/widget-tree-parity.test.mjs && node host-ts/parity.mjs"
   },
   "devDependencies": {
-    "tree-sitter-cli": "0.27.0"
+    "tree-sitter-cli": "0.27.1"
   },
   "dependencies": {
-    "web-tree-sitter": "0.27.0"
+    "web-tree-sitter": "0.27.1"
   }
 }
