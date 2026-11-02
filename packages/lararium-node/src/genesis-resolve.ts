@@ -66,19 +66,26 @@ export function pinGenesisSeed(storageDir: string, resolution: GenesisResolution
   writeFileSync(join(storageDir, PIN_FILE), JSON.stringify({ seedCid, dir: resolution.dir, source: resolution.source }, null, 2) + "\n");
 }
 
-/** Refuse by name a boot whose resolved seed differs from the seed the vessel was founded on. No pin passes. */
-export function checkGenesisPin(storageDir: string, resolution: GenesisResolution): void {
+/**
+ * Refuse by name a boot whose resolved seed differs from the seed the vessel was founded on, and read back the line the
+ * boot prints: `pinned <cid>` where the seeds agree, `unpinned` where no pin stands (a root-held or declared founding, or
+ * the pin's crash window). The pin and the seed both sit on this host, so the compare reads SELF-CONSISTENCY.
+ */
+export function checkGenesisPin(storageDir: string, resolution: GenesisResolution): string {
   const path = join(storageDir, PIN_FILE);
-  if (!existsSync(path)) return;
+  const resolved = seedCidAt(resolution.dir);
+  if (!existsSync(path)) {
+    return `[genesis seed] unpinned — no founding pin at ${path}; this boot serves seed ${resolved ?? "(unreadable)"} ` +
+      `(${resolution.source} at ${resolution.dir}) and holds nothing to compare it against`;
+  }
   let pin: { seedCid?: unknown; dir?: unknown };
   try { pin = JSON.parse(readFileSync(path, "utf8")) as typeof pin; }
   catch { throw new Error(`[genesis seed] ${path} does not read; this vessel's founding seed is unknown — re-found it, or restore the file`); }
   if (typeof pin.seedCid !== "string") throw new Error(`[genesis seed] ${path} names no seed CID — re-found the vessel, or restore the file`);
-  const resolved = seedCidAt(resolution.dir);
-  if (resolved === pin.seedCid) return;
+  if (resolved === pin.seedCid) return `[genesis seed] pinned ${pin.seedCid} — this boot's seed matches the founding pin (self-consistency)`;
   throw new Error(
-    `[genesis seed] this vessel was founded on genesis seed ${pin.seedCid} (${String(pin.dir)}); this boot resolves ` +
-    `${resolved ?? "no readable seed"} (${resolution.dir}, ${resolution.source}). Point LAR_GENESIS at the pinned seed, or re-found the vessel.`,
+    `[genesis seed] genesis-mismatch: pinned ${pin.seedCid} · boot ${resolved ?? "(no readable seed)"} (${resolution.source} at ${resolution.dir}) ` +
+    `— self-consistency against the founding pin ${path} (founded at ${String(pin.dir)}). Point LAR_GENESIS at the pinned seed, or re-found the vessel.`,
   );
 }
 
