@@ -217,10 +217,10 @@ ENTRYPOINT ["python", "trial_intake.py"]
 
 # The disposable QA runner owns the exact walk bytes it executes. The official
 # image supplies Chromium; npm installs only the pinned client these walks import.
-FROM mcr.microsoft.com/playwright:v1.64.0-noble AS browser-harness
+FROM mcr.microsoft.com/playwright:v1.64.1-noble AS browser-harness
 WORKDIR /app
 RUN printf '{"private":true,"type":"module"}\n' > package.json
-RUN npm install --no-save --no-package-lock --ignore-scripts playwright@1.64.0
+RUN npm install --no-save --no-package-lock --ignore-scripts playwright@1.64.1
 COPY tools/browser-ci-smoke.mjs tools/browser-ci-join.mjs ./tools/
 COPY packages/lararium-web/tests/live-wiki.mjs ./packages/lararium-web/tests/
 COPY --from=build /app/packages/lararium-node/dist/probes/browser-test-custody.js ./packages/lararium-node/dist/probes/browser-test-custody.js
