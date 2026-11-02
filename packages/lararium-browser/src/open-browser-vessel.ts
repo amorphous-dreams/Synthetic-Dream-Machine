@@ -1285,7 +1285,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         });
         if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
         const kahua = adoptKahuaPlane(proof.projection, wornGroup, kahuaCatalogRow(assembly.catalogHandle.doc()));
-        if ("refused" in kahua) console.warn(`[lararium-browser] kahua stage: ${kahua.refused} (the catalog names ${kahua.catalog}, the face pins ${kahua.pinned ?? "none"}); the layer stands absent`);
+        if (kahua.staleRow) console.warn(`[lararium-browser] kahua stage: the catalog row names ${kahua.staleRow}, a stale hint (the face pins ${"mount" in kahua ? kahua.mount : "none"}); the pin decides`);
         provenKahuaUrl = adoptedKahuaUrl(kahua);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
         // The LEASE rises with it, from a VERIFIED observation alone (a signed advance by the KEL's current roster), so a later

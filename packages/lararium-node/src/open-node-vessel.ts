@@ -2254,7 +2254,7 @@ async function prepareNodeBootOn(
         wornFaceProved = true;
         wornFaceProjection = proof.projection;
         const kahua = adoptKahuaPlane(proof.projection, personaGroupId, kahuaCatalogRow(assembly.catalogHandle.doc()));
-        if ("refused" in kahua) console.warn(`[lararium] kahua stage: ${kahua.refused} (the catalog names ${kahua.catalog}, the face pins ${kahua.pinned ?? "none"}); the layer stands absent`);
+        if (kahua.staleRow) console.warn(`[lararium] kahua stage: the catalog row names ${kahua.staleRow}, a stale hint (the face pins ${"mount" in kahua ? kahua.mount : "none"}); the pin decides`);
         const kahuaUrl = adoptedKahuaUrl(kahua);
         wornKahua = kahuaUrl ? { group: personaGroupId, url: kahuaUrl } : null;
         wornFaceProven = true;
