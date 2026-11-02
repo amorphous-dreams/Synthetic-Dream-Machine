@@ -1470,6 +1470,7 @@ export class LarDiskProjector {
         this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, obsHash);
         this._leaveStandoff(bagId, tiddlerUri);
         this._leavePending(bagId, tiddlerUri);
+        await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
         return;
       }
     } catch { /* unreadable existing file — fall through to the gate */ }
@@ -1572,6 +1573,7 @@ export class LarDiskProjector {
           this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, diskHash);
         }
         this._leaveStandoff(bagId, tiddlerUri);
+        await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
         return;
       }
       if (decision.kind === "conflict") {
@@ -1640,10 +1642,18 @@ export class LarDiskProjector {
       this.writing.delete(tiddlerUri);
     }
 
-    // After writing the current mirror, unlink stale files from OTHER mirrors —
-    // but ONLY where the carrier has genuinely LEFT that bag (a true MOVE, e.g.
-    // promotion wiki-bag → lares-bag, cleaning the old scratch file). A carrier
-    // that STILL LIVES in a bag — a working edit SHADOWING its canon copy — keeps
+    await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
+  }
+
+  /**
+   * Unlink stale files from OTHER mirrors once this flush settled its own mirror, whether it wrote bytes
+   * or found them already standing, but ONLY where the carrier has genuinely LEFT that bag (a true MOVE,
+   * e.g. promotion wiki-bag → lares-bag, cleaning the old scratch file). The seed's leaf-bag road LOADs onto
+   * a working layer and MOVEs it into canon, whose mirror already holds the bytes: that flush writes nothing
+   * and still clears the working mirror's copy here.
+   */
+  private async sweepLeftMirrors(bagId: string, tiddlerUri: string, candidate: string, settleHash: string | null): Promise<void> {
+    // A carrier that STILL LIVES in a bag — a working edit SHADOWING its canon copy — keeps
     // its file there: `bagsHolding` reports every bag holding it, and a bag on
     // that list never gets its file unlinked. Without the callback, the unlink
     // clears every other mirror by path. One gate, one choke-point: the unlink
@@ -1666,7 +1676,7 @@ export class LarDiskProjector {
       const homes = staleFiles.map((f) => LarDiskProjector.contentOf(f)).filter((home) => home !== candidate);
       // The carrier left this mirror's bag: each file it left there gets read first. One that says what the
       // records render (or stands where its base left it) leaves; one a hand edited stays and stands off.
-      if (this.settleHomes(otherMirror.bagId, tiddlerUri, homes, bodyPending ? null : obsHash, null, `${tiddlerUri} left ${otherMirror.bagId} for ${bagId}`)) {
+      if (this.settleHomes(otherMirror.bagId, tiddlerUri, homes, settleHash, null, `${tiddlerUri} left ${otherMirror.bagId} for ${bagId}`)) {
         this.sited.delete(sitedKey(otherMirror.bagId, tiddlerUri));
         this._leaveStandoff(otherMirror.bagId, tiddlerUri, "home");
       }
