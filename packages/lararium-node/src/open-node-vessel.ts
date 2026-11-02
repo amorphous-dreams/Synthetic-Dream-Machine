@@ -66,7 +66,7 @@ import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
-import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow } from "@lararium/mesh";
+import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, kahuaPlaneUrl, faceRecordsOf, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
 import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest, ownEntry } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
@@ -194,7 +194,8 @@ import {
   makeVesselResidency, type VesselResidency,
   replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
-import { loadVesselIdentity, vesselPlaceSignerDoor, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
+import { loadVesselIdentity, vesselPlaceSignerDoor, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands, personaRootExists, loadPersonaGroupRootSeed } from "./node-vessel-identity.js";
+import { pinKahuaAtBoot } from "./kahua-door.js";
 import { socketsNoLongerHeld, ownPlacePosture, sameOperatorStands, seatedDeviceKey, type PlaceClass, type SeatedPresenter } from "./socket-sorter.js";
 import { faceGateServer, gateSessionRegistry, timerGateDeadlines } from "./face-gate-server.js";
 import { gateSyncServer, type GateSyncSocket }    from "./gate-sync-server.js";
@@ -2240,15 +2241,36 @@ async function prepareNodeBootOn(
       if (faceAnchor && activeAtom && personaGroupId) {
         // A FACED BOOT PROVES ITS FACE: a bootstrap that omits the persona plane cannot skip the proof, it refuses by name.
         if (!bootstrap.personaUrl) throw new Error("[lararium] Face proof: plane persona; the bootstrap names no persona plane for a face with a sealed anchor; re-found or re-admit the face");
-        const records = await readFacePersonaRecords(repo, {
-          personaUrl: bootstrap.personaUrl, group: personaGroupId, extraDocs: [daemonDoc], heldOnly: true,
-        });
-        const proof = proveFaceFromLog({ records, chain: personaKelChain, group: personaGroupId,
-          anchor: faceAnchor, deviceKey: activeAtom.key, ...(deviceEdge ? { edge: deviceEdge } : {}),
+        const personaUrl = bootstrap.personaUrl, group = personaGroupId, atomKey = activeAtom.key, kelChain = personaKelChain;
+        const proveWorn = async () => proveFaceFromLog({
+          records: await readFacePersonaRecords(repo, { personaUrl, group, extraDocs: [daemonDoc], heldOnly: true }),
+          chain: kelChain, group, anchor: faceAnchor, deviceKey: atomKey, ...(deviceEdge ? { edge: deviceEdge } : {}),
           // The face's SHARED documents: its persona plane, its circles and its identities, each named by a signed act. Sessions
           // stay per vessel (motion, never a decision that crosses devices), so no act names them.
-          planes: { persona: bootstrap.personaUrl, identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl, intents: bootstrap.intentsUrl } });
+          planes: { persona: personaUrl, identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl, intents: bootstrap.intentsUrl } });
+        let proof = await proveWorn();
         if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
+        // A FACE FOUNDED BEFORE KAHUA PINS ITS STAGE HERE, on its founding hearth alone, under the root this unlocked custody
+        // holds (`pinKahuaAtBoot`); the proof then reads again, so the frontier below pins the head that carries the pin.
+        if (kahuaPlaneUrl(proof.projection, group) === null) {
+          const reading = readFace(kelChain, faceAnchor);
+          const persona = await repo.find<LarDoc>(personaUrl as never);
+          const pinned = !reading ? null : await pinKahuaAtBoot({
+            repo, group, atom: atomKey, persona: persona as DocHandle<LarDoc>, currentSigner: reading.currentSigner,
+            projection: () => reading.project(faceRecordsOf([persona.doc(), daemonDoc], group), group),
+            epoch: () => reading.lineage[reading.lineage.length - 1]!.epoch,
+            rootSigner: async () => {
+              if (!(await personaRootExists(mountedFace))) return null;
+              const seed = await loadPersonaGroupRootSeed(mountedFace);
+              return { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
+            },
+          }).catch((e: unknown) => { console.warn(`[kahua] the founding hearth could not pin the face's stage: ${e instanceof Error ? e.message : String(e)}`); return null; });
+          if (pinned?.minted) {
+            console.log(`[kahua] the founding hearth pins the face's stage: ${pinned.url}`);
+            proof = await proveWorn();
+            if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
+          }
+        }
         wornFaceProved = true;
         wornFaceProjection = proof.projection;
         const kahua = adoptKahuaPlane(proof.projection, personaGroupId, kahuaCatalogRow(assembly.catalogHandle.doc()));
@@ -2559,6 +2581,7 @@ async function prepareNodeBootOn(
     if (wornFaceProved && wornFaceProjection && personaGroupId) {
       const url = await adoptKahuaStage({ repo, group: personaGroupId, projection: wornFaceProjection, register: registerInCatalog });
       wornKahua = url ? { group: personaGroupId, url } : null;
+      console.log(url ? `[kahua] the face's stage stands adopted: ${url}` : "[kahua] the face pins no stage yet; the layer stands absent until its pin syncs");
     }
     // The selected face's custody standing decides whether its veil archive may leave this
     // composition and whether the island may rest a later export through the same door.

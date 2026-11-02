@@ -1,6 +1,6 @@
 /**
- * kahua-command-live — the `lares kahua` store-door rows over a really founded face: the mint pins once in the face's
- * signed log and registers `bags/kahua`; a direct act stands no island, so a lift refuses `lokahi-cap-unread`; on a
+ * kahua-command-live — the `lares kahua` store-door rows over a really founded face: the founding pinned the stage in the
+ * face's signed log, so the mint answers that pin and registers `bags/kahua`; a direct act stands no island, so a lift refuses `lokahi-cap-unread`; on a
  * standing vessel's reactor the island's cap answer gates apart from the grant; the root's grant lifts and withdraws.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { KAHUA_BAG, personaBagIdFor, personaSiblingBagIds, PERSONA_GROUP_ID_TIDDLER, tiddlerText, type LarDoc } from "@lararium/mesh";
+import { KAHUA_BAG, kahuaStageDocUrl, personaBagIdFor, personaSiblingBagIds, PERSONA_GROUP_ID_TIDDLER, tiddlerText, type LarDoc } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/index.js";
 import { ownedStore } from "../src/owned-store.js";
 import { storeDoorDirect, storeDoorReactors } from "../src/store-door-verbs.js";
@@ -76,9 +76,9 @@ const standing = (verb: Parameters<typeof storeDoorDirect>[0], args: Record<stri
 const src = [{ title: "daemon/note", revision: "r1" }];
 
 describe("lares kahua over a founded face", () => {
-  test("RED: a second mint no-ops; CONTROL: the first mint pins the stage and registers bags/kahua", async () => {
+  test("RED: the founding pinned the stage, so a mint no-ops; CONTROL: the mint answers the face's derived stage and registers bags/kahua", async () => {
     const first = await row("kahua-mint", {}) as { url: string; minted: boolean };
-    expect(first).toMatchObject({ minted: true, url: expect.stringMatching(/^automerge:/) });
+    expect(first).toMatchObject({ minted: false, url: kahuaStageDocUrl(group) });
     expect(await row("kahua-mint", {})).toMatchObject({ url: first.url, minted: false });
     const registered = await ownedStore(storage, async (repo) => {
       const catalog = (await repo.find<LarDoc>(readFileSync(join(storage, "catalog-url"), "utf8").trim() as never)).doc()!;
