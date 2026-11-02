@@ -64,21 +64,21 @@ The Two Organs law binds the quine and the Memory Sensorium as cortex and hippoc
 
 !! The recipe ~ the house lean, CONSUME
 
-''The lean.'' The `kahua` recipe stacks three layers, the topmost shadowing those beneath it:
+''The ruled stack'' (operator, 2026-11-01: //"We enact this design now, no 'A now, b later' for the live Lararium standing."//). The `kahua` wiki and recipe at `<state>/wikis/kahua` stack three layers, the topmost shadowing those beneath it:
 
-# ''the daemon'' — the writable top, this device's private working wiki;
-# ''`kahua/<face>`'' — lift-only, the face's fleet stage; no hand edits it in place;
+# ''`<state>/bags/daemon`'' — the draft and private top, this device alone, writable;
+# ''`<state>/bags/kahua`'' — ONE fleet-synced, lift-only bag; a project rides inside it as `$(project)$/**` tiddler paths, never as a bag of its own; no hand edits it in place;
 # ''the lares canon'' — read-only, the floor.
+
+''No face on disk.'' No path carries a face segment: the face rides sync, one face per device-session, and the stage doc a device mounts comes from its face's verified pin (#/pinning). ''Private layers project under state alone''; workspace canon writes back to `/workspace/bags/<bag>` and `/workspace/wikis/<slug>`, and no private layer writes there.
 
 One wiki then reads the device's drafts, the fleet's lifted items and the canon in one cascade, and a session opens by reading one index rather than three.
 
 ''The shadow shows its diff.'' A daemon draft that carries the same title as a kahua item shadows it on this device alone. That "local draft over shared" state MUST render visibly, with a diff against the kahua item it covers, so no device reads its own draft as the fleet's record. A re-lift of the draft supersedes the kahua item (#/the-lift) and the shadow clears; discarding the draft clears it too.
 
-''The open alternative: parallel wikis.'' The daemon and the kahua stand as two wikis side by side, each with its own recipe over canon, and a session reads both. It buys a cleaner shore and costs the single cascade. The operator rules the fork (#/calls-owed, call 1).
+''The cascade names its layer.'' The house's composite store answers which layer a title came from (`resolveTopmost`, `resolveAll`: each record beside the bag that holds it), so the shadow renders against the kahua record it covers and a lift names its source bag. A red-first probe pinned that reading before the build.
 
-''Owed confirmation.'' The consume lean leans on TW5's cascade exposing which layer a title came from, so the shadow can render and a lift can name its source bag. Nothing here confirms that yet; a red-first probe against the house's composite store reads it before any build.
-
-''Where it projects.'' Under `~/.lares/state`, beside the house's other projections, and never into `bags/` or `wikis/` in the tracked checkout (operator, 2026-11-01).
+''Where it projects.'' Under the house root's state, beside the house's other projections, and never into `bags/` or `wikis/` in the tracked checkout (operator, 2026-11-01).
 
 <<~/ahu>>
 
@@ -168,10 +168,10 @@ A held capability MUST NOT stand in for the operator's choice. An AI seat holdin
 
 Each call names the fork and the house lean as a lean only; the operator rules each.
 
-# ''Consume or parallel.'' One cascaded `kahua` recipe over the daemon, or two wikis read side by side (#/the-recipe). Lean: consume. What flips it: the cascade probe reading that TW5 hides a title's source layer.
-# ''Pinning in both senses.'' The stage pinned once per face in its plane; each lift pinned to its parent revision (#/pinning). Lean: yes to both.
+# ''Consume or parallel.'' RULED: consume, one cascaded `kahua` recipe over the daemon (operator's layout ruling, 2026-11-01; #/the-recipe).
+# ''Pinning in both senses.'' The stage pinned once per face in its plane; each lift pinned to its parent revision (#/pinning). Lean: yes to both. The build enacts both under the operator's word to enact the design whole; no ruling names this call by itself.
 # ''An AI low-authority note lane.'' A lane where an AI seat writes on its own, which never seeds a boot, never drives an action, and decays unless a hand confirms it. Open; no lean. No source tests it.
-# ''Whether the AI seat lifts or only proposes.'' Lean: proposes. What flips it: a narrow schema-conformant class the operator names, each self-lift signed by the seat's own cap and withdrawable.
+# ''Whether the AI seat lifts or only proposes.'' RULED: the AI seat proposes; the operator's hand lifts, through `lares kahua lift` under the operator's grant (operator, 2026-11-01). A narrow schema-conformant self-lift class stays open for a later ruling.
 # ''The Law-of-5s register count once the kahua joins.'' The memory model counts five registers (RAM · DreamDeckSurface · Agent.MEMORY · Memory Sensorium · quine; <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory#/head`>>). A meshed, distilled, face-scoped stage reads as a sixth unless the count re-reads. Open.
 
 <<~/ahu>>
@@ -230,6 +230,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BjBJLIsDeVqNV83r1w_oZzSjJh7bCwBxeNaGpfQ6tDI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aWmOHyRzgPMZn2vEnX4BZQa3wlvE-5d32EgXVx78-Qc`>>
 
 <<^ code=`&#x0004;` to=`?`>>
