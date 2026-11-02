@@ -386,7 +386,7 @@ async function bootVessel(): Promise<void> {
     return;
   }
   if (relayUrl) {
-    const verdict = genesisCrossingVerdict(served.cid, await arrivalSeedAnchor(relayUrl, (input) => fetch(input, { cache: "no-store" })));
+    const verdict = genesisCrossingVerdict(served.cid, await arrivalSeedAnchor(relayUrl, (input) => fetch(input, { cache: "no-store" })), { pageOrigin: location.origin });
     if (verdict.kind === "refuse") {
       console.error(`[vessel] ${verdict.text}`);
       set("status", verdict.text, "err");

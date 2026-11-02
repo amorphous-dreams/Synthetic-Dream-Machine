@@ -84,9 +84,22 @@ export async function arrivalSeedAnchor(relayUrl: string, fetchFn: SeedFetch): P
     : { kind: "missing", at, why: "names no genesis-seed route" };
 }
 
-/** Whether the page crosses on the seed it booted, against the anchor it read. */
-export function genesisCrossingVerdict(pageSeedCid: string, anchor: SeedAnchor): CrossingVerdict {
+/**
+ * Whether the page crosses on the seed it booted, against the anchor it read. A page the hearth serves itself (its
+ * origin equals the descriptor's) refuses a missing descriptor: the hearth's own Pronaos serves `/.well-known/lar`, so its
+ * absence there reads as a fault. A page dialling a relay on another origin (a dev page, a mesh probe) names the gap and
+ * crosses uncompared.
+ */
+export function genesisCrossingVerdict(pageSeedCid: string, anchor: SeedAnchor, page: { readonly pageOrigin?: string } = {}): CrossingVerdict {
   if (anchor.kind === "missing") {
+    const sameOrigin = page.pageOrigin !== undefined && new URL(anchor.at).origin === page.pageOrigin;
+    if (sameOrigin) {
+      return {
+        kind: "refuse",
+        text: `arrival-descriptor-missing: ${anchor.at} (${anchor.why}) — the hearth serves this page from the same origin and names no seed there; ` +
+          "self-consistency cannot read, so the page does not cross. Reload once the hearth answers its arrival descriptor.",
+      };
+    }
     return { kind: "uncompared", text: `arrival-descriptor-missing: ${anchor.at} (${anchor.why}) · page seed ${pageSeedCid} crosses uncompared` };
   }
   if (anchor.seedCid === pageSeedCid) return { kind: "cross" };
