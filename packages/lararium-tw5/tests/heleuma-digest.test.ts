@@ -33,7 +33,8 @@ const moduleCarrier = frameCarrier({
 /** The anchor whose meta carries the digest, framed and checked. */
 const anchor = frameCarrier({
   head: { uri: "lar:///ha.ka.ba/lararium/tw5/probe-anchor" },
-  body: `\`\`\`toml meta\nsource-sha256 = "sha256:stale"\nheleuma     = "ka"\nmodule-ref  = "${MODULE}"\n\`\`\`\n\nAnchor prose.`,
+  // `title` seals the head's address, so the check reads `ok` rather than `head-unbound` (head-bind.ts).
+  body: `\`\`\`toml meta\ntitle = "lar:///ha.ka.ba/lararium/tw5/probe-anchor"\nsource-sha256 = "sha256:stale"\nheleuma     = "ka"\nmodule-ref  = "${MODULE}"\n\`\`\`\n\nAnchor prose.`,
 });
 
 describe("★ source-sha256 is the gate's own hash ★", () => {

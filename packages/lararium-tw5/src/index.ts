@@ -252,6 +252,7 @@ export type {
 
 export * from "./memetic-wikitext-sensorium.js";
 export { readCarrierShape } from "./carrier-shape.js";
+export { memeticVerdict, metaParityFaults } from "./meta-parity.js";
 // THE ONE ROOT-META LOCATOR — every reader composes onto this, so semantics agree by construction.
 export { metaFenceAt, rootMetaFence, rootMetaFields, metaValueRaw } from "./root-meta.js";
 export type { MetaFenceSpan } from "./root-meta.js";

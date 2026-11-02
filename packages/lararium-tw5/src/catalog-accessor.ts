@@ -30,8 +30,7 @@ import {
   type DocHandle,
   type LarDoc,
   type LarTiddlerRecord,
-  type LarTiddlerStore,
-} from "@lararium/mesh";
+  type LarTiddlerStore, ownEntry} from "@lararium/mesh";
 import { isSystemCanonBag, plainRecordOrNull, realmStandingDocUrl } from "@lararium/mesh";
 
 export interface CatalogAccessor {
@@ -79,12 +78,12 @@ export function makeCatalogAccessor(repo: Repo, catalogUrl: string): CatalogAcce
   const urlOf = async (bagUri: string): Promise<string | null> => {
     if (bagUri === CATALOG_DOC_URI) return catalogUrl;
     const cat = await handle();
-    return tiddlerText(cat.doc()?.tiddlers?.[bagUri]) ?? null;
+    return tiddlerText(ownEntry(cat.doc()?.tiddlers, bagUri)) ?? null;
   };
 
   const recordOf = async (title: string): Promise<LarTiddlerRecord | null> => {
     const cat = await handle();
-    return plainRecordOrNull(cat.doc()?.tiddlers?.[title]);
+    return plainRecordOrNull(ownEntry(cat.doc()?.tiddlers, title));
   };
 
   const find = async (bagUri: string): Promise<DocHandle<LarDoc> | null> => {

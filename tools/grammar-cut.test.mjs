@@ -63,6 +63,7 @@ const CARRIER = [
   '```toml meta',
   'title    = "lar:///ha.ka.ba/x/y"',
   'uri-path = "ha.ka.ba/x/y"',
+  'namespace = "⊙"',
   '```',
   '',
   '<<~ ahu #/head>>',
@@ -90,9 +91,9 @@ test('the envelope cuts: DOCTYPE names, ticked marks, arrows out, the toml block
   assert.equal(lines[2], '<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/x/y`>>');
   assert.equal(lines[3], '<<^ code=`&#x0002;`>>');
   assert.equal(lines[6], 'title    = "lar:///ha.ka.ba/x/y"');
-  assert.equal(lines[10], '<<~ ahu slot=`#/head`>>');
-  assert.match(lines[14], /^<<\^ code=`&#x0003;` bcc=`ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}`>>$/);
-  assert.equal(lines[16], '<<^ code=`&#x0004;` to=`?`>>');
+  assert.equal(lines[11], '<<~ ahu slot=`#/head`>>');
+  assert.match(lines[15], /^<<\^ code=`&#x0003;` bcc=`ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}`>>$/);
+  assert.equal(lines[17], '<<^ code=`&#x0004;` to=`?`>>');
   assert.equal(r.seal, 'ok');
 });
 
@@ -389,4 +390,15 @@ test('a STALE trailer never moves: the cut refuses it and leaves every byte as i
   const r = cut(stale);
   assert.equal(r.text, stale);
   assert.deepEqual(kinds(r), ['seal-broken']);
+});
+
+test('a head-unbound seal verifies, so the cut re-seals it like ok and never refuses it as broken', () => {
+  const unbound = toTrailer(ctx.frame.stampCarrier(CARRIER.replace('namespace = "⊙"\n', '').replace('>>ni:///sha-256;AAAA', '>>')));
+  const first = cut(unbound);
+  assert.deepEqual(kinds(first), []);
+  assert.equal(ctx.frame.verifyBcc(first.text), 'head-unbound', 'the cut head now reads, and names a namespace the meta never seals');
+  // The arriving standing now reads head-unbound: the cut still treats it as verified, never seal-broken.
+  const again = cut(first.text);
+  assert.deepEqual(kinds(again), []);
+  assert.equal(ctx.frame.verifyBcc(again.text), 'head-unbound');
 });

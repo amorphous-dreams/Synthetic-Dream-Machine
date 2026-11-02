@@ -32,8 +32,7 @@ import {
   wikiSlotUri,
   bagStackFromRec,
   type ChangeOrigin,
-  type LarTiddlerRecord,
-} from "@lararium/mesh";
+  type LarTiddlerRecord, ownEntry} from "@lararium/mesh";
 import { makeCatalogAccessor, findOrThrow, libraryDocUrl } from "./catalog-accessor.js";
 import { kahuaLayerStore, librarySlotUrl } from "./kahua-layer.js";
 import { effectiveRecipe } from "./recipe-planes.js";
@@ -69,7 +68,7 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
   // composition (catalog) shadows a system wiki's default (oracle), the same two planes, own first.
   const loadRecipeRec = (): LarTiddlerRecord | undefined =>
     effectiveRecipe(slug, (plane, title) =>
-      (plane === "oracle" ? sysHandle : catHandle)?.doc()?.tiddlers?.[title],
+      ownEntry((plane === "oracle" ? sysHandle : catHandle)?.doc()?.tiddlers, title),
     )?.record;
 
   // Slots the recipe model owns structurally (`structuralSlots` — the ONE spelling the record

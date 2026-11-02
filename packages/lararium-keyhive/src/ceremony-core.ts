@@ -62,8 +62,7 @@ import {
   enrolDevice, sealGroupSecret, groupSecretSealTitle, type GroupSecretSeal,
   type LarTiddlerStore, writePersonaAct,
   signFoundingLog, faceRootCommitment, edgeBodyDigest, landFleetGenesis, makeHandLineage,
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type LarDoc,
-} from "@lararium/mesh";
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type LarDoc, ownEntry} from "@lararium/mesh";
 
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
 import { buildCeremonyTiddlers, webDigest, hex as hexEncode, plainEntries, storedRecord, tiddlerText, kahuaPlaneUrl, type StoredTiddlers } from "@lararium/mesh";
@@ -323,7 +322,7 @@ type FaceCheckpoint = {
 };
 
 async function readFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomSeed: Uint8Array, scope: string): Promise<FaceCheckpoint | null> {
-  const record = handle.doc()?.tiddlers[`${FACE_FOUNDING_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`];
+  const record = ownEntry(handle.doc()?.tiddlers, `${FACE_FOUNDING_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`);
   const body = record ? tiddlerText(record) : null;
   if (!body) return null;
   const checkpoint = await openCheckpoint<FaceCheckpoint>(body, atomSeed);
@@ -333,7 +332,7 @@ async function readFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atom
 /** Retire the founding write-ahead record after the node commits this face's local carriers. */
 export async function retireFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomSeed: Uint8Array): Promise<void> {
   const title = `${FACE_FOUNDING_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
-  if (handle.doc()?.tiddlers[title]) handle.change((doc) => { delete doc.tiddlers[title]; });
+  if (ownEntry(handle.doc()?.tiddlers, title)) handle.change((doc) => { delete doc.tiddlers[title]; });
 }
 
 async function landFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, checkpoint: FaceCheckpoint): Promise<void> {
@@ -484,7 +483,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   for (const t of ceremonyTiddlers) {
     const handle = t.bag === IDENTITIES_NAMESPACE ? identitiesHandle : circlesHandle;
     handle.change((doc) => {
-      if (!doc.tiddlers[t.title]) {
+      if (!ownEntry(doc.tiddlers, t.title)) {
         doc.tiddlers[t.title] = storedRecord({ tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } });
       }
     });
@@ -653,7 +652,7 @@ async function flushCapEvents(
     const hash    = hexEncode(await webDigest("SHA-256", evt.bytes));
     const title   = capEventTitle(face, hash);
     daemonHandle.change((doc) => {
-      if (!doc.tiddlers[title]) {
+      if (!ownEntry(doc.tiddlers, title)) {
         doc.tiddlers[title] = storedRecord({
           tiddler: {
             title,
@@ -895,7 +894,7 @@ type ApplyCheckpoint = {
 };
 
 async function readApplyCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomSeed: Uint8Array, scope: string): Promise<ApplyCheckpoint | null> {
-  const record = handle.doc()?.tiddlers[`${APPLY_ADMIT_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`];
+  const record = ownEntry(handle.doc()?.tiddlers, `${APPLY_ADMIT_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`);
   const body = record ? tiddlerText(record) : null;
   if (!body) return null;
   const checkpoint = await openCheckpoint<ApplyCheckpoint>(body, atomSeed);
@@ -905,7 +904,7 @@ async function readApplyCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, ato
 /** Retire the admission write-ahead record after the node commits this face's local carriers. */
 export async function retireApplyCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomSeed: Uint8Array): Promise<void> {
   const title = `${APPLY_ADMIT_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
-  if (handle.doc()?.tiddlers[title]) handle.change((doc) => { delete doc.tiddlers[title]; });
+  if (ownEntry(handle.doc()?.tiddlers, title)) handle.change((doc) => { delete doc.tiddlers[title]; });
 }
 
 /**
@@ -992,13 +991,13 @@ export async function runApplyAdmitPayload(
     // A shared document is not held yet on a fresh device; the founder seeded it, and this device's own entry joins it on a boot that holds it.
     if (t.bag === IDENTITIES_NAMESPACE) {
       identitiesHandle?.change((doc) => {
-        if (!doc.tiddlers[t.title]) {
+        if (!ownEntry(doc.tiddlers, t.title)) {
           doc.tiddlers[t.title] = storedRecord({ tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } });
         }
       });
     } else {
       circlesHandle?.change((doc) => {
-        if (!doc.tiddlers[t.title]) {
+        if (!ownEntry(doc.tiddlers, t.title)) {
           doc.tiddlers[t.title] = storedRecord({ tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } });
         }
       });

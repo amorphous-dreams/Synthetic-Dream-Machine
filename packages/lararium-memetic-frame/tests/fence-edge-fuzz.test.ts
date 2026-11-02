@@ -36,6 +36,7 @@ import { describe, test, expect } from "vitest";
 import { frameCarrier } from "../src/write.js";
 import { readFrame, frameStanding } from "../src/span.js";
 import { verifyBcc } from "../src/check.js";
+import { headBinding } from "../src/head-bind.js";
 import { markCode } from "../src/write.js";
 
 // ── a small, seeded PRNG (mulberry32) — deterministic, no dependency ──────────────────────────────
@@ -178,40 +179,51 @@ function buildCases(): readonly Case[] {
 
 const CASES = buildCases();
 
+const BOUND_META = "```toml meta\ntitle = \"lar:///t/fuzz\"\n```";
+
 describe("fence-edge fuzz — the one span reader at every fence boundary", () => {
-  test(`generated ${CASES.length} cases (sanity floor)`, () => {
+  test(`generated ${CASES.length} cases (sanity floor), each run bound and bare`, () => {
     expect(CASES.length).toBeGreaterThanOrEqual(300);
   });
 
+  // TWO SHAPES PER CASE (blind security read, LOW): the fuzzed body under a bound root meta, where a lawful
+  // case reads `ok`; and the body as it stands, with no root meta of the frame's own, where the fuzzed
+  // fence edge itself may open the body. A lawful bare case reads `ok` or `head-unbound` (the head binds
+  // to nothing the body names), or `torn` only where its own opening fence reads outside the binding grammar.
   for (const c of CASES) {
-    test(c.name, () => {
-      const body = bodyFor(c);
-      const carrier = frameCarrier({ head: { uri: "lar:///t/fuzz" }, body });
-      const standing = frameStanding(carrier);
-      const read = readFrame(carrier);
-      const check = verifyBcc(carrier);
+    for (const shape of ["bound", "bare"] as const) {
+      test(`${c.name} · ${shape}`, () => {
+        const body = bodyFor(c);
+        const carrier = frameCarrier({ head: { uri: "lar:///t/fuzz" }, body: shape === "bound" ? `${BOUND_META}\n\n${body}` : body });
+        const standing = frameStanding(carrier);
+        const read = readFrame(carrier);
+        const check = verifyBcc(carrier);
+        const binding = headBinding(carrier);
 
-      // THE INVARIANT: agree with the writer, or NAME why not — never a silent wrong span.
-      const named = check === "ok" || read.faults.length > 0 || standing.kind === "torn";
-      if (!named) {
-        throw new Error(
-          `silent wrong span: check=${check} faults=${JSON.stringify(read.faults)} standing=${standing.kind}`,
-        );
-      }
-      expect(named).toBe(true);
-
-      if (c.lawful) {
-        // The POSITIVE half: a lawfully-quoted case masks fully. `unclosed-to-eof` is lawful by
-        // running the fence off the end of the text — reading `torn` there is the CORRECT outcome
-        // (the real ETX got swallowed with the fake one), not a fault.
-        if (c.placement === "unclosed-to-eof") {
-          expect(standing.kind).toBe("torn");
-        } else {
-          expect(check).toBe("ok");
-          expect(read.faults).toEqual([]);
-          expect(standing.kind).toBe("framed");
+        // THE INVARIANT: agree with the writer, or NAME why not — never a silent wrong span.
+        const verifies = check === "ok" || (shape === "bare" && check === "head-unbound");
+        const named = verifies || read.faults.length > 0 || standing.kind === "torn" || binding.kind === "split";
+        if (!named) {
+          throw new Error(
+            `silent wrong span: check=${check} faults=${JSON.stringify(read.faults)} standing=${standing.kind}`,
+          );
         }
-      }
-    });
+        expect(named).toBe(true);
+
+        if (c.lawful) {
+          // The POSITIVE half: a lawfully-quoted case masks fully. `unclosed-to-eof` is lawful by
+          // running the fence off the end of the text — reading `torn` there is the CORRECT outcome
+          // (the real ETX got swallowed with the fake one), not a fault.
+          if (c.placement === "unclosed-to-eof") {
+            expect(standing.kind).toBe("torn");
+          } else {
+            expect(read.faults).toEqual([]);
+            expect(standing.kind).toBe("framed");
+            if (shape === "bound") expect(check).toBe("ok");
+            else expect(binding.kind === "split" ? "split" : check).toMatch(/^(ok|head-unbound|split)$/);
+          }
+        }
+      });
+    }
   }
 });

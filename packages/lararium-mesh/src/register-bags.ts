@@ -43,6 +43,7 @@
 import { type LarDoc, tiddlerText } from "./base-doc.js";
 import { BAG_IDS, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
 import { isFaceScopedBag, personaScopedBagIds } from "./persona-scope.js";
+import { ownEntry } from "./stored-value.js";
 
 /**
  * The bag URIs the `catalog` registry NAMES — the PersonaGroup's own work, read from the projection.
@@ -66,7 +67,7 @@ import { isFaceScopedBag, personaScopedBagIds } from "./persona-scope.js";
 export function catalogNamedBags(doc: LarDoc | undefined | null): string[] {
   const tiddlers = doc?.tiddlers ?? {};
   return Object.keys(tiddlers).filter(
-    (title) => isBagId(title) && (tiddlerText(tiddlers[title]) ?? "").startsWith("automerge:"),
+    (title) => isBagId(title) && (tiddlerText(ownEntry(tiddlers, title)) ?? "").startsWith("automerge:"),
   );
 }
 

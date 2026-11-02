@@ -66,7 +66,8 @@ import { parseMemeText } from "./meme-ast/parse.js";
 import { failuresToDiagnostics, gradeOf, MEMETIC_SOURCE } from "./meme-ast/diagnostics.js";
 import type { MemeDiagnostic, DiagnosticSeverity } from "./meme-ast/diagnostics.js";
 import { getGrammar } from "./grammar-cache.js";
-import { headUriOf, verdict, type FrameFault, type FrameVerdict } from "@lararium/memetic-frame";
+import { headUriOf, type FrameFault, type FrameVerdict } from "@lararium/memetic-frame";
+import { memeticVerdict } from "./meta-parity.js";
 import { checkCarrier } from "./carrier-check.js";
 import { metaKeyRedefinitions } from "./root-meta.js";
 
@@ -139,6 +140,7 @@ const TORN_CODE: Readonly<Record<FrameFault["kind"], string>> = {
   "eot-out-of-order":  "frame-malformed",
   "second-soh":        "frame-malformed",
   "retired-trailer":   "retired-trailer",
+  "head-meta-split":   "head-meta-split",
 };
 
 /**
@@ -153,6 +155,9 @@ const TORN_CODE: Readonly<Record<FrameFault["kind"], string>> = {
  *             pre-commit hook (`tools/meme-check-staged.sh` via `lares meme check`) still refuses a
  *             staged stale check.
  *   · bare  → WARNING, UNSTABLE: the bytes hold, unread.
+ *   · head-unbound → WARNING, the unbound ends named: the check verifies, and the head names an end the
+ *             sealed meta never names, so the seal never reaches it (head-bind.ts). Visible, never a refuse.
+ *             A head that SPLITS from its sealed meta tears above, `head-meta-split`.
  *   · match, absent → nothing to say.
  */
 export function frameDiagnostics(uri: string, v: FrameVerdict, length: number): MemeDiagnostic[] {
@@ -162,6 +167,9 @@ export function frameDiagnostics(uri: string, v: FrameVerdict, length: number): 
     case "stale":
       return [diagnostic("warning", "block-check-mismatch",
         `ni:/// block check does not match the STX–ETX body, including root TOML metadata — stored ${v.stored} · computed ${v.computed}`, length)];
+    case "head-unbound":
+      return [diagnostic("warning", "head-unbound",
+        `${uri}: the head names ${v.unbound.map((e) => `\`${e}=\``).join(" and ")} where the sealed root meta names none (no ${v.unbound.includes("to") ? "`title` or `uri-path`" : ""}${v.unbound.length > 1 ? ", no " : ""}${v.unbound.includes("namespace") ? "`namespace`" : ""}) — the block check verifies, and never reaches that end of the head`, length)];
     case "bare":
       return [diagnostic("warning", "bare-data",
         `${uri}: bare data — no frame stands (no head, no STX/ETX, no release); held verbatim, never read as a meme. WARNING: UNSTABLE`, length)];
@@ -223,7 +231,8 @@ export const memeticIngestOps: IngestOps<TiddlerFields> = {
   grade(diagnostics) {
     return gradeOf(diagnostics);
   },
-  frame: verdict,
+  // The house verdict: the frame's, torn where its meta read and smol-toml's part (meta-parity.ts).
+  frame: memeticVerdict,
 };
 
 export interface IngestGateInput {

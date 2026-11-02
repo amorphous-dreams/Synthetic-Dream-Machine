@@ -32,8 +32,7 @@ import {
   makeWikiActivationCap,
   slugFromUri, wikiBagUri, tiddlerText, recipeUri, deriveWikiRecipe,
   DEFAULT_HOT_CAP, DEFAULT_IDLE_MS, DEFAULT_SWEEP_INTERVAL_MS,
-  pinTiddlerUri, pinTiddlerRecord, scanPinTiddlers,
-} from "@lararium/mesh";
+  pinTiddlerUri, pinTiddlerRecord, scanPinTiddlers, ownEntry} from "@lararium/mesh";
 import { plainRecordOrNull, storedRecord } from "@lararium/mesh";
 import type {
   ActivationPool, WikiActivationCap, ResolveWikiSpec,
@@ -209,10 +208,10 @@ export function makeVesselResidency(
     //    ACCESS, so no vessel-composite layer mount is needed here. ──
     const resolveWikiSpec: ResolveWikiSpec = async (wikiId) => {
       const slug    = slugFromUri(wikiId);
-      const wikiUrl = tiddlerText(catalogHandle.doc()?.tiddlers?.[wikiBagUri(slug)]) ?? null;
+      const wikiUrl = tiddlerText(ownEntry(catalogHandle.doc()?.tiddlers, wikiBagUri(slug))) ?? null;
       // The libraries AND the plugin offerings the wiki's recipe record names lay at boot
       // (`recipeFromRecord`) — R3: this grain's OWN recipe, never the vessel-wide floor.
-      const rec = plainRecordOrNull(catalogHandle.doc()?.tiddlers?.[recipeUri("catalog", slug)]);
+      const rec = plainRecordOrNull(ownEntry(catalogHandle.doc()?.tiddlers, recipeUri("catalog", slug)));
       const derived = deriveWikiRecipe({ slug, record: rec, canonUrl: wikiUrl });
       if (!derived.ok) return derived;
       if (!wikiUrl) return { ok: false, cause: "no-such-bag", detail: wikiBagUri(slug) };

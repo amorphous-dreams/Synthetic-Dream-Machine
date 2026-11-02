@@ -38,6 +38,7 @@ import {
   edgeKapaeActsFromRecords, edgeRollAnchorsFromRecords, edgeRollAnchorCid, writeEdgeKapae, writeEdgeRollAnchor, mergeEdgeActs, mergeEdgeRollAnchors,
   readEdgeBoard, type CountedEdgeBoard, type EdgeAuthority, type EdgeBoardRead, type EdgeCharter, type EdgeKapae, type EdgeRollAnchor, type KeptEdgeRows,
 } from "./edge-kapae.js";
+import { ownEntry } from "./stored-value.js";
 
 /** The tiddler-key prefix every ledger row rides under: `<prefix><scope>/<act|anchor|rolled>/<cid>`. */
 export const EDGE_LEDGER_PREFIX = "lar:///ha.ka.ba/dreamnet/edge-ledger/" as const;
@@ -86,7 +87,7 @@ export function keptFromLedger(ledger: LarDoc | undefined | null, scope: string)
 export function noteRealm(draft: LarDoc, realm: string, nexusAid?: string): void {
   const scope = realm.trim().toLowerCase();
   const key = rowKey(scope, "realm", "known");
-  if (draft.tiddlers[key] === undefined) draft.tiddlers[key] = storedLarRecord(key, { text: "realm" }, "edge-ledger");
+  if (ownEntry(draft.tiddlers, key) === undefined) draft.tiddlers[key] = storedLarRecord(key, { text: "realm" }, "edge-ledger");
   if (nexusAid === undefined) return;
   const aid = nexusAid.trim().toLowerCase();
   if (!NEXUS_AID_PATTERN.test(aid)) throw new Error(`edge-ledger: a realm stands under a Nexus AID, and "${nexusAid}" reads as none`);
@@ -149,14 +150,14 @@ export function ledgerScopes(ledger: LarDoc | undefined | null): string[] {
 export function keepInLedger(draft: LarDoc, scope: string, counted: CountedEdgeBoard, headEpochCid?: string): number {
   let added = 0;
   const put = (key: string, value: EdgeKapae | EdgeRollAnchor) => {
-    if (draft.tiddlers[key] !== undefined) return;
+    if (ownEntry(draft.tiddlers, key) !== undefined) return;
     draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(value) }, scope);
     added++;
   };
   for (const a of counted.acts) {
     // One row per act, its signatures gathered: a row grows when a read counted more signatures than it holds.
     const key = rowKey(scope, "act", a.actCid);
-    const [have] = draft.tiddlers[key] !== undefined ? edgeKapaeActsFromRecords([draft.tiddlers[key]!]) : [];
+    const [have] = ownEntry(draft.tiddlers, key) !== undefined ? edgeKapaeActsFromRecords([ownEntry(draft.tiddlers, key)!]) : [];
     if (have === undefined) put(key, a);
     else {
       const [merged] = mergeEdgeActs([have, a]);
@@ -164,11 +165,11 @@ export function keepInLedger(draft: LarDoc, scope: string, counted: CountedEdgeB
     }
     if (headEpochCid === undefined || a.hand !== "quorum" || a.epochCid !== headEpochCid) continue;
     const seen = rowKey(scope, "seen", a.actCid);
-    if (draft.tiddlers[seen] === undefined) draft.tiddlers[seen] = storedLarRecord(seen, { text: headEpochCid }, scope);
+    if (ownEntry(draft.tiddlers, seen) === undefined) draft.tiddlers[seen] = storedLarRecord(seen, { text: headEpochCid }, scope);
   }
   for (const a of counted.anchors) {
     const key = rowKey(scope, "anchor", edgeRollAnchorCid(a));
-    const [have] = draft.tiddlers[key] !== undefined ? edgeRollAnchorsFromRecords([draft.tiddlers[key]!]) : [];
+    const [have] = ownEntry(draft.tiddlers, key) !== undefined ? edgeRollAnchorsFromRecords([ownEntry(draft.tiddlers, key)!]) : [];
     if (have === undefined) put(key, a);
     else {
       const [merged] = mergeEdgeRollAnchors([have, a]);
@@ -246,7 +247,7 @@ export function markRaiseRolled(draft: LarDoc, scope: string, raiseCid: string, 
   });
   // The incoming roll passes the readers' own predicate for this row, or nothing is written (it would read as no mark).
   if (rowRollOf(text, scope, raiseCid, vesselKey) === null) return;
-  const had = draft.tiddlers[key] !== undefined ? rowRollOf(tiddlerText(draft.tiddlers[key]!) ?? "", scope, raiseCid, vesselKey) : null;
+  const had = ownEntry(draft.tiddlers, key) !== undefined ? rowRollOf(tiddlerText(ownEntry(draft.tiddlers, key)!) ?? "", scope, raiseCid, vesselKey) : null;
   if (had !== null && (had.how !== "no-authority" || roll.how === "no-authority")) return;
   draft.tiddlers[key] = storedLarRecord(key, { text }, scope);
 }
@@ -360,7 +361,7 @@ export async function readLedgeredVouches(opts: {
       noteRealm(d, realm);
       for (const i of toKeep) {
         const key = rowKey(realm, "vouch", vouchEdgeId(i));
-        if (d.tiddlers[key] === undefined) d.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(i) }, realm);
+        if (ownEntry(d.tiddlers, key) === undefined) d.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(i) }, realm);
       }
     });
   }
@@ -369,7 +370,7 @@ export async function readLedgeredVouches(opts: {
     handle.change((d) => {
       for (const i of missing) {
         // Never overwrite a record standing at the vouch's own key: a re-issue by the same voucher lives there.
-        if (d.tiddlers[vouchEntryKey(i.realmDocIdHex, i.voucherDid, i.joinerIdentityHex)] === undefined) writeVouch(d, i);
+        if (ownEntry(d.tiddlers, vouchEntryKey(i.realmDocIdHex, i.voucherDid, i.joinerIdentityHex)) === undefined) writeVouch(d, i);
       }
     });
   }

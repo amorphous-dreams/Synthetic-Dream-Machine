@@ -97,6 +97,7 @@ import {
 import {
   depositPersonaKelChain, httpPersonaKelDropHerm, pullPersonaKelSuccessors, type PersonaKelDropHerm, type PersonaKelPull,
 } from "./persona-kel-drop.js";
+import { shoreInbound } from "./prototype-key-shore.js";
 
 
 /** The session kind a leaf joins its channel under. Body: `{ channels }` — a later join REPLACES the set. */
@@ -973,7 +974,7 @@ export async function standSiblingChannel(opts: {
     ...(opts.onRefusal ? { onRefusal: opts.onRefusal } : {}),
   });
   if (refusal === undefined) board.on("change", () => { void adapter.relicense(eventsNow()); });
-  opts.repo.networkSubsystem.addNetworkAdapter(adapter);
+  opts.repo.networkSubsystem.addNetworkAdapter(shoreInbound(adapter));
   adapter.bindRepo(opts.repo);
   return adapter;
 }

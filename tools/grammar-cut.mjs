@@ -718,17 +718,19 @@ export function cutText(arriving, ctx, opts = {}) {
     // tampered, a seal gone stale before the cut) would come out re-stamped and read `match`, laundering
     // whatever broke it. So the cut re-stamps over `ok` alone, leaves `unchecked` unsealed, and any other
     // standing refuses by name, the file exactly as it stood.
-    if (standing !== "ok" && standing !== "unchecked") {
+    // `head-unbound` verifies too: the check covers the span; only the head reaches past the seal.
+    if (standing !== "ok" && standing !== "head-unbound" && standing !== "unchecked") {
       refusals.push({ rel, line: 1, kind: "seal-broken", why: `the arriving check reads ${standing}: re-seal by hand after reading the body`, src: "" });
       return { text: arriving, changes: 0, refusals, unmapped, seal: standing, lists, counts: { ...counts, phase: 0, renamed: 0, filePath: 0, foot: 0, fences: 0 } };
     }
     // THE CUT NEVER MINTS. An unchecked carrier stays unchecked: a seal whose run was deleted and whose
     // body moved after would otherwise come out stamped over bytes no seal ever attested. Only an
-    // arriving `ok` re-stamps, and then over exactly the bytes the cut itself moved.
-    if (standing === "ok") {
+    // arriving `ok` (or `head-unbound`, whose check verifies too) re-stamps, and then over exactly the
+    // bytes the cut itself moved.
+    if (standing === "ok" || standing === "head-unbound") {
       const stamped = next === text ? next : ctx.frame.stampCarrier(next);
       seal = ctx.frame.verifyBcc(stamped);
-      if (seal === "ok") next = stamped;
+      if (seal === "ok" || seal === "head-unbound") next = stamped;
     }
   }
   const changes = flat.length + filePath + at.phase + at.renamed + foot.moved + fences.widened;

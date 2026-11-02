@@ -67,7 +67,7 @@ import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow } from "@lararium/mesh";
-import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest } from "@lararium/mesh";
+import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest, ownEntry } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
@@ -226,6 +226,7 @@ import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
 import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 import { PLANE_LABELS } from "@lararium/mesh";
+import { shoreInbound } from "@lararium/mesh";
 
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
  *  (`LAR_GENESIS` → `~/.lares/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
@@ -1036,7 +1037,8 @@ async function prepareNodeBootOn(
   let houseIslands: { has(peerId: string): boolean } = new Set<string>();
   const repo = new Repo({
     storage,
-    network: [network],
+    // THE PROTOTYPE-KEY SHORE: a sync message carrying a `__proto__` key never reaches the Repo.
+    network: [shoreInbound(network)],
     // Two rings: WS peers (outside) must have passed a face gate; the
     // vessel's OWN islands (MessageChannel peers — daemon + wiki workers) are
     // house members and share freely. Without the island ring, main never
@@ -2095,7 +2097,7 @@ async function prepareNodeBootOn(
 
   // Active-wiki slot — slug from the daemon-doc marker (post-genesis).
   const wikiSlot = async (_assembly: VesselCoreAssembly): Promise<VesselWikiSlot> => {
-    const sel = selectActiveWikiSlug(wikiId, (await readDaemonDoc()).doc()?.tiddlers?.[ACTIVE_WIKI_URI] ?? null);
+    const sel = selectActiveWikiSlug(wikiId, ownEntry((await readDaemonDoc()).doc()?.tiddlers, ACTIVE_WIKI_URI) ?? null);
     activeWikiSource = sel.source;
     slotActiveWikiId = sel.slug;
     // The draft DOC is no facet of the slug — the daemon's slot-doc resolver names it at mount.
@@ -2141,11 +2143,11 @@ async function prepareNodeBootOn(
     // wrote, so a second write never builds from the copy read before the first and erases the first's pin.
     let standingAnchor = faceAnchor;
     if (personaGroupId && !faceAnchor && !atFloor) throw new Error("[openNodeVessel] Face anchor: anchor-missing; re-found the face");
-    if (!personaGroupId && !atFloor && tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_ID_TIDDLER])) {
+    if (!personaGroupId && !atFloor && tiddlerText(ownEntry(daemonDoc?.tiddlers, PERSONA_GROUP_ID_TIDDLER))) {
       throw new Error("[openNodeVessel] Face anchor: anchor-missing; re-found the face");
     }
     // The worn handle selects the atom seed in local custody for this face's live signer and Keyhive Individual.
-    const edgeRecord = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER];
+    const edgeRecord = ownEntry(daemonDoc?.tiddlers, DEVICE_DELEGATION_SELF_TIDDLER);
     // The switch presents the mounted face's signed edge. It changes WHICH edge is presented, never whether it
     // is checked: `bootDaemonKeyhive` runs the Binding Gate on it in full, or grants no persona caps at all.
     const deviceEdge = bootMount?.deviceEdge ?? (plainRecordOrNull(edgeRecord)?.tiddler as unknown as DeviceDelegationTiddler | undefined);
@@ -2499,7 +2501,7 @@ async function prepareNodeBootOn(
     // Idempotent by construction: it writes the url the seed already names, so a plane registered on an
     // earlier boot is re-written identically and a plane the operator lit an hour ago registers now.
     const registerInCatalog = (bagId: string, url: string | null | undefined): void => {
-      if (!url || tiddlerText(assembly.catalogHandle.doc()?.tiddlers?.[bagId]) === url) return;
+      if (!url || tiddlerText(ownEntry(assembly.catalogHandle.doc()?.tiddlers, bagId)) === url) return;
       assembly.catalogHandle.change((doc) => {
         doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "vessel-boot");
       });
@@ -2754,7 +2756,7 @@ async function prepareNodeBootOn(
       ?? (process.env["LAR_SIBLING_HERMS"] ?? "").split(",").map((h) => h.trim()).filter((h) => h.length > 0);
     if (siblingHerms.length > 0 && personaGroupId && personaKelPrefix && deviceEdge && siblingGate) {
       if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
-      const sealRecord = tiddlerText(daemonDoc?.tiddlers?.[groupSecretSealTitle(personaGroupId)]);
+      const sealRecord = tiddlerText(ownEntry(daemonDoc?.tiddlers, groupSecretSealTitle(personaGroupId)));
       let sealRaw: unknown = null;
       try { sealRaw = sealRecord ? JSON.parse(sealRecord) : null; } catch { sealRaw = null; }
       const seal = await verifyGroupSecretSeal(sealRaw);
@@ -3247,7 +3249,7 @@ async function prepareNodeBootOn(
       // it should keep. Each sweep takes this boot's captured epoch, so a `--held` pin is judged against
       // the boot that stands, never a re-read of the `.boot-epoch` sidecar file.
       const bootEpoch = storeClaim.bootEpoch;
-      const sweep = installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: genesisProtect, pins: () => readCasPins(cidDir), currentFence: () => bootEpoch, realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(doc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER]); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
+      const sweep = installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: genesisProtect, pins: () => readCasPins(cidDir), currentFence: () => bootEpoch, realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(ownEntry(doc?.tiddlers, MESH_CABAL_DOC_ID_TIDDLER)); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
       stood.push({ what: "the CAS sweep tick", down: () => sweep.stop() });
     }
 

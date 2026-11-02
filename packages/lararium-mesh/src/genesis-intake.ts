@@ -19,7 +19,7 @@ import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import { load as automergeLoad } from "@automerge/automerge";
 import type { LarDoc } from "./base-doc.js";
 import { ENGINE_CORE_ID } from "./base-doc.js";
-import { plainField } from "./stored-value.js";
+import { plainField, ownEntry } from "./stored-value.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
 import {
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
@@ -27,10 +27,11 @@ import {
 } from "./genesis-doc.js";
 import { resolveBootDoc } from "./boot-resolver.js";
 import { storedLarRecord } from "./stored-record.js";
+import { assertNoPrototypeKeys } from "./prototype-key-shore.js";
 
 /** Read a region content-CID recorded in a live/incoming island doc, or null when absent. */
 function regionCid(handle: DocHandle<LarDoc>, title: string): string | null {
-  const cid = plainField(handle.doc()?.tiddlers?.[title], "cid");
+  const cid = plainField(ownEntry(handle.doc()?.tiddlers, title), "cid");
   return typeof cid === "string" ? cid : null;
 }
 const short = (c: string | null): string => c?.slice(0, 12) ?? "none";
@@ -47,13 +48,15 @@ export function validateGenesisBytes(bytes: Uint8Array, label: string): LarDoc {
   } catch (err) {
     throw new Error(`[${label}] genesis bytes failed Automerge.load() validation: ${err}`);
   }
-  if (!preview.blobs?.[ENGINE_CORE_ID]) {
+  // Every by-key read below (`blobs`, `tiddlers`) stands on own keys only: a prototype key refuses by name.
+  assertNoPrototypeKeys(preview, `${label}: genesis bytes`);
+  if (!ownEntry(preview.blobs, ENGINE_CORE_ID)) {
     throw new Error(
       `[${label}] genesis artifact missing TW5 core blob (${ENGINE_CORE_ID}) — ` +
       `CID mismatch or corrupt artifact; rebuild genesis`,
     );
   }
-  if (!preview.blobs?.[LARES_MEMETIC_WIKITEXT_PLUGIN_URI]) {
+  if (!ownEntry(preview.blobs, LARES_MEMETIC_WIKITEXT_PLUGIN_URI)) {
     throw new Error(
       `[${label}] genesis artifact missing packed Lares TW5 plugin — rebuild genesis after build:plugin`,
     );
@@ -77,7 +80,7 @@ export async function importGenesisIsland(
   await handle.whenReady();
 
   const doc = handle.doc();
-  if (!doc?.blobs?.[ENGINE_CORE_ID]) {
+  if (!doc || !ownEntry(doc.blobs, ENGINE_CORE_ID)) {
     throw new Error(`[${label}] handle.whenReady() resolved but TW5 core blob absent — import failed silently`);
   }
 
@@ -120,7 +123,7 @@ export async function materializeGenesisIsland(
   } catch {
     existing = null;   // unavailable → first boot, materialize below
   }
-  if (existing?.doc()?.blobs?.[ENGINE_CORE_ID]) {
+  if (existing && ownEntry(existing.doc()?.blobs, ENGINE_CORE_ID)) {
     const d = existing.doc()!;
     console.log(
       `[${label}] oracle doc reloaded (persisted)  url=${existing.url}  ` +
@@ -142,7 +145,7 @@ export async function materializeGenesisIsland(
   await handle.whenReady();
 
   const doc = handle.doc();
-  if (!doc?.blobs?.[ENGINE_CORE_ID]) {
+  if (!doc || !ownEntry(doc.blobs, ENGINE_CORE_ID)) {
     throw new Error(`[${label}] oracle doc materialized but TW5 core blob absent — corrupt genesis seed`);
   }
   if (handle.url !== url) {
@@ -173,7 +176,7 @@ export function genesisCasCidsFromOracle(doc: LarDoc): readonly string[] {
     }
     return entry.sha256;
   });
-  if (!cids.includes(doc.blobs?.[ENGINE_CORE_ID]?.sha256 ?? "")) {
+  if (!cids.includes(ownEntry(doc.blobs, ENGINE_CORE_ID)?.sha256 ?? "")) {
     throw new Error(`[genesis-intake] persisted oracle is missing TW5 core CAS metadata (${ENGINE_CORE_ID})`);
   }
   if (new Set(cids).size !== cids.length) {

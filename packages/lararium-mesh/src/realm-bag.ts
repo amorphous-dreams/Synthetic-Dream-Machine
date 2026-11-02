@@ -55,6 +55,7 @@ import {
 import type { FederationGate, NexusMembership } from "./federation-gate.js";
 import type { CapTier } from "./cap-tier.js";
 import { storedLarRecord } from "./stored-record.js";
+import { ownEntry } from "./stored-value.js";
 
 /** The realm plane's pointer namespace on a vessel's oracle plane. */
 export const REALM_DOC_URI = bagUri("realm");
@@ -76,7 +77,7 @@ export function realmStandingPointer(realmId: string): string { return `${REALM_
 export function writeRealmStanding(draft: LarDoc, realmId: string, standing: ReadonlyMap<string, RealmBagRegistration>): boolean {
   const key = realmStandingPointer(realmId);
   const text = JSON.stringify([...standing.values()].sort((a, b) => a.bagUri < b.bagUri ? -1 : a.bagUri > b.bagUri ? 1 : 0));
-  if (tiddlerText(draft.tiddlers[key]) === text) return false;
+  if (tiddlerText(ownEntry(draft.tiddlers, key)) === text) return false;
   draft.tiddlers[key] = storedLarRecord(key, { text }, realmId);
   return true;
 }
@@ -99,10 +100,10 @@ export function readRealmStanding(text: string | null | undefined): ReadonlyMap<
  * the bag. A reader that wants the live system documents asks the Kahu predicate first: this names a url, never a reach.
  */
 export function realmStandingDocUrl(catalog: LarDoc | undefined | null, bagUri: string): string | null {
-  const realmId = tiddlerText(catalog?.tiddlers?.[REALM_ID_TIDDLER]);
+  const realmId = tiddlerText(ownEntry(catalog?.tiddlers, REALM_ID_TIDDLER));
   if (!realmId) return null;
-  if (tiddlerText(catalog?.tiddlers?.[realmDocPointer(realmId)]) !== realmDocUrl(realmId)) return null;
-  return readRealmStanding(tiddlerText(catalog?.tiddlers?.[realmStandingPointer(realmId)])).get(bagUri)?.docUrl ?? null;
+  if (tiddlerText(ownEntry(catalog?.tiddlers, realmDocPointer(realmId))) !== realmDocUrl(realmId)) return null;
+  return readRealmStanding(tiddlerText(ownEntry(catalog?.tiddlers, realmStandingPointer(realmId)))).get(bagUri)?.docUrl ?? null;
 }
 
 /** The signing / content domain of a realm-bag registration — minted in the registry (`domains.ts`). */

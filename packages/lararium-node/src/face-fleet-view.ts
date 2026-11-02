@@ -31,7 +31,7 @@
  *        lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view
  */
 import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { KAHUA_BAG, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, isFaceScopedBag, tiddlerText, type LarDoc, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets } from "@lararium/mesh";
+import { KAHUA_BAG, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, isFaceScopedBag, tiddlerText, type LarDoc, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets, ownEntry } from "@lararium/mesh";
 import { bootDaemonUrl, bootFacePlanes } from "./boot-face-planes.js";
 import type { KahuCanonDocs } from "./kahu-realm.js";
 
@@ -125,7 +125,7 @@ export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?:
       if (facets === null || facets.documents.length === 0) return;
       const view = new SessionDocumentView({ profile: "face", facets });
       // The mounted face is the caller's (sealed custody's) when it names one; the bootstrap's group text answers only where no caller does.
-      const worn = wornGroup ? wornGroup() : (tiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text ?? null);
+      const worn = wornGroup ? wornGroup() : (ownEntry(tiddlers, PERSONA_GROUP_ID_TIDDLER)?.text ?? null);
       if (worn !== face.personaGroup || tiddlers === null) {
         views.set(peerId, { view, gate: viewFederationGate(view), face: face.personaGroup });
         return;

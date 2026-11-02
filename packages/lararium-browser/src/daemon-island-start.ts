@@ -5,6 +5,7 @@ import { HULLS_TS_ONLY } from "@lararium/mesh";
 import { edgeLedgerDocUrl, materializeSharedLarDoc } from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
+import { shoreStorage } from "@lararium/mesh";
 
 // The daemon INHERITS the wiki render cap (hasProjection). Mount its projection DORMANT at island-boot —
 // exactly as a pool wiki mounts its camera — so summoning the daemon is a pure active-surface gate flip,
@@ -14,7 +15,7 @@ export function startIsland(scope?: BrowserIslandScope): void {
 runBrowserSovereignWorker((manifest) => {
   // Same-origin writes are accepted within one custody context: api/pono/session-contract.mem #/the-trust-line.
   const key = manifest.daemonAuth?.atom?.key;
-  const ledgerRepo = key ? new Repo({ storage: new IndexedDBStorageAdapter(`lares:island-edge-ledger:${key}`) }) : null;
+  const ledgerRepo = key ? new Repo({ storage: shoreStorage(new IndexedDBStorageAdapter(`lares:island-edge-ledger:${key}`)) }) : null;
   const dyadLedger = key && ledgerRepo ? materializeSharedLarDoc(ledgerRepo, edgeLedgerDocUrl(key), "ledger:edge") : undefined;
   return makeOperatorDaemonBehavior(manifest, {
     // The island reads its signed fleet board through its own Repo; an absent edge reads clear until the signed frontier stands.

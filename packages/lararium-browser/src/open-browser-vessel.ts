@@ -19,6 +19,7 @@ import type { PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
+import { shoreStorage } from "@lararium/mesh";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
 import {
   emptyLarDoc, storedLarRecord,
@@ -54,7 +55,7 @@ import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
 import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, provenCrossingPlanes, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
-import { readLarControlResult, readLarFrame, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame } from "@lararium/mesh";
+import { readLarControlResult, readLarFrame, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, ownEntry } from "@lararium/mesh";
 import { createBrowserConnectionState, crossingStandingOf, observeRelayConnection } from "./browser-connection-state.js";
 import type { BrowserConnectionState } from "./browser-connection-state.js";
 import { browserWalkStore, requireAdmittedFaceIsland } from "./browser-walk.js";
@@ -129,6 +130,7 @@ import { clearCustodyVerb, standBrowserCustody, type CustodyAsk, type CustodyAns
 import { guardedBoot, type BootHold } from "./guarded-boot.js";
 import { attachSharedHolder, holderWorkerHandle, houseName } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
+import { shoreInbound } from "@lararium/mesh";
 // ── Bootstrap artifact (IDB-persisted) ──────────────────────────────────────────
 
 const BOOTSTRAP_KEY  = "social-bootstrap";
@@ -563,7 +565,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     return fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, key))?.stands === true;
   };
   const repo = new Repo({
-    storage:     new IndexedDBStorageAdapter(`${idbName}:repo`),
+    storage:     shoreStorage(new IndexedDBStorageAdapter(`${idbName}:repo`)),
     // The verdict seats on announce AND access (the announce-only lie the node measured in
     // share-policy-is-access.test.ts); `browserShareConfig` composes it through mesh's one law.
     // The gate rides by READER: it arms at the spore crossing below, after this Repo stands.
@@ -920,9 +922,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // hearth; it says nothing about which way a change travels. The leg reads every sync message this Repo
     // sends toward the hearth and keeps back any that carries a change to a canon document the admit named.
     const canonIds = hearthCanonDocIds(hearthCanon);
-    repo.networkSubsystem.addNetworkAdapter(
+    // THE PROTOTYPE-KEY SHORE rides every leg: a sync message carrying a `__proto__` key never reaches the Repo.
+    repo.networkSubsystem.addNetworkAdapter(shoreInbound(
       canonIds.size > 0 ? new GatedSyncLeg(adapter, oneWayDocumentsGate({ receiveOnly: canonIds })) : adapter,
-    );
+    ));
   }
 
   // ── Catalog ────────────────────────────────────────────────────────────────
@@ -973,7 +976,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     let recipe: string[] = [];
     if (recipeSlug) {
       const rec = effectiveRecipe(recipeSlug, (plane, title) =>
-        (plane === "oracle" ? oracleAtBoot : catalogHandle)?.doc()?.tiddlers?.[title])?.record;
+        ownEntry((plane === "oracle" ? oracleAtBoot : catalogHandle)?.doc()?.tiddlers, title))?.record;
       if (rec) recipe = bagStackFromRec(rec);
     }
     // Add-candidates: the daemon-resolvable system library bags not already in this
@@ -1112,7 +1115,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             ? `[lararium-browser] hearth canon named by the admit — this leaf mounts ${named.join(", ")}`
             : "[lararium-browser] the admit names no hearth canon — this leaf mounts a wiki document of its own; take a fresh admit from the hearth to open its wiki");
         }
-        const coreHash = islandHandle.doc()?.blobs?.[ENGINE_CORE_ID]?.sha256 ?? null;
+        const coreHash = ownEntry(islandHandle.doc()?.blobs, ENGINE_CORE_ID)?.sha256 ?? null;
         if (!coreHash) throw new Error("[openBrowserVessel] genesis island missing ENGINE_CORE_ID blob metadata");
         // Populate the OPFS CAS — the worker pulls engine + plugin bytes by CID from here
         // (the breath path), never CRDT-syncing the bytes over the port. The genesis CRDT now
@@ -1175,7 +1178,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // and gate that reads a persona plane (the face bag ledger, the join's crash-replay record, the grant record) resolves
       // it from the catalog registry. Idempotent: the url the seed already names re-writes identically.
       const registerInCatalog = (bagId: string, url: string | null | undefined): void => {
-        if (!url || tiddlerText(assembly.catalogHandle.doc()?.tiddlers?.[bagId]) === url) return;
+        if (!url || tiddlerText(ownEntry(assembly.catalogHandle.doc()?.tiddlers, bagId)) === url) return;
         assembly.catalogHandle.change((doc) => { doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "vessel-boot"); });
       };
       // The planes register AFTER the face proof below, and only the ones a proof vouched for.
@@ -1271,7 +1274,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const wornPlaneUrl = foundingFace ? social.personaUrl : (social.personaPlanes.find((p) => p.personaGroupId === wornGroup)?.url ?? null);
         if (!wornPlaneUrl) throw new Error("[lararium-browser] Face proof: plane persona; the bootstrap names no persona plane for a face with a sealed anchor; re-found or re-admit the face");
         const wornIntentsBag = personaSiblingBagIds(personaBagIdFor(wornGroup))!.intents;
-        const wornIntentsUrl = foundingFace ? social.intentsUrl : tiddlerText(assembly.catalogHandle.doc()?.tiddlers?.[wornIntentsBag]);
+        const wornIntentsUrl = foundingFace ? social.intentsUrl : tiddlerText(ownEntry(assembly.catalogHandle.doc()?.tiddlers, wornIntentsBag));
         if (!wornIntentsUrl) throw new Error("[lararium-browser] Face proof: plane intents; the vessel names no intents plane for a face with a sealed anchor; re-found or re-admit the face");
         const planeDoc = heldDocOf(repo, wornPlaneUrl);   // an unsynced plane proves from the admit bundle in the daemon doc
         const daemonDoc = heldDocOf(repo, social.daemonUrl);
@@ -1315,7 +1318,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           if (!chain || chain.length === 0) continue;
           const otherDoc = heldDocOf(repo, plane.url);
           const otherIntentsBag = personaSiblingBagIds(personaBagIdFor(plane.personaGroupId))!.intents;
-          const otherIntentsUrl = tiddlerText(assembly.catalogHandle.doc()?.tiddlers?.[otherIntentsBag]);
+          const otherIntentsUrl = tiddlerText(ownEntry(assembly.catalogHandle.doc()?.tiddlers, otherIntentsBag));
           if (!otherIntentsUrl) continue;
           if (proveFaceFromLog({
             records: faceRecordsOf([otherDoc, daemonDoc], plane.personaGroupId),
@@ -1511,7 +1514,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const siblingEdge = daemonAuth.deviceEdge;
       if (siblingHerms && siblingHerms.length > 0 && siblingEdge && siblingGate) {
         const group = daemonAuth.personaGroupId;
-        const sealText = tiddlerText(bootDaemonDoc?.tiddlers?.[groupSecretSealTitle(group)]);
+        const sealText = tiddlerText(ownEntry(bootDaemonDoc?.tiddlers, groupSecretSealTitle(group)));
         let sealRaw: unknown = null;
         try { sealRaw = sealText ? JSON.parse(sealText) : null; } catch { sealRaw = null; }
         const seal = await verifyGroupSecretSeal(sealRaw);

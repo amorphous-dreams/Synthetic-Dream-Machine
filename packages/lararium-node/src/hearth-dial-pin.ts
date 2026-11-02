@@ -18,7 +18,7 @@
  */
 
 import { readFileSync } from "node:fs";
-import { DAEMON_BAG_ID, readAdmitGatePin, type GateBundlePin } from "@lararium/mesh";
+import { DAEMON_BAG_ID, readAdmitGatePin, type GateBundlePin, ownEntry } from "@lararium/mesh";
 
 /** The hearth's `ws://…/ws` relay — where this joinee dials. */
 export const HEARTH_SYNC_URL_TIDDLER = `${DAEMON_BAG_ID}/hearth/sync-url`;
@@ -84,14 +84,14 @@ export function readHearthDialPin(bootstrapPath: string): HearthDialPin | null {
   try {
     const plugin = JSON.parse(readFileSync(bootstrapPath, "utf8")) as { text?: string };
     const packed = JSON.parse(plugin.text ?? "{}") as { tiddlers?: Record<string, { text?: unknown }> };
-    const syncUrl = packed.tiddlers?.[HEARTH_SYNC_URL_TIDDLER]?.text;
-    const gate    = packed.tiddlers?.[HEARTH_GATE_KEY_TIDDLER]?.text;
+    const syncUrl = ownEntry(packed.tiddlers, HEARTH_SYNC_URL_TIDDLER)?.text;
+    const gate    = ownEntry(packed.tiddlers, HEARTH_GATE_KEY_TIDDLER)?.text;
     if (typeof syncUrl !== "string" || typeof gate !== "string") return null;
     const gatePubKey = gate.trim().toLowerCase();
     if (!/^wss?:\/\//.test(syncUrl.trim()) || !KEY_RE.test(gatePubKey)) return null;
 
-    const kindRaw  = packed.tiddlers?.[HEARTH_ISLAND_KIND_TIDDLER]?.text;
-    const scopeRaw = packed.tiddlers?.[HEARTH_ISLAND_SCOPE_TIDDLER]?.text;
+    const kindRaw  = ownEntry(packed.tiddlers, HEARTH_ISLAND_KIND_TIDDLER)?.text;
+    const scopeRaw = ownEntry(packed.tiddlers, HEARTH_ISLAND_SCOPE_TIDDLER)?.text;
     const islandPresent = kindRaw !== undefined || scopeRaw !== undefined;
     if (islandPresent && (typeof kindRaw !== "string" || !KIND_RE.test(kindRaw) ||
         typeof scopeRaw !== "string" || scopeRaw.trim().length === 0)) {
@@ -105,7 +105,7 @@ export function readHearthDialPin(bootstrapPath: string): HearthDialPin | null {
     // sovereign sync route, and the Nexus where the bootstrap names it (a charter island's scope is its genesis, the
     // Nexus its hearth's gate stands at). It must be the pin of the carried key. A torn, foreign or misplaced pin
     // refuses the whole dial, never a silent fall back to the key alone.
-    const pinRaw = packed.tiddlers?.[HEARTH_GATE_PIN_TIDDLER]?.text;
+    const pinRaw = ownEntry(packed.tiddlers, HEARTH_GATE_PIN_TIDDLER)?.text;
     let gatePin: GateBundlePin | undefined;
     if (pinRaw !== undefined) {
       if (typeof pinRaw !== "string") return null;
@@ -115,7 +115,7 @@ export function readHearthDialPin(bootstrapPath: string): HearthDialPin | null {
       gatePin = reading.pin;
     }
     // The doc url, when the bootstrap holds one, is an `automerge:` url; a torn one refuses the whole dial.
-    const docRaw = packed.tiddlers?.[HEARTH_DOC_URL_TIDDLER]?.text;
+    const docRaw = ownEntry(packed.tiddlers, HEARTH_DOC_URL_TIDDLER)?.text;
     if (docRaw !== undefined && (typeof docRaw !== "string" || !/^automerge:[1-9A-HJ-NP-Za-km-z]+$/.test(docRaw.trim()))) return null;
     const docUrl = typeof docRaw === "string" ? docRaw.trim() : undefined;
     return { syncUrl: syncUrl.trim(), gatePubKey, ...(gatePin ? { gatePin } : {}), ...(island ?? {}), ...(docUrl ? { docUrl } : {}) };

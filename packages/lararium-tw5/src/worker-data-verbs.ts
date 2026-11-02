@@ -14,7 +14,7 @@
  * Runtime-only reads (residency `stats`) stay at the resource (main) — no askMain.
  */
 
-import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, WARD_AUDIT_URI_PREFIX, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind } from "@lararium/mesh";
+import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, WARD_AUDIT_URI_PREFIX, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind, ownEntry } from "@lararium/mesh";
 import { plainEntries, storedDeleted, SYSTEM_CANON_BAGS } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
@@ -105,7 +105,7 @@ export function makeWhereReactor(composite: CompositeStore, reach?: RegistryReac
         // A draft FLOOR doc (`wikis/<slug>/drafts/<did>`) answers under its slot name below, never its key.
         if (!mounted && !isDraftFloorKey(bagUri)) {
           const h   = await accessor.find(bagUri).catch(() => null);
-          const rec = h?.doc()?.tiddlers?.[tiddler];
+          const rec = ownEntry(h?.doc()?.tiddlers, tiddler);
           if (rec && !storedDeleted(rec)) holding.add(bagUri);
         }
         // A registered WIKI's live instance slots — the docs THE ONE slot-doc resolver names (the
@@ -118,7 +118,7 @@ export function makeWhereReactor(composite: CompositeStore, reach?: RegistryReac
           const url = await reach.slotDocUrl(slug, kind, { mint: false }).catch(() => null);
           if (!url) continue;
           const sh  = await findOrThrow(reach.repo, url, `${wikiSlotUri(slug, kind)}`).catch(() => null);
-          const sr  = sh?.doc()?.tiddlers?.[tiddler];
+          const sr  = ownEntry(sh?.doc()?.tiddlers, tiddler);
           if (sr && !storedDeleted(sr)) holding.add(wikiSlotUri(slug, kind));
         }
       }
@@ -133,14 +133,14 @@ export function makeWhereReactor(composite: CompositeStore, reach?: RegistryReac
             const slotUrl = await reach.slotDocUrl(slug, kind, { mint: false }).catch(() => null);
             if (!slotUrl) continue;
             const sh  = await findOrThrow(reach.repo, slotUrl, `${wikiSlotUri(slug, kind)}`).catch(() => null);
-            const sr  = sh?.doc()?.tiddlers?.[tiddler];
+            const sr  = ownEntry(sh?.doc()?.tiddlers, tiddler);
             if (sr && !storedDeleted(sr)) holding.add(wikiSlotUri(slug, kind));
           }
         }
         if (holding.has(bagUri) || composite.hasBag(bagUri)) continue;
         const url = await reach.systemCanonUrl(bagUri).catch(() => null);
         const h   = url ? await findOrThrow(reach.repo, url, bagUri).catch(() => null) : null;
-        const rec = h?.doc()?.tiddlers?.[tiddler];
+        const rec = ownEntry(h?.doc()?.tiddlers, tiddler);
         if (rec && !storedDeleted(rec)) holding.add(bagUri);
       }
     }
