@@ -36,12 +36,13 @@ describe("the hand's raise and lower", () => {
     expect(read().shadowed(W2).size).toBe(0);
   });
 
-  test("RED: a lower cites every standing head and lifts; a lower with nothing raised refuses `kapae-nothing-to-lower`; CONTROL: a second raise stacks and one lower still lifts both", async () => {
+  test("RED: a lower cites every standing head and lifts; a lower with nothing raised refuses `kapae-nothing-to-lower`; CONTROL: a second raise cites the first and one lower still lifts", async () => {
     const { d, read } = await door();
     await expect(d.kapae({ action: "lower", wiki: W1, digest: D, who: HAND })).rejects.toMatchObject({ code: "kapae-nothing-to-lower" });
     await d.kapae({ action: "raise", wiki: W1, digest: D, who: HAND });
-    await d.kapae({ action: "raise", wiki: W1, digest: D, who: HAND, nonce: "second" });
-    expect(read().kapaeHeads(W1, D).length).toBeGreaterThanOrEqual(1);
+    await d.kapae({ action: "raise", wiki: W1, digest: D, who: HAND });
+    expect(read().kapaeHeads(W1, D)).toHaveLength(1);
+    expect(read().kapae(W1, D)).toBe("held");
     await d.kapae({ action: "lower", wiki: W1, digest: D, who: HAND });
     expect(read().kapae(W1, D)).toBe("withdrawn");
   });
