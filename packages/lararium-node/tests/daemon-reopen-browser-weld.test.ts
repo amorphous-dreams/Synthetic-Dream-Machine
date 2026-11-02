@@ -26,7 +26,7 @@ describe("the browser vessel's daemon seam", () => {
   test("the shipped page carries NO restart door: the symbol hides behind a build-time constant the default build sets false", () => {
     const main = readFileSync(join(__dirname, "..", "..", "lararium-web", "src", "main.ts"), "utf8");
     const vite = readFileSync(join(__dirname, "..", "..", "lararium-web", "vite.config.ts"), "utf8");
-    expect(main).toMatch(/if \(__LAR_WALK_DOOR__\) \(window as [^;]*?\)\.__larRestartDaemonIsland = /);
+    expect(main).toMatch(/if \(__LAR_WALK_DOOR__\) \(window as [^\n]*?\)\.__larRestartDaemonIsland = /);
     expect(main).not.toMatch(/isLoopbackOrigin/);
     expect(main.split("\n").filter((l) => l.includes("__larRestartDaemonIsland")).join("\n")).not.toMatch(/hostname|origin/i);       // no runtime origin check stands in for the build gate
     expect(vite).toMatch(/__LAR_WALK_DOOR__:\s*JSON\.stringify\(process\.env\["LAR_WALK_DOOR"\] === "1"\)/);

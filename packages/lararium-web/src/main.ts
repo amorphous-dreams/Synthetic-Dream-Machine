@@ -507,7 +507,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
       ...(meshLeaf ? { meshLeaf } : {}),
     });
     // A harness-only door, compiled out of every default build.
-    if (__LAR_WALK_DOOR__) (window as Window & { __larRestartDaemonIsland?: (reason: string) => Promise<{ restarts: number }> }).__larRestartDaemonIsland = (reason: string) => result.restartDaemonIsland(reason);
+    if (__LAR_WALK_DOOR__) (window as Window & { __larRestartDaemonIsland?: (reason: string) => Promise<{ restarts: number; leg: string }> }).__larRestartDaemonIsland = async (reason: string) => ({ ...(await result.restartDaemonIsland(reason)), leg: await result.daemon.syncLegReady() });
     vesselOpened = true;
     pendingAdmit = null;
     // Identity custody stays in the browser vessel. The web surface renders the public receipt returned
