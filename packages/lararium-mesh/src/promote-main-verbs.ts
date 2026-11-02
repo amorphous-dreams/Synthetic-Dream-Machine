@@ -18,8 +18,9 @@ export function promoteMainVerbs({ api, push }: { api: PromotePanelApi; push: (d
   };
   const handlers: Record<string, (args: Record<string, unknown>) => Promise<Record<string, unknown>>> = {};
   for (const verb of PROMOTE_PANEL_VERBS) handlers[verb] = async (args) => {
-    const { wiki, digest } = args;
-    if (typeof wiki !== "string" || !wiki.trim()) throw new PromoteRefused("promote-wiki-missing", "a wiki must be named");
+    const { digest } = args;
+    // The store door's CLI row names no wiki unless `--wiki` does: absent means the daemon wiki, as `promoteCommand` reads it.
+    const wiki = typeof args["wiki"] === "string" && args["wiki"].trim() ? args["wiki"] : "daemon";
     if (typeof digest !== "string" || !/^[0-9a-f]{64}$/i.test(digest)) throw new PromoteRefused("promote-digest-malformed", "a hex digest must be named");
     await acts[verb](wiki, digest);
     await refresh();

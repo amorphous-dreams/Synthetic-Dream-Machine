@@ -51,9 +51,11 @@ describe("the handlers", () => {
     expect(out).toMatchObject({ pushed: true });
   });
 
-  test("RED: a missing wiki or a malformed digest refuses by name and acts on nothing; CONTROL: a refused act still pushes nothing", async () => {
+  test("RED: a malformed digest refuses by name and acts on nothing; CONTROL: a refused act pushes nothing, and a missing wiki means the daemon wiki (the CLI row names none)", async () => {
     const s = stand();
-    await expect(s.verbs["promote-commit"]!({ digest: D })).rejects.toMatchObject({ code: "promote-wiki-missing" });
+    await s.verbs["promote-commit"]!({ digest: D });
+    expect(s.calls).toEqual([`commit daemon ${D}`]);
+    s.calls.length = 0; s.pushed.length = 0;
     await expect(s.verbs["kapae-raise"]!({ wiki: "garden", digest: "nope" })).rejects.toMatchObject({ code: "promote-digest-malformed" });
     expect(s.calls).toEqual([]);
     expect(s.pushed).toEqual([]);
