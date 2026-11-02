@@ -1,3 +1,4 @@
+import { holdDaemonVm, type DaemonVmHolder } from "@lararium/tw5";
 /**
  * openBrowserVessel — local-first browser vessel factory.
  *
@@ -340,6 +341,7 @@ export type ProjectionSurfaceFrame = LarMsg_Frame & { readonly surface: string }
 export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPool, DaemonVmCore> {
   /** The public identity receipt composed by this vessel. Private signing material never leaves the vessel. */
   identity: BrowserVesselIdentity;
+  restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
   /**
    * Has this vessel crossed? True once the hearth it dials answered with a verdict signed by the pinned gate key
    * (a fleet device, a contracted member, or a walker); false while it has not — never pinned, unanswered, or
@@ -954,6 +956,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let vmManager!: BrowserVesselIslandPool;   // set in makePool
   let portFaceId: string | null = null;
   let wikiActivation!: WikiActivationCap;     // set in makePool — activation-on-reference cap (minimal grant)
+  let daemonHolder!: DaemonVmHolder;
   let daemon!:     DaemonVmCore;      // set in openDaemon
   let wikiSense!:  WikiSenseSupervisor;   // set in wireVerbs (post-daemon)
   let slotActiveWikiId = "";
@@ -1389,15 +1392,15 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // the floor alone in practice — but it is the floor PROVEN through the selector, not
       // assumed past it.
       crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
-      const daemonPluginResolution = await resolveBrowserIslandPluginCids({
-        islandBlobs: assembly.islandHandle.doc()?.blobs,
-        recipe:      { wikiSlug: "daemon" },
-        lookup:      browserOfferingLookup(crossroadsOfferingsHandle.doc()),
-      });
-      if (!daemonPluginResolution.ok) {
-        throw new Error(`[openBrowserVessel] the daemon island's plugin resolution refused: ${daemonPluginResolution.error}`);
-      }
-      const pluginCids = daemonPluginResolution.pluginCids;
+      const resolveDaemonPlugins = async () => {
+        const daemonPluginResolution = await resolveBrowserIslandPluginCids({
+          islandBlobs: assembly.islandHandle.doc()?.blobs,
+          recipe: { wikiSlug: "daemon" },
+          lookup: browserOfferingLookup(crossroadsOfferingsHandle!.doc()),
+        });
+        if (!daemonPluginResolution.ok) throw new Error(`[openBrowserVessel] the daemon island's plugin resolution refused: ${daemonPluginResolution.error}`);
+        return daemonPluginResolution.pluginCids;
+      };
       // The leaf reads its fleet board for sibling sync; the island reads its own copy for binding.
       const fleetRootOfFace = daemonAuth.deviceEdge?.personaRootDid;
       if (fleetRootOfFace) {
@@ -1430,7 +1433,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         await fleetRead;
       }
       let replayManifest: (() => { msg: IslandMsg_Manifest; transfer: MessagePort[] }) | null = null;
-      daemon = await openBrowserDaemonVm({
+      const openOnce = (pluginCids: readonly string[]) => openBrowserDaemonVm({
         repo, daemonUrl: social.daemonUrl, coreHash: assembly.coreHash, ownedDocument: true,
         // The persona plane rides only when a face stands. A browser vessel normally holds one — it IS
         // a person's face — so absence here names an unfinished founding rather than a crossroads, and
@@ -1469,6 +1472,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         },
         daemonAuth,
       });
+      daemonHolder = holdDaemonVm({ vm: await openOnce(await resolveDaemonPlugins()), prepare: resolveDaemonPlugins, reopen: (_reason, pluginCids) => openOnce(pluginCids) });
+      daemon = daemonHolder.vm;
       held.stood.push({ what: "daemon worker", down: () => daemon.dispose() });
 
       // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ─────────────────
@@ -1904,6 +1909,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
 
   return {
     identity: vesselIdentity,
+    restartDaemonIsland: (reason: string) => daemonHolder.restart(reason),
     pool: result.pool,
     repo,
     store: result.assembly.composite,

@@ -533,6 +533,7 @@ async function standDown(stood: Stood): Promise<void> {
 
 export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonVmCore> {
   restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
+  daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
   lightFace: (ordinal: number) => Promise<void>;
   dropFace: (ordinal: number) => Promise<void>;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
@@ -571,6 +572,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
 export interface NodeHermResult {
   restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
+  daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
   lightFace: (ordinal: number) => Promise<void>;
   dropFace: (ordinal: number) => Promise<void>;
   repo:             Repo;
@@ -679,6 +681,7 @@ interface NodeBootPrep {
   dropFace: (ordinal: number) => Promise<void>;
   daemonVm:         () => DaemonVmCore;
   restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
+  daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
   eventBus:         () => LarEventBusImpl;
   slotActiveWikiId: () => string;
   activeWikiSource: () => "boot-arg" | "daemon-marker";
@@ -3646,6 +3649,7 @@ async function prepareNodeBootOn(
     lightFace: (ordinal) => lightFace(ordinal), dropFace,
     daemonVm:         () => daemonVm,
     restartDaemonIsland: (reason) => daemonHolder.restart(reason),
+    daemonIslandState: async () => ({ restarts: daemonHolder.restarts, leg: await daemonVm.syncLegReady() }),
     eventBus:         () => eventBus,
     slotActiveWikiId: () => slotActiveWikiId,
     activeWikiSource: () => activeWikiSource,
@@ -3732,6 +3736,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     store: result.assembly.composite,
     daemon: p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
+    daemonIslandState: p.daemonIslandState,
     lightFace: p.lightFace, dropFace: p.dropFace,
     wikiDocUrl:       result.wikiHandle.url,
     catalogHandleUrl: p.catalogHandle.url,
@@ -3865,6 +3870,7 @@ async function composeNodeHermOn(
     store:            herm.assembly.composite,
     daemon:           p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
+    daemonIslandState: p.daemonIslandState,
     lightFace: p.lightFace, dropFace: p.dropFace,
     oracleDocUrl:     herm.assembly.islandHandle.url,
     catalogHandleUrl: p.catalogHandle.url,

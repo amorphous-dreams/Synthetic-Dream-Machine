@@ -99,6 +99,8 @@ export interface SealedActContext {
    * there refuses by name.
    */
   readonly backup: BackupDoor | null;
+  /** The standing composition lends its island; a command in its own process holds null and refuses by name. */
+  readonly island: { readonly state: () => Promise<{ restarts: number; leg: string }>; readonly restart: (reason: string) => Promise<{ restarts: number; leg: string }> } | null;
 }
 
 /** One own persona as the persona plane holds it: the two names that ride a face's fleet. */
@@ -403,6 +405,8 @@ export const SESSION_ACTS: ReadonlySet<string> = new Set([
  *                         sealed row holds. `fill` lands it only where the plane never held that name. A plane whose
  *                         rest stands clear takes no name, and the carry refuses by that rest
  *   selves.clear          clear ONE name of one held face on its plane, once its sealed row holds that name no more
+ *   island.state          read the standing daemon island
+ *   island.restart        reopen the standing daemon island
  *   walk.state            where this vessel walks: per hearth, the Nexus, the grant it holds and its wallet's count
  *   walk.take             keep a carried invite on the walk record of the hearth it names
  *   walk.invite           hand the newest invite out of the wallet of the hearth this vessel walks at
@@ -575,6 +579,14 @@ export const SEALED_ACTS = Object.freeze({
   // THE WALK RECORDS. A record holds bearer invites, the hearth's grant and one key per carried document, so it
   // rests sealed (`node-walk-store`) and its three acts ride this door: a carried invite as a verb's argument, or
   // an invite as a verb's outcome, would rest in the daemon's document in the clear.
+  "island.state": act({}, async (_a, ctx) => {
+    if (!ctx.island) throw refuse("no daemon island stands here");
+    return { ...await ctx.island.state() };
+  }),
+  "island.restart": act({ reason: text }, async (a, ctx) => {
+    if (!ctx.island) throw refuse("no daemon island stands here");
+    return { ...await ctx.island.restart(a.reason) };
+  }),
   "walk.state": act({}, async () => ({ walks: (await runWalkState()).map((w) => ({ ...w })) })),
   "walk.take": act({ carried: text, face: optional(index) }, async (a, ctx) => {
     const dialGate = ctx.walk?.dialGate()?.toLowerCase() ?? null;

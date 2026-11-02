@@ -84,6 +84,7 @@ function emitPronaosArtifactRecord(): Plugin {
 // so vite-plugin-top-level-await is NOT needed (and dropping it removes the @swc/core
 // native build that snagged pnpm's pre-run deps-check).
 export default defineConfig({
+  define: { __LAR_WALK_DOOR__: JSON.stringify(process.env["LAR_WALK_DOOR"] === "1") },
   plugins: [wasm(), serveGenesisInDev(), emitPronaosArtifactRecord()],
 
   // The worker is a SEPARATE rollup build — top-level plugins do NOT inherit, so wasm()
