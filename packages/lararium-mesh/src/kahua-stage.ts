@@ -1,8 +1,10 @@
 /**
  * kahua-stage — a face's fleet stage: the signed acts that write it and the ONE reader that decides what stands on it.
  *
- * The face mints one stage doc (`lar:///ha.ka.ba/bags/kahua`) and pins its url by a root-signed `plane` act on
- * `@persona` (`KAHUA_PLANE`); a device adopts the url from its verified projection alone (`kahuaPlaneUrl`).
+ * The face stands one stage doc (`lar:///ha.ka.ba/bags/kahua`) at an address every device of the face derives alike
+ * (`kahuaStageDocUrl(group)`), so two hearths that mint at once mint the same doc and sign the same pin; the face pins it
+ * by a root-signed `plane` act on `@persona` (`KAHUA_PLANE`), and a device adopts it from its verified projection alone
+ * (`kahuaPlaneUrl`, which answers the derived url and nothing else).
  *
  * TWO RECORDS, TWO QUESTIONS. The lōkahi cap (Keyhive's plane: the face's group holds the stage bag) answers who CAN
  * lift; the act answers that the operator CHOSE to. Each act signs under the operator's grant: a key the face's verified
@@ -17,19 +19,22 @@
  * first lifts of one title) stand as siblings, both visible; a parent the reader does not hold reads `orphan`, never a
  * head; a withdrawn revision drops from recall and its parent stays superseded (a re-lift restores an item).
  *
- * WHAT LANDS WHERE. The stage doc carries the acts (under `KAHUA_ACT_PREFIX`) and, beside them, one projected tiddler per
- * standing item (`projectKahuaItems`), so the kahua recipe layer reads items by title. A proposal (`KAHUA_PROPOSE_VERB`)
+ * WHAT LANDS WHERE. The stage doc carries the acts (under `KAHUA_ACT_PREFIX`) and nothing a reader trusts beside them: any
+ * member of the face can write any tiddler into it, so every reader folds the acts at READ (`kahua-stage-store`, the recipe
+ * layer; `kahuaItemTiddlers`, the item fields) and a plain tiddler counts for nothing. A proposal (`KAHUA_PROPOSE_VERB`)
  * rides the face's intents plane as one signed batch per pass, pinned to the proposing device, naming daemon titles,
  * revisions and digests and never a body; the lift door cites the proposal and answers it with an outcome there.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
+import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
 import { tiddlerText } from "./base-doc.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { KAHUA_ACT_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { buildIntent, IntentRefusal, type IntentSigner } from "./intent-issue.js";
+import { deterministicDocUrl } from "./deterministic-doc.js";
 import type { SignedIntentEntry } from "./intent-entry.js";
 import type { IntentVerbRegistry } from "./intent-verbs.js";
 import { storedLarRecord } from "./stored-record.js";
@@ -181,7 +186,7 @@ export function readKahuaStage(records: readonly unknown[], opts: { readonly gro
 }
 
 export function kahuaActKey(group: string, cid: string): string { return `${KAHUA_ACT_PREFIX}${encodeURIComponent(group)}/${cid}`; }
-/** Land an act record on a stage draft. Call INSIDE a `handle.change()`; follow with `projectKahuaItems`. */
+/** Land an act record on a stage draft. Call INSIDE a `handle.change()`. */
 export function writeKahuaAct(draft: LarDoc, act: SignedKahuaAct): void {
   const cid = kahuaActCid(act), key = kahuaActKey(act.body.group, cid);
   draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(act) }, cid);
@@ -215,21 +220,21 @@ export function kahuaItemTiddlers(reading: KahuaStageReading): Record<string, Re
   return out;
 }
 
-/** Rewrite a stage draft's item tiddlers to the verified reading: every non-act title the reading does not stand clears. */
-export function projectKahuaItems(draft: LarDoc, reading: KahuaStageReading): void {
-  const items = kahuaItemTiddlers(reading);
-  for (const title of Object.keys(draft.tiddlers)) {
-    if (!title.startsWith(KAHUA_ACT_PREFIX) && !(title in items)) delete draft.tiddlers[title];
-  }
-  for (const [title, fields] of Object.entries(items)) {
-    if (tiddlerText(draft.tiddlers[title]) === fields.text && (draft.tiddlers[title] as unknown as { fields?: Record<string, string> })?.fields?.["kahua-cid"] === fields["kahua-cid"]) continue;
-    draft.tiddlers[title] = storedLarRecord(title, fields, fields["kahua-cid"]!);
-  }
+/** The address family of a face's stage: one doc per face, derived from its group. */
+const KAHUA_STAGE_URI = "lar:///ha.ka.ba/dreamnet/kahua-stage" as const;
+
+/** The face's ONE stage doc url, every device of the face computing it alike: no mint race, no second stage. */
+export function kahuaStageDocUrl(group: string): AutomergeUrl {
+  return deterministicDocUrl(`${KAHUA_STAGE_URI}/${group.trim().toLowerCase()}`);
 }
 
-/** The stage url the face's verified projection names, or null. A bootstrap, catalog or doc value never answers. */
-export function kahuaPlaneUrl(projection: { readonly planes: Readonly<Record<string, string | undefined>> }): string | null {
-  return projection.planes[KAHUA_PLANE] ?? null;
+/**
+ * The stage url the face's verified projection pins, or null. It answers only the face's derived stage: a pin naming any
+ * other doc, a bootstrap, catalog or doc value never answers.
+ */
+export function kahuaPlaneUrl(projection: { readonly planes: Readonly<Record<string, string | undefined>> }, group: string): string | null {
+  const url = kahuaStageDocUrl(group);
+  return projection.planes[KAHUA_PLANE] === url ? url : null;
 }
 
 export interface KahuaProposal { readonly title: string; readonly revision: string; readonly digest: string; readonly taint: readonly string[] }

@@ -11,7 +11,7 @@ import { fixtureIntentVerbs, faceIntentVerbs } from "../src/intent-verbs.js";
 import { intentEntryCid, readIntentEntry } from "../src/intent-entry.js";
 import {
   KAHUA_PLANE, KAHUA_PROPOSE_VERB, buildKahuaProposal, kahuaActCid, kahuaActRecords, kahuaItemTiddlers, kahuaPlaneUrl,
-  readKahuaAct, readKahuaProposal, readKahuaStage, signKahuaLift, signKahuaWithdraw, writeKahuaAct, projectKahuaItems,
+  readKahuaAct, readKahuaProposal, readKahuaStage, signKahuaLift, signKahuaWithdraw, writeKahuaAct, kahuaStageDocUrl,
 } from "../src/kahua-stage.js";
 
 const signer = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -97,29 +97,27 @@ describe("the stage fold", () => {
     expect(read.orphans.map((o) => o.cid)).toEqual([kahuaActCid(orphan)]);
   });
 
-  test("the doc carries acts under their prefix; the item projection writes only verified heads and clears a withdrawn one", async () => {
+  test("the doc carries acts under their prefix; the item fields read only verified heads and drop a withdrawn one", async () => {
     const { root, atom, grant, lift } = await fixture();
     const stage = doc();
     const a = await lift("a", "A", null), b = await lift("b", "B", null);
     for (const act of [a, b]) writeKahuaAct(stage, act);
-    // A rogue hand writes an item tiddler straight into the doc: the projection overwrites it from the verified reading.
+    // A rogue hand writes an item tiddler straight into the doc: the reading never reads it.
     stage.tiddlers["rogue"] = { title: "rogue", text: "bad" } as never;
     writeKahuaAct(stage, await lift("c", "C", null, atom));
     writeKahuaAct(stage, await signKahuaWithdraw({ group: GROUP, epoch: 0, target: kahuaActCid(b) }, root));
     expect(kahuaActRecords(stage, GROUP)).toHaveLength(4);
     const reading = readKahuaStage(kahuaActRecords(stage, GROUP), { group: GROUP, grant });
-    projectKahuaItems(stage, reading);
     const items = kahuaItemTiddlers(reading);
     expect(Object.keys(items)).toEqual(["a"]);
     expect(items["a"]).toMatchObject({ title: "a", text: "A", "kahua-cid": kahuaActCid(a), "kahua-origin-seat": atom.key });
-    expect(Object.keys(stage.tiddlers).filter((t) => !t.startsWith("lar:///ha.ka.ba/dreamnet/kahua-act/"))).toEqual(["a"]);
   });
 });
 
 describe("the pin and the proposal", () => {
   test("RED: the stage url reads only from the face's verified plane act; CONTROL: an absent act names none", () => {
-    expect(kahuaPlaneUrl({ planes: { intents: "automerge:x" } })).toBeNull();
-    expect(kahuaPlaneUrl({ planes: { [KAHUA_PLANE]: "automerge:k" } })).toBe("automerge:k");
+    expect(kahuaPlaneUrl({ planes: { intents: "automerge:x" } }, GROUP)).toBeNull();
+    expect(kahuaPlaneUrl({ planes: { [KAHUA_PLANE]: kahuaStageDocUrl(GROUP) } }, GROUP)).toBe(kahuaStageDocUrl(GROUP));
   });
 
   test("RED: a proposal rides the intents plane as one signed batch pinned to the proposing device, content never inside; CONTROL: the verb stands declared", async () => {
