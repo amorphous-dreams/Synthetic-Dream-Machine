@@ -290,9 +290,10 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(pendingStands()).toBe(false);
   });
 
-  // KNOWN RED, strict: the operator's fork on restore-same, rotate-evict and burn-new stands open (research:
-  // /home/joshu/.lares-scratch/kahua/research-restore-vs-burn.md). `restoreFaceBundle` re-mints the PersonaGroup today and R1
-  // pins that; this case flips green the day a ruling keeps the group, and `test.fails` then reads it as a fault to settle.
+  // KNOWN RED, strict: face-keyed names, ruled 2026-11-02, next lane. A face's private names (its persona planes, its kahua
+  // stage, its kahua-<tag> folders) key off the FACE, derived from its address secret, never the seat group; a restore keeps
+  // them and a burn stays a new face. `restoreFaceBundle` re-mints the group today and R1 pins that; the next lane re-derives
+  // the names from the face, and this case then flips green, where `test.fails` reads it as the cue to drop the mark.
   test.fails("R17 — RED (recovery keeps the identifier): the restored face keeps its PersonaGroup, so its derived tag, its persona-plane name and its kahua-<tag> folders stay; CONTROL: the prefix and the working address already stay", async () => {
     // The recovery law (layered, 2026-09-06): the name rotates under a FIXED identifier. A face's tag derives from its
     // PersonaGroup id alone (`personaScopeTag`), so a restore that re-mints the group moves the plane name
