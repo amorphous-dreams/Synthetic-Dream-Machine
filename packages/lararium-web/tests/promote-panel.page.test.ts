@@ -10,6 +10,13 @@ import panelSource from "../src/promote-panel.ts?raw";
 import { mountPromotePanel, type PromotePanelApi } from "../src/promote-panel.js";
 
 const inner = (host: HTMLElement): ShadowRoot => roots.get(host)!;
+/** A trusted click: the panel is a closed shadow root no selector reaches, so the click lands on the host at the button's own offset. */
+async function press(host: HTMLElement, button: Element): Promise<void> {
+  const h = host.getBoundingClientRect(), b = button.getBoundingClientRect();
+  await userEvent.click(host, { position: { x: b.left - h.left + b.width / 2, y: b.top - h.top + b.height / 2 } });
+}
+/** A shadow root's own `textContent` is null: its text is its children's. */
+const textOf = (root: ShadowRoot): string => [...root.children].map((c) => c.textContent ?? "").join(" ");
 const D = "d".repeat(64), E = "e".repeat(64);
 const hosts: HTMLElement[] = [];
 afterEach(() => { for (const h of hosts.splice(0)) h.remove(); });
@@ -50,7 +57,7 @@ describe("rites waiting here", () => {
     expect(daemon.textContent).toContain(D.slice(0, 12));
     expect(daemon.textContent).toContain("startup-action");
     expect(daemon.textContent).toContain("s-1");
-    await userEvent.click(daemon.querySelector(`[data-act="commit"][data-digest="${D}"]`) as HTMLButtonElement);
+    await press(s.host, daemon.querySelector(`[data-act="commit"][data-digest="${D}"]`) as HTMLButtonElement);
     expect(s.clicks).toEqual([`commit daemon ${D}`]);
     expect(inner(s.host).querySelector('[data-wiki="garden"]')!.textContent).toContain("no rites waiting");
     expect(inner(s.host).querySelector('[data-wiki="broken"]')!.textContent).toContain("wiki unreadable");
@@ -62,8 +69,8 @@ describe("rites waiting here", () => {
       { wiki: "daemon", digest: D, title: "rites/live", revision: "r", state: "standing", classes: [], shadowed: false }] }] } as never);
     await s.panel.refresh();
     const q = (act: string, digest: string) => inner(s.host).querySelector(`[data-act="${act}"][data-digest="${digest}"]`) as HTMLButtonElement | null;
-    expect((inner(s.host).textContent ?? '')).toContain("orphaned");
-    await userEvent.click(q("orphan-keep", E)!); await userEvent.click(q("orphan-drop", E)!);
+    expect(textOf(inner(s.host))).toContain("orphaned");
+    await press(s.host, q("orphan-keep", E)!); await press(s.host, q("orphan-drop", E)!);
     expect(s.clicks).toEqual([`orphan daemon ${E} keep`, `orphan daemon ${E} drop`]);
     expect(q("orphan-keep", D)).toBeNull();
     expect(q("drop", D)).not.toBeNull();
@@ -78,7 +85,7 @@ describe("rites waiting here", () => {
     expect(inner(s.host).querySelector(`[data-act="lower"][data-digest="${D}"]`)).not.toBeNull();
     expect(inner(s.host).querySelector(`[data-act="raise"][data-digest="${E}"]`)).not.toBeNull();
     expect(inner(s.host).querySelector(`[data-act="raise"][data-digest="${D}"]`)).toBeNull();
-    expect((inner(s.host).textContent ?? '')).toContain("set aside");
+    expect(textOf(inner(s.host))).toContain("set aside");
     expect([...inner(s.host).querySelectorAll("[data-wiki]")].map((n) => n.getAttribute("data-wiki"))).toEqual(["daemon"]);
     history.replaceState(null, "", location.pathname);
     expect(panelSource).not.toMatch(/location\.(search|hash|href)|URLSearchParams|history\./);
@@ -98,8 +105,8 @@ describe("no hand, no promotion: the page realm cannot press a button", () => {
     (root.querySelector(`[data-act="raise"][data-digest="${E}"]`) as HTMLButtonElement).dispatchEvent(new Event("click", { bubbles: true }));
     await new Promise((r) => setTimeout(r, 20));
     expect(s.clicks).toEqual([]);
-    expect(root.textContent).toContain("promote-needs-hand");
-    await userEvent.click(root.querySelector(`[data-act="commit"][data-digest="${D}"]`) as HTMLButtonElement);
+    expect(textOf(root)).toContain("promote-needs-hand");
+    await press(s.host, root.querySelector(`[data-act="commit"][data-digest="${D}"]`) as HTMLButtonElement);
     expect(s.clicks).toEqual([`commit daemon ${D}`]);
   });
 
