@@ -17,7 +17,7 @@ import { join, relative, basename, dirname } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { daemonDiskMirrors, daemonWorkingMirror, kahuaStageMirror } from "../src/bag-paths.js";
 import {
-  CROSSROADS_DOC_URI, DAEMON_BAG_ID, KAHUA_BAG, PERSONAL_BINDINGS_PREFIX, PERSONA_ACT_ENTRY_PREFIX,
+  CROSSROADS_DOC_URI, DAEMON_BAG_ID, KAHUA_BAG, OUTCOME_URI_PREFIX, PERSONAL_BINDINGS_PREFIX, PERSONA_ACT_ENTRY_PREFIX,
   groupSecretSealTitle, wikiSlotUri,
 } from "@lararium/mesh";
 import type { CarrierFile } from "@lararium/tw5";
@@ -126,6 +126,19 @@ describe("the kahua disk witnesses", () => {
     for (const leaf of ["face-founding-checkpoint", "persona-act", "cap", "group-secret", "personal-bindings"]) {
       expect(everything.filter((p) => p.split("/").includes(leaf)), `a control record (${leaf}) on disk`).toEqual([]);
     }
+  });
+
+  test("(d) a daemon title the working top holds (a verb outcome, any bags/daemon/** record) never projects under <state>/wikis/kahua", async () => {
+    // The daemon stays the control plane, never projected (operator, 2026-11-01). A verb outcome or a daemon flow record
+    // that reaches the working top by any road still writes no file: the projector reads the title, never the layer.
+    const { projector, state } = rig();
+    await projector.flush(WORKING, `${OUTCOME_URI_PREFIX}req-0001`);
+    await projector.flush(WORKING, `${DAEMON_BAG_ID}/flows/couple`);
+    await projector.flush(WORKING, "Plain Note");
+    const kahua = walk(join(state, "wikis", "kahua"));
+    expect(kahua, "the ordinary write landed: the absence below proves something").toContain("Plain Note.tid");
+    expect(kahua.filter((p) => p.split("/").includes("outcomes")), "an outcomes/ path under <state>/wikis/kahua").toEqual([]);
+    expect(kahua.filter((p) => p.split("/").includes("daemon")), "a bags/daemon record under <state>/wikis/kahua").toEqual([]);
   });
 
   test("CONTROL (c): a canon source holding stale daemon/ and kahua/ dirs receives nothing into them", async () => {
