@@ -210,7 +210,7 @@ interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly 
 async function main(): Promise<void> {
   const { port, storageDir, genesisDir, genesis, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
   // A vessel founded on the build's shipped seed refuses a boot that resolves another (genesis-resolve, the pin).
-  checkGenesisPin(storageDir, genesis);
+  console.log(checkGenesisPin(storageDir, genesis));
   // LAN discovery stays OFF unless the operator turns it. An empty value reads as unset, so a compose file may
   // pass the variable through; any other word refuses by name before a face listens.
   const lanDiscoveryMode = process.env["LAR_LAN_DISCOVERY"] || undefined;

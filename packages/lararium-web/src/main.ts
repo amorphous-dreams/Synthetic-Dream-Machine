@@ -35,10 +35,10 @@ import { standTabTopology } from "./glass/topology.js";
 import type { Lend } from "./glass/tab-bus.js";
 import { makePortTransport } from "./port-transport.js";
 import { defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl, arrivalRelayUrl } from "./live-status.js";
-// The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
-// The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
-// (node-parity). Boot imports this plain-data seed alone — no Automerge binary.
-import genesisSeed from "../../../genesis/seed.json";
+// The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json), read off the genesis base the page's URL names
+// (the hearth's Pronaos serves its own). The page carries no seed of its own, and checks the one it reads against the hearth's
+// arrival descriptor before it crosses (`genesis-anchor.ts`).
+import { arrivalSeedAnchor, genesisCrossingVerdict, readServedSeed } from "./genesis-anchor.js";
 // `?worker&url` — Vite builds each worker shim through its worker pipeline and yields the built
 // bundle's URL (a real /assets file). A standalone `new URL("./x.ts", import.meta.url)` passed
 // INDIRECTLY to the vessel got inlined as a `data:` URI, where the worker's dynamic imports
@@ -373,6 +373,29 @@ async function bootVessel(): Promise<void> {
   // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.
   const admit = pendingAdmit ?? takeStashedAdmit();
   pendingAdmit = admit;
+  // ?genesis=<base> → where the static host serves genesis/ (seed + cas/). Default /genesis.
+  const genesisCasBaseUrl = new URLSearchParams(location.search).get("genesis") ?? "/genesis";
+  // THE SEED, then THE ANCHOR, before any crossing: a served seed whose CID differs from the one the hearth's own descriptor
+  // names refuses by name, in the vessel's status row and the console, and the relay stays undialled.
+  let served: Awaited<ReturnType<typeof readServedSeed>>;
+  try { served = await readServedSeed(genesisCasBaseUrl, (input) => fetch(input, { cache: "no-store" })); }
+  catch (error) {
+    const text = error instanceof Error ? error.message : String(error);
+    console.error(`[vessel] ${text}`);
+    set("status", text, "err");
+    return;
+  }
+  if (relayUrl) {
+    const verdict = genesisCrossingVerdict(served.cid, await arrivalSeedAnchor(relayUrl, (input) => fetch(input, { cache: "no-store" })));
+    if (verdict.kind === "refuse") {
+      console.error(`[vessel] ${verdict.text}`);
+      set("status", verdict.text, "err");
+      const admitStatus = document.getElementById("admit-status");
+      if (admitStatus) { admitStatus.textContent = `✗ ${verdict.text}`; admitStatus.className = "err"; }
+      return;
+    }
+    if (verdict.kind === "uncompared") console.warn(`[vessel] ${verdict.text}`);
+  }
   // A local boot and a CROSSED boot look identical from the outside: both render, both say "ready". So
   // the vessel names which one it just performed. A shore nobody can see is a shore nobody watches, and an
   // absent crossing that reports nothing reads exactly like a crossing that worked.
@@ -386,8 +409,6 @@ async function bootVessel(): Promise<void> {
       "         To cross: open the URL a hearth's banner prints (`?relay=…#floor=…`); this device stands at its floor, and a face joins it by the fleet-join door.",
     );
   }
-  // ?genesis=<base> → where the static host serves genesis/ (seed + cas/). Default /genesis.
-  const genesisCasBaseUrl = new URLSearchParams(location.search).get("genesis") ?? "/genesis";
   // ?mesh=<readface%23gatekey,…> → carry-in as a mesh LEAF, bootstrapping the FLOW-map from peer flow
   //   read-faces, each pinned by its gate key (opt-in; absent = no carriage / pure local boot). An entry with no
   //   key is dropped: nothing to knock on. The browser is a LEAF (no endpoint — carries-in, not dial-able).
@@ -398,7 +419,7 @@ async function bootVessel(): Promise<void> {
         peers: meshParam.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null),
       }
     : undefined;
-  const boot = { paint, relayUrl, floor, floorAnchor, admit, genesisCasBaseUrl, meshLeaf };
+  const boot = { paint, relayUrl, floor, floorAnchor, admit, genesisCasBaseUrl, genesisSeed: served.seed as GenesisSeed, meshLeaf };
   // THE TAB TOPOLOGY (G4): one tab per origin holds the vessel (the store lock proves one holder); another tab on the same origin
   // FOLLOWS it over the bus and stands its own mirror from the leader's lend, instead of refusing the vessel by name. The leader
   // lock queues succession: when the leader's page goes, the next request grants and that tab opens the vessel itself. The shared
@@ -448,8 +469,8 @@ async function standFollowerMirror(lend: Lend): Promise<void> {
 }
 
 async function lead(boot: { paint: (p: string) => void; relayUrl: string | undefined; floor: ReturnType<typeof floorCardOf>; floorAnchor: ReturnType<typeof floorAnchorOf>;
-  admit: DeviceAdmitPayload | null; genesisCasBaseUrl: string; meshLeaf: { coordSeed: string; peers: MeshPeer[] } | undefined }): Promise<void> {
-  const { paint, relayUrl, floor, floorAnchor, admit, genesisCasBaseUrl, meshLeaf } = boot;
+  admit: DeviceAdmitPayload | null; genesisCasBaseUrl: string; genesisSeed: GenesisSeed; meshLeaf: { coordSeed: string; peers: MeshPeer[] } | undefined }): Promise<void> {
+  const { paint, relayUrl, floor, floorAnchor, admit, genesisCasBaseUrl, genesisSeed, meshLeaf } = boot;
   $("mirror").setAttribute("data-lar-tab", "leader");
   let vesselOpened = false;
   try {
@@ -469,7 +490,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
       askCustody,
       hostId: "elyncia-browser",
       wikiId: "lares",
-      genesisSeed: genesisSeed as unknown as GenesisSeed,
+      genesisSeed,
       genesisCasBaseUrl,
       daemonWorkerUrl,
       ...(sharedHolderUrl ? { sharedHolderUrl } : {}),

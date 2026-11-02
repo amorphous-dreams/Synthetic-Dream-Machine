@@ -10,7 +10,7 @@ export default defineConfig({
   test: {
     globalSetup: ["../../tools/vitest-dist-guard.mjs"],
     name: "floor-crossing-e2e",
-    include: ["tests/e2e/floor-crossing.e2e.test.ts", "tests/e2e/stage-walk.e2e.test.ts"],
+    include: ["tests/e2e/floor-crossing.e2e.test.ts", "tests/e2e/stage-walk.e2e.test.ts", "tests/e2e/genesis-anchor.e2e.test.ts"],
     environment: "node",
     browser: { enabled: false },
     isolate: true,

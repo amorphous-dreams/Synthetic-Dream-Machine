@@ -42,6 +42,12 @@
 # witnesses. The seed's floor witness names the manifest row. A carrier edit cannot move this floor;
 # only a release cuts and names another snapshot. CAS and git checks cover its files as every blob.
 #
+# ── ONE SERVED SEED ─────────────────────────────────────────────────────────────────────────────
+# The hearth's Pronaos serves `/genesis/seed.json` and `/genesis/cas/<cid>` off the genesis root it boots, and the page
+# reads the seed there. So the web dist carries no genesis: a `packages/lararium-web/dist/genesis` directory, or any dist
+# file that holds the seed's `actorSeed`, reads RED as a second carrier of one bundle (pronaos: a static copy mirrors,
+# never kindles). An unbuilt dist reads nothing and says so.
+#
 # ── WHAT IT COMPARES ────────────────────────────────────────────────────────────────────────────
 #   · the ENGINE: `packages/lararium-tw5/tw5-core/<TW5_CORE_SCRIPT_FILENAME>` (a build output; the
 #     filename reads from the tracked `generated-tw5-version.ts`) against the seed's `tiddlywikicore`;
@@ -264,9 +270,27 @@ if top.returncode == 0 and pathlib.Path(top.stdout.strip()).resolve() == root:
 else:
     tracked_note = f"tracked-ness unread: {root} stands as no git tree's root"
 
+# ── the web dist carries no genesis copy ────────────────────────────────────────────────────────
+web_dist = root / "packages" / "lararium-web" / "dist"
+if web_dist.is_dir():
+    copy_dir = web_dist / "genesis"
+    if copy_dir.exists():
+        reds.append(f"WEB COPY  {rel(copy_dir)} stands: the hearth serves genesis off its own root; the web build carries none")
+    actor = seed.get("actorSeed")
+    if isinstance(actor, str) and actor:
+        needle = actor.encode()
+        for f in sorted(p for p in web_dist.rglob("*") if p.is_file() and copy_dir not in p.parents):
+            if needle in f.read_bytes():
+                reds.append(f"WEB COPY  {rel(f)} carries the genesis seed (its actorSeed {actor[:16]}…): the page reads the seed its hearth serves")
+    web_note = "web dist carries no genesis copy" if not any(r.startswith("WEB COPY") for r in reds) else None
+else:
+    web_note = f"web dist unbuilt at {rel(web_dist)}: no copy to read"
+
 # ── the verdict ─────────────────────────────────────────────────────────────────────────────────
 compared = len(sources)
 print(f"{TAG} {compared} source artifact(s) compared against {len(blobs)} genesis blob(s); {tracked_note}")
+if web_note:
+    print(f"  {web_note}")
 for bid, (path, have) in sorted(sources.items()):
     if blobs.get(bid) == have:
         print(f"  ok        {bid}  {have[:16]}…  {rel(path)}")
