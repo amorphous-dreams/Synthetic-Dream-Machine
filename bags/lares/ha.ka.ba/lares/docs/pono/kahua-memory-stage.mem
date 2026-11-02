@@ -72,7 +72,7 @@ The Two Organs law binds the quine and the Memory Sensorium as cortex and hippoc
 
 ''The daemon stays the control plane.'' The daemon doc holds the device's sealed checkpoints, persona acts, cap events, group-secret seals and bindings: CRDT only, never projected, never a layer a hand writes (operator, 2026-11-01: //"Maybe that layer just gets written to the wiki/kahua as all other wikis do (flat files), and the daemon remains the non-projected/crdt only control plane?"//). Nothing lands at `<state>/bags/daemon`.
 
-''The face rides the wiki's name'' (operator, 2026-11-01, after two scouts collided the multi-face device). One tree, no per-face root: each face's kahua wiki and stage stand in their own folders, `<state>/wikis/kahua-<tag>` and `<state>/bags/kahua-<tag>`, where `<tag>` names the face's DERIVED persona tag, the derivation `persona-<tag>` already rides (`personaBagIdFor`): stable across the face's devices, no stored map, never the Handle, never a device-local custody id, never an ordinal. Two faces on one device project two folders side by side, each session leasing its own wiki; nothing swaps. The bag ids stay; the folders alone carry the tag. ''Private layers project under state alone''; workspace canon writes back to `/workspace/bags/<bag>` and `/workspace/wikis/<slug>`, and no private layer writes there.
+''The face rides the wiki's name'' (operator, 2026-11-01, after two scouts collided the multi-face device). One tree, no per-face root: each face's kahua wiki and stage stand in their own folders, `<state>/wikis/kahua-<tag>` and `<state>/bags/kahua-<tag>`, where `<tag>` names the face's DERIVED persona tag, the derivation `persona-<tag>` already rides (`personaBagIdFor`): stable across the face's devices, no stored map, never the Handle, never a device-local custody id, never an ordinal. Two faces on one device project two folders side by side, each session leasing its own wiki; nothing swaps. A rotation or a recovery under the face's fixed identifier keeps its group, so its tag and folders hold still; a new identity yields a new tag by design, and its stage carries forward only by a deliberate carry or re-lift. The bag ids stay; the folders alone carry the tag. ''Private layers project under state alone''; workspace canon writes back to `/workspace/bags/<bag>` and `/workspace/wikis/<slug>`, and no private layer writes there.
 
 One wiki then reads the device's drafts, the fleet's lifted items and the canon in one cascade, and a session opens by reading one index rather than three.
 
@@ -257,6 +257,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BzcWi7We0Cg3NkG00BZJv94yLF8UAznPtbzr0ZXkAwE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PNVya18OZSblVteBV16y0cTMuv-k7tJ_ME3wv4puW64`>>
 
 <<^ code=`&#x0004;` to=`?`>>
