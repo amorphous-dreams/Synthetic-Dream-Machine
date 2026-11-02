@@ -165,7 +165,7 @@ Parser SHOULD check:
 
 Missing or out-of-order control sigils SHOULD emit structural warnings rather than silent failure.
 
-<<~/ahu>>⊙:7c926d0ede886109
+<<~/ahu>>
 
 <<~ ahu slot=`#/closure-law`>>
 
@@ -258,6 +258,6 @@ Consumers: island adaptor (`island-adaptor.ts`), deserializer (`deserializer.ts`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jF_x5T5XW_6kzxVe0E8UTnKmYA73hJ6UdbpcjBqClok`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VT_wdaoCQpN4qLXX6lNxYkg-mqs3XLznrfi5bQw8lko`>>
 
 <<^ code=`&#x0004;` to=`?`>>
