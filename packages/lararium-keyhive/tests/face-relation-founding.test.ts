@@ -79,7 +79,7 @@ async function admitWith(extra: (head: { seq: number; cid: string }, group: stri
   });
   const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(founderSeed)), "board:persona-kel");
   const chain = personaKelChainForPrefix(board.doc(), face.personaKelPrefix)!;
-  const base = await founderAndJoineeActs({ face, signerSeed, founderAtomSeed: atomSeed, joineeKey: key(joineeAtom), chain }) as Act[];
+  const base = await founderAndJoineeActs({ face, signerSeed, founderAtomSeed: atomSeed, joineeKey: key(joineeAtom), chain, extraPlanes: { [FACE_PLANE]: (face as unknown as { faceRelation: string }).faceRelation } }) as Act[];
   const last = base.reduce((m, a) => (a.body.seq > m.body.seq ? a : m));
   const personaActs = [...base, ...await extra({ seq: last.body.seq, cid: actCid(last.body as never) }, face.personaGroupId, chain[chain.length - 1]!.seq, signerSeed)];
   const payload = await runDeviceAdmitEdge({
@@ -88,18 +88,25 @@ async function admitWith(extra: (head: { seq: number; cid: string }, group: stri
     meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: founder.daemonUrl, personaUrl: face.personaUrl,
   });
   const joineeRepo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
-  return runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), atomSeed: joineeAtom, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) });
+  const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), atomSeed: joineeAtom, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) });
+  return { ...applied, founderRelation: (face as unknown as { faceRelation: string }).faceRelation };
 }
 const faceAct = async (head: { seq: number; cid: string }, group: string, epoch: number, seed: Uint8Array) =>
   signPersonaAct(head, { group, act: "plane", epoch, fields: { plane: FACE_PLANE, url: RECOVERED } },
     { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) });
 
 describe("a joinee reads F from the verified admit bundle", () => {
-  test("RED: the root's face-plane act rides the bundle and the admit names F", async () => {
-    const applied = await admitWith(async (head, group, epoch, seed) => [await faceAct(head, group, epoch, seed)]);
-    expect((applied as unknown as { faceRelation: string | null }).faceRelation).toBe(RECOVERED);
+  test("RED: the admit names the founder's F, the one the founding act pinned", async () => {
+    const applied = await admitWith(async () => []);
+    expect(applied.founderRelation).toMatch(UUID);
+    expect((applied as unknown as { faceRelation: string | null }).faceRelation).toBe(applied.founderRelation);
   });
-  test("CONTROL: a stranger's face-plane act names none", async () => {
+  test("RED: a later root-signed face-plane act rides the bundle and the admit still names the FOUNDING F (first pin per plane)", async () => {
+    const applied = await admitWith(async (head, group, epoch, seed) => [await faceAct(head, group, epoch, seed)]);
+    expect((applied as unknown as { faceRelation: string | null }).faceRelation).toBe(applied.founderRelation);
+    expect((applied as unknown as { faceRelation: string | null }).faceRelation).not.toBe(RECOVERED);
+  });
+  test("CONTROL: a stranger's face-plane act names none of its own", async () => {
     const applied = await admitWith(async (head, group, epoch) => [await faceAct(head, group, epoch, new Uint8Array(32).fill(99))]);
     expect((applied as unknown as { faceRelation: string | null }).faceRelation).not.toBe(RECOVERED);
   });
