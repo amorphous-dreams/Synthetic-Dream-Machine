@@ -22,7 +22,7 @@ export interface PromoteActGate {
   begin(act: object, kind: string, edge?: string): void;
   end(act: object): void;
   /** True when acts of `kinds` stand and `run` waits on their completion; false when none stand and the caller acts now. */
-  /** With `edges`, only acts naming one of those (wiki, digest) edges count: an unrelated act never holds the arrival. */
+  /** With `edges`, the run defers only when a standing act names EVERY one of them; an edge nobody here raised restarts now. */
   after(kinds: readonly string[], run: () => void, edges?: readonly string[]): boolean;
 }
 
@@ -39,7 +39,10 @@ export function promoteActGate(): PromoteActGate {
       }
     },
     after(kinds, run, edges) {
-      const left = new Set([...open].filter(([, a]) => kinds.includes(a.kind) && (edges === undefined || (a.edge !== undefined && edges.includes(a.edge)))).map(([act]) => act));
+      const standing = [...open].filter(([, a]) => kinds.includes(a.kind));
+      // With edges, EVERY carried edge needs a standing local act: an edge nobody here raised restarts now, whatever else stands.
+      if (edges !== undefined && !edges.every(edge => standing.some(([, a]) => a.edge === edge))) return false;
+      const left = new Set(standing.filter(([, a]) => edges === undefined || (a.edge !== undefined && edges.includes(a.edge))).map(([act]) => act));
       if (!left.size) return false;
       waiters.add({ left, run });
       return true;

@@ -291,3 +291,41 @@ describe("an unreadable board never skips the brake (Luna cure read #1)", () => 
     expect(await quiet.b.arrive()).toEqual([]);
   });
 });
+
+describe("two digests in one wiki (Sol: mixed pending edges)", () => {
+  test("RED: a second raise over another digest of a wiki whose first edge stands pending passes ONLY the new edge to the restart; CONTROL: nothing new passes nothing", async () => {
+    const { b, st, raise } = await boot();
+    const RITE2 = { title: "rites/b", text: "exports.startup = function(){ /* b */ }", fields: { "module-type": "startup" } };
+    const D2 = promoteDigest(RITE2);
+    st.ledger = ledgerCommit(st.ledger, { wiki: W1, digest: D2, item: RITE2, revision: "r2" }, HAND);
+    st.items.set(W1, [itemOf(RITE), itemOf(RITE2)]);
+    await b.promotedFor(W1);
+    st.acts.push(await raise(W1));
+    st.defer.set(W1, { settle: () => {} });
+    await b.arrive();
+    expect(st.hits).toEqual([[W1, [promoteEdgeKey(W1, D)]]]);
+    const root = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(1)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(1)) };
+    st.acts.push(await signPromoteKapae({ group: GROUP, epoch: 0, wiki: W1, digest: D2, raised: true, parents: [] }, root));
+    await b.arrive();
+    expect(st.hits[1], "only the edge no pending restart carries").toEqual([W1, [promoteEdgeKey(W1, D2)]]);
+    await b.arrive();
+    expect(st.hits, "both edges already carried: nothing passes").toHaveLength(2);
+  });
+});
+
+describe("an UNREAD cache is never replaced (Sol: a cache read failure erases an older shadow)", () => {
+  test("RED: a failed cache read still brakes, then a good write never persists the board-only reading over the older shadow; CONTROL: the next healthy read keeps the older shadow", async () => {
+    const { b, st, hooks, raise } = await boot();
+    const OLD = promoteEdgeKey("old-wiki", "e".repeat(64));
+    st.local = { shadowed: [OLD] };
+    await b.promotedFor(W1);
+    st.acts.push(await raise(W1));
+    hooks.tornLocalRead = true;
+    expect(await b.arrive()).toEqual([W1]);
+    expect(st.local.shadowed, "the unread cache is left alone").toEqual([OLD]);
+    hooks.tornLocalRead = false;
+    await b.promotedFor(W1);
+    await b.arrive();
+    expect(st.local.shadowed.sort()).toEqual([OLD, promoteEdgeKey(W1, D)].sort());
+  });
+});

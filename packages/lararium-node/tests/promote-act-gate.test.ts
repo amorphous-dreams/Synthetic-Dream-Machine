@@ -87,3 +87,21 @@ test("RED (Sol #6): an arrival defers only to a local raise for the SAME (wiki, 
   gate.end(stuck);
   expect(ran).toEqual(["A", "legacy"]);
 });
+
+test("RED (Sol: mixed edges): an arrival carrying a raised edge AND another edge defers only when a local raise stands over EVERY carried edge; CONTROL: all edges covered defers", async () => {
+  const { promoteActEdge } = await import("../src/promote-act-gate.js");
+  const A = promoteActEdge({ digest: "a".repeat(64) })!, B = promoteActEdge({ digest: "b".repeat(64) })!;
+  const gate = promoteActGate();
+  const raiseA = {};
+  gate.begin(raiseA, "kapae-raise", A);
+  const ran: string[] = [];
+  expect(gate.after(["kapae-raise"], () => ran.push("mixed"), [A, B]), "B has no local raise: restart now").toBe(false);
+  expect(gate.after(["kapae-raise"], () => ran.push("A"), [A])).toBe(true);
+  const raiseB = {};
+  gate.begin(raiseB, "kapae-raise", B);
+  expect(gate.after(["kapae-raise"], () => ran.push("both"), [A, B])).toBe(true);
+  gate.end(raiseA);
+  expect(ran, "the both-edge run waits for BOTH raises").toEqual(["A"]);
+  gate.end(raiseB);
+  expect(ran).toEqual(["A", "both"]);
+});

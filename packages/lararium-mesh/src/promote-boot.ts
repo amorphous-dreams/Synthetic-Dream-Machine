@@ -50,16 +50,17 @@ export function promoteBoot(opts: {
       // THE BRAKE RUNS FIRST. A torn cache read never stops it (the board's own reading stands alone), and the cache is persisted AFTER the
       // restarts: a failed write is named and tried again by the next arrive, never thrown into the brake.
       let local: Awaited<ReturnType<typeof opts.stores.local.read>> = EMPTY_KAPAE_LOCAL;
-      try { local = await opts.stores.local.read(); } catch { opts.onFault?.("ledger-unreadable"); }
+      let localRead = true;
+      try { local = await opts.stores.local.read(); } catch { localRead = false; opts.onFault?.("ledger-unreadable"); }
       const edges = board ? kapaeStanding(local, board) : new Set(local.shadowed);
       const allLoaded = new Set([...loaded.values()].flatMap(set => [...set]));
       const next = kapaeNoteArrival(local, edges, allLoaded).local;
       const restarted: string[] = [];
       for (const [wiki, held] of [...loaded]) {
-        const hit = [...held].filter(edge => edges.has(edge));
         const pending = pendingRestart.get(wiki);
-        // A pending restart suppresses only the edges it already carries: a different edge's restart runs now.
-        if (hit.length === 0 || (pending && hit.every(edge => pending.has(edge)))) continue;
+        // A pending restart suppresses only the edges it already carries: the restart passes the edges NO pending restart carries.
+        const hit = [...held].filter(edge => edges.has(edge) && !pending?.has(edge));
+        if (hit.length === 0) continue;
         let outcome: void | { pending: Promise<void> };
         try { outcome = await opts.restart(wiki, hit); } catch (error) { opts.onRestartFailed?.(wiki, error); continue; }
         if (outcome && "pending" in outcome) {
@@ -77,7 +78,8 @@ export function promoteBoot(opts: {
         for (const edge of hit) held.delete(edge);
         restarted.push(wiki);
       }
-      if (board && new TextDecoder().decode(encodeKapaeLocal(local)) !== new TextDecoder().decode(encodeKapaeLocal(next))) {
+      // An UNREAD cache is never replaced: the board-only reading would erase an older shadow the board no longer shows.
+      if (board && localRead && new TextDecoder().decode(encodeKapaeLocal(local)) !== new TextDecoder().decode(encodeKapaeLocal(next))) {
         try { await opts.stores.local.write(next); } catch { opts.onFault?.("ledger-unreadable"); }
       }
       return restarted.sort();
