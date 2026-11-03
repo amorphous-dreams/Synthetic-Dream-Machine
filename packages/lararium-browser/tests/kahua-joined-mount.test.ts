@@ -66,13 +66,9 @@ async function joinedPage(opts: { readonly pin: boolean; readonly catalogRow?: (
     stage.change((d) => writeKahuaAct(d, lift));
   }
   await new AutomergeDocStore(stage, KAHUA_BAG).put(rec("Poison", "raw"), origin);
-  const base = await founderAndJoineeActs({ face, signerSeed, founderAtomSeed: atomSeed, joineeKey: key(joineeAtom), chain }) as Array<{ body: { seq: number } }>;
-  const last = base.reduce((m, a) => (a.body.seq > m.body.seq ? a : m));
-  const pinAct = opts.pin ? [await signPersonaAct({ seq: last.body.seq, cid: actCid(last.body as never) },
-    { group: face.personaGroupId, act: "plane", epoch: chain[chain.length - 1]!.seq, fields: { plane: KAHUA_PLANE, url: stage.url } },
-    root)] : [];
+  const base = await founderAndJoineeActs({ face, signerSeed, founderAtomSeed: atomSeed, joineeKey: key(joineeAtom), chain, ...(opts.pin ? { extraPlanes: { [KAHUA_PLANE]: stage.url } } : {}) }) as Array<{ body: { seq: number } }>;
   const payload = await runDeviceAdmitEdge({
-    signerSeed, joineeVerifyingKey: key(joineeAtom), personaKelPrefix: face.personaKelPrefix, personaKelChain: chain, personaActs: [...base, ...pinAct],
+    signerSeed, joineeVerifyingKey: key(joineeAtom), personaKelPrefix: face.personaKelPrefix, personaKelChain: chain, personaActs: base,
     edgeFrontier: await frontierFromFoundingSeed(signerSeed), hearthTrueName: "hearth", personaGroupId: face.personaGroupId,
     meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: founder.daemonUrl, personaUrl: face.personaUrl,
   });

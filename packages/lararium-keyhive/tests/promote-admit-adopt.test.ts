@@ -21,7 +21,7 @@ const repo = () => makeIslandRepo({ syncPort: new MessageChannel().port1 });
 
 type Act = { body: { seq: number } };
 
-async function admitWith(extra: (head: { seq: number; cid: string }, group: string, epoch: number, signerSeed: Uint8Array) => Promise<unknown[]>) {
+async function admitWith(extra: (head: { seq: number; cid: string }, group: string, epoch: number, signerSeed: Uint8Array) => Promise<unknown[]>, pinned?: (group: string) => Record<string, string>) {
   const founderRepo = repo();
   const founderSeed = new Uint8Array(32).fill(61), signerSeed = new Uint8Array(32).fill(62);
   const atomSeed = new Uint8Array(32).fill(63), joineeAtom = new Uint8Array(32).fill(64);
@@ -32,7 +32,7 @@ async function admitWith(extra: (head: { seq: number; cid: string }, group: stri
   });
   const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(founderSeed)), "board:persona-kel");
   const chain = personaKelChainForPrefix(board.doc(), face.personaKelPrefix)!;
-  const base = await founderAndJoineeActs({ face, signerSeed, founderAtomSeed: atomSeed, joineeKey: key(joineeAtom), chain }) as Act[];
+  const base = await founderAndJoineeActs({ face, signerSeed, founderAtomSeed: atomSeed, joineeKey: key(joineeAtom), chain, ...(pinned ? { extraPlanes: pinned(face.personaGroupId) } : {}) }) as Act[];
   const last = base.reduce((m, a) => (a.body.seq > m.body.seq ? a : m));
   const personaActs = [...base, ...await extra({ seq: last.body.seq, cid: actCid(last.body as never) }, face.personaGroupId, chain[chain.length - 1]!.seq, signerSeed)];
   const payload = await runDeviceAdmitEdge({
@@ -50,9 +50,14 @@ const promoteAct = async (head: { seq: number; cid: string }, group: string, epo
     { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) });
 
 describe("a joinee adopts the founder's promote board from the verified admit bundle", () => {
-  test("RED: the root's promote plane act rides the bundle and the admit names the founder's board url", async () => {
-    const applied = await admitWith(async (head, group, epoch, signerSeed) => [await promoteAct(head, group, epoch, signerSeed)]);
+  test("RED: the root's promote plane pinned inside the founding span rides the bundle and the admit names the founder's url", async () => {
+    const applied = await admitWith(async () => [], (group) => ({ [PROMOTE_PLANE]: promoteBoardDocUrl(group) }));
     expect(applied.promoteUrl).toBe(promoteBoardDocUrl(applied.group));
+  });
+
+  test("CONTROL: the root's promote plane act made AFTER the founding span (a late first pin) names nothing", async () => {
+    const applied = await admitWith(async (head, group, epoch, signerSeed) => [await promoteAct(head, group, epoch, signerSeed)]);
+    expect(applied.promoteUrl).toBeNull();
   });
 
   test("CONTROL: a stranger's promote plane act names no board", async () => {
