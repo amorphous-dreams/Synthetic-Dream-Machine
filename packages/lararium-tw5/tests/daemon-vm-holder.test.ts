@@ -594,3 +594,76 @@ describe("an emergency that cannot restart still fails closed through the host's
     expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).not.toThrow();
   });
 });
+
+describe("an emergency that overlaps an ordinary restart is never downgraded (Sol 2)", () => {
+  const brake = (r: string) => r === "brake";
+
+  test("an ordinary restart in prepare, an overlapping emergency, then a prepare refusal: the island closes and stands daemon-down, zero calls accepted", async () => {
+    const first = fakeVm();
+    const prepared = deferred<void>();
+    const held = holdDaemonVm({
+      vm: first, emergency: brake,
+      prepare: async () => { await prepared.promise; throw new Error("floor blob corrupt"); },
+      reopen: async () => fakeVm(),
+    });
+    const ordinary = held.restart("operator");
+    const ordinaryOutcome = ordinary.then(() => "restarted", (e: Error) => e.message);
+    await Promise.resolve();
+    const emergency = held.restart("brake");           // joins the restart standing in prepare
+    const emergencyOutcome = emergency.then(() => "restarted", (e: Error) => e.message);
+    prepared.resolve();
+    expect(await ordinaryOutcome).toMatch(/floor blob corrupt/);
+    expect(await emergencyOutcome).toMatch(/floor blob corrupt/);
+    expect(first.downs).toBe(1);
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).toThrow(/daemon-down/);
+    expect(first.calls).toEqual([]);
+  });
+
+  test("CONTROL: two ordinary restarts overlapping a refusing prepare leave the island ready", async () => {
+    const first = fakeVm();
+    const prepared = deferred<void>();
+    const held = holdDaemonVm({ vm: first, emergency: brake, prepare: async () => { await prepared.promise; throw new Error("refused"); }, reopen: async () => fakeVm() });
+    const a = held.restart("operator").catch(() => "x");
+    await Promise.resolve();
+    const b = held.restart("also-ordinary").catch(() => "x");
+    prepared.resolve();
+    await Promise.all([a, b]);
+    expect(first.downs).toBe(0);
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).not.toThrow();
+  });
+
+  test("an emergency that arrives after the standing restart passed prepare schedules one follow-up emergency restart, never dropped", async () => {
+    const first = fakeVm();
+    const second = fakeVm();
+    const opening = deferred<DaemonVmCore>();
+    const reasons: string[] = [];
+    let opens = 0;
+    const held = holdDaemonVm({
+      vm: first, emergency: brake,
+      prepare: async (reason) => { reasons.push(reason); if (reason === "brake") throw new Error("floor blob corrupt"); },
+      reopen: () => (++opens === 1 ? opening.promise : Promise.resolve(fakeVm())),
+    });
+    const ordinary = held.restart("operator");
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+    const emergency = held.restart("brake");
+    const emergencyOutcome = emergency.then(() => "restarted", (e: Error) => e.message);
+    opening.resolve(second);
+    await ordinary;                                   // the ordinary restart completes onto its replacement
+    expect(await emergencyOutcome).toMatch(/floor blob corrupt/);
+    expect(reasons).toEqual(["operator", "brake"]);   // the emergency ran its own prepare after the ordinary restart finished
+    expect(second.downs).toBe(1);                      // fail closed on the replacement
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).toThrow(/daemon-down/);
+  });
+
+  test("CONTROL: an ordinary request after the standing restart passed prepare schedules nothing", async () => {
+    const opening = deferred<DaemonVmCore>();
+    const reasons: string[] = [];
+    const held = holdDaemonVm({ vm: fakeVm(), emergency: brake, prepare: async (r) => { reasons.push(r); }, reopen: () => opening.promise });
+    const a = held.restart("operator");
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+    const b = held.restart("again");
+    opening.resolve(fakeVm());
+    await Promise.all([a, b]);
+    expect(reasons).toEqual(["operator"]);
+  });
+});
