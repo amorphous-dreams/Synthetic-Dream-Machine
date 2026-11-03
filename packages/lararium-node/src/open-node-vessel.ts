@@ -54,7 +54,7 @@ import {
   faceAtomKeyFromSeed, type FaceAtomKey,
   carriageFloorDutyOf, type PlaceSigner,
   genesisCasCidsFromOracle, provenVesselKeyOf,
-  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed, type GateSweepSeat,
+  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed, type GateSweepSeat,
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { registerStoreDoorReactors } from "./store-door-registry.js";
@@ -2301,6 +2301,14 @@ async function prepareNodeBootOn(
         // face; every boot, the founding device's among them, reads that pin off the verified projection.
         wornFaceProved = true;
         wornFaceProjection = proof.projection;
+        wornFaceProven = true;
+        provenPlanes.set(personaGroupId, bootstrap.personaUrl);
+        // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
+        const head = proof.projection.head;
+        if (head) {
+          const pinned = raiseFaceFrontier(faceAnchor, { actSeq: head.seq, actCid: head.cid });
+          if (pinned !== faceAnchor) { await keepFaceAnchorOfGroup(pinned); standingAnchor = pinned; }
+        }
         const kahua = adoptKahuaPlane(proof.projection, personaGroupId, kahuaCatalogRow(assembly.catalogHandle.doc()));
         if (kahua.staleRow) console.warn(`[lararium] kahua stage: the catalog row names ${kahua.staleRow}, a stale hint (the face pins ${"mount" in kahua ? kahua.mount : "none"}); the pin decides`);
         const kahuaUrl = adoptedKahuaUrl(kahua);
@@ -2351,17 +2359,17 @@ async function prepareNodeBootOn(
               loaded: () => wiring.loadedFor(wiki), restart: () => wiring.restart(wiki) }), boardDoor,
           });
           const push = async (data: string) => { daemonVm.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
-          pushPromoteSnapshot = async () => { await push(JSON.stringify(await core.snapshot())); };
+          // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.
+          let panelQuiet = true;
+          pushPromoteSnapshot = async () => {
+            const snapshot = await core.snapshot();
+            const quiet = isQuietSnapshot(snapshot);
+            if (quiet && panelQuiet) return;
+            panelQuiet = quiet;
+            await push(JSON.stringify(snapshot));
+          };
           promoteHandlers = promoteMainVerbs({ api: core, push });
         };
-        wornFaceProven = true;
-        provenPlanes.set(personaGroupId, bootstrap.personaUrl);
-        // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
-        const head = proof.projection.head;
-        if (head) {
-          const pinned = raiseFaceFrontier(faceAnchor, { actSeq: head.seq, actCid: head.cid });
-          if (pinned !== faceAnchor) { await keepFaceAnchorOfGroup(pinned); standingAnchor = pinned; }
-        }
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
         if (bootstrap.identitiesUrl && bootstrap.circlesUrl) {
           const joining = joinFaceDocumentsOnArrival(repo, { identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl }, activeAtom.key);

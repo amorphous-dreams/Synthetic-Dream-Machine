@@ -23,3 +23,11 @@ export function promotePanelApi(deps: PromoteCommandDeps & { wikis: () => Promis
     lower: (wiki: string, digest: string) => act("lower", wiki, digest),
   };
 }
+
+/**
+ * True when no wiki shows a rite waiting, promoted, shadowed or a read error. A boot with a quiet snapshot pushes nothing to the island:
+ * a push is a verb tiddler in the daemon document, and a boot mints no content head (the second-boot law).
+ */
+export function isQuietSnapshot(snapshot: PromotePanelSnapshot): boolean {
+  return snapshot.wikis.every(entry => !("error" in entry) && Object.values(entry).every(value => !Array.isArray(value) || value.length === 0));
+}

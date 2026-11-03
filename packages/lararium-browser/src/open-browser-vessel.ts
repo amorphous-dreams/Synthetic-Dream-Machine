@@ -80,7 +80,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  promotePanelApi, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
+  promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
   readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
   type WideningRead,
 } from "@lararium/mesh";
@@ -1400,7 +1400,15 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
               loaded: () => wiring.loadedFor(wiki), restart: () => wiring.restart(wiki) }), boardDoor,
           });
           const push = async (data: string) => { daemon.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
-          pushPromoteSnapshot = async () => { await push(JSON.stringify(await core.snapshot())); };
+          // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.
+          let panelQuiet = true;
+          pushPromoteSnapshot = async () => {
+            const snapshot = await core.snapshot();
+            const quiet = isQuietSnapshot(snapshot);
+            if (quiet && panelQuiet) return;
+            panelQuiet = quiet;
+            await push(JSON.stringify(snapshot));
+          };
           promoteHandlers = promoteMainVerbs({ api: core, push });
         }
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).

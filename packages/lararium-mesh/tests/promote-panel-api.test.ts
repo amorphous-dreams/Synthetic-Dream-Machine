@@ -51,3 +51,16 @@ describe("the hand's click", () => {
     expect(calls).toEqual([]);
   });
 });
+
+describe("a quiet snapshot writes nothing at boot (the second-boot law: a boot mints no content head)", () => {
+  test("RED: a snapshot with no rite waiting, promoted or shadowed anywhere reads quiet; CONTROL: a waiting rite, a promoted row, a shadow or an error row each read busy", async () => {
+    const { isQuietSnapshot } = await import("../src/promote-panel-api.js");
+    expect(isQuietSnapshot({ wikis: [{ wiki: "daemon", rows: [], waiting: [], shadowed: [] } as never] })).toBe(true);
+    expect(isQuietSnapshot({ wikis: [] })).toBe(true);
+    const busy = (entry: Record<string, unknown>) => isQuietSnapshot({ wikis: [{ wiki: "daemon", rows: [], waiting: [], shadowed: [], ...entry } as never] });
+    expect(busy({ waiting: [{ title: "t" }] })).toBe(false);
+    expect(busy({ rows: [{ title: "t" }] })).toBe(false);
+    expect(busy({ shadowed: ["d"] })).toBe(false);
+    expect(busy({ error: "unreadable" })).toBe(false);
+  });
+});
