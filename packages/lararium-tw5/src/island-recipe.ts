@@ -150,9 +150,12 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   // the bags' own startup actions, so each one the boot pass never saw runs once over the resident seed;
   // the ones that already ran stay run.
   const checkpoint = adaptor.armSeedCheckpoint().then(() => {
-    const tw = tw5.$tw as unknown as { wiki: { filterTiddlers(f: string): string[]; getTiddlerText(t: string): string | undefined }; rootWidget: { invokeActionString(actions: string, triggeringWidget: unknown, event: unknown, variables: Record<string, string>): void } };
+    const tw = tw5.$tw as unknown as { wiki: { filterTiddlers(f: string): string[]; getTiddlerText(t: string): string | undefined; getTiddler(t: string): { fields: Record<string, unknown> } | undefined }; rootWidget: { invokeActionString(actions: string, triggeringWidget: unknown, event: unknown, variables: Record<string, string>): void } };
     for (const title of tw.wiki.filterTiddlers(STARTUP_ACTIONS)) {
       if (ranAtBoot.has(title)) continue;
+      // A StartupAction lifted from the kahua stage stays inert data: it carries `kahua-cid`, and only a promotion puts a rite among the
+      // preloads, where the boot pass above ran it. The seed pass never runs code a hand has not promoted.
+      if (tw.wiki.getTiddler(title)?.fields["kahua-cid"] !== undefined) continue;
       tw.rootWidget.invokeActionString(tw.wiki.getTiddlerText(title) ?? "", tw.rootWidget, undefined, {});
     }
   });
