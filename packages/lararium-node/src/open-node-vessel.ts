@@ -63,7 +63,7 @@ import { makeRealmPlane, type RealmPlanesHolder } from "./realm-plane.js";
 import { noteVesselRealm, readVesselRealms } from "./edge-board.js";
 import { makeEdgeShadowRing, type EdgeShadowRing } from "./edge-shadow-ring.js";
 import { floorShadowRing } from "./floor-fleet-lanes.js";
-import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
+import type { JoinedFaceAuth, WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
@@ -1802,7 +1802,7 @@ async function prepareNodeBootOn(
   const promoteActs = promoteActGate();
   const restartDaemonNow = async () => {
     console.log("[promote] the daemon island restarts: a shadow meets a loaded rite");
-    const done = await daemonHolder.restart("promote: kapae raised over a loaded rite");
+    const done = await daemonHolder.restart(KAPAE_EMERGENCY_REASON);
     console.log(`[promote] the daemon island restarted (${done.restarts})`);
   };
   // A restart that runs after a raise or a commit answered has no asker to tell: its failure is named, and the next arrive tries again.
@@ -2724,9 +2724,13 @@ async function prepareNodeBootOn(
       addressSecret: readFaceAddressSecret, veilArchive: sovereign.veilArchive,
       log: (line: string) => console.log(`[lararium] ${line}`),
     } : null;
-    const joinedFaces = siblingPorts ? await joinedFaceAuth(siblingPorts) : [];
-    // Each joined face's edge ledger stays on this device too (road `T33`): the island opens it under that face's atom.
-    classDeviceLedgers(vesselPrivate, joinedFaces.map((face) => face.atom.key));
+    // EVERY OPEN READS THE SIBLINGS' CURRENT CUSTODY STANDING (Sol train #1): a sibling that locked or dropped since boot never rides a
+    // re-open. Each joined face's edge ledger stays on this device too (road `T33`): the island opens it under that face's atom.
+    const readJoinedFaces = async (): Promise<JoinedFaceAuth[]> => {
+      const faces = siblingPorts ? await joinedFaceAuth(siblingPorts) : [];
+      classDeviceLedgers(vesselPrivate, faces.map((face) => face.atom.key));
+      return faces;
+    };
     lightFace = async (ordinal) => {
       if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
       const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal] });
@@ -2738,7 +2742,7 @@ async function prepareNodeBootOn(
       }
       await intentRelay?.refresh();
     };
-    const daemonAuthNow = () => ({
+    const daemonAuthNow = (joinedFaces: readonly JoinedFaceAuth[]) => ({
       ...(joinedFaces.length ? { joinedFaces } : {}),
       placeVerifyingKey: vesselIdentity.verifyingKey,
       ...(workingFloorAnchor ? { workingFloorAnchor } : {}),
@@ -2782,6 +2786,7 @@ async function prepareNodeBootOn(
     crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
     const offerings = crossroadsOfferingsHandle;
     daemonHolder = await standDaemonIsland({
+      readJoinedFaces,
       resolvePlugins: () => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe: { wikiSlug: "daemon" },
@@ -2790,7 +2795,7 @@ async function prepareNodeBootOn(
         promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
         onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
       }),
-      open: ({ pluginCids }) => openDaemonVm({
+      open: ({ pluginCids, joinedFaces }) => openDaemonVm({
         repo,
         daemonUrl: bootstrap.daemonUrl,
         // The persona plane rides only when a face stands; the daemon VM resolves nothing that is absent.
@@ -2813,7 +2818,7 @@ async function prepareNodeBootOn(
           // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
           ...(wornKahua ? { kahuaUrl: wornKahua.url } : {}),
         },
-        daemonAuth: daemonAuthNow(),
+        daemonAuth: daemonAuthNow(joinedFaces),
         storageDir,
         // D-VR-C: the daemon bag is the one explicit worker-owned durable scope;
         // ordinary oracle/recipe documents remain parent-attached in the primary worker Repo.

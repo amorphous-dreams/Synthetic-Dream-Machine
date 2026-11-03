@@ -49,6 +49,19 @@ describe("the browser vessel's daemon seam", () => {
     expect(close.slice(0, 2000)).not.toMatch(/resolve\(import\.meta\.dirname, "dist"/);
   });
 
+  test("#7 a tab attached to the shared holder refuses the restart by name before it touches the shared island, the port or another tab", () => {
+    const prep = SRC.slice(SRC.indexOf("const resolveDaemonPlugins"), SRC.indexOf("daemonHolder = holdDaemonVm("));
+    expect(SRC).toMatch(/prepare: async \(\) => \{[^}]*holder\?\.kind === "attached"[^}]*daemon-restart-shared-holder/);
+    expect(prep.length).toBeGreaterThan(0);
+  });
+
+  test("#7 the kapae emergency fails a shared-holder tab CLOSED: it detaches through the handle and stands daemon-down, and the page is told to reload", () => {
+    expect(SRC).toMatch(/emergency: \(reason\) => reason === KAPAE_EMERGENCY_REASON,/);
+    expect(SRC).toMatch(/failClosed: holder\?\.kind === "attached"[^\n]*\.dispose\(\)/);
+    expect(SRC).toMatch(/import \{[^}]*\bKAPAE_EMERGENCY_REASON\b[^}]*\} from "@lararium\/tw5"/);
+    expect(SRC).toMatch(/daemon-restart-shared-holder[^"]*reload/);
+  });
+
   test("CONTROL: the instrument reads an absent seam as red", () => {
     expect("daemon = await openBrowserDaemonVm({".match(/daemon = daemonHolder\.vm;/)).toBeNull();
   });

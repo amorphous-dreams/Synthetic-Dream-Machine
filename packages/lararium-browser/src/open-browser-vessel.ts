@@ -1,5 +1,5 @@
 import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
-import { holdDaemonVm, DaemonRestarting, type DaemonVmHolder } from "@lararium/tw5";
+import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHolder } from "@lararium/tw5";
 /**
  * openBrowserVessel — local-first browser vessel factory.
  *
@@ -963,7 +963,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let promoteWiringRef: ReturnType<typeof promoteWiring> | null = null;
   const restartWikiIsland = async (wiki: string) => {
     if (wiki === "daemon") {
-      await daemonHolder.restart("promote: kapae raised over a loaded rite");
+      await daemonHolder.restart(KAPAE_EMERGENCY_REASON);
     } else {
       await vmManager.unmountWiki(wiki);
       await wikiActivation.ensureActive(wiki);
@@ -1543,7 +1543,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         },
         daemonAuth,
       });
-      daemonHolder = holdDaemonVm({ vm: await openOnce(await resolveDaemonPlugins()), prepare: resolveDaemonPlugins, reopen: (_reason, pluginCids) => openOnce(pluginCids) });
+      daemonHolder = holdDaemonVm({ vm: await openOnce(await resolveDaemonPlugins()), prepare: async () => {
+        // A tab attached to the shared holder shares ONE island with every other tab: a restart here would close the port it reuses and tear down the shared island under the others (Sol train #7), so it refuses by name before anything moves.
+        if (holder?.kind === "attached") throw new Error("daemon-restart-shared-holder: this tab shares its daemon island with the holder's other tabs, so it cannot restart it; reload this page");
+        return resolveDaemonPlugins();
+      }, reopen: (_reason, pluginCids) => openOnce(pluginCids),
+      emergency: (reason) => reason === KAPAE_EMERGENCY_REASON,
+      // The emergency on a shared-holder tab fails CLOSED through the tab's own door: it detaches from the holder (session:close, its port closed) and stands daemon-down; each tab acts on its own arrival, and the shared island ends with its last tab.
+      failClosed: holder?.kind === "attached" ? (vm) => vm.dispose() : undefined });
       daemon = daemonHolder.vm;
       held.stood.push({ what: "daemon worker", down: () => daemon.dispose() });
 

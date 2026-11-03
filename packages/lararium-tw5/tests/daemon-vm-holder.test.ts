@@ -417,11 +417,14 @@ describe("restart against a direct shutdown, and against a replay that throws (L
     await expect(held.restart("r")).rejects.toThrow(/replay refused/);
     expect(broken.downs).toBe(1);
     expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).toThrow(/daemon-down/);
-    held.vm.dispose();
-    expect(broken.downs).toBe(1);                   // a down facade disposes nothing twice
+    expect(broken.downs).toBe(1);
     await held.restart("r2");
     expect(await held.vm.syncLegReady()).toBe(`leg-${third.id}`);
     expect(live).toBe(1);                           // only the recovered island stands
+    held.vm.dispose();                              // disposal is final (Sol train #8): it closes the recovered island once
+    held.vm.dispose();
+    expect(third.downs).toBe(1);
+    expect(live).toBe(0);
   });
 });
 
@@ -487,5 +490,128 @@ describe("the kapae arrival restart keeps the no-wait law (a promote act in flig
     expect(await ok.answer).toBe("kept");
     await control.restart("kapae-raise");
     expect(control.restarts).toBe(1);
+  });
+});
+
+describe("Sol train read: dispose wins, an emergency fails closed, the node replays no face (#8, #5, #1)", () => {
+  test("#8 dispose during prepare ends the restart by name: no replacement opens, the island closes once", async () => {
+    const first = fakeVm();
+    const prepared = deferred<void>();
+    let reopened = 0;
+    const held = holdDaemonVm({ vm: first, prepare: async () => { await prepared.promise; }, reopen: async () => { reopened += 1; return fakeVm(); } });
+    const restarting = held.restart("r");
+    const outcome = restarting.then(() => "restarted", (e: Error) => e.message);
+    await Promise.resolve();
+    held.vm.dispose();
+    prepared.resolve();
+    expect(await outcome).toBe("daemon-down");
+    expect(reopened).toBe(0);
+    expect(first.downs).toBe(1);
+    await expect(held.restart("again")).rejects.toThrow(/daemon-down/);   // a disposed facade restarts no more
+  });
+
+  test("#8 dispose while the replacement opens closes that replacement and leaves the facade down", async () => {
+    const first = fakeVm();
+    const next = fakeVm();
+    const opening = deferred<DaemonVmCore>();
+    const held = holdDaemonVm({ vm: first, reopen: () => opening.promise });
+    const restarting = held.restart("r");
+    const outcome = restarting.then(() => "restarted", (e: Error) => e.message);
+    await Promise.resolve(); await Promise.resolve();
+    held.vm.dispose();
+    opening.resolve(next);
+    expect(await outcome).toBe("daemon-down");
+    expect(next.downs).toBe(1);
+    expect(first.downs).toBe(1);                    // the old island closed once, by the restart's own shutdown
+  });
+
+  test("#8 CONTROL: with no dispose standing the same restart opens its replacement", async () => {
+    const next = fakeVm();
+    const held = holdDaemonVm({ vm: fakeVm(), prepare: async () => undefined, reopen: async () => next });
+    await held.restart("r");
+    expect(next.downs).toBe(0);
+  });
+
+  test("#5 an emergency restart whose prepare refuses closes the old island and stands daemon-down: zero calls accepted", async () => {
+    const first = fakeVm();
+    const held = holdDaemonVm({
+      vm: first,
+      emergency: (reason) => reason.startsWith("kapae"),
+      prepare: async () => { throw new Error("floor blob corrupt"); },
+      reopen: async () => fakeVm(),
+    });
+    await expect(held.restart("kapae-raise")).rejects.toThrow(/floor blob corrupt/);
+    expect(first.downs).toBe(1);
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).toThrow(/daemon-down/);
+    await expect(held.vm.runAsFace({ verb: "x", args: {}, worn: {} as never })).rejects.toThrow(/daemon-down/);
+    expect(first.calls).toEqual([]);
+  });
+
+  test("#5 an emergency pending call settles by name; a later restart recovers once prepare answers", async () => {
+    const first = fakeVm();
+    const next = fakeVm();
+    first.gate = deferred<unknown>();
+    let refuse = true;
+    const held = holdDaemonVm({
+      vm: first, emergency: (r) => r.startsWith("kapae"),
+      prepare: async () => { if (refuse) throw new Error("floor blob corrupt"); },
+      reopen: async () => next,
+    });
+    const stuck = held.vm.resolveBinding("f", { wikiDocId: "w", libraryBagDocIds: [] }, "s").then(() => "resolved", (e: Error) => e.message);
+    await expect(held.restart("kapae-raise")).rejects.toThrow(/floor blob corrupt/);
+    expect(await stuck).toBe("daemon-restarting");
+    refuse = false;
+    await held.restart("kapae-raise");
+    expect(await held.vm.syncLegReady()).toBe(`leg-${next.id}`);
+  });
+
+  test("#5 CONTROL: an ordinary restart whose prepare refuses keeps the old island ready", async () => {
+    const first = fakeVm();
+    const held = holdDaemonVm({
+      vm: first, emergency: (r) => r.startsWith("kapae"),
+      prepare: async () => { throw new Error("plugin resolution refused"); },
+      reopen: async () => fakeVm(),
+    });
+    await expect(held.restart("operator")).rejects.toThrow(/plugin resolution refused/);
+    expect(first.downs).toBe(0);
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).not.toThrow();
+  });
+
+  test("#1 a holder told the manifest carries the faces replays none, and records none", async () => {
+    const next = fakeVm();
+    const held = holdDaemonVm({ vm: fakeVm(), faces: "manifest", reopen: async () => next });
+    held.vm.onFrame(() => undefined);
+    await held.vm.lightFace(entry("a1"));
+    await held.restart("r");
+    expect(next.registered).toEqual(["onFrame"]);
+  });
+});
+
+describe("an emergency that cannot restart still fails closed through the host's own door (Sol train #7)", () => {
+  test("failClosed replaces the shutdown on an emergency refusal: the host detaches, the holder stands daemon-down", async () => {
+    const first = fakeVm();
+    const closed: number[] = [];
+    const held = holdDaemonVm({
+      vm: first,
+      emergency: (r) => r === "brake",
+      failClosed: async (vm) => { closed.push((vm as Fake).id); },
+      prepare: async () => { throw new Error("daemon-restart-shared-holder"); },
+      reopen: async () => fakeVm(),
+    });
+    await expect(held.restart("brake")).rejects.toThrow(/daemon-restart-shared-holder/);
+    expect(closed).toEqual([first.id]);
+    expect(first.downs).toBe(0);                    // the shared island's own teardown never ran
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).toThrow(/daemon-down/);
+  });
+
+  test("CONTROL: an ordinary reason refuses by name and the tab stays ready, failClosed untouched", async () => {
+    const closed: number[] = [];
+    const held = holdDaemonVm({
+      vm: fakeVm(), emergency: (r) => r === "brake", failClosed: async (vm) => { closed.push((vm as Fake).id); },
+      prepare: async () => { throw new Error("daemon-restart-shared-holder"); }, reopen: async () => fakeVm(),
+    });
+    await expect(held.restart("operator")).rejects.toThrow(/daemon-restart-shared-holder/);
+    expect(closed).toEqual([]);
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).not.toThrow();
   });
 });
