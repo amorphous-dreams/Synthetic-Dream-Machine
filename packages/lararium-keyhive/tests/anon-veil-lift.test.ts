@@ -320,6 +320,38 @@ describe("the anon-veil lift on join", () => {
     expect((await resolverFor(v, a.face).liftFloor()).moved).toContain(wikiWorkingFloorKey("garden", PLACE));
   }, 30_000);
 
+  test("L13 — a flush of the face's working destination that never answers is named and deferred: nothing minted, no mark, nothing burned, the floor source stays, and the next pass completes the lift", async () => {
+    const v = await vessel();
+    const joined = { on: false };
+    const a = await newFace(v, joined);
+    const resolver = resolverFor(v, a.face);
+    const { workingUrl } = await resolver.bindings(v.fp, { wikiDocId: v.wikiUrl, libraryBagDocIds: [] }, "garden");
+    await write(v, workingUrl, "Saved", "working layer");
+    joined.on = true;
+    const derived = faceWorkingDocUrl(SECRET(), "garden", "working");
+    let hung = 0;
+    const stuckFlush = { create: v.repo.create.bind(v.repo), find: v.repo.find.bind(v.repo), delete: v.repo.delete.bind(v.repo),
+      flush: (ids?: string[]) => { hung += 1; return new Promise<never>(() => {}); } };
+    const warned: string[] = [];
+    const warn = console.warn; console.warn = (...m: unknown[]) => { warned.push(m.join(" ")); };
+    let first: Awaited<ReturnType<SlotDocResolver["liftFloor"]>>;
+    try {
+      first = await makeSlotDocResolver({
+        repo: stuckFlush as unknown as Repo, daemonStore: v.daemon, keyhive: v.kh, catalog: makeCatalogAccessor(v.repo, v.catalogUrl),
+        vesselDid: () => DID, mintedByHex: () => MINTED_BY, floorAnchor: () => PLACE, faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(v.repo, url as never, label),
+        personaGroupId: a.face.group, faceSeated: async () => a.face.seated(), faceDoor: a.face.door, faceAddressSecret: async () => SECRET(), liftReadBoundMs: 100,
+      }).liftFloor();
+    } finally { console.warn = warn; }
+    expect(hung, "the flush was asked and never answered").toBeGreaterThan(0);
+    expect(first.moved, "the working floor did not move").not.toContain(wikiWorkingFloorKey("garden", PLACE));
+    expect(warned.join("\n"), "the stuck flush is named").toMatch(/flush|never arrived/);
+    expect(a.minted, "the derived working address is not minted").not.toContain(derived);
+    expect(await opens(v, workingUrl), "the floor source stays").toBe(true);
+    // CONTROL: the honest repo finishes the lift.
+    expect((await resolverFor(v, a.face).liftFloor()).moved).toContain(wikiWorkingFloorKey("garden", PLACE));
+    expect(await textOf(v, derived, "Saved")).toBe("working layer");
+  }, 30_000);
+
   test("L9 — a burn that faults in the working floor's lift leaves the place's key marked, and the rerun burns it and takes the key out last", async () => {
     const v = await vessel();
     const joined = { on: false };

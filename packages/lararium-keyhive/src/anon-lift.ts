@@ -94,7 +94,7 @@ function carryTiddlers(from: LarDoc | undefined, into: { change(fn: (doc: LarDoc
 /** A floor document no peer answered for within the read bound: the lift names it, leaves it where it stands and moves on. */
 export class FloorDocumentUnavailable extends Error {
   constructor(readonly url: string, readonly waitedMs: number) {
-    super(`[anon-lift] floor document ${url} never arrived (${waitedMs}ms); the lift skips it and leaves it unburned, to lift on a later pass`);
+    super(`[anon-lift] floor document ${url} never arrived or never rested (${waitedMs}ms); the lift skips it and leaves it unburned, to lift on a later pass`);
     this.name = "FloorDocumentUnavailable";
   }
 }
@@ -127,7 +127,7 @@ async function rehome(args: LiftArgs, oldUrl: string): Promise<{ url: string; ke
   await fresh.whenReady?.();
   const { docId } = await args.faceDoor.mint(fresh.url, "admin");
   carryTiddlers(old, fresh);
-  await args.repo.flush([fresh.documentId]);
+  await boundedRead(args, fresh.url, () => args.repo.flush([fresh.documentId]));
   return { url: fresh.url, keyhiveDocId: docId };
 }
 
@@ -260,7 +260,9 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
           catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
           const into = await working.open(url, slug);
           carryTiddlers(source, into);
-          await args.repo.flush([into.documentId]);
+          // The flush is bounded too: a destination that cannot rest defers the lift (named, floor source kept, nothing minted or marked).
+          try { await boundedRead(args, url, () => args.repo.flush([into.documentId])); }
+          catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
           await args.faceDoor.mint(url, "admin");
           // MARK, BURN, THEN DELETE: the key keeps the lift's mark until the floor document burns.
           handle.change((doc) => {
