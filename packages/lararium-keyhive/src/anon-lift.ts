@@ -34,7 +34,7 @@
 import {
   DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
   mutableLarRecord, tiddlerText, sha256HexBytesSync, utf8Bytes, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord, storedLarRecord,
-  floorAnchorSegment, type WorkingFloorAnchor, type ChangeOrigin, type CompositeStore, type LarDoc, ownEntry} from "@lararium/mesh";
+  floorAnchorSegment, type WorkingFloorAnchor, type ChangeOrigin, type CompositeStore, type LarDoc, ownEntry, DOCUMENT_READY_TIMEOUT_MS} from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { FaceBagDoor } from "./face-bag-door.js";
 
@@ -53,6 +53,8 @@ export interface LiftArgs {
   readonly faceDoor: FaceBagDoor;
   readonly mintedByHex: string;
   readonly vesselDid: string;
+  /** How long a floor document may stay silent before the lift names it and skips it (default: the house's document-ready bound). */
+  readonly readBoundMs?: number;
   /** The labels a faceless floor gave its documents (the public place key and its DID): a lit face lifts those too. */
   readonly floor?: { readonly mintedByHex: string; readonly vesselDid: string };
   /** The binding slot a wiki's draft floor belongs to: its fingerprint and trace, or null where the wiki is unregistered. */
@@ -89,18 +91,42 @@ function carryTiddlers(from: LarDoc | undefined, into: { change(fn: (doc: LarDoc
   });
 }
 
-async function readDoc(repo: LiftRepo, url: string): Promise<LarDoc | undefined> {
-  const handle = await repo.find(url);
-  await handle.whenReady?.();
-  return handle.doc();
+/** A floor document no peer answered for within the read bound: the lift names it, leaves it where it stands and moves on. */
+export class FloorDocumentUnavailable extends Error {
+  constructor(readonly url: string, readonly waitedMs: number) {
+    super(`[anon-lift] floor document ${url} never arrived (${waitedMs}ms); the lift skips it and leaves it unburned, to lift on a later pass`);
+    this.name = "FloorDocumentUnavailable";
+  }
+}
+
+/** One read of a document the lift does not own, bounded: automerge-repo's `find` waits for ever while a peer stays silent, and the lift runs inside the daemon island's boot. */
+async function boundedRead<T>(args: LiftArgs, url: string, read: () => Promise<T>): Promise<T> {
+  const waitedMs = args.readBoundMs ?? DOCUMENT_READY_TIMEOUT_MS;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const out = await Promise.race([read(), new Promise<typeof TIMED_OUT>((resolve) => { timer = setTimeout(() => resolve(TIMED_OUT), waitedMs); })]);
+    if (out === TIMED_OUT) throw new FloorDocumentUnavailable(url, waitedMs);
+    return out;
+  } finally { if (timer !== undefined) clearTimeout(timer); }
+}
+const TIMED_OUT = Symbol("timed-out");
+
+async function readDoc(args: LiftArgs, url: string): Promise<LarDoc | undefined> {
+  return boundedRead(args, url, async () => {
+    const handle = await args.repo.find(url);
+    await handle.whenReady?.();
+    return handle.doc();
+  });
 }
 
 /** Mint a fresh document under the face and carry the floor document's tiddlers into it. */
 async function rehome(args: LiftArgs, oldUrl: string): Promise<{ url: string; keyhiveDocId: string }> {
+  // The old document is read FIRST: a silent one leaves nothing minted behind it.
+  const old = await readDoc(args, oldUrl);
   const fresh = args.repo.create<LarDoc>(emptyLarDoc());
   await fresh.whenReady?.();
   const { docId } = await args.faceDoor.mint(fresh.url, "admin");
-  carryTiddlers(await readDoc(args.repo, oldUrl), fresh);
+  carryTiddlers(old, fresh);
   await args.repo.flush([fresh.documentId]);
   return { url: fresh.url, keyhiveDocId: docId };
 }
@@ -155,7 +181,8 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
     const fields = fieldsOf(record);
     const oldUrl = tiddlerText(record);
     if (!fields || !oldUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
-    const next = await rehome(args, oldUrl);
+    let next: { url: string; keyhiveDocId: string };
+    try { next = await rehome(args, oldUrl); } catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
     await putBinding(args, title, {
       ...carried(fields), text: next.url, "face-reach": "face", "keyhive-doc-id": next.keyhiveDocId,
       "lifted-from": digestOf(title), "lifted-from-url": oldUrl,
@@ -189,12 +216,14 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
       let url: string; let keyhiveDocId: string;
       if (standingUrl && fieldsOf(standing)?.["face-reach"] === "face") {
         // The face already holds a draft for this wiki: the floor draft joins it, additively.
-        const into = await args.repo.find(standingUrl);
-        await into.whenReady?.();
-        carryTiddlers(await readDoc(args.repo, oldUrl), into as unknown as { change(fn: (doc: LarDoc) => void): void });
+        try {
+          const into = await boundedRead(args, standingUrl, async () => { const h = await args.repo.find(standingUrl); await h.whenReady?.(); return h; });
+          carryTiddlers(await readDoc(args, oldUrl), into as unknown as { change(fn: (doc: LarDoc) => void): void });
+        } catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
         url = standingUrl; keyhiveDocId = String(fieldsOf(standing)?.["keyhive-doc-id"] ?? "");
       } else {
-        const next = await rehome(args, oldUrl);
+        let next: { url: string; keyhiveDocId: string };
+        try { next = await rehome(args, oldUrl); } catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
         url = next.url; keyhiveDocId = next.keyhiveDocId;
       }
       await putBinding(args, bindingKey, {
@@ -226,7 +255,8 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
           const slug = floorKey.slice(0, -mark.length).replace(/^.*\/wikis\//, "");
           const url = await working.urlOf(slug);
           const into = await working.open(url, slug);
-          carryTiddlers(await readDoc(args.repo, oldUrl), into);
+          try { carryTiddlers(await readDoc(args, oldUrl), into); }
+          catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
           await args.repo.flush([into.documentId]);
           await args.faceDoor.mint(url, "admin");
           // MARK, BURN, THEN DELETE: the key keeps the lift's mark until the floor document burns.

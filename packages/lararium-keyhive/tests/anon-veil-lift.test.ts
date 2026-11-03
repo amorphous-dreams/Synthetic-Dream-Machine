@@ -215,6 +215,30 @@ describe("the anon-veil lift on join", () => {
     expect(await textOf(v, String(binding["text"]), "Draft")).toBe("never asked for again");
   });
 
+  test("L11 — a floor draft whose old document never arrives is named and skipped within the read bound: the lift returns, moves nothing, burns nothing, and the next pass lifts it once the document answers", async () => {
+    const v = await vessel();
+    const joined = { on: false };
+    const a = await newFace(v, joined);
+    const anon = await resolverFor(v, a.face).draft("garden");
+    await write(v, anon.url, "Draft", "waits for its document");
+    joined.on = true;
+    // The old floor document is a document no peer answers for: its find stands pending for ever.
+    const silent = { create: v.repo.create.bind(v.repo), flush: v.repo.flush.bind(v.repo), delete: v.repo.delete.bind(v.repo),
+      find: (url: string) => (url === anon.url ? new Promise<never>(() => {}) : v.repo.find(url as never)) };
+    const stuck = makeSlotDocResolver({
+      repo: silent as unknown as Repo, daemonStore: v.daemon, keyhive: v.kh, catalog: makeCatalogAccessor(v.repo, v.catalogUrl),
+      vesselDid: () => DID, mintedByHex: () => MINTED_BY, floorAnchor: () => PLACE, faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(v.repo, url as never, label),
+      personaGroupId: a.face.group, faceSeated: async () => a.face.seated(), faceDoor: a.face.door, faceAddressSecret: async () => SECRET(), liftReadBoundMs: 100,
+    });
+    const first = await stuck.liftFloor();
+    expect(first.moved, "nothing moved while the document is silent").toEqual([]);
+    expect(await opens(v, anon.url), "nothing burned").toBe(true);
+    // CONTROL: the same lift over the honest repo moves it.
+    const second = await resolverFor(v, a.face).liftFloor();
+    expect(second.moved).toHaveLength(1);
+    expect(await textOf(v, (await resolverFor(v, a.face).draft("garden")).url, "Draft")).toBe("waits for its document");
+  }, 30_000);
+
   test("L6 — a crash between the binding and the burn finishes on the next pass, with no second copy", async () => {
     const v = await vessel();
     const joined = { on: false };
