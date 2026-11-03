@@ -21,22 +21,24 @@ const D = promoteDigest(RITE);
 const itemOf = (i: typeof RITE): PromoteItem => ({ ...i, revision: "r1", origin: { seat: "s", device: "d", session: "s-1" } });
 
 async function boot(opts: { locked?: boolean } = {}) {
+  const hooks = { tornLocalRead: false, failLocalWrite: false, rotated: false };
   const root = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(1)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(1)) };
   const face = { group: GROUP, grant: (k: string) => k === root.key, device: () => false };
   const st = {
     ledger: [W1, W2].reduce((l, wiki) => ledgerCommit(l, { wiki, digest: D, item: RITE, revision: "r1" }, HAND), EMPTY_LEDGER) as PromotionLedger,
     local: EMPTY_KAPAE_LOCAL as KapaeLocal, acts: [] as unknown[], cas: new Map<string, Uint8Array>(), pinned: new Set<string>(),
-    items: new Map<string, PromoteItem[]>([[W1, [itemOf(RITE)]], [W2, [itemOf(RITE)]]]), restarts: [] as string[], failRestart: new Set<string>(), defer: new Map<string, { settle: (error?: Error) => void }>(), failed: [] as string[], reports: [] as Array<{ wiki: string; report: PromoteBootReport }>, faults: [] as string[],
+    items: new Map<string, PromoteItem[]>([[W1, [itemOf(RITE)]], [W2, [itemOf(RITE)]]]), restarts: [] as string[], hits: [] as Array<[string, string[]]>, failRestart: new Set<string>(), defer: new Map<string, { settle: (error?: Error) => void }>(), failed: [] as string[], reports: [] as Array<{ wiki: string; report: PromoteBootReport }>, faults: [] as string[],
   };
   const b = promoteBoot({
     stores: {
       ledger: { read: async () => { if (opts.locked) throw new Error("CustodyLocked"); return st.ledger; }, write: async (l) => { st.ledger = l; } },
-      local: { read: async () => { if (opts.locked) throw new Error("CustodyLocked"); return st.local; }, write: async (l) => { st.local = l; } },
+      local: { read: async () => { if (opts.locked) throw new Error("CustodyLocked"); if (hooks.tornLocalRead) throw new Error("torn cache"); return st.local; }, write: async (l) => { if (hooks.failLocalWrite) throw new Error("disk full"); st.local = l; } },
     },
     cas: { put: (d, bytes) => { st.cas.set(d, bytes); }, pin: (d) => { st.pinned.add(d); } },
-    board: async () => readPromoteBoard(st.acts, face),
+    board: async () => readPromoteBoard(st.acts, hooks.rotated ? { ...face, grant: () => false } : face),
     itemsOf: async (wiki) => st.items.get(wiki) ?? [],
-    restart: async (wiki) => {
+    restart: async (wiki, hit) => {
+      st.hits.push([wiki, [...hit]]);
       if (st.failRestart.has(wiki)) throw new Error(`restart refused: ${wiki}`);
       if (st.defer.has(wiki)) {
         st.restarts.push(`${wiki}:deferred`);
@@ -48,7 +50,7 @@ async function boot(opts: { locked?: boolean } = {}) {
     onReport: (wiki, report) => { st.reports.push({ wiki, report }); },
     onFault: (reason) => { st.faults.push(reason); },
   });
-  return { b, st, raise: (wiki: string, parents: string[] = []) => signPromoteKapae({ group: GROUP, epoch: 0, wiki, digest: D, raised: true, parents }, root) };
+  return { b, st, hooks, raise: (wiki: string, parents: string[] = []) => signPromoteKapae({ group: GROUP, epoch: 0, wiki, digest: D, raised: true, parents }, root) };
 }
 
 describe("a wiki's boot union", () => {
@@ -200,5 +202,73 @@ describe("a restart that DEFERS stays pending until it reports (a raise in fligh
     expect(await b.arrive()).toEqual([]);
     expect(st.restarts).toEqual([`${W1}:deferred`]);
     expect(st.failed).toEqual([]);
+  });
+});
+
+describe("the brake outlives its cache and its history (Sol #2, #4)", () => {
+  test("RED: a grant rotation that drops the raise from the board keeps the shadow in the cache and at the next boot; CONTROL: a counted signed lower releases it", async () => {
+    const { b, st, hooks, raise } = await boot();
+    await b.promotedFor(W1);
+    const act = await raise(W1);
+    st.acts.push(act);
+    expect(await b.arrive()).toEqual([W1]);
+    expect(st.local.shadowed).toEqual([promoteEdgeKey(W1, D)]);
+    hooks.rotated = true;                                  // the old grant no longer counts: the board reads no raise
+    expect(await b.arrive()).toEqual([]);
+    expect(st.local.shadowed, "the reduced reading never overwrites the cache").toEqual([promoteEdgeKey(W1, D)]);
+    expect(await b.promotedFor(W1), "the shadowed rite does not load again").toEqual([]);
+    hooks.rotated = false;
+    const lower = await signPromoteKapae({ group: GROUP, epoch: 0, wiki: W1, digest: D, raised: false, parents: [promoteActCid(act)] }, await (async () => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(1)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(1)) }))());
+    st.acts.push(lower);
+    await b.arrive();
+    expect(st.local.shadowed).toEqual([]);
+    expect(await b.promotedFor(W1)).toEqual([D]);
+  });
+
+  test("RED: a raise record deleted from the board keeps the shadow; CONTROL: with no raise ever seen the rite loads", async () => {
+    const { b, st, raise } = await boot();
+    expect(await (await boot()).b.promotedFor(W1)).toEqual([D]);
+    await b.promotedFor(W1);
+    st.acts.push(await raise(W1));
+    await b.arrive();
+    st.acts.length = 0;                                    // the record vanishes through sync
+    expect(await b.promotedFor(W1)).toEqual([]);
+  });
+
+  test("RED: a torn cache read and a failed cache write never stop the restart, the failure is named, and the next arrive writes the cache; CONTROL: a healthy cache writes at once", async () => {
+    const torn = await boot();
+    await torn.b.promotedFor(W1);
+    torn.st.acts.push(await torn.raise(W1));
+    torn.hooks.tornLocalRead = true;
+    expect(await torn.b.arrive(), "the brake runs on the board's own reading").toEqual([W1]);
+    expect(torn.st.faults).toContain("ledger-unreadable");
+    const failing = await boot();
+    await failing.b.promotedFor(W1);
+    failing.st.acts.push(await failing.raise(W1));
+    failing.hooks.failLocalWrite = true;
+    expect(await failing.b.arrive()).toEqual([W1]);
+    expect(failing.st.local.shadowed).toEqual([]);
+    expect(failing.st.faults).toContain("ledger-unreadable");
+    failing.hooks.failLocalWrite = false;
+    await failing.b.arrive();
+    expect(failing.st.local.shadowed, "the next arrive persists it").toEqual([promoteEdgeKey(W1, D)]);
+    const healthy = await boot();
+    await healthy.b.promotedFor(W1);
+    healthy.st.acts.push(await healthy.raise(W1));
+    await healthy.b.arrive();
+    expect(healthy.st.local.shadowed).toEqual([promoteEdgeKey(W1, D)]);
+  });
+});
+
+describe("a pending restart suppresses only the edge it carries (Sol #6)", () => {
+  test("RED: while a restart for one edge stands pending, a different edge's restart runs now; CONTROL: the same edge is not restarted twice", async () => {
+    const { b, st, raise } = await boot();
+    await b.promotedFor(W1);
+    st.acts.push(await raise(W1));
+    st.defer.set(W1, { settle: () => {} });
+    await b.arrive();
+    expect(st.hits).toEqual([[W1, [promoteEdgeKey(W1, D)]]]);
+    await b.arrive();
+    expect(st.hits, "the same edge is already carried").toHaveLength(1);
   });
 });

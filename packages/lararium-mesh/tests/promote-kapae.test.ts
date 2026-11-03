@@ -5,7 +5,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { EMPTY_LEDGER, encodeLedger, ledgerCommit, promoteDigest, promotedPreloads, verifyPromotionRows } from "../src/promote.js";
-import { EMPTY_KAPAE_LOCAL, KapaeRefused, assertKapaeHand, decodeKapaeLocal, encodeKapaeLocal, kapaeBootSet, kapaeNoteArrival } from "../src/promote-kapae.js";
+import { EMPTY_KAPAE_LOCAL, KapaeRefused, assertKapaeHand, decodeKapaeLocal, encodeKapaeLocal, kapaeBootSet, kapaeNoteArrival, kapaeStanding } from "../src/promote-kapae.js";
 import { promoteEdgeKey } from "../src/promote-board.js";
 
 const W1 = "lar:///ha.ka.ba/wikis/field-notes", W2 = "lar:///ha.ka.ba/wikis/garden";
@@ -40,11 +40,13 @@ describe("a raise arrives", () => {
 });
 
 describe("offline and the hand", () => {
-  test("RED: an unreadable board honors the cached set; CONTROL: a readable board wins over the cache", () => {
+  test("RED: an unreadable board honors the cached set; CONTROL: a readable board adds to the cache and only a counted lower removes from it", () => {
     const cached = { shadowed: [E1] };
     expect([...kapaeBootSet(cached, null)]).toEqual([E1]);
-    expect([...kapaeBootSet(cached, new Set())]).toEqual([]);
-    expect([...kapaeBootSet(cached, new Set([E2]))]).toEqual([E2]);
+    const read = (edges: string[], lowered: string[] = []) => ({ edges: () => new Set(edges), lowered: () => new Set(lowered) });
+    expect([...kapaeBootSet(cached, read([]))], "a raise missing from the board (rotated away, deleted, corrupted) keeps its shadow").toEqual([E1]);
+    expect([...kapaeBootSet(cached, read([E2]))].sort()).toEqual([E1, E2].sort());
+    expect([...kapaeBootSet(cached, read([], [E1]))], "a counted signed LOWER releases it").toEqual([]);
   });
 
   test("RED: a seat's raise and lower refuse `kapae-needs-hand`; CONTROL: a hand's pass", () => {
@@ -53,5 +55,16 @@ describe("offline and the hand", () => {
     expect(() => assertKapaeHand("raise", HAND)).not.toThrow();
     expect(() => assertKapaeHand("lower", HAND)).not.toThrow();
     expect(KapaeRefused.name).toBe("KapaeRefused");
+  });
+});
+
+describe("the cache never shrinks a shadow without a counted signed lower (Sol #2)", () => {
+  test("RED: a raise that vanished from the board keeps standing; CONTROL: a lower that the board counts removes it, and an edge never raised stands nowhere", () => {
+    const board = (edges: string[], lowered: string[] = []) => ({ edges: () => new Set(edges), lowered: () => new Set(lowered) });
+    const cached = { shadowed: [E1] };
+    expect([...kapaeStanding(cached, board([]))]).toEqual([E1]);
+    expect([...kapaeStanding(cached, board([], [E1]))]).toEqual([]);
+    expect([...kapaeStanding(EMPTY_KAPAE_LOCAL, board([]))]).toEqual([]);
+    expect(kapaeNoteArrival(cached, kapaeStanding(cached, board([])), new Set([E1])).local.shadowed, "the reduced reading never overwrites the cache").toEqual([E1]);
   });
 });

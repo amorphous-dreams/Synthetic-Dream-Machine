@@ -3,7 +3,7 @@ import {
   ledgerCommit, ledgerUnpromote, ledgerDecideOrphan, reconcilePromotions, verifyPromotionRows,
   type PromoteWho, type PromotionLedger,
 } from "./promote.js";
-import { kapaeNoteArrival, kapaeBootSet, encodeKapaeLocal, type KapaeLocal } from "./promote-kapae.js";
+import { kapaeNoteArrival, kapaeBootSet, kapaeStanding, encodeKapaeLocal, type KapaeLocal } from "./promote-kapae.js";
 import type { PromoteBoardReading } from "./promote-board.js";
 
 export type PromoteItem = { title: string; text: string; fields: Readonly<Record<string, string>>; revision: string; origin: { seat: string; device: string; session: string } };
@@ -61,7 +61,7 @@ export function promotions(ports: PromotionPorts) {
       let board: PromoteBoardReading | null;
       try { board = await ports.board(); } catch { board = null; }
       if (board) {
-        edges = board.edges();
+        edges = kapaeStanding(local, board);
         readings = states(own(ledger), await ports.items());
         await saveLocal(local, kapaeNoteArrival(local, edges, new Set()).local);
       } else { edges = kapaeBootSet(local, null); }
@@ -73,7 +73,7 @@ export function promotions(ports: PromotionPorts) {
     async arrive() {
       // The shadow is cached first (an offline boot honors it); the island restarts while it LOADED any shadowed edge, so a restart that
       // failed is tried again by the next arrive.
-      const board = await ports.board(), local = await ports.local.read(), edges = board.edges();
+      const board = await ports.board(), local = await ports.local.read(), edges = kapaeStanding(local, board);
       const result = kapaeNoteArrival(local, edges, ports.loaded());
       await saveLocal(local, result.local);
       const hit = [...edges].some(edge => ports.loaded().has(edge));

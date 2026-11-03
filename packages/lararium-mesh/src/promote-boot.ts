@@ -1,6 +1,6 @@
 import { promotions, type PromoteItem, type PromotionPorts } from "./promote-door.js";
 import { promoteEdgeKey } from "./promote.js";
-import { encodeKapaeLocal, kapaeNoteArrival } from "./promote-kapae.js";
+import { EMPTY_KAPAE_LOCAL, encodeKapaeLocal, kapaeNoteArrival, kapaeStanding } from "./promote-kapae.js";
 
 export interface PromoteBootReport {
   orphans: string[];
@@ -15,13 +15,13 @@ export function promoteBoot(opts: {
   board: PromotionPorts["board"];
   itemsOf: (wiki: string) => Promise<readonly PromoteItem[]>;
   /** Resolves when the wiki restarted, or answers `{ pending }` when the restart follows a later completion (a raise in flight here): pending until it reports. */
-  restart: (wiki: string) => Promise<void | { pending: Promise<void> }>;
+  restart: (wiki: string, hit: readonly string[]) => Promise<void | { pending: Promise<void> }>;
   onReport?: (wiki: string, report: PromoteBootReport) => void;
   onRestartFailed?: (wiki: string, error: unknown) => void;
   onFault?: (reason: "ledger-unreadable" | "board-unreadable" | "board-unpinned") => void;
 }) {
   const loaded = new Map<string, Set<string>>();
-  const pendingRestart = new Set<string>();
+  const pendingRestart = new Map<string, Set<string>>();
   return {
     loadedFor: (wiki: string): ReadonlySet<string> => loaded.get(wiki) ?? new Set(),
     async promotedFor(wiki: string): Promise<readonly string[]> {
@@ -46,31 +46,38 @@ export function promoteBoot(opts: {
     async arrive(): Promise<readonly string[]> {
       let board: Awaited<ReturnType<typeof opts.board>>;
       try { board = await opts.board(); } catch { opts.onFault?.("board-unreadable"); return []; }
-      let local: Awaited<ReturnType<typeof opts.stores.local.read>>;
-      try { local = await opts.stores.local.read(); } catch { opts.onFault?.("ledger-unreadable"); return []; }
-      const edges = board.edges();
+      // THE BRAKE RUNS FIRST. A torn cache read never stops it (the board's own reading stands alone), and the cache is persisted AFTER the
+      // restarts: a failed write is named and tried again by the next arrive, never thrown into the brake.
+      let local: Awaited<ReturnType<typeof opts.stores.local.read>> = EMPTY_KAPAE_LOCAL;
+      try { local = await opts.stores.local.read(); } catch { opts.onFault?.("ledger-unreadable"); }
+      const edges = kapaeStanding(local, board);
       const allLoaded = new Set([...loaded.values()].flatMap(set => [...set]));
-      // The cache records the whole shadow before any restart: an offline boot honors it whatever a restart did. A wiki restarts while
-      // any edge it LOADED sits in the current shadow, so a restart that failed is tried again by the next arrive.
       const next = kapaeNoteArrival(local, edges, allLoaded).local;
-      if (new TextDecoder().decode(encodeKapaeLocal(local)) !== new TextDecoder().decode(encodeKapaeLocal(next))) await opts.stores.local.write(next);
       const restarted: string[] = [];
       for (const [wiki, held] of [...loaded]) {
         const hit = [...held].filter(edge => edges.has(edge));
-        if (hit.length === 0 || pendingRestart.has(wiki)) continue;
+        const pending = pendingRestart.get(wiki);
+        // A pending restart suppresses only the edges it already carries: a different edge's restart runs now.
+        if (hit.length === 0 || (pending && hit.every(edge => pending.has(edge)))) continue;
         let outcome: void | { pending: Promise<void> };
-        try { outcome = await opts.restart(wiki); } catch (error) { opts.onRestartFailed?.(wiki, error); continue; }
+        try { outcome = await opts.restart(wiki, hit); } catch (error) { opts.onRestartFailed?.(wiki, error); continue; }
         if (outcome && "pending" in outcome) {
           // The restart waits on a later completion: the loaded edges stay held, so a failure there converges on the next arrive.
-          pendingRestart.add(wiki);
+          const carried = pending ?? new Set<string>();
+          for (const edge of hit) carried.add(edge);
+          pendingRestart.set(wiki, carried);
+          const settle = () => { const now = pendingRestart.get(wiki); if (now) { for (const edge of hit) now.delete(edge); if (!now.size) pendingRestart.delete(wiki); } };
           outcome.pending.then(
-            () => { pendingRestart.delete(wiki); for (const edge of hit) held.delete(edge); },
-            (error) => { pendingRestart.delete(wiki); opts.onRestartFailed?.(wiki, error); },
+            () => { settle(); for (const edge of hit) held.delete(edge); },
+            (error) => { settle(); opts.onRestartFailed?.(wiki, error); },
           );
           continue;
         }
         for (const edge of hit) held.delete(edge);
         restarted.push(wiki);
+      }
+      if (new TextDecoder().decode(encodeKapaeLocal(local)) !== new TextDecoder().decode(encodeKapaeLocal(next))) {
+        try { await opts.stores.local.write(next); } catch { opts.onFault?.("ledger-unreadable"); }
       }
       return restarted.sort();
     },

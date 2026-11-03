@@ -13,4 +13,10 @@ export function decodeKapaeLocal(bytes: Uint8Array): KapaeLocal {
  } catch { throw new KapaeRefused("kapae-local-malformed", "the local cache has an invalid shape"); }
 }
 export function kapaeNoteArrival(local: KapaeLocal, shadowed: ReadonlySet<string>, loaded: ReadonlySet<string>): { local: KapaeLocal; restart: boolean } { const previous = new Set(local.shadowed); return { local: { shadowed: [...shadowed].sort() }, restart: [...shadowed].some(e => !previous.has(e) && loaded.has(e)) }; }
-export function kapaeBootSet(local: KapaeLocal, readable: ReadonlySet<string> | null): ReadonlySet<string> { return readable ?? new Set(local.shadowed); }
+/** The edges that STAND on this device: what the cache holds and the board counts, less only what a counted signed LOWER withdrew. The cache never
+ * shrinks without a lower, so a raise that vanished from the board (a rotation of the grant, a deleted or corrupted record) keeps its shadow. */
+export function kapaeStanding(local: KapaeLocal, board: { readonly edges: () => ReadonlySet<string>; readonly lowered: () => ReadonlySet<string> }): ReadonlySet<string> {
+ const lowered = board.lowered();
+ return new Set([...local.shadowed, ...board.edges()].filter(edge => !lowered.has(edge)));
+}
+export function kapaeBootSet(local: KapaeLocal, board: { readonly edges: () => ReadonlySet<string>; readonly lowered: () => ReadonlySet<string> } | null): ReadonlySet<string> { return board ? kapaeStanding(local, board) : new Set(local.shadowed); }

@@ -77,3 +77,22 @@ describe("the board watcher", () => {
     stop();
   });
 });
+
+describe("the watcher reconciles at attach (Sol #3)", () => {
+  test("RED: a raise that landed between the boot preload and the listener restarts that wiki once the watcher attaches; CONTROL: a board with no raise restarts nothing", async () => {
+    const quiet = await world();
+    await quiet.wiring.boot.promotedFor("daemon");
+    const stopQuiet = quiet.wiring.watch();
+    await quiet.wiring.settle();
+    expect(quiet.st.restarts).toEqual([]);
+    stopQuiet();
+    const w = await world();
+    expect(await w.wiring.boot.promotedFor("daemon")).toEqual([D]);
+    const act = await w.raise("daemon");
+    w.board.change((d: LarDoc) => writePromoteAct(d, act));
+    const stop = w.wiring.watch();
+    await w.wiring.settle();
+    expect(w.st.restarts).toEqual(["daemon"]);
+    stop();
+  });
+});
