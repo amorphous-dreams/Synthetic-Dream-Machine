@@ -26,7 +26,7 @@ async function boot(opts: { locked?: boolean } = {}) {
   const st = {
     ledger: [W1, W2].reduce((l, wiki) => ledgerCommit(l, { wiki, digest: D, item: RITE, revision: "r1" }, HAND), EMPTY_LEDGER) as PromotionLedger,
     local: EMPTY_KAPAE_LOCAL as KapaeLocal, acts: [] as unknown[], cas: new Map<string, Uint8Array>(), pinned: new Set<string>(),
-    items: new Map<string, PromoteItem[]>([[W1, [itemOf(RITE)]], [W2, [itemOf(RITE)]]]), restarts: [] as string[], failRestart: new Set<string>(), failed: [] as string[], reports: [] as Array<{ wiki: string; report: PromoteBootReport }>, faults: [] as string[],
+    items: new Map<string, PromoteItem[]>([[W1, [itemOf(RITE)]], [W2, [itemOf(RITE)]]]), restarts: [] as string[], failRestart: new Set<string>(), defer: new Map<string, { settle: (error?: Error) => void }>(), failed: [] as string[], reports: [] as Array<{ wiki: string; report: PromoteBootReport }>, faults: [] as string[],
   };
   const b = promoteBoot({
     stores: {
@@ -36,7 +36,14 @@ async function boot(opts: { locked?: boolean } = {}) {
     cas: { put: (d, bytes) => { st.cas.set(d, bytes); }, pin: (d) => { st.pinned.add(d); } },
     board: async () => readPromoteBoard(st.acts, face),
     itemsOf: async (wiki) => st.items.get(wiki) ?? [],
-    restart: async (wiki) => { if (st.failRestart.has(wiki)) throw new Error(`restart refused: ${wiki}`); st.restarts.push(wiki); },
+    restart: async (wiki) => {
+      if (st.failRestart.has(wiki)) throw new Error(`restart refused: ${wiki}`);
+      if (st.defer.has(wiki)) {
+        st.restarts.push(`${wiki}:deferred`);
+        return { pending: new Promise<void>((resolve, reject) => { st.defer.get(wiki)!.settle = (error) => error ? reject(error) : resolve(); }) };
+      }
+      st.restarts.push(wiki);
+    },
     onRestartFailed: (wiki) => { st.failed.push(wiki); },
     onReport: (wiki, report) => { st.reports.push({ wiki, report }); },
     onFault: (reason) => { st.faults.push(reason); },
@@ -160,5 +167,38 @@ describe("a restart that fails converges on the next arrive", () => {
     st.failRestart.clear();
     await b.arrive();
     expect(st.local.shadowed.sort()).toEqual([promoteEdgeKey(W1, D), promoteEdgeKey(W2, D)].sort());
+  });
+});
+
+describe("a restart that DEFERS stays pending until it reports (a raise in flight here takes the restart to its own completion)", () => {
+  test("RED: a deferred restart that then throws is named and the next arrive restarts that wiki; the arrive between them never restarts it twice", async () => {
+    const { b, st, raise } = await boot();
+    await b.promotedFor(W1);
+    st.acts.push(await raise(W1));
+    st.defer.set(W1, { settle: () => {} });
+    expect(await b.arrive(), "a deferred restart is pending, never counted as done").toEqual([]);
+    expect(st.restarts).toEqual([`${W1}:deferred`]);
+    expect(await b.arrive(), "while it stands pending a further arrive does not restart it twice").toEqual([]);
+    expect(st.restarts).toEqual([`${W1}:deferred`]);
+    st.defer.get(W1)!.settle(new Error("deferred restart refused"));
+    await new Promise((r) => setTimeout(r, 0));
+    expect(st.failed).toEqual([W1]);
+    st.defer.delete(W1);
+    expect(await b.arrive(), "the failed deferred restart converges on the next arrive").toEqual([W1]);
+    expect(st.restarts).toEqual([`${W1}:deferred`, W1]);
+  });
+
+  test("CONTROL: a deferred restart that succeeds leaves no retry", async () => {
+    const { b, st, raise } = await boot();
+    await b.promotedFor(W1);
+    st.acts.push(await raise(W1));
+    st.defer.set(W1, { settle: () => {} });
+    await b.arrive();
+    st.defer.get(W1)!.settle();
+    await new Promise((r) => setTimeout(r, 0));
+    st.defer.delete(W1);
+    expect(await b.arrive()).toEqual([]);
+    expect(st.restarts).toEqual([`${W1}:deferred`]);
+    expect(st.failed).toEqual([]);
   });
 });

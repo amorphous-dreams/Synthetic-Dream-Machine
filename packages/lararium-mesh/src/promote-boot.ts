@@ -14,12 +14,14 @@ export function promoteBoot(opts: {
   cas: PromotionPorts["cas"];
   board: PromotionPorts["board"];
   itemsOf: (wiki: string) => Promise<readonly PromoteItem[]>;
-  restart: (wiki: string) => Promise<void>;
+  /** Resolves when the wiki restarted, or answers `{ pending }` when the restart follows a later completion (a raise in flight here): pending until it reports. */
+  restart: (wiki: string) => Promise<void | { pending: Promise<void> }>;
   onReport?: (wiki: string, report: PromoteBootReport) => void;
   onRestartFailed?: (wiki: string, error: unknown) => void;
   onFault?: (reason: "ledger-unreadable" | "board-unreadable" | "board-unpinned") => void;
 }) {
   const loaded = new Map<string, Set<string>>();
+  const pendingRestart = new Set<string>();
   return {
     loadedFor: (wiki: string): ReadonlySet<string> => loaded.get(wiki) ?? new Set(),
     async promotedFor(wiki: string): Promise<readonly string[]> {
@@ -55,8 +57,18 @@ export function promoteBoot(opts: {
       const restarted: string[] = [];
       for (const [wiki, held] of [...loaded]) {
         const hit = [...held].filter(edge => edges.has(edge));
-        if (hit.length === 0) continue;
-        try { await opts.restart(wiki); } catch (error) { opts.onRestartFailed?.(wiki, error); continue; }
+        if (hit.length === 0 || pendingRestart.has(wiki)) continue;
+        let outcome: void | { pending: Promise<void> };
+        try { outcome = await opts.restart(wiki); } catch (error) { opts.onRestartFailed?.(wiki, error); continue; }
+        if (outcome && "pending" in outcome) {
+          // The restart waits on a later completion: the loaded edges stay held, so a failure there converges on the next arrive.
+          pendingRestart.add(wiki);
+          outcome.pending.then(
+            () => { pendingRestart.delete(wiki); for (const edge of hit) held.delete(edge); },
+            (error) => { pendingRestart.delete(wiki); opts.onRestartFailed?.(wiki, error); },
+          );
+          continue;
+        }
         for (const edge of hit) held.delete(edge);
         restarted.push(wiki);
       }

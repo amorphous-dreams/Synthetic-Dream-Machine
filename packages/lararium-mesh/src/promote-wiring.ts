@@ -11,7 +11,7 @@ export function promoteWiring(opts: {
   foldFace: () => KahuaFoldFace; boardFace: () => PromoteFace;
   stores: { ledger: PromotionPorts["ledger"]; local: PromotionPorts["local"] };
   cas: PromotionPorts["cas"]; wikiItems: (wiki: string) => Promise<readonly PromoteItem[]>;
-  restart: (wiki: string) => Promise<void>; daemonWiki?: string;
+  restart: (wiki: string) => Promise<void | { pending: Promise<void> }>; daemonWiki?: string;
   onArrive?: () => Promise<void>;
   onReport?: (wiki: string, report: PromoteBootReport) => void;
   onRestartFailed?: (wiki: string, error: unknown) => void;

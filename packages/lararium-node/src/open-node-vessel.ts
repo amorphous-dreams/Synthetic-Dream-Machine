@@ -1807,11 +1807,14 @@ async function prepareNodeBootOn(
   };
   // A restart that runs after a raise or a commit answered has no asker to tell: its failure is named, and the next arrive tries again.
   const restartDaemonDeferred = () => { void restartDaemonNow().catch((error) => { console.warn(`[promote] restart of the daemon island failed: ${error instanceof Error ? error.message : String(error)}`); void pushPromoteSnapshot?.().catch(console.warn); }); };
-  const restartWikiIsland = async (wiki: string) => {
+  const restartWikiIsland = async (wiki: string): Promise<void | { pending: Promise<void> }> => {
     if (wiki === "daemon") {
       // The holder's restart never waits. On the RAISING device the arrival lands before this device's own raise reply leaves, so the restart
       // follows that raise's completion; no other act is waited on, and any other arrival (a remote raise, a sync) restarts at once.
-      if (promoteActs.after(["kapae-raise"], restartDaemonDeferred)) return;
+      // A deferred restart answers PENDING, never done: the board's arrive keeps the loaded edges until it reports, so a failure retries.
+      let settle!: { resolve: () => void; reject: (error: unknown) => void };
+      const pending = new Promise<void>((resolve, reject) => { settle = { resolve, reject }; });
+      if (promoteActs.after(["kapae-raise"], () => { restartDaemonNow().then(settle.resolve, settle.reject); })) return { pending };
       await restartDaemonNow();
     } else {
       await vmManager.unmountWiki(wiki);
@@ -1820,7 +1823,7 @@ async function prepareNodeBootOn(
   };
   // The store door's own verbs (commit, drop) run INSIDE the act that asks for the reload, so the daemon reload follows that act's completion.
   const reloadWikiAfterVerb = async (wiki: string) => {
-    if (wiki !== "daemon") return restartWikiIsland(wiki);
+    if (wiki !== "daemon") { await restartWikiIsland(wiki); return; }
     if (!promoteActs.after(["promote-commit", "promote-drop", "promote-orphan"], restartDaemonDeferred)) restartDaemonDeferred();
   };
   let mailbox!: DurableMailbox;            // set in makePool — the durable park/drain lane (node-only capability)
@@ -2356,7 +2359,7 @@ async function prepareNodeBootOn(
             wikis: async () => ["daemon", ...vmManager.inspect().filter(slot => slot.temperature === "wela" && slot.wikiId !== "daemon").map(slot => slot.wikiId)],
             promotionsFor: wiki => promotions({ wiki, ...nodePromoteStores(personaGroupId), who,
               items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(casDirForStorage(storageDir), atom.key),
-              loaded: () => wiring.loadedFor(wiki), restart: () => wiring.restart(wiki) }), boardDoor,
+              loaded: () => wiring.loadedFor(wiki), restart: async () => { await wiring.restart(wiki); } }), boardDoor,
           });
           const push = async (data: string) => { daemonVm.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
           // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.
