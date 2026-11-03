@@ -44,6 +44,8 @@ export interface SlotDocRepo extends DocMinter {
 }
 
 export interface SlotDocResolverArgs {
+  /** How long the floor lift waits on a silent floor document before it names it and skips it (default: the house document-ready bound). */
+  readonly liftReadBoundMs?: number;
   readonly repo: SlotDocRepo;
   /** The daemon-bag composite — binding records live here. */
   readonly daemonStore: CompositeStore;
@@ -279,6 +281,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       return liftVesselOnlyIntoFace({
         repo: args.repo as unknown as LiftRepo, daemonStore: args.daemonStore, catalog: args.catalog, faceDoor: args.faceDoor,
         mintedByHex: args.mintedByHex(), vesselDid: String(await args.vesselDid()),
+        ...(args.liftReadBoundMs !== undefined ? { readBoundMs: args.liftReadBoundMs } : {}),
         ...(args.floorMinter ? { floor: args.floorMinter() } : {}),
         // THE WORKING FLOOR LIFTS TO THE FACE'S DERIVED ADDRESS: by the floor's own anchor, into the document the face's
         // secret names for each wiki.
