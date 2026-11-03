@@ -270,3 +270,36 @@ describe("the group document listener never gives up silently", () => {
     expect(g.counts().opens).toBe(0);
   });
 });
+
+describe("the lift stands off the ea path (Sol/P5: the seated verdict gates the bindings, the lift's wait never does)", () => {
+  function seatWith(lift: () => Promise<void>) {
+    let known = true, lifts = 0;
+    const logs: string[] = [];
+    const seat = makeFaceSeat({
+      group, leasePrefix, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+      knowsAgent: async () => known, grants: async () => [], readLease: async () => ({ kind: "epoch", n: 0 }),
+      verify: async () => ({ ok: true }), ingest: async () => {}, lift: async () => { lifts++; await lift(); }, log: (m) => { logs.push(m); },
+    });
+    return { seat, logs, lifts: () => lifts };
+  }
+  test("RED: a lift that never answers does not hold `run()` or `settled()`; CONTROL: the lift was still asked, once", async () => {
+    const { seat, lifts } = seatWith(() => new Promise<never>(() => {}));
+    expect(await seat.run(), "the seated verdict returns").toBe(true);
+    await seat.settled();
+    expect(lifts(), "the lift began").toBe(1);
+  }, 5_000);
+  test("RED: a lift that faults after the verdict is named and retried by the next pass; CONTROL: a lift that succeeds is not asked twice", async () => {
+    let fail = true;
+    const { seat, logs, lifts } = seatWith(async () => { if (fail) throw new Error("lift"); });
+    expect(await seat.run()).toBe(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(logs.join("\n")).toContain("face lift faulted");
+    fail = false;
+    expect(await seat.run()).toBe(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(lifts()).toBe(2);
+    expect(await seat.run()).toBe(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(lifts(), "a lifted seat is not lifted again").toBe(2);
+  });
+});

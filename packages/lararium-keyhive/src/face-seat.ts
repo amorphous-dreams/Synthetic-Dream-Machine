@@ -115,7 +115,9 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
   };
   const pass = async (): Promise<boolean> => {
     waitingOnLease = false;
-    if (await seated()) { announcedUnseated = false; await lift(); return true; }
+    // The SEATED VERDICT is what the bindings wait on; the lift moves floor documents under the face afterwards and stands off that path
+    // (guarded by `lifted`, its faults named, retried by the next pass).
+    if (await seated()) { announcedUnseated = false; void lift(); return true; }
     let taken = false;
     const settle = async (): Promise<boolean> => {
       const answer = await seated();
@@ -153,7 +155,7 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
         taken = true;
         const nowSeated = await seated();
         ports.log(`face-join grant record taken from the PersonaGroup plane (${record.capEvents.length} cap events, ${record.reSealed?.length ?? 0} chunks re-sealed) — face ${nowSeated ? "SEATED" : "still unseated after ingest"}`);
-        if (nowSeated) { announcedUnseated = false; await lift(); return true; }
+        if (nowSeated) { announcedUnseated = false; void lift(); return true; }
         announcedUnseated = true;
       }
     } catch (error) { ports.log(`face-join grant read faulted: ${String(error)}`); }
