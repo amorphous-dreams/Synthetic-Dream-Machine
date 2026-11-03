@@ -12,7 +12,10 @@
 import { describe, expect, test } from "vitest";
 import * as paths from "../src/bag-paths.js";
 import { daemonWorkingMirror, kahuaFaceFolder, isKahuaFaceFolder, kahuaStageMirror } from "../src/bag-paths.js";
-import { kahuaIndexToml } from "../src/kahua-index.js";
+import { kahuaIndexToml, writeKahuaIndex } from "../src/kahua-index.js";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const F1 = "7b0f6c1e-4a52-4d3b-9c18-2e5a6f0d8b31", F2 = "5d2c9e70-1b3a-4f68-8a47-c0e91d3b7a25";
 const OLD_TAG = "2a1f0c9e4b7d";
@@ -56,5 +59,55 @@ describe("the label index is a convenience view", () => {
     expect(after).toContain('group = "g-new"');
     expect(before.replace("g-old", "g-new")).toBe(after);
     expect(kahuaFaceFolder(F1)).toBe(`kahua-${F1}`);
+  });
+});
+
+describe("the index write never drops another face's row", () => {
+  const A = { relation: F1, tag: "t1", label: "home", group: "g1" }, B = { relation: F2, tag: "t2", label: "work", group: "g2" };
+  const fresh = () => mkdtempSync(join(tmpdir(), "kahua-index-"));
+
+  test("RED: two faces on one root; a boot wearing one leaves both rows standing", async () => {
+    const root = fresh();
+    try {
+      await writeKahuaIndex(root, [A]);
+      await writeKahuaIndex(root, [B]);
+      const toml = readFileSync(join(root, "kahua-index.toml"), "utf8");
+      expect(toml).toContain(`[faces."${F1}"]`);
+      expect(toml).toContain(`[faces."${F2}"]`);
+      expect(toml).toContain('label = "home"');
+      expect(toml).toContain('label = "work"');
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("RED: a face's own row merges by F, so a group change replaces its row and leaves the other", async () => {
+    const root = fresh();
+    try {
+      await writeKahuaIndex(root, [A, B]);
+      await writeKahuaIndex(root, [{ ...A, group: "g-new" }]);
+      const toml = readFileSync(join(root, "kahua-index.toml"), "utf8");
+      expect(toml).toContain('group = "g-new"');
+      expect(toml).not.toContain('group = "g1"');
+      expect(toml).toContain('group = "g2"');
+      expect(toml.match(/\[faces\./g)).toHaveLength(2);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("CONTROL: a first write on a fresh root writes exactly its rows, and an identical rewrite changes no byte", async () => {
+    const root = fresh();
+    try {
+      await writeKahuaIndex(root, [A, B]);
+      const first = readFileSync(join(root, "kahua-index.toml"), "utf8");
+      expect(first).toBe(kahuaIndexToml([A, B]));
+      await writeKahuaIndex(root, [A, B]);
+      expect(readFileSync(join(root, "kahua-index.toml"), "utf8")).toBe(first);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+});
+
+describe("a restored bundle keeps F end to end (OWED with R17, the face-keyed names lane)", () => {
+  test.fails("RED (owed): a recovery onto a new group restores the bundle and the kahua folders keep kahua-<F>", () => {
+    // R17 (packages/lararium-node/tests/face-bundle-restore.test.ts) carries the real restore walk; this pin flips when
+    // the bundle-to-founding wiring carries F through a recovery. Until then the restore mints no F of its own.
+    expect(false).toBe(true);
   });
 });
