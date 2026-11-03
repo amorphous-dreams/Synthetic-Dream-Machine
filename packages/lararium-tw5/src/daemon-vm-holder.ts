@@ -41,6 +41,7 @@ export function holdDaemonVm<P = void>(o: {
   const listeners = new Set<(info: { reason: string; restarts: number }) => void | Promise<void>>();
   let restarts = 0;
   let upgraded = false;      // an emergency joined the restart standing in prepare: it fails closed whatever reason started it
+  let upgradeReason = "";   // the emergency reason that upgraded it
   let preparePassed = false; // the standing restart is past prepare
   let followUp: Promise<{ restarts: number }> | undefined;
   let disposed = false;     // a disposed facade restarts no more, and a restart that sees it never re-opens
@@ -161,7 +162,7 @@ export function holdDaemonVm<P = void>(o: {
       if (restarting) {
         if (!o.emergency?.(reason)) return restarting;
         // An emergency is never downgraded to the ordinary restart it overlaps: it upgrades one still in prepare, and follows one already past it.
-        if (!preparePassed) { upgraded = true; return restarting; }
+        if (!preparePassed) { upgraded = true; upgradeReason = reason; return restarting; }
         followUp ??= restarting.then(() => undefined, () => undefined).then(() => { followUp = undefined; return holder.restart(reason); });
         return followUp;
       }
@@ -177,17 +178,24 @@ export function holdDaemonVm<P = void>(o: {
       };
       const run = async () => {
         let prepared: P = undefined as P;
+        let current = reason;
         if (o.prepare) {
-          try { prepared = await o.prepare(reason); }
-          catch (err) {
-            // An EMERGENCY restart fails closed: the shadowed island stops accepting work even when its replacement cannot be prepared.
-            if (!disposed && state === "ready" && (upgraded || o.emergency?.(reason))) {
-              state = "restarting";
-              settleAll();
-              innerClosed = true;
-              try { await (o.failClosed ? o.failClosed(inner) : inner.shutdown()); } finally { state = "down"; }
+          for (;;) {
+            try { prepared = await o.prepare(current); }
+            catch (err) {
+              // An EMERGENCY restart fails closed: the shadowed island stops accepting work even when its replacement cannot be prepared.
+              if (!disposed && state === "ready" && (upgraded || o.emergency?.(current))) {
+                state = "restarting";
+                settleAll();
+                innerClosed = true;
+                try { await (o.failClosed ? o.failClosed(inner) : inner.shutdown()); } finally { state = "down"; }
+              }
+              throw err;
             }
-            throw err;
+            // An emergency that landed while prepare ran may postdate the inputs it read: prepare runs again under that emergency before anything reopens.
+            if (!upgraded) break;
+            upgraded = false;
+            current = upgradeReason;
           }
         }
         preparePassed = true;
@@ -199,7 +207,7 @@ export function holdDaemonVm<P = void>(o: {
         try {
           settleAll();
           if (wasReady) { innerClosed = true; await inner.shutdown(); }
-          next = await o.reopen(reason, prepared);
+          next = await o.reopen(current, prepared);
           if (disposed) throw new DaemonRestarting("daemon-down");   // the catch closes the replacement
           inner = next;
           innerClosed = false;
