@@ -813,3 +813,65 @@ describe("an emergency STOPS the standing island first, then prepares as often a
     expect(downsAtEachPrepare.slice(1).every((d) => d === 1)).toBe(true);   // every re-prepare ran with it already down
   });
 });
+
+describe("stale inputs never boot: an emergency between prepare-pass and reopen re-prepares first (Sol 4 residual)", () => {
+  const brake = (r: string) => r === "brake";
+  const picker = () => {
+    const all = ["a", "x"];
+    let shadowed = new Set<string>();
+    const calls: Array<{ reason: string; picked: string[] }> = [];
+    return {
+      shadow: (cid: string) => { shadowed = new Set([...shadowed, cid]); },
+      calls,
+      prepare: async (reason: string) => { const picked = all.filter((c) => !shadowed.has(c)); calls.push({ reason, picked }); return picked; },
+    };
+  };
+
+  test("an emergency that lands while the old island shuts down (prepare passed, reopen not begun) makes the replacement open WITHOUT the shadowed digest", async () => {
+    const first = fakeVm();
+    const closing = deferred<void>();
+    const realShutdown = first.shutdown;
+    (first as { shutdown: () => Promise<{ acked: boolean }> }).shutdown = async () => { await closing.promise; return realShutdown(); };
+    const pick = picker();
+    const opened: string[][] = [];
+    const held = holdDaemonVm({ vm: first, emergency: brake, prepare: pick.prepare, reopen: async (_r, picked: string[]) => { opened.push(picked); return fakeVm(); } });
+    const ordinary = held.restart("operator");
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); await Promise.resolve();   // prepare passed; the ordinary shutdown stands
+    pick.shadow("x");
+    const emergency = held.restart("brake");
+    closing.resolve();
+    await ordinary; await emergency;
+    expect(opened).toEqual([["a"]]);                      // stale [a,x] never boots
+    expect(pick.calls.map((c) => c.reason)).toEqual(["operator", "brake"]);
+  });
+
+  test("CONTROL: with no emergency the one prepare's inputs reopen, prepared once", async () => {
+    const first = fakeVm();
+    const pick = picker();
+    const opened: string[][] = [];
+    const held = holdDaemonVm({ vm: first, emergency: brake, prepare: pick.prepare, reopen: async (_r, picked: string[]) => { opened.push(picked); return fakeVm(); } });
+    await held.restart("operator");
+    expect(opened).toEqual([["a", "x"]]);
+    expect(pick.calls).toHaveLength(1);
+  });
+
+  test("RESIDUAL: an emergency that lands DURING reopen (mid-boot) cannot stop that boot; the follow-up closes the replacement and boots the final inputs", async () => {
+    const pick = picker();
+    const opening = deferred<DaemonVmCore>();
+    const replacement = fakeVm();
+    const opened: string[][] = [];
+    let n = 0;
+    const held = holdDaemonVm({
+      vm: fakeVm(), emergency: brake, prepare: pick.prepare,
+      reopen: (_r, picked: string[]) => { opened.push(picked); return ++n === 1 ? opening.promise : Promise.resolve(fakeVm()); },
+    });
+    const ordinary = held.restart("operator");
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+    pick.shadow("x");
+    const emergency = held.restart("brake");               // lands mid-boot: reopen has begun
+    opening.resolve(replacement);
+    await ordinary; await emergency;
+    expect(opened).toEqual([["a", "x"], ["a"]]);            // the first boot ran on stale inputs: the irreducible window
+    expect(replacement.downs).toBe(1);                       // the follow-up closed it at once
+  });
+});
