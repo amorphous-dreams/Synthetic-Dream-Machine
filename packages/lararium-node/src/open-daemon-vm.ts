@@ -99,6 +99,18 @@ export interface DaemonVmOptions {
   guardCrossroadsNexusHandles?: boolean;
 }
 
+/**
+ * THE FACE'S FOLDER STANCE. `faceRelation` (F) reads from the face's VERIFIED founding record alone, and the vessel names the
+ * worn face (`faceGroup`) only after that proof. So: no persona plane -> `no-face`; a plane with no proof yet (a locked key, a
+ * joinee still syncing) -> `unproven`, mirroring no private layer until the unlocked composition proves it; a proven face
+ * -> `worn`. A proven face carrying no F refuses by name: the founding act pins F, and no path derives it.
+ */
+export function faceRelationStance(input: { personaBagId?: string | null | undefined; faceGroup?: string | null | undefined; faceRelation?: string | null | undefined }): "no-face" | "unproven" | "worn" {
+  if (input.faceGroup && !input.faceRelation) throw new Error("openDaemonVm: worn face requires faceRelation");
+  if (input.faceRelation && input.faceGroup) return "worn";
+  return input.personaBagId ? "unproven" : "no-face";
+}
+
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
   const { repo, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, rootDir, workerScriptUrl,
           guardCrossroadsNexusHandles = true } = opts;
@@ -135,8 +147,9 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     console.log(`[daemon] ${PLANE_LABELS.persona} still joining — this composition holds no vessel key, so the plane stands on the hearth until the unlocked composition dials it`);
   }
 
-  if (personaBagId && !faceRelation) throw new Error("openDaemonVm: worn face requires faceRelation");
-  if (rootDir && !personaBagId) console.log("[kahua] no face worn; no private kahua mirrors");
+  const stance = faceRelationStance({ personaBagId, faceGroup, faceRelation });
+  if (rootDir && stance === "no-face") console.log("[kahua] no face worn; no private kahua mirrors");
+  if (rootDir && stance === "unproven") console.log("[kahua] the face's founding record stands unproven in this composition (the key rests locked or the face is still joining); no private kahua mirrors until the unlocked composition proves it");
   if (rootDir && faceRelation && faceGroup) await writeKahuaIndex(rootDir, [{ relation: faceRelation, tag: personaScopeTag(faceGroup), label: faceLabel ?? "", group: faceGroup }]);
 
   // The daemon holds NO standing system-bag mount: it reaches a deep target bag
