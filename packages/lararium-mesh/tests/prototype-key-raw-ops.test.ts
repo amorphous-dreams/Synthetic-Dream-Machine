@@ -14,10 +14,10 @@
  * `Object.prototype` write, so a zero stands as a measurement.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { applyChanges, change, getAllChanges, init, loadIncremental, save, load, generateSyncMessage, initSyncState, receiveSyncMessage, decodeSyncMessage } from "@automerge/automerge";
+import { applyChanges, change, getAllChanges, init, loadIncremental, save, load, generateSyncMessage, initSyncState, receiveSyncMessage, decodeSyncMessage, merge, clone, getChanges } from "@automerge/automerge";
 import { createHash } from "node:crypto";
 import { hasOwnEntry, ownEntry, plainEntries, prototypeKeyFault, type StoredTiddlers } from "../src/stored-value.js";
-import { PROTOTYPE_KEY_CODE, assertNoPrototypeKeys, chunkPrototypeKey, shoreInbound, syncMessagePrototypeKey } from "../src/prototype-key-shore.js";
+import { PROTOTYPE_KEY_CODE, assertNoPrototypeKeys, chunkPrototypeKey, docPrototypeKeyFault, shoreInbound, syncMessagePrototypeKey } from "../src/prototype-key-shore.js";
 import { EventEmitter } from "node:events";
 import { isVerbRefusal } from "../src/verb-refusal.js";
 
@@ -186,5 +186,47 @@ describe("a hostile sync message through shoreInbound and receiveSyncMessage", (
     adapter.on("message", (m: { data: Uint8Array }) => { [doc, sync] = receiveSyncMessage(doc, sync, m.data); });
     adapter.emit("message", { type: "sync", senderId: "p", data: messageFrom(hostileChange("title")) });
     expect((doc.tiddlers as Record<string, unknown>)[PHANTOM]).toBeDefined();
+  });
+});
+
+/**
+ * THE MATERIALIZED VIEW OF A MERGE HIDES THE KEY (measured, Sol's probe on the promote tree): a hostile change merged with
+ * a clean peer's change reads `prototypeKeyFault(merged) === null` though the document's operations still carry
+ * `tiddlers.__proto__`, and a later clean deletion of `tiddlers` then resolves the phantom through the prototype. A view-level
+ * check is therefore no door by itself on a merge or applyChanges result: `docPrototypeKeyFault` reads the document's OPERATIONS
+ * (every change's keys) beside the view, and `assertNoPrototypeKeys` answers through it, so a load, a merge and an apply refuse
+ * by name. The chunk shore stays the early cut on bytes.
+ */
+describe("a merged document carries the key its view hides", () => {
+  const base = change(init<Doc>(), (d) => { (d as unknown as { tiddlers: unknown }).tiddlers = { real: { tiddler: { title: "real" } } }; });
+  const baseBytes = save(base);
+  /** A raw op writing `tiddlers.__proto__` on top of the shared base, checksum rewritten. */
+  function hostileOnBase(): Uint8Array {
+    const start = load<Doc>(baseBytes);
+    const d1 = change(clone(start), (d) => { (d as unknown as { tiddlers: Record<string, unknown> }).tiddlers["ZZZZZZZZZ"] = { [PHANTOM]: { tiddler: { title: "p" } } }; });
+    let b = Buffer.from(getChanges(start, d1)[0]!);
+    b = Buffer.from(b.toString("latin1").split("ZZZZZZZZZ").join("__proto__"), "latin1");
+    createHash("sha256").update(b.subarray(8)).digest().copy(b, 4, 0, 4);
+    return new Uint8Array(b);
+  }
+  const cleanPeer = () => change(load<Doc>(baseBytes), (d) => { (d as unknown as { tiddlers: Record<string, unknown> }).tiddlers["other"] = { tiddler: { title: "o" } }; });
+
+  test("RED: the merge result's view reads clean while docPrototypeKeyFault names the key from the operations", () => {
+    const hostile = applyChanges(load<Doc>(baseBytes), [hostileOnBase()])[0];
+    const merged = merge(clone(hostile), cleanPeer());
+    expect(prototypeKeyFault(merged)).toBeNull();               // the blind spot, pinned so a cure of the view is noticed
+    expect(docPrototypeKeyFault(merged)).toMatch(/__proto__/);
+    expect(docPrototypeKeyFault(load<Doc>(save(merged)))).toMatch(/__proto__/);
+    let caught: unknown;
+    try { assertNoPrototypeKeys(merged, "merge"); } catch (e) { caught = e; }
+    expect(isVerbRefusal(caught)).toBe(true);
+    expect(polluted()).toEqual([]);
+  });
+
+  test("CONTROL: a clean merge and a clean snapshot read null at the same door", () => {
+    const clean = merge(load<Doc>(baseBytes), cleanPeer());
+    expect(docPrototypeKeyFault(clean)).toBeNull();
+    expect(docPrototypeKeyFault(load<Doc>(save(clean)))).toBeNull();
+    expect(() => assertNoPrototypeKeys(clean, "merge")).not.toThrow();
   });
 });
