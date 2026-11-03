@@ -339,14 +339,18 @@ jobs:
       # which the root `requirements.txt` (the operator's ~/.venv manifest) includes. The root list's
       # prose-tier NLP stack stays out: it needs downloaded models and the router degrades through it.
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        id: py
         with:
           python-version: '3.12'
+      - id: mempalace-pin
+        run: echo "sha=$(git rev-parse HEAD:mempalace)" >> "$GITHUB_OUTPUT"
+
       - name: Cache the holder venv
         id: venv-cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.venv
-          key: holder-venv-${{ runner.os }}-py312-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
+          key: holder-venv-${{ runner.os }}-py${{ steps.py.outputs.python-version }}-${{ steps.mempalace-pin.outputs.sha }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
       - name: Stand the holder venv (~/.venv)
         if: steps.venv-cache.outputs.cache-hit != 'true'
         run: |
