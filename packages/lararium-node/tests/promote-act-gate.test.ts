@@ -70,3 +70,20 @@ test("RED: a raise whose reply never writes leaves a plain holder restart (the o
   expect(shut).toEqual(["old"]);
   expect(deferred, "the hung raise's own deferred run never fired").toBe(false);
 });
+
+test("RED (Sol #6): an arrival defers only to a local raise for the SAME (wiki, digest) edge; a stuck raise for another edge never holds it. CONTROL: the same edge defers", async () => {
+  const { promoteActEdge } = await import("../src/promote-act-gate.js");
+  const A = "a".repeat(64), B = "b".repeat(64);
+  expect(promoteActEdge({ digest: A })).toBe(promoteActEdge({ digest: A, wiki: "daemon" }));
+  expect(promoteActEdge({ digest: A, wiki: "garden" })).not.toBe(promoteActEdge({ digest: A }));
+  expect(promoteActEdge({ digest: "nope" })).toBeUndefined();
+  const gate = promoteActGate();
+  const stuck = {};
+  gate.begin(stuck, "kapae-raise", promoteActEdge({ digest: A }));       // never ends: a raise for edge A
+  const ran: string[] = [];
+  expect(gate.after(["kapae-raise"], () => ran.push("B"), [promoteActEdge({ digest: B })!]), "a remote raise over B restarts at once").toBe(false);
+  expect(gate.after(["kapae-raise"], () => ran.push("A"), [promoteActEdge({ digest: A })!]), "the same edge defers to its own raise").toBe(true);
+  expect(gate.after(["kapae-raise"], () => ran.push("legacy")), "no edges given keeps the kind-wide reading").toBe(true);
+  gate.end(stuck);
+  expect(ran).toEqual(["A", "legacy"]);
+});

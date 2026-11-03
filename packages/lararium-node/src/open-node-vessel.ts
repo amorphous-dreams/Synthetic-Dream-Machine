@@ -1807,14 +1807,15 @@ async function prepareNodeBootOn(
   };
   // A restart that runs after a raise or a commit answered has no asker to tell: its failure is named, and the next arrive tries again.
   const restartDaemonDeferred = () => { void restartDaemonNow().catch((error) => { console.warn(`[promote] restart of the daemon island failed: ${error instanceof Error ? error.message : String(error)}`); void pushPromoteSnapshot?.().catch(console.warn); }); };
-  const restartWikiIsland = async (wiki: string): Promise<void | { pending: Promise<void> }> => {
+  const restartWikiIsland = async (wiki: string, hit?: readonly string[]): Promise<void | { pending: Promise<void> }> => {
     if (wiki === "daemon") {
       // The holder's restart never waits. On the RAISING device the arrival lands before this device's own raise reply leaves, so the restart
       // follows that raise's completion; no other act is waited on, and any other arrival (a remote raise, a sync) restarts at once.
       // A deferred restart answers PENDING, never done: the board's arrive keeps the loaded edges until it reports, so a failure retries.
       let settle!: { resolve: () => void; reject: (error: unknown) => void };
       const pending = new Promise<void>((resolve, reject) => { settle = { resolve, reject }; });
-      if (promoteActs.after(["kapae-raise"], () => { restartDaemonNow().then(settle.resolve, settle.reject); })) return { pending };
+      // Only a local raise over one of THE EDGES this arrival carries is waited on: an unrelated raise never holds the brake.
+      if (promoteActs.after(["kapae-raise"], () => { restartDaemonNow().then(settle.resolve, settle.reject); }, hit ?? [])) return { pending };
       await restartDaemonNow();
     } else {
       await vmManager.unmountWiki(wiki);

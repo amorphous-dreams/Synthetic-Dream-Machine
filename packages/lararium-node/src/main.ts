@@ -34,7 +34,7 @@
  *   localStorage for offline return visits.
  */
 
-import { isPromoteAct } from "./promote-act-gate.js";
+import { isPromoteAct, promoteActEdge } from "./promote-act-gate.js";
 import { createServer }  from "http";
 import { networkInterfaces }             from "os";
 import WebSocket                         from "isomorphic-ws";
@@ -807,7 +807,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     sessionActs: {
       names: new Set([...sessionActs.names, ...STORE_DOOR_FACE_ROWS, ...REALM_SESSION_ACTS]),
       run: (act, args, worn) => (STORE_DOOR_FACE_ROWS as ReadonlySet<string>).has(act) || REALM_SESSION_ACTS.has(act)
-        ? (isPromoteAct(act) && result.promoteActs.begin(args, act), faceRowAnswer(() => result.daemon.runAsFace({ verb: act, args, worn }), (line) => console.log(`[lararium] ${act}: ${line}`)))
+        ? (isPromoteAct(act) && result.promoteActs.begin(args, act, promoteActEdge(args)), faceRowAnswer(() => result.daemon.runAsFace({ verb: act, args, worn }), (line) => console.log(`[lararium] ${act}: ${line}`)))
         : sessionActs.run(act, args, worn),
       settled: (act, args) => { if (isPromoteAct(act)) result.promoteActs.end(args); },
     },
