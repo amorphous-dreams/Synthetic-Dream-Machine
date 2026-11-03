@@ -738,3 +738,78 @@ describe("an emergency that overlaps a SUCCEEDING prepare never lets pre-emergen
     expect(sel.calls).toHaveLength(1);
   });
 });
+
+describe("an emergency STOPS the standing island first, then prepares as often as it must (Sol 4)", () => {
+  const brake = (r: string) => r === "brake";
+
+  test("an emergency reason closes the island before prepare begins", async () => {
+    const first = fakeVm();
+    const downsAtPrepare: number[] = [];
+    const held = holdDaemonVm({
+      vm: first, emergency: brake,
+      prepare: async () => { downsAtPrepare.push(first.downs); return ["a"]; },
+      reopen: async () => fakeVm(),
+    });
+    await held.restart("brake");
+    expect(downsAtPrepare).toEqual([1]);
+  });
+
+  test("CONTROL: an ordinary restart still prepares before teardown (the island serves until prepare returns)", async () => {
+    const first = fakeVm();
+    const gate = deferred<void>();
+    const downsAtPrepare: number[] = [];
+    const held = holdDaemonVm({
+      vm: first, emergency: brake,
+      prepare: async () => { downsAtPrepare.push(first.downs); await gate.promise; return ["a"]; },
+      reopen: async () => fakeVm(),
+    });
+    const restarting = held.restart("operator");
+    await Promise.resolve(); await Promise.resolve();
+    expect(first.downs).toBe(0);
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).not.toThrow();
+    gate.resolve();
+    await restarting;
+    expect(downsAtPrepare).toEqual([0]);
+  });
+
+  test("an emergency that upgrades an ordinary restart mid-prepare closes the island AT THAT MOMENT, and overlapping emergencies keep it closed while prepare repeats", async () => {
+    const first = fakeVm();
+    const gates = [deferred<void>(), deferred<void>(), deferred<void>()];
+    const all = ["a", "x", "y"];
+    let shadowed = new Set<string>();
+    let n = 0;
+    const opened: string[][] = [];
+    const downsAtEachPrepare: number[] = [];
+    const held = holdDaemonVm({
+      vm: first, emergency: brake,
+      prepare: async () => {
+        const mine = n; n += 1;
+        const picked = all.filter((c) => !shadowed.has(c));       // captured at the prepare's start
+        downsAtEachPrepare.push(first.downs);
+        await gates[mine]!.promise;
+        return picked;
+      },
+      reopen: async (_r, picked: string[]) => { opened.push(picked); return fakeVm(); },
+    });
+    const ordinary = held.restart("operator");
+    await Promise.resolve(); await Promise.resolve();
+    expect(first.downs).toBe(0);                                  // ordinary: still serving
+    shadowed = new Set(["x"]);
+    const e1 = held.restart("brake");                             // the FIRST emergency
+    await Promise.resolve(); await Promise.resolve();
+    expect(first.downs).toBe(1);                                  // closed the moment it arrived
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "v", args: {} } as never)).toThrow(/daemon-restarting/);
+    gates[0]!.resolve();                                          // prepare 1 returns stale [a,x]; it must not reopen
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+    shadowed = new Set(["x", "y"]);
+    const e2 = held.restart("brake");                             // another emergency during re-prepare 2
+    gates[1]!.resolve();                                          // prepare 2 returns [a,y]: stale again
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+    gates[2]!.resolve();                                          // prepare 3 returns [a]
+    await ordinary; await e1; await e2;
+    expect(opened).toEqual([["a"]]);                              // only the final inputs ever reopen
+    expect(first.downs).toBe(1);                                  // closed once, after the FIRST emergency
+    expect(downsAtEachPrepare[0]).toBe(0);                        // the ordinary prepare began with the island up
+    expect(downsAtEachPrepare.slice(1).every((d) => d === 1)).toBe(true);   // every re-prepare ran with it already down
+  });
+});
