@@ -10,7 +10,7 @@ import { pinnedDoc } from "./pinned-doc.js";
 import { storedRecord } from "./stored-record.js";
 import { plainRecord, ownEntry, hasOwnEntry, type StoredLarRecord } from "./stored-value.js";
 import type { LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
-import { prototypeKeyFault } from "./stored-value.js";
+import { docPrototypeKeyFault } from "./prototype-key-shore.js";
 
 export const FLOOR_MANIFEST_FORMAT = "lararium-floor/v1";
 /** The seed witness row naming the genesis floor's manifest CID (sha256 hex) in its `cid` field, shaped as the region witnesses stand. */
@@ -126,7 +126,7 @@ export function openFloorSnapshot(bytes: Uint8Array, cid: string):
     }
     const doc = load<Record<string, unknown>>(bytes);
     // A prototype key refuses ahead of every by-key read (`prototype-key-shore.ts`; KEEP: a live hostile form).
-    const poisoned = prototypeKeyFault(doc);
+    const poisoned = docPrototypeKeyFault(doc);
     if (poisoned) throw new Error(`prototype-key: ${poisoned}`);
     if (getAllChanges(doc).length !== 1 || Object.keys(doc).length !== 1 || !Object.hasOwn(doc, "tiddlers")) {
       throw new Error("Snapshot must hold one pinned change and its tiddlers map");
