@@ -121,7 +121,7 @@ async function readDoc(args: LiftArgs, url: string): Promise<LarDoc | undefined>
 
 /** Mint a fresh document under the face and carry the floor document's tiddlers into it. */
 async function rehome(args: LiftArgs, oldUrl: string): Promise<{ url: string; keyhiveDocId: string }> {
-  // The old document is read FIRST: a silent one leaves nothing minted behind it.
+  // The floor document is read FIRST: a silent one leaves nothing minted behind it.
   const old = await readDoc(args, oldUrl);
   const fresh = args.repo.create<LarDoc>(emptyLarDoc());
   await fresh.whenReady?.();
