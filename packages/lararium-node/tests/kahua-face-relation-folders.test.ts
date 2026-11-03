@@ -44,10 +44,10 @@ describe("the label index is a convenience view", () => {
     expect(toml).toContain('group = "g1"');
     expect(toml).toContain(`tag = "${OLD_TAG}"`);
   });
-  test("CONTROL: the index is deterministic, sorted by F, and holds no key material", () => {
+  test("CONTROL: the index is deterministic, sorted by F (F2 before F1), and holds no key material", () => {
     const rows = [{ relation: F2, tag: "t2", label: "b", group: "g2" }, { relation: F1, tag: "t1", label: "a", group: "g1" }];
     expect(kahuaIndexToml(rows)).toBe(kahuaIndexToml([...rows].reverse()));
-    expect(kahuaIndexToml(rows).indexOf(F2)).toBeGreaterThan(kahuaIndexToml(rows).indexOf(F1));
+    expect(kahuaIndexToml(rows).indexOf(F1)).toBeGreaterThan(kahuaIndexToml(rows).indexOf(F2));
     expect(kahuaIndexToml(rows)).not.toMatch(/seed|secret|private/i);
   });
   test("RED: a group change moves the index row's group and leaves its folder key F", () => {

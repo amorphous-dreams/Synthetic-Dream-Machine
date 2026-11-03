@@ -85,6 +85,7 @@ export * from "./kahua-stage.js";
 export * from "./promote.js";
 export * from "./promote-kapae.js";
 export * from "./promote-board.js";
+export * from "./face-relation.js";
 export * from "./promote-door.js";
 export * from "./promote-command.js";
 export * from "./promote-board-door.js";
