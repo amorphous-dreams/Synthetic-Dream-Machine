@@ -49,6 +49,12 @@ describe("the browser vessel's daemon seam", () => {
     expect(close.slice(0, 2000)).not.toMatch(/resolve\(import\.meta\.dirname, "dist"/);
   });
 
+  test("#7 a tab attached to the shared holder refuses the restart by name before it touches the shared island, the port or another tab", () => {
+    const prep = SRC.slice(SRC.indexOf("const resolveDaemonPlugins"), SRC.indexOf("daemonHolder = holdDaemonVm("));
+    expect(SRC).toMatch(/prepare: async \(\) => \{[^}]*holder\?\.kind === "attached"[^}]*daemon-restart-shared-holder/);
+    expect(prep.length).toBeGreaterThan(0);
+  });
+
   test("CONTROL: the instrument reads an absent seam as red", () => {
     expect("daemon = await openBrowserDaemonVm({".match(/daemon = daemonHolder\.vm;/)).toBeNull();
   });
