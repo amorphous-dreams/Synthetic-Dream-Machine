@@ -107,3 +107,36 @@ describe("persona-act", () => {
     expect(projectPersonaLog([f, a, fresh], { group: G, lineage, authorize: () => true, acceptedThrough: 1 }).devices).toEqual(["dev1", "dev2"]);
   });
 });
+
+describe("a founding-pinned plane takes its first pin only (Sol: last-wins projection)", () => {
+  test("RED: a later root-signed plane act over a pinned plane moves nothing and surfaces by name; CONTROL: a plane not yet pinned takes its first pin, and the same url repeated is no rewrite", async () => {
+    const { root, log } = await honest();
+    const lineage = lineageOf([root.key]);
+    const rewrite = await signAct(act(4, actCid(log[3]!.body), "plane", { plane: "persona", url: "automerge:evil" }), root);
+    const pr = projectPersonaLog([...log, rewrite], { group: G, lineage, authorize: () => true });
+    expect(pr.planes, "the first pin stands").toEqual({ persona: "automerge:p" });
+    expect(pr.planeRewrites).toEqual([{ plane: "persona", cid: actCid(rewrite.body) }]);
+    const fresh = await signAct(act(4, actCid(log[3]!.body), "plane", { plane: "kahua", url: "automerge:k" }), root);
+    const same = await signAct(act(5, actCid(fresh.body), "plane", { plane: "kahua", url: "automerge:k" }), root);
+    const ok = projectPersonaLog([...log, fresh, same], { group: G, lineage, authorize: () => true });
+    expect(ok.planes).toEqual({ persona: "automerge:p", kahua: "automerge:k" });
+    expect(ok.planeRewrites).toEqual([]);
+  });
+});
+
+describe("each founding-pinned plane refuses a rewrite (face, the kahua stage, the promote board)", () => {
+  for (const plane of ["face", "kahua", "promote"]) {
+    test(`RED: a later root-signed ${plane} plane act over its founding pin reads as no act; CONTROL: the first pin stands and a rotated reader folds the same`, async () => {
+      const { root, log } = await honest();
+      const lineage = lineageOf([root.key]);
+      const pin = await signAct(act(4, actCid(log[3]!.body), "plane", { plane, url: `automerge:${plane}-first` }), root);
+      const rewrite = await signAct(act(5, actCid(pin.body), "plane", { plane, url: `automerge:${plane}-evil` }), root);
+      const pr = projectPersonaLog([...log, pin, rewrite], { group: G, lineage, authorize: () => true });
+      expect(pr.planes[plane], "the first pin stands").toBe(`automerge:${plane}-first`);
+      expect(pr.planeRewrites).toEqual([{ plane, cid: actCid(rewrite.body) }]);
+      const control = projectPersonaLog([...log, pin], { group: G, lineage, authorize: () => true });
+      expect(control.planes[plane]).toBe(`automerge:${plane}-first`);
+      expect(control.planeRewrites).toEqual([]);
+    });
+  }
+});
