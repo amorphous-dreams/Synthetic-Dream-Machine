@@ -667,3 +667,74 @@ describe("an emergency that overlaps an ordinary restart is never downgraded (So
     expect(reasons).toEqual(["operator"]);
   });
 });
+
+describe("an emergency that overlaps a SUCCEEDING prepare never lets pre-emergency inputs reopen (Sol 3)", () => {
+  const brake = (r: string) => r === "brake";
+  const selecting = () => {
+    const all = ["a", "x"];
+    let shadowed = new Set<string>();
+    const gate = deferred<void>();
+    const calls: Array<{ reason: string; picked: string[] }> = [];
+    return {
+      shadow: (cid: string) => { shadowed = new Set([...shadowed, cid]); },
+      release: () => gate.resolve(),
+      calls,
+      prepare: async (reason: string) => {
+        const picked = all.filter((c) => !shadowed.has(c));      // the selection is captured at the prepare's start
+        calls.push({ reason, picked });
+        await gate.promise;                                        // ...and the board/CAS awaits that follow
+        return picked;
+      },
+    };
+  };
+
+  test("the emergency lands before prepare returns: prepare runs again under the emergency and the replacement excludes the shadowed digest", async () => {
+    const sel = selecting();
+    const opened: string[][] = [];
+    const held = holdDaemonVm({
+      vm: fakeVm(), emergency: brake, prepare: sel.prepare,
+      reopen: async (_r, picked: string[]) => { opened.push(picked); return fakeVm(); },
+    });
+    const ordinary = held.restart("operator");
+    await Promise.resolve();
+    sel.shadow("x");                                  // the raise lands: x is shadowed now
+    const emergency = held.restart("brake");           // joins the restart standing in prepare
+    sel.release();
+    await ordinary; await emergency;
+    expect(opened).toEqual([["a"]]);                   // never the pre-emergency selection ["a","x"]
+    expect(sel.calls.map((c) => c.reason)).toEqual(["operator", "brake"]);
+  });
+
+  test("the re-prepare under the emergency refuses: the island closes and stands daemon-down, nothing reopens", async () => {
+    const first = fakeVm();
+    const gate = deferred<void>();
+    let n = 0;
+    let reopened = 0;
+    const held = holdDaemonVm({
+      vm: first, emergency: brake,
+      prepare: async () => { n += 1; await gate.promise; if (n === 2) throw new Error("floor blob corrupt"); return ["a", "x"]; },
+      reopen: async () => { reopened += 1; return fakeVm(); },
+    });
+    const ordinary = held.restart("operator").catch((e: Error) => e.message);
+    await Promise.resolve();
+    const emergency = held.restart("brake").catch((e: Error) => e.message);
+    gate.resolve();
+    expect(await ordinary).toMatch(/floor blob corrupt/);
+    expect(await emergency).toMatch(/floor blob corrupt/);
+    expect(first.downs).toBe(1);
+    expect(reopened).toBe(0);
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).toThrow(/daemon-down/);
+  });
+
+  test("CONTROL: with no emergency the one prepare's selection reopens, prepared once", async () => {
+    const sel = selecting();
+    const opened: string[][] = [];
+    const held = holdDaemonVm({ vm: fakeVm(), emergency: brake, prepare: sel.prepare, reopen: async (_r, picked: string[]) => { opened.push(picked); return fakeVm(); } });
+    const restarting = held.restart("operator");
+    await Promise.resolve();
+    sel.release();
+    await restarting;
+    expect(opened).toEqual([["a", "x"]]);
+    expect(sel.calls).toHaveLength(1);
+  });
+});
