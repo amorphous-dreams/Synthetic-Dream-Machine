@@ -37,9 +37,10 @@ const said = (r: CliResult): string => `rc ${r.code}; stdout: ${r.stdout.slice(-
 const answer = (r: CliResult): Record<string, any> => JSON.parse(r.stdout.trim().split("\n").pop() ?? "{}") as Record<string, any>;
 // The staged hearth routes no plain title to a bag (its wiki bag holds nothing), so a tiddler the module writes never persists; the island
 // adaptor names each write it could not land (`unrouted-save: "<title>"`) in the daemon's log. That line IS the observable: the module ran
-// (one `probe/ran/<ms>` title per boot) and the StartupAction ran (the module copies its marker into `probe/action-seen`).
+// (one `probe/ran/<ms>` title per boot) and the StartupAction ran (its own marker `probe/action-ran`).
 const ranFiles = (): string[] => [...new Set([...hearth!.bootLog().matchAll(/unrouted-save: "(probe\/ran\/\d+)"/g)].map((m) => m[1]!))];
-const actionRan = (): boolean => /unrouted-save: "probe\/action-seen"/.test(hearth!.bootLog());
+// The action's OWN marker (`probe/action-ran`), never the copy the module makes: a lifted action that ran without a promotion must read here.
+const actionRan = (): boolean => /unrouted-save: "probe\/action-ran"/.test(hearth!.bootLog());
 async function settle<T>(read: () => T, done: (v: T) => boolean, ms = 30_000): Promise<T> {
   const deadline = performance.now() + ms;
   for (;;) { const v = read(); if (done(v) || performance.now() > deadline) return v; await new Promise((r) => setTimeout(r, 250)); }

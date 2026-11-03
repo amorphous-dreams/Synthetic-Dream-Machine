@@ -40,6 +40,9 @@ export function holdDaemonVm<P = void>(o: {
   const pendingAsks = new Set<() => void>();
   const listeners = new Set<(info: { reason: string; restarts: number }) => void | Promise<void>>();
   let restarts = 0;
+  let upgraded = false;      // an emergency joined the restart standing in prepare: it fails closed whatever reason started it
+  let preparePassed = false; // the standing restart is past prepare
+  let followUp: Promise<{ restarts: number }> | undefined;
   let disposed = false;     // a disposed facade restarts no more, and a restart that sees it never re-opens
   let innerClosed = false;  // the current inner island already got its shutdown
   let replaying = false;   // true while a re-opened island takes its registrations
@@ -123,7 +126,7 @@ export function holdDaemonVm<P = void>(o: {
     },
   });
 
-  return {
+  const holder: DaemonVmHolder = {
     vm: facade,
     get restarts() { return restarts; },
     guardAsk<T>(ask: { answer: Promise<T>; abandon: () => void }) {
@@ -153,9 +156,17 @@ export function holdDaemonVm<P = void>(o: {
       listeners.add(fn);
       return () => { listeners.delete(fn); };
     },
-    restart(reason) {
+    restart(reason): Promise<{ restarts: number }> {
       if (disposed) return Promise.reject(new DaemonRestarting("daemon-down"));
-      if (restarting) return restarting;
+      if (restarting) {
+        if (!o.emergency?.(reason)) return restarting;
+        // An emergency is never downgraded to the ordinary restart it overlaps: it upgrades one still in prepare, and follows one already past it.
+        if (!preparePassed) { upgraded = true; return restarting; }
+        followUp ??= restarting.then(() => undefined, () => undefined).then(() => { followUp = undefined; return holder.restart(reason); });
+        return followUp;
+      }
+      upgraded = false;
+      preparePassed = false;
       const settleAll = (): void => {
         // No wait: a call still pending settles by name, so one that never settles cannot stall the restart.
         for (const settle of [...pending]) settle(new DaemonRestarting("daemon-restarting"));
@@ -170,7 +181,7 @@ export function holdDaemonVm<P = void>(o: {
           try { prepared = await o.prepare(reason); }
           catch (err) {
             // An EMERGENCY restart fails closed: the shadowed island stops accepting work even when its replacement cannot be prepared.
-            if (!disposed && state === "ready" && o.emergency?.(reason)) {
+            if (!disposed && state === "ready" && (upgraded || o.emergency?.(reason))) {
               state = "restarting";
               settleAll();
               innerClosed = true;
@@ -179,6 +190,7 @@ export function holdDaemonVm<P = void>(o: {
             throw err;
           }
         }
+        preparePassed = true;
         // A disposal or direct shutdown that started while prepare awaited ends the restart: no replacement opens beside a closing island.
         if (disposed || (state === "down" && shutdown)) throw new DaemonRestarting("daemon-down");
         const wasReady = state === "ready";
@@ -221,4 +233,5 @@ export function holdDaemonVm<P = void>(o: {
       return restarting;
     },
   };
+  return holder;
 }

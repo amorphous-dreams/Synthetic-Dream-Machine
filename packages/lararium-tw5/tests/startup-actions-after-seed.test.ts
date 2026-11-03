@@ -65,4 +65,22 @@ describe.skipIf(wikiSkip)(`startup actions after the seed drains${skipNote}`, ()
     expect(wiki.getTiddler(PROBE)?.fields["text"]).toBe("ran");
     expect(wiki.getTiddler(CONTROL)).toBeUndefined();
   }, 120_000);
+
+  test("RED: a StartupAction lifted from the kahua stage (it carries `kahua-cid`) stays inert after the seed drains; CONTROL: the same action without the mark runs", async () => {
+    engine = await bootTestWiki();
+    const slug = "startup-lifted";
+    const working = wikiSlotUri(slug, "working");
+    const LIFTED = "$:/temp/lararium/startup-lifted", PLAIN = "$:/temp/lararium/startup-plain";
+    const records: LarTiddlerRecord[] = [
+      { tiddler: { title: "lar:///t/startup/lifted", tags: ["$:/tags/StartupAction"], "kahua-cid": "c".repeat(64), text: `<$action-setfield $tiddler="${LIFTED}" text="ran"/>` } },
+      { tiddler: { title: "lar:///t/startup/plain", tags: ["$:/tags/StartupAction"], text: `<$action-setfield $tiddler="${PLAIN}" text="ran"/>` } },
+    ];
+    const composite = new CompositeStore();
+    buildIslandRecipe({ tw5: engine, composite, recipe: { wikiSlug: slug }, ready: [{ slot: working, handle: handleOver(records) }] });
+    await seedDrained(engine);
+    const wiki = engine.$tw.wiki;
+    expect(wiki.getTiddler("lar:///t/startup/lifted"), "the lifted action landed as data").toBeDefined();
+    expect(wiki.getTiddler(PLAIN)?.fields["text"], "a plain seeded action runs").toBe("ran");
+    expect(wiki.getTiddler(LIFTED), "a lifted action never runs without a promotion").toBeUndefined();
+  }, 120_000);
 });

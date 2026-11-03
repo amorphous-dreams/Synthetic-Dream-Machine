@@ -14,6 +14,8 @@ export async function founderAndJoineeActs(input: {
   founderAtomSeed: Uint8Array;
   joineeKey: string;
   chain: readonly PersonaKelEvent[];
+  /** planes the founding pins beside the five (kahua, promote): a pin made after the founding span pins nothing. */
+  extraPlanes?: Readonly<Record<string, string>>;
 }): Promise<unknown[]> {
   const { face } = input;
   const key = await ed25519VerifyingKeyFromSeed(input.signerSeed);
@@ -21,7 +23,7 @@ export async function founderAndJoineeActs(input: {
   const founding = await signFoundingLog({
     group: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
     rootCommitment: faceRootCommitment(face.founderEdge.personaRootDid), epoch: 0,
-    planes: { persona: face.personaUrl, identities: face.identitiesUrl, circles: face.circlesUrl, sessions: face.sessionsUrl, intents: face.intentsUrl },
+    planes: { persona: face.personaUrl, identities: face.identitiesUrl, circles: face.circlesUrl, sessions: face.sessionsUrl, intents: face.intentsUrl, ...(input.extraPlanes ?? {}) },
     deviceKey: faceAtomKeyFromSeed(input.founderAtomSeed, face.personaGroupId).key,
     edgeDigest: edgeBodyDigest({ ...face.founderEdge, deviceVerifyingKey: "founder", boundEpoch: 0 }),
   }, signer);
