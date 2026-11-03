@@ -1472,7 +1472,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         },
         daemonAuth,
       });
-      daemonHolder = holdDaemonVm({ vm: await openOnce(await resolveDaemonPlugins()), prepare: resolveDaemonPlugins, reopen: (_reason, pluginCids) => openOnce(pluginCids) });
+      daemonHolder = holdDaemonVm({ vm: await openOnce(await resolveDaemonPlugins()), prepare: async () => {
+        // A tab attached to the shared holder shares ONE island with every other tab: a restart here would close the port it reuses and tear down the shared island under the others (Sol train #7), so it refuses by name before anything moves.
+        if (holder?.kind === "attached") throw new Error("daemon-restart-shared-holder: this tab shares its daemon island with the holder's other tabs; a restart waits on a holder-side swap");
+        return resolveDaemonPlugins();
+      }, reopen: (_reason, pluginCids) => openOnce(pluginCids) });
       daemon = daemonHolder.vm;
       held.stood.push({ what: "daemon worker", down: () => daemon.dispose() });
 

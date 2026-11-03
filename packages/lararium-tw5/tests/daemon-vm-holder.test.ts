@@ -417,11 +417,14 @@ describe("restart against a direct shutdown, and against a replay that throws (L
     await expect(held.restart("r")).rejects.toThrow(/replay refused/);
     expect(broken.downs).toBe(1);
     expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).toThrow(/daemon-down/);
-    held.vm.dispose();
-    expect(broken.downs).toBe(1);                   // a down facade disposes nothing twice
+    expect(broken.downs).toBe(1);
     await held.restart("r2");
     expect(await held.vm.syncLegReady()).toBe(`leg-${third.id}`);
     expect(live).toBe(1);                           // only the recovered island stands
+    held.vm.dispose();                              // disposal is final (Sol train #8): it closes the recovered island once
+    held.vm.dispose();
+    expect(third.downs).toBe(1);
+    expect(live).toBe(0);
   });
 });
 

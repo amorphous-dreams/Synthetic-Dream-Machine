@@ -55,7 +55,7 @@ describe("the node's daemon island re-opens through the shared plugin resolver",
       open: async (inputs) => { const vm = fakeVm(inputs.pluginCids, {}); opened.push(vm); return vm; },
     });
     refuse = true;
-    await expect(held.restart("kapae-raise")).rejects.toThrow(/plugin resolution refused: offering gone/);
+    await expect(held.restart("operator")).rejects.toThrow(/plugin resolution refused: offering gone/);
     expect(opened).toHaveLength(1);
     expect(opened[0]!.downs).toBe(0);
     expect(await held.vm.syncLegReady()).toBe("leg:cid-a");

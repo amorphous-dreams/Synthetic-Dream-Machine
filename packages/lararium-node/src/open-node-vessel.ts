@@ -62,7 +62,7 @@ import { makeRealmPlane, type RealmPlanesHolder } from "./realm-plane.js";
 import { noteVesselRealm, readVesselRealms } from "./edge-board.js";
 import { makeEdgeShadowRing, type EdgeShadowRing } from "./edge-shadow-ring.js";
 import { floorShadowRing } from "./floor-fleet-lanes.js";
-import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
+import type { JoinedFaceAuth, WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
@@ -2620,9 +2620,13 @@ async function prepareNodeBootOn(
       addressSecret: readFaceAddressSecret, veilArchive: sovereign.veilArchive,
       log: (line: string) => console.log(`[lararium] ${line}`),
     } : null;
-    const joinedFaces = siblingPorts ? await joinedFaceAuth(siblingPorts) : [];
-    // Each joined face's edge ledger stays on this device too (road `T33`): the island opens it under that face's atom.
-    classDeviceLedgers(vesselPrivate, joinedFaces.map((face) => face.atom.key));
+    // EVERY OPEN READS THE SIBLINGS' CURRENT CUSTODY STANDING (Sol train #1): a sibling that locked or dropped since boot never rides a
+    // re-open. Each joined face's edge ledger stays on this device too (road `T33`): the island opens it under that face's atom.
+    const readJoinedFaces = async (): Promise<JoinedFaceAuth[]> => {
+      const faces = siblingPorts ? await joinedFaceAuth(siblingPorts) : [];
+      classDeviceLedgers(vesselPrivate, faces.map((face) => face.atom.key));
+      return faces;
+    };
     lightFace = async (ordinal) => {
       if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
       const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal] });
@@ -2634,7 +2638,7 @@ async function prepareNodeBootOn(
       }
       await intentRelay?.refresh();
     };
-    const daemonAuthNow = () => ({
+    const daemonAuthNow = (joinedFaces: readonly JoinedFaceAuth[]) => ({
       ...(joinedFaces.length ? { joinedFaces } : {}),
       placeVerifyingKey: vesselIdentity.verifyingKey,
       ...(workingFloorAnchor ? { workingFloorAnchor } : {}),
@@ -2678,13 +2682,14 @@ async function prepareNodeBootOn(
     crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
     const offerings = crossroadsOfferingsHandle;
     daemonHolder = await standDaemonIsland({
+      readJoinedFaces,
       resolvePlugins: () => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe: { wikiSlug: "daemon" },
         lookup: nodeOfferingLookup(offerings.doc()),
         readBytes: (cid) => readCasBlobFromFs(cid, casDirForStorage(storageDir)),
       }),
-      open: ({ pluginCids }) => openDaemonVm({
+      open: ({ pluginCids, joinedFaces }) => openDaemonVm({
         repo,
         daemonUrl: bootstrap.daemonUrl,
         // The persona plane rides only when a face stands; the daemon VM resolves nothing that is absent.
@@ -2707,7 +2712,7 @@ async function prepareNodeBootOn(
           // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
           ...(wornKahua ? { kahuaUrl: wornKahua.url } : {}),
         },
-        daemonAuth: daemonAuthNow(),
+        daemonAuth: daemonAuthNow(joinedFaces),
         storageDir,
         // D-VR-C: the daemon bag is the one explicit worker-owned durable scope;
         // ordinary oracle/recipe documents remain parent-attached in the primary worker Repo.

@@ -21,10 +21,10 @@ describe("the node vessel's daemon seam", () => {
   });
 
   test("the auth is a function that reads the standing anchor at call time, and the seam reuses it for every open", () => {
-    expect(SRC).toMatch(/const daemonAuthNow = \(\) => \(\{/);
+    expect(SRC).toMatch(/const daemonAuthNow = \(joinedFaces: readonly JoinedFaceAuth\[\]\) => \(\{/);
     expect(SRC).toContain("...(faceLit && standingAnchor ? { faceAnchor: standingAnchor } : {}),");
     expect(SRC).not.toMatch(/const daemonAuth = \{/);
-    expect((SRC.match(/daemonAuth: daemonAuthNow\(\)/g) ?? []).length).toBe(1);
+    expect((SRC.match(/daemonAuth: daemonAuthNow\(joinedFaces\)/g) ?? []).length).toBe(1);
   });
 
   test("both result shapes offer restartDaemonIsland, through the holder alone", () => {
