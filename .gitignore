@@ -94,3 +94,6 @@ lar-dev-root.json
 
 # The unbuilt-laws witness's transient skip-stripped copy of the register (tools/unbuilt-laws-witness.sh).
 packages/lararium-mesh/.unbuilt-laws/
+
+# Vitest browser mode leaves its per-run cache beside each package it ran in.
+.vitest/

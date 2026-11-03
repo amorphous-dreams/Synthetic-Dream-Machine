@@ -91,13 +91,10 @@ type Signer = { readonly key: string; readonly sign: (bytes: Uint8Array) => Prom
 const object = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
 const string = (x: unknown): x is string => typeof x === "string";
 const hex64 = (x: unknown): x is string => string(x) && /^[0-9a-f]{64}$/.test(x);
-const RESERVED_FIELDS = new Set(["title", "text", "module-type"]);
-/** Types TW5 executes: a lifted item rides every device of the face, so none of them lifts. */
-const EXECUTABLE_TYPES = new Set(["application/javascript", "text/javascript", "application/x-javascript", "application/ecmascript", "text/ecmascript", "module"]);
-const normalizedMimeType = (value: string): string => value.split(";", 1)[0]!.trim().toLowerCase();
-/** A field the stage may carry: no reserved name, no `kahua-*` stamp (the fold writes those), no executable type. */
+const RESERVED_FIELDS = new Set(["title", "text"]);
+/** A field the stage may carry: no reserved name and no `kahua-*` stamp. */
 const liftField = (k: string, v: unknown): boolean =>
-  string(v) && !RESERVED_FIELDS.has(k) && !k.startsWith("kahua-") && !(k === "type" && EXECUTABLE_TYPES.has(normalizedMimeType(v)));
+  string(v) && !RESERVED_FIELDS.has(k) && !k.startsWith("kahua-");
 
 /** Which lift field fails its shape, or null; `origin`, `taint` and `sources` refuse by their own names. */
 function liftFault(b: Record<string, unknown>): KahuaActRefusal | null {

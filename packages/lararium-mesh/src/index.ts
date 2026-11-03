@@ -82,6 +82,15 @@ export * from "./intent-read.js";
 export * from "./intent-view.js";
 export * from "./intent-issue.js";
 export * from "./kahua-stage.js";
+export * from "./promote.js";
+export * from "./promote-kapae.js";
+export * from "./promote-board.js";
+export * from "./promote-door.js";
+export * from "./promote-command.js";
+export * from "./promote-board-door.js";
+export * from "./promote-boot.js";
+export * from "./promote-wiring.js";
+export * from "./promote-wiki-items.js";
 export * from "./kahua-stage-store.js";
 export * from "./kahua-adopt.js";
 export * from "./intent-relay-door.js";
@@ -631,3 +640,8 @@ export { parseNexusDoc, readNexusDocFence, nexusDocFenceRe, NEXUS_DOC_FENCES } f
 
 export * from "./intent-admission.js";
 export { censusOutcomeLinkage, type OutcomeLinkage } from "./outcome-census.js";
+
+export * from "./promote-panel-api.js";
+
+
+export * from "./promote-main-verbs.js";

@@ -65,7 +65,7 @@ function fakeTw(initial: Record<string, Fields>) {
     modules: { define: (name: string, type: string, definition: string) => { defined.push(`${type}:${name}:${definition}`); } },
   };
 
-  return { tw: tw as never, tiddlers, defined };
+  return { tw: tw as never, tiddlers, defined, titles: Object.keys(initial) };
 }
 
 function moduleMeme(title: string, body: string, overrides: Fields = {}): Fields {
@@ -84,12 +84,12 @@ function moduleMeme(title: string, body: string, overrides: Fields = {}): Fields
 describe("bootTrustedModules — selection by worn component", () => {
   test("a module wearing tw5/tw5-module at rating passes the gate and injects", async () => {
     const body = "exports.probe = 1;";
-    const { tw, tiddlers, defined } = fakeTw({
+    const { tw, tiddlers, defined, titles } = fakeTw({
       ["lar:///ha.ka.ba/bags/test/modules/probe"]: moduleMeme("lar:///ha.ka.ba/bags/test/modules/probe", body),
       [AGGREGATE_URI]: moduleMeme(AGGREGATE_URI, "exports.agg = 1;"),
     });
 
-    await bootTrustedModules(tw);
+    await bootTrustedModules(tw, new Set(titles));
 
     const injected = tiddlers.get("lar:///ha.ka.ba/bags/test/modules/probe")!;
     expect(injected["type"]).toBe("application/javascript");   // rewritten = injected
@@ -103,13 +103,13 @@ describe("bootTrustedModules — selection by worn component", () => {
 
   test("low rating, missing hash, and unworn carriers all stay un-injected", async () => {
     const body = "exports.probe = 1;";
-    const { tw, tiddlers } = fakeTw({
+    const { tw, tiddlers, titles } = fakeTw({
       ["lar:///ha.ka.ba/bags/test/modules/low"]:    moduleMeme("lar:///ha.ka.ba/bags/test/modules/low", body, { mana: "3" }),
       ["lar:///ha.ka.ba/bags/test/modules/nohash"]: moduleMeme("lar:///ha.ka.ba/bags/test/modules/nohash", body, { "source-sha256": "" }),
       ["lar:///ha.ka.ba/bags/test/modules/bare"]:   moduleMeme("lar:///ha.ka.ba/bags/test/modules/bare", body, { tags: [] }),
     });
 
-    await bootTrustedModules(tw);
+    await bootTrustedModules(tw, new Set(titles));
 
     for (const t of ["low", "nohash", "bare"]) {
       expect(tiddlers.get(`lar:///ha.ka.ba/bags/test/modules/${t}`)!["type"])

@@ -34,6 +34,7 @@
  *   localStorage for offline return visits.
  */
 
+import { isPromoteAct, promoteActEdge } from "./promote-act-gate.js";
 import { createServer }  from "http";
 import { networkInterfaces }             from "os";
 import WebSocket                         from "isomorphic-ws";
@@ -59,7 +60,7 @@ import { parseMeshPeer } from "@lararium/mesh";
 import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
 import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront } from "./uds-channel.js";
 import { nodeSwitchActLog } from "./switch-act-log.js";
-import { KAHUA_OPERATOR_ROWS, REALM_KEY_VERBS, REALM_SESSION_ACTS, STORE_DOOR_FACE_ROWS, faceRowAnswer } from "./store-door-verbs.js";
+import { PROMOTE_HAND_CODES, KAHUA_OPERATOR_ROWS, REALM_KEY_VERBS, REALM_SESSION_ACTS, STORE_DOOR_FACE_ROWS, faceRowAnswer } from "./store-door-verbs.js";
 import { makeCustodyHolder } from "./custody-holder.js";
 import { testScratchNotice } from "./test-scratch-notice.js";
 import { seatCustody } from "./custody-seat.js";
@@ -460,7 +461,7 @@ async function main(): Promise<void> {
     // what it reads and answers, and the standing composition lends it the board it may read a KEL head from.
     runAct: (act, args) => runSealedAct(act, args, {
       kelHead: composition?.kelHead ?? null, personaSelves: composition?.personaSelves ?? null, walk: composition?.walk ?? null,
-      hosting: composition?.hosting ?? null, backup: composition?.backup ?? null,
+      hosting: composition?.hosting ?? null, backup: composition?.backup ?? null, island: composition?.island ?? null,
     }),
     // A BACKUP'S CUT RUNS HERE TOO, against the same seated holder, once the frame's own route proves: the
     // standing composition lends it the mounted face, its own edge's shadow, the island's memory section and the
@@ -516,6 +517,7 @@ interface ComposedAs { readonly standing: ReturnType<typeof standAs>; readonly f
 /** A composition standing on the floor: everything a boot builds past the store's claim and the listening faces. */
 interface StandingComposition {
   readonly standing: "herm" | "hearth";
+  readonly island: NonNullable<SealedActContext["island"]>;
   readonly lightFace: (ordinal: number) => Promise<void>;
   readonly dropFace: (ordinal: number) => Promise<void>;
   /** Stop the PROCESS gracefully: flush, tear down, exit. */
@@ -688,6 +690,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   };
   return {
     standing: "herm",
+    island: { state: herm.daemonIslandState, restart: async (reason) => ({ ...(await herm.restartDaemonIsland(reason)), leg: (await herm.daemonIslandState()).leg }) },
     lightFace: herm.lightFace, dropFace: herm.dropFace,
     onSignal: (sig) => void hermShutdown(sig),
     teardown: async () => { await front.detach(); await herm.teardown(); },
@@ -794,7 +797,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     signers:      result.sessionSigns,
     switchActs:   nodeSwitchActLog,
     sessionVerbs: STORE_DOOR_FACE_ROWS,
-    handOnlyActs: KAHUA_OPERATOR_ROWS,
+    handOnlyActs: new Set([...KAHUA_OPERATOR_ROWS, ...PROMOTE_HAND_CODES.keys()]),
+    handOnlyCodes: PROMOTE_HAND_CODES,
     socketVerbs:  new Set([...STORE_DOOR_FACE_ROWS, ...REALM_KEY_VERBS]),
     // A FACE ROW ANSWERS ON THE SOCKET ALONE (K20): the store door's face rows, and the realm verbs a session runs that
     // name a face's key (`REALM_SESSION_ACTS`), ride `session:act` beside the sealed acts, main's handler running as the
@@ -803,8 +807,9 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     sessionActs: {
       names: new Set([...sessionActs.names, ...STORE_DOOR_FACE_ROWS, ...REALM_SESSION_ACTS]),
       run: (act, args, worn) => (STORE_DOOR_FACE_ROWS as ReadonlySet<string>).has(act) || REALM_SESSION_ACTS.has(act)
-        ? faceRowAnswer(() => result.daemon.runAsFace({ verb: act, args, worn }), (line) => console.log(`[lararium] ${act}: ${line}`))
+        ? (isPromoteAct(act) && result.promoteActs.begin(args, act, promoteActEdge(args)), faceRowAnswer(() => result.daemon.runAsFace({ verb: act, args, worn }), (line) => console.log(`[lararium] ${act}: ${line}`)))
         : sessionActs.run(act, args, worn),
+      settled: (act, args) => { if (isPromoteAct(act)) result.promoteActs.end(args); },
     },
     ...(receiptRing !== undefined && { ring: receiptRing.count, ringBytes: receiptRing.bytes }),
     onLog: (line) => console.log(`[lararium] ${line}`),
@@ -957,6 +962,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   };
   return {
     standing: "hearth",
+    island: { state: result.daemonIslandState, restart: async (reason) => ({ ...(await result.restartDaemonIsland(reason)), leg: (await result.daemonIslandState()).leg }) },
     lightFace: result.lightFace, dropFace: result.dropFace,
     onSignal: (sig) => void shutdown(sig),
     teardown: async () => { await front.detach(); await result.teardown(); },

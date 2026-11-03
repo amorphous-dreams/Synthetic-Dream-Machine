@@ -232,6 +232,7 @@ export const INTENT_DELEGATION_DOMAIN = mint("intent-delegation");
 export const INTENT_ADMISSION_DOMAIN = mint("intent-admission");
 /** One lift or withdraw on a face's kahua stage, signed under the operator's grant (the face's current persona root). */
 export const KAHUA_ACT_DOMAIN = mint("kahua-act");
+export const PROMOTE_ACT_DOMAIN = mint("promote-act");
 /** The COMMITMENT a sealed face anchor keeps to its persona root: the root's DID hashes under this name, so
  *  the anchor names the root without carrying it. */
 export const FACE_ANCHOR_ROOT_DOMAIN = mint("face-anchor-root");

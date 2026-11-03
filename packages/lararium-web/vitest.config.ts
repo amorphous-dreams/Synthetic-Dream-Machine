@@ -56,6 +56,21 @@ export default defineConfig(async () => ({
         },
       },
       {
+        // The browser vessel re-opens its daemon island in process (red 6): this walk BUILDS a walk bundle of the Pronaos
+        // (`LAR_WALK_DOOR=1 vite build` into a scratch dir, the only build that carries the restart door), serves it and the
+        // default dist on two loopback ports, and drives a real Chromium. The build and two previews make it slow, and it
+        // owns the host for its run.
+        test: {
+          name: "daemon-island-reopen-e2e",
+          include: ["tests/e2e/daemon-island-reopen.e2e.test.ts"],
+          fileParallelism: false,
+          environment: "node",
+          browser: { enabled: false },
+          testTimeout: 300_000,
+          hookTimeout: 600_000,
+        },
+      },
+      {
         // Golden 01 on the whole road: a staged hearth (a scratch LAR_ROOT of its own) serves the page and a real
         // Chromium acts on it. It stands a daemon, so its waits are long and it owns the process for its run.
         test: {

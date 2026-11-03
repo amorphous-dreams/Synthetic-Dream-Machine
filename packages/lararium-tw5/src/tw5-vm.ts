@@ -54,6 +54,19 @@ export class TW5Engine {
       const { instance, isBrowser, release } = await prepareHostBootInstance(core, mirrorToken);
 
       const allPreloads = preloadedTiddlers ?? [];
+      const preloadedTitles = new Set(allPreloads.map(t => String(t["title"] ?? "")));
+      for (const preload of allPreloads) {
+        if (!preload["plugin-type"] || typeof preload["text"] !== "string") continue;
+        try {
+          const packed: unknown = JSON.parse(preload["text"]);
+          if (packed && typeof packed === "object" && !Array.isArray(packed)) {
+            const { tiddlers } = packed as { tiddlers?: unknown };
+            if (tiddlers && typeof tiddlers === "object" && !Array.isArray(tiddlers)) {
+              for (const title of Object.keys(tiddlers)) preloadedTitles.add(title);
+            }
+          }
+        } catch { /* TW5 handles malformed plugin text during boot. */ }
+      }
 
       instance.preloadTiddlers = instance.preloadTiddlers ?? [];
       for (const t of allPreloads) instance.preloadTiddlers.push(t as Record<string, unknown>);
@@ -64,7 +77,7 @@ export class TW5Engine {
       try {
         await bootWithHostBridge(instance, isBrowser, async () => {
           this._tw = instance;
-          await bootTrustedModules(instance);
+          await bootTrustedModules(instance, preloadedTitles);
         });
       } catch (error) { this.releaseGlass(); throw error; }
     })();

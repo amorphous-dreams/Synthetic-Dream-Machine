@@ -33,7 +33,7 @@ import { seatChairs } from "./seat-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
-const ctx: SealedActContext = { kelHead: null, personaSelves: null, walk: null, hosting: null, backup: null };
+const ctx: SealedActContext = { kelHead: null, personaSelves: null, walk: null, hosting: null, backup: null, island: null };
 const drops: SeatedScratchCustody[] = [];
 async function vessel(label: string): Promise<SeatedScratchCustody> {
   setMountedFace(undefined);

@@ -22,7 +22,7 @@ import {
   makeMemePutReactor, makeMemeGetReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
   makeWardAlertReactor, fileWardRefusal,
   makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor,
-  makeSwitcherStateReactor,
+  makeSwitcherStateReactor, makePromoteStateReactor,
   makePersonaStateReactor,
   makeCircleStateReactor,
   makeCircleReactors,
@@ -534,6 +534,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // activation state and this writes the LOCAL, volatile $:/temp/lares/switcher
       // tiddler so the projected switcher re-renders (reactive, never a poll).
       registry.register("switcher-state", makeSwitcherStateReactor(ctx.tw5));
+      registry.register("promote-state", makePromoteStateReactor(ctx.tw5));
 
       // persona-state — the daemon persona surface's IN path: main (which holds the IDB
       // persona vault) pushes the live multitude-view and this writes the LOCAL, volatile

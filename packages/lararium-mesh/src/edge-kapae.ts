@@ -595,15 +595,19 @@ export interface EdgeReading {
   readonly raiseCids: readonly string[];
 }
 
-function foldOneHand(group: readonly EdgeKapae[]): EdgeKapaeVerdict {
+export function foldCausalHeads(group: readonly { readonly actCid: string; readonly raised: boolean; readonly parents: readonly string[] }[]): EdgeKapaeVerdict {
   const ids = new Set(group.map((a) => a.actCid));
   if (group.some((a) => a.parents.some((p) => !ids.has(p)))) return "unavailable";
-  if (group.some((a) => { const { signatures: _s, actCid, ...u } = a; return actCid !== edgeKapaeActCid(u); })) return "rejected";
   const covered = new Set(group.flatMap((a) => a.parents));
   const heads = group.filter((a) => !covered.has(a.actCid));
   if (heads.length === 0) return "unavailable";
   if (heads.some((a) => a.raised) && heads.some((a) => !a.raised)) return "unsettled";
   return heads[0]!.raised ? "held" : "withdrawn";
+}
+
+function foldOneHand(group: readonly EdgeKapae[]): EdgeKapaeVerdict {
+  if (group.some((a) => { const { signatures: _s, actCid, ...u } = a; return actCid !== edgeKapaeActCid(u); })) return "rejected";
+  return foldCausalHeads(group);
 }
 
 const GRAVITY: readonly EdgeKapaeVerdict[] = ["withdrawn", "unavailable", "rejected", "unsettled", "held"];

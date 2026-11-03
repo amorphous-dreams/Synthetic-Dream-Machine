@@ -54,23 +54,25 @@ import {
   faceAtomKeyFromSeed, type FaceAtomKey,
   carriageFloorDutyOf, type PlaceSigner,
   genesisCasCidsFromOracle, provenVesselKeyOf,
-  wikiSlugOfBag, gateSweep, type GateSweepSeat,
+  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed, type GateSweepSeat,
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
+import { registerStoreDoorReactors } from "./store-door-registry.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
 import { makeRealmPlane, type RealmPlanesHolder } from "./realm-plane.js";
 import { noteVesselRealm, readVesselRealms } from "./edge-board.js";
 import { makeEdgeShadowRing, type EdgeShadowRing } from "./edge-shadow-ring.js";
 import { floorShadowRing } from "./floor-fleet-lanes.js";
-import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
+import type { JoinedFaceAuth, WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
+import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
-import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow } from "@lararium/mesh";
+import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
 import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest, ownEntry } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
-  ACTIVE_WIKI_URI,
+  DaemonRestarting, ACTIVE_WIKI_URI,
   MemoryTiddlerStore,
   selectActiveWikiSlug,
   seedVesselDefaults,
@@ -78,10 +80,10 @@ import {
   composeVerbPlane,
   mempalaceProviderCap, formPalaceProviderCap, daemonVerbProviderCap, telemetryProviderCap,
   recallVerbCap, telemetryVerbCap, captureVerbCap, worldlineVerbCap,
-  makeCatalogAccessor,
+  makeCatalogAccessor, liveKahuaFace, KAPAE_EMERGENCY_REASON,
 } from "@lararium/tw5";
 import type {
-  VesselWikiSlot, DaemonVmCore, VesselDaemonVm, VesselOrchestration,
+  VesselWikiSlot, DaemonVmCore, DaemonVmHolder, VesselDaemonVm, VesselOrchestration,
   VerbContribution, MempalaceProvider, FormPalaceProvider, DaemonVerbProvider, TelemetryProvider, RecallClient,
 } from "@lararium/tw5";
 import {
@@ -177,8 +179,11 @@ import { openOutboxKey } from "./outbox-key.js";
 import { sweepFoundingSeeds } from "./face-atom-store.js";
 import { readWornPersonaMount } from "./worn-mount.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
+import { standDaemonIsland }               from "./daemon-island-reopen.js";
 import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
 import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
+import { islandAsk } from "./daemon-island-ask.js";
+import { promoteActGate, type PromoteActGate } from "./promote-act-gate.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
@@ -194,7 +199,7 @@ import {
   makeVesselResidency, type VesselResidency,
   replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
-import { loadVesselIdentity, vesselPlaceSignerDoor, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
+import { loadPersonaGroupRootSeed, loadVesselIdentity, vesselPlaceSignerDoor, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
 import { socketsNoLongerHeld, ownPlacePosture, sameOperatorStands, seatedDeviceKey, type PlaceClass, type SeatedPresenter } from "./socket-sorter.js";
 import { faceGateServer, gateSessionRegistry, timerGateDeadlines } from "./face-gate-server.js";
 import { gateSyncServer, type GateSyncSocket }    from "./gate-sync-server.js";
@@ -531,6 +536,11 @@ async function standDown(stood: Stood): Promise<void> {
 }
 
 export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonVmCore> {
+  restartWiki: (wiki: string) => Promise<void>;
+  /** The promote and kapae session acts in flight: main begins each one, the channel ends it once the reply left. */
+  promoteActs: PromoteActGate;
+  restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
+  daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
   lightFace: (ordinal: number) => Promise<void>;
   dropFace: (ordinal: number) => Promise<void>;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
@@ -568,6 +578,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
 export interface NodeHermResult {
+  restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
+  daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
   lightFace: (ordinal: number) => Promise<void>;
   dropFace: (ordinal: number) => Promise<void>;
   repo:             Repo;
@@ -609,6 +621,8 @@ const blankMemeStore = (repo: Repo): (() => DocHandle<LarDoc>) =>
 
 /** The atoms + keel + boot closures both node cap-stacks compose over (built ONCE per boot). */
 interface NodeBootPrep {
+  restartWiki: (wiki: string) => Promise<void>;
+  promoteActs: PromoteActGate;
   wornFace: () => { readonly face: number; readonly personaGroup: string } | null;
   repo:             Repo;
   /** The store's claim, taken before the Repo opened and held for the vessel's life. */
@@ -675,6 +689,8 @@ interface NodeBootPrep {
   lightFace: (ordinal: number) => Promise<void>;
   dropFace: (ordinal: number) => Promise<void>;
   daemonVm:         () => DaemonVmCore;
+  restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
+  daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
   eventBus:         () => LarEventBusImpl;
   slotActiveWikiId: () => string;
   activeWikiSource: () => "boot-arg" | "daemon-marker";
@@ -899,9 +915,17 @@ async function prepareNodeBootOn(
   // THE WORN FACE'S KAHUA STAGE, adopted off its verified projection at the face proof below (`adoptKahuaPlane`): the
   // face's `kahua` facet and the daemon island's `bags/kahua` grant read this, never a catalog row.
   let wornKahua: { readonly group: string; readonly url: string } | null = null;
+  let wornPromote: string | null = null;
+  let promoteWiringRef: ReturnType<typeof promoteWiring> | null = null;
+  let promoteHandlers: ReturnType<typeof promoteMainVerbs> | null = null;
+  let pushPromoteSnapshot: (() => Promise<void>) | null = null;
+  let setupPromotePanel: (() => Promise<void>) | null = null;
+  let rebuildPromoteWiring: () => void = () => {};
+  let wornPromoteGroup: string | null = null;
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
     () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()),
-    (group) => (wornKahua && wornKahua.group === group ? wornKahua.url : null));
+    (group) => (wornKahua && wornKahua.group === group ? wornKahua.url : null),
+    (group) => (wornPromoteGroup === group ? wornPromote : null));
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
@@ -1457,14 +1481,13 @@ async function prepareNodeBootOn(
   // the store door's row for `lares edge settle` share it; no other road reaches the verb with a proof.
   const askSeatDutiesAsVessel = (facts: { readonly fleetRoot: string; readonly acts: readonly unknown[]; readonly rolled: readonly string[] }): IslandAsk => {
     if (!daemonVm) throw new Error("the daemon island does not stand yet");
-    const vm = daemonVm;
-    return askSeatDuties({
-      daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), facts,
+    return islandAsk(daemonHolder)((ports) => askSeatDuties({
+      ...ports, facts,
       vesselKey: activeAtom?.key ?? "", sign: (image) => {
         if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
         return activeAtom.sign(image);
       },
-    });
+    }));
   };
   const seatSettler = sovereign ? makeSeatSettler({
     wornFleetRoot: () => wornFleetRoot,
@@ -1776,6 +1799,34 @@ async function prepareNodeBootOn(
   //    mechanism here). onEvict commands the pool via the forward `vmManager` ref. ──
   let vmManager!: VesselIslandPool;        // set in makePool
   let wikiActivation!: WikiActivationCap;  // set in makePool — the activation-on-reference cap
+  const promoteActs = promoteActGate();
+  const restartDaemonNow = async () => {
+    console.log("[promote] the daemon island restarts: a shadow meets a loaded rite");
+    const done = await daemonHolder.restart(KAPAE_EMERGENCY_REASON);
+    console.log(`[promote] the daemon island restarted (${done.restarts})`);
+  };
+  // A restart that runs after a raise or a commit answered has no asker to tell: its failure is named, and the next arrive tries again.
+  const restartDaemonDeferred = () => { void restartDaemonNow().catch((error) => { console.warn(`[promote] restart of the daemon island failed: ${error instanceof Error ? error.message : String(error)}`); void pushPromoteSnapshot?.().catch(console.warn); }); };
+  const restartWikiIsland = async (wiki: string, hit?: readonly string[]): Promise<void | { pending: Promise<void> }> => {
+    if (wiki === "daemon") {
+      // The holder's restart never waits. On the RAISING device the arrival lands before this device's own raise reply leaves, so the restart
+      // follows that raise's completion; no other act is waited on, and any other arrival (a remote raise, a sync) restarts at once.
+      // A deferred restart answers PENDING, never done: the board's arrive keeps the loaded edges until it reports, so a failure retries.
+      let settle!: { resolve: () => void; reject: (error: unknown) => void };
+      const pending = new Promise<void>((resolve, reject) => { settle = { resolve, reject }; });
+      // Only a local raise over one of THE EDGES this arrival carries is waited on: an unrelated raise never holds the brake.
+      if (promoteActs.after(["kapae-raise"], () => { restartDaemonNow().then(settle.resolve, settle.reject); }, hit ?? [])) return { pending };
+      await restartDaemonNow();
+    } else {
+      await vmManager.unmountWiki(wiki);
+      await wikiActivation.ensureActive(wiki);
+    }
+  };
+  // The store door's own verbs (commit, drop) run INSIDE the act that asks for the reload, so the daemon reload follows that act's completion.
+  const reloadWikiAfterVerb = async (wiki: string) => {
+    if (wiki !== "daemon") { await restartWikiIsland(wiki); return; }
+    if (!promoteActs.after(["promote-commit", "promote-drop", "promote-orphan"], restartDaemonDeferred)) restartDaemonDeferred();
+  };
   let mailbox!: DurableMailbox;            // set in makePool — the durable park/drain lane (node-only capability)
   let lightFace: (ordinal: number) => Promise<void> = async () => {};
   const dropFace = async (ordinal: number) => {
@@ -1785,6 +1836,7 @@ async function prepareNodeBootOn(
     // The lock closes the face's relay route at once; the next gate sweep would leave it standing.
     await intentRelay?.refresh();
   };
+  let daemonHolder!: DaemonVmHolder;
   let daemonVm!:   DaemonVmCore;           // set in openDaemon
   let standDaemonVm: () => void = () => {};
   const daemonVmStood = new Promise<void>((resolve) => { standDaemonVm = resolve; });   // the rest door waits on the island's leg through it
@@ -2253,10 +2305,6 @@ async function prepareNodeBootOn(
         // face; every boot, the founding device's among them, reads that pin off the verified projection.
         wornFaceProved = true;
         wornFaceProjection = proof.projection;
-        const kahua = adoptKahuaPlane(proof.projection, personaGroupId, kahuaCatalogRow(assembly.catalogHandle.doc()));
-        if (kahua.staleRow) console.warn(`[lararium] kahua stage: the catalog row names ${kahua.staleRow}, a stale hint (the face pins ${"mount" in kahua ? kahua.mount : "none"}); the pin decides`);
-        const kahuaUrl = adoptedKahuaUrl(kahua);
-        wornKahua = kahuaUrl ? { group: personaGroupId, url: kahuaUrl } : null;
         wornFaceProven = true;
         provenPlanes.set(personaGroupId, bootstrap.personaUrl);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
@@ -2265,6 +2313,67 @@ async function prepareNodeBootOn(
           const pinned = raiseFaceFrontier(faceAnchor, { actSeq: head.seq, actCid: head.cid });
           if (pinned !== faceAnchor) { await keepFaceAnchorOfGroup(pinned); standingAnchor = pinned; }
         }
+        const kahua = adoptKahuaPlane(proof.projection, personaGroupId, kahuaCatalogRow(assembly.catalogHandle.doc()));
+        if (kahua.staleRow) console.warn(`[lararium] kahua stage: the catalog row names ${kahua.staleRow}, a stale hint (the face pins ${"mount" in kahua ? kahua.mount : "none"}); the pin decides`);
+        const kahuaUrl = adoptedKahuaUrl(kahua);
+        wornKahua = kahuaUrl ? { group: personaGroupId, url: kahuaUrl } : null;
+        wornPromote = adoptedPromoteUrl(adoptPromotePlane(proof.projection, personaGroupId));
+        wornPromoteGroup = personaGroupId;
+        const promoteFace = liveKahuaFace({ group: personaGroupId, prefix: personaKelPrefix, bootChain: personaKelChain, anchor: faceAnchor, board: repo.find(personaKelBoardDocUrl(nexusPubkey)) });
+        const devices = new Set(proof.projection.devices);
+        const promoteHolder = activeAtom.key;
+        rebuildPromoteWiring = () => {
+          promoteWiringRef = wornPromote ? promoteWiring({
+            repo, group: personaGroupId, boardUrl: wornPromote, stageUrl: wornKahua?.url ?? null,
+            foldFace: () => { const f = promoteFace.read(); return { group: personaGroupId, grant: f ? f.grant : () => false }; },
+            boardFace: () => { const f = promoteFace.read(); return { group: personaGroupId, grant: f ? f.grant : () => false, device: (k) => devices.has(k) }; },
+            stores: nodePromoteStores(personaGroupId), cas: nodePromoteCas(casDirForStorage(storageDir), promoteHolder),
+            wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
+            onArrive: async () => { await pushPromoteSnapshot?.(); },
+            onFault: (reason) => console.warn(`[promote] ${reason}`),
+            onRestartFailed: (wiki, error) => { console.warn(`[promote] restart of ${wiki} failed: ${error instanceof Error ? error.message : String(error)}`); void pushPromoteSnapshot?.().catch(console.warn); },
+            onReport: (wiki, r) => { if (r.orphans.length || r.updateWaits.length || r.voided.length) console.warn(`[promote] ${wiki}: orphans=${r.orphans.join(",")} updateWaits=${r.updateWaits.join(",")} voided=${r.voided.map(v => v.digest).join(",")}`); },
+          }) : null;
+        };
+        rebuildPromoteWiring();
+        const atom = activeAtom;
+        setupPromotePanel = async () => {
+          const wiring = promoteWiringRef;
+          if (!wiring || !wornPromote) return;
+          const handle = await repo.find<LarDoc>(wornPromote as AutomergeUrl);
+          const boardFace = { group: personaGroupId, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
+          const boardDoor = promoteBoardDoor({ group: personaGroupId, face: boardFace, atom,
+            epoch: () => readFace(personaKelChain ?? [], faceAnchor)?.lineage.at(-1)?.epoch ?? 0,
+            rootSigner: async () => {
+              const seed = await loadPersonaGroupRootSeed(wornMount?.handleIndex ?? 0);
+              try { return { key: await ed25519VerifyingKeyFromSeed(seed), sign: async (bytes: Uint8Array) => {
+                const fresh = await loadPersonaGroupRootSeed(wornMount?.handleIndex ?? 0);
+                try { return await ed25519SignerFromSeed(fresh)(bytes); } finally { fresh.fill(0); }
+              } }; }
+              finally { seed.fill(0); }
+            },
+            board: { records: async () => promoteActRecords(handle.doc(), personaGroupId), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
+            projection: () => proof.projection,
+          });
+          const who = { kind: "hand" as const, id: atom.key };
+          const core = promotePanelApi({ who,
+            wikis: async () => ["daemon", ...vmManager.inspect().filter(slot => slot.temperature === "wela" && slot.wikiId !== "daemon").map(slot => slot.wikiId)],
+            promotionsFor: wiki => promotions({ wiki, ...nodePromoteStores(personaGroupId), who,
+              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(casDirForStorage(storageDir), atom.key),
+              loaded: () => wiring.loadedFor(wiki), restart: async () => { await wiring.restart(wiki); } }), boardDoor,
+          });
+          const push = async (data: string) => { daemonVm.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
+          // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.
+          let panelQuiet = true;
+          pushPromoteSnapshot = async () => {
+            const snapshot = await core.snapshot();
+            const quiet = isQuietSnapshot(snapshot);
+            if (quiet && panelQuiet) return;
+            panelQuiet = quiet;
+            await push(JSON.stringify(snapshot));
+          };
+          promoteHandlers = promoteMainVerbs({ api: core, push });
+        };
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
         if (bootstrap.identitiesUrl && bootstrap.circlesUrl) {
           const joining = joinFaceDocumentsOnArrival(repo, { identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl }, activeAtom.key);
@@ -2561,6 +2670,9 @@ async function prepareNodeBootOn(
     if (wornFaceProved && wornFaceProjection && personaGroupId) {
       const url = await adoptKahuaStage({ repo, group: personaGroupId, projection: wornFaceProjection, register: registerInCatalog });
       wornKahua = url ? { group: personaGroupId, url } : null;
+      wornPromote = await adoptPromoteBoard({ repo, group: personaGroupId, projection: wornFaceProjection });
+      rebuildPromoteWiring();
+      await setupPromotePanel?.();
       console.log(url ? `[kahua] the face's stage stands adopted: ${url}` : "[kahua] the face pins no stage yet; the layer stands absent until its pin syncs");
     }
     // The selected face's custody standing decides whether its veil archive may leave this
@@ -2588,7 +2700,7 @@ async function prepareNodeBootOn(
       setCustodyWriteDoor((_carrier, bytes) => personaGroupId
         ? sovereign.writeVeilArchive(bytes, personaGroupId) : Promise.reject(new Error("face-not-named: the mounted face names no PersonaGroup")));
     }
-    // THE ANCHOR THE DAEMON STANDS ON ALREADY CARRIES THE VERIFIED LEASE: this runs before `daemonAuth` snapshots `standingAnchor`, so the
+    // THE ANCHOR THE DAEMON STANDS ON ALREADY CARRIES THE VERIFIED LEASE: this runs before the first open snapshots `standingAnchor`; a re-open snapshots the anchor the vessel holds now, so the
     // daemon's live join and grant reads floor under the anchor this boot raised, never an older copy (read 6, opening row 2).
     // The sealed frontier rises only on a VERIFIED observation (`lease-observation`): a signed advance from a key the KEL
     // lineage seats. An unsigned slot on the mirrored daemon doc raises nothing, so a forged high slot cannot ratchet custody.
@@ -2612,9 +2724,13 @@ async function prepareNodeBootOn(
       addressSecret: readFaceAddressSecret, veilArchive: sovereign.veilArchive,
       log: (line: string) => console.log(`[lararium] ${line}`),
     } : null;
-    const joinedFaces = siblingPorts ? await joinedFaceAuth(siblingPorts) : [];
-    // Each joined face's edge ledger stays on this device too (road `T33`): the island opens it under that face's atom.
-    classDeviceLedgers(vesselPrivate, joinedFaces.map((face) => face.atom.key));
+    // EVERY OPEN READS THE SIBLINGS' CURRENT CUSTODY STANDING (Sol train #1): a sibling that locked or dropped since boot never rides a
+    // re-open. Each joined face's edge ledger stays on this device too (road `T33`): the island opens it under that face's atom.
+    const readJoinedFaces = async (): Promise<JoinedFaceAuth[]> => {
+      const faces = siblingPorts ? await joinedFaceAuth(siblingPorts) : [];
+      classDeviceLedgers(vesselPrivate, faces.map((face) => face.atom.key));
+      return faces;
+    };
     lightFace = async (ordinal) => {
       if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
       const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal] });
@@ -2626,7 +2742,7 @@ async function prepareNodeBootOn(
       }
       await intentRelay?.refresh();
     };
-    const daemonAuth = {
+    const daemonAuthNow = (joinedFaces: readonly JoinedFaceAuth[]) => ({
       ...(joinedFaces.length ? { joinedFaces } : {}),
       placeVerifyingKey: vesselIdentity.verifyingKey,
       ...(workingFloorAnchor ? { workingFloorAnchor } : {}),
@@ -2662,53 +2778,57 @@ async function prepareNodeBootOn(
         : {}),
       ...(faceLit && deviceEdge ? { deviceEdge } : {}),
       ...(outboxKey ? { outboxKey } : {}),
-    };
+    });
     // R3 — the daemon VM resolves its plugins through the SAME selector + CAS path every wiki
     // island does (`resolveNodeIslandPluginCids`), never a vessel-wide hand-off. The
     // daemon's own one-recipe-model record names no offerings today, so this call is the floor
     // alone in practice — but it is the floor PROVEN through the selector, not assumed past it.
     crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
-    const daemonPluginResolution = await resolveNodeIslandPluginCids({
-      islandBlobs: assembly.islandHandle.doc()?.blobs,
-      recipe:      { wikiSlug: "daemon" },
-      lookup:      nodeOfferingLookup(crossroadsOfferingsHandle.doc()),
-      readBytes:   (cid) => readCasBlobFromFs(cid, casDirForStorage(storageDir)),
+    const offerings = crossroadsOfferingsHandle;
+    daemonHolder = await standDaemonIsland({
+      readJoinedFaces,
+      resolvePlugins: () => resolveNodeIslandPluginCids({
+        islandBlobs: assembly.islandHandle.doc()?.blobs,
+        recipe: { wikiSlug: "daemon" },
+        lookup: nodeOfferingLookup(offerings.doc()),
+        readBytes: (cid) => readCasBlobFromFs(cid, casDirForStorage(storageDir)),
+        promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
+        onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
+      }),
+      open: ({ pluginCids, joinedFaces }) => openDaemonVm({
+        repo,
+        daemonUrl: bootstrap.daemonUrl,
+        // The persona plane rides only when a face stands; the daemon VM resolves nothing that is absent.
+        ...(bootstrap.personaUrl   ? { personaUrl:   bootstrap.personaUrl }   : {}),
+        ...(bootstrap.personaBagId ? { personaBagId: bootstrap.personaBagId } : {}),
+        // A joinee at the floor holds no key to present its dial, so its persona plane (served by the hearth it dials) may
+        // stand on the hearth alone; the unlocked composition dials and receives it. A founder's plane stays hearth-private.
+        // An admitted device whose replica does not yet hold the plane (it syncs from the fleet) resolves it as a mesh-shared
+        // document, which waits for the sync, rather than reading the hearth-private "no reachable copy" under load.
+        ...((sovereign === null && joinSyncUrl) || (bootstrap.personaUrl && !heldDocOf(repo, bootstrap.personaUrl)) ? { personaLate: true } : {}),
+        coreHash: assembly.coreHash,
+        ...(pluginCids.length ? { pluginCids } : {}),
+        grants: {
+          islandUrl: assembly.islandHandle.url,
+          // The daemon island's OWN bag (daemon = wikiBagUri("daemon"), one-recipe model).
+          wikiUrl:   bootstrap.daemonUrl,
+          // ACCESS grant, not a LOAD slot — the catalog registry is absent from expandRecipe,
+          // so the kernel never layers it; the worker reaches it via the accessor.
+          catalogUrl: catalogHandle.url,
+          // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
+          ...(wornKahua ? { kahuaUrl: wornKahua.url } : {}),
+        },
+        daemonAuth: daemonAuthNow(joinedFaces),
+        storageDir,
+        // D-VR-C: the daemon bag is the one explicit worker-owned durable scope;
+        // ordinary oracle/recipe documents remain parent-attached in the primary worker Repo.
+        ownedDocument: true,
+        rootDir: corpusRoot,
+        guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
+      }),
     });
-    if (!daemonPluginResolution.ok) {
-      throw new Error(`[openNodeVessel] the daemon island's plugin resolution refused: ${daemonPluginResolution.error}`);
-    }
-    const pluginCids = daemonPluginResolution.pluginCids;
-    daemonVm = await openDaemonVm({
-      repo,
-      daemonUrl: bootstrap.daemonUrl,
-      // The persona plane rides only when a face stands; the daemon VM resolves nothing that is absent.
-      ...(bootstrap.personaUrl   ? { personaUrl:   bootstrap.personaUrl }   : {}),
-      ...(bootstrap.personaBagId ? { personaBagId: bootstrap.personaBagId } : {}),
-      // A joinee at the floor holds no key to present its dial, so its persona plane (served by the hearth it dials) may
-      // stand on the hearth alone; the unlocked composition dials and receives it. A founder's plane stays hearth-private.
-      // An admitted device whose replica does not yet hold the plane (it syncs from the fleet) resolves it as a mesh-shared
-      // document, which waits for the sync, rather than reading the hearth-private "no reachable copy" under load.
-      ...((sovereign === null && joinSyncUrl) || (bootstrap.personaUrl && !heldDocOf(repo, bootstrap.personaUrl)) ? { personaLate: true } : {}),
-      coreHash: assembly.coreHash,
-      ...(pluginCids.length ? { pluginCids } : {}),
-      grants: {
-        islandUrl: assembly.islandHandle.url,
-        // The daemon island's OWN bag (daemon = wikiBagUri("daemon"), one-recipe model).
-        wikiUrl:   bootstrap.daemonUrl,
-        // ACCESS grant, not a LOAD slot — the catalog registry is absent from expandRecipe,
-        // so the kernel never layers it; the worker reaches it via the accessor.
-        catalogUrl: catalogHandle.url,
-        // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
-        ...(wornKahua ? { kahuaUrl: wornKahua.url } : {}),
-      },
-      daemonAuth,
-      storageDir,
-      // D-VR-C: the daemon bag is the one explicit worker-owned durable scope;
-      // ordinary oracle/recipe documents remain parent-attached in the primary worker Repo.
-      ownedDocument: true,
-      rootDir: corpusRoot,
-      guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
-    });
+    daemonVm = daemonHolder.vm;
+    daemonHolder.onRestarted(() => { if (seatSettler) void daemonVm.workerEa.then(() => seatSettler.onFold(), () => undefined); });
     standDaemonVm();
     // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────
     // A cross-operator peer holding a VERIFIED face-join grant on THIS face's plane reaches the face's own
@@ -3137,6 +3257,7 @@ async function prepareNodeBootOn(
   // wiki island) and residency stats (a read of the main-resident manager).
   const wireVerbs: VesselOrchestration<VesselIslandPool>["wireVerbs"] = (registry, assembly) => {
     seedVesselDefaults(registry);
+    if (promoteHandlers) for (const [name, handler] of Object.entries(promoteHandlers)) registry.register(name, args => handler(args), { summary: name, surfaces: [] });
     registry.register("sync-wiki", async (args, ctx) => {
       // Resolver-as-activator: a reference wakes a cold grain before the verb lands
       // (the pinned home wiki is already live → a cheap no-op).
@@ -3179,6 +3300,7 @@ async function prepareNodeBootOn(
     // rows reach the refold, and no standalone CLI-dialed verb does.
     const doors = storeDoorReactors({
       storageDir, sealHome, repo, catalogUrl: assembly.catalogHandle.url,
+      casDir: casDirForStorage(storageDir), restartWiki: reloadWikiAfterVerb,
       onRolled: afterRoll,
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
@@ -3188,11 +3310,10 @@ async function prepareNodeBootOn(
       // A feed asks the island's `realm-feed` as the face, from this thread, over the host channel.
       askIsland: (verb, args, requestedBy, requestId) => {
         if (!daemonVm) throw new Error("the daemon island does not stand yet");
-        const vm = daemonVm;
-        return askIslandVerb({ daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), verb, args, requestedBy, requestId }).answer;
+        return islandAsk(daemonHolder)((ports) => askIslandVerb({ ...ports, verb, args, requestedBy, requestId })).answer;
       },
     });
-    for (const [verb, reactor] of Object.entries(doors)) registry.register(verb, reactor);
+    registerStoreDoorReactors(registry, doors);
 
     // realm-bag — REGISTER a bag this vessel's steward keeps on the realm's shared CRDT (realm-bag-brief): the
     // record `{ bagUri, docUrl, keptBy, readTier }` sealed by the key the acting face (`face`, else the one face standing open) presents to the
@@ -3406,7 +3527,9 @@ async function prepareNodeBootOn(
       "worker.event",
       ({ listenable, payload }) => {
         const ask = islandEventAsk(listenable, payload);
-        if (ask) daemonVm.placeVerb(ask);
+        if (ask) {
+          try { daemonVm.placeVerb(ask); } catch (err) { if (!(err instanceof DaemonRestarting)) throw err; console.log("[daemon] a worker event dropped: the island restarts"); }
+        }
       },
     );
   };
@@ -3498,6 +3621,8 @@ async function prepareNodeBootOn(
         recipe,
         lookup:      nodeOfferingLookup(crossroadsOfferingsHandle?.doc()),
         readBytes:   (cid) => readCasBlobFromFs(cid, casDir),
+        promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
+        onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
       }),
       diskMirrorGrant,
       onWorkerEvent: (wikiId, msg) => {
@@ -3534,6 +3659,9 @@ async function prepareNodeBootOn(
     // exempt from collection. Everything else activates on reference through the cap.
     // mountPrimaryWiki already mounted + spec-retained it, so onHydrate → ensureWiki
     // sees it live and no-ops (idempotent). Rotation = unpin the old, pin the new.
+    void pushPromoteSnapshot?.().catch(console.warn);
+    const stopPromoteWatch = promoteWiringRef?.watch();
+    if (stopPromoteWatch) stood.push({ what: "the promote watcher", down: stopPromoteWatch });
     if (slotActiveWikiId) void residency.pin(slotActiveWikiId, "boot:home-wiki", "wiki");
   };
 
@@ -3547,6 +3675,7 @@ async function prepareNodeBootOn(
 
   return {
     repo, storeClaim, catalogHandle, placeSigner, nexusPubkey, floorGates, carriagePull, wornFace: wornGateFace,
+    restartWiki: reloadWikiAfterVerb, promoteActs,
     vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
@@ -3585,17 +3714,16 @@ async function prepareNodeBootOn(
       // Null while no daemon island stands, so a cut there refuses `memory-unavailable` by name.
       get cutMemory() {
         if (!daemonVm) return null;
-        const vm = daemonVm;
         return async (to: Uint8Array) => {
           // The cut read this vessel's shadow at its entry; the ask says so, and the holder reads none of its own.
-          const out = await askIslandMemory({
-            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), act: "cut",
+          const out = await islandAsk(daemonHolder)((ports) => askIslandMemory({
+            ...ports, act: "cut",
             facts: { to: Buffer.from(to).toString("hex"), shadow: MEMORY_CUT_SHADOW_READ },
             vesselKey: activeAtom?.key ?? "", sign: (image) => {
               if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
               return activeAtom.sign(image);
             },
-          }).answer;
+          })).answer;
           const holds = Array.isArray(out["holds"]) ? out["holds"] as Array<{ bagId: string; founding: string; keyVersion: string }> : [];
           if (typeof out["section"] !== "string") throw new Error("the island answered no memory section");
           return { section: out["section"], holds };
@@ -3606,30 +3734,28 @@ async function prepareNodeBootOn(
       // import, then takes the section beside its pair's secret half sealed to that door.
       get memoryDoor() {
         if (!daemonVm) return null;
-        const vm = daemonVm;
         return async () => {
-          const out = await askIslandMemory({
-            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), act: "door", facts: {},
+          const out = await islandAsk(daemonHolder)((ports) => askIslandMemory({
+            ...ports, act: "door", facts: {},
             vesselKey: activeAtom?.key ?? "", sign: (image) => {
               if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
               return activeAtom.sign(image);
             },
-          }).answer;
+          })).answer;
           if (typeof out["door"] !== "string" || !/^[0-9a-f]{64}$/.test(out["door"])) throw new Error("the island named no door");
           return Uint8Array.from(Buffer.from(out["door"], "hex"));
         };
       },
       get importMemory() {
         if (!daemonVm) return null;
-        const vm = daemonVm;
         return async (section: string, sealedSecret: string) => {
-          const out = await askIslandMemory({
-            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), act: "import", facts: { section, secret: sealedSecret },
+          const out = await islandAsk(daemonHolder)((ports) => askIslandMemory({
+            ...ports, act: "import", facts: { section, secret: sealedSecret },
             vesselKey: activeAtom?.key ?? "", sign: (image) => {
               if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
               return activeAtom.sign(image);
             },
-          }).answer;
+          })).answer;
           return Array.isArray(out["results"]) ? out["results"] as Array<{ bagId: string; keyVersion: string; outcome: string; cause?: string }> : [];
         };
       },
@@ -3640,6 +3766,8 @@ async function prepareNodeBootOn(
     realmStanding:    async () => (realmPlane ? await realmPlane.standing() : new Map()),
     lightFace: (ordinal) => lightFace(ordinal), dropFace,
     daemonVm:         () => daemonVm,
+    restartDaemonIsland: (reason) => daemonHolder.restart(reason),
+    daemonIslandState: async () => ({ restarts: daemonHolder.restarts, leg: await daemonVm.syncLegReady() }),
     eventBus:         () => eventBus,
     slotActiveWikiId: () => slotActiveWikiId,
     activeWikiSource: () => activeWikiSource,
@@ -3725,7 +3853,9 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     },
     store: result.assembly.composite,
     daemon: p.daemonVm(),
-    lightFace: p.lightFace, dropFace: p.dropFace,
+    restartDaemonIsland: p.restartDaemonIsland,
+    daemonIslandState: p.daemonIslandState,
+    lightFace: p.lightFace, dropFace: p.dropFace, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
     wikiDocUrl:       result.wikiHandle.url,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),
@@ -3857,6 +3987,8 @@ async function composeNodeHermOn(
     repo:             p.repo,
     store:            herm.assembly.composite,
     daemon:           p.daemonVm(),
+    restartDaemonIsland: p.restartDaemonIsland,
+    daemonIslandState: p.daemonIslandState,
     lightFace: p.lightFace, dropFace: p.dropFace,
     oracleDocUrl:     herm.assembly.islandHandle.url,
     catalogHandleUrl: p.catalogHandle.url,

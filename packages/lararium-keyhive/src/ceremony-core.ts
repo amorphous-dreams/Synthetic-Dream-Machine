@@ -61,7 +61,7 @@ import {
   deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard,
   enrolDevice, sealGroupSecret, groupSecretSealTitle, type GroupSecretSeal,
   type LarTiddlerStore, writePersonaAct,
-  signFoundingLog, faceRootCommitment, edgeBodyDigest, landFleetGenesis, makeHandLineage, KAHUA_PLANE, kahuaStageDocUrl,
+  signFoundingLog, faceRootCommitment, edgeBodyDigest, landFleetGenesis, makeHandLineage, KAHUA_PLANE, kahuaStageDocUrl, PROMOTE_PLANE, promoteBoardDocUrl, promotePlaneUrl,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type LarDoc, ownEntry} from "@lararium/mesh";
 
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
@@ -390,9 +390,8 @@ function writeGroupSecretSeal(
  * checkpoint lands the same bytes and nothing doubles. A contracted founding holds no root seed and signs none: the
  * contracting operator's records arrive with its edge.
  *
- * THE KAHUA STAGE PINS HERE, inside the face's founding act, by whichever device founds the face (node or browser), beside
- * the intents plane and under the same hand: its `plane` act names the face's derived stage (`kahuaStageDocUrl`), and the
- * blank stage doc stands in the founder's repo, so a face never stands unpinned and no act outside the founding mints one
+ * THE KAHUA STAGE AND PROMOTE BOARD PIN HERE inside the face's founding act, on every founding vessel class, under the
+ * same hand as the intents plane. Their derived documents stand in the founder's repo; later adoption reads these pins.
  * (meme lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage).
  */
 async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; atomSeed: Uint8Array; face: Pick<FaceFoundingResult, "personaGroupId" | "personaKelPrefix" | "personaUrl" | "identitiesUrl" | "circlesUrl" | "sessionsUrl" | "intentsUrl" | "founderEdge" | "signerDid"> }): Promise<void> {
@@ -408,11 +407,13 @@ async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; at
     planes: {
       persona: face.personaUrl, identities: face.identitiesUrl, circles: face.circlesUrl, sessions: face.sessionsUrl, intents: face.intentsUrl,
       [KAHUA_PLANE]: kahuaStageDocUrl(face.personaGroupId),
+      [PROMOTE_PLANE]: promoteBoardDocUrl(face.personaGroupId),
     },
     deviceKey: faceAtomKeyFromSeed(input.atomSeed, face.personaGroupId).key,
     edgeDigest: edgeBodyDigest(face.founderEdge),
   }, signer);
   await materializeSharedLarDoc(input.repo, kahuaStageDocUrl(face.personaGroupId), "kahua:stage");
+  await materializeSharedLarDoc(input.repo, promoteBoardDocUrl(face.personaGroupId), "promote:board");
   const plane = await input.repo.find<LarDoc>(face.personaUrl as never);
   plane.change((draft) => { for (const act of acts) writePersonaAct(draft, act); });
   const lineage = makeHandLineage([{ epoch: 0, signers: [rootKey], threshold: 1 }])!;
@@ -877,9 +878,10 @@ export interface ApplyAdmitResult {
   circlesUrl:    string;
   sessionsUrl:   string;
   intentsUrl:    string;
-  /** The face's kahua stage as the bundle's VERIFIED log pins it (`kahuaPlaneUrl`), or null where the face pinned none
-   *  yet: a stage minted after this admit reaches the device through the persona doc's sync, and its boot proof reads it. */
+  /** The face's kahua stage as the bundle's VERIFIED log pins it, or null where the carried log pins none. */
   kahuaUrl:      string | null;
+  /** The board pinned by the verified carried log, or null when unpinned. */
+  promoteUrl:    string | null;
   daemonUrl:      string;
   /** The PersonaGroup plane's doc URL the joinee resolves — the founder's shared doc
    *  (membership-sync) when the payload carries it, else a fresh local seed. */
@@ -1028,7 +1030,7 @@ export async function runApplyAdmitPayload(
   const capStore = new InMemoryEventStore();
   if (checkpoint) {
     for (const e of checkpoint.events) await capStore.put({ hash: e.hash, variant: e.variant, bytes: base64ToBytes(e.bytes), ...(e.island ? { island: e.island } : {}) });
-    result = { ...checkpoint.result, kahuaUrl: kahuaPlaneUrl(carriedLog, payload.personaGroupId), archive: base64ToBytes(checkpoint.result.archive) };
+    result = { ...checkpoint.result, kahuaUrl: kahuaPlaneUrl(carriedLog, payload.personaGroupId), promoteUrl: promotePlaneUrl(carriedLog, payload.personaGroupId), archive: base64ToBytes(checkpoint.result.archive) };
   } else {
     const keyhive = new KeyhiveProvider();
     await keyhive.init({ seed: atomSeed, eventStore: capStore, ...(input.archiveBytes ? { archiveBytes: input.archiveBytes } : {}) });
@@ -1042,7 +1044,7 @@ export async function runApplyAdmitPayload(
       circlesUrl: sharedCirclesUrl ?? circlesHandle!.url as string,
       sessionsUrl: sessionsHandle.url as string,
       intentsUrl: sharedIntentsUrl,
-      kahuaUrl: kahuaPlaneUrl(carriedLog, payload.personaGroupId),
+      kahuaUrl: kahuaPlaneUrl(carriedLog, payload.personaGroupId), promoteUrl: promotePlaneUrl(carriedLog, payload.personaGroupId),
       daemonUrl: daemonHandle.url as string,
       personaUrl, personaBagId,
       hearthDaemonUrl: payload.hearthDaemonUrl,

@@ -63,6 +63,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
+import { runPromoteVerb } from "./commands/promote.js";
+import { PromoteRefused, KapaeRefused, type PromoteCommandRequest } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
 import type { Repo } from "@automerge/automerge-repo";
 import { readFileSync } from "node:fs";
@@ -111,6 +113,8 @@ async function standsAsHerm(): Promise<boolean> {
 /** What the rows read off their holder. */
 export interface StoreDoorDeps {
   readonly storageDir: string;
+  readonly casDir?: string;
+  readonly restartWiki?: (wiki: string) => Promise<void>;
   readonly sealHome:   string;
   /** The store's one holder — the running vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:       Repo;
@@ -176,6 +180,7 @@ export const STORE_DOOR_VERBS = [
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status", "intent-relay-rotate",
   "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
+  "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -195,6 +200,7 @@ export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoo
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status",
   "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
+  "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
 ]);
 
 /**
@@ -202,6 +208,12 @@ export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoo
  * spirit) refuses each one at the socket (`handOnlyActs`), so an AI seat proposes and reads and never lifts.
  */
 export const KAHUA_OPERATOR_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["kahua-mint", "kahua-lift", "kahua-withdraw", "kahua-carry"]);
+
+/** A seat session refuses these before custody reads; a client names its own hand, so this gate remains advisory, as for the existing operator rows. */
+export const PROMOTE_HAND_CODES: ReadonlyMap<string, string> = new Map([
+  ["promote-commit", "promote-needs-hand"], ["promote-drop", "promote-needs-hand"], ["promote-orphan", "promote-needs-hand"],
+  ["kapae-raise", "kapae-needs-hand"], ["kapae-lower", "kapae-needs-hand"],
+]);
 
 /**
  * The face a face row names: `face`, else `handleIndex`; undefined where it names none. The two naming different faces
@@ -227,7 +239,7 @@ const REFUSALS = [
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError, FleetJoinRefused, NexusCabalError,
   CarryBundleError,
   IntentRefused,
-  KahuaRefused,
+  KahuaRefused, PromoteRefused, KapaeRefused,
   FaceRowRefused,
 ] as const;
 
@@ -314,7 +326,17 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...opt("cap", kahuaCap),
     });
   };
+  const promoteRow = (action: PromoteCommandRequest["action"], args: Readonly<Record<string, unknown>>) =>
+    runPromoteVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("restartWiki", deps.restartWiki) });
   return {
+    "promote-prepare": (args) => answer("promote-prepare", () => promoteRow("prepare", args)),
+    "promote-commit": (args) => answer("promote-commit", () => promoteRow("commit", args)),
+    "promote-drop": (args) => answer("promote-drop", () => promoteRow("drop", args)),
+    "promote-orphan": (args) => answer("promote-orphan", () => promoteRow("orphan", args)),
+    "promote-list": (args) => answer("promote-list", () => promoteRow("list", args)),
+    "kapae-raise": (args) => answer("kapae-raise", () => promoteRow("raise", args)),
+    "kapae-lower": (args) => answer("kapae-lower", () => promoteRow("lower", args)),
+    "kapae-flag": (args) => answer("kapae-flag", () => promoteRow("flag", args)),
     "intent-relay-enable": (args) => answer("intent-relay-enable", async () => { const result = await runIntentRelayCommand({ action: "enable", ...relayFace(args) }); if (deps.onRolled) await awaitOnRolled(deps.onRolled()); return result; }),
     "intent-relay-disable": (args) => answer("intent-relay-disable", async () => { const result = await runIntentRelayCommand({ action: "disable", ...relayFace(args) }); if (deps.onRolled) await awaitOnRolled(deps.onRolled()); return result; }),
     "intent-relay-status": (args) => answer("intent-relay-status", () => runIntentRelayCommand({ action: "status", ...relayFace(args) })),
