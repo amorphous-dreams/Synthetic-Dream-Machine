@@ -1,10 +1,11 @@
 /**
- * promote-act-gate — the kapae arrival on the RAISING device waits for the raise's own session act to be answered, never for a timer.
+ * promote-act-gate — the RAISING device's own raise completes before its daemon island restarts; nothing else ever holds an arrival.
  *
  * The raise (`lares kapae raise`) runs as a face row on the daemon island and the board watcher sees its act land before the row's reply
- * leaves; a plain holder restart then rejects the row (`daemon-restarting`) though the act landed. The gate counts the promote acts a
- * session has begun and releases a waiter once each of THEM has settled (reply written). It never waits on an act that begins later,
- * and it never holds anything the vessel did not begin itself (the holder keeps its no-wait law).
+ * leaves; a bare restart then rejects the row (`daemon-restarting`) though the act landed. The gate counts the promote acts a session has
+ * begun. `after(kinds, run)` hands `run` to the completion of the acts of those kinds standing NOW and returns true; with none standing it
+ * returns false and the caller restarts at once. It never awaits and never holds a promise: a hung act leaves a plain restart (the owner
+ * door's `island.restart`) free to force the swap, and an act that begins later is never waited on.
  */
 import { expect, test } from "vitest";
 import { promoteActGate, isPromoteAct } from "../src/promote-act-gate.js";
@@ -14,31 +15,58 @@ test("the names the gate counts: promote and kapae rows, nothing else", () => {
   for (const act of ["kahua-lift", "face.resolve", "island.restart", "promote", ""]) expect(isPromoteAct(act), act).toBe(false);
 });
 
-test("RED: a waiter parks while a begun act stands and releases the moment it settles; CONTROL: an idle gate releases at once", async () => {
+test("RED: a local raise in flight defers the restart to its own completion; CONTROL: with none standing the caller restarts at once", () => {
   const gate = promoteActGate();
-  let idle = false;
-  await gate.settled().then(() => { idle = true; });
-  expect(idle, "no act stands, so nothing waits").toBe(true);
-  const act = {};
-  gate.begin(act);
-  let released = false;
-  const waiting = gate.settled().then(() => { released = true; });
-  await Promise.resolve(); await Promise.resolve();
-  expect(released).toBe(false);
-  gate.end(act);
-  await waiting;
-  expect(released).toBe(true);
+  const ran: string[] = [];
+  expect(gate.after(["kapae-raise"], () => ran.push("idle")), "no raise stands: the caller restarts at once").toBe(false);
+  expect(ran).toEqual([]);
+  const raise = {};
+  gate.begin(raise, "kapae-raise");
+  expect(gate.after(["kapae-raise"], () => ran.push("after-raise"))).toBe(true);
+  expect(ran, "the restart waits for the raise's reply").toEqual([]);
+  gate.end(raise);
+  expect(ran).toEqual(["after-raise"]);
 });
 
-test("an act that begins after the request does not extend the wait; one that never begins here is never waited on", async () => {
+test("RED (Luna final, MED): an unrelated promote act pending forever never holds an arrival; CONTROL: a commit's own reload does wait for the commit", () => {
+  const gate = promoteActGate();
+  const stuck = {};
+  gate.begin(stuck, "promote-commit");           // never ends in this test
+  const ran: string[] = [];
+  expect(gate.after(["kapae-raise"], () => ran.push("arrival")), "a remote raise restarts at once").toBe(false);
+  expect(gate.after(["promote-commit", "promote-drop", "promote-orphan"], () => ran.push("reload"))).toBe(true);
+  expect(ran).toEqual([]);
+  gate.end(stuck);
+  expect(ran).toEqual(["reload"]);
+});
+
+test("RED: a raise whose reply never writes holds only its own deferred run; the run fires once, never for an act that begins later, and a stray end is a no-op", () => {
   const gate = promoteActGate();
   const first = {}, later = {};
-  gate.begin(first);
-  const waiting = gate.settled();
-  gate.begin(later);
+  gate.begin(first, "kapae-raise");
+  const ran: string[] = [];
+  expect(gate.after(["kapae-raise"], () => ran.push("a"))).toBe(true);
+  gate.begin(later, "kapae-raise");
   gate.end(first);
-  await waiting;
+  expect(ran, "the deferred run follows the act standing at the request alone").toEqual(["a"]);
   gate.end(later);
-  gate.end({});          // an end for an act this gate never began is a no-op
-  await gate.settled();
+  gate.end({});
+  gate.end(first);
+  expect(ran).toEqual(["a"]);
+});
+
+test("RED: a raise whose reply never writes leaves a plain holder restart (the owner door's island.restart) free to force the swap", async () => {
+  const { holdDaemonVm } = await import("@lararium/tw5");
+  const shut: string[] = [];
+  const vm = (id: string) => ({ shutdown: async () => { shut.push(id); return { acked: true }; }, dispose: () => undefined }) as never;
+  const held = holdDaemonVm({ vm: vm("old"), reopen: async () => vm("new") });
+  const gate = promoteActGate();
+  const hung = {};
+  gate.begin(hung, "kapae-raise");                // its reply never writes: `end` never fires
+  let deferred = false;
+  expect(gate.after(["kapae-raise"], () => { deferred = true; })).toBe(true);
+  const forced = await held.restart("island.restart");
+  expect(forced.restarts).toBe(1);
+  expect(shut).toEqual(["old"]);
+  expect(deferred, "the hung raise's own deferred run never fired").toBe(false);
 });

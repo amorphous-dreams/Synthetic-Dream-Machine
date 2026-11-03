@@ -1,33 +1,39 @@
 /**
- * The promote act gate: the kapae arrival on the RAISING device waits for the raise's own session act to answer.
+ * The promote act gate: the RAISING device's own raise completes before its daemon island restarts, and nothing else holds an arrival.
  *
  * A raise runs as a face row on the daemon island; the board watcher sees its act land before the row's reply leaves, and a holder restart
  * then rejects the row `daemon-restarting` though the act landed. The vessel begins each promote or kapae session act here, the channel
- * ends it once the reply left, and the arrival restart awaits `settled()`: the acts that stood when it was asked, each answered. No timer
- * decides, and the holder keeps its law (a restart never waits on a call): the wait stands in front of the restart, on acts this vessel
- * began itself. An arrival with no such act in flight (every other device) restarts at once.
+ * ends it once the reply left, and `after(kinds, run)` hands a restart to the completion of the acts of those kinds standing NOW. It never
+ * awaits and holds no promise: the holder keeps its law (a restart never waits on a call), a hung act leaves a plain restart (the owner
+ * door's `island.restart`) free to force the swap, and an arrival with no such act in flight (a remote raise, a sync) restarts at once.
+ * Narrow residual, named: a hung reply of this device's own raise holds only the deferred run for the raise standing at the request.
  */
 export const isPromoteAct = (act: string): boolean => /^(promote|kapae)-/.test(act);
 
 export interface PromoteActGate {
-  begin(act: object): void;
+  begin(act: object, kind: string): void;
   end(act: object): void;
-  /** Resolves once every act that stood at this call has ended; an act that begins later never extends it. */
-  settled(): Promise<void>;
+  /** True when acts of `kinds` stand and `run` waits on their completion; false when none stand and the caller acts now. */
+  after(kinds: readonly string[], run: () => void): boolean;
 }
 
 export function promoteActGate(): PromoteActGate {
-  const open = new Set<object>();
-  const waiters = new Set<{ left: Set<object>; done: () => void }>();
+  const open = new Map<object, string>();
+  const waiters = new Set<{ left: Set<object>; run: () => void }>();
   return {
-    begin(act) { open.add(act); },
+    begin(act, kind) { open.set(act, kind); },
     end(act) {
       if (!open.delete(act)) return;
-      for (const w of [...waiters]) { w.left.delete(act); if (!w.left.size) { waiters.delete(w); w.done(); } }
+      for (const w of [...waiters]) {
+        w.left.delete(act);
+        if (!w.left.size) { waiters.delete(w); w.run(); }
+      }
     },
-    settled() {
-      if (!open.size) return Promise.resolve();
-      return new Promise<void>((done) => { waiters.add({ left: new Set(open), done }); });
+    after(kinds, run) {
+      const left = new Set([...open].filter(([, kind]) => kinds.includes(kind)).map(([act]) => act));
+      if (!left.size) return false;
+      waiters.add({ left, run });
+      return true;
     },
   };
 }

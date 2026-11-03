@@ -1800,25 +1800,28 @@ async function prepareNodeBootOn(
   let vmManager!: VesselIslandPool;        // set in makePool
   let wikiActivation!: WikiActivationCap;  // set in makePool — the activation-on-reference cap
   const promoteActs = promoteActGate();
+  const restartDaemonNow = async () => {
+    console.log("[promote] the daemon island restarts: a shadow meets a loaded rite");
+    const done = await daemonHolder.restart("promote: kapae raised over a loaded rite");
+    console.log(`[promote] the daemon island restarted (${done.restarts})`);
+  };
+  // A restart that runs after a raise or a commit answered has no asker to tell: its failure is named, and the next arrive tries again.
+  const restartDaemonDeferred = () => { void restartDaemonNow().catch((error) => { console.warn(`[promote] restart of the daemon island failed: ${error instanceof Error ? error.message : String(error)}`); void pushPromoteSnapshot?.().catch(console.warn); }); };
   const restartWikiIsland = async (wiki: string) => {
     if (wiki === "daemon") {
-      // On the raising device the arrival lands before the raise's own reply leaves: that act answers first, then the island restarts.
-      // Every other arrival finds no promote act in flight and restarts at once; the holder itself never waits on a call.
-      console.log("[promote] the daemon island restarts: a shadow meets a loaded rite");
-      await promoteActs.settled();
-      console.log("[promote] no promote act stands in front of the daemon island restart");
-      const done = await daemonHolder.restart("promote: kapae raised over a loaded rite");
-      console.log(`[promote] the daemon island restarted (${done.restarts})`);
+      // The holder's restart never waits. On the RAISING device the arrival lands before this device's own raise reply leaves, so the restart
+      // follows that raise's completion; no other act is waited on, and any other arrival (a remote raise, a sync) restarts at once.
+      if (promoteActs.after(["kapae-raise"], restartDaemonDeferred)) return;
+      await restartDaemonNow();
     } else {
       await vmManager.unmountWiki(wiki);
       await wikiActivation.ensureActive(wiki);
     }
   };
-  // The store door's own verbs (commit, drop) run INSIDE a call the daemon island holds, so they cannot await a restart of that
-  // island: the restart waits on the very act that asks for it. The daemon wiki's reload therefore starts and the verb answers.
+  // The store door's own verbs (commit, drop) run INSIDE the act that asks for the reload, so the daemon reload follows that act's completion.
   const reloadWikiAfterVerb = async (wiki: string) => {
     if (wiki !== "daemon") return restartWikiIsland(wiki);
-    void restartWikiIsland(wiki).catch((error) => console.warn(`[promote] restart of the daemon island failed: ${error instanceof Error ? error.message : String(error)}`));
+    if (!promoteActs.after(["promote-commit", "promote-drop", "promote-orphan"], restartDaemonDeferred)) restartDaemonDeferred();
   };
   let mailbox!: DurableMailbox;            // set in makePool — the durable park/drain lane (node-only capability)
   let lightFace: (ordinal: number) => Promise<void> = async () => {};
