@@ -875,3 +875,79 @@ describe("stale inputs never boot: an emergency between prepare-pass and reopen 
     expect(replacement.downs).toBe(1);                       // the follow-up closed it at once
   });
 });
+
+describe("the final check, reopenStarted and the reopen call share ONE continuation (Sol 5)", () => {
+  const brake = (r: string) => r === "brake";
+  /** An ordinary restart whose old island is still shutting down when emergency E1 lands (so a late re-prepare runs); E2 lands `depth` microtask hops after that re-prepare returns. */
+  async function handoff(depth: number | null, extra: { disposeAt?: "during-reprepare" } = {}) {
+    const first = fakeVm();
+    const closing = deferred<void>();
+    const realShutdown = first.shutdown;
+    (first as { shutdown: () => Promise<{ acked: boolean }> }).shutdown = async () => { await closing.promise; return realShutdown(); };
+    const all = ["a", "x", "y"];
+    let shadowed = new Set<string>();
+    let calls = 0;
+    const gate2 = deferred<void>();
+    const opened: string[][] = [];
+    let held!: ReturnType<typeof holdDaemonVm<string[]>>;
+    held = holdDaemonVm<string[]>({
+      vm: first, emergency: brake,
+      prepare: async () => {
+        calls += 1;
+        const picked = all.filter((c) => !shadowed.has(c));
+        if (calls === 2) {
+          if (extra.disposeAt === "during-reprepare") await gate2.promise;
+          else if (depth !== null) {
+            let hops = Promise.resolve();
+            for (let i = 0; i < depth; i += 1) hops = hops.then(() => undefined);
+            void hops.then(() => { shadowed = new Set([...shadowed, "y"]); void held.restart("brake").catch(() => undefined); });
+          }
+        }
+        return picked;
+      },
+      reopen: async (_r, picked) => { opened.push(picked); return fakeVm(); },
+    });
+    const ordinary = held.restart("operator");
+    for (let i = 0; i < 6; i += 1) await Promise.resolve();
+    shadowed = new Set(["x"]);
+    const e1 = held.restart("brake");                 // lands while the old island shuts down: a late re-prepare will run
+    return { held, first, closing, gate2, ordinary, e1, opened, calls: () => calls };
+  }
+
+  test("an emergency landing at ANY hop after the late re-prepare returns is never lost: the last reopen always excludes the digest it shadowed", async () => {
+    for (let depth = 0; depth <= 8; depth += 1) {
+      const t = await handoff(depth);
+      t.closing.resolve();
+      await t.ordinary.catch(() => undefined); await t.e1.catch(() => undefined);
+      for (let i = 0; i < 40; i += 1) await Promise.resolve();   // let a follow-up settle
+      expect(t.opened.at(-1), `depth ${depth}: opened ${JSON.stringify(t.opened)}`).toEqual(["a"]);
+    }
+  });
+
+  test("CONTROL: with no second emergency the late re-prepare's inputs reopen once", async () => {
+    const t = await handoff(null);
+    t.closing.resolve();
+    await t.ordinary; await t.e1;
+    expect(t.opened).toEqual([["a", "y"]]);
+  });
+
+  test("a dispose during the late re-prepare means zero reopen calls", async () => {
+    const t = await handoff(null, { disposeAt: "during-reprepare" });
+    t.closing.resolve();
+    for (let i = 0; i < 12; i += 1) await Promise.resolve();   // the re-prepare stands on its gate
+    expect(t.calls()).toBe(2);
+    t.held.vm.dispose();
+    t.gate2.resolve();
+    await t.ordinary.catch(() => undefined); await t.e1.catch(() => undefined);
+    expect(t.opened).toEqual([]);
+  });
+
+  test("CONTROL: without the dispose the same restart reopens once", async () => {
+    const t = await handoff(null, { disposeAt: "during-reprepare" });
+    t.closing.resolve();
+    for (let i = 0; i < 12; i += 1) await Promise.resolve();
+    t.gate2.resolve();
+    await t.ordinary; await t.e1;
+    expect(t.opened).toHaveLength(1);
+  });
+});
