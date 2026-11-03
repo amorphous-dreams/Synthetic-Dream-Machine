@@ -224,8 +224,19 @@ export function holdDaemonVm<P = void>(o: {
           settleAll();
           if (wasReady) { innerClosed = true; await inner.shutdown(); }
           // An emergency that landed after prepare passed, while the standing island shut down, re-prepares before the replacement boots: stale inputs never boot.
-          if (o.prepare && upgraded) { upgraded = false; current = upgradeReason; await prepareUnder(); }
-          reopenStarted = true;   // no await between the last check and the reopen call
+          // The LAST check (`upgraded`, `disposed`), `reopenStarted` and the reopen call share ONE continuation: the loop re-checks after every await and nothing is awaited between the final check and the call.
+          for (;;) {
+            if (disposed) throw new DaemonRestarting("daemon-down");
+            if (!(o.prepare && upgraded)) break;
+            upgraded = false;
+            current = upgradeReason;
+            try { prepared = await o.prepare(current); }
+            catch (err) {
+              if (!disposed) { try { await stopNow(); } finally { state = "down"; } }
+              throw err;
+            }
+          }
+          reopenStarted = true;
           next = await o.reopen(current, prepared);
           if (disposed) throw new DaemonRestarting("daemon-down");   // the catch closes the replacement
           inner = next;
