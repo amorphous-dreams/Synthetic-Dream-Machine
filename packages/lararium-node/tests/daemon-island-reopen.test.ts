@@ -7,6 +7,7 @@
  */
 import { describe, expect, test } from "vitest";
 import type { DaemonVmCore } from "@lararium/tw5";
+import { KAPAE_EMERGENCY_REASON } from "@lararium/tw5";
 import { standDaemonIsland } from "../src/daemon-island-reopen.js";
 
 interface Fake extends DaemonVmCore { readonly cids: readonly string[]; readonly auth: object; downs: number }
@@ -81,7 +82,7 @@ describe("the node's daemon island re-opens through the shared plugin resolver",
     expect(opened.at(-1)).toEqual([]);
   });
 
-  test("#5 the seam arms the emergency: a kapae restart whose plugin resolution refuses closes the old island, an ordinary one keeps it", async () => {
+  test("#5 the seam arms the emergency by the ONE exported reason, never by prose: that restart, with its plugin resolution refusing, closes the old island; every other reason keeps it", async () => {
     let refuse = false;
     const opened: Fake[] = [];
     const held = await standDaemonIsland({
@@ -92,7 +93,10 @@ describe("the node's daemon island re-opens through the shared plugin resolver",
     refuse = true;
     await expect(held.restart("operator")).rejects.toThrow(/floor blob corrupt/);
     expect(opened[0]!.downs).toBe(0);
-    await expect(held.restart("kapae-raise")).rejects.toThrow(/floor blob corrupt/);
+    await expect(held.restart("kapae-raise")).rejects.toThrow(/floor blob corrupt/);   // prose never arms the brake
+    await expect(held.restart("promote: kapae raised over a loaded rite ")).rejects.toThrow(/floor blob corrupt/);   // nor a near miss
+    expect(opened[0]!.downs).toBe(0);
+    await expect(held.restart(KAPAE_EMERGENCY_REASON)).rejects.toThrow(/floor blob corrupt/);
     expect(opened[0]!.downs).toBe(1);
     await expect(held.vm.syncLegReady()).rejects.toThrow(/daemon-down/);
   });

@@ -565,3 +565,32 @@ describe("Sol train read: dispose wins, an emergency fails closed, the node repl
     expect(next.registered).toEqual(["onFrame"]);
   });
 });
+
+describe("an emergency that cannot restart still fails closed through the host's own door (Sol train #7)", () => {
+  test("failClosed replaces the shutdown on an emergency refusal: the host detaches, the holder stands daemon-down", async () => {
+    const first = fakeVm();
+    const closed: number[] = [];
+    const held = holdDaemonVm({
+      vm: first,
+      emergency: (r) => r === "brake",
+      failClosed: async (vm) => { closed.push((vm as Fake).id); },
+      prepare: async () => { throw new Error("daemon-restart-shared-holder"); },
+      reopen: async () => fakeVm(),
+    });
+    await expect(held.restart("brake")).rejects.toThrow(/daemon-restart-shared-holder/);
+    expect(closed).toEqual([first.id]);
+    expect(first.downs).toBe(0);                    // the shared island's own teardown never ran
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).toThrow(/daemon-down/);
+  });
+
+  test("CONTROL: an ordinary reason refuses by name and the tab stays ready, failClosed untouched", async () => {
+    const closed: number[] = [];
+    const held = holdDaemonVm({
+      vm: fakeVm(), emergency: (r) => r === "brake", failClosed: async (vm) => { closed.push((vm as Fake).id); },
+      prepare: async () => { throw new Error("daemon-restart-shared-holder"); }, reopen: async () => fakeVm(),
+    });
+    await expect(held.restart("operator")).rejects.toThrow(/daemon-restart-shared-holder/);
+    expect(closed).toEqual([]);
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).not.toThrow();
+  });
+});
