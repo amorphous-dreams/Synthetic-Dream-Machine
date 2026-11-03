@@ -1,4 +1,0 @@
-{ "format": "lararium-genesis-unbaked/v1",
-  "unbaked": [ { "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
-                 "sha256": "37f6dbb7facd822f37f859d447284e2359eabbef0f19f7fe25464413473fdb29",
-                 "why": "debt-porch rows 2-4 moved the plugin's weave, meme-normalize and recall verb sources; the next labelled GENESIS RE-BAKE carries them, and the promote and daemon-reopen lanes land in the same batch, so the bake waits for the batch" } ] }
