@@ -43,6 +43,8 @@ const answer = (r: CliResult): Record<string, any> => JSON.parse(r.stdout.trim()
 // adaptor names each write it could not land (`unrouted-save: "<title>"`) in the daemon's log. That line IS the observable: the module ran
 // (one `probe/ran/<ms>` title per boot) and the StartupAction ran (its own marker `probe/action-ran`).
 const ranFiles = (): string[] => [...new Set([...hearth!.bootLog().matchAll(/unrouted-save: "(probe\/ran\/\d+)"/g)].map((m) => m[1]!))];
+// An unpromoted action that wrongly ran AFTER the seed writes its marker once the bridge is attached, so the adaptor logs it by name.
+const actionWrote = (): boolean => /unrouted-save: "probe\/action-ran"/.test(hearth!.bootLog());
 const actionRan = (): boolean => /unrouted-save: "probe\/action-seen"/.test(hearth!.bootLog());
 async function settle<T>(read: () => T, done: (v: T) => boolean, ms = 30_000): Promise<T> {
   const deadline = performance.now() + ms;
@@ -82,6 +84,7 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
       await new Promise((r) => setTimeout(r, 9000));
       expect(ranFiles(), `restart ${n}: the lifted module ran\n${hearth!.bootLog().slice(-1500)}`).toEqual([]);
       expect(actionRan(), `restart ${n}: the lifted StartupAction ran (the promoted observer saw its marker)`).toBe(false);
+      expect(actionWrote(), `restart ${n}: the lifted StartupAction wrote its marker after the seed`).toBe(false);
     }
   }, 900_000);
 
