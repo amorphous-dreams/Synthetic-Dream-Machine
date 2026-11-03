@@ -24,11 +24,15 @@ import { sendCustodyFrame } from "../../packages/lares-cli/src/custody-door.js";
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const built = existsSync(join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js")) && existsSync(join(REPO_ROOT, "packages/lararium-node/dist/src/main.js"));
 
-// The module writes after the island's sync adaptor has attached (a write at startup precedes the working layer and never lands). It also
-// copies the StartupAction's own marker, so a StartupAction that ran at boot shows through a persisted tiddler.
+// A write at TW5 boot precedes the island adaptor and its change events clear after the startup actions, so a StartupAction's own tiddler
+// never shows in the daemon log. The OBSERVER is a module promoted before anything else: it runs after startup, finds the action's marker
+// tiddler if the action ran at boot, and copies it as a write the adaptor logs (`unrouted-save: "probe/action-seen"`). That observation
+// stands apart from the module under test, so a lifted action that ran WITHOUT a promotion still reads in P1.
+const OBSERVER = "exports.name=\"promote-probe-observer\";exports.after=[\"startup\"];exports.synchronous=true;"
+  + "exports.startup=function(){setTimeout(function(){if($tw.wiki.getTiddler(\"probe/action-ran\")){$tw.wiki.addTiddler({title:\"probe/action-seen\",text:\"yes\"});}},4000);};";
+// The module under test writes after the adaptor attached, one `probe/ran/<ms>` title per boot.
 const MODULE = "exports.name=\"promote-probe\";exports.after=[\"startup\"];exports.synchronous=true;"
-  + "exports.startup=function(){setTimeout(function(){$tw.wiki.addTiddler({title:\"probe/ran/\"+Date.now(),text:\"ran\"});"
-  + "if($tw.wiki.getTiddler(\"probe/action-ran\")){$tw.wiki.addTiddler({title:\"probe/action-seen\",text:\"yes\"});}},4000);};";
+  + "exports.startup=function(){setTimeout(function(){$tw.wiki.addTiddler({title:\"probe/ran/\"+Date.now(),text:\"ran\"});},4000);};";
 const ACTION = "<$action-setfield $tiddler=\"probe/action-ran\" text=\"yes\"/>";
 const SOURCES = JSON.stringify([{ title: "daemon/probe", revision: "r1" }]);
 
@@ -39,8 +43,7 @@ const answer = (r: CliResult): Record<string, any> => JSON.parse(r.stdout.trim()
 // adaptor names each write it could not land (`unrouted-save: "<title>"`) in the daemon's log. That line IS the observable: the module ran
 // (one `probe/ran/<ms>` title per boot) and the StartupAction ran (its own marker `probe/action-ran`).
 const ranFiles = (): string[] => [...new Set([...hearth!.bootLog().matchAll(/unrouted-save: "(probe\/ran\/\d+)"/g)].map((m) => m[1]!))];
-// The action's OWN marker (`probe/action-ran`), never the copy the module makes: a lifted action that ran without a promotion must read here.
-const actionRan = (): boolean => /unrouted-save: "probe\/action-ran"/.test(hearth!.bootLog());
+const actionRan = (): boolean => /unrouted-save: "probe\/action-seen"/.test(hearth!.bootLog());
 async function settle<T>(read: () => T, done: (v: T) => boolean, ms = 30_000): Promise<T> {
   const deadline = performance.now() + ms;
   for (;;) { const v = read(); if (done(v) || performance.now() > deadline) return v; await new Promise((r) => setTimeout(r, 250)); }
@@ -66,6 +69,10 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
   afterAll(async () => { await hearth?.stop(); });
 
   test("P1 — code lifts as inert data: two restarts and neither the module nor the StartupAction runs", async () => {
+    const obs = await hearth!.cli(["kahua", "lift", "rites/probe-observer", "--text", OBSERVER, "--taint", "none", "--sources", SOURCES, "--fields", JSON.stringify({ "module-type": "startup", type: "application/javascript" })]);
+    expect(obs.code, said(obs)).toBe(0);
+    const committed = await hearth!.cli(["promote", "commit", digestOf(await list(), "rites/probe-observer")]);
+    expect(committed.code, said(committed)).toBe(0);
     const mod = await hearth!.cli(["kahua", "lift", "rites/probe-module", "--text", MODULE, "--taint", "none", "--sources", SOURCES, "--fields", JSON.stringify({ "module-type": "startup", type: "application/javascript" })]);
     expect(mod.code, said(mod)).toBe(0);
     const act = await hearth!.cli(["kahua", "lift", "rites/probe-action", "--text", ACTION, "--taint", "none", "--sources", SOURCES, "--fields", JSON.stringify({ tags: "$:/tags/StartupAction" })]);
@@ -74,7 +81,7 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
       await restart();
       await new Promise((r) => setTimeout(r, 9000));
       expect(ranFiles(), `restart ${n}: the lifted module ran\n${hearth!.bootLog().slice(-1500)}`).toEqual([]);
-      expect(actionRan(), `restart ${n}: the lifted StartupAction ran`).toBe(false);
+      expect(actionRan(), `restart ${n}: the lifted StartupAction ran (the promoted observer saw its marker)`).toBe(false);
     }
   }, 900_000);
 
@@ -100,7 +107,7 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
         expect(JSON.stringify(refused), verb).toMatch(/promote-needs-hand|kapae-needs-hand|answers-on-the-socket/);
       }
     } finally { await seat.close(); }
-    expect((await list())["rows"]).toEqual([]);
+    expect(((await list())["rows"] as Array<{ title: string }>).map((r) => r.title), "only the observer stands promoted").toEqual(["rites/probe-observer"]);
     expect(ranFiles()).toEqual([]);
   }, 300_000);
 
@@ -113,7 +120,7 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
     await restart();
     const ran = await settle(ranFiles, (f) => f.length >= 1, 60_000);
     expect(ran, hearth!.bootLog().slice(-2500)).toHaveLength(1);
-    expect(actionRan()).toBe(true);
+    expect(actionRan(), `the promoted action ran at boot and the observer saw its marker; log: ${hearth!.bootLog().split("\n").filter((l) => /probe|promote/.test(l)).slice(-10).join("\n")}`).toBe(true);
   }, 600_000);
 
   test("P4 — the brake: a raise keeps the module off at the next boot; a lower brings it back", async () => {
