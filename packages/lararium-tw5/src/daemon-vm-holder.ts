@@ -41,6 +41,7 @@ export function holdDaemonVm<P = void>(o: {
   const listeners = new Set<(info: { reason: string; restarts: number }) => void | Promise<void>>();
   let restarts = 0;
   let upgraded = false;      // an emergency joined the restart standing in prepare: it fails closed whatever reason started it
+  let stopping: Promise<void> | undefined;   // an emergency's stop of the standing island, started the moment the emergency arrived
   let upgradeReason = "";   // the emergency reason that upgraded it
   let preparePassed = false; // the standing restart is past prepare
   let followUp: Promise<{ restarts: number }> | undefined;
@@ -127,6 +128,27 @@ export function holdDaemonVm<P = void>(o: {
     },
   });
 
+  const settleAll = (): void => {
+    // No wait: a call still pending settles by name, so one that never settles cannot stall the restart.
+    for (const settle of [...pending]) settle(new DaemonRestarting("daemon-restarting"));
+    pending.clear();
+    for (const settle of [...pendingAsks]) {
+      try { settle(); } catch (err) { console.error("[daemon] ask abandon failed", err); }
+    }
+  };
+  /** An EMERGENCY stops first: pending calls and asks settle by name and the standing island closes at once, before any prepare, so nothing shadowed serves while inputs prepare. */
+  const stopNow = (): Promise<void> => {
+    if (stopping) return stopping;
+    if (state !== "ready") return Promise.resolve();
+    state = "restarting";
+    settleAll();
+    innerClosed = true;
+    const closing = (async () => { await (o.failClosed ? o.failClosed(inner) : inner.shutdown()); })();
+    stopping = closing;
+    closing.catch(() => undefined);
+    return closing;
+  };
+
   const holder: DaemonVmHolder = {
     vm: facade,
     get restarts() { return restarts; },
@@ -162,20 +184,14 @@ export function holdDaemonVm<P = void>(o: {
       if (restarting) {
         if (!o.emergency?.(reason)) return restarting;
         // An emergency is never downgraded to the ordinary restart it overlaps: it upgrades one still in prepare, and follows one already past it.
-        if (!preparePassed) { upgraded = true; upgradeReason = reason; return restarting; }
+        if (!preparePassed) { upgraded = true; upgradeReason = reason; void stopNow(); return restarting; }
         followUp ??= restarting.then(() => undefined, () => undefined).then(() => { followUp = undefined; return holder.restart(reason); });
         return followUp;
       }
       upgraded = false;
       preparePassed = false;
-      const settleAll = (): void => {
-        // No wait: a call still pending settles by name, so one that never settles cannot stall the restart.
-        for (const settle of [...pending]) settle(new DaemonRestarting("daemon-restarting"));
-        pending.clear();
-        for (const settle of [...pendingAsks]) {
-          try { settle(); } catch (err) { console.error("[daemon] ask abandon failed", err); }
-        }
-      };
+      stopping = undefined;
+      if (o.emergency?.(reason)) void stopNow();
       const run = async () => {
         let prepared: P = undefined as P;
         let current = reason;
@@ -183,12 +199,9 @@ export function holdDaemonVm<P = void>(o: {
           for (;;) {
             try { prepared = await o.prepare(current); }
             catch (err) {
-              // An EMERGENCY restart fails closed: the shadowed island stops accepting work even when its replacement cannot be prepared.
-              if (!disposed && state === "ready" && (upgraded || o.emergency?.(current))) {
-                state = "restarting";
-                settleAll();
-                innerClosed = true;
-                try { await (o.failClosed ? o.failClosed(inner) : inner.shutdown()); } finally { state = "down"; }
+              // An EMERGENCY restart fails closed: the island is already stopped, and a refused prepare leaves it down.
+              if (!disposed && (upgraded || o.emergency?.(current))) {
+                try { await stopNow(); } finally { state = "down"; }
               }
               throw err;
             }
@@ -199,6 +212,9 @@ export function holdDaemonVm<P = void>(o: {
           }
         }
         preparePassed = true;
+        if (stopping) {                  // an emergency's stop finishes before anything reopens
+          try { await stopping; } catch (err) { state = "down"; throw err; }
+        }
         // A disposal or direct shutdown that started while prepare awaited ends the restart: no replacement opens beside a closing island.
         if (disposed || (state === "down" && shutdown)) throw new DaemonRestarting("daemon-down");
         const wasReady = state === "ready";
