@@ -14,10 +14,11 @@
  * `Object.prototype` write, so a zero stands as a measurement.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { applyChanges, change, getAllChanges, init, loadIncremental, save, load, generateSyncMessage, initSyncState, receiveSyncMessage } from "@automerge/automerge";
+import { applyChanges, change, getAllChanges, init, loadIncremental, save, load, generateSyncMessage, initSyncState, receiveSyncMessage, decodeSyncMessage } from "@automerge/automerge";
 import { createHash } from "node:crypto";
 import { hasOwnEntry, ownEntry, plainEntries, prototypeKeyFault, type StoredTiddlers } from "../src/stored-value.js";
-import { assertNoPrototypeKeys, chunkPrototypeKey, syncMessagePrototypeKey } from "../src/prototype-key-shore.js";
+import { PROTOTYPE_KEY_CODE, assertNoPrototypeKeys, chunkPrototypeKey, shoreInbound, syncMessagePrototypeKey } from "../src/prototype-key-shore.js";
+import { EventEmitter } from "node:events";
 import { isVerbRefusal } from "../src/verb-refusal.js";
 
 type Doc = { tiddlers: StoredTiddlers };
@@ -122,3 +123,68 @@ for (const position of ["title", "field", "nested"] as const) {
     });
   });
 }
+
+/** The first sync message CARRYING CHANGES that a doc holding `bytes` sends a peer: the frame a far end would post. */
+function messageFrom(bytes: Uint8Array): Uint8Array {
+  let doc = applyChanges(init<Doc>(), [bytes])[0], peer = init<Doc>();
+  let sd = initSyncState(), sp = initSyncState();
+  for (let i = 0; i < 6; i++) {
+    let m: Uint8Array | null;
+    [sd, m] = generateSyncMessage(doc, sd);
+    if (m && m.byteLength > 0) {
+      if (decodeSyncMessage(m).changes.length > 0) return m;
+      [peer, sp] = receiveSyncMessage(peer, sp, m);
+    }
+    let r: Uint8Array | null;
+    [sp, r] = generateSyncMessage(peer, sp);
+    if (r) [doc, sd] = receiveSyncMessage(doc, sd, r);
+  }
+  throw new Error("the doc never sent its changes");
+}
+
+/**
+ * THE REAL INBOUND PATH: an adapter emits `message` the way a peer's frame arrives, the shore sits on `emit`, and the
+ * receiving listener applies the bytes with `receiveSyncMessage`, as the Repo's synchronizer does. A refused message
+ * never reaches the listener, so the receiving doc stays empty and Object.prototype stays clean.
+ */
+function receiver() {
+  const adapter = new EventEmitter();
+  const refused: Array<{ reason: string; detail: string }> = [];
+  shoreInbound(adapter, (r) => refused.push({ reason: r.reason, detail: r.detail }));
+  const state = { doc: init<Doc>(), sync: initSyncState(), reached: 0 };
+  adapter.on("message", (m: { data: Uint8Array }) => { state.reached += 1; [state.doc, state.sync] = receiveSyncMessage(state.doc, state.sync, m.data); });
+  const arrive = (data: Uint8Array) => adapter.emit("message", { type: "sync", senderId: "peer-hostile", documentId: "doc", targetId: "me", data });
+  return { arrive, refused, state };
+}
+
+describe("a hostile sync message through shoreInbound and receiveSyncMessage", () => {
+  for (const position of ["title", "field", "nested"] as const) {
+    test(`${position}: refused by name before the listener, the receiving doc stays empty, no pollution`, () => {
+      const { arrive, refused, state } = receiver();
+      arrive(messageFrom(hostileChange(position)));
+      expect(refused).toHaveLength(1);
+      expect(refused[0]!.reason).toBe(PROTOTYPE_KEY_CODE);
+      expect(refused[0]!.detail).toMatch(/__proto__/);
+      expect(state.reached).toBe(0);
+      expect(Object.keys(state.doc)).toEqual([]);
+      expect(polluted()).toEqual([]);
+    });
+  }
+
+  test("CONTROL: a clean message lands through the same path, with no refusal", () => {
+    const { arrive, refused, state } = receiver();
+    arrive(messageFrom(hostileChange(null)));
+    expect(refused).toEqual([]);
+    expect(state.reached).toBe(1);
+    expect(hasOwnEntry(state.doc.tiddlers, "real")).toBe(true);
+    expect(polluted()).toEqual([]);
+  });
+
+  test("CONTROL: the same hostile bytes WITHOUT the shore land and materialize the phantom, so the refusal above is the shore's doing", () => {
+    const adapter = new EventEmitter();
+    let doc = init<Doc>(); let sync = initSyncState();
+    adapter.on("message", (m: { data: Uint8Array }) => { [doc, sync] = receiveSyncMessage(doc, sync, m.data); });
+    adapter.emit("message", { type: "sync", senderId: "p", data: messageFrom(hostileChange("title")) });
+    expect((doc.tiddlers as Record<string, unknown>)[PHANTOM]).toBeDefined();
+  });
+});
