@@ -229,4 +229,26 @@ describe("a merged document carries the key its view hides", () => {
     expect(docPrototypeKeyFault(load<Doc>(save(clean)))).toBeNull();
     expect(() => assertNoPrototypeKeys(clean, "merge")).not.toThrow();
   });
+
+  /**
+   * SOL'S SEQUENCE, kept as a file for the re-probe (reconstructed from its report): a hostile change carrying `__proto__` in
+   * `tiddlers`, merged with a clean peer; `save` then `load`; a clean peer's deletion of `tiddlers` merges in. Every step must
+   * either refuse by name at a door or leave no phantom reachable through `ownEntry`. Reads GREEN on the lane's tree; the probe
+   * Sol ran against the promote tree's older `dist` lacked the shore work this lane carries.
+   */
+  test("SOL'S SEQUENCE: merge, save, load, then a clean deletion — a door names the key at every step and no phantom resolves", () => {
+    const hostile = applyChanges(load<Doc>(baseBytes), [hostileOnBase()])[0];
+    const merged = merge(clone(hostile), cleanPeer());
+    const snapshot = save(merged);
+    expect(chunkPrototypeKey(snapshot)).toMatch(/__proto__/);              // the chunk shore sees inside the saved document
+    const loaded = load<Doc>(snapshot);
+    expect(Object.keys(loaded.tiddlers).sort()).toEqual(["other", "real"]);
+    expect(docPrototypeKeyFault(loaded)).toMatch(/__proto__/);              // the load door refuses it by name
+    const deleter = change(clone(loaded), (d) => { delete (d as unknown as { tiddlers?: unknown }).tiddlers; });
+    const after = merge(clone(loaded), deleter);
+    expect(docPrototypeKeyFault(after)).toMatch(/__proto__/);               // the operations still carry the key after the deletion
+    expect(ownEntry(after.tiddlers, PHANTOM)).toBeUndefined();              // and no phantom answers through the read door
+    expect(hasOwnEntry(after.tiddlers, PHANTOM)).toBe(false);
+    expect(polluted()).toEqual([]);
+  });
 });
