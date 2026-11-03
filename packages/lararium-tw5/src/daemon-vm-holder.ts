@@ -43,7 +43,7 @@ export function holdDaemonVm<P = void>(o: {
   let upgraded = false;      // an emergency joined the restart standing in prepare: it fails closed whatever reason started it
   let stopping: Promise<void> | undefined;   // an emergency's stop of the standing island, started the moment the emergency arrived
   let upgradeReason = "";   // the emergency reason that upgraded it
-  let preparePassed = false; // the standing restart is past prepare
+  let reopenStarted = false; // the standing restart began its reopen: a boot underway cannot be stopped
   let followUp: Promise<{ restarts: number }> | undefined;
   let disposed = false;     // a disposed facade restarts no more, and a restart that sees it never re-opens
   let innerClosed = false;  // the current inner island already got its shutdown
@@ -184,20 +184,21 @@ export function holdDaemonVm<P = void>(o: {
       if (restarting) {
         if (!o.emergency?.(reason)) return restarting;
         // An emergency is never downgraded to the ordinary restart it overlaps: it upgrades one still in prepare, and follows one already past it.
-        if (!preparePassed) { upgraded = true; upgradeReason = reason; void stopNow(); return restarting; }
+        if (!reopenStarted) { upgraded = true; upgradeReason = reason; void stopNow(); return restarting; }
         followUp ??= restarting.then(() => undefined, () => undefined).then(() => { followUp = undefined; return holder.restart(reason); });
         return followUp;
       }
       upgraded = false;
-      preparePassed = false;
+      reopenStarted = false;
       stopping = undefined;
       if (o.emergency?.(reason)) void stopNow();
       const run = async () => {
         let prepared: P = undefined as P;
         let current = reason;
-        if (o.prepare) {
+        // Prepare under `current`; an emergency that landed while it ran may postdate its inputs, so prepare runs again under that emergency until none lands.
+        const prepareUnder = async (): Promise<void> => {
           for (;;) {
-            try { prepared = await o.prepare(current); }
+            try { prepared = await o.prepare!(current); }
             catch (err) {
               // An EMERGENCY restart fails closed: the island is already stopped, and a refused prepare leaves it down.
               if (!disposed && (upgraded || o.emergency?.(current))) {
@@ -205,13 +206,12 @@ export function holdDaemonVm<P = void>(o: {
               }
               throw err;
             }
-            // An emergency that landed while prepare ran may postdate the inputs it read: prepare runs again under that emergency before anything reopens.
             if (!upgraded) break;
             upgraded = false;
             current = upgradeReason;
           }
-        }
-        preparePassed = true;
+        };
+        if (o.prepare) await prepareUnder();
         if (stopping) {                  // an emergency's stop finishes before anything reopens
           try { await stopping; } catch (err) { state = "down"; throw err; }
         }
@@ -223,6 +223,9 @@ export function holdDaemonVm<P = void>(o: {
         try {
           settleAll();
           if (wasReady) { innerClosed = true; await inner.shutdown(); }
+          // An emergency that landed after prepare passed, while the standing island shut down, re-prepares before the replacement boots: stale inputs never boot.
+          if (o.prepare && upgraded) { upgraded = false; current = upgradeReason; await prepareUnder(); }
+          reopenStarted = true;   // no await between the last check and the reopen call
           next = await o.reopen(current, prepared);
           if (disposed) throw new DaemonRestarting("daemon-down");   // the catch closes the replacement
           inner = next;
