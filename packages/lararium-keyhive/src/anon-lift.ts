@@ -254,9 +254,12 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
         if (!interrupted) {
           const slug = floorKey.slice(0, -mark.length).replace(/^.*\/wikis\//, "");
           const url = await working.urlOf(slug);
-          const into = await working.open(url, slug);
-          try { carryTiddlers(await readDoc(args, oldUrl), into); }
+          // The floor source is read FIRST: a silent one opens no destination, so no blank document stands at the derived address.
+          let source: LarDoc | undefined;
+          try { source = await readDoc(args, oldUrl); }
           catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
+          const into = await working.open(url, slug);
+          carryTiddlers(source, into);
           await args.repo.flush([into.documentId]);
           await args.faceDoor.mint(url, "admin");
           // MARK, BURN, THEN DELETE: the key keeps the lift's mark until the floor document burns.
