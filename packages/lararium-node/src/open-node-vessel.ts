@@ -80,7 +80,7 @@ import {
   composeVerbPlane,
   mempalaceProviderCap, formPalaceProviderCap, daemonVerbProviderCap, telemetryProviderCap,
   recallVerbCap, telemetryVerbCap, captureVerbCap, worldlineVerbCap,
-  makeCatalogAccessor, liveKahuaFace,
+  makeCatalogAccessor, liveKahuaFace, KAPAE_EMERGENCY_REASON,
 } from "@lararium/tw5";
 import type {
   VesselWikiSlot, DaemonVmCore, DaemonVmHolder, VesselDaemonVm, VesselOrchestration,
