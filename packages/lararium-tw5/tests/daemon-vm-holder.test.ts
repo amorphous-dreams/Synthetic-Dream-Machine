@@ -632,7 +632,7 @@ describe("an emergency that overlaps an ordinary restart is never downgraded (So
     expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).not.toThrow();
   });
 
-  test("an emergency that arrives after the standing restart passed prepare schedules one follow-up emergency restart, never dropped", async () => {
+  test("an emergency that arrives once the standing restart began its reopen schedules one follow-up emergency restart, never dropped", async () => {
     const first = fakeVm();
     const second = fakeVm();
     const opening = deferred<DaemonVmCore>();
@@ -644,7 +644,7 @@ describe("an emergency that overlaps an ordinary restart is never downgraded (So
       reopen: () => (++opens === 1 ? opening.promise : Promise.resolve(fakeVm())),
     });
     const ordinary = held.restart("operator");
-    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+    for (let i = 0; i < 8; i += 1) await Promise.resolve();   // the ordinary restart is mid-reopen
     const emergency = held.restart("brake");
     const emergencyOutcome = emergency.then(() => "restarted", (e: Error) => e.message);
     opening.resolve(second);
