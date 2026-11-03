@@ -78,7 +78,7 @@ export function promoteBoot(opts: {
         for (const edge of hit) held.delete(edge);
         restarted.push(wiki);
       }
-      // An UNREAD cache is never replaced: the board-only reading would erase an older shadow the board no longer shows.
+      // An UNREAD cache is never replaced: the board-only reading would erase an older shadow the board does not show.
       if (board && localRead && new TextDecoder().decode(encodeKapaeLocal(local)) !== new TextDecoder().decode(encodeKapaeLocal(next))) {
         try { await opts.stores.local.write(next); } catch { opts.onFault?.("ledger-unreadable"); }
       }
