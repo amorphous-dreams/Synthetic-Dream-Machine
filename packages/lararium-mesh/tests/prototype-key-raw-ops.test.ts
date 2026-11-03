@@ -23,15 +23,15 @@ import { isVerbRefusal } from "../src/verb-refusal.js";
 
 type Doc = { tiddlers: StoredTiddlers };
 const PHANTOM = "lar:///phantom";
-type Position = "title" | "field" | "nested";
-const PLACEHOLDER = { title: "ZZZZZZZZZ", field: "YYYYYYYYY", nested: "WWWWWWWWW" } as const;
+type Position = "title" | "field" | "nested" | "fieldString";
+const PLACEHOLDER = { title: "ZZZZZZZZZ", field: "YYYYYYYYY", nested: "WWWWWWWWW", fieldString: "YYYYYYYYY" } as const;
 
 /** One change whose placeholder at `position` reads `__proto__` after the rewrite (null position: a clean change). */
 function hostileChange(position: Position | null): Uint8Array {
   const doc = change(init<Doc>(), (d) => {
     (d as unknown as { tiddlers: unknown }).tiddlers = {
       [PLACEHOLDER.title]: { [PHANTOM]: { tiddler: { title: "p" } } },
-      real: { tiddler: { title: "real", [PLACEHOLDER.field]: { phantomField: "x" }, n: { [PLACEHOLDER.nested]: { a: 1, polluted: true } } } },
+      real: { tiddler: { title: "real", [PLACEHOLDER.field]: position === "fieldString" ? "plain-string" : { phantomField: "x" }, n: { [PLACEHOLDER.nested]: { a: 1, polluted: true } } } },
     };
   });
   let bytes = Buffer.from(getAllChanges(doc)[0]!);
@@ -69,7 +69,7 @@ describe("a clean change reads clean at every door (control)", () => {
   });
 });
 
-for (const position of ["title", "field", "nested"] as const) {
+for (const position of ["title", "field", "nested", "fieldString"] as const) {
   describe(`__proto__ as a ${position} key in raw ops`, () => {
     const bytes = hostileChange(position);
 
@@ -99,7 +99,11 @@ for (const position of ["title", "field", "nested"] as const) {
     test("the ingest shore names the key: the raw chunk, the view, the assert and a sync message", () => {
       expect(chunkPrototypeKey(bytes)).toMatch(/__proto__/);
       const [doc] = applyChanges(init<Doc>(), [bytes]);
-      expect(prototypeKeyFault(doc)).toMatch(/__proto__/);
+      // The view door names the object-valued positions; a STRING-valued `__proto__` leaves no trace in the view (the JS setter
+      // ignores a primitive), so the operations door is the one that names every position.
+      if (position !== "fieldString") expect(prototypeKeyFault(doc)).toMatch(/__proto__/);
+      else expect(prototypeKeyFault(doc)).toBeNull();
+      expect(docPrototypeKeyFault(doc)).toMatch(/__proto__/);
       let caught: unknown;
       try { assertNoPrototypeKeys(doc, "probe"); } catch (e) { caught = e; }
       expect(isVerbRefusal(caught)).toBe(true);
@@ -158,7 +162,7 @@ function receiver() {
 }
 
 describe("a hostile sync message through shoreInbound and receiveSyncMessage", () => {
-  for (const position of ["title", "field", "nested"] as const) {
+  for (const position of ["title", "field", "nested", "fieldString"] as const) {
     test(`${position}: refused by name before the listener, the receiving doc stays empty, no pollution`, () => {
       const { arrive, refused, state } = receiver();
       arrive(messageFrom(hostileChange(position)));

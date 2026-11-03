@@ -34,7 +34,8 @@ export function chunkPrototypeKey(bytes: Uint8Array): string | null {
     return op ? `change ${change.hash} writes a \`${String(op.key)}\` key` : null;
   } catch { /* not a raw change: a document chunk, read below */ }
   try {
-    return prototypeKeyFault(load(bytes), "chunk");
+    // A document chunk reads through its OPERATIONS as well as its view: a string-valued `__proto__` leaves no trace in the view.
+    return docPrototypeKeyFault(load(bytes));
   } catch {
     return null;
   }
@@ -72,6 +73,19 @@ export function docPrototypeKeyFault(doc: unknown): string | null {
 export function assertNoPrototypeKeys(doc: unknown, where: string): void {
   const fault = docPrototypeKeyFault(doc);
   if (fault) throw new VerbRefusal(PROTOTYPE_KEY_CODE, `${PROTOTYPE_KEY_CODE}: ${where}: ${fault} — a by-key map never holds one; the bytes refuse`);
+}
+
+interface MergeHandle { doc(): unknown; merge(other: never): void }
+/**
+ * A DIRECT HANDLE MERGE, GUARDED. The sync shore cuts hostile bytes at the wire and the storage shore at rest; a handle merging
+ * another handle (a late remote into a fallback, a live genesis handle taking the incoming one) crosses neither. The SOURCE
+ * reads through the operations door before the merge, so the target never takes the bytes, and the MERGED result reads again
+ * after, since a merge result's view can hide the key. Refuses by name (`prototype-key`).
+ */
+export function mergeGuarded(target: MergeHandle, source: MergeHandle, where: string): void {
+  assertNoPrototypeKeys(source.doc(), `${where}: incoming document`);
+  target.merge(source as never);
+  assertNoPrototypeKeys(target.doc(), `${where}: merged document`);
 }
 
 /** One message the shore dropped. */
