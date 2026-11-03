@@ -9,7 +9,7 @@ export interface DaemonVmHolder {
 }
 
 /**
- * THE ONE REASON THAT ARMS THE BRAKE. A restart called with exactly this string is the kapae emergency: a refused prepare still closes the old
+ * THE ONE REASON THAT ARMS THE BRAKE. A restart called with exactly this string is the kapae emergency: a refused prepare still closes the standing
  * island (fail CLOSED) instead of leaving shadowed code running. Callers pass this constant; no prose, prefix or near miss matches.
  */
 export const KAPAE_EMERGENCY_REASON = "promote: kapae raised over a loaded rite";
@@ -27,9 +27,9 @@ export function holdDaemonVm<P = void>(o: {
   vm: DaemonVmCore;
   prepare?: (reason: string) => Promise<P>;
   reopen: (reason: string, prepared: P) => Promise<DaemonVmCore>;
-  /** A restart whose reason this names fails CLOSED: a refused prepare still shuts the old island down and stands `daemon-down` (the brake beats availability). */
+  /** A restart whose reason this names fails CLOSED: a refused prepare still shuts the standing island down and stands `daemon-down` (the brake beats availability). */
   emergency?: (reason: string) => boolean;
-  /** How an emergency refusal closes the old island; absent, it shuts it down. A host that shares its island with others (a browser tab on the shared holder) detaches itself here. */
+  /** How an emergency refusal closes the standing island; absent, it shuts it down. A host that shares its island with others (a browser tab on the shared holder) detaches itself here. */
   failClosed?: ((vm: DaemonVmCore) => void | Promise<void>) | undefined;
   /** `manifest`: the re-opened island's manifest carries the lit faces, so the holder records and replays none (the node reads each face's current standing at every open). */
   faces?: "replay" | "manifest";

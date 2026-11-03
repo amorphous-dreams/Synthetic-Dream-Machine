@@ -6,8 +6,8 @@ const isEmergency = (reason: string): boolean => reason === KAPAE_EMERGENCY_REAS
 
 /**
  * Stand the daemon island once and hold it for re-opens. Every open (the first and each restart) resolves the plugin inputs through the
- * shared resolver and reads every joined face's CURRENT custody standing, so a plugin change takes effect and a sibling that locked or
- * dropped since boot never rides a re-open. The resolver runs first (`prepare`), so an ordinary refusal leaves the old island standing;
+ * shared resolver and reads every joined face's CURRENT custody standing, so a plugin change takes effect and a sibling that holds its custody locked or
+ * dropped at the open never rides it. The resolver runs first (`prepare`), so an ordinary refusal leaves the standing island running;
  * the kapae emergency fails closed. The manifest carries the lit faces, so the holder replays none.
  */
 export async function standDaemonIsland(o: {
