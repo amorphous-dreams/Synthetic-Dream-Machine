@@ -44,13 +44,14 @@ export function promoteBoot(opts: {
       }
     },
     async arrive(): Promise<readonly string[]> {
-      let board: Awaited<ReturnType<typeof opts.board>>;
-      try { board = await opts.board(); } catch { opts.onFault?.("board-unreadable"); return []; }
+      // An unreadable board never skips the brake: the cached shadow stands alone (an offline boot honors it the same way).
+      let board: Awaited<ReturnType<typeof opts.board>> | null = null;
+      try { board = await opts.board(); } catch { opts.onFault?.("board-unreadable"); }
       // THE BRAKE RUNS FIRST. A torn cache read never stops it (the board's own reading stands alone), and the cache is persisted AFTER the
       // restarts: a failed write is named and tried again by the next arrive, never thrown into the brake.
       let local: Awaited<ReturnType<typeof opts.stores.local.read>> = EMPTY_KAPAE_LOCAL;
       try { local = await opts.stores.local.read(); } catch { opts.onFault?.("ledger-unreadable"); }
-      const edges = kapaeStanding(local, board);
+      const edges = board ? kapaeStanding(local, board) : new Set(local.shadowed);
       const allLoaded = new Set([...loaded.values()].flatMap(set => [...set]));
       const next = kapaeNoteArrival(local, edges, allLoaded).local;
       const restarted: string[] = [];
@@ -76,7 +77,7 @@ export function promoteBoot(opts: {
         for (const edge of hit) held.delete(edge);
         restarted.push(wiki);
       }
-      if (new TextDecoder().decode(encodeKapaeLocal(local)) !== new TextDecoder().decode(encodeKapaeLocal(next))) {
+      if (board && new TextDecoder().decode(encodeKapaeLocal(local)) !== new TextDecoder().decode(encodeKapaeLocal(next))) {
         try { await opts.stores.local.write(next); } catch { opts.onFault?.("ledger-unreadable"); }
       }
       return restarted.sort();

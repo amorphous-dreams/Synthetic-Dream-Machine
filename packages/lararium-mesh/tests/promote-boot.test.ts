@@ -21,7 +21,7 @@ const D = promoteDigest(RITE);
 const itemOf = (i: typeof RITE): PromoteItem => ({ ...i, revision: "r1", origin: { seat: "s", device: "d", session: "s-1" } });
 
 async function boot(opts: { locked?: boolean } = {}) {
-  const hooks = { tornLocalRead: false, failLocalWrite: false, rotated: false };
+  const hooks = { tornLocalRead: false, failLocalWrite: false, rotated: false, boardDown: false };
   const root = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(1)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(1)) };
   const face = { group: GROUP, grant: (k: string) => k === root.key, device: () => false };
   const st = {
@@ -35,7 +35,7 @@ async function boot(opts: { locked?: boolean } = {}) {
       local: { read: async () => { if (opts.locked) throw new Error("CustodyLocked"); if (hooks.tornLocalRead) throw new Error("torn cache"); return st.local; }, write: async (l) => { if (hooks.failLocalWrite) throw new Error("disk full"); st.local = l; } },
     },
     cas: { put: (d, bytes) => { st.cas.set(d, bytes); }, pin: (d) => { st.pinned.add(d); } },
-    board: async () => readPromoteBoard(st.acts, hooks.rotated ? { ...face, grant: () => false } : face),
+    board: async () => { if (hooks.boardDown) throw new Error("board unreadable"); return readPromoteBoard(st.acts, hooks.rotated ? { ...face, grant: () => false } : face); },
     itemsOf: async (wiki) => st.items.get(wiki) ?? [],
     restart: async (wiki, hit) => {
       st.hits.push([wiki, [...hit]]);
@@ -270,5 +270,24 @@ describe("a pending restart suppresses only the edge it carries (Sol #6)", () =>
     expect(st.hits).toEqual([[W1, [promoteEdgeKey(W1, D)]]]);
     await b.arrive();
     expect(st.hits, "the same edge is already carried").toHaveLength(1);
+  });
+});
+
+describe("an unreadable board never skips the brake (Luna cure read #1)", () => {
+  test("RED: a loaded edge the cache shadows restarts though the board cannot be read, and the cache stays as it was; CONTROL: with an empty cache an unreadable board restarts nothing", async () => {
+    const { b, st, hooks, raise } = await boot();
+    await b.promotedFor(W1);
+    st.acts.push(await raise(W1));
+    st.failRestart.add(W1);
+    expect(await b.arrive()).toEqual([]);                 // the restart failed: W1 still holds its loaded edge, the cache holds the shadow
+    st.failRestart.clear();
+    hooks.boardDown = true;
+    expect(await b.arrive(), "the cache alone retries the brake").toEqual([W1]);
+    expect(st.faults).toContain("board-unreadable");
+    expect(st.local.shadowed).toEqual([promoteEdgeKey(W1, D)]);
+    const quiet = await boot();
+    await quiet.b.promotedFor(W1);
+    quiet.hooks.boardDown = true;
+    expect(await quiet.b.arrive()).toEqual([]);
   });
 });
