@@ -13,7 +13,7 @@ import { describe, expect, test } from "vitest";
 import {
   groupSecretOpenerFromSeed, makeIslandRepo, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
   personaLineageFromKel, personaActRecordsOfGroup, projectPersonaLog, seedDaemonDoc, signPersonaAct, ed25519SignerFromSeed,
-  ed25519VerifyingKeyFromSeed, actCid, FACE_PLANE, faceRelationOf, type LarDoc,
+  ed25519VerifyingKeyFromSeed, actCid, FACE_PLANE, faceRelationOf, writePersonaAct, type LarDoc,
 } from "@lararium/mesh";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
@@ -38,7 +38,7 @@ async function founded(n: number, relation?: string) {
   const records = () => personaActRecordsOfGroup(persona.doc(), face.personaGroupId);
   const project = () => projectPersonaLog(records(), { group: face.personaGroupId, lineage, authorize: () => true });
   const faceActs = () => records().filter((r) => (r as { body: Record<string, unknown> }).body["act"] === "plane" && (r as { body: Record<string, unknown> }).body["plane"] === FACE_PLANE);
-  return { face, input, project, faceActs };
+  return { face, input, project, faceActs, persona, signerSeed, lineage };
 }
 
 describe("the founding pins the face's relation id", () => {
@@ -102,5 +102,20 @@ describe("a joinee reads F from the verified admit bundle", () => {
   test("CONTROL: a stranger's face-plane act names none", async () => {
     const applied = await admitWith(async (head, group, epoch) => [await faceAct(head, group, epoch, new Uint8Array(32).fill(99))]);
     expect((applied as unknown as { faceRelation: string | null }).faceRelation).not.toBe(RECOVERED);
+  });
+});
+
+describe("the pin is founding-only: a later plane act never rewrites F", () => {
+  test("RED: a later root-signed plane act naming another id reads as no act, so the projection keeps the founding F; CONTROL: the founding F stands before the act", async () => {
+    const f = await founded(6);
+    const first = faceRelationOf(f.project());
+    expect(first).toMatch(UUID);
+    const head = f.project().head!;
+    const epoch = 0;
+    const act = await signPersonaAct({ seq: head.seq, cid: head.cid }, { group: f.face.personaGroupId, act: "plane", epoch, fields: { plane: FACE_PLANE, url: RECOVERED } },
+      { key: await ed25519VerifyingKeyFromSeed(f.signerSeed), sign: ed25519SignerFromSeed(f.signerSeed) });
+    f.persona.change((draft) => { writePersonaAct(draft, act); });
+    expect(faceRelationOf(f.project())).toBe(first);
+    expect(faceRelationOf(f.project())).not.toBe(RECOVERED);
   });
 });
