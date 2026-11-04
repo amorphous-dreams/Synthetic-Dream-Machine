@@ -287,6 +287,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   private readonly residentWaiters = new Set<() => void>();
+  /** Removals (a draft's tombstone, a rename source) parked because their target family was not durably acknowledged, by target title. */
+  private readonly deferredRemovals = new Map<string, Array<{ bag: string; base: readonly string[] | undefined; puts: LarTiddlerRecord[]; deletes: string[] }>>();
   /** The slot children a family call put, by address, until a landing wave or a different state replaces them. */
   private readonly familyPlaced = new Map<string, LarTiddlerRecord>();
   /** Run `fn` once the shore stands resident (at once when it does): the outbound bridge holds a pre-resident write here. */
@@ -1128,14 +1130,16 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const taken = this.gate.consume(members);
     for (const member of members) { this.pendingHand.add(member); this.handed.delete(member); }
 
-    interface Group { bag: string; base: readonly string[] | undefined; puts: LarTiddlerRecord[]; deletes: string[]; titles: string[]; from?: { bag: string; heads: readonly string[] } }
+    interface Group { bag: string; base: readonly string[] | undefined; puts: LarTiddlerRecord[]; deletes: string[]; titles: string[]; removal?: true; from?: { bag: string; heads: readonly string[] } }
     const groups: Group[] = [];
     const strays: Array<{ slot: SlotUri; uri: string }> = [];
     const sentValues = new Map<string, unknown | null>();
-    const group = (bag: string, base: readonly string[] | undefined, puts: LarTiddlerRecord[], deletes: string[], titles: string[], from?: { bag: string; heads: readonly string[] }): void => {
-      const found = groups.find((g) => g.bag === bag && sameHeads(g.base, base));
+    // A REMOVAL group (the draft's own tombstone, a rename's source tombstone) never merges with a target group: it is issued only
+    // after the target family's DURABLE ack (the capture route: the store copy of the draft is the recovery copy until then).
+    const group = (bag: string, base: readonly string[] | undefined, puts: LarTiddlerRecord[], deletes: string[], titles: string[], from?: { bag: string; heads: readonly string[] }, removal = false): void => {
+      const found = groups.find((g) => g.bag === bag && sameHeads(g.base, base) && (g.removal === true) === removal);
       if (found) { found.puts.push(...puts); found.deletes.push(...deletes); found.titles.push(...titles); if (from && !found.from) found.from = from; }
-      else groups.push({ bag, base, puts, deletes, titles, ...(from ? { from } : {}) });
+      else groups.push({ bag, base, puts, deletes, titles, ...(removal ? { removal: true as const } : {}), ...(from ? { from } : {}) });
     };
     let surfaced: Promise<void> | null = null;
     let tombstonedSource = false;
@@ -1170,7 +1174,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
           if (landedBag) {
             const bag = this._tombstoneBag(entry.of, landedBag);
             const base = bag === entry.baseBag ? entry.baseHeads : standing?.bag === bag ? standing.heads : undefined;
-            group(bag, base && base.length > 0 ? base : undefined, [], [entry.of], [entry.of]);
+            group(bag, base && base.length > 0 ? base : undefined, [], [entry.of], [entry.of], undefined, true);
             sentValues.set(entry.of, null);
             tombstonedSource = true;
           }
@@ -1180,7 +1184,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         const bag = entry.bag ?? this.ledger.landedOf(draftTitle)?.bag ?? this.handBase.get(draftTitle)?.bag;
         if (bag) {
           const draftBag = this._tombstoneBag(draftTitle, bag);
-          group(draftBag, this._handBaseFor(draftTitle, draftBag), [], [draftTitle], [draftTitle]);
+          group(draftBag, this._handBaseFor(draftTitle, draftBag), [], [draftTitle], [draftTitle], undefined, true);
           sentValues.set(draftTitle, null);
         }
       } else this._clearUnsaved(draftTitle);
@@ -1193,9 +1197,44 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const ackBefore = new Map([...sentValues.keys()].map((title) => [title, this.writeAcks.get(title) ?? 0]));
     // Every store call of the act is issued here, before the first await.
     const hold = groups.length > 0 ? this.restDoor?.begin() : undefined;   // in the turn of the dispatch, so the act's result can wait
-    const issued = groups.map((g) => this._issueGroup(g.bag, g.base, g.puts, g.deletes, origin));
+    // THE SAVE ORDER (operator ruling 2026-11-04): the target family goes first and must be DURABLY acknowledged (the rest door's heads ack
+    // from the vessel's storage-backed Repo); only then are the draft and a rename's source removed. A failure keeps the store copy of the
+    // draft (the recovery copy) and defers its removal until the target's next acknowledged write.
+    const targetAt = groups.map((g, index) => g.removal === true ? -1 : index).filter((index) => index >= 0);
+    const removalAt = groups.map((g, index) => g.removal === true ? index : -1).filter((index) => index >= 0);
+    // A CANCEL (no target family at all) has nothing to wait for: its removals are issued here, in the turn of the dispatch.
+    const noTarget = targetAt.length === 0 && strays.length === 0 && !surfaced;
+    const early = noTarget ? removalAt.map((index) => this._issueGroup(groups[index]!.bag, groups[index]!.base, groups[index]!.puts, groups[index]!.deletes, origin)) : null;
     const issuedStrays = strays.map(({ slot, uri }) => this.store.tombstoneInBag(slot, uri, origin));
-    const settled = await Promise.allSettled([...issued, ...issuedStrays, ...(surfaced ? [surfaced] : [])]);
+    const issuedTargets = targetAt.map((index) => this._issueGroup(groups[index]!.bag, groups[index]!.base, groups[index]!.puts, groups[index]!.deletes, origin));
+    const first = await Promise.allSettled([...issuedTargets, ...issuedStrays, ...(surfaced ? [surfaced] : [])]);
+    const targetResults = first.slice(0, targetAt.length);
+    let acknowledged = first.every((outcome) => outcome.status === "fulfilled");
+    if (acknowledged && targetAt.length > 0 && this.restDoor) {
+      try { await this.restDoor.ack([...new Set(targetAt.map((index) => groups[index]!.bag))]); }
+      catch (error) {
+        acknowledged = false;
+        // Written but not durably acknowledged: the target reads as unwritten, so its obligation stays owed and retries.
+        targetResults.forEach((outcome, at) => { if (outcome.status === "fulfilled") targetResults[at] = { status: "rejected", reason: error } as PromiseRejectedResult; });
+      }
+    }
+    const removalResults = new Map<number, PromiseSettledResult<void>>();
+    if (early) {
+      const done = await Promise.allSettled(early);
+      removalAt.forEach((index, at) => removalResults.set(index, done[at]!));
+    } else if (removalAt.length > 0) {
+      if (acknowledged) {
+        const done = await Promise.allSettled(removalAt.map((index) => this._issueGroup(groups[index]!.bag, groups[index]!.base, groups[index]!.puts, groups[index]!.deletes, origin)));
+        removalAt.forEach((index, at) => removalResults.set(index, done[at]!));
+      } else {
+        this.deferredRemovals.set(target, removalAt.map((index) => groups[index]!));
+        removalAt.forEach((index) => removalResults.set(index, { status: "fulfilled", value: undefined }));
+      }
+    }
+    const settled: Array<PromiseSettledResult<void>> = [
+      ...groups.map((_, index) => removalResults.get(index) ?? targetResults[targetAt.indexOf(index)]!),
+      ...first.slice(targetAt.length),
+    ];
     let handBags: string[] = [];
     {
       // The ordinary hands this act's own dispatch left marked (the story list the navigator rewrote, for one) leave with the act:
@@ -1253,6 +1292,19 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     }
     if (fault === null) this.draftBook.delete(draftTitle);
     taken.settle(fault ?? undefined);
+    // A failed act re-marks its consumed members as owed; the draft and a rename's source are NOT owed (their removal waits, parked,
+    // behind the target's acknowledged write), and re-firing one would tombstone the recovery copy.
+    if (this.deferredRemovals.has(target)) this.gate.drop(removalAt.flatMap((index) => groups[index]!.titles));
+  }
+
+  /** Run the removals parked behind `target` once its family is durably acknowledged; they stay parked when the ack does not come. */
+  private async _releaseRemovals(target: string, origin: ChangeOrigin, writeBag: string | undefined): Promise<void> {
+    const parked = this.deferredRemovals.get(target);
+    if (!parked) return;
+    if (this.restDoor && writeBag) await this.restDoor.ack([writeBag]);
+    this.deferredRemovals.delete(target);
+    const done = await Promise.allSettled(parked.map((g) => this._issueGroup(g.bag, g.base, g.puts, g.deletes, origin)));
+    for (const outcome of done) if (outcome.status === "rejected") console.warn(`[island-adaptor] a parked removal for "${target}" was refused: ${String(outcome.reason)}`);
   }
 
   /** One `writeFamily` call for one (bag, base); a base outside the document's history retries without it. */
@@ -1401,6 +1453,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       // an equal state already stood (a noop). A noop fires no envelope, so no return wave lands over `sent`
       // and none clears `unlanded`: only an acknowledged write stands ahead of the ledger.
       const acknowledged = (this.writeAcks.get(title) ?? 0) > ackBefore;
+      // The target stands in the store: a draft removal parked behind it (a save whose family was not durably acknowledged) proceeds now,
+      // after the durable ack of THIS write; a failure here keeps the obligation owed.
+      if (this.deferredRemovals.has(title)) await this._releaseRemovals(title, origin, writeBag);
       this.lastFlushWrote.set(title, acknowledged);
       if (writeBag) this.lastWriteBag.set(title, writeBag);
       if (acknowledged) this.unlanded.add(title);

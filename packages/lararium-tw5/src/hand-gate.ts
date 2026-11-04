@@ -85,6 +85,9 @@ export class HandGate {
     }) };
   }
 
+  /** Forget the obligation for these titles (their removal is parked behind a target's ack elsewhere): nothing re-fires them. */
+  drop(titles: readonly string[]): void { for (const title of titles) this.entries.delete(title); }
+
   retained(): string[] { return this.titles(); }
   has(title: string): boolean { return this.entries.has(title); }
   titles(): string[] { return [...this.entries.keys()]; }

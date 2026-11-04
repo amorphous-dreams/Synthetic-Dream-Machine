@@ -52,6 +52,44 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     await r.stop();
   }, 120_000);
 
+  test("SAVE ORDER (durable ack): the draft leaves only after the target family is DURABLY acknowledged; a missing ack keeps the recovery copy and the removal waits for the next acknowledged write", async () => {
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
+    const x = "lar:///t/road/save-ack";
+    await seedRecords(r, [{ title: x, text: "landed" }]);
+    await r.adaptor.armSeedCheckpoint();
+    const order: string[] = [];
+    let ackOk = false;
+    r.adaptor.restDoor = {
+      begin: () => ({ done: () => {} }), held: () => null, idle: async () => {}, answer: () => false, stalledAsks: () => 0, close: () => {},
+      ack: async (slots: readonly string[]) => { order.push(`ack:${slots.join(",")}`); if (!ackOk) throw new Error("the vessel did not rest the written documents"); },
+    } as never;
+    const d = openDraft(r, x, "keystroke 0");
+    await afterDispatch();
+    typeInto(r, d, "the edit that must survive");
+    await afterDispatch();
+    await r.adaptor.handsRested().catch(() => {});
+    expect(storeText(r, draftBag, d), "the recovery copy stands before the save").toBe("the edit that must survive");
+    const mark = r.calls.length;
+    saveSequence(r, d);
+    await afterDispatch();
+    await turns(24);
+    const removals = r.calls.slice(mark).filter((c) => c.deletes.includes(d));
+    expect(removals, "no removal of the draft while the target family stands unacknowledged").toEqual([]);
+    expect(storeDeleted(r, draftBag, d), "the recovery copy is intact").toBe(false);
+    ackOk = true;
+    await r.adaptor.handsRested().catch(() => {});
+    await turns(24);
+    const after = r.calls.slice(mark);
+    const writeAt = after.findIndex((c) => c.puts.includes(x));
+    const removeAt = after.findIndex((c) => c.deletes.includes(d));
+    expect(writeAt, "the target was written").toBeGreaterThanOrEqual(0);
+    expect(removeAt, "the draft is removed once the target is acknowledged").toBeGreaterThan(writeAt);
+    expect(storeDeleted(r, draftBag, d)).toBe(true);
+    expect(storeText(r, workingBag, x)).toBe("the edit that must survive");
+    await r.stop();
+  }, 120_000);
+
   test("R + control: a save act leaves in the dispatch turn with the draft-open base and no timer", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
