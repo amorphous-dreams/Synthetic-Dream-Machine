@@ -278,7 +278,17 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   armSeedCheckpoint(): Promise<void> {
     this.installLandingQueue();
-    return this.landing!.checkpoint().then(() => { this.resident = true; });
+    return this.landing!.checkpoint().then(() => {
+      this.resident = true;
+      const waiting = [...this.residentWaiters]; this.residentWaiters.clear();
+      for (const fn of waiting) fn();
+    });
+  }
+
+  private readonly residentWaiters = new Set<() => void>();
+  /** Run `fn` once the shore stands resident (at once when it does): the outbound bridge holds a pre-resident write here. */
+  whenResident(fn: () => void): void {
+    if (this.resident) fn(); else this.residentWaiters.add(fn);
   }
 
   landingIdle(): Promise<void> { return this.landing?.idle() ?? Promise.resolve(); }
@@ -775,6 +785,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // A stopped shore holds no account of the wiki: a restart seeds its ledger afresh and turns resident
     // again at its own seed checkpoint, so no stale landed value reads a later change as foam.
     this.resident = false;
+    this.residentWaiters.clear();
     this.ledger.clear();
     this.landedHeads.clear();
     this.sent.clear();

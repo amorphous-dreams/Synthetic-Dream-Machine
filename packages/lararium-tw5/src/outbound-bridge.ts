@@ -27,8 +27,23 @@ interface BridgeWiki {
 export function bridgeWikiToAdaptor(tw5: TW5Engine, adaptor: IslandAdaptor): () => void {
   const wiki = tw5.$tw.wiki as unknown as BridgeWiki;
   adaptor.installLandingQueue();
+  // A write the wiki makes BEFORE the shore stands resident reaches no bag: TW5's own boot writes (slot pointers, status titles) notify
+  // after the bridge stands, so a save of every one would flood the stores with boot noise. The loss is NAMED instead, once, when the
+  // shore stands resident: the titles the seed did not carry and no hand holds ride into the log, so a promoted startup module that
+  // writes early learns where its write went (it rewrites after the attach).
+  const early = new Set<string>();
+  const nameEarly = (): void => {
+    const held = [...early]; early.clear();
+    const lost = held.filter((title) => !adaptor.holdsHand(title) && !adaptor.isFoam(title, wiki.getTiddler(title) ?? null));
+    if (lost.length === 0) return;
+    console.warn(`[outbound-bridge] ${lost.length} wiki write(s) made before the shore stood resident reach no bag: ${lost.slice(0, 8).map((t) => JSON.stringify(t)).join(", ")}${lost.length > 8 ? ", ..." : ""}`);
+  };
   const onChange = (changes: WikiChanges): void => {
-    if (!adaptor.isResident()) return;
+    if (!adaptor.isResident()) {
+      for (const title of Object.keys(changes ?? {})) early.add(title);
+      if (early.size > 0) adaptor.whenResident(nameEarly);
+      return;
+    }
     const dispatch = changes ?? {};
     const consumed = adaptor.handleChangeDispatch(dispatch);
     for (const title of Object.keys(dispatch)) {
