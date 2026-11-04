@@ -481,6 +481,7 @@ export async function addWorktree(ctx, { path: dest, branch, base }) {
     const seeded = git(stageCtx, ['read-tree', base], { env: { GIT_INDEX_FILE: idxPathRun.stdout.trim() } });
     if (!seeded.ok) { undo(); return fail(seeded.output); }
 
+    if (typeof ctx.onStaged === 'function') await ctx.onStaged(stage);
     if (typeof ctx.beforeLink === 'function') await ctx.beforeLink();
     try { symlinkSync(stage, parent.at(name)); } catch (error) { undo(); return fail(`link: ${error.code ?? error.message}`); }
     let shown = null;

@@ -1,10 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
+import { appendFileSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir, userInfo } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { tokenTail } from "./launch-codex.mjs";
 import { appendSeatLaw, canaryBrief, leadLaw, canaryVerdict, ceilingFor, COMPACT_LIMIT, TOOL_OUTPUT_LIMIT, distFresh, findRollout, rolloutTokens, watchSeat, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
 import { globalStampPath, packageStampPath, sourceDigest } from "./stamp-build.mjs";
 
@@ -651,4 +652,28 @@ test("P1-4 the supervisor fails closed: a seat with no token reading for blindTi
   let n = 0;
   const ok = await watchSeat({ seatDir: mkdtempSync(join(tmpdir(), "blind-")), pid: 5, ceiling: 1e9, mode: "build", tokens: () => (n++ < 2 ? null : 5), alive: () => n < 10, kill() { throw new Error("killed"); }, sleep: async () => {}, blindTicks: 3 });
   assert.equal(ok, "exited", "CONTROL a reading that appears in time resets the count");
+});
+
+test("P1-4 tokenTail reads only the bytes appended since its last call and holds a partial line until it completes", () => {
+  const dir = mkdtempSync(join(tmpdir(), "tail-")), f = join(dir, "rollout.jsonl");
+  writeFileSync(f, `${tc(10)}\n`);
+  const tail = tokenTail(f);
+  assert.equal(tail(), 10);
+  appendFileSync(f, `${tc(20)}\n${tc(30)}`);
+  assert.equal(tail(), 20, "a line not yet newline-terminated waits");
+  appendFileSync(f, "\n");
+  assert.equal(tail(), 30);
+  assert.equal(tail(), 30, "nothing new reads the same total");
+});
+
+test("P1-4 findRollout remembers the rollouts whose prompt carries another marker and skips them next tick", () => {
+  const home = mkdtempSync(join(tmpdir(), "rollouts-")), dir = join(home, ".codex", "sessions", "2026", "11", "04"); mkdirSync(dir, { recursive: true });
+  const other = join(dir, "rollout-other.jsonl");
+  writeFileSync(other, `${cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ text: "SEAT-MARKER other" }] } })}\n`);
+  const seen = new Set();
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before: new Set(), seen }), null);
+  assert.ok(seen.has(other), "decided: never re-read");
+  const mine = join(dir, "rollout-mine.jsonl");
+  writeFileSync(mine, `${cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ text: "SEAT-MARKER mine" }] } })}\n`);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before: new Set(), seen }), mine);
 });

@@ -82,8 +82,8 @@ async function handle(request) {
     const target = await lanePath(request.path, true);
     if (typeof request.branch !== 'string' || !request.branch.startsWith(`${branch}-`) || git('check-ref-format', `refs/heads/${request.branch}`).status !== 0) throw new Error('invalid worktree branch');
     if (typeof request.base !== 'string' || !request.base || request.base.startsWith('-')) throw new Error('invalid base');
-    const built = await addWorktree(await brokerCtx(), { path: target, branch: request.branch, base: request.base });
-    if (built.ok) { made.set(target, built.stage); await saveMade(); }
+    const built = await addWorktree({ ...(await brokerCtx()), onStaged: async (stage) => { made.set(target, stage); await saveMade(); } }, { path: target, branch: request.branch, base: request.base });
+    if (!built.ok && made.delete(target)) await saveMade();
     return { ok: built.ok, output: cap(built.output) };
   }
   if (request.kind === 'worktree-remove') {
@@ -97,7 +97,7 @@ async function handle(request) {
   }
   if (request.kind === 'install') {
     if (!options.installer || !options['store-dir']) throw new Error('install is not configured');
-    const target = await lanePath(request.path);
+    const target = made.get(path.resolve(String(request.path))) ?? await lanePath(request.path);
     const ctx = await brokerCtx();
     const done = await runInstallSeat({ worktree: target, gitDir: ctx.gitDir, installer: path.resolve(options.installer), storeDir: path.resolve(options['store-dir']), iso, protect: [goDir] });
     return { ok: done.ok, output: cap(done.output) };

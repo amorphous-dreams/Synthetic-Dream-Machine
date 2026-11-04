@@ -38,7 +38,8 @@ console.log('SEAT-LAUNCHED 123');
   const bin = path.join(root, 'bin'); mkdirSync(bin); writeFileSync(path.join(bin, 'pnpm'), '#!/bin/sh\necho pnpm-ok\n', { mode: 0o755 });
   const relayEnv = { ...process.env, HOME: home, PATH: `${bin}:${process.env.PATH}` };
   const checksFile = path.join(root, 'checks.json'); writeFileSync(checksFile, JSON.stringify([{ name: 'true', argv: ['/usr/bin/true'] }]));
-  const brokerArgs = ['--checks', checksFile, '--author-name', 'Relay', '--author-email', 'relay@example.invalid'];
+  const storeDir = path.join(root, 'store'); mkdirSync(storeDir);
+  const brokerArgs = ['--installer', path.join(bin, 'pnpm'), '--store-dir', storeDir, '--checks', checksFile, '--author-name', 'Relay', '--author-email', 'relay@example.invalid'];
   const run = () => { const r = spawnSync(process.execPath, [script, '--lane-root', lane, '--worktree', wt, '--branch', 'relay-test', '--go-file', goFile, '--launcher', launcher, ...brokerArgs, '--remote-url', remote, '--once'], { encoding: 'utf8', env: relayEnv }); assert.equal(r.status, 0, r.stderr); };
   const response = id => JSON.parse(readFileSync(path.join(lane, 'relay', `res-${id}.json`), 'utf8'));
   const go = value => writeFileSync(goFile, value);
@@ -460,4 +461,16 @@ test('P1-5 the trusted launcher must sit outside the scratch tree entirely', () 
   assert.notEqual(r.status, 0); assert.match(r.stderr, /launcher must sit outside the scratch tree/);
   const ok = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', x.goFile, '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
   assert.equal(ok.status, 0, ok.stderr);
+});
+
+test('a worktree the broker made is a first-class lane worktree: the install door resolves its stage, and the registry stands before the link does', () => {
+  const x = setup(), dest = path.join(x.lane, 'builder');
+  x.request('1', { kind: 'worktree', path: dest, branch: 'relay-test-build', base: 'HEAD' }); x.run();
+  assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1')));
+  const made = JSON.parse(readFileSync(path.join(x.root, 'controller', 'broker-iso', 'made.json'), 'utf8'));
+  assert.equal(Object.keys(made)[0], dest);
+  x.request('2', { kind: 'install', path: dest }); x.run();
+  assert.doesNotMatch(x.response('2').output, /outside lane-root/, 'the install door follows the registry to the stage');
+  x.request('3', { kind: 'install', path: path.join(x.lane, 'not-made') }); x.run();
+  assert.equal(x.response('3').ok, false);
 });

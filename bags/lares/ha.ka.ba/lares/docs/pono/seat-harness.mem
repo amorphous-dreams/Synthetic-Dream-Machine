@@ -82,7 +82,7 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 * ''Cached input counts.'' Caching lowers the price of a token, never its weight against a rate limit or a plan pool.
 * ''The floors'': the Codex pool keeps 20% for a build, research or lead seat and 0% for a read seat; the launcher refuses at or under the floor.
 * ''The used-percent lines'': a lead step refuses above 50% of the weekly pool used, a build or research seat above 60%, and a read seat stays at its floor; each refusal names the reading.
-* ''The per-seat ceiling'': the launcher starts a detached supervisor that is the seat's parent: it spawns codex itself, so the child pid cannot be reused before the supervisor reaps it, and it signals only its own child. It tails the seat's own rollout (matched by the seat's own marker, which rides its prompt and which the first user-prompt event of its rollout records; a seat with no token reading for 100 ticks is stopped, failing closed) and sums `total_token_usage.total_tokens`; at the ceiling (15M for a lead step, 8M for build, read and research; `--ceiling N` overrides) it sends SIGTERM, then SIGKILL, and writes `ceiling.md` in the seat directory naming the reading. The watchdog never reads `run.log`. A Copilot run reads its spend from its log's `Requests N Premium` line, and a log without one reads UNMETERED, never zero.
+* ''The per-seat ceiling'': the launcher starts a detached supervisor that is the seat's parent: it spawns codex itself, so the child pid cannot be reused before the supervisor reaps it, and it signals only its own child. It tails the seat's own rollout (matched by the seat's own marker, which rides its prompt and which the first user-prompt event of its rollout records; a seat with no token reading for 200 ticks (ten minutes) is stopped, failing closed) and sums `total_token_usage.total_tokens`; at the ceiling (15M for a lead step, 8M for build, read and research; `--ceiling N` overrides) it sends SIGTERM, then SIGKILL, and writes `ceiling.md` in the seat directory naming the reading. The watchdog never reads `run.log`. A Copilot run reads its spend from its log's `Requests N Premium` line, and a log without one reads UNMETERED, never zero.
 * ''Compaction'': every seat launches with `-c model_auto_compact_token_limit=120000` and `-c tool_output_token_limit=8000`, launcher overrides only (`~/.codex/config.toml` stays the operator's). `--canary` (read mode) writes a brief that makes about 100 small tool calls in one turn and runs under a 50000 limit; `--check-canary --seat-dir D` reads that seat's rollout and prints `COMPACTION-FIRED` (exit 0) or `COMPACTION-NOT-FIRED` (exit 1) with the event, call and token counts; the launcher snapshots the existing rollouts before it spawns the seat. Measured 2026-11-04 (Luna, low effort): compaction fired inside `codex exec` (1 event, about 100 calls, 2.9M total tokens).
 * ''Reasoning effort'' moves little of the draw; context length moves most of it. Effort follows the step's difficulty, never the budget.
 
@@ -110,6 +110,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;03btBRyQNCHBHIBjQhXqhR7MtNG7wewqknkW1irFDxI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MTwZHmKj6j8RBtN6CS1lg0gwQYwMovrrgqZJLg_1G0k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

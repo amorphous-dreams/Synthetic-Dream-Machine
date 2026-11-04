@@ -62,6 +62,28 @@ export function ceilingFor(mode, override) {
 }
 
 /** The last total_token_usage.total_tokens in a rollout's lines, or null when none. */
+/** A reader of one rollout's running token total that reads only the bytes appended since its last call. */
+export function tokenTail(file) {
+  let pos = 0, carry = "", total = null;
+  const buf = Buffer.alloc(262144);
+  return () => {
+    const fd = openSync(file, "r");
+    try {
+      for (;;) {
+        const n = readSync(fd, buf, 0, buf.length, pos);
+        if (n === 0) break;
+        pos += n;
+        carry += buf.toString("utf8", 0, n);
+        const lines = carry.split("\n");
+        carry = lines.pop();
+        const t = rolloutTokens(lines);
+        if (t !== null) total = t;
+      }
+    } finally { closeSync(fd); }
+    return total;
+  };
+}
+
 export function rolloutTokens(lines) {
   let total = null;
   for (const line of lines ?? []) {
@@ -95,7 +117,7 @@ function promptText(event) {
   return null;
 }
 
-/** Whether the rollout at `file` holds `marker` in its FIRST user-prompt event: lines parse as JSONL events, no byte cap, an echoed copy in tool output never counts; a file with no complete prompt event yet reads as not yet. */
+/** Whether the rollout at `file` holds `marker` in its FIRST user-prompt event (true or false), or null while no complete prompt event stands yet: lines parse as JSONL events, no byte cap, an echoed copy in tool output never counts; a file with no complete prompt event yet reads as not yet. */
 function rolloutHoldsMarker(file, marker) {
   const fd = openSync(file, "r");
   try {
@@ -103,7 +125,7 @@ function rolloutHoldsMarker(file, marker) {
     let tail = Buffer.alloc(0), pos = 0;
     for (;;) {
       const n = readSync(fd, buf, 0, buf.length, pos);
-      if (n === 0) return false;
+      if (n === 0) return null;
       pos += n;
       tail = Buffer.concat([tail, buf.subarray(0, n)]);
       let nl;
@@ -120,10 +142,14 @@ function rolloutHoldsMarker(file, marker) {
 }
 
 /** The rollout of one seat: among the files NOT in `before` (the set the launcher listed ahead of the spawn), the one whose first user-prompt event carries the seat's own marker. The marker rides the prompt, so a rollout names its seat. */
-export function findRollout(home, { marker, before }) {
+export function findRollout(home, { marker, before, seen = new Set() }) {
   for (const p of listRollouts(home)) {
-    if (before.has(p)) continue;
-    try { if (rolloutHoldsMarker(p, marker)) return p; } catch { /* unreadable or torn */ }
+    if (before.has(p) || seen.has(p)) continue;
+    try {
+      const held = rolloutHoldsMarker(p, marker);
+      if (held === true) return p;
+      if (held === false) seen.add(p);
+    } catch { /* unreadable or torn: tried again next tick */ }
   }
   return null;
 }
@@ -133,7 +159,7 @@ export function findRollout(home, { marker, before }) {
  * ticks) and writes ceiling.md; fails closed (the same stop) when no token reading appears for `blindTicks` ticks.
  * Returns "ceiling", "blind" or "exited".
  */
-export async function watchSeat({ seatDir, pid, ceiling, mode, tokens, alive, kill, sleep, graceTicks = 10, blindTicks = 100 }) {
+export async function watchSeat({ seatDir, pid, ceiling, mode, tokens, alive, kill, sleep, graceTicks = 10, blindTicks = 200 }) {
   let blind = 0;
   const stop = async (why) => {
     kill("SIGTERM");
@@ -370,13 +396,14 @@ function superviseMain(o) {
   let exited = false;
   child.on("exit", () => { exited = true; });
   child.on("error", () => { exited = true; });
-  let file = null;
+  let tail = null;
+  const seen = new Set();
   return watchSeat({
     seatDir: o.seatDir, pid: child.pid, ceiling: Number(o.ceiling), mode: o.mode,
     alive: () => !exited,
     kill: (sig) => { if (!exited) { try { process.kill(-child.pid, sig); } catch { /* gone */ } } },
     sleep: () => new Promise((r) => setTimeout(r, 3000)),
-    tokens: () => { file ??= findRollout(home, { marker, before }); return file ? rolloutTokens(readFileSync(file, "utf8").split("\n")) : null; },
+    tokens: () => { if (!tail) { const file = findRollout(home, { marker, before, seen }); if (file) tail = tokenTail(file); } return tail ? tail() : null; },
   }).then(() => (exited ? 0 : new Promise((r) => child.on("exit", () => r(0)))));
 }
 
