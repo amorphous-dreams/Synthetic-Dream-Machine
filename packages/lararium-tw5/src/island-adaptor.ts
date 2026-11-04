@@ -288,7 +288,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   private readonly residentWaiters = new Set<() => void>();
   /** Removals (a draft's tombstone, a rename source) parked because their target family was not durably acknowledged, by target title. */
-  private readonly deferredRemovals = new Map<string, Array<{ bag: string; base: readonly string[] | undefined; puts: LarTiddlerRecord[]; deletes: string[] }>>();
+  private readonly deferredRemovals = new Map<string, Array<{ bag: string; base: readonly string[] | undefined; puts: LarTiddlerRecord[]; deletes: string[]; sourceBefore?: { title: string; value: unknown } }>>();
+  private readonly removalReleases = new Map<string, Promise<void>>();
   /** The slot children a family call put, by address, until a landing wave or a different state replaces them. */
   private readonly familyPlaced = new Map<string, LarTiddlerRecord>();
   /** Run `fn` once the shore stands resident (at once when it does): the outbound bridge holds a pre-resident write here. */
@@ -1135,16 +1136,18 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const taken = this.gate.consume(members);
     for (const member of members) { this.pendingHand.add(member); this.handed.delete(member); }
 
-    interface Group { bag: string; base: readonly string[] | undefined; puts: LarTiddlerRecord[]; deletes: string[]; titles: string[]; removal?: true; from?: { bag: string; heads: readonly string[] } }
+    interface Group { bag: string; base: readonly string[] | undefined; puts: LarTiddlerRecord[]; deletes: string[]; titles: string[]; removal?: true; from?: { bag: string; heads: readonly string[] }; sourceBefore?: { title: string; value: unknown } }
     const groups: Group[] = [];
     const strays: Array<{ slot: SlotUri; uri: string }> = [];
     const sentValues = new Map<string, unknown | null>();
     // A REMOVAL group (the draft's own tombstone, a rename's source tombstone) never merges with a target group: it is issued only
     // after the target family's DURABLE ack (the capture route: the store copy of the draft is the recovery copy until then).
-    const group = (bag: string, base: readonly string[] | undefined, puts: LarTiddlerRecord[], deletes: string[], titles: string[], from?: { bag: string; heads: readonly string[] }, removal = false): void => {
+    const group = (bag: string, base: readonly string[] | undefined, puts: LarTiddlerRecord[], deletes: string[], titles: string[], from?: { bag: string; heads: readonly string[] }, removal = false): Group => {
       const found = groups.find((g) => g.bag === bag && sameHeads(g.base, base) && (g.removal === true) === removal);
-      if (found) { found.puts.push(...puts); found.deletes.push(...deletes); found.titles.push(...titles); if (from && !found.from) found.from = from; }
-      else groups.push({ bag, base, puts, deletes, titles, ...(removal ? { removal: true as const } : {}), ...(from ? { from } : {}) });
+      if (found) { found.puts.push(...puts); found.deletes.push(...deletes); found.titles.push(...titles); if (from && !found.from) found.from = from; return found; }
+      const created: Group = { bag, base, puts, deletes, titles, ...(removal ? { removal: true as const } : {}), ...(from ? { from } : {}) };
+      groups.push(created);
+      return created;
     };
     let surfaced: Promise<void> | null = null;
     let tombstonedSource = false;
@@ -1179,7 +1182,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
           if (landedBag) {
             const bag = this._tombstoneBag(entry.of, landedBag);
             const base = bag === entry.baseBag ? entry.baseHeads : standing?.bag === bag ? standing.heads : undefined;
-            group(bag, base && base.length > 0 ? base : undefined, [], [entry.of], [entry.of], undefined, true);
+            group(bag, base && base.length > 0 ? base : undefined, [], [entry.of], [entry.of], undefined, true).sourceBefore = { title: entry.of, value: standing?.tiddler ?? null };
             sentValues.set(entry.of, null);
             tombstonedSource = true;
           }
@@ -1232,9 +1235,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         const done = await Promise.allSettled(removalAt.map((index) => this._issueGroup(groups[index]!.bag, groups[index]!.base, groups[index]!.puts, groups[index]!.deletes, origin)));
         removalAt.forEach((index, at) => removalResults.set(index, done[at]!));
       } else {
-        this.deferredRemovals.set(target, removalAt.map((index) => groups[index]!));
+        this._parkRemovals(target, removalAt.map((index) => groups[index]!));
         removalAt.forEach((index) => removalResults.set(index, { status: "fulfilled", value: undefined }));
       }
+    }
+    if (saves && acknowledged) {
+      const failedRemovals = removalAt.filter((index) => removalResults.get(index)?.status === "rejected");
+      if (failedRemovals.length) this._parkRemovals(target, failedRemovals.map((index) => groups[index]!));
     }
     const settled: Array<PromiseSettledResult<void>> = [
       ...groups.map((_, index) => removalResults.get(index) ?? targetResults[targetAt.indexOf(index)]!),
@@ -1291,25 +1298,108 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       this._raiseUnsaved(uri, slot, outcome.reason);
     });
     if (surfaced && settled[settled.length - 1]!.status === "rejected") fault ??= asError((settled[settled.length - 1] as PromiseRejectedResult).reason);
-    if (tombstonedSource && !refused.has(entry.of)) this._removeSlotChildren(entry.of);
+    const sourceGroup = groups.find((g) => g.sourceBefore?.title === entry.of);
+    const laterSource = sourceGroup?.sourceBefore && this._laterSource(sourceGroup.sourceBefore);
+    if (laterSource) this._replaySource(entry.of);
+    if (tombstonedSource && (!acknowledged || refused.has(entry.of))) {
+      // TW5 removed the source optimistically. Restore it while removal waits or has been refused.
+      const source = this.ledger.landedOf(entry.of)?.tiddler;
+      if (source && !wiki.getTiddler(entry.of)) wiki.addTiddler(source as Parameters<typeof wiki.addTiddler>[0]);
+    } else if (tombstonedSource && !refused.has(entry.of) && !laterSource) this._removeSlotChildren(entry.of);
     for (const member of members) {
-      if (!refused.has(member)) this.pendingHand.delete(member);
+      if (!refused.has(member) && !(member === entry.of && laterSource)) this.pendingHand.delete(member);
     }
     if (fault === null) this.draftBook.delete(draftTitle);
     taken.settle(fault ?? undefined);
     // A failed act re-marks its consumed members as owed; the draft and a rename's source are NOT owed (their removal waits, parked,
     // behind the target's acknowledged write), and re-firing one would tombstone the recovery copy.
-    if (this.deferredRemovals.has(target)) this.gate.drop(removalAt.flatMap((index) => groups[index]!.titles));
+    if (this.deferredRemovals.has(target)) {
+      this.gate.drop(removalAt.flatMap((index) => groups[index]!.titles));
+      void this.gate.mark(target, () => this._flushHand(target)).catch(() => {});
+    }
   }
 
-  /** Run the removals parked behind `target` once its family is durably acknowledged; they stay parked when the ack does not come. */
+  private _laterSource(source: { title: string; value: unknown }): boolean {
+    const current = this.tw5.$tw.wiki.getTiddler(source.title);
+    return !!current && !same(current, source.value);
+  }
+
+  private _replaySource(title: string): void {
+    this.sent.delete(title);
+    this.pendingHand.add(title);
+    void this.gate.mark(title, () => this._flushHand(title)).catch(() => {});
+  }
+
+  private _parkRemovals(target: string, groups: NonNullable<ReturnType<typeof this.deferredRemovals.get>>): void {
+    this.deferredRemovals.set(target, [...(this.deferredRemovals.get(target) ?? []), ...groups]);
+  }
+
+  /** Serialize releases for each target while allowing later acts to append their own obligations. */
   private async _releaseRemovals(target: string, origin: ChangeOrigin, writeBag: string | undefined): Promise<void> {
+    const prior = this.removalReleases.get(target);
+    let finish!: () => void;
+    const reservation = new Promise<void>((resolve) => { finish = resolve; });
+    this.removalReleases.set(target, reservation);
+    try {
+      if (prior) await prior;
+      await this._releaseParkedRemovals(target, origin, writeBag);
+    } finally {
+      if (this.removalReleases.get(target) === reservation) this.removalReleases.delete(target);
+      finish();
+    }
+  }
+
+  private async _releaseParkedRemovals(target: string, origin: ChangeOrigin, writeBag: string | undefined): Promise<void> {
     const parked = this.deferredRemovals.get(target);
     if (!parked) return;
     if (this.restDoor && writeBag) await this.restDoor.ack([writeBag]);
-    this.deferredRemovals.delete(target);
-    const done = await Promise.allSettled(parked.map((g) => this._issueGroup(g.bag, g.base, g.puts, g.deletes, origin)));
-    for (const outcome of done) if (outcome.status === "rejected") console.warn(`[island-adaptor] a parked removal for "${target}" was refused: ${String(outcome.reason)}`);
+    const eligible = parked.map((g) => {
+      const source = g.sourceBefore;
+      const current = source && this.tw5.$tw.wiki.getTiddler(source.title);
+      if (!source || !current || same(current, source.value)) return g;
+      // A later hand supersedes this source deletion; keep it owed as a write.
+      this.sent.delete(source.title);
+      void this.gate.mark(source.title, () => this._flushHand(source.title)).catch(() => {});
+      return { ...g, deletes: g.deletes.filter((title) => title !== source.title) };
+    });
+    const done = await Promise.allSettled(eligible.map(async (g) => {
+      const source = g.sourceBefore;
+      const title = source?.title;
+      const prior = title ? this.inFlight.get(title) : undefined;
+      let release!: () => void;
+      const reservation = new Promise<void>((resolve) => { release = resolve; });
+      if (title) this.inFlight.set(title, reservation);
+      try {
+        if (prior) await prior.catch(() => {});
+        if (source && this._laterSource(source)) {
+          this._replaySource(source.title);
+          g = { ...g, deletes: g.deletes.filter((name) => name !== source.title) };
+        }
+        if (g.puts.length || g.deletes.length) await this._issueGroup(g.bag, g.base, g.puts, g.deletes, origin);
+        if (source && this._laterSource(source)) this._replaySource(source.title);
+        else for (const name of g.deletes) this._removeSlotChildren(name);
+      } finally {
+        if (title && this.inFlight.get(title) === reservation) this.inFlight.delete(title);
+        release();
+      }
+    }));
+    const refused: typeof parked = [];
+    let fault: unknown;
+    done.forEach((outcome, index) => {
+      if (outcome.status === "rejected") {
+        refused.push(parked[index]!);
+        fault ??= outcome.reason;
+      }
+      else for (const title of eligible[index]!.deletes) {
+        this.failedAtTeardown.delete(title);
+        this._clearUnsaved(title);
+      }
+    });
+    const completed = new Set(parked.filter((_, index) => done[index]!.status === "fulfilled"));
+    const remaining = (this.deferredRemovals.get(target) ?? []).filter((group) => !completed.has(group));
+    if (remaining.length) this.deferredRemovals.set(target, remaining);
+    else this.deferredRemovals.delete(target);
+    if (refused.length) throw fault;
   }
 
   /** One `writeFamily` call for one (bag, base); a base outside the document's history retries without it. */
@@ -1382,7 +1472,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       ? this.sent.get(title) === state
       : this.resident && !this.unlanded.has(title) && same(state, landed ? landed.tiddler : null));
     if (!placedByFamily) this.familyPlaced.delete(title);
-    if (settled) {
+    // Restoring an optimistically deleted source raises a wiki change. It must not clear a refused removal's alert.
+    if (settled && [...this.deferredRemovals.values()].some((groups) => groups.some((group) => group.deletes.includes(title)))) return;
+    if (settled && !this.deferredRemovals.has(title)) {
       if (this.handed.get(title) === state) this.handed.delete(title);
       this.pendingHand.delete(title);
       if (!this.sent.has(title)) this.handBase.delete(title);
@@ -1641,7 +1733,11 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
     try {
       await this.store.writeFamily(puts, tombstones, origin, { bag: targetBag, ...(base ? { base } : {}) });
-      for (const { uri, slot } of strays) await this.store.tombstoneInBag(slot, uri, origin);
+      for (const { uri, slot } of strays) {
+        // A refused stray already has its own absent hand; that hand owns its retry.
+        if (this.pendingHand.has(uri) && this.handed.has(uri) && this.handed.get(uri) === null) continue;
+        await this.store.tombstoneInBag(slot, uri, origin);
+      }
     } catch (error) {
       for (const member of rode) {
         if (this.sent.get(member.uri) !== member.value) continue;
