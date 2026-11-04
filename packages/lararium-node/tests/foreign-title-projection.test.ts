@@ -29,6 +29,9 @@ import { join } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree } from "../src/synced-tree.js";
 import type { CarrierFile } from "@lararium/tw5";
+import { createHash } from "node:crypto";
+import { afterDispatch, draftBag, openDraft, shoreRig, turns, typeInto } from "../../lararium-tw5/tests/wiki-shore-rig.js";
+import { makeRestDoor } from "../../lararium-tw5/src/rest-door.js";
 
 let root = "";
 afterEach(() => { if (root) { rmSync(root, { recursive: true, force: true }); root = ""; } });
@@ -68,6 +71,74 @@ const nativeFile = (title: string, text: string): CarrierFile => ({
   body: tidBody(title, text),
   defaultRelPath: `${title.replace(/\/|\\/g, "_")}.tid`,
 });
+
+test.each([false, true])("recovery drain waits for projection after durable heads (grant=%s)", async (grant) => {
+  root = mkdtempSync(join(tmpdir(), "lar-recovery-drain-"));
+  const r = await shoreRig();
+  await r.adaptor.armSeedCheckpoint();
+  let releaseRender!: () => void;
+  let renderStarted!: () => void;
+  const heldRender = new Promise<void>((resolve) => { releaseRender = resolve; });
+  const rendering = new Promise<void>((resolve) => { renderStarted = resolve; });
+  let first = true;
+  const projector = new LarDiskProjector({
+    mirrors: grant ? [{ bagId: draftBag, mirrorRoot: root, mirrorClass: "recovery" }] : [],
+    carrierFileFn: async () => null,
+    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
+    recoveryFileFn: async (fields) => {
+      if (first) { first = false; renderStarted(); await heldRender; }
+      return nativeFile(String(fields.title), String(fields.text));
+    },
+  });
+  const stopProjector = projector.start(r.engine);
+  const asks: Array<{ requestId: string; documentIds: string[]; heads: Record<string, string[]> }> = [];
+  let sequence = 0;
+  const door = makeRestDoor({
+    post: (message) => { if (message.type === "doc:rest") asks.push(message); },
+    handles: () => new Map(Object.entries(r.handles)),
+    mintId: () => `recovery-${++sequence}`,
+  });
+  r.adaptor.restDoor = door;
+  const count = () => r.calls.filter((call) => call.bag === draftBag && call.puts.includes(title)).length;
+  let title = "";
+  try {
+    title = openDraft(r, "Note", "first");
+    await afterDispatch();
+    await turns(30);
+    if (grant) await rendering;
+    expect(count()).toBe(1);
+    expect(asks).toHaveLength(1);
+    const ask = asks[0]!;
+    expect(ask.documentIds).toContain(r.draftHandle.documentId);
+    expect(ask.heads[r.draftHandle.documentId]!.length).toBeGreaterThan(0);
+    typeInto(r, title, "latest");
+    await afterDispatch();
+    await turns(20);
+    expect(count(), "held repo acknowledgement prevents the second drain").toBe(1);
+    door.answer({ type: "doc:rested", requestId: ask.requestId, rested: true });
+    await turns(30);
+    const beforeProjection = count();
+    releaseRender();
+    await projector.idle();
+    await turns(30);
+    if (asks[1]) door.answer({ type: "doc:rested", requestId: asks[1].requestId, rested: true });
+    await turns(20);
+    if (grant) {
+      const bytes = readFileSync(join(root, `${title}.tid`));
+      expect(createHash("sha256").update(bytes).digest("hex")).toBe(createHash("sha256").update(tidBody(title, "latest")).digest("hex"));
+      expect(beforeProjection, "the granted recovery file must land before the next drain").toBe(1);
+    } else {
+      expect(readdirSync(root)).toEqual([]);
+      expect(beforeProjection, "without a recovery grant the drain needs only durable heads").toBe(2);
+    }
+  } finally {
+    releaseRender();
+    door.close();
+    r.adaptor.restDoor = null;
+    await stopProjector();
+    await r.stop();
+  }
+}, 60_000);
 
 describe("foreign-title projection — the form cut", () => {
   test("★ a tiddler titled `My Notes` projects to disk ★", async () => {
