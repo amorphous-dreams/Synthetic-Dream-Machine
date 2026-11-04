@@ -9,7 +9,12 @@ const script = fileURLToPath(new URL('./commit-relay.mjs', import.meta.url));
 const roots = [];
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
 function setup() {
-  const root = mkdtempSync(path.join(path.dirname(path.dirname(path.dirname(script))), 'relay-test-')); roots.push(root);
+  const home = mkdtempSync(path.join(path.dirname(path.dirname(path.dirname(script))), 'relay-home-'));
+  roots.push(home);
+  const scratch = path.join(home, '.lares-scratch');
+  mkdirSync(scratch, { recursive: true });
+  const root = mkdtempSync(path.join(scratch, 'relay-test-'));
+  roots.push(root);
   const lane = path.join(root, 'lane'), wt = path.join(lane, 'wt'), remote = path.join(root, 'remote.git');
   mkdirSync(path.join(lane, 'relay'), { recursive: true }); mkdirSync(wt);
   const git = (...args) => execFileSync('git', ['-C', wt, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -25,10 +30,11 @@ writeFileSync(${JSON.stringify(path.join(root, 'argv.json'))}, JSON.stringify(pr
 console.log('SEAT-LAUNCHED 123');
 `);
   const bin = path.join(root, 'bin'); mkdirSync(bin); writeFileSync(path.join(bin, 'pnpm'), '#!/bin/sh\necho pnpm-ok\n', { mode: 0o755 });
-  const run = () => { const r = spawnSync(process.execPath, [script, '--lane-root', lane, '--worktree', wt, '--branch', 'relay-test', '--go-file', goFile, '--launcher', launcher, '--once'], { encoding: 'utf8', env: { ...process.env, PATH: `${bin}:${process.env.PATH}` } }); assert.equal(r.status, 0, r.stderr); };
+  const relayEnv = { ...process.env, HOME: home, PATH: `${bin}:${process.env.PATH}` };
+  const run = () => { const r = spawnSync(process.execPath, [script, '--lane-root', lane, '--worktree', wt, '--branch', 'relay-test', '--go-file', goFile, '--launcher', launcher, '--once'], { encoding: 'utf8', env: relayEnv }); assert.equal(r.status, 0, r.stderr); };
   const response = id => JSON.parse(readFileSync(path.join(lane, 'relay', `res-${id}.json`), 'utf8'));
   const go = value => writeFileSync(goFile, value);
-  return { root, wt, lane, remote, git, request, run, response, go, goFile, launcher, bin };
+  return { home, root, wt, lane, remote, git, request, run, response, go, goFile, launcher, bin, relayEnv };
 }
 
 test('commit selects only requested paths', () => {
@@ -72,7 +78,7 @@ test('bad JSON, unknown kinds, and outside message refuse', () => {
 
 test('a go file inside the lane root refuses to start, so a lead can never grant its own push', () => {
   const x = setup();
-  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', path.join(x.lane, 'relay', 'push-go'), '--launcher', x.launcher, '--once'], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', path.join(x.lane, 'relay', 'push-go'), '--launcher', x.launcher, '--once'], { encoding: 'utf8', env: x.relayEnv });
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /go-file must sit outside the lane root/);
 });
