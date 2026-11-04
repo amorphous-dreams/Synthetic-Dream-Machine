@@ -42,6 +42,13 @@ describe("the island's rest door", () => {
     expect(d.rest.held()).toBeNull();
   });
 
+  test("RED: the door names which bags it holds a replica of — a bag it holds none of has no heads to compare, and `ack` still refuses it by name", async () => {
+    const d = door();
+    expect(d.rest.holds(SLOT)).toBe(true);
+    expect(d.rest.holds("lar:///ha.ka.ba/wikis/lares/temp")).toBe(false);
+    await expect(d.rest.ack(["lar:///ha.ka.ba/wikis/lares/temp"])).rejects.toThrow();
+  });
+
   test("an unrested answer still releases the act (the write itself stood), and an answer nobody waits for is consumed", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const d = door();

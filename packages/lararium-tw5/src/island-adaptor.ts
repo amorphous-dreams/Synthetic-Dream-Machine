@@ -424,10 +424,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   private async _ackDurably(fired: readonly string[]): Promise<void> {
     const door = this.restDoor;
-    const slots = [...new Set(fired.map((title) => this.lastWriteBag.get(title)).filter((bag): bag is string => bag !== undefined))];
-    if (!door && this.requireDurableAck && slots.length > 0) {
+    const written = [...new Set(fired.map((title) => this.lastWriteBag.get(title)).filter((bag): bag is string => bag !== undefined))];
+    if (!door && this.requireDurableAck && written.length > 0) {
       throw new Error("[island-adaptor] durable acknowledgement refused: no rest door stands for target write");
     }
+    // A bag the island holds no replica of (the vessel's own temp plane) names no heads here: the store call that wrote it already answered.
+    const slots = door ? written.filter((bag) => door.holds?.(bag) ?? true) : written;
     const checks = fired.flatMap((title) => {
       const written = this.recoveryWrites.get(title);
       return written && this.recoveryAtRest ? [this.recoveryAtRest(written.bag, title, written.fields)] : [];

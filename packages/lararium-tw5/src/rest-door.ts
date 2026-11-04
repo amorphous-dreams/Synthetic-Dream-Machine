@@ -37,6 +37,8 @@ export interface RestDoor {
    * island's own flush is not an ack: the worker's Repo has no storage.
    */
   ack(slots: readonly string[]): Promise<void>;
+  /** True when this island holds a replica of the bag's document (its heads can be named); a bag it holds none of is the vessel's alone. */
+  holds(slot: string): boolean;
   /** Release every parked wait. */
   close(): void;
 }
@@ -104,6 +106,7 @@ export function makeRestDoor(deps: RestDoorDeps): RestDoor {
       return true;
     },
     stalledAsks: () => stalled,
+    holds: (slot) => deps.handles().has(slot),
     async ack(slots) {
       if (!(await rest(slots))) throw new Error("the vessel did not rest the written documents");
     },
