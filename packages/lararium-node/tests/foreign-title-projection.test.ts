@@ -253,3 +253,24 @@ describe("foreign-title projection — the CONTROLs", () => {
     expect(existsSync(join(root, "..", "escape.tid"))).toBe(false);
   });
 });
+
+test("a recovery mirror projects a held draft even when the wiki view shadows it; an ungranted bag stays off disk", async () => {
+  root = mkdtempSync(join(tmpdir(), "lar-recovery-projection-"));
+  const title = "Draft of 'Note'";
+  const recovery = join(root, "recovery");
+  const bytes = `title: ${title}\ndraft.of: Note\nlar-draft-base-bag: working\nlar-draft-base-heads: abc\n\nunsaved words`;
+  const projector = new LarDiskProjector({
+    mirrors: [{ bagId: "draft", mirrorRoot: recovery }],
+    bagsHolding: async (uri) => uri === title ? ["draft", "temp"] : ["temp"],
+    carrierFileFn: async (uri) => ({ ext: ".tid", body: uri === title ? bytes : tidBody(uri, "private"), defaultRelPath: `${uri}.tid` }),
+  });
+  (projector as unknown as { _tw5: unknown })._tw5 = { $tw: { wiki: { getTiddler: (uri: string) => ({ fields: { title: uri, "$origin-bag": "temp" } }) } } };
+  const reconcile = (projector as unknown as { reconcile: (uri: string) => Promise<void> }).reconcile.bind(projector);
+  await reconcile("temp-only");
+  expect(existsSync(recovery)).toBe(false);
+  await reconcile(title);
+  expect(existsSync(recovery)).toBe(true);
+  const files = readdirSync(recovery);
+  expect(files).toHaveLength(1);
+  expect(readFileSync(join(recovery, files[0]!), "utf8")).toBe(bytes);
+});
