@@ -351,7 +351,7 @@ export async function commitWithReceipt(ctx, { paths, messageFile, expectHead })
 
   const receipt0 = verifyReceipt({ keyFile: ctx.keyFile, receiptsDir: ctx.receiptsDir, tree, requiredChecks: ctx.requiredChecks, definitions: ctx.checks });
   if (!receipt0.ok) {
-    const checked = await runCheckSeat({ ...ctx, tree });
+    const checked = await (ctx.checkRunner ?? runCheckSeat)({ ...ctx, tree });
     if (!checked.ok) return fail(checked.output || 'check failed');
     const receipt1 = verifyReceipt({ keyFile: ctx.keyFile, receiptsDir: ctx.receiptsDir, tree, requiredChecks: ctx.requiredChecks, definitions: ctx.checks });
     if (!receipt1.ok) return fail('check receipt verification failed');

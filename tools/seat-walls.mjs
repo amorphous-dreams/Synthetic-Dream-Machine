@@ -49,7 +49,7 @@ function run(command, args, { env, cwd, input } = {}) {
   return { ok: result.status === 0, output: mergeOutput(result), result };
 }
 
-export const HAVE_BWRAP = existsSync(BWRAP)
+export const HAVE_BWRAP = !process.env.SEAT_WALLS_NO_BWRAP && existsSync(BWRAP)
   && spawnSync(BWRAP, ['--ro-bind', '/', '/', '/usr/bin/true'], { stdio: 'ignore' }).status === 0;
 
 /** The mac covers the tree, the check names AND the check definitions (name and argv), so a receipt earned under a weaker check never satisfies a changed one. */

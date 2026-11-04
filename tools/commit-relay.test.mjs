@@ -44,7 +44,7 @@ console.log('SEAT-LAUNCHED 123');
   return { home, root, wt, lane, remote, git, request, run, response, go, goFile, launcher, bin, relayEnv, brokerArgs };
 }
 
-test('commit selects only requested paths', () => {
+test('commit selects only requested paths', { skip: !HAVE_BWRAP }, () => {
   const x = setup(); writeFileSync(path.join(x.wt, 'a'), 'changed\n'); writeFileSync(path.join(x.wt, 'b'), 'dirty\n');
   x.request('1', { kind: 'commit', message: 'message', paths: ['a'] }); x.run();
   assert.equal(x.response('1').ok, true); assert.equal(x.git('show', '--format=', '--name-only', 'HEAD'), 'a');
@@ -71,7 +71,7 @@ test('push with matching go succeeds and consumes go', () => {
   assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1'))); assert.equal(existsSync(x.goFile), false);
   assert.equal(execFileSync('git', ['--git-dir', x.remote, 'rev-parse', 'refs/heads/relay-test'], { encoding: 'utf8' }).trim(), x.git('rev-parse', 'HEAD'));
 });
-test('requests run in id order, completing each before the next', () => {
+test('requests run in id order, completing each before the next', { skip: !HAVE_BWRAP }, () => {
   const x = setup(); writeFileSync(path.join(x.wt, 'a'), 'changed\n');
   x.request('02', { kind: 'push' }); x.request('01', { kind: 'commit', message: 'message', paths: ['a'] }); x.go(`relay-test\n${x.git('rev-parse', 'HEAD')}\n`); x.run();
   assert.equal(x.response('01').ok, true, JSON.stringify(x.response('01')));
@@ -167,7 +167,9 @@ function brokerFixture() {
   execFileSync('git', ['init', '--bare', remote], { stdio: 'ignore' }); git('remote', 'add', 'origin', remote);
   writeFileSync(path.join(root, 'message'), 'broker test\n');
   const checks = [{ name: 'true', argv: ['/usr/bin/true'] }];
-  const ctx = { gitDir: path.join(wt, '.git'), worktree: wt, iso, remoteUrl: remote, branch: 'lane', author: { name: 'Broker', email: 'broker@example.invalid' }, receiptsDir: receipts, keyFile, requiredChecks: ['true'], checks, bwrap: HAVE_BWRAP };
+  // Where bubblewrap cannot stand (a runner that bars user namespaces) a stand-in signs the receipt the seat would; the wall proofs skip there.
+  const standIn = async (c) => { mkdirSync(c.receiptsDir, { recursive: true }); writeFileSync(path.join(c.receiptsDir, `${c.tree}.json`), JSON.stringify(signReceipt({ keyFile: c.keyFile, tree: c.tree, checks: c.checks.map((k) => k.name), definitions: c.checks }))); return { ok: true, output: '' }; };
+  const ctx = { ...(HAVE_BWRAP ? {} : { checkRunner: standIn }), gitDir: path.join(wt, '.git'), worktree: wt, iso, remoteUrl: remote, branch: 'lane', author: { name: 'Broker', email: 'broker@example.invalid' }, receiptsDir: receipts, keyFile, requiredChecks: ['true'], checks, bwrap: HAVE_BWRAP };
   const marker = (n) => path.join(root, `MARK-${n}`);
   const hook = (name, body) => { const f = path.join(wt, '.git', 'hooks', name); mkdirSync(path.dirname(f), { recursive: true }); writeFileSync(f, `#!/bin/sh\n${body}\n`); chmodSync(f, 0o755); };
   const markers = () => readdirSync(root).filter((n) => n.startsWith('MARK-'));
@@ -280,9 +282,12 @@ test('PROOF 4 a poisoned PATH, HOME, GIT_*, NODE_OPTIONS and a symlink race: the
   const poison = { ...process.env, PATH: `${evilBin}:${process.env.PATH}`, HOME: evilHome, XDG_CONFIG_HOME: evilHome, GIT_DIR: '/nonexistent-evil', GIT_WORK_TREE: '/nonexistent-evil', GIT_INDEX_FILE: path.join(x.root, 'evil-index'), GIT_CONFIG_COUNT: '1', GIT_CONFIG_KEY_0: 'core.hooksPath', GIT_CONFIG_VALUE_0: evilHooks, GIT_EXEC_PATH: evilBin, GIT_SSH_COMMAND: `touch '${x.marker('ssh')}'`, NODE_OPTIONS: '--max-old-space-size=64' };
   writeFileSync(path.join(x.wt, 'a'), 'poisoned run\n');
   const driver = `import { commitWithReceipt } from ${JSON.stringify(new URL('./seat-broker.mjs', import.meta.url).href)};
-const [ctx, req] = JSON.parse(process.argv[1]);
+const [ctx0, req, fake] = JSON.parse(process.argv[1]);
+import { signReceipt } from ${JSON.stringify(new URL('./seat-walls.mjs', import.meta.url).href)};
+import { mkdirSync, writeFileSync } from 'node:fs'; import path from 'node:path';
+const ctx = fake ? { ...ctx0, checkRunner: async (c) => { mkdirSync(c.receiptsDir, { recursive: true }); writeFileSync(path.join(c.receiptsDir, c.tree + '.json'), JSON.stringify(signReceipt({ keyFile: c.keyFile, tree: c.tree, checks: c.checks.map((k) => k.name), definitions: c.checks }))); return { ok: true, output: '' }; } } : ctx0;
 const r = await commitWithReceipt(ctx, req); console.log(JSON.stringify(r)); process.exit(r.ok ? 0 : 1);`;
-  const ran = spawnSync(process.execPath, ['--input-type=module', '-e', driver, JSON.stringify([x.ctx, commitReq(x)])], { encoding: 'utf8', env: poison });
+  const ran = spawnSync(process.execPath, ['--input-type=module', '-e', driver, JSON.stringify([x.ctx, commitReq(x), !HAVE_BWRAP])], { encoding: 'utf8', env: poison });
   assert.equal(ran.status, 0, ran.stdout + ran.stderr);
   assert.equal(x.git('show', 'HEAD:a'), 'poisoned run');
   assert.deepEqual(x.markers(), [], 'no planted tool, hook, helper or ssh command ran');
@@ -348,7 +353,7 @@ test('the commit door binds an expected old head, a clean receipt, and refuses a
   writeFileSync(path.join(x.wt, 'a'), 'v2\n');
   const stale = await commitWithReceipt(x.ctx, commitReq(x, { expectHead: 'a'.repeat(40) }));
   assert.equal(stale.ok, false); assert.match(stale.output, /expected old head/);
-  const failing = await commitWithReceipt({ ...x.ctx, checks: [{ name: 'true', argv: ['/usr/bin/false'] }] }, commitReq(x));
+  const failing = await commitWithReceipt({ ...x.ctx, checks: [{ name: 'true', argv: ['/usr/bin/false'] }], ...(HAVE_BWRAP ? {} : { checkRunner: async () => ({ ok: false, output: 'check true failed' }) }) }, commitReq(x));
   assert.equal(failing.ok, false); assert.match(failing.output, /check/);
   const head0 = x.git('rev-parse', 'HEAD');
   assert.equal((await commitWithReceipt(x.ctx, commitReq(x))).ok, true);
