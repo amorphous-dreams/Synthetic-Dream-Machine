@@ -5,7 +5,7 @@ import { mkdtempSync, mkdirSync, readFileSync, realpathSync, symlinkSync, utimes
 import { tmpdir, userInfo } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { appendSeatLaw, distFresh, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
+import { appendSeatLaw, ceilingFor, distFresh, findRollout, rolloutTokens, watchSeat, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
 import { globalStampPath, packageStampPath, sourceDigest } from "./stamp-build.mjs";
 
 const TOOL = fileURLToPath(new URL("./launch-codex.mjs", import.meta.url));
@@ -25,7 +25,7 @@ function world(over = {}) {
   const readers = {
     realHome: home, repo,
     modelsCache: () => CACHE,
-    rolloutLines: () => { calls.pool++; return [rate(60)]; },
+    rolloutLines: () => { calls.pool++; return [rate(40)]; },
     distFresh: () => true,
     canon: () => readFileSync(CANON, "utf8"),
     ...over,
@@ -89,7 +89,7 @@ test("CONTROL: a fresh build seat over a fresh stamp passes preflight, and names
   const w = world();
   const got = preflight(ask(w), w.readers);
   assert.match(got.pool, /ABOVE FLOOR/);
-  assert.match(got.pool, /40\.0% left/);
+  assert.match(got.pool, /60.0% left/);
 });
 
 test("refuses the main checkout as a build worktree; a reader and a researcher need none", () => {
@@ -137,7 +137,7 @@ test("the pool: a pure read of the recorded line; at the floor refuses; CONTROL 
   const w = world();
   refuses(w, {}, /at or below its floor/, { ...w.readers, rolloutLines: () => [rate(80)] });
   refuses(w, {}, /at or below its floor/, { ...w.readers, rolloutLines: () => [rate(97)] });
-  assert.ok(preflight(ask(w), { ...w.readers, rolloutLines: () => [rate(79.9)] }));
+  assert.ok(preflight(ask(w, { mode: "read" }), { ...w.readers, rolloutLines: () => [rate(79.9)] }));
 });
 
 test("lead preflight floor", () => {
@@ -209,7 +209,7 @@ test("run: a real launch appends the law once, logs the attempt, spawns codex wi
   assert.equal(code(), 0);
   const brief = readFileSync(join(w.seatDir, "brief.md"), "utf8");
   assert.equal(brief.match(/^## SEAT LAW/gm).length, 1);
-  assert.equal(spawned.length, 2);
+  assert.equal(spawned.filter((x) => x.cmd === "codex").length, 2);
   assert.equal(spawned[0].cmd, "codex");
   assert.equal(spawned[0].opts.env.HOME, w.home);
   assert.equal(spawned[0].opts.env.TMPDIR, join(w.seatDir, ".tmp"));
@@ -353,4 +353,99 @@ test("the floors by mode: a READ seat launches down to its own floor (0% while t
   refuses(w, { mode: "read" }, /at or below its floor/, { ...w.readers, rolloutLines: () => [rate(100)] }); // an empty pool still refuses
   assert.equal(readPool([rate(85)], "read").above, true);
   assert.equal(readPool([rate(85)], "build").above, false);
+});
+
+// ---- row 2: the pool-used ceilings by mode ----
+test("row 2: a lead refuses above 50% used, build and research above 60%, a read seat never; the refusal names the reading; CONTROL at the line passes", () => {
+  const w = world();
+  const at = (u) => ({ ...w.readers, rolloutLines: () => [rate(u)] });
+  refuses(w, { mode: "lead" }, /used 55\.0%.*lead.*50%/s, at(55));
+  assert.ok(preflight(ask(w, { mode: "lead" }), at(50)));
+  refuses(w, { mode: "build" }, /used 65\.0%.*build.*60%/s, at(65));
+  assert.ok(preflight(ask(w, { mode: "build" }), at(60)));
+  refuses(w, { mode: "research", worktree: undefined }, /used 61\.0%.*research.*60%/s, at(61));
+  assert.ok(preflight(ask(w, { mode: "read" }), at(79)));
+  refuses(w, { mode: "lead" }, /at or below its floor/, at(85)); // the 20%-left floor still speaks first
+});
+
+// ---- row 1: per-seat ceilings ----
+const tc = (total) => JSON.stringify({ type: "event_msg", payload: { type: "token_count", info: { total_token_usage: { total_tokens: total } } } });
+
+test("row 1: ceilingFor gives 15M to a lead step and 8M to the rest; an override wins; junk refuses", () => {
+  assert.equal(ceilingFor("lead"), 15_000_000);
+  for (const m of ["build", "read", "research"]) assert.equal(ceilingFor(m), 8_000_000);
+  assert.equal(ceilingFor("build", 1234), 1234);
+  assert.equal(ceilingFor("build", "99"), 99);
+  for (const bad of [0, -5, "x", 1.5, NaN]) assert.throws(() => ceilingFor("build", bad), /ceiling/);
+});
+
+test("row 1: rolloutTokens reads the LAST total_token_usage.total_tokens, skips info:null lines, null when none", () => {
+  const nul = JSON.stringify({ type: "event_msg", payload: { type: "token_count", info: null } });
+  assert.equal(rolloutTokens([tc(10), nul, tc(7_000_000), "garbage"]), 7_000_000);
+  assert.equal(rolloutTokens([nul, "x"]), null);
+  assert.equal(rolloutTokens([]), null);
+});
+
+test("row 1: findRollout matches the seat by session cwd and start time, never another seat's rollout; KNOWN POSITIVE and CONTROL", () => {
+  const home = mkdtempSync(join(tmpdir(), "rollouts-"));
+  const dir = join(home, ".codex", "sessions", "2026", "11", "04");
+  mkdirSync(dir, { recursive: true });
+  const meta = (cwd) => JSON.stringify({ type: "session_meta", payload: { cwd } });
+  const mine = join(dir, "rollout-a.jsonl"), other = join(dir, "rollout-b.jsonl"), old = join(dir, "rollout-c.jsonl");
+  writeFileSync(mine, `${meta("/lane/wt")}\n${tc(5)}\n`);
+  writeFileSync(other, `${meta("/elsewhere")}\n${tc(999)}\n`);
+  writeFileSync(old, `${meta("/lane/wt")}\n${tc(1)}\n`);
+  utimesSync(old, new Date(1000), new Date(1000));
+  assert.equal(findRollout(home, { cwds: ["/lane/wt", "/lane/s"], sinceMs: 5000 }), mine);
+  assert.equal(findRollout(home, { cwds: ["/nowhere"], sinceMs: 5000 }), null);
+});
+
+test("row 1: watchSeat stops a seat at its ceiling (SIGTERM, then SIGKILL when it lives), writes ceiling.md naming the reading and the ceiling; reads no run.log", () => {
+  const seatDir = mkdtempSync(join(tmpdir(), "ceil-"));
+  writeFileSync(join(seatDir, "run.log"), "tokens used\n12\n"); // the understated line must never decide
+  const readings = [100, 7_999_999, 8_100_000];
+  const signals = [];
+  let alive = true;
+  const r = watchSeat({ seatDir, pid: 77, ceiling: 8_000_000, mode: "build", tokens: () => readings.shift() ?? 8_100_000, alive: () => alive, kill: (sig) => { signals.push(sig); if (sig === "SIGKILL") alive = false; }, sleep() {}, graceTicks: 2 });
+  assert.equal(r, "ceiling");
+  assert.deepEqual(signals, ["SIGTERM", "SIGKILL"]);
+  const note = readFileSync(join(seatDir, "ceiling.md"), "utf8");
+  assert.match(note, /8100000/);
+  assert.match(note, /8000000/);
+  assert.match(note, /build/);
+});
+
+test("row 1: CONTROL watchSeat under the ceiling leaves the seat alone and writes nothing; a seat that exits on SIGTERM draws no SIGKILL", () => {
+  const seatDir = mkdtempSync(join(tmpdir(), "ceil-"));
+  let ticks = 0;
+  const signals = [];
+  const r = watchSeat({ seatDir, pid: 1, ceiling: 100, mode: "read", tokens: () => 50, alive: () => ++ticks < 4, kill: (s) => signals.push(s), sleep() {}, graceTicks: 2 });
+  assert.equal(r, "exited");
+  assert.deepEqual(signals, []);
+  assert.throws(() => readFileSync(join(seatDir, "ceiling.md")));
+  let up = true;
+  const r2 = watchSeat({ seatDir, pid: 1, ceiling: 100, mode: "read", tokens: () => 500, alive: () => up, kill: (s) => { signals.push(s); up = false; }, sleep() {}, graceTicks: 2 });
+  assert.equal(r2, "ceiling");
+  assert.deepEqual(signals, ["SIGTERM"]);
+});
+
+test("row 1: run launches the watchdog detached beside the seat with the mode's ceiling, or the --ceiling override; a dry run launches none", () => {
+  const w = world();
+  const spawned = [];
+  const spawn = (cmd, args, opts) => { spawned.push({ cmd, args, opts }); return { pid: 4242, unref() {} }; };
+  const base = ["--mode", "build", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", w.wt];
+  assert.equal(run(base, { readers: w.readers, spawn, log() {} }), 0);
+  const dog = spawned.find((x) => x.cmd !== "codex");
+  assert.ok(dog, "a watchdog spawned");
+  assert.equal(dog.opts.detached, true);
+  assert.ok(dog.args.includes("--watch"));
+  assert.equal(dog.args[dog.args.indexOf("--ceiling") + 1], "8000000");
+  assert.equal(dog.args[dog.args.indexOf("--pid") + 1], "4242");
+  spawned.length = 0;
+  assert.equal(run([...base, "--ceiling", "123"], { readers: w.readers, spawn, log() {} }), 0);
+  assert.equal(spawned.find((x) => x.cmd !== "codex").args[spawned.find((x) => x.cmd !== "codex").args.indexOf("--ceiling") + 1], "123");
+  spawned.length = 0;
+  assert.equal(run([...base, "--dry-run"], { readers: w.readers, spawn, log() {} }), 0);
+  assert.equal(spawned.length, 0);
+  assert.equal(run([...base, "--ceiling", "nope"], { readers: w.readers, spawn, log() {}, err() {} }), 2);
 });

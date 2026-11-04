@@ -19,13 +19,16 @@
  * from Codex's models cache, `gpt-6-sol`, a Codex pool line unreadable twice (never read as zero), a pool at or under
  * its floor (20% for build, lead or research, 0% for read), a build or lead seat on the main checkout, a lead worktree
  * outside scratch, or a build seat over a stale dist.
+ * Pool-used lines (seat-harness#/the-spend-guard): a lead refuses above 50% used, build or research above 60%. A detached
+ * watchdog (`--watch`, spawned beside every seat) tails the seat's rollout and stops it at its token ceiling (`--ceiling N`;
+ * lead 15M, others 8M), writing `ceiling.md`.
  * `--dry-run` runs the preflight and prints the argument array, spawns nothing and writes nothing.
  *
  * The Codex cache, auth and rollouts live under the PASSWD home (`os.userInfo().homedir`), never `$HOME`: a lead runs
  * under a scratch HOME. Every reader injects, so a test stands nothing. The tool never writes `~/.codex`.
  */
 import { execFileSync, spawn as nodeSpawn } from "node:child_process";
-import { appendFileSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from "node:fs";
+import { appendFileSync, closeSync, existsSync, readSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from "node:fs";
 import { userInfo } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -37,6 +40,68 @@ const FLOOR = 20;
 /** A read seat's own floor: the operator lets readers spend the pool to its end for now (2026-10-31: "temp bump that limit to 0%"; it stood at 5); builders and research keep FLOOR. */
 const READ_FLOOR = 0;
 const MODES = ["build", "lead", "read", "research"];
+/** The pool's used-percent ceiling by mode (seat-harness#/owed row 2): a read seat spends to its own floor. */
+const MAX_USED = { lead: 50, build: 60, research: 60 };
+/** The per-seat token ceiling by mode (row 1): total_token_usage.total_tokens, cached input counted. */
+const CEILINGS = { lead: 15_000_000, build: 8_000_000, read: 8_000_000, research: 8_000_000 };
+
+/** The ceiling for a mode: the default, or a positive-integer override (a number or its digits). */
+export function ceilingFor(mode, override) {
+  if (override === undefined) return CEILINGS[mode];
+  const n = typeof override === "string" && /^[0-9]+$/.test(override) ? Number(override) : override;
+  if (!Number.isInteger(n) || n <= 0) throw refuse(`ceiling must be a positive integer of tokens (got "${override}")`);
+  return n;
+}
+
+/** The last total_token_usage.total_tokens in a rollout's lines, or null when none. */
+export function rolloutTokens(lines) {
+  let total = null;
+  for (const line of lines ?? []) {
+    if (!line.includes('"total_token_usage"')) continue;
+    try { const t = JSON.parse(line)?.payload?.info?.total_token_usage?.total_tokens; if (typeof t === "number") total = t; } catch { /* a torn tail line */ }
+  }
+  return total;
+}
+
+/** The rollout of one seat: the newest file under sessions/ whose session_meta cwd is one of `cwds` and whose mtime reaches `sinceMs`. */
+export function findRollout(home, { cwds, sinceMs }) {
+  let best = null;
+  const walk = (d, depth) => {
+    let es; try { es = readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const e of es) {
+      const p = join(d, e.name);
+      if (e.isDirectory() && depth < 5) walk(p, depth + 1);
+      else if (e.isFile() && /^rollout-.*\.jsonl$/.test(e.name)) {
+        let m; try { m = statSync(p).mtimeMs; } catch { continue; }
+        if (m < sinceMs || (best && best[0] >= m)) continue;
+        try {
+          const fd = openSync(p, "r"); const buf = Buffer.alloc(16384);
+          const n = readSync(fd, buf, 0, buf.length, 0); closeSync(fd);
+          const first = buf.toString("utf8", 0, n).split("\n", 1)[0];
+          if (cwds.includes(/"cwd":"((?:[^"\\]|\\.)*)"/.exec(first)?.[1])) best = [m, p];
+        } catch { /* unreadable or torn */ }
+      }
+    }
+  };
+  walk(join(home, ".codex", "sessions"), 0);
+  return best ? best[1] : null;
+}
+
+/** The watchdog loop over injected readers: stops the seat at its ceiling (SIGTERM, then SIGKILL after `graceTicks` ticks) and writes ceiling.md; returns "ceiling" or "exited". */
+export function watchSeat({ seatDir, pid, ceiling, mode, tokens, alive, kill, sleep, graceTicks = 10 }) {
+  while (alive()) {
+    const t = tokens();
+    if (typeof t === "number" && t >= ceiling) {
+      kill("SIGTERM");
+      for (let i = 0; i < graceTicks && alive(); i++) sleep();
+      if (alive()) kill("SIGKILL");
+      writeFileSync(join(seatDir, "ceiling.md"), `# Ceiling reached\n\nThe ${mode} seat (pid ${pid}) read ${t} total tokens in its rollout (total_token_usage.total_tokens, cached input counted) against a ceiling of ${ceiling}. The watchdog stopped it (SIGTERM, then SIGKILL if it lived).\n`);
+      return "ceiling";
+    }
+    sleep();
+  }
+  return "exited";
+}
 
 /** The passwd home, never `$HOME`. */
 export function realHome() { return userInfo().homedir; }
@@ -177,6 +242,7 @@ export function preflight({ mode, model, seatDir, worktree }, readers) {
   const pool = readPool(readers.rolloutLines(), mode) ?? readPool(readers.rolloutLines(), mode);
   if (!pool) throw refuse("Codex pool line unreadable (no rate_limits record in the newest rollout, read twice); read it by hand before launching");
   if (!pool.above) throw refuse(`Codex pool at or below its floor: ${pool.summary}`);
+  if (MAX_USED[mode] !== undefined && pool.used > MAX_USED[mode]) throw refuse(`Codex pool used ${pool.used.toFixed(1)}%, above the ${mode} seat's ${MAX_USED[mode]}% used ceiling: ${pool.summary}`);
   if (mode === "build" || mode === "lead") {
     const role = mode === "lead" ? "lead" : "builder";
     if (!worktree) throw refuse(`a ${role} needs its worktree`);
@@ -189,22 +255,41 @@ export function preflight({ mode, model, seatDir, worktree }, readers) {
 
 function parse(argv) {
   const o = { dryRun: false };
-  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree" };
+  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--pid": "pid", "--cwds": "cwds", "--since": "since" };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--dry-run") o.dryRun = true;
+    else if (argv[i] === "--watch") o.watch = true;
     else if (keys[argv[i]]) { if (argv[i + 1] === undefined) throw new Error(`${argv[i]} wants a value`); o[keys[argv[i]]] = argv[++i]; }
     else throw new Error(`unknown option ${argv[i]}`);
   }
+  if (o.watch) return o;
   for (const k of ["mode", "model", "effort", "seatDir"]) if (!o[k]) throw new Error(`--${k === "seatDir" ? "seat-dir" : k} is required`);
   return o;
+}
+
+/** The detached watchdog entry: tails the seat's rollout every few seconds until the seat exits or crosses its ceiling. */
+function watchMain(o) {
+  const pid = Number(o.pid), cwds = o.cwds.split(","), sinceMs = Number(o.since), home = realHome();
+  const alive = () => { try { process.kill(pid, 0); return true; } catch { return false; } };
+  const nap = new Int32Array(new SharedArrayBuffer(4));
+  let file = null;
+  watchSeat({
+    seatDir: o.seatDir, pid, ceiling: Number(o.ceiling), mode: o.mode, alive,
+    kill: (sig) => { try { process.kill(-pid, sig); } catch { try { process.kill(pid, sig); } catch { /* gone */ } } },
+    sleep: () => Atomics.wait(nap, 0, 0, 3000),
+    tokens: () => { file ??= findRollout(home, { cwds, sinceMs }); return file ? rolloutTokens(readFileSync(file, "utf8").split("\n")) : null; },
+  });
+  return 0;
 }
 
 /** The launcher over injected readers, spawn and writers; returns the exit code. */
 export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err = console.error } = {}) {
   let o;
   try { o = parse(argv); } catch (e) { err(`[launch-codex] ${e.message}`); return 2; }
+  if (o.watch) return watchMain(o);
   const seatDir = real(o.seatDir);
   try {
+    const ceiling = ceilingFor(o.mode, o.ceiling);
     readers ??= realReaders();
     const worktree = o.worktree ? real(o.worktree) : undefined;
     const { pool } = preflight({ ...o, seatDir, worktree }, readers);
@@ -223,6 +308,10 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(seatDir, ".tmp"), TMPPREFIX: join(seatDir, ".tmp", "zsh") };
     const child = spawn("codex", [...args, brief], { cwd: seatDir, env, detached: true, stdio: ["ignore", fd, fd] });
     child.unref?.();
+    const since = Date.now() - 5000;
+    const cwds = [worktree ?? seatDir, seatDir].join(",");
+    const dog = spawn(process.execPath, [fileURLToPath(import.meta.url), "--watch", "--seat-dir", seatDir, "--pid", String(child.pid), "--ceiling", String(ceiling), "--mode", o.mode, "--cwds", cwds, "--since", String(since)], { cwd: seatDir, env: { ...process.env, HOME: readers.realHome }, detached: true, stdio: "ignore" });
+    dog.unref?.();
     log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${child.pid}; wait on: until [ -f ${join(seatDir, "final.md")} ]`);
     return 0;
   } catch (e) {

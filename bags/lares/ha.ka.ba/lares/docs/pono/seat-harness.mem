@@ -79,7 +79,9 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 * ''True usage'' reads from each Codex rollout's `token_count` events (`total_token_usage`: input, cached input, output, reasoning) and from each rollout's `rate_limits.primary.used_percent`. A seat's printed "tokens used" line understates the draw by orders of magnitude, so no tally reads it.
 * ''Cached input counts.'' Caching lowers the price of a token, never its weight against a rate limit or a plan pool.
-* ''The floors'': the Codex pool keeps 20% for a build, research or lead seat and 0% for a read seat; the launcher refuses at or under the floor. A Copilot run reads its spend from its log's `Requests N Premium` line, and a log without one reads UNMETERED, never zero.
+* ''The floors'': the Codex pool keeps 20% for a build, research or lead seat and 0% for a read seat; the launcher refuses at or under the floor.
+* ''The used-percent lines'': a lead step refuses above 50% of the weekly pool used, a build or research seat above 60%, and a read seat stays at its floor; each refusal names the reading.
+* ''The per-seat ceiling'': the launcher starts a detached watchdog beside every seat. It tails the seat's own rollout (matched by session cwd and start time) and sums `total_token_usage.total_tokens`; at the ceiling (15M for a lead step, 8M for build, read and research; `--ceiling N` overrides) it sends SIGTERM, then SIGKILL, and writes `ceiling.md` in the seat directory naming the reading. The watchdog never reads `run.log`. A Copilot run reads its spend from its log's `Requests N Premium` line, and a log without one reads UNMETERED, never zero.
 * ''Reasoning effort'' moves little of the draw; context length moves most of it. Effort follows the step's difficulty, never the budget.
 
 <<~/ahu>>
@@ -87,8 +89,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 <<~ ahu slot=`#/owed`>>
 !! Owed ~ the rows this design still lacks
 
-# The launcher tails a live seat's rollout and stops it at a per-seat ceiling (about 15M tokens for a lead step, about 8M for a read or build), naming the ceiling.
-# Pool-aware launching: a lead step refuses above about 50% of the weekly pool used and any build above about 60%, naming the reading.
 # An explicit `model_auto_compact_token_limit` and `tool_output_token_limit`, with a canary seat proving compaction fires inside `codex exec`.
 # The ratcheted broker: data-only git plumbing with a fixed environment and pinned binaries, a commit bound to an expected old head and an exact tree, hooks and validators in a separate check seat whose receipt the broker verifies, installs in an isolated install seat, a go bound to branch and head, and one outer wall that means the same for Codex and Copilot, proved by planted hooks, filters, a hostile `.npmrc`, a poisoned `PATH` and malicious config.
 # The lane state file and the fresh-per-step lead as launcher modes, replacing the long-session lead.
@@ -105,6 +105,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HlVXyrN5varDUZDW2rX3u4zGV7bD6NFGupll4mnV2-A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NYit0MzArhv1MDJdQEt8DhhlEExXBO-pIQZqDQUOb3c`>>
 
 <<^ code=`&#x0004;` to=`?`>>
