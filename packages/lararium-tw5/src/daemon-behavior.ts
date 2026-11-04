@@ -43,7 +43,7 @@ import { hasEngineWatch, hasHandBoundary, hasProjection } from "./has-island-wat
 import { hasCapture } from "./capture/has-capture.js";
 import { VerbDispatcher, VerbTable } from "./verb-dispatcher.js";
 import type { IslandCap } from "./island-caps.js";
-import type { IslandContext, IslandBehavior } from "./island-context.js";
+import type { IslandContext, IslandBehavior, WritableOutcome } from "./island-context.js";
 import type { RunnableHulls } from "@lararium/mesh";
 import { seedDaemonProtocol } from "./daemon-protocol-seed.js";
 import { canonicalJson, wikiSlotUri, VERB_URI_PREFIX } from "@lararium/mesh";
@@ -79,6 +79,8 @@ function writeLayerPointerStands(ctx: IslandContext): Promise<void> {
 export interface DaemonBehaviorOptions {
   /** A ready verifier (e.g. tests, or a host-provided one). */
   verifier?: CapabilityVerifier;
+  /** Stand the daemon working route during the writable startup marker. */
+  onWritable?: (ctx: IslandContext) => Promise<WritableOutcome>;
   onHostMessage?: (msg: DaemonMsg_FaceLit | DaemonMsg_FaceDrop, ctx: IslandContext) => Promise<void>;
   /**
    * Projection mount shore — the daemon INHERITS the wiki's render cap (hasProjection). When the worker
@@ -157,6 +159,11 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
   // whole behavior, minus the engine-watch (now its own shared cap).
   const dispatchCap: IslandCap = {
     name: "daemon-dispatch",
+    async onWritable(ctx: IslandContext) {
+      const outcome = await opts.onWritable?.(ctx) ?? { state: "standing" as const };
+      if (outcome.state === "standing" && opts.onWritable) await writeLayerPointerStands(ctx);
+      return outcome;
+    },
     async onEa(ctx: IslandContext) {
       const { tw5, composite, post } = ctx;
       _post = post;

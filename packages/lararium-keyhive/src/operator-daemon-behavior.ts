@@ -29,7 +29,7 @@ import {
   makeCabalRealmReactors,
   makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, SEED_OFF_DISK,
 } from "@lararium/tw5";
-import { ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
@@ -381,9 +381,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
       const daemonUrl = ctx.handles.get(wikiBagUri(slug))?.url;
       if (!daemonUrl) throw new Error(`daemon bag ${wikiBagUri(slug)} is unavailable`);
-      const recipeTrace = { wikiDocId: daemonUrl, libraryBagDocIds: [] as readonly string[] };
-      const fingerprint = await computeRecipeFingerprint(recipeTrace);
-      const { workingUrl } = await slotDocsOf(ctx).bindings(fingerprint, recipeTrace, slug);
+      const resolved = await slotDocsOf(ctx).slotDoc(slug, "working");
+      if (!resolved) throw new Error("working slot did not resolve");
+      const workingUrl = resolved.url;
       const handle = await findOrThrow(ctx.repo, workingUrl, `${working} (the daemon's working layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
       const store = new AutomergeDocStore(handle, working);
       const at = ctx.composite.layerIndexOf(wikiBagUri(slug)) + 1;
@@ -430,6 +430,97 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const readLeaseEpoch = (composite: IslandContext["composite"] | null | undefined): Promise<LeaseFrontier> =>
     // THE ONE DOOR: the current roster's signed advances, floored under the sealed anchor this daemon stands on.
     readLeaseUnderFace(composite, daemonAuth.personaGroupId, readFace(daemonAuth.personaKel?.chain, daemonAuth.faceAnchor));
+
+  // One authority and archive stand serves both the writable marker and ea.
+  // The memory keys the island's own context: one island asks twice (the marker, then ea) and reads one stand; a second context is a
+  // second island and stands afresh.
+  type WorkingStand = { keyhive: KeyhiveProvider; floor: Awaited<ReturnType<typeof persistArchiveFloor>> };
+  const writableStands = new WeakMap<object, Promise<WorkingStand>>();
+  const standWorking = (ctx: IslandContext): Promise<WorkingStand> => {
+    const standing = writableStands.get(ctx);
+    if (standing) return standing;
+    const fresh = standWorkingOnce(ctx);
+    writableStands.set(ctx, fresh);
+    return fresh;
+  };
+  const standWorkingOnce = (ctx: IslandContext): Promise<WorkingStand> => (async () => {
+      // THE BINDING GATE'S OWN LEASE READ — the same fold, done once here (boot only re-runs the gate at
+      // boot, so a single read at this moment is exactly as fresh as the gate itself). An UNAVAILABLE frontier
+      // threads no epoch, and the gate refuses a persona-bound boot on it.
+      const bindingGateLease = await readLeaseEpoch(ctx.composite);
+      if (bindingGateLease.kind === "unavailable" && daemonAuth.personaGroupId) {
+        console.log(`[daemon] Binding Gate lease read: current lease frontier unavailable (${bindingGateLease.why})`);
+      }
+      let booted: Awaited<ReturnType<typeof bootDaemonKeyhive>>;
+      try {
+        booted = await bootDaemonKeyhive({
+          ...(daemonAuth.atom ? { atomSeed: meshHexToBytes(daemonAuth.atom.seed) } : {}),
+          eventStore:            new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }),
+          ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
+          // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
+          ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
+          ...(daemonAuth.faceAnchor ? { faceAnchor: daemonAuth.faceAnchor } : {}),
+          ...(daemonAuth.meshCabalDocIdHex      ? { meshCabalDocIdHex:      daemonAuth.meshCabalDocIdHex }      : {}),
+          registerBags:          daemonAuth.atom ? daemonAuth.registerBags.filter(isVesselGround) : daemonAuth.registerBags,
+          ledger:                daemonBagDocLedger(ctx.composite, daemonAuth.personaGroupId),
+          ...(daemonAuth.signerDid  ? { signerDid:  daemonAuth.signerDid }  : {}),
+          ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),
+          ...(daemonAuth.deviceEdge ? { deviceEdge: daemonAuth.deviceEdge } : {}),
+          ...(bindingGateLease.kind === "epoch" ? { expectedEpoch: bindingGateLease.n } : {}),
+          // THE DYAD'S SHADOW over this vessel's own device edge, asked of the vessel's own fold of its fleet board.
+          ...(daemonAuth.deviceEdge
+            ? { dyad: await requireDyadReader(dyadReader(ctx), "the Binding Gate")(daemonAuth.deviceEdge.personaRootDid, daemonAuth.deviceEdge.deviceVerifyingKey) } : {}),
+          ...(daemonAuth.veilArchiveBytes ? { veilArchiveBytes: daemonAuth.veilArchiveBytes } : {}),
+          ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
+        });
+      } catch (error) {
+        const cause = error instanceof Error ? error.message : String(error);
+        // A persona-bound boot that does not complete refuses the face, whichever step refused it.
+        if (daemonAuth.deviceEdge && daemonAuth.personaGroupId) {
+          ctx.post({ type: "gate:refused", cause });
+          refuseGate(new Error(cause));
+        }
+        throw error;
+      }
+      const { keyhive } = booted;
+      if (daemonAuth.deviceEdge && daemonAuth.personaGroupId) {
+        ctx.post({ type: "gate:clear", edgeDigest: deviceEdgeDigest(daemonAuth.deviceEdge), personaRoot: daemonAuth.deviceEdge.personaRootDid });
+        gateCleared = true;
+        clearGate();
+      }
+      kh = keyhive;
+      if (daemonAuth.atom) mintedByHex = daemonAuth.atom.key;
+      if (daemonAuth.atom) {
+        faceLedger = null;
+        if (daemonAuth.personaGroupId) {
+          try {
+            if (!ctx.catalogUrl) throw new Error("catalog unavailable");
+            const store = await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(daemonAuth.personaGroupId));
+            if (!store) throw new Error("face plane absent");
+            await store.listVisible();
+            faceLedger = planeBagDocLedger(store);
+          } catch (cause) {
+            console.warn(`[daemon] face bag document plane unavailable (${(cause as Error)?.message ?? String(cause)}); registering face bags without durable bindings`);
+          }
+        }
+        const faceBags = daemonAuth.registerBags.filter((bag) => !isVesselGround(bag));
+        if (faceLedger) await registerBagsDurably({ provider: keyhive, bags: faceBags, ledger: faceLedger });
+        else for (const bag of faceBags) await keyhive.registerBag(bag);
+      }
+      // ── M3 — THE ARCHIVE FLOOR, THROUGH THE ONE DOOR ──────────────────────────────────────────
+      // The face archive carries the atom's prekeys and capability state. The write door reads
+      // custody standing before export; a shut face writes nothing. A failed write surfaces below.
+      const floor = await persistArchiveFloor({
+        archiveOpens: daemonAuth.archiveOpens,
+        writers: { ...(persistVeilArchive ? { persistVeilArchive } : {}) },
+        // EACH STAND'S CARD MINTS BEFORE ITS ARCHIVE LEAVES. Every later ask in this boot (a binding's
+        // a face-join or a crossing) presents that same card, so the Archive that
+        // lands here holds the secret behind every prekey this boot presents.
+        exportVeilArchive: () => keyhive.exportArchiveAfterTheCard(),
+      });
+      await attachDaemonWorking(ctx);
+      return { keyhive, floor };
+  })();
 
   return {
     ...daemonExtra, // the vessel-injected telemetry capture SINK flows through (idempotent cap → live)
@@ -1114,84 +1205,16 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       faceChanges = change.catch(() => {});
       return change;
     },
+    onWritable: async (ctx: IslandContext) => {
+      if (!daemonAuth.atom && !daemonAuth.personaGroupId && !daemonAuth.deviceEdge) return { state: "no-route", reason: "no face" };
+      await standWorking(ctx);
+      return { state: "standing" };
+    },
     verifierFactory: async (ctx: IslandContext) => {
       if (!daemonAuth.atom && !daemonAuth.personaGroupId && !daemonAuth.deviceEdge) {
         return floorVerifier;
       }
-      // THE BINDING GATE'S OWN LEASE READ — the same fold, done once here (boot only re-runs the gate at
-      // boot, so a single read at this moment is exactly as fresh as the gate itself). An UNAVAILABLE frontier
-      // threads no epoch, and the gate refuses a persona-bound boot on it.
-      const bindingGateLease = await readLeaseEpoch(ctx.composite);
-      if (bindingGateLease.kind === "unavailable" && daemonAuth.personaGroupId) {
-        console.log(`[daemon] Binding Gate lease read: current lease frontier unavailable (${bindingGateLease.why})`);
-      }
-      let booted: Awaited<ReturnType<typeof bootDaemonKeyhive>>;
-      try {
-        booted = await bootDaemonKeyhive({
-          ...(daemonAuth.atom ? { atomSeed: meshHexToBytes(daemonAuth.atom.seed) } : {}),
-          eventStore:            new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }),
-          ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
-          // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
-          ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
-          ...(daemonAuth.faceAnchor ? { faceAnchor: daemonAuth.faceAnchor } : {}),
-          ...(daemonAuth.meshCabalDocIdHex      ? { meshCabalDocIdHex:      daemonAuth.meshCabalDocIdHex }      : {}),
-          registerBags:          daemonAuth.atom ? daemonAuth.registerBags.filter(isVesselGround) : daemonAuth.registerBags,
-          ledger:                daemonBagDocLedger(ctx.composite, daemonAuth.personaGroupId),
-          ...(daemonAuth.signerDid  ? { signerDid:  daemonAuth.signerDid }  : {}),
-          ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),
-          ...(daemonAuth.deviceEdge ? { deviceEdge: daemonAuth.deviceEdge } : {}),
-          ...(bindingGateLease.kind === "epoch" ? { expectedEpoch: bindingGateLease.n } : {}),
-          // THE DYAD'S SHADOW over this vessel's own device edge, asked of the vessel's own fold of its fleet board.
-          ...(daemonAuth.deviceEdge
-            ? { dyad: await requireDyadReader(dyadReader(ctx), "the Binding Gate")(daemonAuth.deviceEdge.personaRootDid, daemonAuth.deviceEdge.deviceVerifyingKey) } : {}),
-          ...(daemonAuth.veilArchiveBytes ? { veilArchiveBytes: daemonAuth.veilArchiveBytes } : {}),
-          ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
-        });
-      } catch (error) {
-        const cause = error instanceof Error ? error.message : String(error);
-        // A persona-bound boot that does not complete refuses the face, whichever step refused it.
-        if (daemonAuth.deviceEdge && daemonAuth.personaGroupId) {
-          ctx.post({ type: "gate:refused", cause });
-          refuseGate(new Error(cause));
-        }
-        throw error;
-      }
-      const { keyhive } = booted;
-      if (daemonAuth.deviceEdge && daemonAuth.personaGroupId) {
-        ctx.post({ type: "gate:clear", edgeDigest: deviceEdgeDigest(daemonAuth.deviceEdge), personaRoot: daemonAuth.deviceEdge.personaRootDid });
-        gateCleared = true;
-        clearGate();
-      }
-      kh = keyhive;
-      if (daemonAuth.atom) mintedByHex = daemonAuth.atom.key;
-      if (daemonAuth.atom) {
-        faceLedger = null;
-        if (daemonAuth.personaGroupId) {
-          try {
-            if (!ctx.catalogUrl) throw new Error("catalog unavailable");
-            const store = await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(daemonAuth.personaGroupId));
-            if (!store) throw new Error("face plane absent");
-            await store.listVisible();
-            faceLedger = planeBagDocLedger(store);
-          } catch (cause) {
-            console.warn(`[daemon] face bag document plane unavailable (${(cause as Error)?.message ?? String(cause)}); registering face bags without durable bindings`);
-          }
-        }
-        const faceBags = daemonAuth.registerBags.filter((bag) => !isVesselGround(bag));
-        if (faceLedger) await registerBagsDurably({ provider: keyhive, bags: faceBags, ledger: faceLedger });
-        else for (const bag of faceBags) await keyhive.registerBag(bag);
-      }
-      // ── M3 — THE ARCHIVE FLOOR, THROUGH THE ONE DOOR ──────────────────────────────────────────
-      // The face archive carries the atom's prekeys and capability state. The write door reads
-      // custody standing before export; a shut face writes nothing. A failed write surfaces below.
-      const floor = await persistArchiveFloor({
-        archiveOpens: daemonAuth.archiveOpens,
-        writers: { ...(persistVeilArchive ? { persistVeilArchive } : {}) },
-        // EACH STAND'S CARD MINTS BEFORE ITS ARCHIVE LEAVES. Every later ask in this boot (a binding's
-        // a face-join or a crossing) presents that same card, so the Archive that
-        // lands here holds the secret behind every prekey this boot presents.
-        exportVeilArchive: () => keyhive.exportArchiveAfterTheCard(),
-      });
+      const { keyhive, floor } = await standWorking(ctx);
       // ── THE CONTENT-KEY HOLDER STANDS HERE, beside the face identity ──────────
       // One subscription: its roll takes this island's seat rolls (kapae#/keys). A wrap rests the wrapping
       // identity's Archive through the SAME door as the floor above, and only where the archive opens: a locked
@@ -1405,7 +1428,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         await seat.run();
       }
       // Archive refusal records use the daemon wiki's default writable layer, so attachment precedes them.
-      await attachDaemonWorking(ctx);
       console.log(`[daemon] unbound documents: ${(await unboundMints(ctx.composite)).length} (list them with \`lares vessel unbound\`; nothing removes one)`);
       if (floor.barred) {
         console.log("[daemon] the archive holds shut — the identity archive was NOT re-sealed; every sovereign act waits.");
