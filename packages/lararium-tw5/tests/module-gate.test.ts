@@ -119,6 +119,27 @@ vi.mock("../src/tw5-host-bridge.js", () => ({
   bootWithHostBridge: async (_instance: unknown, _browser: boolean, ready: () => Promise<void>) => ready(),
 }));
 
+describe("a walk that dies half-way", () => {
+  test("RED: a throw on the 2nd of 3 granted modules admits exactly the 1st and names the fault with its title", async () => {
+    const titles = [1, 2, 3].map((n) => `lar:///ha.ka.ba/bags/test/modules/walk-${n}`);
+    const fake = fakeTw(Object.fromEntries(titles.map((t) => [t, moduleMeme({ title: t })])));
+    const define = fake.tw.modules.define.bind(fake.tw.modules);
+    fake.tw.modules.define = ((name: string, type: string, text: string) => {
+      if (name === titles[1]) throw new Error("define exploded");
+      return define(name, type, text);
+    }) as never;
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      await bootTrustedModules(fake.tw, new Set(titles), new Set(titles));
+      expect(fake.defined.map((d) => d.split(":")[0] + ":" + d.split(":").slice(1).join(":").split(":exports")[0])).toEqual([`library:${titles[0]}`]);
+      const said = warn.mock.calls.map((c) => c.join(" ")).filter((m) => m.includes("[module-gate]") && m.includes("walk stopped"));
+      expect(said, "the half-admitted set stayed invisible").toHaveLength(1);
+      expect(said[0]).toContain(titles[1]);
+      expect(said[0]).toContain("define exploded");
+    } finally { warn.mockRestore(); }
+  });
+});
+
 describe("TW5Engine grant mapping", () => {
   test("maps only matching string-valued preload digests to titles", async () => {
     const { promoteDigest } = await import("../../lararium-mesh/src/promote.js");

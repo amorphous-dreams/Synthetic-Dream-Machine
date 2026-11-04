@@ -10,9 +10,11 @@ const MODULE_COMPONENT_URI = "lar:///ha.ka.ba/lararium/tw5/tw5-module";
 export async function bootTrustedModules(tw: TW5Instance, preloaded: ReadonlySet<string>, granted: ReadonlySet<string>): Promise<void> {
   const wiki = tw.wiki;
 
+  let at = "(the module list)";
   try {
     const titles: string[] = wiki.filterTiddlers(`[all[tiddlers]stack:has[${MODULE_COMPONENT_URI}]]`) ?? [];
     for (const title of titles) {
+      at = title;
       if (!preloaded.has(title)) continue;
       if (!granted.has(title)) {
         console.warn(`[module-gate] refused ${title}: no local grant (promote it by hand)`);
@@ -47,8 +49,10 @@ export async function bootTrustedModules(tw: TW5Instance, preloaded: ReadonlySet
       // defines each trusted module under that name, `define(name, moduleType, definition)`.
       tw.modules.define(title, moduleType, body);
     }
-  } catch {
-    /* filter unavailable — fall through */
+  } catch (error) {
+    // The walk stops here and fails closed for every later title; the modules admitted before it stay. Say where it died so a
+    // half-admitted set never goes unseen.
+    console.warn(`[module-gate] walk stopped at ${at}: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
