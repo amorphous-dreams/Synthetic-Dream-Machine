@@ -63,31 +63,36 @@ export function rolloutTokens(lines) {
   return total;
 }
 
-/** The rollout of one seat: among the files whose session_meta cwd is one of `cwds` and whose session began at or after `sinceMs`, the one that began FIRST (two seats sharing a cwd each claim the nearest start). */
-export function findRollout(home, { cwds, sinceMs }) {
-  let best = null;
+/** Every rollout path under the home's sessions dir. */
+export function listRollouts(home) {
+  const out = [];
   const walk = (d, depth) => {
     let es; try { es = readdirSync(d, { withFileTypes: true }); } catch { return; }
     for (const e of es) {
       const p = join(d, e.name);
       if (e.isDirectory() && depth < 5) walk(p, depth + 1);
-      else if (e.isFile() && /^rollout-.*\.jsonl$/.test(e.name)) {
-        let m; try { m = statSync(p).mtimeMs; } catch { continue; }
-        if (m < sinceMs) continue;
-        try {
-          const fd = openSync(p, "r"); const buf = Buffer.alloc(16384);
-          const n = readSync(fd, buf, 0, buf.length, 0); closeSync(fd);
-          const first = buf.toString("utf8", 0, n).split("\n", 1)[0];
-          const cwd = /"cwd":("(?:[^"\\]|\\.)*")/.exec(first)?.[1];
-          if (cwd === undefined || !cwds.includes(JSON.parse(cwd))) continue;
-          const began = Date.parse(/"timestamp":"([^"]+)"/.exec(first)?.[1] ?? "") || m;
-          if (began < sinceMs) continue;
-          if (!best || began < best[0]) best = [began, p];
-        } catch { /* unreadable or torn */ }
-      }
+      else if (e.isFile() && /^rollout-.*\.jsonl$/.test(e.name)) out.push(p);
     }
   };
   walk(join(home, ".codex", "sessions"), 0);
+  return out;
+}
+
+/** The rollout of one seat: among the files NOT in `before` (the set the launcher listed ahead of the spawn) whose session_meta cwd is one of `cwds`, the one whose session began first. No wall clock decides; the launch order does. */
+export function findRollout(home, { cwds, before }) {
+  let best = null;
+  for (const p of listRollouts(home)) {
+    if (before.has(p)) continue;
+    try {
+      const fd = openSync(p, "r"); const buf = Buffer.alloc(16384);
+      const n = readSync(fd, buf, 0, buf.length, 0); closeSync(fd);
+      const first = buf.toString("utf8", 0, n).split("\n", 1)[0];
+      const cwd = /"cwd":("(?:[^"\\]|\\.)*")/.exec(first)?.[1];
+      if (cwd === undefined || !cwds.includes(JSON.parse(cwd))) continue;
+      const began = /"timestamp":"([^"]+)"/.exec(first)?.[1] ?? "";
+      if (!best || began < best[0]) best = [began, p];
+    } catch { /* unreadable or torn */ }
+  }
   return best ? best[1] : null;
 }
 
@@ -259,7 +264,7 @@ export function preflight({ mode, model, seatDir, worktree }, readers) {
 
 function parse(argv) {
   const o = { dryRun: false };
-  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--pid": "pid", "--cwds": "cwds", "--since": "since" };
+  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--pid": "pid", "--cwds": "cwds", "--before": "before" };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--dry-run") o.dryRun = true;
     else if (argv[i] === "--watch") o.watch = true;
@@ -273,7 +278,7 @@ function parse(argv) {
 
 /** The detached watchdog entry: tails the seat's rollout every few seconds until the seat exits or crosses its ceiling. */
 function watchMain(o) {
-  const pid = Number(o.pid), cwds = JSON.parse(o.cwds), sinceMs = Number(o.since), home = realHome();
+  const pid = Number(o.pid), cwds = JSON.parse(o.cwds), before = new Set(JSON.parse(readFileSync(o.before, "utf8"))), home = realHome();
   // The pid's start tick pins its identity: a reused pid reads as a different process and the seat as gone.
   const startTick = (n) => { try { return readFileSync(`/proc/${n}/stat`, "utf8").replace(/^.*\) /, "").split(" ")[19]; } catch { return null; } };
   const born = startTick(pid);
@@ -284,7 +289,7 @@ function watchMain(o) {
     seatDir: o.seatDir, pid, ceiling: Number(o.ceiling), mode: o.mode, alive,
     kill: (sig) => { try { process.kill(-pid, sig); } catch { try { process.kill(pid, sig); } catch { /* gone */ } } },
     sleep: () => Atomics.wait(nap, 0, 0, 3000),
-    tokens: () => { file ??= findRollout(home, { cwds, sinceMs }); return file ? rolloutTokens(readFileSync(file, "utf8").split("\n")) : null; },
+    tokens: () => { file ??= findRollout(home, { cwds, before }); return file ? rolloutTokens(readFileSync(file, "utf8").split("\n")) : null; },
   });
   return 0;
 }
@@ -315,9 +320,10 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(seatDir, ".tmp"), TMPPREFIX: join(seatDir, ".tmp", "zsh") };
     const child = spawn("codex", [...args, brief], { cwd: seatDir, env, detached: true, stdio: ["ignore", fd, fd] });
     child.unref?.();
-    const since = Date.now() - 5000;
+    const beforeFile = join(seatDir, "rollouts-before.json");
+    writeFileSync(beforeFile, JSON.stringify(listRollouts(readers.realHome)));
     const cwds = JSON.stringify([worktree ?? seatDir, seatDir]);
-    const dog = spawn(process.execPath, [fileURLToPath(import.meta.url), "--watch", "--seat-dir", seatDir, "--pid", String(child.pid), "--ceiling", String(ceiling), "--mode", o.mode, "--cwds", cwds, "--since", String(since)], { cwd: seatDir, env: { ...process.env, HOME: readers.realHome }, detached: true, stdio: "ignore" });
+    const dog = spawn(process.execPath, [fileURLToPath(import.meta.url), "--watch", "--seat-dir", seatDir, "--pid", String(child.pid), "--ceiling", String(ceiling), "--mode", o.mode, "--cwds", cwds, "--before", beforeFile], { cwd: seatDir, env: { ...process.env, HOME: readers.realHome }, detached: true, stdio: "ignore" });
     dog.unref?.();
     log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${child.pid}; wait on: until [ -f ${join(seatDir, "final.md")} ]`);
     return 0;

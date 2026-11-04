@@ -386,27 +386,24 @@ test("row 1: rolloutTokens reads the LAST total_token_usage.total_tokens, skips 
   assert.equal(rolloutTokens([]), null);
 });
 
-test("row 1: findRollout matches the seat by session cwd and start time, never another seat's rollout; KNOWN POSITIVE and CONTROL", () => {
+test("row 1: findRollout matches the seat by session cwd among the rollouts new since the launch, never another seat's or an earlier one; commas and escapes match; two seats in one cwd each find the earlier start", () => {
   const home = mkdtempSync(join(tmpdir(), "rollouts-"));
   const dir = join(home, ".codex", "sessions", "2026", "11", "04");
   mkdirSync(dir, { recursive: true });
-  const meta = (cwd) => JSON.stringify({ type: "session_meta", payload: { cwd } });
-  const mine = join(dir, "rollout-a.jsonl"), other = join(dir, "rollout-b.jsonl"), old = join(dir, "rollout-c.jsonl");
-  writeFileSync(mine, `${meta("/lane/wt")}\n${tc(5)}\n`);
-  writeFileSync(other, `${meta("/elsewhere")}\n${tc(999)}\n`);
-  writeFileSync(old, `${meta("/lane/wt")}\n${tc(1)}\n`);
-  utimesSync(old, new Date(1000), new Date(1000));
-  assert.equal(findRollout(home, { cwds: ["/lane/wt", "/lane/s"], sinceMs: 5000 }), mine);
-  assert.equal(findRollout(home, { cwds: ["/nowhere"], sinceMs: 5000 }), null);
-  // cwds with commas and JSON escapes match; two seats in one cwd each find the earlier start, and a start before sinceMs is another seat's
-  const odd = join(dir, "rollout-d.jsonl"), early = join(dir, "rollout-e.jsonl"), late = join(dir, "rollout-f.jsonl");
   const metaAt = (cwd, ts) => JSON.stringify({ timestamp: ts, type: "session_meta", payload: { cwd } });
-  writeFileSync(odd, `${metaAt('/la,ne/"q"', new Date().toISOString())}\n`);
-  writeFileSync(early, `${metaAt("/shared", "2026-11-04T10:00:01.000Z")}\n`);
-  writeFileSync(late, `${metaAt("/shared", "2026-11-04T10:00:09.000Z")}\n`);
-  assert.equal(findRollout(home, { cwds: ['/la,ne/"q"'], sinceMs: 5000 }), odd);
-  assert.equal(findRollout(home, { cwds: ["/shared"], sinceMs: Date.parse("2026-11-04T10:00:00Z") }), early);
-  assert.equal(findRollout(home, { cwds: ["/shared"], sinceMs: Date.parse("2026-11-04T10:00:05Z") }), late);
+  const put = (name, cwd, ts) => { const f = join(dir, name); writeFileSync(f, `${metaAt(cwd, ts)}\n${tc(5)}\n`); return f; };
+  const old = put("rollout-c.jsonl", "/lane/wt", "2026-11-04T09:00:00.000Z");
+  const before = new Set([old]);
+  const mine = put("rollout-a.jsonl", "/lane/wt", "2026-11-04T10:00:00.000Z");
+  put("rollout-b.jsonl", "/elsewhere", "2026-11-04T10:00:00.000Z");
+  assert.equal(findRollout(home, { cwds: ["/lane/wt", "/lane/s"], before }), mine);
+  assert.equal(findRollout(home, { cwds: ["/nowhere"], before }), null);
+  assert.equal(findRollout(home, { cwds: ["/lane/wt"], before: new Set([old, mine]) }), null, "CONTROL: every match listed before reads none");
+  const odd = put("rollout-d.jsonl", '/la,ne/"q"', "2026-11-04T10:00:00.000Z");
+  assert.equal(findRollout(home, { cwds: ['/la,ne/"q"'], before }), odd);
+  put("rollout-f.jsonl", "/shared", "2026-11-04T10:00:09.000Z");
+  const early = put("rollout-e.jsonl", "/shared", "2026-11-04T10:00:01.000Z");
+  assert.equal(findRollout(home, { cwds: ["/shared"], before }), early);
 });
 
 test("row 1: watchSeat stops a seat at its ceiling (SIGTERM, then SIGKILL when it lives), writes ceiling.md naming the reading and the ceiling; reads no run.log", () => {
