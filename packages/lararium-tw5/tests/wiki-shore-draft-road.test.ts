@@ -834,6 +834,48 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     await r.stop();
   }, 120_000);
 
+  test.each([false, true])("a source edited during %s deferred rename removal survives", async (deferred) => {
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
+    const x = `lar:///t/road/in-flight-${deferred}`, y = `${x}-renamed`, child = `${x}#/c`;
+    await seedRecords(r, [{ title: x, text: "landed" }, { title: child, text: "child", "$fragment-parent": x }]);
+    await r.adaptor.armSeedCheckpoint();
+    let ackOk = !deferred;
+    r.adaptor.restDoor = {
+      begin: () => ({ done: () => {} }), held: () => null, idle: async () => {}, answer: () => false, stalledAsks: () => 0, close: () => {},
+      ack: async () => { if (!ackOk) throw new Error("ack refused"); },
+    } as never;
+    const d = openDraft(r, x, "renamed");
+    typeInto(r, d, "renamed", { "draft.title": y });
+    await afterDispatch(); await r.adaptor.handsRested().catch(() => {});
+    let release!: () => void;
+    const until = new Promise<void>((resolve) => { release = resolve; });
+    r.failures.holdDelete = { title: x, until };
+    const mark = r.calls.length;
+    saveSequence(r, d);
+    await afterDispatch(); await turns(24);
+    let retry: Promise<void> | undefined;
+    if (deferred) {
+      expect(r.calls.slice(mark).some((call) => call.deletes.includes(x)), "source waits for target acknowledgement").toBe(false);
+      ackOk = true;
+      retry = r.adaptor.handsRested().catch(() => {});
+      await turns(24);
+    }
+    expect(r.calls.slice(mark).some((call) => call.deletes.includes(x)), "source removal reached the held store call").toBe(true);
+    r.wiki.addTiddler(new r.Tiddler({ title: x, text: "newer hand" }));
+    await afterDispatch();
+    r.failures.holdDelete = null;
+    release();
+    await retry;
+    await turns(24); await r.adaptor.handsRested().catch(() => {});
+    await turns(24); await r.adaptor.landingIdle();
+    expect(r.wiki.getTiddler(x)?.fields.text, "the newer source survives in the wiki").toBe("newer hand");
+    expect(storeText(r, workingBag, x), "the newer source reaches the store after removal").toBe("newer hand");
+    expect(r.wiki.getTiddler(child), "the newer source keeps its child").toBeDefined();
+    expect(storeText(r, workingBag, y)).toBe("renamed");
+    await r.stop();
+  }, 120_000);
+
   test("refused parked rename removal stays owed and retries after target acknowledgement", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
