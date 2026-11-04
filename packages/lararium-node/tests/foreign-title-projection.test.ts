@@ -299,7 +299,8 @@ test.each([false, true])("recovery retry rechecks the file without another edit 
       await turns(30);
       if (asks[1]) door.answer({ type: "doc:rested", requestId: asks[1].requestId, rested: true });
       await turns(30);
-      expect.soft(checks, "retry must recheck the failed projection receipt").toBe(2);
+      // A landing wave after a standing refusal also releases the retry (the drain's ruling 2), so the claim reads "at least one more recheck".
+      expect.soft(checks, "retry must recheck the failed projection receipt").toBeGreaterThanOrEqual(2);
       expect.soft(r.adaptor.pendingTitles(), "conflict still prevents acknowledgement").toContain(title);
       expect(readFileSync(path, "utf8")).toBe(tidBody(title, "separate disk edit"));
     } else {
