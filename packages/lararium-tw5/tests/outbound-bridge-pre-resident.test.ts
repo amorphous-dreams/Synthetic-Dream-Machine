@@ -214,6 +214,29 @@ describe.skipIf(wikiSkip)(`outbound bridge — draft recovery follows the idle d
     await adaptor.stop();
   }, 120_000);
 
+  test("the default drain holds newer draft state until the durable acknowledgement", async () => {
+    const { adaptor, store, type } = await residentWith("draft-ack-paced");
+    let release!: () => void;
+    let asked!: () => void;
+    const held = new Promise<void>((resolve) => { release = resolve; });
+    const firstAck = new Promise<void>((resolve) => { asked = resolve; });
+    let acknowledgements = 0;
+    adaptor.restDoor = {
+      ack: async () => { if (++acknowledgements === 1) { asked(); await held; } },
+      begin: () => ({ done: () => {} }), held: () => null, idle: async () => {},
+      answer: () => false, stalledAsks: () => 0, close: () => {},
+    };
+    await type(0);
+    await firstAck;
+    await type(1);
+    await type(2);
+    expect(store.puts.filter((p) => p.title === "Draft of 'Note'").map((p) => p.fields.text)).toEqual(["keystroke 0"]);
+    release();
+    await new Promise((r) => setTimeout(r, 30));
+    expect(store.puts.filter((p) => p.title === "Draft of 'Note'").map((p) => p.fields.text)).toEqual(["keystroke 0", "keystroke 2"]);
+    await adaptor.stop();
+  }, 120_000);
+
   test("an inbound landing neither flushes nor loses an unrelated draft", async () => {
     const { adaptor, store, type, land } = await residentWith("draft-inbound");
     await type(1);
