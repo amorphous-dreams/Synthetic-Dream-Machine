@@ -187,6 +187,7 @@ async function readRegularNoSymlink(file) {
     fh = await open(file, FS.O_RDONLY | FS.O_NOFOLLOW);
     const st = await fh.stat();
     if (!st.isFile()) throw new Error('not a regular file');
+    if (st.nlink > 1) throw new Error('hardlink');
     return await fh.readFile();
   } catch (error) {
     if (error?.code === 'ELOOP') throw new Error('symlink');
@@ -235,11 +236,12 @@ export async function readSafe(worktree, rel) {
     if (linked !== target) throw new Error('outside');
     const st = await fh.stat();
     if (!st.isFile()) throw new Error('not a regular file');
+    if (st.nlink > 1) throw new Error('hardlink');
     const content = await fh.readFile();
     const mode = (st.mode & 0o111) !== 0 ? '100755' : '100644';
     return { mode, content };
   } catch (error) {
-    if (error?.message === 'outside') throw error;
+    if (error?.message === 'outside' || error?.message === 'hardlink') throw error;
     if (error?.code === 'ELOOP') throw new Error('symlink');
     if (error?.code === 'EISDIR' || error?.code === 'ENOTDIR') throw new Error('not a regular file');
     if (error?.code === 'ENOENT') throw error;
@@ -257,13 +259,13 @@ function headMode(ctx, rel) {
   return entries[0]?.mode ?? null;
 }
 
-export function verifyReceipt({ keyFile, receiptsDir, tree, requiredChecks }) {
+export function verifyReceipt({ keyFile, receiptsDir, tree, requiredChecks, definitions = [] }) {
   try {
     const payload = JSON.parse(readFileSync(path.join(receiptsDir, `${tree}.json`), 'utf8'));
     if (!payload || payload.tree !== tree || !Array.isArray(payload.checks) || typeof payload.mac !== 'string') {
       return { ok: false, reason: 'shape' };
     }
-    const signed = signReceipt({ keyFile, tree, checks: payload.checks });
+    const signed = signReceipt({ keyFile, tree, checks: payload.checks, definitions });
     const have = Buffer.from(payload.mac, 'hex');
     const want = Buffer.from(signed.mac, 'hex');
     if (have.length === 0 || want.length === 0 || have.length !== want.length || !timingSafeEqual(have, want)) {
@@ -347,11 +349,11 @@ export async function commitWithReceipt(ctx, { paths, messageFile, expectHead })
   if (!treeRun.ok) return fail(treeRun.output);
   const tree = treeRun.stdout.trim();
 
-  const receipt0 = verifyReceipt({ keyFile: ctx.keyFile, receiptsDir: ctx.receiptsDir, tree, requiredChecks: ctx.requiredChecks });
+  const receipt0 = verifyReceipt({ keyFile: ctx.keyFile, receiptsDir: ctx.receiptsDir, tree, requiredChecks: ctx.requiredChecks, definitions: ctx.checks });
   if (!receipt0.ok) {
     const checked = await runCheckSeat({ ...ctx, tree });
     if (!checked.ok) return fail(checked.output || 'check failed');
-    const receipt1 = verifyReceipt({ keyFile: ctx.keyFile, receiptsDir: ctx.receiptsDir, tree, requiredChecks: ctx.requiredChecks });
+    const receipt1 = verifyReceipt({ keyFile: ctx.keyFile, receiptsDir: ctx.receiptsDir, tree, requiredChecks: ctx.requiredChecks, definitions: ctx.checks });
     if (!receipt1.ok) return fail('check receipt verification failed');
   }
 

@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { exportTree } from './tree-export.mjs';
-import { createHmac } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync } from 'node:fs';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
@@ -52,10 +52,12 @@ function run(command, args, { env, cwd, input } = {}) {
 export const HAVE_BWRAP = existsSync(BWRAP)
   && spawnSync(BWRAP, ['--ro-bind', '/', '/', '/usr/bin/true'], { stdio: 'ignore' }).status === 0;
 
-export function signReceipt({ keyFile, tree, checks }) {
+/** The mac covers the tree, the check names AND the check definitions (name and argv), so a receipt earned under a weaker check never satisfies a changed one. */
+export function signReceipt({ keyFile, tree, checks, definitions = [] }) {
   const key = readFileSync(keyFile);
   const sorted = checks.slice().sort();
-  const mac = createHmac('sha256', key).update(`${tree}\n${sorted.join(',')}`).digest('hex');
+  const defs = createHash('sha256').update(JSON.stringify(definitions.map((d) => [d.name, d.argv]).sort((a, b) => (a[0] < b[0] ? -1 : 1)))).digest('hex');
+  const mac = createHmac('sha256', key).update(`${tree}\n${sorted.join(',')}\n${defs}`).digest('hex');
   return { tree, checks, mac };
 }
 
@@ -113,7 +115,7 @@ export async function runCheckSeat({ gitDir, tree, checks, keyFile, receiptsDir,
     }
 
     mkdirSync(receiptsDir, { recursive: true });
-    const receipt = signReceipt({ keyFile, tree, checks: (checks ?? []).map((c) => c.name) });
+    const receipt = signReceipt({ keyFile, tree, checks: (checks ?? []).map((c) => c.name), definitions: checks ?? [] });
     await writeFile(path.join(receiptsDir, `${tree}.json`), `${JSON.stringify(receipt)}\n`);
     if (keepWork) {
       kept = true;

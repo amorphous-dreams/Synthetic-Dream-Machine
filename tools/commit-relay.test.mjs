@@ -1,6 +1,6 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, symlinkSync, chmodSync, readdirSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, symlinkSync, chmodSync, readdirSync, linkSync } from 'node:fs';
 import { createServer } from 'node:net';
 import os from 'node:os';
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -291,6 +291,7 @@ const r = await commitWithReceipt(ctx, req); console.log(JSON.stringify(r)); pro
   const inTree = 'in-tree content\n'; writeFileSync(path.join(x.wt, 'a'), inTree);
   await assert.rejects(readSafe(x.wt, '../secret'), /outside|invalid/);
   symlinkSync(x.root, path.join(x.wt, 'linkdir')); await assert.rejects(readSafe(x.wt, 'linkdir/secret'), /symlink|outside/);
+  linkSync(x.keyFile, path.join(x.wt, 'hard')); await assert.rejects(readSafe(x.wt, 'hard'), /hardlink/);
   const swapper = spawn_swapper(path.join(x.wt, 'a'), secret, inTree);
   let leaked = 0, good = 0;
   try { for (let i = 0; i < 400; i++) { try { const r = await readSafe(x.wt, 'a'); if (r.content.toString().includes('TOP-SECRET')) leaked++; else good++; } catch { /* a refusal is the right answer mid-swap */ } } }
@@ -323,7 +324,8 @@ cat '${cred}' 2>/dev/null >> $out
 (exec 3<>/dev/tcp/127.0.0.1/${port}) 2>/dev/null && echo LOOPBACK >> $out
 touch /work/inside-ok && echo WORKWRITE >> $out
 exit 0`;
-  const r = await runCheckSeat({ ...x.ctx, tree: x.git('rev-parse', 'HEAD^{tree}'), checks: [{ name: 'true', argv: ['/usr/bin/sh', '-c', attack] }], keepWork: true });
+  const defs = [{ name: 'true', argv: ['/usr/bin/sh', '-c', attack] }];
+  const r = await runCheckSeat({ ...x.ctx, tree: x.git('rev-parse', 'HEAD^{tree}'), checks: defs, keepWork: true });
   server.close();
   assert.equal(r.ok, true, JSON.stringify(r));
   const out = readFileSync(path.join(r.work, 'out'), 'utf8');
@@ -332,7 +334,8 @@ exit 0`;
   assert.equal(x.git('rev-parse', 'HEAD'), refBefore); assert.equal(existsSync(x.goFile), false);
   // receipts: the seat signed this tree and check set; a forged, a wrong-tree and a short-check receipt all refuse
   const tree = x.git('rev-parse', 'HEAD^{tree}');
-  assert.equal(verifyReceipt({ keyFile: x.keyFile, receiptsDir: x.receipts, tree, requiredChecks: ['true'] }).ok, true);
+  assert.equal(verifyReceipt({ keyFile: x.keyFile, receiptsDir: x.receipts, tree, requiredChecks: ['true'], definitions: defs }).ok, true);
+  assert.equal(verifyReceipt({ keyFile: x.keyFile, receiptsDir: x.receipts, tree, requiredChecks: ['true'], definitions: [{ name: 'true', argv: ['/usr/bin/true'] }] }).ok, false, 'a receipt earned under another check definition refuses');
   assert.equal(verifyReceipt({ keyFile: x.keyFile, receiptsDir: x.receipts, tree, requiredChecks: ['true', 'lint'] }).ok, false);
   assert.equal(verifyReceipt({ keyFile: x.keyFile, receiptsDir: x.receipts, tree: 'f'.repeat(40), requiredChecks: ['true'] }).ok, false);
   writeFileSync(path.join(x.receipts, `${'e'.repeat(40)}.json`), JSON.stringify({ tree: 'e'.repeat(40), checks: ['true'], mac: 'deadbeef' }));

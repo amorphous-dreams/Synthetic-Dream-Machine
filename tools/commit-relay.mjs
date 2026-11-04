@@ -14,6 +14,7 @@ for (let i = 0; i < args.length; i++) {
   else if (['--lane-root', '--worktree', '--branch', '--go-file', '--launcher', '--checks', '--check-key', '--receipts-dir', '--installer', '--store-dir', '--author-name', '--author-email', '--remote-url'].includes(arg) && args[i + 1] && !args[i + 1].startsWith('--')) options[arg.slice(2)] = args[++i];
   else throw new Error(`invalid argument: ${arg}`);
 }
+if (!options['remote-url']) throw new Error('--remote-url is required: the push target comes from the controller, never from the lane\'s config');
 if (!options['lane-root'] || !options.worktree || !options.branch || !options['go-file'] || !options.launcher) throw new Error('usage: --lane-root <dir> --worktree <wt> --branch <branch> --go-file <path outside lane-root> --launcher <path> [--once]');
 const lane = await realpath(options['lane-root']);
 const worktree = await realpath(options.worktree);
@@ -39,7 +40,7 @@ for (const guarded of [keyFile, receiptsDir, iso]) { await (await import('node:f
 const checks = options.checks ? JSON.parse(await readFile(options.checks, 'utf8')) : [];
 const gitDirOf = async () => { const dot = path.join(worktree, '.git'); try { const text = await readFile(dot, 'utf8'); const m = /^gitdir: (.+)$/m.exec(text); return m ? path.resolve(worktree, m[1].trim()) : dot; } catch (error) { if (error.code === 'EISDIR') return dot; throw error; } };
 const identity = () => { const read = key => (spawnSync('/usr/bin/git', ['config', '--global', key], { encoding: 'utf8', env: { PATH: '/usr/bin:/bin', HOME: os.homedir(), GIT_CONFIG_NOSYSTEM: '1' } }).stdout || '').trim(); return { name: options['author-name'] || read('user.name') || 'Relay', email: options['author-email'] || read('user.email') || 'relay@example.invalid' }; };
-const brokerCtx = async () => ({ gitDir: await gitDirOf(), worktree, iso, branch, author: identity(), receiptsDir, keyFile, remoteUrl: options['remote-url'] ?? (git('remote', 'get-url', 'origin').stdout || '').trim(), requiredChecks: checks.map(c => c.name), checks, bwrap: true, goFile: path.join(goDir, path.basename(goFile)) });
+const brokerCtx = async () => ({ gitDir: await gitDirOf(), worktree, iso, branch, author: identity(), receiptsDir, keyFile, remoteUrl: options['remote-url'], requiredChecks: checks.map(c => c.name), checks, bwrap: true, goFile: path.join(goDir, path.basename(goFile)) });
 const cap = value => new TextDecoder().decode(Buffer.from(value).subarray(0, 8192), { stream: true });
 const result = run => ({ ok: run.status === 0, head: (git('rev-parse', '--short', 'HEAD').stdout || '').trim(), output: cap((run.stdout || '') + (run.stderr || '') + (run.error ? String(run.error) : '')) });
 
