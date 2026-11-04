@@ -56,10 +56,16 @@ export function bridgeWikiToAdaptor(tw5: TW5Engine, adaptor: IslandAdaptor): () 
         void adaptor.deleteTiddler(title).catch((err: unknown) => console.warn(`[outbound-bridge] delete "${title}" faulted: ${String(err)}`));
       }
     }
-    // The batch ends here: every ordinary title it marked leaves now, clocklessly (no timer lifts a lone write). A DRAFT keeps its gate:
-    // keystrokes coalesce there until the draft's own act, never one store write per dispatch.
-    const ordinary = Object.keys(dispatch).filter((title) => !consumed.has(title) && (wiki.getTiddler(title) as { fields?: Record<string, unknown> } | null)?.fields?.["draft.of"] === undefined);
-    void adaptor.boundaryOf(ordinary).catch(() => {});
+    // The batch ends here: every ordinary title it marked leaves now, clocklessly (no timer lifts a lone write).
+    // A batch that carried a discrete draft act skips this: the act takes the leftover marks itself (`_leaveNow` beside its rest
+    // hold), so the story list a confirm rewrites rests WITH the confirm instead of leaving ahead of its rest door.
+    // A DRAFT keeps its gate by design: its keystrokes coalesce and leave only on a deliberate act (a save or cancel act, the island
+    // boundary, `handsRested`, or teardown), never one store write per dispatch. A draft is the person's unsaved scratch; no path
+    // leaves one marked past those acts.
+    if (consumed.size === 0) {
+      const ordinary = Object.keys(dispatch).filter((title) => (wiki.getTiddler(title) as { fields?: Record<string, unknown> } | null)?.fields?.["draft.of"] === undefined);
+      void adaptor.boundaryOf(ordinary).catch(() => {});
+    }
   };
   wiki.addEventListener("change", onChange);
   return () => wiki.removeEventListener("change", onChange);
