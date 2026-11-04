@@ -65,7 +65,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     const markZ = r.calls.length;
     r.wiki.addTiddler(new r.Tiddler({ title: z, text: "ordinary hand" }));
     await afterDispatch();
-    expect(touching(r, markZ, z), "an ordinary hand still rides the gate").toEqual([]);
+    expect(touching(r, markZ, z), "an ordinary hand leaves at its batch boundary").toHaveLength(1);
     boundary.fire();
     await turns(16);
     expect(touching(r, markZ, z)).toHaveLength(1);

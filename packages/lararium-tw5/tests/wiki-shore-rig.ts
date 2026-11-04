@@ -169,12 +169,13 @@ export async function shoreRig(opts: RigOptions = {}) {
 }
 
 /** A second actor over its own Repo: imports the bag's doc, writes, and merges back into the shore's handle. */
-export async function peerWrite(r: Rig, bag: string, records: readonly LarTiddlerRecord[]): Promise<void> {
+export async function peerWrite(r: Rig, bag: string, records: readonly LarTiddlerRecord[], beforeMerge?: () => void): Promise<void> {
   const peerRepo = new Repo({ network: [] });
   const peerHandle = peerRepo.import<LarDoc>(automerge.save(r.handles[bag]!.doc()));
   const peerStore = new AutomergeDocStore(peerHandle, bag);
   for (const record of records) await peerStore.put(record, { kind: "crdt-remote", edgeIsland: `peer-of-${r.instanceId}` });
   const before = r.arrivals.length;
+  beforeMerge?.();
   r.handles[bag]!.merge(peerHandle);
   await arrived(r, before, records.map((record) => record.tiddler.title));
   await peerRepo.shutdown();

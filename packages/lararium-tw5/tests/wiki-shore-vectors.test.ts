@@ -907,7 +907,8 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     expect(root.fields.text).toContain("<<~ kahea ahu slot=`#/a`>>");
     expect(root.fields.text).not.toContain("! body");
     expect(child.fields).toMatchObject({ title: `${title}#/a`, type: CARRIER_TYPE, text: "! body", "uri-path": "t/shore/backstop-unsplit#/a", "$fragment-parent": title, "$slot": "#/a" });
-    expect(placeWrites.map((write) => write.title).filter((writtenTitle) => writtenTitle === title || writtenTitle === `${title}#/a`)).toEqual([title, `${title}#/a`]);
+    expect(placeWrites.filter((write) => !write.stamped).map((write) => write.title)).toEqual([title, `${title}#/a`]);
+    expect(placeWrites.filter((write) => write.stamped).map((write) => write.title).sort()).toEqual([title, `${title}#/a`]);
     boundary.fire();
     await settleTurns(r, [title, `${title}#/a`], () => familyWrites.length);
     // The family call records its two member titles; separate member calls are not one atomic placement.
@@ -917,8 +918,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     expect(familyWrites).toHaveLength(1);
     const afterPlacement = wikiWrites.slice(placeWrites.length);
     expect(afterPlacement.every((write) => write.action === "add" && write.stamped), "every later wiki write is a wave landing with its bag stamp").toBe(true);
-    expect(afterPlacement.map((write) => write.title).sort()).toEqual([title, `${title}#/a`]);
-    expect(placeWrites.every((write) => !write.stamped)).toBe(true);
+    expect(afterPlacement).toEqual([]);
     const changeCounts = [r.wiki.getChangeCount(title), r.wiki.getChangeCount(`${title}#/a`)];
     const settledWrites = wikiWrites.length;
     await turns(40);
@@ -946,7 +946,6 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
       return write(puts, deletes, origin, options);
     });
     r.wiki.addTiddler(new r.Tiddler({ title, text: "briefly present" }));
-    await turns(2);
     (r.wiki as unknown as { deleteTiddler(title: string): void }).deleteTiddler(title);
     await turns(2);
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "ordinary hand" }));
@@ -979,7 +978,6 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
       return write(puts, deletes, origin, options);
     });
     r.wiki.addTiddler(new r.Tiddler({ title, text: "b" }));
-    await turns(2);
     r.wiki.addTiddler(new r.Tiddler({ title, text: "a" }));
     await turns(2);
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "ordinary hand" }));
@@ -1057,7 +1055,6 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
       return tombstone(bag, deletedTitle, origin, options);
     });
     (r.wiki as unknown as { deleteTiddler(title: string): void }).deleteTiddler(title);
-    await turns(2);
     r.wiki.addTiddler(new r.Tiddler(fields));
     await turns(2);
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "ordinary hand" }));
