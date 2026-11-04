@@ -18,6 +18,13 @@
  * Memory stays bounded by titles: one slot per owed title, one shared waiter per title, and a slot leaves once its receipts cover it.
  * Writes stay idempotent by (title, generation): a retry after an ambiguous failure writes the title's latest state again.
  *
+ * THE KICK RULE (operator ruling 2026-11-04): `kick()` is a REQUEST, never a write. It sets flight-eligible state (releases a standing refusal,
+ * records a demand) and goes through `schedule()` or finds the flight already standing; it never starts a second write beside a flight.
+ * A landing wave releases only its OWN title's standing refusal. Patience belongs to the receipt capability: the drain holds no timer, so a
+ * door that gives up REJECTS its write, the generation goes terminal `failed`, and every waiter, `close` included, settles.
+ * `forget(title)` drops moot owed work (its waiters read `superseded`) and ABANDONS the title's dependent edges: their removals reach
+ * the terminal outcome `abandoned` and the sources stay, so nothing leaves without the ack it waited on.
+ *
  * Meme: lar:///ha.ka.ba/lararium/api/disk-projection
  */
 
@@ -59,7 +66,9 @@ interface Slot {
 
 interface Waiter {
   readonly title: string | null;
-  epoch: number;
+  readonly epoch: number;
+  /** A terminal word a forget laid on this waiter: it reads this where the slots would read acked. */
+  verdict: DrainOutcome | null;
   readonly promise: Promise<DrainOutcome>;
   readonly resolve: (outcome: DrainOutcome) => void;
 }
@@ -84,8 +93,8 @@ export class Drain {
   readonly #schedule: (run: () => void) => void;
   readonly #slots = new Map<string, Slot>();
   readonly #blocked = new Set<Slot>();
-  readonly #waiters = new Set<Waiter>();
-  readonly #titleWaiters = new Map<string, Waiter>();
+  /** One waiter per (title or whole drain, epoch); a call for a standing key shares it. */
+  readonly #waiters = new Map<string, Waiter>();
   /** THE one flight: the pump starts only when it reads null. */
   #flight: Promise<void> | null = null;
   #scheduled = false;
@@ -146,10 +155,8 @@ export class Drain {
     return this.#wait(null, epoch);
   }
 
-  /** Resolves once `title`'s generations up to `epoch` (default: now) reach a terminal outcome; one shared waiter per title. */
+  /** Resolves once `title`'s generations up to `epoch` (default: now) reach a terminal outcome; one shared waiter per (title, epoch). */
   whenSettled(title: string, epoch: number = this.#epoch): Promise<DrainOutcome> {
-    const shared = this.#titleWaiters.get(title);
-    if (shared) { shared.epoch = Math.max(shared.epoch, epoch); return shared.promise; }
     return this.#wait(title, epoch);
   }
 
@@ -159,15 +166,29 @@ export class Drain {
     return this.whenAcked(this.#closeEpoch);
   }
 
-  /** Drop a title's owed work that a later act made moot; its waiters read superseded. A write in flight keeps its own course. */
+  /**
+   * Drop a title's owed work that a later act made moot: its waiters read superseded. Its dependent edges are ABANDONED (their removals
+   * read abandoned and the sources stay). A write in flight keeps its own course.
+   */
   forget(title: string): void {
     const slot = this.#slots.get(title);
     if (!slot || slot.flying !== 0) return;
-    this.#slots.delete(title);
-    this.#blocked.delete(slot);
-    const waiter = this.#titleWaiters.get(title);
-    if (waiter) { this.#titleWaiters.delete(title); waiter.resolve(SUPERSEDED); }
+    this.#drop(slot, SUPERSEDED);
+    for (const dependent of [...this.#slots.values()]) {
+      if (dependent.after?.target === title && dependent.flying === 0) this.#drop(dependent, ABANDONED);
+    }
     this.#settle();
+  }
+
+  #drop(slot: Slot, outcome: DrainOutcome): void {
+    this.#slots.delete(slot.title);
+    this.#blocked.delete(slot);
+    for (const waiter of this.#waiters.values()) {
+      if ((waiter.title === null || waiter.title === slot.title) && slot.owedFrom !== 0 && waiter.epoch >= slot.owedFrom) waiter.verdict ??= outcome;
+    }
+    for (const dependent of [...this.#slots.values()]) {
+      if (dependent.after?.target === slot.title && dependent.flying === 0) this.#drop(dependent, ABANDONED);
+    }
   }
 
   /** How many titles hold a slot. */
@@ -295,28 +316,28 @@ export class Drain {
       }
     }
     if (failed) return { kind: "failed", error: failed };
+    if (waiter.verdict) return waiter.verdict;
     if (this.#abandonedFrom !== 0 && waiter.epoch >= this.#abandonedFrom) return ABANDONED;
     return ACKED;
   }
 
   #wait(title: string | null, epoch: number): Promise<DrainOutcome> {
+    const key = `${title ?? "\u0000"}\u0001${epoch}`;
+    const standing = this.#waiters.get(key);
+    if (standing) return standing.promise;
     let resolve!: (outcome: DrainOutcome) => void;
     const promise = new Promise<DrainOutcome>((done) => { resolve = done; });
-    const waiter: Waiter = { title, epoch, promise, resolve };
+    const waiter: Waiter = { title, epoch, verdict: null, promise, resolve };
     const now = this.#outcome(waiter);
     if (now) return Promise.resolve(now);
-    if (title === null) this.#waiters.add(waiter); else this.#titleWaiters.set(title, waiter);
+    this.#waiters.set(key, waiter);
     return promise;
   }
 
   #settle(): void {
-    for (const waiter of this.#waiters) {
+    for (const [key, waiter] of this.#waiters) {
       const outcome = this.#outcome(waiter);
-      if (outcome) { this.#waiters.delete(waiter); waiter.resolve(outcome); }
-    }
-    for (const [title, waiter] of this.#titleWaiters) {
-      const outcome = this.#outcome(waiter);
-      if (outcome) { this.#titleWaiters.delete(title); waiter.resolve(outcome); }
+      if (outcome) { this.#waiters.delete(key); waiter.resolve(outcome); }
     }
   }
 }

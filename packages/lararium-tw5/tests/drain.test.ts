@@ -233,4 +233,92 @@ describe("Drain", () => {
     if (retried) expect(retried.gen).toBeGreaterThanOrEqual(g);
     expect(writes[0]!.gen).toBe(g);
   });
+
+  test("KICK RULE: a kick during a flight starts no second write; it only requests", async () => {
+    const { drain, writes, maxLive } = rig();
+    drain.mark("a"); drain.mark("b");
+    await settle();
+    expect(writes).toHaveLength(1);
+    for (let i = 0; i < 5; i++) drain.kick();
+    drain.kick({ demand: false, only: "b" });
+    await settle();
+    expect(writes).toHaveLength(1);
+    writes[0]!.resolve(); await settle();
+    expect(writes).toHaveLength(2);
+    writes[1]!.resolve(); await settle();
+    expect(maxLive()).toBe(1);
+  });
+
+  test("a kick releases a standing refusal for a request, and `only` releases that title alone", async () => {
+    const { drain, writes } = rig();
+    drain.mark("a"); drain.mark("b"); await settle();
+    writes[0]!.reject(new Error("no")); await settle();
+    writes[1]!.reject(new Error("no")); await settle();
+    expect(writes).toHaveLength(2);
+    drain.kick({ only: "b" }); await settle();
+    expect(writes).toHaveLength(3);
+    expect(writes[2]!.title).toBe("b");
+  });
+
+  test("forget of a target ABANDONS its dependent edge: the removal never runs, its waiter reads abandoned, the target's read superseded", async () => {
+    const { drain, writes } = rig();
+    drain.mark("blocker");
+    await settle();                                   // a flight stands, so nothing else starts
+    const target = drain.mark("target");
+    const removal = drain.markAfter("source", "target", target);
+    const targetWait = drain.whenSettled("target", target);
+    const removalWait = drain.whenSettled("source", removal);
+    drain.forget("target");
+    expect(kind(await targetWait)).toBe("superseded");
+    expect(kind(await removalWait)).toBe("abandoned");
+    writes[0]!.resolve(); await settle();
+    for (let i = 0; i < 3; i++) await settle();
+    expect(writes.map((w) => w.title)).toEqual(["blocker"]);
+    expect(drain.owes("source")).toBe(false);
+  });
+
+  test("a whole-drain waiter over a forgotten title reads superseded, never a silent acked", async () => {
+    const { drain, writes } = rig();
+    drain.mark("blocker");
+    await settle();
+    const g = drain.mark("moot");
+    const all = drain.whenAcked(g);
+    drain.forget("moot");
+    writes[0]!.resolve();
+    expect(kind(await all)).toBe("superseded");
+  });
+
+  test("no timer in the drain: a door that gives up REJECTS after its patience, and every waiter settles failed", async () => {
+    const { drain, writes } = rig();
+    const g = drain.mark("t");
+    await settle();
+    const all = drain.whenAcked(g);
+    const one = drain.whenSettled("t", g);
+    const closing = drain.close();
+    for (let i = 0; i < 6; i++) await macrotask();   // the receipt stays silent
+    let settled = false;
+    void Promise.race([all, one, closing]).then(() => { settled = true; });
+    await macrotask();
+    expect(settled).toBe(false);
+    writes[0]!.reject(new Error("the vessel did not rest the written documents"));  // the door's own patience ends
+    expect([kind(await all), kind(await one), kind(await closing)]).toEqual(["failed", "failed", "failed"]);
+  });
+
+  test("one waiter per (title, epoch): calls share it, and a later caller's epoch never raises an earlier caller's", async () => {
+    const { drain, writes } = rig();
+    const g1 = drain.mark("t");
+    await settle();
+    const a = drain.whenSettled("t", g1);
+    expect(drain.whenSettled("t", g1)).toBe(a);
+    expect(drain.whenAcked(g1)).toBe(drain.whenAcked(g1));
+    const g2 = drain.mark("t");
+    const b = drain.whenSettled("t", g2);
+    expect(b).not.toBe(a);
+    writes[0]!.resolve();
+    expect(kind(await a)).toBe("acked");              // generation g1 settled; g2 still owed
+    expect(drain.owes("t")).toBe(true);
+    await settle();
+    writes[1]!.resolve();
+    expect(kind(await b)).toBe("acked");
+  });
 });
