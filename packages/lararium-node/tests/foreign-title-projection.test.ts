@@ -27,6 +27,7 @@ import { mkdtempSync, rmSync, existsSync, readFileSync, writeFileSync, readdirSy
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
+import { SyncedTree } from "../src/synced-tree.js";
 import type { CarrierFile } from "@lararium/tw5";
 
 let root = "";
@@ -379,3 +380,41 @@ test("recovery mount reads the draft bag's fields despite a shadow, and keeps ot
     expect(updated[0]).not.toContain("secret");
   } finally { await stop(); }
 }, 60_000);
+
+test("recovery restart removes a tombstoned draft even when a different bag shadows its title", async () => {
+  const { MemoryTiddlerStore } = await import("../../lararium-tw5/src/memory-store.js");
+  root = mkdtempSync(join(tmpdir(), "lar-recovery-tombstone-restart-"));
+  const draft = new MemoryTiddlerStore("draft");
+  const origin = { kind: "operator-import", sessionId: "test" } as const;
+  const deleted = "Draft of 'Deleted'";
+  const retained = "Draft of 'Retained'";
+  await draft.put({ tiddler: { title: deleted, text: "remove me" } }, origin);
+  await draft.put({ tiddler: { title: retained, text: "keep me" } }, origin);
+  const syncedTree = new SyncedTree(null);
+  const wiki = {
+    allTitles: () => [deleted, retained],
+    getTiddler: (title: string) => ({ fields: { title, "$origin-bag": "temp" } }),
+    addEventListener: () => {}, removeEventListener: () => {},
+  };
+  const mount = () => new LarDiskProjector({
+    mirrors: [{ bagId: "draft", mirrorRoot: root, mirrorClass: "recovery" }],
+    recoveryStore: () => draft,
+    recoveryFileFn: async (fields) => nativeFile(fields.title as string, fields.text as string),
+    carrierFileFn: async () => null,
+    bagsHolding: async (title) => (await draft.get(title))?.meta?.deleted ? ["temp"] : ["draft", "temp"],
+    syncedTree,
+  });
+  const first = mount();
+  const stopFirst = first.start({ $tw: { wiki } } as never);
+  await first.idle();
+  expect(readdirSync(root).sort()).toEqual([`${deleted}.tid`, `${retained}.tid`].sort());
+  await stopFirst();
+  await draft.tombstone(deleted, origin);
+  const second = mount();
+  const stopSecond = second.start({ $tw: { wiki } } as never);
+  try {
+    await second.idle();
+    expect(readdirSync(root)).toEqual([`${retained}.tid`]);
+    expect(readFileSync(join(root, `${retained}.tid`), "utf8")).toContain("keep me");
+  } finally { await stopSecond(); }
+});
