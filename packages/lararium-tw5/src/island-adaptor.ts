@@ -1558,7 +1558,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       await this.store.writeFamily(puts, tombstones, origin, { bag: targetBag, ...(base ? { base } : {}) });
       for (const { uri, slot } of strays) await this.store.tombstoneInBag(slot, uri, origin);
     } catch (error) {
-      for (const member of rode) if (this.sent.get(member.uri) === member.value) this.sent.delete(member.uri);
+      for (const member of rode) {
+        if (this.sent.get(member.uri) !== member.value) continue;
+        this.sent.delete(member.uri);
+        this.pendingHand.add(member.uri);
+        if (!this.gate.has(member.uri)) void this.gate.mark(member.uri, () => this._flushHand(member.uri)).catch(() => {});
+        this._raiseUnsaved(member.uri, targetBag, error);
+      }
       for (const record of puts) if (record.tiddler.title !== title) this.familyPlaced.delete(record.tiddler.title);
       throw error;
     }
