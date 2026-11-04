@@ -23,7 +23,7 @@
  */
 
 import { composeSensoriumContract, type SensoriumContract } from "@lararium/mesh/sensorium-contract";
-import type { IslandBehavior, IslandContext } from "./island-context.js";
+import type { IslandBehavior, IslandContext, WritableOutcome } from "./island-context.js";
 
 /** A teardown returned from a cap's onEa — sync or async (e.g. a final flush). */
 export type CapTeardown = () => void | Promise<void>;
@@ -35,6 +35,8 @@ export interface IslandCap {
   readonly name?: string;
   /** Open sensorium fragment this cap contributes when the island composes it. */
   readonly sensorium?: SensoriumContract;
+  /** Stand the working route inside the writable marker (see `IslandBehavior.onWritable`). */
+  onWritable?(ctx: IslandContext): Promise<WritableOutcome>;
   /** Set up on ea. A returned function registers as a LIFO teardown run (awaited) on hooʻanu. */
   onEa?(ctx: IslandContext): void | CapTeardown | Promise<void | CapTeardown>;
   /** Claim a non-lifecycle message — return true if handled. First cap in stack order wins. */
@@ -75,6 +77,15 @@ export function composeIsland(caps: readonly IslandCap[]): IslandBehavior {
     if (tw.lares?.sensoriumContract === sensorium) delete tw.lares.sensoriumContract;
   };
   return {
+    async onWritable(ctx: IslandContext): Promise<WritableOutcome> {
+      // Every cap stands its part in stack order; the first refusal names the outcome and the rest still run.
+      let outcome: WritableOutcome = { state: "standing" };
+      for (const cap of caps) {
+        const one = await cap.onWritable?.(ctx);
+        if (one && one.state === "no-route" && outcome.state === "standing") outcome = one;
+      }
+      return outcome;
+    },
     async onEa(ctx: IslandContext) {
       try {
         for (const cap of caps) {

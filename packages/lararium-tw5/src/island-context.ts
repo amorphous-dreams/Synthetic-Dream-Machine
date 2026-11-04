@@ -107,7 +107,16 @@ export interface IslandContext {
  * - `onSignal` — called for every non-lifecycle message. Return true if handled.
  * - `onHooAnu` — called before drain loop stops.
  */
+/**
+ * THE WRITABLE OUTCOME. The `lararium-writable` startup marker settles by NAME: `standing` once the working route stands, `no-route` with
+ * the reason where none can (a faceless daemon). The marker never hangs on a missing route; promoted modules run either way, and a write
+ * made against `no-route` meets the refuse-by-name floor.
+ */
+export type WritableOutcome = { readonly state: "standing" } | { readonly state: "no-route"; readonly reason: string };
+
 export interface IslandBehavior {
+  /** Runs INSIDE the `lararium-writable` marker, after the recipe, bridge and resident seed and before any promoted module: stand the working route (authority, archive, working-only attachment, pointer landed). Absent: the route stands as the recipe left it. */
+  onWritable?(ctx: IslandContext): Promise<WritableOutcome>;
   onEa(ctx: IslandContext): void | Promise<void>;
   onSignal(type: string, raw: unknown, ctx: IslandContext): boolean;
   onHooAnu(ctx: IslandContext): void | Promise<void>;

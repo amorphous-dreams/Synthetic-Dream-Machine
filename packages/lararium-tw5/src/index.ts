@@ -141,7 +141,7 @@ export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 
 export { recipeUri } from "@lararium/mesh/lar-uris";
 
-export type { IslandContext, IslandBehavior } from "./island-context.js";
+export type { IslandContext, IslandBehavior, WritableOutcome } from "./island-context.js";
 export { composeIsland } from "./island-caps.js";
 export type { IslandCap, CapTeardown } from "./island-caps.js";
 export { hasCapture, TELEMETRY_FRAME } from "./capture/has-capture.js";
