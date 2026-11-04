@@ -91,7 +91,7 @@ test.each([false, true])("recovery drain waits for projection after durable head
     },
   });
   const stopProjector = projector.start(r.engine);
-  r.adaptor.recoveryAtRest = (bag, title) => projector.recoveryAtRest(bag, title);
+  r.adaptor.recoveryAtRest = (bag, title, fields) => projector.recoveryAtRest(bag, title, fields);
   const asks: Array<{ requestId: string; documentIds: string[]; heads: Record<string, string[]> }> = [];
   let sequence = 0;
   const door = makeRestDoor({
@@ -162,7 +162,7 @@ test("recovery drain retains its obligation when the granted file conflicts", as
     },
   });
   const stopProjector = projector.start(r.engine);
-  r.adaptor.recoveryAtRest = (bag, title) => projector.recoveryAtRest(bag, title);
+  r.adaptor.recoveryAtRest = (bag, title, fields) => projector.recoveryAtRest(bag, title, fields);
   const asks: Array<{ requestId: string }> = [];
   const door = makeRestDoor({
     post: (message) => { if (message.type === "doc:rest") asks.push(message); },
@@ -191,6 +191,73 @@ test("recovery drain retains its obligation when the granted file conflicts", as
     const writes = r.calls.filter((call) => call.bag === draftBag && call.puts.includes(title));
     expect(writes, "a conflicting recovery file must not acknowledge the first drain").toHaveLength(1);
     expect(r.adaptor.pendingTitles()).toContain(title);
+  } finally {
+    releaseRender();
+    door.close();
+    r.adaptor.restDoor = null;
+    await stopProjector();
+    await r.stop();
+  }
+}, 60_000);
+
+test.each([false, true])("recovery retry rechecks the file without another edit (conflict=%s)", async (conflict) => {
+  root = mkdtempSync(join(tmpdir(), "lar-recovery-retry-"));
+  const r = await shoreRig();
+  await r.adaptor.armSeedCheckpoint();
+  let releaseRender!: () => void;
+  let renderStarted!: () => void;
+  const heldRender = new Promise<void>((resolve) => { releaseRender = resolve; });
+  const rendering = new Promise<void>((resolve) => { renderStarted = resolve; });
+  let first = true;
+  const projector = new LarDiskProjector({
+    mirrors: [{ bagId: draftBag, mirrorRoot: root, mirrorClass: "recovery" }],
+    carrierFileFn: async () => null,
+    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
+    recoveryFileFn: async (fields) => {
+      if (first) { first = false; renderStarted(); await heldRender; }
+      return nativeFile(String(fields.title), String(fields.text));
+    },
+  });
+  const stopProjector = projector.start(r.engine);
+  let checks = 0;
+  r.adaptor.recoveryAtRest = (bag, title, fields) => {
+    checks++;
+    return projector.recoveryAtRest(bag, title, fields);
+  };
+  const asks: Array<{ requestId: string }> = [];
+  const door = makeRestDoor({
+    post: (message) => { if (message.type === "doc:rest") asks.push(message); },
+    handles: () => new Map(Object.entries(r.handles)),
+    mintId: () => `retry-${asks.length}`,
+  });
+  r.adaptor.restDoor = door;
+  try {
+    const title = openDraft(r, "Note", "first");
+    await afterDispatch();
+    await rendering;
+    await turns(20);
+    expect(asks).toHaveLength(1);
+    const path = join(root, `${title}.tid`);
+    if (conflict) writeFileSync(path, tidBody(title, "separate disk edit"));
+    releaseRender();
+    await projector.idle();
+    door.answer({ type: "doc:rested", requestId: asks[0]!.requestId, rested: true });
+    await turns(30);
+    expect(checks).toBe(1);
+    if (conflict) {
+      expect(r.adaptor.pendingTitles()).toContain(title);
+      r.adaptor.requestDrain();
+      await turns(30);
+      if (asks[1]) door.answer({ type: "doc:rested", requestId: asks[1].requestId, rested: true });
+      await turns(30);
+      expect.soft(checks, "retry must recheck the failed projection receipt").toBe(2);
+      expect.soft(r.adaptor.pendingTitles(), "conflict still prevents acknowledgement").toContain(title);
+      expect(readFileSync(path, "utf8")).toBe(tidBody(title, "separate disk edit"));
+    } else {
+      expect(r.adaptor.pendingTitles()).not.toContain(title);
+      expect(readFileSync(path, "utf8")).toBe(tidBody(title, "first"));
+    }
+    expect(r.calls.filter((call) => call.bag === draftBag && call.puts.includes(title))).toHaveLength(1);
   } finally {
     releaseRender();
     door.close();
@@ -637,9 +704,9 @@ test.each([false, true])("recovery grant gates a drain even without a rest door 
     recoveryFileFn: async (fields) => nativeFile(String(fields.title), String(fields.text)),
   });
   const stop = projector.start(r.engine);
-  r.adaptor.recoveryAtRest = async (bag, title) => {
+  r.adaptor.recoveryAtRest = async (bag, title, fields) => {
     if (grant) { checks++; await held; }
-    await projector.recoveryAtRest(bag, title);
+    await projector.recoveryAtRest(bag, title, fields);
   };
   try {
     const title = openDraft(r, "No door", "first");
@@ -671,18 +738,18 @@ test("a record superseding the written snapshot before receipt capture cannot ac
   r.adaptor.restDoor = door;
   let receiptDone!: () => void;
   const receipt = new Promise<void>((resolve) => { receiptDone = resolve; });
-  r.adaptor.recoveryAtRest = async (bag, title) => {
+  r.adaptor.recoveryAtRest = async (bag, title, fields) => {
     const written = await r.draft.get(title);
     if (!written) throw new Error("missing written snapshot");
     await r.draft.put({ ...written, tiddler: { ...written.tiddler, text: "external successor" } }, { kind: "crdt-remote", edgeIsland: "other" });
-    try { await projector.recoveryAtRest(bag, title); } finally { receiptDone(); }
+    try { await projector.recoveryAtRest(bag, title, fields); } finally { receiptDone(); }
   };
   try {
     const title = openDraft(r, "Superseded", "written snapshot");
     await afterDispatch();
     await expect.poll(() => asks.length).toBe(1);
     door.answer({ type: "doc:rested", requestId: asks[0]!.requestId, rested: true });
-    await receipt; await turns(30);
+    await receipt; await turns(30); await projector.idle();
     expect(readFileSync(join(root, `${title}.tid`), "utf8")).toContain("external successor");
     expect(r.adaptor.pendingTitles(), "the successor cannot prove the earlier write").toContain(title);
   } finally {
@@ -710,14 +777,15 @@ test("recovery receipt verifies bytes and refuses render faults and teardown", a
   try {
     const title = openDraft(r, "Receipt", "written");
     await afterDispatch(); await turns(30); await projector.idle();
-    await expect(projector.recoveryAtRest(draftBag, title)).resolves.toBeUndefined();
+    const fields = (await r.draft.get(title))!.tiddler;
+    await expect(projector.recoveryAtRest(draftBag, title, fields)).resolves.toBeUndefined();
     renderFault = true;
-    await expect(projector.recoveryAtRest(draftBag, title)).rejects.toThrow("render fault");
+    await expect(projector.recoveryAtRest(draftBag, title, fields)).rejects.toThrow("render fault");
     renderFault = false;
     writeFileSync(join(root, `${title}.tid`), tidBody(title, "tampered"));
-    await expect(projector.recoveryAtRest(draftBag, title)).rejects.toThrow(/conflicting|not written/);
+    await expect(projector.recoveryAtRest(draftBag, title, fields)).rejects.toThrow(/conflicting|not written/);
     await stop(); stopped = true;
-    await expect(projector.recoveryAtRest(draftBag, title)).rejects.toThrow(/unavailable|stopped/);
+    await expect(projector.recoveryAtRest(draftBag, title, fields)).rejects.toThrow(/unavailable|stopped/);
   } finally {
     if (!stopped) await stop();
     await r.stop();
@@ -740,7 +808,7 @@ test("a recovery mirror write fault cannot produce a file receipt", async () => 
   try {
     const title = openDraft(r, "Write fault", "written");
     await afterDispatch(); await turns(30); await projector.idle();
-    await expect(projector.recoveryAtRest(draftBag, title)).rejects.toThrow();
+    await expect(projector.recoveryAtRest(draftBag, title, (await r.draft.get(title))!.tiddler)).rejects.toThrow();
     expect(readFileSync(blocked, "utf8")).toBe("blocks mkdir");
   } finally { await stop(); await r.stop(); }
 }, 60_000);
