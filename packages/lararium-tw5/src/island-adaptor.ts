@@ -214,6 +214,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private readonly sent = new Map<string, unknown>();
   private readonly handBase = new Map<string, { bag: string; heads: readonly string[] }>();
   private readonly lastWriteBag = new Map<string, string>();
+  private readonly recoveryWrites = new Map<string, { bag: string; fields: Record<string, unknown> }>();
   /** Titles this shore wrote whose wave has not landed: the store stands ahead of the ledger for them. */
   private readonly unlanded = new Set<string>();
   private readonly handed = new Map<string, unknown | null>();
@@ -323,12 +324,22 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this._triggerOff = this._trigger.attach((titles) => this.gate.fire(titles));
   }
 
-  /** The durable acknowledgement of a pass: the rest door's heads ack for the slots it wrote. With no door (a session island, a unit rig) the store's own acknowledgement stands. */
+  /** The projection receipt checks the snapshot handed to the store by this pass. */
+  recoveryAtRest: ((bag: string, title: string, fields: Record<string, unknown>) => Promise<void>) | null = null;
+
   private async _ackDurably(fired: readonly string[]): Promise<void> {
     const door = this.restDoor;
-    if (!door) return;
     const slots = [...new Set(fired.map((title) => this.lastWriteBag.get(title)).filter((bag): bag is string => bag !== undefined))];
-    if (slots.length > 0) await door.ack(slots);
+    const checks = fired.flatMap((title) => {
+      const written = this.recoveryWrites.get(title);
+      return written && this.recoveryAtRest ? [this.recoveryAtRest(written.bag, title, written.fields)] : [];
+    });
+    // Attach rejection handling immediately while the storage receipt remains in flight.
+    const projection = Promise.allSettled(checks);
+    if (door && slots.length > 0) await door.ack(slots);
+    const outcomes = await projection;
+    const failed = outcomes.find((outcome): outcome is PromiseRejectedResult => outcome.status === "rejected");
+    if (failed) throw failed.reason;
   }
   pendingTitles(): string[] { return this.gate.titles(); }
 
@@ -826,6 +837,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.sent.clear();
     this.handBase.clear();
     this.lastWriteBag.clear();
+    this.recoveryWrites.clear();
     this.unlanded.clear();
     this._unsubscribe?.();
     this._unsubscribe = null;
@@ -1561,7 +1573,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       this.pendingHand.delete(title);
       this.failedAtTeardown.delete(title);
       this._clearUnsaved(title);
-      if (state === null) this.draftBook.delete(title);
+      if (state === null) { this.recoveryWrites.delete(title); this.draftBook.delete(title); }
     } catch (error) {
       // The title stays marked (pendingHand keeps it) so the next change, wave or teardown tries again;
       // no timer is armed, because a timer would decide when the refusal ends.
@@ -1733,6 +1745,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
     try {
       await this.store.writeFamily(puts, tombstones, origin, { bag: targetBag, ...(base ? { base } : {}) });
+      const written = puts.find((record) => record.tiddler.title === title);
+      if (written) this.recoveryWrites.set(title, { bag: targetBag, fields: structuredClone(written.tiddler) });
       for (const { uri, slot } of strays) {
         // A refused stray already has its own absent hand; that hand owns its retry.
         if (this.pendingHand.has(uri) && this.handed.has(uri) && this.handed.get(uri) === null) continue;

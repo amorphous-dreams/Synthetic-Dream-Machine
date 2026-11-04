@@ -13,7 +13,7 @@
 import { mkWikiVerbResult } from "@lararium/mesh";
 import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh";
 import type { VesselJournal } from "@lararium/mesh";
-import { exportCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText, wikiLandedCovers } from "@lararium/tw5";
+import { exportCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText, wikiLandedCovers, bindRecoveryAtRest } from "@lararium/tw5";
 import type { CarrierFile } from "@lararium/tw5";
 import type { IslandBehavior, IslandContext } from "@lararium/tw5";
 // PURE subpath (no Automerge/wasm) — the same law `ingest-gate` reads `@lararium/mesh/agile-digest` under.
@@ -203,7 +203,9 @@ export function mountDiskProjection(
   });
   const stop = projector.start(ctx.tw5);
   mountedProjector = projector;
+  bindRecoveryAtRest(ctx.tw5, (bag, title, fields) => projector.recoveryAtRest(bag, title, fields));
   return async () => {
+    bindRecoveryAtRest(ctx.tw5, null);
     if (mountedProjector === projector) mountedProjector = null;
     await stop();
   };

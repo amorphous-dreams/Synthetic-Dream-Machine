@@ -538,6 +538,42 @@ export class LarDiskProjector {
     return async () => { wiki.removeEventListener?.("change", handler); for (const unsub of recoveryUnsubs) unsub(); await this.recoveryScan; await this.stop(); };
   }
 
+  /** Confirm the captured recovery record against the actual bytes at its granted mirror. */
+  async recoveryAtRest(bagId: string, title: string, written: Record<string, unknown>): Promise<void> {
+    const mirrors = this.mirrors.filter((m) => m.bagId === bagId && m.mirrorClass === "recovery");
+    if (!mirrors.length) return;
+    const store = this.recoveryStore?.(bagId);
+    if (!store || !this.recoveryFileFn || this.stopping) throw new Error("recovery projection unavailable");
+    const record = await store.get(title);
+    if (!record || record.meta?.deleted || record.tiddler["disk-projection"] === "no") throw new Error("recovery record missing");
+    const stableFields = (fields: Record<string, unknown>): string => JSON.stringify(Object.fromEntries(Object.entries(fields).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)));
+    const captured = stableFields(written);
+    if (stableFields(record.tiddler) !== captured) throw new Error("recovery record superseded");
+    const file = await this.recoveryFileFn(written);
+    if (!file || typeof file.body !== "string") throw new Error("recovery render unavailable");
+    const expected = carrierHash(file.body, file.metaBody);
+    await this.idle();
+    if (this.stopping) throw new Error("recovery projection stopped");
+    const current = await store.get(title);
+    if (!current || current.meta?.deleted || stableFields(current.tiddler) !== captured) throw new Error("recovery record superseded");
+    this.syncedTree.reread(syncedTreeKey(bagId, title));
+    const bases = this.syncedTree.bases(syncedTreeKey(bagId, title));
+    for (const mirror of mirrors) {
+      const candidates = bases.filter((base) => {
+        const rel = relativePath(resolvePath(mirror.mirrorRoot), base.path);
+        return rel !== "" && rel !== ".." && !rel.startsWith("../") && !rel.startsWith("..\\");
+      });
+      if (!candidates.some((base) => {
+        if (!digestsEqual(base.records, expected)) return false;
+        try {
+          const body = readFileSync(base.path, "utf8");
+          const meta = file.metaBody === undefined ? undefined : readFileSync(base.path + ".meta", "utf8");
+          return digestsEqual(carrierHash(body, meta), expected);
+        } catch { return false; }
+      })) throw new Error("recovery file missing, conflicting, or not written");
+    }
+  }
+
   /** Resolve when no reconcile runs and no root waits in the queue, and every pending-removal set that moved has surfaced. */
   async idle(): Promise<void> {
     await this.recoveryScan;
