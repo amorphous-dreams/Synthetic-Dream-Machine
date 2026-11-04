@@ -133,3 +133,42 @@ describe.skipIf(wikiSkip)(`outbound bridge — a lone async write on a resident 
     }
   }, 120_000);
 });
+
+describe.skipIf(wikiSkip)(`outbound bridge — a draft is held until a deliberate act${skipNote}`, () => {
+  async function residentWith(label: string) {
+    const engine = await bootTestWiki();
+    const wiki = engine.$tw.wiki as unknown as { addTiddler(t: unknown): void };
+    const Tiddler = (engine.$tw as never as { Tiddler: new (f: Record<string, unknown>) => unknown }).Tiddler;
+    for (const [title, text] of [
+      ["lar:///ha.ka.ba/lararium/config/current-wiki-bag", SLOTS.working],
+      ["lar:///ha.ka.ba/lararium/config/current-wiki-temp", SLOTS.temp],
+      ["lar:///ha.ka.ba/lararium/config/current-wiki-draft", SLOTS.draft],
+      ["lar:///ha.ka.ba/lararium/config/current-wiki-personal", SLOTS.personal],
+    ] as const) wiki.addTiddler(new Tiddler({ title, text }));
+    const store = new RecordingStore();
+    const adaptor = new IslandAdaptor(engine, asIslandStore(store), label);
+    adaptor.start();
+    bridgeWikiToAdaptor(engine, adaptor);
+    await adaptor.armSeedCheckpoint();
+    store.puts.length = 0;
+    const type = async (n: number): Promise<void> => {
+      wiki.addTiddler(new Tiddler({ title: "Draft of 'Note'", "draft.of": "Note", "draft.title": "Note", text: `keystroke ${n}` }));
+      await new Promise((r) => setTimeout(r, 15));
+    };
+    return { adaptor, store, type };
+  }
+  const draftPuts = (store: RecordingStore): number => store.puts.filter((p) => p.title === "Draft of 'Note'").length;
+
+  test("DESIGN: keystrokes on a draft never leave per dispatch; each deliberate act (the island boundary, handsRested, teardown) takes the held mark", async () => {
+    for (const act of ["boundary", "handsRested", "stop"] as const) {
+      const { adaptor, store, type } = await residentWith(`draft-${act}`);
+      await type(1); await type(2); await type(3);
+      expect(draftPuts(store), "keystrokes leave one store write per dispatch").toBe(0);
+      expect(adaptor.holdsHand("Draft of 'Note'")).toBe(true);
+      if (act === "boundary") await adaptor.boundary();
+      else if (act === "handsRested") await adaptor.handsRested();
+      else await adaptor.stop();
+      expect(draftPuts(store), `the draft left on ${act}`).toBeGreaterThanOrEqual(1);
+    }
+  }, 120_000);
+});
