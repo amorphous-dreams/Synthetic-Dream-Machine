@@ -31,19 +31,25 @@ export interface RestDoor {
   answer(raw: unknown): boolean;
   /** How many asks the vessel answered stalled: a rest whose heads never arrived reads here by name, and its act's result still leaves. */
   stalledAsks(): number;
+  /**
+   * A REAL acknowledgement: resolves only when the vessel's storage-backed Repo answered `rested: true` for the slots' heads; rejects on a
+   * negative or stalled answer and when the door closes. (`begin().done` stays warn-only for an act's result; this one never is.) The
+   * island's own flush is not an ack: the worker's Repo has no storage.
+   */
+  ack(slots: readonly string[]): Promise<void>;
   /** Release every parked wait. */
   close(): void;
 }
 
 export function makeRestDoor(deps: RestDoorDeps): RestDoor {
   const mint = deps.mintId ?? (() => crypto.randomUUID());
-  const parked = new Map<string, () => void>();
+  const parked = new Map<string, (ok: boolean) => void>();
   const waiting = new Set<Promise<void>>();
   let closed = false;
   let stalled = 0;
 
-  const rest = async (slots: readonly string[]): Promise<void> => {
-    if (closed) return;
+  const rest = async (slots: readonly string[]): Promise<boolean> => {
+    if (closed) return false;
     const held = deps.handles();
     const documentIds: string[] = [];
     const heads: Record<string, string[]> = {};
@@ -54,9 +60,10 @@ export function makeRestDoor(deps: RestDoorDeps): RestDoor {
       heads[handle.documentId] = replicaHeads(handle);
     }
     try { await deps.flushOwn?.(); } catch (error) { console.warn(`[rest-door] the island's own flush faulted: ${String(error)}`); }
-    if (documentIds.length === 0 || closed) return;
+    if (documentIds.length === 0) return true;
+    if (closed) return false;
     const requestId = mint();
-    await new Promise<void>((resolve) => {
+    return await new Promise<boolean>((resolve) => {
       parked.set(requestId, resolve);
       const ask: IslandMsg_DocRest = { type: "doc:rest", requestId, documentIds, heads };
       deps.post(ask);
@@ -92,13 +99,16 @@ export function makeRestDoor(deps: RestDoorDeps): RestDoor {
       parked.delete(requestId);
       if (stall === true) stalled++;
       if (rested !== true) console.warn(`[rest-door] the vessel did not rest the act's documents: ${typeof why === "string" ? why : "unrested"}`);
-      resolve();
+      resolve(rested === true && stall !== true);
       return true;
     },
     stalledAsks: () => stalled,
+    async ack(slots) {
+      if (!(await rest(slots))) throw new Error("the vessel did not rest the written documents");
+    },
     close() {
       closed = true;
-      for (const resolve of parked.values()) resolve();
+      for (const resolve of parked.values()) resolve(false);
       parked.clear();
     },
   };

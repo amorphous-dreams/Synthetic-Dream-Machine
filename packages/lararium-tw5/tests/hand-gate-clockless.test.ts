@@ -25,12 +25,14 @@ describe("HandGate causal boundaries", () => {
     expect(b).toHaveBeenCalledTimes(1);
   });
 
-  it("flushes on the eighth mark without a boundary and leaves seven resting", async () => {
+  it("holds eight marks until a boundary", async () => {
     const gate = new HandGate();
     const flush = vi.fn(async () => {});
     const marks = Array.from({ length: 7 }, () => gate.mark("A", flush));
     expect(flush).not.toHaveBeenCalled();
     marks.push(gate.mark("A", flush));
+    expect(flush).not.toHaveBeenCalled();
+    await gate.boundary();
     await Promise.all(marks);
     expect(flush).toHaveBeenCalledTimes(1);
   });
@@ -75,7 +77,9 @@ describe("HandGate causal boundaries", () => {
     const consumed = gate.mark("B", async () => {});
     gate.consume(["B"]).settle();
     await consumed;
-    await Promise.all(Array.from({ length: 8 }, () => gate.mark("C", async () => {})));
+    const capped = Array.from({ length: 8 }, () => gate.mark("C", async () => {}));
+    await gate.boundary();
+    await Promise.all(capped);
     const last = gate.mark("D", async () => {});
     await gate.flushAll();
     await last;

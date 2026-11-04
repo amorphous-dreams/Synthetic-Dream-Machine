@@ -33,7 +33,8 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     expect(String(raised!.fields.text)).toContain(workingBag);
     expect(String(raised!.fields.text)).toContain("disk full");
     expect(r.adaptor.holdsHand(x), "the title stays owed").toBe(true);
-    expect(boundary.pending(), "no retry boundary is pending").toBe(0);
+    // The refused obligation is RETAINED by the drain until a write is acknowledged; nothing retries it on its own (no timer).
+    expect(boundary.pending(), "the refused hand stays retained, with no retry armed").toBe(1);
     expect(storeText(r, workingBag, x)).toBe("landed");
 
     r.failures.family = null;

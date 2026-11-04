@@ -81,7 +81,8 @@ import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
 import { KAHEA_REF_RE } from "./meme-ast/ahu-scan.js";
 import { LandedLedger, same, sameWithStamp } from "./landed-ledger.js";
 import { WaveLanding } from "./wave-landing.js";
-import { HandGate } from "./hand-gate.js";
+import { HandGate, type RecoveryTrigger } from "./hand-gate.js";
+import { AckPacedTrigger } from "./ack-paced-trigger.js";
 import {
   DRAFT_BASE_BAG, DRAFT_BASE_HEADS, contentKey, draftBaseFields, readDraftBase, sameHeads, withoutDraftBase,
   type DraftBase, type DraftEntry,
@@ -298,10 +299,32 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   /** Flush hands marked before this island boundary. */
   boundary(): Promise<void> { return this.gate.boundary(); }
 
-  /** Close a boundary over exactly these titles: each one marked in the gate leaves now; a title the gate holds nothing for is skipped. */
-  async boundaryOf(titles: readonly string[]): Promise<void> {
-    // All at once, as the island boundary does.
-    await Promise.allSettled(titles.filter((title) => this.gate.has(title)).map((title) => this.gate.flush(title)));
+  /**
+   * THE DRAIN'S CLOCK. The default trigger is ACK-PACED (see ack-paced-trigger.ts): one write in flight, the next carries the latest
+   * coalesced state once the durable ack lands. Lifecycle only REQUESTS a pass through here, best effort. A trigger attached through
+   * `setRecoveryTrigger` replaces it.
+   */
+  requestDrain(): void { if (this._trigger === this._ackTrigger) this._ackTrigger.request(); }
+
+  private readonly _ackTrigger: AckPacedTrigger = new AckPacedTrigger({
+    pending: () => this.gate.titles(),
+    ack: (fired) => this._ackDurably(fired),
+  });
+  private _trigger: RecoveryTrigger | null = this._ackTrigger;
+  private _triggerOff: (() => void) | null = this._ackTrigger.attach((titles) => this.gate.fire(titles));
+  /** Hand WHEN the drain fires to another trigger (null restores the ack-paced default). */
+  setRecoveryTrigger(trigger: RecoveryTrigger | null): void {
+    this._triggerOff?.(); this._triggerOff = null;
+    this._trigger = trigger ?? this._ackTrigger;
+    this._triggerOff = this._trigger.attach((titles) => this.gate.fire(titles));
+  }
+
+  /** The durable acknowledgement of a pass: the rest door's heads ack for the slots it wrote. With no door (a session island, a unit rig) the store's own acknowledgement stands. */
+  private async _ackDurably(fired: readonly string[]): Promise<void> {
+    const door = this.restDoor;
+    if (!door) return;
+    const slots = [...new Set(fired.map((title) => this.lastWriteBag.get(title)).filter((bag): bag is string => bag !== undefined))];
+    if (slots.length > 0) await door.ack(slots);
   }
   pendingTitles(): string[] { return this.gate.titles(); }
 
@@ -418,7 +441,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.handBase.delete(title);
     this.unlanded.delete(title);
     if (applies) this.lastWriteBag.delete(title);
-    void this.boundaryOf(this.gate.titles().filter((held) => !this.draftBook.has(held))).catch(() => {});
   }
 
   /**
@@ -1104,7 +1126,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const wiki = this.tw5.$tw.wiki;
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
     const taken = this.gate.consume(members);
-    void this.boundary().catch(() => {});
     for (const member of members) { this.pendingHand.add(member); this.handed.delete(member); }
 
     interface Group { bag: string; base: readonly string[] | undefined; puts: LarTiddlerRecord[]; deletes: string[]; titles: string[]; from?: { bag: string; heads: readonly string[] } }
@@ -1176,13 +1197,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const issuedStrays = strays.map(({ slot, uri }) => this.store.tombstoneInBag(slot, uri, origin));
     const settled = await Promise.allSettled([...issued, ...issuedStrays, ...(surfaced ? [surfaced] : [])]);
     let handBags: string[] = [];
-    if (hold) {
-      // The act's result waits on the rest door, so the hands the act's dispatch left marked on the gate (the story
-      // list the navigator rewrote, for one) leave now and rest with it: a reload that follows reads the story the
-      // person left, never the one from before the confirm.
-      const others = this.gate.titles().filter((title) => !members.includes(title));
+    {
+      // The ordinary hands this act's own dispatch left marked (the story list the navigator rewrote, for one) leave with the act:
+      // with the rest door they rest with it, so a reload that follows reads the story the person left; with none they still leave
+      // here, so no hand is left without a path. A held DRAFT is never taken by another title's act.
+      const others = this.gate.titles().filter((title) => !members.includes(title) && !this.draftBook.has(title));
       await Promise.allSettled(others.map((title) => this._leaveNow(title)));
-      handBags = others.map((title) => this.lastWriteBag.get(title)).filter((bag): bag is string => bag !== undefined);
+      if (hold) handBags = others.map((title) => this.lastWriteBag.get(title)).filter((bag): bag is string => bag !== undefined);
     }
     hold?.done([...new Set([...groups.filter((_, index) => settled[index]!.status === "fulfilled").map((g) => g.bag), ...handBags])]);
     let fault: Error | null = null;
@@ -1441,7 +1462,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // A mark names the title; the flush reads the wiki. Only a value the wiki does not hold rides pinned.
     if ((this.tw5.$tw.wiki.getTiddler(title) ?? null) === tiddler) this.handed.delete(title);
     else this.handed.set(title, tiddler);
-    return this.gate.mark(title, () => this._flushHand(title), fields["draft.of"] !== undefined);
+    const marked = this.gate.mark(title, () => this._flushHand(title), fields["draft.of"] !== undefined);
+    queueMicrotask(() => this.requestDrain());
+    return marked;
   }
 
   saveRecord(record: LarTiddlerRecord): Promise<void> {
@@ -1464,7 +1487,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.pendingHand.add(title);
     if (this.tw5.$tw.wiki.getTiddler(title)) this.handed.set(title, null);
     else this.handed.delete(title);
-    return this.gate.mark(title, () => this._flushHand(title), this.draftBook.has(title));
+    const marked = this.gate.mark(title, () => this._flushHand(title), this.draftBook.has(title));
+    queueMicrotask(() => this.requestDrain());
+    return marked;
   }
 
   // ---------------------------------------------------------------------------

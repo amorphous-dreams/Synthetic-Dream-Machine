@@ -1,66 +1,91 @@
 interface GateEntry {
-  marks: number;
   flush: () => Promise<void>;
   promise: Promise<void>;
   resolve: () => void;
   reject: (error: Error) => void;
 }
 
-/** A title's hands gather until an island boundary or eight marks. */
-export class HandGate {
-  static readonly COALESCE_CAP = 8;
-  private readonly entries = new Map<string, GateEntry>();
+/**
+ * THE ONE NAMED TRIGGER SEAM. The drain decides what leaves and in what state; WHEN a pass runs is the trigger's. The default causal
+ * set (a discrete act for its own titles, handsRested, teardown, the island boundary signal, and the end of a change dispatch for
+ * ordinary titles) fires `drain.fire()` directly. A trigger attached through `IslandAdaptor.setRecoveryTrigger` takes over the
+ * end-of-dispatch fire: its `fire` runs exactly one pass over the named titles (or all). Unwired in production.
+ */
+export interface RecoveryTrigger {
+  attach(fire: (titles?: readonly string[]) => Promise<void>): () => void;
+}
 
-  mark(title: string, flush: () => Promise<void>, draft = false): Promise<void> {
+/** One latest-state obligation and one completion per title and generation. */
+export class HandGate {
+  private readonly entries = new Map<string, GateEntry>();
+  private readonly running = new Map<string, Promise<void>>();
+
+  private entry(flush: () => Promise<void>): GateEntry {
+    let resolve!: () => void;
+    let reject!: (error: Error) => void;
+    const promise = new Promise<void>((res, rej) => { resolve = res; reject = rej; });
+    // Retried obligations may have no new caller.
+    void promise.catch(() => {});
+    return { flush, promise, resolve, reject };
+  }
+
+  mark(title: string, flush: () => Promise<void>, _draft = false): Promise<void> {
     let entry = this.entries.get(title);
-    if (!entry) {
-      let resolve!: () => void;
-      let reject!: (error: Error) => void;
-      const promise = new Promise<void>((res, rej) => { resolve = res; reject = rej; });
-      entry = { marks: 0, flush, promise, resolve, reject };
-      this.entries.set(title, entry);
-    }
+    if (!entry) { entry = this.entry(flush); this.entries.set(title, entry); }
     entry.flush = flush;
-    entry.marks++;
-    if (!draft && entry.marks >= HandGate.COALESCE_CAP) void this.flush(title).catch(() => {});
     return entry.promise;
   }
 
   async flush(title: string): Promise<void> {
+    // A flush already running for this title finishes first; a NEWER generation marked meanwhile then leaves in this same call, so no
+    // fire strands a newer state until another fire.
+    const prior = this.running.get(title);
+    if (prior) { try { await prior; } catch { /* its own callers see it; the retained obligation is retried below */ } }
     const entry = this.entries.get(title);
     if (!entry) return;
     this.entries.delete(title);
-    try {
-      await entry.flush();
-      entry.resolve();
-    } catch (error) {
-      const fault = error instanceof Error ? error : new Error(String(error));
-      entry.reject(fault);
-      throw fault;
-    }
+    const run = (async () => {
+      try {
+        await entry.flush();
+        entry.resolve();
+      } catch (error) {
+        const fault = error instanceof Error ? error : new Error(String(error));
+        entry.reject(fault);
+        if (!this.entries.has(title)) this.entries.set(title, this.entry(entry.flush));
+        throw fault;
+      }
+    })();
+    this.running.set(title, run);
+    try { await run; } finally { this.running.delete(title); }
   }
 
-  /** A boundary takes the entries already marked when it began. */
-  boundary(): Promise<void> { return this.flushAll(); }
+  fire(titles?: readonly string[]): Promise<void> {
+    const keys = titles ? [...new Set(titles)] : this.titles();
+    return Promise.allSettled(keys.map((title) => this.flush(title))).then((results) => {
+      const failed = results.find((result): result is PromiseRejectedResult => result.status === "rejected");
+      if (failed) throw failed.reason;
+    });
+  }
+  boundary(): Promise<void> { return this.fire(); }
+  flushAll(): Promise<void> { return this.fire(); }
 
-  /** A discrete act takes its own titles before any store call. */
   consume(titles: readonly string[]): { settle(error?: Error): void } {
-    const entries: GateEntry[] = [];
+    const entries: Array<[string, GateEntry]> = [];
     for (const title of new Set(titles)) {
       const entry = this.entries.get(title);
       if (!entry) continue;
       this.entries.delete(title);
-      entries.push(entry);
+      entries.push([title, entry]);
     }
-    return { settle: (error) => entries.forEach((entry) => error ? entry.reject(error) : entry.resolve()) };
+    return { settle: (error) => entries.forEach(([title, entry]) => {
+      if (error) {
+        entry.reject(error);
+        if (!this.entries.has(title)) this.entries.set(title, this.entry(entry.flush));
+      } else entry.resolve();
+    }) };
   }
 
-  async flushAll(): Promise<void> {
-    const results = await Promise.allSettled([...this.entries.keys()].map((title) => this.flush(title)));
-    const failed = results.find((result): result is PromiseRejectedResult => result.status === "rejected");
-    if (failed) throw failed.reason;
-  }
-
+  retained(): string[] { return this.titles(); }
   has(title: string): boolean { return this.entries.has(title); }
   titles(): string[] { return [...this.entries.keys()]; }
 }

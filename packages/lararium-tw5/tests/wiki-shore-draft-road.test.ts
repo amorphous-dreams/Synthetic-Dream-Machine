@@ -254,7 +254,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     }
   }, 120_000);
 
-  test("U + control: a cancel writes nothing for X; a draft that never left produces no store call", async () => {
+  test("U + control: cancel writes nothing for X and removes each recovery copy", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
     const x = "lar:///t/road/U";
@@ -283,14 +283,16 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     expect(storeDeleted(r, draftBag, d)).toBe(true);
     expect(r.changes(workingBag)).toBe(workingChanges);
 
-    const dQuick = openDraft(r, quick, "never left");
+    const dQuick = openDraft(r, quick, "recovery copy");
     await afterDispatch();
+    expect(storeText(r, draftBag, dQuick)).toBe("recovery copy");
     const markQuick = r.calls.length;
     r.wiki.deleteTiddler(dQuick);
     await afterDispatch();
     boundary.fire();
     await turns(16);
-    expect(r.calls.slice(markQuick), "a draft that never reached the store leaves nothing").toEqual([]);
+    expect(touching(r, markQuick, quick)).toEqual([]);
+    expect(storeDeleted(r, draftBag, dQuick)).toBe(true);
     expect(boundary.pending()).toBe(0);
     await r.stop();
   }, 120_000);
@@ -345,14 +347,14 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     await r.adaptor.armSeedCheckpoint();
     const d = openDraft(r, x, "k0");
     await afterDispatch();
-    // Marks gather while no boundary crosses; the store's own landings are the boundaries that release them,
-    // so a burst that outruns the store leaves in fewer writes than keystrokes.
+    const beforeBurst = touching(r, 0, d).length;
+    expect(storeText(r, draftBag, d)).toBe("k0");
     for (let i = 1; i <= 30; i++) { typeInto(r, d, `k${i}`); }
     await afterDispatch();
-    expect(touching(r, 0, d), "a burst inside one dispatch turn leaves nothing before a boundary").toEqual([]);
-    boundary.fire();
     await turns(16);
-    expect(touching(r, 0, d), "thirty keystrokes of one burst leave as one write").toHaveLength(1);
+    expect(touching(r, 0, d).length - beforeBurst).toBe(1);
+    expect(touching(r, 0, d).length).toBeLessThanOrEqual(31);
+    expect(touching(r, 0, x)).toEqual([]);
     expect(storeText(r, draftBag, d)).toBe("k30");
     await r.stop();
   }, 120_000);
@@ -371,8 +373,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     expect(touching(r, mark, x)).toHaveLength(1);
     boundary.fire();
     await turns(24);
-    expect(touching(r, 0, d), "D never reached the store, so nothing is written for it").toEqual([]);
-    expect(r.doc(draftBag).tiddlers[d]).toBeUndefined();
+    expect(storeDeleted(r, draftBag, d)).toBe(true);
     expect(r.wiki.getTiddler(d)).toBeUndefined();
     expect(storeText(r, workingBag, x)).toBe("quick");
     await r.stop();

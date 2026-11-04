@@ -25,13 +25,14 @@ describe("HandGate shared waiters", () => {
     expect(flush).toHaveBeenCalledTimes(1);
   });
 
-  it("counts every ordinary mark toward the eight-mark cap", async () => {
+  it("holds ordinary marks until a boundary", async () => {
     const gate = new HandGate();
     const flush = vi.fn(async () => {});
     const promises = Array.from({ length: 7 }, () => gate.mark("title", flush));
     expect(flush).not.toHaveBeenCalled();
     promises.push(gate.mark("title", flush));
-    expect(flush).toHaveBeenCalledTimes(1);
+    expect(flush).not.toHaveBeenCalled();
+    await gate.boundary();
     await Promise.all(promises);
   });
 });

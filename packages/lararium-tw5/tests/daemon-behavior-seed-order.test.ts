@@ -101,7 +101,8 @@ describe.skipIf(wikiSkip)(`daemon behavior boot order${skipNote}`, () => {
     const r = await rig(Promise.resolve(), false);
     await r.behavior.onEa(r.ctx);
     await eventsDelivered(r.engine);
-    expect(markedHands(r.adaptor), "the batch boundary clears the attempted seed writes").toEqual([]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(markedHands(r.adaptor).length, "the refused seed writes stay owed in the drain until a write is acknowledged").toBeGreaterThan(0);
     await r.adaptor.stop();
     const wiki = r.engine.$tw.wiki as never as { filterTiddlers(f: string): string[] };
     expect(wiki.filterTiddlers("[all[tiddlers]tag[$:/tags/Alert]field:alert-kind[unrouted-save]]").length).toBeGreaterThan(0);

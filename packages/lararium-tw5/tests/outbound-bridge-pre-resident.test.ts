@@ -134,8 +134,8 @@ describe.skipIf(wikiSkip)(`outbound bridge — a lone async write on a resident 
   }, 120_000);
 });
 
-describe.skipIf(wikiSkip)(`outbound bridge — a draft is held until a deliberate act${skipNote}`, () => {
-  async function residentWith(label: string) {
+describe.skipIf(wikiSkip)(`outbound bridge — draft recovery follows the idle drain${skipNote}`, () => {
+  async function residentWith(label: string, store = new RecordingStore()) {
     const engine = await bootTestWiki();
     const wiki = engine.$tw.wiki as unknown as { addTiddler(t: unknown): void };
     const Tiddler = (engine.$tw as never as { Tiddler: new (f: Record<string, unknown>) => unknown }).Tiddler;
@@ -145,7 +145,6 @@ describe.skipIf(wikiSkip)(`outbound bridge — a draft is held until a deliberat
       ["lar:///ha.ka.ba/lararium/config/current-wiki-draft", SLOTS.draft],
       ["lar:///ha.ka.ba/lararium/config/current-wiki-personal", SLOTS.personal],
     ] as const) wiki.addTiddler(new Tiddler({ title, text }));
-    const store = new RecordingStore();
     const adaptor = new IslandAdaptor(engine, asIslandStore(store), label);
     adaptor.start();
     bridgeWikiToAdaptor(engine, adaptor);
@@ -163,39 +162,77 @@ describe.skipIf(wikiSkip)(`outbound bridge — a draft is held until a deliberat
       await adaptor.landingIdle();
       await new Promise((r) => setTimeout(r, 30));
     };
-    return { adaptor, store, type, land };
+    return { adaptor, store, type, land, wiki, Tiddler };
   }
   const draftPuts = (store: RecordingStore): number => store.puts.filter((p) => p.title === "Draft of 'Note'").length;
 
-  test("twelve draft dispatches remain held until hands rest", async () => {
+  test("an attached recovery trigger alone decides when ordinary hands fire", async () => {
+    const { adaptor, store, wiki, Tiddler } = await residentWith("trigger-seam");
+    let fire!: (titles?: readonly string[]) => Promise<void>;
+    adaptor.setRecoveryTrigger({ attach(fn) { fire = fn; return () => {}; } });
+    wiki.addTiddler(new Tiddler({ title: "probe/trigger", text: "latest" }));
+    await new Promise((r) => setTimeout(r, 30));
+    expect(store.puts.filter((p) => p.title === "probe/trigger")).toHaveLength(0);
+    await fire();
+    expect(store.puts.filter((p) => p.title === "probe/trigger")).toHaveLength(1);
+    await adaptor.stop();
+  }, 120_000);
+
+  test("twelve draft dispatches reach the store at idle", async () => {
     const { adaptor, store, type } = await residentWith("draft-twelve");
     for (let n = 0; n < 12; n++) await type(n);
-    expect(draftPuts(store), "twelve draft dispatches stay held").toBe(0);
-    await adaptor.handsRested();
-    expect(draftPuts(store)).toBe(1);
+    expect(draftPuts(store)).toBeLessThanOrEqual(12);
+    expect(store.puts.filter((p) => p.title === "Draft of 'Note'").at(-1)?.fields.text).toBe("keystroke 11");
+    expect(store.puts.filter((p) => p.title === "Note")).toHaveLength(0);
     await adaptor.stop();
   }, 120_000);
 
-  test("an inbound landing leaves a draft held", async () => {
+  test("draft marks during a write coalesce to the latest recovery copy", async () => {
+    let release!: () => void;
+    let started!: () => void;
+    const held = new Promise<void>((resolve) => { release = resolve; });
+    const writing = new Promise<void>((resolve) => { started = resolve; });
+    class HeldStore extends RecordingStore {
+      override async put(record: LarTiddlerRecord, origin: ChangeOrigin, options?: LarWriteOptions): Promise<void> {
+        if (record.tiddler.title === "Draft of 'Note'" && this.puts.every((p) => p.title !== record.tiddler.title)) {
+          started();
+          await held;
+        }
+        await super.put(record, origin, options);
+      }
+    }
+    const { adaptor, store, type } = await residentWith("draft-flight", new HeldStore());
+    await type(0);
+    await writing;
+    await type(1);
+    await type(2);
+    release();
+    await new Promise((r) => setTimeout(r, 30));
+    const writes = store.puts.filter((p) => p.title === "Draft of 'Note'");
+    expect(writes.map((p) => p.fields.text)).toEqual(["keystroke 0", "keystroke 2"]);
+    expect(store.puts.filter((p) => p.title === "Note")).toHaveLength(0);
+    await adaptor.stop();
+  }, 120_000);
+
+  test("an inbound landing neither flushes nor loses an unrelated draft", async () => {
     const { adaptor, store, type, land } = await residentWith("draft-inbound");
     await type(1);
-    await land();
-    expect(draftPuts(store), "an inbound landing leaves the draft held").toBe(0);
-    await adaptor.handsRested();
     expect(draftPuts(store)).toBe(1);
+    await land();
+    expect(draftPuts(store)).toBe(1);
+    expect(store.puts.filter((p) => p.title === "Draft of 'Note'").at(-1)?.fields.text).toBe("keystroke 1");
     await adaptor.stop();
   }, 120_000);
 
-  test("DESIGN: keystrokes on a draft never leave per dispatch; each deliberate act (the island boundary, handsRested, teardown) takes the held mark", async () => {
-    for (const act of ["boundary", "handsRested", "stop"] as const) {
-      const { adaptor, store, type } = await residentWith(`draft-${act}`);
-      await type(1); await type(2); await type(3);
-      expect(draftPuts(store), "keystrokes leave one store write per dispatch").toBe(0);
-      expect(adaptor.holdsHand("Draft of 'Note'")).toBe(true);
-      if (act === "boundary") await adaptor.boundary();
-      else if (act === "handsRested") await adaptor.handsRested();
-      else await adaptor.stop();
-      expect(draftPuts(store), `the draft left on ${act}`).toBeGreaterThanOrEqual(1);
+  test("a synchronous burst of draft dispatches produces one latest recovery copy", async () => {
+    const { adaptor, store, wiki, Tiddler } = await residentWith("draft-burst");
+    for (let n = 0; n < 12; n++) {
+      wiki.addTiddler(new Tiddler({ title: "Draft of 'Note'", "draft.of": "Note", "draft.title": "Note", text: `keystroke ${n}` }));
     }
+    await new Promise((r) => setTimeout(r, 30));
+    expect(draftPuts(store)).toBe(1);
+    expect(store.puts.filter((p) => p.title === "Draft of 'Note'")[0]?.fields.text).toBe("keystroke 11");
+    expect(store.puts.filter((p) => p.title === "Note")).toHaveLength(0);
+    await adaptor.stop();
   }, 120_000);
 });

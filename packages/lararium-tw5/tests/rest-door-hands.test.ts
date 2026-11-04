@@ -1,7 +1,7 @@
 /**
  * The rest door covers the hands a confirm leaves marked: the story list the navigator rewrites in the same dispatch
  * as the save leaves with the act and rests beside it, so a reload that follows reads the story the person left
- * (dreamdom#/what-a-sink-keeps). Without a rest door the hand waits for its gate's timer, as it always did.
+ * (dreamdom#/what-a-sink-keeps). Without a rest door the idle drain writes the story list.
  */
 import { describe, expect, test } from "vitest";
 import { makeRestDoor } from "../src/rest-door.js";
@@ -19,7 +19,7 @@ async function standing(r: Rig, title: string): Promise<void> {
 }
 
 describe.skipIf(wikiSkip)(`the rest door covers the hands a confirm leaves marked${skipNote}`, () => {
-  test("RED: a confirm that rewrites the story list rests the personal bag beside the working bag — CONTROL: with no rest door the story list waits for its gate", async () => {
+  test("RED: a confirm that rewrites the story list rests the personal bag beside the working bag — CONTROL: with no rest door the idle drain writes the story list", async () => {
     for (const withDoor of [true, false]) {
       const boundary = new ManualBoundary();
       const r = await shoreRig({ boundary, upperSlots: true });
@@ -38,12 +38,12 @@ describe.skipIf(wikiSkip)(`the rest door covers the hands a confirm leaves marke
       await afterDispatch();
       boundary.fire();
       await turns(16);
+      asks.length = 0;
       const mark = r.calls.length;
       saveSequence(r, d);
       r.wiki.addTiddler(new r.Tiddler({ title: STORY, list: [x] }));
       await afterDispatch();
       const personalOf = () => r.calls.slice(mark).filter((c) => c.bag === personalBag && c.puts.includes(STORY));
-      if (!withDoor) expect(personalOf(), "CONTROL: with no door the story list has not left when the act's turn ends").toHaveLength(0);
       await turns(24);
       const personal = personalOf();
       if (withDoor) {
@@ -52,7 +52,7 @@ describe.skipIf(wikiSkip)(`the rest door covers the hands a confirm leaves marke
         expect(asks[0]!.documentIds).toContain(r.handles[workingBag]!.documentId);
         expect(asks[0]!.documentIds, "the personal bag rests with the act").toContain(r.handles[personalBag]!.documentId);
       } else {
-        expect(personal, "CONTROL: with no door the story list leaves at the next boundary, the act's landing").toHaveLength(1);
+        expect(personal, "CONTROL: with no door the idle drain writes the story list").toHaveLength(1);
         expect(asks, "no door asks nothing").toHaveLength(0);
       }
       await r.stop();
