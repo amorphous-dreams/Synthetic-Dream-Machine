@@ -436,6 +436,7 @@ export function runSovereignKernel(
     let used = false;
     try {
       await handler.bootTw5(msg.wikiUri, coreBytes, pluginTiddlers, {
+        grantedDigests: new Set(msg.pluginCids ?? []),
         onInstance(instance) {
           bootInstance = instance as unknown as Record<string, unknown>;
           Object.defineProperty(instance, "larariumWritableStand", {

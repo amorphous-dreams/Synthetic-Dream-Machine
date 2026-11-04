@@ -1,39 +1,26 @@
 import { digestsEqual, formatDigest, SHA256_ALGO } from "@lararium/mesh/agile-digest";
 import { hex } from "@lararium/mesh/crypto";
-import { parsePonoLevel } from "./pono-level.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 
-// Module gate thresholds on the 0–20 Level scale: mana ≥ 18, manao ≥ 17, manaoio ≥ 17.
-const MODULE_MANA_THRESHOLD = 18;
-const MODULE_MANAO_THRESHOLD = 17;
-const MODULE_MANAOIO_THRESHOLD = 17;
 // The has-stack model: a kernel-injectable module WEARS the
 // tw5-module component in its stack (tags), never "implements an interface".
 const MODULE_COMPONENT_URI = "lar:///ha.ka.ba/lararium/tw5/tw5-module";
 
 /** Read genesis and promoted preloads alone, never the composite a stage item joins after boot. */
-export async function bootTrustedModules(tw: TW5Instance, preloaded: ReadonlySet<string>): Promise<void> {
+export async function bootTrustedModules(tw: TW5Instance, preloaded: ReadonlySet<string>, granted: ReadonlySet<string>): Promise<void> {
   const wiki = tw.wiki;
 
   try {
     const titles: string[] = wiki.filterTiddlers(`[all[tiddlers]stack:has[${MODULE_COMPONENT_URI}]]`) ?? [];
     for (const title of titles) {
       if (!preloaded.has(title)) continue;
+      if (!granted.has(title)) {
+        console.warn(`[module-gate] refused ${title}: no local grant (promote it by hand)`);
+        continue;
+      }
       const t = wiki.getTiddler(title);
       if (!t) continue;
       const f = t.fields as Record<string, string>;
-
-      const mana       = parsePonoLevel(f["mana"]);
-      const manao      = parsePonoLevel(f["manao"]);
-      const manaoio    = parsePonoLevel(f["manaoio"]);
-      if (
-        mana === null ||
-        manao === null ||
-        manaoio === null ||
-        mana < MODULE_MANA_THRESHOLD ||
-        manao < MODULE_MANAO_THRESHOLD ||
-        manaoio < MODULE_MANAOIO_THRESHOLD
-      ) continue;
 
       const body = f["text"] ?? "";
       if (!body.trim() || body.startsWith("// Body injected")) continue;

@@ -8,6 +8,7 @@
  * Reaction routing: reaction-router.ts TW5 startup module. No globals.
  */
 
+import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import type {
   TW5Instance,
@@ -46,7 +47,7 @@ export class TW5Engine {
    * Node:    evaluates the same tiddlywikicore blob with a CommonJS-shaped
    *          wrapper; no node_modules tiddlywiki runtime fallback is allowed.
    */
-  boot(coreBlob?: TW5CoreBootInput, preloadedTiddlers?: Array<Record<string, unknown>>, mirrorToken?: symbol, options?: { onInstance?: (instance: TW5Instance) => void }): Promise<void> {
+  boot(coreBlob?: TW5CoreBootInput, preloadedTiddlers?: Array<Record<string, unknown>>, mirrorToken?: symbol, options?: { onInstance?: (instance: TW5Instance) => void; grantedDigests?: ReadonlySet<string> }): Promise<void> {
     if (this._bootPromise) return this._bootPromise;
     this._bootPromise = (async () => {
       const core = normalizeCoreBootBlob(coreBlob);
@@ -57,7 +58,19 @@ export class TW5Engine {
 
       const allPreloads = preloadedTiddlers ?? [];
       const preloadedTitles = new Set(allPreloads.map(t => String(t["title"] ?? "")));
+      const grantedTitles = new Set<string>();
+      const titleCounts = new Map<string, number>();
       for (const preload of allPreloads) {
+        if (typeof preload["title"] === "string") titleCounts.set(preload["title"], (titleCounts.get(preload["title"]) ?? 0) + 1);
+      }
+      for (const preload of allPreloads) {
+        if (typeof preload["title"] === "string" && typeof preload["text"] === "string" &&
+            Object.values(preload).every(value => typeof value === "string")) {
+          const title = preload["title"];
+          // promoteDigest hashes these canonical preload bytes; require a unique title so an
+          // ungranted duplicate cannot replace a granted entry before the gate reads it.
+          if (titleCounts.get(title) === 1 && options?.grantedDigests?.has(sha256HexBytesSync(canonicalJsonBytes(preload)))) grantedTitles.add(title);
+        }
         if (!preload["plugin-type"] || typeof preload["text"] !== "string") continue;
         try {
           const packed: unknown = JSON.parse(preload["text"]);
@@ -79,7 +92,7 @@ export class TW5Engine {
       try {
         await bootWithHostBridge(instance, isBrowser, async () => {
           this._tw = instance;
-          await bootTrustedModules(instance, preloadedTitles);
+          await bootTrustedModules(instance, preloadedTitles, grantedTitles);
         });
       } catch (error) { this.releaseGlass(); throw error; }
     })();

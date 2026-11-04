@@ -76,7 +76,7 @@ export class IslandKernel {
     wikiUri:          string,
     coreBlob:         Uint8Array,
     preloadedTiddlers?: readonly Record<string, unknown>[],
-    options?: { onInstance?: (instance: import("./types/tiddlywiki.js").TW5Instance) => void },
+    options?: { onInstance?: (instance: import("./types/tiddlywiki.js").TW5Instance) => void; grantedDigests?: ReadonlySet<string> },
   ): Promise<void> {
     this._wikiUri = wikiUri;
     if (coreBlob.byteLength === 0) {

@@ -13,7 +13,7 @@ const MODULE_COMPONENT = "lar:///ha.ka.ba/lararium/tw5/tw5-module";
 type Fields = Record<string, unknown>;
 const body = "exports.probe = 1;";
 const meme = (title: string): Fields => ({
-  title, tags: [MODULE_COMPONENT], mana: "18", manao: "18", manaoio: "18", "module-type": "library",
+  title, tags: [MODULE_COMPONENT], "module-type": "library",
   "source-sha256": `sha256:${createHash("sha256").update(body, "utf8").digest("hex")}`, text: body,
 });
 
@@ -39,14 +39,14 @@ describe("bootTrustedModules reads the preloaded set alone", () => {
     const composite = "lar:///ha.ka.ba/bags/kahua/lifted-module";
     const genesis = "lar:///ha.ka.ba/bags/test/genesis-module";
     const { tw, defined } = fakeTw({ [composite]: meme(composite), [genesis]: meme(genesis) });
-    await bootTrustedModules(tw, new Set([genesis]));
+    await bootTrustedModules(tw, new Set([genesis]), new Set([genesis]));
     expect(defined).toEqual([`library:${genesis}`]);
   });
 
   test("RED: an empty preloaded set defines nothing", async () => {
     const t = "lar:///ha.ka.ba/bags/test/m";
     const { tw, defined } = fakeTw({ [t]: meme(t) });
-    await bootTrustedModules(tw, new Set());
+    await bootTrustedModules(tw, new Set(), new Set([t]));
     expect(defined).toEqual([]);
   });
 });
