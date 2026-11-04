@@ -1472,6 +1472,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   // ---------------------------------------------------------------------------
 
   /** True while the wiki holds `uri`, or the last wave landed it live. */
+  /** Refuse new outbound hands while a faulted shore detaches. */
+  dropResidency(): void { this.resident = false; this.residentWaiters.clear(); }
+
   private _stands(uri: string): boolean {
     return this.tw5.$tw.wiki.getTiddler(uri) !== undefined || (this.ledger.landedOf(uri)?.tiddler ?? null) !== null;
   }

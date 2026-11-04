@@ -6,8 +6,8 @@ module-type: startup
 /**
  * The mirror needs this task too: TW5 leaves dependents of a missing task unrun.
  * It needs no port-ready gate: the mirror holds no authority and the port snapshot
- * overwrites pre-attach writes. Dependents can run on faulted backing during the
- * boot window; they should read $:/temp/lares/writable before writing.
+ * overwrites pre-attach writes. A faulted stand detaches its backing before this
+ * task settles and dependents run.
  */
 export const name = "lararium-writable";
 export const after = ["load-modules", "lararium-nalu-engine", "startup"];

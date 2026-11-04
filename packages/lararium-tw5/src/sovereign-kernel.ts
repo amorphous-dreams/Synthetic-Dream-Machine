@@ -79,6 +79,21 @@ import { makeRestDoor, type RestDoor } from "./rest-door.js";
 import type { IslandContext, IslandBehavior } from "./island-context.js";
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
 
+/** Detach a failed writable shore before its scheduler task settles. */
+export async function guardWritableStand<T>(run: () => Promise<T>, detach: () => Promise<void>): Promise<T> {
+  try { return await run(); }
+  catch (error) {
+    try { await detach(); } catch (cleanupError) { console.warn("[writable] detach failed:", cleanupError); }
+    throw error;
+  }
+}
+
+export async function detachFaultedWritable(adaptor: import("./island-adaptor.js").IslandAdaptor | null, unsub: (() => void) | null): Promise<void> {
+  adaptor?.dropResidency();
+  unsub?.();
+  await adaptor?.stop();
+}
+
 // ── The host shore — platform divergence as composition ──────────────────────
 
 export interface IslandHostShore {
@@ -445,6 +460,7 @@ export function runSovereignKernel(
               // Only the marker's take (delete before call) opens this door.
               if (used || Object.hasOwn(bootInstance!, "larariumWritableStand")) return;
               used = true;
+              return guardWritableStand(async () => {
               const tw5 = handler.tw5()!;
               // One recipe model — buildIslandRecipe walks expandRecipe(msg.recipe),
               // wires temp + every resolved CRDT slot, registers the adaptor, and ARMS
@@ -499,6 +515,16 @@ export function runSovereignKernel(
               // (content-resolution.mem #tw5-shore). The boot above already refused an island with no CAS resolver.
               _lazyUnsub = installLazyResolver(tw5, resolveByCid);
               return await behavior.onWritable?.(_ctx!) ?? { state: "standing" };
+              }, async () => {
+                const unsub = _bridgeUnsub;
+                _bridgeUnsub = null;
+                _lazyUnsub?.();
+                _lazyUnsub = null;
+                await detachFaultedWritable(_adaptor, unsub);
+                _adaptor = null;
+                _ctx = null;
+                _rest = null;
+              });
             },
           });
         },

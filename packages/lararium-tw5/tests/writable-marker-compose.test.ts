@@ -2,6 +2,7 @@
 
 import { describe, test, expect, vi } from "vitest";
 import { readFileSync } from "node:fs";
+import * as kernel from "../src/sovereign-kernel.js";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { CORE_PATH } from "./test-wiki.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plugin-tiddler.generated.js";
@@ -61,7 +62,7 @@ async function bootWith(opts: { stand?: (engine: TW5Engine) => Promise<void>; mo
   return { engine, seen };
 }
 
-const stoodShore = (store: RecordingStore, adaptor: { value?: IslandAdaptor }) => async (engine: TW5Engine): Promise<void> => {
+const stoodShore = (store: RecordingStore, adaptor: { value?: IslandAdaptor }, bridge?: { unsub?: () => void }) => async (engine: TW5Engine): Promise<void> => {
   const wiki = engine.$tw.wiki as unknown as { addTiddler(t: unknown): void };
   const Tiddler = (engine.$tw as never as { Tiddler: new (f: Record<string, unknown>) => unknown }).Tiddler;
   for (const [title, text] of [
@@ -72,7 +73,8 @@ const stoodShore = (store: RecordingStore, adaptor: { value?: IslandAdaptor }) =
   ] as const) wiki.addTiddler(new Tiddler({ title, text }));
   adaptor.value = new IslandAdaptor(engine, asIslandStore(store), "writable-marker");
   adaptor.value.start();
-  bridgeWikiToAdaptor(engine, adaptor.value);
+  const unsub = bridgeWikiToAdaptor(engine, adaptor.value);
+  if (bridge) bridge.unsub = unsub;
   await adaptor.value.armSeedCheckpoint();
 };
 
@@ -96,6 +98,49 @@ describe.skipIf(wikiSkip)(`writable marker — the scheduler holds a dependent u
     expect(store.puts.some((p) => p.title === "probe/after-writable" && p.bag === SLOTS.working), "the dependent's write reached the working bag").toBe(true);
     expect(warns.filter((w) => w.includes("before the shore stood resident") && w.includes("probe/after-writable")), "the dependent was named as lost").toEqual([]);
     expect(engine.wiki.getTiddler("$:/temp/lares/writable")).toBeDefined();
+  }, 120_000);
+
+  test("a fault after residency detaches before a dependent writes", async () => {
+    const store = new RecordingStore();
+    const adaptor: { value?: IslandAdaptor } = {};
+    const bridge: { unsub?: () => void } = {};
+    const stand = async (engine: TW5Engine) => {
+      await stoodShore(store, adaptor, bridge)(engine);
+      throw new Error("after residency");
+    };
+    const wrap = (kernel as unknown as { guardWritableStand?: (run: () => Promise<void>, detach: () => Promise<void>) => Promise<void> }).guardWritableStand;
+    const detach = (kernel as unknown as { detachFaultedWritable?: (adaptor: IslandAdaptor | null, unsub: (() => void) | null) => Promise<void> }).detachFaultedWritable;
+    const { engine } = await bootWith({
+      stand: (e) => wrap ? wrap(() => stand(e), async () => { await detach!(adaptor.value ?? null, bridge.unsub ?? null); }) : stand(e),
+      module: `$tw.wiki.addTiddler({title:"probe/fault-dependent",text:"ran"});`,
+    });
+    await adaptor.value!.handsRested();
+    await new Promise((r) => setTimeout(r, 30));
+    expect(engine.wiki.getTiddler("$:/temp/lares/writable")?.fields.text).toBe("fault");
+    expect(store.puts.some((p) => p.title === "probe/fault-dependent"), "faulted backing must not persist the dependent").toBe(false);
+  }, 120_000);
+
+  test("T6: a call before the marker leaves the door and shore unchanged", async () => {
+    const store = new RecordingStore();
+    const adaptor: { value?: IslandAdaptor } = {};
+    const engine = new TW5Engine();
+    let calls = 0;
+    let used = false;
+    let earlyUnchanged = false;
+    await engine.boot(new Uint8Array(readFileSync(CORE_PATH)), [
+      LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>,
+      moduleTiddler("$:/test/probe-before-door", `exports.name="probe-before-door";exports.before=["lararium-writable"];exports.after=["startup"];exports.synchronous=false;exports.startup=function(done){var door=$tw.larariumWritableStand;door().then(function(){$tw.__earlyCheck(door);done();});};`),
+    ], undefined, { onInstance(instance) {
+      const tw = instance as unknown as Record<string, unknown>;
+      tw.__earlyCheck = (door: unknown) => { earlyUnchanged = tw.larariumWritableStand === door && calls === 0 && !adaptor.value; };
+      Object.defineProperty(instance, "larariumWritableStand", { configurable: true, value: async () => {
+        if (used || Object.hasOwn(tw, "larariumWritableStand")) return;
+        used = true; calls++; await stoodShore(store, adaptor)(engine); return { state: "standing" };
+      } });
+    } });
+    expect(earlyUnchanged).toBe(true);
+    expect(calls).toBe(1);
+    expect(adaptor.value!.isResident()).toBe(true);
   }, 120_000);
 
   test("CONTROL: a module with no `after` still meets the refuse-by-name floor", async () => {
