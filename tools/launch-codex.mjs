@@ -9,7 +9,7 @@
  * the brief once, appended here. Hand-back: wait on `until [ -f <seat-dir>/final.md ]`.
  *
  *   build    workspace-write in the worktree, network off, both tmp excludes, `-C <worktree> --add-dir <seat-dir>`
- *   lead     workspace-write in a scratch worktree, network on, with seat and common Git dirs added
+ *   lead     workspace-write in a scratch worktree, network on, with seat, common Git, and lane root dirs added
  *   read     `-s read-only -C <seat-dir>`
  *   research workspace-write in the seat dir alone, networked, the only mode with `--search`
  *
@@ -42,7 +42,7 @@ const MODES = ["build", "lead", "read", "research"];
 export function realHome() { return userInfo().homedir; }
 
 /** The argument array after `codex` and before the brief. */
-export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir }) {
+export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir, laneRoot }) {
   if (!MODES.includes(mode)) throw new Error(`mode must be build, lead, read or research (got "${mode}")`);
   const common = ["exec", "-m", model, "-c", `model_reasoning_effort=${effort}`, "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", join(seatDir, "final.md")];
   const tmpWall = ["-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true"];
@@ -52,7 +52,7 @@ export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir }) {
   }
   if (mode === "lead") {
     if (!worktree) throw new Error("a lead needs its worktree");
-    return [...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=true", "-C", worktree, "--add-dir", seatDir, ...(gitDir ? ["--add-dir", gitDir] : [])];
+    return [...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=true", "-C", worktree, "--add-dir", seatDir, ...(gitDir ? ["--add-dir", gitDir] : []), ...(laneRoot ? ["--add-dir", laneRoot] : [])];
   }
   if (mode === "research") return ["--search", ...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=true", "-C", seatDir];
   return [...common, "-s", "read-only", "-C", seatDir];
@@ -209,7 +209,8 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const worktree = o.worktree ? real(o.worktree) : undefined;
     const { pool } = preflight({ ...o, seatDir, worktree }, readers);
     const gitDir = o.mode === "lead" ? readers.gitCommonDir(worktree) : undefined;
-    const args = seatArgs({ ...o, seatDir, worktree, gitDir });
+    const laneRoot = o.mode === "lead" ? dirname(seatDir) : undefined;
+    const args = seatArgs({ ...o, seatDir, worktree, gitDir, laneRoot });
     log(pool);
     if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...args, "<brief>"])}`); return 0; }
     const law = o.mode === "lead" ? leadLaw() : seatLaw(readers.canon());

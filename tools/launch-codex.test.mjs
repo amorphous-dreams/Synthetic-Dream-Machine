@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, readFileSync, realpathSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir, userInfo } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { appendSeatLaw, distFresh, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
 import { globalStampPath, packageStampPath, sourceDigest } from "./stamp-build.mjs";
@@ -57,7 +57,7 @@ test("build: workspace-write, network off, both tmp excludes, -C worktree, --add
 });
 
 test("lead argv exact", () => {
-  assert.deepEqual(seatArgs({ mode: "lead", model: "m", effort: "high", seatDir: "/s", worktree: "/w", gitDir: "/g" }), ["exec", "-m", "m", "-c", "model_reasoning_effort=high", "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", "/s/final.md", "-s", "workspace-write", "-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true", "-c", "sandbox_workspace_write.network_access=true", "-C", "/w", "--add-dir", "/s", "--add-dir", "/g"]);
+  assert.deepEqual(seatArgs({ mode: "lead", model: "m", effort: "high", seatDir: "/lane/s", worktree: "/w", gitDir: "/g", laneRoot: "/lane" }), ["exec", "-m", "m", "-c", "model_reasoning_effort=high", "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", "/lane/s/final.md", "-s", "workspace-write", "-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true", "-c", "sandbox_workspace_write.network_access=true", "-C", "/w", "--add-dir", "/lane/s", "--add-dir", "/g", "--add-dir", "/lane"]);
 });
 
 test("lead argv needs worktree", () => {
@@ -260,7 +260,8 @@ test("lead dry run argv", () => {
   assert.equal(code, 0);
   assert.equal(resolved, realpathSync(w.wt));
   const args = JSON.parse(out.find((s) => s.startsWith("DRY-RUN ")).slice(8));
-  assert.deepEqual(args, ["codex", ...seatArgs({ mode: "lead", model: "gpt-6.1-terra", effort: "high", seatDir: realpathSync(w.seatDir), worktree: realpathSync(w.wt), gitDir: "/common/git" }), "<brief>"]);
+  assert.deepEqual(args, ["codex", ...seatArgs({ mode: "lead", model: "gpt-6.1-terra", effort: "high", seatDir: realpathSync(w.seatDir), worktree: realpathSync(w.wt), gitDir: "/common/git", laneRoot: dirname(realpathSync(w.seatDir)) }), "<brief>"]);
+  assert.ok(args.includes(dirname(realpathSync(w.seatDir))));
 });
 
 test("HOME for the cache and rollouts reads os.userInfo().homedir, never $HOME (a lead under a scratch HOME)", () => {
