@@ -398,6 +398,15 @@ test("row 1: findRollout matches the seat by session cwd and start time, never a
   utimesSync(old, new Date(1000), new Date(1000));
   assert.equal(findRollout(home, { cwds: ["/lane/wt", "/lane/s"], sinceMs: 5000 }), mine);
   assert.equal(findRollout(home, { cwds: ["/nowhere"], sinceMs: 5000 }), null);
+  // cwds with commas and JSON escapes match; two seats in one cwd each find the earlier start, and a start before sinceMs is another seat's
+  const odd = join(dir, "rollout-d.jsonl"), early = join(dir, "rollout-e.jsonl"), late = join(dir, "rollout-f.jsonl");
+  const metaAt = (cwd, ts) => JSON.stringify({ timestamp: ts, type: "session_meta", payload: { cwd } });
+  writeFileSync(odd, `${metaAt('/la,ne/"q"', new Date().toISOString())}\n`);
+  writeFileSync(early, `${metaAt("/shared", "2026-11-04T10:00:01.000Z")}\n`);
+  writeFileSync(late, `${metaAt("/shared", "2026-11-04T10:00:09.000Z")}\n`);
+  assert.equal(findRollout(home, { cwds: ['/la,ne/"q"'], sinceMs: 5000 }), odd);
+  assert.equal(findRollout(home, { cwds: ["/shared"], sinceMs: Date.parse("2026-11-04T10:00:00Z") }), early);
+  assert.equal(findRollout(home, { cwds: ["/shared"], sinceMs: Date.parse("2026-11-04T10:00:05Z") }), late);
 });
 
 test("row 1: watchSeat stops a seat at its ceiling (SIGTERM, then SIGKILL when it lives), writes ceiling.md naming the reading and the ceiling; reads no run.log", () => {

@@ -63,7 +63,7 @@ export function rolloutTokens(lines) {
   return total;
 }
 
-/** The rollout of one seat: the newest file under sessions/ whose session_meta cwd is one of `cwds` and whose mtime reaches `sinceMs`. */
+/** The rollout of one seat: among the files whose session_meta cwd is one of `cwds` and whose session began at or after `sinceMs`, the one that began FIRST (two seats sharing a cwd each claim the nearest start). */
 export function findRollout(home, { cwds, sinceMs }) {
   let best = null;
   const walk = (d, depth) => {
@@ -73,12 +73,16 @@ export function findRollout(home, { cwds, sinceMs }) {
       if (e.isDirectory() && depth < 5) walk(p, depth + 1);
       else if (e.isFile() && /^rollout-.*\.jsonl$/.test(e.name)) {
         let m; try { m = statSync(p).mtimeMs; } catch { continue; }
-        if (m < sinceMs || (best && best[0] >= m)) continue;
+        if (m < sinceMs) continue;
         try {
           const fd = openSync(p, "r"); const buf = Buffer.alloc(16384);
           const n = readSync(fd, buf, 0, buf.length, 0); closeSync(fd);
           const first = buf.toString("utf8", 0, n).split("\n", 1)[0];
-          if (cwds.includes(/"cwd":"((?:[^"\\]|\\.)*)"/.exec(first)?.[1])) best = [m, p];
+          const cwd = /"cwd":("(?:[^"\\]|\\.)*")/.exec(first)?.[1];
+          if (cwd === undefined || !cwds.includes(JSON.parse(cwd))) continue;
+          const began = Date.parse(/"timestamp":"([^"]+)"/.exec(first)?.[1] ?? "") || m;
+          if (began < sinceMs) continue;
+          if (!best || began < best[0]) best = [began, p];
         } catch { /* unreadable or torn */ }
       }
     }
@@ -269,8 +273,11 @@ function parse(argv) {
 
 /** The detached watchdog entry: tails the seat's rollout every few seconds until the seat exits or crosses its ceiling. */
 function watchMain(o) {
-  const pid = Number(o.pid), cwds = o.cwds.split(","), sinceMs = Number(o.since), home = realHome();
-  const alive = () => { try { process.kill(pid, 0); return true; } catch { return false; } };
+  const pid = Number(o.pid), cwds = JSON.parse(o.cwds), sinceMs = Number(o.since), home = realHome();
+  // The pid's start tick pins its identity: a reused pid reads as a different process and the seat as gone.
+  const startTick = (n) => { try { return readFileSync(`/proc/${n}/stat`, "utf8").replace(/^.*\) /, "").split(" ")[19]; } catch { return null; } };
+  const born = startTick(pid);
+  const alive = () => { try { process.kill(pid, 0); } catch { return false; } return born === null || startTick(pid) === born; };
   const nap = new Int32Array(new SharedArrayBuffer(4));
   let file = null;
   watchSeat({
@@ -309,7 +316,7 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const child = spawn("codex", [...args, brief], { cwd: seatDir, env, detached: true, stdio: ["ignore", fd, fd] });
     child.unref?.();
     const since = Date.now() - 5000;
-    const cwds = [worktree ?? seatDir, seatDir].join(",");
+    const cwds = JSON.stringify([worktree ?? seatDir, seatDir]);
     const dog = spawn(process.execPath, [fileURLToPath(import.meta.url), "--watch", "--seat-dir", seatDir, "--pid", String(child.pid), "--ceiling", String(ceiling), "--mode", o.mode, "--cwds", cwds, "--since", String(since)], { cwd: seatDir, env: { ...process.env, HOME: readers.realHome }, detached: true, stdio: "ignore" });
     dog.unref?.();
     log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${child.pid}; wait on: until [ -f ${join(seatDir, "final.md")} ]`);
