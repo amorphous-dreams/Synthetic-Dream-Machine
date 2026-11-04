@@ -339,17 +339,24 @@ jobs:
       # which the root `requirements.txt` (the operator's ~/.venv manifest) includes. The root list's
       # prose-tier NLP stack stays out: it needs downloaded models and the router degrades through it.
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        id: py
         with:
           python-version: '3.12'
+      # The key carries the exact interpreter PATCH: a restored venv's bin/python3 symlinks to the hostedtoolcache path of the patch that built
+      # it, so on a runner carrying another 3.12.x it dangles (exit 127).
       - name: Cache the holder venv
         id: venv-cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.venv
-          key: holder-venv-${{ runner.os }}-py312-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
+          key: holder-venv-${{ runner.os }}-py${{ steps.py.outputs.python-version }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
       - name: Stand the holder venv (~/.venv)
-        if: steps.venv-cache.outputs.cache-hit != 'true'
+        env:
+          CACHE_HIT: ${{ steps.venv-cache.outputs.cache-hit }}
         run: |
+          # A restored venv whose interpreter does not answer is no venv: stand it again (belt beside the patch-keyed cache).
+          if [ "$CACHE_HIT" = 'true' ] && ~/.venv/bin/python3 -V >/dev/null 2>&1; then exit 0; fi
+          rm -rf ~/.venv
           python3 -m venv ~/.venv
           ~/.venv/bin/python3 -m pip install --upgrade pip
           ~/.venv/bin/python3 -m pip install -e ./mempalace -r packages/lararium-sensorium/requirements.txt
