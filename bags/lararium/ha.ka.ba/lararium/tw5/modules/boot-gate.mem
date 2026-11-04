@@ -5,9 +5,6 @@
 
 ```toml meta
 heleuma       = "ha"
-mana          = 17
-manao         = 17
-manaoio       = 16
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/modules/boot-gate"
 role          = "the TW5 boot gate — the trust check every corpus-promoted JS module passes before it becomes executable"
 source-file   = "packages/lararium-tw5/src/tw5-module-gate.ts"
@@ -23,7 +20,7 @@ uri-path      = "ha.ka.ba/lararium/tw5/modules/boot-gate"
 
 !! Boot Gate
 
-`bootTrustedModules(tw)` runs after TW5's own boot resolves. It queries every tiddler that WEARS the tw5-module component — `[all[tiddlers]stack:has[lar:///ha.ka.ba/lararium/tw5/tw5-module]]`, the has-stack model — and admits each one only after it clears the trust layers below. An admitted tiddler re-enters the wiki as `type: application/javascript` carrying the `module-type` its own field names, defaulting to `library`, with its tags stripped.
+`bootTrustedModules(tw, preloaded, granted)` runs after TW5's own boot resolves. It queries every tiddler that WEARS the tw5-module component — `[all[tiddlers]stack:has[lar:///ha.ka.ba/lararium/tw5/tw5-module]]`, the has-stack model — and admits each one only after it clears the trust layers below. An admitted tiddler re-enters the wiki as `type: application/javascript` carrying the `module-type` its own field names, defaulting to `library`, with its tags stripped.
 
 ''This code cannot load from a meme.'' It needs a live `$tw` instance and stands as the mechanism that promotes memes into executables.
 
@@ -37,17 +34,15 @@ uri-path      = "ha.ka.ba/lararium/tw5/modules/boot-gate"
 
 | Layer | Reading | Floor |
 |---|---|---|
-| pono | `mana` via `MODULE_MANA_THRESHOLD` | 18 |
-| pono | `manao` via `MODULE_MANAO_THRESHOLD` | 17 |
-| pono | `manaoio` via `MODULE_MANAOIO_THRESHOLD` | 17 |
+| preload | the title came in with the genesis preload | — |
+| grant | the title sits in the granted set: the promote ledger's hand-committed digest, held on this device, not shadowed by kāpae; absent means refused and warned | — |
 | body | non-empty text, and not the injected-body placeholder | — |
 | digest | `source-sha256` verifies through `SubtleCrypto.digest("SHA-256")` | — |
-
-A level that reads as `null` — absent, or unparseable by `parsePonoLevel` — fails the same way a low one does.
+| type | `module-type` reads `library`; any other type refuses by name | — |
 
 ''The digest read accepts two spellings.'' A `source-sha256` field may ride bare (implicit sha256) or tagged (`sha256:…`); `digestsEqual` normalizes both, so a reader accepting both stands BEFORE any emitter starts writing the tagged form.
 
-A keyhive capability proof stands as the layer still owed; the gate admits on pono and digest alone.
+No field value on a carrier authorizes execution, and the gate fails closed. A keyhive capability proof stands as a layer still owed; the gate admits on grant, digest and type.
 
 <<~/ahu>>
 
@@ -55,7 +50,7 @@ A keyhive capability proof stands as the layer still owed; the gate admits on po
 
 !! The Aggregate Define
 
-After at least one module injects, the gate reads `lar:///ha.ka.ba/lararium/tw5/modules/tw5-modules` and hands its text to `tw.modules.define(text, "library", "lararium-tw5-modules")` — one call, whatever body stands at that address.
+Each admitted module defines under its own title: `tw.modules.define(title, "library", text)`, the name another module `require`s.
 
 <<~/ahu>>
 
@@ -67,6 +62,6 @@ After at least one module injects, the gate reads `lar:///ha.ka.ba/lararium/tw5/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iSVJP4Hyx3zFkBo9Sw5d_NbHkacCCJ3_ZUuMX0f_YJM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-Zjum0rtyfyxier2opIrz1lMVMYJrAM47_1DuGiLO0I`>>
 
 <<^ code=`&#x0004;` to=`?`>>
