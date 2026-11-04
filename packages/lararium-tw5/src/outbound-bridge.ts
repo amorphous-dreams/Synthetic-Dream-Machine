@@ -56,7 +56,10 @@ export function bridgeWikiToAdaptor(tw5: TW5Engine, adaptor: IslandAdaptor): () 
         void adaptor.deleteTiddler(title).catch((err: unknown) => console.warn(`[outbound-bridge] delete "${title}" faulted: ${String(err)}`));
       }
     }
-    void adaptor.boundary().catch(() => {});
+    // The batch ends here: every ordinary title it marked leaves now, clocklessly (no timer lifts a lone write). A DRAFT keeps its gate:
+    // keystrokes coalesce there until the draft's own act, never one store write per dispatch.
+    const ordinary = Object.keys(dispatch).filter((title) => !consumed.has(title) && (wiki.getTiddler(title) as { fields?: Record<string, unknown> } | null)?.fields?.["draft.of"] === undefined);
+    void adaptor.boundaryOf(ordinary).catch(() => {});
   };
   wiki.addEventListener("change", onChange);
   return () => wiki.removeEventListener("change", onChange);

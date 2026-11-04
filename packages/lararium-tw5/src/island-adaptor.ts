@@ -295,6 +295,11 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   /** Flush hands marked before this island boundary. */
   boundary(): Promise<void> { return this.gate.boundary(); }
+
+  /** Close a boundary over exactly these titles: each one marked in the gate leaves now; a title the gate holds nothing for is skipped. */
+  async boundaryOf(titles: readonly string[]): Promise<void> {
+    await Promise.allSettled(titles.filter((title) => this.gate.has(title)).map((title) => this.gate.flush(title)));
+  }
   pendingTitles(): string[] { return this.gate.titles(); }
 
   /**
