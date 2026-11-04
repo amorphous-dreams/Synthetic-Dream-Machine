@@ -522,3 +522,39 @@ test("row 3: --canary on a read seat writes the canary brief and launches with a
   assert.equal(run(["--check-canary", "--seat-dir", none.seatDir], { readers: none.readers, log: (s) => say2.push(s), err: (s) => say2.push(s) }), 2);
   assert.match(say2.join("\n"), /no rollout/);
 });
+
+// ---- row 4: the fresh-per-step lead ----
+test("row 4: --lead-step reads the lane state, bumps the step, writes the step brief, launches a LEAD with the lane root added and the lead ceiling; a missing state refuses", () => {
+  const w = world();
+  const laneRoot = join(w.home, ".lares-scratch", "lane");
+  const readers = { ...w.readers, gitCommonDir: () => "/git-common" };
+  const spawned = [];
+  const spawn = (cmd, args, opts) => { spawned.push({ cmd, args, opts }); return { pid: 7, unref() {} }; };
+  const argv = ["--lead-step", "--lane-root", laneRoot, "--model", "gpt-6.1-terra", "--effort", "high", "--worktree", w.wt];
+  const err = [];
+  assert.equal(run(argv, { readers, spawn, log() {}, err: (s) => err.push(s) }), 2);
+  assert.match(err.join("\n"), /no state\.json/);
+  assert.equal(spawned.length, 0);
+  writeFileSync(join(laneRoot, "state.json"), JSON.stringify({ head: "e6aa31a8e", owed: ["row 5"], seats: [], worktrees: {}, next: "do row 5", step: 3 }));
+  assert.equal(run(argv, { readers, spawn, log() {} }), 0);
+  const codex = spawned.find((x) => x.cmd === "codex");
+  const stepDir = join(realpathSync(laneRoot), "steps", "step-004");
+  assert.ok(codex.args.includes(stepDir), "the step dir is the seat dir");
+  assert.ok(codex.args.includes(realpathSync(laneRoot)), "the lane root rides --add-dir so the lead can write state.json");
+  assert.ok(codex.args.includes("network_access=true") || codex.args.some((a) => a.endsWith("network_access=true")));
+  assert.match(readFileSync(join(stepDir, "brief.md"), "utf8"), /do row 5/);
+  assert.match(readFileSync(join(stepDir, "brief.md"), "utf8"), /^## LEAD LAW/m);
+  assert.equal(JSON.parse(readFileSync(join(laneRoot, "state.json"), "utf8")).step, 4);
+  const dog = spawned.find((x) => x.cmd !== "codex");
+  assert.equal(dog.args[dog.args.indexOf("--ceiling") + 1], "15000000", "a step is bounded by the lead ceiling");
+});
+
+test("row 4: a refused launch does not spend a step; --lead-step needs --lane-root", () => {
+  const w = world({ rolloutLines: () => [rate(95)] });
+  const laneRoot = join(w.home, ".lares-scratch", "lane");
+  writeFileSync(join(laneRoot, "state.json"), JSON.stringify({ head: "e6aa31a8e", owed: [], seats: [], worktrees: {}, next: "x", step: 0 }));
+  const err = [];
+  assert.equal(run(["--lead-step", "--lane-root", laneRoot, "--model", "gpt-6.1-terra", "--effort", "high", "--worktree", w.wt], { readers: { ...w.readers, gitCommonDir: () => "/g" }, spawn() { throw new Error("spawned"); }, log() {}, err: (s) => err.push(s) }), 2);
+  assert.equal(JSON.parse(readFileSync(join(laneRoot, "state.json"), "utf8")).step, 0);
+  assert.equal(run(["--lead-step", "--model", "m", "--effort", "high", "--worktree", w.wt], { readers: w.readers, log() {}, err() {} }), 2);
+});

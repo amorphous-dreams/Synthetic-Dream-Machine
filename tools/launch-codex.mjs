@@ -23,6 +23,9 @@
  * Pool-used lines (seat-harness#/the-spend-guard): a lead refuses above 50% used, build or research above 60%. A detached
  * watchdog (`--watch`, spawned beside every seat) tails the seat's rollout and stops it at its token ceiling (`--ceiling N`;
  * lead 15M, others 8M), writing `ceiling.md`.
+ * `--lead-step --lane-root <dir> --model --effort --worktree` launches ONE fresh lead step over `<lane-root>/state.json`
+ * (tools/lane-state.mjs): the step dir `<lane-root>/steps/step-NNN` is the seat dir, the counter is spent only when the
+ * preflight passes, and the lead ceiling bounds the step.
  * `--dry-run` runs the preflight and prints the argument array, spawns nothing and writes nothing.
  *
  * The Codex cache, auth and rollouts live under the PASSWD home (`os.userInfo().homedir`), never `$HOME`: a lead runs
@@ -33,6 +36,7 @@ import { appendFileSync, closeSync, existsSync, readSync, mkdirSync, openSync, r
 import { userInfo } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { leadStepBrief, peekStep, writeState } from "./lane-state.mjs";
 import { globalStampPath, packageStampPath, sourceDigest, workspacePackageDirs } from "./stamp-build.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -298,10 +302,11 @@ export function preflight({ mode, model, seatDir, worktree }, readers) {
 
 function parse(argv) {
   const o = { dryRun: false };
-  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--pid": "pid", "--cwds": "cwds", "--before": "before" };
+  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--pid": "pid", "--cwds": "cwds", "--before": "before", "--lane-root": "laneRoot" };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--dry-run") o.dryRun = true;
     else if (argv[i] === "--watch") o.watch = true;
+    else if (argv[i] === "--lead-step") o.leadStep = true;
     else if (argv[i] === "--canary") o.canary = true;
     else if (argv[i] === "--check-canary") o.checkCanary = true;
     else if (keys[argv[i]]) { if (argv[i + 1] === undefined) throw new Error(`${argv[i]} wants a value`); o[keys[argv[i]]] = argv[++i]; }
@@ -311,6 +316,10 @@ function parse(argv) {
   if (o.checkCanary) {
     if (!o.seatDir) throw new Error("--seat-dir is required");
     return o;
+  }
+  if (o.leadStep) {
+    for (const k of ["laneRoot", "model", "effort", "worktree"]) if (!o[k]) throw new Error(`--lead-step needs --${k === "laneRoot" ? "lane-root" : k}`);
+    return { ...o, mode: "lead" };
   }
   for (const k of ["mode", "model", "effort", "seatDir"]) if (!o[k]) throw new Error(`--${k === "seatDir" ? "seat-dir" : k} is required`);
   return o;
@@ -353,6 +362,16 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     log(`${verdict.fired ? "COMPACTION-FIRED" : "COMPACTION-NOT-FIRED"} events=${verdict.events} calls=${verdict.calls} tokens=${verdict.tokens}`);
     return verdict.fired ? 0 : 1;
   }
+  let stepPlan;
+  if (o.leadStep) {
+    try {
+      const laneRoot = real(o.laneRoot);
+      stepPlan = { ...peekStep(laneRoot), laneRoot };
+      mkdirSync(stepPlan.stepDir, { recursive: true });
+      writeFileSync(join(stepPlan.stepDir, "brief.md"), leadStepBrief(stepPlan.state, { laneRoot, stepDir: stepPlan.stepDir }));
+      o.seatDir = stepPlan.stepDir;
+    } catch (e) { err(`SEAT-REFUSED: ${e.message}`); return 2; }
+  }
   const seatDir = real(o.seatDir);
   try {
     if (o.canary && o.mode !== "read") throw refuse("--canary only runs with --mode read");
@@ -361,11 +380,12 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const worktree = o.worktree ? real(o.worktree) : undefined;
     const { pool } = preflight({ ...o, seatDir, worktree }, readers);
     const gitDir = o.mode === "lead" ? readers.gitCommonDir(worktree) : undefined;
-    const laneRoot = o.mode === "lead" ? dirname(seatDir) : undefined;
+    const laneRoot = o.mode === "lead" ? (stepPlan?.laneRoot ?? dirname(seatDir)) : undefined;
     const args = seatArgs({ ...o, seatDir, worktree, gitDir, laneRoot, compactLimit: o.canary ? 50_000 : undefined });
     log(pool);
     if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...args, "<brief>"])}`); return 0; }
     if (o.canary) writeFileSync(join(seatDir, "brief.md"), canaryBrief());
+    if (stepPlan) writeState(stepPlan.laneRoot, { ...stepPlan.state, step: stepPlan.n });
     const law = o.mode === "lead" ? leadLaw() : seatLaw(readers.canon());
     mkdirSync(join(seatDir, ".tmp"), { recursive: true });
     const briefPath = join(seatDir, "brief.md");

@@ -56,6 +56,7 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 <<~ ahu slot=`#/the-lead`>>
 !! The lead ~ fresh per step, never one long session
 
+* `tools/lane-state.mjs` holds the shape and `node tools/launch-codex.mjs --lead-step --lane-root <dir> --model <m> --effort <e> --worktree <wt>` launches the step: it reads `<lane-root>/state.json`, writes `<lane-root>/steps/step-NNN/brief.md` from the state, and launches a lead there with the lane root added so the lead can rewrite the state. The step counter spends only when the preflight passes, a missing or misshapen state refuses by name, and the lead ceiling bounds the step.
 * A lead runs ONE step per launch: it reads its lane's state file (head, owed rows, live seats, worktree map), does that step, writes the state file and its hand-back, and stops. The next step launches a fresh lead over the new state.
 * A step stays short: about 10 to 15 minutes or 40 tool calls. An agentic session re-sends its whole transcript on every call, so one long session grows its draw roughly with the square of its length.
 * A lead dispatches and waits outside the model: the broker or the controller's watcher blocks on a seat, and the next lead step reads the result path. A lead never polls inside its own context.
@@ -91,7 +92,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 !! Owed ~ the rows this design still lacks
 
 # The ratcheted broker: data-only git plumbing with a fixed environment and pinned binaries, a commit bound to an expected old head and an exact tree, hooks and validators in a separate check seat whose receipt the broker verifies, installs in an isolated install seat, a go bound to branch and head, and one outer wall that means the same for Codex and Copilot, proved by planted hooks, filters, a hostile `.npmrc`, a poisoned `PATH` and malicious config.
-# The lane state file and the fresh-per-step lead as launcher modes, replacing the long-session lead.
 # The swarm's live controls (the crew cap, the push go, the lane state, the seat roster and its spend readings) move out of flat files into the live Lararium wiki once it stands: tiddlers the controller's hand signs and every seat reads through its capability, so a cap or a go carries an author and a history instead of a file mode.
 
 <<~/ahu>>
@@ -105,6 +105,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;74L2fnEtuU6wYCQYGMQ8is0Vk6_SQN4egWXzxuPNV2I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Fs1gSTky20l7t3vp5TKKb_-40JRkLUkOZTcyax4h1mY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
