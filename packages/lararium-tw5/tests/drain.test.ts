@@ -304,7 +304,7 @@ describe("Drain", () => {
     expect([kind(await all), kind(await one), kind(await closing)]).toEqual(["failed", "failed", "failed"]);
   });
 
-  test("one waiter per (title, epoch): calls share it, and a later caller's epoch never raises an earlier caller's", async () => {
+  test("one waiter per (title, generation): calls share it, and a later caller's generation never raises an earlier caller's", async () => {
     const { drain, writes } = rig();
     const g1 = drain.mark("t");
     await settle();

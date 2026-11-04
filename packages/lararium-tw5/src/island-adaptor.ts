@@ -206,7 +206,7 @@ interface ActRemoval {
   readonly bag: string;
   readonly base: readonly string[] | undefined;
   readonly target: string;
-  readonly targetEpoch: number;
+  readonly targetGeneration: number;
   /** The value the wiki held when the act took the title (null for a draft): a different value later reads as a newer hand. */
   readonly before: unknown | null;
   /** A rename's source: the wiki shows it again while its removal waits or after a refusal, and loses it with its acknowledged removal. */
@@ -1242,9 +1242,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const hold = this.restDoor?.begin();   // in the turn of the dispatch, so the act's result can wait
     if (hold) this.actHolds.push({ hold, members });
     for (const member of members) this.handed.delete(member);
-    let targetEpoch = 0;
+    let targetGeneration = 0;
     const draftBase = entry.baseBag ? { bag: entry.baseBag, heads: entry.baseHeads } : undefined;
-    const behind = (title: string): number => targetEpoch > 0 ? this.drain.markAfter(title, target, targetEpoch) : this.drain.mark(title);
+    const behind = (title: string): number => targetGeneration > 0 ? this.drain.markAfter(title, target, targetGeneration) : this.drain.mark(title);
     try {
       // A title that never persists (the volatile plane, the alert rail) takes no store call as a member.
       if (saves && !neverPersists(target)) {
@@ -1255,7 +1255,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
           // A save builds on the draft-open base, a rename onto a standing title on that title's landed base; a retry keeps it.
           const from = standsAtY ? { bag: landed!.bag!, heads: landed!.heads! } : draftBase;
           if (from) this.handBase.set(target, from);
-          targetEpoch = this.drain.mark(target);
+          targetGeneration = this.drain.mark(target);
         }
       }
       if (rename && members.includes(entry.of) && !wiki.getTiddler(entry.of) && !neverPersists(entry.of)) {
@@ -1265,7 +1265,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         if (landedBag) {
           const bag = this._tombstoneBag(entry.of, landedBag);
           const base = bag === entry.baseBag ? entry.baseHeads : standing?.bag === bag ? standing.heads : undefined;
-          this.actRemovals.set(entry.of, { bag, base: base && base.length > 0 ? base : undefined, target, targetEpoch, before: standing?.tiddler ?? null, source: true });
+          this.actRemovals.set(entry.of, { bag, base: base && base.length > 0 ? base : undefined, target, targetGeneration, before: standing?.tiddler ?? null, source: true });
           behind(entry.of);
         }
       }
@@ -1273,13 +1273,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       const snapshot = this.draftSnapshots.get(draftTitle);
       if (this._reachedStore(draftTitle) && bag) {
         const draftBag = this._tombstoneBag(draftTitle, bag);
-        this.actRemovals.set(draftTitle, { bag: draftBag, base: this._handBaseFor(draftTitle, draftBag), target, targetEpoch, before: null, source: false });
+        this.actRemovals.set(draftTitle, { bag: draftBag, base: this._handBaseFor(draftTitle, draftBag), target, targetGeneration, before: null, source: false });
         behind(draftTitle);
-      } else if (!this._reachedStore(draftTitle) && snapshot && bag && targetEpoch > 0) {
+      } else if (!this._reachedStore(draftTitle) && snapshot && bag && targetGeneration > 0) {
         // The draft never reached the store before the save dispatch: its recovery copy leaves first, its removal behind the target after.
         const { "$origin-bag": _originBag, ...persisted } = snapshot;
         const recovery = toLarTiddlerRecord({ ...withoutDraftBase(persisted), ...draftBaseFields(entry), title: draftTitle });
-        this.actRemovals.set(draftTitle, { bag, base: this._handBaseFor(draftTitle, bag), target, targetEpoch, before: null, source: false, recovery });
+        this.actRemovals.set(draftTitle, { bag, base: this._handBaseFor(draftTitle, bag), target, targetGeneration, before: null, source: false, recovery });
         this.drain.mark(draftTitle);
       } else {
         // Nothing of the draft stands in the store: the act supersedes whatever it still owed.
@@ -1291,7 +1291,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     } catch (error) {
       // A refused route stands on the alert rail; the member stays owed so the next request meets the same refusal by name.
       if (!(error instanceof UnroutedSaveRefusal)) console.warn(`[island-adaptor] act on "${draftTitle}" faulted: ${String(error)}`);
-      if (saves && targetEpoch === 0 && !neverPersists(target)) this.drain.mark(target);
+      if (saves && targetGeneration === 0 && !neverPersists(target)) this.drain.mark(target);
     }
   }
 
@@ -1332,7 +1332,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       this.lastWriteBag.set(title, removal.bag);
       if ((this.writeAcks.get(title) ?? 0) > ackBefore) this.unlanded.add(title);
       this.lastFlushWrote.set(title, true);
-      this.drain.markAfter(title, removal.target, removal.targetEpoch);
+      this.drain.markAfter(title, removal.target, removal.targetGeneration);
       return;
     }
     this.sent.set(title, null);

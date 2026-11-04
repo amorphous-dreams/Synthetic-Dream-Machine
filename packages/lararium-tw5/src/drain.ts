@@ -60,13 +60,13 @@ interface Slot {
   retry: boolean;
   /** A write of this title was refused and none has been acknowledged since. */
   refused: boolean;
-  /** The dependency edge: this title waits until `target`'s receipts cover `epoch`. */
-  after: { readonly target: string; readonly epoch: number } | null;
+  /** The dependency edge: this title waits until `target`'s receipts cover `generation`. */
+  after: { readonly target: string; readonly generation: number } | null;
 }
 
 interface Waiter {
   readonly title: string | null;
-  readonly epoch: number;
+  readonly generation: number;
   /** A terminal word a forget laid on this waiter: it reads this where the slots would read acked. */
   verdict: DrainOutcome | null;
   readonly promise: Promise<DrainOutcome>;
@@ -93,15 +93,15 @@ export class Drain {
   readonly #schedule: (run: () => void) => void;
   readonly #slots = new Map<string, Slot>();
   readonly #blocked = new Set<Slot>();
-  /** One waiter per (title or whole drain, epoch); a call for a standing key shares it. */
+  /** One waiter per (title or whole drain, generation); a call for a standing key shares it. */
   readonly #waiters = new Map<string, Waiter>();
   /** THE one flight: the pump starts only when it reads null. */
   #flight: Promise<void> | null = null;
   #scheduled = false;
   /** A lifecycle request arrived while the write flew: should that write fail, the request still stands for its title. */
   #demanded = false;
-  #epoch = 0;
-  #closeEpoch: number | null = null;
+  #generation = 0;
+  #closeGeneration: number | null = null;
   #abandonedFrom = 0;
 
   constructor(deps: DrainDeps) {
@@ -111,8 +111,8 @@ export class Drain {
 
   /** The title owes the store its latest state at a fresh generation. Never starts a write. */
   mark(title: string): number {
-    const gen = ++this.#epoch;
-    if (this.#closeEpoch !== null) {
+    const gen = ++this.#generation;
+    if (this.#closeGeneration !== null) {
       if (this.#abandonedFrom === 0) this.#abandonedFrom = gen;
       return gen;
     }
@@ -129,11 +129,11 @@ export class Drain {
     return gen;
   }
 
-  /** Mark `title`, parked until `targetTitle`'s receipts cover `targetEpoch` (an act's removal behind its target). */
-  markAfter(title: string, targetTitle: string, targetEpoch: number): number {
+  /** Mark `title`, parked until `targetTitle`'s receipts cover `targetGeneration` (an act's removal behind its target). */
+  markAfter(title: string, targetTitle: string, targetGeneration: number): number {
     const gen = this.mark(title);
     const slot = this.#slots.get(title);
-    if (slot && this.#closeEpoch === null) slot.after = { target: targetTitle, epoch: targetEpoch };
+    if (slot && this.#closeGeneration === null) slot.after = { target: targetTitle, generation: targetGeneration };
     return gen;
   }
 
@@ -150,20 +150,20 @@ export class Drain {
     this.#pump();
   }
 
-  /** Resolves once every generation at or below `epoch` (default: now) reaches a terminal outcome. */
-  whenAcked(epoch: number = this.#epoch): Promise<DrainOutcome> {
-    return this.#wait(null, epoch);
+  /** Resolves once every generation at or below `generation` (default: now) reaches a terminal outcome. */
+  whenAcked(generation: number = this.#generation): Promise<DrainOutcome> {
+    return this.#wait(null, generation);
   }
 
-  /** Resolves once `title`'s generations up to `epoch` (default: now) reach a terminal outcome; one shared waiter per (title, epoch). */
-  whenSettled(title: string, epoch: number = this.#epoch): Promise<DrainOutcome> {
-    return this.#wait(title, epoch);
+  /** Resolves once `title`'s generations up to `generation` (default: now) reach a terminal outcome; one shared waiter per (title, generation). */
+  whenSettled(title: string, generation: number = this.#generation): Promise<DrainOutcome> {
+    return this.#wait(title, generation);
   }
 
   /** Refuse new marks (they read abandoned) and await the owed work; a failed write answers failed, never a hang. */
   close(): Promise<DrainOutcome> {
-    if (this.#closeEpoch === null) this.#closeEpoch = this.#epoch;
-    return this.whenAcked(this.#closeEpoch);
+    if (this.#closeGeneration === null) this.#closeGeneration = this.#generation;
+    return this.whenAcked(this.#closeGeneration);
   }
 
   /**
@@ -184,7 +184,7 @@ export class Drain {
     this.#slots.delete(slot.title);
     this.#blocked.delete(slot);
     for (const waiter of this.#waiters.values()) {
-      if ((waiter.title === null || waiter.title === slot.title) && slot.owedFrom !== 0 && waiter.epoch >= slot.owedFrom) waiter.verdict ??= outcome;
+      if ((waiter.title === null || waiter.title === slot.title) && slot.owedFrom !== 0 && waiter.generation >= slot.owedFrom) waiter.verdict ??= outcome;
     }
     for (const dependent of [...this.#slots.values()]) {
       if (dependent.after?.target === slot.title && dependent.flying === 0) this.#drop(dependent, ABANDONED);
@@ -226,9 +226,9 @@ export class Drain {
     }
   }
 
-  #edgeMet(edge: { readonly target: string; readonly epoch: number }): boolean {
+  #edgeMet(edge: { readonly target: string; readonly generation: number }): boolean {
     const target = this.#slots.get(edge.target);
-    return target === undefined || target.acked >= edge.epoch || target.owedFrom === 0 || target.owedFrom > edge.epoch;
+    return target === undefined || target.acked >= edge.generation || target.owedFrom === 0 || target.owedFrom > edge.generation;
   }
 
   #pumpable(slot: Slot): boolean {
@@ -291,8 +291,8 @@ export class Drain {
     this.#ask();
   }
 
-  #status(slot: Slot, epoch: number): Status {
-    if (slot.owedFrom === 0 || slot.owedFrom > epoch) return null;
+  #status(slot: Slot, generation: number): Status {
+    if (slot.owedFrom === 0 || slot.owedFrom > generation) return null;
     if (slot.blocked) return slot.blocked;
     if (slot.after && !this.#edgeMet(slot.after)) {
       const target = this.#slots.get(slot.after.target);
@@ -305,29 +305,29 @@ export class Drain {
     let failed: Error | null = null;
     if (waiter.title !== null) {
       const slot = this.#slots.get(waiter.title);
-      const status = slot ? this.#status(slot, waiter.epoch) : null;
+      const status = slot ? this.#status(slot, waiter.generation) : null;
       if (status === PENDING) return null;
       failed = status;
     } else {
       for (const slot of this.#slots.values()) {
-        const status = this.#status(slot, waiter.epoch);
+        const status = this.#status(slot, waiter.generation);
         if (status === PENDING) return null;
         failed ??= status;
       }
     }
     if (failed) return { kind: "failed", error: failed };
     if (waiter.verdict) return waiter.verdict;
-    if (this.#abandonedFrom !== 0 && waiter.epoch >= this.#abandonedFrom) return ABANDONED;
+    if (this.#abandonedFrom !== 0 && waiter.generation >= this.#abandonedFrom) return ABANDONED;
     return ACKED;
   }
 
-  #wait(title: string | null, epoch: number): Promise<DrainOutcome> {
-    const key = `${title ?? "\u0000"}\u0001${epoch}`;
+  #wait(title: string | null, generation: number): Promise<DrainOutcome> {
+    const key = `${title ?? "\u0000"}\u0001${generation}`;
     const standing = this.#waiters.get(key);
     if (standing) return standing.promise;
     let resolve!: (outcome: DrainOutcome) => void;
     const promise = new Promise<DrainOutcome>((done) => { resolve = done; });
-    const waiter: Waiter = { title, epoch, verdict: null, promise, resolve };
+    const waiter: Waiter = { title, generation, verdict: null, promise, resolve };
     const now = this.#outcome(waiter);
     if (now) return Promise.resolve(now);
     this.#waiters.set(key, waiter);
