@@ -214,7 +214,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private readonly sent = new Map<string, unknown>();
   private readonly handBase = new Map<string, { bag: string; heads: readonly string[] }>();
   private readonly lastWriteBag = new Map<string, string>();
-  private readonly recoveryWrites = new Map<string, { bag: string; fields: Record<string, unknown> }>();
+  private readonly recoveryWrites = new Map<string, { bag: string; fields: Record<string, unknown> | null }>();
   /** Titles this shore wrote whose wave has not landed: the store stands ahead of the ledger for them. */
   private readonly unlanded = new Set<string>();
   private readonly handed = new Map<string, unknown | null>();
@@ -325,7 +325,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   /** The projection receipt checks the snapshot handed to the store by this pass. */
-  recoveryAtRest: ((bag: string, title: string, fields: Record<string, unknown>) => Promise<void>) | null = null;
+  recoveryAtRest: ((bag: string, title: string, fields: Record<string, unknown> | null) => Promise<void>) | null = null;
 
   private async _ackDurably(fired: readonly string[]): Promise<void> {
     const door = this.restDoor;
@@ -428,6 +428,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const isHand = !handSettled && this.resident
       && (marked || (!shadowOnly && !same(standing, known) && !(this.sent.has(title) && this.sent.get(title) === standing)));
     if (isHand) {
+      // A returning wave must not send a newer hand around the drain's outstanding durable receipt.
+      if (this._trigger === this._ackTrigger && this.gate.has(title)) this.requestDrain();
+      const flight = this._trigger === this._ackTrigger ? this._ackTrigger.flight() : null;
+      if (flight) {
+        await flight;
+        if (this.gate.has(title)) return;
+        return this._landOne(change);
+      }
       for (let pass = 0; pass < 8; pass++) {
         const wrote = await this._leaveNow(title);
         const latest = wiki.getTiddler(title) ?? null;
@@ -1139,6 +1147,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return run.finally(() => {
       for (const member of members) if (this.inFlight.get(member) === done) this.inFlight.delete(member);
       finish();
+      this.requestDrain();
     });
   }
 
@@ -1297,6 +1306,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         this.pendingHand.delete(title);
         this.failedAtTeardown.delete(title);
         this._clearUnsaved(title);
+        if (g.removal && !this.deferredRemovals.has(target) && g.deletes.includes(title)) {
+          this.recoveryWrites.set(title, { bag: g.bag, fields: null });
+          void this.gate.mark(title, () => this._flushHand(title)).catch(() => {});
+        }
       }
     });
     strays.forEach(({ slot, uri }, index) => {
@@ -1573,7 +1586,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       this.pendingHand.delete(title);
       this.failedAtTeardown.delete(title);
       this._clearUnsaved(title);
-      if (state === null) { this.recoveryWrites.delete(title); this.draftBook.delete(title); }
+      if (state === null && writeBag) {
+        this.recoveryWrites.set(title, { bag: writeBag, fields: null });
+        this.draftBook.delete(title);
+      }
     } catch (error) {
       // The title stays marked (pendingHand keeps it) so the next change, wave or teardown tries again;
       // no timer is armed, because a timer would decide when the refusal ends.

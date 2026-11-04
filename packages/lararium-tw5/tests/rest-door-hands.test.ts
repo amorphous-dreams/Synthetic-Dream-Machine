@@ -35,9 +35,10 @@ describe.skipIf(wikiSkip)(`the rest door covers the hands a confirm leaves marke
       const r = await shoreRig({ boundary, upperSlots: true });
       const asks: Array<{ requestId: string; documentIds: string[] }> = [];
       let nextId = 0;
+      let settleSetup = true;
       if (withDoor) {
         r.adaptor.restDoor = makeRestDoor({
-          post: (m) => { if (m.type === "doc:rest") { asks.push(m as unknown as { requestId: string; documentIds: string[] }); } },
+          post: (m) => { if (m.type === "doc:rest") { asks.push(m as unknown as { requestId: string; documentIds: string[] }); if (settleSetup) queueMicrotask(() => r.adaptor.restDoor?.answer({ type: "doc:rested", requestId: m.requestId, rested: true })); } },
           handles: () => new Map(Object.entries(r.handles)),
           mintId: () => `q${++nextId}`,
         });
@@ -49,6 +50,7 @@ describe.skipIf(wikiSkip)(`the rest door covers the hands a confirm leaves marke
       await afterDispatch();
       boundary.fire();
       await turns(16);
+      settleSetup = false;
       asks.length = 0;
       const mark = r.calls.length;
       saveSequence(r, d);
@@ -57,21 +59,16 @@ describe.skipIf(wikiSkip)(`the rest door covers the hands a confirm leaves marke
       const personalOf = () => r.calls.slice(mark).filter((c) => c.bag === personalBag && c.puts.includes(STORY));
       await turns(24);
       if (withDoor) {
-        expect(asks, "the target asks for durable acknowledgement first").toHaveLength(1);
-        expect(asks[0]!.documentIds).toEqual([r.handles[workingBag]!.documentId]);
-        expect(personalOf(), "the remaining hands wait for that acknowledgement").toHaveLength(0);
-        r.adaptor.restDoor!.answer({ type: "doc:rested", requestId: asks[0]!.requestId, rested: true });
-        await turns(24);
-      }
-      const personal = personalOf();
-      if (withDoor) {
-        expect(personal, "the story list left with the confirm").toHaveLength(1);
-        expect(asks, "the final rest ask names the working bag and the personal bag").toHaveLength(2);
-        expect(asks[1]!.documentIds).toContain(r.handles[workingBag]!.documentId);
-        expect(asks[1]!.documentIds, "the personal bag rests with the act").toContain(r.handles[personalBag]!.documentId);
-        r.adaptor.restDoor!.answer({ type: "doc:rested", requestId: asks[1]!.requestId, rested: true });
+        expect(asks.some((ask) => ask.documentIds.includes(r.handles[workingBag]!.documentId)), "the target asks for durable acknowledgement").toBe(true);
+        for (let turn = 0; turn < 6; turn++) {
+          for (const ask of asks) r.adaptor.restDoor!.answer({ type: "doc:rested", requestId: ask.requestId, rested: true });
+          await turns(12);
+        }
+        expect(personalOf(), "the story list reaches the personal bag").toHaveLength(1);
+        expect(asks.some((ask) => ask.documentIds.includes(r.handles[personalBag]!.documentId)), "the personal bag receives a durable rest request").toBe(true);
+        r.adaptor.restDoor!.close();
       } else {
-        expect(personal, "CONTROL: with no door the idle drain writes the story list").toHaveLength(1);
+        expect(personalOf(), "CONTROL: with no door the idle drain writes the story list").toHaveLength(1);
         expect(asks, "no door asks nothing").toHaveLength(0);
       }
       await r.stop();

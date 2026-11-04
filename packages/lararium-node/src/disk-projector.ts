@@ -539,11 +539,33 @@ export class LarDiskProjector {
   }
 
   /** Confirm the captured recovery record against the actual bytes at its granted mirror. */
-  async recoveryAtRest(bagId: string, title: string, written: Record<string, unknown>): Promise<void> {
+  async recoveryAtRest(bagId: string, title: string, written: Record<string, unknown> | null): Promise<void> {
     const mirrors = this.mirrors.filter((m) => m.bagId === bagId && m.mirrorClass === "recovery");
     if (!mirrors.length) return;
     const store = this.recoveryStore?.(bagId);
     if (!store || !this.recoveryFileFn || this.stopping) throw new Error("recovery projection unavailable");
+    if (written === null) {
+      const absent = async (): Promise<boolean> => {
+        const record = await store.get(title);
+        return !record || !!record.meta?.deleted;
+      };
+      if (!await absent()) throw new Error("recovery deletion superseded");
+      const key = syncedTreeKey(bagId, title);
+      this.syncedTree.reread(key);
+      const homes = new Set(mirrors.flatMap((mirror) => [
+        ...this.basedHomes(mirror, title),
+        ...(this.mirrorCarrierFiles(mirror, title) ?? []).map((file) => LarDiskProjector.contentOf(file)),
+      ]));
+      await this.reconcileNow(title);
+      if (this.stopping) throw new Error("recovery projection stopped");
+      if (!await absent()) throw new Error("recovery deletion superseded");
+      this.syncedTree.reread(key);
+      for (const mirror of mirrors) for (const home of this.basedHomes(mirror, title)) homes.add(home);
+      if ([...homes].some((home) => existsSync(home) || existsSync(`${home}.meta`))) {
+        throw new Error("recovery file still present or conflicting");
+      }
+      return;
+    }
     const record = await store.get(title);
     if (!record || record.meta?.deleted || record.tiddler["disk-projection"] === "no") throw new Error("recovery record missing");
     const stableFields = (fields: Record<string, unknown>): string => JSON.stringify(Object.fromEntries(Object.entries(fields).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)));

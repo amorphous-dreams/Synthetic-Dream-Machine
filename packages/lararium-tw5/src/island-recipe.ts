@@ -209,7 +209,7 @@ export function wikiHandBoundaryAfterAct(tw5: TW5Engine): void {
 }
 
 /** Bind the node-owned recovery projection receipt to this island’s drain. */
-export function bindRecoveryAtRest(tw5: TW5Engine, receipt: ((bag: string, title: string, fields: Record<string, unknown>) => Promise<void>) | null): void {
+export function bindRecoveryAtRest(tw5: TW5Engine, receipt: ((bag: string, title: string, fields: Record<string, unknown> | null) => Promise<void>) | null): void {
   const adaptor = adaptors.get(tw5);
   if (adaptor) adaptor.recoveryAtRest = receipt;
 }
