@@ -238,6 +238,8 @@ export class Drain {
     this.#demanded = false;
     slot.flying = slot.dirty;
     slot.nextFrom = 0;
+    // The guard stands BEFORE the write starts: an async body runs synchronously to its first await, and a re-entrant request must read a flight.
+    this.#flight = Promise.resolve();
     this.#flight = this.#fly(slot, slot.dirty);
   }
 
