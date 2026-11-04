@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { exportTree } from './tree-export.mjs';
-import { constants as FS, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { constants as FS, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { lstat, open, readFile, readlink, realpath, unlink } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -409,8 +409,21 @@ export async function pushWithGo(ctx) {
   const current = now.stdout.trim();
   if (head !== current) return fail('go head mismatch');
 
-  const pushed = git(ctx, ['push', 'origin', `${head}:refs/heads/${ctx.branch}`], {
-    env: { HOME: os.userInfo().homedir },
+  // The push runs from a throwaway repo of the broker's own: the lane's .git/config (pushurl, insteadOf, helpers) is never read.
+  if (typeof ctx.remoteUrl !== 'string' || !/^(ssh:\/\/|https:\/\/|git@[\w.-]+:|\/)/.test(ctx.remoteUrl)) return fail('push needs a remote url from the controller (ssh, https or an absolute path)');
+  const common = git(ctx, ['rev-parse', '--git-path', 'objects']);
+  if (!common.ok) return fail(common.output);
+  const objects = path.resolve(ctx.gitDir, common.stdout.trim());
+  const pushRepo = path.join(ctx.iso, 'pushrepo');
+  rmSync(pushRepo, { recursive: true, force: true });
+  const made = git({ ...ctx, gitDir: pushRepo }, ['init', '--bare', '-q', pushRepo]);
+  if (!made.ok) return fail(made.output);
+  writeFileSync(path.join(pushRepo, 'objects', 'info', 'alternates'), `${objects}\n`);
+  const shell = { ...ctx, gitDir: pushRepo };
+  const placed = git(shell, ['update-ref', `refs/heads/${ctx.branch}`, head]);
+  if (!placed.ok) return fail(placed.output);
+  const pushed = git(shell, ['push', ctx.remoteUrl, `refs/heads/${ctx.branch}:refs/heads/${ctx.branch}`], {
+    env: { HOME: os.userInfo().homedir, GIT_ALLOW_PROTOCOL: 'ssh:https:file' },
   });
   return { ok: pushed.ok, output: pushed.output };
 }

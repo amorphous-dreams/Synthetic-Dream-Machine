@@ -34,7 +34,7 @@ A seat holds only the capabilities its wall grants. Every act runs under exactly
 | ''Builder'' | its worktree alone | edits, typecheck, single-file tests | commits; reaches the network |
 | ''Reader'' | nothing writable | reads | writes any file; its final message carries the hand-back |
 
-''The trust boundary of the broker.'' The broker executes no code from a lead's tree. It runs data-only git plumbing (`write-tree`, `commit-tree`, `update-ref` with an expected old head) through a pinned absolute `git`, a fixed environment and an isolated home and temp dir, so a planted hook, credential helper, `.gitattributes` filter, submodule, poisoned `PATH`, `GIT_*` or `NODE_OPTIONS` reaches nothing. Hooks and validators run in a separate ''check seat'' behind bubblewrap (no network, a read-only root, one writable work dir) over an exact export of the tree; the broker commits only when it verifies that seat's signed receipt for the tree and the check set. Installs run in an ''install seat'' (scripts off, offline, a refused `.npmrc` key by name, `.git` and the controller dir read-only). The proofs live in `tools/commit-relay.test.mjs`. Two edges remain open: the receipt key is symmetric, held by the controller-side check seat and the broker, and the wall rests on `bwrap` being present (its absence refuses by name, never runs unwalled).
+''The trust boundary of the broker.'' The broker executes no code from a lead's tree. It runs data-only git plumbing (`write-tree`, `commit-tree`, `update-ref` with an expected old head) through a pinned absolute `git`, a fixed environment (attributes read from the empty tree), an isolated home and temp dir, and a push that runs from a throwaway repo of the broker's own to the controller's remote URL, so the lane's `.git/config` (pushurl, insteadOf, helpers) is never read, so a planted hook, credential helper, `.gitattributes` filter, submodule, poisoned `PATH`, `GIT_*` or `NODE_OPTIONS` reaches nothing. Hooks and validators run in a separate ''check seat'' behind bubblewrap (no network, a read-only root, one writable work dir) over an exact export of the tree; the broker commits only when it verifies that seat's signed receipt for the tree and the check set. Installs run in an ''install seat'' (scripts off, pnpmfile ignored, offline, a refused `.npmrc` key by name, `.git` read-only, the controller dir read as empty so the key and the go stay unreadable). The proofs live in `tools/commit-relay.test.mjs`. Two edges remain open: the receipt key is symmetric, held by the controller-side check seat and the broker, and the wall rests on `bwrap` being present (its absence refuses by name, never runs unwalled).
 
 <<~/ahu>>
 
@@ -104,6 +104,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rfvHPLHsAC1xnUkzyfOugaLxbiVlEcJo0BFCL6TNmzM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;R6k4rJUPstsji6krOLII8da8zDr6SCexLX6kTS4e36A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

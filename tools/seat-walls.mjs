@@ -171,6 +171,8 @@ export async function runInstallSeat({ worktree, gitDir, installer, storeDir, is
   mkdirSync(path.join(iso, 'home'), { recursive: true });
   mkdirSync(path.join(iso, 'tmp'), { recursive: true });
 
+  // A protected path reads as an empty read-only directory: the controller's go, key and receipts stay unreadable and unwritable.
+  const emptyDir = path.join(iso, 'empty'); mkdirSync(emptyDir, { recursive: true });
   const args = [
     '--die-with-parent',
     '--unshare-net',
@@ -181,7 +183,7 @@ export async function runInstallSeat({ worktree, gitDir, installer, storeDir, is
     '--bind', worktree, worktree,
     '--bind', storeDir, storeDir,
     '--ro-bind', gitDir, gitDir,
-    ...protect.flatMap((p) => ['--ro-bind', p, p]),
+    ...protect.flatMap((p) => ['--ro-bind', emptyDir, p]),
     ...hideCredentials(),
     '--dev', '/dev',
     '--proc', '/proc',
@@ -194,6 +196,7 @@ export async function runInstallSeat({ worktree, gitDir, installer, storeDir, is
     '--offline',
     '--frozen-lockfile',
     '--ignore-scripts',
+    '--ignore-pnpmfile',
     '--store-dir',
     storeDir,
   ];

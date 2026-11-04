@@ -38,7 +38,7 @@ console.log('SEAT-LAUNCHED 123');
   writeFileSync(path.join(goDir, 'check.key'), 'k'.repeat(48), { mode: 0o600 });
   const checksFile = path.join(root, 'checks.json'); writeFileSync(checksFile, JSON.stringify([{ name: 'true', argv: ['/usr/bin/true'] }]));
   const brokerArgs = ['--checks', checksFile, '--author-name', 'Relay', '--author-email', 'relay@example.invalid'];
-  const run = () => { const r = spawnSync(process.execPath, [script, '--lane-root', lane, '--worktree', wt, '--branch', 'relay-test', '--go-file', goFile, '--launcher', launcher, ...brokerArgs, '--once'], { encoding: 'utf8', env: relayEnv }); assert.equal(r.status, 0, r.stderr); };
+  const run = () => { const r = spawnSync(process.execPath, [script, '--lane-root', lane, '--worktree', wt, '--branch', 'relay-test', '--go-file', goFile, '--launcher', launcher, ...brokerArgs, '--remote-url', remote, '--once'], { encoding: 'utf8', env: relayEnv }); assert.equal(r.status, 0, r.stderr); };
   const response = id => JSON.parse(readFileSync(path.join(lane, 'relay', `res-${id}.json`), 'utf8'));
   const go = value => writeFileSync(goFile, value);
   return { home, root, wt, lane, remote, git, request, run, response, go, goFile, launcher, bin, relayEnv, brokerArgs };
@@ -85,7 +85,7 @@ test('bad JSON, unknown kinds, and outside message refuse', () => {
 
 test('a go file inside the lane root refuses to start, so a lead can never grant its own push', () => {
   const x = setup();
-  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', path.join(x.lane, 'relay', 'push-go'), '--launcher', x.launcher, ...x.brokerArgs, '--once'], { encoding: 'utf8', env: x.relayEnv });
+  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', path.join(x.lane, 'relay', 'push-go'), '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /go-file must sit outside the lane root/);
 });
@@ -167,7 +167,7 @@ function brokerFixture() {
   execFileSync('git', ['init', '--bare', remote], { stdio: 'ignore' }); git('remote', 'add', 'origin', remote);
   writeFileSync(path.join(root, 'message'), 'broker test\n');
   const checks = [{ name: 'true', argv: ['/usr/bin/true'] }];
-  const ctx = { gitDir: path.join(wt, '.git'), worktree: wt, iso, branch: 'lane', author: { name: 'Broker', email: 'broker@example.invalid' }, receiptsDir: receipts, keyFile, requiredChecks: ['true'], checks, bwrap: HAVE_BWRAP };
+  const ctx = { gitDir: path.join(wt, '.git'), worktree: wt, iso, remoteUrl: remote, branch: 'lane', author: { name: 'Broker', email: 'broker@example.invalid' }, receiptsDir: receipts, keyFile, requiredChecks: ['true'], checks, bwrap: HAVE_BWRAP };
   const marker = (n) => path.join(root, `MARK-${n}`);
   const hook = (name, body) => { const f = path.join(wt, '.git', 'hooks', name); mkdirSync(path.dirname(f), { recursive: true }); writeFileSync(f, `#!/bin/sh\n${body}\n`); chmodSync(f, 0o755); };
   const markers = () => readdirSync(root).filter((n) => n.startsWith('MARK-'));
@@ -191,11 +191,15 @@ test('PROOF 1 planted hooks and a credential helper never run: commit and push l
   assert.notEqual(x.git('rev-parse', 'HEAD'), before);
   assert.equal(x.git('rev-parse', 'HEAD~1'), before);
   assert.equal(x.git('show', 'HEAD:a'), 'changed');
+  x.git('config', 'remote.origin.pushurl', `ext::sh -c "touch '${x.marker('ext')}'"`);
+  x.git('config', `url.${path.join(x.root, 'elsewhere.git')}.insteadOf`, x.remote);
+  execFileSync('git', ['init', '--bare', '-q', path.join(x.root, 'elsewhere.git')]);
   writeFileSync(x.goFile, `lane\n${x.git('rev-parse', 'HEAD')}\n`);
   const p = await pushWithGo({ ...x.ctx, goFile: x.goFile });
   assert.equal(p.ok, true, JSON.stringify(p));
   assert.equal(execFileSync('git', ['--git-dir', x.remote, 'rev-parse', 'refs/heads/lane'], { encoding: 'utf8' }).trim(), x.git('rev-parse', 'HEAD'));
-  assert.deepEqual(x.markers().filter((m) => !m.startsWith('MARK-plain')), [], 'no planted hook or helper ran');
+  assert.equal(spawnSync('git', ['--git-dir', path.join(x.root, 'elsewhere.git'), 'rev-parse', '--verify', 'refs/heads/lane']).status, 128, 'a lane insteadOf never redirected the push');
+  assert.deepEqual(x.markers().filter((m) => !m.startsWith('MARK-plain')), [], 'no planted hook, helper or ext push url ran');
 });
 
 test('PROOF 2 a .gitattributes filter and a submodule run nothing: commit hashes raw bytes, the worktree door checks out no filter and no submodule', async () => {
@@ -241,6 +245,7 @@ echo "CWD $(pwd)" >> "${log}"
 env | grep -E '^(NODE_OPTIONS|npm_config_|GIT_|HOME)=' >> "${log}"
 touch "${x.wt}/.git/PWNED" 2>>"${log}" && echo GITWRITE >> "${log}"
 touch "${x.goFile}" 2>>"${log}" && echo GOWRITE >> "${log}"
+cat "${x.keyFile}" 2>/dev/null | head -c 5 | grep -q kkkkk && echo KEYREAD >> "${log}"
 touch "${store}/ok" && echo STOREWRITE >> "${log}"
 `, { mode: 0o755 });
   writeFileSync(path.join(x.wt, 'package.json'), JSON.stringify({ name: 'p', scripts: { postinstall: `touch ${probe}` } }));
@@ -257,7 +262,7 @@ touch "${store}/ok" && echo STOREWRITE >> "${log}"
   const seen = readFileSync(log, 'utf8');
   assert.match(seen, /ARGV .*--ignore-scripts/); assert.match(seen, /--offline/); assert.match(seen, /--frozen-lockfile/);
   assert.doesNotMatch(seen, /NODE_OPTIONS|npm_config_script|GIT_DIR/, 'the poisoned environment never reaches the install');
-  assert.match(seen, /STOREWRITE/); assert.doesNotMatch(seen, /GITWRITE|GOWRITE/, 'the install wrote neither git metadata nor the controller file');
+  assert.match(seen, /STOREWRITE/); assert.match(seen, /--ignore-pnpmfile/); assert.doesNotMatch(seen, /KEYREAD/, 'the check key stays unreadable'); assert.doesNotMatch(seen, /GITWRITE|GOWRITE/, 'the install wrote neither git metadata nor the controller file');
   assert.equal(existsSync(path.join(x.wt, '.git', 'PWNED')), false); assert.equal(existsSync(probe), false);
 });
 
@@ -291,6 +296,11 @@ const r = await commitWithReceipt(ctx, req); console.log(JSON.stringify(r)); pro
   try { for (let i = 0; i < 400; i++) { try { const r = await readSafe(x.wt, 'a'); if (r.content.toString().includes('TOP-SECRET')) leaked++; else good++; } catch { /* a refusal is the right answer mid-swap */ } } }
   finally { swapper.kill(); }
   assert.equal(leaked, 0, 'a swapped path never reads outside the worktree');
+  mkdirSync(path.join(x.wt, 'd')); writeFileSync(path.join(x.wt, 'd', 'f'), inTree); mkdirSync(path.join(x.root, 'outdir')); writeFileSync(path.join(x.root, 'outdir', 'f'), 'TOP-SECRET\n');
+  const dirSwap = spawnAsync(process.execPath, ['-e', `const fs=require('fs');const [d,o]=process.argv.slice(1);const k=d+'.real';fs.renameSync(d,k);setInterval(()=>{try{fs.renameSync(d,k)}catch{};try{fs.symlinkSync(o,d)}catch{};try{fs.unlinkSync(d)}catch{};try{fs.renameSync(k,d)}catch{}},0);`, path.join(x.wt, 'd'), path.join(x.root, 'outdir')], { stdio: 'ignore' });
+  let dirLeaked = 0;
+  try { for (let i = 0; i < 400; i++) { try { const r = await readSafe(x.wt, 'd/f'); if (r.content.toString().includes('TOP-SECRET')) dirLeaked++; } catch { /* refusal mid-swap */ } } } finally { dirSwap.kill(); }
+  assert.equal(dirLeaked, 0, 'a swapped directory never reads outside the worktree');
   assert.ok(good > 0, 'the control: reads of the real file still succeed between swaps');
 });
 function spawn_swapper(file, secret, inTree) {
