@@ -322,7 +322,7 @@ export async function commitWithReceipt(ctx, { paths, messageFile, expectHead })
     }
   }
 
-  const tmpIndex = path.join(ctx.iso, 'tmp', `broker-index-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+  const tmpIndex = path.join(ctx.iso, 'tmp', `broker-index-${process.pid}-${Math.random().toString(16).slice(2)}`);
   const idxEnv = { GIT_INDEX_FILE: tmpIndex };
   const readTree = git(ctx, ['read-tree', 'HEAD'], { env: idxEnv });
   if (!readTree.ok) return fail(readTree.output);
