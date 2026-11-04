@@ -36,7 +36,7 @@
 import {
   DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
   mutableLarRecord, tiddlerText, sha256HexBytesSync, utf8Bytes, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord, storedLarRecord,
-  floorAnchorSegment, type WorkingFloorAnchor, type ChangeOrigin, type CompositeStore, type LarDoc, ownEntry, DOCUMENT_READY_TIMEOUT_MS} from "@lararium/mesh";
+  floorAnchorSegment, type WorkingFloorAnchor, type ChangeOrigin, type CompositeStore, type LarDoc, ownEntry, plainField, DOCUMENT_READY_TIMEOUT_MS} from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { FaceBagDoor } from "./face-bag-door.js";
 
@@ -278,7 +278,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
             const into = await working.open(url, slug);
             const carriedTo = tiddlerText(ownEntry(source.doc()?.tiddlers, WORKING_CARRY_MARK));
             if (carriedTo && carriedTo !== url) throw new Error("[anon-lift] working floor already carried to a different destination");
-            const skip = readWorkingCarrySkip(ownEntry(source.doc()?.tiddlers, WORKING_CARRY_MARK)?.tiddler?.[WORKING_CARRY_SKIP]);
+            const skip = readWorkingCarrySkip(plainField(ownEntry(source.doc()?.tiddlers, WORKING_CARRY_MARK), WORKING_CARRY_SKIP));
             if (!carriedTo) {
               skip.add(WORKING_CARRY_MARK);
               const titles = plainEntries(source.doc()?.tiddlers).map(([title]) => title);
