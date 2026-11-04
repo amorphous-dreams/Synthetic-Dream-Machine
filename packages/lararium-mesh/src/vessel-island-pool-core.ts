@@ -406,6 +406,14 @@ export class VesselIslandPoolCore {
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
+  /** Ask every live wiki to start a best-effort drain; this does not acknowledge durability. */
+  requestWikiDrains(): void {
+    for (const slot of this._slots.values()) {
+      if (slot.temperature !== "wela" || slot.closing) continue;
+      try { slot.worker.post({ type: "wiki:request-drain" }); } catch { /* A departing worker must not block its peers. */ }
+    }
+  }
+
   /** Mount a wiki as a live (`wela`) island. `opts.pinned` exempts from LRU.
    *  Single-flight per grain: concurrent activations of one wikiId fold into ONE. */
   async mountWiki(wikiId: string, spec: WikiMountSpec, opts: { pinned?: boolean } = {}): Promise<void> {

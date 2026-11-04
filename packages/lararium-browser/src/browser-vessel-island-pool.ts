@@ -28,6 +28,15 @@ import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
 import { refuseBrowserDyadAsks } from "./browser-dyad-door.js";
 import { readCasBlobFromOpfs } from "./browser-genesis.js";
 
+/** Page departure only asks the workers to drain; the browser may suspend them at any point. */
+export function listenForPageDrains(page: EventTarget, document: EventTarget & { readonly visibilityState: string }, request: () => void): () => void {
+  const onVisibility = () => { if (document.visibilityState === "hidden") request(); };
+  const onHide = () => request();
+  document.addEventListener("visibilitychange", onVisibility);
+  page.addEventListener("pagehide", onHide);
+  return () => { document.removeEventListener("visibilitychange", onVisibility); page.removeEventListener("pagehide", onHide); };
+}
+
 export interface BrowserVesselIslandPoolOptions {
   /**
    * URL of the compiled browser-wiki-worker entry script. Optional at

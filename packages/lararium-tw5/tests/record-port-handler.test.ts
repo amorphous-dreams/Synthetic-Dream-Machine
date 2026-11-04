@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { CompositeStore, type IslandToVesselMsg } from "@lararium/mesh";
 import type { PortMsg_Open, PortMsg_Write, PortMsg_Ask } from "@lararium/mesh/record-port";
 import { AtomicMemoryStore as MemoryTiddlerStore } from "./atomic-memory-store.js";
@@ -1386,4 +1386,14 @@ describe("record port handler", () => {
     unsubscribe();
     await r.close();
   });
+});
+
+test("the wiki behavior requests its adaptor drain and ignores an unrelated signal", () => {
+  const requestDrain = vi.fn();
+  const ctx = { requestDrain } as unknown as IslandContext;
+  const behavior = makeWikiBehavior();
+  expect(behavior.onSignal("unrelated", {}, ctx)).toBe(false);
+  expect(requestDrain).not.toHaveBeenCalled();
+  expect(behavior.onSignal("wiki:request-drain", { type: "wiki:request-drain" }, ctx)).toBe(true);
+  expect(requestDrain).toHaveBeenCalledOnce();
 });

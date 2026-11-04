@@ -27,6 +27,8 @@ export interface IslandContext {
   tw5:       TW5Engine;
   handles:   Map<string, DocHandle<LarDoc>>;
   post:      (msg: IslandToVesselMsg) => void;
+  /** Request a best-effort drain; no persistence acknowledgement follows. */
+  requestDrain?: () => void;
   /**
    * The island-side Automerge Repo. Island behaviors that mint docs (e.g. the
    * daemon island's personal/draft binding resolver) create them here; the docs

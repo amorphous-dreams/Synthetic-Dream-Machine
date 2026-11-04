@@ -102,7 +102,7 @@ import {
 }                                            from "./browser-vessel-identity.js";
 import type { BrowserVesselIdentity }        from "./browser-vessel-identity.js";
 import { personaPanelStateArgs }             from "./persona-panel-state.js";
-import { BrowserVesselIslandPool }           from "./browser-vessel-island-pool.js";
+import { BrowserVesselIslandPool, listenForPageDrains } from "./browser-vessel-island-pool.js";
 import { publishHandleBrowser }              from "./browser-handle-publish.js";
 import { burnFaceBrowser, attestFaceBrowser } from "./browser-handle-verbs.js";
 
@@ -1968,6 +1968,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       }
       const stopPromoteWatch = promoteWiringRef?.watch();
       if (stopPromoteWatch) held.stood.push({ what: "the promote watcher", down: stopPromoteWatch });
+      if (typeof window !== "undefined" && typeof document !== "undefined") {
+        const stopPageDrains = listenForPageDrains(window, document, () => vmManager.requestWikiDrains());
+        held.stood.push({ what: "page drain signals", down: stopPageDrains });
+      }
       return vmManager;
     },
 
