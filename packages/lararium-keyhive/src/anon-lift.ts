@@ -19,8 +19,8 @@
  * A face's working document has no record: its address derives from the face's secret and the wiki's slug. The lift carries
  * each floor working document's tiddlers into the face's document for that wiki (additively: a title the face's document
  * holds stays), rests it, marks the anchor's key `lifted-from`, burns the floor document, and takes the key out of the catalog
- * last. A durable floor marker records the destination after carry and rebind, before the destination flush. A retry
- * flushes that marker and the destination without carrying again. A stop
+ * last. A durable floor marker records the destination only after the destination flush. A retry
+ * skips titles already carried in this process or covered by the durable marker. A stop
  * after the mark finds the marked key on the next pass, which burns the floor document and removes the key, carrying nothing.
  *
  * ── THE SECRET STANDS FIRST ─────────────────────────────────────────────────────────────────────
@@ -83,14 +83,17 @@ const mintedHere = (args: LiftArgs, by: unknown): boolean => by === args.mintedB
 const digestOf = (text: string): string => sha256HexBytesSync(utf8Bytes(text));
 const originFor = (tag: string): ChangeOrigin => ({ kind: "lares-verb", requestId: `anon-lift-${tag}`.slice(0, 32) });
 const WORKING_CARRY_MARK = "$:/lares/anon-lift/working-carried-to";
+// A failed destination flush leaves no durable marker. Remember the attempted titles while this
+// repo stays live so a MOVE after rebind cannot be undone by the next carry.
+const workingCarries = new WeakMap<LiftRepo, Map<string, Set<string>>>();
 
 /** Copy `from`'s tiddlers into `into` where `into` holds none of that title: read through the read door, written through the write door. */
-function carryTiddlers(from: LarDoc | undefined, into: { change(fn: (doc: LarDoc) => void): void }): void {
+function carryTiddlers(from: LarDoc | undefined, into: { change(fn: (doc: LarDoc) => void): void }, skip?: Set<string>): void {
   const source = plainEntries(from?.tiddlers);
   if (source.length === 0) return;
   into.change((doc) => {
     for (const [title, record] of source) {
-      if (ownEntry(doc.tiddlers, title) === undefined) doc.tiddlers[title] = storedRecord(record);
+      if (!skip?.has(title) && ownEntry(doc.tiddlers, title) === undefined) doc.tiddlers[title] = storedRecord(record);
     }
   });
 }
@@ -265,13 +268,21 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
           const into = await working.open(url, slug);
           const carriedTo = tiddlerText(ownEntry(source.doc()?.tiddlers, WORKING_CARRY_MARK));
           if (carriedTo && carriedTo !== url) throw new Error("[anon-lift] working floor already carried to a different destination");
-          if (!carriedTo) carryTiddlers(source.doc(), into);
+          if (!carriedTo) {
+            let carries = workingCarries.get(args.repo);
+            if (!carries) { carries = new Map(); workingCarries.set(args.repo, carries); }
+            const key = `${oldUrl}\0${url}`;
+            let seen = carries.get(key);
+            if (!seen) { seen = new Set(); carries.set(key, seen); }
+            const titles = plainEntries(source.doc()?.tiddlers).map(([title]) => title);
+            carryTiddlers(source.doc(), into, seen);
+            for (const title of titles) seen.add(title);
+          }
           working.rebind?.(slug, oldUrl, url, into);
-          if (!carriedTo) source.change((doc) => { doc.tiddlers[WORKING_CARRY_MARK] = storedLarRecord(WORKING_CARRY_MARK, { text: url }, "anon-lift:working-floor"); });
-          // Persist the carry marker before attempting the destination flush; retry never recopies removed titles.
           try {
-            await boundedRead(args, oldUrl, () => args.repo.flush([source.documentId]));
             await boundedRead(args, url, () => args.repo.flush([into.documentId]));
+            if (!carriedTo) source.change((doc) => { doc.tiddlers[WORKING_CARRY_MARK] = storedLarRecord(WORKING_CARRY_MARK, { text: url }, "anon-lift:working-floor"); });
+            await boundedRead(args, oldUrl, () => args.repo.flush([source.documentId]));
           }
           catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
           await args.faceDoor.mint(url, "admin");

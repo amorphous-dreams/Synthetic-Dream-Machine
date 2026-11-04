@@ -954,6 +954,27 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await r.repo.shutdown();
   }, 120_000);
 
+  test("failed hand retry surfaces a record moved out of its original bag", async () => {
+    const r = await rig();
+    const title = "lar:///t/shore/retry-moved";
+    await r.working.put({ tiddler: { title, text: "base" } }, remote);
+    r.working.emitInitialReplay();
+    await r.adaptor.armSeedCheckpoint();
+    r.unbridge();
+    const original = r.composite.writeFamily.bind(r.composite);
+    vi.spyOn(r.composite, "writeFamily").mockRejectedValueOnce(new Error("refused")).mockImplementation(original);
+    const internal = r.adaptor as unknown as { _flushHand(title: string): Promise<void>; _surfaceHand(title: string, fields: Record<string, string>, bag: string): Promise<void> };
+    const surface = vi.spyOn(internal, "_surfaceHand");
+    r.wiki.addTiddler(new r.Tiddler({ title, text: "hand" }));
+    await expect(internal._flushHand(title)).rejects.toThrow("refused");
+    r.workingHandle.change(doc => { delete doc.tiddlers[title]; });
+    await internal._flushHand(title);
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[title], "retry must not recreate the moved record").toBeUndefined();
+    expect(surface, "the hand surfaces").toHaveBeenCalledOnce();
+    await r.adaptor.stop();
+    await r.repo.shutdown();
+  }, 120_000);
+
   test("a rejected family write never settles its child", async () => {
     const r = await rig();
     await r.adaptor.armSeedCheckpoint();

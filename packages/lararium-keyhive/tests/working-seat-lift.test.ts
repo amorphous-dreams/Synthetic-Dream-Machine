@@ -31,6 +31,7 @@ test("retry after a failed flush does not restore a title removed from the rebou
     },
   } as never;
   await expect(liftVesselOnlyIntoFace(args)).rejects.toThrow("flush failed");
+  expect(floor.doc().tiddlers["$:/lares/anon-lift/working-carried-to"], "no marker before destination flush").toBeUndefined();
   expect(composite.layerIndexOf(bag)).toBeGreaterThanOrEqual(0);
   face.change(d => { delete d.tiddlers.moved; }); // MOVE hard-removes its source.
   failFlush = false;
@@ -74,4 +75,39 @@ test("a pending grant, working attach and lift leave subsequent writes on the fa
   expect(liftError).toBeUndefined();
   await expect(composite.put({ tiddler: { title: "after", text: "landed" } }, { kind: "test" })).resolves.toBeUndefined();
   expect(face.doc().tiddlers.after).toBeDefined();
+});
+
+test("destination flush completes before marker, and a marker fault permits a safe retry", async () => {
+  const anchor = { kind: "place", aid: "Etest" } as const;
+  const key = wikiWorkingFloorKey("daemon", anchor);
+  const marker = "$:/lares/anon-lift/working-carried-to";
+  let destinationFlushed = false, markerAttempted = false, fault = true;
+  const events: string[] = [];
+  function handle(url: string) {
+    const state = emptyLarDoc();
+    return { url, documentId: url, doc: () => state, heads: () => [], on: () => () => {}, remove: () => {},
+      change: (fn: (d: LarDoc) => void) => {
+        if (url === "floor" && destinationFlushed && !markerAttempted) {
+          markerAttempted = true; events.push("marker");
+          if (fault) throw new Error("marker fault");
+        }
+        fn(state);
+      } };
+  }
+  const floor = handle("floor"), face = handle("face"), catalog = handle("catalog");
+  floor.change(d => { d.tiddlers.saved = storedLarRecord("saved", { text: "content" }, "test"); });
+  catalog.change(d => { d.tiddlers[key] = storedLarRecord(key, { text: "floor", "face-reach": "vessel-only", "minted-by": "vessel" }, "test"); });
+  const composite = new CompositeStore();
+  const repo = { find: async () => floor, create: () => { throw Error("unexpected"); }, delete: () => {},
+    flush: async (ids?: string[]) => { if (ids?.includes("face")) { events.push("destination flush"); expect(floor.doc().tiddlers[marker], "marker absent while destination flush runs").toBeUndefined(); destinationFlushed = true; } } };
+  const args = { repo: repo as never, daemonStore: composite, catalog: { handle: async () => catalog } as never,
+    faceDoor: { mint: async () => ({ docId: "face" }) } as never, mintedByHex: "vessel", vesselDid: didFromVerifyingKey("ab".repeat(32)),
+    traceOf: async () => null, working: { anchor, urlOf: async () => "face", open: async () => face } } as never;
+  await expect(liftVesselOnlyIntoFace(args)).rejects.toThrow("marker fault");
+  expect(events).toEqual(["destination flush", "marker"]);
+  expect(floor.doc().tiddlers[marker]).toBeUndefined();
+  fault = false;
+  await liftVesselOnlyIntoFace(args);
+  expect(Object.keys(face.doc().tiddlers)).toEqual(["saved"]);
+  expect(String(face.doc().tiddlers.saved.tiddler.text)).toBe("content");
 });

@@ -903,7 +903,11 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const hand = this.handBase.get(title);
     const source = from ?? hand ?? (entry?.bag && entry.heads ? { bag: entry.bag, heads: entry.heads } : undefined);
     if (!source) return {};
-    if (source.bag === dest) return source.heads.length > 0 ? { base: source.heads } : {};
+    if (source.bag === dest) {
+      // A failed hand may outlive a MOVE that hard-removes its original record.
+      if (!this.unlanded.has(title) && this.failedAtTeardown.has(title) && !this._holdsRecord(source.bag, title) && this._sourceMoved(title, source.bag, source.heads)) return { moved: source.bag };
+      return source.heads.length > 0 ? { base: source.heads } : {};
+    }
     if (!this.unlanded.has(title) && this._sourceMoved(title, source.bag, source.heads)) return { moved: source.bag };
     // The destination's record NOW, whatever the ledger says: a peer's copy-up may sit in the document with
     // its wave still queued. A record there that differs, as content, from the source as the hand saw it
