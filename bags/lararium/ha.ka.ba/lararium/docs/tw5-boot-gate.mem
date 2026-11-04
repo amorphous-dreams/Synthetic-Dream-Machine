@@ -55,7 +55,7 @@ No score gates execution. A carrier runs only when this device holds a local gra
 | digest | `source-sha256` verifies against the `text` field (integrity relative to the claim, never authenticity or consent) |
 | type | `module-type` reads `library` |
 
-Fail closed: a carrier missing any condition injects nothing. The promote lane's gate (`tw5-module-gate.ts` at the promote branch) retired the level parser; no field value on a carrier authorizes execution. A keyhive capability proof reads UNBUILT.
+Fail closed: a carrier missing any condition injects nothing. The promote lane's gate (`tw5-module-gate.ts` at the promote branch) removed the level parser; no field value on a carrier authorizes execution. A keyhive capability proof reads UNBUILT.
 
 <<~/ahu>>
 
@@ -71,6 +71,6 @@ The distinction makes the whole gate. ''Authority rides on what a carrier holds 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yCBdsD6IT0IF4lOBSXPkUY2w29D7zyXn1IzXsAiB1mY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_7Aam5LewByP1u2XGELfEQabH03zQLHiYATllGS_jv0`>>
 
 <<^ code=`&#x0004;` to=`?`>>
