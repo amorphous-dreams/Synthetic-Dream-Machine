@@ -232,7 +232,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     await r.stop();
   }, 120_000);
 
-  test("a rename whose source lives in canon lands the target in working and shadows the source in the same change", async () => {
+  test("a rename whose source lives in canon lands the target before shadowing the source", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
     const x = "lar:///t/shadow/rename-from";
@@ -252,16 +252,18 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     const mark = r.calls.length;
     saveSequence(r, d);
     await afterDispatch();
-    // THE WHOLE ACT, issued in the dispatch turn: Y and the shadow of X share one working group with no
-    // base (a canon bag's heads never reach the working document); the draft's own tombstone rides the
-    // draft layer at the draft's landed base. Nothing else is written, and nothing beneath working.
+    // The target lands first; neither removal may precede its acknowledgement.
     expect(r.calls.slice(mark)).toEqual([
-      { kind: "family", bag: workingBag, puts: [y], deletes: [x], base: undefined },
-      { kind: "family", bag: draftBag, puts: [], deletes: [d], base: draftBase },
+      { kind: "family", bag: workingBag, puts: [y], deletes: [], base: undefined },
     ]);
     expect(r.wiki.getTiddler(y)?.fields.text).toBe("renamed");
     await turns(32);
-    expect(r.changes(workingBag) - working).toBe(1);
+    expect(r.calls.slice(mark + 1)).toEqual(expect.arrayContaining([
+      { kind: "family", bag: workingBag, puts: [], deletes: [x], base: undefined },
+      { kind: "family", bag: draftBag, puts: [], deletes: [d], base: draftBase },
+    ]));
+    expect(r.calls.slice(mark + 1)).toHaveLength(2);
+    expect(r.changes(workingBag) - working).toBe(2);
     expect(heads(r, canonBag)).toBe(canonBefore);
     expect(storeText(r, workingBag, y)).toBe("renamed");
     expect(storeDeleted(r, workingBag, x)).toBe(true);
