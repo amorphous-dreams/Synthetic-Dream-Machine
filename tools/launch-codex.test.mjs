@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, realpathSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir, userInfo } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,6 +27,7 @@ function world(over = {}) {
     modelsCache: () => CACHE,
     rolloutLines: () => { calls.pool++; return [rate(40)]; },
     distFresh: () => true,
+    startTick: () => "12345",
     canon: () => readFileSync(CANON, "utf8"),
     ...over,
   };
@@ -408,6 +409,13 @@ test("P1-5 findRollout binds a seat to its OWN marker: two overlapping launches 
   assert.equal(findRollout(home, { marker: "SEAT-MARKER bbbb", before }), b);
   assert.equal(findRollout(home, { marker: "SEAT-MARKER old", before }), null, "a rollout listed before the launch never counts");
   assert.equal(findRollout(home, { marker: "SEAT-MARKER none", before }), null);
+  // a seat that echoes ANOTHER seat's marker into tool output claims nothing
+  const forged = join(dir, "rollout-forger.jsonl");
+  writeFileSync(forged, `${cevent({ type: "session_meta", payload: { cwd: "/shared" } })}\n${cevent({ type: "response_item", payload: { type: "function_call_output", output: "SEAT-MARKER zzzz" } })}\n`);
+  const victim = put("rollout-victim.jsonl", "SEAT-MARKER zzzz");
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER zzzz", before }), victim, "the prompt line claims the rollout, not an echoed copy");
+  rmSync(victim);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER zzzz", before }), null, "CONTROL an echo alone claims nothing");
 });
 
 test("row 1: watchSeat stops a seat at its ceiling (SIGTERM, then SIGKILL when it lives), writes ceiling.md naming the reading and the ceiling; reads no run.log", () => {
@@ -511,14 +519,14 @@ test("row 3: --canary on a read seat writes the canary brief and launches with a
   const marker = readFileSync(join(w.seatDir, "marker.txt"), "utf8").trim();
   assert.match(marker, /^SEAT-MARKER [0-9a-f-]{36}$/);
   assert.ok(codex.args.at(-1).startsWith(marker), "the marker rides the prompt");
-  writeFileSync(join(dir, "rollout-x.jsonl"), `${cevent({ timestamp: "2026-11-04T10:00:00Z", type: "session_meta", payload: { cwd: realpathSync(w.seatDir) } })}\n${cevent({ type: "response_item", payload: { type: "message", content: [{ text: marker }] } })}\n${cevent({ type: "compacted", payload: {} })}\n`);
+  writeFileSync(join(dir, "rollout-x.jsonl"), `${cevent({ timestamp: "2026-11-04T10:00:00Z", type: "session_meta", payload: { cwd: realpathSync(w.seatDir) } })}\n${cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ text: marker }] } })}\n${cevent({ type: "compacted", payload: {} })}\n`);
   const say = [];
   assert.equal(run(["--check-canary", "--seat-dir", w.seatDir], { readers: w.readers, log: (s) => say.push(s), err: (s) => say.push(s) }), 0);
   assert.match(say.join("\n"), /COMPACTION-FIRED/);
   // the pre-spawn snapshot: a rollout listed before the launch never counts, and a canary that did not compact exits 1
   const dir2 = join(w.home, ".codex", "sessions", "2026", "11", "04");
   writeFileSync(join(w.seatDir, "rollouts-before.json"), JSON.stringify([join(dir2, "rollout-x.jsonl")]));
-  writeFileSync(join(dir2, "rollout-y.jsonl"), `${cevent({ timestamp: "2026-11-04T11:00:00Z", type: "session_meta", payload: { cwd: realpathSync(w.seatDir) } })}\n${cevent({ type: "response_item", payload: { type: "message", content: [{ text: marker }] } })}\n`);
+  writeFileSync(join(dir2, "rollout-y.jsonl"), `${cevent({ timestamp: "2026-11-04T11:00:00Z", type: "session_meta", payload: { cwd: realpathSync(w.seatDir) } })}\n${cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ text: marker }] } })}\n`);
   const say3 = [];
   assert.equal(run(["--check-canary", "--seat-dir", w.seatDir], { readers: w.readers, log: (s) => say3.push(s), err() {} }), 1);
   assert.match(say3.join("\n"), /COMPACTION-NOT-FIRED/);
@@ -587,4 +595,20 @@ test("row 4: a --lead-step dry run writes nothing and spends no step; a lane roo
   const err2 = [];
   assert.equal(run([...base, "--lane-root", laneRoot], { readers, log() {}, err: (s) => err2.push(s), spawn() { throw new Error("spawned"); } }), 2);
   assert.match(err2.join("\n"), /already claimed/);
+});
+
+test("P1-5 the launcher pins the seat by its start tick: the watchdog gets --born and --marker; a seat already gone gets no watchdog", () => {
+  const w = world();
+  const spawned = [];
+  const spawn = (cmd, args, opts) => { spawned.push({ cmd, args, opts }); return { pid: 4242, unref() {} }; };
+  const argv = ["--mode", "build", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", w.wt];
+  assert.equal(run(argv, { readers: w.readers, spawn, log() {} }), 0);
+  const dog = spawned.find((x) => x.cmd !== "codex");
+  assert.equal(dog.args[dog.args.indexOf("--born") + 1], "12345");
+  assert.equal(dog.args[dog.args.indexOf("--marker") + 1], readFileSync(join(w.seatDir, "marker.txt"), "utf8").trim());
+  spawned.length = 0;
+  const out = [];
+  assert.equal(run(argv, { readers: { ...w.readers, startTick: () => null }, spawn, log: (s) => out.push(s) }), 0);
+  assert.equal(spawned.filter((x) => x.cmd !== "codex").length, 0, "no watchdog guards an exited seat");
+  assert.match(out.join("\n"), /exited before the watchdog/);
 });

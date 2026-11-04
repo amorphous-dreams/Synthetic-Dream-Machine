@@ -379,6 +379,7 @@ export async function commitWithReceipt(ctx, { paths, messageFile, expectHead })
 
   const moved = git(ctx, ['update-ref', `refs/heads/${ctx.branch}`, newHead, head]);
   if (!moved.ok) return fail(moved.output);
+  ctx.receipts.delete(tree); // a receipt spends with its commit, so the map never grows
 
   for (const entry of resolved) {
     const real = entry.remove
@@ -486,7 +487,7 @@ export async function addWorktree(ctx, { path: dest, branch, base }) {
   if (typeof ctx.beforeMove === 'function') await ctx.beforeMove();
   if (!(await parentOk().catch(() => false))) { rollback(); return fail('destination parent changed after validation'); }
   const moved = git(ctx, ['worktree', 'move', stage, dest]);
-  if (!moved.ok) { rollback(); return fail(moved.output); }
+  if (!moved.ok) { rollback(); return fail(/cross-device|EXDEV/i.test(moved.output) ? 'the broker state and the lane sit on different filesystems; place the broker state beside the lane' : moved.output); }
   let landed = null;
   try { landed = await realpath(dest); } catch { /* gone */ }
   if (landed !== dest || !insideLane(landed)) {

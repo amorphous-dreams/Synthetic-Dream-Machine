@@ -96,7 +96,9 @@ export function findRollout(home, { marker, before }) {
     try {
       const fd = openSync(p, "r"); const buf = Buffer.alloc(262144);
       const n = readSync(fd, buf, 0, buf.length, 0); closeSync(fd);
-      if (buf.toString("utf8", 0, n).includes(marker)) return p;
+      // The FIRST line that names the marker must be the user's prompt, so a marker a seat later copies into tool output never claims a rollout.
+      const first = buf.toString("utf8", 0, n).split("\n").find((l) => l.includes(marker));
+      if (first && /"role":"user"|"type":"user_message"/.test(first)) return p;
     } catch { /* unreadable or torn */ }
   }
   return null;
@@ -407,8 +409,10 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     writeFileSync(join(seatDir, "marker.txt"), `${marker}\n`);
     const child = spawn("codex", [...args, `${marker}\n\n${brief}`], { cwd: seatDir, env, detached: true, stdio: ["ignore", fd, fd] });
     child.unref?.();
-    const born = startTick(child.pid);
-    const dog = spawn(process.execPath, [fileURLToPath(import.meta.url), "--watch", "--seat-dir", seatDir, "--pid", String(child.pid), "--ceiling", String(ceiling), "--mode", o.mode, "--marker", marker, "--before", beforeFile, ...(born ? ["--born", born] : [])], { cwd: seatDir, env: { ...process.env, HOME: readers.realHome }, detached: true, stdio: "ignore" });
+    const born = (readers.startTick ?? startTick)(child.pid);
+    // A seat whose start tick cannot be read has already exited; no watchdog guards a pid that may be reused.
+    if (!born) { log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${child.pid}; it exited before the watchdog could pin it; wait on: until [ -f ${join(seatDir, "final.md")} ]`); return 0; }
+    const dog = spawn(process.execPath, [fileURLToPath(import.meta.url), "--watch", "--seat-dir", seatDir, "--pid", String(child.pid), "--ceiling", String(ceiling), "--mode", o.mode, "--marker", marker, "--before", beforeFile, "--born", born], { cwd: seatDir, env: { ...process.env, HOME: readers.realHome }, detached: true, stdio: "ignore" });
     dog.unref?.();
     log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${child.pid}; wait on: until [ -f ${join(seatDir, "final.md")} ]`);
     return 0;
