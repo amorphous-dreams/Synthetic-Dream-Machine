@@ -12,9 +12,6 @@ encroach          = false
 foreground-voices = ["Muse", "Pedagogue", "Stranger", "Hierophant", "Council"]
 fourth-wall       = true
 l-space           = "stable"
-mana              = 16
-manao             = 16
-manaoio           = 16
 name              = "Ghost of Mark Twain"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = false
@@ -158,6 +155,6 @@ Remaining Voices — Gatekeeper, Lorekeeper, Scryer, Artificer, Advocate, Diplom
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wdAnq-O_CtWEAxWklQLDGf-yvssfx1JLM-Mld0nEKT8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YannolUfFmh0b3R4dz2_KpGMPHs110__BtGbTxn7pb4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

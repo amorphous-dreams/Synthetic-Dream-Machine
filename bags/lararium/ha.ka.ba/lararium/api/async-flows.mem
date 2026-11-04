@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 17
-manao     = 16
-manaoio   = 15
 namespace = "&#x0950; &#x0901;"
 role      = "the async/long-running CLI flow contract for lares — submit→request-id→status/watch/wait/cancel over a 5-state terminal-once job machine; progress as ONE event stream the dual renderer splits (TTY bar/spinner on stderr · NDJSON progress off-TTY), result alone on stdout; heartbeat-not-hard-fail timeouts (exit 124), durable-id = idempotency = no-loss; mapped onto the infra we already hold (mempalace daemon-jobs + durable summons/outcome by requestId + render dual-surface)"
 tags      = ["api/pono/meme", "api/lararium"]
@@ -177,6 +174,6 @@ write toward; it describes no current emission.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UZx8QHW9WqfoYeAUjIC-OLp3pKHNFbAyR5G346j3dsM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cZfe4rb2WT1G6YEV-PdsmmUMr0QgTV5_nAr4ScooPsw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

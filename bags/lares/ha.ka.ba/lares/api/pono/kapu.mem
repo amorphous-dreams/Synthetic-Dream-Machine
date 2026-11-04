@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 18
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "above-namespace authority law; kernel/sacred tier capability; trust boundary root"
 tags      = ["api/pono/meme", "api/pono/kapu", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kapu"]
@@ -130,6 +127,6 @@ This meme governs the kapu rating and above-namespace trust law.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;clJzQdtumRbBNkY1wVwJ9sDImrd8KDrfuRpMAIQd7Aw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dovg_9J5O3jxCt_AnyCq-0tJ9KcdjIB4yykacPrHIxE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

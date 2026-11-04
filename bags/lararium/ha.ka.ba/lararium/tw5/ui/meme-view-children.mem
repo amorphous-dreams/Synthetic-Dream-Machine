@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 list-after = "$:/core/ui/ViewTemplate/body"
-mana       = 18
-manao      = 17
-manaoio    = 16
 role       = "ViewTemplate: slot-name headers + inline-edit overlay for non-body ahu sections"
 tags       = ["$:/tags/ViewTemplate", "lar:///ha.ka.ba/lares/api/pono/meme"]
 title      = "lar:///ha.ka.ba/lararium/tw5/ui/meme-view-children"
@@ -62,6 +59,6 @@ uri-path   = "ha.ka.ba/lararium/tw5/ui/meme-view-children"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6o_W92YyO0aOpMsxQmBI6nLzRCSk103iLpZNYCG8e_E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kKbZ1WWevr5ERCQ2Oxcyqlji3U1fTDP3wFmK3I72W84`>>
 
 <<^ code=`&#x0004;` to=`?`>>

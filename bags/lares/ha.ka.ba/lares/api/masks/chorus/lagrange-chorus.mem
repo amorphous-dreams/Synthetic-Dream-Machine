@@ -10,9 +10,6 @@ created           = "Invalid Date"
 foreground-voices = "[STUB — pending-grammar; likely distributed across nodes]"
 harmony-protocol  = "[STUB — pending-grammar]"
 l-space           = "stable"
-mana              = 7
-manao             = 9
-manaoio           = 7
 mask-type         = "chorus"
 name              = "Lagrange Chorus"
 namespace         = "&#x0950; &#x0901;"
@@ -159,6 +156,6 @@ Stage position applies to the Lagrange Chorus as a whole unit. How individual no
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vOPwRMD4Y0KLmhgWgvv2ljCfJ4IOrWPeCJO-to5LNUk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EJIf1AlSPKHhuiXmhQUshc341O7vg9iBMb3k-qlFVVc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

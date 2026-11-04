@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 15
-manao     = 15
-manaoio   = 14
 rating    = "meme"
 role      = "the Arcana model — thirteen rooms as verbs-of-will and axes-of-system, the guard-law, the charters, the walk order, and the word-sense laws that keep Arcana/module from blurring"
 title     = "lar:///ha.ka.ba/sdm/docs/arcana-model"
@@ -140,6 +137,6 @@ verb × capability saturation × capability totality. One word, three owners, no
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XNmpZmy8I-Ag9zHZMHqbQ_Yl5kug74lv-bX447sFxU4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aIo0VIMGXAecFdAhm48ZzRp1C4wIEna_PpM5g-9aDGg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

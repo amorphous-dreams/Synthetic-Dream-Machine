@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 14
-manao     = 15
-manaoio   = 13
 namespace = "&#x2299;"
 role      = "craft failure law — deriving from context what the graph already holds, at the cost of the derivation"
 tags      = ["api/pono/meme"]
@@ -68,6 +65,6 @@ If the graph's version reads WORSE than the derivation, that reads as a genuine 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xjrtAawJNclm7FYQrerTKRf9Iz49ivP1_42HxGjYQtY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UxyRdRCSdsqPmGOKqbXDfRpx_0T0CH5ORcUK6nL8v9Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

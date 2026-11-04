@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 18
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "device placement/instantiation — set down with intention, own URI, own context"
 tags      = ["api/pono/meme", "api/lararium/widgets/kau", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kau"]
@@ -118,6 +115,6 @@ This maps directly to the Ink & Switch island model: each automerge object opera
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;L5nAdAo1x4Ad1plOdNhggl-gGyrCHYdhBGkLx5Y_q9A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mPCK1gHuYBwybwBzWJNYV2S930Ro05TTHHADS8Ywm-o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

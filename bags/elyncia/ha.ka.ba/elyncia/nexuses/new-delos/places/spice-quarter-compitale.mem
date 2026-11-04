@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "place, sea-level ring market district — the Spice Quarter crossroads compitale; the RNG's worked interior seated as live geography"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/spice-quarter-compitale"
@@ -48,6 +45,6 @@ Undermarket behind the Cistern Wall, the East Gate warehouses.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rboC_CDpPMhNouyXGT-E95XHjja_HglQOXIFw_z1svo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;s4bsh9Zg70n7vmRBwfFCyBSivVaI8-kXGd_kubEiMAQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

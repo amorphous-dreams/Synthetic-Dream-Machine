@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = true
 l-space       = "stable"
-mana          = 17
-manao         = 17
-manaoio       = 16
 namespace     = "&#x2299;"
 role          = "render pipeline law: render axes (stage/surface/posture/engine), render posture (live/frozen by sigil, through the template cascade) and the five project targets, causal island boundary, meme-ast in @lararium/tw5"
 source-symbol = "ProjectTarget PROJECT_TARGETS MEME_TEMPLATE"
@@ -249,6 +246,6 @@ Trace continuity across the causal island boundary:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tkIk4D667lSiZd1TlB9t46hn2nP2nbMLIcxH5UnDZME`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;K5bloIpaPE9hqUg7-dfRDcdUz_kzRI_-hcirlTNXVEY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

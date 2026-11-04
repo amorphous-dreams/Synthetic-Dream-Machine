@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: 2. Apple Screen Time — PARTIALLY REACHED. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -112,6 +109,6 @@ The only enforceable, quotable rule that the supervised party be *shown* they ar
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-vMBE6kYFNF2ThCLyGqkuGOh45Pl_mBsK4c43PP5lZk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BZKaJ_1UwRLTAEtWV1VCkF1MroH9yq8nG4iqCAsPN04`>>
 
 <<^ code=`&#x0004;` to=`?`>>

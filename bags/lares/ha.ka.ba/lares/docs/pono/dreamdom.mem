@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 17
-manao             = 16
-manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-10-16"
@@ -626,6 +623,6 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pN2dkX_X_ivvxww4j3gL9qZGXl4M-aD4QVu-w_FDxJU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ADSyLphMpy4nn2RkyRljQLxRmJR39nUEPFxslB_upKE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 15
-manao     = 16
-manaoio   = 16
 role      = "parent docs shelf for archive crystals, continuity mechanisms, prospective MemPalace work, and MCP-backed session carry"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/crystal"
@@ -49,6 +46,6 @@ Use this branch for:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YMZ-eF0oSxobvLrI95R_P5rQZBxcHHWTKCTzWELCDMo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AgnSqmxixIvn-UcYJ_F4HwHRKKQrIrCjGhlZ1cPfHDw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

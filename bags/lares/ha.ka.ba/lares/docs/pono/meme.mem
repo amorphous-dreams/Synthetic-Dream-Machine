@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 15
 role      = "extended documentation surface for meme examples, lifecycle table, resolution notes, and migration residue"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/meme"
@@ -125,6 +122,6 @@ Research backlog and subtype-specific detail should deepen into their own outwar
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5-fznZBN_JJCY8Q6MLhw8ZekXHI8TG0ZoY5yEHNNfMk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rtFK5BexFFjTptGKfHvLRlEQ7J0XWK11Ci5_rYj4Bec`>>
 
 <<^ code=`&#x0004;` to=`?`>>

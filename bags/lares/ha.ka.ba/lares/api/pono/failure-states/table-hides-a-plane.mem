@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 14
-manao     = 15
-manaoio   = 13
 namespace = "&#x2299;"
 role      = "craft failure law — two entities sharing a table row when they ride different planes, so the row hides the seam"
 tags      = ["api/pono/meme"]
@@ -70,6 +67,6 @@ If the entities share a plane but differ in degree, that reads as an ordinary ta
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;dD6pmQBBg02uve8OMUeYleH71YT4eJtYZtZjdZCvyEs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qhbjV12RDcQBDTpVR6ouh1UN1DVGVucq10QoogmRlYA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

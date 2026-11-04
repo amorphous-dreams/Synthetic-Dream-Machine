@@ -20,9 +20,6 @@ description: Convene a talk-story floor (kūkākūkā, talanoa) — co-narrated
 ```toml meta
 cacheable  = true
 l-space    = "stable"
-mana       = 16
-manao      = 16
-manaoio    = 16
 role       = "practice face of talk-story — triggers, the five steps, three worked exits, crucible record; law lives at the parent meme"
 status-why = "a skill definition — a procedure invoked, never a thing built"
 tags       = ["kind/rite"]
@@ -123,6 +120,6 @@ Read the three together and the grammar teaches itself: the floor opens on a rea
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rg8dAWOrtHSCUGwdXbiKGFRAF74-SE20MG-fJjROuE4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dJ_VSkdi3A4xablNxpMqr4ltYnldQhPorPC4axzDVwg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

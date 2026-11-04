@@ -6,8 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 16
 role      = "extended docs: memetic-wikitext message routing — render-down (dataflow) and message-up (message) over the control DAG; lexical meme-scope; filter context binding"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/message-routing"
@@ -91,6 +89,6 @@ Filters inside `wai` / `huli` / `ui` evaluate against the ''explicit current mem
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NRQ8q3JaTt8oN2S54zG-rUpHq_p6r0-mDfyFPwtwiiw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AXATA7u8qekH_D4fQugGyuvt-5v9OLaCXOZZbdwlTdY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

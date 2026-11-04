@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 15
-manao     = 15
-manaoio   = 14
 namespace = "&#x2299;"
 role      = "carriage-fold-lane — the lane kit a fresh local session takes for roadmap row `W18`: the founding hearth reads its carried herms' floor pins as `place-uncarried` in the held-out herm-mesh and nexus cells, so a host reader never files a herm's pin. It names the evidence measured so far, the causes ruled out with what ruled them out, the leading lead and the probe that settles it, the lane's branch and crucible under `mixed-model-swarm#/the-lanes`, its crew, its fences, where the evidence rests on disk, and who answers questions while the controller's session stays open."
 tags      = ["api/pono/meme"]
@@ -118,6 +115,6 @@ The controller's session (Lares-Awakens) stays open for a short while after this
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xTK05i2JjQgtm-CSh0TZll07O9jsxBElg-xPF4LNTRc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EFNNAOhbHh0kX2RRkLStO-meAUHeTDCqhuqC4HhFdrE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

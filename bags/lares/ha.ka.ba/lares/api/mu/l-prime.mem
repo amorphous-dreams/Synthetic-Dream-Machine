@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 14
-manao     = 16
-manaoio   = 15
 namespace = "&#x0950; &#x0901;"
 role      = "active language-discipline law (kānāwai), certainty-pressure regulator, and forward generation-pressure surface --- seeds wording toward verb-relations as it forms"
 tags      = ["api/pono/meme"]
@@ -139,6 +136,6 @@ L-Prime runs ''binary''. The ward stands ''lit'' (default --- the discipline app
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xzT4TB6NI1rPjeHVYAk3vzkKtqePplHZrTIcqsT7hgc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uepvo_IVWq024RsM_6bUZGQ5UK--qjaM2LW6g0lwa9M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

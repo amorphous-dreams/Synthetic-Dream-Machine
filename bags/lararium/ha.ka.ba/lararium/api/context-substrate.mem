@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 17
 role      = "the context substrate — the daemon-wiki VM as the surface every door renders through; transclusion in place of file-import, the two-verb door, the write shore, the pull budget"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/api/context-substrate"
@@ -222,6 +219,6 @@ else moves first.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5QMp-TKPe4IkyuryWWnC6dLf0nnLJTOVWnTr0mb0tUI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sO4VTFaJslKhPVsh4beXvbKxN0IXDgCEQzadCAjfkpw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

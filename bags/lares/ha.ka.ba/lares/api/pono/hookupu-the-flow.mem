@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = false
 l-space       = "stable"
-mana          = 9
-manao         = 9
-manaoio       = 9
 revision-note = "PROVISIONAL — the flow-medium: a bounded expiring non-transferable offering laid at a place. The giver-bound hypothesis stands REFUTED; the receiver-side cap is the only lever with measured success"
 role          = "the flow-medium — hookupu, an offering laid down at a place rather than given to a person. A flow refills; a stock accumulates, and pricing an obligation converts a relation into a heritable estate. Carries the concentration findings and what each cost to learn"
 tags          = ["api/pono/meme"]
@@ -115,6 +112,6 @@ Not coincidence: the Handle already reads as ''the only one that ever federates'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zlPs-4xlVWdzDctMR-bD6iLKVc74zmZn0qWgx9wigTk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6DFY1sQyB93auMLwDeF9Awm0S2eE3D47KpXrUyq4Cp4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

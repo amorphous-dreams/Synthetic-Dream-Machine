@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: 2. DNS — root system ~41 years; measured resolver centralization. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -220,6 +217,6 @@ Its conclusions: federation is **necessary but insufficient**; technical measure
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nqH-HBWRv04-e17Y08CY93csUYMPbwjIoF2Cb_3d2o0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HVgnpWddFFMAYf8vTotQcAZ5TUL_TzyBEqHg2RA3ocg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

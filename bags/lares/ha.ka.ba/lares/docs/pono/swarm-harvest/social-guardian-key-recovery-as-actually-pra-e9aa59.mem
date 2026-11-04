@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: Social / guardian key recovery as actually practiced and measured. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -556,6 +553,6 @@ Krombholz et al., *"The Other Side of the Coin"* (Financial Cryptography 2016, D
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CwxVex4lfZos453zLWWBviaaMrIafpXpDn1mBfjEfog`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Kvt8xKAp3ybfpiEJZfRaCLo-zqbE4ujsuuJfmwpiMtA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

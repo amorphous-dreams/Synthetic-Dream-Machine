@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 13
 rating    = "kapu"
 role      = "referee doc — Session Zero notes for the Neo-Thracia campaign arc"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero"
@@ -179,6 +176,6 @@ Bring three agreements to the first session:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rlMLr-gxHnm3gSLk5mtqdZM4CMKZQ988o8y-0vlUZjk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-36EYSbMRnFhXgV-4O1PLo_5Njd2jtBR2MBjU2XpvZk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

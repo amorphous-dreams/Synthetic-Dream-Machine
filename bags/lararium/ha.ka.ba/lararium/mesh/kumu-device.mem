@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 17
-manao       = 17
-manaoio     = 16
 namespace   = "&#x0950; &#x0901;"
 role        = "type-level device contract: KumuDeviceSpec, KumuListenable, KumuSubscribable, KumuInstanceRef — the @editable boundary for kumu devices; spec derives from pranala edges, not TS class hierarchy"
 source-file = "packages/lararium-mesh/src/kumu-device.ts"
@@ -194,6 +191,6 @@ See: `lar:///ha.ka.ba/lares/api/pono/nalu#/yin-collapse-law`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BF1WvLJTbazLA9Gp9HoR2Cjoi5g43fmiUfFiohgjY6Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QlSdzUKt9F5Ij1xrjvhZeCPlVQ93zfeSG4Ve_rfdXq4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

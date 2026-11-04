@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 15
-manao     = 16
-manaoio   = 16
 role      = "vendor declaration: the Claude Code harness — its extension seams, their contracts and stability grades, the design law it publishes, and where a sovereign system owns its own ground"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/vendor/claude-code-harness"
@@ -195,6 +192,6 @@ built against them tests behaviour, never a schema.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mGQsQCPG_cwV-1cSvLFl18qA7fYBJxN5nXb5RUnFlEs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MLk6bU0S7_hivJDqUB5j2UiC1k7sbe5pWHW41EQQSEc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

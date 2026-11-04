@@ -6,7 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 8
 role        = "invariant law: the genesis island BUILD — the three-layer I/O split that keeps the artifact platform-neutral, the DECLARED blob class each vendored file carries into its region, and the determinism the actor seed buys."
 source-file = "packages/lararium-node/scripts/build-genesis-island.ts"
 title       = "lar:///ha.ka.ba/lararium/node/genesis-island"
@@ -122,6 +121,6 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KMLl2cTxRvJQY-4-NFGJWyo5E7xncBLx3Eawq3PbzF4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9fqxlho0ZrTaqnB5f5_d_QXa5NVRqNSGKzX4yLx4CFA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

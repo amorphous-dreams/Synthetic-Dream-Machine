@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "sdm"
-mana      = 14
-manao     = 17
-manaoio   = 15
 role      = "FTLS card projection: Porter's Pebble — an item that carries the Floating Disc Power; card shows the nested Power as a clickable doorway"
 tags      = ["mount-points/item", "components/domain/stuckforce"]
 title     = "lar:///ha.ka.ba/sdm/projections/items/ftls-card/porters-pebble"
@@ -59,6 +56,6 @@ The carried Floating Disc runs at its own card's stats (P:2 · R:30m · T:point 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GW1szMlN4-3YiwAYY5bHvK4gzT6hdywwhUo7c5KrRXA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;R1AUfxXXsR3Ckh-pws0mNHUy1mEVglB-54JojGIsPlU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

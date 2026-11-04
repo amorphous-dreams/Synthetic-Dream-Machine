@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: THE ABUSE SURFACE OF MANAGED IDENTITY. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -725,6 +722,6 @@ The supervised party can *discover* the relation in Google and Apple, and is tol
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ckt-GRJmukJ3oHnndO78nfixH7l-SjrJMqToE4kiAs4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;m7PISRxCyUfGUsfzWVJnlTXkGVwRZTaq5K4_GTmhYnw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

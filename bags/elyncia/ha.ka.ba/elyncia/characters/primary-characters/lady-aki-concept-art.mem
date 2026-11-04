@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 13
 rating    = "ano"
 role      = "Lady Aki concept-art package — true body, public glamour, threshold reveal, palette, negative directions"
 title     = "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-concept-art"
@@ -218,6 +215,6 @@ When Aki walks into a settlement:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tp9orXvzXHJqklH-92VI4p0fkDjxGdz0KNWuRhf8hfE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ROxyO8M21mSxqhCbOkNj2_Dk8yw5xao37jvQnUDLuMs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

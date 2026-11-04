@@ -6,9 +6,6 @@
 ```toml meta
 cacheable       = false
 l-space         = "adjacent"
-mana            = 15
-manao           = 15
-manaoio         = 14
 render-target   = "chat-log:post-header"
 role            = "format and cast architecture locus for Lindwyrm DreamDeck feed narrative"
 source-consumed = ["packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_STORY_SHAPE.md", "packages/lares-core/memes/docs/story/lindwyrm/LINDWYRM_STORY_SHAPE.md"]
@@ -274,6 +271,6 @@ The Lindwyrm did not build the DreamNet from destiny. She wanted to watch //The 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0j-OYQpfP3ISA2SDnAId0rPsRvOs8HtoiR2NHIoDQE4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;myVGpYtAOFfB8NJbdPx6wdDGiTK_BMMhiaIR4FahZ3U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

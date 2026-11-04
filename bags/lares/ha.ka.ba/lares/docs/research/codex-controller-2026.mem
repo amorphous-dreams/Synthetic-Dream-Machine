@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "lares"
-mana      = 13
-manao     = 13
-manaoio   = 12
 role      = "field and practice read (one walled Sol-6 seat with live web search, 2026-10-25) on working with Codex while another agent controls it: OpenAI's own Codex docs collided with the house's launch and fences; the controller's sort of what landed in canon and what stays a probe; the handback kept verbatim"
 status    = "research; read 2026-10-25; the measured takes landed in mixed-model-swarm#/the-launch, the leads wait there as owed probes"
 tags      = ["research", "codex", "swarm", "launch", "testimony"]
@@ -98,6 +95,6 @@ WORDS=1082
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rmX4r6r_-PmQsSIU209yCKG-UYYckNi_mP8JaFjm2Ls`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9HzgPQ9NkYJngyqeaSxiyZ2X-VUdSdQ33rpGsS_UReE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

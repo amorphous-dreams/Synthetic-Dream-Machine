@@ -6,7 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 15
 role        = "invariant law: THE CRYPTO BOUNDARY. Lararium defines needs and implements no primitive; portable code depends on these shores and never on a platform's own crypto. Names the three doctrines, the two digest paths and which each serves, the canonical-bytes rule, and the buffer constraint a shared view would break."
 source-file = "packages/lararium-mesh/src/crypto.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/crypto"
@@ -83,6 +82,6 @@ buffer moves that refusal to the call site, where a caller can still choose diff
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rtst_eMwmWUa1FatFDXhp5VPUKnTrk7rUaToe0EkMVM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bRKpa5XFtEB3Gort825YIkTiS6DrbII9WK-eH5gkmts`>>
 
 <<^ code=`&#x0004;` to=`?`>>

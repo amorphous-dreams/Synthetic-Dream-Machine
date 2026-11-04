@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "adjacent"
-mana      = 13
-manao     = 13
-manaoio   = 12
 narrator  = "@lares@~crossroads"
 role      = "history / the afternoon the bridge to verbatim session memory was PROOFED but not yet crossed — the @lararium/mempalace integration layer built and witnessed, the read leg shaking hands with the live sidecar, the local-only bearing index breathing under test (2026-06-21). Proofed, not integrated. Written by hand into lares history. Narrator lares@~crossroads."
 title     = "lar:///ha.ka.ba/lares/docs/history/the-bridge-takes-shape"
@@ -75,6 +72,6 @@ So this carrier marks a smaller morning than the founding: ''the read-leg took s
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uiZGPUz1H4tqimXRlnF6hKRyM60jk0OurdUaLB56PZQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ry-IcBYrGJKQSHsTDFORpgtIXjAdiWhlLFJNSTCByc4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

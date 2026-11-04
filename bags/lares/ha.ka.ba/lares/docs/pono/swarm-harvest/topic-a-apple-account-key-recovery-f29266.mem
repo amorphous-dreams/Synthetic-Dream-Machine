@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: TOPIC A — Apple Account/Key Recovery. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -168,6 +165,6 @@ Source: [signal.org/blog/secure-value-recovery/](https://signal.org/blog/secure-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;O5g-Cw3Zbkmc8YqqEgQ5EFquF6KEFWFqyMfplq7tHgc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;a52soY6wL68K3pKzzt7NV50cl1adpOJeE0j2qbfndGk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

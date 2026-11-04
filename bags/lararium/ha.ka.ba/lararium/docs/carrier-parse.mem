@@ -6,9 +6,6 @@
 ```toml meta
 heleuma       = "ka"
 last-reviewed = "2026-07-18"
-mana          = 17
-manao         = 17
-manaoio       = 17
 role          = "design doc: carrier ingress shore — text-in, records + diagnostics out (deserializeCarrier)"
 source        = "lar:///ha.ka.ba/lararium/tw5/modules/deserializer"
 source-symbol = "deserializeCarrier"
@@ -69,6 +66,6 @@ export function deserializeCarrier(
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SGu0zXuQ6MFumZTn1JCBL_z3JMTuVUdqq-PcIHITPxM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LbExFH3ULxFd1Xip5YBkavZ7j_6urD_TAipu8KKXuxE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

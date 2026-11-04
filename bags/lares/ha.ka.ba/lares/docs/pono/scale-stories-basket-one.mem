@@ -7,9 +7,6 @@
 cacheable  = true
 hydrate    = true
 l-space    = "stable"
-mana       = 12
-manao      = 14
-manaoio    = 11
 namespace  = "&#x2299;"
 revised-on = "2026-09-13"
 role       = "scale-stories-basket-one — eight open design loops (the outbound bridge · the fleet fetch door · the shared bag · the later grant · grace and pin · the phone seat · the two doors · one plugin or two) told twice each, at the household scale and at the faerie-folk / Gaia scale, so the operator can feel the pono intent before ruling. Every tension names its house file:line; every story stays inside Elyncia's public canon (bags/elyncia, the four books) and names in-world people only; each slot closes on what the stories reveal and the lean they point at, held open. Stories rule nothing; the operator rules."
@@ -444,6 +441,6 @@ Six code sites cite this carrier: `packages/lararium-mesh/src/realm-bag.ts:4` an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1PsM4VG28BJDbJbR_dA-f_UperkDOoELszjJLQnCZjU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BPiktiRCvtGtU_4-mLs0iWeIXvqlSCnkRgg54Iu92K4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

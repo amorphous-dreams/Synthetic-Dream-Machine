@@ -8,9 +8,6 @@ approved-on   = "2026-06-02"
 cacheable     = true
 hydrate       = true
 l-space       = "stable"
-mana          = 17
-manao         = 17
-manaoio       = 15
 namespace     = "&#x0950; &#x0901;"
 revised-on    = "2026-09-13"
 revision-note = "the `disk-leaning` grading reads as GRAIN, never as a write door — two grounds under one word, the authoring grain holding and the alpha-era surviving-copy retiring, pointed at wiki-layer-ontology#/alpha-transition; prior: working↔canon split (shore-law): a wiki's saved edits land in the typed working-slot live layer (wikis/, tracked); canon (bags/) is reached only by a cap-gated promotion MOVE; the general lararium shore law (working↔canon · plane↔plane · host↔lararium) governs every causal-island crossing, host-agnostic surface contract; prior: oracle-floor/@lararium split (#/oracle-split) — the runtime system island (@oracle) separates from the memetic corpus (@lararium); projection-law trued to running code; co-projection rewrite; carrier-whole at rest"
@@ -222,6 +219,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IooYIKbGgKI5VirkeiNPHeKjmobcbPJPtfkwCELoz2M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;g2NJyNxXDuFOXQztkcB3vbEppGRjB_x6T4Yl6KNBqzE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

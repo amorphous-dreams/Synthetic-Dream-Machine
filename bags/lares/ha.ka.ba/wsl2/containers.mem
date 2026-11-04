@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "stable"
-mana       = 13
-manao      = 14
-manaoio    = 13
 role       = "the container-engine ruling for a WSL2 host — what WSL containers (wslc) carries as of its GA, why the lararium stack still runs on Docker Engine in the distro, and the tripwire that flips it"
 status-why = "three scouts read the Microsoft record, the open WSL repository and the community signal on 2026-10-05, six days after WSL 3.0.1 shipped wslc GA; every claim below names its source grade"
 tags       = ["api/wsl2", "lifecycle/standing"]
@@ -128,6 +125,6 @@ Community, most rigorous first: [[endjin — Trying out WSL containers|https://e
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LmJwD6nnTj86UWUVHD02QgVttjJF8qJ7jYWOXf1Vlmg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7xIADlQD4d3YO2G-hFumDP8pqwsV9p6BFEZyjLsqg7c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

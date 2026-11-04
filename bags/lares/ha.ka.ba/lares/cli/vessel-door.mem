@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "lares"
-mana       = 15
-manao      = 15
-manaoio    = 14
 namespace  = "&#x2299;"
 role       = "The vessel door carries four primitives and one read inside LAR_ROOT, the rotate and rite sub-doors, the founding · refresh · rebuild rites, retired spellings that refuse, and the witnesses that verify the surface."
 status-why = "the door stands, the compositions ride it as rites, every caller moved and every collapsed spelling refuses; walked by the founding and contract witnesses and the founding rehearsal harness"
@@ -271,6 +268,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JhtLjVLb-zYYL0lD_YPKRoJQETVntzFTY-UmO4Kg7Mg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7JaHVhQKpfldUJ2Yx3wAFjSv7E1Km2Iuj5Bm8ZOuQCc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

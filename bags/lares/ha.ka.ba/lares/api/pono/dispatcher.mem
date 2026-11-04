@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 17
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "~ dispatcher sigil — routes <<~ name key=`value`>> to the named ~procedure; the entry point for all sigil dispatch"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-dispatcher"]
@@ -93,6 +90,6 @@ TW5 wikitext body:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GadzrJZMdb_W_fry1LdfbOfZ6qpqJHqvfJLO3J8we4I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;G6gDEYdFStD5c_JzCWZgnHnOkxR2RyLt9sZA8ROL7-w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "stable"
-mana       = 12
-manao      = 14
-manaoio    = 12
 role       = "the incident record — a background tree-sitter gate exhausted RAM and swap, the kernel thrashed for five minutes without killing, the operator shut WSL down by hand"
 status-why = "timeline from journalctl -b -1 and the session transcripts; the runaway reproduced under a 3 GB cap the same afternoon (segfault at 2.99 GB in 28 s)"
 tags       = ["api/wsl2", "lifecycle/standing"]
@@ -79,6 +76,6 @@ The fault sits in the regenerated parser with the new external scanner, fed a br
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NApi-mle0tlPv9pKWQPT0-iGeUYoDuwhsu2HGCFTdTY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cbuNqOLK-xZdFLTKPpCJwosY9BdYFLFOUkYkxhwIxVI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

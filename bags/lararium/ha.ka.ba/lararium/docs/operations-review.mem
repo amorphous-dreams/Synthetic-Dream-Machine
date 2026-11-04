@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 15
-manao     = 16
-manaoio   = 16
 role      = "OODA-HA extraction plan for lararium interaction protocols — frame-uncertainty, talk story, session init, and related surfaces"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/operations-review"
@@ -292,6 +289,6 @@ After the extraction pass closes, these questions remain for a future consolidat
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Zz8gxbYPDHrLh6QozHuoI3RTnVpguXhrvp8lZYDqkYI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dmhx-t25Zs2vB-FJXwn-EVy1GH05wDFxvyoVpVbvftk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

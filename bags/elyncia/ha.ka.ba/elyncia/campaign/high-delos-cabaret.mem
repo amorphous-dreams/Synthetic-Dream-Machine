@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "adjacent"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "actual-play locus for Session 0.1 — the High Delos cabaret scene; venue, cast, and lifepath-flow scaffold now, the played record as it lands; player-safe by construction, nothing kapu ever drafts here"
 title     = "lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret"
@@ -325,6 +322,6 @@ The played record lands in this locus using the shelf's witness pattern
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;g_Zpy_6XQeGnymhJiH_EWFkpokBtOM6PIyVvugh47-A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cwGMRjhwEmzbOqWsyM6Z9W2SXNQH-QYtkpuAeUurFvI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

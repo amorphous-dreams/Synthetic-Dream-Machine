@@ -6,7 +6,6 @@
 ```toml meta
 cacheable     = true
 l-space       = "lararium"
-mana          = 14
 revised-on    = "2026-06-12"
 revision-note = "ea-breath law lands: breath message (phase + monotonic progress) added island→vessel; watchdogs re-arm on breath, judge frozen evidence by stall budget, silence alone times out; mkBreath factory"
 role          = "island message envelope schema: all vessel ↔ causal-island message types, the nine-clause Island Sovereignty Law, IslandGrants (typed ocap manifest capabilities), and envelope factories"
@@ -121,6 +120,6 @@ The manifest HANDS the island typed structural capabilities — each field arriv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bynk7I-EN3PNI5mnUzWRiVcAm2fbTaGWvzxsUMPXXE0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LvJUyLheM-mmF0jvbEsyQ3R6b0eE9F10mFbWWWm7_gM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 14
-manao     = 14
-manaoio   = 13
 role      = "doctrine: the wiki layer stack in OCI-aligned nouns — library layers / write layer / instance mounts; named⇒shareable vs typed-slot⇒owned; only the write layer crosses (motion rides ACTION verbs, never VCS verbs); writes flow through the layer's own wiki; recipe DAG; the wiki-as-bag quine; transitive closure held open; the ALPHA TRANSITION (#/alpha-transition) — why the tree does not yet wear the shore: `bags/` survives because the substrate gets paved, three roles ride it and only the hand-edit door retires, the standing carriers stay put, the window carries the risk and the weld lands last"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology"
@@ -343,6 +340,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uEj5RuWZXs3UvwMqh_iUL34q6O5GoHz8jWxGp8ct6II`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;B4NXpTV3GKCbpk0AmxyUIo5VDsi73Pg6Pov_fxf4jS4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

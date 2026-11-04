@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 14
-manao     = 15
-manaoio   = 12
 namespace = "&#x2299;"
 role      = "swarm-harvest INDEX — the three largest messages from each of 55 research spirits across four waves, held verbatim in their own carriers. Names come from each spirit OWN opening heading, never from a summary of it. The fence law that makes it safe, the reason a lane with no independent name still earns a carrier, and the roll of what stands."
 tags      = ["api/pono/meme"]
@@ -105,6 +102,6 @@ Four research waves went out and ran three levels deep. ''55 spirits wrote somet
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zjc9pVcDN5QVS8Wi3l6u_kzfeWjqR6rhFCBfh4YTc4c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3Sn8lJWo5tmiZG81yP8D7loP9qaC3s_DHGXTt0eUykM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

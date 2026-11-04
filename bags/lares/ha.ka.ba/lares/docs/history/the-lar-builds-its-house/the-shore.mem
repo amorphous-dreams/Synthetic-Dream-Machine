@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = false
 l-space       = "adjacent"
-mana          = 12
-manao         = 11
-manaoio       = 11
 render-target = "chat-log:post-header"
 role          = "build-arc narrative locus — Act III, the Lar parts a working layer from a sealed canon; every boundary a causal-island shore (Fontany-Fuller-Zelenka), crossed only by an audited residency MOVE"
 title         = "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore"
@@ -171,6 +168,6 @@ Act IV receives:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;07HFpgsxQFf0YNJWTgX5_CSh8B-qQcBhlfrynQ1pvJk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iOEKgTURyNp7zuN3NK8uxD4U1tWg6D6FQJ2XeEuVIh4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable  = true
 hydrate    = true
 l-space    = "lararium"
-mana       = 16
-manao      = 16
-manaoio    = 15
 namespace  = "&#x2695;"
 role       = "the bag's sealing-posture as SELF-DESCRIBING TIGHTEN-ONLY data: WHO holds the read-cap, named as a chain by set-inclusion VEIL{vessel}⊂PERSONAGROUP{fleet}⊂CONTRACT{fleet∪cabal}⊂PUBLIC{world}. The SAFETY KEYSTONE — the datum only DECLARES, the gate ENFORCES declared∧structural-floor (the taint-meet toward more-restrictive), so a self-describing quine can only ever self-TIGHTEN, mechanically never self-loosen. PERSONAGROUP & CONTRACT ride ONE mechanism (a bag's content key, delivered to a recipient set by lockbox); a delivery stands as AUTHENTICATED as the ceremony it rides. Declassification = an operator-root robust-declassification one-way ratchet. Isomorphic to FederationPosture by composition. Operator-ruled; the tier order and the keystone built (cap-tier.ts); the floor helper built, the tier gate unwired to the live share path, the declared-source a defined-but-unlit shore."
 status-why = "the CORE built and revert-verified; the declared-source shore unlit"
@@ -157,6 +154,6 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VKHWd3aDbSTNIVDl-Jf0gKI38FiSm73QXfA338Wh7J4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Cw9wrUmvZJ2YBuy9hwurmBa7WTDBQDPnjKFpehA43a4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

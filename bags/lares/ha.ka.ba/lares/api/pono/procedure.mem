@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 17
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "English alias pointer — \\procedure redirects to wehe; canonical spec lives at pono/wehe"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-procedure"]
@@ -29,6 +26,6 @@ Use whichever reads more naturally in context.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XMJyASAi27DQifWfYQSv9H1rmdgKjgVm7sgOMUwsKso`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mN-U4G9E7CrzkBSoYIPGyM9k_KnI1_lpjCfa4oEkdhs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 18
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "invariant: heleuma anchor pattern — compiled-side artifacts held in the meme graph by necessity"
 tags      = ["api/pono/meme"]
@@ -84,6 +81,6 @@ A heleuma API meme that acquires:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;z8p6lgh2H48UQfquoqBldNBuXef1fNZueFWKKKdp6wA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;I3pcTXZElPrBXaxLMp5u7aVzVPAZ4YMfFJp4lF8eUlo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

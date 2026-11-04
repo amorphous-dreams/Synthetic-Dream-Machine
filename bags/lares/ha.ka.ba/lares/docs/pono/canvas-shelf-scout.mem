@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 16
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-02"
@@ -328,6 +325,6 @@ I read the source. `FolkSpace` is a **plain Web Component** — `folk-space` —
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;udNGXLJH9j5CuC_uzQSQvP27RX1Ccu646CzOk_mougU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_-LNsPueVmY3BS8mFoxwqYTpJDGUCq4MWdIJk0kz2hM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable  = true
 hydrate    = true
 l-space    = "stable"
-mana       = 14
-manao      = 14
-manaoio    = 11
 namespace  = "&#x26B7;"
 role       = "the identity architecture stated whole — the two-axis split (the WHO/social axis vessel-key→PersonaGroup→CabalGroup ⊥ the INFRA/carriage axis relay→Lararium→Nexus→DreamNet), the per-vessel key as the user×vessel bond, the delegation EDGE as the relationship, and the encrypt-from-start temporary keying that mocks Keyhive/BeeKEM/Beelay with nested Automerge docs behind a four-port swap surface; PROPOSED — one dissent kept open at #provenance"
 status-why = "the vessel identity core stands live on both platforms"
@@ -551,6 +548,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bbkplVoq-5sFmNXGLl2kSc1cQM5L6bZubJJha3uRBUk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ir6r64Kj5bfHUwsH8YrVahWlgG2RZsHR-eqQ64AHUyY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

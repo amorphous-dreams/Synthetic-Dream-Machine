@@ -6,7 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 3
 role        = "verb-vm — the verb VM's durable outcome and its bound: an outcome rests in the daemon bag and never shrinks, so an array past the cap rides as a summary that still names every refused or conflicting row; the reader asks again in waves under the cap; a rename re-homes only records that stand"
 source-file = "packages/lararium-tw5/src/verb-vm.ts"
 title       = "lar:///ha.ka.ba/lararium/tw5/verb-vm"
@@ -28,6 +27,6 @@ Witnesses: `packages/lararium-tw5/tests/verb-vm.test.ts` · `packages/lararium-t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9DFRFL66f_pfi22YcJvp2fVSByP5n5wKwWY5odeeiM8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;djUwUnn7M1qv-khDc5YDRK_TWqGcgM_tjJ6pwn58lp4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

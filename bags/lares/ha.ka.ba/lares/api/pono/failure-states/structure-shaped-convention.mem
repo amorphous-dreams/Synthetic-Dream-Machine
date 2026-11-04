@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 14
-manao     = 15
-manaoio   = 14
 namespace = "&#x2299;"
 role      = "craft failure law — a mechanism whose guarantee rides a register its substrate cannot enforce, so it reads structural and holds only by agreement"
 tags      = ["api/pono/meme"]
@@ -76,6 +73,6 @@ That makes this a ''sibling of Confabulation-as-Canon'' rather than a variant: t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;06iqM6nBuG63R1tffIIfESI9zbVN8KcDjTsrE0_upP0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aAFKlWrCAwlcSsM4CD4ruKLFQ2lsxbTfzzaATrG-RG0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 17
-manao             = 16
-manaoio           = 16
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "the-veil-ladder — the WHO-plane as myth-as-infrastructure: a self on the DreamNet is a LADDER of veils (throwaway anon → lived anon → pledged Handle), climbed by choice, held by feeding; reputation born bottom-up, rep⊥anonymity reconciled by rotation, trust distributed on the FLOW-map, defended by immune systems. ShadowTalk pre-SIN ⊕ Mage Digital Web ⊕ Earthdawn True-Names, made literal."
@@ -140,6 +137,6 @@ For the citizen with ''no quorum yet'', the floor rests on a ''standalone record
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jtv0RFMDCMJQ_6lWj-zOmPU0SdpuiS_GLUOqL5eD4rk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aQ6wQVkWo__7EY2Z20M0tIEy2diVqIjDL6v8KyeZz80`>>
 
 <<^ code=`&#x0004;` to=`?`>>

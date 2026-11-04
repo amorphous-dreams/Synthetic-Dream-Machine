@@ -6,9 +6,6 @@
 ```toml meta
 cacheable      = true
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
-mana           = 17
-manao          = 17
-manaoio        = 14
 namespace      = "&#x2299;"
 role           = "meme invariant law, copy-shape authority, and rating posture root — nameless-entity / has-stack ontology (interfaces-and-implements REJECTED 2026-06-12)"
 title          = "lar:///ha.ka.ba/lares/api/pono/meme"
@@ -174,6 +171,6 @@ its own ceremony.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EbTe_l87AQvCMVvm4o9zsILBiHs1cJlCmrNmiJdAaQY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DfnCcxNFuczXFiue4VNJnpjRRaCRQ7UdHVWCimWawo4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,9 +5,6 @@
 
 ```toml meta
 l-space     = "stable"
-mana        = 17
-manao       = 17
-manaoio     = 17
 role        = "three-tier traversal model, DFS cycle detection, Kahn topological sort, and declared-unresolved law for the pranala-edge DAG compiler"
 status-date = "2026-04-24"
 tags        = ["api/pono/meme"]
@@ -238,6 +235,6 @@ The boot receipt hash changes to reflect the newly resolved carrier.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LizCovgUr6J6cWJQ_Uq1TClUkxwWhP01maK1wZwKF3o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dMfreanTJD_0-a376E2eFoyLmSPiw_7clG2SXQnug8Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

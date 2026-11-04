@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "lararium"
-mana      = 19
-manao     = 18
-manaoio   = 18
 role      = "Constitutional charter for lararium-browser: detached worker-authority pool vessel"
 title     = "lar:///ha.ka.ba/lararium/browser/pono-charter"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -136,6 +133,6 @@ These questions do not block charter adoption. They require measurement before r
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;v8fJjz84B-qlv4CmsaTwxHYkSuFPZ4bu9Nct9jb3Yig`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jd8GS5V06H9OWm_f47ygN5Y2EUxax18WmY0srqXmQX8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

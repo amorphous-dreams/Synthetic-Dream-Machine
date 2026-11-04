@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = false
 l-space       = "stable"
-mana          = 12
-manao         = 12
-manaoio       = 11
 revision-note = "the founding ARC the runbook's command-sequence does not carry: one vessel, one realm fed, a fleet gathered, a second operator founding their own and then DWELLING IN the first. Names the three stretches where the runbook stops and the code does not yet reach"
 role          = "the first realm's founding arc, end to end — what gets founded, what gets FED, what joins, and in which order. Distinguishes the four different joins that all read as //joining// in plain speech and run as four different acts in the model"
 tags          = ["api/pono/meme"]
@@ -131,6 +128,6 @@ The runbook stands ''Synthesis-Canon and complete for what it covers''. These si
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z-djFsPyAZdkBT6thF09f1bUyp4h_sNBlTSTHn2Pg7c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hLeSKWaePvV8LHWpgxF_epnKr_9wCfYCq5Pu2ey9iAQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

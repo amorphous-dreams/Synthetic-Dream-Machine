@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 15
-manao             = 15
-manaoio           = 14
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "dreamdom-port-contract — the normative contract of the record port (D2): the port log and its cursor, the chunked snapshot, cursor reset, the atomic write boundary with txId and causedBy, tombstone retention, clockless presence, and the invoke gate; each answer names its red and its control; the owed rows beside it"
@@ -177,6 +174,6 @@ What stays owed, each by name:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2WpyGk8xFdGBbT3tagFwvyZTeqRYJlEMA3bUEqvLJas`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lFJCCs0ZHaVQtLV4cZj_Db2NF9eTrMT9DuQng7fFWg0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

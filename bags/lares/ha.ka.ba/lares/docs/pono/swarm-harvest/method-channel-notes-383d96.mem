@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: Method / channel notes. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -473,6 +470,6 @@ Confidence overall: **medium-high**. The load-bearing weakness is the Bluesky 2.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z-o937xIJ6579ReMTAhFLVaLr1zVaum0duq93kj33Wk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;E7fG4ki_VFuOFxA8U-JSWeorgu2NyNHmLyQn6xcRCsI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

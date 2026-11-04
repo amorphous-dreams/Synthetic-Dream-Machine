@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "lararium"
-mana       = 17
-manao      = 16
-manaoio    = 15
 revised-on = "2026-10-11"
 role       = "DreamNet two-axis mesh topology: INFRA (relay-floor → lararium → nexusGroup → DreamNet) ⊥ SOCIAL (vessel-key → personaGroup-veiled → cabalGroup), the two axes crossing at the vessel. Re-trued 2026-09-20 against the board-keying ruling (`91ce09afb`+`c6cfe5b8d`), the seven per-Nexus boards, the crossroads/offering/heraldry canon, and the registry-filter + causal-islands laws."
 title      = "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture"
@@ -637,6 +634,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;g2NQjOeqZWt_wt0JpYHhdO9m3yvbXWTzRsUhKW5Q3FE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2CsSEU2xm6RvTn5qPFJF1aF-pBm43jVJPW51nuJm-Zw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

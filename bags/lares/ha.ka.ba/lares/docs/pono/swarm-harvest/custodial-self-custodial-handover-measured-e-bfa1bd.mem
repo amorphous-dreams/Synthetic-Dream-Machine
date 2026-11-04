@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: CUSTODIAL → SELF-CUSTODIAL HANDOVER: measured evidence. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -261,6 +258,6 @@ The two independent systems that expose the answer agree on the order of magnitu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EfRXeUk__yh8BHn26w8PKmTLGOL--PD2VmKu4NvKvwk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Oq2afj6KDST3rgG_D3Jk6oj9f8BFsb0MaWkoCJYHjj4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "archive"
-mana      = 16
-manao     = 15
-manaoio   = 14
 role      = "how to read an early carrier's HUD — which instrument forms carry as testimony and MUST NOT be modernized in place"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/history/period-forms"
@@ -69,6 +66,6 @@ glyph-definition drafts and the `lares-*.instructions` files.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VsYNkjkQHgtiOIrQeBfEckldHIK0SAWGa-s3gwGHv4s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;m3awkOzOMY9CXcwYZpDC5OP7UMQ5axL-AmslZZeogyk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

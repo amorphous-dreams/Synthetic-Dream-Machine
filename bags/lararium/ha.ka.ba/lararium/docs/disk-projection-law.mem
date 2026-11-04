@@ -7,9 +7,6 @@
 cacheable     = true
 l-space       = "stable"
 last-reviewed = "2026-07-18"
-mana          = 10
-manao         = 10
-manaoio       = 10
 role          = "pointer: the disk-projection law lives at api/disk-projection — carrier-whole at rest"
 title         = "lar:///ha.ka.ba/lararium/docs/disk-projection-law"
 type          = "text/memetic-wikitext+tiddlywiki"
@@ -30,6 +27,6 @@ The full, load-bearing statement — surfaces, bag roles, projection routing, th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q9UcjxPzpdLcbLYORZ_EJZGlJWon-eHRaynPJAssj_8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;n-WVPUEwVckHsdvvZQgpR2uPh_92dDE0kTZu_uprxws`>>
 
 <<^ code=`&#x0004;` to=`?`>>

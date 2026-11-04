@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 18
-manaoio   = 18
 namespace = "&#x2299;"
 role      = "origin myth and cultural contract for the Lares memetic wikitext sigil set — nihomano as the first discovered grammar; SharktoothSigil as operator-extensible wild-magic"
 tags      = ["lar:///ha.ka.ba/tags/SharktoothSigil"]
@@ -312,6 +309,6 @@ derive from those tiddlers, held to them by `tools/sigil-parity-witness.sh`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hGWpiRkKLTlPKhEKnHK6Fe7ZQlv8Tj0hzhPGutCALx0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;n61tpaQeTHXzw749uI4FiaPSDwe6Q76bUvOQhYoNvmE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

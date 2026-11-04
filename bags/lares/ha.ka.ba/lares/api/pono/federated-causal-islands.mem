@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 17
-manao     = 16
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "invariant law: Fontany-Fuller-Zelenka non-simultaneous apprehension as ontological basis; causal island tiers 0–3; authority-first sync order; edge-island identity, lifecycle, relay semantics"
 tags      = ["api/pono/pranala"]
@@ -381,6 +378,6 @@ causal-island-may = [
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4sQ923YDxwktQMZAq6KUQfRllta8js0L_eF1leGD6Lc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mdSRkPHIuS2VVIDYubSgW9gny0rVsd7XWLEwYN6oOFg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

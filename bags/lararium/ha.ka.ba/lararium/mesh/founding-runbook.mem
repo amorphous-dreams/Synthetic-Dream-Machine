@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "lararium"
-mana       = 15
-manao      = 15
-manaoio    = 14
 namespace  = "&#x2695;"
 revised-on = "2026-11-01"
 role       = "a household walk for founding a fresh Dockerized node, establishing custody, and naming the built and owed browser, membership, and aftercare steps"
@@ -373,6 +370,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mY9T4lISZJd9eiTdtoaBdqEoDh0ZwxJpayzPM-I456Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ob1ga_hcOd9AZgOiEP45k6AZG_h6giyx-n-sYZUhpcs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 17
-manao     = 16
-manaoio   = 14
 namespace = "&#x0950; &#x0901;"
 role      = "sacred chao boot, ha/ka/ba triad instantiator, address-space semantics"
 tags      = ["api/pono/meme"]
@@ -153,6 +150,6 @@ A lar URI with all three slots aligned reads the address back at the Chao's rota
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NbKks3rlRp8KvZPalQvQpOehXJ5IZPjOUYgaD-5It-k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FWkJBRcZ4sN1rxoyDWB0OK7kVGVgdxcdyRwjXvACY9s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

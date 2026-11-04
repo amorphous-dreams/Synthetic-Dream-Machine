@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 15
 namespace = "&#x2299;"
 role      = "the has sigil — one relation in three slots: an ENTITY, a NAME, and what that name HOLDS. Names the copula-free predicate the corpus authors rows with; states the quoting law and the text law that decide what a slot receives; routes the relations has refuses (sequence, crossing, grade) to their own verbs"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-has"]
@@ -221,6 +218,6 @@ after welded to the before. The trigger does the work the dead water would have 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IPgrELBTAtranFHCmMB0gXQ0Ilpwh1HSl6Qmx6jFZu4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4EeRDaPIOq8KmvRwhanqsZ-fYIr6qAgcd6Fyocezh5k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

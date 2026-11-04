@@ -7,9 +7,6 @@
 cacheable  = true
 hydrate    = true
 l-space    = "lararium"
-mana       = 15
-manao      = 15
-manaoio    = 14
 namespace  = "&#x2695;"
 role       = "carrier-neutral NGINX/Caddy pattern-integrity study for a Pronaos. Commodity carriers realize an operator-held first face; they do not become Herm, Lararium, Nexus, identity, or Librarium."
 status-why = "RESEARCHED design meme, 2026-09-22; no carrier integration built"
@@ -472,6 +469,6 @@ deferred and does not enter this carrier meme by implication.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JMseabXBzhXedAbH4Eq3EXpBIqnl_HUfNvR5HU3e3sk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MweII-CCzQQVulFVA3WEF9vjhKNR5PkheeCVdvw2l1k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

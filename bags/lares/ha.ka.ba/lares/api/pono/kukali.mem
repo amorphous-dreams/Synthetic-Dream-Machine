@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 17
-manao     = 16
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "reactive wait posture inside a causal island — Verse suspends analogue; execution yields until named papalohe trigger fires"
 tags      = ["api/pono/reaction-graph", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kukali"]
@@ -146,6 +143,6 @@ sigilName = "kukali"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;B_fxnT1yQIP9xz835so4koHOyjzhC4FP-r13HHkx7o4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ELuOtyqiGh14kJzwV8Ispq3ZaGGibGb7_kW7S6kl3iw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: Research report — curated-set addressing: ancestors and moderns. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -415,6 +412,6 @@ This is the sharpest finding in the whole brief: **in a federated design, the co
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GTRh0tMX5lCa2f0OylFp7SlIW0iuE5_Tvozg7y8l1jg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aYSTvy8ZEmjPLDaLFzq2tSMVnTxNqbmFIo97dodPB2k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

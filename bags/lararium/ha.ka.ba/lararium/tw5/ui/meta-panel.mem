@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 18
-manaoio   = 17
 role      = "character sheet template: renders #meta metadata for any lar: tiddler; stat bars + progressive disclosure + arbitrary field fallback"
 tags      = ["$:/tags/Global", "lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/tw5/ui/meta-panel"
@@ -115,6 +112,6 @@ exclude = ["title", "text", "tags", "bag", "revision", "created", "modified", "c
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4Kl1HH8lJmmbRWvoVKhStALqx2zQPMfNdXZqlep5sdo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;A4XLXO1jYaIYgCIivIBuS_e7hUQf-I8VaUampmt6_rY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

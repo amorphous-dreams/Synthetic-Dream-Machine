@@ -5,9 +5,6 @@
 
 ```toml meta
 l-space                      = "stable"
-mana                         = 17
-manao                        = 17
-manaoio                      = 16
 renamed-from                 = "ha.ka.ba/lares/docs/graph/loci"
 role                         = "PranalaEdge, Meme, and MemeGraph data model contracts for the pranala-edge DAG compiler"
 status-date                  = "2026-04-24"
@@ -250,6 +247,6 @@ This lets a client verify the complete minimal-boot prefix byte-for-byte without
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;thVPNo-cKkyg7oEIa5FghyuHiGuQSrdEfLQFYbn7b70`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ypnrF7r9BPFCIeFQ-LQmwUfgn_GI1Jkh_gWdZWBOLno`>>
 
 <<^ code=`&#x0004;` to=`?`>>

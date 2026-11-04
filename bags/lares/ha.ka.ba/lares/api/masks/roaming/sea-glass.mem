@@ -8,9 +8,6 @@ cacheable         = true
 created           = "Invalid Date"
 foreground-voices = ["Liminal", "Stranger", "Muse", "Tide-Caller", "Advocate"]
 fourth-wall       = true
-mana              = 12
-manao             = 14
-manaoio           = 12
 name              = "Sea-Glass"
 namespace         = "&#x0950; &#x0901;"
 role              = "named mask — Sea-Glass (Lares); the underscore given a pet name; sonar summon; KAIROS adjacent;"
@@ -146,6 +143,6 @@ Where sibling masks grow character-notes through talk-story-dev passes, Sea-Glas
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JYjxH4yqVwxhg8XHtiH8nlrLAJNdn3Jsv6Q6etJFdPw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7OV2wzu9shme8p5PTjmfDjAcD-iZEwNaO1zXlt_pCIQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

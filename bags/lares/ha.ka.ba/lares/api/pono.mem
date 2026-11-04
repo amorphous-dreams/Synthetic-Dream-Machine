@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 13
-manao     = 14
-manaoio   = 12
 namespace = "&#x2299;"
 role      = "core invariant example of a pono meme: right-sized law surface, bounded self-description, and outward routing pressure"
 tags      = ["api/pono/meme"]
@@ -44,6 +41,6 @@ This folder already shows the family shape around it: `meme`, `invariant`, `meme
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ziVn03OqoNm7DvAi8ari1CxbTqHL-2MUAvv-ILRjxJc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_FCyxPm6O42TDEslYoLNg0OOoQlB2EH9MfCFp3KDfao`>>
 
 <<^ code=`&#x0004;` to=`?`>>

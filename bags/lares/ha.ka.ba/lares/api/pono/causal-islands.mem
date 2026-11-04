@@ -7,9 +7,6 @@
 cacheable     = true
 heleuma       = "ba"
 l-space       = "stable"
-mana          = 18
-manao         = 17
-manaoio       = 17
 namespace     = "&#x2299;"
 role          = "invariant law: causal island doctrine — three structural axes (access × scale × powers) + alignment plane; authority-first sync order; visibility gate; edge island lifecycle"
 source-symbol = "ABILITY_LADDER AUTHORITY_FIRST_ORDER CAUSAL_ISLAND_MUST CAUSAL_ISLAND_MAY AuthorityFirstGuard visibilityGate"
@@ -368,6 +365,6 @@ meant to escape):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_GEtb6ldhjlMmk14U8cZRLppQrcwzY2ZJzHdfWTIXF0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6yby1XqIQ7C9UzUoMYFiiS_WDFA6X0XmX26a03vIDB4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

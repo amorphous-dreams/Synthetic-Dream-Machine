@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 14
-manao     = 15
-manaoio   = 13
 rating    = "ano"
 role      = "concept canon — the Burned Library: the Librarians' 500-year grammar, the Library of Alexander's l-space fire, the locked records, and the kahu kuleana of restoration"
 title     = "lar:///ha.ka.ba/elyncia/concepts/the-burned-library"
@@ -88,6 +85,6 @@ your exits memorized.// Some information they hold stays locked — not by the f
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wp_d82Ec_kTLU9cSHZOznsw1MlbDhB8Zs5AUVOkEWE4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IHbZTd70x4hyepZGw-zwBpgooF7PKY_GZa21kj0cXpE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "sdm"
-mana      = 14
-manao     = 17
-manaoio   = 15
 role      = "FTLS card projection: Shield Ward — playable surface with clickable component pills"
 tags      = ["components/domain/abjuration", "components/function/ward", "components/function/barrier", "components/hook/imbued", "mount-points/trait"]
 title     = "lar:///ha.ka.ba/sdm/projections/powers/ftls-card/shield-ward"
@@ -56,6 +53,6 @@ A barrier less than an inch from your skin, moving with you. Strong cover agains
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0GsxOXDMKNcTrBggU6HxoFz7Z9KU1JbXi894AkeBbvM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ruqHoFNphnNgsNoj0XtwES2mrd7UsonGdqj8DZdPHes`>>
 
 <<^ code=`&#x0004;` to=`?`>>

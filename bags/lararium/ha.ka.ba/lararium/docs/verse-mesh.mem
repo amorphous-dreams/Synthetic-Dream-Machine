@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 docs      = "lar:///ha.ka.ba/lararium/docs/verse-mesh"
-mana      = 18
-manao     = 18
-manaoio   = 17
 role      = "design narrative for the Verse polychronous CRDT mesh — peer model, VM pool, camera model, landing-queue wiring"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/verse-mesh"
@@ -262,6 +259,6 @@ The host-task seat changes; the landing contract does not. The nalu engine holds
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vomH_XXESh8PlZ9s9G-3ClJg7gG9FsUJsRqy32_MiRk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gUZymA4IbeJPELk2pCp8eWFn-rHaObQ_0Ac-gAO0qnI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

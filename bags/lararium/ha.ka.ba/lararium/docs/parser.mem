@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 18
 role      = "self-documentation: parseMemeCarrier and MemeAst construction pipeline"
 title     = "lar:///ha.ka.ba/lararium/docs/parser"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -45,6 +44,6 @@ Walks the AST, collects all `PranalaNode` and `PranalaSugarNode` instances, retu
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/pranala-parser`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/parsers/memetic-parser`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mP-venqMp2b3hoCs6tlRRwG2J_8gQ9g13HERAd3NE6Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VhpGQRTRB1AqXfB89Rt8mX-JCJECZ0txQ4T8l2UY8NI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "stable"
-mana       = 14
-manao      = 15
-manaoio    = 15
 role       = "repeatable Windows 11 + WSL2 developer-host runbook; it selects no personal machine, distro name, disk, or security exception as a universal requirement"
 status-why = "the scripts derive bounded resource intents from the machine they inspect, preserve unrelated host configuration, report any operator-owned choice instead of guessing it, and keep sparse VHD opt-in behind Microsoft's own data-corruption gate (WSL 2.5.6+)"
 tags       = ["api/wsl2", "lifecycle/standing", "environment/onboarding"]
@@ -314,5 +311,5 @@ Two shapes a household also meets that carry no error text: the Linux password p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yY5eNxx6ev4-Ud1E3_oFH3K_oMkGP0mBOA7lM3QkNRE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1yPF-x_ffx8FF-1Y16chr6ec-BCxyDTdi6GEMDPuFJk`>>
 <<^ code=`&#x0004;` to=`?`>>

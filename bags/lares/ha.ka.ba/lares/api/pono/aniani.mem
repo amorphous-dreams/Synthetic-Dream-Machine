@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "stable"
-mana        = 16
-manao       = 16
-manaoio     = 15
 namespace   = "&#x0950; &#x0901;"
 role        = "Aniani the Mirror — a self-contained reflexive pass: point it at any instruction-set (or at the very set running it) and it reads the wielder first, then the set's claims about itself, rating silent self-exemption (0) against named self-inclusion (20); composes with a host's own instruments when present, runs cold on any reader when absent; hands findings back, never self-seats"
 status-date = "2026-06-13"
@@ -118,6 +115,6 @@ Leave one corner honestly open and seen. A set that sweeps every corner clean ha
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ptM9K7BLdDqHDvWNyOIwGAolO5vF4YxL2gDURvKWYL0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;98sTeh8jBr1REdhvwZIYkmpw4FMhmsOvfemE_HwgWvE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

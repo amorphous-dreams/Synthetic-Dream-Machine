@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 16
-manao             = 15
-manaoio           = 14
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-02"
@@ -131,6 +128,6 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;evFixu_vTSTXX6lfT5qlBYHhfs1i14poDo8AgjkwlbM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DZeX8falWWebT2PCaP-z6-x9g1EHs4Qe-R_3aKCcgFY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

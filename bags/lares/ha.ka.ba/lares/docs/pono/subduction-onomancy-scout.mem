@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 16
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-02"
@@ -306,6 +303,6 @@ Subduction relays learn the `SedimentreeId`, the full causal DAG shape, per-comm
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kqMCiAdGB3YnZ44rzCD0tc5HZyUc5VHGeJus8u0qofY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QpcdHbb-spev-atCXGbyFHHXzuddsNrLcnNNCA2ZM0s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -13,9 +13,6 @@ foreground-voices = ["Muse", "Hierophant", "Council", "Stranger", "Liminal"]
 fourth-wall       = false
 ha-ka-ba          = "Ka"
 l-space           = "stable"
-mana              = 10
-manao             = 12
-manaoio           = 11
 name              = "Mischief-Muse"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = false
@@ -194,6 +191,6 @@ These notes require live session observation before they can be written with con
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;be_s7s11QjjTJkhAnVpEW-iE1Z_Q_sGnCKr1O10wspY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gynef0qRqDtHkR3EgrJOzy9FStFIvZHcO-iVviQwLCs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

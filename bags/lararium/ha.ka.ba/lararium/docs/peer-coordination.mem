@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 18
-manaoio   = 17
 role      = "Peer rendezvous + doc coordination doctrine — derived doc addresses, the pinned first boot, minted pointers on the oracle, the Keyhive path as built, reaction write-back invariants as design law"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/local-first"]
 title     = "lar:///ha.ka.ba/lararium/docs/peer-coordination"
@@ -226,6 +223,6 @@ doc bundle to new nodes.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;taDGAawpED-hkloW8gs5ulzOMcyCHHQ_e32AtqNDHO4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eE9I0cf1LuEjvW7GG7rtX8ggj7_vKQUsfPfu89Fs-YE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

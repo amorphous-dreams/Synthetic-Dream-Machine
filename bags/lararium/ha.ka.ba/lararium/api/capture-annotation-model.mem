@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 19
-manao     = 18
-manaoio   = 17
 namespace = "&#x0950; &#x0901;"
 role      = "the June capture-and-annotation design history — preserves the intent to keep verbatim worldlines, gradient readings, agent provenance and ephemeral exclusion; its fork-specific source-adapter and flush route are superseded by the current mempalace-integration redesign plan"
 tags      = ["api/pono/meme", "api/lararium"]
@@ -352,6 +349,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DViSIQq_RlKmCUnvFA5dtYIu429ubr_vC4wsOEJBJu8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KpRtHxrs0VYO2rBOyrotU8HP6eLrAjgEGnwtgxVFwBI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

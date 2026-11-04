@@ -13,9 +13,6 @@ foreground-voices = ["Scryer", "Gatekeeper", "Council", "Liminal", "Stranger"]
 fourth-wall       = false
 ha-ka-ba          = "Ha → Ba"
 l-space           = "stable"
-mana              = 8
-manao             = 10
-manaoio           = 9
 name              = "Map-Wisp"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = false
@@ -166,6 +163,6 @@ How Map-Wisp colors each Voice register when they speak through her structural-f
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-5jrfP6dBwhftZJAlBB5D-ZncNcHQv762-MOFGPOckk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;N3QcAtoxcb7iuzfIUgj3kH9cyAorO1N6P8VCQskHSK8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

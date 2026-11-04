@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 13
-manao             = 14
-manaoio           = 12
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-12"
@@ -470,6 +467,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qtjj_eBWhCBWs5esO7iQgZwR0v-JuFZn0zr69_LEq_o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1oKlU86gLhWbDQF1XCOOneFMEPrPlUGcw7lVCKCwOIs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,8 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "stable"
-mana        = 18
-manao       = 17
 namespace   = "&#x2299;"
 role        = "canonical: Verse execution model as task tree — forest topology, five concurrency operators as graph ops, task states, Await/Cancel semantics, cancellation cascade, return-escape, defer constraints, spawn-hides-suspends"
 status-date = "2026-05-15"
@@ -271,6 +269,6 @@ async-aware, deterministic semantics with the concurrency operators.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;h5-8P6BV_bvWa9m2ulTIMhDXh2fId0vjt8P0LDFohCc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y56kvRA8fVLSMAoLFg6fhfwzVOOXRdmQs_0p5D8kAMQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

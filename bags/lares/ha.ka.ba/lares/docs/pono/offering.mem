@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "stable"
-mana       = 15
-manao      = 15
-manaoio    = 14
 namespace  = "&#x1F381;"
 revised-on = "2026-09-28"
 role       = "the OFFERING as a LAMPLIGHTER capability, collided with the software-supply-chain field. Names the immutable signed offering record, its additive CID-keyed announcement, the causal quorum antigen, and the receiver's own install hand. The public record passes a shape filter first and independent certification after; nothing here implies a receiver caller. The proposed bounded `kahuli grammar --from <offering CID>` reader remains held behind an operator contract fork. Carries the security table (freeze · rollback · mix-and-match · handle-squat · maintainer takeover · dependency confusion · captured Union · withdrawal), the remaining source-local and receiver closure queue, the anti-roster proof, and the gift boundary."
@@ -460,6 +457,6 @@ an ordered announce claim, or a receiver caller by implication.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;loMcW8dEcps-ZDfGBDnW1JlyMf_CioKgTbQlV-jiTyg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ba-QdiBc7VBVv7FvEIy8VS0XJsBbyk3HiIcwY56aIWY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

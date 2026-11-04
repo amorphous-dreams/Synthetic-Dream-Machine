@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 17
-manao     = 17
-manaoio   = 18
 role      = "docs concept room for trust checkpoints before costly shell, git, and workspace actions"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/preferences/workspace-trust-gate"
@@ -67,6 +64,6 @@ The workspace trust gate explains when the node must pause anyway.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Vdqaw6la_WJNU96oMeimV3dPEoy-YXqKZGvdiS4nsUo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4OX3A6mPyvf7sLAp0UoPL1HIsdo-fQLU1IwdleKQFGU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

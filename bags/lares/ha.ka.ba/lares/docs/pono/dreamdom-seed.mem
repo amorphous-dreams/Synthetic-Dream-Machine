@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 16
-manao             = 15
-manaoio           = 14
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "dreamdom-seed — the libation a fresh cloud session drinks to enact the whole DreamDOM roadmap (train D, phases D0 to D7) in house style: it stands the house from the boot seed, reads the model and the road, takes the Episkopos seat over lane spirits, and walks every phase through one OODA-HA loop — research spirits in code and on the web, multiple eyes, Gaia 2026 and Elyncia 5492 user stories and the talk-story rite to settle uncertainty, red-first test-led design with a control, then aftermath, o-takiage and evergreen prose — until the tree reads as if DreamDOM had always stood this way, with no back-compatibility residue."
@@ -213,6 +210,6 @@ The train's final handback adds the conformance rows each DreamDOM surface publi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;J2a6sVCaTJm3ZYABP7b-OrjVnBiKkGcT5Weirb7isoo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5T1vYIhxdfjTWyA5dBtRqMVOvt3BLoNib4YhLWbF1jo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

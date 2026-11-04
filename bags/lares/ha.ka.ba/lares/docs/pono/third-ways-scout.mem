@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 13
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "third-ways-scout — VERBATIM handoff of a tasked Fable spirit (2026-10-16): the map of third and further ways for a portable TiddlyWiki VM engine, rewritten after the operator's rulings. Carries the four layers with two waists and two grains, the camera as a root template over a document sink, the Replica Port width dial, the Wiki Actor and the first surface, the families re-scored with the rejected ones named once, per-host landing, conformance as the portability measure, Mu, the map of all paths, the spikes, the separating experiment, two stories, the draft moolelo and open rulings. Held as a collision surface; dreamdom and dreamdom-roadmap carry the house's reading of it."
@@ -377,6 +374,6 @@ Held here as **draft**; the thread's telling wins over this copy where they diff
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4KTmS0Wt2AThyylKt3BtrYmePYU9gTb6QGWiFDR_l-g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XI2xpfvIATbefRyGfsSzvN2hQFmy1cBEfwPCKqvm61o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

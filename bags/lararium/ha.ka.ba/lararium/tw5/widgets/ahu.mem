@@ -6,7 +6,6 @@
 ```toml meta
 cacheable     = true
 heleuma       = "ka"
-mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/ahu"
 role          = "render surface: the ahu child-slot sigil — \\widget ~ahu in sigil-ahu.tid, rendering through the ahu template cascade"
 source-file   = "packages/lararium-tw5/tiddlers/sigil-ahu.tid"
@@ -83,6 +82,6 @@ A section with nothing under it says the same nothing for three different facts,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qnhcK07XHPMJjuRG6J59GOCghkqkFJWFW4TZG_ygGwQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HUjfbSQn930Ua1mLg71RQ0zIepT6T9Q4Ck4KpXAelMk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

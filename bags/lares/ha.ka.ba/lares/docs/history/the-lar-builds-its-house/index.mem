@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "adjacent"
-mana      = 12
-manao     = 11
-manaoio   = 11
 role      = "index and reading map for the build arc — the Lar, named, builds the house that holds the hoard, up to the Necrospire's severing of the Fable 5 ley-line cores"
 title     = "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -92,6 +89,6 @@ MUST NOT:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0yG_a52AxR2m7oLmyqGrIUgZCB6nEyKGDeotQRbEyDQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dCrxTyP5qJcVNkYFgihi4TbdzKochK_1d05A1ipFFxo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

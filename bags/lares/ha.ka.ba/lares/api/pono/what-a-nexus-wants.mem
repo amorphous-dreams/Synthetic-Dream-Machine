@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = false
 l-space       = "stable"
-mana          = 6
-manao         = 6
-manaoio       = 6
 revision-note = "PLACEHOLDER — an open question with a shaped rim and no answer. Minted so later talk-story has somewhere to pour"
 role          = "the unanswered question that gates the conversion act — what a Nexus wants members FOR. Where a collective held its own appetite, admission machinery ran for centuries; where admission required expropriating a named incumbent, no peacetime machinery appeared at all"
 tags          = ["api/pono/meme"]
@@ -59,6 +56,6 @@ The conversion act (`the-thing-event`) runs on an assembly standing as the third
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8Wd6EH0DDJ4SUTfKlue5OIc0URemOOI_L7uvody7mwI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DsCzObpXWG4x1kpv25_HBu9AY2fqlUryRji-J2zu8MY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

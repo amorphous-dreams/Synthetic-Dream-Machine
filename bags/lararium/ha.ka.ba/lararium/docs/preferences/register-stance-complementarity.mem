@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 17
 role      = "staging docs shelf for the explicit complementarity claim between epistemic register and discourse stance"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/preferences/register-stance-complementarity"
@@ -74,6 +71,6 @@ Current comparison surfaces:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4q_ZFq5MpDuLfB5nOIpwBfQD90TX1hAgaklRmKi9umg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;E_TcgnZefJMdvdNesztlIObAsRfxPoFUYLAGWbQ-Tmg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

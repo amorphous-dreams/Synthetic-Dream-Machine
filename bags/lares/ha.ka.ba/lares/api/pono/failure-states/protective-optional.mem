@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 14
-manao     = 15
-manaoio   = 13
 namespace = "&#x2299;"
 role      = "craft failure law — an optional parameter protecting the author's own tests in a codebase with no consumers"
 tags      = ["api/pono/meme"]
@@ -64,6 +61,6 @@ If the parameter is optional and a real outside consumer needs the default, that
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Lb7PIY6Ws5s_w8PV4tMnUyYLza2WS2Z1diaaoo4HayY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FEou8k5bQ3FwqbhoHcEvBGsIknhYt45SlhxUBdup-eA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable  = true
 hydrate    = true
 l-space    = "lararium"
-mana       = 14
-manao      = 15
-manaoio    = 13
 namespace  = "&#x2695;"
 role       = "the MEASURED scout of the realm/nexus word-blur, taken under the operator's 2026-09-13 ruling (NEXUS keys the public/crossroads plane; 'realm' as pet-name serves cabal-private docs and resources). REPORT ONLY — no rename lands from this carrier. It carries four things: the structural fact that both words presently name ONE value (the charter's genesis epoch cid) while a second `realm` names a DIFFERENT id space entirely; the realm-named/Nexus-shaped sites; the nexus-named/realm-shaped sites; and the UN-RENAMEABLE SET — every signing domain, HKDF info, doc-url seed, hash-feeding lar URI, persisted record key and wire field where the word rides inside bytes that are already signed or already addressed. NEXUS_DOC_DOMAIN heads that set: it is a content-address PREIMAGE, so re-spelling it renames every island, every board, every realm doc and every charter at once."
 status-why = "scouted 2026-09-13 against the tree; no rename attempted, and the ranked plan awaits the operator"
@@ -205,6 +202,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uJHkDhpF02482RuiXaQPUusyjZ_cIHATMWzuuJQEcVg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hSyj2mevBQAeGRAoxsO1VHpF3Y37nJN1fOzGoXZbOe4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

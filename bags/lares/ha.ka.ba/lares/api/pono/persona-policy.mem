@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 17
-manao             = 16
-manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "persona-policy — the operator's rulings on the multi-persona identity core: a SESSION wears the face and the vessel wears none, so every act carries exactly ONE face (PRIVATE-all, PUBLIC-one); a switch runs as ONE session's act, recorded on the vessel and never on the wire; two faces live from one vessel never link on the wire · each PersonaGroup a CRYPTOGRAPHIC INDIVIDUAL (Sybil-of-one the accepted IoC cost, answered socially never in crypto) · DISTINCT recovery custodians per persona. Plus the two-layer pet-names (private map ⊥ public glamour) under Zooko — the pet-name FLEET-SYNCS among the human's own vessels and never PUBLICLY federates — under THE BINDING LAW: only a publicly announced Handle binds a PersonaGroup to a public glamour, so no other path may carry a persona's name onto a federating surface. Identity carries no universal index; the mesh refuses to build the SIN even to defend itself"
@@ -262,6 +259,6 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rFIX9TGkEP3zXkweRHvaLj-9j60LiwzdLac69rRfSaI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;urgrCcXkaYRHjT5AQcUohrrAxyDomV28Iyi-cNtC3ng`>>
 
 <<^ code=`&#x0004;` to=`?`>>

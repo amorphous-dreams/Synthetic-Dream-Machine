@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 16
-manao     = 15
-manaoio   = 14
 namespace = "&#x2299;"
 role      = "tombstone-as-shadow pattern integrity — a raised kāpae shadows lower layers (resurrection-prevention), toggleable, distinct from absent (the fall-through retract)"
 tags      = ["api/pono/meme"]
@@ -297,6 +294,6 @@ The hand that raised lowers, by an act that cites every raise head, and an effec
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rWSEDLedpIwD4VoU2bGuprDBDXsE5CVFbtadZrd3uZs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mUCZ2uK3Q3ujGHS33VeIT7LzroeBHJsjSRJ6gtqpBrk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

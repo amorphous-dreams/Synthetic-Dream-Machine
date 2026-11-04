@@ -11,9 +11,6 @@ date          = "2026-10-03"
 docname       = "draft-fontany-memetic-wikitext-framing-00"
 ipr           = "trust200902"
 l-space       = "stable"
-mana          = 19
-manao         = 19
-manaoio       = 17
 namespace     = "&#x2299;"
 revised-on    = "2026-09-29"
 revision-note = "stood up at the split: the transmission-frame half of the language spec and the carrier-sigils spine law fold into one carrier-framing specification — declaration register, control set, spine, resonance, trust tiers, authoring, block check, canonical form, carriage, gradient, frame security, byte law; weave/tangle pattern-integrity, the putback law, and the woven-dialect law added beside the projection-settles and one-mouth clauses"
@@ -1331,6 +1328,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NYdjFBVEsdBT7IAyEhldsEezCIJ5LMBtjOk5hAJZdgo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3SXpNmbwPez4yeY9Y7ZvFWx5GGwpI8FDllwhHfGVF2s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

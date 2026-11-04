@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "spine — Elyncia 03, Daemons and the Metaphysics of Play; cut-plan pending its close read"
 tags      = ["ha.ka.ba/elyncia/books/index"]
@@ -58,6 +55,6 @@ comes only after all source text reads as moved.)//
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8XuDaQGV33sGTLiLnCVaXHcd_-QKlDn95iEV6f2Xp6g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;r_syVTyx_IbeWQQpXrOW_YRwn17KapD9EgDIsMWZJcQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

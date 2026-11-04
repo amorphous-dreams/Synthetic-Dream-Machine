@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "burden"
 l-space   = "sdm"
-mana      = 15
-manao     = 17
-manaoio   = 16
 role      = "mount-point: Burden — Power as curse, compulsion, affliction, or overflow"
 title     = "lar:///ha.ka.ba/sdm/mount-points/burden"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -86,6 +83,6 @@ Burden is itself the overflow sink for Trait and Item. Past 20, the character is
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0eHl17SaFRpD-F06rKlgGxcfb-w3cRHXxz3U5Vp6ApE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;k4mcjHwksSLbXwV6AKtPtIaXxCBmQ83AXMmhyuaQI50`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,7 +6,6 @@
 ```toml meta
 cacheable     = true
 heleuma       = "ka"
-mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/kumu"
 role          = "render surface: the kumu type-declaration pragma — sigil-kumu.tid declares a named element type that kau resolves and places"
 source-file   = "packages/lararium-tw5/tiddlers/sigil-kumu.tid"
@@ -57,6 +56,6 @@ An unresolved name renders `<span class="lar-kau-hole">` at the placement site, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vBj1vJf-eh_WKQzgVkXOj5Efbnjr_q-AMs3om81i6m4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hJqF0NiyYhZxxW2ZO2_9CSpnepS6DH_tb2uiNVUnTbA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

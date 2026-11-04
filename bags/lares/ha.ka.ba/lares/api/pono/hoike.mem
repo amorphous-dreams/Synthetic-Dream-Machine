@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "stable"
-mana       = 16
-manao      = 16
-manaoio    = 16
 role       = "canon law of the hoike layer — kept records of contested rulings: hoike (\\testimony), kue (\\dissent), saksi (\\witness); the eight laws, the witness law, off-true tells, lineage"
 status-why = "the hoike testimony rite, filed rather than built"
 tags       = ["kind/rite"]
@@ -110,6 +107,6 @@ The layer carries the Eduyot pattern: minority opinions kept with attribution so
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tWuk7m048s_3l3ZsSCk0MP7NGdneKI8oIIXOX-7YoFo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;F1wJWAgVAKO26e4A4LxdUYQHpcqU8OMTRqZL4EtMkyo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

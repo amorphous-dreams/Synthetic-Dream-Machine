@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 17
-manao             = 16
-manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "session-contract — the contract a SESSION holds with the vessel it rides: one vessel owns one durable Repo, one store lock, custody and one trusted face-blind daemon; each browser tab or CLI run opens a volatile session that wears exactly one verified face. An owner-minted id ROUTES and nothing more; a binding and worker-held capabilities AUTHORIZE; a generation advances at a switch. The owner persists switch acts and request outcomes and never a roster of sessions. Every interactive surface takes its own island, a session-scoped document view replaces the broad sync port, one function resolves the effective recipe at surface mount, the holder answers the requesting binding alone, and receipts bind to the face's proof subject. Every hand (a tab, a CLI run, the disk watcher, a spirit's seat) opens a session and differs by capability profile, never by key. Carries the five-step switch, how a session ends, what the code holds, and the eleven debts of the build"
@@ -338,6 +335,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wWF_eZJT8H1ErNnivy-bpval-b3l-cGbaFlFJvN7tTE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Fr6P6I5wAt7ttHvXXJlgpuWWajtP0nJC5v7HmMpn6Gs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable      = false
 l-space        = "stable"
 last-reviewed  = "2026-05-27"
-mana           = 14
-manao          = 14
-manaoio        = 14
 review-cadence = "quarterly"
 review-note    = "anchor commitments (Beer's principle, user-rights-criterion, Lares five-laws-plus-two) survive any upstream rev; survey-aging risk acknowledged"
 role           = "doctrine: protocols as political design — frames the Lares stack's architecture-vs-governance-vs-topology position relative to commons literature; three-source synthesis"
@@ -179,6 +176,6 @@ These questions don't get answered by adding more architecture. They get answere
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9QuPXXMac5YM2mczpjMqfn5C-M0fOsbQl9nkz67-N4Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zKZ912hrdBlKvWO3LIS6T2iEUe56eI9pjz4-1RE1doM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

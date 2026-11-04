@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 14
-manao     = 14
-manaoio   = 14
 namespace = "&#x0950; &#x0901;"
 role      = "lararium child invariant for continuity, crystal carry, and memory-as-hint boundaries"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
@@ -81,6 +78,6 @@ This child meme keeps the cold-hydration contract small.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iehxpMPIMezEmxD2HaWRVl1EB1yRFxvFQZX2Q-dd0wk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gYtvfpx5JIxq0yh9scokyPtq7gSflc0NBncUsauLo6g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

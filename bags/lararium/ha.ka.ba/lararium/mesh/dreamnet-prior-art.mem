@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = true
 l-space       = "lararium"
-mana          = 16
-manao         = 15
-manaoio       = 14
 research-date = "2026-05-28"
 role          = "prior art research synthesis: best practices and golden principles for DreamNet two-axis mesh topology (INFRA⊥SOCIAL, relay-floor)"
 title         = "lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art"
@@ -669,6 +666,6 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bX9TlP7Px1HNBngX0_qMDwxdo_hejGWa5ZVdRJe0W8E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eFCeDmdjXQzauL_Q7dVVhoj-bh8NbCRAYXM_hh3wZes`>>
 
 <<^ code=`&#x0004;` to=`?`>>

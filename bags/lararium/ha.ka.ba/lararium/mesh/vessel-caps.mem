@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "lararium"
-mana      = 16
-manao     = 15
-manaoio   = 14
 role      = "the vessel cap-stack model: a vessel = a composed #has-stack of caps (CARRIAGE{rhizome,stolon} ⊥ VESSEL{tuber,bulb,corm}), ECS-shaped, declared by handshake, carriage self-elected — any vessel meshes by declaring caps"
 title     = "lar:///ha.ka.ba/lararium/mesh/vessel-caps"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -197,6 +194,6 @@ What stays to ''write'' runs narrow and named — the cap //vocabulary// itself 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ja-dPqqFPHcES_HKCqYmXoSwp7emnPPc7yKp3zX5bkQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bq1X9UkjJmiNYPhBZlHECYzOClMs0ctK8rklxuIIKkk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

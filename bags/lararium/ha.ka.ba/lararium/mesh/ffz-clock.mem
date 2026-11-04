@@ -7,9 +7,6 @@
 cacheable   = true
 hydrate     = true
 l-space     = "lararium"
-mana        = 16
-manao       = 16
-manaoio     = 17
 role        = "FfzClock (Fuller-Fontany-Zelenka Chronometer) — the domain-general RHYTHMIC pattern integrity: a 5-level bounded hierarchical clock (Pulse→Theme) read as a MEMBERSHIP TREE / meet-semilattice (the keystone — a containment path carrying the ultrametric d=co-depth(LCA), never a shared tick-count) naming the rhythmic POSITION — WHERE a drawer SITS, a dimensionless order-free membership coordinate; it holds NO decaying scalar, no 'as of last sync', no age (the manaoio freshness/decay serves MEMES — the wiki / on-disk bags — NEVER this chat-session clock) — for EVERY non-Automerge domain (agent-worldline cadence · external streams: game·Mudlet·video·DAW·market·CI/CD·IoT · capability-leases), profile-scoped by FFZ_PROFILES. The two-domain boundary: FfzClock NEVER carries causal order INSIDE Automerge docs/wiki-CRDTs (Automerge logical time owns that); it carries the grain everywhere else. NOT a causality court — the worldline's happened-before rides the reified edge-DAG, not ffzCompare's LWW. Its serializer yields a prefix-truncatable rhythmic ADDRESS (Theme.Arc.Measure.Beat.Segment[.block] — segment ticks, block addresses, Loom-grounded, #rhythmic-address); local work-memory drawers carry lar_ffz as a nested-membership address (profile/Theme.Arc.Measure.Beat.Pulse)"
 source-file = "packages/lararium-mesh/src/ffz-clock.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/ffz-clock"
@@ -471,6 +468,6 @@ targeted revocation MUST ride Keyhive's convergent removal, never the counter
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EfIYLsq6X89kA3gjOzUEfH8GuUvwYsMy87GqkEL5Q3w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zMzNr_t13irp1uXVSi2RK5ovXHoqb08TBFNGI42VR5s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

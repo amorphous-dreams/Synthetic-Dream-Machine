@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 13
-manao             = 14
-manaoio           = 12
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-10-11"
@@ -224,6 +221,6 @@ What moved: decode-before-hash in `cas-stage.ts` (+ `declaredType`); `ridesAsPoi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;a5a_AfaX7rWVyOCPDVqBGpicbMawNROe4aNxFqkvmGQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;D_OSYiex-l0dnMJs6TySHAx725wW-cxIBfCYJ-s2VOI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

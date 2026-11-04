@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 14
-manao     = 15
-manaoio   = 13
 rating    = "kapu"
 role      = "NPC dossier, referee view — the Lindwyrm behind the public face: the summit as recruitment engine, the intelligence apparatus, the long game of the mesh; the deepest seals stay in the operator's own seats, pointed at and never carried here"
 title     = "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier"
@@ -99,6 +96,6 @@ dragon builds meshes. These live referee-side of even this bag — the operator'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xameVKYmjIfuxRd9C8A7XY86UoIcXd6f_KGGyvAvYWQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sfd0YmNuUDvCruWgFxkQCoDu1PeWTRbA5CbasqdRe5o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

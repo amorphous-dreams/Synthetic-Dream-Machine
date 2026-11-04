@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "lares"
-mana      = 14
-manao     = 14
-manaoio   = 13
 role      = "field research, two traded waves (a Luna-6 YIN and YANG pair, 2026-10-18), on one Keyhive identity per PersonaGroup and none above; the controller's sort of confirmed ground, the runtime lead and first probe, K15's six red-first steps, four house readings under operator confidence, and both wave-two handbacks kept verbatim"
 status    = "research; read 2026-10-18; no code changed; one Keyhive identity per PersonaGroup, none above them"
 tags      = ["research", "keyhive", "persona-group", "identity", "two-faces", "testimony"]
@@ -223,6 +220,6 @@ Sources below are repository paths under `/home/joshu/Synthetic-Dream-Machine`; 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AzBsRkeW9KxGG06DV33FpGsnLwGsBYprtSRoBsJgT-M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7GC1JYGhZixqhkYbpnDEdMWQ1xGGl13KibEnv15i1_M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

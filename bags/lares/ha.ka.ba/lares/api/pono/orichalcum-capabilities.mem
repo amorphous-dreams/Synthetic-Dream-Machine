@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 16
-manao     = 16
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "invariant law: Orichalcum capability profile — UCAN-compatible at wire boundary, Lararium-native semantic caveats; authority-gate law for wiki islands, edge islands, and canon MOVE"
 tags      = ["api/pono/meme"]
@@ -295,6 +292,6 @@ the crypto gate, not instead of it.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UavLBdWZSFpYLeLIfVsk4s3NtwEsJHj-0xhtZhI2h8w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;saWnOfraBIRoAxndAuBx2DqgnTJFDo4eo3NiG51JLxk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

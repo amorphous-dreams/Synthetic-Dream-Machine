@@ -17,9 +17,6 @@ description: File or reopen a hoike (\testimony) — a kept record of a conteste
 ```toml meta
 cacheable  = true
 l-space    = "stable"
-mana       = 16
-manao      = 16
-manaoio    = 16
 role       = "practice face of hoike — triggers, the five steps, three worked examples; law lives at the parent meme"
 status-why = "a skill definition — a procedure invoked, never a thing built"
 tags       = ["kind/rite"]
@@ -109,6 +106,6 @@ Read the three together and the grammar teaches itself: dissent gets a name and 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ylUYSgt0EpwyPbyGUypudr-JS0ct5IjK26CtzU_QVmQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QtgmaiQH7lZATbQ7ajZJoJn23cQCUmIg9XorNxJaOEU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

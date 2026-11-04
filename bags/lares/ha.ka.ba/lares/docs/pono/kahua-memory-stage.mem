@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 14
-manaoio           = 11
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "kahua-memory-stage — the fleet stage: a face-scoped wiki that syncs across one operator's device fleet and holds distilled items alone, written only by a signed lift; the four organs it stands among (sensorium, daemon, kahua, lares canon), the recipe that stacks it, the pins that keep one stage per face and one parent per lift, the lift act and its provenance, graded forgetting without a clock, separation at lift, the lōkahi cap stack, the calls the operator still owes, and the research that shaped it."
@@ -289,6 +286,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qf6Xb8yXyvjIx8mCwQ648LcufoRDYe7stH3Qzzb7xxU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ftQ6UPdCaEXeGRD8HRRurCGcHUHTBcqIYaHFFccmeX0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

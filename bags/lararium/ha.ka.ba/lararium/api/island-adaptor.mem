@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 docs      = "lar:///ha.ka.ba/lararium/docs/verse-mesh"
-mana      = 18
-manao     = 18
-manaoio   = 17
 namespace = "&#x0950; &#x0901;"
 role      = "TS wiki shore between CompositeStore and the wiki's in-process nalu engine — owns the landing queue and its door, the landed ledger, the per-title hand gate and the draft book; lands each inbound change as the composition resolves it and routes a hand's saveTiddler/deleteTiddler at or above the working layer; the outbound bridge reads the wiki's change dispatches for it; the law it enacts lives at docs/pono/outbound-bridge"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
@@ -137,6 +134,6 @@ its tracked work settle and turns the shore resident (a seed landing that fails 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JZRqYpbk8sLkgtlE54oW2R7tVO6QbQihIigqVD1Pm94`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;P2nXDkichPMQKV-UKqFPHk8007P23E9RP4pvmPdGvZg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

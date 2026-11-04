@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable     = true
-mana          = 11
-manao         = 11
-manaoio       = 11
 revised-on    = "2026-06-10"
 revision-note = "demoted from Synthesis-Canon: the six-layer Catalog/Corpus model predates IslandGrants + recipe-watch (boot = first reconcile); terms swept room→wiki 2026-06-10"
 role          = "research-era doc-stack model (six-layer) — structurally PRE-keel-cut; superseded for current law by recipe + island-protocol (IslandGrants) + wiki-layer-ontology; retained for boot-sequence and export round-trip teaching"
@@ -155,6 +152,6 @@ infrastructure rather than rolling a separate exporter.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1DY64CcQt6dR4oQFZYqeAHXuC9R-r2SVuI1ioZtcFSw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_A2nWzudXV9-AhyttzMvdg5WoIJkq3BNZhSEC7iOp68`>>
 
 <<^ code=`&#x0004;` to=`?`>>

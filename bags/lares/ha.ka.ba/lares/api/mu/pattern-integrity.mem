@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "stable"
-mana        = 18
-manao       = 18
-manaoio     = 17
 namespace   = "&#x0950; &#x0901;"
 role        = "invariant doctrine: Fuller's 5 pattern integrities applied to Lararium — tensegrity, wave/water, synergy, ephemeralization, trim tab"
 status-date = "2026-05-02"
@@ -220,6 +217,6 @@ Run this against any new code before merging:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3hslbB-7Jg9aZfc6Q7ny0cDr7lLCLUNhmUzkFYF_0II`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hi1Qto6oV0E0SftL3u74yOses_FMiMflLuKmMObLt7M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

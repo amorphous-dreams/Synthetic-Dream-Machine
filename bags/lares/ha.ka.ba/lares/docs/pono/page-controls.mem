@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 17
-manao             = 16
-manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "page-controls — the page-native controls that carry TiddlyWiki's third layer under the DreamDOM ruling: the island renders through the page template and the layout layers and emits keyed absolute frames; the PAGE holds live values, selection, focus, geometry and top-layer state behind a small allowlisted set of vessel-shipped light-DOM custom elements, and writes whole values and identified events back. A template NAMES a control and never supplies script. Carries the first three controls as ruled (a field editor, a popover, a disclosure), the designed set, the naming convention with three worked examples, the wire (a keyed frame and one answered control event), the words a person reads at a refusal, the shadow-widget verdict per stock widget, the debts standing in the page sink, and the measure-first clause"
@@ -251,6 +248,6 @@ The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projectio
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7sJf2Ug_ATpRpBNNNoY8oYmYw4IXyztp6NT-mJRgguE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;k2vo67E5zhrqcYzeB3J62Z4FNdEv4_0cGJpqmbrL2ww`>>
 
 <<^ code=`&#x0004;` to=`?`>>

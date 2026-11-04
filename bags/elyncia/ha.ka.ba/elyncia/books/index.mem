@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "landing page — the Elyncia books as a TW5 ToC over the spine memes; each spine walks its chapter's chunks through the graph"
 title     = "lar:///ha.ka.ba/elyncia/books/index"
@@ -47,6 +44,6 @@ shelf reads plainly:)//
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5k0fDt3Gqt1Zdht4QatBUifngDopejbwgz8EnBSbXGM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;S-WY3JfYe7ntLrwv415gOFQNh8emrEH49PnMiy3Uyow`>>
 
 <<^ code=`&#x0004;` to=`?`>>

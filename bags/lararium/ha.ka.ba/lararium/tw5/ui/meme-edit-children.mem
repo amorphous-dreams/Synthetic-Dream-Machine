@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 list-after = "$:/core/ui/EditTemplate/body"
-mana       = 18
-manao      = 17
-manaoio    = 16
 role       = "EditTemplate: inline editors for non-body ahu slots; body slot edited via core EditTemplate/body"
 tags       = ["$:/tags/EditTemplate", "lar:///ha.ka.ba/lares/api/pono/meme"]
 title      = "lar:///ha.ka.ba/lararium/tw5/ui/meme-edit-children"
@@ -57,6 +54,6 @@ uri-path   = "ha.ka.ba/lararium/tw5/ui/meme-edit-children"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wD44tYg_nuvmO3CKcKtjSOJiGYHmHZtNkrP2ponRNFc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CmpkkH5PveyF-iJGUc7giB2v_1UJj0PoDgKKG6jwpdA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

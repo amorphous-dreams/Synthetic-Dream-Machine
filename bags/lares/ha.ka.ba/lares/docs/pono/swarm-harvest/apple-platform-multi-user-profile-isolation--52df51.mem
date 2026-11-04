@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: Apple platform multi-user / profile isolation — measured evidence. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -302,6 +299,6 @@ CVE-2005-2509 (Mac OS X ≤10.4.2, loginwindow, "allows attackers to log into ot
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uAU5Wbi_1FSYImGmpmz_QFJyP2Jjg8tVDA7ZktU9OVc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;USZ1fqrWcpuJm6py79Hobr2f10qiBLTGU1c7MZ-XNRc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

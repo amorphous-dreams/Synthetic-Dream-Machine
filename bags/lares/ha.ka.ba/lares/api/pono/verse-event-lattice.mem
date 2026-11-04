@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "stable"
-mana        = 18
-manao       = 18
-manaoio     = 17
 namespace   = "&#x2299;"
 role        = "invariant doctrine: UEFN Verse 5.6 event type lattice — event/listenable asymmetry, suspends effect specifier, @editable boundary, using module import; unreleased: sticky_event + subscribable_event; standard for Lararium device model"
 status-date = "2026-05-15"
@@ -366,6 +363,6 @@ via TW5's own event bus.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eyUjGd4W9hc9LA_0K_Mt3QGInpAVYcvATYhjePFxS4s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8p-07JVAGiINlbc-bBBd61d8PD9s2Pv4HnBQaiaHSGk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

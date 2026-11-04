@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 14
-manao     = 14
-manaoio   = 13
 rating    = "ano"
 role      = "image-design seed — the Lindwyrm in the Patrick Nagel register: the verbatim prompt block, what the renders returned, and the witness law that keeps her form unfixed"
 title     = "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed"
@@ -122,6 +119,6 @@ column of small unreadable type down the left margin.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wFYSd9cLtjDZ-qZznYsGdYyjK3mIf8FEJ_OZn8A4FXM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AHxxrB9FD-psiiTO-EYMb1OymHc4T0mNt9NPiReNiIg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

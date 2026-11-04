@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "adjacent"
-mana      = 14
-manao     = 14
-manaoio   = 13
 rating    = "ano"
 role      = "research substrate for the Session 0.1 Painter of Words and Light — the AI renderer assistant Lares; carries the fae-casting, visual-canon, world-dress, Midjourney V8.2, and Delos-archaeology research verbatim, plus the negentropy proposals for the open canon gaps (the venue settled as The House of Masks; six ride open)"
 title     = "lar:///ha.ka.ba/elyncia/campaign/session-0-1-render-research"
@@ -612,6 +609,6 @@ Finding: Corpus yields strong *object* and *tag* vocabulary (Wild Mage item tabl
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XuTu_pRRk_xdyjpwyCjI8aUlAz2tWRmnV01CTr7oQds`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QOJ2zdQpwb1oHe-I60xfVAOzYhu1bgFvxgi-b0U0CWU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

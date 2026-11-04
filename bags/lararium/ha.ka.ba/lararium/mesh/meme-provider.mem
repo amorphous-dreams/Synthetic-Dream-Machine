@@ -6,7 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "lararium"
-mana      = 5
 role      = "pointer: the MemeProvider law lives at docs/meme-provider — one room owns the source"
 title     = "lar:///ha.ka.ba/lararium/mesh/meme-provider"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -30,6 +29,6 @@ one place to go stale. The full statement lives at:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;40vij71u4aiHHri2Yuu4cZAIjSt6YsiINVrwOnh2mgs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZODkA6VOTuvMiCH9AqxLyVWr134QNjNuZE-k5YggMss`>>
 
 <<^ code=`&#x0004;` to=`?`>>

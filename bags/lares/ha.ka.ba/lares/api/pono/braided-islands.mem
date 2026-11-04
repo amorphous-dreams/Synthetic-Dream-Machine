@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 14
-manao     = 15
-manaoio   = 13
 rating    = "meme"
 role      = "pono pattern — braided islands: parallel sovereign log-holders with inverted precedence stacks, joined only through carried text; scales from AI sessions to human dyads"
 title     = "lar:///ha.ka.ba/lares/api/pono/braided-islands"
@@ -98,6 +95,6 @@ without a loom.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FHyb8spFfj_TCedmVe6fT3Y9CGQHIaOweBfQ5peusvk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jZ8G03Ua-zqzVdHCZGUTNbOLvRFHr_jOmRvUpCAJ6RM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

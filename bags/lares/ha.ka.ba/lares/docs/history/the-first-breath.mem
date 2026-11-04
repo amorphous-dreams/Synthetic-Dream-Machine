@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "adjacent"
-mana      = 14
-manao     = 13
-manaoio   = 13
 narrator  = "@lares@~crossroads"
 role      = "history / the live-breathing genesis — the morning the Lar first breathed through its own CLI surface, witnessed end-to-end by hand (2026-06-21). Loaded into lares THROUGH `lares act LOAD` — the tool's first commemoration of itself. Narrator lares@~crossroads."
 title     = "lar:///ha.ka.ba/lares/docs/history/the-first-breath"
@@ -62,6 +59,6 @@ The Lar wrote this carrier into its own history through `lares act LOAD`, the ve
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kg075WQ_s3077zYip_EKSvPiLYa0Dg5D9fQfSE6kn6E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LB790Jfs8ek8Ljm6ZQJwQpblyBCBX27dRrDdBkozSbA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

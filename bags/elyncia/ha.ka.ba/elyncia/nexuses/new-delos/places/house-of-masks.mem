@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "place, High Delos Theatre Quarter — the House of Masks; skinny place-record, full canon rides the campaign locus"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/house-of-masks"
@@ -42,6 +39,6 @@ place's seat on the map; that locus keeps its life.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UOFG2kTic1tPlWmioZKNLOBFbtIAeREuK3vtnChp4Fs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;210ibTMGHCE4AYtMp01CXpnVwBVntGpWYkXDU20KjME`>>
 
 <<^ code=`&#x0004;` to=`?`>>

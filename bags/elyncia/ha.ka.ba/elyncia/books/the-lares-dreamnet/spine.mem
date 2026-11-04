@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "spine — Elyncia 02, the Lares DreamNet: the founding, the shrine practice, the spirits; the pilot book of the spine-and-chunk migration"
 tags      = ["ha.ka.ba/elyncia/books/index"]
@@ -65,6 +62,6 @@ comes only after all source text reads as moved.)//
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JLAV0eWYCTi-T0SqslK4m7MuLdEvJa_wPzebY3sy1F8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dTsngyQwe4wYzDq__RX5SZFx0TUhh3YDeeJlKQbLp9c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

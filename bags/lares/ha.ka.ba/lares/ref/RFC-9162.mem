@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable      = true
-mana           = 14
-manao          = 14
-manaoio        = 13
 namespace      = "&#x2299;"
 reference-kind = "rfc"
 role           = "reference meme — cites IETF RFC 9162 by its own bibliographic metadata"
@@ -42,6 +39,6 @@ Obsoletes `lar:///ha.ka.ba/lares/ref/RFC-6962`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vPGiRCvCIpDDqig2CQ33NPSvHbOThqxZ6cK9Q_N0jQ8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z1KpP7Dx9FRQ3VOmk5jp3J83RDmNDCZtuibd2aX9JnE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

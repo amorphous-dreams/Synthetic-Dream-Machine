@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "lares"
-mana      = 17
-manao     = 16
-manaoio   = 15
 role      = "One name carries one relation — the three relations a lar: name may carry (holding · meeting · being), the identity ladder each layer sits on, and why a name carrying two of them fuses two things a reader cannot tell apart"
 title     = "lar:///ha.ka.ba/lares/api/pono/one-name-one-relation"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -151,6 +148,6 @@ Three moves, smallest first, each standing on its own.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/open-vessel`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-uris`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iXoq1bdsMA1qju66AfADTjyidT-Z8itYUb3bIwomyCM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GXGfhud-MbdKjiWwlhi11Yf1Yr4vRfJy8xtSyPI4m7s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

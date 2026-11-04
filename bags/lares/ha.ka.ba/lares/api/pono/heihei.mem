@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 16
-manao     = 16
-manaoio   = 15
 namespace = "&#x2299;"
 role      = "canvasspace conditional-branch — the Verse `if`/`case` flow-branch; a `<decides>` failable condition tests serially, one execution arm fires; renders as a branch node whose arms fire as reaction wires; the canvas cousin of wai"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-heihei"]
@@ -105,6 +102,6 @@ arm-wire       = "reaction"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QL3G7Y8tIjGXxOKL3o3xgMHpmpo39LloH2F5sLdccvA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-XjJn6eq9VcbILPKwHjBdKqbGCcLcMJZsmgcYE65duI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

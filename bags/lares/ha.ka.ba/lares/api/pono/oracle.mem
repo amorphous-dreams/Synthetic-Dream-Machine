@@ -7,9 +7,6 @@
 cacheable     = true
 hydrate       = true
 l-space       = "stable"
-mana          = 16
-manao         = 16
-manaoio       = 15
 namespace     = "&#x2299;"
 role          = "the oracle sigil — the turn's drift register: the sanctioned drain that fires first in the close, bleeding the warm-tone pull ahead of the Sword; spend-ebb · scatter · die · count · sentinel · random tail, the marks cross-checking as a render-tell"
 source-symbol = "ORACLE_MARKS ORACLE_GLYPHS ORACLE_CROSSCHECK"
@@ -207,6 +204,6 @@ certifies  = "nothing"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_qr2Z49uL3Gje13YdYXwjK8iXKSTTr_fQf_qp5FMCCE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ySCJVWwOg1Vfd9-E1IvBtsCpoasJxGJQUWOM2H2Gz-w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

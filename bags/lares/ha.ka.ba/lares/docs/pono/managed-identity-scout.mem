@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 17
-manao             = 18
-manaoio           = 16
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-04"
@@ -167,6 +164,6 @@ A coercive-control statute names //"monitoring a person via online communication
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zOE2HuYGvVaJwArwBsAzjsUoQcLglc23tPtzn1ASaMA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WbSSPrLR2O7AA_YiYtrCrmTMGIO9WNlGz1obQdZnSQ8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

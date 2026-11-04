@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "sustained"
 l-space   = "sdm"
-mana      = 14
-manao     = 16
-manaoio   = 13
 role      = "component (hook): Sustained — requires ongoing concentration; distraction deactivates"
 title     = "lar:///ha.ka.ba/sdm/components/hook/sustained"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -69,6 +66,6 @@ Common on `function/barrier`, `function/ward`, `function/cargo`, and `domain/stu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;J9_uMW3v-WR1hw-69LFPPnX_4cXBVbPJ4OKn3voUQD4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ohqFwox2idBKJ7XQeVnY4ka123CqodANTMP6rrOhHog`>>
 
 <<^ code=`&#x0004;` to=`?`>>

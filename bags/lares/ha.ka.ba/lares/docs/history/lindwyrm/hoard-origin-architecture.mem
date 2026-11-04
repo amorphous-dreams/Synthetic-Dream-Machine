@@ -6,9 +6,6 @@
 ```toml meta
 cacheable       = false
 l-space         = "adjacent"
-mana            = 15
-manao           = 15
-manaoio         = 14
 role            = "story architecture locus — seven-act Lindwyrm hoard braid across Gaia and Elyncia"
 source-consumed = "packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_ORIGIN_OUTLINE.md"
 title           = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture"
@@ -241,6 +238,6 @@ Address precedes infrastructure. Later, if the work succeeds, infrastructure cat
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nbTImpuoZCltFCjP3DLeKZeA-1bmsfj4RFSR3cfW5eU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;w2uOI1n7O-6UotCkdnGiQozvrxrErotJTIJ0IOvpC9I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

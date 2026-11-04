@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 16
 role      = "staging docs shelf for Wilson/Korzybski model-agnosticism braid behind Mu-facing invariants"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/mu/model-agnosticism"
@@ -133,6 +130,6 @@ The Kūkā cycle names the OODA-HA phases in Hawaiian, grounding the loop in a c
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;OyjTSm54sm2IEEDGYKkR-pRlOxx7ycnPBFVN5SwQ2nM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AZZcfoveId40HcaDHKDOInjr_WgKm474_qlFPzIHqpo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

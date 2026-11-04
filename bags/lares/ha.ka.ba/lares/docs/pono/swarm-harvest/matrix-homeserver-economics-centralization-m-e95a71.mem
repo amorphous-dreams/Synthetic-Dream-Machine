@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: MATRIX HOMESERVER ECONOMICS & CENTRALIZATION — measured evidence. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -265,6 +262,6 @@ Findings from this series:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ADcJK7y9X__2nCAkISZIt1FryAEdwRLlP2GPii7Z_bw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lR_3KkGytwK9Jqy9Cf0_P0icT0_gd1Tr2tTLerePkao`>>
 
 <<^ code=`&#x0004;` to=`?`>>

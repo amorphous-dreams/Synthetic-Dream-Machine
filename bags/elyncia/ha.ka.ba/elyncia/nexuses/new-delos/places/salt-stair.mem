@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "place, sea-level ring — the Salt-Stair market lararium; scene canon seated, host-town unnamed"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/salt-stair"
@@ -39,6 +36,6 @@ who have never met — the Salt-Stair declines to say, and MUG-SMOKE has never b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;E-iKWcVMzaqRkpyhJWE0dkoveUh0qqKpeqEKIxwLtsk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oaSsKeVryJLXeXVe8fuFxcCtqe4q6eE--iIbyT2vP5k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 15
-manao             = 15
-manaoio           = 14
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "live-equivocation — the exposure the federated-mesh collision named (Fork C, 2026-09-09): detection catches a live-key equivocator but cannot PREVENT it, and KERI has no admin recovery for a live current+next capture, so that case falls only to recovery-quorum — which the roadmap built last. Recovery and detection each sit in the other's blind spot; pull recovery FORWARD beside the sensorium. This meme LOGS the exposure for later research spirits to resolve with outside negentropy + load-bearing fiction user stories, and frames Elyncia's DreamNet as the first QA world."
@@ -117,6 +114,6 @@ to refresh.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;l3JVKrA_GhKHTsJDjFPCGbn-UGb_ZuW5ltayL9qilEs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;F_CPOOOj1XbcCxa7PR77AKuw9fMBbyGvM6jom-9MGLM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

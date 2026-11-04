@@ -6,8 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 16
-manao     = 15
 namespace = "&#x2299;"
 role      = "ontology invariant: ea — sovereignty, breath, life — the declaration pattern for any self-standing causal island group or node on the DreamNet"
 tags      = ["lar:///ha.ka.ba/lararium/mesh/island-protocol"]
@@ -112,6 +110,6 @@ The web2 concept of a "heartbeat" (a server-side liveness ping) shares the //liv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ot2I9t03DEjTF6YHOEOSsEywbrQDf44W5jMpLCpIZE4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VAdALAn35soM5wGAsElGF0MtKdSksw4wK_e_IRSDnxk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

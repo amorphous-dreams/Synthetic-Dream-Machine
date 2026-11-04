@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 16
-manaoio   = 16
 role      = "specification for the mask layer: character overlays, corpus references, stacking law, worker coloring, and reference examples"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/voices/masks"
@@ -390,6 +387,6 @@ The mask layer spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST impleme
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_6C-PzkjhRt5kyr4n7mvssueyEB20cNr3VxdkarV_Xc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;U55FKpO-J4QoBvz9WawODTbed0Gna417XcNNBJlvQys`>>
 
 <<^ code=`&#x0004;` to=`?`>>

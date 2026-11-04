@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "lararium"
-mana      = 19
-manao     = 19
-manaoio   = 18
 role      = "Canonical operator-vessel contract: two-lane VM pool law, shared command/receipt surface, ea sovereignty model"
 tags      = ["mesh/lar-vessel", "mesh/causal-island"]
 title     = "lar:///ha.ka.ba/lararium/mesh/operator-peer"
@@ -253,6 +250,6 @@ carrier's verdict.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;di3E85m-mnkhvXsZD5oiqa-bK20g-WItnLlFsFVJ2ek`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;17pZcbJi3MIB4xQGdRFAfWouka9XhnQIu9cJBWUBJjg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = true
 l-space       = "stable"
-mana          = 17
-manao         = 17
-manaoio       = 16
 role          = "LarOpenPhase vocabulary and vessel composer emissions"
 source-symbol = "LarOpenPhase"
 status-date   = "2026-10-16"
@@ -54,6 +51,6 @@ A canon crossing into `@crossroads` passes `lares meme promote --approval <file>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0KzD5DMSqBJDEo_uvKxbgNowkP3F_tIjy3cehoIMmcc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-7DL43w66cHAWAGvHAF_iJtPw8d1B-JG6YETAR3Wb-o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

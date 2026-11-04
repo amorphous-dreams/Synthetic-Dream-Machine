@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: TOPIC A — IS THE MYCELIUM ANALOGY LOAD-BEARING OR DECORATIVE?. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -355,6 +352,6 @@ Named failures and their diagnosed causes: **Gopher** (outcompeted on net value 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xb-uLuU9kZ2M1J1rAe1FYTgawmnCH7oepri_PAf63_8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oJa7XbOIkAgPYhCKZfZstUl-dQ_N5xhFm7tvhObE-yk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

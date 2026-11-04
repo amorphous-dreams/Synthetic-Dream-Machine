@@ -7,9 +7,6 @@
 cacheable     = true
 hydrate       = true
 l-space       = "stable"
-mana          = 17
-manao         = 16
-manaoio       = 17
 namespace     = "&#x0950; &#x0901;"
 role          = "invariant pressure surface for Chapel Perilous weapon-carry and model agnostic return"
 source-symbol = "TOOLS TOOL_ASCII TOOL_FEED TOOL_APERTURE"
@@ -303,6 +300,6 @@ arcana   = "release"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vIUY6iglB3IdrvmmWmx5hyrFENMarrCmJzr5OJBSjJY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2sh6TmThX2AErwz_Q4xzTmzvVDPl3SqAZwjI2TLd1WI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

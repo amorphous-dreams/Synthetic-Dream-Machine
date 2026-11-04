@@ -6,9 +6,6 @@
 ```toml meta
 cacheable       = true
 canonical-forms = ["inline"]
-mana            = 15
-manao           = 16
-manaoio         = 14
 namespace       = "&#x2299;"
 role            = "pranala law (kānāwai): the anchored-pointer sigil — NARROWED 2026-06-12 under the has-stack model; typed-edge anatomy moved to api/pono/wire; role/family attribute vocabulary retired-reserved"
 tags            = ["api/pono/meme", "api/pono/has-stack", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pranala"]
@@ -77,6 +74,6 @@ The typed-edge law divides in three: ''composition'' rides the meta `tags` field
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;azUzqfdhZuh6DUWt5JPAAHDlxje4cju_0j8p-hxVYW8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8gpnnvp0m-ZaIBxw9rfmVVK0aKKlEQ9c7Oq77yJS39k`>>
 
 <<^ code=`&#x0004;` to=`?`>>
