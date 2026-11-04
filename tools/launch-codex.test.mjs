@@ -558,3 +558,27 @@ test("row 4: a refused launch does not spend a step; --lead-step needs --lane-ro
   assert.equal(JSON.parse(readFileSync(join(laneRoot, "state.json"), "utf8")).step, 0);
   assert.equal(run(["--lead-step", "--model", "m", "--effort", "high", "--worktree", w.wt], { readers: w.readers, log() {}, err() {} }), 2);
 });
+
+test("row 4: a --lead-step dry run writes nothing and spends no step; a lane root outside scratch refuses before any write; a step dir already claimed refuses", () => {
+  const w = world();
+  const readers = { ...w.readers, gitCommonDir: () => "/g" };
+  const laneRoot = join(w.home, ".lares-scratch", "lane");
+  const st = { head: "e6aa31a8e", owed: [], seats: [], worktrees: {}, next: "x", step: 0 };
+  writeFileSync(join(laneRoot, "state.json"), JSON.stringify(st));
+  const base = ["--lead-step", "--model", "gpt-6.1-terra", "--effort", "high", "--worktree", w.wt];
+  const out = [];
+  assert.equal(run([...base, "--lane-root", laneRoot, "--dry-run"], { readers, log: (s) => out.push(s), err() {}, spawn() { throw new Error("spawned"); } }), 0);
+  assert.match(out.join("\n"), /DRY-RUN/);
+  assert.throws(() => readFileSync(join(laneRoot, "steps", "step-001", "brief.md")));
+  assert.equal(JSON.parse(readFileSync(join(laneRoot, "state.json"), "utf8")).step, 0);
+  const outside = mkdtempSync(join(tmpdir(), "outside-lane-"));
+  writeFileSync(join(outside, "state.json"), JSON.stringify(st));
+  const err = [];
+  assert.equal(run([...base, "--lane-root", outside], { readers, log() {}, err: (s) => err.push(s), spawn() { throw new Error("spawned"); } }), 2);
+  assert.match(err.join("\n"), /lane root must sit under/);
+  assert.throws(() => readFileSync(join(outside, "steps", "step-001", "brief.md")));
+  mkdirSync(join(laneRoot, "steps", "step-001"), { recursive: true });
+  const err2 = [];
+  assert.equal(run([...base, "--lane-root", laneRoot], { readers, log() {}, err: (s) => err2.push(s), spawn() { throw new Error("spawned"); } }), 2);
+  assert.match(err2.join("\n"), /already claimed/);
+});

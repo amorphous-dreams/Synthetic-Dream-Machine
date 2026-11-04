@@ -274,13 +274,13 @@ const refuse = (why) => Object.assign(new Error(why), { refused: true });
 const real = (p) => { try { return realpathSync(p); } catch { return resolve(p); } };
 
 /** Throws a refusal naming why a seat must not start; else returns `{ pool }` (the pool summary line). */
-export function preflight({ mode, model, seatDir, worktree }, readers) {
+export function preflight({ mode, model, seatDir, worktree, briefless }, readers) {
   // The REAL paths decide: a symlinked seat dir that leaves the lane reads as outside it.
   const scratch = real(join(readers.realHome, ".lares-scratch"));
   const there = real(seatDir);
   const rel = there.startsWith(`${scratch}/`) ? there.slice(scratch.length + 1).split("/") : [];
   if (rel.length < 2) throw refuse(`seat dir must sit under ${scratch}/<lane>/ (the spend tally reads the lane from it): ${seatDir}`);
-  if (!existsSync(join(seatDir, "brief.md"))) throw refuse(`no ${join(seatDir, "brief.md")}`);
+  if (!briefless && !existsSync(join(seatDir, "brief.md"))) throw refuse(`no ${join(seatDir, "brief.md")}`);
   if (!MODES.includes(mode)) throw refuse("mode must be build, lead, read or research");
   if (model === "gpt-6-sol") throw refuse("gpt-6-sol never launches; use gpt-6.1-sol");
   const cache = readers.modelsCache();
@@ -367,8 +367,6 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     try {
       const laneRoot = real(o.laneRoot);
       stepPlan = { ...peekStep(laneRoot), laneRoot };
-      mkdirSync(stepPlan.stepDir, { recursive: true });
-      writeFileSync(join(stepPlan.stepDir, "brief.md"), leadStepBrief(stepPlan.state, { laneRoot, stepDir: stepPlan.stepDir }));
       o.seatDir = stepPlan.stepDir;
     } catch (e) { err(`SEAT-REFUSED: ${e.message}`); return 2; }
   }
@@ -378,14 +376,24 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const ceiling = ceilingFor(o.mode, o.ceiling);
     readers ??= realReaders();
     const worktree = o.worktree ? real(o.worktree) : undefined;
-    const { pool } = preflight({ ...o, seatDir, worktree }, readers);
+    if (stepPlan) {
+      const scratch = real(join((readers ??= realReaders()).realHome, ".lares-scratch"));
+      if (!stepPlan.laneRoot.startsWith(`${scratch}/`)) throw refuse(`the lane root must sit under ${scratch}/<lane>: ${o.laneRoot}`);
+    }
+    const { pool } = preflight({ ...o, seatDir, worktree, briefless: Boolean(stepPlan) }, readers);
     const gitDir = o.mode === "lead" ? readers.gitCommonDir(worktree) : undefined;
     const laneRoot = o.mode === "lead" ? (stepPlan?.laneRoot ?? dirname(seatDir)) : undefined;
     const args = seatArgs({ ...o, seatDir, worktree, gitDir, laneRoot, compactLimit: o.canary ? 50_000 : undefined });
     log(pool);
     if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...args, "<brief>"])}`); return 0; }
     if (o.canary) writeFileSync(join(seatDir, "brief.md"), canaryBrief());
-    if (stepPlan) writeState(stepPlan.laneRoot, { ...stepPlan.state, step: stepPlan.n });
+    if (stepPlan) {
+      // The dir is the claim: two launches reading the same counter cannot both make step N.
+      mkdirSync(dirname(stepPlan.stepDir), { recursive: true });
+      try { mkdirSync(stepPlan.stepDir); } catch (e) { throw refuse(`step ${stepPlan.n} is already claimed (${stepPlan.stepDir}): ${e.code ?? e.message}`); }
+      writeFileSync(join(stepPlan.stepDir, "brief.md"), leadStepBrief(stepPlan.state, { laneRoot: stepPlan.laneRoot, stepDir: stepPlan.stepDir }));
+      writeState(stepPlan.laneRoot, { ...stepPlan.state, step: stepPlan.n });
+    }
     const law = o.mode === "lead" ? leadLaw() : seatLaw(readers.canon());
     mkdirSync(join(seatDir, ".tmp"), { recursive: true });
     const briefPath = join(seatDir, "brief.md");

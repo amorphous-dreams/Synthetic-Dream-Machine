@@ -9,7 +9,8 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const KEYS = ["head", "owed", "seats", "worktrees", "next", "step"];
-const isStr = (v) => typeof v === "string";
+const isStr = (v) => typeof v === "string" && v.length > 0;
+const SEAT_KEYS = ["name", "mode", "dir"];
 
 /** Throws a named error unless `s` holds exactly the state shape. */
 export function validateState(s) {
@@ -18,9 +19,9 @@ export function validateState(s) {
   for (const k of KEYS) if (!(k in s)) throw new Error(`lane state is missing key "${k}"`);
   if (!isStr(s.head) || !/^[0-9a-f]{7,40}$/.test(s.head)) throw new Error("lane state head must be 7 to 40 hex characters");
   if (!Array.isArray(s.owed) || !s.owed.every(isStr)) throw new Error("lane state owed must be an array of strings");
-  if (!Array.isArray(s.seats) || !s.seats.every((x) => x && isStr(x.name) && isStr(x.mode) && isStr(x.dir))) throw new Error("lane state seats must be {name, mode, dir} strings (a seat)");
+  if (!Array.isArray(s.seats) || !s.seats.every((x) => x && typeof x === "object" && Object.keys(x).length === SEAT_KEYS.length && SEAT_KEYS.every((k) => isStr(x[k])))) throw new Error("lane state seats must be {name, mode, dir} strings (a seat)");
   if (!s.worktrees || typeof s.worktrees !== "object" || Array.isArray(s.worktrees) || !Object.values(s.worktrees).every(isStr)) throw new Error("lane state worktrees must map names to strings");
-  if (!isStr(s.next)) throw new Error("lane state next must be a string");
+  if (typeof s.next !== "string" || s.next.length === 0) throw new Error("lane state next must be a string");
   if (!Number.isInteger(s.step) || s.step < 0) throw new Error("lane state step must be a non-negative integer");
   return s;
 }

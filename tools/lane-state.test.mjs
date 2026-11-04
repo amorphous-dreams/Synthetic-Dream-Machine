@@ -56,3 +56,10 @@ test("leadStepBrief carries the head, every owed row, the live seats, the worktr
   const text = leadStepBrief(good(), { laneRoot: root, stepDir: join(root, "steps", "step-001") });
   for (const need of ["e6aa31a8e", "row 4", "row 5", "b3", "/lane/cop3", "feature/x", "write the broker red tests", join(root, "state.json"), "ONE step", "40 tool calls", "out.md", "never poll"]) assert.ok(text.includes(need), need);
 });
+
+test("validateState refuses a seat with an extra or empty field, and an empty next, head-ward strings and worktree paths", () => {
+  assert.throws(() => validateState({ ...good(), seats: [{ name: "b", mode: "build", dir: "/d", extra: 1 }] }), /seat/);
+  assert.throws(() => validateState({ ...good(), seats: [{ name: "", mode: "build", dir: "/d" }] }), /seat/);
+  assert.throws(() => validateState({ ...good(), next: "" }), /next/);
+  assert.throws(() => validateState({ ...good(), worktrees: { a: "" } }), /worktrees/);
+});
