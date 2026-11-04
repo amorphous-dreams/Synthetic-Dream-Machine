@@ -148,4 +148,20 @@ describe("the stage projection is folded once per snapshot (P5: every landed tit
     expect(folds, "a moved face folds again").toBe(3);
   });
 });
+
+describe("the projection memory never outlives its authority", () => {
+  test("RED: a signer the face revokes loses its acts at the next read (the moved face is a NEW reading); CONTROL: the same face object keeps the memory", async () => {
+    const { root, face, lift, device } = await fixture();
+    const d = await device();
+    land(d.stage, await lift("Item", "shared body", null));
+    let standing = face;
+    const store = kahuaStageStore({ handle: d.stage, bagId: KAHUA_BAG, face: () => standing });
+    expect((await store.get("Item"))?.tiddler.text, "the grant holder's lift reads").toBe("shared body");
+    expect(await store.get("Item"), "the same face and heads: the memory answers").not.toBeNull();
+    standing = { group: GROUP, grant: (key: string) => key !== root.key };          // the roster dropped the signer: a new reading
+    expect(await store.get("Item"), "the revoked signer's act reads as nothing at the next get").toBeNull();
+    standing = face;                                                                // the grant returns (a carry): the act reads again
+    expect((await store.get("Item"))?.tiddler.text).toBe("shared body");
+  });
+});
 });
