@@ -27,6 +27,31 @@ const keptDrafts = (r: Rig, target: string): Array<Record<string, unknown>> =>
   Object.values(r.doc(draftBag).tiddlers).filter((rec) => !rec.meta?.deleted && rec.tiddler["lar-conflict-fields"] !== undefined && rec.tiddler["draft.of"] === target).map((rec) => rec.tiddler as Record<string, unknown>);
 
 describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
+  test("SAVE ORDER: the draft's removal never lands before the target write is acknowledged; a refused target write leaves the draft intact", async () => {
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
+    const x = "lar:///t/road/save-order";
+    await seedRecords(r, [{ title: x, text: "landed" }]);
+    await r.adaptor.armSeedCheckpoint();
+    const d = openDraft(r, x, "keystroke 0");
+    await afterDispatch();
+    typeInto(r, d, "the edit that must not be lost");
+    await afterDispatch();
+    boundary.fire();
+    await turns(16);
+    expect(storeText(r, draftBag, d), "the draft record stands in the draft layer before the save").toBe("the edit that must not be lost");
+    r.failures.family = new Error("the target write was refused");
+    const mark = r.calls.length;
+    saveSequence(r, d);
+    await afterDispatch();
+    await turns(24);
+    const removals = r.calls.slice(mark).filter((c) => c.deletes.includes(d));
+    expect(removals.filter((c) => c.kind === "tombstone"), "no tombstone for the draft was issued while the target write stood refused").toEqual([]);
+    expect(storeDeleted(r, draftBag, d), "the draft record is still intact in the draft layer").toBe(false);
+    expect(storeText(r, draftBag, d)).toBe("the edit that must not be lost");
+    await r.stop();
+  }, 120_000);
+
   test("R + control: a save act leaves in the dispatch turn with the draft-open base and no timer", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
