@@ -260,7 +260,7 @@ test("a recovery mirror projects a held draft even when the wiki view shadows it
   const recovery = join(root, "recovery");
   const bytes = `title: ${title}\ndraft.of: Note\nlar-draft-base-bag: working\nlar-draft-base-heads: abc\n\nunsaved words`;
   const projector = new LarDiskProjector({
-    mirrors: [{ bagId: "draft", mirrorRoot: recovery }],
+    mirrors: [{ bagId: "draft", mirrorRoot: recovery, mirrorClass: "recovery" }],
     bagsHolding: async (uri) => uri === title ? ["draft", "temp"] : ["temp"],
     carrierFileFn: async (uri) => ({ ext: ".tid", body: uri === title ? bytes : tidBody(uri, "private"), defaultRelPath: `${uri}.tid` }),
   });
