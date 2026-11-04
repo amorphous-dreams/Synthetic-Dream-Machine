@@ -39,7 +39,7 @@ describe("pragma-kind sigils accept an optional `!` — both spellings PAIR (sca
     ["wehe",   '<<~%s wehe name=`greet` params=`name:"world"`>>Hello<<~/wehe>>'],
     ["kumu",   '<<~%s kumu name=`TypeName` params=`params`>>body<<~/kumu>>'],
     ["helu",   '<<~%s helu name=`tally` params=`x`>>[<x>count[]]<<~/helu>>'],
-    ["widget", '<<~%s widget name=`~mana` params=`uri:""`>>body<<~/widget>>'],
+    ["widget", '<<~%s widget name=`~example` params=`uri:""`>>body<<~/widget>>'],
   ])("%s — bare and `!` both pair, no Error node", (_name, template) => {
     const bare = template.replace("%s", "");
     const bang = template.replace("%s", "!");

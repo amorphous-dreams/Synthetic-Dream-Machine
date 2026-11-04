@@ -14,5 +14,5 @@ type: text/vnd.tiddlywiki
      callable as <<~name ...>> via the ~ dispatcher.
      lar-kind: pragma — produces no render output; the sigil serves as the declaration.
 
-     The ~ prefix convention: <<~ widget name=`~mana` params=`uri:""`>>...<<~/widget>>
-     registers a new mana sigil callable as <<~ mana uri=`lar:///uri`>>. -->
+     The ~ prefix convention: <<~ widget name=`~example` params=`uri:""`>>...<<~/widget>>
+     registers a new example sigil callable as <<~ example uri=`lar:///uri`>>. -->

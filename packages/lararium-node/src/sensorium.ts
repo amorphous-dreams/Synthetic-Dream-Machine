@@ -731,7 +731,7 @@ export function livePalaceHolderCount(label: string): number {
  * the federated corpus), the FEED replacing the per-turn local `encodeStore`/`put` write path.
  *
  * The full DreamNet peer-federation wiring (the meshpalace AutomergeDocStore FLOW-map,
- * mesh-memegraph, manaoio, the read-face wire) is a SEPARATE, larger mesh-domain piece and
+ * mesh-memegraph, the read-face wire) is a SEPARATE, larger mesh-domain piece and
  * is NOT implemented here. This interface only names the shore so the shape is ready.
  */
 export interface PalaceFeedCap {
