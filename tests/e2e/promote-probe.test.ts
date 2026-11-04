@@ -28,15 +28,15 @@ const built = existsSync(join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.
 // never shows in the daemon log. The OBSERVER is a module promoted before anything else: it runs after startup, finds the action's marker
 // tiddler if the action ran at boot, and copies it as a write the adaptor logs (`unrouted-save: "probe/action-seen"`). That observation
 // stands apart from the module under test, so a lifted action that ran WITHOUT a promotion still reads in P1.
-// Both modules POLL after startup rather than fire once: the island adaptor attaches some seconds after TW5 boots, and a write that lands
-// before it vanishes (nothing logs it). The cure that stopped the daemon island burning its thread in signature maths also stopped the
-// stall that used to hold a one-shot 4 s timer until after the attach, so a single write now races the attach and loses. Each poll rewrites
-// the SAME title (one title per boot) with a new text, so the first write after the attach logs and the Set of titles still counts one boot.
-const OBSERVER = "exports.name=\"promote-probe-observer\";exports.after=[\"startup\"];exports.synchronous=true;"
-  + "exports.startup=function(){var n=0,t=setInterval(function(){n++;if($tw.wiki.getTiddler(\"probe/action-ran\")){$tw.wiki.addTiddler({title:\"probe/action-seen\",text:\"yes\"+n});}if(n>=30){clearInterval(t);}},1000);};";
-// The module under test writes after the adaptor attached, one `probe/ran/<startup ms>` title per boot.
-const MODULE = "exports.name=\"promote-probe\";exports.after=[\"startup\"];exports.synchronous=true;"
-  + "exports.startup=function(){var id=Date.now(),n=0,t=setInterval(function(){n++;$tw.wiki.addTiddler({title:\"probe/ran/\"+id,text:\"ran\"+n});if(n>=30){clearInterval(t);}},1000);};";
+// Both modules order AFTER `lararium-writable`: the house's writable backing (recipe layers, adaptor, bridge, resident seed, the daemon's
+// working route) stands before any promoted startup module runs, so a write made at startup lands and the module needs no timer and no
+// polling. Each module also prints its OWN marker line (`[probe] ran <id>`, `[probe] action-seen`); the probe counts execution off those
+// lines, never off a refusal text, so a boot that routes the write cleanly (no `unrouted-save` line) still reads as a run.
+const OBSERVER = "exports.name=\"promote-probe-observer\";exports.after=[\"lararium-writable\"];exports.synchronous=true;"
+  + "exports.startup=function(){if($tw.wiki.getTiddler(\"probe/action-ran\")){if(typeof console!==\"undefined\"){console.warn(\"[probe] action-seen\");}$tw.wiki.addTiddler({title:\"probe/action-seen\",text:\"yes\"});}};";
+// The module under test writes once, after the backing stands: one `probe/ran/<startup ms>` title per boot.
+const MODULE = "exports.name=\"promote-probe\";exports.after=[\"lararium-writable\"];exports.synchronous=true;"
+  + "exports.startup=function(){var id=Date.now();if(typeof console!==\"undefined\"){console.warn(\"[probe] ran \"+id);}$tw.wiki.addTiddler({title:\"probe/ran/\"+id,text:\"ran\"});};";
 const ACTION = "<$action-setfield $tiddler=\"probe/action-ran\" text=\"yes\"/>";
 const SOURCES = JSON.stringify([{ title: "daemon/probe", revision: "r1" }]);
 
@@ -46,10 +46,12 @@ const answer = (r: CliResult): Record<string, any> => JSON.parse(r.stdout.trim()
 // The staged hearth routes no plain title to a bag (its wiki bag holds nothing), so a tiddler the module writes never persists; the island
 // adaptor names each write it could not land (`unrouted-save: "<title>"`) in the daemon's log. That line IS the observable: the module ran
 // (one `probe/ran/<ms>` title per boot) and the StartupAction ran (its own marker `probe/action-ran`).
-const ranFiles = (): string[] => [...new Set([...hearth!.bootLog().matchAll(/unrouted-save: "(probe\/ran\/\d+)"/g)].map((m) => m[1]!))];
+// Execution reads from the module's OWN marker line (`[probe] ran <id>`), never from a refusal: once the daemon fills `current-wiki-bag` a routed
+// save logs no `unrouted-save`, and a faster boot would turn the refusal text into a silent success this count reads as zero.
+const ranFiles = (): string[] => [...new Set([...hearth!.bootLog().matchAll(/\[probe\] ran (\d+)|unrouted-save: "probe\/ran\/(\d+)"/g)].map((m) => m[1] ?? m[2]!))];
 // An unpromoted action that wrongly ran AFTER the seed writes its marker once the bridge is attached, so the adaptor logs it by name.
 const actionWrote = (): boolean => /unrouted-save: "probe\/action-ran"/.test(hearth!.bootLog());
-const actionRan = (): boolean => /unrouted-save: "probe\/action-seen"/.test(hearth!.bootLog());
+const actionRan = (): boolean => /\[probe\] action-seen|unrouted-save: "probe\/action-seen"/.test(hearth!.bootLog());
 async function settle<T>(read: () => T, done: (v: T) => boolean, ms = 30_000): Promise<T> {
   const deadline = performance.now() + ms;
   for (;;) { const v = read(); if (done(v) || performance.now() > deadline) return v; await new Promise((r) => setTimeout(r, 250)); }
