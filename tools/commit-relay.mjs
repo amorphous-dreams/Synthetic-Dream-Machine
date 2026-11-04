@@ -4,6 +4,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { randomBytes } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { openHeld } from './held-dir.mjs';
 import { addWorktree, commitWithReceipt, pushWithGo, removeWorktree } from './seat-broker.mjs';
 import { runInstallSeat } from './seat-walls.mjs';
 
@@ -27,12 +28,14 @@ const goFile = path.resolve(options['go-file']);
 const goDir = await realpath(path.dirname(goFile));
 if (goDir === lane || inside(lane, goDir) || goDir === worktree || inside(worktree, goDir)) throw new Error('go-file must sit outside the lane root and the worktree');
 const launcher = await realpath(options.launcher);
-if (launcher === lane || inside(lane, launcher)) throw new Error('launcher must sit outside the lane root');
+if (launcher === scratch || inside(scratch, launcher)) throw new Error('launcher must sit outside the scratch tree entirely: a lead can write anywhere a lane or worktree lives under it');
 const branch = options.branch;
 const git = (...argv) => spawnSync('/usr/bin/git', ['-C', worktree, ...argv], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, env: { PATH: '/usr/bin:/bin', HOME: '/nonexistent', LC_ALL: 'C', GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null', GIT_TERMINAL_PROMPT: '0' } });
 if (branch.startsWith('-') || git('check-ref-format', `refs/heads/${branch}`).status !== 0) throw new Error('invalid branch');
-const relay = path.join(lane, 'relay');
-await (await import('node:fs/promises')).mkdir(relay, { recursive: true });
+const relayDir = path.join(lane, 'relay');
+await (await import('node:fs/promises')).mkdir(relayDir, { recursive: true });
+// The request directory is held open by handle: a lead that swaps `relay` for a symlink afterwards redirects nothing.
+const relay = await openHeld(relayDir, lane);
 // THE BROKER'S OWN STATE lives where the lead cannot write: beside the go file.
 const iso = path.join(goDir, 'broker-iso');
 // THE RECEIPT KEY NEVER TOUCHES DISK: a workspace-write sandbox fences writes, not reads, so any key file the user can read a lead can read. The key and the receipts live in this process's memory alone.
@@ -66,6 +69,11 @@ async function lanePath(value, create = false) {
 const run = (command, argv) => spawnSync(command, argv, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
 const output = r => cap((r.stdout || '') + (r.stderr || '') + (r.error ? String(r.error) : ''));
 
+// Worktrees the broker made stand in the lane as symlinks to a staging dir that never moves; this maps each lane link to its stage.
+const madeFile = path.join(iso, 'made.json');
+const made = new Map();
+try { for (const [k, v] of Object.entries(JSON.parse(await readFile(madeFile, 'utf8')))) made.set(k, v); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+const saveMade = async () => { await (await import('node:fs/promises')).mkdir(iso, { recursive: true }); await writeFile(madeFile, JSON.stringify(Object.fromEntries(made))); };
 async function handle(request) {
   if (!request || typeof request !== 'object' || Array.isArray(request)) throw new Error('request must be an object');
   const schemas = { commit: ['kind', 'paths', 'message', 'expectHead'], push: ['kind'], install: ['kind', 'path'], worktree: ['kind', 'path', 'branch', 'base'], 'worktree-remove': ['kind', 'path'], launch: ['kind', 'seatDir', 'model', 'effort', 'mode', 'worktree'] };
@@ -74,13 +82,17 @@ async function handle(request) {
     const target = await lanePath(request.path, true);
     if (typeof request.branch !== 'string' || !request.branch.startsWith(`${branch}-`) || git('check-ref-format', `refs/heads/${request.branch}`).status !== 0) throw new Error('invalid worktree branch');
     if (typeof request.base !== 'string' || !request.base || request.base.startsWith('-')) throw new Error('invalid base');
-    const made = await addWorktree(await brokerCtx(), { path: target, branch: request.branch, base: request.base });
-    return { ok: made.ok, output: cap(made.output) };
+    const built = await addWorktree(await brokerCtx(), { path: target, branch: request.branch, base: request.base });
+    if (built.ok) { made.set(target, built.stage); await saveMade(); }
+    return { ok: built.ok, output: cap(built.output) };
   }
   if (request.kind === 'worktree-remove') {
-    const target = await lanePath(request.path);
+    const link = path.resolve(String(request.path));
+    const stage = made.get(link);
+    const target = stage ?? await lanePath(request.path);
     if (target === worktree) throw new Error('cannot remove relay worktree');
     const gone = await removeWorktree(await brokerCtx(), { path: target });
+    if (gone.ok && stage) { (await import('node:fs')).rmSync(path.dirname(stage), { recursive: true, force: true }); made.delete(link); await saveMade(); const parent = await openHeld(path.dirname(link), lane); try { await unlink(parent.at(path.basename(link))); } finally { await parent.close(); } }
     return { ok: gone.ok, output: cap(gone.output) };
   }
   if (request.kind === 'install') {
@@ -99,7 +111,7 @@ async function handle(request) {
     const brief = await realpath(path.join(seat, 'brief.md'));
     if (!inside(seat, brief) || !(await stat(brief)).isFile()) throw new Error('invalid brief');
     const argv = [launcher, '--seat-dir', seat, '--model', request.model, '--effort', request.effort, '--mode', request.mode];
-    if (request.mode === 'build') argv.push('--worktree', await lanePath(request.worktree));
+    if (request.mode === 'build') argv.push('--worktree', made.get(path.resolve(String(request.worktree))) ?? await lanePath(request.worktree));
     const launched = run(process.execPath, argv);
     return { ok: launched.status === 0, output: output(launched) };
   }
@@ -120,13 +132,13 @@ async function handle(request) {
 }
 
 async function poll() {
-  const names = (await readdir(relay)).filter(name => /^req-(.+)\.json$/.test(name)).sort();
+  const names = (await readdir(relay.at())).filter(name => /^req-(.+)\.json$/.test(name)).sort();
   for (const name of names) {
     const id = name.slice(4, -5);
-    const response = path.join(relay, `res-${id}.json`);
+    const response = relay.at(`res-${id}.json`);
     try { await readFile(response); continue; } catch (error) { if (error.code !== 'ENOENT') throw error; }
     let answer;
-    try { answer = await handle(JSON.parse(await readFile(path.join(relay, name), 'utf8'))); }
+    try { answer = await handle(JSON.parse(await readFile(relay.at(name), 'utf8'))); }
     catch (error) { answer = { ok: false, output: cap(`refused: ${error.message}`) }; }
     await writeFile(response, JSON.stringify(answer) + '\n', { flag: 'wx' });
   }

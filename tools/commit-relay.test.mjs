@@ -1,12 +1,13 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, symlinkSync, chmodSync, readdirSync, linkSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, symlinkSync, chmodSync, readdirSync, linkSync, renameSync } from 'node:fs';
 import { createServer } from 'node:net';
 import os from 'node:os';
 import { randomBytes } from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { openHeld } from './held-dir.mjs';
 import { addWorktree, brokerEnv, commitWithReceipt, pushWithGo, readSafe, verifyReceipt } from './seat-broker.mjs';
 import { runCheckSeat, runInstallSeat, signReceipt, HAVE_BWRAP } from './seat-walls.mjs';
 
@@ -30,7 +31,7 @@ function setup() {
   writeFileSync(path.join(lane, 'message'), 'relay test\n');
   const request = (id, data) => writeFileSync(path.join(lane, 'relay', `req-${id}.json`), typeof data === 'string' ? data : JSON.stringify(data));
   const goDir = path.join(root, 'controller'); mkdirSync(goDir); const goFile = path.join(goDir, 'push-go');
-  const launcher = path.join(root, 'launcher.mjs'); writeFileSync(launcher, `import { writeFileSync } from 'node:fs';
+  const launcher = path.join(home, 'launcher.mjs'); writeFileSync(launcher, `import { writeFileSync } from 'node:fs';
 writeFileSync(${JSON.stringify(path.join(root, 'argv.json'))}, JSON.stringify(process.argv.slice(2)));
 console.log('SEAT-LAUNCHED 123');
 `);
@@ -409,11 +410,17 @@ test('P1-4 a worktree parent swapped after validation refuses and leaves nothing
   const x = brokerFixture();
   const lane = path.join(x.root, 'lane'), parent = path.join(lane, 'p'), outside = path.join(x.root, 'outside');
   mkdirSync(parent, { recursive: true }); mkdirSync(outside);
-  const ctx = { ...x.ctx, laneRoot: lane, beforeMove: async () => { rmSync(parent, { recursive: true }); symlinkSync(outside, parent); } };
+  const ctx = { ...x.ctx, laneRoot: lane, beforeLink: async () => { rmSync(parent, { recursive: true }); symlinkSync(outside, parent); } };
   const r = await addWorktree(ctx, { path: path.join(parent, 'wt'), branch: 'lane-swap', base: 'HEAD' });
-  assert.equal(r.ok, false, JSON.stringify(r)); assert.match(r.output, /parent|outside|changed/);
+  assert.equal(r.ok, false, JSON.stringify(r)); assert.match(r.output, /parent|outside|changed|link/);
   assert.deepEqual(readdirSync(outside), [], 'nothing landed outside the lane');
   assert.equal(spawnSync('git', ['-C', x.wt, 'rev-parse', '--verify', 'refs/heads/lane-swap']).status, 128, 'the branch was rolled back');
+  // the parent renamed away (still a live directory) and a symlink put in its place: the held handle keeps the link inside the lane, the check refuses, the rollback unlinks through the handle
+  const moved = path.join(lane, 'p-moved');
+  mkdirSync(path.join(lane, 'p2'));
+  const ctx3 = { ...x.ctx, laneRoot: lane, beforeLink: async () => { renameSync(path.join(lane, 'p2'), moved); symlinkSync(outside, path.join(lane, 'p2')); } };
+  const r3 = await addWorktree(ctx3, { path: path.join(lane, 'p2', 'wt'), branch: 'lane-swap2', base: 'HEAD' });
+  assert.equal(r3.ok, false, JSON.stringify(r3)); assert.deepEqual(readdirSync(outside), [], 'nothing landed outside'); assert.deepEqual(readdirSync(moved), [], 'the held directory holds no leftover link');
   // CONTROL: an unswapped parent lands the worktree inside the lane
   const good = await addWorktree({ ...x.ctx, laneRoot: lane }, { path: path.join(lane, 'good'), branch: 'lane-good', base: 'HEAD' });
   assert.equal(good.ok, true, JSON.stringify(good)); assert.equal(readFileSync(path.join(lane, 'good', 'a'), 'utf8'), 'initial\n');
@@ -425,4 +432,32 @@ test('P2-6 a missing wall refuses by name: the check and the install each say wh
   assert.equal(c.ok, false); assert.match(c.output, /no wall available/); assert.match(c.output, /lint, unit/);
   const i = await runInstallSeat({ worktree: x.wt, gitDir: x.ctx.gitDir, installer: '/opt/pnpm', storeDir: x.root, iso: x.iso, bwrap: false });
   assert.equal(i.ok, false); assert.match(i.output, /no wall available/); assert.match(i.output, /\/opt\/pnpm/);
+});
+
+test('P1-1 the relay request directory is held by handle: swapping `relay` for a symlink after the hold redirects nothing', async () => {
+  const x = brokerFixture();
+  const lane = path.join(x.root, 'lane'), relay = path.join(lane, 'relay'), outside = path.join(x.root, 'outside');
+  mkdirSync(relay, { recursive: true }); mkdirSync(outside);
+  const held = await openHeld(relay, lane);
+  writeFileSync(held.at('req-1.json'), '{}');
+  renameSync(relay, path.join(lane, 'relay-moved')); symlinkSync(outside, relay);
+  writeFileSync(held.at('res-1.json'), 'answer');
+  assert.deepEqual(readdirSync(outside), [], 'nothing landed outside the lane');
+  assert.deepEqual(readdirSync(path.join(lane, 'relay-moved')).sort(), ['req-1.json', 'res-1.json']);
+  await held.close();
+  // CONTROL: a pathname-based write after the swap WOULD have landed outside
+  writeFileSync(path.join(relay, 'res-2.json'), 'x');
+  assert.deepEqual(readdirSync(outside), ['res-2.json']);
+  await assert.rejects(openHeld(relay, lane), /not a real directory/, 'a symlinked relay dir refuses to open');
+  const elsewhere = path.join(x.root, 'elsewhere'); mkdirSync(elsewhere);
+  await assert.rejects(openHeld(elsewhere, lane), /outside/, 'a directory outside the root refuses');
+});
+
+test('P1-5 the trusted launcher must sit outside the scratch tree entirely', () => {
+  const x = setup();
+  const inScratch = path.join(x.lane, 'wt', 'launcher.mjs'); writeFileSync(inScratch, '// planted');
+  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', x.goFile, '--launcher', inScratch, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
+  assert.notEqual(r.status, 0); assert.match(r.stderr, /launcher must sit outside the scratch tree/);
+  const ok = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', x.goFile, '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
+  assert.equal(ok.status, 0, ok.stderr);
 });

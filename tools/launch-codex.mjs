@@ -21,7 +21,7 @@
  * its floor (20% for build, lead or research, 0% for read), a build or lead seat on the main checkout, a lead worktree
  * outside scratch, or a build seat over a stale dist.
  * Pool-used lines (seat-harness#/the-spend-guard): a lead refuses above 50% used, build or research above 60%. A detached
- * watchdog (`--watch`, spawned beside every seat) tails the seat's rollout and stops it at its token ceiling (`--ceiling N`;
+ * supervisor (`--supervise`, the seat's parent: it spawns codex itself) tails the seat's rollout and stops it at its token ceiling (`--ceiling N`;
  * lead 15M, others 8M), writing `ceiling.md`.
  * `--lead-step --lane-root <dir> --model --effort --worktree` launches ONE fresh lead step over `<lane-root>/state.json`
  * (tools/lane-state.mjs): the step dir `<lane-root>/steps/step-NNN` is the seat dir, the counter is spent only when the
@@ -86,41 +86,71 @@ export function listRollouts(home) {
   return out;
 }
 
-/** The pid's start tick from /proc: its identity, since a reused pid carries another. */
-export function startTick(n) { try { return readFileSync(`/proc/${n}/stat`, "utf8").replace(/^.*\) /, "").split(" ")[19]; } catch { return null; } }
+/** The text of a rollout event's user-prompt field, or null when the event holds no user prompt. */
+function promptText(event) {
+  const p = event?.payload;
+  if (!p) return null;
+  if (p.type === "user_message") return typeof p.message === "string" ? p.message : JSON.stringify(p.message ?? "");
+  if (p.type === "message" && p.role === "user") return JSON.stringify(p.content ?? "");
+  return null;
+}
 
-/** The rollout of one seat: among the files NOT in `before` (the set the launcher listed ahead of the spawn), the one whose opening lines carry the seat's own marker. The marker rides the prompt, so a rollout names its seat; no cwd or start order decides. */
+/** Whether the rollout at `file` holds `marker` in its FIRST user-prompt event: lines parse as JSONL events, no byte cap, an echoed copy in tool output never counts; a file with no complete prompt event yet reads as not yet. */
+function rolloutHoldsMarker(file, marker) {
+  const fd = openSync(file, "r");
+  try {
+    const buf = Buffer.alloc(65536);
+    let tail = Buffer.alloc(0), pos = 0;
+    for (;;) {
+      const n = readSync(fd, buf, 0, buf.length, pos);
+      if (n === 0) return false;
+      pos += n;
+      tail = Buffer.concat([tail, buf.subarray(0, n)]);
+      let nl;
+      while ((nl = tail.indexOf(10)) !== -1) {
+        const line = tail.subarray(0, nl).toString("utf8");
+        tail = tail.subarray(nl + 1);
+        if (!line.trim()) continue;
+        let event; try { event = JSON.parse(line); } catch { continue; }
+        const text = promptText(event);
+        if (text !== null) return text.includes(marker);
+      }
+    }
+  } finally { closeSync(fd); }
+}
+
+/** The rollout of one seat: among the files NOT in `before` (the set the launcher listed ahead of the spawn), the one whose first user-prompt event carries the seat's own marker. The marker rides the prompt, so a rollout names its seat. */
 export function findRollout(home, { marker, before }) {
   for (const p of listRollouts(home)) {
     if (before.has(p)) continue;
-    try {
-      const fd = openSync(p, "r"); const buf = Buffer.alloc(262144);
-      const n = readSync(fd, buf, 0, buf.length, 0); closeSync(fd);
-      // The FIRST line that names the marker must be the user's prompt, so a marker a seat later copies into tool output never claims a rollout.
-      const first = buf.toString("utf8", 0, n).split("\n").find((l) => l.includes(marker));
-      if (first && /"role":"user"|"type":"user_message"/.test(first)) return p;
-    } catch { /* unreadable or torn */ }
+    try { if (rolloutHoldsMarker(p, marker)) return p; } catch { /* unreadable or torn */ }
   }
   return null;
 }
 
-/** The watchdog loop over injected readers: stops the seat at its ceiling (SIGTERM, then SIGKILL after `graceTicks` ticks) and writes ceiling.md; returns "ceiling" or "exited". */
-export function watchSeat({ seatDir, pid, ceiling, mode, tokens, alive, kill, sleep, graceTicks = 10 }) {
+/**
+ * The supervisor's loop over injected readers: stops the seat at its ceiling (SIGTERM, then SIGKILL after `graceTicks`
+ * ticks) and writes ceiling.md; fails closed (the same stop) when no token reading appears for `blindTicks` ticks.
+ * Returns "ceiling", "blind" or "exited".
+ */
+export async function watchSeat({ seatDir, pid, ceiling, mode, tokens, alive, kill, sleep, graceTicks = 10, blindTicks = 100 }) {
+  let blind = 0;
+  const stop = async (why) => {
+    kill("SIGTERM");
+    for (let i = 0; i < graceTicks && alive(); i++) await sleep();
+    if (alive()) kill("SIGKILL");
+    writeFileSync(join(seatDir, "ceiling.md"), `# Ceiling reached\n\nThe ${mode} seat (pid ${pid}) ${why} The supervisor stopped it (SIGTERM, then SIGKILL if it lived).\n`);
+  };
   while (alive()) {
     const t = tokens();
-    if (typeof t === "number" && t >= ceiling) {
-      kill("SIGTERM");
-      for (let i = 0; i < graceTicks && alive(); i++) sleep();
-      if (alive()) kill("SIGKILL");
-      writeFileSync(join(seatDir, "ceiling.md"), `# Ceiling reached\n\nThe ${mode} seat (pid ${pid}) read ${t} total tokens in its rollout (total_token_usage.total_tokens, cached input counted) against a ceiling of ${ceiling}. The watchdog stopped it (SIGTERM, then SIGKILL if it lived).\n`);
-      return "ceiling";
-    }
-    sleep();
+    if (typeof t === "number") blind = 0; else blind++;
+    if (typeof t === "number" && t >= ceiling) { await stop(`read ${t} total tokens in its rollout (total_token_usage.total_tokens, cached input counted) against a ceiling of ${ceiling}.`); return "ceiling"; }
+    if (blind >= blindTicks) { await stop(`showed no token reading in any rollout for ${blindTicks} ticks, so no ceiling could be enforced (failing closed; ceiling ${ceiling}).`); return "blind"; }
+    await sleep();
   }
   return "exited";
 }
 
-/** The passwd home, never `$HOME`. */
 export function realHome() { return userInfo().homedir; }
 
 /** The argument array after `codex` and before the brief. */
@@ -303,17 +333,18 @@ export function preflight({ mode, model, seatDir, worktree, briefless }, readers
 
 function parse(argv) {
   const o = { dryRun: false };
-  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--pid": "pid", "--marker": "marker", "--born": "born", "--before": "before", "--lane-root": "laneRoot" };
+  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--marker": "marker", "--before": "before", "--prompt-file": "promptFile", "--home": "home", "--lane-root": "laneRoot" };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--dry-run") o.dryRun = true;
-    else if (argv[i] === "--watch") o.watch = true;
+    else if (argv[i] === "--supervise") o.supervise = true;
+    else if (argv[i] === "--") { o.rest = argv.slice(i + 1); break; }
     else if (argv[i] === "--lead-step") o.leadStep = true;
     else if (argv[i] === "--canary") o.canary = true;
     else if (argv[i] === "--check-canary") o.checkCanary = true;
     else if (keys[argv[i]]) { if (argv[i + 1] === undefined) throw new Error(`${argv[i]} wants a value`); o[keys[argv[i]]] = argv[++i]; }
     else throw new Error(`unknown option ${argv[i]}`);
   }
-  if (o.watch) return o;
+  if (o.supervise) return o;
   if (o.checkCanary) {
     if (!o.seatDir) throw new Error("--seat-dir is required");
     return o;
@@ -326,28 +357,34 @@ function parse(argv) {
   return o;
 }
 
-/** The detached watchdog entry: tails the seat's rollout every few seconds until the seat exits or crosses its ceiling. */
-function watchMain(o) {
-  const pid = Number(o.pid), marker = o.marker, before = new Set(JSON.parse(readFileSync(o.before, "utf8"))), home = realHome();
-  // The launcher read the pid's start tick right after the spawn and passed it as --born: a reused pid reads as a different process, and the seat as gone.
-  const born = o.born ?? null;
-  const alive = () => { try { process.kill(pid, 0); } catch { return false; } return born === null || startTick(pid) === born; };
-  const nap = new Int32Array(new SharedArrayBuffer(4));
+/**
+ * The supervisor: the seat's PARENT. It spawns codex itself, so the child's pid stays its own until the supervisor reaps it
+ * (no reuse, no looked-up pid), signals only its own child's process group, and tails the seat's rollout every few seconds
+ * until the seat exits or crosses its ceiling.
+ */
+function superviseMain(o) {
+  const marker = o.marker, before = new Set(JSON.parse(readFileSync(o.before, "utf8"))), home = o.home ?? realHome();
+  const prompt = readFileSync(o.promptFile, "utf8");
+  const fd = openSync(join(o.seatDir, "run.log"), "w");
+  const child = nodeSpawn("codex", [...(o.rest ?? []), prompt], { cwd: o.seatDir, env: process.env, detached: true, stdio: ["ignore", fd, fd] });
+  let exited = false;
+  child.on("exit", () => { exited = true; });
+  child.on("error", () => { exited = true; });
   let file = null;
-  watchSeat({
-    seatDir: o.seatDir, pid, ceiling: Number(o.ceiling), mode: o.mode, alive,
-    kill: (sig) => { if (!alive()) return; try { process.kill(-pid, sig); } catch { /* gone */ } },
-    sleep: () => Atomics.wait(nap, 0, 0, 3000),
+  return watchSeat({
+    seatDir: o.seatDir, pid: child.pid, ceiling: Number(o.ceiling), mode: o.mode,
+    alive: () => !exited,
+    kill: (sig) => { if (!exited) { try { process.kill(-child.pid, sig); } catch { /* gone */ } } },
+    sleep: () => new Promise((r) => setTimeout(r, 3000)),
     tokens: () => { file ??= findRollout(home, { marker, before }); return file ? rolloutTokens(readFileSync(file, "utf8").split("\n")) : null; },
-  });
-  return 0;
+  }).then(() => (exited ? 0 : new Promise((r) => child.on("exit", () => r(0)))));
 }
 
 /** The launcher over injected readers, spawn and writers; returns the exit code. */
 export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err = console.error } = {}) {
   let o;
   try { o = parse(argv); } catch (e) { err(`[launch-codex] ${e.message}`); return 2; }
-  if (o.watch) return watchMain(o);
+  if (o.supervise) return superviseMain(o);
   if (o.checkCanary) {
     const seatDir = real(o.seatDir);
     readers ??= realReaders();
@@ -401,19 +438,17 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const brief = appendSeatLaw(readFileSync(briefPath, "utf8"), law, o.mode === "lead" ? "LEAD LAW" : "SEAT LAW");
     writeFileSync(briefPath, brief);
     appendFileSync(join(seatDir, "attempts.log"), `attempt model=${o.model} effort=${o.effort} mode=${o.mode}\n`);
-    const fd = openSync(join(seatDir, "run.log"), "w");
     const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(seatDir, ".tmp"), TMPPREFIX: join(seatDir, ".tmp", "zsh") };
     const beforeFile = join(seatDir, "rollouts-before.json");
     writeFileSync(beforeFile, JSON.stringify(listRollouts(readers.realHome)));
     const marker = `SEAT-MARKER ${randomUUID()}`;
     writeFileSync(join(seatDir, "marker.txt"), `${marker}\n`);
-    const child = spawn("codex", [...args, `${marker}\n\n${brief}`], { cwd: seatDir, env, detached: true, stdio: ["ignore", fd, fd] });
-    child.unref?.();
-    const born = (readers.startTick ?? startTick)(child.pid);
-    // A seat whose start tick cannot be read has already exited; no watchdog guards a pid that may be reused.
-    if (!born) { log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${child.pid}; it exited before the watchdog could pin it; wait on: until [ -f ${join(seatDir, "final.md")} ]`); return 0; }
-    const dog = spawn(process.execPath, [fileURLToPath(import.meta.url), "--watch", "--seat-dir", seatDir, "--pid", String(child.pid), "--ceiling", String(ceiling), "--mode", o.mode, "--marker", marker, "--before", beforeFile, "--born", born], { cwd: seatDir, env: { ...process.env, HOME: readers.realHome }, detached: true, stdio: "ignore" });
-    dog.unref?.();
+    // The supervisor is the seat's parent and spawns codex itself (see superviseMain); the prompt rides a file because it can run long.
+    const promptFile = join(seatDir, "prompt.txt");
+    writeFileSync(promptFile, `${marker}\n\n${brief}`);
+    const supervisor = spawn(process.execPath, [fileURLToPath(import.meta.url), "--supervise", "--seat-dir", seatDir, "--ceiling", String(ceiling), "--mode", o.mode, "--marker", marker, "--before", beforeFile, "--prompt-file", promptFile, "--home", readers.realHome, "--", ...args], { cwd: seatDir, env, detached: true, stdio: "ignore" });
+    supervisor.unref?.();
+    const child = supervisor;
     log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${child.pid}; wait on: until [ -f ${join(seatDir, "final.md")} ]`);
     return 0;
   } catch (e) {
@@ -423,4 +458,4 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) process.exit(run(process.argv.slice(2)));
+if (process.argv[1] === fileURLToPath(import.meta.url)) Promise.resolve(run(process.argv.slice(2))).then((code) => process.exit(code));

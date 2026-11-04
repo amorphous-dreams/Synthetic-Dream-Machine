@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { exportTree } from './tree-export.mjs';
-import { constants as FS, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { openHeld } from './held-dir.mjs';
+import { constants as FS, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
 import { lstat, open, readFile, readlink, realpath, unlink } from 'node:fs/promises';
 import os from 'node:os';
@@ -446,56 +447,49 @@ function listGitlinks(ctx, base) {
 }
 
 /**
- * A new worktree is built in a broker-owned staging directory and moved into the lane in one step, so no write follows a
- * lane path a lead could swap. The parent of the destination is checked before the move and the landed path after it;
- * a swap between them refuses and rolls the worktree back.
+ * A new worktree is built where it stays: in a broker-owned staging directory that never moves. The lane sees it as a
+ * symlink the broker makes through a parent directory it holds open by handle, so no later step re-resolves a pathname a
+ * lead could swap, and a rollback unlinks through the same handle.
  */
 export async function addWorktree(ctx, { path: dest, branch, base }) {
   if (typeof ctx.laneRoot !== 'string') return fail('worktree needs the lane root');
-  const lane = await realpath(ctx.laneRoot);
-  const insideLane = (p) => p !== lane && p.startsWith(`${lane}${path.sep}`);
-  const parentOk = async () => {
-    const parent = await realpath(path.dirname(dest));
-    return path.join(parent, path.basename(dest)) === dest && insideLane(path.join(parent, path.basename(dest)));
-  };
+  const name = path.basename(dest);
   try {
     await lstat(dest);
     return fail('destination exists');
   } catch (error) {
     if (error?.code !== 'ENOENT') return fail(error instanceof Error ? error.message : String(error));
   }
-  if (!(await parentOk().catch(() => false))) return fail('destination parent resolves outside the lane root');
+  let parent;
+  try { parent = await openHeld(path.dirname(dest), ctx.laneRoot); } catch (error) { return fail(`destination parent: ${error.message}`); }
+  try {
+    ensureIso(ctx.iso);
+    const stageRoot = path.join(ctx.iso, 'staging');
+    mkdirSync(stageRoot, { recursive: true });
+    const stage = path.join(await mkdtemp(path.join(stageRoot, 'wt-')), 'wt');
+    const undo = () => { git(ctx, ['worktree', 'remove', '--force', stage]); git(ctx, ['branch', '-D', branch]); rmSync(path.dirname(stage), { recursive: true, force: true }); };
 
-  ensureIso(ctx.iso);
-  const stageRoot = path.join(ctx.iso, 'staging');
-  mkdirSync(stageRoot, { recursive: true });
-  const stage = path.join(await mkdtemp(path.join(stageRoot, 'wt-')), 'wt');
-  const rollback = () => { git(ctx, ['worktree', 'remove', '--force', stage]); git(ctx, ['branch', '-D', branch]); rmSync(path.dirname(stage), { recursive: true, force: true }); };
+    const added = git(ctx, ['worktree', 'add', '--no-checkout', '-b', branch, stage, base]);
+    if (!added.ok) { rmSync(path.dirname(stage), { recursive: true, force: true }); return fail(added.output); }
+    const baseTree = git(ctx, ['rev-parse', `${base}^{tree}`]);
+    if (!baseTree.ok) { undo(); return fail(baseTree.output); }
+    const exported = exportTree({ gitDir: ctx.gitDir, tree: baseTree.stdout.toString('utf8').trim(), to: stage, iso: ctx.iso });
+    if (!exported.ok) { undo(); return fail(exported.output); }
+    const stageCtx = { ...ctx, gitDir: path.join(stage, '.git') };
+    const idxPathRun = git(stageCtx, ['rev-parse', '--git-path', 'index']);
+    if (!idxPathRun.ok) { undo(); return fail(idxPathRun.output); }
+    const seeded = git(stageCtx, ['read-tree', base], { env: { GIT_INDEX_FILE: idxPathRun.stdout.trim() } });
+    if (!seeded.ok) { undo(); return fail(seeded.output); }
 
-  const added = git(ctx, ['worktree', 'add', '--no-checkout', '-b', branch, stage, base]);
-  if (!added.ok) { rmSync(path.dirname(stage), { recursive: true, force: true }); return fail(added.output); }
-  const baseTree = git(ctx, ['rev-parse', `${base}^{tree}`]);
-  if (!baseTree.ok) { rollback(); return fail(baseTree.output); }
-  const exported = exportTree({ gitDir: ctx.gitDir, tree: baseTree.stdout.toString('utf8').trim(), to: stage, iso: ctx.iso });
-  if (!exported.ok) { rollback(); return fail(exported.output); }
-  const stageCtx = { ...ctx, gitDir: path.join(stage, '.git') };
-  const idxPathRun = git(stageCtx, ['rev-parse', '--git-path', 'index']);
-  if (!idxPathRun.ok) { rollback(); return fail(idxPathRun.output); }
-  const seeded = git(stageCtx, ['read-tree', base], { env: { GIT_INDEX_FILE: idxPathRun.stdout.trim() } });
-  if (!seeded.ok) { rollback(); return fail(seeded.output); }
-
-  if (typeof ctx.beforeMove === 'function') await ctx.beforeMove();
-  if (!(await parentOk().catch(() => false))) { rollback(); return fail('destination parent changed after validation'); }
-  const moved = git(ctx, ['worktree', 'move', stage, dest]);
-  if (!moved.ok) { rollback(); return fail(/cross-device|EXDEV/i.test(moved.output) ? 'the broker state and the lane sit on different filesystems; place the broker state beside the lane' : moved.output); }
-  let landed = null;
-  try { landed = await realpath(dest); } catch { /* gone */ }
-  if (landed !== dest || !insideLane(landed)) {
-    git(ctx, ['worktree', 'remove', '--force', dest]); git(ctx, ['branch', '-D', branch]);
-    return fail('destination parent changed during the move; the worktree was rolled back');
+    if (typeof ctx.beforeLink === 'function') await ctx.beforeLink();
+    try { symlinkSync(stage, parent.at(name)); } catch (error) { undo(); return fail(`link: ${error.code ?? error.message}`); }
+    let shown = null;
+    try { shown = await readlink(dest); } catch { /* the path leads elsewhere */ }
+    if (shown !== stage) { try { unlinkSync(parent.at(name)); } catch { /* gone */ } undo(); return fail('destination parent changed after it was opened; the worktree was rolled back'); }
+    return { ok: true, output: '', stage };
+  } finally {
+    await parent.close();
   }
-  rmSync(path.dirname(stage), { recursive: true, force: true });
-  return { ok: true, output: '' };
 }
 
 /** Removes a clean registered worktree; the cleanliness read takes its attributes from the empty tree, so no lane filter runs. */
