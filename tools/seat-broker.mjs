@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { exportTree } from './tree-export.mjs';
 import { constants as FS, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtemp } from 'node:fs/promises';
 import { lstat, open, readFile, readlink, realpath, unlink } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -259,13 +260,13 @@ function headMode(ctx, rel) {
   return entries[0]?.mode ?? null;
 }
 
-export function verifyReceipt({ keyFile, receiptsDir, tree, requiredChecks, definitions = [] }) {
+export function verifyReceipt({ key, receipts, tree, requiredChecks, definitions = [] }) {
   try {
-    const payload = JSON.parse(readFileSync(path.join(receiptsDir, `${tree}.json`), 'utf8'));
+    const payload = receipts.get(tree);
     if (!payload || payload.tree !== tree || !Array.isArray(payload.checks) || typeof payload.mac !== 'string') {
       return { ok: false, reason: 'shape' };
     }
-    const signed = signReceipt({ keyFile, tree, checks: payload.checks, definitions });
+    const signed = signReceipt({ key, tree, checks: payload.checks, definitions });
     const have = Buffer.from(payload.mac, 'hex');
     const want = Buffer.from(signed.mac, 'hex');
     if (have.length === 0 || want.length === 0 || have.length !== want.length || !timingSafeEqual(have, want)) {
@@ -349,11 +350,11 @@ export async function commitWithReceipt(ctx, { paths, messageFile, expectHead })
   if (!treeRun.ok) return fail(treeRun.output);
   const tree = treeRun.stdout.trim();
 
-  const receipt0 = verifyReceipt({ keyFile: ctx.keyFile, receiptsDir: ctx.receiptsDir, tree, requiredChecks: ctx.requiredChecks, definitions: ctx.checks });
+  const receipt0 = verifyReceipt({ key: ctx.key, receipts: ctx.receipts, tree, requiredChecks: ctx.requiredChecks, definitions: ctx.checks });
   if (!receipt0.ok) {
     const checked = await (ctx.checkRunner ?? runCheckSeat)({ ...ctx, tree });
     if (!checked.ok) return fail(checked.output || 'check failed');
-    const receipt1 = verifyReceipt({ keyFile: ctx.keyFile, receiptsDir: ctx.receiptsDir, tree, requiredChecks: ctx.requiredChecks, definitions: ctx.checks });
+    const receipt1 = verifyReceipt({ key: ctx.key, receipts: ctx.receipts, tree, requiredChecks: ctx.requiredChecks, definitions: ctx.checks });
     if (!receipt1.ok) return fail('check receipt verification failed');
   }
 
@@ -443,34 +444,56 @@ function listGitlinks(ctx, base) {
   return paths;
 }
 
+/**
+ * A new worktree is built in a broker-owned staging directory and moved into the lane in one step, so no write follows a
+ * lane path a lead could swap. The parent of the destination is checked before the move and the landed path after it;
+ * a swap between them refuses and rolls the worktree back.
+ */
 export async function addWorktree(ctx, { path: dest, branch, base }) {
+  if (typeof ctx.laneRoot !== 'string') return fail('worktree needs the lane root');
+  const lane = await realpath(ctx.laneRoot);
+  const insideLane = (p) => p !== lane && p.startsWith(`${lane}${path.sep}`);
+  const parentOk = async () => {
+    const parent = await realpath(path.dirname(dest));
+    return path.join(parent, path.basename(dest)) === dest && insideLane(path.join(parent, path.basename(dest)));
+  };
   try {
     await lstat(dest);
     return fail('destination exists');
   } catch (error) {
     if (error?.code !== 'ENOENT') return fail(error instanceof Error ? error.message : String(error));
   }
-  if (!existsSync(TAR)) return fail(`${TAR} is required`);
+  if (!(await parentOk().catch(() => false))) return fail('destination parent resolves outside the lane root');
 
-  const added = git(ctx, ['worktree', 'add', '--no-checkout', '-b', branch, dest, base]);
-  if (!added.ok) return fail(added.output);
+  ensureIso(ctx.iso);
+  const stageRoot = path.join(ctx.iso, 'staging');
+  mkdirSync(stageRoot, { recursive: true });
+  const stage = path.join(await mkdtemp(path.join(stageRoot, 'wt-')), 'wt');
+  const rollback = () => { git(ctx, ['worktree', 'remove', '--force', stage]); git(ctx, ['branch', '-D', branch]); rmSync(path.dirname(stage), { recursive: true, force: true }); };
 
+  const added = git(ctx, ['worktree', 'add', '--no-checkout', '-b', branch, stage, base]);
+  if (!added.ok) { rmSync(path.dirname(stage), { recursive: true, force: true }); return fail(added.output); }
   const baseTree = git(ctx, ['rev-parse', `${base}^{tree}`]);
-  if (!baseTree.ok) return fail(baseTree.output);
-  const exported = exportTree({ gitDir: ctx.gitDir, tree: baseTree.stdout.toString('utf8').trim(), to: dest, iso: ctx.iso });
-  if (!exported.ok) return fail(exported.output);
+  if (!baseTree.ok) { rollback(); return fail(baseTree.output); }
+  const exported = exportTree({ gitDir: ctx.gitDir, tree: baseTree.stdout.toString('utf8').trim(), to: stage, iso: ctx.iso });
+  if (!exported.ok) { rollback(); return fail(exported.output); }
+  const stageCtx = { ...ctx, gitDir: path.join(stage, '.git') };
+  const idxPathRun = git(stageCtx, ['rev-parse', '--git-path', 'index']);
+  if (!idxPathRun.ok) { rollback(); return fail(idxPathRun.output); }
+  const seeded = git(stageCtx, ['read-tree', base], { env: { GIT_INDEX_FILE: idxPathRun.stdout.trim() } });
+  if (!seeded.ok) { rollback(); return fail(seeded.output); }
 
-  for (const gitlink of listGitlinks(ctx, base)) {
-    mkdirSync(path.join(dest, gitlink), { recursive: true });
+  if (typeof ctx.beforeMove === 'function') await ctx.beforeMove();
+  if (!(await parentOk().catch(() => false))) { rollback(); return fail('destination parent changed after validation'); }
+  const moved = git(ctx, ['worktree', 'move', stage, dest]);
+  if (!moved.ok) { rollback(); return fail(moved.output); }
+  let landed = null;
+  try { landed = await realpath(dest); } catch { /* gone */ }
+  if (landed !== dest || !insideLane(landed)) {
+    git(ctx, ['worktree', 'remove', '--force', dest]); git(ctx, ['branch', '-D', branch]);
+    return fail('destination parent changed during the move; the worktree was rolled back');
   }
-
-  const newCtx = { ...ctx, gitDir: path.join(dest, '.git') };
-  const idxPathRun = git(newCtx, ['rev-parse', '--git-path', 'index']);
-  if (!idxPathRun.ok) return fail(idxPathRun.output);
-  const indexPath = idxPathRun.stdout.trim();
-  const seeded = git(newCtx, ['read-tree', base], { env: { GIT_INDEX_FILE: indexPath } });
-  if (!seeded.ok) return fail(seeded.output);
-
+  rmSync(path.dirname(stage), { recursive: true, force: true });
   return { ok: true, output: '' };
 }
 

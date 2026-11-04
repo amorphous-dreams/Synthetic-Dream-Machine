@@ -33,6 +33,7 @@
  */
 import { execFileSync, spawn as nodeSpawn } from "node:child_process";
 import { appendFileSync, closeSync, existsSync, readSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { userInfo } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -85,22 +86,20 @@ export function listRollouts(home) {
   return out;
 }
 
-/** The rollout of one seat: among the files NOT in `before` (the set the launcher listed ahead of the spawn) whose session_meta cwd is one of `cwds`, the one whose session began first. No wall clock decides; the launch order does. */
-export function findRollout(home, { cwds, before }) {
-  let best = null;
+/** The pid's start tick from /proc: its identity, since a reused pid carries another. */
+export function startTick(n) { try { return readFileSync(`/proc/${n}/stat`, "utf8").replace(/^.*\) /, "").split(" ")[19]; } catch { return null; } }
+
+/** The rollout of one seat: among the files NOT in `before` (the set the launcher listed ahead of the spawn), the one whose opening lines carry the seat's own marker. The marker rides the prompt, so a rollout names its seat; no cwd or start order decides. */
+export function findRollout(home, { marker, before }) {
   for (const p of listRollouts(home)) {
     if (before.has(p)) continue;
     try {
-      const fd = openSync(p, "r"); const buf = Buffer.alloc(16384);
+      const fd = openSync(p, "r"); const buf = Buffer.alloc(262144);
       const n = readSync(fd, buf, 0, buf.length, 0); closeSync(fd);
-      const first = buf.toString("utf8", 0, n).split("\n", 1)[0];
-      const cwd = /"cwd":("(?:[^"\\]|\\.)*")/.exec(first)?.[1];
-      if (cwd === undefined || !cwds.includes(JSON.parse(cwd))) continue;
-      const began = /"timestamp":"([^"]+)"/.exec(first)?.[1] ?? "";
-      if (!best || began < best[0]) best = [began, p];
+      if (buf.toString("utf8", 0, n).includes(marker)) return p;
     } catch { /* unreadable or torn */ }
   }
-  return best ? best[1] : null;
+  return null;
 }
 
 /** The watchdog loop over injected readers: stops the seat at its ceiling (SIGTERM, then SIGKILL after `graceTicks` ticks) and writes ceiling.md; returns "ceiling" or "exited". */
@@ -123,7 +122,7 @@ export function watchSeat({ seatDir, pid, ceiling, mode, tokens, alive, kill, sl
 export function realHome() { return userInfo().homedir; }
 
 /** The argument array after `codex` and before the brief. */
-export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir, laneRoot, compactLimit }) {
+export function seatArgs({ mode, model, effort, seatDir, worktree, laneRoot, compactLimit }) {
   if (!MODES.includes(mode)) throw new Error(`mode must be build, lead, read or research (got "${mode}")`);
   const common = ["exec", "-m", model, "-c", `model_reasoning_effort=${effort}`, "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", join(seatDir, "final.md"), "-c", `model_auto_compact_token_limit=${compactLimit ?? COMPACT_LIMIT}`, "-c", `tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`];
   const tmpWall = ["-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true"];
@@ -133,7 +132,8 @@ export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir, laneR
   }
   if (mode === "lead") {
     if (!worktree) throw new Error("a lead needs its worktree");
-    return [...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=true", "-C", worktree, "--add-dir", seatDir, ...(gitDir ? ["--add-dir", gitDir] : []), ...(laneRoot ? ["--add-dir", laneRoot] : [])];
+    // A lead edits its worktree and asks the broker for every git act, so it holds NO git dir and no network flag: the model API rides the codex process itself, outside the sandbox (a read seat works the same way).
+    return [...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=false", "-C", worktree, "--add-dir", seatDir, ...(laneRoot ? ["--add-dir", laneRoot] : [])];
   }
   if (mode === "research") return ["--search", ...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=true", "-C", seatDir];
   return [...common, "-s", "read-only", "-C", seatDir];
@@ -209,13 +209,13 @@ export function seatLaw(canonText) {
 /** The lead's separate wall permits work a builder's canon law forbids. */
 export function leadLaw() {
   return `## LEAD LAW (appended by tools/launch-codex.mjs to a lead brief; it binds this lead)
-* No \`git stash\` in any form, no \`--no-verify\`, no \`git push -u\`, no force-push, no edit of .git/config.
-* Commit by \`git commit -F <file> --only -- <paths>\` with the \`lar:///w1.w2.w3 — summary\` message convention and the two trailers the session's attribution reminder gives.
+* You hold no git write access and no credential. Every git act goes through the broker: write a request file \`req-<id>.json\` (zero-padded, in order) into \`<lane-root>/relay/\` and read its \`res-<id>.json\` on your next step. The doors are \`commit\` (named paths, a message file in the lane root, the expected old head), \`push\` (only when the controller's go names the branch and the head), \`worktree\`, \`worktree-remove\`, \`install\` and \`launch\`.
+* A commit message follows the \`lar:///w1.w2.w3 — summary\` convention and ends with the two trailers the session's attribution reminder gives. No \`git stash\` in any form, no \`--no-verify\`, no \`git push -u\`, no force-push, no edit of .git/config.
 * Never write the main checkout (~/Synthetic-Dream-Machine) or its submodule worktrees; work in your own worktree under ~/.lares-scratch only.
-* Never read a credential file.
+* Never read a credential file or the controller's directory.
 * Never boot a daemon in-tree bare; any boot uses a scratch LAR_ROOT and no global LAR_BAGS.
 * No local e2e loops (unit first; e2e in CI via tools/e2e-shards.mjs or a raw ci/* branch).
-* Launch seats ONLY through tools/launch-codex.mjs; a Sol seat only through the controller.
+* Seats start only through the broker's launch door; a Sol seat only through the controller.
 * A stop that needs more than this wall names itself in out.md and stops.
 * Report to the controller (final.md) for any push beyond the lane's go, and never push without its go.
 `;
@@ -266,7 +266,6 @@ export function realReaders(home = realHome(), repo = REPO) {
     rolloutLines: () => { try { return newestRolloutLines(home); } catch { return null; } },
     distFresh: (wt) => { try { return distFresh(wt); } catch { return false; } },
     canon: () => readFileSync(join(repo, CANON), "utf8"),
-    gitCommonDir: (worktree) => execFileSync("git", ["-C", worktree, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).trim(),
   };
 }
 
@@ -302,7 +301,7 @@ export function preflight({ mode, model, seatDir, worktree, briefless }, readers
 
 function parse(argv) {
   const o = { dryRun: false };
-  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--pid": "pid", "--cwds": "cwds", "--before": "before", "--lane-root": "laneRoot" };
+  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--pid": "pid", "--marker": "marker", "--born": "born", "--before": "before", "--lane-root": "laneRoot" };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--dry-run") o.dryRun = true;
     else if (argv[i] === "--watch") o.watch = true;
@@ -327,18 +326,17 @@ function parse(argv) {
 
 /** The detached watchdog entry: tails the seat's rollout every few seconds until the seat exits or crosses its ceiling. */
 function watchMain(o) {
-  const pid = Number(o.pid), cwds = JSON.parse(o.cwds), before = new Set(JSON.parse(readFileSync(o.before, "utf8"))), home = realHome();
-  // The pid's start tick pins its identity: a reused pid reads as a different process and the seat as gone.
-  const startTick = (n) => { try { return readFileSync(`/proc/${n}/stat`, "utf8").replace(/^.*\) /, "").split(" ")[19]; } catch { return null; } };
-  const born = startTick(pid);
+  const pid = Number(o.pid), marker = o.marker, before = new Set(JSON.parse(readFileSync(o.before, "utf8"))), home = realHome();
+  // The launcher read the pid's start tick right after the spawn and passed it as --born: a reused pid reads as a different process, and the seat as gone.
+  const born = o.born ?? null;
   const alive = () => { try { process.kill(pid, 0); } catch { return false; } return born === null || startTick(pid) === born; };
   const nap = new Int32Array(new SharedArrayBuffer(4));
   let file = null;
   watchSeat({
     seatDir: o.seatDir, pid, ceiling: Number(o.ceiling), mode: o.mode, alive,
-    kill: (sig) => { try { process.kill(-pid, sig); } catch { try { process.kill(pid, sig); } catch { /* gone */ } } },
+    kill: (sig) => { if (!alive()) return; try { process.kill(-pid, sig); } catch { /* gone */ } },
     sleep: () => Atomics.wait(nap, 0, 0, 3000),
-    tokens: () => { file ??= findRollout(home, { cwds, before }); return file ? rolloutTokens(readFileSync(file, "utf8").split("\n")) : null; },
+    tokens: () => { file ??= findRollout(home, { marker, before }); return file ? rolloutTokens(readFileSync(file, "utf8").split("\n")) : null; },
   });
   return 0;
 }
@@ -356,7 +354,9 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     if (existsSync(beforePath)) {
       try { before = new Set(JSON.parse(readFileSync(beforePath, "utf8"))); } catch { before = new Set(); }
     }
-    const rollout = findRollout(readers.realHome, { cwds: [seatDir], before });
+    const markerPath = join(seatDir, "marker.txt");
+    const marker = existsSync(markerPath) ? readFileSync(markerPath, "utf8").trim() : null;
+    const rollout = marker ? findRollout(readers.realHome, { marker, before }) : null;
     if (!rollout) { err(`no rollout found for ${o.seatDir}`); return 2; }
     const verdict = canaryVerdict(readFileSync(rollout, "utf8").split("\n"));
     log(`${verdict.fired ? "COMPACTION-FIRED" : "COMPACTION-NOT-FIRED"} events=${verdict.events} calls=${verdict.calls} tokens=${verdict.tokens}`);
@@ -381,9 +381,8 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
       if (!stepPlan.laneRoot.startsWith(`${scratch}/`)) throw refuse(`the lane root must sit under ${scratch}/<lane>: ${o.laneRoot}`);
     }
     const { pool } = preflight({ ...o, seatDir, worktree, briefless: Boolean(stepPlan) }, readers);
-    const gitDir = o.mode === "lead" ? readers.gitCommonDir(worktree) : undefined;
     const laneRoot = o.mode === "lead" ? (stepPlan?.laneRoot ?? dirname(seatDir)) : undefined;
-    const args = seatArgs({ ...o, seatDir, worktree, gitDir, laneRoot, compactLimit: o.canary ? 50_000 : undefined });
+    const args = seatArgs({ ...o, seatDir, worktree, laneRoot, compactLimit: o.canary ? 50_000 : undefined });
     log(pool);
     if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...args, "<brief>"])}`); return 0; }
     if (o.canary) writeFileSync(join(seatDir, "brief.md"), canaryBrief());
@@ -404,10 +403,12 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(seatDir, ".tmp"), TMPPREFIX: join(seatDir, ".tmp", "zsh") };
     const beforeFile = join(seatDir, "rollouts-before.json");
     writeFileSync(beforeFile, JSON.stringify(listRollouts(readers.realHome)));
-    const child = spawn("codex", [...args, brief], { cwd: seatDir, env, detached: true, stdio: ["ignore", fd, fd] });
+    const marker = `SEAT-MARKER ${randomUUID()}`;
+    writeFileSync(join(seatDir, "marker.txt"), `${marker}\n`);
+    const child = spawn("codex", [...args, `${marker}\n\n${brief}`], { cwd: seatDir, env, detached: true, stdio: ["ignore", fd, fd] });
     child.unref?.();
-    const cwds = JSON.stringify([worktree ?? seatDir, seatDir]);
-    const dog = spawn(process.execPath, [fileURLToPath(import.meta.url), "--watch", "--seat-dir", seatDir, "--pid", String(child.pid), "--ceiling", String(ceiling), "--mode", o.mode, "--cwds", cwds, "--before", beforeFile], { cwd: seatDir, env: { ...process.env, HOME: readers.realHome }, detached: true, stdio: "ignore" });
+    const born = startTick(child.pid);
+    const dog = spawn(process.execPath, [fileURLToPath(import.meta.url), "--watch", "--seat-dir", seatDir, "--pid", String(child.pid), "--ceiling", String(ceiling), "--mode", o.mode, "--marker", marker, "--before", beforeFile, ...(born ? ["--born", born] : [])], { cwd: seatDir, env: { ...process.env, HOME: readers.realHome }, detached: true, stdio: "ignore" });
     dog.unref?.();
     log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${child.pid}; wait on: until [ -f ${join(seatDir, "final.md")} ]`);
     return 0;

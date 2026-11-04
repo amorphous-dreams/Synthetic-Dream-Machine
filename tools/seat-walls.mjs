@@ -53,8 +53,8 @@ export const HAVE_BWRAP = !process.env.SEAT_WALLS_NO_BWRAP && existsSync(BWRAP)
   && spawnSync(BWRAP, ['--ro-bind', '/', '/', '/usr/bin/true'], { stdio: 'ignore' }).status === 0;
 
 /** The mac covers the tree, the check names AND the check definitions (name and argv), so a receipt earned under a weaker check never satisfies a changed one. */
-export function signReceipt({ keyFile, tree, checks, definitions = [] }) {
-  const key = readFileSync(keyFile);
+export function signReceipt({ key, tree, checks, definitions = [] }) {
+  if (!Buffer.isBuffer(key) || key.length < 32) throw new Error('receipt key must be at least 32 bytes held in memory');
   const sorted = checks.slice().sort();
   const defs = createHash('sha256').update(JSON.stringify(definitions.map((d) => [d.name, d.argv]).sort((a, b) => (a[0] < b[0] ? -1 : 1)))).digest('hex');
   const mac = createHmac('sha256', key).update(`${tree}\n${sorted.join(',')}\n${defs}`).digest('hex');
@@ -65,18 +65,18 @@ async function extractTree({ gitDir, tree, to, iso }) {
   return exportTree({ gitDir, tree, to, iso });
 }
 
-export async function runCheckSeat({ gitDir, tree, checks, keyFile, receiptsDir, iso, bwrap, keepWork }) {
-  if (!bwrap) return { ok: false, output: 'no wall available' };
-  if (!HAVE_GIT || !HAVE_TAR || !HAVE_BWRAP) return { ok: false, output: 'no wall available' };
+export async function runCheckSeat({ gitDir, tree, checks, key, receipts, iso, bwrap, keepWork }) {
+  const named = (checks ?? []).map((c) => c?.name).join(', ') || '<none>';
+  if (!bwrap || !HAVE_GIT || !HAVE_TAR || !HAVE_BWRAP) return { ok: false, output: `no wall available: refusing to run check ${named} unwalled` };
 
   mkdirSync(path.join(iso, 'tmp'), { recursive: true });
   mkdirSync(path.join(iso, 'home'), { recursive: true });
 
   const work = await mkdtemp(path.join(iso, 'tmp', 'check-seat-'));
   const treeDir = path.join(work, 'tree');
-  const homeDir = path.join(work, 'home');
+  const scratchDir = path.join(work, 'scratch');
   mkdirSync(treeDir, { recursive: true });
-  mkdirSync(homeDir, { recursive: true });
+  mkdirSync(scratchDir, { recursive: true });
 
   let kept = false;
   try {
@@ -103,10 +103,11 @@ export async function runCheckSeat({ gitDir, tree, checks, keyFile, receiptsDir,
         '--dev', '/dev',
         '--proc', '/proc',
         '--dir', '/work',
-        '--bind', work, '/work',
+        '--ro-bind', treeDir, '/work/tree',
+        '--bind', scratchDir, '/work/scratch',
         '--chdir', '/work/tree',
         '--setenv', 'PATH', '/usr/bin:/bin',
-        '--setenv', 'HOME', '/work/home',
+        '--setenv', 'HOME', '/work/scratch',
         '--setenv', 'LC_ALL', 'C',
         ...check.argv,
       ];
@@ -114,9 +115,8 @@ export async function runCheckSeat({ gitDir, tree, checks, keyFile, receiptsDir,
       if (!ran.ok) return { ok: false, output: `check ${check.name} failed: ${ran.output}` };
     }
 
-    mkdirSync(receiptsDir, { recursive: true });
-    const receipt = signReceipt({ keyFile, tree, checks: (checks ?? []).map((c) => c.name), definitions: checks ?? [] });
-    await writeFile(path.join(receiptsDir, `${tree}.json`), `${JSON.stringify(receipt)}\n`);
+    // The receipt lives in the broker's memory under a key that never touched disk: a lead can neither read the key nor plant a receipt.
+    receipts.set(tree, signReceipt({ key, tree, checks: (checks ?? []).map((c) => c.name), definitions: checks ?? [] }));
     if (keepWork) {
       kept = true;
       return { ok: true, output: '', work };
@@ -160,7 +160,7 @@ function hideCredentials() {
 
 export async function runInstallSeat({ worktree, gitDir, installer, storeDir, iso, protect = [], env, extraRw = [], bwrap = HAVE_BWRAP }) {
   void env;
-  if (!bwrap || !HAVE_BWRAP) return { ok: false, output: 'no wall available' };
+  if (!bwrap || !HAVE_BWRAP) return { ok: false, output: `no wall available: refusing to run the install of ${installer} in ${worktree} unwalled` };
 
   const npmrc = path.join(worktree, '.npmrc');
   if (existsSync(npmrc)) {

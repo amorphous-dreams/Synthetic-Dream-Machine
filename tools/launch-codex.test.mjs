@@ -5,7 +5,7 @@ import { mkdtempSync, mkdirSync, readFileSync, realpathSync, symlinkSync, utimes
 import { tmpdir, userInfo } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { appendSeatLaw, canaryBrief, canaryVerdict, ceilingFor, COMPACT_LIMIT, TOOL_OUTPUT_LIMIT, distFresh, findRollout, rolloutTokens, watchSeat, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
+import { appendSeatLaw, canaryBrief, leadLaw, canaryVerdict, ceilingFor, COMPACT_LIMIT, TOOL_OUTPUT_LIMIT, distFresh, findRollout, rolloutTokens, watchSeat, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
 import { globalStampPath, packageStampPath, sourceDigest } from "./stamp-build.mjs";
 
 const TOOL = fileURLToPath(new URL("./launch-codex.mjs", import.meta.url));
@@ -57,7 +57,18 @@ test("build: workspace-write, network off, both tmp excludes, -C worktree, --add
 });
 
 test("lead argv exact", () => {
-  assert.deepEqual(seatArgs({ mode: "lead", model: "m", effort: "high", seatDir: "/lane/s", worktree: "/w", gitDir: "/g", laneRoot: "/lane" }), ["exec", "-m", "m", "-c", "model_reasoning_effort=high", "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", "/lane/s/final.md", "-c", `model_auto_compact_token_limit=${COMPACT_LIMIT}`, "-c", `tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`, "-s", "workspace-write", "-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true", "-c", "sandbox_workspace_write.network_access=true", "-C", "/w", "--add-dir", "/lane/s", "--add-dir", "/g", "--add-dir", "/lane"]);
+  assert.deepEqual(seatArgs({ mode: "lead", model: "m", effort: "high", seatDir: "/lane/s", worktree: "/w", laneRoot: "/lane" }), ["exec", "-m", "m", "-c", "model_reasoning_effort=high", "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", "/lane/s/final.md", "-c", `model_auto_compact_token_limit=${COMPACT_LIMIT}`, "-c", `tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`, "-s", "workspace-write", "-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true", "-c", "sandbox_workspace_write.network_access=false", "-C", "/w", "--add-dir", "/lane/s", "--add-dir", "/lane"]);
+});
+
+test("P0-1 a lead holds no git dir and no network flag: edits go through the broker, the model API rides the codex process; CONTROL a git dir passed in is ignored", () => {
+  const a = seatArgs({ mode: "lead", model: "m", effort: "high", seatDir: "/lane/s", worktree: "/w", laneRoot: "/lane", gitDir: "/the/git/dir" });
+  assert.ok(!a.includes("/the/git/dir"), "no git dir rides --add-dir");
+  assert.ok(!a.some((x) => x.endsWith("network_access=true")));
+  assert.ok(a.includes("sandbox_workspace_write.network_access=false"));
+  const law = leadLaw();
+  assert.match(law, /broker/); assert.match(law, /req-<id>\.json/);
+  assert.doesNotMatch(law, /git commit -F/, "the law no longer tells a lead to commit itself");
+  assert.doesNotMatch(law, /Launch seats ONLY through tools\/launch-codex/);
 });
 
 test("lead argv needs worktree", () => {
@@ -213,7 +224,7 @@ test("run: a real launch appends the law once, logs the attempt, spawns codex wi
   assert.equal(spawned[0].cmd, "codex");
   assert.equal(spawned[0].opts.env.HOME, w.home);
   assert.equal(spawned[0].opts.env.TMPDIR, join(w.seatDir, ".tmp"));
-  assert.equal(spawned[0].args.at(-1), brief, "the brief rides as the last argument, law included");
+  assert.ok(spawned[0].args.at(-1).endsWith(brief) && /^SEAT-MARKER [0-9a-f-]{36}\n\n/.test(spawned[0].args.at(-1)), "the brief rides last, law included, behind the seat's own marker");
   assert.equal(readFileSync(join(w.seatDir, "attempts.log"), "utf8").trim().split("\n").length, 2);
   assert.match(out.join("\n"), /SEAT-LAUNCHED .*pid 4242.*until \[ -f .*final\.md \]/s);
 });
@@ -234,7 +245,7 @@ test("lead law launch twice", () => {
   assert.doesNotMatch(brief, /^## SEAT LAW/m);
   assert.doesNotMatch(brief, /forged/);
   assert.match(brief, /## Notes\nkeep/);
-  for (const phrase of ["git stash", "--no-verify", "git push -u", "force-push", ".git/config", "git commit -F <file> --only -- <paths>", "lar:///w1.w2.w3 — summary", "two trailers", "submodule worktrees", "credential file", "scratch LAR_ROOT", "global LAR_BAGS", "tools/e2e-shards.mjs", "ci/*", "tools/launch-codex.mjs", "Sol seat", "out.md", "final.md", "never push without"]) assert.ok(brief.includes(phrase), phrase);
+  for (const phrase of ["git stash", "--no-verify", "git push -u", "force-push", ".git/config", "req-<id>.json", "lar:///w1.w2.w3 — summary", "two trailers", "submodule worktrees", "credential file", "scratch LAR_ROOT", "global LAR_BAGS", "tools/e2e-shards.mjs", "ci/*", "launch door", "Sol seat", "out.md", "final.md", "never push without"]) assert.ok(brief.includes(phrase), phrase);
 });
 
 test("--dry-run prints the whole argv and spawns nothing, writes nothing; a refusal exits 2 and names SEAT-REFUSED", () => {
@@ -254,13 +265,11 @@ test("--dry-run prints the whole argv and spawns nothing, writes nothing; a refu
 
 test("lead dry run argv", () => {
   const w = world(), out = [];
-  let resolved;
-  const readers = { ...w.readers, gitCommonDir: (wt) => { resolved = wt; return "/common/git"; } };
+  const readers = w.readers;
   const code = run(["--mode", "lead", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", w.wt, "--dry-run"], { readers, log: (s) => out.push(s), err() {}, spawn: () => { throw new Error("spawned"); } });
   assert.equal(code, 0);
-  assert.equal(resolved, realpathSync(w.wt));
   const args = JSON.parse(out.find((s) => s.startsWith("DRY-RUN ")).slice(8));
-  assert.deepEqual(args, ["codex", ...seatArgs({ mode: "lead", model: "gpt-6.1-terra", effort: "high", seatDir: realpathSync(w.seatDir), worktree: realpathSync(w.wt), gitDir: "/common/git", laneRoot: dirname(realpathSync(w.seatDir)) }), "<brief>"]);
+  assert.deepEqual(args, ["codex", ...seatArgs({ mode: "lead", model: "gpt-6.1-terra", effort: "high", seatDir: realpathSync(w.seatDir), worktree: realpathSync(w.wt), laneRoot: dirname(realpathSync(w.seatDir)) }), "<brief>"]);
   assert.ok(args.includes(dirname(realpathSync(w.seatDir))));
 });
 
@@ -369,6 +378,7 @@ test("row 2: a lead refuses above 50% used, build and research above 60%, a read
 });
 
 // ---- row 1: per-seat ceilings ----
+const cevent = (o) => JSON.stringify(o);
 const tc = (total) => JSON.stringify({ type: "event_msg", payload: { type: "token_count", info: { total_token_usage: { total_tokens: total } } } });
 
 test("row 1: ceilingFor gives 15M to a lead step and 8M to the rest; an override wins; junk refuses", () => {
@@ -386,24 +396,18 @@ test("row 1: rolloutTokens reads the LAST total_token_usage.total_tokens, skips 
   assert.equal(rolloutTokens([]), null);
 });
 
-test("row 1: findRollout matches the seat by session cwd among the rollouts new since the launch, never another seat's or an earlier one; commas and escapes match; two seats in one cwd each find the earlier start", () => {
+test("P1-5 findRollout binds a seat to its OWN marker: two overlapping launches in one cwd each find only their own rollout; an earlier rollout never counts; CONTROL a marker no rollout holds finds none", () => {
   const home = mkdtempSync(join(tmpdir(), "rollouts-"));
   const dir = join(home, ".codex", "sessions", "2026", "11", "04");
   mkdirSync(dir, { recursive: true });
-  const metaAt = (cwd, ts) => JSON.stringify({ timestamp: ts, type: "session_meta", payload: { cwd } });
-  const put = (name, cwd, ts) => { const f = join(dir, name); writeFileSync(f, `${metaAt(cwd, ts)}\n${tc(5)}\n`); return f; };
-  const old = put("rollout-c.jsonl", "/lane/wt", "2026-11-04T09:00:00.000Z");
+  const put = (name, marker, cwd = "/shared") => { const f = join(dir, name); writeFileSync(f, `${cevent({ timestamp: "2026-11-04T10:00:00.000Z", type: "session_meta", payload: { cwd } })}\n${cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ type: "input_text", text: `${marker}\n\nthe brief` }] } })}\n${tc(5)}\n`); return f; };
+  const old = put("rollout-old.jsonl", "SEAT-MARKER old");
   const before = new Set([old]);
-  const mine = put("rollout-a.jsonl", "/lane/wt", "2026-11-04T10:00:00.000Z");
-  put("rollout-b.jsonl", "/elsewhere", "2026-11-04T10:00:00.000Z");
-  assert.equal(findRollout(home, { cwds: ["/lane/wt", "/lane/s"], before }), mine);
-  assert.equal(findRollout(home, { cwds: ["/nowhere"], before }), null);
-  assert.equal(findRollout(home, { cwds: ["/lane/wt"], before: new Set([old, mine]) }), null, "CONTROL: every match listed before reads none");
-  const odd = put("rollout-d.jsonl", '/la,ne/"q"', "2026-11-04T10:00:00.000Z");
-  assert.equal(findRollout(home, { cwds: ['/la,ne/"q"'], before }), odd);
-  put("rollout-f.jsonl", "/shared", "2026-11-04T10:00:09.000Z");
-  const early = put("rollout-e.jsonl", "/shared", "2026-11-04T10:00:01.000Z");
-  assert.equal(findRollout(home, { cwds: ["/shared"], before }), early);
+  const a = put("rollout-b.jsonl", "SEAT-MARKER aaaa"), b = put("rollout-a.jsonl", "SEAT-MARKER bbbb");
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER aaaa", before }), a);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER bbbb", before }), b);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER old", before }), null, "a rollout listed before the launch never counts");
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER none", before }), null);
 });
 
 test("row 1: watchSeat stops a seat at its ceiling (SIGTERM, then SIGKILL when it lives), writes ceiling.md naming the reading and the ceiling; reads no run.log", () => {
@@ -457,7 +461,6 @@ test("row 1: run launches the watchdog detached beside the seat with the mode's 
 });
 
 // ---- row 3: the compaction canary ----
-const cevent = (o) => JSON.stringify(o);
 
 test("row 3: every mode carries the compaction and tool-output limits as -c overrides; an override moves the compaction limit alone", () => {
   for (const mode of ["build", "lead", "read", "research"]) {
@@ -505,14 +508,17 @@ test("row 3: --canary on a read seat writes the canary brief and launches with a
   // the check
   const dir = join(w.home, ".codex", "sessions", "2026", "11", "04");
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "rollout-x.jsonl"), `${cevent({ timestamp: "2026-11-04T10:00:00Z", type: "session_meta", payload: { cwd: realpathSync(w.seatDir) } })}\n${cevent({ type: "compacted", payload: {} })}\n`);
+  const marker = readFileSync(join(w.seatDir, "marker.txt"), "utf8").trim();
+  assert.match(marker, /^SEAT-MARKER [0-9a-f-]{36}$/);
+  assert.ok(codex.args.at(-1).startsWith(marker), "the marker rides the prompt");
+  writeFileSync(join(dir, "rollout-x.jsonl"), `${cevent({ timestamp: "2026-11-04T10:00:00Z", type: "session_meta", payload: { cwd: realpathSync(w.seatDir) } })}\n${cevent({ type: "response_item", payload: { type: "message", content: [{ text: marker }] } })}\n${cevent({ type: "compacted", payload: {} })}\n`);
   const say = [];
   assert.equal(run(["--check-canary", "--seat-dir", w.seatDir], { readers: w.readers, log: (s) => say.push(s), err: (s) => say.push(s) }), 0);
   assert.match(say.join("\n"), /COMPACTION-FIRED/);
   // the pre-spawn snapshot: a rollout listed before the launch never counts, and a canary that did not compact exits 1
   const dir2 = join(w.home, ".codex", "sessions", "2026", "11", "04");
   writeFileSync(join(w.seatDir, "rollouts-before.json"), JSON.stringify([join(dir2, "rollout-x.jsonl")]));
-  writeFileSync(join(dir2, "rollout-y.jsonl"), `${cevent({ timestamp: "2026-11-04T11:00:00Z", type: "session_meta", payload: { cwd: realpathSync(w.seatDir) } })}\n`);
+  writeFileSync(join(dir2, "rollout-y.jsonl"), `${cevent({ timestamp: "2026-11-04T11:00:00Z", type: "session_meta", payload: { cwd: realpathSync(w.seatDir) } })}\n${cevent({ type: "response_item", payload: { type: "message", content: [{ text: marker }] } })}\n`);
   const say3 = [];
   assert.equal(run(["--check-canary", "--seat-dir", w.seatDir], { readers: w.readers, log: (s) => say3.push(s), err() {} }), 1);
   assert.match(say3.join("\n"), /COMPACTION-NOT-FIRED/);
@@ -541,7 +547,7 @@ test("row 4: --lead-step reads the lane state, bumps the step, writes the step b
   const stepDir = join(realpathSync(laneRoot), "steps", "step-004");
   assert.ok(codex.args.includes(stepDir), "the step dir is the seat dir");
   assert.ok(codex.args.includes(realpathSync(laneRoot)), "the lane root rides --add-dir so the lead can write state.json");
-  assert.ok(codex.args.includes("network_access=true") || codex.args.some((a) => a.endsWith("network_access=true")));
+  assert.ok(codex.args.includes("sandbox_workspace_write.network_access=false") && !codex.args.some((a) => /^\/.*(\.git|git-common)/.test(a) && a !== stepDir), "a lead step carries no git dir and no network flag");
   assert.match(readFileSync(join(stepDir, "brief.md"), "utf8"), /do row 5/);
   assert.match(readFileSync(join(stepDir, "brief.md"), "utf8"), /^## LEAD LAW/m);
   assert.equal(JSON.parse(readFileSync(join(laneRoot, "state.json"), "utf8")).step, 4);

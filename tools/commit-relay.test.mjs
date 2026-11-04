@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, symlinkSync, chmodSync, readdirSync, linkSync } from 'node:fs';
 import { createServer } from 'node:net';
 import os from 'node:os';
+import { randomBytes } from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -35,7 +36,6 @@ console.log('SEAT-LAUNCHED 123');
 `);
   const bin = path.join(root, 'bin'); mkdirSync(bin); writeFileSync(path.join(bin, 'pnpm'), '#!/bin/sh\necho pnpm-ok\n', { mode: 0o755 });
   const relayEnv = { ...process.env, HOME: home, PATH: `${bin}:${process.env.PATH}` };
-  writeFileSync(path.join(goDir, 'check.key'), 'k'.repeat(48), { mode: 0o600 });
   const checksFile = path.join(root, 'checks.json'); writeFileSync(checksFile, JSON.stringify([{ name: 'true', argv: ['/usr/bin/true'] }]));
   const brokerArgs = ['--checks', checksFile, '--author-name', 'Relay', '--author-email', 'relay@example.invalid'];
   const run = () => { const r = spawnSync(process.execPath, [script, '--lane-root', lane, '--worktree', wt, '--branch', 'relay-test', '--go-file', goFile, '--launcher', launcher, ...brokerArgs, '--remote-url', remote, '--once'], { encoding: 'utf8', env: relayEnv }); assert.equal(r.status, 0, r.stderr); };
@@ -156,10 +156,10 @@ test('read launch omits worktree and requires a brief', () => {
 function brokerFixture() {
   const root = mkdtempSync(path.join(os.tmpdir(), 'broker-'));
   roots.push(root);
-  const wt = path.join(root, 'wt'), remote = path.join(root, 'remote.git'), iso = path.join(root, 'iso'), receipts = path.join(root, 'receipts');
-  const control = path.join(root, 'controller'), keyFile = path.join(control, 'check.key'), goFile = path.join(control, 'push-go');
-  for (const d of [wt, iso, receipts, control]) mkdirSync(d, { recursive: true });
-  writeFileSync(keyFile, 'k'.repeat(48), { mode: 0o600 });
+  const wt = path.join(root, 'wt'), remote = path.join(root, 'remote.git'), iso = path.join(root, 'iso'), receipts = new Map(), key = randomBytes(32);
+  const control = path.join(root, 'controller'), goFile = path.join(control, 'push-go');
+  for (const d of [wt, iso, control]) mkdirSync(d, { recursive: true });
+  writeFileSync(path.join(control, 'secret'), 'CONTROLLER-SECRET\n', { mode: 0o600 });
   const git = (...args) => execFileSync('git', ['-C', wt, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
   git('init', '-b', 'lane'); git('config', 'user.name', 'T'); git('config', 'user.email', 't@example.invalid');
   writeFileSync(path.join(wt, 'a'), 'initial\n'); writeFileSync(path.join(wt, 'b'), 'initial\n');
@@ -168,12 +168,12 @@ function brokerFixture() {
   writeFileSync(path.join(root, 'message'), 'broker test\n');
   const checks = [{ name: 'true', argv: ['/usr/bin/true'] }];
   // Where bubblewrap cannot stand (a runner that bars user namespaces) a stand-in signs the receipt the seat would; the wall proofs skip there.
-  const standIn = async (c) => { mkdirSync(c.receiptsDir, { recursive: true }); writeFileSync(path.join(c.receiptsDir, `${c.tree}.json`), JSON.stringify(signReceipt({ keyFile: c.keyFile, tree: c.tree, checks: c.checks.map((k) => k.name), definitions: c.checks }))); return { ok: true, output: '' }; };
-  const ctx = { ...(HAVE_BWRAP ? {} : { checkRunner: standIn }), gitDir: path.join(wt, '.git'), worktree: wt, iso, remoteUrl: remote, branch: 'lane', author: { name: 'Broker', email: 'broker@example.invalid' }, receiptsDir: receipts, keyFile, requiredChecks: ['true'], checks, bwrap: HAVE_BWRAP };
+  const standIn = async (c) => { c.receipts.set(c.tree, signReceipt({ key: c.key, tree: c.tree, checks: c.checks.map((k) => k.name), definitions: c.checks })); return { ok: true, output: '' }; };
+  const ctx = { ...(HAVE_BWRAP ? {} : { checkRunner: standIn }), laneRoot: root, gitDir: path.join(wt, '.git'), worktree: wt, iso, remoteUrl: remote, branch: 'lane', author: { name: 'Broker', email: 'broker@example.invalid' }, receipts, key, requiredChecks: ['true'], checks, bwrap: HAVE_BWRAP };
   const marker = (n) => path.join(root, `MARK-${n}`);
   const hook = (name, body) => { const f = path.join(wt, '.git', 'hooks', name); mkdirSync(path.dirname(f), { recursive: true }); writeFileSync(f, `#!/bin/sh\n${body}\n`); chmodSync(f, 0o755); };
   const markers = () => readdirSync(root).filter((n) => n.startsWith('MARK-'));
-  return { root, wt, remote, iso, receipts, control, keyFile, goFile, git, ctx, marker, hook, markers, message: path.join(root, 'message') };
+  return { root, wt, remote, iso, receipts, key, control, goFile, git, ctx, marker, hook, markers, message: path.join(root, 'message') };
 }
 const commitReq = (x, over = {}) => ({ paths: ['a'], messageFile: x.message, expectHead: x.git('rev-parse', 'HEAD'), ...over });
 
@@ -247,7 +247,7 @@ echo "CWD $(pwd)" >> "${log}"
 env | grep -E '^(NODE_OPTIONS|npm_config_|GIT_|HOME)=' >> "${log}"
 touch "${x.wt}/.git/PWNED" 2>>"${log}" && echo GITWRITE >> "${log}"
 touch "${x.goFile}" 2>>"${log}" && echo GOWRITE >> "${log}"
-cat "${x.keyFile}" 2>/dev/null | head -c 5 | grep -q kkkkk && echo KEYREAD >> "${log}"
+cat "${x.control}/secret" 2>/dev/null | grep -q CONTROLLER-SECRET && echo CTRLREAD >> "${log}"
 touch "${store}/ok" && echo STOREWRITE >> "${log}"
 `, { mode: 0o755 });
   writeFileSync(path.join(x.wt, 'package.json'), JSON.stringify({ name: 'p', scripts: { postinstall: `touch ${probe}` } }));
@@ -264,7 +264,7 @@ touch "${store}/ok" && echo STOREWRITE >> "${log}"
   const seen = readFileSync(log, 'utf8');
   assert.match(seen, /ARGV .*--ignore-scripts/); assert.match(seen, /--offline/); assert.match(seen, /--frozen-lockfile/);
   assert.doesNotMatch(seen, /NODE_OPTIONS|npm_config_script|GIT_DIR/, 'the poisoned environment never reaches the install');
-  assert.match(seen, /STOREWRITE/); assert.match(seen, /--ignore-pnpmfile/); assert.doesNotMatch(seen, /KEYREAD/, 'the check key stays unreadable'); assert.doesNotMatch(seen, /GITWRITE|GOWRITE/, 'the install wrote neither git metadata nor the controller file');
+  assert.match(seen, /STOREWRITE/); assert.match(seen, /--ignore-pnpmfile/); assert.doesNotMatch(seen, /CTRLREAD/, 'the controller dir reads as empty'); assert.doesNotMatch(seen, /GITWRITE|GOWRITE/, 'the install wrote neither git metadata nor the controller file');
   assert.equal(existsSync(path.join(x.wt, '.git', 'PWNED')), false); assert.equal(existsSync(probe), false);
 });
 
@@ -285,9 +285,9 @@ test('PROOF 4 a poisoned PATH, HOME, GIT_*, NODE_OPTIONS and a symlink race: the
 const [ctx0, req, fake] = JSON.parse(process.argv[1]);
 import { signReceipt } from ${JSON.stringify(new URL('./seat-walls.mjs', import.meta.url).href)};
 import { mkdirSync, writeFileSync } from 'node:fs'; import path from 'node:path';
-const ctx = fake ? { ...ctx0, checkRunner: async (c) => { mkdirSync(c.receiptsDir, { recursive: true }); writeFileSync(path.join(c.receiptsDir, c.tree + '.json'), JSON.stringify(signReceipt({ keyFile: c.keyFile, tree: c.tree, checks: c.checks.map((k) => k.name), definitions: c.checks }))); return { ok: true, output: '' }; } } : ctx0;
+const ctx = { ...ctx0, key: Buffer.from(ctx0.keyHex, 'hex'), receipts: new Map(), ...(fake ? { checkRunner: async (c) => { c.receipts.set(c.tree, signReceipt({ key: c.key, tree: c.tree, checks: c.checks.map((k) => k.name), definitions: c.checks })); return { ok: true, output: '' }; } } : {}) };
 const r = await commitWithReceipt(ctx, req); console.log(JSON.stringify(r)); process.exit(r.ok ? 0 : 1);`;
-  const ran = spawnSync(process.execPath, ['--input-type=module', '-e', driver, JSON.stringify([x.ctx, commitReq(x), !HAVE_BWRAP])], { encoding: 'utf8', env: poison });
+  const ran = spawnSync(process.execPath, ['--input-type=module', '-e', driver, JSON.stringify([{ ...x.ctx, keyHex: x.key.toString('hex') }, commitReq(x), !HAVE_BWRAP])], { encoding: 'utf8', env: poison });
   assert.equal(ran.status, 0, ran.stdout + ran.stderr);
   assert.equal(x.git('show', 'HEAD:a'), 'poisoned run');
   assert.deepEqual(x.markers(), [], 'no planted tool, hook, helper or ssh command ran');
@@ -296,7 +296,7 @@ const r = await commitWithReceipt(ctx, req); console.log(JSON.stringify(r)); pro
   const inTree = 'in-tree content\n'; writeFileSync(path.join(x.wt, 'a'), inTree);
   await assert.rejects(readSafe(x.wt, '../secret'), /outside|invalid/);
   symlinkSync(x.root, path.join(x.wt, 'linkdir')); await assert.rejects(readSafe(x.wt, 'linkdir/secret'), /symlink|outside/);
-  linkSync(x.keyFile, path.join(x.wt, 'hard')); await assert.rejects(readSafe(x.wt, 'hard'), /hardlink/);
+  linkSync(path.join(x.control, 'secret'), path.join(x.wt, 'hard')); await assert.rejects(readSafe(x.wt, 'hard'), /hardlink/);
   const swapper = spawn_swapper(path.join(x.wt, 'a'), secret, inTree);
   let leaked = 0, good = 0;
   try { for (let i = 0; i < 400; i++) { try { const r = await readSafe(x.wt, 'a'); if (r.content.toString().includes('TOP-SECRET')) leaked++; else good++; } catch { /* a refusal is the right answer mid-swap */ } } }
@@ -322,30 +322,33 @@ test('PROOF 5 malicious build, test and editor config run only inside the check 
   const cred = path.join(x.root, 'home-creds'); writeFileSync(cred, 'SECRET-TOKEN\n');
   const refBefore = x.git('rev-parse', 'HEAD');
   writeFileSync(path.join(x.wt, '.vscode.json'), '{"tasks":"touch /tmp/should-not-matter"}');
-  const attack = `out=/work/out; : > $out
+  const attack = `out=/work/scratch/out; : > $out
 touch '${x.goFile}' 2>/dev/null && echo GOWRITE >> $out
 git --git-dir='${x.ctx.gitDir}' update-ref refs/heads/lane ${'0'.repeat(40)} 2>/dev/null && echo REFWRITE >> $out
 cat '${cred}' 2>/dev/null >> $out
 (exec 3<>/dev/tcp/127.0.0.1/${port}) 2>/dev/null && echo LOOPBACK >> $out
-touch /work/inside-ok && echo WORKWRITE >> $out
+touch /work/scratch/inside-ok && echo WORKWRITE >> $out
 exit 0`;
   const defs = [{ name: 'true', argv: ['/usr/bin/sh', '-c', attack] }];
   const r = await runCheckSeat({ ...x.ctx, tree: x.git('rev-parse', 'HEAD^{tree}'), checks: defs, keepWork: true });
   server.close();
   assert.equal(r.ok, true, JSON.stringify(r));
-  const out = readFileSync(path.join(r.work, 'out'), 'utf8');
+  const out = readFileSync(path.join(r.work, 'scratch', 'out'), 'utf8');
   assert.match(out, /WORKWRITE/, 'the seat writes inside its own work dir'); assert.doesNotMatch(out, /GOWRITE|REFWRITE|LOOPBACK|SECRET-TOKEN/);
   assert.equal(hits.length, 0, 'the loopback listener saw no connection');
   assert.equal(x.git('rev-parse', 'HEAD'), refBefore); assert.equal(existsSync(x.goFile), false);
-  // receipts: the seat signed this tree and check set; a forged, a wrong-tree and a short-check receipt all refuse
+  // receipts: the seat signed this tree and check set in memory; wrong-tree, short-check, another definition, a stale key and a planted receipt all refuse
   const tree = x.git('rev-parse', 'HEAD^{tree}');
-  assert.equal(verifyReceipt({ keyFile: x.keyFile, receiptsDir: x.receipts, tree, requiredChecks: ['true'], definitions: defs }).ok, true);
-  assert.equal(verifyReceipt({ keyFile: x.keyFile, receiptsDir: x.receipts, tree, requiredChecks: ['true'], definitions: [{ name: 'true', argv: ['/usr/bin/true'] }] }).ok, false, 'a receipt earned under another check definition refuses');
-  assert.equal(verifyReceipt({ keyFile: x.keyFile, receiptsDir: x.receipts, tree, requiredChecks: ['true', 'lint'] }).ok, false);
-  assert.equal(verifyReceipt({ keyFile: x.keyFile, receiptsDir: x.receipts, tree: 'f'.repeat(40), requiredChecks: ['true'] }).ok, false);
-  writeFileSync(path.join(x.receipts, `${'e'.repeat(40)}.json`), JSON.stringify({ tree: 'e'.repeat(40), checks: ['true'], mac: 'deadbeef' }));
-  assert.equal(verifyReceipt({ keyFile: x.keyFile, receiptsDir: x.receipts, tree: 'e'.repeat(40), requiredChecks: ['true'] }).ok, false, 'a receipt without the key refuses');
-  assert.ok(signReceipt({ keyFile: x.keyFile, tree: 'a'.repeat(40), checks: ['true'] }).mac.length > 20);
+  const v = (over) => verifyReceipt({ key: x.key, receipts: x.receipts, tree, requiredChecks: ['true'], definitions: defs, ...over });
+  assert.equal(v({}).ok, true);
+  assert.equal(v({ definitions: [{ name: 'true', argv: ['/usr/bin/true'] }] }).ok, false, 'a receipt earned under another check definition refuses');
+  assert.equal(v({ requiredChecks: ['true', 'lint'] }).ok, false);
+  assert.equal(v({ tree: 'f'.repeat(40) }).ok, false);
+  assert.equal(v({ key: randomBytes(32) }).ok, false, 'a receipt checked under a stale or guessed key refuses');
+  x.receipts.set('e'.repeat(40), { tree: 'e'.repeat(40), checks: ['true'], mac: 'deadbeef' });
+  assert.equal(v({ tree: 'e'.repeat(40) }).ok, false, 'a planted receipt without the key refuses');
+  const scratchSeen = readFileSync(path.join(r.work, 'scratch', 'out'), 'utf8');
+  assert.match(scratchSeen, /WORKWRITE/);
 });
 
 test('the commit door binds an expected old head, a clean receipt, and refuses a failing check; the push go binds branch AND head', async () => {
@@ -364,4 +367,62 @@ test('the commit door binds an expected old head, a clean receipt, and refuses a
   assert.equal(existsSync(x.goFile), false, 'the go spends on the attempt');
   writeFileSync(x.goFile, `other\n${head1}\n`); assert.equal((await pushWithGo({ ...x.ctx, goFile: x.goFile })).ok, false);
   writeFileSync(x.goFile, `lane\n${head1}\n`); assert.equal((await pushWithGo({ ...x.ctx, goFile: x.goFile })).ok, true);
+});
+
+// ======================= the Terra HOLD cures =======================
+test('P0-2 the receipt key never touches disk: a relay run leaves no key or receipt file anywhere, and the relay takes no key option', { skip: !HAVE_BWRAP }, () => {
+  const x = setup(); writeFileSync(path.join(x.wt, 'a'), 'changed\n');
+  x.request('1', { kind: 'commit', message: 'message', paths: ['a'] }); x.run();
+  assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1')));
+  const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.name === '.git' ? [] : e.isDirectory() ? [path.join(d, e.name), ...walk(path.join(d, e.name))] : [path.join(d, e.name)]));
+  const files = walk(x.root).concat(walk(x.home));
+  assert.deepEqual(files.filter((f) => /key|receipt|\.mac$/i.test(path.basename(f))), [], 'no key or receipt file stands under any path');
+  const src = readFileSync(new URL('./commit-relay.mjs', import.meta.url), 'utf8');
+  assert.doesNotMatch(src, /check-key|receipts-dir|keyFile/);
+  assert.match(src, /randomBytes\(32\)/);
+});
+
+test('P0-2 a receipt forged from a guessed or stale key refuses', () => {
+  const key = randomBytes(32), receipts = new Map();
+  const defs = [{ name: 'true', argv: ['/usr/bin/true'] }], tree = 'a'.repeat(40);
+  receipts.set(tree, signReceipt({ key: randomBytes(32), tree, checks: ['true'], definitions: defs }));
+  assert.equal(verifyReceipt({ key, receipts, tree, requiredChecks: ['true'], definitions: defs }).ok, false, 'signed under another key');
+  receipts.set(tree, signReceipt({ key: Buffer.from('guess'.repeat(8)), tree, checks: ['true'], definitions: defs }));
+  assert.equal(verifyReceipt({ key, receipts, tree, requiredChecks: ['true'], definitions: defs }).ok, false, 'signed under a guessed key');
+  receipts.set(tree, signReceipt({ key, tree, checks: ['true'], definitions: defs }));
+  assert.equal(verifyReceipt({ key, receipts, tree, requiredChecks: ['true'], definitions: defs }).ok, true, 'CONTROL the right key verifies');
+  assert.throws(() => signReceipt({ key: Buffer.from('short'), tree, checks: ['true'] }), /32 bytes/);
+});
+
+test('P1-3 the checked tree is bound read-only: a check that mutates it yields no receipt, and a mutation it swallows still leaves the export unchanged', { skip: !HAVE_BWRAP }, async () => {
+  const x = brokerFixture();
+  const tree = x.git('rev-parse', 'HEAD^{tree}');
+  const loud = await runCheckSeat({ ...x.ctx, tree, checks: [{ name: 'mutate', argv: ['/usr/bin/sh', '-c', 'echo evil >> /work/tree/a'] }, { name: 'later', argv: ['/usr/bin/true'] }], keepWork: true });
+  assert.equal(loud.ok, false); assert.equal(x.receipts.size, 0, 'no receipt');
+  const quiet = await runCheckSeat({ ...x.ctx, tree, checks: [{ name: 'swallow', argv: ['/usr/bin/sh', '-c', 'echo evil >> /work/tree/a; echo evil > /work/tree/new; true'] }], keepWork: true });
+  assert.equal(quiet.ok, true);
+  assert.equal(readFileSync(path.join(quiet.work, 'tree', 'a'), 'utf8'), 'initial\n', 'the export stands as the tree holds it');
+  assert.equal(existsSync(path.join(quiet.work, 'tree', 'new')), false);
+});
+
+test('P1-4 a worktree parent swapped after validation refuses and leaves nothing outside the lane', async () => {
+  const x = brokerFixture();
+  const lane = path.join(x.root, 'lane'), parent = path.join(lane, 'p'), outside = path.join(x.root, 'outside');
+  mkdirSync(parent, { recursive: true }); mkdirSync(outside);
+  const ctx = { ...x.ctx, laneRoot: lane, beforeMove: async () => { rmSync(parent, { recursive: true }); symlinkSync(outside, parent); } };
+  const r = await addWorktree(ctx, { path: path.join(parent, 'wt'), branch: 'lane-swap', base: 'HEAD' });
+  assert.equal(r.ok, false, JSON.stringify(r)); assert.match(r.output, /parent|outside|changed/);
+  assert.deepEqual(readdirSync(outside), [], 'nothing landed outside the lane');
+  assert.equal(spawnSync('git', ['-C', x.wt, 'rev-parse', '--verify', 'refs/heads/lane-swap']).status, 128, 'the branch was rolled back');
+  // CONTROL: an unswapped parent lands the worktree inside the lane
+  const good = await addWorktree({ ...x.ctx, laneRoot: lane }, { path: path.join(lane, 'good'), branch: 'lane-good', base: 'HEAD' });
+  assert.equal(good.ok, true, JSON.stringify(good)); assert.equal(readFileSync(path.join(lane, 'good', 'a'), 'utf8'), 'initial\n');
+});
+
+test('P2-6 a missing wall refuses by name: the check and the install each say what they declined to run', async () => {
+  const x = brokerFixture();
+  const c = await runCheckSeat({ ...x.ctx, bwrap: false, tree: x.git('rev-parse', 'HEAD^{tree}'), checks: [{ name: 'lint', argv: ['/usr/bin/true'] }, { name: 'unit', argv: ['/usr/bin/true'] }] });
+  assert.equal(c.ok, false); assert.match(c.output, /no wall available/); assert.match(c.output, /lint, unit/);
+  const i = await runInstallSeat({ worktree: x.wt, gitDir: x.ctx.gitDir, installer: '/opt/pnpm', storeDir: x.root, iso: x.iso, bwrap: false });
+  assert.equal(i.ok, false); assert.match(i.output, /no wall available/); assert.match(i.output, /\/opt\/pnpm/);
 });
