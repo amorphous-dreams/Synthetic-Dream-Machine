@@ -1,7 +1,9 @@
 interface GateEntry {
   marks: number;
   flush: () => Promise<void>;
-  waiters: Array<{ resolve: () => void; reject: (error: Error) => void }>;
+  promise: Promise<void>;
+  resolve: () => void;
+  reject: (error: Error) => void;
 }
 
 /** A title's hands gather until an island boundary or eight marks. */
@@ -10,17 +12,18 @@ export class HandGate {
   private readonly entries = new Map<string, GateEntry>();
 
   mark(title: string, flush: () => Promise<void>, draft = false): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      let entry = this.entries.get(title);
-      if (!entry) {
-        entry = { marks: 0, flush, waiters: [] };
-        this.entries.set(title, entry);
-      }
-      entry.flush = flush;
-      entry.marks++;
-      entry.waiters.push({ resolve, reject });
-      if (!draft && entry.marks >= HandGate.COALESCE_CAP) void this.flush(title).catch(() => {});
-    });
+    let entry = this.entries.get(title);
+    if (!entry) {
+      let resolve!: () => void;
+      let reject!: (error: Error) => void;
+      const promise = new Promise<void>((res, rej) => { resolve = res; reject = rej; });
+      entry = { marks: 0, flush, promise, resolve, reject };
+      this.entries.set(title, entry);
+    }
+    entry.flush = flush;
+    entry.marks++;
+    if (!draft && entry.marks >= HandGate.COALESCE_CAP) void this.flush(title).catch(() => {});
+    return entry.promise;
   }
 
   async flush(title: string): Promise<void> {
@@ -29,10 +32,10 @@ export class HandGate {
     this.entries.delete(title);
     try {
       await entry.flush();
-      entry.waiters.forEach((waiter) => waiter.resolve());
+      entry.resolve();
     } catch (error) {
       const fault = error instanceof Error ? error : new Error(String(error));
-      entry.waiters.forEach((waiter) => waiter.reject(fault));
+      entry.reject(fault);
       throw fault;
     }
   }
@@ -42,14 +45,14 @@ export class HandGate {
 
   /** A discrete act takes its own titles before any store call. */
   consume(titles: readonly string[]): { settle(error?: Error): void } {
-    const waiters: GateEntry["waiters"] = [];
+    const entries: GateEntry[] = [];
     for (const title of new Set(titles)) {
       const entry = this.entries.get(title);
       if (!entry) continue;
       this.entries.delete(title);
-      waiters.push(...entry.waiters);
+      entries.push(entry);
     }
-    return { settle: (error) => waiters.forEach((waiter) => error ? waiter.reject(error) : waiter.resolve()) };
+    return { settle: (error) => entries.forEach((entry) => error ? entry.reject(error) : entry.resolve()) };
   }
 
   async flushAll(): Promise<void> {
