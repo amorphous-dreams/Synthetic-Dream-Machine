@@ -47,14 +47,14 @@ describe("★ one fence, one reading: the frame and the house read one sealed me
   }, 60_000);
 
   test("KNOWN POSITIVE: a meta the frame binds and TOML refuses tears through the house door", () => {
-    const text = sealed(meta(`title = "${URI}"`, "mana = 1", "mana = 2"));
+    const text = sealed(meta(`title = "${URI}"`, "gauge = 1", "gauge = 2"));
     expect(metaParityFaults(text).map((f) => f.kind)).toEqual(["head-meta-split"]);
     const v = memeticVerdict(text);
     expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["head-meta-split"]);
   });
 
   test("CONTROL: a clean sealed meta reads match through the house door", () => {
-    expect(memeticVerdict(sealed(meta(`title = "${URI}"`, 'uri-path = "ha.ka.ba/t/parity"', "mana = 16"))).kind).toBe("match");
+    expect(memeticVerdict(sealed(meta(`title = "${URI}"`, 'uri-path = "ha.ka.ba/t/parity"', "gauge = 16"))).kind).toBe("match");
   });
 
   test.each([

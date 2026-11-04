@@ -585,9 +585,6 @@ function scaffoldDecoratorMeme(d: DecoratorFile): void {
     body: `\`\`\`toml meta
 uri-path    = "${uriPath}"
 type        = "text/memetic-wikitext+tiddlywiki"
-mana        = 14
-manao       = 14
-manaoio     = 13
 l-space     = "lararium"
 role        = "${kindLabel}: ${d.slug} — scaffolded by sync-heleuma --scan-decorators --commit"
 heleuma     = "${heleumaMode}"

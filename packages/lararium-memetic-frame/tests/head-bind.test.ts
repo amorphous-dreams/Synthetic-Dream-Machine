@@ -162,7 +162,7 @@ describe("★ the seal binds the head address ★", () => {
       expect(faultsOf(sealed(meta(line, `title = "${URI}"`)))).toEqual(["head-meta-split"]);
     });
     test("CONTROL: the corpus's own value shapes read match — numbers, booleans, one-line arrays, escapes outside the binding keys", () => {
-      expect(verdict(sealed(meta(`title = "${URI}"`, "mana = 16", "cacheable = true", 'tags = ["a", "b c", "d\\"e"]', 'note = "a \\"quoted\\" word"', "# a comment", "", "[slot]", 'title = "ignored"'))).kind).toBe("match");
+      expect(verdict(sealed(meta(`title = "${URI}"`, "gauge = 16", "cacheable = true", 'tags = ["a", "b c", "d\\"e"]', 'note = "a \\"quoted\\" word"', "# a comment", "", "[slot]", 'title = "ignored"'))).kind).toBe("match");
     });
     test("CONTROL: aligned spacing (the corpus's own) reads match", () => {
       expect(verdict(sealed(meta(`title     = "${URI}"`, `uri-path  = "ha.ka.ba/t/head-bind"`))).kind).toBe("match");
