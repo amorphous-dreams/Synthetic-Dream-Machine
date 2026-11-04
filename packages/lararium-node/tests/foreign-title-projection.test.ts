@@ -324,3 +324,58 @@ test("CONTROL — initial scan leaves a title held only by an ungranted bag off 
     await stop();
   }
 });
+
+test("recovery mount reads the draft bag's fields despite a shadow, and keeps other bags isolated", async () => {
+  const { CompositeStore } = await import("@lararium/mesh");
+  const { MemoryTiddlerStore } = await import("../../lararium-tw5/src/memory-store.js");
+  const { TW5Engine } = await import("../../lararium-tw5/src/tw5-vm.js");
+  const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await import("../../lararium-tw5/src/generated-tw5-version.js");
+  const { mountDiskProjection, mountedDiskProjector } = await import("../src/island-behaviors.js");
+  root = mkdtempSync(join(tmpdir(), "lar-recovery-record-"));
+  const recovery = join(root, "recovery");
+  const workingRoot = join(root, "working");
+  const draft = new MemoryTiddlerStore("draft");
+  const temp = new MemoryTiddlerStore("temp");
+  const working = new MemoryTiddlerStore("working");
+  const composite = new CompositeStore();
+  composite.addLayer({ bagId: "working", store: working, writable: true });
+  composite.addLayer({ bagId: "draft", store: draft, writable: true });
+  composite.addLayer({ bagId: "temp", store: temp, writable: true });
+  const origin = { kind: "operator-import", sessionId: "test" } as const;
+  const title = "Draft of 'Note'";
+  await draft.put({ tiddler: { title, text: "recovery words", "draft.of": "Note", "lar-draft-base-bag": "working", "lar-draft-base-heads": "abc" } }, origin);
+  await temp.put({ tiddler: { title, text: "shadow secret" } }, origin);
+  await temp.put({ tiddler: { title: "temp-only", text: "private secret" } }, origin);
+  await working.put({ tiddler: { title: "Working note", text: "ordinary words" } }, origin);
+  const engine = new TW5Engine();
+  await engine.boot(new Uint8Array(readFileSync(join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME))));
+  const tw = engine.$tw;
+  tw.wiki.addTiddler(new tw.Tiddler({ title, text: "shadow secret", "$origin-bag": "temp" }));
+  tw.wiki.addTiddler(new tw.Tiddler({ title: "temp-only", text: "private secret", "$origin-bag": "temp" }));
+  tw.wiki.addTiddler(new tw.Tiddler({ title: "Working note", text: "ordinary words", "$origin-bag": "working" }));
+  const stop = mountDiskProjection({ diskMirrors: [
+    { bagId: "draft", mirrorRoot: recovery, scope: "draft", mirrorClass: "recovery" },
+    { bagId: "working", mirrorRoot: workingRoot, scope: "working" },
+  ] } as never, { tw5: engine, composite, post: () => {}, wikiUri: "test" } as never)!;
+  try {
+    await mountedDiskProjector()!.idle();
+    const ordinary = readdirSync(workingRoot).map((f) => readFileSync(join(workingRoot, f), "utf8"));
+    expect(ordinary.join("\n")).toContain("ordinary words");
+    expect(ordinary.join("\n")).not.toContain("secret");
+    expect(existsSync(recovery)).toBe(true);
+    const files = readdirSync(recovery).map((f) => readFileSync(join(recovery, f), "utf8"));
+    expect(files).toHaveLength(1);
+    expect(files[0]).toContain("recovery words");
+    expect(files[0]).toContain("lar-draft-base-bag: working");
+    expect(files[0]).toContain("lar-draft-base-heads: abc");
+    expect(files[0]).not.toContain("secret");
+    await temp.put({ tiddler: { title, text: "new shadow secret" } }, origin);
+    await draft.put({ tiddler: { title, text: "updated recovery", "draft.of": "Note", "lar-draft-base-bag": "working", "lar-draft-base-heads": "def" } }, origin);
+    await mountedDiskProjector()!.idle();
+    const updated = readdirSync(recovery).map((f) => readFileSync(join(recovery, f), "utf8"));
+    expect(updated).toHaveLength(1);
+    expect(updated[0]).toContain("updated recovery");
+    expect(updated[0]).toContain("lar-draft-base-heads: def");
+    expect(updated[0]).not.toContain("secret");
+  } finally { await stop(); }
+}, 60_000);
