@@ -91,7 +91,13 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 <<~ ahu slot=`#/owed`>>
 !! Owed ~ the rows this design still lacks
 
-# The swarm's live controls (the crew cap, the push go, the lane state, the seat roster and its spend readings) move out of flat files into the live Lararium wiki once it stands: tiddlers the controller's hand signs and every seat reads through its capability, so a cap or a go carries an author and a history instead of a file mode.
+# The swarm's live controls move out of flat files into the live Lararium wiki once it stands. This row holds the design only; nothing builds until the wiki stands.
+## ''The tiddlers.'' Four families, each a tiddler the controller's hand signs: the ''crew cap'' (one tiddler per seat kind, a count), the ''push go'' (branch and head, one tiddler per push, spent on the attempt), the ''lane state'' (the fields of `state.json`: head, owed rows, live seats, worktree map, next step, step counter), and the ''seat roster'' (one tiddler per seat: lineage, model, mode, seat directory, live or done, and its spend readings from #/the-spend-guard).
+## ''Who writes.'' The controller's hand signs the cap and the go. A lead writes the lane state and the roster rows for its own seats, and its signature names the lead. A seat reads through the capability its wall grants: a read seat reads the cap and its own roster row; a lead reads the lane state; the broker reads the go and nothing else. The watchdog writes the roster's spend reading and `ceiling.md` equivalents under its own signature.
+## ''What each carries.'' Every tiddler carries an author and a history, so a cap or a go answers who set it and when in the causal order, never by a file mode. A go binds branch AND head, and the broker verifies the signature before the push, then writes the spent mark.
+## ''What stays out of the wiki.'' The check receipt's key and the broker's isolated state stay on the controller's disk: a lead's capability never reaches them, and a wiki write never substitutes for the receipt the check seat signs.
+## ''Migration.'' The flat files (`state.json`, the go file, the relay directory) keep serving until the wiki stands; the move then runs as one rite per family, the file read once into a tiddler and burned, with the launcher and broker reading the tiddler through the same capability a seat uses. A causal-island boundary holds any seat that cannot reach the wiki: it falls back to its last signed state and reports the stale reading, never a guess.
+## ''Open questions for the operator.'' Whether a lead may sign its own roster rows or only the controller may; whether the crew cap lives per lane or per house.
 
 <<~/ahu>>
 
@@ -104,6 +110,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0UKd2_yRhdrQuhGKuU31QRZCBSySh-zATaKpvw-t7EE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IVTSg_k941l64wDzI9a0-Nx5xRysUsnn5pg4zXMAL9k`>>
 
 <<^ code=`&#x0004;` to=`?`>>
