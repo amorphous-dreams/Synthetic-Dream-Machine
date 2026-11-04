@@ -39,14 +39,14 @@ describe("bootTrustedModules reads the preloaded set alone", () => {
     const composite = "lar:///ha.ka.ba/bags/kahua/lifted-module";
     const genesis = "lar:///ha.ka.ba/bags/test/genesis-module";
     const { tw, defined } = fakeTw({ [composite]: meme(composite), [genesis]: meme(genesis) });
-    await bootTrustedModules(tw, new Set([genesis]), new Set([genesis]));
+    await bootTrustedModules(tw, new Set([genesis]), new Map([[genesis, meme(genesis)]]));
     expect(defined).toEqual([`library:${genesis}`]);
   });
 
   test("RED: an empty preloaded set defines nothing", async () => {
     const t = "lar:///ha.ka.ba/bags/test/m";
     const { tw, defined } = fakeTw({ [t]: meme(t) });
-    await bootTrustedModules(tw, new Set(), new Set([t]));
+    await bootTrustedModules(tw, new Set(), new Map([[t, meme(t)]]));
     expect(defined).toEqual([]);
   });
 });

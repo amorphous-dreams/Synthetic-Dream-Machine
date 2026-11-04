@@ -62,11 +62,29 @@ function moduleMeme(overrides: Fields = {}): Fields {
 }
 async function run(fields: Fields, grant: ReadonlySet<string>, preloaded = new Set([title])) {
   const fake = fakeTw({ [title]: fields });
-  await bootTrustedModules(fake.tw, preloaded, grant);
+  await bootTrustedModules(fake.tw, preloaded, new Map([...grant].map(t => [t, fields])));
   return fake;
 }
 
 describe("local module grants", () => {
+  test("admits captured granted bytes when the live title holds a replacement", async () => {
+    const replacement = "exports.probe = 2;";
+    const fake = fakeTw({ [title]: moduleMeme({ text: replacement, "source-sha256": `sha256:${sha256(replacement)}` }) });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      await bootTrustedModules(fake.tw, new Set([title]), new Map([[title, moduleMeme()]]));
+      expect(fake.defined).toEqual([`library:${title}:${body}`]);
+      expect(warn).toHaveBeenCalledExactlyOnceWith(`[module-gate] ignored a replacement at ${title}: only the granted bytes admit`);
+    } finally { warn.mockRestore(); }
+  });
+  test.each([{ text: "" }, { "source-sha256": `sha256:${sha256("other")}` }])("refuses an invalid captured body despite a valid live record", async overrides => {
+    const fake = fakeTw({ [title]: moduleMeme() });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      await bootTrustedModules(fake.tw, new Set([title]), new Map([[title, moduleMeme(overrides)]]));
+      expect(fake.defined).toEqual([]);
+    } finally { warn.mockRestore(); }
+  });
   test("refuses without a grant and warns once per title", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     try {
@@ -130,7 +148,7 @@ describe("a walk that dies half-way", () => {
     }) as never;
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     try {
-      await bootTrustedModules(fake.tw, new Set(titles), new Set(titles));
+      await bootTrustedModules(fake.tw, new Set(titles), new Map(titles.map(t => [t, moduleMeme({ title: t })])));
       expect(fake.defined.map((d) => d.split(":")[0] + ":" + d.split(":").slice(1).join(":").split(":exports")[0])).toEqual([`library:${titles[0]}`]);
       const said = warn.mock.calls.map((c) => c.join(" ")).filter((m) => m.includes("[module-gate]") && m.includes("walk stopped"));
       expect(said, "the half-admitted set stayed invisible").toHaveLength(1);
@@ -152,13 +170,13 @@ describe("TW5Engine grant mapping", () => {
     try {
       await new TW5Engine().boot(undefined, [entry, other, { title: title + "-nonstring", text: body, extra: ["value"] }], undefined,
         { grantedDigests: new Set([digest]) });
-      expect(spy).toHaveBeenCalledWith(expect.anything(), expect.any(Set), new Set([title]));
+      expect(spy).toHaveBeenCalledWith(expect.anything(), expect.any(Set), new Map([[title, entry]]));
       await new TW5Engine().boot(undefined, [entry, { ...entry, text: "replacement" }], undefined, { grantedDigests: new Set([digest]) });
-      expect(spy).toHaveBeenLastCalledWith(expect.anything(), expect.any(Set), new Set());
+      expect(spy).toHaveBeenLastCalledWith(expect.anything(), expect.any(Set), new Map());
       await new TW5Engine().boot(undefined, [entry], undefined, { grantedDigests: new Set(["other-digest"]) });
-      expect(spy).toHaveBeenLastCalledWith(expect.anything(), expect.any(Set), new Set());
+      expect(spy).toHaveBeenLastCalledWith(expect.anything(), expect.any(Set), new Map());
       await new TW5Engine().boot(undefined, [entry]);
-      expect(spy).toHaveBeenLastCalledWith(expect.anything(), expect.any(Set), new Set());
+      expect(spy).toHaveBeenLastCalledWith(expect.anything(), expect.any(Set), new Map());
     } finally { spy.mockRestore(); }
   });
 });

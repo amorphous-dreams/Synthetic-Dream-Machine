@@ -58,7 +58,7 @@ export class TW5Engine {
 
       const allPreloads = preloadedTiddlers ?? [];
       const preloadedTitles = new Set(allPreloads.map(t => String(t["title"] ?? "")));
-      const grantedTitles = new Set<string>();
+      const grantedRecords = new Map<string, Record<string, unknown>>();
       const titleCounts = new Map<string, number>();
       for (const preload of allPreloads) {
         if (typeof preload["title"] === "string") titleCounts.set(preload["title"], (titleCounts.get(preload["title"]) ?? 0) + 1);
@@ -69,7 +69,7 @@ export class TW5Engine {
           const title = preload["title"];
           // promoteDigest hashes these canonical preload bytes; require a unique title so an
           // ungranted duplicate cannot replace a granted entry before the gate reads it.
-          if (titleCounts.get(title) === 1 && options?.grantedDigests?.has(sha256HexBytesSync(canonicalJsonBytes(preload)))) grantedTitles.add(title);
+          if (titleCounts.get(title) === 1 && options?.grantedDigests?.has(sha256HexBytesSync(canonicalJsonBytes(preload)))) grantedRecords.set(title, { ...preload });
         }
         if (!preload["plugin-type"] || typeof preload["text"] !== "string") continue;
         try {
@@ -92,7 +92,7 @@ export class TW5Engine {
       try {
         await bootWithHostBridge(instance, isBrowser, async () => {
           this._tw = instance;
-          await bootTrustedModules(instance, preloadedTitles, grantedTitles);
+          await bootTrustedModules(instance, preloadedTitles, grantedRecords);
         });
       } catch (error) { this.releaseGlass(); throw error; }
     })();
