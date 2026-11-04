@@ -24,7 +24,7 @@ uri-path      = "ha.ka.ba/lararium/tw5/modules/boot-gate"
 
 ''This code cannot load from a meme.'' It needs a live `$tw` instance and stands as the mechanism that promotes memes into executables.
 
-''A gate that throws is a gate that opens.'' The whole query sits under a `catch` that falls through, so a wiki whose filter surface has not landed injects nothing rather than failing the boot.
+''A gate that throws admits nothing more.'' The whole query sits under a `catch` that falls through, so a wiki whose filter surface has not landed injects nothing rather than failing the boot, and a throw mid-walk stops the walk: modules already admitted stand, no later title joins. The gate fails closed.
 
 <<~/ahu>>
 
@@ -62,6 +62,6 @@ Each admitted module defines under its own title: `tw.modules.define(title, "lib
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-Zjum0rtyfyxier2opIrz1lMVMYJrAM47_1DuGiLO0I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dP-5dALJ9ZC8ZWksF-glfHJ5Z9LWF8s8aqLwUJPa3ro`>>
 
 <<^ code=`&#x0004;` to=`?`>>
