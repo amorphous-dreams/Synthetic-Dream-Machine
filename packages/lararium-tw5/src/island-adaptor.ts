@@ -310,6 +310,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   private readonly _ackTrigger: AckPacedTrigger = new AckPacedTrigger({
     pending: () => this.gate.titles(),
+    retryOnFailure: (fired) => this.gate.retryOnFailure(fired),
     ack: (fired) => this._ackDurably(fired),
   });
   private _trigger: RecoveryTrigger | null = this._ackTrigger;

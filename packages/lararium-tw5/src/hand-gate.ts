@@ -89,6 +89,18 @@ export class HandGate {
   drop(titles: readonly string[]): void { for (const title of titles) this.entries.delete(title); }
 
   retained(): string[] { return this.titles(); }
+  /** Retain this pass for a failed durable acknowledgement without replacing newer marks. */
+  retryOnFailure(titles: readonly string[]): () => void {
+    const saved = titles.flatMap((title) => {
+      const entry = this.entries.get(title);
+      return entry ? [{ title, flush: entry.flush }] : [];
+    });
+    return () => {
+      for (const { title, flush } of saved) {
+        if (!this.entries.has(title)) this.entries.set(title, this.entry(flush));
+      }
+    };
+  }
   has(title: string): boolean { return this.entries.has(title); }
   titles(): string[] { return [...this.entries.keys()]; }
 }

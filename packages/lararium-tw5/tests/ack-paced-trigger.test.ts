@@ -15,6 +15,7 @@ function rig() {
   };
   const trigger = new AckPacedTrigger({
     pending: () => gate.titles(),
+    retryOnFailure: (titles) => gate.retryOnFailure(titles),
     ack: () => new Promise<void>((resolve, reject) => {
       if (failNext) { failNext = false; reject(new Error("no ack")); return; }
       acks.push({ resolve, reject });
@@ -74,6 +75,24 @@ describe("AckPacedTrigger", () => {
     expect(r.acks).toHaveLength(1);
     r.acks.shift()!.resolve(); await turns();
     expect(r.trigger.flight()).toBeNull();
+  });
+  test("a rejected ack waits for a request and retries the latest of several newer generations", async () => {
+    const r = rig();
+    r.mark("d", "old"); r.trigger.request(); await turns();
+    r.mark("d", "middle"); r.mark("d", "latest");
+    r.acks.shift()!.reject(new Error("no ack")); await turns();
+    expect(r.writes).toEqual([{ title: "d", text: "old" }]);
+    r.trigger.request(); await turns();
+    expect(r.writes).toEqual([{ title: "d", text: "old" }, { title: "d", text: "latest" }]);
+    r.acks.shift()!.resolve(); await turns();
+    expect(r.trigger.flight()).toBeNull();
+    expect(r.writes).toHaveLength(2);
+  });
+  test("an ack failure never retries without a new request", async () => {
+    const r = rig();
+    r.mark("d", "held"); r.trigger.request(); await turns();
+    r.acks.shift()!.reject(new Error("first")); await turns();
+    expect(r.writes).toHaveLength(1);
   });
   test("(e) a lifecycle request with nothing in flight starts exactly one write, and one with nothing owed starts none", async () => {
     const r = rig();

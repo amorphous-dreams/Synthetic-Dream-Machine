@@ -15,6 +15,8 @@ import type { RecoveryTrigger } from "./hand-gate.js";
 export interface AckPacedDeps {
   /** The titles the drain owes right now (every marked title, ordinary and draft alike). */
   readonly pending: () => readonly string[];
+  /** Capture the pass before firing, restoring it on failure without replacing newer work. */
+  readonly retryOnFailure: (titles: readonly string[]) => () => void;
   /** Resolves on the DURABLE ack of what the pass wrote; rejects when none comes. */
   readonly ack: (fired: readonly string[]) => Promise<void>;
 }
@@ -37,16 +39,16 @@ export class AckPacedTrigger implements RecoveryTrigger {
     if (this.#fire === null || this.#flight !== null) return;
     const owed = [...this.deps.pending()];
     if (owed.length === 0) return;
-    this.#flight = this.#run(owed);
+    this.#flight = this.#run(owed, this.deps.retryOnFailure(owed));
   }
 
-  async #run(titles: readonly string[]): Promise<void> {
+  async #run(titles: readonly string[], restore: () => void): Promise<void> {
     let acked = false;
     try {
       await this.#fire!(titles);
       await this.deps.ack(titles);
       acked = true;
-    } catch { /* the obligation stays; the next request writes the latest generation */ }
+    } catch { restore(); /* the next request writes the latest generation */ }
     finally { this.#flight = null; }
     // A newer generation that arrived while this write was in flight goes next; a failed pass waits for the next request.
     if (acked) this.request();
