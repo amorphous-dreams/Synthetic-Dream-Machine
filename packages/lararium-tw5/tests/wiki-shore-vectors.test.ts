@@ -947,7 +947,31 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     const changed = new r.Tiddler({ title: child, text: "! body, edited after the root left", type: CARRIER_TYPE });
     expect(adaptor._matchesPlaced(placed, same), "the same state matches the put").toBe(true);
     expect(adaptor._matchesPlaced(placed, changed), "a changed child no longer matches, so its own flush stores it").toBe(false);
+    expect(adaptor._matchesPlaced(placed, new r.Tiddler({ title: child, text: "! body", type: CARRIER_TYPE, extra: "" })), "an added empty field changes the state").toBe(false);
+    expect(adaptor._matchesPlaced({ tiddler: { title: child, text: "! body", type: CARRIER_TYPE, extra: "" } }, same), "a missing field changes the state").toBe(false);
     r.unbridge();
+    await r.adaptor.stop();
+    await r.repo.shutdown();
+  }, 120_000);
+
+  test("a rejected family write never settles its child", async () => {
+    const r = await rig();
+    await r.adaptor.armSeedCheckpoint();
+    r.unbridge();
+    const title = "lar:///t/shore/family-rejection";
+    let childRecord: LarTiddlerRecord | undefined;
+    const write = r.composite.writeFamily.bind(r.composite);
+    const spy = vi.spyOn(r.composite, "writeFamily").mockImplementationOnce(async (puts) => {
+      childRecord = puts.find((record) => record.tiddler.title !== title);
+      throw new Error("family refused");
+    }).mockImplementation(write);
+    const internal = r.adaptor as unknown as { _writeMeme(title: string, fields: Record<string, string>, origin: typeof local, bag: typeof workingBag): Promise<void>; _flushHand(title: string): Promise<void> };
+    await expect(internal._writeMeme(title, { title, type: CARRIER_TYPE, text: framed(title) }, local, workingBag)).rejects.toThrow("family refused");
+    expect(childRecord).toBeDefined();
+    const child = childRecord!.tiddler.title;
+    r.wiki.addTiddler(new r.Tiddler(childRecord!.tiddler as Record<string, unknown>));
+    await internal._flushHand(child);
+    expect(spy.mock.calls.some(([puts]) => puts.some((record) => record.tiddler.title === child) && puts.length === 1), "the child writes after its family fails").toBe(true);
     await r.adaptor.stop();
     await r.repo.shutdown();
   }, 120_000);

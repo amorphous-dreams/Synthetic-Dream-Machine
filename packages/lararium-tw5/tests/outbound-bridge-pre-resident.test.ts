@@ -155,9 +155,36 @@ describe.skipIf(wikiSkip)(`outbound bridge — a draft is held until a deliberat
       wiki.addTiddler(new Tiddler({ title: "Draft of 'Note'", "draft.of": "Note", "draft.title": "Note", text: `keystroke ${n}` }));
       await new Promise((r) => setTimeout(r, 15));
     };
-    return { adaptor, store, type };
+    const land = async (): Promise<void> => {
+      const title = "lar:///t/bridge/inbound";
+      const record = { tiddler: { title, text: "remote" } };
+      await MemoryTiddlerStore.prototype.put.call(store, record, { kind: "crdt-remote", edgeIsland: "peer" });
+      (engine.$tw as never as { lares: { enqueueNalu(c: unknown): void } }).lares.enqueueNalu({ title, bag: SLOTS.working, record, origin: { kind: "crdt-remote", edgeIsland: "peer" } });
+      await adaptor.landingIdle();
+      await new Promise((r) => setTimeout(r, 30));
+    };
+    return { adaptor, store, type, land };
   }
   const draftPuts = (store: RecordingStore): number => store.puts.filter((p) => p.title === "Draft of 'Note'").length;
+
+  test("twelve draft dispatches remain held until hands rest", async () => {
+    const { adaptor, store, type } = await residentWith("draft-twelve");
+    for (let n = 0; n < 12; n++) await type(n);
+    expect(draftPuts(store), "twelve draft dispatches stay held").toBe(0);
+    await adaptor.handsRested();
+    expect(draftPuts(store)).toBe(1);
+    await adaptor.stop();
+  }, 120_000);
+
+  test("an inbound landing leaves a draft held", async () => {
+    const { adaptor, store, type, land } = await residentWith("draft-inbound");
+    await type(1);
+    await land();
+    expect(draftPuts(store), "an inbound landing leaves the draft held").toBe(0);
+    await adaptor.handsRested();
+    expect(draftPuts(store)).toBe(1);
+    await adaptor.stop();
+  }, 120_000);
 
   test("DESIGN: keystrokes on a draft never leave per dispatch; each deliberate act (the island boundary, handsRested, teardown) takes the held mark", async () => {
     for (const act of ["boundary", "handsRested", "stop"] as const) {

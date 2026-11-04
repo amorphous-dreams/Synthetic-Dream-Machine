@@ -9,7 +9,7 @@ export class HandGate {
   static readonly COALESCE_CAP = 8;
   private readonly entries = new Map<string, GateEntry>();
 
-  mark(title: string, flush: () => Promise<void>): Promise<void> {
+  mark(title: string, flush: () => Promise<void>, draft = false): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       let entry = this.entries.get(title);
       if (!entry) {
@@ -19,7 +19,7 @@ export class HandGate {
       entry.flush = flush;
       entry.marks++;
       entry.waiters.push({ resolve, reject });
-      if (entry.marks === HandGate.COALESCE_CAP) void this.flush(title).catch(() => {});
+      if (!draft && entry.marks >= HandGate.COALESCE_CAP) void this.flush(title).catch(() => {});
     });
   }
 

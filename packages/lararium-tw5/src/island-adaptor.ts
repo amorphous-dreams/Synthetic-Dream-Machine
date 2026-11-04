@@ -418,7 +418,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.handBase.delete(title);
     this.unlanded.delete(title);
     if (applies) this.lastWriteBag.delete(title);
-    void this.boundary().catch(() => {});
+    void this.boundaryOf(this.gate.titles().filter((held) => !this.draftBook.has(held))).catch(() => {});
   }
 
   /**
@@ -1279,7 +1279,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const { "$origin-bag": _bag, ...fields } = extractFields(this.tw5, state);
     const put = placed.tiddler as unknown as Record<string, unknown>;
     const keys = new Set([...Object.keys(fields), ...Object.keys(put)]);
-    for (const key of keys) if (String(fields[key] ?? "") !== String(put[key] ?? "")) return false;
+    for (const key of keys) {
+      if (Object.hasOwn(fields, key) !== Object.hasOwn(put, key) || String(fields[key]) !== String(put[key])) return false;
+    }
     return true;
   }
 
@@ -1439,7 +1441,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // A mark names the title; the flush reads the wiki. Only a value the wiki does not hold rides pinned.
     if ((this.tw5.$tw.wiki.getTiddler(title) ?? null) === tiddler) this.handed.delete(title);
     else this.handed.set(title, tiddler);
-    return this.gate.mark(title, () => this._flushHand(title));
+    return this.gate.mark(title, () => this._flushHand(title), fields["draft.of"] !== undefined);
   }
 
   saveRecord(record: LarTiddlerRecord): Promise<void> {
@@ -1462,7 +1464,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.pendingHand.add(title);
     if (this.tw5.$tw.wiki.getTiddler(title)) this.handed.set(title, null);
     else this.handed.delete(title);
-    return this.gate.mark(title, () => this._flushHand(title));
+    return this.gate.mark(title, () => this._flushHand(title), this.draftBook.has(title));
   }
 
   // ---------------------------------------------------------------------------
@@ -1514,7 +1516,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const { puts, tombstones, strays, split } = this._buildFamily(title, fields, targetBag);
     // The family call carries these children: a later flush of a child whose wiki state matches the record the family put owes the
     // store nothing, so a carrier placed across several change batches leaves its children once, with the root.
-    for (const record of puts) if (record.tiddler.title !== title) this.familyPlaced.set(record.tiddler.title, record);
+    for (const record of puts) if (record.tiddler.title !== title) this.familyPlaced.delete(record.tiddler.title);
 
     // A PLACED ROOT CARRIES ITS MARKED SLOTS. The flush reads the wiki's state, and a root the wiki already
     // holds in placed form splits into no children: its slot children stand as their own wiki tiddlers, each
@@ -1551,15 +1553,17 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
     try {
       await this.store.writeFamily(puts, tombstones, origin, { bag: targetBag, ...(base ? { base } : {}) });
+      for (const { uri, slot } of strays) await this.store.tombstoneInBag(slot, uri, origin);
     } catch (error) {
       for (const member of rode) if (this.sent.get(member.uri) === member.value) this.sent.delete(member.uri);
+      for (const record of puts) if (record.tiddler.title !== title) this.familyPlaced.delete(record.tiddler.title);
       throw error;
     }
+    for (const record of puts) if (record.tiddler.title !== title) this.familyPlaced.set(record.tiddler.title, record);
     // A member the store took as a noop raises no envelope, so no return wave will clear its `sent`.
     for (const member of rode) {
       if ((this.writeAcks.get(member.uri) ?? 0) === member.acks && this.sent.get(member.uri) === member.value) this.sent.delete(member.uri);
     }
-    for (const { uri, slot } of strays) await this.store.tombstoneInBag(slot, uri, origin);
   }
 
   /**
