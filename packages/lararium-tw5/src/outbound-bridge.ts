@@ -56,6 +56,7 @@ export function bridgeWikiToAdaptor(tw5: TW5Engine, adaptor: IslandAdaptor): () 
         void adaptor.deleteTiddler(title).catch((err: unknown) => console.warn(`[outbound-bridge] delete "${title}" faulted: ${String(err)}`));
       }
     }
+    void adaptor.boundary().catch(() => {});
   };
   wiki.addEventListener("change", onChange);
   return () => wiki.removeEventListener("change", onChange);
