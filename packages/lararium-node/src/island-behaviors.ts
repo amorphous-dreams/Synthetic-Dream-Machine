@@ -114,8 +114,8 @@ export function mountDiskProjection(
 ): (() => Promise<void>) | undefined {
   const mirrorDefs = manifest.diskMirrors;
   if (!mirrorDefs?.length) return undefined;
-  const mirrors = mirrorDefs.map(({ bagId, mirrorRoot, scope, guardNexusHandles, titlePaths }) =>
-    namedBagMirror(bagId, scope, mirrorRoot, guardNexusHandles, titlePaths),
+  const mirrors = mirrorDefs.map(({ bagId, mirrorRoot, scope, guardNexusHandles, titlePaths, mirrorClass }) =>
+    namedBagMirror(bagId, scope, mirrorRoot, guardNexusHandles, titlePaths, mirrorClass),
   );
   // The Synced tree (Confluence merge base) sits at the INSTANCE ROOT (the dir
   // holding bags/) under .lararium-projection/ — observation state,
@@ -130,6 +130,17 @@ export function mountDiskProjection(
   // + a `.meta` sidecar). The VM registry decides type + bytes; the
   // projector only sites them.
   carrierFileFn: vmCarrierFile(ctx.tw5),
+  recoveryStore: (bagId) => ctx.composite.storeForBag(bagId),
+  recoveryFileFn: async (fields) => {
+    const title = fields["title"];
+    if (typeof title !== "string") return null;
+    const tiddler = new ctx.tw5.$tw.Tiddler(fields);
+    return {
+      ext: ".tid",
+      body: `${tiddler.getFieldStringBlock({ exclude: ["text", "bag", "$origin-bag"] })}\n\n${typeof fields["text"] === "string" ? fields["text"] : ""}`,
+      defaultRelPath: `${encodeURIComponent(title)}.tid`,
+    };
+  },
   // A POINTER projects as the whole file beside its `.meta`: the bytes come from the same
   // cid/ tier the lazy resolver reads (THE BLOB LAW, content-handle.ts).
   ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),

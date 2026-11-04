@@ -419,3 +419,75 @@ test("recovery restart removes a tombstoned draft even when a different bag shad
     expect(readFileSync(join(recovery, `${retained}.tid`), "utf8")).toContain("keep me");
   } finally { await stopSecond(); }
 });
+
+test("multi-bag cleanup preserves co-rooted and live drafts across shadow and absent views", async () => {
+  const { MemoryTiddlerStore } = await import("../../lararium-tw5/src/memory-store.js");
+  root = mkdtempSync(join(tmpdir(), "lar-recovery-multi-cleanup-"));
+  const shared = join(root, "shared");
+  const separate = join(root, "separate");
+  const ordinary = join(root, "ordinary");
+  const stores = new Map(["draft-a", "draft-b", "draft-c"].map((bag) => [bag, new MemoryTiddlerStore(bag)]));
+  const origin = { kind: "operator-import", sessionId: "test" } as const;
+  const title = "lar:///test.multi.draft/shadow";
+  const absent = "lar:///test.multi.draft/absent";
+  for (const bag of ["draft-a", "draft-b", "draft-c"]) {
+    await stores.get(bag)!.put({ tiddler: { title, text: "shared words" } }, origin);
+  }
+  await stores.get("draft-c")!.put({ tiddler: { title: absent, text: "live absent-view draft" } }, origin);
+  let shadow = true;
+  let workingHeld = true;
+  const wiki = {
+    allTitles: () => [title, absent],
+    getTiddler: (uri: string) => shadow && uri === title ? { fields: { title: uri, "$origin-bag": "temp" } }
+      : workingHeld && uri === absent ? { fields: { title: uri, "$origin-bag": "working" } } : undefined,
+    addEventListener: () => {}, removeEventListener: () => {},
+  };
+  const projector = new LarDiskProjector({
+    mirrors: [
+      { bagId: "draft-a", mirrorRoot: shared, mirrorClass: "recovery" },
+      { bagId: "draft-b", mirrorRoot: shared, mirrorClass: "recovery" },
+      { bagId: "draft-c", mirrorRoot: separate, mirrorClass: "recovery" },
+      { bagId: "working", mirrorRoot: ordinary },
+    ],
+    recoveryStore: (bag) => stores.get(bag) ?? null,
+    recoveryFileFn: async (fields) => nativeFile(fields.title as string, fields.text as string),
+    carrierFileFn: async (uri) => nativeFile(uri, "ordinary words"),
+    bagsHolding: async (uri) => {
+      const held: string[] = [];
+      for (const [bag, store] of stores) {
+        const record = await store.get(uri);
+        if (record && !record.meta?.deleted) held.push(bag);
+      }
+      if (shadow && uri === title) held.push("temp");
+      if (workingHeld && uri === absent) held.push("working");
+      return held;
+    },
+    syncedTree: new SyncedTree(join(root, "bases")),
+  });
+  const stop = projector.start({ $tw: { wiki } } as never);
+  try {
+    await projector.idle();
+    const sharedFile = join(shared, "test.multi.draft", "shadow.tid");
+    const separateFile = join(separate, "test.multi.draft", "shadow.tid");
+    const absentFile = join(separate, "test.multi.draft", "absent.tid");
+    const ordinaryFile = join(ordinary, "test.multi.draft", "absent.tid");
+    expect(readFileSync(sharedFile, "utf8")).toContain("shared words");
+    expect(readFileSync(separateFile, "utf8")).toContain("shared words");
+    expect(readFileSync(absentFile, "utf8")).toContain("live absent-view draft");
+    expect(readFileSync(ordinaryFile, "utf8")).toContain("ordinary words");
+    await stores.get("draft-a")!.tombstone(title, origin);
+    await projector.idle();
+    expect(readFileSync(sharedFile, "utf8")).toContain("shared words");
+    expect(readFileSync(separateFile, "utf8")).toContain("shared words");
+    await stores.get("draft-b")!.tombstone(title, origin);
+    await projector.idle();
+    expect(existsSync(sharedFile)).toBe(false);
+    expect(readFileSync(separateFile, "utf8")).toContain("shared words");
+    shadow = false;
+    workingHeld = false;
+    await projector.sense([title, absent]);
+    expect(readFileSync(separateFile, "utf8")).toContain("shared words");
+    expect(readFileSync(absentFile, "utf8")).toContain("live absent-view draft");
+    expect(existsSync(ordinaryFile)).toBe(false);
+  } finally { await stop(); }
+});

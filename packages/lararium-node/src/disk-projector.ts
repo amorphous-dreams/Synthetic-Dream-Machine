@@ -73,7 +73,7 @@ import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
 import { isEffectRecordUri, isControlPlaneUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, isRealmBagAnnounceUri, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
-import type { ReadinessMap, VesselJournal } from "@lararium/mesh";
+import type { ReadinessMap, VesselJournal, LarTiddlerStore } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
 import type { BagMirrorConfig } from "./bag-paths.js";
 
@@ -93,6 +93,9 @@ export interface LarDiskProjectorOptions {
    * only sites at `<uri-path><ext>` and writes the sidecar. Null skips the write.
    */
   readonly carrierFileFn: (tiddlerUri: string) => Promise<CarrierFile | null>;
+  /** Read only the store named by a recovery grant. */
+  readonly recoveryStore?: (bagId: string) => LarTiddlerStore | null;
+  readonly recoveryFileFn?: (fields: Record<string, unknown>) => Promise<CarrierFile | null>;
   /**
    * Resolve a POINTER's raw bytes from the local cid/ tier (the island's `resolveByCid`). A
    * pointer carrier (`CarrierFile.pointerCid`) projects as the WHOLE FILE beside its `.meta`
@@ -357,6 +360,7 @@ export class LarDiskProjector {
   /** Reconcile queue keyed by carrier-root URI. Born in start(). */
   private gate: KeyedReconcileGate<string> | null = null;
   private _firstFlushDone = false;
+  private recoveryScan: Promise<void> = Promise.resolve();
 
   private _tw5: TW5Engine | null = null;
 
@@ -370,6 +374,8 @@ export class LarDiskProjector {
   private readonly sited = new Map<string, string>();
 
   private readonly mirrors: readonly BagMirrorConfig[];
+  private readonly recoveryStore: LarDiskProjectorOptions["recoveryStore"];
+  private readonly recoveryFileFn: LarDiskProjectorOptions["recoveryFileFn"];
   private readonly carrierFileFn: (tiddlerUri: string) => Promise<CarrierFile | null>;
   private readonly resolveByCid: ((cid: string) => Promise<Uint8Array | null>) | undefined;
   private readonly bagsHolding: ((tiddlerUri: string) => Promise<readonly string[]>) | undefined;
@@ -413,6 +419,8 @@ export class LarDiskProjector {
   constructor(opts: LarDiskProjectorOptions) {
     this.mirrors      = opts.mirrors.filter((mirror) => !isFaceScopedBag(mirror.bagId));
     this.carrierFileFn = opts.carrierFileFn;
+    this.recoveryStore = opts.recoveryStore;
+    this.recoveryFileFn = opts.recoveryFileFn;
     this.resolveByCid = opts.resolveByCid;
     this.bagsHolding  = opts.bagsHolding;
     this.layerIndexOf = opts.layerIndexOf;
@@ -497,6 +505,24 @@ export class LarDiskProjector {
       this.wakeWaiters(roots);
     };
     wiki.addEventListener?.("change", handler);
+    const recoveryUnsubs: Array<() => void> = [];
+    const scans: Promise<void>[] = [];
+    for (const mirror of this.mirrors) {
+      if (mirror.mirrorClass !== "recovery") continue;
+      const store = this.recoveryStore?.(mirror.bagId);
+      if (!store) continue;
+      recoveryUnsubs.push(store.subscribe((change) => gate.mark(routeToRoot(change.title))));
+      scans.push(store.listVisible().then((titles) => {
+        for (const title of titles) gate.mark(routeToRoot(title));
+      }));
+    }
+    // A record tombstoned while stopped no longer appears in listVisible. The
+    // persisted agreements name the recovery files that still need a store read.
+    this.syncedTree.reread();
+    for (const { bagId, uri } of this.syncedTree.rows()) {
+      if (this.recoveryStore?.(bagId) && this.mirrors.some((m) => m.bagId === bagId && m.mirrorClass === "recovery")) gate.mark(routeToRoot(uri));
+    }
+    this.recoveryScan = Promise.all(scans).then(() => {});
     // The scan follows subscription in this synchronous turn. The gate starts in a microtask and
     // yields between roots, so a mounted seed receives a complete, paced projection pass.
     // Every title, system titles included: the residency bar below is the only bar (`getTiddlers`
@@ -507,13 +533,14 @@ export class LarDiskProjector {
     for (const rootUri of roots) {
       const fields = wiki.getTiddler?.(rootUri)?.fields as Record<string, unknown> | undefined;
       const bagId = fields?.["$origin-bag"];
-      if (typeof bagId === "string" && this.mirrors.some((mirror) => mirror.bagId === bagId)) gate.mark(rootUri);
+      if ((typeof bagId === "string" && this.mirrors.some((mirror) => mirror.bagId === bagId)) || (!this.recoveryStore && this.mirrors.some((mirror) => mirror.mirrorClass === "recovery"))) gate.mark(rootUri);
     }
-    return async () => { wiki.removeEventListener?.("change", handler); await this.stop(); };
+    return async () => { wiki.removeEventListener?.("change", handler); for (const unsub of recoveryUnsubs) unsub(); await this.recoveryScan; await this.stop(); };
   }
 
   /** Resolve when no reconcile runs and no root waits in the queue, and every pending-removal set that moved has surfaced. */
   async idle(): Promise<void> {
+    await this.recoveryScan;
     await (this.gate?.idle() ?? Promise.resolve());
     this._surfacePending();
   }
@@ -605,6 +632,20 @@ export class LarDiskProjector {
     // marks it stale-on-disk, and only a deliberate REPACK re-renders it. The guard
     // rides FIRST so it also holds the gone-branch (a vanished member never owns a
     // file to unlink — its home is the pack).
+    for (const mirror of this.mirrors) {
+      if (mirror.mirrorClass !== "recovery") continue;
+      const store = this.recoveryStore?.(mirror.bagId);
+      if (store) {
+        const record = await store.get(rootUri);
+        if (record && !record.meta?.deleted && record.tiddler["disk-projection"] !== "no") {
+          await this.flush(mirror.bagId, rootUri, record.tiddler);
+        } else {
+          await this._scheduleUnlinkByTitle(rootUri, mirror.bagId);
+        }
+      } else if (!this.recoveryStore && (await this.bagsHolding?.(rootUri))?.includes(mirror.bagId)) {
+        await this.flush(mirror.bagId, rootUri);
+      }
+    }
     if (this.isPackMember(rootUri)) return;
     // THE VOLATILE PLANE NEVER PROJECTS — a RESIDENCY bar, not a form one: `lararium.local.vm` is a
     // reserved root whose whole meaning is "this vessel's own scratch, never persisted, never synced"
@@ -625,7 +666,7 @@ export class LarDiskProjector {
     if (fields["disk-projection"] === "no") { this._leaveStandoffsExcept(rootUri); this._leavePendingExcept(rootUri); return; }
     // The host's provenance stamp (nalu-engine) names the mirror; `bag` is the author's field.
     const bagId = typeof fields["$origin-bag"] === "string" ? fields["$origin-bag"] : undefined;
-    if (!bagId || !this.mirrors.some((m) => m.bagId === bagId)) { this._leaveStandoffsExcept(rootUri); this._leavePendingExcept(rootUri); return; }
+    if (!bagId || !this.mirrors.some((m) => m.bagId === bagId && m.mirrorClass !== "recovery")) { this._leaveStandoffsExcept(rootUri); this._leavePendingExcept(rootUri); return; }
     this._leaveStandoffsExcept(rootUri, bagId);
     this._leavePendingExcept(rootUri, bagId);
     await this.flush(bagId, rootUri);
@@ -1013,7 +1054,7 @@ export class LarDiskProjector {
     return { ok: true, done: asked.filter((uri) => !still.has(uri) && !below.has(uri)), left: asked.filter((uri) => still.has(uri)), unshadowed: standsBelow };
   }
 
-  private async _scheduleUnlinkByTitle(title: string): Promise<void> {
+  private async _scheduleUnlinkByTitle(title: string, onlyBag?: string): Promise<void> {
     if (this.bagsHolding) this.measure.holdsSinceChange++;
     const holdingBags = this.bagsHolding ? new Set(await this.bagsHolding(title)) : null;
     // A MIRROR ROOT A HOLDING BAG SHARES STAYS WHOLE. Two mirrors over one root resolve one carrier to one
@@ -1027,6 +1068,7 @@ export class LarDiskProjector {
       keptRoots.add(resolvePath(mirror.mirrorRoot));
     }
     for (const mirror of this.mirrors) {
+      if (onlyBag !== undefined && mirror.bagId !== onlyBag) continue;
       if (holdingBags?.has(mirror.bagId)) continue;
       this._leaveStandoff(mirror.bagId, title, "sides");
       if (keptRoots.has(resolvePath(mirror.mirrorRoot))) continue;
@@ -1358,7 +1400,7 @@ export class LarDiskProjector {
     }
   }
 
-  private async flush(bagId: string, tiddlerUri: string): Promise<void> {
+  private async flush(bagId: string, tiddlerUri: string, recoveryFields?: Record<string, unknown>): Promise<void> {
     const mirror = this.mirrors.find((m) => m.bagId === bagId);
     if (!mirror) return;
 
@@ -1390,7 +1432,7 @@ export class LarDiskProjector {
     // hands back the chosen extension + bytes + any `.meta` sidecar, so a
     // memetic carrier sites `.mem` and a `.tid`/`.json`/`.md` record projects
     // back as its OWN file. The VM decides the type; the projector only sites.
-    const file = await this.carrierFileFn(tiddlerUri);
+    const file = recoveryFields ? await this.recoveryFileFn?.(recoveryFields) ?? null : await this.carrierFileFn(tiddlerUri);
     if (file === null) return;
     // Three sitings, one precedence, each reading off the shape of what the shore handed back:
     //   ① a `$:/config/FileSystemPaths` RULE (`relPath`) — the operator's own word, and the same
@@ -1474,7 +1516,7 @@ export class LarDiskProjector {
         this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, obsHash);
         this._leaveStandoff(bagId, tiddlerUri);
         this._leavePending(bagId, tiddlerUri);
-        await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
+        if (mirror.mirrorClass !== "recovery") await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
         return;
       }
     } catch { /* unreadable existing file — fall through to the gate */ }
@@ -1577,7 +1619,7 @@ export class LarDiskProjector {
           this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, diskHash);
         }
         this._leaveStandoff(bagId, tiddlerUri);
-        await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
+        if (mirror.mirrorClass !== "recovery") await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
         return;
       }
       if (decision.kind === "conflict") {
@@ -1646,7 +1688,7 @@ export class LarDiskProjector {
       this.writing.delete(tiddlerUri);
     }
 
-    await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
+    if (mirror.mirrorClass !== "recovery") await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
   }
 
   /**

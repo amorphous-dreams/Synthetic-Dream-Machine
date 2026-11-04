@@ -3592,6 +3592,8 @@ async function prepareNodeBootOn(
       // wikiSlot). The authority (the wikis base) stays static here; designation
       // rides the recipe's mirrorBags.
       { bagId: "working",        mirrorRoot: join(workerRootDir, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis") },
+      // Recovery remains an explicit, recipe-designated grant with its own directory.
+      { bagId: "draft",          mirrorRoot: join(workerRootDir, "wikis"),          scope: "draft", wikiSlot: "draft", mirrorClass: "recovery", sourcedRoots: projection.sourcedRoots("wikis") },
       // self-canon = the per-wiki CANON authority: a minted user wiki's own
       // @{slug} bag projects to bags/{slug} (both bagId and leaf fill from the
       // slug at mount). System wikis (lares/lararium) carry literal grants
