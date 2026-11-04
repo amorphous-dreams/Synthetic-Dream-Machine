@@ -2,7 +2,8 @@
 /**
  * launch-codex — the Codex seat's one launcher (mixed-model-swarm#/the-launch, #/the-seat-law).
  *
- *   node tools/launch-codex.mjs --seat-dir <dir> --model <slug> --effort <level> --mode build|lead|read|research [--worktree <dir>] [--dry-run]
+ *   node tools/launch-codex.mjs --seat-dir <dir> --model <slug> --effort <level> --mode build|lead|read|research [--worktree <dir>] [--dry-run] [--canary]
+ *   node tools/launch-codex.mjs --check-canary --seat-dir <dir>
  *
  * One walled `codex exec`, after a preflight. The brief is `<seat-dir>/brief.md`; the hand-back lands in `final.md`
  * (`-o`), the log in `run.log`, each attempt in `attempts.log`. The canon seat law or the lead law rides
@@ -40,6 +41,8 @@ const FLOOR = 20;
 /** A read seat's own floor: the operator lets readers spend the pool to its end for now (2026-10-31: "temp bump that limit to 0%"; it stood at 5); builders and research keep FLOOR. */
 const READ_FLOOR = 0;
 const MODES = ["build", "lead", "read", "research"];
+export const COMPACT_LIMIT = 120000;
+export const TOOL_OUTPUT_LIMIT = 8000;
 /** The pool's used-percent ceiling by mode (seat-harness#/owed row 2): a read seat spends to its own floor. */
 const MAX_USED = { lead: 50, build: 60, research: 60 };
 /** The per-seat token ceiling by mode (row 1): total_token_usage.total_tokens, cached input counted. */
@@ -116,9 +119,9 @@ export function watchSeat({ seatDir, pid, ceiling, mode, tokens, alive, kill, sl
 export function realHome() { return userInfo().homedir; }
 
 /** The argument array after `codex` and before the brief. */
-export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir, laneRoot }) {
+export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir, laneRoot, compactLimit }) {
   if (!MODES.includes(mode)) throw new Error(`mode must be build, lead, read or research (got "${mode}")`);
-  const common = ["exec", "-m", model, "-c", `model_reasoning_effort=${effort}`, "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", join(seatDir, "final.md")];
+  const common = ["exec", "-m", model, "-c", `model_reasoning_effort=${effort}`, "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", join(seatDir, "final.md"), "-c", `model_auto_compact_token_limit=${compactLimit ?? COMPACT_LIMIT}`, "-c", `tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`];
   const tmpWall = ["-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true"];
   if (mode === "build") {
     if (!worktree) throw new Error("a builder needs its worktree");
@@ -130,6 +133,37 @@ export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir, laneR
   }
   if (mode === "research") return ["--search", ...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=true", "-C", seatDir];
   return [...common, "-s", "read-only", "-C", seatDir];
+}
+
+/** Canary verdict from one rollout's lines: compaction signals, function calls and final token reading. */
+export function canaryVerdict(lines) {
+  let events = 0;
+  let calls = 0;
+  for (const line of lines ?? []) {
+    let d;
+    try { d = JSON.parse(line); } catch { continue; }
+    if (d?.type === "compacted" || d?.payload?.type === "context_compacted" || d?.payload?.type === "compaction") events++;
+    if (["function_call", "custom_tool_call", "local_shell_call"].includes(d?.payload?.type)) calls++;
+  }
+  const tokens = rolloutTokens(lines);
+  return { fired: events > 0, events, calls, tokens };
+}
+
+/** The canary brief: force many small read-only tool calls and a fixed completion line. */
+export function canaryBrief() {
+  return `# Compaction canary
+
+Read-only seat. Do exactly this sequence and nothing else:
+
+1. Read /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs in 40-line slices with \`sed -n\`.
+2. Read /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs in 40-line slices with \`sed -n\`.
+3. Read /home/joshu/.lares-scratch/seat-harness/wt/bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem in 40-line slices with \`sed -n\`.
+4. Keep one tool call per slice.
+5. Make about 100 slices total (target 100).
+6. No summary until all slices are done.
+7. Final message must be exactly:
+CANARY DONE 100 calls
+`;
 }
 
 /** The newest rollout's rate_limits record, from its lines: the pool, or null when no line carries one. */
@@ -268,10 +302,16 @@ function parse(argv) {
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--dry-run") o.dryRun = true;
     else if (argv[i] === "--watch") o.watch = true;
+    else if (argv[i] === "--canary") o.canary = true;
+    else if (argv[i] === "--check-canary") o.checkCanary = true;
     else if (keys[argv[i]]) { if (argv[i + 1] === undefined) throw new Error(`${argv[i]} wants a value`); o[keys[argv[i]]] = argv[++i]; }
     else throw new Error(`unknown option ${argv[i]}`);
   }
   if (o.watch) return o;
+  if (o.checkCanary) {
+    if (!o.seatDir) throw new Error("--seat-dir is required");
+    return o;
+  }
   for (const k of ["mode", "model", "effort", "seatDir"]) if (!o[k]) throw new Error(`--${k === "seatDir" ? "seat-dir" : k} is required`);
   return o;
 }
@@ -299,17 +339,33 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
   let o;
   try { o = parse(argv); } catch (e) { err(`[launch-codex] ${e.message}`); return 2; }
   if (o.watch) return watchMain(o);
+  if (o.checkCanary) {
+    const seatDir = real(o.seatDir);
+    readers ??= realReaders();
+    const beforePath = join(seatDir, "rollouts-before.json");
+    let before = new Set();
+    if (existsSync(beforePath)) {
+      try { before = new Set(JSON.parse(readFileSync(beforePath, "utf8"))); } catch { before = new Set(); }
+    }
+    const rollout = findRollout(readers.realHome, { cwds: [seatDir], before });
+    if (!rollout) { err(`no rollout found for ${o.seatDir}`); return 2; }
+    const verdict = canaryVerdict(readFileSync(rollout, "utf8").split("\n"));
+    log(`${verdict.fired ? "COMPACTION-FIRED" : "COMPACTION-NOT-FIRED"} events=${verdict.events} calls=${verdict.calls} tokens=${verdict.tokens}`);
+    return 0;
+  }
   const seatDir = real(o.seatDir);
   try {
+    if (o.canary && o.mode !== "read") throw refuse("--canary only runs with --mode read");
     const ceiling = ceilingFor(o.mode, o.ceiling);
     readers ??= realReaders();
     const worktree = o.worktree ? real(o.worktree) : undefined;
     const { pool } = preflight({ ...o, seatDir, worktree }, readers);
     const gitDir = o.mode === "lead" ? readers.gitCommonDir(worktree) : undefined;
     const laneRoot = o.mode === "lead" ? dirname(seatDir) : undefined;
-    const args = seatArgs({ ...o, seatDir, worktree, gitDir, laneRoot });
+    const args = seatArgs({ ...o, seatDir, worktree, gitDir, laneRoot, compactLimit: o.canary ? 50_000 : undefined });
     log(pool);
     if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...args, "<brief>"])}`); return 0; }
+    if (o.canary) writeFileSync(join(seatDir, "brief.md"), canaryBrief());
     const law = o.mode === "lead" ? leadLaw() : seatLaw(readers.canon());
     mkdirSync(join(seatDir, ".tmp"), { recursive: true });
     const briefPath = join(seatDir, "brief.md");

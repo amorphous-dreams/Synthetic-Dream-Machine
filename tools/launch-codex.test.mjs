@@ -5,7 +5,7 @@ import { mkdtempSync, mkdirSync, readFileSync, realpathSync, symlinkSync, utimes
 import { tmpdir, userInfo } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { appendSeatLaw, ceilingFor, distFresh, findRollout, rolloutTokens, watchSeat, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
+import { appendSeatLaw, canaryBrief, canaryVerdict, ceilingFor, COMPACT_LIMIT, TOOL_OUTPUT_LIMIT, distFresh, findRollout, rolloutTokens, watchSeat, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
 import { globalStampPath, packageStampPath, sourceDigest } from "./stamp-build.mjs";
 
 const TOOL = fileURLToPath(new URL("./launch-codex.mjs", import.meta.url));
@@ -57,7 +57,7 @@ test("build: workspace-write, network off, both tmp excludes, -C worktree, --add
 });
 
 test("lead argv exact", () => {
-  assert.deepEqual(seatArgs({ mode: "lead", model: "m", effort: "high", seatDir: "/lane/s", worktree: "/w", gitDir: "/g", laneRoot: "/lane" }), ["exec", "-m", "m", "-c", "model_reasoning_effort=high", "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", "/lane/s/final.md", "-s", "workspace-write", "-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true", "-c", "sandbox_workspace_write.network_access=true", "-C", "/w", "--add-dir", "/lane/s", "--add-dir", "/g", "--add-dir", "/lane"]);
+  assert.deepEqual(seatArgs({ mode: "lead", model: "m", effort: "high", seatDir: "/lane/s", worktree: "/w", gitDir: "/g", laneRoot: "/lane" }), ["exec", "-m", "m", "-c", "model_reasoning_effort=high", "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", "/lane/s/final.md", "-c", `model_auto_compact_token_limit=${COMPACT_LIMIT}`, "-c", `tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`, "-s", "workspace-write", "-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true", "-c", "sandbox_workspace_write.network_access=true", "-C", "/w", "--add-dir", "/lane/s", "--add-dir", "/g", "--add-dir", "/lane"]);
 });
 
 test("lead argv needs worktree", () => {
@@ -454,4 +454,60 @@ test("row 1: run launches the watchdog detached beside the seat with the mode's 
   assert.equal(run([...base, "--dry-run"], { readers: w.readers, spawn, log() {} }), 0);
   assert.equal(spawned.length, 0);
   assert.equal(run([...base, "--ceiling", "nope"], { readers: w.readers, spawn, log() {}, err() {} }), 2);
+});
+
+// ---- row 3: the compaction canary ----
+const cevent = (o) => JSON.stringify(o);
+
+test("row 3: every mode carries the compaction and tool-output limits as -c overrides; an override moves the compaction limit alone", () => {
+  for (const mode of ["build", "lead", "read", "research"]) {
+    const a = seatArgs({ mode, model: "m", effort: "high", seatDir: "/s", worktree: "/w" });
+    const i = a.indexOf(`model_auto_compact_token_limit=${COMPACT_LIMIT}`), j = a.indexOf(`tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`);
+    assert.ok(i > 0 && a[i - 1] === "-c", `${mode} lacks the compact limit`);
+    assert.ok(j > 0 && a[j - 1] === "-c", `${mode} lacks the tool output limit`);
+  }
+  const low = seatArgs({ mode: "read", model: "m", effort: "high", seatDir: "/s", compactLimit: 50000 });
+  assert.ok(low.includes("model_auto_compact_token_limit=50000") && low.includes(`tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`));
+  assert.ok(!low.includes(`model_auto_compact_token_limit=${COMPACT_LIMIT}`));
+});
+
+test("row 3: canaryVerdict reads the rollout's compaction events (compacted, context_compacted, compaction); KNOWN POSITIVE and CONTROL", () => {
+  const plain = [cevent({ type: "event_msg", payload: { type: "token_count", info: { total_token_usage: { total_tokens: 90 } } } }), cevent({ type: "response_item", payload: { type: "function_call" } }), cevent({ type: "response_item", payload: { type: "custom_tool_call" } })];
+  assert.deepEqual(canaryVerdict(plain), { fired: false, events: 0, calls: 2, tokens: 90 });
+  assert.equal(canaryVerdict([...plain, cevent({ type: "compacted", payload: { message: "" } })]).fired, true);
+  assert.equal(canaryVerdict([...plain, cevent({ type: "event_msg", payload: { type: "context_compacted" } })]).fired, true);
+  const two = canaryVerdict([...plain, cevent({ type: "compacted", payload: {} }), cevent({ type: "event_msg", payload: { type: "context_compacted" } })]);
+  assert.equal(two.events, 2);
+  assert.equal(canaryVerdict(["garbage", ""]).fired, false);
+});
+
+test("row 3: the canary brief demands many separate tool calls in one turn and a closing line", () => {
+  const b = canaryBrief();
+  assert.match(b, /one tool call per slice/i);
+  assert.match(b, /CANARY DONE/);
+  assert.match(b, /\b(60|80|100)\b/);
+});
+
+test("row 3: --canary on a read seat writes the canary brief and launches with a lowered compaction limit; --check-canary reports the verdict from the seat's own rollout", () => {
+  const w = world();
+  const spawned = [];
+  const spawn = (cmd, args, opts) => { spawned.push({ cmd, args, opts }); return { pid: 9, unref() {} }; };
+  const out = [];
+  assert.equal(run(["--mode", "read", "--model", "gpt-6-luna", "--effort", "low", "--seat-dir", w.seatDir, "--canary"], { readers: w.readers, spawn, log: (s) => out.push(s) }), 0);
+  const codex = spawned.find((x) => x.cmd === "codex");
+  assert.match(readFileSync(join(w.seatDir, "brief.md"), "utf8"), /CANARY DONE/);
+  const limit = codex.args.find((x) => x.startsWith("model_auto_compact_token_limit="));
+  assert.ok(Number(limit.split("=")[1]) < COMPACT_LIMIT, "the canary runs under a lowered limit so compaction can fire");
+  // the check
+  const dir = join(w.home, ".codex", "sessions", "2026", "11", "04");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "rollout-x.jsonl"), `${cevent({ timestamp: "2026-11-04T10:00:00Z", type: "session_meta", payload: { cwd: realpathSync(w.seatDir) } })}\n${cevent({ type: "compacted", payload: {} })}\n`);
+  const say = [];
+  assert.equal(run(["--check-canary", "--seat-dir", w.seatDir], { readers: w.readers, log: (s) => say.push(s), err: (s) => say.push(s) }), 0);
+  assert.match(say.join("\n"), /COMPACTION-FIRED/);
+  const none = world();
+  mkdirSync(join(none.home, ".codex", "sessions"), { recursive: true });
+  const say2 = [];
+  assert.equal(run(["--check-canary", "--seat-dir", none.seatDir], { readers: none.readers, log: (s) => say2.push(s), err: (s) => say2.push(s) }), 2);
+  assert.match(say2.join("\n"), /no rollout/);
 });

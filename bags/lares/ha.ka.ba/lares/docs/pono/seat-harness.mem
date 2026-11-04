@@ -82,6 +82,7 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 * ''The floors'': the Codex pool keeps 20% for a build, research or lead seat and 0% for a read seat; the launcher refuses at or under the floor.
 * ''The used-percent lines'': a lead step refuses above 50% of the weekly pool used, a build or research seat above 60%, and a read seat stays at its floor; each refusal names the reading.
 * ''The per-seat ceiling'': the launcher starts a detached watchdog beside every seat. It tails the seat's own rollout (matched by session cwd and start time) and sums `total_token_usage.total_tokens`; at the ceiling (15M for a lead step, 8M for build, read and research; `--ceiling N` overrides) it sends SIGTERM, then SIGKILL, and writes `ceiling.md` in the seat directory naming the reading. The watchdog never reads `run.log`. A Copilot run reads its spend from its log's `Requests N Premium` line, and a log without one reads UNMETERED, never zero.
+* ''Compaction'': every seat launches with `-c model_auto_compact_token_limit=120000` and `-c tool_output_token_limit=8000`, launcher overrides only (`~/.codex/config.toml` stays the operator's). `--canary` (read mode) writes a brief that makes about 100 small tool calls in one turn and runs under a 50000 limit; `--check-canary --seat-dir D` reads that seat's rollout and prints `COMPACTION-FIRED` or `COMPACTION-NOT-FIRED` with the event, call and token counts. Measured 2026-11-04 (Luna, low effort): compaction fired inside `codex exec` (1 event, about 100 calls, 2.9M total tokens).
 * ''Reasoning effort'' moves little of the draw; context length moves most of it. Effort follows the step's difficulty, never the budget.
 
 <<~/ahu>>
@@ -89,7 +90,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 <<~ ahu slot=`#/owed`>>
 !! Owed ~ the rows this design still lacks
 
-# An explicit `model_auto_compact_token_limit` and `tool_output_token_limit`, with a canary seat proving compaction fires inside `codex exec`.
 # The ratcheted broker: data-only git plumbing with a fixed environment and pinned binaries, a commit bound to an expected old head and an exact tree, hooks and validators in a separate check seat whose receipt the broker verifies, installs in an isolated install seat, a go bound to branch and head, and one outer wall that means the same for Codex and Copilot, proved by planted hooks, filters, a hostile `.npmrc`, a poisoned `PATH` and malicious config.
 # The lane state file and the fresh-per-step lead as launcher modes, replacing the long-session lead.
 # The swarm's live controls (the crew cap, the push go, the lane state, the seat roster and its spend readings) move out of flat files into the live Lararium wiki once it stands: tiddlers the controller's hand signs and every seat reads through its capability, so a cap or a go carries an author and a history instead of a file mode.
@@ -105,6 +105,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NYit0MzArhv1MDJdQEt8DhhlEExXBO-pIQZqDQUOb3c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;StsdtQwflpwum3wUfxvriftvQpb53b7RsA_MansZyKE`>>
 
 <<^ code=`&#x0004;` to=`?`>>
