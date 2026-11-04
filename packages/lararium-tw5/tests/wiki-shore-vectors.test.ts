@@ -933,6 +933,25 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await r.repo.shutdown();
   }, 120_000);
 
+  test("G(c) CONTROL: a child the family call put owes the store nothing only while its state matches the put; a changed child still stores", async () => {
+    const boundary = new ManualBoundary();
+    const r = await rig(boundary);
+    await r.adaptor.armSeedCheckpoint();
+    const child = "lar:///t/shore/family-child#/a";
+    const placed = { tiddler: { title: child, text: "! body", type: CARRIER_TYPE } } as never;
+    const adaptor = r.adaptor as unknown as {
+      familyPlaced: Map<string, unknown>;
+      _matchesPlaced(record: unknown, state: unknown): boolean;
+    };
+    const same = new r.Tiddler({ title: child, text: "! body", type: CARRIER_TYPE });
+    const changed = new r.Tiddler({ title: child, text: "! body, edited after the root left", type: CARRIER_TYPE });
+    expect(adaptor._matchesPlaced(placed, same), "the same state matches the put").toBe(true);
+    expect(adaptor._matchesPlaced(placed, changed), "a changed child no longer matches, so its own flush stores it").toBe(false);
+    r.unbridge();
+    await r.adaptor.stop();
+    await r.repo.shutdown();
+  }, 120_000);
+
   test("H12-1: a never-landed create then delete leaves no store record or wiki title", async () => {
     const boundary = new ManualBoundary();
     const r = await rig(boundary);
