@@ -27,6 +27,15 @@ interface BridgeWiki {
 export function bridgeWikiToAdaptor(tw5: TW5Engine, adaptor: IslandAdaptor): () => void {
   const wiki = tw5.$tw.wiki as unknown as BridgeWiki;
   adaptor.installLandingQueue();
+  // One fault reaction per title generation: repeated dispatches may share one gate promise.
+  const reactions = new Map<string, Promise<void>>();
+  const reactOnce = (title: string, op: "save" | "delete", task: Promise<void>): void => {
+    if (reactions.get(title) === task) return;
+    reactions.set(title, task);
+    void task.catch((err: unknown) => console.warn(`[outbound-bridge] ${op} "${title}" faulted: ${String(err)}`)).finally(() => {
+      if (reactions.get(title) === task) reactions.delete(title);
+    });
+  };
   // A write the wiki makes BEFORE the shore stands resident reaches no bag: TW5's own boot writes (slot pointers, status titles) notify
   // after the bridge stands, so a save of every one would flood the stores with boot noise. The loss is NAMED instead, once, when the
   // shore stands resident: the titles the seed did not carry and no hand holds ride into the log, so a promoted startup module that
@@ -51,9 +60,9 @@ export function bridgeWikiToAdaptor(tw5: TW5Engine, adaptor: IslandAdaptor): () 
       const current = wiki.getTiddler(title) ?? null;
       if (!adaptor.holdsHand(title) && adaptor.isFoam(title, current)) continue;
       if (current) {
-        void adaptor.saveTiddler(current).catch((err: unknown) => console.warn(`[outbound-bridge] save "${title}" faulted: ${String(err)}`));
+        reactOnce(title, "save", adaptor.saveTiddler(current));
       } else {
-        void adaptor.deleteTiddler(title).catch((err: unknown) => console.warn(`[outbound-bridge] delete "${title}" faulted: ${String(err)}`));
+        reactOnce(title, "delete", adaptor.deleteTiddler(title));
       }
     }
     // Nothing fires here: the marks above asked the shore's drain, whose own clock is the durable ack of its last write.

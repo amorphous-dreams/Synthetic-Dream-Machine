@@ -38,6 +38,43 @@ const meme = (slots: readonly string[]): string =>
   slots.map((s) => `<<~ ahu slot=\`#${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
   `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
+test("repeated dispatches over one pending generation attach one fault reaction", async () => {
+  type ChangeListener = (changes: Record<string, unknown>) => void;
+  let onChange: ChangeListener | null = null;
+  const wiki = {
+    addEventListener(_type: "change", fn: ChangeListener) { onChange = fn; },
+    removeEventListener(_type: "change", fn: ChangeListener) { if (onChange === fn) onChange = null; },
+    getTiddler: () => ({ fields: { title: "probe/reaction", text: "x" } }),
+  };
+  let reject!: (error: Error) => void;
+  const pending = new Promise<void>((_resolve, rej) => { reject = rej; });
+  const adaptor = {
+    installLandingQueue() {},
+    isResident: () => true,
+    whenResident() {},
+    handleChangeDispatch: () => new Set<string>(),
+    holdsHand: () => false,
+    isFoam: () => false,
+    saveTiddler: () => pending,
+    deleteTiddler: () => pending,
+  };
+  const warns: string[] = [];
+  const spy = vi.spyOn(console, "warn").mockImplementation((...args: unknown[]) => { warns.push(args.join(" ")); });
+  try {
+    const stop = bridgeWikiToAdaptor({ $tw: { wiki } } as never, adaptor as never);
+    onChange?.({ "probe/reaction": { modified: true } });
+    onChange?.({ "probe/reaction": { modified: true } });
+    onChange?.({ "probe/reaction": { modified: true } });
+    reject(new Error("refused"));
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(warns.filter((line) => line.includes(`save "probe/reaction" faulted: Error: refused`))).toHaveLength(1);
+    stop();
+  } finally {
+    spy.mockRestore();
+  }
+});
+
 describe.skipIf(wikiSkip)(`outbound bridge — a write before the shore stands resident${skipNote}`, () => {
   test("RED: a startup module's write before the seed checkpoint is named, never silent; CONTROL: a seed-landed title is not named and echoes nothing", async () => {
     const engine = await bootTestWiki();
