@@ -274,3 +274,53 @@ test("a recovery mirror projects a held draft even when the wiki view shadows it
   expect(files).toHaveLength(1);
   expect(readFileSync(join(recovery, files[0]!), "utf8")).toBe(bytes);
 });
+
+test("initial scan finds a shadowed recovery draft", async () => {
+  root = mkdtempSync(join(tmpdir(), "lar-recovery-scan-"));
+  const recovery = join(root, "recovery");
+  const title = "Draft of 'Note'";
+  const projector = new LarDiskProjector({
+    mirrors: [{ bagId: "draft", mirrorRoot: recovery, mirrorClass: "recovery" }],
+    bagsHolding: async (uri) => uri === title ? ["draft", "temp"] : ["temp"],
+    carrierFileFn: async (uri) => nativeFile(uri, uri === title ? "draft bytes" : "private"),
+  });
+  const wiki = {
+    allTitles: () => [title, "temp-only"],
+    getTiddler: (uri: string) => ({ fields: { title: uri, "$origin-bag": "temp" } }),
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  };
+  const stop = projector.start({ $tw: { wiki } } as never);
+  try {
+    await projector.idle();
+    expect(existsSync(recovery)).toBe(true);
+    const files = readdirSync(recovery);
+    expect(files).toHaveLength(1);
+    expect(readFileSync(join(recovery, files[0]!), "utf8")).toContain("draft bytes");
+  } finally {
+    await stop();
+  }
+});
+
+test("CONTROL — initial scan leaves a title held only by an ungranted bag off disk", async () => {
+  root = mkdtempSync(join(tmpdir(), "lar-recovery-scan-control-"));
+  const recovery = join(root, "recovery");
+  const projector = new LarDiskProjector({
+    mirrors: [{ bagId: "draft", mirrorRoot: recovery, mirrorClass: "recovery" }],
+    bagsHolding: async () => ["temp"],
+    carrierFileFn: async (uri) => nativeFile(uri, "private"),
+  });
+  const wiki = {
+    allTitles: () => ["temp-only"],
+    getTiddler: (uri: string) => ({ fields: { title: uri, "$origin-bag": "temp" } }),
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  };
+  const stop = projector.start({ $tw: { wiki } } as never);
+  try {
+    await projector.idle();
+    expect(existsSync(recovery)).toBe(false);
+  } finally {
+    await stop();
+  }
+});
