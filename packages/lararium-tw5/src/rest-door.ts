@@ -55,7 +55,8 @@ export function makeRestDoor(deps: RestDoorDeps): RestDoor {
     const heads: Record<string, string[]> = {};
     for (const slot of slots) {
       const handle = held.get(slot);
-      if (!handle || documentIds.includes(handle.documentId)) continue;
+      if (!handle) return false;
+      if (documentIds.includes(handle.documentId)) continue;
       documentIds.push(handle.documentId);
       heads[handle.documentId] = replicaHeads(handle);
     }
