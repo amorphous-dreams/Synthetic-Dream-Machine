@@ -132,7 +132,7 @@ export function recipeRecordOf(
 
 /** Canonical disk-mirror DESIGNATION (system canon). A pool's held grant decides
  *  whether it actually mirrors (node holds a disk grant; browser's empty grant
- *  ignores). The per-wiki working layer + own canon append at mount (slug-scoped). */
+ *  ignores). The per-wiki draft, working layer and own canon append at mount (slug-scoped). */
 const PRIMARY_MIRROR_BAGS: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
 
 /**
@@ -185,7 +185,7 @@ export async function buildWikiMountSpec(
     ...(inputs.libraryBags?.length ? { libraryBags: inputs.libraryBags } : {}),
     ...(inputs.pluginOfferings?.length ? { pluginOfferings: inputs.pluginOfferings } : {}),
     ...(inputs.pluginOfferingsFault !== undefined ? { pluginOfferingsFault: inputs.pluginOfferingsFault } : {}),
-    mirrorBags: [...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "working"), wikiBagUri(inputs.wikiSlug)],
+    mirrorBags: [...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "draft"), wikiSlotUri(inputs.wikiSlug, "working"), wikiBagUri(inputs.wikiSlug)],
   };
 
   return { spec: { coreHash: inputs.coreHash, recipe, grants }, personalUrl, draftUrl, workingUrl };
