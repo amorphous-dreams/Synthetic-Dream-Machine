@@ -140,6 +140,64 @@ test.each([false, true])("recovery drain waits for projection after durable head
   }
 }, 60_000);
 
+test("recovery drain retains its obligation when the granted file conflicts", async () => {
+  root = mkdtempSync(join(tmpdir(), "lar-recovery-conflict-"));
+  const r = await shoreRig();
+  await r.adaptor.armSeedCheckpoint();
+  let releaseRender!: () => void;
+  let renderStarted!: () => void;
+  const heldRender = new Promise<void>((resolve) => { releaseRender = resolve; });
+  const rendering = new Promise<void>((resolve) => { renderStarted = resolve; });
+  let first = true;
+  const conflicts: string[] = [];
+  const projector = new LarDiskProjector({
+    mirrors: [{ bagId: draftBag, mirrorRoot: root, mirrorClass: "recovery" }],
+    carrierFileFn: async () => null,
+    onConflict: (entry) => conflicts.push(entry.uri),
+    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
+    recoveryFileFn: async (fields) => {
+      if (first) { first = false; renderStarted(); await heldRender; }
+      return nativeFile(String(fields.title), String(fields.text));
+    },
+  });
+  const stopProjector = projector.start(r.engine);
+  const asks: Array<{ requestId: string }> = [];
+  const door = makeRestDoor({
+    post: (message) => { if (message.type === "doc:rest") asks.push(message); },
+    handles: () => new Map(Object.entries(r.handles)),
+    mintId: () => `conflict-${asks.length}`,
+  });
+  r.adaptor.restDoor = door;
+  let title = "";
+  try {
+    title = openDraft(r, "Note", "first");
+    await afterDispatch();
+    await rendering;
+    await turns(20);
+    expect(asks).toHaveLength(1);
+    const path = join(root, `${title}.tid`);
+    const disk = tidBody(title, "a separate disk edit");
+    writeFileSync(path, disk);
+    typeInto(r, title, "latest");
+    await afterDispatch();
+    releaseRender();
+    await projector.idle();
+    expect(conflicts).toContain(title);
+    expect(readFileSync(path, "utf8")).toBe(disk);
+    door.answer({ type: "doc:rested", requestId: asks[0]!.requestId, rested: true });
+    await turns(30);
+    const writes = r.calls.filter((call) => call.bag === draftBag && call.puts.includes(title));
+    expect(writes, "a conflicting recovery file must not acknowledge the first drain").toHaveLength(1);
+    expect(r.adaptor.pendingTitles()).toContain(title);
+  } finally {
+    releaseRender();
+    door.close();
+    r.adaptor.restDoor = null;
+    await stopProjector();
+    await r.stop();
+  }
+}, 60_000);
+
 describe("foreign-title projection — the form cut", () => {
   test("★ a tiddler titled `My Notes` projects to disk ★", async () => {
     const { projector, root } = rig(() => nativeFile("My Notes", "a plain title.\n"));
