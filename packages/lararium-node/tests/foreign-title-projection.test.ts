@@ -32,6 +32,11 @@ import type { CarrierFile } from "@lararium/tw5";
 import { createHash } from "node:crypto";
 import { afterDispatch, draftBag, openDraft, shoreRig, turns, typeInto } from "../../lararium-tw5/tests/wiki-shore-rig.js";
 import { makeRestDoor } from "../../lararium-tw5/src/rest-door.js";
+import { attachMessageChannelSync } from "@lararium/mesh";
+import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
+import { restInStore } from "../src/open-node-vessel.js";
+import { answerDocRest, setRestDoor } from "../src/worker-handle.js";
+import { restingRepo, restEvery } from "./resting-repo.js";
 
 let root = "";
 afterEach(() => { if (root) { rmSync(root, { recursive: true, force: true }); root = ""; } });
@@ -811,4 +816,114 @@ test("a recovery mirror write fault cannot produce a file receipt", async () => 
     await expect(projector.recoveryAtRest(draftBag, title, (await r.draft.get(title))!.tiddler)).rejects.toThrow();
     expect(readFileSync(blocked, "utf8")).toBe("blocks mkdir");
   } finally { await stop(); await r.stop(); }
+}, 60_000);
+
+
+test.each(["storage", "projection"] as const)("real storage and recovery file both gate the next drain (hold %s)", async (hold) => {
+  root = mkdtempSync(join(tmpdir(), "recovery-homed-"));
+  const storage = join(root, "store");
+  const mirror = join(root, "mirror");
+  const r = await shoreRig();
+  const vessel = restingRepo(storage, { saveDebounceRate: 60_000 });
+  const channel = new MessageChannel();
+  let ready!: (peer: string) => void;
+  const leg = new Promise<string>((resolve) => { ready = resolve; });
+  attachMessageChannelSync(r.repo as never, channel.port1 as unknown as MessagePort);
+  attachMessageChannelSync(vessel, channel.port2 as unknown as MessagePort, ready);
+  await leg;
+  await r.adaptor.armSeedCheckpoint();
+  let release!: () => void;
+  let started!: () => void;
+  const held = new Promise<void>((resolve) => { release = resolve; });
+  const reached = new Promise<void>((resolve) => { started = resolve; });
+  let firstStorage = true;
+  let firstRender = true;
+  setRestDoor(async (ids, heads) => {
+    if (hold === "storage" && firstStorage) { firstStorage = false; started(); await held; }
+    await restInStore(vessel, ids, { ready: leg, onClose: () => () => {} }, heads);
+  });
+  const projector = new LarDiskProjector({
+    mirrors: [{ bagId: draftBag, mirrorRoot: mirror, mirrorClass: "recovery" }],
+    carrierFileFn: async () => null,
+    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
+    recoveryFileFn: async (fields) => {
+      if (hold === "projection" && firstRender) { firstRender = false; started(); await held; }
+      return nativeFile(String(fields.title), String(fields.text));
+    },
+  });
+  const stopProjector = projector.start(r.engine);
+  r.adaptor.recoveryAtRest = (bag, title, fields) => projector.recoveryAtRest(bag, title, fields);
+  let storedReplies = 0;
+  const door = makeRestDoor({
+    post: (message) => { if (message.type === "doc:rest") void answerDocRest(message).then((reply) => { if (reply.rested) storedReplies++; door.answer(reply); }); },
+    handles: () => new Map(Object.entries(r.handles)),
+  });
+  r.adaptor.restDoor = door;
+  try {
+    const title = openDraft(r, "Homed proof", "first");
+    await afterDispatch();
+    await reached;
+    await turns(40);
+    typeInto(r, title, "latest");
+    await afterDispatch(); await turns(40);
+    const count = () => r.calls.filter((call) => call.bag === draftBag && call.puts.includes(title)).length;
+    expect(count(), "the held receipt prevents the next drain").toBe(1);
+    release();
+    for (let i = 0; i < 200 && count() < 2; i++) await new Promise<void>((resolve) => setTimeout(resolve, 5));
+    expect(count()).toBe(2);
+    await turns(50);
+    r.adaptor.requestDrain(); // A superseded projection receipt waits for the next explicit request.
+    for (let i = 0; i < 200; i++) {
+      await projector.idle();
+      const path = join(mirror, `${title}.tid`);
+      if (existsSync(path) && readFileSync(path, "utf8") === tidBody(title, "latest") && storedReplies >= 2 && !r.adaptor.pendingTitles().includes(title)) break;
+      await new Promise<void>((resolve) => setTimeout(resolve, 5));
+    }
+    expect(readFileSync(join(mirror, `${title}.tid`), "utf8")).toBe(tidBody(title, "latest"));
+    expect(storedReplies, "both generations reached the storage-backed door").toBeGreaterThanOrEqual(2);
+    expect((await new DurableNodeFSStorageAdapter(storage).loadRange([r.draftHandle.documentId])).length).toBeGreaterThan(0);
+    expect(r.adaptor.pendingTitles()).not.toContain(title);
+  } finally {
+    release(); door.close(); r.adaptor.restDoor = null; r.adaptor.recoveryAtRest = null; setRestDoor(null);
+    await stopProjector(); await r.stop(); channel.port1.close(); channel.port2.close(); await restEvery();
+  }
+}, 60_000);
+
+test.each([false, true])("deletion waits for the recovery file to clear and retries a conflicting file (conflict=%s)", async (conflict) => {
+  root = mkdtempSync(join(tmpdir(), "recovery-delete-receipt-"));
+  const r = await shoreRig();
+  await r.adaptor.armSeedCheckpoint();
+  const projector = new LarDiskProjector({
+    mirrors: [{ bagId: draftBag, mirrorRoot: root, mirrorClass: "recovery" }],
+    carrierFileFn: async () => null,
+    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
+    recoveryFileFn: async (fields) => nativeFile(String(fields.title), String(fields.text)),
+  });
+  const stopProjector = projector.start(r.engine);
+  let checks = 0;
+  r.adaptor.recoveryAtRest = (bag, title, fields) => { checks++; return projector.recoveryAtRest(bag, title, fields); };
+  try {
+    const title = openDraft(r, "Delete receipt", "first");
+    const path = join(root, `${title}.tid`);
+    await afterDispatch();
+    for (let i = 0; i < 200 && !existsSync(path); i++) await new Promise<void>((resolve) => setTimeout(resolve, 5));
+    await projector.idle(); await turns(40);
+    expect(readFileSync(path, "utf8")).toBe(tidBody(title, "first"));
+    const before = checks;
+    if (conflict) writeFileSync(path, tidBody(title, "independent disk edit"));
+    r.wiki.deleteTiddler(title);
+    await afterDispatch(); await turns(60); await projector.idle(); await turns(30);
+    if (conflict) {
+      expect(readFileSync(path, "utf8")).toBe(tidBody(title, "independent disk edit"));
+      expect.soft(r.adaptor.pendingTitles(), "a retained file keeps the deletion receipt owed").toContain(title);
+      r.adaptor.requestDrain(); await turns(50);
+      expect.soft(checks, "retry rechecks the deletion receipt").toBeGreaterThan(before + 1);
+      expect.soft(r.adaptor.pendingTitles()).toContain(title);
+    } else {
+      expect(existsSync(path), "CONTROL: the agreed file clears").toBe(false);
+      expect(r.adaptor.pendingTitles()).not.toContain(title);
+    }
+  } finally {
+    r.adaptor.recoveryAtRest = null; await stopProjector(); await r.stop();
+  }
 }, 60_000);
