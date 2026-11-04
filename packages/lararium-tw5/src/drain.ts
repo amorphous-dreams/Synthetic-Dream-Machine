@@ -134,9 +134,9 @@ export class Drain {
    * lifecycle request made while a write flies (`demand`, on by default with `retry`) stands for that write's title should it fail;
    * a landing wave passes `demand: false`, since a wave that met the flight asked nothing of its outcome.
    */
-  kick(opts: { readonly retry?: boolean; readonly demand?: boolean } = {}): void {
+  kick(opts: { readonly retry?: boolean; readonly demand?: boolean; readonly only?: string } = {}): void {
     const retry = opts.retry !== false;
-    if (retry) this.#unblock();
+    if (retry) this.#unblock(opts.only);
     if (retry && opts.demand !== false && this.#flight !== null) this.#demanded = true;
     this.#pump();
   }
@@ -197,9 +197,12 @@ export class Drain {
 
   // ---------------------------------------------------------------------------
 
-  #unblock(): void {
-    for (const slot of this.#blocked) { slot.blocked = null; slot.retry = true; }
-    this.#blocked.clear();
+  #unblock(only?: string): void {
+    for (const slot of this.#blocked) {
+      if (only !== undefined && slot.title !== only) continue;
+      slot.blocked = null; slot.retry = true;
+      this.#blocked.delete(slot);
+    }
   }
 
   #edgeMet(edge: { readonly target: string; readonly epoch: number }): boolean {

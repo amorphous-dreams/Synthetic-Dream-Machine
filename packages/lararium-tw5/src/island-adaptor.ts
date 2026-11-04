@@ -390,7 +390,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       const held = this._heldRun; this._heldRun = null;
       held?.();
       // A wave arriving after a refusal is a request: the refused hand tries again ahead of it. A wave meeting the flight asks nothing of it.
-      this.drain.kick({ demand: false });
+      this.drain.kick({ demand: false, only: title });
       return await this.drain.whenSettled(title, gen);
     } finally { this._firing--; }
   }
