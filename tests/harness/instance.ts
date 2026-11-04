@@ -192,6 +192,32 @@ export function freePort(): Promise<number> {
 }
 
 /**
+ * A LIVENESS RETRY, never a correctness decision. `freePort()` binds :0, reads the port and closes it, and only then does the daemon bind
+ * it: anything (another test's daemon, an outbound socket's ephemeral port) can take it in between. When an attempt dies naming
+ * "already in use", the next attempt stands on a fresh port, bounded, each retry named in the log. Any other failure, and a port the
+ * caller fixed, is final.
+ */
+export async function standOnFreePort<T>(
+  attempt: (port: number) => Promise<T>,
+  opts: { readonly port?: number; readonly first?: number; readonly tries?: number; readonly pick?: () => Promise<number>; readonly say?: (line: string) => void } = {},
+): Promise<{ readonly value: T; readonly port: number; readonly retries: number }> {
+  const tries = opts.port === undefined ? (opts.tries ?? 3) : 1;
+  const pick = opts.pick ?? freePort;
+  const say = opts.say ?? ((line: string) => console.warn(line));
+  let port = opts.port ?? opts.first ?? await pick();
+  for (let n = 1; ; n++) {
+    try { return { value: await attempt(port), port, retries: n - 1 }; }
+    catch (error) {
+      const text = error instanceof Error ? error.message : String(error);
+      if (n >= tries || !/already in use/i.test(text)) throw error;
+      const next = await pick();
+      say(`[harness] port ${port} was taken before the daemon bound it; standing again on ${next} (try ${n + 1} of ${tries})`);
+      port = next;
+    }
+  }
+}
+
+/**
  * Where a staged root is minted. `LAR_STAGE_DIR` names it; else the OS temp dir. A run beside an
  * operator's live hearth stages under its own directory so nothing it mints sits next to the hearth's.
  */
@@ -334,7 +360,7 @@ export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> 
   const root = opts.root ?? mkdtempSync(join(stageDir(), `lares-staged-${opts.tag ? `${opts.tag}-` : ""}`));
   stageGenesis(root);
   // OS-assigned free port — each staged island its own port, collision-free (causal-island isolation).
-  const port = opts.port ?? await freePort();
+  let port = opts.port ?? await freePort();
   const env  = { LAR_ROOT: root, LAR_PORT: String(port) };
   const cli  = (args: readonly string[]) => runCli(env, args);
   // ONE MONOTONIC ORIGIN for every stamp this vessel carries. The timeline is a measurement read by a human
@@ -366,21 +392,30 @@ export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> 
       if (m) phases.push({ phase: m[1]!, ms: since() });
     }
   };
-  const daemon: ChildProcess = spawn(process.execPath, [NODE_MAIN, "--root", root, "--port", String(port)], {
-    cwd: NODE_CWD,
-    env: { ...process.env, ...env, ...(opts.daemonEnv ?? {}) },
-  });
-  daemon.stdout?.on("data", capture);
-  daemon.stderr?.on("data", capture);
-
-  const liveBy = performance.now() + 120_000;
-  await new Promise<void>((resolve, reject) => {
-    const poll = setInterval(() => {
-      if (log.includes("phase → live")) { clearInterval(poll); resolve(); }
-      else if (daemon.exitCode !== null) { clearInterval(poll); reject(new Error(`staged daemon exited ${daemon.exitCode} before live:\n${log.slice(-6000)}`)); }
-      else if (performance.now() > liveBy) { clearInterval(poll); reject(new Error(`staged daemon never reached live (120s):\n${log.slice(-800)}`)); }
-    }, 250);
-  });
+  const standDaemon = async (atPort: number): Promise<ChildProcess> => {
+    log = ""; partial = ""; phases.length = 0;
+    env.LAR_PORT = String(atPort);
+    const child: ChildProcess = spawn(process.execPath, [NODE_MAIN, "--root", root, "--port", String(atPort)], {
+      cwd: NODE_CWD,
+      env: { ...process.env, ...env, ...(opts.daemonEnv ?? {}) },
+    });
+    child.stdout?.on("data", capture);
+    child.stderr?.on("data", capture);
+    const liveBy = performance.now() + 120_000;
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const poll = setInterval(() => {
+          if (log.includes("phase → live")) { clearInterval(poll); resolve(); }
+          else if (child.exitCode !== null) { clearInterval(poll); reject(new Error(`staged daemon exited ${child.exitCode} before live:\n${log.slice(-6000)}`)); }
+          else if (performance.now() > liveBy) { clearInterval(poll); reject(new Error(`staged daemon never reached live (120s):\n${log.slice(-800)}`)); }
+        }, 250);
+      });
+    } catch (error) { await stopChild(child); throw error; }
+    return child;
+  };
+  const stood = await standOnFreePort(standDaemon, opts.port === undefined ? { first: port } : { port: opts.port });
+  const daemon: ChildProcess = stood.value;
+  port = stood.port;
   const name = root.split("/").pop() ?? root;
   recordTimeline({ vessel: name, event: "live", foundMs, phases });
 
