@@ -22,14 +22,6 @@
     "authored-05-block-constructs.mem": {
       "hash": "e9b3f7c77824a17f0dfc401550497aa128bc22b8b9619870967ea9d516cf35bf",
       "sha256": "e49503f68fdee935359504e2487a0eeeb2de715952e6dd5c59ed448a3ec8fac6"
-    },
-    "wild-01-voices.mem": {
-      "hash": "8085a0ab52ae6bee64da42711acb0a19b8b2c4cb55e01b161a8b9a3ef9ca9ec0",
-      "sha256": "0b301ffca638ba8b1e062d7cc7bdfe2696b90f339c80f937740a0bcee1f8269e"
-    },
-    "wild-02-pragma.mem": {
-      "hash": "47eb38df4c1aae46375581678e90d930c94eae6f2172cb4cf6a90cf63a211046",
-      "sha256": "43d3627d938e0845e21f3e14f7a078fdb073d5248f1fdeca07ff02af3e1b2097"
     }
   }
 }
