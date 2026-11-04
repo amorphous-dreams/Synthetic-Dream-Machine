@@ -11,6 +11,16 @@ import type { LarTiddlerRecord } from "@lararium/mesh";
 
 const STORY = "$:/StoryList";
 
+test("a durable acknowledgement refuses an unknown bag; an empty request needs no document", async () => {
+  const posted: unknown[] = [];
+  const door = makeRestDoor({ post: (message) => posted.push(message), handles: () => new Map() });
+  await expect(door.ack([])).resolves.toBeUndefined();
+  expect(posted).toHaveLength(0);
+  await expect(door.ack(["missing-draft-bag"])).rejects.toThrow();
+  expect(posted).toHaveLength(0);
+  door.close();
+});
+
 async function standing(r: Rig, title: string): Promise<void> {
   await r.working.put({ tiddler: { title, text: "landed" } } as LarTiddlerRecord, remote);
   await turns();
