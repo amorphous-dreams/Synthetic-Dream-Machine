@@ -115,7 +115,6 @@ A meme passes the federation gate when ALL of the following hold:
 
 ```
 rating(meme)    >= Meme           # structural ladder: Noise/Data/Meme/Ano/Kapu
-manaoio(meme)   >= wiki.minManaoio
 recipe(wiki).matches(meme)
 hasAbility(subject, "sync", edge.id)
 !edge.revoked
@@ -124,6 +123,8 @@ hasAbility(subject, "sync", edge.id)
 
 `rating` names the structural quality gate: did the carrier reach lawful meme shape?
 Noise and Data stay node-local only. They never federate regardless of any other condition.
+
+No scalar a carrier declares about itself joins these conditions. Disclosure rides the recipe, the holder's capability, revocation and kapu, and each wiki operator keeps the right to read any local field name on their own terms.
 
 Stage band (GR/OS/US/CS/DS) provides a UX rendering annotation — it governs visual presentation
 in the masks/voices layer, not federation eligibility. Wiki recipes MAY filter by stage
@@ -378,6 +379,6 @@ causal-island-may = [
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mdSRkPHIuS2VVIDYubSgW9gny0rVsd7XWLEwYN6oOFg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_PXn3-lgbY_nftXcUZ7J4867idG6mVkFYtKQBG0YRL0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

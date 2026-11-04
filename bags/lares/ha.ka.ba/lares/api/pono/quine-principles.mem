@@ -96,7 +96,7 @@ does not close — it stays partial.
 
 ''Lararium expression:''
 * The meme corpus determines boot behavior (which memes have `invariant = true`,
-  which have `mana ≥ 18`, which carry Heleuma source-sha256 anchors)
+  which carry Heleuma source-sha256 anchors)
 * The `lar:` URI resolver stands as the single gate — all content enters through it
 * FPI-2 (wave vs water): behavior MUST stay independent of physical filesystem layout
 
@@ -131,7 +131,7 @@ save-to-self: editing a tiddler changes what the wiki renders, with no intermedi
 new implementation. Schema rules that require a TypeScript rebuild before they apply.
 Any "reload required" path for content that could live in the tiddler store.
 
-''Rule:'' Any meme with `mana ≥ 18` and a Heleuma source-sha256 anchor MUST stay loadable
+''Rule:'' Any meme with a Heleuma source-sha256 anchor and a local promote grant MUST stay loadable
 at runtime without a restart. The boot-time gate checks these fields; if they pass,
 the gate prefers the meme over the compiled TypeScript equivalent.
 
@@ -238,7 +238,7 @@ source-sha256   = "sha256:..."  # hash of the TypeScript source at time of meme 
 | 0 | Logic in TypeScript only; no meme |
 | 1 | TypeScript file has meme; meme has `heleuma = "ba"` and `source-sha256` |
 | 2 | Meme body contains compiled CJS; TypeScript fallback still active |
-| 3 | Boot-time gate checks `mana`, `confidence`, `source-sha256`; meme preferred if all pass |
+| 3 | Boot-time gate checks `confidence`, `source-sha256` and the local grant; meme preferred if all pass |
 | 4 | Meme holds authority; TypeScript falls back only |
 
 ''`heleuma = "ba"`'': "ba" (Hawaiian: to carry, to bear) — the meme serves as the carrier
@@ -257,6 +257,6 @@ of the pattern. The TypeScript file stands as the material instantiation; the me
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ODFj9ToBcZOfwNpPnk8nSbYzp_oyEqiohtYwrfVWmNc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;axqgnjXyY2BoOQXPjQ8AnLQl5T6BEQ-pgn7ga3nQvQ8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

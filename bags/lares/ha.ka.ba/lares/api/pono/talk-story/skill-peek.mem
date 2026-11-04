@@ -43,9 +43,6 @@ description: Convene a talk-story floor (kūkākūkā, talanoa) — co-narrated
 ```toml meta
 cacheable = true
 invariant = false
-mana      = 16
-manao     = 16
-manaoio   = 16
 register  = "Synthesis-Canon"
 retain    = true
 role      = "practice face of talk-story — triggers, the five steps, three worked exits, crucible record; law lives at the parent meme"
@@ -168,9 +165,6 @@ type = "text/markdown"
 ```toml meta
 cacheable = true
 invariant = false
-mana      = 16
-manao     = 16
-manaoio   = 16
 register  = "Synthesis-Canon"
 retain    = true
 role      = "canon law of the talk-story floor — convened co-narration (kūkākūkā \\talk-story, talanoa, kuwentuhan) that orients work before a ruling locks; three exits: moolelo (\\mufakat \\salaysay \\consensus), hoike (\\testimony), honest suspension; five-sea word-family matrix, eight laws, degraded states, lineage"
@@ -297,6 +291,6 @@ Beneath the triad two grounds rhyme: **kapwa** (Filipino — the other met as sh
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;h4cKgZIKsozLde8BArB9533Rib2siWiVzRQBnG9JkEo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VtVJszf2BU5MsXr_Siv8C0LWrrBwVMX22G8OVtDtIbI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -102,7 +102,7 @@ imply every level below them. (We stand strictly stronger than ATProto here: the
 a plaintext firehose; ours forwards ciphertext it cannot open — the correct boundary for a
 private mesh of households rather than a public broadcast medium.)
 
-''Visibility gate'': ALL six conditions must hold for a meme to federate across an edge island.
+''Visibility gate'': ALL five conditions must hold for a meme to federate across an edge island. No scalar a carrier declares about itself counts among them: disclosure rides the recipe, the holder's capability, revocation and kapu, and a threshold retired from this list never widens what leaves a node without a local sharing grant.
 Stage band serves as a UX annotation — NOT a gate condition.
 
 ''Shore law'' (Scale axis): joining a ''social'' ring (≤ Cabal) requires a capability delegation
@@ -241,11 +241,10 @@ causal-island-may = [
   "peer-sync-state",
 ]
 
-# Visibility gate — ALL six conditions must hold to federate a meme across an edge island
+# Visibility gate — ALL five conditions must hold to federate a meme across an edge island
 [visibility-gate]
 conditions = [
   "rating(meme) >= meme",
-  "manaoio(meme) >= wiki.minManaoio",
   "recipe(wiki).matches(meme)",
   "subjectCanSync(subject, edge.id)",      # holds pull on the edge (forward ciphertext)
   "!edge.revoked",
@@ -299,7 +298,6 @@ export const CAUSAL_ISLAND_MAY = [
 // even ahead of live consumers — it is the cross-ring sync protocol for Axis 2.
 export function visibilityGate(input: VisibilityGateInput): boolean {
   if (!FEDERABLE_RATINGS.has(input.memeRating.toLowerCase())) return false;
-  if (input.memeManaoio < input.wikiMinManaoio)                return false;
   if (!input.recipeMatches)                                    return false;
   if (!input.subjectCanSync)                                   return false;  // holds pull on edge
   if (input.edgeRevoked)                                       return false;
@@ -365,6 +363,6 @@ meant to escape):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6yby1XqIQ7C9UzUoMYFiiS_WDFA6X0XmX26a03vIDB4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cX72jaFIcri691lO1EmcUQphjGhpBX8Au3YNB4zcZsc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

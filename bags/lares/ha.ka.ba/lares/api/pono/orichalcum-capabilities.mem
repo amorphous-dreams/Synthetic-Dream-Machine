@@ -149,18 +149,9 @@ note    = """
 A carrier MUST reach `Meme` rating to federate.
 Noise and Data stay node-local only.
 
-!!! Manaoio Caveat (believability weight)
+!!! No Scalar Caveat
 
-```toml
-[[caveats]]
-kind    = "manaoio-at-least"
-type    = "integer Level [0–20]"
-note    = """
-  Community-weighted believability. Distinct from confidence (operator-set).
-  Three separate thresholds: read / edit / admin.
-  Default: 0 / 12 / 16.
-"""
-```
+A capability caveat never reads a score a carrier declares about itself. Read, propose and move rights ride the holder's delegated capability, the wiki recipe, revocation and the kapu scope below; an operator who wants a believability notion keeps it in their own wiki under their own field and their own meaning.
 
 !!! Scope and Boundary Caveats
 
@@ -196,11 +187,6 @@ note    = "capability invalid once the chain rolls past the epoch it roots on. A
 [federation_defaults]
 # Structural gate — rating ladder
 min_rating_federate  = "Meme"   # Noise and Data are node-local only
-
-# Believability gate — manaoio scalar
-min_manaoio_read     = 0
-min_manaoio_propose  = 12
-min_manaoio_move     = 16
 
 # Stage band is a UX/rendering annotation only.
 # Wiki recipes MAY include stage-based filter predicates as operator configuration,
@@ -279,7 +265,7 @@ UCAN provides the external proof shape. Orichalcum holds the semantic law.
 Build adapters so a Lararium capability can emit and verify a UCAN wire proof.
 Do not let UCAN wire validity become the internal source of truth for Lararium authority.
 
-A cryptographically valid UCAN that fails a Lararium caveat (rating, manaoio,
+A cryptographically valid UCAN that fails a Lararium caveat (rating,
 kapu-scope, epoch) authorizes nothing. The caveat gate fires after
 the crypto gate, not instead of it.
 
@@ -292,6 +278,6 @@ the crypto gate, not instead of it.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;saWnOfraBIRoAxndAuBx2DqgnTJFDo4eo3NiG51JLxk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xu5uoQuxF6R4UbPA2BKd2YV95l5ILwEI63k6H69u2X0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

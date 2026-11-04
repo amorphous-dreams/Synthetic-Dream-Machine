@@ -25,10 +25,10 @@ uri-path  = "ha.ka.ba/lararium/tw5/ui/meta-panel"
 \procedure lar-meta-panel()
 <div class="lar-meta-panel">
 
-!! Tier 1 — Signal Strength
+!! Tier 1 — Confidence
 
 <div class="lar-stat-block">
-<$list filter="mana manao manaoio confidence" variable="f">
+<$list filter="confidence" variable="f">
 <$set name="v" value={{{ [{!!$(f)$}] }}}>
 <$reveal type="nomatch" state="" text="">
 <div class="lar-stat-row">
@@ -76,7 +76,7 @@ uri-path  = "ha.ka.ba/lararium/tw5/ui/meta-panel"
 <details class="lar-meta-details">
 <summary>Raw fields</summary>
 <table class="lar-meta-table">
-<$list filter="[fields[]!match[title]!match[text]!match[tags]!match[bag]!match[revision]!match[created]!match[modified]!match[creator]!match[modifier]!match[mana]!match[manao]!match[manaoio]!match[confidence]!match[role]!match[namespace]!match[register]!match[l-space]!match[content-type]!match[module-type]!match[tw5-module-name]!match[source-sha256]!match[cacheable]!match[retain]!match[hydrate]]" variable="f">
+<$list filter="[fields[]!match[title]!match[text]!match[tags]!match[bag]!match[revision]!match[created]!match[modified]!match[creator]!match[modifier]!match[confidence]!match[role]!match[namespace]!match[register]!match[l-space]!match[content-type]!match[module-type]!match[tw5-module-name]!match[source-sha256]!match[cacheable]!match[retain]!match[hydrate]]" variable="f">
 <$set name="v" value={{{ [{!!$(f)$}] }}}>
 <$reveal type="nomatch" state="" text="">
 <tr><th><code><<f>></code></th><td><<v>></td></tr>
@@ -94,7 +94,7 @@ uri-path  = "ha.ka.ba/lararium/tw5/ui/meta-panel"
 ```toml
 # Canonical field ordering for meta-panel render and MCP hud tool.
 # Tier 1 — stat bars (always visible, compact)
-tier1 = ["mana", "manao", "manaoio", "confidence"]
+tier1 = ["confidence"]
 # Tier 2 — identity block
 tier2 = ["role", "namespace", "register", "l-space"]
 # Tier 3 — technical fields (details disclosure)
@@ -112,6 +112,6 @@ exclude = ["title", "text", "tags", "bag", "revision", "created", "modified", "c
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;A4XLXO1jYaIYgCIivIBuS_e7hUQf-I8VaUampmt6_rY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KXISNFlwSi7TkRHhYNCqgCZCPTXLUGOd7OkMi5mEQ8Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

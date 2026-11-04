@@ -113,10 +113,10 @@ The Kūkā cycle names the OODA-HA phases in Hawaiian, grounding the loop in a c
 
 ''Iʻo lifecycle:'' the flow from "Maybe" to substantiated reality:
 
-# ''Hoʻomanaʻo'' — agent retrieves a meme; initial manaʻo low
+# ''Hoʻomanaʻo'' — agent retrieves a meme; initial standing low
 # ''Pono'' — agent verifies alignment with system invariants; mana cost drops with structural integrity
-# ''Kūkā'' — OODA-HA cycle; each successful pass may raise manaʻo
-# ''Iʻo'' — when both manaʻo and mana cross ~16, the object sheds "maybe" status and enters the Maybe Realized State
+# ''Kūkā'' — OODA-HA cycle; each successful pass may raise standing
+# ''Iʻo'' — when standing and structural integrity both read strong in the operator's own judgment, the object sheds "maybe" status and enters the Maybe Realized State
 
 <<~/ahu>>
 
@@ -130,6 +130,6 @@ The Kūkā cycle names the OODA-HA phases in Hawaiian, grounding the loop in a c
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AZZcfoveId40HcaDHKDOInjr_WgKm474_qlFPzIHqpo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NKtJ7SOGwp2nH2LUAUb7qEv1-y2xB2_c9DZQGyQqAj8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

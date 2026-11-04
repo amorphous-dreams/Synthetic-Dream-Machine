@@ -21,7 +21,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/l-space-trust"
 
 All system memes, imported data memes, and all exchange turns inhabit one `lar:` l-space.
 Shared addressability MUST NOT imply shared authority.
-Canonical memes carry stable law; live exchange records carry situated signal; data memes of any type carry signal at a mana cost.
+Canonical memes carry stable law; live exchange records carry situated signal; data memes of any type carry signal at a cost.
 
 ''The record KIND carries the trust, and the address form carries none of it.'' Hostful and hostless name WHAT a URI names — a hostful authority states who spoke, under what grant, from where, which reads as a fact about the content and keeps holding for as long as the content stands. Both forms stand lawful in any bag on any layer (`lar:///ha.ka.ba/lares/docs/pono/canon-boundary#/the-promotion-boundary`), so a node MUST NOT assign trust by reading the authority.
 
@@ -85,6 +85,6 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iz6jST88KnFitzBt77N4KmTKzYJVILQkgV54Kg2KKAM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AUtZH3XtXtHAIsc56eHiht1vNM95yOaZLv4ryGOtAgY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
