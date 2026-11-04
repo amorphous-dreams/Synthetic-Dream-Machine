@@ -25,8 +25,8 @@ export function hasEngineWatch(): IslandCap {
 }
 
 /**
- * `#has` hand-boundary — the shore's hand gate gathers a title's hands until an island boundary or eight marks
- * (`hand-gate.ts`); this cap fires that boundary on every signal a person's act or a port rides in on: a control
+ * `#has` hand-boundary — the shore's one drain (`drain.ts`) writes owed titles one at a time; this cap asks it for an
+ * island boundary on every signal a person's act or a port rides in on: a control
  * event, a camera resend, a placed verb, a port message. It claims nothing (returns false), so it stands FIRST in a
  * stack and the signal still reaches its owner. Every TW5 VM island that takes hands composes it — the pool wiki and
  * the daemon surface alike — or a single saved tiddler stays in the wiki alone and the composite never holds it.

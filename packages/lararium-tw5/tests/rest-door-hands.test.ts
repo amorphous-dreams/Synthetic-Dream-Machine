@@ -21,6 +21,22 @@ test("a durable acknowledgement refuses an unknown bag; an empty request needs n
   door.close();
 });
 
+test("a required durable acknowledgement with no rest door refuses by name and keeps the title owed", async () => {
+  const r = await shoreRig();
+  await r.adaptor.armSeedCheckpoint();
+  const title = "lar:///t/rest-door/refusal";
+  r.adaptor.requireDurableAck = true;
+  try {
+    await expect(r.adaptor.saveTiddler({ fields: { title, text: "first" } } as never)).rejects
+      .toThrow(/durable acknowledgement refused: no rest door stands/);
+    expect(r.adaptor.pendingTitles()).toContain(title);
+  } finally {
+    r.adaptor.requireDurableAck = false;
+    await r.adaptor.boundary();
+    await r.stop();
+  }
+});
+
 async function standing(r: Rig, title: string): Promise<void> {
   await r.working.put({ tiddler: { title, text: "landed" } } as LarTiddlerRecord, remote);
   await turns();

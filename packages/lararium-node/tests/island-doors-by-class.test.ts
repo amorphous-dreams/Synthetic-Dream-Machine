@@ -125,4 +125,22 @@ describe("the vessel's doors answer by island class", () => {
     expect(calls("nodeSpawnSessionWorker")).toEqual(["vessel-island-pool.ts"]);
     expect(calls("nodeWorkerHandle")).toEqual([]);                                 // no file wraps a worker under a class of its own choosing
   });
+
+  test("D6 — production worker boot wires the rest door in the shared kernel", async () => {
+    vi.resetModules();
+    const runSovereignKernel = vi.fn();
+    const parentPost = vi.fn();
+    const parentOn = vi.fn();
+    vi.doMock("@lararium/tw5", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("@lararium/tw5")>();
+      return { ...actual, runSovereignKernel };
+    });
+    vi.doMock("worker_threads", () => ({
+      parentPort: { postMessage: parentPost, on: parentOn },
+    }));
+    const { runSovereignWorker } = await import("../src/sovereign-island-model.js");
+    runSovereignWorker({} as never);
+    expect(runSovereignKernel).toHaveBeenCalledTimes(1);
+    expect(runSovereignKernel.mock.calls[0]?.[2]).toEqual({ restDoor: true });
+  });
 });

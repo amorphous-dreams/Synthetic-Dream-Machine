@@ -5,13 +5,13 @@
  * One dispatch is read WHOLE, in this order:
  *   1. Discrete acts first. A dispatch holding the deletion of a draft the adaptor's draft book knows is a
  *      save, a rename or a cancel; the adaptor takes the draft, its target and a rename's source, consumes
- *      their pending gate entries and issues the act's store calls inside this handler, in the turn of the
- *      dispatch. The titles it took are skipped below.
+ *      registers the act's writes through the shore's one drain, and starts it inside this handler, in the
+ *      turn of the dispatch. The titles it took are skipped below.
  *   2. Every other title is a hand or foam. A change equal to the value the last wave landed is foam, and
  *      a foam notification for a title that already holds a hand (marked, or sent and not yet landed) is
  *      never skipped: the title re-marks, so the flush reads the title's state at flush even when that
- *      state has returned to the landed value. Any other change marks the title for the per-title pacing
- *      gate, a deletion included.
+ *      state has returned to the landed value. Any other change marks the title in the shore's drain, a deletion
+ *      included.
  */
 import type { TW5Engine } from "./tw5-vm.js";
 import type { IslandAdaptor } from "./island-adaptor.js";
@@ -65,7 +65,8 @@ export function bridgeWikiToAdaptor(tw5: TW5Engine, adaptor: IslandAdaptor): () 
         reactOnce(title, "delete", adaptor.deleteTiddler(title));
       }
     }
-    // Nothing fires here: the marks above asked the shore's drain, whose own clock is the durable ack of its last write.
+    // The dispatch ends: an idle drain starts now (unless an attached trigger owns that clock); a write in flight keeps the next turn.
+    adaptor.dispatchEnded();
   };
   wiki.addEventListener("change", onChange);
   return () => wiki.removeEventListener("change", onChange);

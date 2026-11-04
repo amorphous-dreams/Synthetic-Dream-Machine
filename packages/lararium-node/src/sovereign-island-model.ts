@@ -324,5 +324,5 @@ export function runSovereignWorker(
     ),
   };
 
-  runSovereignKernel(host, behaviorOrFactory);
+  runSovereignKernel(host, behaviorOrFactory, { restDoor: true });
 }

@@ -905,13 +905,15 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     await afterDispatch(); await turns(24);
     saveSequence(r, second);
     await afterDispatch(); await turns(24);
+    // ONE write in flight across the shore: the second target waits behind the first removal's held store call.
+    expect(storeText(r, workingBag, y), "no second write runs beside the held removal").toBe("first rename");
+    r.failures.holdDelete = null;
+    release();
+    await retry; await turns(24);
     expect(storeText(r, workingBag, y), "the second target write reached the store").toBe("second rename");
     expect(storeText(r, draftBag, second), "the second draft remains as recovery").toBe("second rename");
     expect(r.wiki.getTiddler(b), "the second source returns while its removal waits").toBeDefined();
     expect(storeDeleted(r, workingBag, b), "second removal waits for acknowledgement").toBe(false);
-    r.failures.holdDelete = null;
-    release();
-    await retry; await turns(24);
     ackOk = true;
     await r.adaptor.handsRested().catch(() => {});
     await turns(24); await r.adaptor.landingIdle();

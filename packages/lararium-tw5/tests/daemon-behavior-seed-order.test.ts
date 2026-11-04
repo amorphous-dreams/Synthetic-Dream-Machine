@@ -45,7 +45,7 @@ function eventsDelivered(engine: { $tw: { wiki: unknown; Tiddler: unknown } }): 
     wiki.addTiddler(new Tiddler({ title, text: "barrier" }));
   });
 }
-const markedHands = (adaptor: unknown): string[] => (adaptor as { gate: { titles(): string[] } }).gate.titles().filter((t) => !t.startsWith("$:/test/barrier"));
+const markedHands = (adaptor: unknown): string[] => (adaptor as { pendingTitles(): string[] }).pendingTitles().filter((t) => !t.startsWith("$:/test/barrier"));
 
 async function rig(releaseAttach: Promise<void>, attach: boolean) {
   const engine = await bootTestWiki();

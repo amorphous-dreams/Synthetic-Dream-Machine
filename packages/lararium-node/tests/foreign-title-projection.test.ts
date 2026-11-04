@@ -146,6 +146,50 @@ test.each([false, true])("recovery drain waits for projection after durable head
   }
 }, 60_000);
 
+test("a held durable receipt plus a production boundary never opens a parallel write", async () => {
+  const r = await shoreRig();
+  await r.adaptor.armSeedCheckpoint();
+  let release!: () => void;
+  let started!: () => void;
+  const held = new Promise<void>((resolve) => { release = resolve; });
+  const reached = new Promise<void>((resolve) => { started = resolve; });
+  let first = true;
+  const door = makeRestDoor({
+    post: (message) => {
+      if (message.type !== "doc:rest") return;
+      if (first) {
+        first = false;
+        started();
+        void (async () => { await held; door.answer({ type: "doc:rested", requestId: message.requestId, rested: true }); })();
+        return;
+      }
+      door.answer({ type: "doc:rested", requestId: message.requestId, rested: true });
+    },
+    handles: () => new Map(Object.entries(r.handles)),
+  });
+  r.adaptor.restDoor = door;
+  const title = openDraft(r, "Boundary receipt", "first");
+  const count = () => r.calls.filter((call) => call.bag === draftBag && call.puts.includes(title)).length;
+  try {
+    await afterDispatch();
+    await reached;
+    typeInto(r, title, "latest");
+    await afterDispatch();
+    const boundary = r.adaptor.boundary();
+    await turns(30);
+    expect(count(), "the boundary opened a second write before the first durable receipt landed").toBe(1);
+    release();
+    await boundary;
+    for (let i = 0; i < 200 && count() < 2; i++) await new Promise<void>((resolve) => setTimeout(resolve, 5));
+    expect(count()).toBe(2);
+  } finally {
+    release();
+    door.close();
+    r.adaptor.restDoor = null;
+    await r.stop();
+  }
+}, 60_000);
+
 test("recovery drain retains its obligation when the granted file conflicts", async () => {
   root = mkdtempSync(join(tmpdir(), "lar-recovery-conflict-"));
   const r = await shoreRig();

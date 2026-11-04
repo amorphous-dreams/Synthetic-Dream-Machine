@@ -495,6 +495,7 @@ export function runSovereignKernel(
                 flushOwn: async () => { await Promise.all([_ownedRepo?.flush(), _repo?.flush()]); },
               });
               adaptor.restDoor = _rest;
+              adaptor.requireDurableAck = opts?.restDoor === true && view === null;
               // The bridge compares wiki notifications with the landed ledger and sends hands through the gate.
               _bridgeUnsub = bridgeWikiToAdaptor(tw5, adaptor);
               // Await the shore's seed checkpoint before arming behavior: onEa observes a fully resident seed,

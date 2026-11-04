@@ -57,6 +57,7 @@ test("repeated dispatches over one pending generation attach one fault reaction"
     isFoam: () => false,
     saveTiddler: () => pending,
     deleteTiddler: () => pending,
+    dispatchEnded: () => {},
   };
   const warns: string[] = [];
   const spy = vi.spyOn(console, "warn").mockImplementation((...args: unknown[]) => { warns.push(args.join(" ")); });
