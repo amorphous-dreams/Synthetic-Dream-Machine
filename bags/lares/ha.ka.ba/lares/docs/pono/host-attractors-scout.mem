@@ -75,7 +75,7 @@ Drawn from the floor and ceiling hosts found in the field; each line names the e
 | **ES2020 language level**, no reliance on later syntax in the core blob | QuickJS targets ES2020 (Extism/Javy builds) and "almost complete ES2023" upstream; GodotJS claims "near-complete ES2020"; Hermes lags on some features *(inferred: Hermes historically omitted `with`, some RegExp features, and local `eval`; unverified here)* | [reached: fetched] Extism PDK; [reached: search] QuickJS, GodotJS |
 | **`new Function` / indirect eval available** | The kernel evaluates the core with `new Function("exports","module","require","window","process", src)` (survey §3.1). Hermes supports eval without JIT *(inferred)*; Extism's PDK runs Wizer snapshots, where runtime eval is possible but un-idiomatic | survey; [reached: fetched] Extism |
 | **A microtask queue (Promises)** | Universal across hosts surveyed, including Extism (Promise present) | [reached: fetched] |
-| **A timer, or a host pump** | TW5's draft throttle (`setTimeout`, 400 ms), the HandGate (400 ms trailing / 2 s cap) and the CoalesceGate all rest on timers. Extism's PDK has **no `setTimeout`, no event loop**, `queueMicrotask` runs immediately. So the contract names a `host.schedule(ms, fn)` capability; where absent, the engine runs in **pump mode**: the host calls `engine.tick(nowMs)` and the engine drains its own timer wheel *(inferred design)* | [reached: fetched] Extism; survey |
+| **A timer, or a host pump** | TW5's draft throttle (`setTimeout`, 400 ms), the HandGate (400 ms trailing / 2 s cap when scouted; since retired for the clockless Drain) and the CoalesceGate all rested on timers. Extism's PDK has **no `setTimeout`, no event loop**, `queueMicrotask` runs immediately. So the contract names a `host.schedule(ms, fn)` capability; where absent, the engine runs in **pump mode**: the host calls `engine.tick(nowMs)` and the engine drains its own timer wheel *(inferred design)* | [reached: fetched] Extism; survey |
 | **A message channel** | postMessage-shaped (browser Worker, Node `worker_threads`, VS Code webview JSON messages, Owlbear iframe), or host-function-shaped (Extism `Host.inputString/outputString`, PuerTS/GodotJS bindings). Payloads must be **JSON-serializable** at minimum (VS Code refuses Blob/File/ImageData; older versions dropped ArrayBuffers) | [reached: search] VS Code; [reached: fetched] Extism |
 | **A monotonic clock** | `performance.now` exists even in Extism | [reached: fetched] |
 | **No DOM, no Node globals, no `window`** | The third runtime already nulls `$tw.browser` and `$tw.node` (survey §3.1); Roll20 and Extism prove "JS without a browser or Node" is a real class of host | survey; [reached: search] Roll20 |
@@ -287,7 +287,7 @@ Tools per the seed: Wand `*` (visible feed, ignition), Cup `?` (macro, relation)
 What must not be cut: one port for all projections. Ten adapters over one port stay cheap; ten ports become ten syncers.
 
 **Pentacle `_` — the hidden ground.**
-- Timers. TW5's refresh, the HandGate and the CoalesceGate all assume `setTimeout`; a pumped engine has never been run. Presence acknowledged, cost unclaimed.
+- Timers. TW5's refresh and the CoalesceGate assume `setTimeout` (the HandGate did too, since retired for the Drain); a pumped engine has never been run. Presence acknowledged, cost unclaimed.
 - Memory on the small hosts: TidGi-Mobile's 4–10 s boots (v2 §0.10) say phones strain; QuickJS-in-UE and GodotJS have no published TW5 numbers at all.
 - Verse. Everything known is keynote-grade; the transactional claim came through a forum quotation of Epic's post.
 - CEF 59 in Unreal's stock browser widget: a DOM glass inside UE may be too old for the stock TW5 core *(inferred)*.
@@ -398,7 +398,7 @@ Three rules ride with it: (1) a projection declares its renders and limits at op
 | Node host | `worker_thread` path, disk projector, WS relay (CRDT sync only, never DOM) | §2, §3.1 |
 | Neutral render for non-DOM projections | fakedom camera renders RootTemplate and PageStylesheet to HTML in the worker (`tw5-projection.ts`, `tw5-camera.ts`) | §3.4 |
 | Port envelopes | `island-protocol.ts` envelope family, door guard, verb table, `wiki:place-verb`/`verb-result` | §3.3 |
-| Echo and pacing discipline | LandedLedger foam guard, HandGate 400 ms / 2 s | §3.2 |
+| Echo and pacing discipline | LandedLedger foam guard, the Drain (at scouting, the HandGate at 400 ms / 2 s) | §3.2 |
 | Multi-tab leadership | origin Web Lock (`vessel-lock.ts`) | §3.6 |
 | **Missing** | a generic `filter`/`render` ask on the live island (only orphaned `meme-worker-script.ts`); Node path asymmetries (#10); `$tw.version` undefined on node; trusted-module gate mis-wired (#11) | §3.3, §4 |
 
@@ -489,6 +489,6 @@ Marks as in the header. Only `github.com` URLs were fetched; all others were con
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;M7ECCEEcqY9QMJ_Qm-xezvQzKJA2gr6TbqRtsmhKMvc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;27_m2Fl9MSSnhqOWvUv8A95nT-8W_oQMpB-H9gCV83c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -150,7 +150,7 @@ The D2 close lane built the road a page takes to the port and closed the rows th
 * ''Real witnesses.'' The retained-render staleness runs over a real `bootTestWiki` refresh and the commit-boundary drift over a real Automerge fault; each mock stays as its control.
 * ''Listener timing.'' An atomic layer declares `notifiesSynchronously` or the port refuses it `late-notifying-layer` before any family lands. `AutomergeDocStore` and the tests' atomic memory layer declare it and keep `causedBy`.
 * ''A retired port's landed write.'' The write's own settling records its outcome in the ledger and frees the in-flight slot and the actor entry, whether or not the port still stands; a resend replays the original answer.
-* ''Clockless debt.'' `HandGate` flushes at the next store family boundary, the next act, the eighth coalesced mark or teardown; the camera `mountEpoch` mints from a boot nonce and a rising counter.
+* ''Clockless debt.'' the shore's one `Drain` holds every owed write, takes one title at a time and awaits the rest door's durable ack, and reschedules through one macrotask with no timer; the camera `mountEpoch` mints from a boot nonce and a rising counter.
 * ''`$:/info/browser/*`.'' The tier-local filter names it, and the bare `$:/state`, `$:/temp`, `$:/status` and `$:/info/browser` titles, and the handler tests pin the write refusal and the silent change path.
 * ''D1's same-id resend.'' The page resends a pending `eventId` at the next causal boundary within its mount epoch, three attempts at most, and the island's answer ring replays the answer.
 * ''Tree-sitter parity witness for `resolveWidgetTree`.'' The in-VM widget tree and the tree-sitter fold agree on the shared ahu slots and block loulou targets; the two divergences the witness found (the spaced and legacy ahu spellings, and the mid-line loulou sigil) stand pinned.
@@ -174,6 +174,6 @@ What stays owed, each by name:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lFJCCs0ZHaVQtLV4cZj_Db2NF9eTrMT9DuQng7fFWg0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3iqUsfby5hh-RXKkGI5azfnNHHdHiJq5l81FEt1Tkr8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

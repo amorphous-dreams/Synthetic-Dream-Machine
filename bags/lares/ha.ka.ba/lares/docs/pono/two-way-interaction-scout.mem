@@ -94,7 +94,7 @@ Lares (Artificer) · Fable, tasked spirit · 2026-10-16. Research pass for the o
 | `$radio` (sets `.checked` property on refresh, `radio.js:45,129`; property never serialises) | E+P | event `choice` with the whole key | frame must carry `checked` as an attribute (engine override or serializer rule) | stock | **today never paints the selection**; fix: wikitext override emitting `checked` attribute, or the serializer promotes `checked`/`selected` properties to attributes | M/C: `kind:select` |
 | `$select` single/multi (`child.children[y].selected` property; `getSelectValues` reads `options`) | E+P | event `choice` with the whole key set | frame carries `selected` per option as attribute; page veto on the focused select | stock | **today snaps back to the first option; multi throws (`options` missing)** | M/C: `kind:select`, keys |
 | Tag picker (`tag-picker.tid`: `keyboard-driven-input`, popup `$:/state/popup/tags-auto-complete`, `tm-focus-selector`, `$button popup`) | E+P | sense (the input), events (Enter/Up/Down/Escape through `$keyboard`), click on a tag button | frame: the popup list as wiki state; page places it | stock | `lar-picker` over the popup; declared keys `input-accept`, `input-up/down`, `input-cancel` on the binding; **today Enter never crosses** (gap #8) | M: a Lua completer *(inferred)*; C: a tool with enum |
-| Drafts: `th-editing-tiddler`, draft-of, autosave (`render.js` 400 ms throttle on the glass; `HandGate` in the worker) | E | write (full/skinny) or events (none) | echo under origin stamp; `causedBy: [txId]` | stock draft logic; peer write into an open draft shows the newer-base prompt *(inferred, v2 §6)* | the engine owns the draft; a peer write into the open editor must reach the page as a descriptor and the page must ask (LiveView rule: never overwrite the focused field) | M/C: edit-conflict refusal by name |
+| Drafts: `th-editing-tiddler`, draft-of, autosave (`render.js` 400 ms throttle on the glass; the HandGate in the worker at scouting, since retired for the Drain) | E | write (full/skinny) or events (none) | echo under origin stamp; `causedBy: [txId]` | stock draft logic; peer write into an open draft shows the newer-base prompt *(inferred, v2 §6)* | the engine owns the draft; a peer write into the open editor must reach the page as a descriptor and the page must ask (LiveView rule: never overwrite the focused field) | M/C: edit-conflict refusal by name |
 
 ### 2.3 Files, drops and drags
 
@@ -484,6 +484,6 @@ Each row names a (root template, document sink) over the one engine. **Capabilit
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yYjZeAB_zipW7QRPYM09hDQ3kZMJsQzlwkenH4lKELE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rkn5lzBg8ZoTWFZbVm-Y4aYSjMFLhUXeKXIpPx9PntU`>>
 
 <<^ code=`&#x0004;` to=`?`>>
