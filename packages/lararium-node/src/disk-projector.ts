@@ -516,7 +516,7 @@ export class LarDiskProjector {
         for (const title of titles) gate.mark(routeToRoot(title));
       }));
     }
-    // A record tombstoned while stopped no longer appears in listVisible. The
+    // listVisible excludes a record tombstoned while stopped. The
     // persisted agreements name the recovery files that still need a store read.
     this.syncedTree.reread();
     for (const { bagId, uri } of this.syncedTree.rows()) {

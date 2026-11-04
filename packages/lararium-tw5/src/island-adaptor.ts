@@ -433,7 +433,11 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       const flight = this._trigger === this._ackTrigger ? this._ackTrigger.flight() : null;
       if (flight) {
         await flight;
-        if (this.gate.has(title)) return;
+        if (this.gate.has(title)) {
+          // Matching content can still receive its bag stamp without sending a newer hand.
+          if (same(incoming, standing)) return this._landOne(change, true);
+          return;
+        }
         return this._landOne(change);
       }
       for (let pass = 0; pass < 8; pass++) {
