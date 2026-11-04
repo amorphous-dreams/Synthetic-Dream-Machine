@@ -61,6 +61,20 @@ describe("AckPacedTrigger", () => {
     expect(r.writes).toHaveLength(1);
     expect(r.trigger.flight(), "written but not acked: still in flight").not.toBeNull();
   });
+  test("a failed durable ack retries the same obligation on request without another edit", async () => {
+    const r = rig();
+    r.failOnce();
+    r.mark("d", "unacknowledged"); r.trigger.request(); await turns();
+    expect(r.writes).toEqual([{ title: "d", text: "unacknowledged" }]);
+    r.trigger.request(); await turns();
+    expect(r.writes).toEqual([
+      { title: "d", text: "unacknowledged" },
+      { title: "d", text: "unacknowledged" },
+    ]);
+    expect(r.acks).toHaveLength(1);
+    r.acks.shift()!.resolve(); await turns();
+    expect(r.trigger.flight()).toBeNull();
+  });
   test("(e) a lifecycle request with nothing in flight starts exactly one write, and one with nothing owed starts none", async () => {
     const r = rig();
     r.trigger.request(); await turns();
