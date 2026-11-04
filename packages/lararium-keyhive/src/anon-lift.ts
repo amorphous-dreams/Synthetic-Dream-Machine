@@ -19,7 +19,8 @@
  * A face's working document has no record: its address derives from the face's secret and the wiki's slug. The lift carries
  * each floor working document's tiddlers into the face's document for that wiki (additively: a title the face's document
  * holds stays), rests it, marks the anchor's key `lifted-from`, burns the floor document, and takes the key out of the catalog
- * last. The anchor's key then names nothing. A stop before the mark runs again whole, its carry adding nothing twice; a stop
+ * last. A durable floor marker records the destination after carry and rebind, before the destination flush. A retry
+ * flushes that marker and the destination without carrying again. A stop
  * after the mark finds the marked key on the next pass, which burns the floor document and removes the key, carrying nothing.
  *
  * ── THE SECRET STANDS FIRST ─────────────────────────────────────────────────────────────────────
@@ -41,7 +42,7 @@ import type { FaceBagDoor } from "./face-bag-door.js";
 /** The repo surface the lift needs: mint, read, flush and delete a document. */
 export interface LiftRepo {
   create<T = LarDoc>(initialValue: T): { readonly url: string; readonly documentId: string; whenReady?(): Promise<unknown>; change(fn: (doc: LarDoc) => void): void };
-  find(url: string): Promise<{ whenReady?(): Promise<unknown>; doc(): LarDoc | undefined }>;
+  find(url: string): Promise<{ readonly documentId: string; whenReady?(): Promise<unknown>; doc(): LarDoc | undefined; change(fn: (doc: LarDoc) => void): void }>;
   flush(documents?: string[]): Promise<void>;
   delete(url: string): unknown;
 }
@@ -81,6 +82,7 @@ const mintedHere = (args: LiftArgs, by: unknown): boolean => by === args.mintedB
 
 const digestOf = (text: string): string => sha256HexBytesSync(utf8Bytes(text));
 const originFor = (tag: string): ChangeOrigin => ({ kind: "lares-verb", requestId: `anon-lift-${tag}`.slice(0, 32) });
+const WORKING_CARRY_MARK = "$:/lares/anon-lift/working-carried-to";
 
 /** Copy `from`'s tiddlers into `into` where `into` holds none of that title: read through the read door, written through the write door. */
 function carryTiddlers(from: LarDoc | undefined, into: { change(fn: (doc: LarDoc) => void): void }): void {
@@ -261,10 +263,16 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
           try { source = await boundedRead(args, oldUrl, async () => { const h = await args.repo.find(oldUrl); await h.whenReady?.(); return h; }); }
           catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
           const into = await working.open(url, slug);
-          carryTiddlers(source.doc(), into);
+          const carriedTo = tiddlerText(ownEntry(source.doc()?.tiddlers, WORKING_CARRY_MARK));
+          if (carriedTo && carriedTo !== url) throw new Error("[anon-lift] working floor already carried to a different destination");
+          if (!carriedTo) carryTiddlers(source.doc(), into);
           working.rebind?.(slug, oldUrl, url, into);
-          // The flush is bounded too: a destination that cannot rest defers the lift (named, floor source kept, nothing minted or marked).
-          try { await boundedRead(args, url, () => args.repo.flush([into.documentId])); }
+          if (!carriedTo) source.change((doc) => { doc.tiddlers[WORKING_CARRY_MARK] = storedLarRecord(WORKING_CARRY_MARK, { text: url }, "anon-lift:working-floor"); });
+          // Persist the carry marker before attempting the destination flush; retry never recopies removed titles.
+          try {
+            await boundedRead(args, oldUrl, () => args.repo.flush([source.documentId]));
+            await boundedRead(args, url, () => args.repo.flush([into.documentId]));
+          }
           catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
           await args.faceDoor.mint(url, "admin");
           // MARK, BURN, THEN DELETE: the key keeps the lift's mark until the floor document burns.

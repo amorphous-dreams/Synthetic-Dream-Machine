@@ -4,6 +4,40 @@ import { FACE_GRANT_PREFIX } from "../src/face-grant-record.js";
 import { makeFaceSeat } from "../src/face-seat.js";
 import { liftVesselOnlyIntoFace } from "../src/anon-lift.js";
 
+test("retry after a failed flush does not restore a title removed from the rebound working store", async () => {
+  const anchor = { kind: "place", aid: "Etest" } as const;
+  const key = wikiWorkingFloorKey("daemon", anchor);
+  const bag = wikiSlotUri("daemon", "working");
+  function handle(url: string) {
+    const state = emptyLarDoc();
+    return { url, documentId: url, doc: () => state, heads: () => [], on: () => () => {},
+      change: (fn: (d: LarDoc) => void) => fn(state), remove: () => {} };
+  }
+  const floor = handle("floor"), face = handle("face"), catalog = handle("catalog");
+  floor.change(d => {
+    d.tiddlers.moved = storedLarRecord("moved", { text: "old" }, "test");
+    d.tiddlers.kept = storedLarRecord("kept", { text: "keep" }, "test");
+  });
+  catalog.change(d => { d.tiddlers[key] = storedLarRecord(key, { text: "floor", "face-reach": "vessel-only", "minted-by": "vessel" }, "test"); });
+  const composite = new CompositeStore();
+  composite.addLayer({ bagId: bag, store: new AutomergeDocStore(floor as never, bag), writable: true });
+  let failFlush = true;
+  const repo = { find: async () => floor, create: () => { throw Error("unexpected create"); },
+    flush: async (ids?: string[]) => { if (failFlush && ids?.includes("face")) throw new Error("flush failed"); }, delete: () => floor.remove() };
+  const args = { repo: repo as never, daemonStore: composite, catalog: { handle: async () => catalog } as never,
+    faceDoor: { mint: async () => ({ docId: "face" }) } as never, mintedByHex: "vessel", vesselDid: didFromVerifyingKey("ab".repeat(32)),
+    traceOf: async () => null, working: { anchor, urlOf: async () => "face", open: async () => face,
+      rebind: () => { const at = composite.layerIndexOf(bag); composite.removeLayer(bag); composite.addLayer({ bagId: bag, store: new AutomergeDocStore(face as never, bag), writable: true }, at); },
+    },
+  } as never;
+  await expect(liftVesselOnlyIntoFace(args)).rejects.toThrow("flush failed");
+  expect(composite.layerIndexOf(bag)).toBeGreaterThanOrEqual(0);
+  face.change(d => { delete d.tiddlers.moved; }); // MOVE hard-removes its source.
+  failFlush = false;
+  await liftVesselOnlyIntoFace(args);
+  expect(Object.keys(face.doc().tiddlers)).toEqual(["kept"]);
+});
+
 test("a pending grant, working attach and lift leave subsequent writes on the face", async () => {
   const anchor = { kind: "place", aid: "Etest" } as const;
   const key = wikiWorkingFloorKey("daemon", anchor);
