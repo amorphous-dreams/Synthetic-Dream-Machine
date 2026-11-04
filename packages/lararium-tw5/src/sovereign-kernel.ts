@@ -419,16 +419,6 @@ export function runSovereignKernel(
       return;
     }
 
-    tick("tw5-boot");
-    try {
-      await handler.bootTw5(msg.wikiUri, coreBytes, pluginTiddlers);
-    } catch (err) {
-      const stack = err instanceof Error ? (err.stack ?? String(err)) : String(err);
-      _post(mkFault(msg.wikiUri, `bootTw5 threw: ${stack}`));
-      return;
-    }
-
-    const tw5 = handler.tw5()!;
     const floorCidField = plainRecordOrNull(ownEntry(laraiumHandle.doc()?.tiddlers, GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
     let floorRows: readonly Readonly<Record<string, LarTiddlerRecord>>[] = [];
     if (typeof floorCidField === "string" && floorCidField.length > 0) {
@@ -441,58 +431,91 @@ export function runSovereignKernel(
     } else {
       console.info(`[floor] the genesis seed names no floor; the ${PLANE_LABELS.oracle} reads the seed rows alone`);
     }
-    // One recipe model — buildIslandRecipe walks expandRecipe(msg.recipe),
-    // wires temp + every resolved CRDT slot, registers the adaptor, and ARMS
-    // the seed replay on the shore's quota-bounded host-task queue.
-    tick("recipe");
-    // THE KAHUA LAYER READS UNDER THE FACE THIS MANIFEST WEARS: its group names the stage, its verified KEL roster the grant
-    // every lift's signer must hold. A manifest wearing no face reads an empty stage. The lineage reads LIVE off the
-    // island's replica of the KEL board the manifest names, so a rotation merged after boot re-folds the layer.
-    const auth = msg.daemonAuth;
-    const kel = auth?.personaKel;
-    const liveFace = auth?.personaGroupId && kel ? liveKahuaFace({
-      group: auth.personaGroupId, prefix: kel.prefix, bootChain: kel.chain, anchor: auth.faceAnchor ?? null,
-      board: kel.board ? _repo!.find<LarDoc>(kel.board as never) : null,
-    }) : null;
-    const kahuaFace = (): KahuaStageFace | null => liveFace?.read() ?? null;
-    const kahuaFaceWatch = (fn: () => void): (() => void) => liveFace?.watch(fn) ?? (() => {});
-    const { adaptor } = buildIslandRecipe({
-      tw5,
-      composite: _composite,
-      recipe: msg.recipe,
-      ready,
-      floorRows,
-      kahuaFace,
-      kahuaFaceWatch,
-    });
-    _adaptor = adaptor;
-    // THE REST DOOR, for a host whose vessel answers it. A save act's result waits for the vessel to hold and flush
-    // what the act wrote; a session island keeps no store and settles through its view at teardown instead.
-    _rest = view || !opts?.restDoor ? null : makeRestDoor({
-      post: _post,
-      handles: () => _handles,
-      flushOwn: async () => { await Promise.all([_ownedRepo?.flush(), _repo?.flush()]); },
-    });
-    adaptor.restDoor = _rest;
-    // The bridge compares wiki notifications with the landed ledger and sends hands through the gate.
-    _bridgeUnsub = bridgeWikiToAdaptor(tw5, adaptor);
-    // Await the shore's seed checkpoint before arming behavior: onEa observes a fully resident seed,
-    // landed by the shore's queue in host-task slices.
-    await seedDrained(tw5);
+    tick("tw5-boot");
+    let bootInstance: Record<string, unknown> | undefined;
+    let used = false;
+    try {
+      await handler.bootTw5(msg.wikiUri, coreBytes, pluginTiddlers, {
+        onInstance(instance) {
+          bootInstance = instance as unknown as Record<string, unknown>;
+          Object.defineProperty(instance, "larariumWritableStand", {
+            configurable: true, enumerable: false,
+            value: async () => {
+              // Only the marker's take (delete before call) opens this door.
+              if (used || Object.hasOwn(bootInstance!, "larariumWritableStand")) return;
+              used = true;
+              const tw5 = handler.tw5()!;
+              // One recipe model — buildIslandRecipe walks expandRecipe(msg.recipe),
+              // wires temp + every resolved CRDT slot, registers the adaptor, and ARMS
+              // the seed replay on the shore's quota-bounded host-task queue.
+              tick("recipe");
+              // THE KAHUA LAYER READS UNDER THE FACE THIS MANIFEST WEARS: its group names the stage, its verified KEL roster the grant
+              // every lift's signer must hold. A manifest wearing no face reads an empty stage. The lineage reads LIVE off the
+              // island's replica of the KEL board the manifest names, so a rotation merged after boot re-folds the layer.
+              const auth = msg.daemonAuth;
+              const kel = auth?.personaKel;
+              const liveFace = auth?.personaGroupId && kel ? liveKahuaFace({
+                group: auth.personaGroupId, prefix: kel.prefix, bootChain: kel.chain, anchor: auth.faceAnchor ?? null,
+                board: kel.board ? _repo!.find<LarDoc>(kel.board as never) : null,
+              }) : null;
+              const kahuaFace = (): KahuaStageFace | null => liveFace?.read() ?? null;
+              const kahuaFaceWatch = (fn: () => void): (() => void) => liveFace?.watch(fn) ?? (() => {});
+              const { adaptor } = buildIslandRecipe({
+                tw5,
+                composite: _composite!,
+                recipe: msg.recipe,
+                ready,
+                floorRows,
+                kahuaFace,
+                kahuaFaceWatch,
+              });
+              _adaptor = adaptor;
+              // THE REST DOOR, for a host whose vessel answers it. A save act's result waits for the vessel to hold and flush
+              // what the act wrote; a session island keeps no store and settles through its view at teardown instead.
+              _rest = view || !opts?.restDoor ? null : makeRestDoor({
+                post: _post,
+                handles: () => _handles,
+                flushOwn: async () => { await Promise.all([_ownedRepo?.flush(), _repo?.flush()]); },
+              });
+              adaptor.restDoor = _rest;
+              // The bridge compares wiki notifications with the landed ledger and sends hands through the gate.
+              _bridgeUnsub = bridgeWikiToAdaptor(tw5, adaptor);
+              // Await the shore's seed checkpoint before arming behavior: onEa observes a fully resident seed,
+              // landed by the shore's queue in host-task slices.
+              await seedDrained(tw5);
 
-    // Isomorphic base: the catalog registry's grant rides into ctx (access entry, NOT a
-    // load slot — the catalog registry is absent from expandRecipe). Worker behaviors build
-    // a CatalogAccessor over it to reach any registered bag; recipe-watch keeps
-    // reconciling the SAME path boot just walked.
-    // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
-    // behaviors: a residency handler resolves a carrier body a verb rode by reference.
-    _ctx = { wikiUri: msg.wikiUri, composite: _composite, tw5, handles: _handles, post: _post, repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_rest ? { rest: _rest } : {}), catalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
-    // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
-    // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
-    // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The
-    // splice runs through the guarded nalu rail, so a rehydrated body never echoes back to the CRDT
-    // (content-resolution.mem #tw5-shore). The boot above already refused an island with no CAS resolver.
-    _lazyUnsub = installLazyResolver(tw5, resolveByCid);
+              // Isomorphic base: the catalog registry's grant rides into ctx (access entry, NOT a
+              // load slot — the catalog registry is absent from expandRecipe). Worker behaviors build
+              // a CatalogAccessor over it to reach any registered bag; recipe-watch keeps
+              // reconciling the SAME path boot just walked.
+              // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
+              // behaviors: a residency handler resolves a carrier body a verb rode by reference.
+              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, tw5, handles: _handles, post: _post, repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_rest ? { rest: _rest } : {}), catalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
+              // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
+              // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
+              // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The
+              // splice runs through the guarded nalu rail, so a rehydrated body never echoes back to the CRDT
+              // (content-resolution.mem #tw5-shore). The boot above already refused an island with no CAS resolver.
+              _lazyUnsub = installLazyResolver(tw5, resolveByCid);
+              return await behavior.onWritable?.(_ctx!) ?? { state: "standing" };
+            },
+          });
+        },
+      });
+    } catch (err) {
+      const stack = err instanceof Error ? (err.stack ?? String(err)) : String(err);
+      _post(mkFault(msg.wikiUri, `bootTw5 threw: ${stack}`));
+      return;
+    }
+    if (bootInstance?.larariumWritableFault) {
+      const error = bootInstance.larariumWritableFault;
+      _post(mkFault(msg.wikiUri, `lararium-writable failed: ${error instanceof Error ? error.message : String(error)}`));
+      return;
+    }
+    if (!used || !_ctx) {
+      _post(mkFault(msg.wikiUri, "lararium-writable startup marker did not stand the backing"));
+      return;
+    }
     tick("behavior");
     await behavior.onEa(_ctx);
 

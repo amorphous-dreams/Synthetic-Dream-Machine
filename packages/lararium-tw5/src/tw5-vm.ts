@@ -46,12 +46,14 @@ export class TW5Engine {
    * Node:    evaluates the same tiddlywikicore blob with a CommonJS-shaped
    *          wrapper; no node_modules tiddlywiki runtime fallback is allowed.
    */
-  boot(coreBlob?: TW5CoreBootInput, preloadedTiddlers?: Array<Record<string, unknown>>, mirrorToken?: symbol): Promise<void> {
+  boot(coreBlob?: TW5CoreBootInput, preloadedTiddlers?: Array<Record<string, unknown>>, mirrorToken?: symbol, options?: { onInstance?: (instance: TW5Instance) => void }): Promise<void> {
     if (this._bootPromise) return this._bootPromise;
     this._bootPromise = (async () => {
       const core = normalizeCoreBootBlob(coreBlob);
       if (core) verifyCoreBootBlob(core);
       const { instance, isBrowser, release } = await prepareHostBootInstance(core, mirrorToken);
+      this._tw = instance;
+      options?.onInstance?.(instance);
 
       const allPreloads = preloadedTiddlers ?? [];
       const preloadedTitles = new Set(allPreloads.map(t => String(t["title"] ?? "")));

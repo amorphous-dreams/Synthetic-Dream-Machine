@@ -76,6 +76,7 @@ export class IslandKernel {
     wikiUri:          string,
     coreBlob:         Uint8Array,
     preloadedTiddlers?: readonly Record<string, unknown>[],
+    options?: { onInstance?: (instance: import("./types/tiddlywiki.js").TW5Instance) => void },
   ): Promise<void> {
     this._wikiUri = wikiUri;
     if (coreBlob.byteLength === 0) {
@@ -84,7 +85,7 @@ export class IslandKernel {
     }
     this._tw5 = new TW5Engine();
     const tiddlers = preloadedTiddlers?.length ? (preloadedTiddlers as Array<Record<string, unknown>>) : undefined;
-    await this._tw5.boot(coreBlob, tiddlers);
+    await this._tw5.boot(coreBlob, tiddlers, undefined, options);
 
     this._liveHandles.add({
       cancel: this._tw5.onVerseEvent({
