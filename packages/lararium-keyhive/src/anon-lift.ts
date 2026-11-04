@@ -19,8 +19,9 @@
  * A face's working document has no record: its address derives from the face's secret and the wiki's slug. The lift carries
  * each floor working document's tiddlers into the face's document for that wiki (additively: a title the face's document
  * holds stays), rests it, marks the anchor's key `lifted-from`, burns the floor document, and takes the key out of the catalog
- * last. A durable floor marker records the destination only after the destination flush. A retry
- * skips titles already carried in this process or covered by the durable marker. A stop
+ * last. A durable floor marker records the destination only after the destination flush. A failed destination flush
+ * still writes a durable skip history to the floor source, so a retry after restart never re-carries titles that left.
+ * A retry skips titles already listed there or covered by the durable destination marker. A stop
  * after the mark finds the marked key on the next pass, which burns the floor document and removes the key, carrying nothing.
  *
  * ── THE SECRET STANDS FIRST ─────────────────────────────────────────────────────────────────────
@@ -83,9 +84,17 @@ const mintedHere = (args: LiftArgs, by: unknown): boolean => by === args.mintedB
 const digestOf = (text: string): string => sha256HexBytesSync(utf8Bytes(text));
 const originFor = (tag: string): ChangeOrigin => ({ kind: "lares-verb", requestId: `anon-lift-${tag}`.slice(0, 32) });
 const WORKING_CARRY_MARK = "$:/lares/anon-lift/working-carried-to";
-// A failed destination flush leaves no durable marker. Remember the attempted titles while this
-// repo stays live so a MOVE after rebind cannot be undone by the next carry.
-const workingCarries = new WeakMap<LiftRepo, Map<string, Set<string>>>();
+const WORKING_CARRY_SKIP = "skip-titles";
+
+function readWorkingCarrySkip(value: unknown): Set<string> {
+  const text = typeof value === "string" ? value : (value == null ? "" : String(value));
+  if (text.trim() === "") return new Set();
+  try {
+    const parsed = JSON.parse(text);
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(parsed.filter((title): title is string => typeof title === "string"));
+  } catch { return new Set(); }
+}
 
 /** Copy `from`'s tiddlers into `into` where `into` holds none of that title: read through the read door, written through the write door. */
 function carryTiddlers(from: LarDoc | undefined, into: { change(fn: (doc: LarDoc) => void): void }, skip?: Set<string>): void {
@@ -265,26 +274,39 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
           let source: Awaited<ReturnType<LiftRepo["find"]>>;
           try { source = await boundedRead(args, oldUrl, async () => { const h = await args.repo.find(oldUrl); await h.whenReady?.(); return h; }); }
           catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
-          const into = await working.open(url, slug);
-          const carriedTo = tiddlerText(ownEntry(source.doc()?.tiddlers, WORKING_CARRY_MARK));
-          if (carriedTo && carriedTo !== url) throw new Error("[anon-lift] working floor already carried to a different destination");
-          if (!carriedTo) {
-            let carries = workingCarries.get(args.repo);
-            if (!carries) { carries = new Map(); workingCarries.set(args.repo, carries); }
-            const key = `${oldUrl}\0${url}`;
-            let seen = carries.get(key);
-            if (!seen) { seen = new Set(); carries.set(key, seen); }
-            const titles = plainEntries(source.doc()?.tiddlers).map(([title]) => title);
-            carryTiddlers(source.doc(), into, seen);
-            for (const title of titles) seen.add(title);
-          }
-          working.rebind?.(slug, oldUrl, url, into);
           try {
-            await boundedRead(args, url, () => args.repo.flush([into.documentId]));
-            if (!carriedTo) source.change((doc) => { doc.tiddlers[WORKING_CARRY_MARK] = storedLarRecord(WORKING_CARRY_MARK, { text: url }, "anon-lift:working-floor"); });
-            await boundedRead(args, oldUrl, () => args.repo.flush([source.documentId]));
-          }
-          catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
+            const into = await working.open(url, slug);
+            const carriedTo = tiddlerText(ownEntry(source.doc()?.tiddlers, WORKING_CARRY_MARK));
+            if (carriedTo && carriedTo !== url) throw new Error("[anon-lift] working floor already carried to a different destination");
+            const skip = readWorkingCarrySkip(ownEntry(source.doc()?.tiddlers, WORKING_CARRY_MARK)?.tiddler?.[WORKING_CARRY_SKIP]);
+            if (!carriedTo) {
+              skip.add(WORKING_CARRY_MARK);
+              const titles = plainEntries(source.doc()?.tiddlers).map(([title]) => title);
+              carryTiddlers(source.doc(), into, skip);
+              for (const title of titles) skip.add(title);
+            }
+            working.rebind?.(slug, oldUrl, url, into);
+            try {
+              await boundedRead(args, url, () => args.repo.flush([into.documentId]));
+              if (!carriedTo) source.change((doc) => {
+                doc.tiddlers[WORKING_CARRY_MARK] = storedLarRecord(WORKING_CARRY_MARK, {
+                  text: url,
+                  [WORKING_CARRY_SKIP]: canonicalJson([...skip].sort()),
+                }, "anon-lift:working-floor");
+              });
+              await boundedRead(args, oldUrl, () => args.repo.flush([source.documentId]));
+            } catch (error) {
+              if (!carriedTo) {
+                source.change((doc) => {
+                  doc.tiddlers[WORKING_CARRY_MARK] = storedLarRecord(WORKING_CARRY_MARK, {
+                    [WORKING_CARRY_SKIP]: canonicalJson([...skip].sort()),
+                  }, "anon-lift:working-floor");
+                });
+                await boundedRead(args, oldUrl, () => args.repo.flush([source.documentId]));
+              }
+              throw error;
+            }
+          } catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
           await args.faceDoor.mint(url, "admin");
           // MARK, BURN, THEN DELETE: the key keeps the lift's mark until the floor document burns.
           handle.change((doc) => {
