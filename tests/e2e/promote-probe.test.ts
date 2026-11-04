@@ -28,11 +28,15 @@ const built = existsSync(join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.
 // never shows in the daemon log. The OBSERVER is a module promoted before anything else: it runs after startup, finds the action's marker
 // tiddler if the action ran at boot, and copies it as a write the adaptor logs (`unrouted-save: "probe/action-seen"`). That observation
 // stands apart from the module under test, so a lifted action that ran WITHOUT a promotion still reads in P1.
+// Both modules POLL after startup rather than fire once: the island adaptor attaches some seconds after TW5 boots, and a write that lands
+// before it vanishes (nothing logs it). The cure that stopped the daemon island burning its thread in signature maths also stopped the
+// stall that used to hold a one-shot 4 s timer until after the attach, so a single write now races the attach and loses. Each poll rewrites
+// the SAME title (one title per boot) with a new text, so the first write after the attach logs and the Set of titles still counts one boot.
 const OBSERVER = "exports.name=\"promote-probe-observer\";exports.after=[\"startup\"];exports.synchronous=true;"
-  + "exports.startup=function(){setTimeout(function(){if($tw.wiki.getTiddler(\"probe/action-ran\")){$tw.wiki.addTiddler({title:\"probe/action-seen\",text:\"yes\"});}},4000);};";
-// The module under test writes after the adaptor attached, one `probe/ran/<ms>` title per boot.
+  + "exports.startup=function(){var n=0,t=setInterval(function(){n++;if($tw.wiki.getTiddler(\"probe/action-ran\")){$tw.wiki.addTiddler({title:\"probe/action-seen\",text:\"yes\"+n});}if(n>=30){clearInterval(t);}},1000);};";
+// The module under test writes after the adaptor attached, one `probe/ran/<startup ms>` title per boot.
 const MODULE = "exports.name=\"promote-probe\";exports.after=[\"startup\"];exports.synchronous=true;"
-  + "exports.startup=function(){setTimeout(function(){$tw.wiki.addTiddler({title:\"probe/ran/\"+Date.now(),text:\"ran\"});},4000);};";
+  + "exports.startup=function(){var id=Date.now(),n=0,t=setInterval(function(){n++;$tw.wiki.addTiddler({title:\"probe/ran/\"+id,text:\"ran\"+n});if(n>=30){clearInterval(t);}},1000);};";
 const ACTION = "<$action-setfield $tiddler=\"probe/action-ran\" text=\"yes\"/>";
 const SOURCES = JSON.stringify([{ title: "daemon/probe", revision: "r1" }]);
 
