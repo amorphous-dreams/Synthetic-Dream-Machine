@@ -31,11 +31,11 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 |! Seat |! Lineage |! Holds |! Never |
 | ''Operator'' | the human | rulings, credentials, the operator-only configs (`~/.codex/config.toml`, `~/.claude/settings.json`, `~/.copilot/*`, gh auth), WSL size, every founding and custody act on a TTY, the `--force` on a lane worktree that refuses a plain remove | answers a question canon, a measure or the stories settle |
 | ''Controller'' | Claude Opus | the session's seat: lane briefs, slot fill, the one watcher per seat, a read of every chunk's diff before it lands, the batch land, the road commit behind it, canon | solos a lane; lands a chunk it has not read |
-| ''Lane lead'' (Episkopos, a Wright) | Claude, named per lane (#/the-tiers) | the lane's briefs, the authoring of every red and every judgment slice, every commit in its own worktree on its lane branch, the build before each seat, the batch battery, one push per feature, the short hand-back | pushes the span or `main`; arms a watcher; launches a seat on a stale dist |
+| ''Lane lead'' (Episkopos, a Wright) | Claude, named per lane (#/the-tiers), or Codex `gpt-6.1-terra` in the `lead` mode, run fresh per step (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>> #/the-lead) | the lane's briefs, the authoring of every red and every judgment slice, every commit in its own worktree on its lane branch, the build before each seat, the batch battery, one push per feature, the short hand-back | pushes the span or `main`; arms a watcher; launches a seat on a stale dist |
 | ''Terra'' (builder) | Codex `gpt-6.1-terra`, medium effort | a mechanical edit over an exact file list and an exact change; typecheck; single-file unit runs that open no socket | commits, builds, opens a socket, writes outside its seat directory and the worktree |
 | ''Luna'' (reader, sweeper) | Codex `gpt-6-luna`, high effort, read-only | the cold read of each batch before its push, the aftermath sweep | builds, commits, reads a diff it wrote |
 | ''Sol'' (deep reader) | Codex `gpt-6.1-sol`, high effort, read-only | the read of every batch head, every caps, custody, crypto, gate or Keyhive slice, a named deep question | builds by default, commits, launches as `gpt-6-sol` |
-| ''Copilot seat'' | Copilot `gpt-5.3-codex`, medium effort | the batch Aftermath read while the legacy allowance lasts | builds, commits, reads a diff it wrote, runs `--model fusion` |
+| ''Copilot seat'' | Copilot `gpt-5.3-codex`, medium effort | the batch Aftermath read while the legacy allowance lasts; the walled builder when the Codex pool stands under its build floor | builds, commits, reads a diff it wrote, runs `--model fusion` |
 | ''Fresh reader'' | a lineage that built nothing in the piece, read-only | an adversarial read of a whole lane before its train, findings ranked with `file:line` | sees the builder's conclusions first |
 | ''Research pair'' | two seats woken apart | the code read and the field read of one question, each claim marked MEASURED or LEAD, then traded | shares a conclusion with its twin before the trade |
 
@@ -57,7 +57,7 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 ** One writer per worktree; no claims ledger.
 ** The controller arms ONE watcher per seat (`until [ -f <seat>/final.md ]`, in the harness's background mode); a lead hands back once its seat launches and the controller's watcher wakes it. Leads and seats arm none. The lead keeps `resume.md` current at each commit and before each launch, and the controller sweeps a landed lane's watchers by pid.
 ** A lead hands back ONCE, short: one `<<~ status "…">>` line, the head (full sha), the CI and held-out readings on it, the story and the walk that proved it, the rulings taken from canon each with its source, and the true operator asks each with a lean. A failed or discarded seat gets a leg line (directory, model, effort, mode, attempts, outcome). Spend numbers come from the controller's `spend.py`, never a seat's word.
-** Spend reads from what each tool writes: Claude subagent transcripts, Codex rollouts, the Copilot run log's `Requests N Premium` line. A Copilot log with no such line reads UNMETERED, never zero; the Codex pool holds a weekly floor read from the newest rollout (20% for a build or research seat, 0% for a read seat, the operator letting readers spend the pool to its end for now). `spend.py` serves the controller alone and binds no lane.
+** Spend reads from what each tool writes: Claude subagent transcripts, Codex rollouts' `token_count` totals (never a seat's printed "tokens used" line, which understates the draw; cached input counts against the pool), the Copilot run log's `Requests N Premium` line. A Copilot log with no such line reads UNMETERED, never zero; the Codex pool holds a weekly floor read from the newest rollout (20% for a build or research seat, 0% for a read seat, the operator letting readers spend the pool to its end for now). `spend.py` serves the controller alone and binds no lane.
 * ''Observe pair.'' Before a phase designs anything, one seat cold-reads the as-built with `file:line`, and a second, woken apart and handed the framing alone, reads the field. Their handbacks collide in orient.
 * ''The Chao of a review'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/chao`>>). Two reads over one question wear the Chao's two faces, and the review resolves to three:
 ** ''Hodge'' carries Yang and Ha, the Aneristic face: what holds its shape. It reads what the work states as standing (each claim, name and contract) against the source, and finds the line that does not hold.
@@ -78,7 +78,7 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 * Never commit and never run a git write. The lead commits each red, then each fix.
 * Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
 * A "stale build" from the dist guard stops the run; name it, and the lead builds.
-* Write `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
 * Never run the battery; the lead holds its lock. Never read a credential file.
 * Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
 * The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
@@ -212,7 +212,7 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 !! The launch ~ one brief file, any lineage
 
 * ''A brief stands as a file'' that names the mask, the ground, the ruling it enacts, the house style and the handback shape.
-* ''One launcher per Codex seat'' (`tools/launch-codex.mjs`; `--dry-run` prints the argument array and spawns nothing) takes the seat directory, the model, the effort and a mode: `build` (workspace-write, network off, both tmp excludes, `-C <worktree> --add-dir <seat>`), `read` (`-s read-only -C <seat>` over an empty directory, reading the repo from there) or `research` (`codex --search exec …` ahead of `exec`, networked, only where the brief asks for the field). Every mode carries `-c approval_policy="never"` and the seat law (#/the-seat-law). Each seat's directory sits under the lane's scratch directory, since the spend script finds the lane from the rollout's cwd.
+* ''One launcher per Codex seat'' (`tools/launch-codex.mjs`; `--dry-run` prints the argument array and spawns nothing) takes the seat directory, the model, the effort and a mode: `build` (workspace-write, network off, both tmp excludes, `-C <worktree> --add-dir <seat>`), `read` (`-s read-only -C <seat>` over an empty directory, reading the repo from there) `research` (`codex --search exec …` ahead of `exec`, networked, only where the brief asks for the field) or `lead` (its worktree, the repo's git dir and its lane root, networked; it commits, pushes and launches only through the broker, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>> #/the-broker). Every mode carries `-c approval_policy="never"` and the seat law (#/the-seat-law). Each seat's directory sits under the lane's scratch directory, since the spend script finds the lane from the rollout's cwd.
 * ''A seat that needs a CI log'' receives the excerpt as a file.
 * ''A cut-short seat continues by its session id'' through the launcher's resume mode, which carries the same preflight and walls and names the model again; the lead's resume sheet records that id beside the seat's directory, model, effort and head.
 * ''`codex exec` stands as the shell seat.'' `codex mcp-server` left the CLI upstream; `codex mcp` connects tools to Codex and never serves Codex as a tool.
@@ -253,6 +253,11 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 # 2026-10-31, Sol per train (operator's words): "We have 10% Codex left, so I approve Sol reads on whole trains landing ... not individual lanes (approve burning lower than 5% if needed, temp bump that limit to 0%)."
 # 2026-10-31, test levers (operator's word): "Approved!" for provision once, held-out per train and the static witnesses.
 # 2026-10-31, cloud contract (operator's words): "Approve with a Sonnet scout to cure the gh cloud uncertainties."
+# 2026-11-02: a Codex-majority crew; Terra builds, Luna and Sol read, Claude stays minimal.
+# 2026-11-04: a Codex lead in the `lead` mode, with a commit broker outside its wall; the broker kept as a single-operator dev tool with its trust boundary documented, as a ruled exception (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>> #/the-trust-model).
+# 2026-11-04, red-first, homed: a red homes in the narrowest existing test, table, law or property seed; a new file only for a distinct boundary.
+# 2026-11-04, the wrap-up: one Terra builder and one Luna reader at a time; under the Codex build floor, a Copilot builder with Luna and Sol readers.
+# 2026-11-04, spend: a lead runs fresh per step, and spend reads true usage from the rollouts (#/the-shapes).
 <<~/ahu>>
 
 <<~ ahu slot=`#/edges`>>
@@ -265,9 +270,10 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/capture-annotation-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/agent-worldline`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/model-tiers-2026`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Oct-lGmYLWBVNVIiAFiNVtmjt-t4yBgat0KDsArFn6s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;d54nDT9HXvCkYF2kTWHxgBtkP2RDm-sDkTyCRGTO__4`>>
 
 <<^ code=`&#x0004;` to=`?`>>
