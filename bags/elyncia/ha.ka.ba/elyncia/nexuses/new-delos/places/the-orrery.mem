@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "place, High Delos — the Orrery: the Reach-tier instrument mapping where Elyncia's pattern reached into neighboring worlds; access unruled"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery"
@@ -35,6 +32,6 @@ and the Painter's establishing boards stands noted).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rdEcQC6XAuRqtU-7Tr1C2H7Tf-01tyGU8GKETVPtwE0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Tp7YpretTJtKcV-Qh-Ny-EpQ1SVB3XlwVpf3nEOtX4Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

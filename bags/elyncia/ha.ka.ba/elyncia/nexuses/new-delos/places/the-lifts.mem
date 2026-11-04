@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "routes — the mana-lift network: the Nexus's vertical pointcrawl legs; keeper unruled"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-lifts"
@@ -34,6 +31,6 @@ politics.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZYGM6fVPPYwMqmsKyY3PJ_kgyq32sNz3hIEBjAI_mSU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fl3IKLo2LsSCStruopNWU4036sd-S80J6SyaJVVtWYM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

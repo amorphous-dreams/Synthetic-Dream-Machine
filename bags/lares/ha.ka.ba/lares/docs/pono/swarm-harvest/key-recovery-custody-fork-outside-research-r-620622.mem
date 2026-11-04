@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: KEY-RECOVERY CUSTODY FORK — OUTSIDE RESEARCH REPORT. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -654,6 +651,6 @@ Across five research streams, **not one documented failure in the entire public 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8tXLO_WwVwMyOt0cbk7dNtLkR6GxlgOC8v89SsQAJVQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zXx7ujQd7yaHR2-je-cAzaNzFtoVPGMwjs2ni5wfkMs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

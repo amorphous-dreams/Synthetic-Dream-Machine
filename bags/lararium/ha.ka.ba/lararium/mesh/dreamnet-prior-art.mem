@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = true
 l-space       = "lararium"
-mana          = 16
-manao         = 15
-manaoio       = 14
 research-date = "2026-05-28"
 role          = "prior art research synthesis: best practices and golden principles for DreamNet two-axis mesh topology (INFRA⊥SOCIAL, relay-floor)"
 title         = "lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art"
@@ -521,7 +518,7 @@ DreamNet explicitly rejects shared implementation as the interoperability surfac
 ''4. TiddlyWiki as the embedded data layer''
 No other distributed system uses TW5 as a knowledge store. Strength: TW5's mature ecosystem, self-contained model, plugin architecture. Risk: TW5 lacks native design for CRDT merge. Closest analogue: Triplicate project (Ink & Switch).
 
-''5. mana/manao/manaoio trust-weight lattice''
+''5. trust-weight lattice (retired 2026-11-03; kept as a prior-art note)''
 The three-tier trust weight system lacks direct prior art in the literature reviewed. Novel ontological primitives require careful formal specification to avoid semantic drift across implementations.
 
 !!! Potentially Risky Divergences
@@ -600,7 +597,7 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 ''Description'': The architecture does not specify event timestamping within a device-vessel. Using system time stays explicitly unsafe. Automerge uses Lamport counters internally, but:
 * No specified mapping between Automerge's internal causal ordering and human-visible timestamps
-* The mana/manao/manaoio lattice may need causal ordering to determine which trust-weight values count as "more recent"
+* The retired trust-weight lattice would have needed causal ordering to determine which trust-weight values count as "more recent"
 * Cross-vessel event ordering for nexusGroup and DreamNet layers lacks specification
 
 ''Prior art'': Hybrid Logical Clocks (HLC) — combines wall clock for human readability with Lamport counter for causal correctness. Used in CockroachDB, vlcn.io's cr-sqlite.
@@ -651,7 +648,7 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 |---|---|
 | Strongest alignment | Local-first primacy, Automerge CRDT, CID genesis artifact, UCAN-style capability ladder, keypair sovereignty |
 | Principled divergences | Browser-tab vessel, two-axis topology (relay-floor, blind carriage), shared grammar over shared implementation |
-| Potentially risky divergences | Revocation propagation, confinement in certificate cap model, mana lattice novelty |
+| Potentially risky divergences | Revocation propagation, confinement in certificate cap model, trust-lattice novelty (retired) |
 | ''Gap 1'' | Explicit revocation propagation protocol — ''addressed'' (two-mode: authz grow-only CID set + content re-key) |
 | ''Gap 2'' | CRDT compaction / document growth strategy — ''addressed'' (large bodies leave the CRDT into `@cad`; tombstone-GC leg open) |
 | ''Gap 3'' | Petnames / human-readable layer over cryptographic IDs |
@@ -669,6 +666,6 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bX9TlP7Px1HNBngX0_qMDwxdo_hejGWa5ZVdRJe0W8E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6V32e9NFE8lkucj4uYUff7Yvqyt88ZG550cofFplGm0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

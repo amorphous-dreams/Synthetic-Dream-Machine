@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 17
-manao     = 16
-manaoio   = 16
 role      = "TW5 library tiddler: smol-toml TOML parser, spec-compliant, ~26 kB, sync, no WASM"
 title     = "lar:///ha.ka.ba/lararium/tw5/lib-smol-toml"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -70,6 +67,6 @@ component properties, and tick-scoped state in a WYSIWYG-friendly field structur
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iJQiFz7MtSCS0VbKUZKl-ULtFnU9TYHj4bR5-Qf0CL4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NFS4B6_IkH-xQyxwPGPKjUMRpKbfAkl20wktlryG_JY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

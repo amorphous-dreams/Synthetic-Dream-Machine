@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 18
-manao     = 17
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "parser law: MemeticParser subclass contract, lar-sigil dispatch model, grammar self-hosting, sigil kinds, closure law, C0 control-sigil roles"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"]
@@ -256,6 +253,6 @@ Consumers: island adaptor (`island-adaptor.ts`), deserializer (`deserializer.ts`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5djYR5F4NnlDWDl4XFXEH7_rddsVD1bs20foKdxKhGc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iGVclLSNT0otqOmHdLSjDJMbsrlqIJ3Ph-M6BfwxTFs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

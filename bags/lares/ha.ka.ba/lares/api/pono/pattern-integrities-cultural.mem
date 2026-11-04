@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 14
-manao     = 15
-manaoio   = 14
 title     = "lar:///ha.ka.ba/lares/api/pono/pattern-integrities-cultural"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/pattern-integrities-cultural"
@@ -249,6 +246,6 @@ Feed the node. Run the bench whole. Grade on the chain. Keep the cliff independe
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;r6CsTDVscGw1NfhnvTjq1-kQ7AjlvhM5tOi6_RP_3aw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TLw-Q2XCkA_wT-r7Zu6qM_TNCoYoh0Rf5Xmvn5sBt_g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

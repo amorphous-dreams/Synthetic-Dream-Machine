@@ -7,9 +7,6 @@
 cacheable  = true
 hydrate    = true
 l-space    = "stable"
-mana       = 12
-manao      = 14
-manaoio    = 11
 namespace  = "&#x2299;"
 revised-on = "2026-09-13"
 role       = "realm-bag-brief — the brief on a relation-carried bag: a bag two operators keep through a relation. Where the bag doc registers (the realm's shared CRDT, ruled), what crossroads-plane carries (that it exists and who keeps it, never content), which cap-tier gates the read (CONTRACT) and the write (the named stewards' set), how B's `meme get --bag <x>` resolves it (reach-by-access, and why), what the realm layer already holds and what stands unbuilt, and the one gated red that waits on the seam. Every claim carries its file:line."
@@ -87,6 +84,6 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;slcDZrtQgeVjn9AapKuMZ3Sbu8npL-jxjnk9X6utzDM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ULxKs7kJvqp3RiHAYaHRbvda8bwSN-i2oWAoDBwiQpQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

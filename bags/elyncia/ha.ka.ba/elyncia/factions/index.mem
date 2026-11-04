@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 14
-manao     = 14
-manaoio   = 13
 rating    = "ano"
 role      = "faction roster index for Elyncia worldbuilding — the House of Masks summit guest-list stands as its first enactment; per-faction memes grow beside this index as canon deepens"
 title     = "lar:///ha.ka.ba/elyncia/factions/index"
@@ -88,6 +85,6 @@ Derived from the court-dragon alignment canon, never invented whole:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;e_wwnV6ocp5MVEz9ZcL3Cs29dAyK0ALWcOtC0cCxIUQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gOeas_XonGeTfAPscIY0dLywwr5LjyVcgyF6ELvGd3w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 13
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "two-way-interaction-scout — VERBATIM handoff of a tasked Fable spirit (2026-10-16): how the DreamDOM superset keeps the full two-way interaction between a person at a surface and the wiki. Carries the inventory of every TiddlyWiki interaction by widget, message and layer with its owner, up-leg and down-leg per width and host; the up-leg contract (wiki:control-event, declared-at-mount stamps, reliable acts against droppable senses, wake on act, two surfaces on one actor); the silent-loss risks with their fixes or refusals; interaction goldens with fourteen scripts; the ten-surface two-way table; Mu, two stories, spikes and open rulings. Held as a collision surface; dreamdom carries the house's reading of it."
@@ -487,6 +484,6 @@ Each row names a (root template, document sink) over the one engine. **Capabilit
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;aEZVFqExdccRKFJXki7wjmDyhc9o4IiNm48R21uQ6dQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yYjZeAB_zipW7QRPYM09hDQ3kZMJsQzlwkenH4lKELE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

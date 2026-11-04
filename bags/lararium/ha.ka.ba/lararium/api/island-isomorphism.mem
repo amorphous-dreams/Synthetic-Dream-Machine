@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "stable"
-mana       = 14
-manao      = 15
-manaoio    = 13
 role       = "the one-hull law: every island rides the same isomorphic stack; authority = grants, never architecture; the genesis exception named and bounded; field-grounded 2026-06-12"
 status-why = "the one-hull law, field-grounded and live across every island"
 tags       = ["api/pono/meme", "lifecycle/standing"]
@@ -95,6 +92,6 @@ re-entry: the kue key; or the migration's step 4 boundary, where the residue get
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DbUexlvWLQQBYAo2dbSWhAx9Mho38zXZRORKVMiXPVc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;J_QwgkJTCq8oO5ZnEjs-9SS7akxCJAHMkupx9M33r4c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

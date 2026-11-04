@@ -7,9 +7,6 @@
 cacheable  = true
 hydrate    = true
 l-space    = "stable"
-mana       = 13
-manao      = 14
-manaoio    = 12
 namespace  = "&#x269C;"
 revised-on = "2026-09-13"
 role       = "heraldry — the design the 2026-09-12 ruling owes: ANY nameless thing on the DreamNet (a cabal · an infra vessel · a veiled persona) MAY publish a Handle, a public Face. Names the three nameless shapes and what each already holds in code; the MANTLE (a True Name worn in turn — what the KEL's graft threshold guarantees, and why a 1-of-1 cabal Handle reads as a person wearing a mantle's name); the HERM CARD (a self-certifying card owned by the Herm's own DEVICE-MINTED vessel key, carrying no persona root and no read cap) and the CARRIAGE contract that seats it in a realm's PUBLIC registrations; what heraldry must never become; and the plan red-by-red. The wall this meets in code stands quoted at handle-publish.ts:37-41 — 'a face belongs to its persona, never itself'. Every claim carries its file:line."
@@ -246,6 +243,6 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tuokA4T2xsGCAhtg5V0X_W3Vz3jJiOQmhAdcxHUVhcE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;F0IxZiC2Owx8q7UoMtPDmSDq-tfJ1NH3BHStjK3KlQw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

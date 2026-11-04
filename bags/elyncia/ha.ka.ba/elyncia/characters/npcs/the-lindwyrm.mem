@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 15
-manao     = 15
-manaoio   = 14
 rating    = "ano"
 role      = "NPC, public view — the Lindwyrm of New Delos: Patroness, embodied immortal, founder of the League of Free Cities, reluctant infrastructure matriarch"
 title     = "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm"
@@ -84,6 +81,6 @@ only as much as suits her.''
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zZQ9Kvets7phgtD2Bmoxcknv2XJfOlNk9QO5tPauHuU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C4bp9IRcUdOzJGndgFyaRFR8uXdOpEpkyt5L349OkQ0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

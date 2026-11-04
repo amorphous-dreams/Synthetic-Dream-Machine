@@ -6,9 +6,6 @@
 ```toml meta
 source-sha256 = "sha256:d689443fc704d96b7c2e3802de2f76541b33cd3f9fe422199387a4bd1ce74b21"
 heleuma       = "ka"
-mana          = 18
-manao         = 17
-manaoio       = 16
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/modules/deserializer"
 role          = "heleuma ka: TW5 tiddlerdeserializer for text/memetic-wikitext"
 source-symbol = "*"
@@ -59,6 +56,6 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;077OZ7DQq8-6eobjqe-y8ZV3Td44c5gWznuTJKQrbn8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZTU3ctp-o0ZYwdhSxiE--TvyjGKsSMyMGPeqIVme4sw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

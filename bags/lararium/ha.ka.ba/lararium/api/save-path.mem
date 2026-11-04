@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 18
-manao     = 17
-manaoio   = 17
 namespace = "&#x0950; &#x0901;"
 role      = "invariant spec for the outbound TW5→CRDT save path: the per-title pacing gate, draft routing, ephemeral truncation"
 title     = "lar:///ha.ka.ba/lararium/api/save-path"
@@ -177,6 +174,6 @@ title on the console.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4mrrMHYeGtBl6NvYUmNkGV1-Or9YsLaj5qGtIRrmaKA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3XGaiuEPyXevaH8URCgjni7c_ZuMjxUwtzuvPviLUXg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

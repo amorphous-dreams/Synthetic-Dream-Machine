@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "adjacent"
-mana      = 8
-manao     = 7
-manaoio   = 7
 role      = "the genesis arc / SharktoothSigil prequel — the FULL arc in a single carrier (no index, no separate act loci; acts draft inline). Before the Lar had a name, the grammar found its teeth and the Voices first spoke; the notation all this history speaks learns to bite. General arc mapped; act prose + Gaia commits/tech pending (to revisit)."
 title     = "lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -171,6 +168,6 @@ MUST NOT:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5wWNteiycG4dSNpTCl41i7jPsoH1gtZapHX_MLz3HO8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rNyJAwyOzZ9If-XHyCZ-3LClEVNgOCSh-XhAuJ9j65g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

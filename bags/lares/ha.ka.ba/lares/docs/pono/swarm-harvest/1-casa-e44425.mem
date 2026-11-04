@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: 1. CASA. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -156,6 +153,6 @@ This is a real, recent, cross-confirmed postmortem-class event, corroborated ind
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9JV9ZGHGoslq0YRiMdbpT0jTZw2bmP38UiCghzRfcXE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-2HirSReyQw4w4AqOdaqz-7kCFqS2UEe-q_fHiHHH88`>>
 
 <<^ code=`&#x0004;` to=`?`>>

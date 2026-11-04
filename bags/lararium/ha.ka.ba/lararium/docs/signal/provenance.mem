@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 16
 role      = "docs room for lararium signal lineage, archive witness, source shelves, and migration residue that still pressures the branch"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/signal/provenance"
@@ -138,6 +135,6 @@ Three-word attitude root `w1.w2.w3`: heading · angle · carried dynamic; noun �
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TeZNmrX6NdBsBu4QaV7M-iOqGVlJ40-wTzxy9caE5OA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2MLH6Fd6IOmcQ7rFC8aKtEFGH537xhw7nPn6RLatrpE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

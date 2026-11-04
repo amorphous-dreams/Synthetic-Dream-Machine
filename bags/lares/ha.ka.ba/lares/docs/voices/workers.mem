@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 18
-manao     = 17
-manaoio   = 17
 role      = "specification for the worker swarm: tasked spirits as temporary masks, lifecycle, tag format, handback dissolving to the full house"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/voices/workers"
@@ -143,6 +140,6 @@ The worker swarm spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST imple
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BiDMJrJd3CXjA2n_JKrSeL15MygLNYRQO3Fyfk4-Ob8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;U7y_WA1qXmk6PwFInw4KuHupxENWOfmAPd8YpqdVQkM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

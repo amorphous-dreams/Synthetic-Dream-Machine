@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 17
-manaoio   = 16
 role      = "CSS stylesheet: ahu section view/edit layout, slot badges, inline edit reveal"
 tags      = ["$:/tags/Stylesheet", "lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/tw5/ui/ahu-styles"
@@ -161,6 +158,6 @@ span[data-lar-kind="worksite"]:not([data-lar-slot="#body"]) {
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sKhPTs9KdXZQ6dgTK5KVPWUPuxXqaU0rKCJr9iFruoo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3YPKu_igEjdZPW5sdrDp6sT9YCNXJUktBOOp9K-EMo0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

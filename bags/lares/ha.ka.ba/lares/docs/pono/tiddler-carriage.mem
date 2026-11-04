@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 13
-manao             = 14
-manaoio           = 12
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-13"
@@ -133,6 +130,6 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qasN_-kh0qepw3jytSXiQkKEXf_MvYVsLfjDLvzBed4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;c3btp8RQ3KDoF5m4F1VUCLJUCD7DmgA3mx8tDqH7HJY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

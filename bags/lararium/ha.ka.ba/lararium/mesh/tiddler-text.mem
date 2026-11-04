@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 heleuma   = "ba"
-mana      = 18
-manao     = 17
-manaoio   = 17
 role      = "heleuma: oracle tiddler text-field reader"
 title     = "lar:///ha.ka.ba/lararium/mesh/tiddler-text"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -29,6 +26,6 @@ One helper holds the guard on an oracle tiddler's text: a caller reads `tiddlerT
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6EeX7VoMWM3tonL5NtvOvpOfZhAryVYH1-KgwWDQzds`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EWdbECjEcRXp0nrrGGqBTesWUaXS_trvMG-IQcwStdY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

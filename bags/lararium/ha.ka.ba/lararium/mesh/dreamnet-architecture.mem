@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "lararium"
-mana       = 17
-manao      = 16
-manaoio    = 15
 revised-on = "2026-10-11"
 role       = "DreamNet two-axis mesh topology: INFRA (relay-floor → lararium → nexusGroup → DreamNet) ⊥ SOCIAL (vessel-key → personaGroup-veiled → cabalGroup), the two axes crossing at the vessel. Re-trued 2026-09-20 against the board-keying ruling (`91ce09afb`+`c6cfe5b8d`), the seven per-Nexus boards, the crossroads/offering/heraldry canon, and the registry-filter + causal-islands laws."
 title      = "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture"
@@ -20,7 +17,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/dreamnet-architecture"
 
 A hundred thousand Lararia. Each one a different operator. Each one a different charter,
 different ontology, different pono surface. Somehow not isolated — they form a mesh.
-Not by sharing data (local-first means local-first). By sharing ''structure'': the same `lar:///` scheme, the same mana/manao/manaoio grammar, the same
+Not by sharing data (local-first means local-first). By sharing ''structure'': the same `lar:///` scheme, the same grammar of rating and capability, the same
 sensoriums (mempalace++) wing patterns — so
 the gardens recognize each other even when they cannot read each other.
 
@@ -434,7 +431,7 @@ The DreamNet does not share data. It shares structure:
 * SharktoothSigil vocabulary — the grammar rules that keep memetic-wikitext parseable across any vessel without runtime negotiation.
 * ABILITY_LADDER — the shared vocabulary of capability semantics.
 * Genesis artifact CID — the content-addressed root any vessel verifies from cold.
-* mana/manao/manaoio fields — the trust-weight lattice for recipe resolution.
+* recipe resolution rides rating, capability and kapu; no declared scalar enters it.
 
 A vessel that imports a bag from a foreign cabalGroup parses its memes, verifies its capability proofs, and reasons about its recipe stack without asking permission. The grammar makes them legible to each other. Nothing else does — and a relay that carries the bag never needs the grammar at all, because it never reads.
 
@@ -637,6 +634,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;g2NQjOeqZWt_wt0JpYHhdO9m3yvbXWTzRsUhKW5Q3FE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZGj7hpj9dpFOEujlKDYNp6tf14qcdw8d_D2_21NrTXw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

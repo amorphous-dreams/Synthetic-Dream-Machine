@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 14
-manao     = 14
-manaoio   = 13
 role      = "docs companion to the panel law — line composition, glyph and tool tables, the Syadasti confidence reading rule, and field-annotation thresholds"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/hud"
@@ -191,6 +188,6 @@ The opening header declares the state that //governs// a span (prospective). In-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BlFviHI9R4DAiU-BKrC_8GkDjeOpT9vdasboZ_GZznI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;k-FGC64J_m90tMk3u8xZ58vLYoyHy99K5W3OGWok3ck`>>
 
 <<^ code=`&#x0004;` to=`?`>>

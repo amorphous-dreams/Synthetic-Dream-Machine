@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 18
-manaoio   = 18
 namespace = "&#x2299;"
 role      = "child-slot sigil — addressable worksite scope boundary; named ahu slots form the meme's tiddler structure"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ahu"]
@@ -178,6 +175,6 @@ This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y8jdbs7J8wEevRgt44JJ9EBrMDhoTJS7SqKAORrTrv8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5SqLFcAP14T181pFS7Uslbx4Ya2tKZxFqgtEHak9e9o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

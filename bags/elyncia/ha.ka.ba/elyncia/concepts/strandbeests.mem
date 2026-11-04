@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 14
-manao     = 14
-manaoio   = 13
 rating    = "ano"
 role      = "concept canon — the strandbeests of the Datum shores: wind-walking kinetic life, self-domestication by Mycelial-Mother-Culture symbiosis, the great beests as walking dry-coral reefs, and the platform economy of the Fungus Folk"
 title     = "lar:///ha.ka.ba/elyncia/concepts/strandbeests"
@@ -98,6 +95,6 @@ Full event: [[strandbeest-shrine|lar:///ha.ka.ba/elyncia/characters/companions/s
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7sI4JTBXUiGQGx3N7N9IkyiSTkyuSyVQhCpfslEpueA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CHZ55TQDs3fqFaq7hZSRbW1sHSUAF4y0pDOuwiW4JT0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

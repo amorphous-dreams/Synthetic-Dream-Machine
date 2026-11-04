@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: THE CONVERGENT CLAIM — research report. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -605,6 +602,6 @@ McDaniel & Rubin's rebuttal to Rivest (Springer auth wall; abstract publisher-el
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SpJnJFPw-Y4joCF6CBBXBzU3z8kTwV-TZpivE0MNQD8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;G0IkUnoYEz_GGhJ17RfB97oP2U6lhEsGp3-968o-IB4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

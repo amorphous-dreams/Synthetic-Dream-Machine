@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = false
 l-space       = "adjacent"
-mana          = 14
-manao         = 14
-manaoio       = 13
 render-target = "docs"
 role          = "VERBATIM spirit handback (2026-09-11) — the nexus-client-dial flake diagnosed and cured: the early awaited find's instrument-lie corrected at the observation point with findWhenReady; allowableStates is deprecated-and-ignored in automerge-repo 2.6.0-alpha.3. Measured 6/60 red -> 0/80 green under load. Captured word-for-word (MD transliterated to wikitext); corrects project-nexus-client-dial-flake's prior misdiagnosis. Landed 0b022f98a."
 title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-nexus-dial-ready"
@@ -99,6 +96,6 @@ One latent product note (not the flake, out of scope to change): the ''productio
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IHmfWQOwXiDGkRapV-B9c8zk4HI6TQxvgN7sF6zX1Js`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Au3RbyI6XPWwH-Rctm4fqAm-wxP8SzCFERMw-uzwLEg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

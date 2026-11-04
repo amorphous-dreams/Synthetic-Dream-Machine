@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 13
 rating    = "ano"
 role      = "campaign sidebar — the Lindwyrm's Neo-Thracia Expedition Credit Compact; the contract signed at the summit"
 title     = "lar:///ha.ka.ba/elyncia/campaign/credit-compact"
@@ -63,6 +60,6 @@ They may:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6AgBZTvWmah62rAcCTzZyMofOoCJRPSuT7AGBnFmNkI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TVqqI5hAFAavDaH-fqzfGalyDAKxBxlBONmjpDVCcyY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

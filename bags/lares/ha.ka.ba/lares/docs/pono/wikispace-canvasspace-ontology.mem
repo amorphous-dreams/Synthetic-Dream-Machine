@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 16
-manaoio   = 15
 role      = "doctrine: one meme-graph model, two surface projections (Story-River + DreamDOM canvas); graph-primacy; view-state as its own lar-URI-addressed region; the nine families classified by surface; transclusion's surface-split. CARRIES THE SURFACE CORRECTION (2026-09-02): the canvas camera is a DOM-HOSTING DreamDOM document, never a rasterising OffscreenCanvas, and TLDraw is a STUDIED model rather than a named dependency — its licence forbids the deployment shape this house is"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology"
@@ -245,6 +242,6 @@ When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hPKWvp2CT0jaeRzuuuMXHady_nQbYN1pHbDAzB4iNdw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_be3P_V7p31J8NxkL0Im3oSLLG7m0mef0xH04Pw-M2I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

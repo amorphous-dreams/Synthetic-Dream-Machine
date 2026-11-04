@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "stable"
-mana       = 16
-manao      = 16
-manaoio    = 16
 role       = "canon law of the talk-story floor — convened co-narration (kūkākūkā \\talk-story, talanoa, kuwentuhan) that orients work before a ruling locks; three exits: moolelo (\\mufakat \\salaysay \\consensus), hoike (\\testimony), honest suspension; five-sea word-family matrix, eight laws, degraded states, lineage"
 status-why = "the talk-story floor, convened rather than built"
 tags       = ["kind/rite"]
@@ -127,6 +124,6 @@ Beneath the triad two grounds rhyme: ''kapwa'' (Filipino — the other met as sh
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;OUrV2tOvPMKh8AUojP9Ny-MazVqheani41YwMUsQEpM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9p_oXpfFoGcFoXuSkaOtRpg8zkXq6ZyM_Pf0nTbJ1rk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

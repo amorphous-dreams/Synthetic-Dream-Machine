@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 17
-manao     = 16
-manaoio   = 16
 role      = "Shape/Detail/Motion reading frame for Sharktooth sigils; progressive display authoring principle"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/sigil-shape-motion"
@@ -111,6 +108,6 @@ This differs from the technical render posture in `render-pipeline#/render-postu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nI2OBVqXaeVb3wXT5IT9kjhm5jYO4pcnAHZ2oGGeRYI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;n1oUYOws94p2Orkx390x2AB87t3yhQhtIKg2lpbsbw8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

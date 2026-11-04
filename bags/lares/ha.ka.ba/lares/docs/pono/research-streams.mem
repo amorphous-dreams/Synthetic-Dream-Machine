@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = false
 l-space     = "stable"
-mana        = 16
-manao       = 16
-manaoio     = 16
 role        = "documentation hub for external research streams and literal quote witnesses"
 status-date = "2026-05-25"
 title       = "lar:///ha.ka.ba/lares/docs/pono/research-streams"
@@ -62,6 +59,6 @@ executable adversarial tests -> receipt-backed trust
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RA0WdGiVWNgrLj4dU9XPk1wvP_vu3J2pU86SyZ7w7lE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iIvjMqOBxlE934jpXZWi422-ko0jo2EHTd7clDGvaec`>>
 
 <<^ code=`&#x0004;` to=`?`>>

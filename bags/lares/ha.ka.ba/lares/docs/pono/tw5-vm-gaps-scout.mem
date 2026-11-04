@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 13
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "tw5-vm-gaps-scout — VERBATIM handoff of two tasked Opus spirits, TIDDLY and WIKI, in two waves (2026-10-16): how the house turned the TiddlyWiki engine into a worker-thread VM (the third runtime, the CRDT as truth, whole frames to a shadow root, the render-id relay) and the gaps they found, many probed in scratch with file and line: the textarea revert, the blanket click preventDefault, radio and select painting, the absent root tm-* handlers, no frame resend on a surface switch, the boot-shadows push, and the layer-3 glass contract. Held as a collision surface; the red tests of dreamdom-roadmap's D0 and D1 begin from it."
@@ -264,6 +261,6 @@ These scratch files die with this container; the probes are described well enoug
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;y2TqjiFAAnMk4RMmDyyGQ3f1AxUNflQyCy7dhDwtpZQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yv_4v0E9zzo9vurw0wpJDSp7vlMl-y_KHYZ0kVzkEtU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

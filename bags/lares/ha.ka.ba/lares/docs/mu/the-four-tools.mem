@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 17
 role      = "witness shelf and source braid for the four tools of Chapel Perilous"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/mu/the-four-tools"
@@ -85,6 +82,6 @@ one clean preference for model agnosticism over paranoia.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SGnqTNX_UzGona8LqlMQENCJqrjMx07qVxPj2ZvFP7Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H34rtBhPSxhHmLYgTg8QMAlm-mQ03BO370ATychJUCo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

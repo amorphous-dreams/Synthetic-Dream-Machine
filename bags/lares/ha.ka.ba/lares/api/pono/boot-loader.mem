@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 16
-manao     = 16
-manaoio   = 15
 namespace = "&#x2299;"
 role      = "the pre-VM read: what a cold reader must find to stand a wiki, and the floor it stops at"
 title     = "lar:///ha.ka.ba/lares/api/pono/boot-loader"
@@ -120,6 +117,6 @@ does the question mean anything.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_zueyD7V0pDMpgj32GLTd0lUWNseCoDTBA4GovGzEJI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iCHmI-zK78tTJIZSz-pgUMfxBJv2G7gJcG93CR6e8qs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "structure"
 l-space   = "sdm"
-mana      = 8
-manao     = 17
-manaoio   = 6
 role      = "mount-point: Structure (Site) — Power bound to a place; absorbs the former Location class; mobility is a flat component"
 title     = "lar:///ha.ka.ba/sdm/mount-points/structure"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -93,6 +90,6 @@ A Site does not overflow to Burden; it simply lacks capacity until upgraded. Buy
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gLrBWtVjLd5nFFnkhg8bCK0KEyqpE7Ol8mNKeebRbbY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3XyI4fgqrN1encss2zxbwMdmEYHmAWHHJsiLucrGw0I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

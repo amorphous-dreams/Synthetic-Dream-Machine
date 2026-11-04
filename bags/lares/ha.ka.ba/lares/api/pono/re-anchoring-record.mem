@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = false
 l-space       = "stable"
-mana          = 12
-manao         = 12
-manaoio       = 12
 revision-note = "the artifact that records THAT a re-anchoring happened and never what made it valid. Carries the three mechanisms that survive alignment with prior art, the six classes that refuse, and the rulings each refusal breaks"
 role          = "the re-anchoring record — one artifact folded two ways: an EVENT on write, accrued DEPTH on read. Holds the un-thresholded attestor bundle, the grounds-free boundary, and the attester⊥minter split, each with its shipped prior art and what it cost to align"
 tags          = ["api/pono/meme"]
@@ -132,6 +129,6 @@ And the EROSION half needs a rate nobody has seated. Two candidate shapes stand 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wqn6lEtBNcjL1Oi63a1wj-damiY3WUH423X238GtKQU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;n6cUCDmilqgxsMXy_NVwt7y-IdKWLuyvVaz93nW0oW4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

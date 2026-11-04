@@ -11,9 +11,6 @@ date          = "2026-10-03"
 docname       = "draft-fontany-memetic-wikitext-00"
 ipr           = "trust200902"
 l-space       = "stable"
-mana          = 19
-manao         = 19
-manaoio       = 17
 namespace     = "&#x2299;"
 revised-on    = "2026-08-24"
 revision-note = "the split: the transmission-frame half stands in its own sibling specification (api/pono/memetic-wikitext-framing) — this document keeps the language, composes as the document production the frame wraps, and cites [FRAMING] where the frame law lives"
@@ -752,6 +749,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-rFUf1ulDi1ei_RrpCNIEcxXcU4KkqE2uG5wwpp_jdQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TgFPmlZbOmYuq1YvZcuKTa2HMTrkKevWmUpEcMzzf2Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

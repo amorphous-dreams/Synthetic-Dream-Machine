@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "sdm"
-mana      = 11
-manao     = 16
-manaoio   = 15
 role      = "UVG relic witness for Porter's Pebble — pebble-machine provenance + the Floating Disc 'Stuckforce Relic' variant, cold-load"
 title     = "lar:///ha.ka.ba/sdm/witness/items/uvg/porters-pebble"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -61,6 +58,6 @@ The v0.1 ''Porter's Pebble'' is the epic's first ''module-nesting'' proof:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9s5XScB8Zs4vvlBpVIHgqwbrDy1fX8UuWAFGKfi5eY4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7bhI6fEecq09sjeks2q32hXigVQJc6GTLYkAqNoyLjI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

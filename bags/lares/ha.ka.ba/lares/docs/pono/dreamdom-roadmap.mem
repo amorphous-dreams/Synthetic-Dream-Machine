@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 16
-manao             = 16
-manaoio           = 14
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "dreamdom-roadmap — a roadmap to the DreamDOM: the phased build order from today's as-built worker-thread VM to the full superset of cameras the `dreamdom` carrier models. One train, D, in eight phases (D0 measure and mend · D1 the camera contract at width none · D2 the record port · D3 the glass engine and the width spike · D4 the Wiki Actor · D5 conformance · D6 the lean sinks · D7 the wider surfaces), each with what it builds, what it proves (witnesses and goldens), what it waits on, the spikes that gate it and the open rulings that block it; the lanes named the way the house roadmap names them; the spikes and rulings gathered; the rows beside the phase that closes each; what stands off this road by ruling. Reads under `stable-founding-road#/the-attractor` and the lane law of `controller-handoff`."
@@ -246,6 +243,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ziVpDq19OWB6qLpK2tAWmIvnpuNTPKZVGcWf0RW2n_g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;s3qXK6zMkTsAwChdU642KK7WT8hE2UpCQPsbJro_ETk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

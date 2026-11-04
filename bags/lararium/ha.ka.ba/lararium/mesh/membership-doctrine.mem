@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "lararium"
-mana       = 16
-manao      = 16
-manaoio    = 15
 namespace  = "&#x2695;"
 revised-on = "2026-10-11"
 role       = "the membership doctrine — the privacy invariant of the whole public-facing mesh: the Nexus tracks operator CONTRACTS, never user IDENTITIES. An operator contract carries pubkey + accepts-carriage + charter-epoch and NOTHING more; users SOFT-ATTACH and leave no roster trace; invites are POPRF tokens a hearth burns at its own gate for a keyed grant the guest carries, leaving no record of who invited whom; a hearth carries a walker's own documents sealed, and reclaims them only under pressure, by the guest's own rhythm, with notice first. We choose to not have the user table. Operator-ruled 2026-07-21. SECOND CONDITION ruled 2026-08-09: belonging carries TWO conditions — the contract AND agreement with the grammar vectors traded on that Nexus. Agreement rides KEYED, never audited (the MLS RFC 9420 `confirmation_tag` shape): a peer that disagrees cannot produce the binding, so no roster row is needed to record who agrees — the second condition adds NO table and lands back on the no-roster ruling."
@@ -549,6 +546,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vaJz8mqltgtXmT-sOH3B8jbzC8daYqwPw25KZXQSMPY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HrkiL6XTPGhzt3bmARCE34rz4yEt2XVxJrHQo1ndowI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

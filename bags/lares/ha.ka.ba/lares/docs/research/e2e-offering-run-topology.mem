@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "lares"
-mana      = 16
-manao     = 16
-manaoio   = 15
 role      = "static QA topology audit and deterministic run-order receipt for the focused Offering receiver E2E"
 status    = "repo topology first scouted at 92865ca0a; prior-art collision refreshed at 02e1693b3; no suite or build executed"
 tags      = ["research/qa", "tests/e2e", "mesh/offering", "build/stamp", "causal-island"]
@@ -125,5 +122,5 @@ This is the minimum **reproducible** preparation established by repository wirin
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9lPsoQrln2oaASo1t2sU8wa4k1EpgooKA9RTtffIoZo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uPc6ycRzAHrgsdLqNgO5ON7-ou_v9xEutDDrg5D_ML8`>>
 <<^ code=`&#x0004;` to=`?`>>

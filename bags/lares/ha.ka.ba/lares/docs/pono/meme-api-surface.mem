@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 12
-manao             = 14
-manaoio           = 12
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-12"
@@ -225,6 +222,6 @@ The CLI walk names its container on each store verb: `lares meme put lar:///t/x 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;t_w9uRUmAhzpUbbLXH3r5N63Qj3PIAS-sCKU1o2Y-VQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C_mV9LaDSK0mpdxYIO6ojeX7Z04p2dm1_UHmE1AB0gU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = true
 l-space       = "stable"
-mana          = 17
-manao         = 17
-manaoio       = 16
 role          = "SUPERSEDED — MCP tool registry: ten tools + two prompts, OODA-HA phase map, input schemas, env guards"
 source-symbol = "lararium-hud lararium-canvas lararium-read lararium-inspect lararium-edges lararium-draft lararium-write lararium-fire lararium-receipt lararium-align lararium-explain_uri"
 status-date   = "2026-04-30"
@@ -158,6 +155,6 @@ inputs      = ["uri: string"]
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lGMNiURyi7gsEpRBiZtdDbR-7R51K2-Mc_wEend2E3E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_YCdrvJiUz8FJoD-XogTfgAOc3cjEEj97lzaLy_Cd9A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

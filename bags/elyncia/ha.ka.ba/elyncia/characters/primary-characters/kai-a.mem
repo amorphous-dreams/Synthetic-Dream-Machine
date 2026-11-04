@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "adjacent"
-mana      = 12
-manao     = 12
-manaoio   = 11
 rating    = "ano"
 role      = "primary character — Kai ʻĀ, the prismatic elf warrior-ranger kaiju-stalker (Kai's PC); build approved, lifepath open for Session 0.1 talk-story"
 title     = "lar:///ha.ka.ba/elyncia/characters/primary-characters/kai-a"
@@ -84,6 +81,6 @@ stays a table question.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vz7ptz4MSgUxOCVe3GxHtOeYBR3s858Qr6lAy6HyKu8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RWpP4VUsXtBx7t-6ayfb10CAvEy6r5pRX6QIQg9Esbk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

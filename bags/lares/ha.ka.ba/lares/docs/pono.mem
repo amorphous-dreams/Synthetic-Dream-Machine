@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 17
 role      = "parent docs shelf for protocol reference, law-adjacent explanation, and stable operator guidance"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono"
@@ -50,6 +47,6 @@ Use this branch for:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jj242rug6ANMLa4gLZAEvJutYUqRVz4SB1hg8bm3us0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RyNRHF-REhSSC3v58zNsmArE7sEUz6t2KWXiMK4oAZg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

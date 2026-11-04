@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = true
 l-space       = "stable"
-mana          = 18
-manao         = 17
-manaoio       = 17
 role          = "lararium progressive readiness vocabulary — named shrine-lights, boot doctrine"
 source-symbol = "READINESS_KEYS"
 status-date   = "2026-05-01"
@@ -95,6 +92,6 @@ dynamic-forms = ["corpus:<id>", "projection:<id>"]
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Up8NmSVatJIHAKp7gsqxn0eu23BhsPkf-mt3_MXfnVg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;i7AlC9V-AfV6F0GfiMep4SLmajsig8QDRhaqOUD-HC8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 15
-manao     = 15
-manaoio   = 14
 rating    = "ano"
 role      = "concept canon — the other worlds as real, reachable, and dream-mirrored: the Loom's stitches and its offcuts, the four arrival channels, and the referee law for what washes up"
 title     = "lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds"
@@ -150,6 +147,6 @@ settled pet-name for the tideline of worlds yet.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;u2zXxAnzHbcoR-9Ck4bLld1TygEs7UtZugpNIMzLfLs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rHtf1kFAICXGr2fXALe-xGOrX1n86FSFK23ad1eL6Bs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

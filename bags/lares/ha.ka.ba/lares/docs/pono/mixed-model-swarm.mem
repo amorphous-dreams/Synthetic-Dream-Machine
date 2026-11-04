@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 15
-manao     = 15
-manaoio   = 14
 namespace = "&#x2299;"
 role      = "mixed-model-swarm — how the house works across model lineages: which lineage holds which seat, the shapes a crew takes, the seat law every Codex brief carries, the feature unit a PR lands, the tiers each seat draws from, the lens law that makes several eyes worth more than one, the Copilot seat and its walls, the battery, the lanes and trains, the o-takiage, the fences, the launch, the provenance each landed line carries, and the rulings the body rests on"
 tags      = ["api/pono/meme"]
@@ -271,6 +268,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BVMsQQOtcTJTx31p4CMop9SIkSwCmoPmodzkwVOO48g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Oct-lGmYLWBVNVIiAFiNVtmjt-t4yBgat0KDsArFn6s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

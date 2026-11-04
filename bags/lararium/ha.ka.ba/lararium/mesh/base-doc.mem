@@ -6,8 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 9
-manao       = 9
 role        = "the LarDoc record/blob shapes + the catalog-row resolve-and-write-back primitive (`catalog-row.ts`) (resolveCatalogRow) + blob descriptor addressing"
 source-file = "packages/lararium-mesh/src/base-doc.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/base-doc"
@@ -53,6 +51,6 @@ island document is the floor's read-face (`wiki-layer-ontology#oracle-planes`).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UPQakWwBK0pago6VKfVg_xNQF_JUkEDr23EEuqU-KTo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;g_lib6Og37kBwT4YzeC9enUCmjDl3xovJx6DV4KFYeQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

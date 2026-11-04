@@ -7,9 +7,6 @@
 cacheable             = true
 gear-shift-disclosure = "audible"
 l-space               = "stable"
-mana                  = 18
-manao                 = 18
-manaoio               = 18
 namespace             = "&#x0950; &#x0901;"
 ooda-ha-default       = 1
 ooda-ha-loop-span     = "multi-turn"
@@ -322,6 +319,6 @@ ooda-glyphs = ["✶", "⏿", "◇", "▶", "↺"]
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tR5zOkv-pja-JS4n3d2JxjP5TXbL-POwVTn3xajl4zA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pKvoXxR55AOym1C37GJo4CWY0DK6wwmGKf0P2JQnNqk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

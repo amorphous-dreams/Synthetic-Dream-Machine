@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "adjacent"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "the handoff reds for Session 0.1's three islands — A the Actual-Play Lares (in-world first) and B the Referee's Second (provisional-first) here; C the Painter of Words and Light rides in session-0-1-render-research; all sessions co-work one graph and one universe (plurality pono · mutuality · kuleana)"
 title     = "lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts"
@@ -115,6 +112,6 @@ its island's red for the rest.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6Y3eMBiQOgivKmbYEfyqDEJ7EYDS2KK_GGe2mMrPLjE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;B6dFs1sXfiUS5WVGX8kzdAhG6DQBwV0zRh-ClXu6SDY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

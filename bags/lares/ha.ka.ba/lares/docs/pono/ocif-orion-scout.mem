@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 16
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-02"
@@ -1082,6 +1079,6 @@ The format itself is sufficient. §Extension Mechanism grants a URI-identified p
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BWMZtpLeQ7VKXqwluLtWRSA3E8EeZlcyKOT7_Gx5sgc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;psrCGq1l3iUxjljvEJJTmN61X4Ai8OXJuQgKk_CyOTw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

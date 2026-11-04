@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "lararium"
-mana      = 17
-manao     = 16
-manaoio   = 16
 role      = "protocol governance concept: kahu as ONE role at TWO scales — DreamNet corpus-kahu curate the living grammar; a Nexus's kahu quorum holds admit, kapae and seal for that Nexus — with the kahu quorum and the engine cadence kept as separate joints, and walking, contracting and seating kept as three admissions"
 title     = "lar:///ha.ka.ba/lararium/mesh/kahu"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -688,6 +685,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wp91DM1ZpSP4w0jrNI45VkZpY-ATSuHCB-lya11zGiE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IVA7fHHk8Sbh7601PDkEY-d9BLNMcLbuzVfFvRx6Hvs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

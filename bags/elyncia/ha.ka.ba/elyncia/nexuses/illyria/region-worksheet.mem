@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "region worksheet — the Illyrian Regions: the sinking realm, the Accursed Mountains and the caldera, the drowned coast, the deep strata; grown by play"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet"
@@ -84,6 +81,6 @@ lowest tide.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CYpeIgMz05eyK0a8Kthef1NJoYQ1QaRkDCPfnQYH2JE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fuGR_cyXRKCSV6Y-Jx2WRm4UNgOM366eWDMnoQ93BXE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: §0. Method, and the honest limit on this report's reach. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -745,6 +742,6 @@ Reetika Khera / Jean Drèze primary sources and Jharkhand ration-denial numbers;
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TmtYJntscYZl99Qhh2kxrWHGzbX2YWtZjXoBBjgpMXk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TqpoQjtTygyaLqYFKn_Pxlj_m4_LHrPswSprRQvnp5U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

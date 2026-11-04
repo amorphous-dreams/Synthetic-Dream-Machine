@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 15
-manao             = 16
-manaoio           = 14
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "evaluators-one-or-many — the house answer to open fork Q1 of the portable-engine talk story: one reference evaluator (the TW5 engine in JS) for the full wikitext and filter dialects, an evaluator-neutral conformance suite built now with that engine as its pinned oracle, the parse tree as the normative layer and each camera's serialisation as a second layer, and a certified core-subset evaluator permitted only when a host earns it. Rewritten in house prose from a tasked Fable spirit's prior-art survey (CommonMark, sqllogictest, JSONPath RFC 9535, JMESPath, golden-liquid, Mustache, test262, WPT, CEL, ink, Nix/Tvix, regorus, TiddlyWeb), with its principles, suite shape, host landing and open rulings."
@@ -216,6 +213,6 @@ The full survey with its prior-art table rests in the project's shared reports a
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ni05rvzrdsAljW-Ogitx21xS4Kpb7xY246v-tCFpe2Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LHwS671wC-ar55eG7l3PMW9RPLaEPCawBCEZmVtVZno`>>
 
 <<^ code=`&#x0004;` to=`?`>>

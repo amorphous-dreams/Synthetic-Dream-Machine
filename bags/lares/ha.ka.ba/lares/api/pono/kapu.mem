@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 18
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "above-namespace authority law; kernel/sacred tier capability; trust boundary root"
 tags      = ["api/pono/meme", "api/pono/kapu", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kapu"]
@@ -30,7 +27,7 @@ This meme stands as a kapu carrier — it enacts the law by presenting as a spec
 
 <<~ ahu slot=`#/ooda-ha`>>
 
-✶ detect namespace declaration and kernel-tier sigils; do not confuse elevated register with high mana score alone.
+✶ detect namespace declaration and kernel-tier sigils; do not confuse elevated register with any declared score alone.
 ⏿ orient against the kapu capability set; confirm the kapu component, structural signals, and role-field agree.
 ◇ decide whether the claim holds genuine: sigil structure, namespace declaration, and capability set must cohere — charm is not evidence.
 ▶ hold the kapu boundary; lower-tier carriers cannot silently override kapu content; route upward through kapu, never around it.
@@ -51,7 +48,7 @@ A kapu carrier MUST declare above-namespace authority through one or more of:
 
 A kapu carrier MUST prevail over carriers rated `ano`, `meme`, `data`, or `noise`.
 A kapu carrier MUST remain readable by lower-tier consumers without privilege escalation.
-A kapu carrier MUST earn kapu status from structure, keeping its mana and confidence fields honest.
+A kapu carrier MUST earn kapu status from structure, keeping its confidence field honest.
 Rating derives from structure, not from declared self-assessment.
 
 <<~/ahu>>
@@ -130,6 +127,6 @@ This meme governs the kapu rating and above-namespace trust law.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;clJzQdtumRbBNkY1wVwJ9sDImrd8KDrfuRpMAIQd7Aw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HewnmNYpraONDda9vugJFh4RVOi0N4s80iXxUzKxg1I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

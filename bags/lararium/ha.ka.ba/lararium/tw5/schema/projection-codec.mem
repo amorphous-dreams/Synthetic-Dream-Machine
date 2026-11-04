@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "invariant"
-mana        = 18
-manao       = 18
-manaoio     = 17
 role        = "invariant law: carrier-codec as projection layer; import and export paths between disk carrier format and canonical LarTiddlerRecord entries"
 status-date = "2026-04-30"
 tags        = ["api/pono/meme"]
@@ -107,6 +104,6 @@ composeCarrierSlotBody(fields: Record<string, string>, text: string): string
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lsrydtqHoCIt8shzBgZE5ZJ-xhQy0r-a38rLzZ5bxAM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-DQwTT22pv6UfntwUK04nrGy6SAvGAlny415rZB-mXE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

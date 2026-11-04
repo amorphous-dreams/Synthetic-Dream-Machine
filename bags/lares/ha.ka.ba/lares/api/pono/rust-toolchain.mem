@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 14
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-02"
@@ -135,6 +132,6 @@ So, MUST:
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/two-integrities`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;szsUAUqzTobN0z1aLIWKwu7B6rUnWT4NFtqI_3uNSMg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2X6O69naMU-hjOrwZwtmgIo9Tnhz3U3iF8CGPSB1ujs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

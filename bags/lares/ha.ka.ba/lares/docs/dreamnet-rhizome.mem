@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 15
-manao     = 15
-manaoio   = 14
 role      = "the integrating read: the DreamNet as a rhizome grown UP from the anon floor (must-fall-back) through additive overlays (known-user · operator · cabal · nexus), launched at TWO surfaces that run one stack at two admission dials — amorphousdreams.net (closed beta, the Amorphous Dreams Cabal) and elyncia.app (open beta, the public mesh)"
 title     = "lar:///ha.ka.ba/lares/docs/dreamnet-rhizome"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -74,6 +71,6 @@ The identity-privacy hardening (per-handle vessel credential · scope-exclusive 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lU-Ck5nHgHqadvMm0H1XjTw_o9NsBgqcBeuyal__dvc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jhPBpIiKg8BEg2QGjAdx5ebNbDoLLQwh4349Czpa4zI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "sdm"
-mana      = 14
-manao     = 17
-manaoio   = 15
 role      = "FTLS card projection: Floating Disc — playable surface with clickable component pills"
 tags      = ["components/domain/stuckforce", "components/function/cargo", "components/function/barrier", "components/hook/sustained", "mount-points/trait"]
 title     = "lar:///ha.ka.ba/sdm/projections/powers/ftls-card/floating-disc"
@@ -56,6 +53,6 @@ A concave disc of stuckforce, 1m across, hovering at waist height. It bears a lo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;R01d-1U6hKYc2KYA-GAdZUEhA7siNdEJz__FJENrR6c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SDuA_Zl7fH9_QvYZL-htvQUDcGBBsJ6cCFndfKJSVLY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

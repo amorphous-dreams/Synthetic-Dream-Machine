@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 16
-manao     = 16
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "search/turn block-container sigil — iterates a filter; renders body-template per result; Hawaiian alias for \\for"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-huli"]
@@ -122,6 +119,6 @@ close-pattern = '<<~\/huli\s*>>'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rlgqI8TFLtwThQNESK4-2eNZobe9Uy4zwjxn0Eaa904`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dtxF91m4nGoMdIFnku3cOojNWqY-jqjAlGhLf3IaPBA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

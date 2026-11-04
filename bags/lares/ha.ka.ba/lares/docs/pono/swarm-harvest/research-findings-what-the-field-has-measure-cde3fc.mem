@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: Research findings: what the field has measured, by rung. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -190,6 +187,6 @@ This is consistent with — though not sufficient on its own to prove — your h
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;g5qzFQwUYEc3OQhd9qbGAkWy9clB6ad2LcEJjl1X0_8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;n1UW2i1H4dYIZ_y95ZZ9JpmLRG2GTMjihZKskimpPnI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

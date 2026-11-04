@@ -8,9 +8,6 @@ approved-on   = "2026-05-30"
 cacheable     = true
 hydrate       = true
 l-space       = "stable"
-mana          = 18
-manao         = 17
-manaoio       = 16
 namespace     = "&#x0950; &#x0901;"
 revised-on    = "2026-06-15"
 revision-note = "non-residency verb tier seated (#/non-residency-verbs): INGEST (the precedent) + RECONCILE (engine-fold into oracle-floor, operator-admin, preview/conflict-surface/confirm/idempotent/effect-record, conflict-SURFACING never merge-arbitrating); §5 amended to admit non-residency verbs while holding the VCS-verb ban; EPOCH named + deferred (paired, sequenced reconcile→epoch); prior: bag-grain verb pair approved"
@@ -303,6 +300,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2P4pGPWUxb-Jzmgc9AfTmkd9d_jEE0i6EZrZx1VvdOU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;--x8q2QSaigLOsMJyCU_Yt3OMSk8EUYmAL23E_iae88`>>
 
 <<^ code=`&#x0004;` to=`?`>>

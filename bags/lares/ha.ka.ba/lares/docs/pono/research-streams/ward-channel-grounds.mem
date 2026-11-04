@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = false
 l-space     = "stable"
-mana        = 15
-manao       = 15
-manaoio     = 14
 role        = "grounding witness stream for the 2026-06-12 boot ratification — the literal-quote field grounds under the five discipline-layer changes (ward basin, classifier channel, Reference-Fusion, Cup-before, the loose thread); consumed from the boot-ripple letter, words given whole"
 status-date = "2026-06-12"
 title       = "lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds"
@@ -100,6 +97,6 @@ Keys still open: a second token-clean essence-fusion case (Map-Wisp) · an essen
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;C5edtchqpjH09oYo3Jo6HsZo5W6FpfXT1UIJiTkeyNQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vOp3zHs_He4RZ-anm_4_sdTg6LV5oN3Z4FJWj_4SkRw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

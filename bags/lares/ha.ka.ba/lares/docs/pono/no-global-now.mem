@@ -7,9 +7,6 @@
 cacheable  = true
 hydrate    = true
 l-space    = "stable"
-mana       = 14
-manao      = 15
-manaoio    = 12
 namespace  = "&#x23F3;"
 revised-on = "2026-10-11"
 role       = "no-global-now — the clockless lease's INTENT, mined from the house's own conversations and carriers rather than re-derived. What the operator has said about No Global Now, every instance dated; the Fork-4 ruling in its own words (SAFETY = corm-fencing + ITC · LIVENESS = φ-accrual · WITNESS = Roughtime); what SUPERSESSION names in the house's words and which mechanism the ruling seats as the validity gate; whether an `expiry` field survives, and in which of three shapes the house already spells it (backstop · rolls · named wall floor); whether the FENCE reads mandatory in the ruling's own text; where the operator's intent stands SILENT and this carrier declines to fill it; five pattern-integrity rhymes the house already carries; and the plan for the two gap-tests `e2da729e4` pinned, red-by-red. Mining pass — no code, no test and no existing carrier moved."
@@ -350,6 +347,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;h4cdts-TZJ5jHcBED5lhc-h7lbjeGbLLfji5Qmjy_3A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_FUB72z2_pddSvX3HTMyPuEFfNuNgJskrpRm2D1fup4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

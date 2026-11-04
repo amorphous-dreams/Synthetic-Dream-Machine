@@ -18,7 +18,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { verifyBcc } from "@lararium/memetic-frame";
-import { readCarrierShape } from "@lararium/tw5";
+import { readCarrierShape, rootMetaFields } from "@lararium/tw5";
 import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated,
   rotateSealEpoch, sealLineageHead, ed25519SignerFromSeed, hex, UNARMED, seatNextDigest,
@@ -94,6 +94,22 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     // CONTROL: torn bytes read null, never a partial guess.
     expect(parseNexusDoc(body.slice(0, Math.floor(body.length / 2)))).toBeNull();
     expect(parseNexusDoc("")).toBeNull();
+  });
+
+  test("the generated root meta imposes no scalar rating: every key the house writes names carrier structure", () => {
+    const keys = [fixtureKey(0xc), fixtureKey(0xd)];
+    const doc: NexusDoc = {
+      kind: NEXUS_DOC_DOMAIN, threshold: 2,
+      sealEpochCid: heldCharter({ keys: keys, threshold: 2 }).aid,
+      kahu: [
+        { chairLabel: "Kahu Alpha", verifyingKey: keys[0]! },
+        { chairLabel: "Kahu Beta",  verifyingKey: keys[1]! },
+      ],
+    };
+    const fields = rootMetaFields(renderNexusDoc(doc));
+    const STRUCTURE = new Set(["uri-path", "type", "register", "cacheable", "retain", "role", "title", "namespace", "l-space", "tags"]);
+    expect(Object.keys(fields).filter((k) => !STRUCTURE.has(k))).toEqual([]);
+    expect(Object.values(fields).filter((v) => typeof v === "string" && /^\d+$/.test(v))).toEqual([]);
   });
 
   test("charter shape distinguishes earlier, torn and whole epochs", () => {

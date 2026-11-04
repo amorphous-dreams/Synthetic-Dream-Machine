@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "divination"
 l-space   = "sdm"
-mana      = 13
-manao     = 16
-manaoio   = 13
 role      = "component (domain): Divination — the school of perceiving the hidden"
 title     = "lar:///ha.ka.ba/sdm/components/domain/divination"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -70,6 +67,6 @@ Pairs with `function/ecm-scan`, `function/magic-decode`, and `function/archive`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yb3V6iWJ8fm8MWt_psl_5XXTyiZLhC2fdJ4bQO3xItU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aBRiGovHC_OnIXlM2WJjRKrtGYDXsRjtU7UT06mVTL4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

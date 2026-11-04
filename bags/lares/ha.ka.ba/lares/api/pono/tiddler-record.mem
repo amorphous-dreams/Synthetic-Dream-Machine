@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = true
 l-space       = "stable"
-mana          = 18
-manao         = 18
-manaoio       = 18
 namespace     = "&#x2299;"
 role          = "invariant law: LarTiddlerRecord as the canonical Automerge storage unit; carrier text as projection artifact only"
 source-symbol = "LarTiddlerRecord LarTiddlerStore ChangeOrigin LarTiddlerChange"
@@ -99,6 +96,6 @@ ahu-slot-children     = "independent records — not embedded in parent record"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;c90nRTE2nvt8g2lBXfTX1WADNpxrmsdhZxuPwanAgKQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;trulBlAtiBcVK-yG4BTAN8kNjOf2YNha8arWC2DVAeI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 14
-manaoio           = 11
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "kahua-memory-stage — the fleet stage: a face-scoped wiki that syncs across one operator's device fleet and holds distilled items alone, written only by a signed lift; the four organs it stands among (sensorium, daemon, kahua, lares canon), the recipe that stacks it, the pins that keep one stage per face and one parent per lift, the lift act and its provenance, graded forgetting without a clock, separation at lift, the lōkahi cap stack, the calls the operator still owes, and the research that shaped it."
@@ -213,7 +210,7 @@ Promote enacts the face intent-plane law a second time (<<~ loulou uri=`lar:///h
 * ''Code lifts as inert data.'' Any item may ride the stage, code included, as data the island never runs.
 * ''Each device's own hand promotes.'' A person on a device promotes one digest into that device's local preload set, which never syncs. A digest that no longer matches the item voids the promotion. The island takes it the way TW5 imports a plugin and reloads: one reload per island.
 * ''The floor until then.'' The lift refuses `module-type` and executable types today. That refusal BURNS when promote lands (the alpha line keeps no back-compat).
-* ''The code class.'' `module-type`; the executable types; `$:/tags/StartupAction*`; RawMarkup (on the save path alone); the fields the tw5-module gate reads (a `stack` naming `tw5-module`, beside its mana floor and `source-sha256`).
+* ''The code class.'' `module-type`; the executable types; `$:/tags/StartupAction*`; RawMarkup (on the save path alone); the fields the tw5-module gate reads (a `stack` naming `tw5-module`, beside `source-sha256`).
 * ''The module gate reads genesis and the promoted set alone.'' The gate that defines tw5 modules reads genesis-sourced tiddlers and the device's own preloaded set, never the composite, so no stage or wiki layer seeds a module (the promote lane builds it).
 * ''StartupAction rides inert tonight.'' No refusal: the stage mounts after boot and never preloads, so a startup action on the stage never runs, the same load order that keeps a module inert.
 
@@ -302,6 +299,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0yoOZLmNj4PXlyXZ1KnvmQWO3hQKJY46ZWg04rJQ9zY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZmgZd0p_oMRRMx1VgFp9ulbFNkNa6PfO6PRAkadCc94`>>
 
 <<^ code=`&#x0004;` to=`?`>>

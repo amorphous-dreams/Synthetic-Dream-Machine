@@ -15,7 +15,6 @@ import pytest
 import held_text as ht
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_SPECIMEN_DIR = os.path.normpath(os.path.join(_HERE, "..", "fixtures", "specimens"))
 
 _TEXT = (
     "<<^ &#x0001; ? -> lar:///x/y>>\n"
@@ -119,14 +118,3 @@ def test_hold_output_reads_canonical_through_the_ts_frame_reader(tmp_path):
     result = subprocess.run(["lares", "meme", "check", str(path)], capture_output=True, text=True)
     assert result.returncode == 0, result.stdout + result.stderr
     assert "torn" not in (result.stdout + result.stderr)
-
-
-def test_every_wild_specimen_holds_its_text():
-    """The wild specimens are carriers holding a pre-ruling meme; what they hold opens on its own SOH."""
-    for name in sorted(os.listdir(_SPECIMEN_DIR)):
-        if not name.startswith("wild-"):
-            continue
-        with open(os.path.join(_SPECIMEN_DIR, name), encoding="utf-8") as fh:
-            carrier = fh.read()
-        assert ht.held_type(carrier) == "text/x-memetic-wikitext", name
-        assert ht.held(carrier).startswith("<<^ &#x0001; ? -> lar:///"), name

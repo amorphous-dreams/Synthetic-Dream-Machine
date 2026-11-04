@@ -6,7 +6,7 @@ docname: "draft-fontany-lar-uri-scheme-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
-source-check: "ni:///sha-256;1Uf6rsB0uVJl-iYRlB5Ola0Wm49QSFdJwMKvLI_x2Yc"
+source-check: "ni:///sha-256;sO5-xMXFfxgjg3o3B7SnQl6OsYiywza8RbrIR-x6-HU"
 title: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -38,7 +38,7 @@ Each URI component carries a distinct, non-overlapping concern across three sema
 2. **BEARING** — the HA.KA.BA address (path) names semantic attitude
 3. **SECTION** — the fragment (`#`) carries section anchors only, always rooted (`#/ahu-name`, `#/section-id`) — fragment semantics belong to the media type, never this scheme (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/media-type`)
 
-Resource-state annotations such as the mana/context-window pool are HUD adjuncts, not core URI components. This value uses the shared `0–20` Level model as a navigational resource estimate. Span identity, wall-clock timestamps, and export-target metadata remain adjacent calibration fields rather than authority overloads.
+Resource-state annotations such as the context-window pool are HUD adjuncts, not core URI components. This value uses the shared `0–20` Level model as a navigational resource estimate. Span identity, wall-clock timestamps, and export-target metadata remain adjacent calibration fields rather than authority overloads.
 
 The system has one **canonical encoding** and multiple named **render targets**:
 

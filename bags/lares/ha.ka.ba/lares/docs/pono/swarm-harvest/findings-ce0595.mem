@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: FINDINGS. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -233,6 +230,6 @@ The AI Act names the *system* as a machine but every accountable role — all se
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nDADUodxHzgK93wN7Sh1WO3H8vkkP_vcm3sDi0oLz7s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OuPa3nFTuhc5GG3yqgYOJtW5qmyoCe94gdZal1PZ5xk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable     = true
 l-space       = "stable"
 last-reviewed = "2026-07-18"
-mana          = 17
-manao         = 17
-manaoio       = 16
 role          = "lararium-node host: path roots + corpus-source structural contract"
 source-symbol = "*"
 status-date   = "2026-04-30"
@@ -127,6 +124,6 @@ export interface CorpusSource {
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YZ_f5cdrukmzi_RuRny4Ca986cCsg6nrqF2zsoPN5Bo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jDNJjt-986TeB9Cdg2nlWfpBNzSZK9fhczR1D8lPyAg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

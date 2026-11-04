@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 13
 rating    = "kapu"
 role      = "referee worksheet — the Caverns of Neo-Thracia: geography canon, water-road law, watershed villages, guide Burdens"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet"
@@ -254,6 +251,6 @@ Each result yields: ''texture'' (3–5 sensory lines) · ''movement modifier'' �
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KSPOcYJ_6PbJE4Qnd_oksUAVY5wHnDZSGrJKA2I86QE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wReYKeBvYda2u9toIsIAFYxPWlCDnOXNxkTi_cHRLWo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

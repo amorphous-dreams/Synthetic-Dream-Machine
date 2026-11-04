@@ -8,9 +8,6 @@ cacheable = true
 heleuma   = "ba"
 hydrate   = true
 l-space   = "stable"
-mana      = 18
-manao     = 17
-manaoio   = 16
 namespace = "&#x0950; &#x0901;"
 role      = "OODA-HA loop boot, Catma nav terminal, syad handoff shelf"
 tags      = ["api/pono/meme"]
@@ -212,6 +209,6 @@ export const RATING_COLOR: Record<Rating5, string> = {
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;a9b0odwKcDycqBkWne-jgWXsGII9D638AaGyuOZSVok`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WQO3EfWPbGaDEJjN8o-G2Id8rdLiFbD23dq7ETADXBI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

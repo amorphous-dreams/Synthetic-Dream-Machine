@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 13
 rating    = "kapu"
 role      = "referee NPC (Freyja's authorship) — L7 Combat-Rogue/Artificer, the Dragoness's intelligence-mistress; Menzoberranzan fall, blight-hardened prosthetics, Neo-Thracian network"
 title     = "lar:///ha.ka.ba/elyncia/characters/npcs/rhea-the-moon-elf"
@@ -56,6 +53,6 @@ Since her arrival she has ''trained a cadre of agents'' and runs a ''small intel
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eR9iRxCoTJd_Yga_FOrQbSWALKAttDLB_qLsJOvACno`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;K50B80EBJ52YIdx0rJjvtKiWZpDLKK8wzxFSrJ0oYVg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

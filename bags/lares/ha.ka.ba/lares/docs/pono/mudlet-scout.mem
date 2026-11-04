@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "mudlet-scout — VERBATIM handoff of a tasked Fable spirit: Mudlet (the Lua 5.1 MUD client) surveyed 2026-10-16 as a host where a lararium joins any game or world as a capability, never as the game. Carries Mudlet's capability surface (Lua, GMCP and its kin, HTTP without WebSocket, Geyser panes, the mapper, packages, the loopback MCP server merged into development), four integration patterns (virtual-MUD projection, proxy, package over HTTP, server-side module), the TiddlyWiki mapping across store, engine and projection, AI co-player squads under wizard approval on Islands of Myth, the sensorium and live-3D deferral, a phased plan riding the portable-engine plan, and seven open rulings. Held as a collision surface."
@@ -371,6 +368,6 @@ All work outside the tracked tree under a scratch `LAR_ROOT`; e2e vessels per th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rLh-JIFGyUCI9B88eM8okt02_n491xhEb8lbbk6Kuhw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QdkPBEjSXSSA2yplGtbtepAq9RzxATrP8GJDXjWMf8g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-13"
@@ -306,6 +303,6 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;B-LD-0wBUiBPQtjK8pHIpnWEZvWYg327IXJuI0bfUCA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cWph8-v_CSJ178W2wmen3-fLhvUwyoVfSoiLBkYgP5w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

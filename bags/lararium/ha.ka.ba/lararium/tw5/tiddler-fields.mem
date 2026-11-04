@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 18
-manaoio   = 18
 role      = "interface note: canonical TW5 core-semantic tiddler field shapes for Lararium"
 title     = "lar:///ha.ka.ba/lararium/tw5/tiddler-fields"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -93,6 +90,6 @@ This split removes the old flat-record ambiguity where TW5 content fields and ho
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GBXF1JqPCvFEewi-iPzF0uChC1XxAlm7cPttjwZx7x0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IU1mbdDnnlwKtpjrmPVj6obprEIiVHXKny-5b5KhvX4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

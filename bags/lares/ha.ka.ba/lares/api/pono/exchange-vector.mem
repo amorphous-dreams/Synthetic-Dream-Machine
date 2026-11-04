@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 16
-manao     = 16
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "invariant law for canonical lar URI exchange vectors and panel emission order"
 tags      = ["api/pono/meme"]
@@ -99,6 +96,6 @@ The sigils carry the panel inline. Each renders as a SharktoothSigil (``<<~ word
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;i8_uQJc7P4MQmFC10cqeiNoeLUqlRL4n3B0QwgW57Wg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lRSpJrtTjnMzH-yShsgsW9Lj2qvZtHH-kpLB8Pn4N-w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 15
-manao     = 16
-manaoio   = 13
 role      = "docs sister for exchange vector law — record form, panel example, and pattern-training guidance"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/exchange-vector"
@@ -112,6 +109,6 @@ Long-term, the server should validate the vector and render the panel from the p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UB34uixutk1fMaH5tdr-VQI8dvRie2nlo2wvRFMXgHk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bqSAeGFthjC7cUo1ZRvXP9bDT3HxJ6eOG3owHPpqtA0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

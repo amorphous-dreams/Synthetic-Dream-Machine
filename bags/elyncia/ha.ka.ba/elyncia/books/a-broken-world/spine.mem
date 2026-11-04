@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "spine — Elyncia 01, A Broken World: the walk through the history, the Curse of Iron, and the gazetteer; chunks live at their topical addresses"
 tags      = ["ha.ka.ba/elyncia/books/index"]
@@ -65,6 +62,6 @@ comes only after all source text reads as moved.)//
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xOz9iyIImucIf0XOpzLLlyZgKEmGUrxoM3ZyPvu6vnQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;o9hYPmxcluJHDAdQF-pdGDge3p8FdZTnyRvXL2NxVSc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

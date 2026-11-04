@@ -25,9 +25,6 @@ type = "text/x-memetic-wikitext"
 cacheable = false
 file-path = "packages/lararium-sensorium/scripts/fixtures/shuffled-kumulipo/kumulipo-liliuokalani.mem"
 l-space   = "stable"
-mana      = 18
-manao     = 18
-manaoio   = 18
 retain    = false
 role      = "hawaiian source witness meme, Kumulipo Liliʻuokalani-1897 translation locus, koʻihonua cosmogony shelf"
 tags      = ["api/pono/meme", "api/pono/loci"]
@@ -4147,6 +4144,6 @@ KAPAAKEA.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mBsZXCJ8Asm50WINMngu1KsSlGAV28y--BAxxRnAqR8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;t16n2kXZ9_W_k5P4XcNfugGL0tveEpaITyDuep0eVCs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

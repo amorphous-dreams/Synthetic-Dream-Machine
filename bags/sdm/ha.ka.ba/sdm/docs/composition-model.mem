@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "sdm"
-mana      = 15
-manao     = 18
-manaoio   = 14
 role      = "operator/dev doctrine: the Powers composition model — entity + module + component + mount-point, one flat #has verb, pattern/instance two-layer split"
 title     = "lar:///ha.ka.ba/sdm/docs/composition-model"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -133,6 +130,6 @@ Full lineage table lives in the epic. See edges.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hP6Ol6vdfHpLDZT_OyJ9fdTn-J8yXsMT1pnKL7iG0cs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0qIkvgypZgKe_ldfklBgJzMkpBkmkx2GQiCspvXXaJ8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

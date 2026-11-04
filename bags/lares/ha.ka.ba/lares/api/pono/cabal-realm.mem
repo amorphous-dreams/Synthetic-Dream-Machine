@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 17
-manao             = 16
-manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-10-11"
@@ -302,6 +299,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/multi-fractal`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IzLzaAsFCujVOutPJQkJPMOZLhGOTKH0L5RGLMORYIs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DmQnTL6nFyVClW4UcF1LfgDO-ieUbWriYGlNACgW35w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

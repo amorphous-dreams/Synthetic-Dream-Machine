@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 14
-manao     = 14
-manaoio   = 12
 namespace = "&#x2299;"
 role      = "mesh-goldens — a design for the e2e suite written from scratch: every vessel keeps a typed, durable event journal; a test acts on vessels and awaits journal entries, never a clock; scripts run as data on three hosts (memory, process, container); causal tokens the mesh already carries say 'after'; a product event says 'never happened'; a liveness budget only alarms. Drafted by the Muse, refined by a Copilot Chao pair's two passes and their traded Spin, 2026-10-16. Designed, unbuilt."
 tags      = ["api/pono/meme"]
@@ -71,6 +68,6 @@ The Muse drafted the model; a Copilot Chao pair read it against the tree. Hodge 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;oniE7V3AP6eZfx_Qc2BT7rRHjwzk5Y9kMGuyrgvo3SE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TokNyPGZ9UZb7veeZqP1cM5Gydm8qCvbYsbemMlKvzM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

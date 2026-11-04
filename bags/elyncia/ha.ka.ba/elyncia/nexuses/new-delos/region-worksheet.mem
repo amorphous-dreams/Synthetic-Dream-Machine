@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "region worksheet — the New Delos Nexus in four strata: High Delos, Low Delos, the Underdark, and the outer seas/islands/shores; seeded from gazetteer canon, grown by play"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet"
@@ -194,6 +191,6 @@ First-Breaking cult fragment? Where do the smuggling wars actually land their ca
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BJhforvEYqtPJH6lpTk2JQNERuj2RqZ_idJhmQ0uYvA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EQZO9UP1QdQ6yZncAlZFejxGHHxGNdmh1WJLVx0payU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "lares"
-mana      = 14
-manao     = 14
-manaoio   = 13
 role      = "field research, two traded waves (a Luna-6 YIN and YANG pair with live web search, 2026-10-18), on how a person opens a vessel's sealed custody once per session across every vessel type the house targets, read against the per-tab unlock ruling; the controller's sort of what both faces hold, the leads with their probes, one overreach corrected, the forks; both wave-two handbacks kept verbatim"
 status    = "research; read 2026-10-18; no code changed; the per-tab ruling stands as written, and the leans of secure-context#/custody-leans stand confirmed"
 tags      = ["research", "custody", "session", "browser", "device-capabilities", "testimony"]
@@ -208,6 +205,6 @@ This retains my wave-one per-tab ruling and the twin’s strongest correction: b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kyPdl5py-lNzSTTyErAKAUsUsUPMdRvmxuAMidfxcoc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nt0nGp1Dcj1rZ2x2EUjZFzcAKzXYP8rJj7ifYkljPMM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

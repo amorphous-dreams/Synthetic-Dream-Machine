@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "dreamdom-field-scout — VERBATIM handoff of a tasked spirit: the field read for train D's phases D0 and D1, 2026-10-16. TiddlyWiki's performance instrumentation and the draft Performance plugin (PR #9728); how StartupAction tags run and that core never re-runs them; the fakedom's attribute-only serialisation against the checkbox and select widgets' property writes; idiomorph 0.8.0's focus and value guards; the IME rule in MDN, WebKit and ProseMirror; Long Animation Frames support; WorkerDOM's subscription-time preventDefault against remote-dom's response-only events. Every claim marked by reach; eight places where the field disagrees with the house's framing. Held as a collision surface."
@@ -173,6 +170,6 @@ From `src/idiomorph.js` and `CHANGELOG.md` [reached: fetched]:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;byzxPnkmZzw3Edd5rAG275kJX7ZxuE3l3zVuhno98B0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;o6Mn0mBXoOF5TEsfOSBz5VGpPxzb_4zccrsSJ2Dz_AA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

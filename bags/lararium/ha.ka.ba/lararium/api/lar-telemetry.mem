@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 18
-manao     = 18
-manaoio   = 17
 namespace = "&#x0950; &#x0901;"
 role      = "lar-telemetry — the process that reads a turn's instrument sigils (the gauges) into gradient-valued readings and projects lar_* onto the mempalace drawer: the built `lar-telemetry` verb sweeps the drawers the `lar_hv` gate marks, and the hold-then-flush-on-the-wave leg stands as unbuilt design; the chat sigils as SharktoothSigil instruments; gradient readings never verdicts; verbatim-always / telemetry-eventual; daemon-plane owns it all"
 tags      = ["api/pono/meme", "api/lararium"]
@@ -228,6 +225,6 @@ readings AND the form-capture both drain the one emitted-marker stream, no disco
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FuJmUYPOgPn1bxPriyhae60hF7BLnucYYfu_DsOudYc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uujosq1oXKf_0zwW3fNgogS1DSuMh910III8WLKnnoc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

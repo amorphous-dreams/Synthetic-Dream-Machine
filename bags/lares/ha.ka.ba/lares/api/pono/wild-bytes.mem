@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 15
-manao     = 15
-manaoio   = 14
 namespace = "&#x2299;"
 role      = "the wild-bytes line — what the FRAME says decides admission at the disk→records edge: bare bytes carry whole as one text/plain record, flagged on the receipt; torn bytes refuse and stay on disk; stale warns and decides. Provenance (authored vs outside) reaches no gate — a READER over outside text tolerates every grammar it meets, scoped and named at its seat (the turn harvester), and that tolerance lives outside the four store layers. Prior art: RFC 9413, Hyrum's law, Parse-don't-validate. OWED: a durable mark on a bare record; admission policy by bag grade."
 tags      = ["api/pono/meme"]
@@ -167,6 +164,6 @@ holds that line, and no bag-grade policy yet enforces it in the sink.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wIeRpKKI96B2NBy3T1UHDUxA6DsTnFq9r7RMC3EFFxA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SavOheUyluKAQZRY_JR-F6B5CIm_2tk19-Str1XW58Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

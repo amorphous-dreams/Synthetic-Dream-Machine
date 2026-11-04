@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 14
-manao     = 13
-manaoio   = 12
 role      = "the final-paper worksite for the Infrastructure as Myth arXiv submission — the submittable .md + .meta pair stands here when the pipeline lands; the docs sister serves as the working design surface"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/infrastructure-as-myth"
@@ -30,6 +27,6 @@ The working design surface — the doctrine-and-paper draft the submission conde
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3as4wD8oc1pJrZ60x_nUPhrCLPawWH-wyN78MyWiOAs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ejB3JYKjWA13wfeyqfgOI7_wSCoC7btQwFnF3k85Z9g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

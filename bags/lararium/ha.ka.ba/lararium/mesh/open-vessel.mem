@@ -7,9 +7,6 @@
 cacheable   = true
 hydrate     = true
 l-space     = "lararium"
-mana        = 17
-manao       = 16
-manaoio     = 14
 role        = "The Vessel — one clean composable web3-protocol design: a vessel composes from sovereign protocol participations named by its KEEL (VesselKeel); openVesselCore owns the sequence, the keel supplies the substrate atoms; role rides as a capability bundle, never a platform. `recipe` names the pinned wiki's composition and nothing else."
 source-file = "packages/lararium-mesh/src/open-vessel-core.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/open-vessel"
@@ -166,6 +163,6 @@ argument. What stays open sits one level out: a live-daemon exercise of the full
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/island-protocol`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-vessel`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xu8-cdAr9DdAnr0DBT1Drra6e9P8GJF4frx_wm0kuCA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OcUROi0p6WbNrNHWTNIZ8nzfd3BNyAwSlJ8PsXIgHLM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "Floating Disc"
 l-space   = "sdm"
-mana      = 15
-manao     = 17
-manaoio   = 16
 role      = "Power module: Floating Disc — a stuckforce disc that hauls cargo and tilts into a barrier"
 tags      = ["components/domain/stuckforce", "components/function/cargo", "components/function/barrier", "components/hook/sustained", "mount-points/trait"]
 title     = "lar:///ha.ka.ba/sdm/modules/powers/floating-disc"
@@ -89,6 +86,6 @@ On a botched or interfered read, choose one: the disc drops its load; locks into
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GmXraHiSXZvRJAqTqNuIZLLn5YFLU_2ysKptIgMzcYc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;d6Q5ZctSZg0MDAFzzmvbjfTMf0W6eYwiQWpKyP1iOtI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

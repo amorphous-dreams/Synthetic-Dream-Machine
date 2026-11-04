@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 15
-manao     = 15
-manaoio   = 14
 rating    = "ano"
 role      = "concept canon — Grandmother Spider as one Persona of the Arcana wearing three masks (void-weaver, treaty-architect, cult-mother); and what the Mother Spore is NOT"
 title     = "lar:///ha.ka.ba/elyncia/concepts/grandmother-spider"
@@ -83,6 +80,6 @@ debts do not reduce to one.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q2_kfYPwzs4OJQ2n6eglxRt7ykvBoQbyU-C4eCqi5ZI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;t3qQaiEu2-TNWTWT1Uj2E9Fq5XdCWQlDTAXrmk5ovJs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

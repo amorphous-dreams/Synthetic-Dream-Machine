@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 16
-manao     = 16
-manaoio   = 15
 namespace = "&#x2299;"
 role      = "the lens-harness --- references existing content and refracts it through declared lenses into composed readings"
 tags      = ["api/pono/meme"]
@@ -112,6 +109,6 @@ Prism keeps the worthwhile half --- //reference a piece of content and read its 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;j5pUirnQGTZGIsZS8E7zWfZb2F-qS-Ly0quVXBk6t6k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JvBj7s2qWMV0AhYt_J0rXHnEAAH9SwAW5cQiT0ZSQRU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

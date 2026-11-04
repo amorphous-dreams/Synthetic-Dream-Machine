@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 15
 role      = "extended documentation surface for meme examples, lifecycle table, resolution notes, and migration residue"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/meme"
@@ -59,7 +56,7 @@ It does not replace these surfaces.
 | Canon Typed Meme | external ratification confirms the type bundle |
 
 `confidence` reports the operator-facing band.
-`mana`, `manao`, and `manaoio` keep their own jobs.
+Field names beyond the ones the house reads for structure stay open for each operator's own meaning.
 
 <<~/ahu>>
 
@@ -125,6 +122,6 @@ Research backlog and subtype-specific detail should deepen into their own outwar
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5-fznZBN_JJCY8Q6MLhw8ZekXHI8TG0ZoY5yEHNNfMk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ok1MvXFkqgIeuZquuCRu3gmWCm44X8HDKhnF5EMiuXM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

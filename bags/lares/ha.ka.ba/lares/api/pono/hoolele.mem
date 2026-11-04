@@ -6,8 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "stable"
-mana        = 16
-manao       = 16
 namespace   = "&#x2299;"
 role        = "unstructured escape-hatch sigil — hoolele as the flight that does not return; Verse spawn: new task root, outlives creating scope, explicit Cancel() required; English alias: \\spawn; completes the six-operator concurrency ontology"
 status-date = "2026-05-15"
@@ -151,6 +149,6 @@ work below it (CRDT, network) uses `hoolele`-style spawn semantics in TS.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;S2EZ00aSsX8soLRLVRuZcCSN1OB1WilRzEHmSRkhZYQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;x4zCXqxspaphOKL5sLkleX6VevKza8bBV6DMLFpFsUo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

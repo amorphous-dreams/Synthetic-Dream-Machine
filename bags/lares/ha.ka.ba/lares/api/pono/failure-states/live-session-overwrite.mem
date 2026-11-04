@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 16
-manao     = 17
-manaoio   = 14
 namespace = "&#x2299;"
 role      = "invariant bug law for preventing live session claims from masquerading as canon"
 tags      = ["api/pono/meme"]
@@ -79,6 +76,6 @@ If the node records the claim and marks promotion pressure separately, boundary 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ACizgcsvw4zzamCGxE1rX8It8KnJVtQk4JZenUB1GXc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vlCtUQWT-VKmBEpGem4NZYYUZv9TMtlDn0dGJl98A-E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

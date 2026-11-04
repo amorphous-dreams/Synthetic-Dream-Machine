@@ -6,7 +6,6 @@
 ```toml meta
 cacheable     = true
 heleuma       = "ka"
-mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/toml"
 role          = "render surface: the toml data fence — sigil-toml.tid declares the pattern, parseTaploFields dissolves the meta profile into carrier fields"
 source-file   = "packages/lararium-tw5/src/toml-ast.ts"
@@ -55,6 +54,6 @@ A triple-backtick fence opening with the language token `toml` declares data ins
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Br_7NCY_YsUu-QMGtW1OLOve78H9xbd_b-inTYYCTpg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1GYj96YAfhmXL13Sfc7hPNj0JCHarhgc9nuhkW79hD0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

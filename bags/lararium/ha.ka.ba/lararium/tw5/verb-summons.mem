@@ -6,7 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 12
 role        = "the summons relay — CRDT verb-summons tiddler (@daemon/summons/<id>) → volatile local invocation; edge transport, not durable coordination"
 source-file = "packages/lararium-tw5/src/verb-summons.ts"
 title       = "lar:///ha.ka.ba/lararium/tw5/verb-summons"
@@ -26,6 +25,6 @@ Naming note: "signal" names a DIFFERENT layer — the Agent↔Operator HUD/legib
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZrS7KCr0NWSpjpWTZqrRpwmT9AZSlN4ZvyOTzTe5Ibk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5pPYYi-a2IZNOmd4fr_O9d5CnjKxuG69lIVFt6j-NdM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

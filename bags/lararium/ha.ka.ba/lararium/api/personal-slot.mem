@@ -7,9 +7,6 @@
 approved-on = "2026-06-01"
 cacheable   = true
 l-space     = "stable"
-mana        = 16
-manao       = 15
-manaoio     = 16
 merged-on   = "2026-06-04"
 namespace   = "&#x0950; &#x0901;"
 proposed-on = "2026-05-30"
@@ -494,6 +491,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;l3UULxuTNDk3c9Krb9R7wc0gNqOFTba_nKuE2N19SPk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AWnZh0QR6KJc1XuMCaHutnh6lGQ60HnPiA1JmmDOR6M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

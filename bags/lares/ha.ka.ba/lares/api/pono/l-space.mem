@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "lares"
-mana      = 16
-manao     = 15
-manaoio   = 14
 role      = "l-space as a navigable chart behind language(s): the colorless active center (ha.ka.ba), bearings as departures, the non-Riemannian warp, the Voices+Syād atlas, the paragraph characteristic-scale — provisional-and-useful, never the territory"
 title     = "lar:///ha.ka.ba/lares/api/pono/l-space"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -129,6 +126,6 @@ One caveat carried sharp: the ''perceptual'' center (where attention rests) may 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;o8TuCQY0o6F5wOuFMP2UutJ4bO7FWz2xbZvPPqzVYLw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7BgDzA-GD9g7ncJ2nEvICHdD6muH16ljUkWVxYz5rxQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

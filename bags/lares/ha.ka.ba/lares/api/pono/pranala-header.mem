@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 17
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "the bearing a carrier declares about itself — the `?` self-token on the SOH control sigil"
 tags      = ["api/pono/pranala", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pranala-header"]
@@ -107,6 +104,6 @@ agrees-with    = "uri-path"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;R1tlDfDZGZTwxctF3TMd8KAJOiV5YvaZRhfm4s6CDmU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1DM5TEU7WEzBUuK9Z0-bJt5To3t7JsQuGma-WDSz7EY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

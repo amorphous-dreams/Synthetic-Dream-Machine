@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: 1. IROH / n0 (number zero, 'n0, inc.') — THE CENTRAL CASE. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -290,6 +287,6 @@ So the honest range: **$34/mo (non-archiving, 2-hour window) → ~$152/mo (archi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;X0WqqMbcXuFo03tcgKIh2h4-HFRaSXiZGa-achJybvI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;U-W94K7kn8OPjy4ZA-HnAZ7065YCzhVwE2co5AlOQX8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

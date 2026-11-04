@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "sdm"
-mana      = 12
-manao     = 17
-manaoio   = 16
 role      = "root template meme for OSR spell witness memes — cold provenance and conversion anchors"
 title     = "lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -64,6 +61,6 @@ Conversion anchor: P2 ≈ 1st, P4 ≈ 2nd, P6 ≈ 3rd, P18 ≈ 9th.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7oD8kS7R9eus_rjr5c-Ymr96-TFejah9zpbMA28FsHw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4OEclv8VlPVQ7b3YDLtsY-6Ph-SlriUCxol4QTd62HA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

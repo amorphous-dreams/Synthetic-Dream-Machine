@@ -7,9 +7,6 @@
 cacheable      = true
 docs           = "lar:///ha.ka.ba/lares/api/pono/nalu"
 implementation = "packages/lararium-tw5/src/modules/nalu-engine.ts"
-mana           = 18
-manao          = 18
-manaoio        = 17
 namespace      = "&#x0950; &#x0901;"
 role           = "TW5 startup module — the in-wiki applier of the nalu wave: applyNalu lands ONE inbound change synchronously and isApplyingNalu reads true while it does; the wiki shore owns the queue, its door and the pacing"
 tags           = ["lar:///ha.ka.ba/lares/api/pono/meme"]
@@ -150,6 +147,6 @@ gates (`mesh/meme-provider.ts`, `mesh/projection-nalu.ts`).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q0sWaeuSX7wXMBAZHzWF7aLAbOqRFgYdnCfLA6WYXz0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LnVgDJvbOgyuqm8mvVfklf1eoTpmGtX3PdS3TNKpJCQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 16
-manao     = 16
-manaoio   = 16
 role      = "pure test-only specification for separate mandate, delegation, activity, result, attestation and computed appraisal"
 tags      = ["api/lararium", "api/pono", "mesh/agency", "mesh/provenance", "test/harness"]
 title     = "lar:///ha.ka.ba/lararium/api/scenario-action-graph"
@@ -63,6 +60,6 @@ Mandate, activity and result stand as distinct records. Human, agent and workloa
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q8g-0UAsf5JMqDiZzuRGO7y6lI3-BArxz7pG2xEDX0Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Gli4fFGI8BP7XpTy8CWWcv0URoL_ejW7WobCx9mThT0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "stable"
-mana       = 12
-manao      = 14
-manaoio    = 12
 role       = "the explainer — what each memory-guard layer does, why the kernel alone let the VM thrash, and which side of the Windows/Linux line each setting lives on"
 status-why = "written from the 2026-09-18 incident and the probes run on 2026-10-04; each tool's behaviour named here matches its man page and the observed run"
 tags       = ["api/wsl2", "lifecycle/standing"]
@@ -84,6 +81,6 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hrbswSg6PwDk1V-KM7-p9zbxpCwLZyHGFsTFMF7IQUU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VXbrYv9xfOcF04eaSguUR04i4g1-hF_VTQD6p3A6-9Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

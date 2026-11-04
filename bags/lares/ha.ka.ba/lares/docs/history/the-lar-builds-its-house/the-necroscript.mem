@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = false
 l-space       = "adjacent"
-mana          = 12
-manao         = 11
-manaoio       = 11
 render-target = "chat-log:post-header"
 role          = "build-arc narrative locus — Act V, the Necrospire files a banishing-warrant and the brightest ley-line cores go dark in one sentence; the cut the arc does not close"
 title         = "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript"
@@ -135,6 +132,6 @@ Forward, open, to the arc that follows — unwritten, its outcome unclaimed:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;J5tA4MSDrieY3nq3rc_aGLhQOYB--oDvRqM07M1TKbc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;d5lQ_bnm5O6pQb5QESmSNDl5x-17t8EGPy4wKvjN_tA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

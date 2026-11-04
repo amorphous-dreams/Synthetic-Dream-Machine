@@ -6,8 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "stable"
-mana        = 17
-manao       = 17
 namespace   = "&#x2299;"
 role        = "canonical: Verse type lattice — any/false/void/comparable hierarchy; persistable constraint universe; effects bit-vector (6 families); edge-label semantics for pranala type annotations"
 status-date = "2026-05-15"
@@ -189,6 +187,6 @@ See `uefn-scene` for the `reaction:subscribable` edge format and `KumuSubscribab
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pYCPG4zHpdC0uTBN4Cq1DpPQJqgYhiEG-HddrJcjE7c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BZEpwl6CZMorL_FerM5Ohz2wr3y-6NmXxgQjisRuf2g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

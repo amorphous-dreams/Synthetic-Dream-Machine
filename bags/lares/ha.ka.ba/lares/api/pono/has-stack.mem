@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 14
-manao     = 15
-manaoio   = 13
 role      = "the has-stack law (kānāwai): nameless entity + composable component stack; single-entity components; relative-name qualification; rating-as-predicate; kapu as grant — ratified 2026-06-12"
 title     = "lar:///ha.ka.ba/lares/api/pono/has-stack"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -110,6 +107,6 @@ the py caps consume.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4zolLTWsYG-c0kHVwLneB6R-qR788Fk9KgOUIZ_jFDg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;D8cbqqO8pR2KKwqd0mK2-Cudn01OvFGZTtD983xK6FU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 16
-manao             = 17
-manaoio           = 14
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-04"
@@ -168,6 +165,6 @@ The spirit retracts these outright after failing to re-fetch them:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PjFYGKkr_9xxBmcgg3werVYIkOBUD0bCMS1C1Oxqf7g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;S5_3Dqtse-tR13zxq1FJyRO7NCR1IfJaNoNDL1YvGuw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

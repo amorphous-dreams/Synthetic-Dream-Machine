@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = true
 l-space       = "stable"
-mana          = 17
-manao         = 17
-manaoio       = 16
 namespace     = "&#x2299;"
 role          = "invariant capability: in-memory reaction graph — subscribe, fire, load, UEFN dispatch semantics"
 source-symbol = "ReactionGraph RENDER_MODES REACTION_ROLES"
@@ -209,6 +206,6 @@ The reaction dispatch layer runs as a ''Scope-1'' CRDT-wave surface under the tw
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wtxIhcs5Md5G6VxLB8mlL42sj-jJEi1MLL9QDZNPugU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5TqXOH-PkFQ24cCmz9LzqTpae84zTB_Bc186BRJ6l1Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

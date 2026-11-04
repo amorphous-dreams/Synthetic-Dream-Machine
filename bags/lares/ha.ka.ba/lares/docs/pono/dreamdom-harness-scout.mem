@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "dreamdom-harness-scout — VERBATIM handoff of a tasked spirit: the cold read of the as-built worker-thread TiddlyWiki engine that train D's phase D0 (measure and mend) collided against, 2026-10-16. Traces the nine named gaps to file and line: the boot-shadows preload, the Node path's forging, the swallowing VM shim, the render-id maps, the module gate, the daemon's surface state, startup actions against the seed, the global-assignment lends, the orphaned worker script. Code read only; nothing booted. Held as a collision surface."
@@ -200,6 +197,6 @@ Nothing in any src, test, script, vite config or tsconfig imports it. Its schema
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Zizu1RuB4C-eztWpCarkRAutEvDp1jzUT65moSRtDkQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UTWi4inCB5Yi-S7OG3pCBXd8Cqw2Op-rih8b2_cbBys`>>
 
 <<^ code=`&#x0004;` to=`?`>>

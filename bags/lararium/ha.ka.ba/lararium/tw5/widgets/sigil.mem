@@ -6,7 +6,6 @@
 ```toml meta
 cacheable     = true
 heleuma       = "ka"
-mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/sigil"
 role          = "render surface: the ~ sigil dispatch — the lar-sigil wikirule in TS, and the \\widget ~ dispatcher that routes every sigil name to its definition"
 source-file   = "packages/lararium-tw5/src/wikirules/lar-sigil.ts"
@@ -79,6 +78,6 @@ A sigil form the rule cannot recognize renders as `<span class="lar-sigil-degrad
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ajF2vP8Mfmnak5E3ad1IkNbY2TxvTG2SxV4BagrfsXU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Av5qYrAebF9WTtzBI_fsqV5a4qyTLfk8aqQvcOeS9Js`>>
 
 <<^ code=`&#x0004;` to=`?`>>

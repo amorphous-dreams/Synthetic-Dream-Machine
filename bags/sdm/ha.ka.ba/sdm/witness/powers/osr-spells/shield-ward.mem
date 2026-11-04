@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "sdm"
-mana      = 12
-manao     = 16
-manaoio   = 17
 role      = "OSR spell witness for Shield (source alias of SDM+ Shield Ward) — cold-load provenance"
 title     = "lar:///ha.ka.ba/sdm/witness/powers/osr-spells/shield-ward"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -101,6 +98,6 @@ As Basic: a barrier an inch from the body, moving with the caster, AC 2 vs missi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;a9f0gD4zj4xHlXdH3ZMxkQMehU-0XmmZpq1eKFsy1ks`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ynN9JC6gMeeJxqPxOt0MwRnX13D3wQ6fqe6USUtQaNg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

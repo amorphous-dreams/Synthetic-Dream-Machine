@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: 1. FACEBOOK 'People You May Know' — the canonical veil leak. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -187,6 +184,6 @@ Two strong measured cases, both about **the unguessable handle turning out to be
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;58jI-yj1gUFA6fR-utHO0UKO2YTEgY69fddZGVOuhv0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9Lo_p2VrhIl2CB24nTM2nGUQGdGS-SPywnKokgy-A8U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

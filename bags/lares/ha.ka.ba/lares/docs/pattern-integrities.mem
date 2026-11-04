@@ -5,9 +5,6 @@
 
 ```toml meta
 l-space  = "stable"
-mana     = 15
-manao    = 15
-manaoio  = 14
 role     = "the research shelf: prior art, golden principles, anti-patterns for the seven stack integrities — field-grounded by nine research spirits, 2026-06-11/12; binds as kupono intent (builds implement THESE, never improvisation)"
 title    = "lar:///ha.ka.ba/lares/docs/pattern-integrities"
 type     = "text/memetic-wikitext+tiddlywiki"
@@ -133,6 +130,6 @@ The admin↔hot-wiki bridge today (postMessage event → main translates → pla
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;w9HZqYth9TEME57D2L596R_LlDllkOqGukQBJRKm6QQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PA57OLjKfrCzv-YndF8i_5PMdanOrAGCSusvlpwZWRw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

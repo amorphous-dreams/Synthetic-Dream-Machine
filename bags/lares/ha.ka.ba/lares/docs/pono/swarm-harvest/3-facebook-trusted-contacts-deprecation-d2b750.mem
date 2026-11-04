@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: 3. Facebook 'Trusted Contacts' deprecation. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -170,6 +167,6 @@ No local files were read; all sources above were fetched live from the web (arxi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-XKIPZR6gMMWVmeLVcu5TxGjCC7IeM3UodGaILt1kwM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y1Z2oFhfO96E2kMMD2XXNypNPY4fEke6NDCpb8D_7Kc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

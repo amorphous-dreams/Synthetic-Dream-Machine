@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "lararium"
-mana      = 15
-manao     = 14
-manaoio   = 14
 role      = "PROPOSED design intent: the Amorphous Dreams cabal as steward-not-ruler — founders/maintainers who hold repair authority WITHOUT becoming rulers, legitimacy flowing from being BOUND (k-of-n threshold, constitution outside reach, forkable) not from being trusted; the board verdict separates a threshold-signed steward SOURCE from a verify-only public READ plane"
 title     = "lar:///ha.ka.ba/lararium/mesh/steward-doctrine"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -107,6 +104,6 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CB0ojsYgfiiIplImqt40vruYQJ-tGRCT88kUtX-qQwk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;it94kUm0mWaZ7OEvq1qUdm-ui_MxKI5SPZPX8IAfDSg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

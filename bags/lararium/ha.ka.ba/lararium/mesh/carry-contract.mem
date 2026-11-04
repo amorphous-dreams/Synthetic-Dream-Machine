@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "lararium"
-mana       = 15
-manao      = 15
-manaoio    = 14
 namespace  = "&#x2695;"
 role       = "the carry-contract: revocation reframed as an IMMUNE SYSTEM (no firewall exists in no-global-now). Kapae = the propagating antigen riding the always-carried public/infra planes; a Kapae'd authn/z gets MU. Three carry tiers — MANDATORY (operator↔kahu: oracle-floor+@crossroads+Kapae, always) · BILATERAL (operator↔operator: cabal/shared) · PRIVATE (home). Carry ⊥ read ⊥ contract; carry-generous is safe because the BeeKEM read-floor makes every carry-mistake unreadable. Operator-ruled 2026-07-20; substrate built, the contract design-intent."
 status-why = "the SUBSTRATE stands"
@@ -195,6 +192,6 @@ cannot.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SiLYc1zMxSBroTTPUGLVwFpsy96dcQjOIe6FK6gwTBk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lt5s8H6hmPijDEUug8352CM1mV8rpxtc-KxZXiToPwQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

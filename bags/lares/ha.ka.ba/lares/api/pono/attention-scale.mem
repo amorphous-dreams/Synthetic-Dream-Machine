@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "stable"
-mana        = 18
-manao       = 17
-manaoio     = 17
 namespace   = "&#x2299;"
 role        = "unified attention scale — five bands partitioning the 0–20 Level attention-range continuum across three projections (time, text, space); canonical register names Pulse/Beat/Measure/Arc/Theme; turn-HUD gauge name Aperture; FTLS exploration clock and World-Time clock profiles; FfzClock level alignment"
 status-date = "2026-05-06"
@@ -337,6 +334,6 @@ Envelope: <<~ँ₃ ...>>   Arc-scale
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HI3q1LlYK2nmp_6jrhU4_Q5t-BYniWr-AABTiidRqPg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;T6KWNYeWU_0lpk8warWmUYNv_PO3srpbKV4-GwncTD4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

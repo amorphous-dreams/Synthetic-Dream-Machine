@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: 'NO CENTRAL SERVER, EVER' — MEASURED, 2026-09-04. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -316,6 +313,6 @@ Individual instances: **Hachyderm took 30,000 users in 30 days** on four donated
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ArOkSb3RGfj8i3B4XozH3wmoheBP6jXfKvgCS3LKNqU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;A6Tg0rbOc__xCtZMHp07hjVwcMXpd0bc-ATwykHpYW4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 17
-manao     = 16
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "procedure executor sigil — block-container scope for named procedure/function definitions; Hawaiian alias for \\procedure"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-wehe"]
@@ -119,6 +116,6 @@ close-pattern = '<<~\/wehe\s*>>'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SE1HkQVvemQeFXJ59eNKwFFkNm_vLpUEj00EP9M_yds`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8u1PJ3mRnr1YMyICmwvnYVUtxQnEC9_Rlk_TkXmEtps`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,7 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 15
 role        = "invariant law: the persona-KEL — a stable identifier PREFIX the operational key rotates BENEATH, so continuity rides the LOG, never the key. Names the armed inception + rolling recovery commitment, Fork-B threshold-attest (nothing reconstructs), the provisional/veto contest folded structurally, the board as an additive per-Nexus CRDT, the frozen-for-alpha status, and duplicity-detection as the dual of a registry."
 source-file = "packages/lararium-mesh/src/persona-kel.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/persona-kel"
@@ -180,6 +179,6 @@ fold, the quorum, the veto — never on the board's liveness.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/handle-card`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iIPSZlwNCvUeVwYs4dQESNWrIte6a_PrTB0Ethh0KJU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8Kie9MR9PIrskG0ellsiCDbywqNHpj0ToitalEqLtrM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

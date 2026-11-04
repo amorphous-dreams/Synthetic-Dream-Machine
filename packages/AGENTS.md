@@ -1,14 +1,11 @@
 <<^ code=`&#x0001;` from=`?` to=`lar:///packages/AGENTS`>>
 
-<<~ ahu slot=`#meta`>>
+<<~ ahu slot=`#/meta`>>
 
 ```toml
 uri-path     = "packages/AGENTS"
 content-type = "text/memetic-wikitext+tiddlywiki"
 l-space      = "adjacent"
-manaoio      = 16
-mana         = 18
-manao        = 17
 role         = "package workspace navigation shore for coding agents"
 cacheable    = true
 hydrate      = true
@@ -17,7 +14,7 @@ retain       = true
 
 <<~/ahu>>
 
-<<~ ahu slot=`#ooda-ha`>>
+<<~ ahu slot=`#/ooda-ha`>>
 ✶ scan the operator ask, changed files, open tabs, and package boundary.
 ⏿ orient the task against the spine: mesh contracts, TW5 VM, node host, browser vessel, caps, operator CLI.
 ◇ choose the smallest package surface that can carry the change without crossing canon by accident.
@@ -33,7 +30,7 @@ title    = "lar:///packages/AGENTS"
 uri-path = "packages/AGENTS"
 ```
 
-<<~ ahu slot=`#network-topology`>>
+<<~ ahu slot=`#/network-topology`>>
 
 ## Network Topology (canonical)
 
@@ -47,7 +44,7 @@ Within-Nexus sync = Automerge CRDT (reliable). Cross-Nexus = explicit treaty, wi
 
 <<~/ahu>>
 
-<<~ ahu slot=`#package-map`>>
+<<~ ahu slot=`#/package-map`>>
 
 ## Package Map (active)
 
@@ -114,7 +111,7 @@ realm-public controls remain the source-backed red/green witness for the Herm re
 
 <<~/ahu>>
 
-<<~ ahu slot=`#spine`>>
+<<~ ahu slot=`#/spine`>>
 
 ## Quine-Wiki Spine
 
@@ -146,7 +143,7 @@ Residency transitions travel through the ACTION verb surface (`ADD`, `COPY`, `MO
 
 <<~/ahu>>
 
-<<~ ahu slot=`#boot-sequence`>>
+<<~ ahu slot=`#/boot-sequence`>>
 
 ## Boot Sequence — three causal moments
 
@@ -176,7 +173,7 @@ Projections register as kinds with `LarProjectionRegistry`. The node-scoped `dis
 
 <<~/ahu>>
 
-<<~ ahu slot=`#boundary-law`>>
+<<~ ahu slot=`#/boundary-law`>>
 
 ## Boundary Law
 
@@ -196,7 +193,7 @@ Projections register as kinds with `LarProjectionRegistry`. The node-scoped `dis
 
 <<~/ahu>>
 
-<<~ ahu slot=`#test-routes`>>
+<<~ ahu slot=`#/test-routes`>>
 
 ## Test Routes
 
@@ -240,7 +237,7 @@ If sandboxing blocks `tsx` IPC under `/tmp`, request escalation and rerun the sa
 
 <<~/ahu>>
 
-<<~ ahu slot=`#friction-watch`>>
+<<~ ahu slot=`#/friction-watch`>>
 
 ## Friction Watch
 
@@ -260,7 +257,7 @@ Watch these current weak spots:
 
 <<~/ahu>>
 
-<<~ ahu slot=`#edit-discipline`>>
+<<~ ahu slot=`#/edit-discipline`>>
 
 ## Edit Discipline
 
@@ -274,7 +271,7 @@ When reporting back, use OODA-HA receipts: observe facts, orient boundary, decid
 
 <<~/ahu>>
 
-<<~ ahu slot=`#edges`>>
+<<~ ahu slot=`#/edges`>>
 
 ## Edges
 
@@ -293,6 +290,6 @@ When reporting back, use OODA-HA receipts: observe facts, orient boundary, decid
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JhNp6fFCH0tFiUxEIasjZIrh4YOKtgOohc-x-keZ5H0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C6pS_rgDbwGmjSYbF-4CugmpaqAm8K7Fo6FRfkUiJJ4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

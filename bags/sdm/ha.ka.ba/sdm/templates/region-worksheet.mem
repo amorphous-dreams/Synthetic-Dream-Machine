@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "adjacent"
-mana      = 12
-manao     = 13
-manaoio   = 11
 rating    = "meme"
 role      = "spine/skeleton holder — the region-worksheet practice: scale ladder, map-kinds, hex-entry law, travel loop; slots for verbatim SDM-06 and FTLS-04 chapter text land in #source before uplift"
 title     = "lar:///ha.ka.ba/sdm/templates/region-worksheet"
@@ -127,6 +124,6 @@ grain, blessed before moving:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JdnUaUNr-mcTBAgGborTWmAPiLbWghmGEGCxdV6FcAY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wKQpFzdr9dlSoN7mw6A912hhQRyWadzObDWAW2bmqpw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

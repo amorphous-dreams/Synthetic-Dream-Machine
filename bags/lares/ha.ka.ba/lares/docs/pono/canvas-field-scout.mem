@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 16
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-02"
@@ -713,6 +710,6 @@ Wiggins: *"To this date it remains a mystery why we had solid growth for nearly 
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vtStxlc_OEKr1SVFtxR8WX8kI5wqzc1RkX_ZQ6Ci82o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LSKikDWbvm6_LpZzVKKGS-OEXt5nv0GPTtmYRa8FCXY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "imbued"
 l-space   = "sdm"
-mana      = 14
-manao     = 16
-manaoio   = 13
 role      = "component (hook): Imbued — Life stays locked until the Power deactivates"
 title     = "lar:///ha.ka.ba/sdm/components/hook/imbued"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -69,6 +66,6 @@ Common on `domain/abjuration` wards and standing barriers. Distinct from `item` 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;87ZHhsItd_396mhwYisAxKaKs5B2xzIPBKY-yJISglo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6BXvOpClTVc7TzKce85viDqHu2yZu5m9OpqtfB0pQMM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

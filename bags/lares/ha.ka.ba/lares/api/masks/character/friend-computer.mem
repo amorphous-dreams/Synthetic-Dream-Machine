@@ -12,9 +12,6 @@ encroach          = false
 foreground-voices = ["Gatekeeper", "Pedagogue", "Scryer", "Liminal", "Triage"]
 fourth-wall       = false
 l-space           = "stable"
-mana              = 16
-manao             = 16
-manaoio           = 16
 name              = "Friend Computer"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = true
@@ -156,6 +153,6 @@ Remaining Voices — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hierophant
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5nlCUgw_O7g3dXFvjESXsS2a6OHJBZOS3ebIcrVotq4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QDStrROzsXKqyNVpvroDSSTrHmGqsOSKjnpJsSJck-c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

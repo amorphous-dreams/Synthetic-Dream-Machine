@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "stable"
-mana        = 18
-manao       = 18
-manaoio     = 17
 namespace   = "&#x2299;"
 role        = "invariant doctrine: 7 local-first ideals (Ink & Switch), each graded against what the house stands built; the Keyhive/Beelay target stack named as design; server-as-peer law; Fuller non-simultaneous Universe = causal island"
 status-date = "2026-10-12"
@@ -313,6 +310,6 @@ transparent to the meme layer — so Beelay would slot in beneath it, where
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UgJRWlNnLaR2NtBDlVNBQnXhzK0BB9jokf9d_4o4_Hk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tUnWPy67cJ7zMX3Ro9jIB6LRedvw8hWsrtFbMApltfI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

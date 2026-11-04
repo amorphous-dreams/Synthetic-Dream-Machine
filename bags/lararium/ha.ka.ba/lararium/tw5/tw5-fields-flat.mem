@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 heleuma    = "ka"
-mana       = 17
-manao      = 17
-manaoio    = 16
 module-ref = "lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat"
 role       = "heleuma: TW5TiddlerFields → Record<string,string> normaliser"
 title      = "lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat"
@@ -44,6 +41,6 @@ Before this file, `wiki-handlers.ts` owned `flattenRuntimeTiddlerFields()` (skip
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6KzekG3b3pmqE568bSIiDDgPUFjGsgP1pP7ORN8acug`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tHxNmUcXwbpAjQR-5ox57j4kry31cKtS8uPIroMm8J8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

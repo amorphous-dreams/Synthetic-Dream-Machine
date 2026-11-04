@@ -109,7 +109,7 @@ Inline mentions stay literal too: \`\`<<^ code=\`&#x0003;\`>>\`\` and \`\`<<~ ah
 \`\`\`\`md
 a four-backtick fence quoting an meta fence:
 \`\`\`toml meta
-mana = 99
+gauge = 99
 \`\`\`
 \`\`\`\`
 
@@ -135,7 +135,7 @@ describe("fence-mask — quoted sigils never frame, split, or expand", () => {
   });
 
   test("quoted meta (four-backtick fence) never becomes the slot's identity", () => {
-    expect(records.get(`${TEACHING_URI}#/lesson`)!["mana"]).toBeUndefined();
+    expect(records.get(`${TEACHING_URI}#/lesson`)!["gauge"]).toBeUndefined();
   });
 
   test("round-trips content-whole and idempotent", () => {

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = true
 l-space       = "stable"
-mana          = 18
-manao         = 18
-manaoio       = 17
 role          = "invariant law: how a vessel DISCOVERS its corpora — a catalog walk plus a derived bag URI, never a compiled table. Names the loader, the optional scale declaration, and the quine corpus precedence."
 source-symbol = "loadCatalogCorpora"
 status-date   = "2026-04-30"
@@ -111,6 +108,6 @@ A setting-only table composes: lares + elyncia + room.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xAOXfV__AouUZ6Qrz5k5X1FoG5n6qZGOSVUaftK3csY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kv82Y1KoJR-3INr-38zlSchABIx_1Gw-emIxjU0Hcwg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "abjuration"
 l-space   = "sdm"
-mana      = 13
-manao     = 16
-manaoio   = 13
 role      = "component (domain): Abjuration — the school of protection and negation"
 title     = "lar:///ha.ka.ba/sdm/components/domain/abjuration"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -69,6 +66,6 @@ Pairs with `function/barrier` and `function/ward`. Counters offensive crossings;
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_pm-qolqyYs1wVIXXFKYMXt3RXq32MVS-7u8r8N_Dwg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ybhPg_O6SIDbKSYlkk_1aIj0y6c-mxmdrJ5t72bDIxw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

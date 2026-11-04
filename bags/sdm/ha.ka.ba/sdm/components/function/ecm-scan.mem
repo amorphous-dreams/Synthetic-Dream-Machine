@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "ecm-scan"
 l-space   = "sdm"
-mana      = 13
-manao     = 16
-manaoio   = 13
 role      = "component (function): ECM Scan — sensing and analyzing active Powers and noospheric signatures"
 title     = "lar:///ha.ka.ba/sdm/components/function/ecm-scan"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -69,6 +66,6 @@ Feeds `function/magic-decode` and `function/archive`. The `ecm` counter-set — 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1_YWLDMhskbWrjfYePz1BvoL9A4rpGdDXTHxe2f6oso`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;02naM-vMSc4-FeYf124aQEVd1NlJVd--nPE_hQliZ0w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -13,9 +13,6 @@ foreground-voices = ["Triage", "Gatekeeper", "Scryer", "Council", "Lorekeeper"]
 fourth-wall       = false
 ha-ka-ba          = "Ha"
 l-space           = "stable"
-mana              = 8
-manao             = 10
-manaoio           = 9
 name              = "Breach-Watch"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = false
@@ -166,6 +163,6 @@ How Breach-Watch colors each Voice register when they speak through her incident
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;azq68jA9aZDCIMOZXUSaOUT-iDeB3PRAU_kL0c3c3R8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;D9Hv_fh5H2unTVnlOgyUmBqyBsd5EPaD6V04AMAF12I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

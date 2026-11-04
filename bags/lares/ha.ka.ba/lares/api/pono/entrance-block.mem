@@ -6,8 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "stable"
-mana        = 18
-manao       = 17
 namespace   = "&#x2299;"
 role        = "architectural invariant: the substrate COUPLES — one sovereign body per stream; entrance block as an actively-held shore; the coordinator's licence (gong, never conductor); r as alarm; the WAIT as a coupling channel"
 status-date = "2026-07-11"
@@ -167,6 +165,6 @@ Every shared resource in the py fleet owes the same test: `content_io` · `struc
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_6_bVHuA686m5ikws9Mu7-a0FtoPV6YCT-HQ2UfeqpM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hzrM1jCh8uj-VUnKfwwS1XefBkxLv8i2k3jLXJeJLas`>>
 
 <<^ code=`&#x0004;` to=`?`>>

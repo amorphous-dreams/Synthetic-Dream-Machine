@@ -7,9 +7,6 @@
 cacheable  = true
 hydrate    = true
 l-space    = "stable"
-mana       = 12
-manao      = 13
-manaoio    = 11
 namespace  = "&#x2299;"
 revised-on = "2026-09-12"
 role       = "syncer-seams-roundtable — the three open seams of the stock TW5 syncer's back-parity flow (b′ the fragment at the founding door · c′ the lone member's death · d′ the group's arrival) told as a Lares roundtable at two scales, argued by the thirteen Personas, then handed back as an ordered PHASE PLAN: per seam the tension at file:line, the household and five-hundred-year stories, at least three candidate answers each (the operator's Mu among them) with what each breaks, the lean held open, and per step a red → cure → CONTROL → witness with an honest spirit-hour estimate. The carrier also names what the plan REFUSES and the questions only the operator answers."
@@ -408,6 +405,6 @@ When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TUn5b7RnGTBNiWQBBrkvIJzt1eHY7PB17SerCUb1CVM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;71AWWMqmsQsR7Gq3A1hYRwgsFPYqbIUMz36SCKmA4yI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

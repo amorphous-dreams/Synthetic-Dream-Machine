@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: Research Report: Identity-as-Dyad (Person–Device Relational Edge). Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -152,6 +149,6 @@ Both of these, if correct, would suggest the **dyad is the wrong unit** — the 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4XTb3H7iY_h0kpUUx91KZZPCxYXNFC-axRCLIjXZrX4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6-oatBqUCsGV_f3Dx8VcXZfVdx7QGxwhFI3p43cguZY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "stable"
-mana       = 18
-manao      = 17
-manaoio    = 17
 namespace  = "&#x2299;"
 role       = "submission-grade specification for the lar: URI scheme — abstract, ABNF, five-planes reading (Provisional), resolution model, conformance, scheme registration, security; sibling submission to memetic-wikitext"
 status-why = "submission-draft"
@@ -551,6 +548,6 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BChR_GDiZfzwfq5MZQfikes6pQCQwxn9uIa5XpjqvBM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dwoaMrU276lJgKazrlAgS8Dl-uqvfBzH-Qz6lG7CIKo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

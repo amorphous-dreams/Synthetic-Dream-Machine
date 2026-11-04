@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "archive"
-mana      = 16
-manao     = 16
-manaoio   = 16
 role      = "index and reading map for the Lindwyrm story arc — mythologized dev narrative of the Lararium's first self-naming"
 title     = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/index"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -63,6 +60,6 @@ Acts I, II, VI, and VII stand here as discrete narrative loci. The arc's middle 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CscSY05rwx_X_KcXJVFHstiZRIHpNOLuY-Kv1g9m0Sw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;u4rNDJ4gN48eQAFacbW_bwyfDuMmKoBJG5k_6Fef43Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

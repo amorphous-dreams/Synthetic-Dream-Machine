@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 14
-manaoio           = 12
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "keyhive-zero-six-port — the Keyhive 0.3.0-alpha.1 to 0.6.0 upgrade, held for after the founding: what 0.6 brings, the port Trial B measured, the four security laws 0.6 inverts, the rulings the port waits on, and the epoch act that reopens it."
@@ -195,6 +192,6 @@ The port reopens on any of three keys:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MhVZI0WW53577NsS9-OdqkQGxBvhNs5QAoFonyI6VOk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8zjI37bsqjbLJiVi3c_2UqyL6N-kcAOct3a-dSqjZLg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

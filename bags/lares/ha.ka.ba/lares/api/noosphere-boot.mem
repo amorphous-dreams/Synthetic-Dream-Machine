@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 16
-manao     = 16
-manaoio   = 16
 namespace = "&#x0950; &#x0901;"
 title     = "lar:///ha.ka.ba/lares/api/noosphere-boot"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -618,6 +615,6 @@ Every shrine keeps one Pinax to Eris Discordia in a corner.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hN6xFIdQFjMRHkgot-qqRUJbp0lcOpqVV4Z7hM7qoMM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;V8jpM2OzxOb90Jf6RMg_cWZQ98qiRiSb1LRr95AEkBA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

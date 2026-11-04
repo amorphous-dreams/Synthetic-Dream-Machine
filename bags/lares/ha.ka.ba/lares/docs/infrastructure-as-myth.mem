@@ -9,9 +9,6 @@ cacheable      = true
 first-drafted  = "2026-04-06"
 l-space        = "stable"
 last-reviewed  = "2026-08-24"
-mana           = 16
-manao          = 15
-manaoio        = 15
 merged-from    = "ha.ka.ba/lares/docs/pono/infrastructure-as-myth — 2026-08-24, the doctrine draft and the paper draft welded into one carrier, both bodies verbatim"
 namespace      = "&#x2299;"
 review-cadence = "quarterly"
@@ -691,6 +688,6 @@ Aikhenvald 2000, //Classifiers// · Asai et al. 2023, //Self-RAG//, arXiv:2310.1
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XXGEsb5essq2NyNQfyBWyWdtRLzZ9Oe3I20_oRBcHoM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1yZNUKa_RJUKv4sezb2TFQCVWxICF1ZEh5SxaKOPLg8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

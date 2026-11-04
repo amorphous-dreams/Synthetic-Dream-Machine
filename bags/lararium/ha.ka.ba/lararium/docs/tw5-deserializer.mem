@@ -5,9 +5,6 @@
 
 ```toml meta
 last-reviewed = "2026-07-18"
-mana          = 17
-manao         = 17
-manaoio       = 16
 role          = "design doc: TW5 tiddlerdeserializer module (module-type auto-collection) for text/memetic-wikitext"
 source        = "lar:///ha.ka.ba/lararium/tw5/modules/deserializer"
 status-date   = "2026-04-30"
@@ -48,6 +45,6 @@ The paired `carrier-filetype` startup module registers `.mem` as `text/memetic-w
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_cFA-2WSQp0GXNd8vrtmLj058iB969NZ5J5c1rhD2IM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Lpw70-ME2laF4Oo7sQHyUlWQhfVxAkal92vQG_N_-r8`>>
 
 <<^ code=`&#x0004;` to=`?`>>
