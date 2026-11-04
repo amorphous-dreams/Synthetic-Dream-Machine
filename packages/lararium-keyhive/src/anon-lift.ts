@@ -63,6 +63,8 @@ export interface LiftArgs {
     readonly anchor: WorkingFloorAnchor | null;
     readonly urlOf: (slug: string) => Promise<string>;
     readonly open?: (url: string, label: string) => Promise<{ readonly documentId: string; change(fn: (doc: LarDoc) => void): void }>;
+    /** Swap a live mounted floor writer synchronously before any further asynchronous work. */
+    readonly rebind?: (slug: string, oldUrl: string, newUrl: string, into: { readonly documentId: string; change(fn: (doc: LarDoc) => void): void }) => void;
   };
   readonly traceOf: (slug: string) => Promise<{ readonly fingerprint: string; readonly recipeTrace: { readonly wikiDocId: string; readonly libraryBagDocIds: readonly string[] } } | null>;
 }
@@ -251,15 +253,16 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
         if (!oldUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
         // A key already marked: a stop interrupted its burn or its removal; finish both, carrying nothing again.
         const interrupted = typeof fields["lifted-from"] === "string" && fields["lifted-from"] !== "";
+        const slug = floorKey.slice(0, -mark.length).replace(/^.*\/wikis\//, "");
+        const url = await working.urlOf(slug);
         if (!interrupted) {
-          const slug = floorKey.slice(0, -mark.length).replace(/^.*\/wikis\//, "");
-          const url = await working.urlOf(slug);
           // The floor source is read FIRST: a silent one opens no destination, so no blank document stands at the derived address.
-          let source: LarDoc | undefined;
-          try { source = await readDoc(args, oldUrl); }
+          let source: Awaited<ReturnType<LiftRepo["find"]>>;
+          try { source = await boundedRead(args, oldUrl, async () => { const h = await args.repo.find(oldUrl); await h.whenReady?.(); return h; }); }
           catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
           const into = await working.open(url, slug);
-          carryTiddlers(source, into);
+          carryTiddlers(source.doc(), into);
+          working.rebind?.(slug, oldUrl, url, into);
           // The flush is bounded too: a destination that cannot rest defers the lift (named, floor source kept, nothing minted or marked).
           try { await boundedRead(args, url, () => args.repo.flush([into.documentId])); }
           catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); continue; } throw error; }
@@ -268,6 +271,9 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
           handle.change((doc) => {
             if (ownEntry(doc.tiddlers, floorKey)) doc.tiddlers[floorKey] = storedLarRecord(floorKey, { ...carried(fields), "lifted-from": digestOf(floorKey) }, "anon-lift:working-floor");
           });
+        } else if (working.rebind) {
+          const into = await working.open(url, slug);
+          working.rebind(slug, oldUrl, url, into);
         }
         await burn(args, oldUrl);
         handle.change((doc) => { delete doc.tiddlers[floorKey]; });

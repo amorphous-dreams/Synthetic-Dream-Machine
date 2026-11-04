@@ -365,6 +365,20 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       faceAddressSecret: async () => daemonAuth.faceAddressSecret ? meshHexToBytes(daemonAuth.faceAddressSecret) : null,
       floorAnchor: () => daemonAuth.workingFloorAnchor ?? null,
       faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(ctx.repo, url as AutomergeUrl, label),
+      rebindWorking: (slug, oldUrl, _newUrl, into) => {
+        if (slug !== ctx.recipe.wikiSlug) return;
+        const bag = wikiSlotUri(slug, "working");
+        if (ctx.handles.get(bag)?.url !== oldUrl) return;
+        const at = ctx.composite.layerIndexOf(bag);
+        if (at < 0) throw new Error(`mounted working layer ${bag} is missing`);
+        const handle = into as DocHandle<LarDoc>;
+        const store = new AutomergeDocStore(handle, bag);
+        ctx.composite.removeLayer(bag);
+        ctx.composite.addLayer({ bagId: bag, store, writable: true, defaultWritable: true }, at);
+        ctx.handles.set(bag, handle);
+        store.emitInitialReplay();
+        store.markSyncComplete();
+      },
     });
     return slotDocs;
   };

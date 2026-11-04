@@ -72,6 +72,7 @@ export interface SlotDocResolverArgs {
   readonly floorAnchor?: () => WorkingFloorAnchor | null | Promise<WorkingFloorAnchor | null>;
   /** Find or materialize the face's working document under its derived address, and rest it. */
   readonly faceWorkingDoc?: (url: string, label: string) => Promise<FaceWorkingHandle>;
+  readonly rebindWorking?: (slug: string, oldUrl: string, newUrl: string, into: FaceWorkingHandle) => void;
 }
 
 /** The face's working document as the resolver and the lift touch it. */
@@ -289,6 +290,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
           anchor: (await args.floorAnchor?.()) ?? null,
           urlOf: faceWorkingUrl,
           ...(args.faceWorkingDoc ? { open: args.faceWorkingDoc } : {}),
+          ...(args.rebindWorking ? { rebind: args.rebindWorking } : {}),
         },
         traceOf: async (slug) => {
           const url = await args.catalog?.urlOf(wikiBagUri(slug)).catch(() => null);
