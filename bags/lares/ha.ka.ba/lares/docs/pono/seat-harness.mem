@@ -34,7 +34,7 @@ A seat holds only the capabilities its wall grants. Every act runs under exactly
 | ''Builder'' | its worktree alone | edits, typecheck, single-file tests | commits; reaches the network |
 | ''Reader'' | nothing writable | reads | writes any file; its final message carries the hand-back |
 
-''The trust boundary of the broker, as ruled.'' The broker runs `pnpm install` and git hooks inside a lead's tree, so the broker trusts that tree's code at its own authority. The house holds that boundary as a ruled exception for a single-operator dev tool. A lane whose tree carries code the operator has not trusted runs with a Claude lead instead, or waits for the ratcheted broker (#/owed).
+''The trust boundary of the broker.'' The broker executes no code from a lead's tree. It runs data-only git plumbing (`write-tree`, `commit-tree`, `update-ref` with an expected old head) through a pinned absolute `git`, a fixed environment and an isolated home and temp dir, so a planted hook, credential helper, `.gitattributes` filter, submodule, poisoned `PATH`, `GIT_*` or `NODE_OPTIONS` reaches nothing. Hooks and validators run in a separate ''check seat'' behind bubblewrap (no network, a read-only root, one writable work dir) over an exact export of the tree; the broker commits only when it verifies that seat's signed receipt for the tree and the check set. Installs run in an ''install seat'' (scripts off, offline, a refused `.npmrc` key by name, `.git` and the controller dir read-only). The proofs live in `tools/commit-relay.test.mjs`. Two edges remain open: the receipt key is symmetric, held by the controller-side check seat and the broker, and the wall rests on `bwrap` being present (its absence refuses by name, never runs unwalled).
 
 <<~/ahu>>
 
@@ -67,8 +67,8 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 <<~ ahu slot=`#/the-broker`>>
 !! The broker ~ the hands outside a walled lead
 
-* ''Requests'' arrive as `req-<id>.json` files in `<lane-root>/relay/`, zero-padded and in order, one at a time; each answer lands as `res-<id>.json` before the next request runs. Unknown kinds and unknown fields refuse by name.
-* ''Doors'': `commit` (named relative paths inside the worktree, a message file inside the lane root, `--only`, hooks run); `push` (only when the go file names the branch; never `-u`, never force; the go spends on the attempt); `worktree` (a new path under the lane root, a branch carrying the lane prefix, then submodule init and an offline frozen install); `worktree-remove` (a registered, clean tree, never the broker's own, never `--force`); `launch` (`build`, `read` or `research` alone, never `lead`; allowlisted models; a seat directory inside the lane root with its brief).
+* ''The swap'': `tools/seat-broker.mjs` holds the plumbing doors, `tools/seat-walls.mjs` the check and install seats, `tools/tree-export.mjs` the filter-free tree export. ''Requests'' arrive as `req-<id>.json` files in `<lane-root>/relay/`, zero-padded and in order, one at a time; each answer lands as `res-<id>.json` before the next request runs. Unknown kinds and unknown fields refuse by name.
+* ''Doors'': `commit` (named relative paths read race-proof from the worktree, a message file inside the lane root, an expected old head, a verified check receipt; no hook, no filter); `push` (only when the go file names the branch AND the head; never `-u`, never force; the go spends on the attempt); `worktree` (a new path under the lane root, a branch carrying the lane prefix, a filter-free export of the base tree, submodule paths left empty); `install` (the install seat over a worktree in the lane root); `worktree-remove` (a registered, clean tree, never the broker's own, never `--force`); `launch` (`build`, `read` or `research` alone, never `lead`; allowlisted models; a seat directory inside the lane root with its brief).
 * ''The go'' lives outside the lane root and the worktree, at a path the controller names when it starts the broker, so a lead cannot grant its own push.
 * ''The broker runs'' from a copy outside the lane and with a launcher outside the lane; a lead's edit to the lane's own copy never reaches the running broker.
 * ''A crew cap'' may ride the broker: it refuses a `launch` while a seat of the same kind stays live, naming the cap, so a lead adapts by reading the answer.
@@ -91,7 +91,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 <<~ ahu slot=`#/owed`>>
 !! Owed ~ the rows this design still lacks
 
-# The ratcheted broker: data-only git plumbing with a fixed environment and pinned binaries, a commit bound to an expected old head and an exact tree, hooks and validators in a separate check seat whose receipt the broker verifies, installs in an isolated install seat, a go bound to branch and head, and one outer wall that means the same for Codex and Copilot, proved by planted hooks, filters, a hostile `.npmrc`, a poisoned `PATH` and malicious config.
 # The swarm's live controls (the crew cap, the push go, the lane state, the seat roster and its spend readings) move out of flat files into the live Lararium wiki once it stands: tiddlers the controller's hand signs and every seat reads through its capability, so a cap or a go carries an author and a history instead of a file mode.
 
 <<~/ahu>>
@@ -105,6 +104,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Fs1gSTky20l7t3vp5TKKb_-40JRkLUkOZTcyax4h1mY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rfvHPLHsAC1xnUkzyfOugaLxbiVlEcJo0BFCL6TNmzM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

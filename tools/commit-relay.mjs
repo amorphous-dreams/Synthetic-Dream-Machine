@@ -3,13 +3,15 @@ import { realpath, readdir, readFile, writeFile, unlink, lstat, stat } from 'nod
 import path from 'node:path';
 import os from 'node:os';
 import { spawnSync } from 'node:child_process';
+import { addWorktree, commitWithReceipt, pushWithGo, removeWorktree } from './seat-broker.mjs';
+import { runInstallSeat } from './seat-walls.mjs';
 
 const args = process.argv.slice(2);
 const options = {};
 for (let i = 0; i < args.length; i++) {
   const arg = args[i];
   if (arg === '--once') options.once = true;
-  else if (['--lane-root', '--worktree', '--branch', '--go-file', '--launcher'].includes(arg) && args[i + 1] && !args[i + 1].startsWith('--')) options[arg.slice(2)] = args[++i];
+  else if (['--lane-root', '--worktree', '--branch', '--go-file', '--launcher', '--checks', '--check-key', '--receipts-dir', '--installer', '--store-dir', '--author-name', '--author-email'].includes(arg) && args[i + 1] && !args[i + 1].startsWith('--')) options[arg.slice(2)] = args[++i];
   else throw new Error(`invalid argument: ${arg}`);
 }
 if (!options['lane-root'] || !options.worktree || !options.branch || !options['go-file'] || !options.launcher) throw new Error('usage: --lane-root <dir> --worktree <wt> --branch <branch> --go-file <path outside lane-root> --launcher <path> [--once]');
@@ -25,38 +27,21 @@ if (goDir === lane || inside(lane, goDir) || goDir === worktree || inside(worktr
 const launcher = await realpath(options.launcher);
 if (launcher === lane || inside(lane, launcher)) throw new Error('launcher must sit outside the lane root');
 const branch = options.branch;
-const git = (...argv) => spawnSync('git', ['-C', worktree, ...argv], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, env: { ...process.env, GIT_LITERAL_PATHSPECS: '1' } });
+const git = (...argv) => spawnSync('/usr/bin/git', ['-C', worktree, ...argv], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, env: { PATH: '/usr/bin:/bin', HOME: '/nonexistent', LC_ALL: 'C', GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null', GIT_TERMINAL_PROMPT: '0' } });
 if (branch.startsWith('-') || git('check-ref-format', `refs/heads/${branch}`).status !== 0) throw new Error('invalid branch');
 const relay = path.join(lane, 'relay');
 await (await import('node:fs/promises')).mkdir(relay, { recursive: true });
+// THE BROKER'S OWN STATE lives where the lead cannot write: beside the go file.
+const iso = path.join(goDir, 'broker-iso');
+const keyFile = options['check-key'] ? path.resolve(options['check-key']) : path.join(goDir, 'check.key');
+const receiptsDir = options['receipts-dir'] ? path.resolve(options['receipts-dir']) : path.join(goDir, 'receipts');
+for (const guarded of [keyFile, receiptsDir, iso]) { const parent = path.resolve(path.dirname(guarded)); if (parent === lane || inside(lane, parent) || inside(worktree, parent)) throw new Error('check key, receipts and broker state must sit outside the lane root and the worktree'); }
+const checks = options.checks ? JSON.parse(await readFile(options.checks, 'utf8')) : [];
+const gitDirOf = async () => { const dot = path.join(worktree, '.git'); try { const text = await readFile(dot, 'utf8'); const m = /^gitdir: (.+)$/m.exec(text); return m ? path.resolve(worktree, m[1].trim()) : dot; } catch (error) { if (error.code === 'EISDIR') return dot; throw error; } };
+const identity = () => { const read = key => (spawnSync('/usr/bin/git', ['config', '--global', key], { encoding: 'utf8', env: { PATH: '/usr/bin:/bin', HOME: os.homedir(), GIT_CONFIG_NOSYSTEM: '1' } }).stdout || '').trim(); return { name: options['author-name'] || read('user.name') || 'Relay', email: options['author-email'] || read('user.email') || 'relay@example.invalid' }; };
+const brokerCtx = async () => ({ gitDir: await gitDirOf(), worktree, iso, branch, author: identity(), receiptsDir, keyFile, requiredChecks: checks.map(c => c.name), checks, bwrap: true, goFile: path.join(goDir, path.basename(goFile)) });
 const cap = value => new TextDecoder().decode(Buffer.from(value).subarray(0, 8192), { stream: true });
 const result = run => ({ ok: run.status === 0, head: (git('rev-parse', '--short', 'HEAD').stdout || '').trim(), output: cap((run.stdout || '') + (run.stderr || '') + (run.error ? String(run.error) : '')) });
-
-async function validatePath(item) {
-  if (typeof item !== 'string' || !item || path.isAbsolute(item) || item.split(/[\\/]/).includes('..')) throw new Error(`invalid path: ${String(item)}`);
-  const target = path.resolve(worktree, item);
-  if (!inside(worktree, target)) throw new Error(`path outside worktree: ${item}`);
-  try {
-    if (!inside(worktree, await realpath(target))) throw new Error(`path resolves outside worktree: ${item}`);
-  } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
-    // A deleted tracked file can lack parents; resolve the nearest existing ancestor.
-    let ancestor = path.dirname(target);
-    while (true) {
-      try {
-        const resolved = await realpath(ancestor);
-        if (resolved !== worktree && !inside(worktree, resolved)) throw new Error(`path resolves outside worktree: ${item}`);
-        break;
-      } catch (err) {
-        if (err.code !== 'ENOENT') throw err;
-        const parent = path.dirname(ancestor);
-        if (parent === ancestor) throw err;
-        ancestor = parent;
-      }
-    }
-    if (git('ls-files', '--error-unmatch', '--', item).status !== 0) throw new Error(`path does not exist or match a tracked deletion: ${item}`);
-  }
-}
 
 // Resolve existing paths and the parent of a new worktree through symlinks.
 async function lanePath(value, create = false) {
@@ -79,34 +64,27 @@ const output = r => cap((r.stdout || '') + (r.stderr || '') + (r.error ? String(
 
 async function handle(request) {
   if (!request || typeof request !== 'object' || Array.isArray(request)) throw new Error('request must be an object');
-  const schemas = { commit: ['kind', 'paths', 'message'], push: ['kind'], worktree: ['kind', 'path', 'branch', 'base'], 'worktree-remove': ['kind', 'path'], launch: ['kind', 'seatDir', 'model', 'effort', 'mode', 'worktree'] };
+  const schemas = { commit: ['kind', 'paths', 'message', 'expectHead'], push: ['kind'], install: ['kind', 'path'], worktree: ['kind', 'path', 'branch', 'base'], 'worktree-remove': ['kind', 'path'], launch: ['kind', 'seatDir', 'model', 'effort', 'mode', 'worktree'] };
   if (Object.hasOwn(schemas, request.kind) && Object.keys(request).some(key => !schemas[request.kind].includes(key))) throw new Error('unknown field');
   if (request.kind === 'worktree') {
     const target = await lanePath(request.path, true);
     if (typeof request.branch !== 'string' || !request.branch.startsWith(`${branch}-`) || git('check-ref-format', `refs/heads/${request.branch}`).status !== 0) throw new Error('invalid worktree branch');
     if (typeof request.base !== 'string' || !request.base || request.base.startsWith('-')) throw new Error('invalid base');
-    const steps = [
-      ['worktree add', () => git('worktree', 'add', '-b', request.branch, target, request.base)],
-      ['submodule update', () => run('git', ['-C', target, 'submodule', 'update', '--init'])],
-      ['pnpm install', () => run('pnpm', ['--dir', target, 'install', '--offline', '--frozen-lockfile'])],
-    ];
-    let transcript = '';
-    for (const [name, execute] of steps) {
-      const step = execute(); transcript += `${name}:\n${output(step)}\n`;
-      if (step.status !== 0) return { ok: false, output: transcript };
-    }
-    return { ok: true, output: transcript };
+    const made = await addWorktree(await brokerCtx(), { path: target, branch: request.branch, base: request.base });
+    return { ok: made.ok, output: cap(made.output) };
   }
   if (request.kind === 'worktree-remove') {
     const target = await lanePath(request.path);
     if (target === worktree) throw new Error('cannot remove relay worktree');
-    const list = git('worktree', 'list', '--porcelain', '-z');
-    if (list.status !== 0) return result(list);
-    if (!list.stdout.split('\0').includes(`worktree ${target}`)) throw new Error('not a registered worktree');
-    const status = run('git', ['-C', target, 'status', '--porcelain']);
-    if (status.status !== 0) return { ok: false, output: output(status) };
-    if (status.stdout) throw new Error('worktree is dirty');
-    return result(git('worktree', 'remove', target));
+    const gone = await removeWorktree(await brokerCtx(), { path: target });
+    return { ok: gone.ok, output: cap(gone.output) };
+  }
+  if (request.kind === 'install') {
+    if (!options.installer || !options['store-dir']) throw new Error('install is not configured');
+    const target = await lanePath(request.path);
+    const ctx = await brokerCtx();
+    const done = await runInstallSeat({ worktree: target, gitDir: ctx.gitDir, installer: path.resolve(options.installer), storeDir: path.resolve(options['store-dir']), iso, protect: [goDir] });
+    return { ok: done.ok, output: cap(done.output) };
   }
   if (request.kind === 'launch') {
     if (!['gpt-6.1-terra', 'gpt-6-luna'].includes(request.model)) throw new Error('invalid model');
@@ -126,15 +104,13 @@ async function handle(request) {
     if (typeof request.message !== 'string' || !request.message) throw new Error('commit requires a message file');
     const message = await realpath(path.resolve(lane, request.message));
     if (!inside(lane, message)) throw new Error('message file resolves outside lane-root');
-    for (const item of request.paths) await validatePath(item);
-    return result(git('commit', '-F', message, '--only', '--', ...request.paths));
+    if (checks.length === 0) throw new Error('no checks configured for the check seat');
+    const done = await commitWithReceipt(await brokerCtx(), { paths: request.paths, messageFile: message, expectHead: request.expectHead ?? (git('rev-parse', `refs/heads/${branch}`).stdout || '').trim() });
+    return { ok: done.ok, head: done.head, output: cap(done.output) };
   }
   if (request.kind === 'push') {
-    const go = path.join(goDir, path.basename(goFile));
-    let contents;
-    try { contents = await readFile(go, 'utf8'); } catch (error) { if (error.code !== 'ENOENT') throw error; }
-    if (contents === undefined || contents.split(/\r?\n/, 1)[0] !== branch) return { ok: false, output: 'no push-go from the controller' };
-    try { return result(git('push', 'origin', branch)); } finally { await unlink(go); }
+    const done = await pushWithGo(await brokerCtx());
+    return { ok: done.ok, output: cap(done.output) };
   }
   throw new Error(`unknown kind: ${String(request.kind)}`);
 }
