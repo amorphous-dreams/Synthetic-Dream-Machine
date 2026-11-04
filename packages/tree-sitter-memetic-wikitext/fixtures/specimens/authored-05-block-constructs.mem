@@ -1,0 +1,14 @@
+title: authored-05-block-constructs
+role: specimen — the block constructs the burned wild specimens alone reached, a heading, a table with its rows, a horizontal rule and a control sigil
+type: text/x-memetic-wikitext
+
+! A Heading
+
+| Layer | What it carries |
+|---|---|
+| ''first'' | a row of the table |
+| ''second'' | another row |
+
+---
+
+<<^ code=`&#x0004;` to=`?`>>

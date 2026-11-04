@@ -19,6 +19,10 @@
       "hash": "b73ef80b3f82417dc3eac41ee3f0090c089899fafe62e56a3929b332ccfc3164",
       "sha256": "c6e71e1e2d44596692ebe6b35b800d1f9f0fcf1f712182a7d5793fa7687cef1e"
     },
+    "authored-05-block-constructs.mem": {
+      "hash": "e9b3f7c77824a17f0dfc401550497aa128bc22b8b9619870967ea9d516cf35bf",
+      "sha256": "e49503f68fdee935359504e2487a0eeeb2de715952e6dd5c59ed448a3ec8fac6"
+    },
     "wild-01-voices.mem": {
       "hash": "8085a0ab52ae6bee64da42711acb0a19b8b2c4cb55e01b161a8b9a3ef9ca9ec0",
       "sha256": "0b301ffca638ba8b1e062d7cc7bdfe2696b90f339c80f937740a0bcee1f8269e"
