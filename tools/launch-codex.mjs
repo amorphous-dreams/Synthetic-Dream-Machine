@@ -351,7 +351,7 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     if (!rollout) { err(`no rollout found for ${o.seatDir}`); return 2; }
     const verdict = canaryVerdict(readFileSync(rollout, "utf8").split("\n"));
     log(`${verdict.fired ? "COMPACTION-FIRED" : "COMPACTION-NOT-FIRED"} events=${verdict.events} calls=${verdict.calls} tokens=${verdict.tokens}`);
-    return 0;
+    return verdict.fired ? 0 : 1;
   }
   const seatDir = real(o.seatDir);
   try {
@@ -374,10 +374,10 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     appendFileSync(join(seatDir, "attempts.log"), `attempt model=${o.model} effort=${o.effort} mode=${o.mode}\n`);
     const fd = openSync(join(seatDir, "run.log"), "w");
     const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(seatDir, ".tmp"), TMPPREFIX: join(seatDir, ".tmp", "zsh") };
-    const child = spawn("codex", [...args, brief], { cwd: seatDir, env, detached: true, stdio: ["ignore", fd, fd] });
-    child.unref?.();
     const beforeFile = join(seatDir, "rollouts-before.json");
     writeFileSync(beforeFile, JSON.stringify(listRollouts(readers.realHome)));
+    const child = spawn("codex", [...args, brief], { cwd: seatDir, env, detached: true, stdio: ["ignore", fd, fd] });
+    child.unref?.();
     const cwds = JSON.stringify([worktree ?? seatDir, seatDir]);
     const dog = spawn(process.execPath, [fileURLToPath(import.meta.url), "--watch", "--seat-dir", seatDir, "--pid", String(child.pid), "--ceiling", String(ceiling), "--mode", o.mode, "--cwds", cwds, "--before", beforeFile], { cwd: seatDir, env: { ...process.env, HOME: readers.realHome }, detached: true, stdio: "ignore" });
     dog.unref?.();

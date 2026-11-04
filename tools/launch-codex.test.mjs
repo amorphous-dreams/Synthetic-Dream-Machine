@@ -491,11 +491,15 @@ test("row 3: the canary brief demands many separate tool calls in one turn and a
 test("row 3: --canary on a read seat writes the canary brief and launches with a lowered compaction limit; --check-canary reports the verdict from the seat's own rollout", () => {
   const w = world();
   const spawned = [];
-  const spawn = (cmd, args, opts) => { spawned.push({ cmd, args, opts }); return { pid: 9, unref() {} }; };
+  let snapAtSpawn = null;
+  const spawn = (cmd, args, opts) => { if (cmd === "codex") { try { snapAtSpawn = readFileSync(join(w.seatDir, "rollouts-before.json"), "utf8"); } catch { snapAtSpawn = "absent"; } } spawned.push({ cmd, args, opts }); return { pid: 9, unref() {} }; };
   const out = [];
   assert.equal(run(["--mode", "read", "--model", "gpt-6-luna", "--effort", "low", "--seat-dir", w.seatDir, "--canary"], { readers: w.readers, spawn, log: (s) => out.push(s) }), 0);
   const codex = spawned.find((x) => x.cmd === "codex");
   assert.match(readFileSync(join(w.seatDir, "brief.md"), "utf8"), /CANARY DONE/);
+  assert.equal(snapAtSpawn, "[]", "the snapshot stands BEFORE codex spawns");
+  const beforeSnap = readFileSync(join(w.seatDir, "rollouts-before.json"), "utf8");
+  assert.equal(beforeSnap, "[]", "the snapshot lists the rollouts that stood before the spawn");
   const limit = codex.args.find((x) => x.startsWith("model_auto_compact_token_limit="));
   assert.ok(Number(limit.split("=")[1]) < COMPACT_LIMIT, "the canary runs under a lowered limit so compaction can fire");
   // the check
@@ -505,6 +509,13 @@ test("row 3: --canary on a read seat writes the canary brief and launches with a
   const say = [];
   assert.equal(run(["--check-canary", "--seat-dir", w.seatDir], { readers: w.readers, log: (s) => say.push(s), err: (s) => say.push(s) }), 0);
   assert.match(say.join("\n"), /COMPACTION-FIRED/);
+  // the pre-spawn snapshot: a rollout listed before the launch never counts, and a canary that did not compact exits 1
+  const dir2 = join(w.home, ".codex", "sessions", "2026", "11", "04");
+  writeFileSync(join(w.seatDir, "rollouts-before.json"), JSON.stringify([join(dir2, "rollout-x.jsonl")]));
+  writeFileSync(join(dir2, "rollout-y.jsonl"), `${cevent({ timestamp: "2026-11-04T11:00:00Z", type: "session_meta", payload: { cwd: realpathSync(w.seatDir) } })}\n`);
+  const say3 = [];
+  assert.equal(run(["--check-canary", "--seat-dir", w.seatDir], { readers: w.readers, log: (s) => say3.push(s), err() {} }), 1);
+  assert.match(say3.join("\n"), /COMPACTION-NOT-FIRED/);
   const none = world();
   mkdirSync(join(none.home, ".codex", "sessions"), { recursive: true });
   const say2 = [];
