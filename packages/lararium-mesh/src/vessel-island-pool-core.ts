@@ -194,7 +194,7 @@ type Slot = IslandSlot | ColdSlot;
 /** One held disk-write grant. `sourcedRoots` (per-wiki grants alone) names, by wiki slug, the base a SOURCED slug projects
  *  under in place of `mirrorRoot`: a wiki whose bag stands in the canon source writes back beside that source, while every
  *  other slug keeps `mirrorRoot` (the mirror root splits by origin; the host derives the map from its source tree). */
-export type DiskMirrorGrant = readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean; wikiSlot?: WikiSlotKind; guardNexusHandles?: boolean; sourcedRoots?: Readonly<Record<string, string>> }[];
+export type DiskMirrorGrant = readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean; wikiSlot?: WikiSlotKind; mirrorClass?: "recovery"; guardNexusHandles?: boolean; sourcedRoots?: Readonly<Record<string, string>> }[];
 
 /** Resolve a mount's disk mirrors: intersect the held grant (authority) with the
  *  recipe's `mirrorBags` (designation), then fill a per-wiki grant's bag + leaf
@@ -238,7 +238,7 @@ export function resolveDiskMirrors(
       const base = Object.hasOwn(g.sourcedRoots ?? {}, wikiSlug) ? g.sourcedRoots![wikiSlug]! : g.mirrorRoot;
       const { sourcedRoots: _sourced, ...held } = g;
       return (g.selfCanon || g.wikiSlot)
-        ? { ...held, bagId: perWikiBag(g), mirrorRoot: `${base}/${wikiSlug}` }
+        ? { ...held, bagId: perWikiBag(g), mirrorRoot: `${base}/${wikiSlug}${g.mirrorClass === "recovery" ? "/recovery" : ""}` }
         : g.perWikiSlug
           ? { ...held, mirrorRoot: `${base}/${wikiSlug}` }
           : held;
