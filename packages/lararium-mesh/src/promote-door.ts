@@ -59,16 +59,19 @@ export function promotions(ports: PromotionPorts) {
       const [ledger, local] = await Promise.all([ports.ledger.read(), ports.local.read()]);
       let edges: ReadonlySet<string>, readings: ReturnType<typeof states> = [];
       let board: PromoteBoardReading | null;
+      let itemsError: unknown = null;
       try { board = await ports.board(); } catch { board = null; }
       if (board) {
         edges = kapaeStanding(local, board);
-        readings = states(own(ledger), await ports.items());
+        // The enumeration serves the hand's reconciliation report ONLY: a rejection never reaches the runnable rows below (ledger verify
+        // and the brake decide those), and rides out by name for the caller to report.
+        try { readings = states(own(ledger), await ports.items()); } catch (error) { itemsError = error; }
         await saveLocal(local, kapaeNoteArrival(local, edges, new Set()).local);
       } else { edges = kapaeBootSet(local, null); }
       const { verified, voided } = verifyPromotionRows(own(ledger));
       const runnable = verified.filter(row => !edges.has(promoteEdgeKey(wiki, row.digest)));
       for (const row of runnable) { await ports.cas.put(row.digest, new TextEncoder().encode(row.bytes)); await ports.cas.pin(row.digest); }
-      return { pluginCids: runnable.map(row => row.digest), voided, orphans: readings.filter(r => r.state === "orphaned").map(r => r.row.digest), updateWaits: readings.filter(r => r.state === "update-waits").map(r => r.row.digest), shadowed: shadows(edges) };
+      return { itemsError, pluginCids: runnable.map(row => row.digest), voided, orphans: readings.filter(r => r.state === "orphaned").map(r => r.row.digest), updateWaits: readings.filter(r => r.state === "update-waits").map(r => r.row.digest), shadowed: shadows(edges) };
     },
     async arrive() {
       // The shadow is cached first (an offline boot honors it); the island restarts while it LOADED any shadowed edge, so a restart that

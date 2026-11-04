@@ -15,6 +15,9 @@ export function promoteWiring(opts: {
   onArrive?: () => Promise<void>;
   onReport?: (wiki: string, report: PromoteBootReport) => void;
   onRestartFailed?: (wiki: string, error: unknown) => void;
+  onItemsFault?: (wiki: string, error: unknown) => void;
+  onSwallowed?: (wiki: string, error: unknown) => void;
+  onPromoted?: (wiki: string, digests: readonly string[]) => void;
   onFault?: (reason: "ledger-unreadable" | "board-unreadable" | "board-unpinned") => void;
 }) {
   const board: PromotionPorts["board"] = async () => {
@@ -31,7 +34,8 @@ export function promoteWiring(opts: {
   };
   const core = promoteBoot({
     stores: opts.stores, cas: opts.cas, restart: opts.restart,
-    ...(opts.onReport ? { onReport: opts.onReport } : {}), ...(opts.onFault ? { onFault: opts.onFault } : {}), ...(opts.onRestartFailed ? { onRestartFailed: opts.onRestartFailed } : {}),
+    ...(opts.onReport ? { onReport: opts.onReport } : {}), ...(opts.onFault ? { onFault: opts.onFault } : {}),
+    ...(opts.onItemsFault ? { onItemsFault: opts.onItemsFault } : {}), ...(opts.onSwallowed ? { onSwallowed: opts.onSwallowed } : {}), ...(opts.onPromoted ? { onPromoted: opts.onPromoted } : {}), ...(opts.onRestartFailed ? { onRestartFailed: opts.onRestartFailed } : {}),
     board, itemsOf,
   });
   const boot = {

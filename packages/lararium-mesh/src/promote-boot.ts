@@ -18,6 +18,12 @@ export function promoteBoot(opts: {
   restart: (wiki: string, hit: readonly string[]) => Promise<void | { pending: Promise<void> }>;
   onReport?: (wiki: string, report: PromoteBootReport) => void;
   onRestartFailed?: (wiki: string, error: unknown) => void;
+  /** The stage enumeration rejected at boot: reconciliation reporting is blind, the promoted code still stands. */
+  onItemsFault?: (wiki: string, error: unknown) => void;
+  /** A boot failure emptied this wiki's promoted code: the error rides out by name, never silent. */
+  onSwallowed?: (wiki: string, error: unknown) => void;
+  /** The digests this wiki boots with (empty included), for the boot log. */
+  onPromoted?: (wiki: string, digests: readonly string[]) => void;
   onFault?: (reason: "ledger-unreadable" | "board-unreadable" | "board-unpinned") => void;
 }) {
   const loaded = new Map<string, Set<string>>();
@@ -36,9 +42,13 @@ export function promoteBoot(opts: {
           loaded: () => new Set(), restart: async () => {}, who: { kind: "seat", id: "boot" } }).boot();
         loaded.set(wiki, new Set(result.pluginCids.map(digest => promoteEdgeKey(wiki, digest))));
         opts.onReport?.(wiki, { orphans: result.orphans, updateWaits: result.updateWaits, voided: result.voided, shadowed: result.shadowed });
+        if (result.itemsError !== null) opts.onItemsFault?.(wiki, result.itemsError);
+        opts.onPromoted?.(wiki, result.pluginCids);
         return result.pluginCids;
       } catch (error) {
         loaded.delete(wiki);
+        opts.onSwallowed?.(wiki, error);
+        opts.onPromoted?.(wiki, []);
         if (storeFailed) opts.onFault?.("ledger-unreadable");
         return [];
       }

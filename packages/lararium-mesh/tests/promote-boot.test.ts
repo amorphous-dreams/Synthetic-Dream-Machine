@@ -21,13 +21,13 @@ const D = promoteDigest(RITE);
 const itemOf = (i: typeof RITE): PromoteItem => ({ ...i, revision: "r1", origin: { seat: "s", device: "d", session: "s-1" } });
 
 async function boot(opts: { locked?: boolean } = {}) {
-  const hooks = { tornLocalRead: false, failLocalWrite: false, rotated: false, boardDown: false };
+  const hooks = { itemsReject: false, tornLocalRead: false, failLocalWrite: false, rotated: false, boardDown: false };
   const root = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(1)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(1)) };
   const face = { group: GROUP, grant: (k: string) => k === root.key, device: () => false };
   const st = {
     ledger: [W1, W2].reduce((l, wiki) => ledgerCommit(l, { wiki, digest: D, item: RITE, revision: "r1" }, HAND), EMPTY_LEDGER) as PromotionLedger,
     local: EMPTY_KAPAE_LOCAL as KapaeLocal, acts: [] as unknown[], cas: new Map<string, Uint8Array>(), pinned: new Set<string>(),
-    items: new Map<string, PromoteItem[]>([[W1, [itemOf(RITE)]], [W2, [itemOf(RITE)]]]), restarts: [] as string[], hits: [] as Array<[string, string[]]>, failRestart: new Set<string>(), defer: new Map<string, { settle: (error?: Error) => void }>(), failed: [] as string[], reports: [] as Array<{ wiki: string; report: PromoteBootReport }>, faults: [] as string[],
+    items: new Map<string, PromoteItem[]>([[W1, [itemOf(RITE)]], [W2, [itemOf(RITE)]]]), restarts: [] as string[], hits: [] as Array<[string, string[]]>, failRestart: new Set<string>(), defer: new Map<string, { settle: (error?: Error) => void }>(), failed: [] as string[], reports: [] as Array<{ wiki: string; report: PromoteBootReport }>, faults: [] as string[], itemFaults: [] as Array<{ wiki: string; message: string }>, swallowed: [] as string[], promoted: [] as Array<{ wiki: string; digests: string[] }>,
   };
   const b = promoteBoot({
     stores: {
@@ -36,7 +36,7 @@ async function boot(opts: { locked?: boolean } = {}) {
     },
     cas: { put: (d, bytes) => { st.cas.set(d, bytes); }, pin: (d) => { st.pinned.add(d); } },
     board: async () => { if (hooks.boardDown) throw new Error("board unreadable"); return readPromoteBoard(st.acts, hooks.rotated ? { ...face, grant: () => false } : face); },
-    itemsOf: async (wiki) => st.items.get(wiki) ?? [],
+    itemsOf: async (wiki) => { if (hooks.itemsReject) throw new Error("stage enumeration rejected"); return st.items.get(wiki) ?? []; },
     restart: async (wiki, hit) => {
       st.hits.push([wiki, [...hit]]);
       if (st.failRestart.has(wiki)) throw new Error(`restart refused: ${wiki}`);
@@ -49,11 +49,28 @@ async function boot(opts: { locked?: boolean } = {}) {
     onRestartFailed: (wiki) => { st.failed.push(wiki); },
     onReport: (wiki, report) => { st.reports.push({ wiki, report }); },
     onFault: (reason) => { st.faults.push(reason); },
+    onItemsFault: (wiki, error) => { st.itemFaults.push({ wiki, message: error instanceof Error ? error.message : String(error) }); },
+    onSwallowed: (wiki, error) => { st.swallowed.push(`${wiki}:${error instanceof Error ? error.message : String(error)}`); },
+    onPromoted: (wiki, digests) => { st.promoted.push({ wiki, digests: [...digests] }); },
   });
   return { b, st, hooks, raise: (wiki: string, parents: string[] = []) => signPromoteKapae({ group: GROUP, epoch: 0, wiki, digest: D, raised: true, parents }, root) };
 }
 
 describe("a wiki's boot union", () => {
+  test("RED: a stage enumeration that REJECTS never empties the promoted code: the committed digest still answers, the failure is named, the report stays honest; CONTROL: a raised brake still filters", async () => {
+    const { b, st, hooks } = await boot();
+    hooks.itemsReject = true;
+    expect(await b.promotedFor(W1)).toEqual([D]);
+    expect(st.cas.has(D) && st.pinned.has(D)).toBe(true);
+    expect(st.itemFaults).toEqual([{ wiki: W1, message: "stage enumeration rejected" }]);
+    expect(st.swallowed).toEqual([]);
+    expect(st.promoted).toEqual([{ wiki: W1, digests: [D] }]);
+    expect(st.reports.find((r) => r.wiki === W1)?.report).toMatchObject({ orphans: [], updateWaits: [], voided: [] });
+    // CONTROL: a standing raise still shadows the edge while the enumeration rejects.
+    st.acts.push(await (await boot()).raise(W1));
+    expect(await b.promotedFor(W1)).toEqual([]);
+  });
+
   test("RED: promotedFor answers that wiki's own digests, writes and pins their bytes, and reports to the hand; CONTROL: an unknown wiki answers nothing", async () => {
     const { b, st } = await boot();
     expect(await b.promotedFor(W1)).toEqual([D]);

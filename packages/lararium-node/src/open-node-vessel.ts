@@ -2331,6 +2331,9 @@ async function prepareNodeBootOn(
             wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
             onArrive: async () => { await pushPromoteSnapshot?.(); },
             onFault: (reason) => console.warn(`[promote] ${reason}`),
+            onItemsFault: (wiki, error) => console.warn(`[promote] ${wiki}: stage enumeration rejected: ${error instanceof Error ? error.message : String(error)}`),
+            onSwallowed: (wiki, error) => console.warn(`[promote] ${wiki}: boot failed, no promoted code: ${error instanceof Error ? error.message : String(error)}`),
+            onPromoted: (wiki, digests) => console.warn(`[promote] ${wiki}: boots with ${digests.length} promoted: ${digests.map((d) => d.slice(0, 12)).join(",")}`),
             onRestartFailed: (wiki, error) => { console.warn(`[promote] restart of ${wiki} failed: ${error instanceof Error ? error.message : String(error)}`); void pushPromoteSnapshot?.().catch(console.warn); },
             onReport: (wiki, r) => { if (r.orphans.length || r.updateWaits.length || r.voided.length) console.warn(`[promote] ${wiki}: orphans=${r.orphans.join(",")} updateWaits=${r.updateWaits.join(",")} voided=${r.voided.map(v => v.digest).join(",")}`); },
           }) : null;
