@@ -29,7 +29,7 @@
  */
 import { ed25519 } from "@noble/curves/ed25519.js";
 import * as nobleEd25519 from "@noble/ed25519";
-import { sha512 } from "@noble/hashes/sha2.js";
+import { sha256, sha512 } from "@noble/hashes/sha2.js";
 import { hex } from "./crypto.js";
 
 /** Why a public key refuses. */
@@ -122,9 +122,41 @@ export function acceptEd25519Key(publicKey: unknown): Ed25519KeyReading {
   return "point" in read ? OK : { ok: false, refusal: read.refusal };
 }
 
+let equationRuns = 0;
+/** How many verify equations this process has run: the cost the verdict memory spares (a test reads it; nothing else). */
+export function ed25519EquationRuns(): number { return equationRuns; }
+
 /** Does `signature` over `message` stand under `publicKey`? A named refusal otherwise. Never throws. */
+/**
+ * THE VERDICT MEMORY. A verdict is a pure function of the exact (key, signature, message) bytes, so a triple read true once reads true
+ * from memory. The fold that re-reads a stage on every change then runs each act's equation once. The memory keys a hash over the raw
+ * bytes with length-prefixed fields (never a decoded form), keeps TRUE verdicts only (a forged act re-verifies and poisons nothing),
+ * and bounds itself by size, least recently used out, never by time: a miss simply verifies again.
+ */
+const VERDICT_MEMORY_LIMIT = 8192;
+const verified = new Map<string, true>();
+const verdictKey = (keyBytes: Uint8Array, sig: Uint8Array, msg: Uint8Array): string => {
+  const framed = new Uint8Array(12 + keyBytes.length + sig.length + msg.length);
+  const view = new DataView(framed.buffer);
+  view.setUint32(0, keyBytes.length); view.setUint32(4, sig.length); view.setUint32(8, msg.length);
+  framed.set(keyBytes, 12); framed.set(sig, 12 + keyBytes.length); framed.set(msg, 12 + keyBytes.length + sig.length);
+  return hex(sha256(framed));
+};
+
 export function readEd25519(signature: unknown, message: unknown, publicKey: unknown): Ed25519Reading {
   const keyBytes = bytesOf(publicKey, 32);
+  const memoSig = bytesOf(signature, 64), memoMsg = messageOf(message);
+  const memoKey = keyBytes !== null && memoSig !== null && memoMsg !== null ? verdictKey(keyBytes, memoSig, memoMsg) : null;
+  if (memoKey !== null && verified.has(memoKey)) { verified.delete(memoKey); verified.set(memoKey, true); return OK; }
+  const reading = readEd25519Fresh(signature, message, keyBytes);
+  if (memoKey !== null && reading.ok) {
+    verified.set(memoKey, true);
+    if (verified.size > VERDICT_MEMORY_LIMIT) verified.delete(verified.keys().next().value as string);
+  }
+  return reading;
+}
+
+function readEd25519Fresh(signature: unknown, message: unknown, keyBytes: Uint8Array | null): Ed25519Reading {
   const key = readKey(keyBytes);
   if (!("point" in key)) return { ok: false, refusal: key.refusal };
   const sig = bytesOf(signature, 64);
@@ -136,6 +168,7 @@ export function readEd25519(signature: unknown, message: unknown, publicKey: unk
   const r = readPoint(rBytes);
   if (!("point" in r)) return { ok: false, refusal: `signature-point-${r.fault}` };
   try {
+    equationRuns += 1;
     const hashed = new Uint8Array(64 + msg.length);
     hashed.set(rBytes, 0); hashed.set(keyBytes!, 32); hashed.set(msg, 64);
     const k = leToBigInt(sha512(hashed)) % L;
