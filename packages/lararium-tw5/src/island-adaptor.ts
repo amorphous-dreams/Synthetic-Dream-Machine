@@ -286,6 +286,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   private readonly residentWaiters = new Set<() => void>();
+  /** The slot children a family call put, by address, until a landing wave or a different state replaces them. */
+  private readonly familyPlaced = new Map<string, LarTiddlerRecord>();
   /** Run `fn` once the shore stands resident (at once when it does): the outbound bridge holds a pre-resident write here. */
   whenResident(fn: () => void): void {
     if (this.resident) fn(); else this.residentWaiters.add(fn);
@@ -407,6 +409,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       if (!this.engineApply) throw new LandingDoorUnavailableError();
       this.engineApply({ ...change, record: applied, ...(bag !== undefined ? { bag } : {}) });
     }
+    this.familyPlaced.delete(title);
     this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null, ...(bag !== undefined ? { bag } : {}), ...(heads !== undefined ? { heads } : {}) });
     if (change.bag !== undefined && envelopeHeads !== undefined && envelopeHeads.length > 0) this._noteLanded(change.bag, envelopeHeads);
     this._learnDraft(title, live ? record : null, bag);
@@ -1271,6 +1274,15 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return task;
   }
 
+  /** True when the wiki's state for a slot child carries the persisted fields the family call put for it. */
+  private _matchesPlaced(placed: LarTiddlerRecord, state: unknown): boolean {
+    const { "$origin-bag": _bag, ...fields } = extractFields(this.tw5, state);
+    const put = placed.tiddler as unknown as Record<string, unknown>;
+    const keys = new Set([...Object.keys(fields), ...Object.keys(put)]);
+    for (const key of keys) if (String(fields[key] ?? "") !== String(put[key] ?? "")) return false;
+    return true;
+  }
+
   private async _flushHandImpl(title: string): Promise<void> {
     // A flush queued behind a failed one still tries: the earlier write's fault belongs to its own waiters.
     const prior = this.inFlight.get(title);
@@ -1284,9 +1296,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const landed = this.ledger.landedOf(title);
     // The ledger answers only once the seed wave has rebuilt it (a resident shore), and never for a title
     // this shore wrote whose wave has not landed: there the state leaves and the store decides.
-    const settled = this.sent.has(title)
+    const placed = this.familyPlaced.get(title);
+    const placedByFamily = placed !== undefined && state !== null && this._matchesPlaced(placed, state);
+    const settled = placedByFamily || (this.sent.has(title)
       ? this.sent.get(title) === state
-      : this.resident && !this.unlanded.has(title) && same(state, landed ? landed.tiddler : null);
+      : this.resident && !this.unlanded.has(title) && same(state, landed ? landed.tiddler : null));
+    if (!placedByFamily) this.familyPlaced.delete(title);
     if (settled) {
       if (this.handed.get(title) === state) this.handed.delete(title);
       this.pendingHand.delete(title);
@@ -1497,6 +1512,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     base?: readonly string[],
   ): Promise<void> {
     const { puts, tombstones, strays, split } = this._buildFamily(title, fields, targetBag);
+    // The family call carries these children: a later flush of a child whose wiki state matches the record the family put owes the
+    // store nothing, so a carrier placed across several change batches leaves its children once, with the root.
+    for (const record of puts) if (record.tiddler.title !== title) this.familyPlaced.set(record.tiddler.title, record);
 
     // A PLACED ROOT CARRIES ITS MARKED SLOTS. The flush reads the wiki's state, and a root the wiki already
     // holds in placed form splits into no children: its slot children stand as their own wiki tiddlers, each
