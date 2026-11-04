@@ -14,7 +14,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import { KAHUA_BAG, type CompositeStore } from "@lararium/mesh";
+import { KAHUA_BAG, type CompositeStore, type LarTiddlerRecord } from "@lararium/mesh";
 import { KAHUA_SHADOW_PREFIX, kahuaShadowTitle } from "./kahua-shadow-title.js";
 
 export { KAHUA_SHADOW_PREFIX, kahuaShadowTitle };
@@ -28,16 +28,24 @@ export interface KahuaShadow {
 /**
  * The shadow `title` casts over kahua in this composition, or null when none stands: no kahua twin, no
  * live record above kahua, a tombstone hiding the title, or draft and kahua bodies equal.
+ *
+ * The check spends no read it can spare. A landing hands over the answer it already resolved (`resolved`), so the title resolves
+ * once; a winner at or below the kahua layer casts no shadow and ends the check before any further read; and a winner above it reads
+ * the kahua layer ALONE, never every layer. (Each kahua read is a stage lookup: floor replays that landed N titles once re-folded the
+ * stage three times per title before `ea`.)
  */
 export async function kahuaShadowOf(
-  store: Pick<CompositeStore, "resolveAll" | "resolveLayered">,
+  store: Pick<CompositeStore, "resolveLayered" | "layerIndexOf" | "storeForBag">,
   title: string,
+  resolved?: { readonly bagId: string; readonly record: LarTiddlerRecord } | null,
 ): Promise<KahuaShadow | null> {
-  const top = await store.resolveLayered(title);
+  const top = resolved !== undefined ? resolved : await store.resolveLayered(title);
   if (!top || top.record.meta?.deleted || top.bagId === KAHUA_BAG) return null;
-  const shared = (await store.resolveAll(title)).find((entry) => entry.bagId === KAHUA_BAG);
-  if (!shared) return null;
-  const sharedText = String(shared.record.tiddler.text ?? "");
+  const kahuaAt = store.layerIndexOf(KAHUA_BAG);
+  if (kahuaAt === -1 || store.layerIndexOf(top.bagId) <= kahuaAt) return null;
+  const shared = await store.storeForBag(KAHUA_BAG)?.get(title);
+  if (!shared || shared.meta?.deleted) return null;
+  const sharedText = String(shared.tiddler.text ?? "");
   if (String(top.record.tiddler.text ?? "") === sharedText) return null;
   return { draftBag: top.bagId, shared: sharedText };
 }

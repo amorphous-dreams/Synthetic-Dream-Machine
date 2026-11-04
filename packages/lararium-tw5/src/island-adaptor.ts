@@ -335,10 +335,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     let heads = change.heads;
     let record = change.record;
     let bag = change.bag;
+    let resolvedTop: { readonly bagId: string; readonly record: LarTiddlerRecord } | null | undefined;
     // THE WIKI SHOWS WHAT THE COMPOSITION RESOLVES: the topmost layer holding any record for the title, a
     // tombstone included (kāpae), never the emitting layer's record over a higher layer's.
     if (change.bag) {
       const resolved = await this.store.resolveLayered(title);
+      resolvedTop = resolved;
       record = resolved?.record ?? null;
       bag = resolved?.bagId ?? change.bag;
       heads = resolved ? resolved.heads : this._headsOfBag(change.bag);
@@ -392,7 +394,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null, ...(bag !== undefined ? { bag } : {}), ...(heads !== undefined ? { heads } : {}) });
     if (change.bag !== undefined && envelopeHeads !== undefined && envelopeHeads.length > 0) this._noteLanded(change.bag, envelopeHeads);
     this._learnDraft(title, live ? record : null, bag);
-    await this._stampKahuaShadow(title);
+    await this._stampKahuaShadow(title, change.bag ? (resolvedTop ?? null) : undefined);
     this.sent.delete(title);
     this.handBase.delete(title);
     this.unlanded.delete(title);
@@ -404,14 +406,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * Stamp or clear the "local draft over shared" record for a title the wave just landed: the temp-plane
    * stamp carries the kahua body the draft covers and exists only while a shadow stands on this device.
    */
-  private async _stampKahuaShadow(title: string): Promise<void> {
+  private async _stampKahuaShadow(title: string, resolved?: { readonly bagId: string; readonly record: LarTiddlerRecord } | null): Promise<void> {
     if (neverPersists(title)) return;
     // A shadow stands only where the composition lays the kahua stage: a pool wiki (or any store composing no
     // `bags/kahua` layer) asks nothing per landing.
     if (typeof this.store.layerIndexOf !== "function" || this.store.layerIndexOf(KAHUA_BAG) === -1) return;
     const wiki = this.tw5.$tw.wiki;
     const stamp = kahuaShadowTitle(title);
-    const shadow = await kahuaShadowOf(this.store, title);
+    const shadow = await kahuaShadowOf(this.store, title, resolved);
     if (!shadow) {
       if (wiki.getTiddler(stamp)) wiki.deleteTiddler(stamp);
       return;
