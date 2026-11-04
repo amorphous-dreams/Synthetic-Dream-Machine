@@ -876,6 +876,50 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     await r.stop();
   }, 120_000);
 
+  test("a replacement parked rename survives an earlier release", async () => {
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
+    const a = "lar:///t/road/release-first", b = "lar:///t/road/release-second", y = "lar:///t/road/release-target";
+    await seedRecords(r, [{ title: a, text: "first" }, { title: b, text: "second" }]);
+    await r.adaptor.armSeedCheckpoint();
+    let ackOk = false;
+    r.adaptor.restDoor = {
+      begin: () => ({ done: () => {} }), held: () => null, idle: async () => {}, answer: () => false, stalledAsks: () => 0, close: () => {},
+      ack: async () => { if (!ackOk) throw new Error("ack refused"); },
+    } as never;
+    const first = openDraft(r, a, "first rename");
+    typeInto(r, first, "first rename", { "draft.title": y });
+    await afterDispatch(); await r.adaptor.handsRested().catch(() => {});
+    saveSequence(r, first);
+    await afterDispatch(); await turns(24); await r.adaptor.landingIdle();
+    let release!: () => void;
+    const until = new Promise<void>((resolve) => { release = resolve; });
+    r.failures.holdDelete = { title: a, until };
+    ackOk = true;
+    const retry = r.adaptor.handsRested().catch(() => {});
+    await turns(24);
+    expect(r.calls.some((call) => call.deletes.includes(a)), "first removal reaches the held call").toBe(true);
+    ackOk = false;
+    const second = openDraft(r, b, "second rename");
+    typeInto(r, second, "second rename", { "draft.title": y });
+    await afterDispatch(); await turns(24);
+    saveSequence(r, second);
+    await afterDispatch(); await turns(24);
+    expect(storeText(r, workingBag, y), "the second target write reached the store").toBe("second rename");
+    expect(storeText(r, draftBag, second), "the second draft remains as recovery").toBe("second rename");
+    expect(r.wiki.getTiddler(b), "the second source returns while its removal waits").toBeDefined();
+    expect(storeDeleted(r, workingBag, b), "second removal waits for acknowledgement").toBe(false);
+    r.failures.holdDelete = null;
+    release();
+    await retry; await turns(24);
+    ackOk = true;
+    await r.adaptor.handsRested().catch(() => {});
+    await turns(24); await r.adaptor.landingIdle();
+    expect(storeDeleted(r, workingBag, b), "the replacement removal remains owed").toBe(true);
+    expect(storeDeleted(r, draftBag, second), "the replacement draft remains owed").toBe(true);
+    await r.stop();
+  }, 120_000);
+
   test("refused parked rename removal stays owed and retries after target acknowledgement", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
