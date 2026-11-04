@@ -117,7 +117,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 !!! The ratings ladder ~ an orthogonal axis the house already runs
 
-`api/pono/meme#/rating-posture` (`meme.mem:102-113`) carries five structural buckets — ''Noise · Data · Meme · Ano · Kapu'' — and states their nature: "Rating derives from schema compliance, not from promotion"; "Rating runs as a ''predicate'': a bucket names a query that succeeds or fails on the carrier — typing = running the query, never consulting a class." ''So the house already holds a five-rung ladder that grades SHAPE'' and says in the same breath that the ladder answers nothing about maturity. The `mana` / `manao` / `manaoio` triple rides beside it and "stay distinct and should not collapse into one blended score" (`:114`). A lifecycle therefore adds a ''third'' axis to two that stand; it must not fuse with either.
+`api/pono/meme#/rating-posture` (`meme.mem:102-113`) carries five structural buckets — ''Noise · Data · Meme · Ano · Kapu'' — and states their nature: "Rating derives from schema compliance, not from promotion"; "Rating runs as a ''predicate'': a bucket names a query that succeeds or fails on the carrier — typing = running the query, never consulting a class." ''So the house already holds a five-rung ladder that grades SHAPE'' and says in the same breath that the ladder answers nothing about maturity. No universal scalar rides beside it any longer (the retired triad left the doctrine on 2026-11-03). A lifecycle therefore adds a ''third'' axis to two that stand; it must not fuse with either.
 
 !!! The retirement law that already stands
 
@@ -467,6 +467,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1oKlU86gLhWbDQF1XCOOneFMEPrPlUGcw7lVCKCwOIs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6xyFl199pz3JfNP6_pfySkuqlXADucf5kqATbM581wY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

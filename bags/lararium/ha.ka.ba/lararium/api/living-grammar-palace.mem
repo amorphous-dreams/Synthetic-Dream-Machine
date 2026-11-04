@@ -69,7 +69,7 @@ The living grammar lives in three registers, by ''where its source-text sits'' a
 ''entrench'':
 
 <<~ has entity=`Register` name=`Defined` params=`source/TW5 *.tid + parser rules ~ the user-extendable HARD-RULE core; license-entrenched (the grammar a parser MUST honor: SharktoothSigil .tids, wikirules, the lar-sigil grammar)`>>
-<<~ has entity=`Register` name=`Formal` params=`source/all of bags/ ~ the curated corpus, edited to improve structure; mana/manao ARE its fuzzy entrenchment ratings (a high-mana meme entrenches strongly; a stub reads weakly-entrenched)`>>
+<<~ has entity=`Register` name=`Formal` params=`source/all of bags/ ~ the curated corpus, edited to improve structure; its entrenchment reads from curation and use, never from a declared score`>>
 <<~ has entity=`Register` name=`Casual` params=`source/the agentic chat sessions in mempalace ~ da kine pidgin; frequency/recurrence-entrenched (a move repeated across turns entrenches by use, never by decree)`>>
 <<~ has entity=`Register` name=`Three`>>
 
@@ -78,12 +78,12 @@ The living grammar lives in three registers, by ''where its source-text sits'' a
 formal corpus; rule-extraction hardens the settled into the defined core; re-parse pushes the hardened
 grammar back down into casual use.
 
-<<~ loops phases=`casual ~ da-kine-pidgin, by-frequency -> curate(mana) ~ the recurrent earns a meme -> formal ~ bags/, mana-entrenched -> rule-extract ~ the settled hardens to a rule -> defined ~ *.tid + parser, license-entrenched -> re-parse ~ the rule re-shapes casual use -> casual`>>
+<<~ loops phases=`casual ~ da-kine-pidgin, by-frequency -> curate ~ the recurrent earns a meme -> formal ~ bags/, curation-entrenched -> rule-extract ~ the settled hardens to a rule -> defined ~ *.tid + parser, license-entrenched -> re-parse ~ the rule re-shapes casual use -> casual`>>
 
 This IS the descriptive↔prescriptive motion the noosphere-boot enacts: a casual move (a Voice riffs a
 new turn-shape) crests through curation into formal canon and finally into a defined parser rule, then
 flows back down to re-shape the next casual turn. Entrenchment carries the gradient — license (defined)
-> mana (formal) > frequency (casual), three measures of the one thing.
+> curation (formal) > frequency (casual), three measures of the one thing.
 
 ''Curation records; it never legislates.'' The corpus-kahu lift what use already entrenched, as
 lexicographers, and nothing ratifies a lift — the grammar holds no versions
@@ -141,7 +141,7 @@ The two join `constructicon ⋈ manifestation` — the score bound to the perfor
 ''The FORM VECTOR.'' A turn's form reads as a ''fuzzy-membership / sanction-degree profile over the''
 ''3-layer constructicon'' — each coordinate ∈ [0,1]:
 
-<<~ scale name=`coord` ranks=`structural-match ~ does the move's shape fit the construction's pattern -> slor-plausibility ~ SLOR-normalized plausibility (Lau-Clark-Lappin gradient grammaticality, length-normalized log-odds) -> entrenchment-prior ~ the construction's register entrenchment (license · mana · frequency, #three-registers)`>>
+<<~ scale name=`coord` ranks=`structural-match ~ does the move's shape fit the construction's pattern -> slor-plausibility ~ SLOR-normalized plausibility (Lau-Clark-Lappin gradient grammaticality, length-normalized log-odds) -> entrenchment-prior ~ the construction's register entrenchment (license · curation · frequency, #three-registers)`>>
 
 Each coordinate = `structural-match × SLOR-normalized-plausibility × entrenchment-prior`. Beside the
 per-construction coordinates ride three more channels:
@@ -499,7 +499,7 @@ pulling one another into lock; the bands do not couple. The ''handback'' reads a
 ''Two ladders at P0 ~ ship minimal.'' The facet COULD carry eight ordering ladders; the ratified P0
 ships only ''TWO'':
 
-<<~ scale name=`ladder` ranks=`causal-depth ~ the bare turn-DAG coordinate — depth in the happened-before, projected straight off the edge-DAG -> settledness ~ how firmly the captured move's form has entrenched (register × mana × sanction-degree, #two-planes)`>>
+<<~ scale name=`ladder` ranks=`causal-depth ~ the bare turn-DAG coordinate — depth in the happened-before, projected straight off the edge-DAG -> settledness ~ how firmly the captured move's form has entrenched (register × curation × sanction-degree, #two-planes)`>>
 
 The other six ''WAIT for a real query'' that reads them: ''transaction-axis · consolidation-ascent ·''
 ''retention-decay · compressed-past · cross-island-freshness · capture-now''. No ladder ships ahead of a
@@ -567,7 +567,7 @@ Each witness donates a refinement, folded into the living grammar as rhyme-deriv
   The palace inherits the theory wholesale, never by loose analogy.
 * ''Selection-mediated promotion'' (Baldwin effect / niche-construction) ~ casual → formal → defined
   runs ''NON-Lamarckian'': use BIASES what consolidates, never copies it. The defined layer never simply
-  transcribes casual usage — selection (curation · mana · rule-extraction) mediates every climb. (This
+  transcribes casual usage — selection (curation · rule-extraction) mediates every climb. (This
   names the first divergence joint above: ascent ≠ register-climb because selection sits between them.)
 
 !!! The Braid ~ the pattern's honest status (the meta-finding)
@@ -689,6 +689,6 @@ The geometry whole: ''one GROUND · the li spine (shape ↠ idiom) · cross-cutt
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2ulTtxxpoetm1h0OJLFugC7MR-r868XtS5eNoW5FLBM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y0sdxNDGLLUZvKHGLpkiRRolgNuY88YnpLoNre89-c0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -209,7 +209,7 @@ The operator drives the disk-projection Artifact through the `@lares/cli` surfac
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/disk-projector`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>
 
-''Tie ~ bags/ holds the formal register.'' This surface (the seed/canon `bags/`, mana-entrenched) carries exactly
+''Tie ~ bags/ holds the formal register.'' This surface (the seed/canon `bags/`, curation-entrenched) carries exactly
 the FORMAL register of the living grammar ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace#/three-registers]]) — the curated band
 between casual chat-use and the defined parser core.
 
@@ -219,6 +219,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;g2NJyNxXDuFOXQztkcB3vbEppGRjB_x6T4Yl6KNBqzE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;A5FQXFRJm3Dwr7AWn_DWnvI-nwohqoIFRgrIBAGl6lI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

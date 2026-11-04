@@ -11,7 +11,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 
 ```toml meta
 cacheable          = true
-constraints        = ["S1: the parent invariant remains the copy-shape authority and this skill does not outrank it", "S2: a lawful meme keeps identity, thresholds, phase map, edges, and honest return throat visible", "S3: ratings remain distinct — confidence, mana, manao, and manaoio do not collapse into one vague quality signal", "S4: declared depth uses named pranala sugar only when the outward claim carries real yield, real backlog, or real adjacency", "S5: skeleton blocks, detailed conformance tables, research notes, and long procedure move outward before the parent swells"]
+constraints        = ["S1: the parent invariant remains the copy-shape authority and this skill does not outrank it", "S2: a lawful meme keeps identity, thresholds, phase map, edges, and honest return throat visible", "S3: ratings remain distinct — structural rating and confidence do not collapse into one vague quality signal", "S4: declared depth uses named pranala sugar only when the outward claim carries real yield, real backlog, or real adjacency", "S5: skeleton blocks, detailed conformance tables, research notes, and long procedure move outward before the parent swells"]
 covers             = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 role               = "meme operational skill — composition, audit, conformance check, and lawful companion-meme split"
 skill-package-root = "bags/lares/ha.ka.ba/lares/api/pono/meme"
@@ -255,6 +255,6 @@ Aftermath — close by naming:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lqUxlRkIXHgZeNYUGAicoqnKUtEPF4otvhop5H7wJrA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;seWu-9qFWXMjFZ7r04wi1EEDjMfa8LNVRCU8dovpU50`>>
 
 <<^ code=`&#x0004;` to=`?`>>
