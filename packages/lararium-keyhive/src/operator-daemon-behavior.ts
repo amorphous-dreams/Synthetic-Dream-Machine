@@ -1301,6 +1301,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const lifted = await slotDocsOf(ctx).liftFloor();
             if (lifted.moved.length + lifted.finished.length > 0)
               console.log(`[daemon] the seat landed: ${lifted.moved.length} floor record(s) moved under the face, ${lifted.finished.length} burn(s) finished`);
+            return { skipped: lifted.skipped.length };
           },
           log: (message) => console.log(`[daemon] ${message}`),
         });

@@ -14,7 +14,8 @@ export interface FaceSeatPorts {
   readonly readLease: () => Promise<LeaseFrontier>;
   readonly verify: (record: FaceGrantRecord, context: FaceGrantVerifyContext) => Promise<FaceGrantVerdict>;
   readonly ingest: (record: FaceGrantRecord) => Promise<void>;
-  readonly lift: () => Promise<void>;
+  /** Lifts the floor under the face; answers how many records a silent floor document held back, so the next pass tries again. */
+  readonly lift: () => Promise<void | { readonly skipped: number }>;
   readonly log: (message: string) => void;
 }
 
@@ -107,8 +108,11 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
   const lift = async () => {
     if (lifted) return;
     lifted = true;
-    try { await ports.lift(); }
-    catch (error) {
+    try {
+      const result = await ports.lift();
+      // A floor record the lift skipped (its document silent) has not moved: the latch stays open, so a later pass lifts it.
+      if (result && result.skipped > 0) { lifted = false; ports.log(`face lift skipped ${result.skipped} floor record(s) its document held back; a later pass lifts them`); }
+    } catch (error) {
       lifted = false;
       ports.log(`face lift faulted: ${String(error)}`);
     }
