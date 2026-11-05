@@ -75,7 +75,7 @@ import { toLarTiddlerRecord, isVolatileVmUri, draftsOffLive, parallelDraftTitle 
 import { maskedExecAll } from "@lararium/memetic-frame";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
 import type { TW5Engine } from "./tw5-vm.js";
-import type { RestDoor } from "./rest-door.js";
+import { ReceiptCapabilityUnavailable, type ReceiptCapability } from "./receipt.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
 import { KAHEA_REF_RE } from "./meme-ast/ahu-scan.js";
@@ -266,10 +266,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * engine's door: a second shore on the same engine refuses by `LandingDoorOccupiedError`. A shore that
    * stopped installs a fresh queue and its door again.
    */
-  /** The rest door a save act waits on before its result leaves; absent where no vessel answers one. */
-  restDoor: RestDoor | null = null;
-  /** When true, durable acknowledgement refuses by name if no rest door stands (production storage-backed islands). */
-  requireDurableAck = false;
+  /** The capabilities the kernel hands this adaptor: the receipt a save act waits on before its result leaves, null where no vessel issues one. */
+  caps: { receipt: ReceiptCapability | null } = { receipt: null };
+  /**
+   * True when the vessel declared a receipt grant for this island and it stands as no view (production storage-backed islands): a durable
+   * acknowledgement then refuses by name (`ReceiptCapabilityUnavailable`) while `caps.receipt` stays absent.
+   */
+  receiptRequired = false;
 
   installLandingQueue(yieldHost?: () => Promise<void>): void {
     if (this.landing) return;
@@ -423,20 +426,18 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   recoveryAtRest: ((bag: string, title: string, fields: Record<string, unknown> | null) => Promise<void>) | null = null;
 
   private async _ackDurably(fired: readonly string[]): Promise<void> {
-    const door = this.restDoor;
+    const receipt = this.caps.receipt;
     const written = [...new Set(fired.map((title) => this.lastWriteBag.get(title)).filter((bag): bag is string => bag !== undefined))];
-    if (!door && this.requireDurableAck && written.length > 0) {
-      throw new Error("[island-adaptor] durable acknowledgement refused: no rest door stands for target write");
-    }
+    if (!receipt && this.receiptRequired && written.length > 0) throw new ReceiptCapabilityUnavailable();
     // A bag the island holds no replica of (the vessel's own temp plane) names no heads here: the store call that wrote it already answered.
-    const slots = door ? written.filter((bag) => door.holds?.(bag) ?? true) : written;
+    const slots = receipt ? written.filter((bag) => receipt.holds?.(bag) ?? true) : written;
     const checks = fired.flatMap((title) => {
       const written = this.recoveryWrites.get(title);
       return written && this.recoveryAtRest ? [this.recoveryAtRest(written.bag, title, written.fields)] : [];
     });
     // Attach rejection handling immediately while the storage receipt remains in flight.
     const projection = Promise.allSettled(checks);
-    if (door && slots.length > 0) await door.ack(slots);
+    if (receipt && slots.length > 0) await receipt.ack(slots);
     const outcomes = await projection;
     const failed = outcomes.find((outcome): outcome is PromiseRejectedResult => outcome.status === "rejected");
     if (failed) throw failed.reason;
@@ -1232,14 +1233,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   /**
-   * THE SAVE ORDER (operator ruling 2026-11-04): the target family leaves first and must be DURABLY acknowledged (the rest door's heads
+   * THE SAVE ORDER (operator ruling 2026-11-04): the target family leaves first and must be DURABLY acknowledged (the receipt capability's heads
    * ack from the vessel's storage-backed Repo); only then do the draft and a rename's source leave. Each removal rides a dependency edge
    * on the target's generation, so a refused target keeps the store copy of the draft (the recovery copy) and its removal waits for the
    * target's next acknowledged write. The act writes nothing itself: it marks.
    */
   private _act(draftTitle: string, entry: DraftEntry, saves: boolean, target: string, rename: boolean, members: readonly string[]): void {
     const wiki = this.tw5.$tw.wiki;
-    const hold = this.restDoor?.begin();   // in the turn of the dispatch, so the act's result can wait
+    const hold = this.caps.receipt?.begin();   // in the turn of the dispatch, so the act's result can wait
     if (hold) this.actHolds.push({ hold, members });
     for (const member of members) this.handed.delete(member);
     let targetGeneration = 0;
@@ -1484,9 +1485,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     }
     try {
       await task;
-      if (writeBag && this.requireDurableAck && !this.restDoor) {
-        throw new Error("[island-adaptor] durable acknowledgement refused: no rest door stands for target write");
-      }
+      if (writeBag && this.receiptRequired && !this.caps.receipt) throw new ReceiptCapabilityUnavailable();
       // The store took this state for `writeBag`: the title's state stands there, by this write or because
       // an equal state already stood (a noop). A noop fires no envelope, so no return wave lands over `sent`
       // and none clears `unlanded`: only an acknowledged write stands ahead of the ledger.
