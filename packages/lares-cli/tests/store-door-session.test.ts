@@ -14,6 +14,11 @@ vi.mock("../src/session-connector.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/session-connector.js")>();
   return { ...actual, openLocalSession: vi.fn() };
 });
+// A ward row takes its route over the standing vessel's custody door and gets a one-use ticket back (ward-door#wardTicketFor).
+vi.mock("../src/custody-door.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/custody-door.js")>();
+  return { ...actual, sendCustodyFrame: vi.fn(async (frame: { op: string }) => (frame.op === "ward" ? { ticket: "ward-ticket-1" } : null)) };
+});
 vi.mock("../src/sealed-act-door.js", () => ({ sealedAct: vi.fn() }));
 vi.mock("@lararium/node", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@lararium/node")>();
@@ -23,6 +28,7 @@ vi.mock("@lararium/node", async (importOriginal) => {
 import { udsAlive, invokeLocal } from "../src/local-connector.js";
 import { openLocalSession, SessionRefused } from "../src/session-connector.js";
 import { sealedAct } from "../src/sealed-act-door.js";
+import { sendCustodyFrame } from "../src/custody-door.js";
 import { storeVerb, storeFailure } from "../src/store-door.js";
 
 const done = (output: Record<string, unknown>) => ({ status: "done", results: { summary: { ok: true, output } } });
@@ -52,7 +58,9 @@ describe("store rows on a running vessel", () => {
     const r = await storeVerb("handle-publish", { glamour: "g", handleIndex: 2 });
     expect(r).toEqual({ output: { via: "session" }, via: "daemon" });
     expect(opened).toEqual(["h2"]);
-    expect(acted).toEqual([{ act: "handle-publish", args: { glamour: "g", handleIndex: 2 } }]);
+    // handle-publish is a ward act: the route rode the custody door and the session act carries the one-use ticket it answered.
+    expect(sendCustodyFrame).toHaveBeenCalledWith(expect.objectContaining({ op: "ward" }));
+    expect(acted).toEqual([{ act: "handle-publish", args: { glamour: "g", handleIndex: 2, wardTicket: "ward-ticket-1" } }]);
     expect(closed).toBe(1);
     expect(invokeLocal).not.toHaveBeenCalled();
   });

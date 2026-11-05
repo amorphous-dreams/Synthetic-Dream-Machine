@@ -46,11 +46,11 @@ import {
   loadVesselIdentity, loadVesselVerifyingKey, vesselPlaceSignerDoor, vesselFloorKeyDoor,
 } from "../src/node-vessel-identity.js";
 import { FaceNotNamed, resolveFace } from "../src/face-selector.js";
-import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
-import { seatCustody } from "../src/custody-seat.js";
+import { CustodyLocked, CustodyRowUnavailable, WardNeedsFreshUnlock, makeCustodyHolder } from "../src/custody-holder.js";
+import { seatCustody, withWardKeyCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
 import { handleRowPathIn } from "./face-paths.js";
-import { seatScratchCustody, FIXTURE_PASSPHRASE, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { seatScratchCustody, FIXTURE_PASSPHRASE, fixtureWard, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 120_000 });
 const enc = (v: unknown): Uint8Array => new TextEncoder().encode(JSON.stringify(v));
@@ -84,6 +84,12 @@ function rootFile(i: number): string { return `.persona-group-root-h${i}.json`; 
 /** One cold row's JSON, opened for this one read through the fixture's own holder. */
 const cold = <T>(file: string): Promise<T> =>
   c.holder.openColdRow("identity", file, (plain) => JSON.parse(new TextDecoder().decode(plain)) as T);
+/** A face root row rests under the face's WARD: unlocked custody never reaches it. These two doors run the ward route (one fresh unlock per act). */
+const rootIndexOf = (file: string): number => Number(/-h(\d+)\.json$/.exec(file)![1]);
+const wardCold = <T>(file: string): Promise<T> =>
+  withWardKeyCustody({ ordinal: rootIndexOf(file) }, fixtureWard(), (seat) => seat.open(file, (plain) => JSON.parse(new TextDecoder().decode(plain)) as T), "test read");
+const wardWrite = (file: string, plaintext: Uint8Array): Promise<void> =>
+  withWardKeyCustody({ ordinal: rootIndexOf(file) }, fixtureWard(), (seat) => seat.update(file, () => ({ plaintext, value: undefined })), "test write");
 
 beforeEach(async () => {
   priorHome = process.env.HOME; priorXdg = process.env.XDG_CONFIG_HOME; priorGlobal = process.env.GIT_CONFIG_GLOBAL;
@@ -151,12 +157,21 @@ describe("sealed vessel identity family", () => {
     writeFileSync(at(rootFile(0)), rootBytes);
     expect(await loadPersonaGroupRootSeed(0)).toHaveLength(32);
     const other = await generateOrLoadPersonaGroupRoot(1);
-    const kp = await cold<{ verifyingKey: string; signingKey: string }>(rootFile(1));
+    const kp = await wardCold<{ verifyingKey: string; signingKey: string }>(rootFile(1));
     const wrong = { verifyingKey: kp.verifyingKey, signingKey: kp.signingKey };
-    await c.holder.writeRow("identity", rootFile(0), enc(wrong));
+    await wardWrite(rootFile(0), enc(wrong));
     await expect(loadPersonaGroupRootSeed(0)).rejects.toThrow(/reads names-another-key/);
     await expect(generateOrLoadPersonaGroupRoot(0)).rejects.toThrow(/reads names-another-key/);
     expect(other.verifyingKey).not.toBe(minted.verifyingKey);
+  });
+
+  test("V3b unlocked custody never reaches the face root row; the ward route opens it", async () => {
+    const minted = await generateOrLoadPersonaGroupRoot(0);
+    await expect(cold(rootFile(0))).rejects.toBeInstanceOf(WardNeedsFreshUnlock);
+    await expect(c.holder.readRow("identity", rootFile(0))).rejects.toBeInstanceOf(WardNeedsFreshUnlock);
+    await expect(c.holder.writeRow("identity", rootFile(0), enc({}))).rejects.toBeInstanceOf(WardNeedsFreshUnlock);
+    // control: the ward route opens it
+    expect((await wardCold<{ verifyingKey: string }>(rootFile(0))).verifyingKey).toBe(minted.verifyingKey);
   });
 
   test("V4 absent face rows read empty", async () => {
@@ -217,7 +232,8 @@ describe("sealed vessel identity family", () => {
       // What stood before this row's cases returns after them, so each row's refusal names that row alone.
       const before = existsSync(at(file)) ? read(file) : null;
       for (const shape of shapes) {
-        await c.holder.writeRow("identity", file, typeof shape === "string" ? bytes(shape) : enc(shape));
+        const shaped = typeof shape === "string" ? bytes(shape) : enc(shape);
+        if (file === rootFile(0)) await wardWrite(file, shaped); else await c.holder.writeRow("identity", file, shaped);
         const standing = read(file);
         await expect(Promise.resolve().then(readDoor), `${file} ${JSON.stringify(shape)}`).rejects.toThrow(CustodyRowUnavailable);
         await expect(Promise.resolve().then(readDoor), `${file} ${JSON.stringify(shape)}`).rejects.toThrow(new RegExp(`${file.replace(/[.]/g, "\\.")} reads malformed`));
@@ -312,7 +328,7 @@ describe("sealed vessel identity family", () => {
     expect(await listPersonaRoots()).toEqual([0]);
     expect(await pets.get(0)).toBe("private");
     expect(await resolveFace()).toBe(0);
-    expect((await cold<{ verifyingKey: string }>(rootFile(0))).verifyingKey).toMatch(HEX);
+    expect((await wardCold<{ verifyingKey: string }>(rootFile(0))).verifyingKey).toMatch(HEX);
     const fresh = makeCustodyHolder({ io: c.io, homes: c.homes }); await fresh.adopt(rotated.treeKey);
     await fresh.unlockFaces([{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]); seatCustody(fresh);
     expect(await listPersonaRoots()).toEqual([0]); expect(await resolveFace()).toBe(0);
@@ -335,7 +351,7 @@ describe("sealed vessel identity family", () => {
     for (const i of [0, 1, 2, 3, 4, 5]) expect(await pets.get(i)).toBe(`p${i}`);
     const minted = await Promise.all([generateOrLoadPersonaGroupRoot(4), generateOrLoadPersonaGroupRoot(4)]);
     expect(new Set(minted.map((r) => r.verifyingKey)).size).toBe(1); expect(minted.filter((r) => r.created)).toHaveLength(1);
-    expect((await cold<{ verifyingKey: string }>(rootFile(4))).verifyingKey).toBe(minted[0]!.verifyingKey);
+    expect((await wardCold<{ verifyingKey: string }>(rootFile(4))).verifyingKey).toBe(minted[0]!.verifyingKey);
     expect(await listPersonaRosterLines()).toEqual([{ handleIndex: 4, verifyingKey: minted[0]!.verifyingKey }]);
     await other.lock();
   });

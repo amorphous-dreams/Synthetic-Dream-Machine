@@ -83,7 +83,7 @@ import {
 import { readBackStandsIn } from "./seal-ceremony.js";
 import { nodeAnchorStore } from "./identity-anchors.js";
 import { nodeRecoveryShareStore } from "./recovery-share-store.js";
-import { CustodyRowUnavailable, WardNeedsFreshUnlock } from "./custody-holder.js";
+import { CustodyRowUnavailable } from "./custody-holder.js";
 import { readFaceIndexSync } from "./face-index.js";
 import {
   openedCustody, exclusiveCustody, unlockedFaceOrdinals, standingCustody, readCustodyRow, updateCustodyRow, withWardKeyCustody,
@@ -813,8 +813,9 @@ function nodeMountedFaceStore(): ActivePersonaStore {
  * `hasRoot`/`listRoots` read the roster alone. `anchors`/`recovery` ride their own sealed stores.
  */
 export async function makeNodeFsPersonaVault(ward?: WardCredential): Promise<PersonaVault> {
-  // A vault built with no ward token lists and counts roots and refuses every root read or write `ward-needs-fresh-unlock`.
-  const warded = (): WardCredential => { if (!ward) throw new WardNeedsFreshUnlock("the persona vault's root slot"); return ward; };
+  // A vault built with no ward token lists and counts roots; a root read or write asks the ward's one choke point, which takes the
+  // process's seated gatherer (a person at this terminal) or refuses `ward-needs-fresh-unlock`.
+  const warded = (): WardCredential | undefined => ward;
   return {
     rootSlot(handleIndex) {
       return {

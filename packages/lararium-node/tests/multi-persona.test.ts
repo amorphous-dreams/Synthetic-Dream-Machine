@@ -28,7 +28,7 @@ import type { DeviceDelegationTiddler, LarDid } from "@lararium/mesh";
 import { provisionRecoveryAtFounding } from "../src/recovery-keel.js";
 import { loadRecoveryDeviceShare } from "../src/recovery-share-store.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
-import { seatScratchCustody } from "./custody-seat-fixture.js";
+import { seatScratchCustody, fixtureWard } from "./custody-seat-fixture.js";
 import { seedFaceAtom } from "./atom-fixture.js";
 import { unlockedFaceOrdinals } from "../src/custody-seat.js";
 
@@ -168,7 +168,7 @@ describe("multi-persona-per-vessel (#63)", () => {
     await generateOrLoadPersonaGroupRoot(0);
     await generateOrLoadPersonaGroupRoot(1);
 
-    const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(dataDir(), seededRng(11), 1, 1);
+    const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(dataDir(), seededRng(11), 1, 1, undefined, fixtureWard());
 
     // The device-share for persona 1 landed at ITS OWN keyed carrier; persona 0's carrier stays untouched.
     expect((await loadRecoveryDeviceShare(1))?.custodian).toBe("device");

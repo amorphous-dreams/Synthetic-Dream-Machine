@@ -19,6 +19,7 @@ import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { loadRecoveryDeviceShare, deviceShareFile } from "../src/recovery-share-store.js";
 import { armRecoveryAtFounding } from "../src/commands/init.js";
 import { handleRowPath } from "./face-paths.js";
+import { fixtureWard } from "./custody-seat-fixture.js";
 
 const deviceSharePath = (index: number): string => handleRowPath(deviceShareFile(index));
 
@@ -45,7 +46,7 @@ describe("the device share mints at the face founding", () => {
     await generateOrLoadPersonaGroupRoot(0);
     expect(await loadRecoveryDeviceShare(0)).toBeNull();
 
-    const first = await armRecoveryAtFounding(root, 0);
+    const first = await armRecoveryAtFounding(root, 0, undefined, fixtureWard());
     expect(first.minted).toBe(true);
     expect(first.recordedCode.length).toBeGreaterThan(0);
     expect(first.escrowCarrier.length).toBeGreaterThan(0);
@@ -54,7 +55,7 @@ describe("the device share mints at the face founding", () => {
     expect(readFckCarrier(bytes)).toBe("sealed");                                      // a cold row under its face key, from its first write
 
     // CONTROL: the second act (a re-light, a re-stand) leaves the carrier byte-identical.
-    const again = await armRecoveryAtFounding(root, 0);
+    const again = await armRecoveryAtFounding(root, 0, undefined, fixtureWard());
     expect(again.minted).toBe(false);
     expect(readFileSync(deviceSharePath(0)).equals(bytes)).toBe(true);
 
@@ -64,7 +65,7 @@ describe("the device share mints at the face founding", () => {
 
   test("the share lands under its face key, one row per face", async () => {
     await generateOrLoadPersonaGroupRoot(1);
-    const r = await armRecoveryAtFounding(root, 1);
+    const r = await armRecoveryAtFounding(root, 1, undefined, fixtureWard());
     expect(r.minted).toBe(true);
     const row = readFileSync(deviceSharePath(1));
     expect(readFckCarrier(row)).toBe("sealed");
@@ -79,22 +80,22 @@ describe("the device share mints at the face founding", () => {
     let restedAtHandOut: boolean | null = null;
     let handed: { recordedCode: string; escrowCarrier: string } | null = null;
     // A run that stops inside the hand-out (the terminal closed, the process ended) leaves NO device share...
-    await expect(armRecoveryAtFounding(root, 2, () => { throw new Error("the run stopped before the person held the shares"); })).rejects.toThrow(/stopped before/);
+    await expect(armRecoveryAtFounding(root, 2, () => { throw new Error("the run stopped before the person held the shares"); }, fixtureWard())).rejects.toThrow(/stopped before/);
     expect(existsSync(deviceSharePath(2))).toBe(false);
     // ...so the same command splits afresh, hands both shares out, and only then seals.
-    const armed = await armRecoveryAtFounding(root, 2, (off) => { restedAtHandOut = existsSync(deviceSharePath(2)); handed = { ...off }; });
+    const armed = await armRecoveryAtFounding(root, 2, (off) => { restedAtHandOut = existsSync(deviceSharePath(2)); handed = { ...off }; }, fixtureWard());
     expect(restedAtHandOut).toBe(false);
     expect(armed.minted).toBe(true);
     expect(handed).toEqual({ recordedCode: armed.recordedCode, escrowCarrier: armed.escrowCarrier });
     expect(readFckCarrier(readFileSync(deviceSharePath(2)))).toBe("sealed");
     // CONTROL: with the share at rest, a later run hands out nothing and re-splits nothing.
     let again = 0;
-    expect((await armRecoveryAtFounding(root, 2, () => { again += 1; })).minted).toBe(false);
+    expect((await armRecoveryAtFounding(root, 2, () => { again += 1; }, fixtureWard())).minted).toBe(false);
     expect(again).toBe(0);
   });
 
   test("CONTROL: no persona root at the index → refuses, fabricates no share", async () => {
-    await expect(armRecoveryAtFounding(root, 3)).rejects.toThrow();
+    await expect(armRecoveryAtFounding(root, 3, undefined, fixtureWard())).rejects.toThrow();
     expect(existsSync(deviceSharePath(3))).toBe(false);
   });
 });

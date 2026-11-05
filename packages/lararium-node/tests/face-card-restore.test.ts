@@ -48,6 +48,7 @@ import { ownedStore } from "../src/owned-store.js";
 import { readLocalPersonaKelChain, seatLocalPersonaKelChain } from "../src/local-persona-kel.js";
 import { RESTORE_PENDING_FILE } from "../src/vault-carriers.js";
 import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
+import { fixtureWard } from "./custody-seat-fixture.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
 
@@ -106,7 +107,7 @@ async function splitOnDestroyedVessel(label: string): Promise<Faces> {
   const cards = new Map<number, { recordedCode: string; escrowCarrier: string }>();
   const keys = new Map<number, { rootKey: string; prefix: string; group: string; atomKey: string }>();
   for (const index of [0, 1]) {
-    const armed = await armRecoveryAtFounding(larDataDir(), index);
+    const armed = await armRecoveryAtFounding(larDataDir(), index, undefined, fixtureWard());
     expect(armed.minted, `setup: the split of h${index} armed`).toBe(true);
     cards.set(index, { recordedCode: armed.recordedCode, escrowCarrier: armed.escrowCarrier });
     const anchors = (await loadIdentityAnchors(index))!;
