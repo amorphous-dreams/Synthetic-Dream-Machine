@@ -229,6 +229,51 @@ One human carries ''many Handles'' (personaGroups on the WHO axis) crossed with 
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/faces-fleets-and-the-ward`>>
+
+!! Faces, Fleets and the Ward ~ who may cross a device
+
+Rulings from the operator, 2026-11-04 and 2026-11-05. The ward lands as row 7 of the seat-harness carrier.
+
+!!! A cloud of faces, never a registry
+
+A human holds plural faces (PersonaGroups), and each face is a relation with its own fleet. ''Fleets overlap'': one vessel may stand enrolled in several faces, with ''one active face per device or session''. A face holds its own signed device set, folded from its admissions. The human appears in no record. The human stays the hand that knows each face's passphrase, so the overlap forms a cloud, never a list of who owns which device.
+
+!!! The ward binds the hearth's own fire
+
+Users keep full caps over their own wikis. The daemon wiki and the kahua stage carry the ward, StartupActions included. A ward act needs a hand no script can make: the face's ward key stays sealed while custody stands unlocked, a fresh passphrase opens it for one act, the act signs once, and the key zeroes. ''Never a passkey or WebAuthn'', since that binds the house to web2.5 registries. The ward reads class-blind, so a browser-only user fleet wears it the same as a node operator.
+
+Bound acts:
+* promote-commit and kāpae-lower in the daemon and kahua wikis;
+* the swarm's house cap, lane shares and push go;
+* every act that changes who belongs to a face, or what it trusts: admit, fleet-join, recovery contact, publication, the founder certificate;
+* the kahua lift.
+
+kāpae-raise only adds a brake, so it fails safe and needs no hand.
+
+!!! The reach law
+
+''Motion stays local; a decision that crosses devices takes a hand.'' The working top serves as the free local floor the AI writes on. A kahua lift crosses devices, because the stage syncs to every device the face wears, so it rides the ward: one passphrase per verified batch. Memory steers the spirit, since the Lares read the kahua at cold boot, so memory carries weight the way code does.
+
+''The co-sign binds by reach.'' An act whose effect leaves the device (kāpae-lower, the house cap, the push go) also needs a second device of the same face to answer through the face intent plane. A one-device fleet needs the fresh unlock alone. An offline second device refuses and never falls back. Distinctness reads by the face's own atoms. An answer counts only when its signer stands in that face's device set and differs from the asker.
+
+''A vessel never publishes one key across faces'', since that would link a person's faces. Instead, each admission carries a per-face blinded vessel tag, so a vessel admitted twice into one face refuses, while its tags in different faces stay unlinkable.
+
+!!! Remote lifts
+
+The AI proposes into the working top. Each proposal posts by digest, with its body, onto the face's private intent plane for review. Those proposals are never loaded as memory. A hand on any vessel of the face signs one warded lift intent over the batch, and the vessel holding the bytes verifies it and moves them locally. A memory moving between faces counts as a carry, and needs both faces' hands.
+
+!!! Across the shrine tiers
+
+Temples relay and store; they never sign a face's lift. A face's kahua stays face-private at every tier, so a poisoned lift reaches one face's devices at most.
+
+* ''Household Nexus.'' Each person wears their own face, and each holds their own ward. No operator lifts for another person. A recovery contact helps a face re-enroll, and never lifts for it. The batch lift reads as the household's feeding rite, at the person's own cadence, with no timer and no nudge.
+* ''Neighborhood temple.'' Civic memory (a district's stories, its canon) lives in shared stages. A lift into a shared stage composes several warded hands by threshold.
+* ''Big Island temple.'' Ahupuaʻa, town and island stages layer the same composition, each wider plane gathering more hands. Each plane's count belongs to its own civic ruling, not built yet.
+* ''Migrating fleets.'' A face's memory and its ward travel with the face, not with the temple. The ward needs no registry, so it holds under whatever temple a fleet moves to.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/the-shore`>>
 
 !! The Shore — Where the Axes Cross
@@ -634,6 +679,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZGj7hpj9dpFOEujlKDYNp6tf14qcdw8d_D2_21NrTXw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;19hUbqH1f0Eb_XFqOc-VKMcIcI6P8ZP0FfhNwUpd9oQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

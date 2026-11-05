@@ -273,4 +273,88 @@ describe.skipIf(!!wikiSkip)(`glass port ordered races${skipNote}`, () => {
     expect(sent.filter(m => m.type === "port:write").at(-1).records[0].fields.text).toBe("one two");
     expect(next.pendingWrites().length).toBe(1);
   });
+  it("an older entry naming no tx never blanks typing while a write stands in flight, deferred or not; CONTROL an idle title takes a peer", async () => {
+    const g = await glass();
+    g.snapshot("first", 1, 1, [{ title: "Draft", fields: { text: "" }, seq: 1 }]);
+    await g.flush();
+    g.wiki.setTiddler({ title: "Draft", text: "", caption: "t" }); await g.flush();     // tx1 carries the empty body
+    g.change({ title: "Draft", fields: { text: "" } }, []);                             // an older entry names no tx while tx1 stands pending
+    g.wiki.setTiddler({ title: "Draft", text: "typed", caption: "t" }); await g.flush();
+    expect(g.text("Draft")).toBe("typed");
+    g.deliver({ type: "port:written", txId: g.writes()[0].txId, status: "applied", applied: ["Draft"], failed: [] });
+    await g.flush();
+    expect(g.writes()).toHaveLength(2);                                                 // tx2 is out and nothing stands deferred
+    expect(g.adaptor.deferredTitles()).toEqual([]);
+    g.change({ title: "Draft", fields: { text: "" } }, []);                             // the same older entry arrives while tx2 stands pending
+    await g.flush();
+    expect(g.text("Draft")).toBe("typed");
+    g.deliver({ type: "port:written", txId: g.writes()[1].txId, status: "applied", applied: ["Draft"], failed: [] });
+    await g.flush();
+    expect(g.adaptor.quiescent()).toBe(true);
+    g.change({ title: "Draft", fields: { text: "from a peer" } }, []);                  // CONTROL: idle, a peer lands
+    await g.flush();
+    expect(g.text("Draft")).toBe("from a peer");
+  });
+
+  it("a second entry naming a settled tx never lands as a peer; CONTROL an entry naming no tx lands", async () => {
+    const g = await glass();
+    g.snapshot("first", 1, 1, [{ title: "Draft", fields: { text: "" }, seq: 1 }]);
+    await g.flush();
+    g.wiki.setTiddler({ title: "Draft", text: "typed" }); await g.flush();
+    const tx = g.writes()[0].txId;
+    g.deliver({ type: "port:written", txId: tx, status: "applied", applied: ["Draft"], failed: [] });
+    await g.flush();
+    let peers = 0; g.adaptor.onPeerEdit(() => peers++);
+    g.change({ title: "Draft", fields: { text: "typed" } }, [tx]);
+    g.change({ title: "Draft", fields: { text: "" } }, [tx]);                           // the double echo
+    await g.flush();
+    expect(peers).toBe(0);
+    expect(g.text("Draft")).toBe("typed");
+    g.change({ title: "Draft", fields: { text: "peer" } }, []);
+    await g.flush();
+    expect(peers).toBe(1);
+    expect(g.text("Draft")).toBe("peer");
+  });
+  it("a peer entry held while a write stands in flight shows once the write settles, and the next keystroke does not revert it; CONTROL a peer entry older than the write's echo loses to the write", async () => {
+    const g = await glass();
+    g.snapshot("first", 1, 1, [{ title: "Page", fields: { text: "base" }, seq: 1 }]);
+    await g.flush();
+    g.wiki.setTiddler({ title: "Page", text: "mine" }); await g.flush();
+    const tx = g.writes()[0].txId;
+    g.change({ title: "Page", fields: { text: "mine" }, seq: 3 }, [tx]);                // the write's own echo
+    g.change({ title: "Page", fields: { text: "peer" }, seq: 4 }, []);                  // a peer lands after it, while the write stands pending
+    await g.flush();
+    expect(g.text("Page")).toBe("mine");
+    g.deliver({ type: "port:written", txId: tx, status: "applied", applied: ["Page"], failed: [] });
+    await g.flush();
+    expect(g.text("Page")).toBe("peer");
+    g.wiki.setTiddler({ title: "Page", text: "peer plus" }); await g.flush();
+    expect(g.text("Page")).toBe("peer plus");
+    expect(g.writes().at(-1).records[0].fields.text).toBe("peer plus");
+
+    const h = await glass();
+    h.snapshot("first", 1, 1, [{ title: "Page", fields: { text: "base" }, seq: 1 }]);
+    await h.flush();
+    h.wiki.setTiddler({ title: "Page", text: "mine" }); await h.flush();
+    const tx2 = h.writes()[0].txId;
+    h.change({ title: "Page", fields: { text: "older peer" }, seq: 2 }, []);            // the peer's entry precedes the write's echo
+    h.change({ title: "Page", fields: { text: "mine" }, seq: 3 }, [tx2]);
+    h.deliver({ type: "port:written", txId: tx2, status: "applied", applied: ["Page"], failed: [] });
+    await h.flush();
+    expect(h.text("Page")).toBe("mine");
+  });
+
+  it("a saved write with its one echo fires no peer edit", async () => {
+    const g = await glass();
+    g.snapshot("first", 1, 1, [{ title: "Page", fields: { text: "base" }, seq: 1 }]);
+    await g.flush();
+    let peers = 0; g.adaptor.onPeerEdit(() => peers++);
+    g.wiki.setTiddler({ title: "Page", text: "saved" }); await g.flush();
+    const tx = g.writes()[0].txId;
+    g.change({ title: "Page", fields: { text: "saved" }, seq: 3 }, [tx]);
+    g.deliver({ type: "port:written", txId: tx, status: "applied", applied: ["Page"], failed: [] });
+    await g.flush();
+    expect(peers).toBe(0);
+    expect(g.text("Page")).toBe("saved");
+  });
 });

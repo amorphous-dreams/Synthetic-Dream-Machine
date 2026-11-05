@@ -260,6 +260,23 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 # 2026-11-04, spend: a lead runs fresh per step, and spend reads true usage from the rollouts (#/the-shapes).
 <<~/ahu>>
 
+<<~ ahu slot=`#/owed`>>
+
+!! Owed ~ every lineage through the seat
+
+Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all launched Claude swarms... we'll want custom Claude tasked-spirit designs and 'summons', but long step-by-step, leap-by-leap lane-parallel work should go through this to manage the budgets in pono alignment."
+
+# ''A Claude seat.'' The seat spec stays lineage-blind (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>), but only its Codex and Copilot renderings stand. A Claude rendering runs a summoned spirit headless with a pinned model and effort, the seat law appended, and the walls; it reads the run's own usage report, stops the spirit at a ceiling, and keeps every step fresh (the spirit reads its lane state, does one step, writes state and its hand-back, and ends). Built after standing.
+# ''Summons.'' A custom tasked spirit gets a named, reviewed definition (model, effort, tools, the seed, its mask), and a summons invokes it by name, so its shape gets reviewed once instead of re-typed into every brief.
+# ''One budget across lineages.'' Row 7's house cap and lane shares, signed by the hand in the live wiki, govern Claude, Codex and Copilot alike. Each seat reads its share through its capability, and the vessel signs the roster's spend rows.
+# ''A fresh-per-step controller.'' The controller seat hands off through <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> instead of living one long session, which grows in cost with the square of its length.
+# ''A Copilot ceiling.'' Copilot spend reads from its log, but no ceiling stops a running Copilot seat; the seat needs one.
+# ''The spend table.'' The launcher reads its limits from a ruled table in `seat-harness#/the-spend-guard`, keyed to the pool window. It was built on a parked lane (`feature/green-jello-dinosaur-5--spend-burn`) and lands after standing.
+
+''The discipline until then.'' Long, lane-parallel work uses a fresh tasked spirit per lane step, never long resumes, which re-send the whole transcript each time. At most three Claude builders run in parallel. Each spirit's token total is recorded in its lane's canon row. Short ad-hoc scouts stay outside the seat. The operator watches the Claude meter, which the house can't read in-session.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/edges`>>
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>>
@@ -274,6 +291,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;d54nDT9HXvCkYF2kTWHxgBtkP2RDm-sDkTyCRGTO__4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yJLC5SttgZ34szwSU6ugmFfvnMszp3JhLyynpdk8V3E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -9,7 +9,7 @@ import { getAllChanges } from "@automerge/automerge";
 import { AutomergeDocStore } from "../src/automerge-doc-store.js";
 import { CompositeStore } from "../src/composite-store.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
-import type { ChangeOrigin, LarTiddlerRecord } from "../src/tiddler-store.js";
+import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord } from "../src/tiddler-store.js";
 import { tiddlerText } from "../src/index.js";
 
 const ROOT = "lar:///t/family";
@@ -157,5 +157,53 @@ describe("a single put or tombstone is a family of one", () => {
     await store.remove(`${ROOT}#/old`, origin);
     expect(doc().tiddlers[`${ROOT}#/old`]).toBeUndefined();
     expect(seen).toEqual([null]);
+  });
+});
+
+describe("a store's own write reaches every projection with its writer's origin", () => {
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const tag = (c: LarTiddlerChange) => `${c.title}:${c.origin.kind}${c.redelivery ? ":redelivery" : ""}`;
+  const watched = () => {
+    const repo = new Repo({ network: [] });
+    const handle = repo.create<LarDoc>(emptyLarDoc());
+    const store = new AutomergeDocStore(handle, "bag-o");
+    const perUri: string[] = [];
+    const perSet: string[] = [];
+    store.addProjection({ onUriChanged: (c) => perUri.push(tag(c)) });
+    store.addProjection({ onUriChanged: (c) => perSet.push(tag(c)), onChangeset: (cs) => perSet.push(cs.map(tag).join(",")) });
+    const outside = (title: string, text: string) => handle.change((doc) => {
+      (doc.tiddlers as Record<string, unknown>)[title] = { tiddler: { title, text } };
+    });
+    return { store, perUri, perSet, outside };
+  };
+  const CLI = "lar:///t/cli-put";
+  const writer: ChangeOrigin = { kind: "lares-verb", requestId: "cli-put" };
+
+  test("the debounced wave after the write re-reads the title under the writer's origin, marked a redelivery, never crdt-remote; CONTROL: a change made on the handle outside the store arrives as crdt-remote", async () => {
+    const { store, perUri, perSet, outside } = watched();
+    await store.writeFamily([rec(CLI, "hello")], [], writer);
+    const atReturn = { perUri: [...perUri], perSet: [...perSet] };
+    await sleep(200);                                                                   // past the provider's 40 ms debounce
+    expect(atReturn).toEqual({ perUri: [`${CLI}:lares-verb`], perSet: [`${CLI}:lares-verb`] });
+    // The debounced wave stands (a shore lands from it: the island adaptor's own-write wave, then the disk projector) and names its writer.
+    expect(perUri).toEqual([`${CLI}:lares-verb`, `${CLI}:lares-verb:redelivery`]);
+    expect(perSet).toEqual([`${CLI}:lares-verb`, `${CLI}:lares-verb:redelivery`]);
+    outside("lar:///t/remote", "from elsewhere");
+    await sleep(200);
+    expect(perUri.at(-1)).toBe("lar:///t/remote:crdt-remote");
+    expect(perSet.at(-1)).toBe("lar:///t/remote:crdt-remote");
+  });
+
+  test("a remote change still pending when the store writes the same title keeps its delivery: the coalesced wave reads crdt-remote, unmarked; CONTROL: remove re-reads under its writer's origin", async () => {
+    const { store, perUri, perSet, outside } = watched();
+    outside(CLI, "remote first");
+    await store.writeFamily([rec(CLI, "local after")], [], writer);
+    await sleep(200);
+    expect(perUri).toEqual([`${CLI}:lares-verb`, `${CLI}:crdt-remote`]);
+    expect(perSet).toEqual([`${CLI}:lares-verb`, `${CLI}:crdt-remote`]);
+    perUri.length = 0;
+    await store.remove(CLI, writer);
+    await sleep(200);
+    expect(perUri).toEqual([`${CLI}:lares-verb`, `${CLI}:lares-verb:redelivery`]);
   });
 });
