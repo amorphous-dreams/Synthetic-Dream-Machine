@@ -4,7 +4,7 @@ import { FACE_GRANT_PREFIX } from "../src/face-grant-record.js";
 import { makeFaceSeat } from "../src/face-seat.js";
 import { liftVesselOnlyIntoFace } from "../src/anon-lift.js";
 
-test("retry after a failed flush and restart does not restore a title removed from the rebound working store", async () => {
+test("retry after a failed flush in the SAME process (one Repo) does not restore a title removed from the rebound working store", async () => {
   const anchor = { kind: "place", aid: "Etest" } as const;
   const key = wikiWorkingFloorKey("daemon", anchor);
   const bag = wikiSlotUri("daemon", "working");
@@ -32,7 +32,8 @@ test("retry after a failed flush and restart does not restore a title removed fr
   });
   catalog.change(d => { d.tiddlers[key] = storedLarRecord(key, { text: "floor", "face-reach": "vessel-only", "minted-by": "vessel" }, "test"); });
   let failFlush = true;
-  // ONE Repo across the retry: the same process, the same repo instance (a reopened repo is the other test below).
+  // ONE Repo across the retry: the same process, the same repo instance, so the in-memory carry skips survive into the retry. The reopened
+  // Repo (a restart that lost the half-written destination) is anon-veil-lift's O3 test: it carries everything again and burns nothing.
   const repo = {
     find: async () => handle("floor"),
     create: () => { throw Error("unexpected create"); },
