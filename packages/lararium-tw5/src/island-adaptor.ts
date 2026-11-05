@@ -342,7 +342,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (this.actHolds.length === 0) return;
     const holds = this.actHolds.splice(0);
     const marked = this.drain.titles();
-    void this.drain.whenAcked().then(() => {
+    // A whole-drain target the Drain displaced (`superseded`: it keeps the oldest and the newest) never says the acts' writes rest: the hold
+    // asks again for the generation marked by now. An empty bag list releases the receipt at once, so the hold waits on a real rest.
+    void this._whenAllRested().then(() => {
       for (const { hold, members } of holds) {
         const bags = [...new Set([...members, ...marked])].filter((title) => !this.drain.owes(title)).map((title) => this.lastWriteBag.get(title));
         hold.done([...new Set(bags.filter((bag): bag is string => bag !== undefined))]);
@@ -382,12 +384,16 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       held?.();
       this.drain.kick();
       if (close) return await this.drain.close();
-      // A `superseded` target was handed forward to a newer one and never read as rested: ask again for the generation marked by now.
-      for (;;) {
-        const outcome = await this.drain.whenAcked();
-        if (outcome.kind !== "superseded") return outcome;
-      }
+      return await this._whenAllRested();
     } finally { this._firing--; }
+  }
+
+  /** Every generation marked so far rests: a `superseded` whole-drain target was handed forward to a newer one and never read as rested, so ask again for the generation marked by now. */
+  private async _whenAllRested(): Promise<DrainOutcome> {
+    for (;;) {
+      const outcome = await this.drain.whenAcked();
+      if (outcome.kind !== "superseded") return outcome;
+    }
   }
 
   /** One title's turn in the drain: an owed title keeps its own generation, an unmarked hand marks; the pump starts, the landing awaits. */
