@@ -229,6 +229,7 @@ import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { landEveryHostingAct }                    from "./commands/host.js";
 import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
+import { daemonSwarmWiki }                        from "./swarm-wiki.js";
 import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 import { PLANE_LABELS } from "@lararium/mesh";
@@ -3318,6 +3319,8 @@ async function prepareNodeBootOn(
       storageDir, sealHome, repo, catalogUrl: assembly.catalogHandle.url,
       casDir: casDirForStorage(storageDir), restartWiki: reloadWikiAfterVerb,
       onRolled: afterRoll,
+      // The swarm's controls rest in the daemon wiki, device-local by the daemon document's anchor.
+      swarmWiki: daemonSwarmWiki(readDaemonDoc),
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
       ...(sovereign ? { seatDuties: (facts) => askSeatDutiesAsVessel(facts).answer } : {}),

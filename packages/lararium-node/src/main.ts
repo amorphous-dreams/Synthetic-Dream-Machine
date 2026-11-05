@@ -60,7 +60,7 @@ import { parseMeshPeer } from "@lararium/mesh";
 import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
 import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront } from "./uds-channel.js";
 import { nodeSwitchActLog } from "./switch-act-log.js";
-import { PROMOTE_HAND_CODES, KAHUA_OPERATOR_ROWS, REALM_KEY_VERBS, REALM_SESSION_ACTS, STORE_DOOR_FACE_ROWS, faceRowAnswer } from "./store-door-verbs.js";
+import { STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, REALM_KEY_VERBS, REALM_SESSION_ACTS, STORE_DOOR_FACE_ROWS, faceRowAnswer } from "./store-door-verbs.js";
 import { makeCustodyHolder } from "./custody-holder.js";
 import { testScratchNotice } from "./test-scratch-notice.js";
 import { seatCustody } from "./custody-seat.js";
@@ -797,8 +797,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     signers:      result.sessionSigns,
     switchActs:   nodeSwitchActLog,
     sessionVerbs: STORE_DOOR_FACE_ROWS,
-    handOnlyActs: new Set([...KAHUA_OPERATOR_ROWS, ...PROMOTE_HAND_CODES.keys()]),
-    handOnlyCodes: PROMOTE_HAND_CODES,
+    handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS,
+    handOnlyCodes: STORE_DOOR_HAND_CODES,
     socketVerbs:  new Set([...STORE_DOOR_FACE_ROWS, ...REALM_KEY_VERBS]),
     // A FACE ROW ANSWERS ON THE SOCKET ALONE (K20): the store door's face rows, and the realm verbs a session runs that
     // name a face's key (`REALM_SESSION_ACTS`), ride `session:act` beside the sealed acts, main's handler running as the

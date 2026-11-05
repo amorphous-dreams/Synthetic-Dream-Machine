@@ -64,7 +64,8 @@
  */
 
 import { runPromoteVerb } from "./commands/promote.js";
-import { PromoteRefused, KapaeRefused, type PromoteCommandRequest } from "@lararium/mesh";
+import { runSwarmVerb } from "./commands/swarm.js";
+import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
 import type { Repo } from "@automerge/automerge-repo";
 import { readFileSync } from "node:fs";
@@ -141,6 +142,8 @@ export interface StoreDoorDeps {
   /** The fleet the standing vessel WEARS (its device edge's root, its own atom), lent by the composer so the operator's
    *  road settles a joinee's own fleet as the fold does (road `T34`). Absent on a direct act and at the floor. */
   readonly wornFleet?: () => WornFleet | undefined;
+  /** The daemon wiki the swarm's controls rest in, where a daemon stands; absent on a direct act, which refuses every swarm row by name. */
+  readonly swarmWiki?: SwarmWikiPort;
 }
 
 /** How long a row waits for `onRolled`'s own truthful answer before reporting the refold `"pending"`. The
@@ -181,6 +184,7 @@ export const STORE_DOOR_VERBS = [
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status", "intent-relay-rotate",
   "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
+  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-go-issue",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -201,6 +205,7 @@ export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoo
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status",
   "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
+  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-go-issue",
 ]);
 
 /**
@@ -214,6 +219,14 @@ export const PROMOTE_HAND_CODES: ReadonlyMap<string, string> = new Map([
   ["promote-commit", "promote-needs-hand"], ["promote-drop", "promote-needs-hand"], ["promote-orphan", "promote-needs-hand"],
   ["kapae-raise", "kapae-needs-hand"], ["kapae-lower", "kapae-needs-hand"],
 ]);
+
+/** The swarm rows only a hand runs (the house cap, a lane share, a go); `swarm-show` stays open to a seat. Advisory like the promote codes: the ward binds them. */
+export const SWARM_HAND_CODES: ReadonlyMap<string, string> = new Map(Object.entries(SWARM_VERB_HAND_CODES));
+
+/** The socket's one hand-only table: every code a seat session refuses, promote and swarm together. */
+export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES]);
+/** The acts a seat session refuses at the socket: the kahua operator rows (`beyond-profile`) and every row of the code table. */
+export const STORE_DOOR_HAND_ONLY_ACTS: ReadonlySet<string> = new Set([...KAHUA_OPERATOR_ROWS, ...STORE_DOOR_HAND_CODES.keys()]);
 
 /**
  * The face a face row names: `face`, else `handleIndex`; undefined where it names none. The two naming different faces
@@ -239,7 +252,7 @@ const REFUSALS = [
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError, FleetJoinRefused, NexusCabalError,
   CarryBundleError,
   IntentRefused,
-  KahuaRefused, PromoteRefused, KapaeRefused,
+  KahuaRefused, PromoteRefused, KapaeRefused, SwarmRefused,
   FaceRowRefused,
 ] as const;
 
@@ -328,7 +341,13 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
   };
   const promoteRow = (action: PromoteCommandRequest["action"], args: Readonly<Record<string, unknown>>) =>
     runPromoteVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("restartWiki", deps.restartWiki) });
+  const swarmRow = (action: "show" | "cap-set" | "share-set" | "go-issue", args: Readonly<Record<string, unknown>>) =>
+    runSwarmVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, ...opt("wiki", deps.swarmWiki) });
   return {
+    "swarm-show": (args) => answer("swarm-show", () => swarmRow("show", args)),
+    "swarm-cap-set": (args) => answer("swarm-cap-set", () => swarmRow("cap-set", args)),
+    "swarm-share-set": (args) => answer("swarm-share-set", () => swarmRow("share-set", args)),
+    "swarm-go-issue": (args) => answer("swarm-go-issue", () => swarmRow("go-issue", args)),
     "promote-prepare": (args) => answer("promote-prepare", () => promoteRow("prepare", args)),
     "promote-commit": (args) => answer("promote-commit", () => promoteRow("commit", args)),
     "promote-drop": (args) => answer("promote-drop", () => promoteRow("drop", args)),
