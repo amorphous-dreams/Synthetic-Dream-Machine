@@ -25,6 +25,19 @@ import { KeyedCoalesceGate } from "./projection-nalu.js";
 import { neverSyncs } from "./lar-uris.js";
 export type { MemeProjection, RawPatch } from "./tiddler-store.js";
 
+/** One change event's claim on a title's debounced wave: who wrote it, and whether the store already fired the writer's own envelope. */
+interface Wave { readonly origin: ChangeOrigin; readonly redelivery: boolean }
+
+/**
+ * Join a change event into a title's pending wave. The latest event names the origin, as before, except that a
+ * redelivery never covers news: a pending wave from a remote or sync merge keeps its origin and stays unmarked, so the
+ * coalesced delivery still reads as the merge it carries. A wave reads a redelivery only while every event in it was one.
+ */
+function joinWave(pending: Wave | undefined, next: Wave): Wave {
+  if (pending && !pending.redelivery && next.redelivery) return pending;
+  return next;
+}
+
 // ---------------------------------------------------------------------------
 // MemeProvider
 // ---------------------------------------------------------------------------
@@ -39,13 +52,13 @@ export class MemeProvider {
   static readonly DEBOUNCE_MS = 40;
 
   private readonly _projections = new Set<MemeProjection>();
-  private readonly _pending     = new Map<string, { origin: ChangeOrigin; timer: ReturnType<typeof setTimeout> }>();
+  private readonly _pending     = new Map<string, { wave: Wave; timer: ReturnType<typeof setTimeout> }>();
   /** Set of island IDs whose initial replay has settled. Default island: "automerge". */
   private readonly _syncComplete = new Set<string>();
 
   /** Per-bag accumulator for the gated changeset path — retain each touched URI's origin and read
    *  its current record and heads together when the changeset leaves. */
-  private readonly _changesetPending = new Map<string, { touched: Map<string, ChangeOrigin> }>();
+  private readonly _changesetPending = new Map<string, { touched: Map<string, Wave> }>();
   /** The Automerge-boundary nalu (the 5th shore): coalesce a storm of changeset emissions per bag,
    *  storm-safe via maxWaitMs (auditTime — never starves the re-projection under an unbroken flood). */
   private readonly _changesetGate = new KeyedCoalesceGate<string>({
@@ -104,7 +117,7 @@ export class MemeProvider {
    * writer lands one in a document, so a peer's document that carries one names a fault at that peer,
    * and this shore does not spread it.
    */
-  handleChange(patches: RawPatch[], origin: ChangeOrigin): void {
+  handleChange(patches: RawPatch[], origin: ChangeOrigin, redelivery = false): void {
     // Collect all touched URIs from this Automerge change() transaction.
     const touched = new Set<string>();
     for (const p of patches) {
@@ -119,17 +132,18 @@ export class MemeProvider {
     // `onChangeset` receives the union of the events gathered for its bag as ONE array, so a shore can land
     // it with no turn handed to the host in between. The gate's max wait guarantees progress under an
     // unbroken flood (Mogul–Ramakrishnan receive-livelock); the union only ever grows by whole events.
+    const wave: Wave = { origin, redelivery };
     const projections = [...this._projections];
     if (projections.some((p) => p.onChangeset)) {
       const bagId = this._getBag?.() ?? "automerge";
       const acc = this._changesetPending.get(bagId);
-      if (acc) { for (const u of touched) acc.touched.set(u, origin); }
-      else { this._changesetPending.set(bagId, { touched: new Map([...touched].map((u) => [u, origin])) }); }
+      if (acc) { for (const u of touched) acc.touched.set(u, joinWave(acc.touched.get(u), wave)); }
+      else { this._changesetPending.set(bagId, { touched: new Map([...touched].map((u) => [u, wave])) }); }
       this._changesetGate.mark(bagId);
     }
     // A projection that declares no changeset keeps its per-URI path, one debounce per title.
     if (projections.some((p) => !p.onChangeset)) {
-      for (const uri of touched) this._schedule(uri, origin);
+      for (const uri of touched) this._schedule(uri, wave);
     }
   }
 
@@ -185,10 +199,10 @@ export class MemeProvider {
     this._syncComplete.add(islandId);
 
     // Flush all pending debounces — deliver final state now, don't wait.
-    for (const [uri, { origin, timer }] of this._pending) {
+    for (const [uri, { wave, timer }] of this._pending) {
       clearTimeout(timer);
       this._pending.delete(uri);
-      this._fire(uri, origin);
+      this._fire(uri, wave);
     }
 
     // Flush every gated changeset accumulator too — the bulk state MUST land before onSyncComplete
@@ -205,16 +219,17 @@ export class MemeProvider {
   // Internal
   // ---------------------------------------------------------------------------
 
-  private _schedule(uri: string, origin: ChangeOrigin): void {
+  private _schedule(uri: string, wave: Wave): void {
     const existing = this._pending.get(uri);
     if (existing) clearTimeout(existing.timer);
+    const joined = joinWave(existing?.wave, wave);
 
     const timer = setTimeout(() => {
       this._pending.delete(uri);
-      this._fire(uri, origin);
+      this._fire(uri, joined);
     }, MemeProvider.DEBOUNCE_MS);
 
-    this._pending.set(uri, { origin, timer });
+    this._pending.set(uri, { wave: joined, timer });
   }
 
   /** Read complete current envelopes and deliver one coalesced changeset per bag. */
@@ -225,11 +240,12 @@ export class MemeProvider {
     const bag = this._getBag?.();
     const heads = this._getHeads() ?? undefined;
     const changes: LarTiddlerChange[] = [];
-    for (const [uri, origin] of acc.touched) {
+    for (const [uri, { origin, redelivery }] of acc.touched) {
       changes.push({
         title: uri,
         record: this._getRecord(uri),
         origin,
+        ...(redelivery ? { redelivery: true as const } : {}),
         ...(bag !== undefined ? { bag } : {}),
         ...(heads !== undefined ? { heads } : {}),
       });
@@ -242,11 +258,11 @@ export class MemeProvider {
     }
   }
 
-  private _fire(uri: string, origin: ChangeOrigin): void {
+  private _fire(uri: string, { origin, redelivery }: Wave): void {
     const record = this._getRecord(uri);
     const bag = this._getBag?.();
     const heads = this._getHeads() ?? undefined;
-    const change: LarTiddlerChange = { title: uri, record, origin, ...(bag !== undefined && { bag }), ...(heads !== undefined && { heads }) };
+    const change: LarTiddlerChange = { title: uri, record, origin, ...(redelivery && { redelivery: true as const }), ...(bag !== undefined && { bag }), ...(heads !== undefined && { heads }) };
     for (const p of this._projections) {
       // A projection that declares a changeset received this title in its bag's union already.
       if (p.onChangeset) continue;

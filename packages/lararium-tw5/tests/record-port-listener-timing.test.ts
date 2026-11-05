@@ -86,20 +86,38 @@ describe("port listener timing", () => {
     const r = await realPort();
     r.composite.addLayer({ bagId: "real", store: real, writable: true, defaultWritable: false });
     const origins: string[] = [];
-    r.composite.subscribe((change) => { if (change.title === "Once" || change.title === "Remote") origins.push(`${change.title}:${change.origin.kind}`); });
+    r.composite.subscribe((change) => { if (change.title === "Once" || change.title === "Remote") origins.push(`${change.title}:${change.origin.kind}${change.redelivery ? ":redelivery" : ""}`); });
     const entriesOf = (title: string) => ofType(r.messages, "port:changes").flatMap((message) => message.entries).filter((entry) => entry.title === title);
     try {
       await r.send(open);
       await r.send(write("once-tx", "Once", "real"));
       await new Promise((resolve) => setTimeout(resolve, 200));                       // past the provider's 40 ms debounce
       expect(entriesOf("Once").map((entry) => entry.causedBy)).toEqual([["once-tx"]]);
-      expect(origins).toEqual(["Once:tw-local"]);
+      // The store's debounced wave re-reads the title under the port's own origin, marked a redelivery, and the page never sees it.
+      expect(origins).toEqual(["Once:tw-local", "Once:tw-local:redelivery"]);
       (real as unknown as { handle: { change(fn: (doc: LarDoc) => void): void } }).handle.change((doc) => {
         (doc.tiddlers as Record<string, unknown>)["Remote"] = { tiddler: { title: "Remote", text: "from elsewhere" } };
       });
       await new Promise((resolve) => setTimeout(resolve, 200));
       expect(origins.filter((entry) => entry.startsWith("Remote"))).toEqual(["Remote:crdt-remote"]);
       expect(entriesOf("Remote").map((entry) => entry.causedBy)).toEqual([[]]);
+    } finally { await r.close(); }
+  });
+  test("port-other-writer-echoes-once: a write by another writer on the store (a CLI put, no port) reaches the page exactly once, with no cause, after the debounce; CONTROL: its debounced redelivery still reaches a composite subscriber under the writer's origin", async () => {
+    const repo = new Repo({ network: [] });
+    const real = new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), "real");
+    const r = await realPort();
+    r.composite.addLayer({ bagId: "real", store: real, writable: true, defaultWritable: false });
+    const origins: string[] = [];
+    r.composite.subscribe((change) => { if (change.title === "Cli") origins.push(`${change.origin.kind}${change.redelivery ? ":redelivery" : ""}`); });
+    try {
+      await r.send(open);
+      await real.writeFamily([{ tiddler: { title: "Cli", text: "from the CLI" } }], [], { kind: "lares-verb", requestId: "x" });
+      await new Promise((resolve) => setTimeout(resolve, 200));                       // past the provider's 40 ms debounce
+      const entries = ofType(r.messages, "port:changes").flatMap((message) => message.entries).filter((entry) => entry.title === "Cli");
+      expect(entries.map((entry) => entry.causedBy)).toEqual([[]]);
+      expect(entries[0]?.fields).toMatchObject({ text: "from the CLI" });
+      expect(origins).toEqual(["lares-verb", "lares-verb:redelivery"]);
     } finally { await r.close(); }
   });
 });

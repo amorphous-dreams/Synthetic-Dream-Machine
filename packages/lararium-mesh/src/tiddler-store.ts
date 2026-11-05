@@ -179,6 +179,13 @@ export interface LarTiddlerChange {
    * The writer's next write of this title takes it as its base.
    */
   readonly writtenAt?: readonly string[];
+  /**
+   * The store already fired this change's own envelope when it wrote it; this envelope re-reads the title after the
+   * provider's debounce, under the writer's origin, for the shores that land from the debounced wave (the island
+   * adaptor, then the disk projector reading its wiki). A reader that took the writer's envelope drops it: it carries
+   * no write of its own. Absent on every write's own envelope and on every remote or sync merge.
+   */
+  readonly redelivery?: true;
 }
 
 /** The conditional hard-remove a promotion's retract rides (`LarTiddlerStore.remove`). */
