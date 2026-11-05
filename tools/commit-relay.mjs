@@ -5,7 +5,7 @@ import os from 'node:os';
 import { randomBytes } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { openHeld } from './held-dir.mjs';
-import { brokerRootPath, ensureBrokerRoot, ensureLaneDir } from './broker-root.mjs';
+import { brokerRootPath, ensureBrokerRoot, ensureLaneDir, ensureStageRoot, laneId } from './broker-root.mjs';
 import { addWorktree, commitWithReceipt, pushWithGo, removeWorktree } from './seat-broker.mjs';
 import { runInstallSeat } from './seat-walls.mjs';
 
@@ -35,8 +35,7 @@ const goDir = ensureLaneDir(brokerRoot, 'go', lane, rootOpts);
 const goFile = path.join(goDir, 'push-go');
 const iso = ensureLaneDir(brokerRoot, 'iso', lane, rootOpts);
 // A made worktree is a GRANTED root for its builder, so it lives under the scratch tree (house law) but in a broker-owned dir no lane grants: .broker-worktrees/<lane>.
-const stageRoot = path.join(scratch, '.broker-worktrees', path.basename(lane));
-await (await import('node:fs/promises')).mkdir(stageRoot, { recursive: true, mode: 0o700 });
+const stageRoot = ensureStageRoot(scratch, laneId(lane));
 const launcher = await realpath(options.launcher);
 if (launcher === scratch || inside(scratch, launcher)) throw new Error('launcher must sit outside the scratch tree entirely: a lead can write anywhere a lane or worktree lives under it');
 const branch = options.branch;
@@ -54,7 +53,7 @@ const checks = options.checks ? JSON.parse(await readFile(options.checks, 'utf8'
 const gitDirOf = async () => { const dot = path.join(worktree, '.git'); try { const text = await readFile(dot, 'utf8'); const m = /^gitdir: (.+)$/m.exec(text); return m ? path.resolve(worktree, m[1].trim()) : dot; } catch (error) { if (error.code === 'EISDIR') return dot; throw error; } };
 const identity = () => { const read = key => (spawnSync('/usr/bin/git', ['config', '--global', key], { encoding: 'utf8', env: { PATH: '/usr/bin:/bin', HOME: os.homedir(), GIT_CONFIG_NOSYSTEM: '1' } }).stdout || '').trim(); return { name: options['author-name'] || read('user.name') || 'Relay', email: options['author-email'] || read('user.email') || 'relay@example.invalid' }; };
 const pinnedGitDir = await gitDirOf();
-const brokerCtx = async () => ({ gitDir: pinnedGitDir, laneRoot: lane, worktree, iso, stageRoot, branch, author: identity(), receipts, key, remoteUrl: options['remote-url'], requiredChecks: checks.map(c => c.name), checks, bwrap: true, goFile: path.join(goDir, path.basename(goFile)) });
+const brokerCtx = async () => ({ gitDir: pinnedGitDir, laneRoot: lane, laneId: laneId(lane), worktree, iso, stageRoot, branch, author: identity(), receipts, key, remoteUrl: options['remote-url'], requiredChecks: checks.map(c => c.name), checks, bwrap: true, goFile: path.join(goDir, path.basename(goFile)) });
 const cap = value => new TextDecoder().decode(Buffer.from(value).subarray(0, 8192), { stream: true });
 const result = run => ({ ok: run.status === 0, head: (git('rev-parse', '--short', 'HEAD').stdout || '').trim(), output: cap((run.stdout || '') + (run.stderr || '') + (run.error ? String(run.error) : '')) });
 

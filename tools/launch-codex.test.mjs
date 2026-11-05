@@ -1194,3 +1194,18 @@ test("P2 a running seat's output has a live bound: a seat dir over the cap is st
   const v2 = await superviseSeat({ held: S2.held, laneHeld: S2.laneHeld, doneName: "done-n", bsdPath: S2.bsd, marker: "m", home: S2.home, ceiling: 1e9, mode: "read", rest: [], maxBytes: 1e6 }, { spawn: fakeChild(0), sleep: sleep1, groupAlive: () => false, signal: () => {} });
   assert.equal(v2, "exited");
 });
+
+test("P1 preflight keeps every granted root clear of the staging tree: a lead or build worktree that is the scratch dir or an ancestor of the staging parent refuses, a seat dir inside staging refuses, and the EXACT made worktree passes", () => {
+  const w = world();
+  const scratch = join(realpathSync(w.home), ".lares-scratch"), st = join(scratch, ".broker-worktrees");
+  const madeParent = join(st, "lane-0123456789abcdef", "wt-Ab12Cd"); mkdirSync(join(madeParent, "wt"), { recursive: true });
+  for (const mode of ["lead", "build"]) {
+    refuses(w, { mode, worktree: scratch }, /equals or contains the broker's worktree staging tree/);
+    refuses(w, { mode, worktree: st }, /equals or contains the broker's worktree staging tree/);
+    refuses(w, { mode, worktree: join(st, "lane-0123456789abcdef") }, /equals or contains|sits inside/);
+    refuses(w, { mode, worktree: madeParent }, /only the exact made worktree/);
+  }
+  assert.ok(preflight(ask(w, { mode: "build", worktree: join(madeParent, "wt") }), w.readers), "CONTROL the exact made worktree passes");
+  const inStage = join(st, "lane-0123456789abcdef", "seatdir"); mkdirSync(inStage, { recursive: true }); writeFileSync(join(inStage, "brief.md"), "b");
+  refuses(w, { mode: "read", seatDir: inStage, worktree: undefined }, /sits inside the broker's worktree staging tree/);
+});

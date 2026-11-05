@@ -7,6 +7,7 @@
  * mode exactly 0700, and the whole path outside the scratch tree and every guarded root; it creates nothing.
  * `ensureBrokerRoot` makes the missing components (0700) and re-verifies; `newSeatDir` mkdtemp's a seat inside it.
  */
+import { createHash } from "node:crypto";
 import { lstatSync, mkdirSync, mkdtempSync, readdirSync, realpathSync } from "node:fs";
 import path from "node:path";
 
@@ -58,11 +59,11 @@ function checkParts(root) {
   }
 }
 
-/** The per-lane subdirectory name: the lane root's own base name, so lanes never share a go or a state dir. */
+/** The per-lane identity: a digest of the lane root's REAL path (two lanes with one base name never share), shown with the base name for humans. */
 export function laneId(laneRoot) {
-  const id = path.basename(laneRoot);
-  if (!/^[A-Za-z0-9._-]+$/.test(id) || id === "." || id === "..") throw new Error(`lane root ${laneRoot} has no safe base name`);
-  return id;
+  let real = laneRoot; try { real = realpathSync(laneRoot); } catch { /* an absent lane still digests its path */ }
+  const base = path.basename(real).replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 40) || "lane";
+  return `${base}-${createHash("sha256").update(real).digest("hex").slice(0, 16)}`;
 }
 
 /** `<root>/go/<lane>/push-go` and `<root>/iso/<lane>`: the broker's own authority and state, nowhere a lead can write. */
@@ -113,4 +114,40 @@ export function checkBrokerRootSize(root, maxGb = Number(process.env.LARES_BROKE
 /** A fresh seat directory (mkdtemp, 0700) inside a verified root. */
 export function newSeatDir(root) {
   return mkdtempSync(path.join(root, "seats", "seat-")); // broker-owned
+}
+
+
+/** The made-worktree shape: `<scratch>/.broker-worktrees/<lane-id>/wt-<rand>/wt`, the only path inside the staging tree a seat may be granted. */
+export function isMadeWorktree(scratch, p) {
+  const rel = path.relative(path.join(scratch, ".broker-worktrees"), p).split(path.sep);
+  return rel.length === 3 && !rel[0].startsWith(".") && rel[0] !== ".." && /^wt-[A-Za-z0-9]+$/.test(rel[1]) && rel[2] === "wt";
+}
+
+/**
+ * Throws unless every granted root (a worktree, a seat dir, a lane root) stands clear of the broker's worktree staging tree: none
+ * equals it, contains it (the scratch dir itself included), or sits inside it, EXCEPT the exact made worktree a build seat was handed.
+ */
+export function checkGrantedRoots(scratch, roots) {
+  const stage = path.join(scratch, ".broker-worktrees");
+  const within = (parent, child) => child === parent || child.startsWith(`${parent}${path.sep}`);
+  for (const r of roots.filter(Boolean)) {
+    if (r === scratch || within(r, stage)) throw new Error(`the granted root ${r} equals or contains the broker's worktree staging tree ${stage}; grants go under ${scratch}/<lane>/..., never the scratch dir itself`);
+    if (within(stage, r) && !isMadeWorktree(scratch, r)) throw new Error(`the granted root ${r} sits inside the broker's worktree staging tree ${stage}; only the exact made worktree may be granted`);
+  }
+}
+
+/** The staging parent `<scratch>/.broker-worktrees/<lane-id>`: every component a real directory of ours, mode exactly 0700, none group- or world-writable; made (0700) when absent. */
+export function ensureStageRoot(scratch, id) {
+  const st0 = lstatSync(scratch);
+  if (st0.isSymbolicLink() || !st0.isDirectory() || st0.uid !== uid()) throw new Error(`${scratch} is not a real directory of ours`);
+  let cursor = scratch;
+  for (const part of [".broker-worktrees", id]) {
+    cursor = path.join(cursor, part);
+    try { mkdirSync(cursor, { mode: 0o700 }); } catch (error) { if (error.code !== "EEXIST") throw error; } // broker-owned
+    const st = lstatSync(cursor);
+    if (st.isSymbolicLink() || !st.isDirectory()) throw new Error(`${cursor} is not a real directory (a symlink or file stands in the staging path)`);
+    if (st.uid !== uid()) throw new Error(`${cursor} is not owned by this user`);
+    if ((st.mode & 0o777) !== 0o700) throw new Error(`${cursor} must be mode 0700 (it reads ${(st.mode & 0o777).toString(8)})`);
+  }
+  return cursor;
 }

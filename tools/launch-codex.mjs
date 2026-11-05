@@ -39,7 +39,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { leadStepBrief, peekStep, writeState } from "./lane-state.mjs";
 import { heldBytes } from "./held-dir.mjs";
-import { brokerRootPath, checkBrokerRoot, checkBrokerRootSize, ensureBrokerRoot, newSeatDir } from "./broker-root.mjs";
+import { brokerRootPath, checkGrantedRoots, checkBrokerRoot, checkBrokerRootSize, ensureBrokerRoot, newSeatDir } from "./broker-root.mjs";
 import { HAVE_BWRAP } from "./seat-walls.mjs";
 import { copyBack, heldOver, moveAside, removeHeldContents, mkdirHeld, openHeldSync, openLogHeld, readHeld, writeHeld } from "./held-dir.mjs";
 import { globalStampPath, packageStampPath, sourceDigest, workspacePackageDirs } from "./stamp-build.mjs";
@@ -357,6 +357,7 @@ export function preflight({ mode, model, seatDir, worktree, briefless }, readers
   const there = real(seatDir);
   const rel = there.startsWith(`${scratch}/`) ? there.slice(scratch.length + 1).split("/") : [];
   if (rel.length < 2) throw refuse(`seat dir must sit under ${scratch}/<lane>/ (the spend tally reads the lane from it): ${seatDir}`);
+  try { checkGrantedRoots(scratch, [there]); } catch (e) { throw refuse(e.message); }
   if (!briefless && !existsSync(join(seatDir, "brief.md"))) throw refuse(`no ${join(seatDir, "brief.md")}`);
   if (!MODES.includes(mode)) throw refuse("mode must be build, lead, read or research");
   if (model === "gpt-6-sol") throw refuse("gpt-6-sol never launches; use gpt-6.1-sol");
@@ -371,6 +372,7 @@ export function preflight({ mode, model, seatDir, worktree, briefless }, readers
     const role = mode === "lead" ? "lead" : "builder";
     if (!worktree) throw refuse(`a ${role} needs its worktree`);
     if (real(worktree) === real(readers.repo)) throw refuse(`a ${role} never writes the main checkout`);
+    try { checkGrantedRoots(scratch, [real(worktree)]); } catch (e) { throw refuse(e.message); }
     if (!real(worktree).startsWith(`${scratch}/`)) throw refuse(`a ${role} worktree must sit under ${scratch}/ (the house law; a granted root outside it could be an ancestor of the broker root): ${worktree}`);
     if (mode === "build" && !readers.distFresh(worktree)) throw refuse(`the worktree's dist is stale (or unreadable): the lead runs 'pnpm build' in ${worktree} before launching a build seat`);
   }
@@ -554,6 +556,7 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const guarded = [seatDir, worktree, stepPlan?.laneRoot, laneDir].filter(Boolean);
     guard(() => checkBrokerRoot(root, { realHome: homeReal, guarded }));
     const laneRoot = o.mode === "lead" ? (stepPlan?.laneRoot ?? dirname(seatDir)) : undefined;
+    guard(() => checkGrantedRoots(scratchReal, [laneRoot]));
     log(pool);
     if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...seatArgs({ ...o, seatDir: join(root, "seats", "seat-DRYRUN"), worktree, laneRoot, compactLimit: o.canary ? 50_000 : undefined }), "<brief>"])}`); return 0; }
     // A live seat runs inside a PID namespace or does not run: without the wall the launch refuses by name.

@@ -5,7 +5,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync
 import { createServer } from 'node:net';
 import os from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
-import { ensureLaneDir, goPathFor } from './broker-root.mjs';
+import { ensureLaneDir, ensureStageRoot, goPathFor, laneId, checkGrantedRoots } from './broker-root.mjs';
 const scratchOf = (home) => path.join(realpathSync(home), '.lares-scratch');
 import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
@@ -47,7 +47,8 @@ console.log('SEAT-LAUNCHED 123');
   const run = () => { const r = spawnSync(process.execPath, [script, '--lane-root', lane, '--worktree', wt, '--branch', 'relay-test', '--launcher', launcher, ...brokerArgs, '--remote-url', remote, '--once'], { encoding: 'utf8', env: relayEnv }); assert.equal(r.status, 0, r.stderr); };
   const response = id => JSON.parse(readFileSync(path.join(lane, 'relay', `res-${id}.json`), 'utf8'));
   const go = value => { ensureGo(); writeFileSync(goFile, value); };
-  return { home, root, wt, lane, remote, git, request, run, response, go, goFile, launcher, bin, relayEnv, brokerArgs };
+  const goText = (branch, head, dest = remote) => `${laneId(lane)}\n${branch}\n${head}\n${dest}\n`;
+  return { home, root, wt, lane, remote, git, request, run, response, go, goText, goFile, launcher, bin, relayEnv, brokerArgs };
 }
 
 wallTest('commit selects only requested paths', () => {
@@ -73,13 +74,13 @@ test('push with a different branch go refuses', () => {
   assert.equal(spawnSync('git', ['--git-dir', x.remote, 'rev-parse', '--verify', 'refs/heads/relay-test']).status, 128);
 });
 test('push with matching go succeeds and consumes go', () => {
-  const x = setup(); x.go(`relay-test\n${x.git('rev-parse', 'HEAD')}\n`); x.request('1', { kind: 'push' }); x.run();
+  const x = setup(); x.go(x.goText('relay-test', x.git('rev-parse', 'HEAD'))); x.request('1', { kind: 'push' }); x.run();
   assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1'))); assert.equal(existsSync(x.goFile), false);
   assert.equal(execFileSync('git', ['--git-dir', x.remote, 'rev-parse', 'refs/heads/relay-test'], { encoding: 'utf8' }).trim(), x.git('rev-parse', 'HEAD'));
 });
 wallTest('requests run in id order, completing each before the next', () => {
   const x = setup(); writeFileSync(path.join(x.wt, 'a'), 'changed\n');
-  x.request('02', { kind: 'push' }); x.request('01', { kind: 'commit', message: 'message', paths: ['a'] }); x.go(`relay-test\n${x.git('rev-parse', 'HEAD')}\n`); x.run();
+  x.request('02', { kind: 'push' }); x.request('01', { kind: 'commit', message: 'message', paths: ['a'] }); x.go(x.goText('relay-test', x.git('rev-parse', 'HEAD'))); x.run();
   assert.equal(x.response('01').ok, true, JSON.stringify(x.response('01')));
   assert.equal(x.response('02').ok, false); assert.match(x.response('02').output, /go head/, 'the push read the head the commit had already moved');
 });
@@ -175,7 +176,7 @@ function brokerFixture() {
   const checks = [{ name: 'true', argv: ['/usr/bin/true'] }];
   // Where bubblewrap cannot stand (a runner that bars user namespaces) a stand-in signs the receipt the seat would; the wall proofs skip there.
   const standIn = async (c) => { c.receipts.set(c.tree, signReceipt({ key: c.key, tree: c.tree, checks: c.checks.map((k) => k.name), definitions: c.checks })); return { ok: true, output: '' }; };
-  const ctx = { ...(HAVE_BWRAP ? {} : { checkRunner: standIn }), laneRoot: root, gitDir: path.join(wt, '.git'), worktree: wt, iso, remoteUrl: remote, branch: 'lane', author: { name: 'Broker', email: 'broker@example.invalid' }, receipts, key, requiredChecks: ['true'], checks, bwrap: HAVE_BWRAP };
+  const ctx = { ...(HAVE_BWRAP ? {} : { checkRunner: standIn }), laneId: 'lane-x', laneRoot: root, gitDir: path.join(wt, '.git'), worktree: wt, iso, remoteUrl: remote, branch: 'lane', author: { name: 'Broker', email: 'broker@example.invalid' }, receipts, key, requiredChecks: ['true'], checks, bwrap: HAVE_BWRAP };
   const marker = (n) => path.join(root, `MARK-${n}`);
   const hook = (name, body) => { const f = path.join(wt, '.git', 'hooks', name); mkdirSync(path.dirname(f), { recursive: true }); writeFileSync(f, `#!/bin/sh\n${body}\n`); chmodSync(f, 0o755); };
   const markers = () => readdirSync(root).filter((n) => n.startsWith('MARK-'));
@@ -202,7 +203,7 @@ test('PROOF 1 planted hooks and a credential helper never run: commit and push l
   x.git('config', 'remote.origin.pushurl', `ext::sh -c "touch '${x.marker('ext')}'"`);
   x.git('config', `url.${path.join(x.root, 'elsewhere.git')}.insteadOf`, x.remote);
   execFileSync('git', ['init', '--bare', '-q', path.join(x.root, 'elsewhere.git')]);
-  writeFileSync(x.goFile, `lane\n${x.git('rev-parse', 'HEAD')}\n`);
+  writeFileSync(x.goFile, `lane-x\nlane\n${x.git('rev-parse', 'HEAD')}\n${x.remote}\n`);
   const p = await pushWithGo({ ...x.ctx, goFile: x.goFile });
   assert.equal(p.ok, true, JSON.stringify(p));
   assert.equal(execFileSync('git', ['--git-dir', x.remote, 'rev-parse', 'refs/heads/lane'], { encoding: 'utf8' }).trim(), x.git('rev-parse', 'HEAD'));
@@ -367,12 +368,17 @@ test('the commit door binds an expected old head, a clean receipt, and refuses a
   const head0 = x.git('rev-parse', 'HEAD');
   assert.equal((await commitWithReceipt(x.ctx, commitReq(x))).ok, true);
   const head1 = x.git('rev-parse', 'HEAD'); assert.notEqual(head0, head1);
+  const goOf = (lane, branch, head, dest = x.remote) => `${lane}\n${branch}\n${head}\n${dest}\n`;
   writeFileSync(x.goFile, 'lane\n');
   assert.match((await pushWithGo({ ...x.ctx, goFile: x.goFile })).output, /go/);
-  writeFileSync(x.goFile, `lane\n${head0}\n`); assert.equal((await pushWithGo({ ...x.ctx, goFile: x.goFile })).ok, false);
+  writeFileSync(x.goFile, goOf('lane-x', 'lane', head0)); assert.equal((await pushWithGo({ ...x.ctx, goFile: x.goFile })).ok, false);
   assert.equal(existsSync(x.goFile), false, 'the go spends on the attempt');
-  writeFileSync(x.goFile, `other\n${head1}\n`); assert.equal((await pushWithGo({ ...x.ctx, goFile: x.goFile })).ok, false);
-  writeFileSync(x.goFile, `lane\n${head1}\n`); assert.equal((await pushWithGo({ ...x.ctx, goFile: x.goFile })).ok, true);
+  writeFileSync(x.goFile, goOf('lane-x', 'other', head1)); assert.equal((await pushWithGo({ ...x.ctx, goFile: x.goFile })).ok, false);
+  writeFileSync(x.goFile, goOf('lane-y', 'lane', head1)); const otherLane = await pushWithGo({ ...x.ctx, goFile: x.goFile });
+  assert.equal(otherLane.ok, false); assert.match(otherLane.output, /another lane/);
+  writeFileSync(x.goFile, goOf('lane-x', 'lane', head1, 'git@evil.example:x/y.git')); const otherDest = await pushWithGo({ ...x.ctx, goFile: x.goFile });
+  assert.equal(otherDest.ok, false); assert.match(otherDest.output, /another remote/);
+  writeFileSync(x.goFile, goOf('lane-x', 'lane', head1)); assert.equal((await pushWithGo({ ...x.ctx, goFile: x.goFile })).ok, true);
 });
 
 // ======================= the Terra HOLD cures =======================
@@ -471,7 +477,7 @@ test('a worktree the broker made is a first-class lane worktree: the install doo
   const x = setup(), dest = path.join(x.lane, 'builder');
   x.request('1', { kind: 'worktree', path: dest, branch: 'relay-test-build', base: 'HEAD' }); x.run();
   assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1')));
-  const made = JSON.parse(readFileSync(path.join(x.home, '.local/state/lares-broker/iso/lane/made.json'), 'utf8'));
+  const made = JSON.parse(readFileSync(path.join(x.home, '.local/state/lares-broker/iso', laneId(x.lane), 'made.json'), 'utf8'));
   assert.equal(Object.keys(made)[0], dest);
   x.request('2', { kind: 'install', path: dest }); x.run();
   assert.doesNotMatch(x.response('2').output, /outside lane-root/, 'the install door follows the registry to the stage');
@@ -514,7 +520,7 @@ test('P1 the go and the broker state live under the ONE fixed broker root: a roo
   assert.equal(r.status, 0, r.stderr);
   const root = path.join(realpathSync(x.home), '.local/state/lares-broker');
   for (const part of ['seats', 'go', 'iso']) assert.equal(statSync(path.join(root, part)).mode & 0o777, 0o700, `${part} is 0700`);
-  assert.ok(existsSync(path.join(root, 'go', 'lane')) && existsSync(path.join(root, 'iso', 'lane')));
+  assert.ok(existsSync(path.join(root, 'go', laneId(x.lane))) && existsSync(path.join(root, 'iso', laneId(x.lane))));
 });
 
 test('P1 no caller names the go or the state path: --go-file is an unknown option, and a bad root with a missing relay/ leaves the lane byte-identical', () => {
@@ -535,12 +541,50 @@ test('the controller go tool writes under the broker root, refuses a root under 
   const x = setup();
   const tool = fileURLToPath(new URL('./push-go.mjs', import.meta.url));
   const head = x.git('rev-parse', 'HEAD');
-  const w = spawnSync(process.execPath, [tool, '--lane-root', x.lane, '--branch', 'relay-test', '--head', head], { encoding: 'utf8', env: x.relayEnv });
+  const w = spawnSync(process.execPath, [tool, '--lane-root', x.lane, '--branch', 'relay-test', '--head', head, '--remote-url', x.remote], { encoding: 'utf8', env: x.relayEnv });
   assert.equal(w.status, 0, w.stderr);
-  assert.equal(readFileSync(x.goFile, 'utf8'), `relay-test\n${head}\n`);
-  const bad = spawnSync(process.execPath, [tool, '--lane-root', x.lane, '--branch', 'relay-test', '--head', head], { encoding: 'utf8', env: { ...x.relayEnv, LARES_BROKER_ROOT: path.join(scratchOf(x.home), 'other', 'b') } });
+  assert.equal(readFileSync(x.goFile, 'utf8'), x.goText('relay-test', head));
+  const bad = spawnSync(process.execPath, [tool, '--lane-root', x.lane, '--branch', 'relay-test', '--head', head, '--remote-url', x.remote], { encoding: 'utf8', env: { ...x.relayEnv, LARES_BROKER_ROOT: path.join(scratchOf(x.home), 'other', 'b') } });
   assert.notEqual(bad.status, 0); assert.match(bad.stderr, /push-go refused/);
   x.request('1', { kind: 'push' }); x.run();
   assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1')));
   assert.equal(existsSync(x.goFile), false, 'the go spends on the attempt');
+});
+
+test('P1 lane identity is a digest of the real path: two lanes sharing a base name get separate go and state, and neither consumes the other\'s go', () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'lanes-')); roots.push(dir);
+  const a = path.join(dir, 'a', 'lane'), b = path.join(dir, 'b', 'lane'); mkdirSync(a, { recursive: true }); mkdirSync(b, { recursive: true });
+  assert.notEqual(laneId(a), laneId(b)); assert.match(laneId(a), /^lane-[0-9a-f]{16}$/);
+  assert.equal(laneId(a), laneId(a), 'stable');
+  assert.notEqual(goPathFor('/r', a), goPathFor('/r', b));
+  const viaLink = path.join(dir, 'link'); symlinkSync(a, viaLink);
+  assert.equal(laneId(viaLink), laneId(a), 'a symlink to the lane is the same lane');
+});
+
+test('P1 a go for ANOTHER lane or another remote refuses at the relay, and the go spends: CONTROL the matching go pushes', () => {
+  const x = setup(); const head = x.git('rev-parse', 'HEAD');
+  x.go(x.goText('relay-test', head, 'git@evil.example:x/y.git')); x.request('1', { kind: 'push' }); x.run();
+  assert.equal(x.response('1').ok, false); assert.match(x.response('1').output, /another remote/); assert.equal(existsSync(x.goFile), false);
+  x.go(`lane-0000000000000000\nrelay-test\n${head}\n${x.remote}\n`); x.request('2', { kind: 'push' }); x.run();
+  assert.equal(x.response('2').ok, false); assert.match(x.response('2').output, /another lane/);
+  x.go(x.goText('relay-test', head)); x.request('3', { kind: 'push' }); x.run();
+  assert.equal(x.response('3').ok, true, JSON.stringify(x.response('3')));
+});
+
+test('P1 the worktree staging parent is verified like the broker root: a symlinked component, a 0755 parent and a group-writable scratch refuse; CONTROL creates it 0700', () => {
+  const x = setup(); const scratch = scratchOf(x.home);
+  const link = path.join(scratch, '.broker-worktrees'); const real = path.join(x.home, 'elsewhere'); mkdirSync(real, { mode: 0o700 }); symlinkSync(real, link);
+  let r = relayRun(x); assert.notEqual(r.status, 0); assert.match(r.stderr, /not a real directory/);
+  rmSync(link); mkdirSync(link, { mode: 0o755 }); chmodSync(link, 0o755);
+  r = relayRun(x); assert.notEqual(r.status, 0); assert.match(r.stderr, /must be mode 0700/);
+  rmSync(link, { recursive: true });
+  r = relayRun(x); assert.equal(r.status, 0, r.stderr);
+  assert.equal(statSync(link).mode & 0o777, 0o700); assert.equal(statSync(path.join(link, laneId(x.lane))).mode & 0o777, 0o700);
+  assert.equal(ensureStageRoot(scratch, laneId(x.lane)), path.join(link, laneId(x.lane)));
+});
+
+test('P1 granted roots stand clear of the staging tree: the scratch dir, .broker-worktrees, its lane dir and a wt-<rand> parent refuse; the EXACT made worktree passes', () => {
+  const scratch = '/h/.lares-scratch', st = `${scratch}/.broker-worktrees`;
+  for (const bad of [scratch, st, `${st}/lane-abc`, `${st}/lane-abc/wt-X1`, `${st}/lane-abc/wt-X1/wt/sub`, `${st}/lane-abc/other`]) assert.throws(() => checkGrantedRoots(scratch, [bad]), /broker's worktree staging tree/, bad);
+  assert.doesNotThrow(() => checkGrantedRoots(scratch, [`${st}/lane-abc/wt-X1/wt`, `${scratch}/lane/wt`]));
 });

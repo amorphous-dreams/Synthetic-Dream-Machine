@@ -391,9 +391,11 @@ export async function pushWithGo(ctx) {
 
   const lines = go.replace(/\r/g, '').split('\n');
   if (lines[lines.length - 1] === '') lines.pop();
-  if (lines.length !== 2) return fail('go file requires branch and head');
-  const [branch, head] = lines;
+  if (lines.length !== 4) return fail('go file requires lane id, branch, head and destination');
+  const [goLane, branch, head, destination] = lines;
+  if (goLane !== ctx.laneId) return fail('go lane mismatch: this go names another lane');
   if (branch !== ctx.branch) return fail('go branch mismatch');
+  if (destination !== ctx.remoteUrl) return fail('go destination mismatch: the go names another remote than the one the controller configured');
 
   const now = git(ctx, ['rev-parse', `refs/heads/${ctx.branch}`]);
   if (!now.ok) return fail(now.output);
