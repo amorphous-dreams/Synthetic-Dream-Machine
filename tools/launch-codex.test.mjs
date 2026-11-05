@@ -1,4 +1,5 @@
 import { test } from "node:test";
+import { wallTest } from "./wall-test.mjs";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { appendFileSync, closeSync, openSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
@@ -29,6 +30,7 @@ function world(over = {}) {
     modelsCache: () => CACHE,
     rolloutLines: () => { calls.pool++; return [rate(40)]; },
     distFresh: () => true,
+    bwrap: true,
     canon: () => readFileSync(CANON, "utf8"),
     ...over,
   };
@@ -231,10 +233,10 @@ test("run: a real launch appends the law once, logs the attempt, spawns codex wi
   assert.equal(calls.filter((x) => x.cmd === "codex").length, 2);
   assert.equal(calls[0].cmd, "codex");
   assert.equal(calls[0].opts.env.HOME, w.home);
-  assert.match(calls[0].opts.env.TMPDIR, /\.broker-seats\/seat-[0-9a-f-]+\/\.tmp$/, "TMPDIR sits in the broker-owned dir");
+  assert.match(calls[0].opts.env.TMPDIR, /lares-broker\/seats\/seat-[A-Za-z0-9]+\/\.tmp$/, "TMPDIR sits in the broker-owned dir");
   assert.ok(calls[0].args.at(-1).endsWith(brief) && /^SEAT-MARKER [0-9a-f-]{36}\n\n/.test(calls[0].args.at(-1)), "the brief rides last, law included, behind the seat's own marker");
   assert.equal(readFileSync(join(w.seatDir, "attempts.log"), "utf8").trim().split("\n").length, 2);
-  assert.match(out.join("\n"), /SEAT-LAUNCHED .*pid 4242.*until \[ -f .*final\.md \]/s);
+  assert.match(out.join("\n"), /SEAT-LAUNCHED .*pid 4242.*until \[ -f .*done-[0-9a-f-]+ \]/s);
 });
 
 test("lead law launch twice", () => {
@@ -277,7 +279,7 @@ test("lead dry run argv", () => {
   const code = run(["--mode", "lead", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", w.wt, "--dry-run"], { readers, log: (s) => out.push(s), err() {}, spawn: () => { throw new Error("spawned"); } });
   assert.equal(code, 0);
   const args = JSON.parse(out.find((s) => s.startsWith("DRY-RUN ")).slice(8));
-  assert.deepEqual(args, ["codex", ...seatArgs({ mode: "lead", model: "gpt-6.1-terra", effort: "high", seatDir: join(realpathSync(join(w.home, ".lares-scratch")), ".broker-seats", "seat-DRYRUN"), worktree: realpathSync(w.wt), laneRoot: dirname(realpathSync(w.seatDir)) }), "<brief>"]);
+  assert.deepEqual(args, ["codex", ...seatArgs({ mode: "lead", model: "gpt-6.1-terra", effort: "high", seatDir: join(realpathSync(w.home), ".local/state/lares-broker/seats", "seat-DRYRUN"), worktree: realpathSync(w.wt), laneRoot: dirname(realpathSync(w.seatDir)) }), "<brief>"]);
   assert.ok(args.includes(dirname(realpathSync(w.seatDir))));
 });
 
@@ -561,7 +563,7 @@ test("row 4: --lead-step reads the lane state, bumps the step, writes the step b
   CURRENT = { seatDir: stepDir };
   const codex = codexOf(spawned);
   assert.ok(!codex.args.includes(stepDir), "the lane step dir is NOT an argument: Codex works in a broker-owned dir");
-  assert.ok(codex.args.some((a) => /\.broker-seats\/seat-[0-9a-f-]+$/.test(a)), "the broker-owned seat dir rides --add-dir");
+  assert.ok(codex.args.some((a) => /lares-broker\/seats\/seat-[A-Za-z0-9]+$/.test(a)), "the broker-owned seat dir rides --add-dir");
   assert.ok(codex.args.includes(realpathSync(laneRoot)), "the lane root rides --add-dir so the lead can write state.json");
   assert.ok(codex.args.includes("sandbox_workspace_write.network_access=false") && !codex.args.some((a) => /^\/.*(\.git|git-common)/.test(a) && a !== stepDir), "a lead step carries no git dir and no network flag");
   assert.match(readFileSync(join(stepDir, "brief.md"), "utf8"), /do row 5/);
@@ -624,23 +626,23 @@ test("P1-3 the supervisor is the seat's parent: the launcher spawns ONE detached
 /** A scratch lane for the live supervisor tests: a held seat dir with a prompt, a snapshot and a rollout; returns the pieces. */
 function liveSeat(stubBody, rolloutLines) {
   const dir = mkdtempSync(join(tmpdir(), "sup-"));
-  const home = join(dir, "home"), seat = join(dir, "seat"), sess = join(home, ".codex", "sessions", "2026", "11", "04"); mkdirSync(sess, { recursive: true }); mkdirSync(seat);
+  const home = join(dir, "home"), seat = join(dir, "seat"), lane = join(dir, "lane"), sess = join(home, ".codex", "sessions", "2026", "11", "04"); mkdirSync(sess, { recursive: true }); mkdirSync(seat); mkdirSync(lane);
   const bin = join(dir, "bin"); mkdirSync(bin);
   writeFileSync(join(bin, "codex"), `#!/bin/sh\n${stubBody}\n`, { mode: 0o755 });
   writeFileSync(join(seat, "prompt.txt"), "SEAT-MARKER live\n\nbrief"); writeFileSync(join(seat, "rollouts-before.json"), "[]");
   const roll = join(sess, "rollout-live.jsonl");
   writeFileSync(roll, rolloutLines(roll));
-  return { dir, home, seat, bin, roll, env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, HOME: home } };
+  return { dir, home, seat, lane, bin, roll, env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, HOME: home } };
 }
 const userLine = () => `${cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ text: "SEAT-MARKER live\n\nbrief" }] } })}\n`;
-const cli = (L, extra = []) => { const fd = openSync(L.seat, "r"); try { return spawnSync(process.execPath, [TOOL, "--supervise", "--held-fd", "3", "--ceiling", "100", "--mode", "read", "--marker", "SEAT-MARKER live", "--home", L.home, ...extra, "--", "exec"], { encoding: "utf8", timeout: 40000, env: L.env, stdio: ["ignore", "pipe", "pipe", fd] }); } finally { closeSync(fd); } };
+const cli = (L, extra = []) => { const fd = openSync(L.seat, "r"), lfd = openSync(L.lane, "r"); try { return spawnSync(process.execPath, [TOOL, "--supervise", "--held-fd", "3", "--lane-fd", "4", "--bsd-path", L.seat, "--ceiling", "100", "--mode", "read", "--marker", "SEAT-MARKER live", "--home", L.home, ...extra, "--", "exec"], { encoding: "utf8", timeout: 40000, env: L.env, stdio: ["ignore", "pipe", "pipe", fd, lfd] }); } finally { closeSync(fd); closeSync(lfd); } };
 
 test("P1-3 a seat that sleeps past its ceiling is stopped by its parent: the supervisor kills its OWN child group and writes ceiling.md through the held directory (live, stub codex)", () => {
   const L = liveSeat("echo STUB-OUTPUT\nsleep 60", () => `${userLine()}${tc(900)}\n`);
   const r = cli(L);
   assert.equal(r.status, 0, r.stderr);
-  assert.match(readFileSync(join(L.seat, "ceiling.md"), "utf8"), /900 total tokens/);
-  assert.match(readFileSync(join(L.seat, "run.log"), "utf8"), /STUB-OUTPUT/, "the child's output landed in run.log through the held fd");
+  assert.match(readFileSync(join(L.lane, "ceiling.md"), "utf8"), /900 total tokens/);
+  assert.match(readFileSync(join(L.lane, "run.log"), "utf8"), /STUB-OUTPUT/, "the child's output landed in run.log through the held fd");
 });
 
 test("P1-4 findRollout parses JSONL events with no byte cap: a prompt past 256 KiB still binds; an echoed marker or a non-user event never does", () => {
@@ -717,7 +719,7 @@ test("P1-3 live: a rollout that turns unreadable mid-run stops the stub seat thr
   writeFileSync(join(L.bin, "codex"), `#!/bin/sh\nsleep 2\nchmod 000 '${L.roll}'\nsleep 60\n`, { mode: 0o755 });
   const r = cli(L, []);
   assert.equal(r.status, 1, "an error verdict exits 1");
-  assert.match(readFileSync(join(L.seat, "ceiling.md"), "utf8"), /could not be watched.*failing closed/s);
+  assert.match(readFileSync(join(L.lane, "ceiling.md"), "utf8"), /could not be watched.*failing closed/s);
 });
 
 test("P1-4 an unchanged total is no progress: a token event that repeats the last total leaves the tail stale", () => {
@@ -743,7 +745,7 @@ test("P1-3 a stop that throws part-way still runs every step: kill failures neit
 import { superviseSeat } from "./launch-codex.mjs";
 import { copyBack } from "./held-dir.mjs";
 import { heldOver, openHeldSync } from "./held-dir.mjs";
-import { existsSync, linkSync, readdirSync, renameSync } from "node:fs";
+import { chmodSync, existsSync, linkSync, readdirSync, renameSync, statSync } from "node:fs";
 
 const spawnMock = () => { const spawned = []; return { spawned, spawn: (cmd, args, opts) => { spawned.push({ cmd, args, opts }); return { pid: 4242, unref() {} }; } }; };
 const launchArgs = (w) => ["--mode", "build", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", w.wt];
@@ -924,11 +926,58 @@ test("P2 the generated lead law names every field the relay's commit schema acce
   for (const rejected of ["messageFile", "message file", "messagePath"]) assert.ok(!law.includes(rejected), `the law never names ${rejected}`);
 });
 
-test("P1 a --broker-dir inside the lane tree refuses, and CONTROL one outside launches", () => {
-  const w = world(); const { spawn } = spawnMock(); const err = [];
-  assert.equal(run([...launchArgs(w), "--broker-dir", join(w.home, ".lares-scratch", "lane", "inside")], { readers: w.readers, spawn, log() {}, err: (e) => err.push(e) }), 2);
-  assert.match(err.join("\n"), /broker seat dir/);
-  assert.equal(run([...launchArgs(w), "--broker-dir", join(w.home, ".lares-scratch", ".other-broker")], { readers: w.readers, spawn, log() {} }), 0);
+test("P1-1 the broker root is fixed and verified: a root under any scratch lane, a symlinked component, a group-writable ancestor and a 0755 root each refuse; CONTROL passes and creates the root 0700", () => {
+  const attempt = (setup, env) => { const w = world(); const rootEnv = setup(w); const { spawn } = spawnMock(); const err = [];
+    const code = run(launchArgs(w), { readers: { ...w.readers, brokerEnv: rootEnv ? { LARES_BROKER_ROOT: rootEnv } : {} }, spawn, log() {}, err: (e) => err.push(e) });
+    return { code, err: err.join("\n"), w }; };
+  const underLane = attempt((w) => join(w.home, ".lares-scratch", "otherlane", "seats"));
+  assert.equal(underLane.code, 2); assert.match(underLane.err, /outside .*\.lares-scratch entirely/);
+  const sym = attempt((w) => { const real = join(w.home, "realdir"); mkdirSync(real, { mode: 0o700 }); symlinkSync(real, join(w.home, "linked")); return join(w.home, "linked", "seats"); });
+  assert.equal(sym.code, 2); assert.match(sym.err, /not a real directory/);
+  const open = attempt((w) => { const r = join(w.home, "broker"); mkdirSync(r, { mode: 0o755 }); chmodSync(r, 0o755); return r; });
+  assert.equal(open.code, 2); assert.match(open.err, /mode 0700/);
+  const wide = attempt((w) => { const up = join(w.home, "wide"); mkdirSync(up); chmodSync(up, 0o777); const r = join(up, "seats"); mkdirSync(r, { mode: 0o700 }); return r; });
+  assert.equal(wide.code, 2); assert.match(wide.err, /group- or world-writable/);
+  const ok = attempt(() => undefined);
+  assert.equal(ok.code, 0, ok.err);
+  const root = join(realpathSync(ok.w.home), ".local/state/lares-broker/seats");
+  assert.equal(statSync(root).mode & 0o777, 0o700, "created 0700");
+  assert.equal(readdirSync(root).filter((n) => n.startsWith("seat-")).length, 1, "one seat dir stands");
+});
+
+test("P1-1 no CLI or request surface names a broker dir: --broker-dir is an unknown option", () => {
+  const w = world(); const err = [];
+  assert.equal(run([...launchArgs(w), "--broker-dir", "/x"], { readers: w.readers, spawn() {}, log() {}, err: (e) => err.push(e) }), 2);
+  assert.match(err.join("\n"), /unknown option --broker-dir/);
+  assert.doesNotMatch(readFileSync(new URL("./commit-relay.mjs", import.meta.url), "utf8"), /broker-dir/);
+});
+
+test("P2-5 a dry run creates nothing: an absent broker root stays absent", () => {
+  const w = world(); const out = [];
+  assert.equal(run([...launchArgs(w), "--dry-run"], { readers: w.readers, spawn() { throw new Error("spawned"); }, log: (s) => out.push(s) }), 0);
+  assert.equal(existsSync(join(w.home, ".local")), false, "no broker root, no parent");
+  assert.match(out.join("\n"), /DRY-RUN/);
+});
+
+test("P2-4 a refusal after the broker seat dir exists removes it, and a root over its size bound refuses by name", () => {
+  const w = world();
+  const { spawn } = spawnMock();
+  writeFileSync(join(w.seatDir, "brief.md"), "# b\n"); symlinkSync("/etc/hostname", join(w.seatDir, "marker.txt"));
+  assert.equal(run(launchArgs(w), { readers: w.readers, spawn, log() {}, err() {} }), 2);
+  const root = join(realpathSync(w.home), ".local/state/lares-broker/seats");
+  assert.deepEqual(readdirSync(root), [], "the refused launch left no broker seat dir");
+  rmSync(join(w.seatDir, "marker.txt"));
+  writeFileSync(join(root, "leftover.bin"), Buffer.alloc(1024 * 1024 * 3));
+  const err = [];
+  assert.equal(run(launchArgs(w), { readers: { ...w.readers, maxGb: 0.002 }, spawn, log() {}, err: (e) => err.push(e) }), 2);
+  assert.match(err.join("\n"), /over the 0\.002 GB bound/);
+});
+
+test("P1-2 a launch refuses by name where no PID-namespace wall can stand, and a dry run still shows the argv", () => {
+  const w = world(); const err = [];
+  assert.equal(run(launchArgs(w), { readers: { ...w.readers, bwrap: false }, spawn() { throw new Error("spawned"); }, log() {}, err: (e) => err.push(e) }), 2);
+  assert.match(err.join("\n"), /no wall available: refusing to launch the build seat.*uncontained/);
+  assert.equal(run([...launchArgs(w), "--dry-run"], { readers: { ...w.readers, bwrap: false }, spawn() { throw new Error("spawned"); }, log() {} }), 0);
 });
 
 test("a refusal after the lead-step claim point spends no step: a bad broker dir refuses before the state is touched", () => {
@@ -946,4 +995,66 @@ test("the hand-back's 64-file cap counts only copyable names: 70 dotfiles never 
   for (let i = 0; i < 70; i++) writeFileSync(join(bsd, `.a${i}`), "x");
   writeFileSync(join(bsd, "final.md"), "ok");
   assert.deepEqual(copyBack(openHeldSync(bsd, dir), openHeldSync(lane, dir)), ["final.md"]);
+});
+
+import { HAVE_BWRAP } from "./seat-walls.mjs";
+import { moveAside } from "./held-dir.mjs";
+
+/** A stub codex that starts a SIGTERM-ignoring descendant in its OWN session, waits, then lifts the rollout over the ceiling. */
+function setsidSeat() {
+  const L = liveSeat("true", () => `${userLine()}${tc(5)}\n`);
+  writeFileSync(join(L.bin, "codex"), `#!/bin/sh\ntrap 'exit 0' TERM\ncat > "$0.kid" <<'EOF2'\n#!/bin/sh\ntrap '' TERM\nwhile true; do sleep 1; done\nEOF2\nchmod +x "$0.kid"\nsetsid "$0.kid" &\nsleep 1\necho '${tc(900)}' >> '${L.roll}'\nwhile true; do sleep 1; done\n`, { mode: 0o755 });
+  return L;
+}
+const kidsOf = (L) => spawnSync("pgrep", ["-f", `${L.bin}/codex.kid`], { encoding: "utf8" }).stdout.trim();
+
+wallTest("P1-2 CONTAINMENT: a descendant that setsid()s and ignores SIGTERM ends dead with the seat, because the seat runs in a PID namespace; the verdict reads off the namespace's end", async () => {
+  const L = setsidSeat();
+  const held = openHeldSync(L.seat, L.dir);
+  const verdict = await superviseSeat({ held, marker: "SEAT-MARKER live", home: L.home, ceiling: 100, mode: "read", rest: ["exec"], env: L.env, contain: true, graceTicks: 3, hardTicks: 3 }, { sleep: () => new Promise((r) => setTimeout(r, 100)), pollMs: 20 });
+  assert.equal(verdict, "ceiling");
+  await new Promise((r) => setTimeout(r, 300));
+  assert.equal(existsSync(`${L.bin}/codex.kid`), true, "the descendant did start (the red is real)");
+  assert.equal(kidsOf(L), "", "no process of the setsid descendant survives on the host");
+  held.close();
+});
+
+test("P1-2 CONTROL without the namespace the same setsid descendant survives its parent (the process-group kill cannot reach it)", async () => {
+  const L = setsidSeat();
+  const held = openHeldSync(L.seat, L.dir);
+  await superviseSeat({ held, marker: "SEAT-MARKER live", home: L.home, ceiling: 100, mode: "read", rest: ["exec"], env: L.env, contain: false, graceTicks: 3, hardTicks: 3 }, { sleep: () => new Promise((r) => setTimeout(r, 100)), pollMs: 20 });
+  await new Promise((r) => setTimeout(r, 300));
+  const found = kidsOf(L);
+  spawnSync("pkill", ["-9", "-f", `${L.bin}/codex.kid`]);
+  assert.notEqual(found, "", "uncontained, the setsid descendant outlives the seat (the red the namespace cures)");
+  held.close();
+});
+
+test("P3 the hand-back filters to copyable names BEFORE the cap and copies final.md first: 70 directories and symlinks sorting ahead never crowd it out", () => {
+  const dir = mkdtempSync(join(tmpdir(), "hb3-")); const bsd = join(dir, "bsd"), lane = join(dir, "lane"), out = join(dir, "out"); mkdirSync(bsd); mkdirSync(lane); writeFileSync(out, "x");
+  for (let i = 0; i < 70; i++) { mkdirSync(join(bsd, `a-dir-${i}`)); symlinkSync(out, join(bsd, `b-link-${i}`)); }
+  writeFileSync(join(bsd, "final.md"), "result");
+  const names = copyBack(openHeldSync(bsd, dir), openHeldSync(lane, dir));
+  assert.deepEqual(names, ["final.md"]);
+});
+
+test("P3 a reused lane seat dir moves its old hand-back aside into prev-<n>/, and the completion marker is written LAST: a wait on it never reads a stale result", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "done-"));
+  const home = join(dir, "home"), bsd = join(dir, "bsd"), lane = join(dir, "lane"), sess = join(home, ".codex", "sessions", "2026", "11", "04"); mkdirSync(sess, { recursive: true }); mkdirSync(bsd); mkdirSync(lane);
+  writeFileSync(join(lane, "final.md"), "STALE"); writeFileSync(join(lane, "ceiling.md"), "STALE-C");
+  const laneHeld = openHeldSync(lane, dir);
+  assert.deepEqual(moveAside(laneHeld).sort(), ["ceiling.md", "final.md"]);
+  assert.equal(existsSync(join(lane, "final.md")), false);
+  assert.equal(readFileSync(join(lane, "prev-1", "final.md"), "utf8"), "STALE");
+  writeFileSync(join(lane, "final.md"), "STALE2");
+  assert.deepEqual(moveAside(laneHeld), ["final.md"]); assert.ok(existsSync(join(lane, "prev-2", "final.md")), "a second run moves into prev-2");
+  const bin = join(dir, "bin"); mkdirSync(bin); writeFileSync(join(bin, "codex"), "#!/bin/sh\necho FRESH > final.md\n", { mode: 0o755 });
+  writeFileSync(join(bsd, "prompt.txt"), "SEAT-MARKER d\n\nb"); writeFileSync(join(bsd, "rollouts-before.json"), "[]");
+  const held = openHeldSync(bsd, dir);
+  await superviseSeat({ held, laneHeld, doneName: "done-abc", bsdPath: bsd, marker: "SEAT-MARKER d", home, ceiling: 1e9, mode: "read", rest: ["exec"], env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, HOME: home } }, { sleep: async () => {}, pollMs: 10 });
+  const done = JSON.parse(readFileSync(join(lane, "done-abc"), "utf8"));
+  assert.equal(done.finalMd, true); assert.ok(done.copied.includes("final.md"));
+  assert.equal(readFileSync(join(lane, "final.md"), "utf8"), "FRESH\n");
+  assert.ok(statSync(join(lane, "done-abc")).mtimeMs >= statSync(join(lane, "final.md")).mtimeMs, "the marker came after the hand-back");
+  assert.equal(existsSync(bsd), false, "P2-4 the broker-owned seat dir is gone after the hand-back");
 });

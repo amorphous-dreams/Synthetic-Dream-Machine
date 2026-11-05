@@ -98,7 +98,7 @@ export function mkdirHeld(held, name) {
   if (st.isSymbolicLink() || !st.isDirectory()) throw new Error(`${name}: not a real directory`);
 }
 
-import { readdirSync, unlinkSync } from "node:fs";
+import { readdirSync, renameSync, rmSync, unlinkSync } from "node:fs";
 
 const COPY_CAP = 8 * 1024 * 1024;
 const COPY_COUNT = 64;
@@ -111,10 +111,14 @@ const LANE_OWNS = new Set(["brief.md", "prompt.txt", "marker.txt", "rollouts-bef
  */
 export function copyBack(from, to) {
   const copied = [];
-  for (const name of readdirSync(from.at()).filter((n) => !LANE_OWNS.has(n) && !n.startsWith(".")).sort().slice(0, COPY_COUNT)) {
+  // Filter to copyable names FIRST (regular, single-link, not a dot name or a lane-owned input), then cap; final.md goes first.
+  const names = readdirSync(from.at()).filter((n) => {
+    if (LANE_OWNS.has(n) || n.startsWith(".")) return false;
+    try { const st = lstatSync(from.at(n)); return st.isFile() && st.nlink === 1; } catch { return false; }
+  }).sort((a, b) => (a === "final.md" ? -1 : b === "final.md" ? 1 : a < b ? -1 : 1)).slice(0, COPY_COUNT);
+  for (const name of names) {
     const src = from.at(name);
     const st = lstatSync(src);
-    if (!st.isFile() || st.nlink > 1) continue;
     let data;
     const rfd = openSync(src, FSC.O_RDONLY | FSC.O_NOFOLLOW);
     try { const buf = Buffer.alloc(Math.min(st.size, COPY_CAP)); const n = fsReadSync(rfd, buf, 0, buf.length, 0); data = buf.subarray(0, n); } finally { closeSync(rfd); }
@@ -125,4 +129,21 @@ export function copyBack(from, to) {
     copied.push(name);
   }
   return copied;
+}
+
+const STALE = /^(final\.md|ceiling\.md|out\.md|done-.*)$/;
+
+/** Moves a previous run's hand-back (final.md, ceiling.md, out.md, done-*) into prev-<n>/ inside the held directory; returns the names moved. */
+export function moveAside(held) {
+  const old = readdirSync(held.at()).filter((n) => STALE.test(n));
+  if (old.length === 0) return [];
+  const n = readdirSync(held.at()).filter((x) => /^prev-\d+$/.test(x)).length + 1;
+  mkdirHeld(held, `prev-${n}`);
+  for (const name of old) renameSync(held.at(name), held.at(`prev-${n}/${name}`));
+  return old;
+}
+
+/** Removes everything inside a held directory (not the directory itself); symlinks are unlinked, never followed. */
+export function removeHeldContents(held) {
+  for (const name of readdirSync(held.at())) rmSync(held.at(name), { recursive: true, force: true });
 }

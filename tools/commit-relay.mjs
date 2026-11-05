@@ -120,7 +120,7 @@ async function handle(request) {
     const seat = await lanePath(request.seatDir);
     const brief = await realpath(path.join(seat, 'brief.md'));
     if (!inside(seat, brief) || !(await stat(brief)).isFile()) throw new Error('invalid brief');
-    const argv = [launcher, '--broker-dir', path.join(iso, 'seats'), '--seat-dir', seat, '--model', request.model, '--effort', request.effort, '--mode', request.mode];
+    const argv = [launcher, '--seat-dir', seat, '--model', request.model, '--effort', request.effort, '--mode', request.mode];
     if (request.mode === 'build') argv.push('--worktree', made.get(path.resolve(String(request.worktree))) ?? await lanePath(request.worktree));
     const launched = run(process.execPath, argv);
     return { ok: launched.status === 0, output: output(launched) };

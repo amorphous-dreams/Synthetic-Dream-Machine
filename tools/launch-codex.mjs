@@ -32,13 +32,15 @@
  * under a scratch HOME. Every reader injects, so a test stands nothing. The tool never writes `~/.codex`.
  */
 import { execFileSync, spawn as nodeSpawn } from "node:child_process";
-import { appendFileSync, closeSync, existsSync, readSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from "node:fs";
+import { appendFileSync, closeSync, existsSync, readSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, rmSync, rmdirSync, statSync, writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { userInfo } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { leadStepBrief, peekStep, writeState } from "./lane-state.mjs";
-import { copyBack, heldOver, mkdirHeld, openHeldSync, openLogHeld, readHeld, writeHeld } from "./held-dir.mjs";
+import { brokerRootPath, checkBrokerRoot, checkBrokerRootSize, ensureBrokerRoot, newSeatDir } from "./broker-root.mjs";
+import { HAVE_BWRAP } from "./seat-walls.mjs";
+import { copyBack, heldOver, moveAside, removeHeldContents, mkdirHeld, openHeldSync, openLogHeld, readHeld, writeHeld } from "./held-dir.mjs";
 import { globalStampPath, packageStampPath, sourceDigest, workspacePackageDirs } from "./stamp-build.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -374,7 +376,7 @@ export function preflight({ mode, model, seatDir, worktree, briefless }, readers
 
 function parse(argv) {
   const o = { dryRun: false };
-  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--marker": "marker", "--held-fd": "heldFd", "--home": "home", "--blind-ticks": "blindTicks", "--lane-fd": "laneFd", "--broker-dir": "brokerDir", "--lane-root": "laneRoot" };
+  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--marker": "marker", "--held-fd": "heldFd", "--home": "home", "--blind-ticks": "blindTicks", "--lane-fd": "laneFd", "--done-name": "doneName", "--bsd-path": "bsdPath", "--contain": "contain", "--lane-root": "laneRoot" };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--dry-run") o.dryRun = true;
     else if (argv[i] === "--supervise") o.supervise = true;
@@ -412,7 +414,9 @@ export async function superviseSeat(o, deps = {}) {
   const marker = o.marker, before = new Set(JSON.parse(readHeld(held, "rollouts-before.json"))), home = o.home ?? realHome();
   const prompt = readHeld(held, "prompt.txt");
   const logFd = openLogHeld(held, "run.log");
-  const child = (deps.spawn ?? nodeSpawn)("codex", [...(o.rest ?? []), prompt], { cwd: held.at(), env: o.env ?? process.env, detached: true, stdio: ["ignore", logFd, logFd] });
+  // Inside a PID namespace (bwrap --unshare-pid): when the namespace's init dies, EVERY descendant dies with it, setsid or not, so the child's exit reads as the whole seat's end.
+  const command = o.contain ? ["/usr/bin/bwrap", ["--unshare-pid", "--die-with-parent", "--dev-bind", "/", "/", "--proc", "/proc", "codex", ...(o.rest ?? []), prompt]] : ["codex", [...(o.rest ?? []), prompt]];
+  const child = (deps.spawn ?? nodeSpawn)(command[0], command[1], { cwd: held.at(), env: o.env ?? process.env, detached: true, stdio: ["ignore", logFd, logFd] });
   let exited = false;
   // The moment the child's exit lands, its process group gets SIGKILL (ESRCH is fine): a descendant that outlives its parent dies here, before the pgid could be reused.
   const gone = new Promise((resolve) => {
@@ -441,14 +445,19 @@ export async function superviseSeat(o, deps = {}) {
   if (groupAlive(child.pid)) return "unstopped";
   if (verdict === "unstopped") verdict = "forced";
   // The hand-back: Codex's own outputs sit in the broker-owned directory; they reach the lane's seat dir only now, through its held handle.
-  if (o.laneHeld) { try { copyBack(held, o.laneHeld); } catch { /* the broker-owned copy stands */ } }
+  let copied = [];
+  if (o.laneHeld) { try { copied = copyBack(held, o.laneHeld); } catch { /* the broker-owned copy stands */ } }
+  // The completion marker is written LAST, so a wait on it never reads a stale or partial hand-back.
+  if (o.laneHeld && o.doneName) { try { writeHeld(o.laneHeld, o.doneName, `${JSON.stringify({ verdict, copied, finalMd: copied.includes("final.md") })}\n`, "x"); } catch { /* the hand-back stands */ } }
+  // After the hand-back the broker-owned directory goes: its contents through the held fd, then the directory.
+  if (o.bsdPath) { try { removeHeldContents(held); rmdirSync(o.bsdPath); } catch { /* the size bound catches leftovers */ } } // broker-owned
   return verdict;
 }
 
 function superviseMain(o) {
   const held = heldOver(Number(o.heldFd));
   const laneHeld = o.laneFd ? heldOver(Number(o.laneFd)) : undefined;
-  return superviseSeat({ held, laneHeld, marker: o.marker, home: o.home, ceiling: o.ceiling, mode: o.mode, rest: o.rest, blindTicks: o.blindTicks ? Number(o.blindTicks) : undefined }).then((v) => (v === "unstopped" || v === "error" ? 1 : 0), () => 1);
+  return superviseSeat({ held, laneHeld, doneName: o.doneName, bsdPath: o.bsdPath, contain: o.contain === "bwrap", marker: o.marker, home: o.home, ceiling: o.ceiling, mode: o.mode, rest: o.rest, blindTicks: o.blindTicks ? Number(o.blindTicks) : undefined }).then((v) => (v === "unstopped" || v === "error" ? 1 : 0), () => 1);
 }
 
 /** The launcher over injected readers, spawn and writers; returns the exit code. */
@@ -496,28 +505,25 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const { pool } = preflight({ ...o, seatDir, worktree, briefless: Boolean(stepPlan) }, readers);
     // THE SEAT RUNS IN A BROKER-OWNED DIRECTORY outside every lane tree: Codex's own writes (-o final.md, TMPDIR, run.log, ceiling.md) land where no lead can write, and reach the lane's seat dir only through the held hand-back copy.
     const laneDir = join(scratchReal, seatDir.slice(scratchReal.length + 1).split("/")[0]);
-    // Placement is checked on the real path of the deepest existing ancestor BEFORE anything is created.
-    const wanted = o.brokerDir ? resolve(o.brokerDir) : join(scratchReal, ".broker-seats");
-    let ancestor = wanted, rest = "";
-    while (!existsSync(ancestor)) { rest = join(basename(ancestor), rest); ancestor = dirname(ancestor); }
-    const brokerDir = join(real(ancestor), rest);
-    const laneTop = (p) => join(scratchReal, p.slice(scratchReal.length + 1).split("/")[0]);
-    for (const guarded of [seatDir, worktree, stepPlan?.laneRoot].filter(Boolean)) {
-      if (brokerDir === guarded || brokerDir.startsWith(`${guarded}/`) || guarded.startsWith(`${brokerDir}/`)) throw refuse(`the broker seat dir ${brokerDir} must sit outside ${guarded}`);
-      if (guarded.startsWith(`${scratchReal}/`) && brokerDir.startsWith(`${scratchReal}/`) && laneTop(brokerDir) === laneTop(guarded)) throw refuse(`the broker seat dir ${brokerDir} must sit outside the lane tree ${laneTop(guarded)}`);
-    }
-    guard(() => mkdirSync(brokerDir, { recursive: true, mode: 0o700 })); // broker-owned
-    const bsdName = `seat-${randomUUID()}`;
-    const bsdPath = join(brokerDir, o.dryRun ? "seat-DRYRUN" : bsdName);
+    // THE BROKER ROOT is fixed: no caller names it. It sits outside ~/.lares-scratch entirely; a dry run only checks what exists.
+    const homeReal = real(readers.realHome);
+    const root = brokerRootPath(homeReal, readers.brokerEnv ?? process.env);
+    const guarded = [seatDir, worktree, stepPlan?.laneRoot, laneDir].filter(Boolean);
+    guard(() => checkBrokerRoot(root, { realHome: homeReal, guarded }));
     const laneRoot = o.mode === "lead" ? (stepPlan?.laneRoot ?? dirname(seatDir)) : undefined;
-    const args = seatArgs({ ...o, seatDir: bsdPath, worktree, laneRoot, compactLimit: o.canary ? 50_000 : undefined });
     log(pool);
-    if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...args, "<brief>"])}`); return 0; }
-    let held, bsd;
+    if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...seatArgs({ ...o, seatDir: join(root, "seat-DRYRUN"), worktree, laneRoot, compactLimit: o.canary ? 50_000 : undefined }), "<brief>"])}`); return 0; }
+    // A live seat runs inside a PID namespace or does not run: without the wall the launch refuses by name.
+    if (!(readers.bwrap ?? HAVE_BWRAP)) throw refuse(`no wall available: refusing to launch the ${o.mode} seat in ${seatDir} uncontained (a descendant that leaves the process group would outlive it)`);
+    guard(() => ensureBrokerRoot(root, { realHome: homeReal, guarded }));
+    guard(() => checkBrokerRootSize(root, readers.maxGb));
+    const bsdPath = guard(() => newSeatDir(root));
+    const args = seatArgs({ ...o, seatDir: bsdPath, worktree, laneRoot, compactLimit: o.canary ? 50_000 : undefined });
+    const doneName = `done-${randomUUID()}`;
+    let held, bsd, launched = false;
     try {
       // The broker-owned seat dir comes first, so a refusal here spends no step and claims none.
-      guard(() => mkdirSync(join(brokerDir, bsdName), { mode: 0o700 })); // broker-owned
-      bsd = guard(() => openHeldSync(join(brokerDir, bsdName), brokerDir));
+      bsd = guard(() => openHeldSync(bsdPath, root));
       if (stepPlan) {
         guard(() => mkdirHeld(laneHeld, "steps"));
         const steps = guard(() => openHeldSync(laneHeld.at("steps"), stepPlan.laneRoot));
@@ -532,6 +538,8 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
         held = guard(() => openHeldSync(seatDir, laneDir));
       }
       readers.afterHold?.();
+      // An old hand-back moves aside through the held handle, so a wait never reads a stale result.
+      guard(() => moveAside(held));
       if (o.canary) guard(() => writeHeld(held, "brief.md", canaryBrief()));
       const law = o.mode === "lead" ? leadLaw() : seatLaw(readers.canon());
       guard(() => mkdirHeld(bsd, ".tmp"));
@@ -548,11 +556,15 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
         guard(() => writeHeld(h, "brief.md", brief));
       }
       // The supervisor is the seat's parent and spawns codex itself (see superviseSeat); it inherits the broker-owned directory as fd 3 and the lane's seat directory as fd 4 for the hand-back.
-      const supervisor = spawn(process.execPath, [fileURLToPath(import.meta.url), "--supervise", "--held-fd", "3", "--lane-fd", "4", "--ceiling", String(ceiling), "--mode", o.mode, "--marker", marker, "--home", readers.realHome, ...(o.blindTicks ? ["--blind-ticks", String(o.blindTicks)] : []), "--", ...args], { cwd: bsd.at(), env, detached: true, stdio: ["ignore", "ignore", "ignore", bsd.fd, held.fd] });
+      const supervisor = spawn(process.execPath, [fileURLToPath(import.meta.url), "--supervise", "--held-fd", "3", "--lane-fd", "4", "--done-name", doneName, "--bsd-path", bsdPath, "--contain", "bwrap", "--ceiling", String(ceiling), "--mode", o.mode, "--marker", marker, "--home", readers.realHome, ...(o.blindTicks ? ["--blind-ticks", String(o.blindTicks)] : []), "--", ...args], { cwd: bsd.at(), env, detached: true, stdio: ["ignore", "ignore", "ignore", bsd.fd, held.fd] });
       supervisor.unref?.();
-      log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${supervisor.pid}; wait on: until [ -f ${join(seatDir, "final.md")} ]`);
+      launched = true;
+      log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${supervisor.pid}; wait on: until [ -f ${join(seatDir, doneName)} ] (the completion marker, written last; the hand-back is final.md beside it)`);
       return 0;
-    } finally { held?.close(); bsd?.close(); laneHeld?.close(); }
+    } finally {
+      held?.close(); bsd?.close(); laneHeld?.close();
+      if (!launched) rmSync(bsdPath, { recursive: true, force: true }); // broker-owned
+    }
   } catch (e) {
     laneHeld?.close();
     if (!e.refused) throw e;

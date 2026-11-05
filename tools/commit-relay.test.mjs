@@ -1,4 +1,5 @@
 import { test, afterEach } from 'node:test';
+import { wallTest } from './wall-test.mjs';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, symlinkSync, chmodSync, readdirSync, linkSync, renameSync } from 'node:fs';
 import { createServer } from 'node:net';
@@ -46,7 +47,7 @@ console.log('SEAT-LAUNCHED 123');
   return { home, root, wt, lane, remote, git, request, run, response, go, goFile, launcher, bin, relayEnv, brokerArgs };
 }
 
-test('commit selects only requested paths', { skip: !HAVE_BWRAP }, () => {
+wallTest('commit selects only requested paths', () => {
   const x = setup(); writeFileSync(path.join(x.wt, 'a'), 'changed\n'); writeFileSync(path.join(x.wt, 'b'), 'dirty\n');
   x.request('1', { kind: 'commit', message: 'message', paths: ['a'] }); x.run();
   assert.equal(x.response('1').ok, true); assert.equal(x.git('show', '--format=', '--name-only', 'HEAD'), 'a');
@@ -73,13 +74,13 @@ test('push with matching go succeeds and consumes go', () => {
   assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1'))); assert.equal(existsSync(x.goFile), false);
   assert.equal(execFileSync('git', ['--git-dir', x.remote, 'rev-parse', 'refs/heads/relay-test'], { encoding: 'utf8' }).trim(), x.git('rev-parse', 'HEAD'));
 });
-test('requests run in id order, completing each before the next', { skip: !HAVE_BWRAP }, () => {
+wallTest('requests run in id order, completing each before the next', () => {
   const x = setup(); writeFileSync(path.join(x.wt, 'a'), 'changed\n');
   x.request('02', { kind: 'push' }); x.request('01', { kind: 'commit', message: 'message', paths: ['a'] }); x.go(`relay-test\n${x.git('rev-parse', 'HEAD')}\n`); x.run();
   assert.equal(x.response('01').ok, true, JSON.stringify(x.response('01')));
   assert.equal(x.response('02').ok, false); assert.match(x.response('02').output, /go head/, 'the push read the head the commit had already moved');
 });
-test('bad JSON, unknown kinds, a message PATH field and an over-cap message refuse; inline text commits', { skip: !HAVE_BWRAP }, () => {
+wallTest('bad JSON, unknown kinds, a message PATH field and an over-cap message refuse; inline text commits', () => {
   const x = setup(); writeFileSync(path.join(x.wt, 'a'), 'changed\n');
   x.request('1', '{'); x.request('2', { kind: 'other' }); x.request('3', { kind: 'commit', messageFile: '../remote.git', paths: ['a'] });
   x.request('4', { kind: 'commit', message: 'x'.repeat(20000), paths: ['a'] });
@@ -126,7 +127,7 @@ test('launch validates fields and forwards exact arguments to the launcher', () 
   x.request('3', { ...valid, seatDir: x.root }); x.request('4', valid); x.run();
   for (const id of ['1', '2', '3']) assert.equal(x.response(id).ok, false);
   assert.equal(x.response('4').ok, true); assert.match(x.response('4').output, /SEAT-LAUNCHED 123/);
-  assert.deepEqual(JSON.parse(readFileSync(path.join(x.root, 'argv.json'), 'utf8')), ['--broker-dir', path.join(x.home, 'controller', 'broker-iso', 'seats'), '--seat-dir', seat, '--model', valid.model, '--effort', 'high', '--mode', 'build', '--worktree', wt]);
+  assert.deepEqual(JSON.parse(readFileSync(path.join(x.root, 'argv.json'), 'utf8')), ['--seat-dir', seat, '--model', valid.model, '--effort', 'high', '--mode', 'build', '--worktree', wt]);
 });
 test('unknown fields and invalid path forms refuse', () => {
   const x = setup(), seat = path.join(x.lane, 'seat'); mkdirSync(seat); writeFileSync(path.join(seat, 'brief.md'), 'brief');
@@ -155,7 +156,7 @@ test('read launch omits worktree and requires a brief', () => {
   x.request('1', req); x.run(); assert.equal(x.response('1').ok, false);
   writeFileSync(path.join(seat, 'brief.md'), 'brief'); x.request('2', req); x.run();
   assert.equal(x.response('2').ok, true);
-  assert.deepEqual(JSON.parse(readFileSync(path.join(x.root, 'argv.json'), 'utf8')), ['--broker-dir', path.join(x.home, 'controller', 'broker-iso', 'seats'), '--seat-dir', seat, '--model', 'gpt-6-luna', '--effort', 'medium', '--mode', 'read']);
+  assert.deepEqual(JSON.parse(readFileSync(path.join(x.root, 'argv.json'), 'utf8')), ['--seat-dir', seat, '--model', 'gpt-6-luna', '--effort', 'medium', '--mode', 'read']);
 });
 
 
@@ -242,7 +243,7 @@ test('PROOF 2 a .gitattributes filter and a submodule run nothing: commit hashes
   assert.equal(g.ok, false); assert.match(g.output, /gitlink|submodule/);
 });
 
-test('PROOF 3 hostile lifecycle scripts and .npmrc: the broker has no install door, the install seat refuses hostile config by name and installs with scripts off, and it writes only its store', { skip: !HAVE_BWRAP }, async () => {
+wallTest('PROOF 3 hostile lifecycle scripts and .npmrc: the broker has no install door, the install seat refuses hostile config by name and installs with scripts off, and it writes only its store', async () => {
   const x = brokerFixture();
   const src = readFileSync(new URL('./commit-relay.mjs', import.meta.url), 'utf8');
   assert.doesNotMatch(src, /pnpm|npm_config|submodule/, 'the relay carries no install or submodule code');
@@ -323,7 +324,7 @@ function spawn_swapper(file, secret, inTree) {
 }
 import { spawn as spawnAsync } from 'node:child_process';
 
-test('PROOF 5 malicious build, test and editor config run only inside the check seat wall: no go write, no ref write, no credential read, no loopback; forged receipts refuse', { skip: !HAVE_BWRAP }, async () => {
+wallTest('PROOF 5 malicious build, test and editor config run only inside the check seat wall: no go write, no ref write, no credential read, no loopback; forged receipts refuse', async () => {
   const x = brokerFixture();
   const server = createServer((sock) => { hits.push(1); sock.destroy(); }); const hits = [];
   await new Promise((r) => server.listen(0, '127.0.0.1', r)); const port = server.address().port;
@@ -378,7 +379,7 @@ test('the commit door binds an expected old head, a clean receipt, and refuses a
 });
 
 // ======================= the Terra HOLD cures =======================
-test('P0-2 the receipt key never touches disk: a relay run leaves no key or receipt file anywhere, and the relay takes no key option', { skip: !HAVE_BWRAP }, () => {
+wallTest('P0-2 the receipt key never touches disk: a relay run leaves no key or receipt file anywhere, and the relay takes no key option', () => {
   const x = setup(); writeFileSync(path.join(x.wt, 'a'), 'changed\n');
   x.request('1', { kind: 'commit', message: 'message', paths: ['a'] }); x.run();
   assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1')));
@@ -402,7 +403,7 @@ test('P0-2 a receipt forged from a guessed or stale key refuses', () => {
   assert.throws(() => signReceipt({ key: Buffer.from('short'), tree, checks: ['true'] }), /32 bytes/);
 });
 
-test('P1-3 the checked tree is bound read-only: a check that mutates it yields no receipt, and a mutation it swallows still leaves the export unchanged', { skip: !HAVE_BWRAP }, async () => {
+wallTest('P1-3 the checked tree is bound read-only: a check that mutates it yields no receipt, and a mutation it swallows still leaves the export unchanged', async () => {
   const x = brokerFixture();
   const tree = x.git('rev-parse', 'HEAD^{tree}');
   const loud = await runCheckSeat({ ...x.ctx, tree, checks: [{ name: 'mutate', argv: ['/usr/bin/sh', '-c', 'echo evil >> /work/tree/a'] }, { name: 'later', argv: ['/usr/bin/true'] }], keepWork: true });
