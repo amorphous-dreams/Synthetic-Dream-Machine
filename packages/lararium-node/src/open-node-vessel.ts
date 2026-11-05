@@ -628,6 +628,8 @@ const blankMemeStore = (repo: Repo): (() => DocHandle<LarDoc>) =>
 interface NodeBootPrep {
   /** THE CAPABILITY RECORD this vessel hands every island it constructs (daemon, wiki, session): one per vessel, never global. */
   islandCaps: CapabilityRecord;
+  /** The vessel's ONE runtime `cid/` dir, fixed at construction: every site that reads or serves the CAS reads this. */
+  cidDir: string;
   restartWiki: (wiki: string) => Promise<void>;
   promoteActs: PromoteActGate;
   wornFace: () => { readonly face: number; readonly personaGroup: string } | null;
@@ -2020,7 +2022,7 @@ async function prepareNodeBootOn(
       // those into the runtime CAS the workers read via resolveByCid (the nodefs face of the
       // browser vessel's OPFS fetch — isomorphic by composition).
       const manifest = readGenesisCasManifest(genesisDir);
-      const runtimeCas = casDirForStorage(storageDir);
+      const runtimeCas = cidDir;
       if (manifest) {
         const casWritten = mirrorGenesisCasFs(manifest, genesisCasDir(genesisDir), runtimeCas);
         if (casWritten > 0) console.log(`[openNodeVessel] fs CAS: mirrored ${casWritten} blob(s) by CID from genesis/cas`);
@@ -2344,7 +2346,7 @@ async function prepareNodeBootOn(
             repo, group: personaGroupId, boardUrl: wornPromote, stageUrl: wornKahua?.url ?? null,
             foldFace: () => { const f = promoteFace.read(); return { group: personaGroupId, grant: f ? f.grant : () => false }; },
             boardFace: () => { const f = promoteFace.read(); return { group: personaGroupId, grant: f ? f.grant : () => false, device: (k) => devices.has(k) }; },
-            stores: nodePromoteStores(personaGroupId), cas: nodePromoteCas(casDirForStorage(storageDir), promoteHolder),
+            stores: nodePromoteStores(personaGroupId), cas: nodePromoteCas(cidDir, promoteHolder),
             wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
             onArrive: async () => { await pushPromoteSnapshot?.(); },
             onFault: (reason) => console.warn(`[promote] ${reason}`),
@@ -2379,7 +2381,7 @@ async function prepareNodeBootOn(
           const core = promotePanelApi({ who,
             wikis: async () => ["daemon", ...vmManager.inspect().filter(slot => slot.temperature === "wela" && slot.wikiId !== "daemon").map(slot => slot.wikiId)],
             promotionsFor: wiki => promotions({ wiki, ...nodePromoteStores(personaGroupId), who,
-              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(casDirForStorage(storageDir), atom.key) }), boardDoor,
+              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(cidDir, atom.key) }), boardDoor,
           });
           const push = async (data: string) => { daemonVm.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
           // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.
@@ -2810,7 +2812,7 @@ async function prepareNodeBootOn(
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe: { wikiSlug: "daemon" },
         lookup: nodeOfferingLookup(offerings.doc()),
-        readBytes: (cid) => readCasBlobFromFs(cid, casDirForStorage(storageDir)),
+        readBytes: (cid) => readCasBlobFromFs(cid, cidDir),
         promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
         onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
       }),
@@ -3323,7 +3325,7 @@ async function prepareNodeBootOn(
     // rows reach the refold, and no standalone CLI-dialed verb does.
     const doors = storeDoorReactors({
       storageDir, sealHome, repo, catalogUrl: assembly.catalogHandle.url,
-      casDir: casDirForStorage(storageDir), restartWiki: reloadWikiAfterVerb,
+      casDir: cidDir, restartWiki: reloadWikiAfterVerb,
       onRolled: afterRoll,
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
@@ -3624,7 +3626,7 @@ async function prepareNodeBootOn(
     // through the selector + CAS (`resolveNodeIslandPluginCids`), never one vessel-wide floor.
     // The shared Crossroads board materializes once and is read fresh per mount (a
     // later-announced offering becomes selectable without a vessel restart).
-    const casDir = casDirForStorage(storageDir);
+    const casDir = cidDir;
     vmManager = new VesselIslandPool({
       caps:        islandCaps,
       mainRepo:    repo,
@@ -3703,6 +3705,7 @@ async function prepareNodeBootOn(
 
   return {
     islandCaps,
+    cidDir,
     repo, storeClaim, catalogHandle, placeSigner, nexusPubkey, floorGates, carriagePull, wornFace: wornGateFace,
     restartWiki: reloadWikiAfterVerb, promoteActs,
     vesselGateKey:   vesselIdentity.verifyingKey,
@@ -3881,7 +3884,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   try {
     result = await composeLararium<VesselIslandPool>(p.orchestration, extraCaps);
   } catch (e) {
-    sessionSignDown();
+    for (const down of roleCaps.splice(0).reverse()) { try { await down(); } catch { /* the refusal below names the cause */ } }
     throw e;
   }
   // THE PORCH ANSWERS FOR THE FLOOR: `/floor/<AID>` hands a stranger the release rows this board carries (each with its lineage),
@@ -3889,7 +3892,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   if (opts.httpServer || opts.dispatcher) {
     const porch = mountFloorPorch({
       ...(opts.httpServer ? { httpServer: opts.httpServer } : {}), ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), repo: p.repo,
-      nexusPubkey: p.nexusPubkey, casDir: casDirForStorage(opts.storageDir), serveCas: true,
+      nexusPubkey: p.nexusPubkey, casDir: p.cidDir, serveCas: true,
       onLog: (line) => console.log(`[lararium] ${line}`),
     });
     roleCaps.push(() => porch.dispose());
@@ -3992,7 +3995,7 @@ async function composeNodeHermOn(
     ...(p.bulb ? { bulb: p.bulb } : {}),
     // THE HERM RE-SHARE: `/cas/<cid>` serves a fleet peer's PUBLIC blob (landed write-through in its `cid/`) IFF the crossroads board — the public plane by construction — names the cid.
     publicCas: publicCasShore({
-      casDir: casDirForStorage(opts.storageDir),
+      casDir: p.cidDir,
       references: () => Object.entries(hermCrossroads.doc()?.tiddlers ?? {}).map(([title, record]) => ({ title, bagId: CROSSROADS_DOC_URI, record: plainRecord(record) })),
       bagTier: (bagUrl) => (bagUrl === CROSSROADS_DOC_URI ? "public" : null),
       // THE REALM LANE: a Herm serves books it never authored, so its own crossroads alone withheld every
@@ -4009,7 +4012,7 @@ async function composeNodeHermOn(
       // stands UNMEASURED against this cure. Its second half is independent and still owed:
       // the Herm holds no carriage CLIENT (it IS the relay), so nothing in the product ever makes it FETCH the
       // body, and the witness plants it by hand at ⑤b to isolate the index half from the byte half.
-      releasedFloor: () => releasedFloorCids({ board: hermCrossroads.doc(), nexus: p.nexusPubkey, casDir: casDirForStorage(opts.storageDir) }),
+      releasedFloor: () => releasedFloorCids({ board: hermCrossroads.doc(), nexus: p.nexusPubkey, casDir: p.cidDir }),
       realmReferences: () => hermRealmShoreBooks({
         realmStanding: () => p.realmStanding(),
         findDoc:       async (docUrl) => (await p.repo.find<LarDoc>(docUrl as AutomergeUrl).catch(() => null))?.doc() ?? null,
@@ -4023,7 +4026,7 @@ async function composeNodeHermOn(
   // face already carries `/cas`, and the released-floor lane above lends it the head's blobs.
   const porch = mountFloorPorch({
     httpServer: opts.httpServer, ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), repo: p.repo,
-    nexusPubkey: p.nexusPubkey, casDir: casDirForStorage(opts.storageDir), serveCas: false,
+    nexusPubkey: p.nexusPubkey, casDir: p.cidDir, serveCas: false,
     onLog: (line) => console.log(`[herm] ${line}`),
   });
   p.emit("vessel-ready");

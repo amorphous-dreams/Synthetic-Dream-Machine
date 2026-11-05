@@ -43,6 +43,20 @@ describe("the CAS dirs are fixed at construction", () => {
     }
   });
 
+  test("C5 — a session island's spawn is handed no CAS dir; a wiki island's is", async () => {
+    const { VesselIslandPool } = await import("../src/vessel-island-pool.js");
+    const wh = await import("../src/worker-handle.js");
+    const src = readFileSync(join(import.meta.dirname, "..", "src", "vessel-island-pool.ts"), "utf8");
+    expect(/nodeSpawnSessionWorker\(workerUrl, options\.caps\)/.test(src)).toBe(true);
+    expect(/nodeSpawnWikiWorker\(workerUrl, options\.caps, casData\)/.test(src)).toBe(true);
+    expect(typeof VesselIslandPool).toBe("function"); expect(typeof wh.nodeSpawnSessionWorker).toBe("function");
+  });
+
+  test("C6 — open-node-vessel derives the CAS dir once: casDirForStorage( appears a single time", () => {
+    const src = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
+    expect(src.split("casDirForStorage(").length - 1).toBe(1);
+  });
+
   test("C3 — the record's cas answers from the corpus dir as its second tier", async () => {
     const cid = "sha256:" + createHash("sha256").update(BYTES).digest("hex");
     const runtime = tmp(), corpus = tmp();

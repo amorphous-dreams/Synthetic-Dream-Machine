@@ -66,7 +66,7 @@ export interface VesselIslandPoolOptions {
   storageRoot?: string;
   /** The vessel's ONE runtime `cid/` dir, handed at construction: the pool's content reader and every island it spawns read it. */
   cidDir?: string;
-  /** The CORPUS CAS dir the vessel resolved at construction, handed to each island it spawns (the islands read no env). */
+  /** The CORPUS CAS dir the vessel resolved at construction, handed to each WIKI island it spawns (the islands read no env; a session island gets no dir, it reads through its view). */
   corpusCasDir?: string | null;
   /** R3/M6 — resolve a mount's OWN recipe into its final pluginCids (the boot-set floor UNION its
    *  verified offering selection). REQUIRED — no flat vessel-wide `pluginCids` floor stands (every island
@@ -98,7 +98,7 @@ export class VesselIslandPool extends VesselIslandPoolCore {
     const casData: IslandCasData = { cidDir: options.cidDir ?? null, corpusCasDir: options.corpusCasDir ?? null };
     super({
       host: {
-        spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl, options.caps, casData) : nodeSpawnWikiWorker(workerUrl, options.caps, casData)),
+        spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl, options.caps) : nodeSpawnWikiWorker(workerUrl, options.caps, casData)),
         newSyncChannel: nodeNewSyncChannel,
         storage: (wikiId): IslandStorageConfig | undefined =>
           storageRoot ? { type: "nodefs", dir: join(storageRoot, _sanitizeWikiId(wikiId)) } : undefined,
