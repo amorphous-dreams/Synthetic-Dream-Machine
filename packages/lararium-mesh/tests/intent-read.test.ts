@@ -207,9 +207,9 @@ describe("ward co-sign (S3a)", () => {
 
   test("RED: a self-answer approves a ward act on the old plane; CURE: the issuer's own answer counts nothing; CONTROL: a second device approves", async () => {
     const r = await rig();
-    const old = fixtureIntentVerbs({ [VERB]: "single-effect" });   // the verb without the cosign flag keeps the old behaviour
+    const old = fixtureIntentVerbs({ [VERB]: "single-effect" });   // a table without the cosign flag: the ward verb's name still holds the count
     const selfAnswer = await r.answerBy(r.a);
-    expect(mayAct(r.fold([r.call, r.ask, selfAnswer], [r.a.key, r.b.key], () => "stands", old), r.id, r.a.key)).toEqual({ act: true });
+    expect(mayAct(r.fold([r.call, r.ask, selfAnswer], [r.a.key, r.b.key], () => "stands", old), r.id, r.a.key)).toEqual({ act: false, reason: "awaiting-answer" });
     const view = r.fold([r.call, r.ask, selfAnswer]);
     expect(mayAct(view, r.id, r.a.key)).toEqual({ act: false, reason: "awaiting-answer" });
     expect(r.judge(view)).toEqual({ need: "cosign", approved: false, reason: "self-answer" });
@@ -313,10 +313,24 @@ describe("ward co-sign (S3a)", () => {
     const asideView = r.fold([r.call, r.ask, await r.answerBy(r.b)], [r.a.key, r.b.key], aside);
     expect(asideView.intents[0]!.answer).toBeNull();
     expect(r.judge(asideView, [r.a.key, r.b.key], aside)).toEqual({ need: "cosign", approved: false, reason: "answerer-aside" });
-    // CONTROL: the issuer's ask with a second device's approve acts; a plain single-effect verb keeps counting another device's ask.
+    // CONTROL: the issuer's ask with a second device's approve acts.
     expect(mayAct(r.fold([r.call, r.ask, await r.answerBy(r.b)]), r.id, r.a.key)).toEqual({ act: true });
-    const old = fixtureIntentVerbs({ [VERB]: "single-effect" });
-    expect(mayAct(r.fold([r.call, bAsk, bApproves], [r.a.key, r.b.key], () => "stands", old), r.id, r.a.key)).toEqual({ act: true });
+  });
+
+  test("RED: a reader whose table lost the cosign flag counts another device's self-asked approval on a ward intent; CURE: the count keys on the ward verb's name as the audience check does; CONTROL: a plain verb under the same stale table counts any device's ask", async () => {
+    const r = await rig();
+    const stale = fixtureIntentVerbs({ [VERB]: "single-effect", plain: "single-effect" });
+    const bAsk = await entry(r.b, { entry: "asks", intent: r.id, needs: "approval", detail: digestOf() });
+    const bApproves = await entry(r.b, { entry: "answer", ask: intentEntryCid(bAsk), verdict: "approve", executor: r.a.key });
+    const view = r.fold([r.call, bAsk, bApproves], [r.a.key, r.b.key], () => "stands", stale);
+    expect(view.intents[0]!.answer, "a ward verb counts only the issuer's ask, whatever table the reader folded with").toBeNull();
+    expect(mayAct(view, r.id, r.a.key)).toEqual({ act: false, reason: "awaiting-answer" });
+    // CONTROL: a plain verb under the same stale table counts another device's ask and approve, as before.
+    const plain = await entry(r.a, { entry: "intent", issuer: r.a.key, verb: "plain", args: { head: "h1" }, nonce: "n", audience: { mode: "asks" } });
+    const pid = intentId({ issuer: r.a.key, verb: "plain", args: { head: "h1" }, nonce: "n" });
+    const pAsk = await entry(r.b, { entry: "asks", intent: pid, needs: "approval", detail: digestOf() });
+    const pApproves = await entry(r.b, { entry: "answer", ask: intentEntryCid(pAsk), verdict: "approve", executor: r.a.key });
+    expect(mayAct(r.fold([plain, pAsk, pApproves], [r.a.key, r.b.key], () => "stands", stale), pid, r.a.key)).toEqual({ act: true });
   });
 
   test("a face with 0 or 1 device needs no co-sign; aside devices count toward the total", async () => {

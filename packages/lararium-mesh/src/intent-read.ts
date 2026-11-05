@@ -152,8 +152,11 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     // A cosign verb counts what `judgeCosign` counts: an answer to an ask the issuer signed, from a standing device other
     // than the issuer, an approve naming the issuer as executor. A device never approves the act it asked for, and no
     // other device asks and answers in the issuer's place.
+    // The rule keys on the ward verb's name as well as the flag, as mayAct's audience check does, so a reader whose table
+    // lost the flag still counts only what the judge counts.
+    const cosignCount = !!classification.cosign || WARD_COSIGN_VERBS.includes(body.verb as string);
     const issuerAsks = new Set(ownAsks.filter((q) => q.entry.signer === issuer).map((q) => q.cid));
-    const ownAnswers = classification.cosign ? everyAnswer.filter((a) => issuerAsks.has(str(a, "ask")) && a.entry.signer !== issuer &&
+    const ownAnswers = cosignCount ? everyAnswer.filter((a) => issuerAsks.has(str(a, "ask")) && a.entry.signer !== issuer &&
       input.standing(a.entry.signer) === "stands" && (field(a, "verdict") !== "approve" || field(a, "executor") === issuer)) : everyAnswer;
     const ownOutcomes = outcomes.filter((o) => str(o, "cause") === id);
     const answer = effectiveAnswer(ownAnswers);
