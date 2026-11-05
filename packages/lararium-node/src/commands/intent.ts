@@ -57,6 +57,16 @@ export function askShown(view: ReturnType<typeof readIntentPlane>, askCid: strin
   return null;
 }
 
+/** The answer door's refusal, or null where it may sign: for a ward verb it signs only what the plane counts, an answer to an ask
+ *  the issuer signed, from a device other than the issuer, an approve naming the issuer as executor. */
+export function answerRefusal(asked: ReturnType<typeof askShown>, signer: string, executor: string, deny: boolean): string | null {
+  if (!asked?.cosign) return null;
+  if (asked.issuer === signer) return "self-answer: a ward act takes another device of the face";
+  if (asked.askedBy !== asked.issuer) return "ask-signer: a ward act counts an answer only to its issuer's own ask";
+  if (!deny && executor.toLowerCase() !== asked.issuer) return "executor-mismatch: a ward act's approve names its issuer as executor";
+  return null;
+}
+
 export interface IntentCommandOptions {
   readonly repo: Repo;
   readonly catalogUrl?: string;
@@ -223,8 +233,9 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
         if (!target || !opts.executor) throw new IntentRefused("ask-or-executor-absent");
         const asked = askShown(view(), target);
         shown = asked;
-        // A device never approves the ward act it asked for: the plane would count nothing, so the door refuses before it signs.
-        if (asked?.cosign && asked.issuer === atom.key) throw new IntentRefused("self-answer: a ward act takes another device of the face");
+        // The door signs no ward answer the plane would count as nothing: it refuses before it signs.
+        const refusal = answerRefusal(asked, atom.key, opts.executor, !!opts.deny);
+        if (refusal) throw new IntentRefused(refusal);
         entry = await buildAnswer({ group, signer, ask: target, executor: opts.executor, verdict: opts.deny ? "deny" : "approve", refs: [target] }); break;
       }
       case "claim":
