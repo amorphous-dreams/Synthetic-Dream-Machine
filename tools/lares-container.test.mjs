@@ -158,7 +158,7 @@ for (const [name, shim] of shims) {
   /** The revision the shim computes: HEAD, marked `-dirty` while the tree holds changes. */
   const checkoutRev = () => {
     const head = spawnSync("git", ["-C", ROOT, "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim();
-    const dirty = spawnSync("git", ["-C", ROOT, "status", "--porcelain"], { encoding: "utf8" }).stdout.trim() !== "";
+    const dirty = spawnSync("git", ["-C", ROOT, "status", "--porcelain", "--untracked-files=no"], { encoding: "utf8" }).stdout.trim() !== "";
     return dirty ? `${head}-dirty` : head;
   };
 
@@ -166,16 +166,21 @@ for (const [name, shim] of shims) {
     const head = checkoutRev();
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: "0123456789abcdef0123456789abcdef01234567", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}' } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.stderr, /image names revision 0123456789abcdef0123456789abcdef01234567 and the checkout stands at /);
-    assert.ok(r.stderr.includes(head), "the warning names the checkout's head");
-    assert.match(r.stderr, /GIT_REV=\S+ docker compose -f \S+ build lares/, "the hint names the build that bakes the label");
+    assert.match(r.stderr, /image names revision 0123456789abcdef0123456789abcdef01234567 and the checkout /);
+    if (!head.endsWith("-dirty")) {
+      assert.ok(r.stderr.includes(head), "the warning names the checkout's head");
+      assert.match(r.stderr, name === "sh" ? /GIT_REV=\S+ docker compose -f "\S+" build lares/ : /\$env:GIT_REV='\S+'; docker compose -f "\S+" build lares/, "the hint names the build that bakes the label, in the shim's own shell form");
+    } else {
+      assert.match(r.stderr, /commit first/);
+      assert.doesNotMatch(r.stderr, /-dirty build|GIT_REV='\S*-dirty/, "a dirty tree prints no -dirty build line");
+    }
     assert.doesNotMatch(r.stderr, /rebuild the image \(`docker compose build`\)/);
   });
 
   test(`${name}: a label carrying control characters prints without them`, async () => {
-    const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: "\u001b[31mevil\u001b[0m", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}' } });
+    const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: "\u001b[31mevil\u0085\u009b[0m", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}' } });
     assert.equal(r.status, 0, r.stderr);
-    assert.doesNotMatch(r.stderr, /\u001b/);
+    assert.doesNotMatch(r.stderr, /[\u001b\u0085\u009b]/);
   });
 
   test(`${name}: CONTROL up stays silent about the revision when the image names the checkout's rev`, async () => {

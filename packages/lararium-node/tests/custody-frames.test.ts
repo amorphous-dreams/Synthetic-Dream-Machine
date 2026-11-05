@@ -85,6 +85,7 @@ function harness(opts: {
     unlockFace: async (_face: unknown) => ({ reading: "opens", fcid: "00".repeat(16), ordinal: 0, slot: "face-slot" }),
     unlockFaces: async () => [],
     unlockedFaces: () => [],
+    faceStanding: async () => null,
     isUnlocked: () => unlocked,
     attemptsLeft: () => 3 - spent,
     openedSlot: () => (unlocked ? "slot-1" : null),
@@ -202,7 +203,7 @@ describe("the custody door", () => {
     const over = await h.send({ op: "lock", face: 99 }).answer;            // one past the line
     expect(over).toMatchObject({ status: "error", refusal: { reason: "custody-door-busy" } });
     await first.answer;
-    for (const w of waiting) expect(await w.answer, "a waiting frame ran its turn, never refused busy").not.toMatchObject({ refusal: { reason: "custody-door-busy" } });
+    for (const w of waiting) expect(await w.answer, "a waiting frame ran its turn and answered").toMatchObject({ op: "lock", locked: true, was: "locked", face: 99 });
     void gone;
     expect(h.recomposed, "the departed caller's lock never ran").toEqual([true]);
     expect(h.holder.isUnlocked()).toBe(true);

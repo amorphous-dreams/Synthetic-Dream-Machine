@@ -116,7 +116,7 @@ unlock_or_name() {
 SHIM_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 GIT_REV=""; GIT_DIRTY=""
 if GIT_REV=$(git -C "$SHIM_DIR" rev-parse HEAD 2>/dev/null) && [ -n "$GIT_REV" ]; then
-  if [ -n "$(git -C "$SHIM_DIR" status --porcelain 2>/dev/null)" ]; then GIT_DIRTY=yes; GIT_REV="$GIT_REV-dirty"; fi
+  if [ -n "$(git -C "$SHIM_DIR" status --porcelain --untracked-files=no 2>/dev/null)" ]; then GIT_DIRTY=yes; GIT_REV="$GIT_REV-dirty"; fi
   export GIT_REV
 else
   GIT_REV=""
@@ -128,12 +128,12 @@ warn_image_revision() {
   fi
   cid=$(compose ps -q lares 2>/dev/null) || return 0
   [ -n "$cid" ] || return 0
-  label=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$cid" 2>/dev/null | tr -d '[:cntrl:]') || return 0
-  if [ "$label" != "$GIT_REV" ]; then
-    printf 'lares-container: the image names revision %s and the checkout stands at %s; rebuild with `GIT_REV=%s docker compose -f %s build lares`, then `up` again\n' "${label:-none}" "$GIT_REV" "$GIT_REV" "$COMPOSE_FILE_PATH" >&2
-  fi
+  label=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$cid" 2>/dev/null | LC_ALL=C sed -e 's/[[:cntrl:]]//g' -e 's/\xc2[\x80-\x9f]//g') || return 0
+  [ "$label" != "$GIT_REV" ] || return 0
   if [ -n "$GIT_DIRTY" ]; then
-    printf '%s\n' 'lares-container: the checkout holds uncommitted changes; an image built from it labels <sha>-dirty, so commit before the rite rebuild' >&2
+    printf 'lares-container: the image names revision %s and the checkout holds uncommitted changes; commit first, then rebuild with `GIT_REV=$(git rev-parse HEAD) docker compose -f "%s" build lares` and `up` again\n' "${label:-none}" "$COMPOSE_FILE_PATH" >&2
+  else
+    printf 'lares-container: the image names revision %s and the checkout stands at %s; rebuild with `GIT_REV=%s docker compose -f "%s" build lares`, then `up` again\n' "${label:-none}" "$GIT_REV" "$GIT_REV" "$COMPOSE_FILE_PATH" >&2
   fi
 }
 
