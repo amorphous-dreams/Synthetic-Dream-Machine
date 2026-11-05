@@ -599,6 +599,9 @@ export { FCK_SEAL_MAGIC, FCK_SEAL_NONCE_LENGTH, FCK_SEAL_TAG_LENGTH, FCK_SEAL_MI
 export type { FckCarrierReading } from "./fck-envelope.js";
 export { mintFck, faceCarrierContext, sealUnderFck, openUnderFck } from "./fck.js";
 export type { FaceCustodyKey, FaceCarrier, FckOpening } from "./fck.js";
+// The ward: the face's root seed under a key that opens fresh per hand act, over human routes alone.
+export { WARD_SEAL_MAGIC, WARD_STORE, WardRefused, bindWardSlot, mintWardKey, openUnderWard, openWardKey, readWardCarrier, refusePasskeyTree, sealUnderWard } from "./ward-slots.js";
+export type { WardKey, WardCarrierReading, WardOpening } from "./ward-slots.js";
 // The tree key custody spine: the keyslot tree that commits to its tree key, and the ONE writer of tree-key-sealed carriers, which
 // proves every tree key in hand against the standing tree under one custody holder — see `sealed-writer`.
 export {

@@ -555,6 +555,9 @@ export const FLOOR_RELEASE_DOMAIN = mint("floor-release");
 // ── CUSTODY CARRIER CONTEXT ─────────────────────────────────────────────────────────────────────
 /** A D row's seal context: confidential material one PersonaGroup owns, sealed under that group's face custody key. */
 export const CUSTODY_D_DOMAIN = mint("custody-carrier-d");
+/** A WARDED row's seal context: the face's root seed, sealed under the face's ward key, which stays sealed while custody stands
+ *  unlocked and opens fresh for one hand act (`ward-slots`). Its own name, so no face seal opens as a ward seal nor the reverse. */
+export const CUSTODY_WARD_DOMAIN = mint("custody-carrier-ward");
 /** An F row's context: deliberately public bytes. No sealed-carrier writer stands for it; the name keeps it apart. */
 export const CUSTODY_F_DOMAIN = mint("custody-carrier-f");
 /** An S row's seal context: a named node-only secret under a named node principal. */
