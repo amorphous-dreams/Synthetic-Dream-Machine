@@ -59,10 +59,10 @@ import { isCapabilityProfile, type CapabilityProfile } from "./session-contract.
 import { facetsOfSurfaceRecipe, resolvedSlotsOf, type SurfaceRecipe } from "./surface-recipe.js";
 import { ORACLE_BAG } from "./wiki-recipe.js";
 import { verifyCidBytes } from "./cas-transit.js";
-import { answerRestWithHeads } from "./rest-with-heads.js";
+import { answerReceiptWithHeads } from "./receipt-with-heads.js";
 import { makePortDoor, type PortPlacement, type PortPolicy } from "./port-lease.js";
 import { isPortKind, type PortIslandToVesselMsg } from "./record-port.js";
-import type { IslandGrants, IslandMsg_DocRest, IslandMsg_ViewCatalog, IslandMsg_ViewContent, IslandMsg_ViewSettle } from "./island-protocol.js";
+import type { IslandGrants, IslandMsg_ReceiptRequest, IslandMsg_ViewCatalog, IslandMsg_ViewContent, IslandMsg_ViewSettle } from "./island-protocol.js";
 
 // ── Slots — two-state thermal axis (wela/anu) + orthogonal pin flag ──────────
 
@@ -245,7 +245,7 @@ export function resolveDiskMirrors(
     });
 }
 
-/** What the vessel itself read of its rest asks: asked, answered rested (its Repo held the heads and flushed), answered stalled. */
+/** What the vessel itself read of its receipt requests: asked, answered issued (`rested`: its Repo held the heads and flushed), answered stalled. */
 export interface VesselRestState { readonly asked: number; readonly rested: number; readonly stalled: number }
 
 export interface VesselIslandPoolCoreOptions {
@@ -260,7 +260,7 @@ export interface VesselIslandPoolCoreOptions {
   /** Called when an island OUTSIDE any session emits a verse-event reaction, a camera frame, a control
    *  result or a host-door ask. */
   onWorkerEvent?: (wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void;
-  /** Called each time the vessel's rest ledger moves: a wiki island's rest ask arrives, or the vessel answers it. */
+  /** Called each time the vessel's receipt ledger moves: a wiki island's receipt request arrives, or the vessel answers it. */
   onRest?: (state: VesselRestState) => void;
   /**
    * Called when a SESSION's island emits a verse-event reaction, a camera frame, a control result or a
@@ -338,7 +338,7 @@ export class VesselIslandPoolCore {
   private readonly _bootInputs = new Map<string, { coreCid: string; pluginCids: readonly string[] }>();
   private readonly _host:           VesselIslandHost;
   private readonly _mainRepo:       Repo | null;
-  /** The sync peer each wiki island's channel carries, so a rest ask reads a closed channel as a fact. */
+  /** The sync peer each wiki island's channel carries, so a receipt request reads a closed channel as a fact. */
   private readonly _islandPeerOf = new Map<string, string>();
   private _restState: VesselRestState = { asked: 0, rested: 0, stalled: 0 };
   private readonly _onRest: ((state: VesselRestState) => void) | null;
@@ -590,12 +590,12 @@ export class VesselIslandPoolCore {
 
   /** The scoped view an island's peer ID stands under, or null. The share verdict's caller reads it to keep
    *  a session island's announcements inside its facets before any message forms. */
-  /** The vessel's own reading of its rest asks, for a page to show and a test to wait on. */
+  /** The vessel's own reading of its receipt requests, for a page to show and a test to wait on. */
   restState(): VesselRestState { return this._restState; }
 
   private _moveRest(change: Partial<{ -readonly [K in keyof VesselRestState]: VesselRestState[K] }>): void {
     this._restState = { ...this._restState, ...change };
-    try { this._onRest?.(this._restState); } catch { /* a sink never breaks the rest door */ }
+    try { this._onRest?.(this._restState); } catch { /* a sink never breaks the receipt answer */ }
   }
 
   viewOfPeer(peerId: string): SessionDocumentView | null {
@@ -1132,13 +1132,13 @@ export class VesselIslandPoolCore {
         void this._answerSettle(ask, view).then(land, () => land(false));
         return;
       }
-      if (raw.type === "doc:rest" && !view && (raw as IslandMsg_DocRest).heads !== undefined) {
-        const ask = raw as IslandMsg_DocRest;
+      if (raw.type === "receipt:request" && !view && (raw as IslandMsg_ReceiptRequest).heads !== undefined) {
+        const ask = raw as IslandMsg_ReceiptRequest;
         if (typeof ask.requestId !== "string") return;
         this._moveRest({ asked: this._restState.asked + 1 });
-        void answerRestWithHeads(this._mainRepo, ask, this._islandPeerOf.get(wikiId)).then((answer) => {
-          this._moveRest(answer.rested ? { rested: this._restState.rested + 1 } : answer.stalled ? { stalled: this._restState.stalled + 1 } : {});
-          try { worker.post({ type: "doc:rested", requestId: ask.requestId, ...answer }); }
+        void answerReceiptWithHeads(this._mainRepo, ask, this._islandPeerOf.get(wikiId)).then((answer) => {
+          this._moveRest(answer.issued ? { rested: this._restState.rested + 1 } : answer.stalled ? { stalled: this._restState.stalled + 1 } : {});
+          try { worker.post({ type: "receipt:issued", requestId: ask.requestId, ...answer }); }
           catch { /* the island went away: nothing to answer */ }
         });
         return;

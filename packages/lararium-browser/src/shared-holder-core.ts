@@ -148,8 +148,8 @@ export interface SharedHolderCore {
 }
 
 /** The island kinds a house's claimant hears while its island proves the face: the boot handshake and the gate's own asks. */
-const PROVING_KINDS = new Set(["ready", "ea", "breath", "fault", "teardown:ack", "cas:want", "doc:rest"]);
-const BOOT_REPLIES: Readonly<Record<string, string>> = { "cas:block": "cas:want", "doc:rested": "doc:rest" };
+const PROVING_KINDS = new Set(["ready", "ea", "breath", "fault", "teardown:ack", "cas:want", "receipt:request"]);
+const BOOT_REPLIES: Readonly<Record<string, string>> = { "cas:block": "cas:want", "receipt:issued": "receipt:request" };
 
 interface PortState {
   readonly envelope: SessionEnvelope;
@@ -301,7 +301,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       // While the island proves the face, the claimant hears the boot handshake and nothing else; a sealing ask waits.
       if (msg.type === "custody:write") { house.queue.push(msg); return; }
       if (route === "owner" && PROVING_KINDS.has(msg.type) && house.claimant && ports.has(house.claimant)) {
-        if ((msg.type === "cas:want" || msg.type === "doc:rest") && typeof msg.requestId === "string") house.bootRequests.add(`${msg.type}:${msg.requestId}`);
+        if ((msg.type === "cas:want" || msg.type === "receipt:request") && typeof msg.requestId === "string") house.bootRequests.add(`${msg.type}:${msg.requestId}`);
         deliver(house.claimant, msg); return;
       }
       onDrop(msg.type, "house-uncleared");

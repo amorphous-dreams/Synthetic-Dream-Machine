@@ -40,7 +40,7 @@ export interface VesselWorkerHandle {
 export interface VesselIslandHost {
   /**
    * Spawn a fresh island worker (closes over the platform worker URL). `session: true` names a SESSION's
-   * island: the host hands that worker NONE of the vessel's own doors (the fetch door, the rest door, the
+   * island: the host hands that worker NONE of the vessel's own doors (the fetch door, the receipt capability, the
    * custody write door). A session island reaches the vessel through its scoped view alone.
    */
   spawnWorker(opts?: { readonly session?: boolean }): VesselWorkerHandle;

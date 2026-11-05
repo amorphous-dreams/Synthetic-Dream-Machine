@@ -82,6 +82,7 @@ async function run() {
   const events = [];
   const core = await openDaemonVm({
     repo,
+    caps: {},
     daemonUrl: daemon.url,
     coreHash: null,
     grants: { islandUrl: ordinary.url, wikiUrl: daemon.url },

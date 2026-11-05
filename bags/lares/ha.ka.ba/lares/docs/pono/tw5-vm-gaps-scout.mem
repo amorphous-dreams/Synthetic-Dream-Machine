@@ -96,7 +96,7 @@ TW5 no longer lives in the page. It boots inside a module Web Worker (browser) o
 - Lifecycle: `manifest`, `teardown`, `hooanu` in; `ready`, `breath`, `ea`, `fault`, `teardown:ack` out.
 - Wiki island: `wiki:place-verb` → VerbTable → `wiki:verb-result`; `wiki:dom-event` / `wiki:dom-input` → projection return leg (`has-island-watches.ts:38-60`). Both DOM messages are fire-and-forget, no requestId (`vessel-island-pool-core.ts:854-878`). The input value is capped at 65 536 chars, checked three times.
 - Daemon island: `daemon:place-verb` / `telemetry:place-verb` → VerbDispatcher; functors on `$tw.lares.*` (derive-skeleton, worldline-compare, verify, resolve-binding, residency-op, evict).
-- Back-channels: `cas:want/block`, `doc:rest`, `custody:write`, `dyad:ask`, `view:*`.
+- Back-channels: `cas:want/block`, `receipt:request`, `custody:write`, `dyad:ask`, `view:*`.
 - **No generic filter, render or eval RPC exists on the live island.** The only such surface, `meme-worker-script.ts`, is orphaned.
 
 ### 3.4 Rendering (both)
@@ -261,6 +261,6 @@ These scratch files die with this container; the probes are described well enoug
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RroCaOUATnXtw5Vv9H-bZPlqgqpRENqXsCxMD-oDO9E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vfRprhT8aDljQAawOrNPXPfiH1T-ZtAqbFfxEyCVUlU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

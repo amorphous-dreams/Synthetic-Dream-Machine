@@ -51,7 +51,7 @@ Train T's rulings stand in the road: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/
 | heaviest packages by ratio | `lararium-web` 2.02 · `lararium-node` 1.88 · `lararium-keyhive` 1.60 · `lararium-tw5` 1.50; node, mesh and tw5 carry 74% of test lines |
 | where the weight comes from | repeated setup and breadth, never giant test files (p90 223 lines): 1,032 `mkdtemp` calls in 389 files; node runs 2.1 test files per source file |
 | the god-method | `prepareNodeBootOn` (`open-node-vessel.ts`, about 709 to 3546): about 2,840 lines, 164 closures, 49 `let`s; 185 commits touched the file since 2026-10-01 |
-| what blocks a small test | four process-global doors in `worker-handle.ts` (`setRestDoor`, `setCasDoor`, `setDyadDoor`, `setCustodyWriteDoor`): two vessels in one process overwrite each other's doors, so a test stands up nothing smaller than a whole boot; about 40 forward-declared cells tie the stages together |
+| what blocks a small test | four process-global setters in `worker-handle.ts` once let two vessels in one process overwrite each other's capabilities; one capability record (`caps.receipt`, `caps.cas`, `caps.dyad`, `caps.custodyWrite`) now rides each island at construction, so a test stands an island with exactly the capabilities it names; about 40 forward-declared cells tie the stages together |
 | mutation testing | no Stryker config; a 14-mutant hand catalog for `lares-cli` (`tools/law-mutants-witness.sh`); fast-check rides the CLI laws suite alone. StrykerJS 10.1.0 (PR #6214, 2026-10-23) carries a vitest 5 fix tested against vitest 4.1.11; the repo pins vitest 5.0.3, so only the `T1` probe proves it here |
 | dead exports | 53 names nothing references; 16 more ride barrel re-exports |
 | flake families | the wiki-shore 2 s poll (`LandedLedger` fires no event) · the staged unlock answering before the store acknowledges · the TW5 dropdown e2e with no ready signal |
@@ -180,6 +180,6 @@ Train T's complete rows move to the road's own #/o-takiage at each land. This ki
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WnNmLextt8e-paEYHUffQaHjb2UrrpjFXNcZ4pzyOds`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y_TvCy5uUccm5jHxPYmJ7eSS-GhYiLaKLqv8LJYut_0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

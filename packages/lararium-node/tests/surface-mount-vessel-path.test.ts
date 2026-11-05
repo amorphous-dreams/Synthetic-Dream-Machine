@@ -26,13 +26,12 @@ import { Repo, type DocHandle, type PeerId } from "@automerge/automerge-repo";
 import {
   ENGINE_CORE_ID, LARES_BAG, computePluginsCid, emptyLarDoc, hex, pluginOfferingAnnounceOf, pluginOfferingCid, recipeRecordFields,
   recipeUri, sha256HexBytesSync, signPluginOffering, storedLarRecord, wikiBagUri, wikiUri,
-  type LarDoc, type OfferedBlob, type PluginOffering, type WikiRecipe,
+  type LarDoc, type OfferedBlob, type PluginOffering, type WikiRecipe, type CapabilityRecord,
 } from "@lararium/mesh";
 import { resolveSurfaceRecipe, type SurfaceRecipe } from "../../lararium-mesh/src/surface-recipe.js";
 import { casDirForStorage, readCasBlobFromFs } from "../src/node-cas.js";
 import { nodeOfferingLookup } from "../src/node-plugin-resolution.js";
 import { VesselIslandPool } from "../src/vessel-island-pool.js";
-import { setCasDoor, setCustodyWriteDoor, setRestDoor } from "../src/worker-handle.js";
 
 const PROBE_URL = new URL("./fixtures/session-island-probe.mjs", import.meta.url);
 const SLUG = "table";
@@ -44,6 +43,8 @@ const SEED = new Uint8Array(32).fill(44);
 let storageDir: string;
 let repo: Repo;
 let pool: VesselIslandPool;
+/** The capability record the vessel hands the pool's islands; each vessel stands a fresh one. */
+let poolCaps: CapabilityRecord = {};
 beforeEach(() => {
   storageDir = mkdtempSync(join(tmpdir(), "surface-vessel-path-"));
   repo = new Repo({ peerId: "owner" as PeerId });
@@ -132,8 +133,9 @@ async function vessel() {
     return verdict.recipe;
   };
   // The islands' storage root stands beside the content store, as `casDirForStorage` lays it.
+  poolCaps = {};
   pool = new VesselIslandPool({
-    workerScriptUrl: PROBE_URL, mainRepo: repo, storageRoot: storageDir,
+    caps: poolCaps, workerScriptUrl: PROBE_URL, mainRepo: repo, storageRoot: storageDir,
     resolvePluginCids: async () => ({ ok: true as const, pluginCids: [] }),
   });
   // A placement names the session it acts for; the pool passes it only to that session's own island.
@@ -207,33 +209,33 @@ describe("a session surface through the node vessel's own parts", () => {
     expect((await v.probe(WIKI, "manifest"))["storage"]).not.toBeNull();
   });
 
-  test("a session island takes none of the vessel's own doors", async () => {
+  test("a session island takes none of the vessel's own capabilities", async () => {
     const v = await vessel();
     v.writeRecipe({ wikiSlug: SLUG, libraryBags: [SHARED_BAG] });
     const reached: string[] = [];
-    // Every door stands, each recording what reaches it.
-    setCasDoor(async (cid) => { reached.push(`cas:${cid}`); return new Uint8Array([7, 7, 7]); });
-    setRestDoor(async (ids) => { reached.push(`rest:${ids.join(",")}`); });
-    setCustodyWriteDoor(async (carrier) => { reached.push(`custody:${carrier}`); });
+    // Every capability stands on the record the pool's islands hold, each recording what reaches it.
+    poolCaps.cas = async (cid) => { reached.push(`cas:${cid}`); return new Uint8Array([7, 7, 7]); };
+    poolCaps.receipt = async (ids) => { reached.push(`receipt:${ids.join(",")}`); };
+    poolCaps.custodyWrite = async (carrier) => { reached.push(`custody:${carrier}`); };
     try {
       const key = await pool.mountSurface({ sessionId: "session-1", generation: 0, surfaceId: "surface-a", recipe: await v.resolve("player") });
       const asks = [
         { type: "cas:want", fields: { cid: "ab".repeat(32) } },
-        { type: "doc:rest", fields: { documentIds: [v.faces.referee.working.documentId] } },
+        { type: "receipt:request", fields: { documentIds: [v.faces.referee.working.documentId] } },
         { type: "custody:write", fields: { carrier: "archive", bytes: new Uint8Array([1, 2, 3]) } },
       ];
-      for (const ask of asks) expect(await v.probe(key, "door", { ...ask, silentAfterMs: 600 })).toEqual({ answered: false });
+      for (const ask of asks) expect(await v.probe(key, "caps", { ...ask, silentAfterMs: 600 })).toEqual({ answered: false });
       expect(reached).toEqual([]);
       // KNOWN POSITIVE: the same asks from an island mounted through the wiki door each draw an answer. A wiki
-      // island reaches the FETCH door alone; its rest ask and its custody write refuse by name and reach no door
-      // (the daemon island alone reaches those two: `island-doors-by-class.test.ts`).
+      // island reaches its record's `cas` alone; its receipt ask and its custody write refuse by name and reach no
+      // capability (the daemon island alone reaches those two: `island-doors-by-class.test.ts`).
       await pool.mountWiki(WIKI, { coreHash: null, recipe: { wikiSlug: SLUG }, grants: { islandUrl: v.oracle.url } });
-      expect(await v.probe(WIKI, "door", asks[0]!)).toEqual({ answered: true, type: "cas:block", bytes: 3 });
-      expect(await v.probe(WIKI, "door", asks[1]!)).toMatchObject({ answered: true, type: "doc:rested" });
-      expect(await v.probe(WIKI, "door", asks[2]!)).toMatchObject({ answered: true, type: "custody:written" });
+      expect(await v.probe(WIKI, "caps", asks[0]!)).toEqual({ answered: true, type: "cas:block", bytes: 3 });
+      expect(await v.probe(WIKI, "caps", asks[1]!)).toMatchObject({ answered: true, type: "receipt:issued" });
+      expect(await v.probe(WIKI, "caps", asks[2]!)).toMatchObject({ answered: true, type: "custody:written" });
       expect(reached).toEqual([`cas:${"ab".repeat(32)}`]);
     } finally {
-      setCasDoor(null); setRestDoor(null); setCustodyWriteDoor(null);
+      delete poolCaps.cas; delete poolCaps.receipt; delete poolCaps.custodyWrite;
     }
   });
 

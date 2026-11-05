@@ -51,7 +51,7 @@ the sealed face gate · `ListeningWSServerAdapter` · the five peer maps (`peerI
 
 !!! ③ The dial — fleet · contract · pin
 
-The carriage serve-loop over Socket B, the carriage relay stand, the fetch door and its ''process-global'' `setCasDoor`, and the dial CONFIG read. Both reconnect sites call `afterRoll`, the one hook that refolds membership, refreshes the realm plane and then reverdicts.
+The carriage serve-loop over Socket B, the carriage relay stand, the vessel's `cas` capability (`islandCaps.cas`, a member of the ONE capability record the vessel hands its islands), and the dial CONFIG read. Both reconnect sites call `afterRoll`, the one hook that refolds membership, refreshes the realm plane and then reverdicts.
 
 ''The dial itself fires far later'' (`maybeStartNexusClientDial`), inside `openDaemon`, after `registerCrossroadsPointer` and the realm plane, and it must: a `find` a connected peer answers "unavailable" settles ahead of the local materialize, measured as a fatal `slot bags/crossroads unavailable`. ''Nothing but the physical position of that call enforces the order.''
 
@@ -77,12 +77,12 @@ The carriage serve-loop over Socket B, the carriage relay stand, the fetch door 
 
 !! What each region could become
 
-''Three lifts come out of ③, ⑥ and ⑦. Regions ①–④ share one object. ⑤ stands apart.'' Every lift below stands UNBUILT: the tree carries no `makeNodeVerbProviders`, no `NodeCasDoor`, no `NodePool` and no share-verdict authority object.
+''Three lifts come out of ③, ⑥ and ⑦. Regions ①–④ share one object. ⑤ stands apart.'' Every lift below stands UNBUILT: the tree carries no `makeNodeVerbProviders`, no `NodeCas`, no `NodePool` and no share-verdict authority object.
 
 !!! Lifts cleanly
 
 * ''⑦ the verb-provider bundle'' → `makeNodeVerbProviders`, taking `daemonVm` and the recall and capture helpers as injected readings, with ZERO coupling to the verdict cells. The browser registers none of `wiki-act` · `realm-bag` · `realm-bags` · `nexus-rekey` · `nexus-reshare` · `cas-fetch` · `cad-seal`, and it composes six verbs the node does (`sync-wiki` · `residency` · `wiki-switch` · `wiki-hold` · `wiki-release` · `wiki-active`). The provider extraction leaves those six registrations separate (`wireVerbs` holds the node's); a further shared wiring step could give the six ONE spelling and leave each substrate its own.
-* ''③ the CAS / fetch-door'' (`cidDir` · `resolveCidThroughDoor` · `carriageLoop` · `fleetHolders` · `casBagTracker`) → a `NodeCasDoor` holder. It couples to the verdict cluster through `sealRegistry`, and `carriageLoop` also takes `nexusMembership`, `antigenRing` and `selfSlotFedGate`, while the fleet reads consult `peerIdentifierMap` and `peerClassMap`; the module would take each as an injected cell rather than close over it. ''Its `setCasDoor` writes a process global.'' The two-phase boot names that global's teardown (the fetch door, on the stood list); a module would make the write as visible.
+* ''③ the CAS capability'' (`cidDir` · `resolveCid` · `carriageLoop` · `fleetHolders` · `casBagTracker`) → a `NodeCas` holder. It couples to the verdict cluster through `sealRegistry`, and `carriageLoop` also takes `nexusMembership`, `antigenRing` and `selfSlotFedGate`, while the fleet reads consult `peerIdentifierMap` and `peerClassMap`; the module would take each as an injected cell rather than close over it. ''It stands `islandCaps.cas` on the vessel's own capability record'' (no process global since the record landed); the two-phase boot names that member's teardown (the cas capability, on the stood list), and a module would make the write as visible.
 * ''⑥ the pool / mailbox wiring'' → a `NodePool` holder over `vmManager` · `wikiActivation` · `mailbox` · `eventBus`. The residency wiring reads these cells before `makePool` writes them; a holder turns four forward-declared `let`s into one constructed thing.
 
 !!! Does NOT split — and naming it makes the point
@@ -122,7 +122,7 @@ A tasked spirit's walk at this codebase's grain, never a human's; the hours stan
 |R0 · the boot-order reds | 6 | the microtask yield · the dial-after-boards · a reverdict red per cell. Nothing moves; every red must fail when a hand deliberately breaks its ordering. | UNBUILT |
 |R1 · ⑦ the verb-provider bundle | 5 | `makeNodeVerbProviders`, the four provider implementations out of `openDaemon`, `daemonVm` and the recall and capture helpers injected. The six shared verb registrations wait on a further wiring step. | UNBUILT |
 |R2 · ⑥ the pool holder | 4 | four forward-declared cells become one constructed holder; the residency wiring takes it as a parameter. | UNBUILT |
-|R3 · ③ the CAS door | 4 | `NodeCasDoor` with `sealRegistry` and the other verdict cells it reads injected; `setCasDoor`'s process-global scope named at the module edge. | UNBUILT |
+|R3 · ③ the CAS capability | 4 | `NodeCas` with `sealRegistry` and the other verdict cells it reads injected; the `islandCaps.cas` member it stands named at the module edge. | UNBUILT |
 |R4 · the share-verdict authority | 10 | the verdict cells behind setters that reverdict; ①②③④ read it rather than close over it. Gated on R0 — without the reverdict reds nothing can show this step correct. | UNBUILT; `afterRoll` and the `onRefold` callbacks already gather the roll and refold writers |
 |R5 · the Herm shore | 3 | `publicCasShore`'s wiring out of `composeNodeHermOn`, taking `realmStanding` and `daemonVm` as injected readings. | UNBUILT; the body already stands apart from its door |
 
@@ -140,6 +140,6 @@ A tasked spirit's walk at this codebase's grain, never a human's; the hours stan
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hiLyzFuqoGEU_gW5FNCNtFsRKelF_9jWBmmaSKpPtgA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PMhHoca6B1f3PozdxoX1n4h1SZwG2hQw8xV5_8jasSc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

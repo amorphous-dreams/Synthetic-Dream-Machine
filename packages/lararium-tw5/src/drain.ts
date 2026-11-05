@@ -3,7 +3,7 @@
  *
  * OPERATOR RULING (2026-11-04): ONE store write in flight across the whole shore. A mark only records that a title owes the store its
  * latest state at a fresh generation; it never starts work. The pump takes ONE owed title, snapshots its generation at flight start,
- * issues ONE write, and awaits its DURABLE receipt (the write callback resolves only on the rest door's heads ack, plus the projector's
+ * issues ONE write, and awaits its DURABLE receipt (the write callback resolves only on the receipt capability's heads ack, plus the projector's
  * file-hash confirm for recovery files). The receipt raises `acked` to the snapshot; a generation marked during the flight stays owed,
  * so coalescing falls out of the generations: a title whose receipts cover its latest mark costs no write.
  *

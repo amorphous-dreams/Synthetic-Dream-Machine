@@ -300,7 +300,7 @@ describe("Drain", () => {
     void Promise.race([all, one, closing]).then(() => { settled = true; });
     await macrotask();
     expect(settled).toBe(false);
-    writes[0]!.reject(new Error("the vessel did not rest the written documents"));  // the door's own patience ends
+    writes[0]!.reject(new Error("the vessel issued no receipt for the written documents"));  // the receipt's own patience ends
     expect([kind(await all), kind(await one), kind(await closing)]).toEqual(["failed", "failed", "failed"]);
   });
 

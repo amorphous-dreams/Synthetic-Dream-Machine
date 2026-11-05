@@ -6,7 +6,7 @@
  */
 
 import { parentPort } from "worker_threads";
-import { runSovereignWorker, vesselRestAsker, vesselCustodyWriter, vesselDyadAsker, vesselSessionDoor } from "./sovereign-island-model.js";
+import { runSovereignWorker, vesselReceiptAsker, vesselCustodyWriter, vesselDyadAsker, vesselSessionDoor } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
 import { mountDiskProjection, mountedDiskProjector } from "./island-behaviors.js";
 import { answerShore } from "./shore-verb.js";
@@ -24,13 +24,13 @@ import { randomUUID } from "node:crypto";
 
 // The Boundary-1 inversion, in the worker: keyhive stays fs-blind, node supplies the writer that lands the
 // keyhive Archive in the sovereign identity home. This island holds no vessel key, so the writer HANDS the bytes
-// to the vessel through the custody write door, and the vessel's main thread seals them under the key it holds.
+// to the vessel through its custodyWrite capability, and the vessel's main thread seals them under the key it holds.
 // The island names the carrier, never a path.
-// THE REST DOOR: this island's Repo keeps no store for the slot documents it mints, so each mint asks the vessel
-// to rest the new document and records its binding only on the vessel's acknowledgment.
-const restOnVessel = parentPort ? vesselRestAsker(parentPort) : null;
+// THE RECEIPT CAPABILITY: this island's Repo keeps no store for the slot documents it mints, so each mint asks the
+// vessel for a durability receipt over the new document and records its binding only on the vessel's acknowledgment.
+const receiptFromVessel = parentPort ? vesselReceiptAsker(parentPort) : null;
 const sealOnVessel = parentPort ? vesselCustodyWriter(parentPort) : null;
-// The vessel keeps the live fleet reading on its main thread and answers the daemon through this door.
+// The vessel keeps the live fleet reading on its main thread and answers the daemon through its dyad capability.
 const dyadOnVessel = parentPort ? vesselDyadAsker(parentPort) : null;
 // THE SESSION SIGN DOOR: this island holds no session key. It names the invocation a session placed, and the vessel's
 // main thread answers from that session: its certificate, its proof subject, the vessel's own chain, each signature.
@@ -72,7 +72,7 @@ runSovereignWorker((manifest) => {
     // (its working layer's carriers reach disk; the control-plane bag beneath holds no mirror); the
     // option also lights the daemon's projection cap.
     onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx, { journal }),
-    ...(restOnVessel ? { restDocuments: restOnVessel } : {}),
+    ...(receiptFromVessel ? { askReceipt: receiptFromVessel } : {}),
     ...(dyadOnVessel ? { dyadReading: dyadOnVessel } : {}),
     // THE KAHU PREDICATE'S BOARD: this vessel's charter and the admission acts its carriage board carries, read at
     // ACCESS through the island's own repo. Every write door into system canon asks it (kahu-canon-reach).

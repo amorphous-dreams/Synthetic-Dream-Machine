@@ -62,7 +62,7 @@ describe.skipIf(skipReason)(`a session surface on the real island kernel${skipRe
     if (!verdict.ok) throw new Error(`${verdict.refusal}: ${verdict.detail}`);
     expect(verdict.recipe.pluginCids.length).toBeGreaterThan(0);                         // the floor resolved
 
-    const pool = new VesselIslandPool({
+    const pool = new VesselIslandPool({ caps: {},
       workerScriptUrl: ISLAND_JS, mainRepo: repo, storageRoot: cas.storageDir,
       resolvePluginCids: async () => ({ ok: true as const, pluginCids: cas.pluginCids }),
     });

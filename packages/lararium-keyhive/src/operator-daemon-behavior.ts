@@ -53,10 +53,10 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   events?: (args: Record<string, unknown>, signal?: AbortSignal) => Promise<Record<string, unknown>>;
   /** `journalAppend` — daemon-owned vessel journal writes from non-daemon islands; the invocation names who placed it. */
   journalAppend?: (args: Record<string, unknown>, invocation: { readonly requestedBy?: string; readonly listenable?: string }) => Promise<Record<string, unknown>>;
-  /** `restDocuments` — the rest door. This island's Repo may keep no store for a slot document it mints; the
+  /** `askReceipt` — the receipt capability's island half. This island's Repo may keep no store for a slot document it mints; the
    *  host injects the ask that resolves once the vessel's own store holds the named documents durably. Present →
    *  every slot mint waits on it before its binding lands. Absent → the island's own Repo flush stands alone. */
-  restDocuments?: (documentIds: readonly string[], gateClear?: Promise<void>, heads?: Record<string, string[]>) => Promise<void>;
+  askReceipt?: (documentIds: readonly string[], gateClear?: Promise<void>, heads?: Record<string, string[]>) => Promise<void>;
   /** `bagTier` — the SAME inversion for the crossing gate's tier reader: keyhive stays fs-blind, so
    *  NODE injects the reader over its hearth bag manifests. Threaded into the ACTION verb handlers,
    *  where `crossingDirection` prices a transfer by direction. Absent (a browser vessel, tests) →
@@ -213,7 +213,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // The face archive writer stays on the island shore.
   const {
     persistVeilArchive, shore, events, journalAppend,
-    bagTier, restDocuments, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, countedRaises, kahuCabal, ...daemonExtra
+    bagTier, askReceipt, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, countedRaises, kahuCabal, ...daemonExtra
   } = extra;
   const daemonAuth = manifest.daemonAuth;
   let clearGate!: () => void;
@@ -349,7 +349,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const slotDocsOf = (ctx: IslandContext): SlotDocResolver => {
     if (slotDocs) return slotDocs;
     slotDocs = makeSlotDocResolver({
-      repo: restDocuments ? restingMinter(ctx.repo, (ids) => restDocuments(ids,
+      repo: askReceipt ? restingMinter(ctx.repo, (ids) => askReceipt(ids,
         gateCleared ? undefined : gateClear, islandHeadsOf(ctx.repo, ids))) : ctx.repo,
       daemonStore: ctx.composite, ...(kh ? { keyhive: kh } : {}),
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null,

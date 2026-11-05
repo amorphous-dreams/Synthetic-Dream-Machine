@@ -54,7 +54,7 @@ export interface BrowserIslandScope {
 export function runBrowserSovereignWorker(
   behaviorOrFactory: IslandBehavior | ((manifest: IslandMsg_Manifest) => IslandBehavior),
   scope?: BrowserIslandScope,
-  opts?: { restDoor?: boolean },
+  opts?: { caps?: { receipt?: true } },
 ): void {
   const host: IslandHostShore = {
     post:    (msg: IslandToVesselMsg) => scope ? scope.post(msg) : self.postMessage(msg),
@@ -66,5 +66,5 @@ export function runBrowserSovereignWorker(
     resolveByCid: (cid) => readCasBlobFromOpfs(cid),
   };
 
-  runSovereignKernel(host, behaviorOrFactory, opts?.restDoor ? { restDoor: true } : undefined);
+  runSovereignKernel(host, behaviorOrFactory, opts?.caps?.receipt ? { caps: { receipt: true } } : undefined);
 }

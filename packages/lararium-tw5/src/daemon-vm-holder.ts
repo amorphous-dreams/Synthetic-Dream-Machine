@@ -90,7 +90,7 @@ export function holdDaemonVm<P = void>(o: {
       const value = Reflect.get(inner, key);
       if (typeof key !== "string" || typeof value !== "function") return value;
       if (asyncMethods.has(key)) return (...args: unknown[]) => {
-        // The vessel's rest door asks the island's leg while the island mounts its replayed layers: that readiness read answers from the new VM.
+        // The vessel's receipt answer asks the island's leg while the island mounts its replayed layers: that readiness read answers from the new VM.
         if (key === "syncLegReady" && replaying) return Promise.resolve(invoke(key, args));
         try { check(); } catch (err) { return Promise.reject(err); }   // an async door refuses by rejecting
         const generation = restarts;

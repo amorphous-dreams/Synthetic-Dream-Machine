@@ -38,7 +38,7 @@ export const HOLDER_ROUTES = {
   "daemon:wiki-alert": "owner",
   "cas:want": "owner",
   "dyad:ask": "owner",
-  "doc:rest": "owner",
+  "receipt:request": "owner",
   "custody:write": "owner",
   // The session sign door (sealed-store#/the-store): the browser island composes no session proof until U4 moves the
   // daemon kernel into the holder (road F6, slice four), so no browser island asks one; the route stays total.

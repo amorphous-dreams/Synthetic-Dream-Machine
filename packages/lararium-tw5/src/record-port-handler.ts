@@ -335,7 +335,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     let familyStarted = false;
     // THE WRITE'S ANSWER WAITS FOR ITS REST, as a save act's result does: the hold begins in the turn of the dispatch and the
     // vessel's own word releases it, so a page that holds its leave until `port:written` never leaves ahead of storage.
-    const hold = ctx.rest?.begin();
+    const hold = ctx.receipt?.begin();
     let released = false;
     const release = (slots: readonly string[] | null): void => { if (!released) { released = true; hold?.done(slots); } };
     try {
@@ -378,8 +378,8 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           flush(ctx);
         }
       }
-      release(familyStarted && ctx.rest ? [...ctx.handles.keys()] : null);
-      if (familyStarted && ctx.rest) await ctx.rest.held();
+      release(familyStarted && ctx.receipt ? [...ctx.handles.keys()] : null);
+      if (familyStarted && ctx.receipt) await ctx.receipt.held();
       const result = port.ledger.answer(msg.txId, failed);
       if (result.status === "applied") port.actorState.unanswered.delete(msg.txId);
       flush(ctx);

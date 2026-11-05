@@ -1,6 +1,6 @@
 /** A wiki island cannot read the daemon island's fleet board. */
 import { describe, expect, test, vi } from "vitest";
-import { refuseBrowserDyadAsks } from "../src/browser-dyad-door.js";
+import { refuseBrowserDyadAsks } from "../src/browser-dyad-refusal.js";
 
 describe("the wiki island's dyad refusal", () => {
   test("asks answer aside and warn once", () => {
@@ -18,7 +18,7 @@ describe("the wiki island's dyad refusal", () => {
         { type: "dyad:read", requestId: "one", standing: "aside" },
         { type: "dyad:read", requestId: "two", standing: "aside" },
       ]);
-      expect(warn.mock.calls.filter((call) => String(call[0]).includes("DyadDoorRefused"))).toHaveLength(1);
+      expect(warn.mock.calls.filter((call) => String(call[0]).includes("DyadRefused"))).toHaveLength(1);
     } finally { stop(); warn.mockRestore(); }
   });
 });

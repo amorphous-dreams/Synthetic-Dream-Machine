@@ -454,14 +454,14 @@ describe("the host working layer mounts on every island (CI e2e: a read after th
   });
 });
 
-describe("the new island may be read for readiness while its registrations replay (local e2e: the rest door asked the facade mid-mount)", () => {
+describe("the new island may be read for readiness while its registrations replay (local e2e: the receipt answer asked the facade mid-mount)", () => {
   test("syncLegReady answers from the new VM during replay; CONTROL: every other door still refuses daemon-restarting", async () => {
     const first = fakeVm();
     const next = fakeVm();
     let held!: ReturnType<typeof holdDaemonVm>;
     let during: { leg?: string; place?: string } = {};
     (next as { mountHostWorkingLayer: () => Promise<void> }).mountHostWorkingLayer = async () => {
-      during.leg = await held.vm.syncLegReady();          // the vessel's rest door awaits the island's leg through the facade
+      during.leg = await held.vm.syncLegReady();          // the vessel's receipt answer awaits the island's leg through the facade
       try { held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never); } catch (e) { during.place = (e as Error).message; }
     };
     held = holdDaemonVm({ vm: first, reopen: async () => next });

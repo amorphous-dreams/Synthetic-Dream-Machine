@@ -17,7 +17,7 @@ import {
 } from "@lararium/mesh";
 import { mountProjection } from "../src/tw5-projection.js";
 import type { IslandContext } from "../src/island-context.js";
-import type { RestDoor } from "../src/rest-door.js";
+import type { ReceiptCapability } from "../src/receipt.js";
 import { bootTestWiki } from "./test-wiki.js";
 
 export interface LooseWiki {
@@ -57,7 +57,7 @@ export interface Surface {
 let seq = 0;
 
 /** Boot a wiki whose root template reads `root`, mount the projection, and deliver its first frame. */
-export async function mountSurface(root: string, tiddlers: Array<Record<string, string | string[]>> = [], wikiUri = "lar:///test/projection-surface", rest?: RestDoor): Promise<Surface> {
+export async function mountSurface(root: string, tiddlers: Array<Record<string, string | string[]>> = [], wikiUri = "lar:///test/projection-surface", receipt?: ReceiptCapability): Promise<Surface> {
   const engine = await bootTestWiki({ tiddlers });
   engine.setTiddler({ title: "$:/core/ui/RootTemplate", type: "text/vnd.tiddlywiki", text: root });
   const wiki = (engine.$tw as unknown as { wiki: LooseWiki }).wiki;
@@ -65,7 +65,7 @@ export async function mountSurface(root: string, tiddlers: Array<Record<string, 
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   const frames: LarMsg_Frame[] = [], results: LarMsg_ControlResult[] = [], others: unknown[] = [];
   const ctx = {
-    wikiUri, tw5: engine, ...(rest ? { rest } : {}),
+    wikiUri, tw5: engine, ...(receipt ? { receipt } : {}),
     post: (msg: unknown) => {
       const frame = readLarFrame(msg); if (frame) { frames.push(frame); return; }
       const result = readLarControlResult(msg); if (result) { results.push(result); return; }
