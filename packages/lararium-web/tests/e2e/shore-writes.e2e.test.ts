@@ -69,7 +69,11 @@ test("served wiki saves a draft tiddler without worker errors", async () => {
   const bodyEditor = page.frameLocator("#mirror iframe").first().locator("textarea");
   await bodyEditor.fill("newer local composition — 漢字");
   // A title edit writes the draft again; the returned echo must not replace the newer text the person typed.
+  const sentBefore = await wiki.evaluate((host) => (host as unknown as { larMirrorWritesSent: number }).larMirrorWritesSent);
   await wiki.locator("input.tc-titlebar").fill("Shore Write Probe Updated");
+  // The title edit's write goes out first; quiescence read before it would pass on an idle port.
+  await page.waitForFunction((before) => (document.querySelector("#mirror") as unknown as { larMirrorWritesSent: number }).larMirrorWritesSent > before,
+    sentBefore, { timeout: 20_000 });
   // Wait for the port to go still (no write pending, no edit deferred), never for the value to equal the text: a poll-until-equal would hide the race.
   await page.waitForFunction(() => (document.querySelector("#mirror") as unknown as { larMirrorQuiescent?: boolean }).larMirrorQuiescent === true,
     undefined, { timeout: 20_000 });

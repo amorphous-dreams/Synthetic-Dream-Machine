@@ -315,4 +315,46 @@ describe.skipIf(!!wikiSkip)(`glass port ordered races${skipNote}`, () => {
     expect(peers).toBe(1);
     expect(g.text("Draft")).toBe("peer");
   });
+  it("a peer entry held while a write stands in flight shows once the write settles, and the next keystroke does not revert it; CONTROL a peer entry older than the write's echo loses to the write", async () => {
+    const g = await glass();
+    g.snapshot("first", 1, 1, [{ title: "Page", fields: { text: "base" }, seq: 1 }]);
+    await g.flush();
+    g.wiki.setTiddler({ title: "Page", text: "mine" }); await g.flush();
+    const tx = g.writes()[0].txId;
+    g.change({ title: "Page", fields: { text: "mine" }, seq: 3 }, [tx]);                // the write's own echo
+    g.change({ title: "Page", fields: { text: "peer" }, seq: 4 }, []);                  // a peer lands after it, while the write stands pending
+    await g.flush();
+    expect(g.text("Page")).toBe("mine");
+    g.deliver({ type: "port:written", txId: tx, status: "applied", applied: ["Page"], failed: [] });
+    await g.flush();
+    expect(g.text("Page")).toBe("peer");
+    g.wiki.setTiddler({ title: "Page", text: "peer plus" }); await g.flush();
+    expect(g.text("Page")).toBe("peer plus");
+    expect(g.writes().at(-1).records[0].fields.text).toBe("peer plus");
+
+    const h = await glass();
+    h.snapshot("first", 1, 1, [{ title: "Page", fields: { text: "base" }, seq: 1 }]);
+    await h.flush();
+    h.wiki.setTiddler({ title: "Page", text: "mine" }); await h.flush();
+    const tx2 = h.writes()[0].txId;
+    h.change({ title: "Page", fields: { text: "older peer" }, seq: 2 }, []);            // the peer's entry precedes the write's echo
+    h.change({ title: "Page", fields: { text: "mine" }, seq: 3 }, [tx2]);
+    h.deliver({ type: "port:written", txId: tx2, status: "applied", applied: ["Page"], failed: [] });
+    await h.flush();
+    expect(h.text("Page")).toBe("mine");
+  });
+
+  it("a saved write with its one echo fires no peer edit", async () => {
+    const g = await glass();
+    g.snapshot("first", 1, 1, [{ title: "Page", fields: { text: "base" }, seq: 1 }]);
+    await g.flush();
+    let peers = 0; g.adaptor.onPeerEdit(() => peers++);
+    g.wiki.setTiddler({ title: "Page", text: "saved" }); await g.flush();
+    const tx = g.writes()[0].txId;
+    g.change({ title: "Page", fields: { text: "saved" }, seq: 3 }, [tx]);
+    g.deliver({ type: "port:written", txId: tx, status: "applied", applied: ["Page"], failed: [] });
+    await g.flush();
+    expect(peers).toBe(0);
+    expect(g.text("Page")).toBe("saved");
+  });
 });

@@ -80,4 +80,26 @@ describe("port listener timing", () => {
       expect(ofType(r.messages, "port:changes").flatMap((message) => message.entries).find((entry) => entry.title === "Foreign")?.causedBy).toEqual([]);
     } finally { await r.close(); }
   });
+  test("port-local-write-echoes-once: a write the store makes never re-enters as a remote change after the debounce; CONTROL: a change made on the handle outside the store arrives as crdt-remote", async () => {
+    const repo = new Repo({ network: [] });
+    const real = new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), "real");
+    const r = await realPort();
+    r.composite.addLayer({ bagId: "real", store: real, writable: true, defaultWritable: false });
+    const origins: string[] = [];
+    r.composite.subscribe((change) => { if (change.title === "Once" || change.title === "Remote") origins.push(`${change.title}:${change.origin.kind}`); });
+    const entriesOf = (title: string) => ofType(r.messages, "port:changes").flatMap((message) => message.entries).filter((entry) => entry.title === title);
+    try {
+      await r.send(open);
+      await r.send(write("once-tx", "Once", "real"));
+      await new Promise((resolve) => setTimeout(resolve, 200));                       // past the provider's 40 ms debounce
+      expect(entriesOf("Once").map((entry) => entry.causedBy)).toEqual([["once-tx"]]);
+      expect(origins).toEqual(["Once:tw-local"]);
+      (real as unknown as { handle: { change(fn: (doc: LarDoc) => void): void } }).handle.change((doc) => {
+        (doc.tiddlers as Record<string, unknown>)["Remote"] = { tiddler: { title: "Remote", text: "from elsewhere" } };
+      });
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(origins.filter((entry) => entry.startsWith("Remote"))).toEqual(["Remote:crdt-remote"]);
+      expect(entriesOf("Remote").map((entry) => entry.causedBy)).toEqual([[]]);
+    } finally { await r.close(); }
+  });
 });
