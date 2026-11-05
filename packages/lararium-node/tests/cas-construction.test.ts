@@ -57,6 +57,12 @@ describe("the CAS dirs are fixed at construction", () => {
     expect(src.split("casDirForStorage(").length - 1).toBe(1);
   });
 
+  test("C7 — cas-fetch reads `before` across both local tiers, so a corpus hit reports fetched:false", () => {
+    const src = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
+    const m = /registry\.register\("cas-fetch"[\s\S]*?const before = ([^;]+);/.exec(src);
+    expect(m?.[1]).toMatch(/cidDir\)[\s\S]*corpusCasDir/);
+  });
+
   test("C3 — the record's cas answers from the corpus dir as its second tier", async () => {
     const cid = "sha256:" + createHash("sha256").update(BYTES).digest("hex");
     const runtime = tmp(), corpus = tmp();

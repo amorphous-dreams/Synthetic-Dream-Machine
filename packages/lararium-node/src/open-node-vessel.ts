@@ -3408,7 +3408,8 @@ async function prepareNodeBootOn(
     registry.register("cas-fetch", async (args) => {
       const cid = typeof args["cid"] === "string" ? (args["cid"] as string) : "";
       if (!cid) throw new Error("cas-fetch: `cid` required");
-      const before = readCasBlobFromFs(cid, cidDir) !== null;
+      // Held before = either LOCAL tier (the runtime `cid/` dir or the corpus store): a hit in either fetched nothing.
+      const before = readCasBlobFromFs(cid, cidDir) !== null || (corpusCasDir !== null && readCasBlobFromFs(cid, corpusCasDir) !== null);
       const bytes = await resolveCid(cid);
       return { verb: "cas-fetch", cid, held: bytes !== null, fetched: bytes !== null && !before, bytes: bytes?.byteLength ?? 0,
                door: hermShore ? "herm-shore" : "local-only" };
@@ -3880,13 +3881,13 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   const sessionSign = p.liftSessionSign();
   const sessionSignDown = seatSessionSignLift(p.islandCaps, sessionSign.door);
   roleCaps.push(sessionSignDown);
-  let result: Awaited<ReturnType<typeof composeLararium<VesselIslandPool>>>;
+  // THE COMPOSITION BOUNDARY: whatever refuses from here to the result (the keel, a duplicate porch route) drains every role cap
+  // the lift stood, this door among them, before it rethrows; the caller's `p.teardown` runs no role cap.
+  const drainRoleCaps = async (): Promise<void> => {
+    for (const down of roleCaps.splice(0).reverse()) { try { await down(); } catch { /* the refusal names the cause */ } }
+  };
   try {
-    result = await composeLararium<VesselIslandPool>(p.orchestration, extraCaps);
-  } catch (e) {
-    for (const down of roleCaps.splice(0).reverse()) { try { await down(); } catch { /* the refusal below names the cause */ } }
-    throw e;
-  }
+  const result = await composeLararium<VesselIslandPool>(p.orchestration, extraCaps);
   // THE PORCH ANSWERS FOR THE FLOOR: `/floor/<AID>` hands a stranger the release rows this board carries (each with its lineage),
   // and `/cas/<cid>` the blobs the head release names. A hearth with neither a dispatcher nor a server answers no porch.
   if (opts.httpServer || opts.dispatcher) {
@@ -3943,6 +3944,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     storeClaim: p.storeClaim,
     mountManifest: result.assembly.mountManifest,
   };
+  } catch (e) { await drainRoleCaps(); throw e; }
 }
 
 /**

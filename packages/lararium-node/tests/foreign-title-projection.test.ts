@@ -293,7 +293,19 @@ test.each([false, true])("recovery retry rechecks the file without another edit 
     releaseRender();
     await projector.idle();
     capability.answer({ type: "receipt:issued", requestId: asks[0]!.requestId, issued: true });
-    await turns(30);
+    // WAIT ON THE CONDITION, never a turn count: a recheck rides real disk I/O (the render, the file read), which `setImmediate`
+    // turns outrun under load. Quiet means the recheck count and the ask count held still across several rounds, each round
+    // letting a slice of real time pass (a receipt left unanswered holds the drain, so no idle edge can stand in for this).
+    const quiet = async (): Promise<void> => {
+      let still = 0, mark = "";
+      for (let round = 0; round < 400 && still < 12; round++) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 5));
+        const now = `${checks}/${asks.length}`;
+        still = now === mark ? still + 1 : 0; mark = now;
+      }
+      expect(still, "the recheck loop reached quiet").toBeGreaterThanOrEqual(12);
+    };
+    await quiet();
     // The first answer draws one recheck. Under a standing conflict the refusal raises its alert, and a landing wave for the
     // refused title releases ONE retry on its own (the drain's ruling 2), so how soon that second recheck lands rides the
     // loop's turn order: the claim here reads "at least one", and exactly one where no conflict refuses.
@@ -303,13 +315,13 @@ test.each([false, true])("recovery retry rechecks the file without another edit 
       expect(r.adaptor.pendingTitles()).toContain(title);
       const before = checks;                       // taken BEFORE the request: only the request's own work can raise it past here
       r.adaptor.requestDrain();
-      await turns(30);
+      await quiet();
       if (asks[1]) capability.answer({ type: "receipt:issued", requestId: asks[1].requestId, issued: true });
-      await turns(30);
+      await quiet();
       expect(checks, "the request drew at least one more recheck of the failed projection receipt").toBeGreaterThan(before);
-      // QUIESCENCE without another request: further turns draw no further check, and the retries stay bounded.
+      // QUIESCENCE without another request: a further quiet stretch draws no further check, and the retries stay bounded.
       const settled = checks;
-      await turns(60);
+      await quiet();
       expect(checks, "no request stands, so no further recheck runs").toBe(settled);
       expect(settled - before, "the request's retries stay bounded").toBeLessThanOrEqual(3);
       expect.soft(r.adaptor.pendingTitles(), "conflict still prevents acknowledgement").toContain(title);
