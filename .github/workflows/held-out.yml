@@ -56,6 +56,9 @@ env:
   # ONE pnpm, exact: the same string as package.json `packageManager` and the Dockerfile. A lock
   # written by any other pnpm rewrites its peer suffixes on its next write.
   PNPM_VERSION: "11.28.5"
+  # THE BROWSER LIBRARIES COME IN THE IMAGE, NEVER FROM APT (`playwright install-deps` timed out in the browser cells six times in one
+  # day). The same string as ci.yml's; tools/workflow-law.test.mjs holds both to the repo's `playwright` version.
+  PLAYWRIGHT_IMAGE: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f"
 
 jobs:
   plan:
@@ -182,31 +185,16 @@ jobs:
         run: |
           echo "COMPOSE_PROJECT_NAME=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
           echo "MESH_PROJECT=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
-      - name: Name the Playwright version (the engine cache key)
+      # The browser weld's two drivers run inside the pinned official Playwright image (tools/browser-weld-witness.sh reads
+      # `WELD_PW_IMAGE`), so the system libraries and Chromium are already there and no apt or download step runs. The pull
+      # is its own step, so a stall names itself.
+      - name: Pull the pinned Playwright image and find its Chromium
         if: matrix.driver == 'browser-weld'
-        id: pw-version
-        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-      # The engine directory restores by the pinned Playwright version; a bump re-downloads. The install below
-      # still runs apt for the system libraries, so it carries its own timeout and a stall there fails fast.
-      - name: Cache the Playwright engines (chromium)
-        if: matrix.driver == 'browser-weld'
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium
-      - name: Install Playwright system dependencies (chromium)
-        if: matrix.driver == 'browser-weld'
-        timeout-minutes: 5
-        run: pnpm exec playwright install-deps chromium
-      - name: Install Playwright Chromium
-        if: matrix.driver == 'browser-weld'
-        timeout-minutes: 10
+        timeout-minutes: 12
         run: |
-          for attempt in 1 2 3; do
-            if timeout 180s pnpm exec playwright install chromium; then exit 0; fi
-            echo "Playwright engine install attempt $attempt failed; retrying"
-          done
-          exit 1
+          export PW_IMAGE="$PLAYWRIGHT_IMAGE"
+          tools/pw-container.sh node -e 'const p = require("playwright"); const e = p.chromium.executablePath(); require("node:fs").accessSync(e); console.log("chromium:", e, "playwright", require("playwright/package.json").version)'
+          echo "WELD_PW_IMAGE=$PLAYWRIGHT_IMAGE" >> "$GITHUB_ENV"
 
       # Regression for the status bug that held this runner back. The fake Docker seam runs no
       # container and checks both a quiet failed compose result and a quiet successful one.

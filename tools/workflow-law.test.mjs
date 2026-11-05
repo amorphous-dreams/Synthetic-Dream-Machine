@@ -121,3 +121,42 @@ test("WL2 CONTROL: a planted workflow without the caps reads every breach, and a
   const fromStep = lawful.replace("key: playwright-${{ runner.os }}-1.0.0-chromium", "key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium");
   assert.deepEqual(breaches("from-step.yml", fromStep), []);
 });
+
+// THE BROWSER LIBRARIES COME IN THE IMAGE. `playwright install-deps` is an apt step; on a hosted runner it timed out at its five
+// minutes in the browser cells at least six times in one day. The pinned official image carries the libraries and the engines,
+// so no workflow runs the install, and every use of the image names ONE tag-and-digest, the pin the capability probe holds,
+// at the version the repo's `playwright` package resolves to.
+const IMAGE = /mcr\.microsoft\.com\/playwright:v([0-9.]+)-noble@sha256:[0-9a-f]{64}/g;
+
+/** The Playwright image references in one text, and the lines of it that run an install. */
+export function imageLaw(text) {
+  const images = [...text.matchAll(IMAGE)].map((m) => m[0]);
+  const installs = text.split("\n").filter((l) => !/^\s*#/.test(l) && /playwright (install|install-deps)\b|--with-deps/.test(l));
+  return { images, installs };
+}
+
+test("WL3 RED: no workflow installs Playwright, and every Playwright image is the one pinned release", () => {
+  const root = join(import.meta.dirname, "..");
+  const pinned = IMAGE.exec(readFileSync(join(root, "docker-compose.capability-probe.yml"), "utf8"));
+  IMAGE.lastIndex = 0;
+  assert.ok(pinned, "CONTROL: the capability probe pins the image by tag and digest");
+  const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+  const lock = readFileSync(join(root, "pnpm-lock.yaml"), "utf8");
+  assert.equal(pinned[1], pkg.devDependencies?.playwright ?? pkg.dependencies?.playwright, "the image tag names the release the repo's playwright package pins");
+  assert.match(lock, new RegExp(`playwright@${pinned[1].replaceAll(".", "\\.")}`), "CONTROL: the lockfile resolves that same release");
+  let seen = 0;
+  for (const file of readdirSync(WORKFLOWS).filter((f) => /\.ya?ml$/.test(f)).sort()) {
+    const { images, installs } = imageLaw(readFileSync(join(WORKFLOWS, file), "utf8"));
+    assert.deepEqual(installs, [], `${file}: a Playwright install runs apt again`);
+    for (const image of images) assert.equal(image, pinned[0], `${file}: the image drifts from the capability probe's pin`);
+    seen += images.length;
+  }
+  assert.ok(seen >= 3, "CONTROL: the browser cells name the image (ci.yml env and two cells, held-out env)");
+});
+
+test("WL4 CONTROL: a planted install and a planted second image both read", () => {
+  const planted = "image: mcr.microsoft.com/playwright:v1.0.0-noble@sha256:" + "a".repeat(64) + "\n        run: pnpm exec playwright install-deps chromium\n      # playwright install in prose\n";
+  const { images, installs } = imageLaw(planted);
+  assert.equal(images.length, 1);
+  assert.deepEqual(installs, ["        run: pnpm exec playwright install-deps chromium"]);
+});

@@ -183,11 +183,19 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
 
   test("W3 — an ordinary click navigates: beta opens in the river and the page cancels the browser default", async () => {
     const before = opened.length;
+    // THE CLICK WAITS FOR THE ISLAND'S LAST FRAME. A relayed act names the render target the page showed; the island answers
+    // `stale-target` to an act whose target a newer frame replaced, and the page paints that refusal and relays nothing again.
+    // W1 ends on the editor's confirm, and the island may still repaint the river after its answer, so a click straight after
+    // W1/W2 can land on a target the very next frame retires: beta never opens and the wait below runs out. The barrier is
+    // the one W4-W6 raise behind their clicks: the island answers in the order the acts left the page, so once the throwaway
+    // tiddler's frames have come and gone, no earlier frame remains in flight and the link read next is the one the island holds.
+    await raiseSentinel();
     await wiki().locator(".tc-story-river a.tc-tiddlylink-resolves").first().click();
     // The page's template opens a followed link below its source (`tiddlywiki.openLinkFromInsideRiver`), where the
-    // golden's bare navigator world has no source frame; the claim is that beta joins the story.
+    // golden's bare navigator world has no source frame; the claim is that beta joins the story. The island's answer
+    // rides the same road every other wait here rides, so it gets the same bound (WAIT), not a shorter one.
     await page!.waitForFunction((t) => !!document.querySelector("#projection")?.shadowRoot
-      ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]`), BETA, { timeout: 20_000 })
+      ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]`), BETA, { timeout: WAIT })
       .catch(async (e) => { throw new Error(`${e}\nstory=${JSON.stringify(await story())}\n${consoleLines.filter((l) => !l.startsWith("Warning: Global assignment")).slice(-40).join("\n")}`); });
     expect(await story()).toEqual([ALPHA, BETA]);
     expect((await lastClick()).prevented).toBe(true);

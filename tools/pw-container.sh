@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# pw-container — run one command inside the pinned official Playwright image, on the host's workspace.
+#
+# WHY IT EXISTS. `playwright install-deps` is an apt step, and apt on a hosted runner stalled past its five minutes at least
+# six times in one day. The official image carries the system libraries and all three engines already, so a browser step
+# that runs here installs nothing. The image is pinned by tag AND digest (`PW_IMAGE`, the workflows' `PLAYWRIGHT_IMAGE`),
+# and tools/workflow-law.test.mjs holds that pin to the repo's `playwright` version and to docker-compose.capability-probe.yml.
+#
+# WHAT IT CHANGES, AND WHAT IT LEAVES. The workspace, the runner temp dir and the extra mounts in `PW_MOUNTS` (space-separated
+# absolute paths) ride in at their own paths, so every path a step names reads the same inside. The command runs as the
+# caller's uid and gid (nothing root-owned lands in the workspace) on the host network (a dev server on localhost answers).
+# HOME becomes a scratch dir unless the caller sets one; `PW_ENV` (space-separated names) lists the variables to forward.
+#
+# Usage:  PW_IMAGE=<image> tools/pw-container.sh <command> [args...]
+set -euo pipefail
+
+image="${PW_IMAGE:?pw-container: PW_IMAGE names the pinned Playwright image}"
+[ "$#" -gt 0 ] || { echo "pw-container: no command" >&2; exit 2; }
+
+# The pull is the one network step left; it takes three attempts, each bounded, so a stall names itself.
+if ! docker image inspect "$image" >/dev/null 2>&1; then
+  pulled=0
+  for attempt in 1 2 3; do
+    if timeout 300s docker pull --quiet "$image" >/dev/null; then pulled=1; break; fi
+    echo "pw-container: pull attempt $attempt failed; retrying" >&2
+  done
+  [ "$pulled" -eq 1 ] || { echo "pw-container: the image never pulled" >&2; exit 1; }
+fi
+
+root="$(git rev-parse --show-toplevel)"
+args=(--rm --network host --ipc=host --init --user "$(id -u):$(id -g)" -w "$(pwd)" -v "$root:$root")
+if [ -n "${RUNNER_TEMP:-}" ]; then args+=(-v "$RUNNER_TEMP:$RUNNER_TEMP"); fi
+for m in ${PW_MOUNTS:-}; do args+=(-v "$m:$m"); done
+scratch_home="$(mktemp -d)"
+trap 'rm -rf "$scratch_home"' EXIT
+args+=(-v "$scratch_home:$scratch_home" -e "HOME=${HOME_INSIDE:-$scratch_home}")
+if [ -n "${CI:-}" ]; then args+=(-e CI); fi
+for v in ${PW_ENV:-}; do
+  if [ -n "${!v+x}" ]; then args+=(-e "$v"); fi
+done
+
+docker run "${args[@]}" "$image" "$@"
