@@ -242,19 +242,20 @@ export function telemetryProviderCap(impl: TelemetryProvider): CapModule {
  * provenance envelope, and a handle's turns read through the worldline door). The coordinator's holder
  * keeps only the parameters its signature declares and drops the rest without a word, so a caller still
  * passing one of these would read an UNFILTERED result as a filtered one. The verb refuses a burned name
- * before any read runs, in every mode.
+ * before any read runs, in every mode; names match case-insensitively after removing hyphens and underscores.
  */
-const BURNED_RECALL_ARGS: readonly string[] = ["voice", "band", "drift", "agent-handle", "agent_handle", "agentHandle"];
+const BURNED_RECALL_ARGS: readonly string[] = ["voice", "band", "drift", "agenthandle"];
 
 /**
  * The recall filters (provenance agent and surface, the taxonomy axes speaker, channel and function) and the
- * exchange view `pair` have ONE home: the coordinator's recall signature, reached on the search path. The
+ * exchange view `pair`, plus `room` and `lens`, have ONE home: the coordinator's recall signature, reached on the search path. The
  * list path pages drawers by wing and limit, the imago path fetches one entry by id, and the dual fuse
  * assembles its own content-leg args, so none of them can honour one, and the coordinator holds no
  * query-less filtered search. The verb refuses a present one by name off the search path rather than answer
  * unfiltered; the filters never get a second home in TypeScript.
  */
-const SEARCH_ONLY_RECALL_ARGS: readonly string[] = ["agent", "surface", "speaker", "channel", "function", "pair"];
+const SEARCH_ONLY_RECALL_ARGS: readonly string[] = ["agent", "surface", "speaker", "channel", "function", "pair", "room", "lens"];
+const FUSION_ONLY_RECALL_ARGS = ["register", "grammarLayer", "grammar_layer", "formWeight", "apertureGrain", "aperture_grain", "aperture", "apertureWidth", "aperture_width"];
 
 /** recall — the mempalace READ shore (semantic-search | list | get | multi-graph fuse). Requires
  *  the mempalace read-client + the form store (the dual fuse). */
@@ -267,13 +268,17 @@ export function recallVerbCap(): CapModule {
       const form = resolve<FormPalaceProvider>(VERB_PROVIDER.formPalace);
       return (registry: VerbTable) => {
         registry.register("recall", async (args) => {
-          const burned = BURNED_RECALL_ARGS.filter((name) => Object.hasOwn(args, name));
+          const burned = Object.keys(args).filter((name) => BURNED_RECALL_ARGS.includes(name.toLowerCase().replace(/[-_]/g, "")));
           if (burned.length) {
             throw new Error(`recall: ${burned.join(", ")} ${burned.length === 1 ? "names a burned filter" : "name burned filters"} — the coordinator no longer reads ${burned.length === 1 ? "it" : "them"}; narrow the stratum by speaker, channel or function`);
           }
           const imagoId = typeof args["imago"] === "string" ? (args["imago"] as string) : "";
           const query    = typeof args["query"]  === "string" ? (args["query"]  as string) : "";
           const dual     = args["dual"] === true || args["dual"] === "true" || args["multi"] === true || args["multi"] === "true";
+          const fusionOnly = FUSION_ONLY_RECALL_ARGS.filter((name) => Object.hasOwn(args, name) && args[name] !== undefined);
+          if (fusionOnly.length && (imagoId || !query || !dual)) {
+            throw new Error(`recall: ${fusionOnly.join(", ")} requires the dual path`);
+          }
           const searchOnly = SEARCH_ONLY_RECALL_ARGS.filter((name) => Object.hasOwn(args, name) && args[name] !== undefined);
           if (searchOnly.length && (imagoId || !query || dual)) {
             const path = imagoId ? "the imago fetch" : !query ? "the drawer list" : "the dual fuse";

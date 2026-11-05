@@ -3,8 +3,8 @@
  * very mirror list the daemon VM hands its island (`daemonDiskMirrors`).
  *
  * THE LAYOUT (operator ruling, 2026-11-01, revised): the kahua wiki's working top (`wikis/daemon/working`) writes flat
- * files to `<state>/wikis/kahua-<tag>`, as every wiki writes its working layer; a lift lands in `bags/kahua`, projected at
- * `<state>/bags/kahua-<tag>/<title path>`; the daemon bag (`bags/daemon`) stays the CRDT-only control plane, so no control
+ * files to `<state>/wikis/kahua-<F>`, as every wiki writes its working layer; a lift lands in `bags/kahua`, projected at
+ * `<state>/bags/kahua-<F>/<title path>`; the daemon bag (`bags/daemon`) stays the CRDT-only control plane, so no control
  * record (checkpoint, persona act, cap event, group-secret seal, binding) and no `bags/daemon` dir ever reaches disk,
  * under the state root or the workspace, even with the canon source (`LAR_BAGS`) at a checkout-like tree.
  *
@@ -15,7 +15,7 @@ import { mkdirSync, mkdtempSync, rmSync, existsSync, readFileSync, readdirSync, 
 import { tmpdir } from "node:os";
 import { join, relative, basename, dirname } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
-import { daemonDiskMirrors, daemonWorkingMirror, kahuaStageMirror, kahuaFaceTag, kahuaFaceFolder } from "../src/bag-paths.js";
+import { daemonDiskMirrors, daemonWorkingMirror, kahuaStageMirror, kahuaFaceFolder } from "../src/bag-paths.js";
 import {
   CROSSROADS_DOC_URI, DAEMON_BAG_ID, KAHUA_BAG, OUTCOME_URI_PREFIX, PERSONAL_BINDINGS_PREFIX, PERSONA_ACT_ENTRY_PREFIX,
   groupSecretSealTitle, wikiSlotUri,
@@ -24,8 +24,8 @@ import type { CarrierFile } from "@lararium/tw5";
 
 type Flushable = { flush: (b: string, u: string) => Promise<void> };
 const WORKING = wikiSlotUri("daemon", "working");
-/** The worn face: its derived tag names the folders (`kahua-<tag>`). */
-const TAG = kahuaFaceTag("4e1d9a7c2b6f8e3a5d0c7b9a1f2e4d6c");
+/** The worn face: its relation names the folders (`kahua-<F>`). */
+const TAG = "7b0f6c1e-4a52-4d3b-9c18-2e5a6f0d8b31";
 const FACE = kahuaFaceFolder(TAG);
 
 /** One record of each control kind, titled as its writer titles it, every one resting in the daemon bag. */
@@ -51,7 +51,7 @@ function rig(canonDirs: readonly string[] = ["lares", "lararium", "crossroads"])
   for (const d of canonDirs) mkdirSync(join(workspace, "bags", d), { recursive: true });
   mkdirSync(join(workspace, "wikis"), { recursive: true });
   const projector = new LarDiskProjector({
-    mirrors: daemonDiskMirrors({ rootDir: state, canonBags: join(workspace, "bags"), faceTag: TAG }),
+    mirrors: daemonDiskMirrors({ rootDir: state, canonBags: join(workspace, "bags"), faceRelation: TAG }),
     carrierFileFn: carrier,
   }) as unknown as Flushable;
   return { projector, state, workspace };
@@ -79,7 +79,7 @@ const daemonBagDirs = (dir: string): string[] =>
 describe("the daemon VM's mirror list names the ruled layout", () => {
   test("RED: the working top, the kahua stage and crossroads; never the daemon bag", () => {
     const state = "/house/state";
-    const mirrors = daemonDiskMirrors({ rootDir: state, canonBags: "/house/workspace/bags-absent", faceTag: TAG });
+    const mirrors = daemonDiskMirrors({ rootDir: state, canonBags: "/house/workspace/bags-absent", faceRelation: TAG });
     expect(mirrors.map((m) => [m.bagId, m.mirrorRoot])).toEqual([
       [WORKING, join(state, "wikis", FACE)],
       [KAHUA_BAG, join(state, "bags", FACE)],
@@ -89,7 +89,7 @@ describe("the daemon VM's mirror list names the ruled layout", () => {
     expect(mirrors.some((m) => m.mirrorRoot.endsWith(join("bags", "daemon"))), "a mirror roots at bags/daemon").toBe(false);
     // The crossroads guard defaults ON; only a proven charter lifts it.
     expect(mirrors.find((m) => m.bagId === CROSSROADS_DOC_URI)?.guardNexusHandles).toBe(true);
-    expect(daemonDiskMirrors({ rootDir: state, canonBags: "/x", faceTag: TAG, guardCrossroadsNexusHandles: false })
+    expect(daemonDiskMirrors({ rootDir: state, canonBags: "/x", faceRelation: TAG, guardCrossroadsNexusHandles: false })
       .find((m) => m.bagId === CROSSROADS_DOC_URI)?.guardNexusHandles).toBe(false);
   });
 
@@ -100,7 +100,7 @@ describe("the daemon VM's mirror list names the ruled layout", () => {
 });
 
 describe("the kahua disk witnesses", () => {
-  test("(a) a write in the kahua wiki lands as a flat file under <state>/wikis/kahua-<tag>", async () => {
+  test("(a) a write in the kahua wiki lands as a flat file under <state>/wikis/kahua-<F>", async () => {
     const { projector, state, workspace } = rig();
     await projector.flush(WORKING, "Plain Note");
     await projector.flush(WORKING, "lar:///ha.ka.ba/t/kahua/note");
@@ -109,7 +109,7 @@ describe("the kahua disk witnesses", () => {
     expect(walk(join(workspace, "wikis")), "the private working top reached the workspace wikis/").toEqual([]);
   });
 
-  test("(b) a lift lands under <state>/bags/kahua-<tag>/<title path>", async () => {
+  test("(b) a lift lands under <state>/bags/kahua-<F>/<title path>", async () => {
     const { projector, state, workspace } = rig();
     await projector.flush(KAHUA_BAG, "lares-dev/notes/stage");
     expect(readFileSync(join(state, "bags", FACE, "lares-dev", "notes", "stage.tid"), "utf8")).toContain("title: lares-dev/notes/stage");
@@ -132,7 +132,7 @@ describe("the kahua disk witnesses", () => {
     }
   });
 
-  test("(d) a daemon title the working top holds (a verb outcome, any bags/daemon/** record) never projects under <state>/wikis/kahua-<tag>", async () => {
+  test("(d) a daemon title the working top holds (a verb outcome, any bags/daemon/** record) never projects under <state>/wikis/kahua-<F>", async () => {
     // The daemon stays the control plane, never projected (operator, 2026-11-01). A verb outcome or a daemon flow record
     // that reaches the working top by any road still writes no file: the projector reads the title, never the layer.
     const { projector, state } = rig();
@@ -141,8 +141,8 @@ describe("the kahua disk witnesses", () => {
     await projector.flush(WORKING, "Plain Note");
     const kahua = walk(join(state, "wikis", FACE));
     expect(kahua, "the ordinary write landed: the absence below proves something").toContain("Plain Note.tid");
-    expect(kahua.filter((p) => p.split("/").includes("outcomes")), "an outcomes/ path under <state>/wikis/kahua-<tag>").toEqual([]);
-    expect(kahua.filter((p) => p.split("/").includes("daemon")), "a bags/daemon record under <state>/wikis/kahua-<tag>").toEqual([]);
+    expect(kahua.filter((p) => p.split("/").includes("outcomes")), "an outcomes/ path under <state>/wikis/kahua-<F>").toEqual([]);
+    expect(kahua.filter((p) => p.split("/").includes("daemon")), "a bags/daemon record under <state>/wikis/kahua-<F>").toEqual([]);
   });
 
   test("CONTROL (c): a canon source holding stale daemon/ and kahua/ dirs receives nothing into them", async () => {

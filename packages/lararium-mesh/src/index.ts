@@ -85,6 +85,7 @@ export * from "./kahua-stage.js";
 export * from "./promote.js";
 export * from "./promote-kapae.js";
 export * from "./promote-board.js";
+export * from "./face-relation.js";
 export * from "./promote-door.js";
 export * from "./promote-command.js";
 export * from "./promote-board-door.js";
@@ -287,7 +288,7 @@ export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arriva
 export { answerReceiptWithHeads, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";
 export type { CapabilityRecord, ReceiptIssuer, CasFetcher, DyadReader, CustodyWriter } from "./capability-record.js";
 export { GatedSyncLeg, oneWayDocumentsGate, carriesPrototypeKeyReason } from "./gated-sync-leg.js";
-export { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
+export { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey, docPrototypeKeyFault, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
 export type { SyncLegGate, LegRefusal } from "./gated-sync-leg.js";
 export type { IslandRepoConfig } from "./island-repo.js";
 export { assembleVessel, mountWikiSlot } from "./open-vessel-core.js";

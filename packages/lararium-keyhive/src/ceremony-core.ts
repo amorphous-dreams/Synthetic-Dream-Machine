@@ -61,7 +61,7 @@ import {
   deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard,
   enrolDevice, sealGroupSecret, groupSecretSealTitle, type GroupSecretSeal,
   type LarTiddlerStore, writePersonaAct,
-  signFoundingLog, faceRootCommitment, edgeBodyDigest, landFleetGenesis, makeHandLineage, KAHUA_PLANE, kahuaStageDocUrl, PROMOTE_PLANE, promoteBoardDocUrl, promotePlaneUrl,
+  FACE_PLANE, faceRelationOf, mintFaceRelation, signFoundingLog, faceRootCommitment, edgeBodyDigest, landFleetGenesis, makeHandLineage, KAHUA_PLANE, kahuaStageDocUrl, PROMOTE_PLANE, promoteBoardDocUrl, promotePlaneUrl,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type LarDoc, ownEntry} from "@lararium/mesh";
 
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
@@ -286,9 +286,11 @@ export interface FaceFoundingInput {
    *  (its continuity anchor forks). The node adapter records the un-mounted face as a register-many plane
    *  entry the boot's `readPersonaPlanes` consumes; mounting it is a later act (the wear-reboot re-pin). */
   mount?:             boolean;
+  faceRelation?: string;
 }
 
 export interface FaceFoundingResult {
+  faceRelation: string;
   /** The atom seed handed to the shore for custody. */
   atomSeed:               Uint8Array;
   /** The atom's self-certifying contact card. */
@@ -394,7 +396,7 @@ function writeGroupSecretSeal(
  * same hand as the intents plane. Their derived documents stand in the founder's repo; later adoption reads these pins.
  * (meme lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage).
  */
-async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; atomSeed: Uint8Array; face: Pick<FaceFoundingResult, "personaGroupId" | "personaKelPrefix" | "personaUrl" | "identitiesUrl" | "circlesUrl" | "sessionsUrl" | "intentsUrl" | "founderEdge" | "signerDid"> }): Promise<void> {
+async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; atomSeed: Uint8Array; face: Pick<FaceFoundingResult, "personaGroupId" | "personaKelPrefix" | "personaUrl" | "identitiesUrl" | "circlesUrl" | "sessionsUrl" | "intentsUrl" | "founderEdge" | "signerDid" | "faceRelation"> }): Promise<void> {
   if (input.binding.mode !== "self-stood") return;
   const { face } = input;
   const seed = input.binding.signerSeed;
@@ -408,6 +410,7 @@ async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; at
       persona: face.personaUrl, identities: face.identitiesUrl, circles: face.circlesUrl, sessions: face.sessionsUrl, intents: face.intentsUrl,
       [KAHUA_PLANE]: kahuaStageDocUrl(face.personaGroupId),
       [PROMOTE_PLANE]: promoteBoardDocUrl(face.personaGroupId),
+      [FACE_PLANE]: face.faceRelation,
     },
     deviceKey: faceAtomKeyFromSeed(input.atomSeed, face.personaGroupId).key,
     edgeDigest: edgeBodyDigest(face.founderEdge),
@@ -621,6 +624,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   await veilKeyhive.dispose();
 
   const result: FaceFoundingResult = {
+    faceRelation: input.faceRelation ?? mintFaceRelation({ planes: {} }),
     veilArchive,
     meshCabalDocIdHex: meshCabal.docIdHex,
     identitiesUrl: identitiesHandle.url as string,
@@ -882,6 +886,7 @@ export interface ApplyAdmitResult {
   kahuaUrl:      string | null;
   /** The board pinned by the verified carried log, or null when unpinned. */
   promoteUrl:    string | null;
+  faceRelation: string | null;
   daemonUrl:      string;
   /** The PersonaGroup plane's doc URL the joinee resolves — the founder's shared doc
    *  (membership-sync) when the payload carries it, else a fresh local seed. */
@@ -1030,7 +1035,7 @@ export async function runApplyAdmitPayload(
   const capStore = new InMemoryEventStore();
   if (checkpoint) {
     for (const e of checkpoint.events) await capStore.put({ hash: e.hash, variant: e.variant, bytes: base64ToBytes(e.bytes), ...(e.island ? { island: e.island } : {}) });
-    result = { ...checkpoint.result, kahuaUrl: kahuaPlaneUrl(carriedLog, payload.personaGroupId), promoteUrl: promotePlaneUrl(carriedLog, payload.personaGroupId), archive: base64ToBytes(checkpoint.result.archive) };
+    result = { ...checkpoint.result, kahuaUrl: kahuaPlaneUrl(carriedLog, payload.personaGroupId), promoteUrl: promotePlaneUrl(carriedLog, payload.personaGroupId), faceRelation: faceRelationOf(carriedLog), archive: base64ToBytes(checkpoint.result.archive) };
   } else {
     const keyhive = new KeyhiveProvider();
     await keyhive.init({ seed: atomSeed, eventStore: capStore, ...(input.archiveBytes ? { archiveBytes: input.archiveBytes } : {}) });
@@ -1044,7 +1049,7 @@ export async function runApplyAdmitPayload(
       circlesUrl: sharedCirclesUrl ?? circlesHandle!.url as string,
       sessionsUrl: sessionsHandle.url as string,
       intentsUrl: sharedIntentsUrl,
-      kahuaUrl: kahuaPlaneUrl(carriedLog, payload.personaGroupId), promoteUrl: promotePlaneUrl(carriedLog, payload.personaGroupId),
+      kahuaUrl: kahuaPlaneUrl(carriedLog, payload.personaGroupId), promoteUrl: promotePlaneUrl(carriedLog, payload.personaGroupId), faceRelation: faceRelationOf(carriedLog),
       daemonUrl: daemonHandle.url as string,
       personaUrl, personaBagId,
       hearthDaemonUrl: payload.hearthDaemonUrl,

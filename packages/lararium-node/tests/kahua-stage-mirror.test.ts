@@ -2,11 +2,11 @@
  * kahua-stage-mirror — the face's kahua stage projects under the STATE root, items sited by title, a project as the
  * leading path segment; nothing private ever lands in the workspace's `bags/` or `wikis/`.
  *
- * THE LAYOUT (operator ruling, 2026-11-01): `<state>/bags/kahua-<tag>` holds the fleet-synced, lift-only bag; projects ride
+ * THE LAYOUT (operator ruling, 2026-11-01): `<state>/bags/kahua-<F>` holds the fleet-synced, lift-only bag; projects ride
  * inside as `$(project)$/**` tiddler paths. Workspace canon writes back to `/workspace/bags/<bag>`; private layers write
  * ONLY under state, even when the canon source (`LAR_BAGS`) points at the checkout and holds `kahua/` or `daemon/` dirs.
  *
- * Reds: a kahua item lands at `<state>/bags/kahua-<tag>/<project>/<path>`; a `lar:` item keeps its loci path. Controls: the
+ * Reds: a kahua item lands at `<state>/bags/kahua-<F>/<project>/<path>`; a `lar:` item keeps its loci path. Controls: the
  * workspace bags/ and wikis/ stay empty though the canon source holds a `kahua/` dir; a title that climbs out refuses.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
@@ -16,13 +16,13 @@ import { mkdirSync, mkdtempSync, rmSync, existsSync, readFileSync, readdirSync }
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
-import { kahuaStageMirror, kahuaFaceTag, kahuaFaceFolder, projectionRoots, titleRelPath } from "../src/bag-paths.js";
+import { kahuaStageMirror, kahuaFaceFolder, projectionRoots, titleRelPath } from "../src/bag-paths.js";
 import { KAHUA_BAG } from "@lararium/mesh";
 import type { CarrierFile } from "@lararium/tw5";
 
 type Flushable = { flush: (b: string, u: string) => Promise<void> };
-/** The worn face: its derived tag names the stage folder (`kahua-<tag>`). */
-const TAG = kahuaFaceTag("7b3e5a1c9d2f4e6a8c0b1d3f5a7c9e2b");
+/** The worn face: its relation names the stage folder (`kahua-<F>`). */
+const TAG = "7b0f6c1e-4a52-4d3b-9c18-2e5a6f0d8b31";
 const FACE = kahuaFaceFolder(TAG);
 let base = "";
 afterEach(() => { if (base) { rmSync(base, { recursive: true, force: true }); base = ""; } });
@@ -48,13 +48,13 @@ function rig(): { projector: Flushable; state: string; workspace: string; refusa
 }
 
 describe("the kahua stage projects under state", () => {
-  test("RED: the mirror roots at <state>/bags/kahua-<tag> and sites by title", () => {
+  test("RED: the mirror roots at <state>/bags/kahua-<F> and sites by title", () => {
     expect(kahuaStageMirror("/house/state", TAG)).toEqual({ bagId: KAHUA_BAG, mirrorRoot: join("/house/state", "bags", FACE), titlePaths: true });
     expect(titleRelPath("lares-dev/notes/stage")).toBe("lares-dev/notes/stage");
     expect(titleRelPath("Plain Note")).toBe("Plain Note");
   });
 
-  test("RED: a kahua item lands at <state>/bags/kahua-<tag>/<project>/<path>; a lar: item keeps its loci path", async () => {
+  test("RED: a kahua item lands at <state>/bags/kahua-<F>/<project>/<path>; a lar: item keeps its loci path", async () => {
     const { projector, state } = rig();
     await projector.flush(KAHUA_BAG, "lares-dev/notes/stage");
     await projector.flush(KAHUA_BAG, "lar:///ha.ka.ba/kahua/item");
