@@ -1,5 +1,8 @@
 import { describe, test, expect } from "vitest";
-import { carrierBaseRelPath } from "../src/bag-paths.js";
+import { mkdirSync, mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { carrierBaseRelPath, projectionRoots, daemonWorkingMirror } from "../src/bag-paths.js";
 
 describe("carrierBaseRelPath — the extension-less carrier siting function", () => {
   // Post-#37: the siting returns the carrier's base path with NO extension — the caller adds the
@@ -27,5 +30,30 @@ describe("carrierBaseRelPath — the extension-less carrier siting function", ()
   test("unstable attitude roots DO site when projected (session-bag adoption path)", () => {
     expect(carrierBaseRelPath("lar:///threshold.uncertain.opens/note"))
       .toBe("threshold.uncertain.opens/note");
+  });
+});
+
+describe("the projection pre-check — what the founding rite reads before it trusts the layout", () => {
+  const TAG = "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d";
+  const fixtureCanon = (): string => {
+    const dir = mkdtempSync(join(tmpdir(), "bag-paths-canon-"));
+    for (const slug of ["lares", "lararium"]) mkdirSync(join(dir, "bags", slug), { recursive: true });
+    return join(dir, "bags");
+  };
+
+  test("a canon source sources no `daemon` slug, and the daemon working mirror lands under the state root as kahua-<tag>", () => {
+    const canonBags = fixtureCanon();
+    const roots = projectionRoots({ stateRoot: "/state", canonBags });
+    expect(roots.sourcedSlugs()).not.toContain("daemon");
+    expect(daemonWorkingMirror("/state", TAG).mirrorRoot).toBe(`/state/wikis/kahua-${TAG}`);
+  });
+
+  test("CONTROL: a sourced slug lands under the canon parent, its wiki beside the canon source", () => {
+    const canonBags = fixtureCanon();
+    const roots = projectionRoots({ stateRoot: "/state", canonBags });
+    expect(roots.sourcedSlugs()).toContain("lares");
+    expect(roots.bagRoot("lares")).toBe(join(canonBags, "lares"));
+    expect(roots.wikisRootFor("lares")).toBe(join(dirname(canonBags), "wikis"));
+    expect(roots.wikisRootFor("daemon")).toBe("/state/wikis");
   });
 });
