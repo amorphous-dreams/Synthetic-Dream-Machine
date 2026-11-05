@@ -297,7 +297,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...opt("prefer", str(args["prefer"])), ...opt("class", str(args["class"])),
       ...opt("every", args["every"] === true ? true : undefined),
       ...opt("voidAt", str(args["voidAt"])), ...opt("through", str(args["through"])),
-      ...opt("executor", str(args["executor"])), ...opt("deny", args["deny"] === true ? true : undefined),
+      ...opt("executor", str(args["executor"])), ...opt("detail", str(args["detail"])), ...opt("deny", args["deny"] === true ? true : undefined),
       ...opt("agent", str(args["agent"])), ...opt("prefix", str(args["prefix"])), ...opt("policy", args["policy"]),
       ...opt("asOf", str(args["asOf"])), ...opt("until", str(args["until"])),
     });
