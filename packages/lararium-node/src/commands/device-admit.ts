@@ -172,7 +172,7 @@ export async function assertDyadBinds(repo: Repo, joineeVerifyingKey: string, fa
 /** The hearth refused a join's vessel tag by name: `vessel-tag-absent`, `vessel-tag-invalid`, `vessel-already-admitted`. */
 export class DeviceAdmitTagRefused extends Error {
   override readonly name = "DeviceAdmitTagRefused";
-  constructor(readonly refusal: "vessel-tag-absent" | "vessel-tag-invalid" | "vessel-already-admitted", detail: string) {
+  constructor(readonly refusal: "vessel-tag-absent" | "vessel-tag-invalid" | "vessel-already-admitted" | "replay-edge-lapsed", detail: string) {
     super(`[lares fleet join answer] ${refusal}: ${detail}`);
   }
 }
@@ -415,6 +415,13 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // THE ROOT SIGNS ONLY PAST THE TAG LAW: every refusal above reaches no signature over the joinee's edge.
   const signedEdge = await buildDeviceDelegationRootHalf({ personaRootSeed: signerSeed,
     deviceVerifyingKey: deviceKey, hearthTrueName, boundEpoch });
+  // THE REPLAY HANDS OUT THE SEATED EDGE OR NOTHING: the edge mints deterministically from root, device, hearth and epoch, so
+  // it rebuilds the logged edge exactly while none of them moved. A lease roll (or a root or hearth move) since the seat leaves
+  // the logged edge one the joinee's boot halts on as stale, and a fresh mint one its boot refuses as `edge`: the door names it.
+  const seatedDigest = seatedEdge ? bodyOf(seatedEdge)?.["edgeDigest"] : undefined;
+  const replayLapsed = (): DeviceAdmitTagRefused => new DeviceAdmitTagRefused("replay-edge-lapsed",
+    `the edge this vessel's seat logs binds an epoch, root or hearth this face has moved past (now epoch ${boundEpoch}); re-admit the device through the face's regrant or recovery rite`);
+  if (seatedEdge && seatedDigest !== edgeBodyDigest(signedEdge)) throw replayLapsed();
   let appended: Awaited<ReturnType<typeof signPersonaAct>>[] = [];
   if (!seatedEdge) {
     const signer = { key: signerKey, sign: ed25519SignerFromSeed(signerSeed) };
@@ -451,6 +458,8 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     hearthDaemonUrl: opts.hearthDaemonUrl ?? daemonUrl,
     personaUrl,
   });
+  // The operation cache never decides a replay: whatever it returned, the answer carries the logged edge or refuses.
+  if (seatedEdge && edgeBodyDigest(payload.deviceEdge) !== seatedDigest) throw replayLapsed();
   if (appended.length) appendPersonaActs(personaHandle, appended);
 
   // THE PIN NAMES THE DIAL (hearth-dial-pin.ts): the hearth's full sovereign sync pin at the Nexus its own sync gate

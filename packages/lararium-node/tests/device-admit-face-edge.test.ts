@@ -55,9 +55,18 @@ vi.mock("../src/persona-kel-ring.js", () => ({ carryPersonaKelUpTheGradient: asy
 vi.mock("../src/kahu-realm.js", () => ({ admitCanonDocs: async () => ({}), hearthCustodyGroup: async () => "group-zero" }));
 vi.mock("../src/hearth-aid.js", () => ({ hearthAid: () => "hearth-aid" }));
 vi.mock("../src/lan-address.js", () => ({ wsUrlForOrigin: () => null }));
-vi.mock("@lararium/keyhive", () => ({
-  runDeviceAdmitEdge: async (args: Record<string, unknown>) => { seam.edge = args; return { kind: "device-admit/v1" }; },
-}));
+// The payload carries the edge the real producer would mint from these args (the door reads its digest on a replay).
+vi.mock("@lararium/keyhive", async () => {
+  const mesh = await vi.importActual<typeof import("@lararium/mesh")>("@lararium/mesh");
+  return {
+    runDeviceAdmitEdge: async (args: Record<string, unknown>) => {
+      seam.edge = args;
+      const deviceEdge = await mesh.buildDeviceDelegationRootHalf({ personaRootSeed: args["signerSeed"] as Uint8Array,
+        deviceVerifyingKey: args["joineeVerifyingKey"] as string, hearthTrueName: args["hearthTrueName"] as string, boundEpoch: (args["boundEpoch"] as number | undefined) ?? 0 });
+      return { kind: "device-admit/v1", deviceEdge };
+    },
+  };
+});
 vi.mock("@lararium/mesh", async (real) => {
   const mesh = await real<Record<string, unknown>>();
   return {
@@ -213,7 +222,7 @@ describe("runDeviceAdmit names the face whose root signs", () => {
     const [admission, edge] = seam.appended as { body: Record<string, unknown> }[];
     seam.records = [admission, edge]; seam.vesselTags = [mine.vesselTag];
     seam.admissions = [{ deviceKey: JOINEE, cid: actCid(admission!.body as never) }];
-    seam.appended = []; seam.edge = null; seam.observed = 4;   // a lease roll between the answer and its retry
+    seam.appended = []; seam.edge = null;   // a lease roll between the answer and its retry refuses by name: device-admit-replay-edge.test.ts
     await admitAt(undefined, mine);
     expect(seam.appended, "the replay appends nothing").toEqual([]);
     expect(seam.edge!["personaActs"], "the replay carries the log as seated").toEqual([admission, edge]);
