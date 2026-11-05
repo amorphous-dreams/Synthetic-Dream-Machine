@@ -11,7 +11,6 @@ import { constants as FSC } from 'node:fs';
 import { brokerRootPath, ensureBrokerRoot, ensureLaneDir, ensureStageRoot, laneId } from './broker-root.mjs';
 import { addWorktree, commitWithReceipt, pushWithGo, removeWorktree } from './seat-broker.mjs';
 import { runInstallSeat } from './seat-walls.mjs';
-import { requestCarriesBurn, withoutBurn } from './launch-codex.mjs';
 
 const args = process.argv.slice(2);
 const options = {};
@@ -82,7 +81,7 @@ function openLaneDir(value) {
   }
   return openHeldSync(laneHeld.at(rel), lane);
 }
-const run = (command, argv) => spawnSync(command, argv, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'], env: withoutBurn(process.env) }); // the burn variable never rides a relay launch: the controller launches a burn directly
+const run = (command, argv) => spawnSync(command, argv, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
 const output = r => cap((r.stdout || '') + (r.stderr || '') + (r.error ? String(r.error) : ''));
 
 // Worktrees the broker made stand in the lane as symlinks to a staging dir that never moves; this maps each lane link to its stage.
@@ -92,7 +91,6 @@ try { for (const [k, v] of Object.entries(JSON.parse(await readFile(madeFile, 'u
 const saveMade = async () => { await mkdir(iso, { recursive: true }); await writeFile(madeFile, JSON.stringify(Object.fromEntries(made))); }; // broker-owned
 async function handle(request) {
   if (!request || typeof request !== 'object' || Array.isArray(request)) throw new Error('request must be an object');
-  if (requestCarriesBurn(request)) throw new Error('the burn override is the controller\'s alone');
   const schemas = { commit: ['kind', 'paths', 'message', 'expectHead'], push: ['kind'], install: ['kind', 'path'], worktree: ['kind', 'path', 'branch', 'base'], 'worktree-remove': ['kind', 'path'], launch: ['kind', 'seatDir', 'model', 'effort', 'mode', 'worktree'] };
   if (Object.hasOwn(schemas, request.kind) && Object.keys(request).some(key => !schemas[request.kind].includes(key))) throw new Error('unknown field');
   if (request.kind === 'worktree') {

@@ -49,17 +49,6 @@ const CANON = "bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem";
 const FLOOR = 20;
 /** A read seat's own floor: the operator lets readers spend the pool to its end for now (2026-10-31: "temp bump that limit to 0%"; it stood at 5); builders and research keep FLOOR. */
 const READ_FLOOR = 0;
-/** The controller-set burn override: an ISO date naming the operator's ruling, read from the launcher's own process env alone (never a brief, a request or a reader a lead supplies). It lifts every used-percent ceiling and floor so a burn runs the pool to 0% left. */
-export const BURN_VAR = "LARES_CODEX_BURN";
-export function burnRuling(value) {
-  if (value === undefined || value === null || value === "") return null;
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}(T[0-9:.]+Z?)?$/.test(value) || Number.isNaN(Date.parse(value))) throw refuse(`${BURN_VAR} must be the ISO date of the operator's ruling (got "${String(value).slice(0, 40)}")`);
-  return value;
-}
-/** The env a launcher inherits when a lead's request (the relay) or a seat (the supervisor) starts it: the burn variable never rides along. */
-export function withoutBurn(env) { const { [BURN_VAR]: _gone, ...rest } = env; return rest; }
-/** Whether a relay request carries the burn variable in any key or value. */
-export function requestCarriesBurn(request) { return JSON.stringify(request ?? null).includes(BURN_VAR); }
 const MODES = ["build", "lead", "read", "research"];
 export const COMPACT_LIMIT = 120000;
 export const TOOL_OUTPUT_LIMIT = 8000;
@@ -260,8 +249,8 @@ CANARY DONE 100 calls
 }
 
 /** The newest rollout's rate_limits record, from its lines: the pool, or null when no line carries one. */
-export function readPool(lines, mode = "build", burn = null) {
-  const floor = burn ? 0 : mode === "read" ? READ_FLOOR : FLOOR;
+export function readPool(lines, mode = "build") {
+  const floor = mode === "read" ? READ_FLOOR : FLOOR;
   let primary = null;
   for (const line of lines ?? []) {
     if (!line.includes('"rate_limits"')) continue;
@@ -274,8 +263,7 @@ export function readPool(lines, mode = "build", burn = null) {
   const left = 100 - primary.used_percent;
   const above = left > floor;
   const winDays = Math.floor(primary.window_minutes / 1440);
-  let summary = `codex pool: ${primary.used_percent.toFixed(1)}% used of a ${winDays}-day window, resets ${new Date(primary.resets_at * 1000).toISOString().slice(0, 16)}Z; ${left.toFixed(1)}% left, floor ${floor}% -> ${burn ? `BURN (operator ruling ${burn}): limits lifted` : above ? "ABOVE FLOOR" : "AT OR BELOW FLOOR: launch no new Codex seat"}`;
-  if (burn && !above) summary += "; AT 0% LEFT: launch no new Codex seat";
+  const summary = `codex pool: ${primary.used_percent.toFixed(1)}% used of a ${winDays}-day window, resets ${new Date(primary.resets_at * 1000).toISOString().slice(0, 16)}Z; ${left.toFixed(1)}% left, floor ${floor}% -> ${above ? "ABOVE FLOOR" : "AT OR BELOW FLOOR: launch no new Codex seat"}`;
   return { used: primary.used_percent, winDays, reset: primary.resets_at, left, above, summary };
 }
 
@@ -356,7 +344,6 @@ export function realReaders(home = realHome(), repo = REPO) {
     rolloutLines: () => { try { return newestRolloutLines(home); } catch { return null; } },
     distFresh: (wt) => { try { return distFresh(wt); } catch { return false; } },
     canon: () => readFileSync(join(repo, CANON), "utf8"),
-    burn: () => process.env[BURN_VAR],
   };
 }
 
@@ -377,11 +364,10 @@ export function preflight({ mode, model, seatDir, worktree, briefless }, readers
   const cache = readers.modelsCache();
   if (!cache || !new RegExp(`"slug": *"${model.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`).test(cache)) throw refuse(`model ${model} is not in Codex's models cache`);
   // An empty read names itself and reads once more; it never stands in for a pool at zero.
-  const burn = burnRuling(readers.burn?.());
-  const pool = readPool(readers.rolloutLines(), mode, burn) ?? readPool(readers.rolloutLines(), mode, burn);
+  const pool = readPool(readers.rolloutLines(), mode) ?? readPool(readers.rolloutLines(), mode);
   if (!pool) throw refuse("Codex pool line unreadable (no rate_limits record in the newest rollout, read twice); read it by hand before launching");
   if (!pool.above) throw refuse(`Codex pool at or below its floor: ${pool.summary}`);
-  if (!burn && MAX_USED[mode] !== undefined && pool.used > MAX_USED[mode]) throw refuse(`Codex pool used ${pool.used.toFixed(1)}%, above the ${mode} seat's ${MAX_USED[mode]}% used ceiling: ${pool.summary}`);
+  if (MAX_USED[mode] !== undefined && pool.used > MAX_USED[mode]) throw refuse(`Codex pool used ${pool.used.toFixed(1)}%, above the ${mode} seat's ${MAX_USED[mode]}% used ceiling: ${pool.summary}`);
   if (mode === "build" || mode === "lead") {
     const role = mode === "lead" ? "lead" : "builder";
     if (!worktree) throw refuse(`a ${role} needs its worktree`);
@@ -606,7 +592,7 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
       const brief = appendSeatLaw(guard(() => readHeld(held, "brief.md")), law, o.mode === "lead" ? "LEAD LAW" : "SEAT LAW");
       guard(() => writeHeld(held, "brief.md", brief));
       guard(() => writeHeld(held, "attempts.log", `attempt model=${o.model} effort=${o.effort} mode=${o.mode}\n`, "a"));
-      const env = { ...withoutBurn(process.env), HOME: readers.realHome, TMPDIR: join(bsdPath, ".tmp"), TMPPREFIX: join(bsdPath, ".tmp", "zsh") };
+      const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(bsdPath, ".tmp"), TMPPREFIX: join(bsdPath, ".tmp", "zsh") };
       const snapshot = JSON.stringify(listRollouts(readers.realHome));
       const marker = `SEAT-MARKER ${randomUUID()}`;
       for (const h of [held, bsd]) {

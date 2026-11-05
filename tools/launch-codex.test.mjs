@@ -6,7 +6,7 @@ import { appendFileSync, closeSync, openSync, mkdtempSync, mkdirSync, readFileSy
 import { tmpdir, userInfo } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { tokenTail, requestCarriesBurn, withoutBurn } from "./launch-codex.mjs";
+import { tokenTail } from "./launch-codex.mjs";
 import { appendSeatLaw, canaryBrief, leadLaw, canaryVerdict, ceilingFor, COMPACT_LIMIT, TOOL_OUTPUT_LIMIT, distFresh, findRollout, rolloutTokens, watchSeat, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
 import { globalStampPath, packageStampPath, sourceDigest } from "./stamp-build.mjs";
 
@@ -1213,64 +1213,4 @@ test("P1 preflight keeps every granted root clear of the staging tree: a lead or
   assert.ok(preflight(ask(w, { mode: "build", worktree: join(madeParent, "wt") }), w.readers), "CONTROL the exact made worktree passes");
   const inStage = join(st, "lane-0123456789abcdef", "seatdir"); mkdirSync(inStage, { recursive: true }); writeFileSync(join(inStage, "brief.md"), "b");
   refuses(w, { mode: "read", seatDir: inStage, worktree: undefined }, /sits inside the broker's worktree staging tree/);
-});
-
-// ======================= the burn override (seat-harness#/the-spend-guard; operator ruling 2026-11-05) =======================
-const RULING = "2026-11-05";
-const burning = (w, over = {}) => ({ ...w.readers, burn: () => RULING, ...over });
-
-test("BURN 1 at 95% used a build seat refuses without the override and launches with it, naming BURN", () => {
-  const w = world();
-  const at95 = () => [rate(95)];
-  refuses(w, {}, /(at or below its floor|used ceiling)/, { ...w.readers, rolloutLines: at95 });
-  const got = preflight(ask(w), burning(w, { rolloutLines: at95 }));
-  assert.match(got.pool, new RegExp(`^codex pool: .*BURN \\(operator ruling ${RULING}\\): limits lifted`));
-  assert.ok(preflight(ask(w, { mode: "research" }), burning(w, { rolloutLines: at95 })));
-  assert.ok(preflight(ask(w, { mode: "read" }), burning(w, { rolloutLines: at95 })));
-});
-
-test("BURN 2 a lead at 70% used launches under the override and refuses without it", () => {
-  const w = world();
-  const at70 = () => [rate(70)];
-  refuses(w, { mode: "lead" }, /used ceiling/, { ...w.readers, rolloutLines: at70 });
-  assert.match(preflight(ask(w, { mode: "lead" }), burning(w, { rolloutLines: at70 })).pool, /BURN/);
-});
-
-test("BURN 3 an unreadable pool still refuses under the override, and gpt-6-sol still refuses; a non-date value refuses", () => {
-  const w = world();
-  refuses(w, {}, /unreadable.*twice/s, burning(w, { rolloutLines: () => [] }));
-  refuses(w, { model: "gpt-6-sol" }, /gpt-6-sol never launches/, burning(w));
-  for (const bad of ["1", "yes", "true", "2026-13-45", "x2026-11-05"]) refuses(w, {}, /ISO date/, burning(w, { burn: () => bad }));
-  refuses(w, {}, /AT 0% LEFT|at or below its floor/, burning(w, { rolloutLines: () => [rate(100)] }));
-});
-
-test("BURN 4 the relay refuses a request carrying the variable in any field, strips it from the launcher env, and the seat env never inherits it", () => {
-  assert.equal(requestCarriesBurn({ kind: "launch", seatDir: "/x", model: "m", effort: "low", mode: "read", LARES_CODEX_BURN: RULING }), true);
-  assert.equal(requestCarriesBurn({ kind: "launch", seatDir: `/x/LARES_CODEX_BURN=${RULING}` }), true);
-  assert.equal(requestCarriesBurn({ kind: "launch", seatDir: "/x" }), false);
-  assert.deepEqual(withoutBurn({ A: "1", LARES_CODEX_BURN: RULING }), { A: "1" });
-  const relay = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "commit-relay.mjs"), "utf8");
-  assert.match(relay, /requestCarriesBurn\(request\)\) throw/);
-  assert.match(relay, /env: withoutBurn\(process\.env\)/);
-  assert.match(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "launch-codex.mjs"), "utf8"), /env = \{ \.\.\.withoutBurn\(process\.env\)/);
-});
-
-test("BURN 4b the real readers read the variable from the process env alone", () => {
-  const was = process.env.LARES_CODEX_BURN;
-  try {
-    delete process.env.LARES_CODEX_BURN;
-    assert.equal(realReaders(mkdtempSync(join(tmpdir(), "lc-"))).burn(), undefined);
-    process.env.LARES_CODEX_BURN = RULING;
-    assert.equal(realReaders(mkdtempSync(join(tmpdir(), "lc-"))).burn(), RULING);
-  } finally { if (was === undefined) delete process.env.LARES_CODEX_BURN; else process.env.LARES_CODEX_BURN = was; }
-});
-
-test("BURN 5 CONTROL the defaults stand without the variable: ceilings, floors and summary unchanged", () => {
-  const w = world();
-  refuses(w, {}, /used ceiling/, { ...w.readers, rolloutLines: () => [rate(65)] });
-  refuses(w, { mode: "lead" }, /used ceiling/, { ...w.readers, rolloutLines: () => [rate(55)] });
-  refuses(w, {}, /at or below its floor/, { ...w.readers, rolloutLines: () => [rate(80)] });
-  assert.doesNotMatch(preflight(ask(w), w.readers).pool, /BURN/);
-  assert.ok(preflight(ask(w, { mode: "read" }), { ...w.readers, rolloutLines: () => [rate(79.9)] }));
-  assert.equal(readPool([rate(60)]).summary.includes("BURN"), false);
 });
