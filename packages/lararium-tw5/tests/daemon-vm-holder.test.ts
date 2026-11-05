@@ -972,3 +972,52 @@ describe("the final check, reopenStarted and the reopen call share ONE continuat
     expect(t.opened).toHaveLength(1);
   });
 });
+
+describe("a restart and its queued follow-up never wait on restart listeners", () => {
+  const brake = (r: string) => r === "brake";
+
+  test("RED: an emergency queued mid-reopen runs and the stale replacement stops serving, though a listener never settles", async () => {
+    const opening = deferred<DaemonVmCore>();
+    let n = 0;
+    const held = holdDaemonVm({
+      vm: fakeVm(), emergency: brake, prepare: async () => ({}),
+      reopen: () => (++n === 1 ? opening.promise : Promise.resolve(fakeVm())),
+    });
+    held.onRestarted(() => new Promise<void>(() => {}));   // never settles
+    const ordinary = held.restart("operator");
+    for (let i = 0; i < 8; i += 1) await Promise.resolve();
+    const emergency = held.restart("brake");                // lands mid-boot: it follows
+    opening.resolve(fakeVm());
+    await ordinary;
+    await emergency;                                         // the follow-up ran
+    expect(n).toBe(2);
+  });
+
+  test("RED: an async listener that awaits a restart queuing a follow-up does not deadlock; both settle", async () => {
+    const opening = deferred<DaemonVmCore>();
+    let n = 0;
+    const held = holdDaemonVm({
+      vm: fakeVm(), emergency: brake, prepare: async () => ({}),
+      reopen: () => (++n === 1 ? opening.promise : Promise.resolve(fakeVm())),
+    });
+    let inner: Promise<unknown> | undefined;
+    held.onRestarted(async ({ reason }) => { if (reason === "operator") inner = held.restart("brake"); if (inner) await inner; });
+    const ordinary = held.restart("operator");
+    for (let i = 0; i < 8; i += 1) await Promise.resolve();
+    const emergency = held.restart("brake");
+    opening.resolve(fakeVm());
+    await ordinary;
+    await emergency;
+    await inner;
+    expect(n).toBe(2);
+  });
+
+  test("CONTROL: a synchronous listener sees each restart in order", async () => {
+    const held = holdDaemonVm({ vm: fakeVm(), reopen: async () => fakeVm() });
+    const seen: string[] = [];
+    held.onRestarted(({ reason, restarts }) => { seen.push(`${reason}#${restarts}`); });
+    await held.restart("a");
+    await held.restart("b");
+    expect(seen).toEqual(["a#1", "b#2"]);
+  });
+});
