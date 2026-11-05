@@ -493,3 +493,24 @@ test('P1-1 the broker state dir is checked by real path: a lane named broker-iso
   const ok = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', x.goFile, '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
   assert.equal(ok.status, 0, ok.stderr);
 });
+
+test('P1-1 a broker-iso that is a symlink into the lane refuses BEFORE anything is created inside the lane', () => {
+  const x = setup();
+  const ctl = path.join(home_of(x), 'ctl2'); mkdirSync(ctl);
+  mkdirSync(path.join(x.lane, 'inside'));
+  symlinkSync(path.join(x.lane, 'inside'), path.join(ctl, 'broker-iso'));
+  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', path.join(ctl, 'push-go'), '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
+  assert.notEqual(r.status, 0); assert.match(r.stderr, /broker state must sit outside/);
+  assert.deepEqual(readdirSync(path.join(x.lane, 'inside')), [], 'nothing was created inside the lane');
+});
+const home_of = (x) => x.home;
+
+test('P1-2 a commit message with a lone surrogate or a NUL refuses; a multibyte message under the byte cap commits', async () => {
+  const x = brokerFixture(); writeFileSync(path.join(x.wt, 'a'), 'v2\n');
+  for (const bad of ['bad \ud800 text', 'nul \0 text']) {
+    const r = await commitWithReceipt(x.ctx, commitReq(x, { message: bad }));
+    assert.equal(r.ok, false); assert.match(r.output, /well-formed/);
+  }
+  const r = await commitWithReceipt(x.ctx, commitReq(x, { message: 'lar:/// — café\n' }));
+  assert.equal(r.ok, true, JSON.stringify(r)); assert.equal(x.git('log', '-1', '--format=%s'), 'lar:/// — café');
+});

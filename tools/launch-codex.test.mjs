@@ -709,3 +709,22 @@ test("P1-3 live: a rollout that turns unreadable mid-run stops the stub seat thr
   assert.equal(r.status, 0, r.stderr);
   assert.match(readFileSync(join(seat, "ceiling.md"), "utf8"), /could not be watched.*failing closed/s);
 });
+
+test("P1-4 an unchanged total is no progress: a token event that repeats the last total leaves the tail stale", () => {
+  const dir = mkdtempSync(join(tmpdir(), "tail-")), f = join(dir, "rollout.jsonl");
+  writeFileSync(f, `${tc(10)}\n`);
+  const tail = tokenTail(f);
+  assert.equal(tail(), 10); assert.equal(tail.fresh, true);
+  appendFileSync(f, `${tc(10)}\n`);
+  assert.equal(tail(), 10); assert.equal(tail.fresh, false, "the same total again is stale");
+  appendFileSync(f, `${tc(11)}\n`);
+  assert.equal(tail(), 11); assert.equal(tail.fresh, true);
+});
+
+test("P1-3 a stop that throws part-way still runs every step: kill failures neither reject the watch nor skip ceiling.md", async () => {
+  const seatDir = mkdtempSync(join(tmpdir(), "stopthrow-"));
+  let up = true;
+  const r = await watchSeat({ seatDir, pid: 5, ceiling: 10, mode: "build", tokens: () => 50, alive: () => up, kill: () => { throw new Error("EPERM"); }, sleep: async () => { up = false; }, graceTicks: 2 });
+  assert.equal(r, "ceiling");
+  assert.match(readFileSync(join(seatDir, "ceiling.md"), "utf8"), /50 total tokens/);
+});

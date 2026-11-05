@@ -347,6 +347,7 @@ export async function commitWithReceipt(ctx, { paths, message: messageText, expe
 
   // The message rides the request as text: the broker opens no lead-controlled file for it.
   if (typeof messageText !== 'string' || messageText.length === 0) return fail('commit requires message text');
+  if (!messageText.isWellFormed() || messageText.includes('\0')) return fail('commit message must be well-formed text without NUL');
   const message = Buffer.from(messageText, 'utf8');
   if (message.length > MESSAGE_CAP) return fail(`commit message is ${message.length} bytes, over the ${MESSAGE_CAP} cap`);
 

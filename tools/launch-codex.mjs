@@ -78,7 +78,7 @@ export function tokenTail(file) {
         const lines = carry.split("\n");
         carry = lines.pop();
         const t = rolloutTokens(lines);
-        if (t !== null) { total = t; fresh = true; }
+        if (t !== null) { if (t !== total) fresh = true; total = t; }
       }
     } finally { closeSync(fd); }
     read.fresh = fresh;
@@ -166,10 +166,11 @@ export function findRollout(home, { marker, before, seen = new Set() }) {
 export async function watchSeat({ seatDir, pid, ceiling, mode, tokens, advanced = () => true, alive, kill, sleep, graceTicks = 10, blindTicks = 200 }) {
   let blind = 0;
   const stop = async (why) => {
-    kill("SIGTERM");
-    for (let i = 0; i < graceTicks && alive(); i++) await sleep();
-    if (alive()) kill("SIGKILL");
-    writeFileSync(join(seatDir, "ceiling.md"), `# Ceiling reached\n\nThe ${mode} seat (pid ${pid}) ${why} The supervisor stopped it (SIGTERM, then SIGKILL if it lived).\n`);
+    // Every step of the stop runs even if an earlier one throws.
+    try { kill("SIGTERM"); } catch { /* the next step still runs */ }
+    try { for (let i = 0; i < graceTicks && alive(); i++) await sleep(); } catch { /* fall through to SIGKILL */ }
+    try { if (alive()) kill("SIGKILL"); } catch { /* last resort below in the supervisor */ }
+    try { writeFileSync(join(seatDir, "ceiling.md"), `# Ceiling reached\n\nThe ${mode} seat (pid ${pid}) ${why} The supervisor stopped it (SIGTERM, then SIGKILL if it lived).\n`); } catch { /* the child is stopped; the note is best effort */ }
   };
   try {
     while (alive()) {
@@ -415,7 +416,7 @@ function superviseMain(o) {
     sleep: () => new Promise((r) => setTimeout(r, 3000)),
     tokens: () => { if (!tail) { const file = findRollout(home, { marker, before, seen }); if (file) tail = tokenTail(file); } return tail ? tail() : null; },
     advanced: () => Boolean(tail?.fresh),
-  }).then(() => (exited ? 0 : new Promise((r) => child.on("exit", () => r(0)))));
+  }).then(() => (exited ? 0 : new Promise((r) => child.on("exit", () => r(0))))).catch(() => { if (!exited) { try { process.kill(-child.pid, "SIGKILL"); } catch { /* gone */ } } return 1; });
 }
 
 /** The launcher over injected readers, spawn and writers; returns the exit code. */
