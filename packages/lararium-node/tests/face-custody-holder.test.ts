@@ -165,6 +165,9 @@ describe("the ward holds the face root apart from unlocked custody", () => {
     const { holder, face } = await wardedFace((k) => opened.push(k));
     await generateOrLoadPersonaGroupRoot(0, wardCredential(cred(PASS)));
     expect(holder.unlockedFaces()).toEqual([face.fcid]);
+    // No person stands at this process's terminal for the bare calls: the gatherer the fixture seats steps away.
+    const { seatWardGatherer } = await import("../src/ward-credential.js");
+    seatWardGatherer(null);
     const bare = loadPersonaGroupRootSeed as unknown as (i: number) => Promise<Uint8Array>;
     await expect(bare(0)).rejects.toThrow(/ward-needs-fresh-unlock/);
     // Unlocked custody's own doors refuse the warded row by name too: a script holding them reads no root.
@@ -175,6 +178,7 @@ describe("the ward holds the face root apart from unlocked custody", () => {
     expect(seed.length).toBe(32);
     await expect(bare(0)).rejects.toThrow(/ward-needs-fresh-unlock/);
     await expect(loadPersonaGroupRootSeed(0, wardCredential(cred("not the route")))).rejects.toThrow(/ward-no-slot-opens/);
+    seatWardGatherer(async () => [{ kind: "passphrase", passphrase: "fixture-custody-passphrase" }]);
     expect(holder.unlockedFaces()).toEqual([face.fcid]);
     expect(opened.length).toBeGreaterThanOrEqual(2);
     for (const k of opened) expect(k.every((b) => b === 0), "every ward key zeroes once its act settles").toBe(true);

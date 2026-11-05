@@ -9,18 +9,20 @@
  */
 import { ed25519SignerFromSeed } from "@lararium/mesh";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
-import { wardCredentialsOf, type WardCredential } from "./ward-credential.js";
+import { wardCredentialsOf, wardOrGather, type WardCredential } from "./ward-credential.js";
 
 export interface WardRootSigner { readonly key: string; sign(bytes: Uint8Array): Promise<string> }
 
 export async function wardRootSigner(handleIndex: number, ward: WardCredential | undefined, what = `the face root at h${handleIndex}`): Promise<WardRootSigner> {
-  wardCredentialsOf(ward, what);
+  // The act's token, or one the process's seated gatherer asks a person for, ONCE for this signer's act.
+  const held = await wardOrGather(ward, what);
+  wardCredentialsOf(held, what);
   const key = await loadPersonaGroupRootVerifyingKey(handleIndex);
   if (!key) throw new Error(`[ward-signer] this vessel holds no root at h${handleIndex}: a joinee signs as its device, never as the root`);
   return {
     key,
     async sign(bytes) {
-      const seed = await loadPersonaGroupRootSeed(handleIndex, ward!);
+      const seed = await loadPersonaGroupRootSeed(handleIndex, held);
       try { return await ed25519SignerFromSeed(seed)(bytes); } finally { seed.fill(0); }
     },
   };

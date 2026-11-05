@@ -123,3 +123,23 @@ export function storeVerbNeedsWard(verb: string, args: Readonly<Record<string, u
   if (verb === "edge-kapae") return typeof args["realm"] !== "string";
   return WARD_VERBS.has(verb);
 }
+
+// ── the seated gatherer: a person at this process's terminal ─────────────────────────────────────────────────────────────
+
+/**
+ * WHO ASKS WHEN AN ACT CARRIES NO ROUTE. A CLI process seats a gatherer that reads one ward act's route from its own TTY
+ * (`ward-needs-tty` refuses an environment variable and a pipe) or, under a root a harness staged, answers the published test
+ * route by name; a test fixture seats its synthetic route. A daemon seats none, so an act that reaches it with no route refuses
+ * `ward-needs-fresh-unlock`. The gatherer asks once per act and keeps nothing (the face route's own pattern, `face-route`).
+ */
+export type WardGatherer = (what: string) => Promise<readonly Credential[]>;
+let gatherer: WardGatherer | null = null;
+export function seatWardGatherer(gather: WardGatherer | null): void { gatherer = gather; }
+export function wardGathererSeated(): boolean { return gatherer !== null; }
+
+/** The act's own token, else one the seated gatherer asks for this act, else none. */
+export async function wardOrGather(ward: WardCredential | undefined | null, what: string): Promise<WardCredential | undefined> {
+  if (ward) return ward;
+  if (!gatherer) return undefined;
+  return wardCredential(await gatherer(what));
+}

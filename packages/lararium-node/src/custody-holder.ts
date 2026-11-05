@@ -483,7 +483,14 @@ export function makeCustodyHolder(a: {
   };
   /** Resolve a face that must stand unlocked here for a ward act. */
   const openFaceFor = async (by: FaceRef): Promise<{ fcid: string; ordinal: number }> => {
-    const found = await resolveFace(by);
+    let found = await resolveFace(by);
+    // A fixture's founding policy founds an absent face at its first warded write, as `locate` does for a face row (the product seats none).
+    if (!found && faceAutoFounder && !("fcid" in by)) {
+      const selector = "ordinal" in by ? { ordinal: by.ordinal } : "group" in by ? { group: by.group } : { ask: by.ask };
+      try { await doFoundFace({ fillRetired: true, ...selector, slots: faceAutoFounder(selector) }); }
+      catch (err) { if (!(err instanceof FaceIndexRefused)) throw err; }
+      found = await resolveFace(by);
+    }
     if (!found) throw new FaceCustodyAbsent(`face ${JSON.stringify(by)}`);
     if (!faces.has(found.fcid) || !accepting) throw new FaceLocked(found.fcid);
     return found;

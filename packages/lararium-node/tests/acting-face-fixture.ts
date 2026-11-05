@@ -10,6 +10,7 @@
  *     stands (as a vouch would mint it).
  *   · `faceAt(index)` answers face `index`'s key at the primary charter's Nexus, minting none.
  */
+import { fixtureWard } from "./custody-seat-fixture.js";
 import { nexusAidOf } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { larSealHome } from "../src/vessel-paths.js";
@@ -21,7 +22,7 @@ import { seatChairs } from "./seat-fixture.js";
 
 /** Seat a charter whose seats this vessel holds (one per face named), at the vessel's own seal home. */
 export async function seatOwnCharter(faces: readonly number[] = [0], threshold = 1): Promise<string> {
-  for (const face of faces) await generateOrLoadPersonaGroupRoot(face);
+  for (const face of faces) await generateOrLoadPersonaGroupRoot(face, fixtureWard());
   const keys = (await seatChairs(faces)).keys;
   const doc = heldCharter({ keys: [...keys], threshold }).doc();
   writeNexusDoc(larSealHome(), doc);
@@ -37,7 +38,7 @@ export function primaryAid(): string {
 
 /** Stand face `index` and answer its key at the primary charter's Nexus (minted, as an act there would). */
 export async function presentFace(index = 0): Promise<string> {
-  await generateOrLoadPersonaGroupRoot(index);
+  await generateOrLoadPersonaGroupRoot(index, fixtureWard());
   return (await mintNexusLeaf(index, primaryAid())).verifyingKey.toLowerCase();
 }
 

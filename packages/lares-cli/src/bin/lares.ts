@@ -20,6 +20,8 @@
  *     intent (capability-bearing verb-summons), never a session or login.
  */
 
+import { seatWardGatherer } from "@lararium/node";
+import { gatherWardRoute } from "../ward-door.js";
 import { fileURLToPath } from "node:url";
 import { realpathSync }  from "node:fs";
 import { stdout }         from "node:process";
@@ -338,6 +340,8 @@ export async function dispatch(argv: readonly string[]): Promise<number> {
   // sealed row it touches (`offline-custody`); a verb routed through a standing vessel never touches it.
   seatOfflineCustody();
   seatNewFaceRoute();
+  // An act this process runs itself with no ward route asks the person at this terminal, once per act (seat-harness#/the-ward).
+  seatWardGatherer((what) => gatherWardRoute(what));
   try {
     return await cmd.handler(args);
   } catch (err) {

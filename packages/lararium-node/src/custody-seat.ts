@@ -38,7 +38,7 @@
  */
 import { GATE_FLOOR_BUNDLE_INFO, custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable, FaceLocked, type CustodyHolder, type FaceRef, type RowUpdate, type WardSeat } from "./custody-holder.js";
-import { wardCredentialsOf, type WardCredential } from "./ward-credential.js";
+import { wardCredentialsOf, wardOrGather, type WardCredential } from "./ward-credential.js";
 import { CustodyRootRefused } from "./custody-root.js";
 import type { CustodyHome } from "./vault-carriers.js";
 import { larIdentityDir } from "./vessel-paths.js";
@@ -275,7 +275,8 @@ export async function unlockedFaceOrdinals(): Promise<number[]> {
  * warded rows, and the key zeroes. A missing token refuses `ward-needs-fresh-unlock` before the holder is asked anything.
  */
 export async function withWardKeyCustody<T>(face: FaceRef, ward: WardCredential | undefined, act: (seat: WardSeat) => Promise<T>, what?: string): Promise<T> {
-  const credentials = wardCredentialsOf(ward, what);
+  // No token rode the act: the process's seated gatherer (a person at this terminal) asks for this act, or the act refuses.
+  const credentials = wardCredentialsOf(await wardOrGather(ward, what ?? "a ward act"), what);
   return (await openedCustody()).withWardKey(face, credentials, act);
 }
 
