@@ -25,7 +25,7 @@ import {
 } from "@lararium/mesh";
 import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
-import { refuseBrowserDyadAsks } from "./browser-dyad-door.js";
+import { refuseBrowserDyadAsks } from "./browser-dyad-refusal.js";
 import { readCasBlobFromOpfs } from "./browser-genesis.js";
 
 /** Page departure only asks the workers to drain; the browser may suspend them at any point. */
@@ -77,7 +77,7 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
               "Pass workerScriptUrl when constructing the pool (requires genesis island for TW5 core bytes).",
             );
           }
-          // A wiki island reaches no dyad door: its ask draws `aside` and one named warning.
+          // A wiki island reaches no dyad capability: its ask draws `aside` and one named warning.
           const handle = browserSpawnWorker(workerUrl);
           refuseBrowserDyadAsks(handle);
           return handle;
@@ -93,7 +93,7 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
       ...(opts.portPolicy ? { portPolicy: opts.portPolicy } : {}),
       ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
       ...(opts.onPortDrop ? { onPortDrop: opts.onPortDrop } : {}),
-      // The page shows what the vessel read of its rest asks, so a person's tooling waits on the vessel's own word.
+      // The page shows what the vessel read of its receipt requests, so a person's tooling waits on the vessel's own word.
       onRest: (state) => { if (typeof document !== "undefined") document.documentElement.dataset["larRest"] = `${state.asked}/${state.rested}/${state.stalled}`; },
     });
   }

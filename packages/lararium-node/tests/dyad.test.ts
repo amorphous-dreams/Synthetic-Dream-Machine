@@ -1,22 +1,23 @@
 /**
- * The node dyad door asks the vessel's main thread for its live fleet-edge standing.
+ * The node dyad capability: the daemon island asks the vessel's main thread for its live fleet-edge standing, through
+ * the `dyad` member of the capability record the vessel handed it.
  * The browser daemon island reads its own fleet board; the tab reads that board for sibling sync.
  *
- *   D1 no door answers aside. control: clear and all four valid standings pass through unchanged.
- *   D2 throws, an unknown standing, and a non-string ask field answer aside. control: a valid ask returns the door's standing.
+ *   D1 no `dyad` standing answers aside. control: clear and all four valid standings pass through unchanged.
+ *   D2 throws, an unknown standing, and a non-string ask field answer aside. control: a valid ask returns the capability's standing.
  *   D3 only a same-request-id answer settles; silence and unknown standings answer aside. control: concurrent asks settle independently.
- *   D4 daemon asks reach the door. control: wiki asks answer aside and log DyadDoorRefused once; session asks draw no answer.
+ *   D4 daemon asks reach the capability. control: wiki asks answer aside and log DyadRefused once; session asks draw no answer.
  *   D5 each protocol guard accepts its own dyad message and refuses the opposite direction.
- *   D6 the node folds its worn fleet and hangs its door before daemon boot.
+ *   D6 the node folds its worn fleet and stands `islandCaps.dyad` before daemon boot.
  *   D7 the browser tab keeps sibling sync current while the daemon island resolves its own board reader.
  */
 import { EventEmitter } from "node:events";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { afterEach, describe, expect, test, vi } from "vitest";
-import { isIslandToVesselMsg, isVesselToIslandMsg, type EdgeStanding } from "@lararium/mesh";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { isIslandToVesselMsg, isVesselToIslandMsg, type CapabilityRecord, type EdgeStanding } from "@lararium/mesh";
 import { vesselDyadAsker } from "../src/sovereign-island-model.js";
-import { answerDyadAsk, nodeWorkerHandle, setDyadDoor } from "../src/worker-handle.js";
+import { answerDyad, nodeWorkerHandle } from "../src/worker-handle.js";
 
 const standings: EdgeStanding[] = ["clear", "aside", "owing", "returned", "unknown"];
 
@@ -48,27 +49,30 @@ const ask = (requestId: string, fleetRoot: unknown = "fleet", deviceKey: unknown
   type: "dyad:ask", requestId, fleetRoot, deviceKey,
 });
 
-afterEach(() => { setDyadDoor(null); vi.restoreAllMocks(); });
+/** The record the vessel hands; each test starts from an empty one. */
+let caps: CapabilityRecord = {};
+beforeEach(() => { caps = {}; });
+afterEach(() => { vi.restoreAllMocks(); });
 
-describe("the dyad door", () => {
-  test("D1 — missing door reads aside; each valid standing passes through", async () => {
-    await expect(answerDyadAsk({ requestId: "none", fleetRoot: "fleet", deviceKey: "device" })).resolves.toMatchObject({ standing: "aside" });
-    setDyadDoor((_fleet, _device) => "clear");
-    await expect(answerDyadAsk({ requestId: "clear", fleetRoot: "fleet", deviceKey: "device" })).resolves.toMatchObject({ standing: "clear" }); // control
+describe("the dyad capability", () => {
+  test("D1 — a missing capability reads aside; each valid standing passes through", async () => {
+    await expect(answerDyad(caps, { requestId: "none", fleetRoot: "fleet", deviceKey: "device" })).resolves.toMatchObject({ standing: "aside" });
+    caps.dyad = (_fleet, _device) => "clear";
+    await expect(answerDyad(caps, { requestId: "clear", fleetRoot: "fleet", deviceKey: "device" })).resolves.toMatchObject({ standing: "clear" }); // control
     for (const standing of standings) {
-      setDyadDoor(() => standing);
-      await expect(answerDyadAsk({ requestId: standing, fleetRoot: "fleet", deviceKey: "device" })).resolves.toMatchObject({ standing });
+      caps.dyad = () => standing;
+      await expect(answerDyad(caps, { requestId: standing, fleetRoot: "fleet", deviceKey: "device" })).resolves.toMatchObject({ standing });
     }
   });
 
-  test("D2 — faults and malformed readings fail closed; a valid ask reaches its door", async () => {
-    setDyadDoor(() => { throw new Error("closed"); });
-    await expect(answerDyadAsk({ requestId: "throws", fleetRoot: "fleet", deviceKey: "device" })).resolves.toMatchObject({ standing: "aside" });
-    setDyadDoor(() => "fifth" as EdgeStanding);
-    await expect(answerDyadAsk({ requestId: "fifth", fleetRoot: "fleet", deviceKey: "device" })).resolves.toMatchObject({ standing: "aside" });
-    await expect(answerDyadAsk({ requestId: "bad", fleetRoot: 5, deviceKey: "device" } as never)).resolves.toMatchObject({ standing: "aside" });
-    setDyadDoor(() => "owing");
-    await expect(answerDyadAsk({ requestId: "good", fleetRoot: "fleet", deviceKey: "device" })).resolves.toMatchObject({ standing: "owing" }); // control
+  test("D2 — faults and malformed readings fail closed; a valid ask reaches its capability", async () => {
+    caps.dyad = () => { throw new Error("closed"); };
+    await expect(answerDyad(caps, { requestId: "throws", fleetRoot: "fleet", deviceKey: "device" })).resolves.toMatchObject({ standing: "aside" });
+    caps.dyad = () => "fifth" as EdgeStanding;
+    await expect(answerDyad(caps, { requestId: "fifth", fleetRoot: "fleet", deviceKey: "device" })).resolves.toMatchObject({ standing: "aside" });
+    await expect(answerDyad(caps, { requestId: "bad", fleetRoot: 5, deviceKey: "device" } as never)).resolves.toMatchObject({ standing: "aside" });
+    caps.dyad = () => "owing";
+    await expect(answerDyad(caps, { requestId: "good", fleetRoot: "fleet", deviceKey: "device" })).resolves.toMatchObject({ standing: "owing" }); // control
   });
 
   test("D3 — correlation, timeout, invalid reply, and concurrent asks", async () => {
@@ -93,23 +97,23 @@ describe("the dyad door", () => {
     await expect(invalidRead).resolves.toBe("aside");
   });
 
-  test("D4 — worker class controls dyad door access", async () => {
-    setDyadDoor(() => "clear");
+  test("D4 — worker class controls dyad capability access", async () => {
+    caps.dyad = () => "clear";
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const daemon = fakeWorker();
-    nodeWorkerHandle(daemon.worker, { island: "daemon" });
+    nodeWorkerHandle(daemon.worker, { island: "daemon", caps });
     await daemon.ask(ask("daemon-1"));
     expect(daemon.said.map((m) => [m["type"], m["standing"]])).toEqual([["dyad:read", "clear"]]); // control
 
     const wiki = fakeWorker();
-    nodeWorkerHandle(wiki.worker, { island: "wiki" });
+    nodeWorkerHandle(wiki.worker, { island: "wiki", caps });
     await wiki.ask(ask("wiki-1"));
     await wiki.ask(ask("wiki-2"));
     expect(wiki.said.map((m) => [m["type"], m["standing"]])).toEqual([["dyad:read", "aside"], ["dyad:read", "aside"]]);
-    expect(warn.mock.calls.filter((call) => /DyadDoorRefused/.test(String(call[0])))).toHaveLength(1);
+    expect(warn.mock.calls.filter((call) => /DyadRefused/.test(String(call[0])))).toHaveLength(1);
 
     const session = fakeWorker();
-    nodeWorkerHandle(session.worker, { island: "session" });
+    nodeWorkerHandle(session.worker, { island: "session", caps });
     await session.ask(ask("session-1"));
     expect(session.said).toEqual([]);
   });
@@ -123,25 +127,25 @@ describe("the dyad door", () => {
     expect(isIslandToVesselMsg(dyadRead)).toBe(false);
   });
 
-  test("D6 — the composition folds the worn fleet and stands the door before its island boots (a source weld)", () => {
+  test("D6 — the composition folds the worn fleet and stands the dyad capability before its island boots (a source weld)", () => {
     const src = readFileSync(join(__dirname, "..", "src", "open-node-vessel.ts"), "utf8");
     // presence first: an ordering over an absent call passes vacuously
-    expect((src.match(/^\s*setDyadDoor\(async \(fleetRoot, deviceKey\) => \{$/gm) ?? []).length).toBe(1);
+    expect((src.match(/^\s*islandCaps\.dyad = async \(fleetRoot, deviceKey\) => \{$/gm) ?? []).length).toBe(1);
     expect((src.match(/await standDaemonIsland\(\{/g) ?? []).length).toBe(1);
     const fold = src.indexOf("if (activeAtom) await shadowRing.refold();");
-    const door = src.indexOf("setDyadDoor(async (fleetRoot, deviceKey) => {");
+    const stands = src.indexOf("islandCaps.dyad = async (fleetRoot, deviceKey) => {");
     const boot = src.indexOf("await standDaemonIsland({");
     expect(fold).toBeGreaterThan(0);
-    expect(fold).toBeLessThan(door);
-    expect(door).toBeLessThan(boot);
+    expect(fold).toBeLessThan(stands);
+    expect(stands).toBeLessThan(boot);
     // the ring folds the worn fleet once a face's atom stands; the faceless floor names no fleet
     expect(src).toMatch(/if \(wornFleetRoot\) roots\.add\(wornFleetRoot\);/);
-    // the door answers off the ring, waits on a fold where the reading went dark, and drops at teardown
+    // the capability answers off the ring, waits on a fold where the reading went dark, and drops at teardown
     expect(src).toMatch(/return shadowRing\.deviceStanding\(fleetRoot, deviceKey\);/);
     expect(src).toMatch(/try \{ await shadowRing\.refold\(\); \} catch \{ return "aside"; \}/);
     expect(src).toMatch(/for \(let tries = 0; tries < 3 && !shadowRing\.fold\(\); tries\+\+\) \{/);
-    // ...with the island's doors, after the island shuts (T27; the carried-Nexus rig reads it behaviourally)
-    expect(src).toMatch(/what: "the island doors",\s+down: \(\) => \{ setDyadDoor\(null\); setCustodyWriteDoor\(null\); \}/);
+    // ...with the island's capabilities, after the island shuts (T27; the carried-Nexus rig reads it behaviourally)
+    expect(src).toMatch(/what: "the island capabilities", down: \(\) => \{ delete islandCaps\.dyad; delete islandCaps\.custodyWrite; \}/);
   });
 
   test("D7 — the leaf reads its fleet board for sibling sync while the daemon island reads its own board for dyad standing (a source weld)", () => {
@@ -150,8 +154,8 @@ describe("the dyad door", () => {
     const behavior = readFileSync(join(__dirname, "..", "..", "lararium-keyhive", "src", "operator-daemon-behavior.ts"), "utf8");
     const boardReader = readFileSync(join(__dirname, "..", "..", "lararium-keyhive", "src", "board-dyad-reader.ts"), "utf8");
 
-    // The tab attaches a worker handle without hanging a dyad door on it.
-    expect(src).not.toMatch(/attachBrowserDyadDoor|dyadDoor/);
+    // The tab attaches a worker handle without standing a dyad capability on it.
+    expect(src).not.toMatch(/attachBrowserDyad|\.dyad\s*=/);
     expect((src.match(/openBrowserDaemonVm\(\{/g) ?? []).length).toBe(1);   // the island opens once, inside the holder's open step
     expect((src.match(/holdDaemonVm\(/g) ?? []).length).toBe(1);
     const spawnStart = src.indexOf("spawnWorker: (url) => {");
@@ -160,7 +164,7 @@ describe("the dyad door", () => {
     expect(spawnEnd).toBeGreaterThan(spawnStart);
     const spawn = src.slice(spawnStart, spawnEnd);
     expect(spawn).toContain("return handle;");
-    expect(spawn).not.toMatch(/attachBrowserDyadDoor|dyadDoor|answerBrowserDyadAsk/);
+    expect(spawn).not.toMatch(/attachBrowserDyad|answerBrowserDyadAsk|\.dyad\s*=/);
 
     // The leaf still folds the fleet board before boot, then keeps its sibling gate current on changes.
     expect((src.match(/^\s*fleetRead = readFleet\(\);\n\s*await fleetRead;$/gm) ?? []).length).toBe(1);
@@ -174,7 +178,7 @@ describe("the dyad door", () => {
     expect(read).toBeLessThan(boot);
 
     // The daemon island resolves standing through its own Repo and signed fleet board.
-    expect(island).not.toMatch(/browserDyadAsker|vesselDyadAsker|browser-dyad-door/);
+    expect(island).not.toMatch(/browserDyadAsker|vesselDyadAsker|browser-dyad-refusal/);
     expect((island.match(/readDyadFromBoard: true/g) ?? []).length).toBe(1);
     expect(behavior).toMatch(/readDyadFromBoard\s*\?[\s\S]*?boardDyadReader\(\s*ctx\.repo,[\s\S]*?:\s*dyadReading/);
     expect(boardReader).toMatch(/findOrThrow\(repo, fleetEdgeBoardDocUrl\(fleetRootDid\)/);

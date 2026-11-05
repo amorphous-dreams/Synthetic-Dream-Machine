@@ -65,7 +65,7 @@ describe.skipIf(skipReason)(`§6 blob sovereignty — island reads coreBlob from
       (d as unknown as Record<string, unknown>)["tiddlers"] = {};
     });
 
-    const pool = new VesselIslandPool({
+    const pool = new VesselIslandPool({ caps: {},
       workerScriptUrl: ISLAND_JS,
       mainRepo:        vesselRepo,
       storageRoot:     cas.storageDir,

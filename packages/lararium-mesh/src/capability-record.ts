@@ -7,7 +7,7 @@
  * absent, and an ask that needs it refuses by name.
  *
  *   receipt       ask for a durability receipt: resolves once every named document rests in the vessel's store, the
- *                 heads the island holds named beside it. Replaces the "rest door".
+ *                 heads the island holds named beside it. Replaces the four process-global island setters.
  *   cas           the bytes a cid names, or null (a miss stays a miss).
  *   dyad          the vessel's reading of one device edge on one fleet root.
  *   custodyWrite  seal bytes under the vessel key (the daemon island's archive exports cross here).
