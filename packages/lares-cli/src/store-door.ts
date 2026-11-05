@@ -14,6 +14,7 @@
 import { storeDoorDirect, storeRowFace, StoreHeld, STORE_DOOR_FACE_ROWS, type StoreDoorVerb } from "@lararium/node";
 import { openLocalSession, SessionRefused } from "./session-connector.js";
 import { sealedAct } from "./sealed-act-door.js";
+import { vesselStanding } from "./custody-door.js";
 import { vesselDid, larSealHome } from "./env.js";
 import { DaemonUnreachable, refusalCode, refusalHint, verbFailure } from "./verb-call.js";
 import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable, LocalWaitExpired } from "./local-connector.js";
@@ -189,6 +190,16 @@ export { SlowBootTimeout };
 /** A door's refusal, when the calling command names no refusal class of its own. */
 export class StoreDoorRefusal extends Error {}
 
+/**
+ * THE VESSEL STANDS LOCKED: its custody door answered, and no vessel key is held. A store row sent to it would park
+ * behind the recomposition an unlock starts and wait out the door's whole budget with no word (measured: a
+ * `persona new` sent during a 14.8s recomposition returned at the recomposition's end, silent the whole while). The door
+ * refuses by name before it parks.
+ */
+export class VesselLocked extends Error {
+  constructor() { super("the vessel stands locked: `lares vault unlock`"); }
+}
+
 /** A verb routed through the standing vessel ended in an error. `reason` holds the vessel's own name for it, where it gave one. */
 export class RoutedVerbRefused extends Error {
   constructor(message: string, readonly reason?: string) { super(message); }
@@ -223,6 +234,7 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
     const hint = refusalHint(code, undefined);
     return { code: code === "verb-error" ? err.reason : code, message, ...(hint !== undefined ? { hint } : {}) };
   }
+  if (err instanceof VesselLocked) return { code: "vessel-locked", message, hint: "open the vessel key with `lares vault unlock`, then run again." };
   if (err instanceof StoreHeld) return { code: "store-held", message, hint: "another holder holds this store: a standing vessel, or a command mid-act. Run again once it has gone." };
   if (err instanceof SlowBootTimeout) return { code: "store-door-timeout", message, hint: "the vessel's store door gave no answer inside its budget. `lares vessel read` names what holds it." };
   if (err instanceof LocalWaitExpired || err instanceof DaemonUnreachable) {
@@ -248,6 +260,12 @@ export async function storeVerb(
   Refusal: new (message: string) => Error = StoreDoorRefusal,
 ): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
   const daemonUp = await udsAlive();
+  // A LOCKED VESSEL REFUSES BY NAME BEFORE THE DOOR PARKS. The refold poke is the one row exempt: it writes nothing
+  // the key guards and answers `failed` on its own.
+  if (daemonUp && verb !== "seal-home-refold") {
+    const standing = await vesselStanding();
+    if (standing.reading === "vessel" && !standing.unlocked) throw new VesselLocked();
+  }
   // THE FACE RESOLVES ONCE, here: the session opens on it and the row carries it, so the row never resolves again.
   const named = STORE_DOOR_FACE_ROWS.has(verb) ? storeRowFace(args) : undefined;
   const face = daemonUp && STORE_DOOR_FACE_ROWS.has(verb)

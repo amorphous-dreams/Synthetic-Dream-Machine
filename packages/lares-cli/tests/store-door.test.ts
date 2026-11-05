@@ -24,10 +24,12 @@ vi.mock("../src/local-connector.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/local-connector.js")>();
   return { ...actual, udsAlive: vi.fn(), whoHolds: vi.fn(), udsSocketPresent: vi.fn(() => true), invokeLocal: vi.fn() };
 });
+vi.mock("../src/custody-door.js", () => ({ vesselStanding: vi.fn(async () => ({ reading: "vessel", unlocked: true })) }));
 vi.mock("../src/env.js", () => ({ vesselDid: vi.fn(async () => "did:test"), larSealHome: vi.fn(() => "/tmp/unused-seal") }));
 
 import { udsAlive, whoHolds, invokeLocal } from "../src/local-connector.js";
-import { throughStoreDoor, pokeSealHomeRefold, SlowBootTimeout } from "../src/store-door.js";
+import { vesselStanding } from "../src/custody-door.js";
+import { throughStoreDoor, pokeSealHomeRefold, SlowBootTimeout, storeVerb, storeFailure, VesselLocked } from "../src/store-door.js";
 
 const FAST_PHASES = [
   { name: "unbound", budgetMs: 30 },
@@ -162,5 +164,37 @@ describe("pokeSealHomeRefold says what the refold did, one word per outcome", ()
     expect(await pokeSealHomeRefold()).toBe("none");
     vi.mocked(udsAlive).mockResolvedValue(false);               // no vessel stands
     expect(await pokeSealHomeRefold()).toBe("none");
+  });
+});
+
+describe("storeVerb — a locked vessel refuses by name before the door parks (L7)", () => {
+  it("RED: a vessel that stands locked refuses `persona-new` as vessel-locked and no verb reaches the socket", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(vesselStanding).mockResolvedValue({ reading: "vessel", unlocked: false });
+    vi.mocked(invokeLocal).mockClear();
+    vi.mocked(invokeLocal).mockImplementation(() => new Promise(() => { /* the parked line: never answers */ }));
+    const err = await storeVerb("persona-new", { handleIndex: 1 }).then(() => null, (e: unknown) => e);
+    expect(err).toBeInstanceOf(VesselLocked);
+    expect((err as Error).message).toBe("the vessel stands locked: `lares vault unlock`");
+    expect(storeFailure(err).code).toBe("vessel-locked");
+    expect(invokeLocal).not.toHaveBeenCalled();
+  });
+
+  it("CONTROL: an unlocked vessel carries the row through the door", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(null);
+    vi.mocked(vesselStanding).mockResolvedValue({ reading: "vessel", unlocked: true });
+    vi.mocked(invokeLocal).mockClear();
+    vi.mocked(invokeLocal).mockResolvedValue({ status: "done", requestId: "r9", results: { summary: { ok: true, output: { verb: "persona-new", alreadyStood: false } } } });
+    const r = await storeVerb("persona-new", { handleIndex: 1 });
+    expect(r.via).toBe("daemon");
+    expect(invokeLocal).toHaveBeenCalled();
+  });
+
+  it("CONTROL: with no vessel standing the custody door is never asked", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(false);
+    vi.mocked(vesselStanding).mockClear();
+    await storeVerb("persona-new", { handleIndex: 1 }).catch(() => { /* the direct run needs a store; only the ask matters */ });
+    expect(vesselStanding).not.toHaveBeenCalled();
   });
 });
