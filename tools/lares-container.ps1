@@ -28,6 +28,7 @@ foreach ($name in 'LARES_STATE', 'LARES_WORKSPACE') {
 
 $Base = @()
 if (Test-Path $EnvFile) { $Base += @('--env-file', $EnvFile) }
+else { $Base += @('--env-file', $(if ([System.IO.Path]::DirectorySeparatorChar -eq '\') { 'NUL' } else { '/dev/null' })) }
 $Base += @('-f', $ComposeFile)
 
 function Compose([string[]]$more) {

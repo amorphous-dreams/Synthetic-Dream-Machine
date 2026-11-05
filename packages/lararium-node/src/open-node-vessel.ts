@@ -2811,13 +2811,15 @@ async function prepareNodeBootOn(
         promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
         onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
       }),
-      open: ({ pluginCids, joinedFaces }) => openDaemonVm({
+      open: async ({ pluginCids, joinedFaces }) => openDaemonVm({
         repo,
         caps: islandCaps,
         daemonUrl: bootstrap.daemonUrl,
         // The persona plane rides only when a face stands; the daemon VM resolves nothing that is absent.
         ...(bootstrap.personaUrl   ? { personaUrl:   bootstrap.personaUrl }   : {}),
         ...(bootstrap.personaBagId ? { personaBagId: bootstrap.personaBagId } : {}),
+        faceRelation: wornFaceProjection ? (await import("@lararium/mesh")).faceRelationOf(wornFaceProjection) : null,
+        ...(wornKahua ? { faceGroup: wornKahua.group } : {}),
         // A joinee at the floor holds no key to present its dial, so its persona plane (served by the hearth it dials) may
         // stand on the hearth alone; the unlocked composition dials and receives it. A founder's plane stays hearth-private.
         // An admitted device whose replica does not yet hold the plane (it syncs from the fleet) resolves it as a mesh-shared

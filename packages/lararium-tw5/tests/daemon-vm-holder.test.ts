@@ -653,7 +653,7 @@ describe("an emergency that overlaps an ordinary restart is never downgraded (So
     expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).not.toThrow();
   });
 
-  test("an emergency that arrives after the standing restart passed prepare schedules one follow-up emergency restart, never dropped", async () => {
+  test("an emergency that arrives once the standing restart began its reopen schedules one follow-up emergency restart, never dropped", async () => {
     const first = fakeVm();
     const second = fakeVm();
     const opening = deferred<DaemonVmCore>();
@@ -665,7 +665,7 @@ describe("an emergency that overlaps an ordinary restart is never downgraded (So
       reopen: () => (++opens === 1 ? opening.promise : Promise.resolve(fakeVm())),
     });
     const ordinary = held.restart("operator");
-    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+    for (let i = 0; i < 8; i += 1) await Promise.resolve();   // the ordinary restart is mid-reopen
     const emergency = held.restart("brake");
     const emergencyOutcome = emergency.then(() => "restarted", (e: Error) => e.message);
     opening.resolve(second);
@@ -757,5 +757,218 @@ describe("an emergency that overlaps a SUCCEEDING prepare never lets pre-emergen
     await restarting;
     expect(opened).toEqual([["a", "x"]]);
     expect(sel.calls).toHaveLength(1);
+  });
+});
+
+describe("an emergency STOPS the standing island first, then prepares as often as it must (Sol 4)", () => {
+  const brake = (r: string) => r === "brake";
+
+  test("an emergency reason closes the island before prepare begins", async () => {
+    const first = fakeVm();
+    const downsAtPrepare: number[] = [];
+    const held = holdDaemonVm({
+      vm: first, emergency: brake,
+      prepare: async () => { downsAtPrepare.push(first.downs); return ["a"]; },
+      reopen: async () => fakeVm(),
+    });
+    await held.restart("brake");
+    expect(downsAtPrepare).toEqual([1]);
+  });
+
+  test("CONTROL: an ordinary restart still prepares before teardown (the island serves until prepare returns)", async () => {
+    const first = fakeVm();
+    const gate = deferred<void>();
+    const downsAtPrepare: number[] = [];
+    const held = holdDaemonVm({
+      vm: first, emergency: brake,
+      prepare: async () => { downsAtPrepare.push(first.downs); await gate.promise; return ["a"]; },
+      reopen: async () => fakeVm(),
+    });
+    const restarting = held.restart("operator");
+    await Promise.resolve(); await Promise.resolve();
+    expect(first.downs).toBe(0);
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never)).not.toThrow();
+    gate.resolve();
+    await restarting;
+    expect(downsAtPrepare).toEqual([0]);
+  });
+
+  test("an emergency that upgrades an ordinary restart mid-prepare closes the island AT THAT MOMENT, and overlapping emergencies keep it closed while prepare repeats", async () => {
+    const first = fakeVm();
+    const gates = [deferred<void>(), deferred<void>(), deferred<void>()];
+    const all = ["a", "x", "y"];
+    let shadowed = new Set<string>();
+    let n = 0;
+    const opened: string[][] = [];
+    const downsAtEachPrepare: number[] = [];
+    const held = holdDaemonVm({
+      vm: first, emergency: brake,
+      prepare: async () => {
+        const mine = n; n += 1;
+        const picked = all.filter((c) => !shadowed.has(c));       // captured at the prepare's start
+        downsAtEachPrepare.push(first.downs);
+        await gates[mine]!.promise;
+        return picked;
+      },
+      reopen: async (_r, picked: string[]) => { opened.push(picked); return fakeVm(); },
+    });
+    const ordinary = held.restart("operator");
+    await Promise.resolve(); await Promise.resolve();
+    expect(first.downs).toBe(0);                                  // ordinary: still serving
+    shadowed = new Set(["x"]);
+    const e1 = held.restart("brake");                             // the FIRST emergency
+    await Promise.resolve(); await Promise.resolve();
+    expect(first.downs).toBe(1);                                  // closed the moment it arrived
+    expect(() => held.vm.placeVerb({ origin: "channel", verb: "v", args: {} } as never)).toThrow(/daemon-restarting/);
+    gates[0]!.resolve();                                          // prepare 1 returns stale [a,x]; it must not reopen
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+    shadowed = new Set(["x", "y"]);
+    const e2 = held.restart("brake");                             // another emergency during re-prepare 2
+    gates[1]!.resolve();                                          // prepare 2 returns [a,y]: stale again
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+    gates[2]!.resolve();                                          // prepare 3 returns [a]
+    await ordinary; await e1; await e2;
+    expect(opened).toEqual([["a"]]);                              // only the final inputs ever reopen
+    expect(first.downs).toBe(1);                                  // closed once, after the FIRST emergency
+    expect(downsAtEachPrepare[0]).toBe(0);                        // the ordinary prepare began with the island up
+    expect(downsAtEachPrepare.slice(1).every((d) => d === 1)).toBe(true);   // every re-prepare ran with it already down
+  });
+});
+
+describe("stale inputs never boot: an emergency between prepare-pass and reopen re-prepares first (Sol 4 residual)", () => {
+  const brake = (r: string) => r === "brake";
+  const picker = () => {
+    const all = ["a", "x"];
+    let shadowed = new Set<string>();
+    const calls: Array<{ reason: string; picked: string[] }> = [];
+    return {
+      shadow: (cid: string) => { shadowed = new Set([...shadowed, cid]); },
+      calls,
+      prepare: async (reason: string) => { const picked = all.filter((c) => !shadowed.has(c)); calls.push({ reason, picked }); return picked; },
+    };
+  };
+
+  test("an emergency that lands while the old island shuts down (prepare passed, reopen not begun) makes the replacement open WITHOUT the shadowed digest", async () => {
+    const first = fakeVm();
+    const closing = deferred<void>();
+    const realShutdown = first.shutdown;
+    (first as { shutdown: () => Promise<{ acked: boolean }> }).shutdown = async () => { await closing.promise; return realShutdown(); };
+    const pick = picker();
+    const opened: string[][] = [];
+    const held = holdDaemonVm({ vm: first, emergency: brake, prepare: pick.prepare, reopen: async (_r, picked: string[]) => { opened.push(picked); return fakeVm(); } });
+    const ordinary = held.restart("operator");
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); await Promise.resolve();   // prepare passed; the ordinary shutdown stands
+    pick.shadow("x");
+    const emergency = held.restart("brake");
+    closing.resolve();
+    await ordinary; await emergency;
+    expect(opened).toEqual([["a"]]);                      // stale [a,x] never boots
+    expect(pick.calls.map((c) => c.reason)).toEqual(["operator", "brake"]);
+  });
+
+  test("CONTROL: with no emergency the one prepare's inputs reopen, prepared once", async () => {
+    const first = fakeVm();
+    const pick = picker();
+    const opened: string[][] = [];
+    const held = holdDaemonVm({ vm: first, emergency: brake, prepare: pick.prepare, reopen: async (_r, picked: string[]) => { opened.push(picked); return fakeVm(); } });
+    await held.restart("operator");
+    expect(opened).toEqual([["a", "x"]]);
+    expect(pick.calls).toHaveLength(1);
+  });
+
+  test("RESIDUAL: an emergency that lands DURING reopen (mid-boot) cannot stop that boot; the follow-up closes the replacement and boots the final inputs", async () => {
+    const pick = picker();
+    const opening = deferred<DaemonVmCore>();
+    const replacement = fakeVm();
+    const opened: string[][] = [];
+    let n = 0;
+    const held = holdDaemonVm({
+      vm: fakeVm(), emergency: brake, prepare: pick.prepare,
+      reopen: (_r, picked: string[]) => { opened.push(picked); return ++n === 1 ? opening.promise : Promise.resolve(fakeVm()); },
+    });
+    const ordinary = held.restart("operator");
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+    pick.shadow("x");
+    const emergency = held.restart("brake");               // lands mid-boot: reopen has begun
+    opening.resolve(replacement);
+    await ordinary; await emergency;
+    expect(opened).toEqual([["a", "x"], ["a"]]);            // the first boot ran on stale inputs: the irreducible window
+    expect(replacement.downs).toBe(1);                       // the follow-up closed it at once
+  });
+});
+
+describe("the final check, reopenStarted and the reopen call share ONE continuation (Sol 5)", () => {
+  const brake = (r: string) => r === "brake";
+  /** An ordinary restart whose old island is still shutting down when emergency E1 lands (so a late re-prepare runs); E2 lands `depth` microtask hops after that re-prepare returns. */
+  async function handoff(depth: number | null, extra: { disposeAt?: "during-reprepare" } = {}) {
+    const first = fakeVm();
+    const closing = deferred<void>();
+    const realShutdown = first.shutdown;
+    (first as { shutdown: () => Promise<{ acked: boolean }> }).shutdown = async () => { await closing.promise; return realShutdown(); };
+    const all = ["a", "x", "y"];
+    let shadowed = new Set<string>();
+    let calls = 0;
+    const gate2 = deferred<void>();
+    const opened: string[][] = [];
+    let held!: ReturnType<typeof holdDaemonVm<string[]>>;
+    held = holdDaemonVm<string[]>({
+      vm: first, emergency: brake,
+      prepare: async () => {
+        calls += 1;
+        const picked = all.filter((c) => !shadowed.has(c));
+        if (calls === 2) {
+          if (extra.disposeAt === "during-reprepare") await gate2.promise;
+          else if (depth !== null) {
+            let hops = Promise.resolve();
+            for (let i = 0; i < depth; i += 1) hops = hops.then(() => undefined);
+            void hops.then(() => { shadowed = new Set([...shadowed, "y"]); void held.restart("brake").catch(() => undefined); });
+          }
+        }
+        return picked;
+      },
+      reopen: async (_r, picked) => { opened.push(picked); return fakeVm(); },
+    });
+    const ordinary = held.restart("operator");
+    for (let i = 0; i < 6; i += 1) await Promise.resolve();
+    shadowed = new Set(["x"]);
+    const e1 = held.restart("brake");                 // lands while the old island shuts down: a late re-prepare will run
+    return { held, first, closing, gate2, ordinary, e1, opened, calls: () => calls };
+  }
+
+  test("an emergency landing at ANY hop after the late re-prepare returns is never lost: the last reopen always excludes the digest it shadowed", async () => {
+    for (let depth = 0; depth <= 8; depth += 1) {
+      const t = await handoff(depth);
+      t.closing.resolve();
+      await t.ordinary.catch(() => undefined); await t.e1.catch(() => undefined);
+      for (let i = 0; i < 40; i += 1) await Promise.resolve();   // let a follow-up settle
+      expect(t.opened.at(-1), `depth ${depth}: opened ${JSON.stringify(t.opened)}`).toEqual(["a"]);
+    }
+  });
+
+  test("CONTROL: with no second emergency the late re-prepare's inputs reopen once", async () => {
+    const t = await handoff(null);
+    t.closing.resolve();
+    await t.ordinary; await t.e1;
+    expect(t.opened).toEqual([["a", "y"]]);
+  });
+
+  test("a dispose during the late re-prepare means zero reopen calls", async () => {
+    const t = await handoff(null, { disposeAt: "during-reprepare" });
+    t.closing.resolve();
+    for (let i = 0; i < 12; i += 1) await Promise.resolve();   // the re-prepare stands on its gate
+    expect(t.calls()).toBe(2);
+    t.held.vm.dispose();
+    t.gate2.resolve();
+    await t.ordinary.catch(() => undefined); await t.e1.catch(() => undefined);
+    expect(t.opened).toEqual([]);
+  });
+
+  test("CONTROL: without the dispose the same restart reopens once", async () => {
+    const t = await handoff(null, { disposeAt: "during-reprepare" });
+    t.closing.resolve();
+    for (let i = 0; i < 12; i += 1) await Promise.resolve();
+    t.gate2.resolve();
+    await t.ordinary; await t.e1;
+    expect(t.opened).toHaveLength(1);
   });
 });

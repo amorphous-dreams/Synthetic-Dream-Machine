@@ -87,6 +87,7 @@ import {
   frameAlt,
   fenceLineOpen,
   fenceLineClose,
+  bccOf,
   bccOfSpan,
   type FenceOpen,
 } from "@lararium/memetic-frame";
@@ -861,7 +862,7 @@ export function transposeMarkdown(
   let metaFenceDone: string | undefined;
   let inMetaFence = false;
   let uri: string | undefined;
-  let check: string | undefined;
+  const check = bccOf(text) ?? undefined;
   let tableRow = 0;         // rows emitted in the current table run
   let sigilBuf: string[] | null = null;  // a line-spanning sigil, gathered whole
   let proseBuf: string[] | null = null;  // a contiguous default/ordered run, flushed as one string
@@ -949,7 +950,7 @@ export function transposeMarkdown(
     const soh = matchCarrierHeadLine(line);
     if (soh) { uri = uri ?? soh.uri; continue; }
     const etx = ETX_LINE.exec(line);
-    if (etx) { check = check ?? etx[1]; continue; }
+    if (etx) { continue; }
     if (FRAME_LINE.test(line) || DOCTYPE_LINE.test(line)) continue;
 
     // ── a sigil spanning lines travels whole, shown literally in a fence ──

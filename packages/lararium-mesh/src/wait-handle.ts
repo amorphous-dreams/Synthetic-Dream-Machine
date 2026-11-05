@@ -27,6 +27,8 @@
  */
 
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
+import { mergeGuarded } from "./prototype-key-shore.js";
+import { isVerbRefusal } from "./verb-refusal.js";
 
 /** How long local readiness gets before the caller takes a fallback and boot moves on. */
 export const LOCAL_READY_MS = 3000;
@@ -54,6 +56,6 @@ export async function waitHandle<T>(
   const fresh = fallbackFn();
   // The remote stays alive past the fallback. A doc that lands after the window merges into the handle
   // the caller is already using, so a late peer costs latency rather than content.
-  progress.whenReady().then((h) => { fresh.merge(h); }).catch(() => { /* the remote never came */ });
+  progress.whenReady().then((h) => { mergeGuarded(fresh, h, "waitHandle"); }).catch((e) => { if (isVerbRefusal(e)) console.warn(`[waitHandle] ${(e as Error).message}`); /* else: the remote never came */ });
   return fresh;
 }

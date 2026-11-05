@@ -6,6 +6,7 @@
  * literally, their anchors resolve, and two projections of one carrier never differ.
  */
 import { describe, test, expect } from "vitest";
+import { bccOf } from "@lararium/memetic-frame";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -72,9 +73,9 @@ describe("the submission projection", () => {
     }
     expect(p.markdown).not.toContain("toml meta");
     expect(p.uri).toBe("lar:///ha.ka.ba/lares/api/pono/probe");
-    expect(p.check).toBe("ni:///sha-256;AAAA_probe_check");
+    expect(p.check).toBe(bccOf(CARRIER));
     expect(p.meta).toContain("source: lar:///ha.ka.ba/lares/api/pono/probe");
-    expect(p.meta).toContain("source-check: ni:///sha-256;AAAA_probe_check");
+    expect(p.meta).toContain(`source-check: ${bccOf(CARRIER)}`);
   });
 
   test("the sidecar rests in TW5's own field-block form, so the disk projection re-renders it byte for byte", () => {
@@ -341,7 +342,7 @@ uri-path = "ha.ka.ba/lares/api/pono/probe2"
     expect(p.standalone).toBe(true);
     expect(p.markdown.startsWith("---\n")).toBe(true);
     expect(p.markdown).toContain('source: "lar:///ha.ka.ba/lares/api/pono/probe2"');
-    expect(p.markdown).toContain('source-check: "ni:///sha-256;PROBE2"');
+    expect(p.markdown).toContain(`source-check: "${bccOf(CARRIER2)}"`);
     expect(p.markdown).toContain('variant: "GFM"');
     expect(p.markdown).toContain('lang: "en"');
     // the sidecar: title/type (what TW5 loads) + the target record (what --check re-projects with)
@@ -537,7 +538,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
     const t = transposeMarkdown('<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/target`>>\n', PROFILES.CommonMark, resolve);
-    expect(t.markdown).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/target pinned ni:///sha-256;TARGET_CHECK -->");
+    expect(t.markdown).toContain(`<!-- aka: lar:///ha.ka.ba/lares/api/pono/target pinned ${bccOf(target)} -->`);
     expect(t.markdown).toContain("# Target content");
     expect(t.markdown).toContain("<!-- /aka -->");
     expect(t.markdown).not.toContain("unresolved");
@@ -610,7 +611,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
     const t = transposeMarkdown('<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/target`>>\n', PROFILES.CommonMark, resolve);
     expect(t.markdown).toContain("# Other Slot");
-    expect(t.markdown).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/target pinned ni:///sha-256;WHOLE_CHECK -->");
+    expect(t.markdown).toContain(`<!-- aka: lar:///ha.ka.ba/lares/api/pono/target pinned ${bccOf(target)} -->`);
   });
 
   test("a `#/slot` fragment naming no slot falls back to the marked-unresolved form, naming the missing slot", () => {
@@ -823,14 +824,14 @@ title      = "Key words for use in RFCs to Indicate Requirement Levels"
     test(`RED: a pin of a CONTENT target weaves as the frozen image in ${where} position — position no longer decides`, () => {
       const src = carrier('<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/target`>>', where);
       const t = transposeMarkdown(src, PROFILES.CommonMark, resolve);
-      expect(t.markdown).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/target pinned ni:///sha-256;TARGET_CHECK -->");
+      expect(t.markdown).toContain(`<!-- aka: lar:///ha.ka.ba/lares/api/pono/target pinned ${bccOf(CONTENT_TARGET)} -->`);
       expect(t.markdown).toContain("# Target content");
     });
 
     test(`RED: a pin of a REFERENCE meme weaves as a citation in ${where} position — position no longer decides`, () => {
       const src = carrier('<<~ aka uri=`lar:///ha.ka.ba/lares/ref/RFC-9498`>>', where);
       const t = transposeMarkdown(src, PROFILES.CommonMark, resolve);
-      expect(t.markdown).toContain("- `aka lar:///ha.ka.ba/lares/ref/RFC-9498` — pinned `ni:///sha-256;REF9498_CHECK`");
+      expect(t.markdown).toContain(`- ` + "`aka lar:///ha.ka.ba/lares/ref/RFC-9498`" + ` — pinned ` + "`" + bccOf(REFERENCE_TARGET) + "`");
       expect(t.markdown).not.toContain("GNU Name System reference meme");
       expect(t.markdown).not.toContain("<!--");
     });

@@ -95,6 +95,20 @@ for (const [name, shim] of shims) {
     assert.equal(r.calls, "");
   });
 
+  test(`${name}: with no hearth env file and the mounts from the shell, compose is pointed off the checkout's own .env`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: MOUNTS });
+    assert.equal(r.status, 0, r.stderr);
+    // Compose auto-loads `.env` from the compose file's directory when no --env-file names one; the shim
+    // names an empty one so a checkout .env never feeds the vessel's variables.
+    assert.match(r.calls, /--env-file \/dev\/null|--env-file NUL/);
+  });
+
+  test(`${name}: CONTROL: a hearth env file stays the env file named`, async () => {
+    const r = await run(shim, ["vessel", "read"], { envFile: "LARES_STATE=/s\nLARES_WORKSPACE=/w\n" });
+    assert.match(r.calls, /--env-file \S*\/hearth\/lares-surface\.env/);
+    assert.doesNotMatch(r.calls, /--env-file \/dev\/null/);
+  });
+
   test(`${name}: any other argv with a running vessel runs the CLI by exec`, async () => {
     const r = await run(shim, ["vessel", "read", "--json"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);

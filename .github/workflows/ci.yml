@@ -361,6 +361,9 @@ jobs:
         id: py
         with:
           python-version: '3.12'
+      - id: mempalace-pin
+        run: echo "sha=$(git rev-parse HEAD:mempalace)" >> "$GITHUB_OUTPUT"
+
       # The key carries the exact interpreter PATCH: a restored venv's bin/python3 symlinks to the hostedtoolcache path of the patch that built
       # it, so on a runner carrying another 3.12.x it dangles (exit 127).
       - name: Cache the holder venv
@@ -368,7 +371,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.venv
-          key: holder-venv-${{ runner.os }}-py${{ steps.py.outputs.python-version }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
+          key: holder-venv-${{ runner.os }}-py${{ steps.py.outputs.python-version }}-${{ steps.mempalace-pin.outputs.sha }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
       - name: Stand the holder venv (~/.venv)
         env:
           CACHE_HIT: ${{ steps.venv-cache.outputs.cache-hit }}
