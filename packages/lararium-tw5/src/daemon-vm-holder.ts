@@ -14,6 +14,9 @@ export interface DaemonVmHolder {
  */
 export const KAPAE_EMERGENCY_REASON = "promote: kapae raised over a loaded rite";
 
+/** The reason an ordinary promote verb (commit, drop, orphan decision) restarts the daemon island with: no brake, so a refused prepare leaves the standing island running. */
+export const PROMOTE_RESTART_REASON = "promote: a hand's verb reloads the daemon island";
+
 export class DaemonRestarting extends Error {
   constructor(readonly code: "daemon-restarting" | "daemon-down") {
     super(code);

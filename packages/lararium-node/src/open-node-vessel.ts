@@ -81,7 +81,7 @@ import {
   composeVerbPlane,
   mempalaceProviderCap, formPalaceProviderCap, daemonVerbProviderCap, telemetryProviderCap,
   recallVerbCap, telemetryVerbCap, captureVerbCap, worldlineVerbCap,
-  makeCatalogAccessor, liveKahuaFace, KAPAE_EMERGENCY_REASON,
+  makeCatalogAccessor, liveKahuaFace, KAPAE_EMERGENCY_REASON, PROMOTE_RESTART_REASON,
 } from "@lararium/tw5";
 import type {
   VesselWikiSlot, DaemonVmCore, DaemonVmHolder, VesselDaemonVm, VesselOrchestration,
@@ -1811,13 +1811,15 @@ async function prepareNodeBootOn(
   let vmManager!: VesselIslandPool;        // set in makePool
   let wikiActivation!: WikiActivationCap;  // set in makePool — the activation-on-reference cap
   const promoteActs = promoteActGate();
-  const restartDaemonNow = async () => {
-    console.log("[promote] the daemon island restarts: a shadow meets a loaded rite");
-    const done = await daemonHolder.restart(KAPAE_EMERGENCY_REASON);
+  // The kapae emergency alone carries the brake (a refused prepare closes the standing island). A hand's verb reloads under a routine
+  // reason: a refused prepare there leaves the island running and names the failure.
+  const restartDaemonNow = async (reason: string = KAPAE_EMERGENCY_REASON) => {
+    console.log(reason === KAPAE_EMERGENCY_REASON ? "[promote] the daemon island restarts: a shadow meets a loaded rite" : "[promote] the daemon island restarts: a hand's verb reloads it");
+    const done = await daemonHolder.restart(reason);
     console.log(`[promote] the daemon island restarted (${done.restarts})`);
   };
   // A restart that runs after a raise or a commit answered has no asker to tell: its failure is named, and the next arrive tries again.
-  const restartDaemonDeferred = () => { void restartDaemonNow().catch((error) => { console.warn(`[promote] restart of the daemon island failed: ${error instanceof Error ? error.message : String(error)}`); void pushPromoteSnapshot?.().catch(console.warn); }); };
+  const restartDaemonDeferred = () => { void restartDaemonNow(PROMOTE_RESTART_REASON).catch((error) => { console.warn(`[promote] restart of the daemon island failed: ${error instanceof Error ? error.message : String(error)}`); void pushPromoteSnapshot?.().catch(console.warn); }); };
   const restartWikiIsland = async (wiki: string, hit?: readonly string[]): Promise<void | { pending: Promise<void> }> => {
     if (wiki === "daemon") {
       // The holder's restart never waits. On the RAISING device the arrival lands before this device's own raise reply leaves, so the restart
