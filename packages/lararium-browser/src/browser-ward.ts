@@ -26,9 +26,22 @@ export class BrowserWardRefused extends Error {
   constructor(readonly reading: string) { super(`${reading}: the face root opened to no ward act in this browser`); }
 }
 
-/** Sign `bytes` as face `handleIndex`'s root in one ward act. */
+/** The ward acts a page may miss before it refuses every one until it reloads: the node holder's own bound, per keystore. */
+export const WARD_ATTEMPTS_PER_PAGE = 3;
+const spent = new Map<string, number>();
+
+/** Sign `bytes` as face `handleIndex`'s root in one ward act. A miss spends one of the page's attempts for this keystore. */
 export async function browserWardSign(idbName: string, handleIndex: number, passphrase: string, bytes: Uint8Array, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly signature: string }> {
   if (typeof passphrase !== "string" || passphrase.length === 0) throw new BrowserWardRefused("ward-needs-fresh-unlock");
+  if ((spent.get(idbName) ?? 0) >= WARD_ATTEMPTS_PER_PAGE) throw new BrowserWardRefused("ward-attempts-spent");
+  // CHARGE FIRST: the attempt pays before the worker derives, so a throw keeps it; an act that signs earns it back.
+  spent.set(idbName, (spent.get(idbName) ?? 0) + 1);
+  const signed = await browserWardSignOnce(idbName, handleIndex, passphrase, bytes, spawn);
+  spent.set(idbName, (spent.get(idbName) ?? 1) - 1);
+  return signed;
+}
+
+async function browserWardSignOnce(idbName: string, handleIndex: number, passphrase: string, bytes: Uint8Array, spawn: WardWorkerSpawn): Promise<{ readonly key: string; readonly signature: string }> {
   const io = browserKeystoreCustodyIo(idbName);
   const tree = await io.read(CUSTODY_TREE_ROW);
   const carrier = sealedCarrierOf(`persona-root-h${handleIndex}`);

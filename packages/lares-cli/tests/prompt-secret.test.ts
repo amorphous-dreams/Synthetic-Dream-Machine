@@ -127,3 +127,25 @@ describe("the ward door reads a hand's route from a terminal alone (row 7, S2)",
     expect(await answered).toBe("the hand's route");
   });
 });
+
+describe("the product ward door answers from no file (S2 cold read, P3)", () => {
+  test("RED: under a root that carries the harness's marker, the terminal reader refuses `ward-needs-tty` and never answers the test route; CONTROL: a gatherer the test seats explicitly answers", async () => {
+    const { mkdtempSync, writeFileSync, rmSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const { ttyWardRoute, gatherWardRoute } = await import("../src/ward-door.js");
+    const { seatWardGatherer } = await import("@lararium/node");
+    const root = mkdtempSync(join(tmpdir(), "ward-door-marker-"));
+    writeFileSync(join(root, ".lar-test-scratch"), "");
+    const prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
+    try {
+      await expect(ttyWardRoute("lares promote commit")).rejects.toThrow(/ward-needs-tty/);
+      seatWardGatherer(async () => [{ kind: "passphrase", passphrase: "an explicit test route" }]);
+      expect(await gatherWardRoute("lares promote commit")).toEqual([{ kind: "passphrase", passphrase: "an explicit test route" }]);
+    } finally {
+      if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});

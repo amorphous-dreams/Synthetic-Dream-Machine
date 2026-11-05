@@ -61,6 +61,8 @@ export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<Person
   const anchor = await loadFaceAnchorOfGroup(anchors.personaGroupId);
   if (!anchor) throw new PersonaLeaseError("this face holds no sealed anchor; re-found it");
   const seed = await loadPersonaGroupRootSeed(handleIndex, opts.ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
   const key = await ed25519VerifyingKeyFromSeed(seed);
   const face = await fleetFaceForVessel(opts.repo, key, anchor);
   if (!face) throw new PersonaLeaseError("this vessel reads no verified persona-KEL lineage for that root, so no advance can verify");
@@ -72,4 +74,5 @@ export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<Person
   if (raised !== anchor) await keepFaceAnchorOfGroup(raised);
   await opts.repo.flush();
   return { handleIndex, personaGroupId: anchors.personaGroupId, effective: r.effective, rolled: r.rolled, slot: r.slot, frontier: raised.frontier.leaseEpoch };
+  } finally { seed.fill(0); }
 }

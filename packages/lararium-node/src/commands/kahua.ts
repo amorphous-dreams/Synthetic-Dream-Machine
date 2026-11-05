@@ -9,14 +9,14 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
+import { wardRootSigner } from "../ward-signer.js";
 import type { WardCredential } from "../ward-credential.js";
 import { randomBytes } from "node:crypto";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceRecordsOf, storedLarRecord, type KahuaSource, type LarDoc,
+  faceRecordsOf, storedLarRecord, type KahuaSource, type LarDoc,
 } from "@lararium/mesh";
 import { loadIntentFace, IntentRefused } from "./intent.js";
-import { loadPersonaGroupRootSeed } from "../node-vessel-identity.js";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../kahua-door.js";
 
 export { KahuaRefused };
@@ -63,10 +63,8 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
     currentSigner: (key) => face.currentSigner(key),
     signedAt: (epoch, key) => face.signsAt(epoch, key),
     atom: signer, intents: plane as DocHandle<LarDoc>,
-    rootSigner: async () => {
-      const seed = await loadPersonaGroupRootSeed(index, opts.ward);
-      return { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
-    },
+    // The root signs ONE act here, opening fresh under the act's ward route and zeroing after it (seat-harness#/the-ward).
+    rootSigner: () => wardRootSigner(index, opts.ward, "a kahua hand act"),
     cap: opts.cap ?? null,
     register: (bagId, url) => catalog.change((d) => { d.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "kahua-pin"); }),
     session: () => session,

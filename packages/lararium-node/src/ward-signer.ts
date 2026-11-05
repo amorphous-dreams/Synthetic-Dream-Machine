@@ -7,7 +7,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-ward
  */
-import { ed25519SignerFromSeed } from "@lararium/mesh";
+import { ed25519SignerFromSeed, WardRefused } from "@lararium/mesh";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 import { wardCredentialsOf, wardOrGather, type WardCredential } from "./ward-credential.js";
 
@@ -19,11 +19,37 @@ export async function wardRootSigner(handleIndex: number, ward: WardCredential |
   wardCredentialsOf(held, what);
   const key = await loadPersonaGroupRootVerifyingKey(handleIndex);
   if (!key) throw new Error(`[ward-signer] this vessel holds no root at h${handleIndex}: a joinee signs as its device, never as the root`);
+  // ONE SIGNATURE: a second sign refuses by name, so a signer handed on never signs an act the hand did not make.
+  let spent = false;
   return {
     key,
     async sign(bytes) {
+      if (spent) throw new WardRefused("ward-signer-spent", `${what} signed once already; a ward signer signs one act`);
+      spent = true;
       const seed = await loadPersonaGroupRootSeed(handleIndex, held);
       try { return await ed25519SignerFromSeed(seed)(bytes); } finally { seed.fill(0); }
     },
+  };
+}
+
+/**
+ * The face root for ONE act that signs more than once (a holder's edge kāpae signs its act and the fleet frontier it counts): the
+ * seed opens under the act's ward at the first signature, serves the act's signatures, and zeroes at `close`, which the act calls
+ * when it settles. Nothing reopens it after `close`.
+ */
+export async function wardRootSession(handleIndex: number, ward: WardCredential | undefined, what: string): Promise<WardRootSigner & { close(): void }> {
+  const held = await wardOrGather(ward, what);
+  wardCredentialsOf(held, what);
+  const key = await loadPersonaGroupRootVerifyingKey(handleIndex);
+  if (!key) throw new Error(`[ward-signer] this vessel holds no root at h${handleIndex}: a joinee signs as its device, never as the root`);
+  let seed: Uint8Array | null = null, closed = false;
+  return {
+    key,
+    async sign(bytes) {
+      if (closed) throw new WardRefused("ward-signer-spent", `${what} settled; its root signs nothing more`);
+      seed ??= await loadPersonaGroupRootSeed(handleIndex, held);
+      return ed25519SignerFromSeed(seed)(bytes);
+    },
+    close() { closed = true; seed?.fill(0); seed = null; },
   };
 }

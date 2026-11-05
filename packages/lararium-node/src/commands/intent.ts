@@ -234,6 +234,8 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
           if (err instanceof Error && /^ward-/.test(err.message)) throw new IntentRefused(err.message);
           throw new IntentRefused("root-absent: ask the root's hearth with `lares intent ask <intent-id>`");
         }
+        // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills once the entry is signed, whatever happened (seat-harness#/the-ward).
+        try {
         const key = await ed25519VerifyingKeyFromSeed(seed);
         if (!face.currentSigner(key)) throw new IntentRefused("root-rotated: ask the root's hearth with `lares intent ask <intent-id>`");
         const rootSigner = { key, sign: ed25519SignerFromSeed(seed) };
@@ -252,6 +254,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
             : opts.action === "supersede" ? await buildSupersede({ group, signer: rootSigner, intent, epoch })
             : await signIntentEntry({ group, entry: "release", intent, epoch, refs: [] }, rootSigner);
         }
+        } finally { seed.fill(0); }
         break;
       }
     }

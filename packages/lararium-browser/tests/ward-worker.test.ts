@@ -61,3 +61,14 @@ describe("a browser ward act", () => {
     expect((await browserWardSign(idbName, 0, PASS, new Uint8Array([1]), spawnCore(idbName, seen))).signature).toMatch(/^[0-9a-f]+$/);
   });
 });
+
+describe("the browser ward spends attempts (S2 cold read, P3)", () => {
+  test("RED: three wrong passphrases spend the page's ward attempts, and the right one then refuses `ward-attempts-spent`; CONTROL: a fresh keystore's right passphrase signs", async () => {
+    const { idbName } = await wardedBrowser();
+    const seen = { answers: [] as unknown[], unlockedDuring: [] as boolean[] };
+    for (let i = 0; i < 3; i++) await expect(browserWardSign(idbName, 0, `wrong ${i}`, new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toMatchObject({ reading: "ward-no-slot-opens" });
+    await expect(browserWardSign(idbName, 0, PASS, new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toMatchObject({ reading: "ward-attempts-spent" });
+    const other = await wardedBrowser();
+    expect((await browserWardSign(other.idbName, 0, PASS, new Uint8Array([1]), spawnCore(other.idbName, seen))).signature).toMatch(/^[0-9a-f]+$/);
+  });
+});

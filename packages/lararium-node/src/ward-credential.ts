@@ -25,9 +25,12 @@ export interface WardCredential { readonly [wardBrand]: true }
 
 const routes = new WeakMap<WardCredential, readonly Credential[]>();
 
-/** Mint the token for one act over the credentials a person presented for it. A passkey never rides it. */
+/** Mint the token for one act over the human route (passphrases, paper sheets) a person presented for it. A passkey refuses here. */
 export function wardCredential(credentials: readonly Credential[]): WardCredential {
   if (!Array.isArray(credentials) || credentials.length === 0) throw new WardNeedsFreshUnlock("an empty route");
+  if (credentials.some((c) => (c as { kind: unknown }).kind !== "passphrase" && (c as { kind: unknown }).kind !== "paper")) {
+    throw new WardRefused("ward-passkey-refused", "a ward route is a passphrase or a paper sheet; a passkey rides an authenticator vendor's registry");
+  }
   const token = Object.freeze({}) as WardCredential;
   routes.set(token, Object.freeze(credentials.map((c) => Object.freeze({ ...c })) as Credential[]));
   return token;

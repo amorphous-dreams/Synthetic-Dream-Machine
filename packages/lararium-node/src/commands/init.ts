@@ -628,6 +628,8 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   const ward = opts.ward ?? born ?? undefined;
   await generateOrLoadPersonaGroupRoot(handleIndex, ward!);
   const signerSeed = await loadPersonaGroupRootSeed(handleIndex, ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
   // The ask's first row founds the face's own custody (never the vessel's route), keyed by this ask until its group exists;
   // an interrupted founding re-enters the face it already holds.
   const askDigest = foundingAskDigest(foundingAsk);
@@ -716,4 +718,5 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     personaKelPrefix:     face.personaKelPrefix,
     signerDid:            face.signerDid,
   };
+  } finally { signerSeed.fill(0); }
 }

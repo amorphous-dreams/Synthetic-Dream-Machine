@@ -2,8 +2,8 @@
  * ward-door — THE CLI'S ONE PLACE A WARD ACT'S ROUTE IS READ, and how it reaches the act.
  *
  * A ward act (seat-harness#/the-ward) opens the face's ward key fresh from a human route. Here the route comes from a TTY alone
- * (`readWardPassphrase`: an environment variable or a piped stdin refuses `ward-needs-tty`), or, under a root a harness staged, from
- * the published test route named in the open. It reaches the act one of two ways and never through a store verb's arguments (those
+ * (`readWardPassphrase`: an environment variable or a piped stdin refuses `ward-needs-tty`), or from a gatherer a test seated
+ * explicitly; no file ever answers for it. It reaches the act one of two ways and never through a store verb's arguments (those
  * get hashed into a receipt): a standing vessel takes it over ONE custody frame and answers a one-use ticket the verb names; with no
  * vessel standing, the route parks in this process under the same kind of ticket. Nothing here keeps a route past its act.
  *
@@ -13,19 +13,17 @@ import type { Credential } from "@lararium/mesh";
 import { gatherSeatedWardRoute, parkWardTicket, wardBindDigest, wardCredential, wardGathererSeated, storeVerbNeedsWard, type WardCredential } from "@lararium/node";
 import { readWardPassphrase } from "./prompt-secret.js";
 import { RoutedVerbRefused } from "./store-door.js";
-import { TEST_ROUTE_PASSPHRASE, testScratchRoot } from "./offline-custody.js";
 
 /** One ward act's route, as this process asks it: the gatherer the process seated (the binary seats `ttyWardRoute`). */
 export async function gatherWardRoute(verb: string): Promise<Credential[]> {
   return wardGathererSeated() ? [...await gatherSeatedWardRoute(verb)] : ttyWardRoute(verb);
 }
 
-/** The terminal's own answer: the published test route on a staged root, else a passphrase typed at a terminal. */
+/**
+ * The terminal's own answer: a passphrase typed at a terminal, and nothing else. No file answers for it: a test harness that
+ * drives the CLI with no terminal seats its route explicitly (`tools/test-ward-route.mjs`, loaded ahead of the binary).
+ */
 export async function ttyWardRoute(verb: string): Promise<Credential[]> {
-  if (testScratchRoot()) {
-    process.stderr.write(`[ward] TEST SCRATCH ROOT: ${verb} opens the face's ward under the published test route\n`);
-    return [{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }];
-  }
   return [{ kind: "passphrase", passphrase: await readWardPassphrase(verb) }];
 }
 

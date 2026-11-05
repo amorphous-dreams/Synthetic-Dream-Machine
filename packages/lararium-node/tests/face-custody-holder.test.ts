@@ -235,3 +235,26 @@ describe("the ward holds the face root apart from unlocked custody", () => {
     expect(await rewrapWardCustody({ ordinal: 0 }, wardCredential(cred(PASS)))).toMatchObject({ rewrapped: 0 });
   });
 });
+
+describe("the rewrap never weakens a ward, and its proof is charged (S2 cold read, P3)", () => {
+  test("RED: a face behind a 2-of-2 route rewraps to a ward that one passphrase alone does not open; a wrong route's proof spends the face's attempts; CONTROL: both passphrases open the rewrapped ward", async () => {
+    const { rmSync } = await import("node:fs");
+    const { wardTreePath } = await import("../src/face-index.js");
+    seat = await seatScratchCustody("ward-rewrap-threshold");
+    const { holder } = seat;
+    const twoOfTwo: SlotSpec = { t: 2, pins: [{ kind: "passphrase", passphrase: "first half" }, { kind: "passphrase", passphrase: "second half" }] };
+    const face = await holder.foundFace({ ordinal: 0, slots: [twoOfTwo] });
+    rmSync(wardTreePath(seat.homes.identity, face.fcid));
+    const both = [...cred("first half"), ...cred("second half")];
+    await holder.rewrapWard({ ordinal: 0 }, both);
+    await expect(holder.withWardKey({ ordinal: 0 }, cred("first half"), async () => "opened")).rejects.toThrow(/ward-no-slot-opens|ward-attempts-spent/);
+    expect(await holder.withWardKey({ ordinal: 0 }, both, async () => "opened")).toBe("opened");
+
+    // A wrong route's rewrap proof charges the face's own attempts until they spend.
+    rmSync(wardTreePath(seat.homes.identity, face.fcid));
+    const wrong = cred("not this face's route");
+    const readings: string[] = [];
+    for (let i = 0; i < 4; i++) readings.push(await holder.rewrapWard({ ordinal: 0 }, wrong).then(() => "rewrapped", (e: Error) => /ward-[a-z-]+/.exec(e.message)?.[0] ?? e.message));
+    expect(readings.at(-1)).toBe("ward-attempts-spent");
+  });
+});

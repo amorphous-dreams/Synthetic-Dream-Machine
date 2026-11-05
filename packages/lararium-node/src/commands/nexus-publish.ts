@@ -28,13 +28,13 @@
  * publish in a human's name; an unset selector therefore refuses instead of choosing handle zero.
  */
 
+import { wardRootSigner } from "../ward-signer.js";
 import type { WardCredential } from "../ward-credential.js";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   crossroadsDocUrl,
-  ed25519SignerFromSeed,
   materializeSharedLarDoc,
   pluginOfferingCid,
   signPluginOffering,
@@ -51,7 +51,6 @@ import { readGenesisCasManifest } from "../genesis-artifact.js";
 import { FaceNotNamed, resolveFace } from "../face-selector.js";
 import { casDirForStorage, writeCasEntriesFs } from "../node-cas.js";
 import {
-  loadPersonaGroupRootSeed,
   loadPersonaGroupRootVerifyingKey,
   loadVesselVerifyingKey,
   personaRootExists,
@@ -203,7 +202,8 @@ export async function runNexusPublishPlugins(
     const pluginsCid = computePluginsCid(blobs);
     offering = await signPluginOffering(
       { offeror: offeror.toLowerCase(), pluginsCid, blobs },
-      ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex, opts.ward)),
+      // The root signs this one offering under the ward, its seed opened fresh and zeroed after the signature.
+      (await wardRootSigner(handleIndex, opts.ward, "a nexus publish")).sign,
     );
   }
 

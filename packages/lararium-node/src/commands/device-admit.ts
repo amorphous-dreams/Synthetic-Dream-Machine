@@ -333,6 +333,8 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     throw new Error("[lares fleet join answer] the request names no joinee key — the joining vessel's public verifying key.");
   }
   const signerSeed     = await loadPersonaGroupRootSeed(face, opts.ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
   // THE BINDING GATE READS THE DYAD'S SHADOW (kapae#/reach): no seat, no bind.
   await assertDyadBinds(repo, opts.joineeVerifyingKey, face);
   // The joinee's edge binds THIS hearth: the AID of its seed charter, the true name its own face's edge names.
@@ -435,4 +437,5 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     islandKind: founderIdentity.kind, islandScope: founderIdentity.scope,
   };
   return { payload, hearth };
+  } finally { signerSeed.fill(0); }
 }

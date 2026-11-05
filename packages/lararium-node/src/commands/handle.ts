@@ -54,12 +54,15 @@ export async function runHandlePublish(opts: HandlePublishOptions): Promise<Hand
   // THE OWNER RIDES THE SEALED ANCHOR (the door): never the daemon tiddler.
   const owner       = await readHandleOwner(repo, handleIndex, boardIsland, "publish");
   const seed        = await loadPersonaGroupRootSeed(handleIndex, opts.ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
   const board       = await materializeSharedLarDoc(repo, whoBoardDocUrl(boardIsland), "board:who-face");
   const store       = await makeNodePublicHandleStore();
 
   const card = await publishHandleForFace({ owner, board, seed, handleIndex, glamour: opts.glamour, store });
   await repo.flush();
   return card;
+  } finally { seed.fill(0); }
 }
 
 /**
@@ -198,6 +201,8 @@ export interface HandleBurnOptions {
  */
 export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard> {
   const face = await openOwnFace("burn", opts.repo, opts.handleIndex, opts.ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
 
   // The card re-signs with the seated handle key regardless of hand — a reader refuses a burned chain BEFORE
   // checking the sig, so even an owner-burn of a lost key lands; a well-formed card just keeps the lineage clean.
@@ -231,6 +236,7 @@ export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard
   });
   await face.repo.flush();
   return result.card;
+  } finally { face.seed.fill(0); }
 }
 
 export interface HandleRotateOptions {
@@ -253,6 +259,8 @@ export interface HandleRotateOptions {
  */
 export async function runHandleRotate(opts: HandleRotateOptions): Promise<HandleCard> {
   const face = await openOwnFace("rotate", opts.repo, opts.handleIndex, opts.ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
 
   // The OWNING PERSONA authorizes rotation. Resolve its verified head op-key off the per-Nexus persona-KEL board.
   const { personaKelPrefix, headOpKeyDid } = await readHandleOwner(face.repo, face.handleIndex, face.boardIsland, "rotate");
@@ -286,6 +294,7 @@ export async function runHandleRotate(opts: HandleRotateOptions): Promise<Handle
   });
   await face.repo.flush();
   return result.card;
+  } finally { face.seed.fill(0); }
 }
 
 export interface HandleAttestOptions {
@@ -313,5 +322,8 @@ export async function runHandleAttest(opts: HandleAttestOptions): Promise<Handle
     throw new Error("[lares handle attest] the claim does not read as a structured edge — name a known surface and its subject.");
   }
   const face = await openOwnFace("attest", opts.repo, opts.handleIndex, opts.ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
   return attestUnderHead(face.chain, opts.claim, face.veiledSigner);
+  } finally { face.seed.fill(0); }
 }

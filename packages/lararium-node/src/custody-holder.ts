@@ -514,20 +514,32 @@ export function makeCustodyHolder(a: {
     if (standing.reading === "unreadable") throw new WardRefused("ward-tree-unreadable", standing.why);
     if (standing.reading === "readable") ward = await openWardFresh(fcid, standing.tree, credentials);
     else {
-      // THE ROUTE PROVES THE FACE FIRST: the ward binds only over a route that opens this face's own tree to the key held.
-      const proof = await openFaceTree({ io: a.io, homes: a.homes, fcid, credentials });
-      if (proof.reading !== "opens") throw new WardRefused("ward-no-slot-opens", "the route opens no slot of this face's own tree, so no ward binds over it");
+      // THE ROUTE PROVES THE FACE FIRST: the ward binds only over a route that opens this face's own tree to the key held. The
+      // proof spends the face's own attempts as an unlock's miss does (CHARGE FIRST: a miss or a throw keeps the charge).
+      if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) throw new WardRefused("ward-attempts-spent", "this face's unlock attempts are spent until the vessel restarts");
+      const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0));
+      faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + charge.cost);
+      const proof = await openFaceTree({ io: a.io, homes: a.homes, fcid, credentials: charge.offered });
+      if (proof.reading !== "opens") {
+        const left = UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0);
+        throw new WardRefused(charge.short || left <= 0 ? "ward-attempts-spent" : "ward-no-slot-opens", `the route opens no slot of this face's own tree, so no ward binds over it (${left} attempt(s) left)`);
+      }
+      faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) - charge.cost);
       const same = treeKeyEquals(proof.fck, fck);
       proof.fck.fill(0);
       if (!same) throw new WardRefused("ward-no-slot-opens", "the route opens another key than the face's own");
+      // THE WARD NEVER WEAKENS THE FACE: it binds ONE slot over the routes presented, at the threshold of the face slot they opened,
+      // so a k-of-n face rewraps to a ward that asks k of these routes, never one.
+      const faceTree = decodeSlotTree(await a.io.read(faceTreePath(a.homes.identity, fcid)));
+      const opened = faceTree.reading === "readable" ? faceTree.tree.slots.find((sl) => sl.id === proof.slot) : undefined;
+      const threshold = opened?.t ?? credentials.length;
       ward = mintWardKey();
       wardKeys.add(ward);
       wardWatch?.(ward);
       try {
         const pins: PinSpec[] = credentials.map((c): PinSpec => c.kind === "passphrase" ? { kind: "passphrase", passphrase: c.passphrase } : c.kind === "paper" ? { kind: "paper", confirmed: confirmHeldPaper(c.sheets) } : (() => { throw new WardRefused("ward-passkey-refused", "the ward binds human routes alone"); })());
-        let tree = null as SlotTree | null;
-        for (const pin of pins) tree = await bindWardSlot(tree, ward, { t: 1, pins: [pin] }, nativeKdf);
-        if (tree === null) throw new WardRefused("ward-needs-human-route", "a rewrap binds the ward over a passphrase or a paper pin; none was given");
+        if (pins.length === 0) throw new WardRefused("ward-needs-human-route", "a rewrap binds the ward over a passphrase or a paper pin; none was given");
+        const tree = await bindWardSlot(null, ward, { t: Math.min(Math.max(threshold, 1), pins.length), pins }, nativeKdf);
         // THE TREE LANDS FIRST, so a rewrap torn after it resumes by opening the ward it left.
         await commitWardTree({ io: a.io, path: wardTreePath(a.homes.identity, fcid), expected: null, key: ward, tree, carriers: [] });
       } catch (err) { dropWard(ward); throw err; }

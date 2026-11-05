@@ -93,3 +93,23 @@ describe("a ticket names its act (S2 cold read, P2-1)", () => {
     expect(wc.takeWardTicket(five[4], bind)).toBeDefined();
   });
 });
+
+describe("the ward's token and signer (S2 cold read, P3)", () => {
+  test("RED: a passkey credential refuses at the token, and a ward signer signs once; CONTROL: a passphrase token mints, and its first signature verifies", async () => {
+    expect(() => wardCredential([{ kind: "passkey", credentialId: new Uint8Array([1]), prfOutput: new Uint8Array(32) } as never])).toThrow(/ward-passkey-refused/);
+    const { seatScratchCustody } = await import("./custody-seat-fixture.js");
+    const { generateOrLoadPersonaGroupRoot, setMountedFace } = await import("../src/node-vessel-identity.js");
+    const { wardRootSigner } = await import("../src/ward-signer.js");
+    const { verifyEd25519 } = await import("@lararium/mesh");
+    const seat = await seatScratchCustody("ward-signer-once");
+    try {
+      setMountedFace(undefined);
+      await seat.holder.foundFace({ ordinal: 0, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "signer route" }] }] });
+      await generateOrLoadPersonaGroupRoot(0, wardCredential(route("signer route")));
+      const signer = await wardRootSigner(0, wardCredential(route("signer route")), "a test act");
+      const bytes = new TextEncoder().encode("one act");
+      expect(verifyEd25519(await signer.sign(bytes), bytes, signer.key)).toBe(true);
+      await expect(signer.sign(bytes)).rejects.toThrow(/ward-signer-spent/);
+    } finally { setMountedFace(undefined); await seat.drop(); }
+  });
+});
