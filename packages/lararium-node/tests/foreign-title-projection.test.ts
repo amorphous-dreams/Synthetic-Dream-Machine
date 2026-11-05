@@ -301,12 +301,17 @@ test.each([false, true])("recovery retry rechecks the file without another edit 
     else expect(checks).toBe(1);
     if (conflict) {
       expect(r.adaptor.pendingTitles()).toContain(title);
+      const before = checks;                       // taken BEFORE the request: only the request's own work can raise it past here
       r.adaptor.requestDrain();
       await turns(30);
       if (asks[1]) capability.answer({ type: "receipt:issued", requestId: asks[1].requestId, issued: true });
       await turns(30);
-      // A landing wave after a standing refusal also releases the retry (the drain's ruling 2), so the claim reads "at least one more recheck".
-      expect.soft(checks, "retry must recheck the failed projection receipt").toBeGreaterThanOrEqual(2);
+      expect(checks, "the request drew at least one more recheck of the failed projection receipt").toBeGreaterThan(before);
+      // QUIESCENCE without another request: further turns draw no further check, and the retries stay bounded.
+      const settled = checks;
+      await turns(60);
+      expect(checks, "no request stands, so no further recheck runs").toBe(settled);
+      expect(settled - before, "the request's retries stay bounded").toBeLessThanOrEqual(3);
       expect.soft(r.adaptor.pendingTitles(), "conflict still prevents acknowledgement").toContain(title);
       expect(readFileSync(path, "utf8")).toBe(tidBody(title, "separate disk edit"));
     } else {
