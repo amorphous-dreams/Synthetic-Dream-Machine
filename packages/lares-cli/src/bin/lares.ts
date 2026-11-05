@@ -21,7 +21,7 @@
  */
 
 import { seatWardGatherer } from "@lararium/node";
-import { gatherWardRoute } from "../ward-door.js";
+import { ttyWardRoute } from "../ward-door.js";
 import { fileURLToPath } from "node:url";
 import { realpathSync }  from "node:fs";
 import { stdout }         from "node:process";
@@ -341,7 +341,7 @@ export async function dispatch(argv: readonly string[]): Promise<number> {
   seatOfflineCustody();
   seatNewFaceRoute();
   // An act this process runs itself with no ward route asks the person at this terminal, once per act (seat-harness#/the-ward).
-  seatWardGatherer((what) => gatherWardRoute(what));
+  seatWardGatherer((what) => ttyWardRoute(what));
   try {
     return await cmd.handler(args);
   } catch (err) {

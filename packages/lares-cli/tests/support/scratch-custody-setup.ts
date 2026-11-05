@@ -19,10 +19,13 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve, sep } from "node:path";
 import { beforeEach } from "vitest";
 import {
-  FsCustodyIo, custodyTreeStands, foundCustody, makeCustodyHolder, seatCustodyWhenNeeded, seatFaceAutoFounder, vesselCustodyHomes,
+  FsCustodyIo, custodyTreeStands, foundCustody, makeCustodyHolder, seatCustodyWhenNeeded, seatFaceAutoFounder, seatWardGatherer, vesselCustodyHomes,
   type CustodyHolder,
 } from "@lararium/node";
 import { TEST_PASSPHRASE } from "./found-route.js";
+
+// A ward act a suite drives asks the suite's "person", who answers the routes its faces are founded under (seat-harness#/the-ward).
+seatWardGatherer(async () => [TEST_PASSPHRASE, "fixture-custody-passphrase"].map((passphrase) => ({ kind: "passphrase" as const, passphrase })));
 
 // A write to a face the floor index does not name founds that face under the scratch route (the product seats no such policy).
 seatFaceAutoFounder(() => [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] }]);

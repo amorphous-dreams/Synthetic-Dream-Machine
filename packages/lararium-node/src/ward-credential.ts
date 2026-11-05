@@ -136,6 +136,11 @@ export type WardGatherer = (what: string) => Promise<readonly Credential[]>;
 let gatherer: WardGatherer | null = null;
 export function seatWardGatherer(gather: WardGatherer | null): void { gatherer = gather; }
 export function wardGathererSeated(): boolean { return gatherer !== null; }
+/** Ask the seated gatherer for one act's route; refuses `ward-needs-fresh-unlock` where none is seated. */
+export async function gatherSeatedWardRoute(what: string): Promise<readonly Credential[]> {
+  if (!gatherer) throw new WardNeedsFreshUnlock(what);
+  return gatherer(what);
+}
 
 /** The act's own token, else one the seated gatherer asks for this act, else none. */
 export async function wardOrGather(ward: WardCredential | undefined | null, what: string): Promise<WardCredential | undefined> {

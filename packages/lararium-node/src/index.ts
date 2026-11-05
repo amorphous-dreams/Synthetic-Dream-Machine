@@ -510,7 +510,7 @@ export type { CustodyOpener } from "./custody-seat.js";
 export { WardNeedsFreshUnlock, WardAbsent } from "./custody-holder.js";
 export type { WardSeat } from "./custody-holder.js";
 export { rewrapWardCustody, withWardKeyCustody } from "./custody-seat.js";
-export { wardCredential, wardCredentialOfRoute, parkWardTicket, storeVerbNeedsWard, seatWardGatherer, wardGathererSeated } from "./ward-credential.js";
+export { wardCredential, wardCredentialOfRoute, parkWardTicket, storeVerbNeedsWard, seatWardGatherer, wardGathererSeated, gatherSeatedWardRoute } from "./ward-credential.js";
 export type { WardCredential } from "./ward-credential.js";
 export { wardRootSigner } from "./ward-signer.js";
 export { seatFaceAutoFounder } from "./custody-holder.js";

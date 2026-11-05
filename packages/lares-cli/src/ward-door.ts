@@ -10,12 +10,17 @@
  * Meme: lar:///ha.ka.ba/lares/cli/vessel-door
  */
 import type { Credential } from "@lararium/mesh";
-import { parkWardTicket, wardCredential, storeVerbNeedsWard, type WardCredential } from "@lararium/node";
+import { gatherSeatedWardRoute, parkWardTicket, wardCredential, wardGathererSeated, storeVerbNeedsWard, type WardCredential } from "@lararium/node";
 import { readWardPassphrase } from "./prompt-secret.js";
 import { TEST_ROUTE_PASSPHRASE, testScratchRoot } from "./offline-custody.js";
 
-/** One ward act's route: the published test route on a staged root, else a passphrase typed at a terminal. */
+/** One ward act's route, as this process asks it: the gatherer the process seated (the binary seats `ttyWardRoute`). */
 export async function gatherWardRoute(verb: string): Promise<Credential[]> {
+  return wardGathererSeated() ? [...await gatherSeatedWardRoute(verb)] : ttyWardRoute(verb);
+}
+
+/** The terminal's own answer: the published test route on a staged root, else a passphrase typed at a terminal. */
+export async function ttyWardRoute(verb: string): Promise<Credential[]> {
   if (testScratchRoot()) {
     process.stderr.write(`[ward] TEST SCRATCH ROOT: ${verb} opens the face's ward under the published test route\n`);
     return [{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }];
