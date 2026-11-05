@@ -4,7 +4,8 @@ import { makeHandLineage } from "../src/hand-lineage.js";
 import { intentEntryCid, intentId, signIntentEntry, type IntentAudience, type SignedIntentEntry } from "../src/intent-entry.js";
 import { mayAct, readIntentPlane } from "../src/intent-read.js";
 import { intentPaneModel } from "../src/intent-view.js";
-import { faceIntentVerbs, fixtureIntentVerbs, issueCheck } from "../src/intent-verbs.js";
+import { faceIntentVerbs, fixtureIntentVerbs, issueCheck, WARD_COSIGN_VERBS } from "../src/intent-verbs.js";
+import { cosignDigest, judgeCosign } from "../src/ward-cosign.js";
 
 const who = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
 const entry = (signer: Awaited<ReturnType<typeof who>>, fields: Record<string, unknown>) => signIntentEntry({ group: "face", refs: [], ...fields } as Parameters<typeof signIntentEntry>[0], signer);
@@ -181,5 +182,117 @@ describe("the pane names the entry a refusal concerns", () => {
     const x = await f.intent({ mode: "every" }), y = await f.intent({ mode: "class", capability: "x" });
     expect(intentPaneModel(f.fold([x, y])).refusals).toEqual([intentEntryCid(x), intentEntryCid(y)].sort().map((cid) => ({ refusal: "id-collision", cid })));
     expect(intentPaneModel(f.fold([x])).refusals).toEqual([]);
+  });
+});
+
+describe("ward co-sign (S3a)", () => {
+  const VERB = "ward-push-go";
+  const digestOf = (head = "h1") => cosignDigest({ act: VERB, face: "face", wiki: "daemon", head });
+  const rig = async () => {
+    const a = await who(11), b = await who(12), c = await who(13), foreign = await who(14), root = await who(15);
+    const lineage = makeHandLineage([{ epoch: 0, signers: [root.key], threshold: 1 }])!;
+    const verbs = faceIntentVerbs();
+    const face = (devices: string[]) => ({ devices, rosterCids: ["r"], admittedAt: new Map(devices.map((d) => [d, "r"])), lineage });
+    const fold = (records: SignedIntentEntry[], devices = [a.key, b.key], standing: (atom: string) => "stands" | "aside" | "unknown" = () => "stands", v = verbs) =>
+      readIntentPlane({ group: "face", records, face: face(devices), standing, verbs: v, holdsCapability: () => true });
+    const call = await entry(a, { entry: "intent", issuer: a.key, verb: VERB, args: { head: "h1" }, nonce: "n", audience: { mode: "asks" } });
+    const id = intentId({ issuer: a.key, verb: VERB, args: { head: "h1" }, nonce: "n" });
+    const ask = await entry(a, { entry: "asks", intent: id, needs: "approval", detail: digestOf() });
+    const answerBy = (who_: Awaited<ReturnType<typeof who>>, over: Record<string, unknown> = {}) =>
+      entry(who_, { entry: "answer", ask: intentEntryCid(ask), verdict: "approve", executor: a.key, ...over });
+    const judge = (view: ReturnType<typeof fold>, devices = [a.key, b.key], standing: (atom: string) => "stands" | "aside" | "unknown" = () => "stands", digest = digestOf()) =>
+      judgeCosign({ view, intentId: id, requester: a.key, projection: { devices }, standing, digest });
+    return { a, b, c, foreign, fold, call, id, ask, answerBy, judge, verbs };
+  };
+
+  test("RED: a self-answer approves a ward act on the old plane; CURE: the issuer's own answer counts nothing; CONTROL: a second device approves", async () => {
+    const r = await rig();
+    const old = fixtureIntentVerbs({ [VERB]: "single-effect" });   // the verb without the cosign flag keeps the old behaviour
+    const selfAnswer = await r.answerBy(r.a);
+    expect(mayAct(r.fold([r.call, r.ask, selfAnswer], [r.a.key, r.b.key], () => "stands", old), r.id, r.a.key)).toEqual({ act: true });
+    const view = r.fold([r.call, r.ask, selfAnswer]);
+    expect(mayAct(view, r.id, r.a.key)).toEqual({ act: false, reason: "awaiting-answer" });
+    expect(r.judge(view)).toEqual({ need: "cosign", approved: false, reason: "self-answer" });
+    const second = await r.answerBy(r.b), good = r.fold([r.call, r.ask, second]);
+    expect(mayAct(good, r.id, r.a.key)).toEqual({ act: true });
+    expect(r.judge(good)).toMatchObject({ need: "cosign", approved: true, cosigner: r.b.key });
+  });
+
+  test("RED: a digest mismatch refuses; CONTROL: the matching digest approves", async () => {
+    const r = await rig(), second = await r.answerBy(r.b), view = r.fold([r.call, r.ask, second]);
+    expect(r.judge(view, [r.a.key, r.b.key], () => "stands", digestOf("other-head"))).toEqual({ need: "cosign", approved: false, reason: "digest-mismatch" });
+    expect(r.judge(view).need).toBe("cosign");
+    expect(r.judge(view)).toMatchObject({ approved: true });
+  });
+
+  test("RED: an ask signed by another device refuses ask-signer; a request by another refuses wrong-requester", async () => {
+    const r = await rig();
+    const bAsk = await entry(r.b, { entry: "asks", intent: r.id, needs: "approval", detail: digestOf() });
+    const ans = await entry(r.b, { entry: "answer", ask: intentEntryCid(bAsk), verdict: "approve", executor: r.a.key });
+    expect(r.judge(r.fold([r.call, bAsk, ans]))).toEqual({ need: "cosign", approved: false, reason: "ask-signer" });
+    const second = await r.answerBy(r.b), view = r.fold([r.call, r.ask, second]);
+    expect(judgeCosign({ view, intentId: r.id, requester: r.b.key, projection: { devices: [r.a.key, r.b.key] }, standing: () => "stands", digest: digestOf() }))
+      .toEqual({ need: "cosign", approved: false, reason: "wrong-requester" });
+  });
+
+  test("RED: an aside answerer never co-signs; it still counts toward the total; CONTROL: standing approves", async () => {
+    const r = await rig(), second = await r.answerBy(r.b), view = r.fold([r.call, r.ask, second]);
+    const aside = (atom: string) => (atom === r.b.key ? "aside" as const : "stands" as const);
+    expect(r.judge(view, [r.a.key, r.b.key], aside)).toEqual({ need: "cosign", approved: false, reason: "answerer-aside" });
+    expect(r.judge(view, [r.a.key, r.b.key], (atom) => (atom === r.b.key ? "unknown" : "stands"))).toEqual({ need: "cosign", approved: false, reason: "answerer-not-standing" });
+    expect(r.judge(view)).toMatchObject({ approved: true });
+  });
+
+  test("RED: a contested pair refuses; CONTROL: a repin over both resolves", async () => {
+    const r = await rig(), x = await r.answerBy(r.b), y = await r.answerBy(r.c, { verdict: "deny" });
+    const view = r.fold([r.call, r.ask, x, y], [r.a.key, r.b.key, r.c.key]);
+    expect(r.judge(view, [r.a.key, r.b.key, r.c.key])).toEqual({ need: "cosign", approved: false, reason: "contested" });
+    const repin = await signIntentEntry({ group: "face", entry: "answer", refs: [intentEntryCid(x), intentEntryCid(y)], ask: intentEntryCid(r.ask), verdict: "approve", executor: r.a.key }, r.b);
+    expect(r.judge(r.fold([r.call, r.ask, x, y, repin], [r.a.key, r.b.key, r.c.key]), [r.a.key, r.b.key, r.c.key])).toMatchObject({ approved: true });
+  });
+
+  test("RED: a replay after the outcome refuses spent; CONTROL: before it the co-sign stands", async () => {
+    const r = await rig(), second = await r.answerBy(r.b);
+    expect(r.judge(r.fold([r.call, r.ask, second]))).toMatchObject({ approved: true });
+    const outcome = await entry(r.a, { entry: "outcome", cause: r.id, result: "pushed" });
+    expect(r.judge(r.fold([r.call, r.ask, second, outcome]))).toEqual({ need: "cosign", approved: false, reason: "spent" });
+  });
+
+  test("RED: a signer outside the face's own atoms refuses; a vessel's other-face atom is no device here", async () => {
+    const r = await rig();
+    // Face A holds a and b; the same vessel's atom for face B (foreign) signs the answer.
+    const viaB = await r.answerBy(r.foreign);
+    const real = r.fold([r.call, r.ask, viaB]);
+    expect(real.refused).toContainEqual({ refusal: "unauthorized" });   // the fold never admits a signer outside the face's devices
+    expect(r.judge(real)).toEqual({ need: "cosign", approved: false, reason: "awaiting-answer" });
+    // A view whose device set differs from the projection (the judge reads the projection) refuses by name.
+    const wide = r.fold([r.call, r.ask, viaB], [r.a.key, r.b.key, r.foreign.key]);
+    expect(r.judge(wide, [r.a.key, r.b.key])).toEqual({ need: "cosign", approved: false, reason: "signer-not-in-face" });
+    // CONTROL: two distinct atoms of face A approve.
+    expect(r.judge(r.fold([r.call, r.ask, await r.answerBy(r.b)]))).toMatchObject({ approved: true });
+  });
+
+  test("a face with 0 or 1 device needs no co-sign; aside devices count toward the total", async () => {
+    const r = await rig(), view = r.fold([r.call, r.ask]);
+    expect(r.judge(view, [])).toEqual({ need: "none" });
+    expect(r.judge(view, [r.a.key])).toEqual({ need: "none" });
+    expect(r.judge(view, [r.a.key, r.b.key], (atom) => (atom === r.b.key ? "aside" : "stands"))).toEqual({ need: "cosign", approved: false, reason: "awaiting-answer" });
+  });
+
+  test("the three ward verbs classify single-effect with the asks audience and a cosign flag; table over node and browser classes", async () => {
+    const verbs = faceIntentVerbs();
+    for (const verb of WARD_COSIGN_VERBS) {
+      expect(verbs.classOfVerb(verb)).toEqual({ class: "single-effect", cosign: true });
+      expect(issueCheck(verbs, verb, { mode: "asks" })).toMatchObject({ ok: true });
+      expect(issueCheck(verbs, verb, { mode: "every" })).toEqual({ ok: false, refusal: "single-effect-unpinned" });
+    }
+    // Class-blind: the judge reads devices and reach; the same verdicts hold whatever class each device wears.
+    for (const klass of ["node", "browser"] as const) {
+      const r = await rig(), second = await r.answerBy(r.b), view = r.fold([r.call, r.ask, second]);
+      const devices = [r.a.key, r.b.key], classOf: Record<string, string> = { [r.a.key]: klass, [r.b.key]: klass };
+      expect(classOf[r.b.key]).toBe(klass);
+      expect(r.judge(view, devices)).toMatchObject({ approved: true });
+      expect(r.judge(r.fold([r.call, r.ask, await r.answerBy(r.a)]), devices)).toMatchObject({ approved: false, reason: "self-answer" });
+    }
   });
 });

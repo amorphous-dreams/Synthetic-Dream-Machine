@@ -5,7 +5,8 @@ import { intentId } from "../src/intent-entry.js";
 import { makeHandLineage } from "../src/hand-lineage.js";
 import { readIntentPlane } from "../src/intent-read.js";
 import { buildAnswer, buildAsks, buildCancel, buildClaim, buildIntent, buildOutcome, buildRelease, buildSupersede, buildTakeover, IntentRefusal } from "../src/intent-issue.js";
-import { faceIntentVerbs, fixtureIntentVerbs } from "../src/intent-verbs.js";
+import { faceIntentVerbs, fixtureIntentVerbs, WARD_COSIGN_VERBS } from "../src/intent-verbs.js";
+import { cosignDigest } from "../src/ward-cosign.js";
 
 const signer = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
 
@@ -47,5 +48,20 @@ describe("intent issue", () => {
     expect(fold([call, ...rogue]).intents[0]?.status).toBe("open");
     expect(fold([call, own]).intents[0]?.voidCause).toBe("cancelled");
     expect(fold([call, operator]).intents[0]?.voidCause).toBe("superseded");
+  });
+  test("RED: the three ward verbs classify and issue under the asks audience only; CONTROL: buildAsks carries the digest as its detail", async () => {
+    const atom = await signer(1), verbs = faceIntentVerbs();
+    expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-go"]);
+    for (const verb of WARD_COSIGN_VERBS) {
+      expect(verbs.classOfVerb(verb)).toMatchObject({ class: "single-effect", cosign: true });
+      const base = { group: "face", signer: atom, verb, args: {}, nonce: "n", verbs };
+      await expect(buildIntent({ ...base, audience: { mode: "every" } })).rejects.toThrow("single-effect-unpinned");
+      const call = await buildIntent({ ...base, audience: { mode: "asks" } });
+      const detail = cosignDigest({ act: verb, face: "face", wiki: "daemon", head: "h1" });
+      const ask = await buildAsks({ group: "face", signer: atom, intent: intentId(call.body as never), needs: "approval", detail });
+      expect(ask.body["detail"]).toBe(detail);
+      expect(readIntentEntry(ask, { group: "face", authorize: () => true }).ok).toBe(true);
+    }
+    expect(cosignDigest({ act: "a", face: "f", wiki: "w", head: "h" })).not.toBe(cosignDigest({ act: "a", face: "f", wiki: "w", head: "h2" }));
   });
 });

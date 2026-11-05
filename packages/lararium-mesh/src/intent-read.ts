@@ -33,6 +33,8 @@ export interface IntentState {
   readonly voidCause: "superseded" | "cancelled" | "issuer-aside" | "roster-passed" | "delegation-revoked" | "delegation-closed" | "delegation-lapsed" | null;
   readonly agent: null | { readonly delegation: string; readonly status: "live" | "revoked" | "closed" | "lapsed" | "awaiting" };
   readonly asks: readonly IntentRecord[];
+  /** Every answer to this intent's asks, counted or not; `answer` reads the counted ones. */
+  readonly answers: readonly IntentRecord[];
   readonly answer: IntentRecord | "contested" | null;
   readonly claim: IntentRecord | null;
   readonly slots: readonly IntentSlot[];
@@ -144,7 +146,9 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     const agent = delegation ? { delegation: delegation.cid, status: delegation.status } : null;
     const classification = input.verbs.classOfVerb(body.verb as string)!;
     const ownAsks = asks.filter((q) => str(q, "intent") === id);
-    const ownAnswers = answers.filter((a) => ownAsks.some((q) => q.cid === field(a, "ask")));
+    const everyAnswer = answers.filter((a) => ownAsks.some((q) => q.cid === field(a, "ask")));
+    // A cosign verb counts no answer from its own issuer: a device never approves the act it asked for.
+    const ownAnswers = classification.cosign ? everyAnswer.filter((a) => a.entry.signer !== issuer) : everyAnswer;
     const ownOutcomes = outcomes.filter((o) => str(o, "cause") === id);
     const answer = effectiveAnswer(ownAnswers);
     const ownClaims = claims.filter((c) => str(c, "intent") === id);
@@ -217,7 +221,7 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     }
     const unknown = (agent ? agent.status === "awaiting" : input.standing(issuer) === "unknown") || slots.some((s) => s.unknownFrontier);
     const status = voidCause ? "void" : unknown ? "unknown-frontier" : slots.some((s) => s.winner) ? "answered" : "open";
-    states.push({ cid: source.cid, admissions: admissions.flatMap(r => r.ok && r.admission.body.entry === source.cid ? [{ cid: r.cid, relay: r.admission.body.relay }] : []).sort((a, b) => a.cid.localeCompare(b.cid)), id, issuer, verb: body.verb as string, class: classification.class, fenced: classification.class === "single-effect" || !!classification.fenced, audience, bound, status, voidCause, agent, asks: ownAsks,
+    states.push({ cid: source.cid, admissions: admissions.flatMap(r => r.ok && r.admission.body.entry === source.cid ? [{ cid: r.cid, relay: r.admission.body.relay }] : []).sort((a, b) => a.cid.localeCompare(b.cid)), id, issuer, verb: body.verb as string, class: classification.class, fenced: classification.class === "single-effect" || !!classification.fenced, audience, bound, status, voidCause, agent, asks: ownAsks, answers: everyAnswer,
       answer, claim, claims: ownClaims, slots, voidAfterAct: voidCause ? ownOutcomes : [], outOfAudience });
   }
   refused.sort((a, b) => a.refusal.localeCompare(b.refusal) || (a.cid ?? "").localeCompare(b.cid ?? ""));

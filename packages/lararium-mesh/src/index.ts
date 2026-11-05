@@ -81,6 +81,7 @@ export * from "./intent-verbs.js";
 export * from "./intent-read.js";
 export * from "./intent-view.js";
 export * from "./intent-issue.js";
+export * from "./ward-cosign.js";
 export * from "./kahua-stage.js";
 export * from "./promote.js";
 export * from "./promote-kapae.js";
