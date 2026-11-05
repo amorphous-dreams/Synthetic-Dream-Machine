@@ -31,7 +31,6 @@ import {
   faceWorkingDocUrl, materializeFaceWorkingDoc, type LarDoc, type LarTiddlerRecord, type WorkingFloorAnchor,
 } from "@lararium/mesh";
 import { MemoryTiddlerStore, makeCatalogAccessor } from "@lararium/tw5";
-import { forgetPendingCarry } from "../src/anon-lift.js";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "../src/slot-doc-resolver.js";
 import { makeFaceBagDoor, type FaceBagDoor } from "../src/face-bag-door.js";
@@ -373,8 +372,7 @@ describe("the anon-veil lift on join", () => {
     expect(skips, "no title is recorded as carried while the destination never rested").not.toContain("Saved");
     expect(await opens(v, workingUrl), "the floor source stays").toBe(true);
     expect(await catalog.urlOf(wikiWorkingFloorKey("garden", PLACE)), "the place's key stands").not.toBeNull();
-    // RESTART: the destination document the failed pass half-wrote is gone with the process, and so is its memory.
-    forgetPendingCarry();
+    // RESTART: the destination document the failed pass half-wrote is gone, and the reopened Repo is a fresh instance with no memory of it.
     try { v.repo.delete(derived as never); } catch { /* the address may not stand */ }
     const rerun = await resolverFor(v, a.face).liftFloor();
     expect(rerun.moved).toContain(wikiWorkingFloorKey("garden", PLACE));

@@ -32,6 +32,8 @@ export function holdDaemonVm<P = void>(o: {
   reopen: (reason: string, prepared: P) => Promise<DaemonVmCore>;
   /** A restart whose reason this names fails CLOSED: a refused prepare still shuts the standing island down and stands `daemon-down` (the brake beats availability). */
   emergency?: (reason: string) => boolean;
+  /** A reason whose request reads state that moved after a standing restart passed prepare (a hand's promote verb): it follows that restart with one more reload, without failing closed. */
+  follows?: (reason: string) => boolean;
   /** How an emergency refusal closes the standing island; absent, it shuts it down. A host that shares its island with others (a browser tab on the shared holder) detaches itself here. */
   failClosed?: ((vm: DaemonVmCore) => void | Promise<void>) | undefined;
   /** `manifest`: the re-opened island's manifest carries the lit faces, so the holder records and replays none (the node reads each face's current standing at every open). */
@@ -46,6 +48,7 @@ export function holdDaemonVm<P = void>(o: {
   let upgraded = false;      // an emergency joined the restart standing in prepare: it fails closed whatever reason started it
   let upgradeReason = "";   // the emergency reason that upgraded it
   let preparePassed = false; // the standing restart is past prepare
+  let followUpReason: string | undefined;
   let followUp: Promise<{ restarts: number }> | undefined;
   let disposed = false;     // a disposed facade restarts no more, and a restart that sees it never re-opens
   let innerClosed = false;  // the current inner island already got its shutdown
@@ -163,10 +166,14 @@ export function holdDaemonVm<P = void>(o: {
     restart(reason): Promise<{ restarts: number }> {
       if (disposed) return Promise.reject(new DaemonRestarting("daemon-down"));
       if (restarting) {
-        if (!o.emergency?.(reason)) return restarting;
+        const emergency = o.emergency?.(reason) === true;
+        // A restart still in prepare reads its inputs afterward, so an ordinary request joins it. Past prepare, its inputs are fixed: ANY request
+        // follows it (an ordinary one reloads once more, without failing closed), so a reload never reads as served by a restart that opened earlier state.
+        if (!emergency && (!preparePassed || o.follows?.(reason) !== true)) return restarting;
         // An emergency is never downgraded to the ordinary restart it overlaps: it upgrades one still in prepare, and follows one already past it.
-        if (!preparePassed) { upgraded = true; upgradeReason = reason; return restarting; }
-        followUp ??= restarting.then(() => undefined, () => undefined).then(() => { followUp = undefined; return holder.restart(reason); });
+        if (emergency && !preparePassed) { upgraded = true; upgradeReason = reason; return restarting; }
+        if (emergency || followUpReason === undefined) followUpReason = emergency ? reason : (followUpReason ?? reason);
+        followUp ??= restarting.then(() => undefined, () => undefined).then(() => { const next = followUpReason!; followUp = undefined; followUpReason = undefined; return holder.restart(next); });
         return followUp;
       }
       upgraded = false;

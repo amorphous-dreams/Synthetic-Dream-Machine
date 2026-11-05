@@ -32,18 +32,19 @@ test("retry after a failed flush and restart does not restore a title removed fr
   });
   catalog.change(d => { d.tiddlers[key] = storedLarRecord(key, { text: "floor", "face-reach": "vessel-only", "minted-by": "vessel" }, "test"); });
   let failFlush = true;
+  // ONE Repo across the retry: the same process, the same repo instance (a reopened repo is the other test below).
+  const repo = {
+    find: async () => handle("floor"),
+    create: () => { throw Error("unexpected create"); },
+    flush: async (ids?: string[]) => { if (failFlush && ids?.includes("face")) throw new Error("flush failed"); },
+    delete: () => handle("floor").remove(),
+  };
   const openArgs = () => {
     const floorHandle = handle("floor");
     const faceHandle = handle("face");
     const catalogHandle = handle("catalog");
     const composite = new CompositeStore();
     composite.addLayer({ bagId: bag, store: new AutomergeDocStore(floorHandle as never, bag), writable: true });
-    const repo = {
-      find: async () => floorHandle,
-      create: () => { throw Error("unexpected create"); },
-      flush: async (ids?: string[]) => { if (failFlush && ids?.includes("face")) throw new Error("flush failed"); },
-      delete: () => floorHandle.remove(),
-    };
     return {
       composite,
       args: {
