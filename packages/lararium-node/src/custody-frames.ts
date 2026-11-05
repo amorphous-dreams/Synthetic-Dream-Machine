@@ -73,7 +73,7 @@ export type CustodyAnswer =
   /** The node key opened and a face did not (`face-refused`), or the vessel holds several faces and none was named (`face-not-named`): nothing stays open. */
   | { readonly op: "unlock"; readonly reading: "face-refused" | "face-not-named"; readonly standing: string; readonly face?: number; readonly faceReading?: string; readonly faces?: readonly unknown[] }
   | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked"; readonly face?: number } & Partial<CustodyStanding>)
-  | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly testScratch: boolean }
+  | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
   | { readonly op: "face-route"; readonly parked: true }
   | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
@@ -187,7 +187,17 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
    * `face-not-named`, so a credential never opens a sibling by luck. The composition stands sovereign when S and the mounted face
    * both stand open (a place with no face needs S alone).
    */
-  const unlock = async (credentials: readonly Credential[], sel: { readonly face?: number; readonly all?: boolean }): Promise<CustodyAnswer> => {
+  /**
+   * THE COMPOSING FLAG: true from an unlock's (or a lock's) first step to its recomposition's end. The holder reads
+   * unlocked BEFORE the recomposition stands, so `unlocked` alone would call a vessel ready that has no verb channel
+   * yet. The state query answers outside the chain with this flag, so a caller asking mid-unlock hears it at once.
+   */
+  let composingDepth = 0;
+  const composing = <A extends unknown[], T>(act: (...args: A) => Promise<T>) => async (...args: A): Promise<T> => {
+    composingDepth += 1;
+    try { return await act(...args); } finally { composingDepth -= 1; }
+  };
+  const unlock = composing(async (credentials: readonly Credential[], sel: { readonly face?: number; readonly all?: boolean }): Promise<CustodyAnswer> => {
     const u = await holder.unlock(credentials);
     if (u.reading !== "opens" && u.reading !== "already-unlocked") {
       deps.onLog(`unlock: ${u.reading}${u.reading === "no-slot-opens" ? ` (${u.attemptsLeft} attempt(s) left this boot)` : ""}`);
@@ -249,13 +259,13 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       return { op: "unlock", ...u, ...stood, held: false };
     }
     return { op: "unlock", ...u, ...stood, held: true };
-  };
+  });
 
   /**
    * `lock --face N`: one face drops its key. The mounted face's lock stands the vessel back at the floor through the same gate the
    * unlock reads (`sovereignStands`); a sibling's lock leaves the sovereign composition standing.
    */
-  const lockFaceOf = async (ordinal: number): Promise<CustodyAnswer> => {
+  const lockFaceOf = composing(async (ordinal: number): Promise<CustodyAnswer> => {
     const named = await holder.faceStanding({ ordinal });
     if (named === null) return { op: "lock", locked: true, was: "locked", face: ordinal, standing: deps.standing() };
     const wasOpen = named.unlocked;
@@ -275,15 +285,15 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       return { op: "lock", locked: true, was: "unlocked", face: ordinal, ...stood };
     }
     return { op: "lock", locked: true, was: wasOpen ? "unlocked" : "locked", face: ordinal, standing: deps.standing() };
-  };
+  });
 
-  const lock = async (): Promise<CustodyAnswer> => {
+  const lock = composing(async (): Promise<CustodyAnswer> => {
     if (!holder.isUnlocked()) return { op: "lock", locked: true, was: "locked", standing: deps.standing() };
     await holder.lock();
     deps.onLog("locked: the vessel key dropped");
     const stood = await deps.recompose(false);
     return { op: "lock", locked: true, was: "unlocked", ...stood };
-  };
+  });
 
   /** One act of the table, run on the door's one chain: an unlock or a lock never interleaves it. */
   const runAct = (name: string, args: unknown) => async (): Promise<CustodyAnswer> => {
@@ -399,10 +409,13 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       }
       act = face === undefined ? lock : () => lockFaceOf(face as number);
     } else {
-      act = async () => ({
+      // THE STATE QUERY IS READ-ONLY: it answers at once, beside the chain, so a caller asking while an unlock
+      // recomposes hears `composing: true` instead of waiting behind the recomposition.
+      answer(sock, {
         op: "custody", unlocked: holder.isUnlocked(), slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(), facesOpen: holder.unlockedFaces().length,
-        standing: deps.standing(), testScratch: deps.testScratch,
+        standing: deps.standing(), testScratch: deps.testScratch, composing: composingDepth > 0,
       });
+      return true;
     }
     // THE DOOR HOLDS A SHORT LINE. Past `CUSTODY_LINE` acts waiting, a frame refuses at once by name, and an act
     // whose caller left before its turn never runs: no caller builds a backlog a later lock must wait behind.
