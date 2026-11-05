@@ -15,7 +15,7 @@ import { mkdirSync, readFileSync, existsSync, copyFileSync, readdirSync, statSyn
 import { join, dirname } from "node:path";
 import {
   casReferences, graceForTier, tiersByGraceDescending, realmPace, pinnedCids,
-  sha256HexBytesSync, verifyCidBytes,
+  sha256HexBytesSync, verifyCidBytes, makeCidResolver,
   type GenesisCasManifest, type PinCap, type CasReferenceEntry, type CabalRealmMaintenanceProvenance, type CasTransitTransport,
 } from "@lararium/mesh";
 import { runtimeCasOverride } from "./lares-config.js";
@@ -28,6 +28,18 @@ import { atomicWriteFileSync } from "./fs-atomic.js";
 export function casDirForStorage(storageDir: string): string {
   return runtimeCasOverride() ?? join(storageDir, "cas");
 }
+
+/**
+ * The CORPUS CAS dir — where the operator gesture stages oversized carrier bodies: `LAR_CAS`, else `<LAR_ROOT>/cas`, else
+ * none. The ONE env read of it: a vessel calls it ONCE at construction and hands the dir on (the pool, the daemon island's
+ * workerData, the record's `cas`); nothing reads the env again at ask time.
+ */
+export function corpusCasDirFromEnv(): string | null {
+  return process.env["LAR_CAS"] ?? (process.env["LAR_ROOT"] ? join(process.env["LAR_ROOT"], "cas") : null);
+}
+
+/** What an island worker is handed at construction (`workerData`): the vessel's CAS dirs, so the worker reads no env. */
+export interface IslandCasData { readonly cidDir: string | null; readonly corpusCasDir: string | null }
 
 /**
  * The CAS dir an island WORKER derives from its own manifest storage dir. Every
@@ -181,6 +193,19 @@ export function composeCasTransits(fleet: CasTransitTransport, herm: CasTransitT
 export function hermCasTransitFromEnv(env: NodeJS.ProcessEnv = process.env): CasTransitTransport | null {
   const url = env["LAR_HERM_SHORE"];
   return url && url.length > 0 ? hermCasTransit(url) : null;
+}
+
+/**
+ * The vessel's `cas` capability over its CAS dirs, fixed at construction: the runtime `cid/` dir first, the CORPUS store
+ * (staged carrier bodies) as its second tier, then the Herm shore where one stands (write-through into `cid/`). Every
+ * local hit re-verifies against its own address, so a two-dir lookup never widens trust. Reads no env.
+ */
+export function makeNodeCasResolver(opts: { readonly cidDir: string; readonly corpusCasDir: string | null; readonly shore: CasTransitTransport | null }): (cid: string) => Promise<Uint8Array | null> {
+  const { cidDir, corpusCasDir, shore } = opts;
+  const local = (cid: string): Uint8Array | null =>
+    readVerifiedCasBlobFromFs(cid, cidDir) ?? (corpusCasDir ? readVerifiedCasBlobFromFs(cid, corpusCasDir) : null);
+  if (!shore) return async (cid) => local(cid);
+  return makeCidResolver(local, shore, (cid, bytes) => { writeCasEntriesFs([{ cid, bytes }], cidDir); });
 }
 
 // ── PIN and RELEASE (tiddler-carriage #/pin-and-release) ─────────────────────

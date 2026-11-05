@@ -2,10 +2,11 @@
 // capability-inventory — which members of its vessel's capability record each composed island REACHES, measured, held
 // against one committed table.
 //
-// A vessel hands each island ONE capability record at construction (`CapabilityRecord`, mesh), with four members: CAS
+// A vessel hands each island ONE capability record at construction (`CapabilityRecord`, mesh), with five members: CAS
 // (`cas:want`, the blobs its tiddlers name), RECEIPT (`receipt:request`, the vessel's store saves a document it minted
 // and issues a durability receipt), CUSTODY WRITE (`custody:write`, the main thread seals bytes under the vessel key)
-// and DYAD (`dyad:ask`, what a device's edge reads on the fleet board). Which members an island reaches decides what
+// DYAD (`dyad:ask`, what a device's edge reads on the fleet board) and SESSION SIGN (`session:sign`, a LIFT member: the
+// vessel signs through the session that placed a call; a herm floor carries none). Which members an island reaches decides what
 // code running inside it can make the vessel do.
 //
 // THE TABLE MEASURES REACH, NEVER A CAPABILITY'S POLICY. A cell reads `grants` when the ask reached a member (on node
@@ -78,7 +79,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const TABLE = join(ROOT, "tools/capability-inventory.json");
 /** The table's columns: the four members of the capability record, as `CapabilityRecord` names them. */
-export const CAPS = ["cas", "receipt", "custodyWrite", "dyad"];
+export const CAPS = ["cas", "receipt", "custodyWrite", "dyad", "sessionSign"];
 export const UNMEASURED = Object.freeze(Object.fromEntries(CAPS.map((d) => [d, "unmeasured"])));
 
 // ── the outcome of one ask ────────────────────────────────────────────────────────────────────────
@@ -89,6 +90,7 @@ export function grantingReply(cap, reply) {
     case "receipt":      return reply?.type === "receipt:issued" && reply.issued === true;
     case "custodyWrite": return reply?.type === "custody:written" && reply.written === true;
     case "dyad":         return reply?.type === "dyad:read" && reply.standing === "clear";
+    case "sessionSign":  return reply?.type === "session:signed" && typeof reply.signature === "string";
     default:             throw new Error(`unknown capability ${cap}`);
   }
 }
@@ -110,6 +112,7 @@ export function asksOf() {
     { cap: "receipt",      msg: { type: "receipt:request", requestId: "probe-receipt", documentIds: ["probe-document"] } },
     { cap: "custodyWrite", msg: { type: "custody:write", requestId: "probe-custody", carrier: "veil", bytes: new Uint8Array([1]) } },
     { cap: "dyad",         msg: { type: "dyad:ask", requestId: "probe-dyad", fleetRoot: "probe-fleet", deviceKey: "probe-device" } },
+    { cap: "sessionSign",  msg: { type: "session:sign", requestId: "probe-sign", op: "sign", ask: "probe-ask", verb: "probe-verb", payload: new Uint8Array([1]) } },
   ];
 }
 
@@ -118,7 +121,7 @@ export function asksOf() {
 export const SEAM_NAMES = [
   "nodeSpawnDaemonWorker", "nodeSpawnWikiWorker", "nodeSpawnSessionWorker", "nodeWorkerHandle",
   "refuseBrowserDyadAsks", "browserSpawnWorker", "browserWorkerHandle", "holderWorkerHandle",
-  "answerReceipt", "answerCustodyWrite", "answerDyad", "answerBrowserDyadAsk",
+  "answerReceipt", "answerCustodyWrite", "answerDyad", "answerSessionSign", "answerBrowserDyadAsk",
 ];
 const SEAM_REF = new RegExp(`\\b(${SEAM_NAMES.join("|")})\\b`, "g");
 const WORKER_REF = /\b(Worker|SharedWorker)\b/g;
@@ -126,7 +129,7 @@ const CODE_ALIAS = new RegExp(`(?:\\b(?:const|let|var)\\s+([\\w$]+)\\s*=\\s*(?:a
 const SEAM_ALIAS = new RegExp(`\\b(${SEAM_NAMES.join("|")})\\s+as\\s+([\\w$]+)`, "g");
 /** The ask and answer types of the four capabilities and of a session's view, as source spells them. */
 export const ASK_TYPES = [
-  "cas:want", "cas:block", "receipt:request", "receipt:issued", "custody:write", "custody:written", "dyad:ask", "dyad:read",
+  "cas:want", "cas:block", "receipt:request", "receipt:issued", "custody:write", "custody:written", "dyad:ask", "dyad:read", "session:sign", "session:signed",
   "view:catalog", "view:catalog-result", "view:content", "view:content-result", "view:settle", "view:settled",
 ];
 const ASK_REF = new RegExp(`["'\`](${ASK_TYPES.join("|")})["'\`]`, "g");
@@ -247,9 +250,9 @@ export function askMentions(root, readDir = readdirSync, readFile = (p) => readF
 // ── the measurements ──────────────────────────────────────────────────────────────────────────────
 /** The probe module: it posts the four asks, keeps EVERY reply, and hands them back once the vessel side says end. */
 export function probeSource(asks) {
-  const wire = asks.map((a) => ({ ...a.msg, ...(a.msg.bytes ? { bytes: [...a.msg.bytes] } : {}) }));
+  const wire = asks.map((a) => ({ ...a.msg, ...(a.msg.bytes ? { bytes: [...a.msg.bytes] } : {}), ...(a.msg.payload ? { payload: [...a.msg.payload] } : {}) }));
   return `import { parentPort } from "node:worker_threads";
-const asks = ${JSON.stringify(wire)}.map((a) => (a.bytes ? { ...a, bytes: new Uint8Array(a.bytes) } : a));
+const asks = ${JSON.stringify(wire)}.map((a) => { const o = a.bytes ? { ...a, bytes: new Uint8Array(a.bytes) } : a; return o.payload ? { ...o, payload: new Uint8Array(o.payload) } : o; });
 const replies = {};
 parentPort.on("message", (m) => {
   if (m && m.type === "probe:end") { parentPort.postMessage({ type: "probe:result", replies }); return; }
@@ -307,6 +310,7 @@ export function countingCaps() {
       receipt: async () => { hit("receipt"); },
       custodyWrite: async () => { hit("custodyWrite"); },
       dyad: () => { hit("dyad"); return "clear"; },
+      sessionSign: async () => { hit("sessionSign"); return { signature: "probe" }; },
     },
   };
 }
