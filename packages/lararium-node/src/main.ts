@@ -34,6 +34,7 @@
  *   localStorage for offline return visits.
  */
 
+import type { WardCredential } from "./ward-credential.js";
 import { isPromoteAct, promoteActEdge } from "./promote-act-gate.js";
 import { createServer }  from "http";
 import { networkInterfaces }             from "os";
@@ -401,12 +402,12 @@ async function main(): Promise<void> {
       ? { ...(await custodyDoor.act(act, args)) }
       : { op: "act", status: "error", errorMessage: "this vessel's custody door runs no acts", refusal: { reason: "acts-unavailable" } } },
   };
-  const composeStanding = (sovereign: SovereignReaders | null): Promise<StandingComposition> => {
+  const composeStanding = (sovereign: SovereignReaders | null, ward?: WardCredential): Promise<StandingComposition> => {
     const lit = faceStands();
     const as  = standAs(askedStanding !== "herm" && lit ? "hearth" : "herm", sovereign !== null);
     return as === "herm"
       ? composeHermStanding({ ...ctx, standing: as, faceLit: lit }, sovereign)
-      : composeHearthStanding({ ...ctx, standing: as, faceLit: lit }, sovereign);
+      : composeHearthStanding({ ...ctx, standing: as, faceLit: lit }, sovereign, ward);
   };
   // A REFUSED BOOT FREES ITS STORE: the front stops answering and the floor releases the name before the fault
   // prints, so the next boot never waits on a composition that never stood.
@@ -423,10 +424,10 @@ async function main(): Promise<void> {
     throw err;
   };
   /** Compose with the sovereign rows; a refusal there names itself once and the floor stands instead. */
-  const composeOrFloor = async (readers: SovereignReaders | null): Promise<{ stood: StandingComposition; refused?: string }> => {
+  const composeOrFloor = async (readers: SovereignReaders | null, ward?: WardCredential): Promise<{ stood: StandingComposition; refused?: string }> => {
     if (readers === null) return { stood: await composeStanding(null).catch(floorRefused) };
     try {
-      return { stood: await composeStanding(readers) };
+      return { stood: await composeStanding(readers, ward) };
     } catch (err) {
       const refused = err instanceof Error ? err.message : String(err);
       console.error(`[lararium] the sovereign composition refused: ${refused}`);
@@ -443,12 +444,12 @@ async function main(): Promise<void> {
   let firstStood: () => void = () => {};
   const first = new Promise<void>((resolve) => { firstStood = resolve; });
   let signalHeld: string | null = null;
-  const recompose = async (sovereign: boolean): Promise<{ standing: string; refused?: string }> => {
+  const recompose = async (sovereign: boolean, ward?: WardCredential): Promise<{ standing: string; refused?: string }> => {
     await first;
     const prior = composition;
     composition = null;
     await prior?.teardown();
-    const out = await composeOrFloor(sovereign && sovereignStands() ? seatedSovereignReaders() : null);
+    const out = await composeOrFloor(sovereign && sovereignStands() ? seatedSovereignReaders() : null, ward);
     composition = out.stood;
     if (signalHeld !== null) composition.onSignal(signalHeld);
     return { standing: out.stood.standing, ...(out.refused !== undefined ? { refused: out.refused } : {}) };
@@ -702,7 +703,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
 }
 
 /** The hearth: the floor's caps with the wiki, the pool and the porch lit over them. */
-async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null): Promise<StandingComposition> {
+async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null, ward?: WardCredential): Promise<StandingComposition> {
   const { wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
           reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front, lanSocket,
           standing, faceLit, sessionActs } = ctx;
@@ -716,6 +717,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     hostId:     "lararium-node",
     floor,
     sovereign,
+    ...(ward ? { bootWard: ward } : {}),
     wikiId,
     storageDir,
     genesisDir,

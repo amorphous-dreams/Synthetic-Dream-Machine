@@ -42,7 +42,7 @@
  * table does not name refuses by name, and no act takes a credential of this vessel. The door logs the act's NAME and how it
  * ended, and never an argument, an answer or a refusal's own words.
  */
-import { dropWardTickets, duringUnlockAct, parkWardTicket, wardCredential, type WardCredential } from "./ward-credential.js";
+import { dropWardTickets, parkWardTicket, wardCredential, type WardCredential } from "./ward-credential.js";
 import type { Socket } from "node:net";
 import type { Credential, SlotSpec } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
@@ -86,7 +86,7 @@ export type CustodyAnswer =
 export interface CustodyFrameDeps {
   readonly holder: CustodyHolder;
   /** Tear the standing composition down and compose again: `sovereign` true with the private rows, false at the floor. */
-  readonly recompose: (sovereign: boolean) => Promise<CustodyStanding>;
+  readonly recompose: (sovereign: boolean, ward?: WardCredential) => Promise<CustodyStanding>;
   readonly lightFace?: (ordinal: number) => Promise<void>;
   readonly dropFace?: (ordinal: number) => Promise<void>;
   /** What stands now. */
@@ -246,9 +246,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       }
       return { op: "unlock", ...u, standing: deps.standing(), held: true };
     }
-    // THE UNLOCK IS A HAND ACT: its route rides the composition it stands for that act's length alone, so the boot dial may issue the
-    // founder's own certificate at a new scope (a ward act) and nothing holds the route once the composition settles.
-    const stood = await duringUnlockAct(wardCredential(credentials), () => deps.recompose(true));
+    // THE UNLOCK IS A HAND ACT: its route rides, AS AN ARGUMENT, into the composition it stands, whose boot dial alone may issue the
+    // founder's own certificate at a new scope (a ward act); no module holds it, and the composition drops it once that dial settles.
+    const stood = await deps.recompose(true, wardCredential(credentials));
     // A KEY NEVER RESTS OVER A FLOOR. When the composition that should have stood on the key refused, the vessel
     // stands at the floor and the holder drops what it opened: held and standing never disagree.
     if (stood.refused !== undefined) {

@@ -42,7 +42,7 @@ import { larIdentityDir } from "./vessel-paths.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { readJoinedFaceProof, type JoinedFaceAbsence, type JoinedFaceProof } from "./joined-face-proof.js";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "./node-vessel-identity.js";
-import { unlockActWard, type WardCredential } from "./ward-credential.js";
+import type { WardCredential } from "./ward-credential.js";
 
 export const FOUNDER_CERTIFICATE_REFUSALS = [
   "face-provisional",           // a restored face adds no vessel to its authority until a party confirms its head
@@ -69,7 +69,7 @@ export class FounderCertificateRefused extends Error {
 export interface FounderCertificateDoors {
   readonly guard?:    (face: number, act: string) => Promise<void>;
   readonly loadRoot?: (face: number) => Promise<{ readonly seed: Uint8Array; readonly verifyingKey: string } | null>;
-  /** The ward route an issuing act carries; absent, the default root door reads the face-unlock act's own (`unlockActWard`). */
+  /** The ward route an issuing act carries, as an argument (the unlock's boot dial, a take's re-present); absent, an issue refuses. */
   readonly ward?: WardCredential;
   readonly vesselKey?: () => Promise<string>;
   /** The PersonaGroup face `face` owns (its anchors' `personaGroupId`), or null where it owns none. */
@@ -128,7 +128,7 @@ export async function ensureFounderCertificate(
     const key = await rosterKey(face);
     if (key !== null && await standsAt(personaGroup, scope, key)) return { state: "standing" };
   }
-  const root = await (doors.loadRoot ?? wardedRoot(doors.ward ?? unlockActWard()))(face);
+  const root = await (doors.loadRoot ?? wardedRoot(doors.ward))(face);
   if (root === null) throw new FounderCertificateRefused("root-absent", "this vessel holds no root for the face; its root holder certifies a joiner.");
   try {
     const record = await readFaceJoinRecord(personaGroup);

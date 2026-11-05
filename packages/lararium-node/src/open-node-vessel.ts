@@ -16,7 +16,7 @@
  * The node vessel holds no semantic privilege. It carries roads, docks, and sync; live VM state lives
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
-import { takeWardTicket, unlockActWard } from "./ward-credential.js";
+import { takeWardTicket, type WardCredential } from "./ward-credential.js";
 import { wardRootSigner } from "./ward-signer.js";
 import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-registration.js";
 import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
@@ -343,6 +343,11 @@ export type NodeOpenPhase = LarOpenPhase;
 export type AskedStanding = "lararium" | "herm";
 
 export interface NodeVesselOptions extends LarariumVesselOptions {
+  /**
+   * The route of the unlock act that stands this composition (seat-harness#/the-ward), handed in as an argument: the composition's
+   * boot dial alone may issue the founder's certificate at a new scope under it, and drops it once that dial settles.
+   */
+  readonly bootWard?: WardCredential;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   storageDir: string;
@@ -455,14 +460,14 @@ export function lateDialOnce(deps: {
   /** The vessel stood its dial down: nothing stands after it. */
   readonly tornDown: () => boolean;
   /** Stand the dial; `live` answers false once a dial stood or the vessel stood down, and the stand then stands nothing. */
-  readonly stand:    (live: () => boolean) => Promise<void>;
-}): () => Promise<void> {
+  readonly stand:    (live: () => boolean, ward?: WardCredential) => Promise<void>;
+}): (ward?: WardCredential) => Promise<void> {
   let flight: Promise<void> | null = null;
   const live = (): boolean => !deps.standing() && !deps.tornDown();
-  return () => {
+  return (ward) => {
     if (!live()) return Promise.resolve();
     if (flight !== null) return flight;
-    const mine: Promise<void> = Promise.resolve().then(() => deps.stand(live)).finally(() => { if (flight === mine) flight = null; });
+    const mine: Promise<void> = Promise.resolve().then(() => deps.stand(live, ward)).finally(() => { if (flight === mine) flight = null; });
     flight = mine;
     return mine;
   };
@@ -754,7 +759,7 @@ async function prepareNodeBootOn(
   // THE UNLOCK ACT'S ROUTE, held for THIS composition's boot dial alone: a founder's first presentation at a scope issues its
   // certificate, a ward act, under the route the person typed for the unlock that stands this composition. It drops once that
   // dial settles; a later dial (a take's) carries its own act's route (seat-harness#/the-ward).
-  let bootWard = unlockActWard();
+  let bootWard = opts.bootWard;
   // THE GATE: sovereign only when the node key stands held AND the mounted face stands unlocked; otherwise the floor composes.
   const sovereignOpen = sovereignStands();
   await sweepUnderTheGate(sovereignOpen, sweepFoundingSeeds);
@@ -963,7 +968,7 @@ async function prepareNodeBootOn(
   // Forward-declared: the holder stands once the vessel's island is known, below, and replays `peerBindings`.
   let nexusMembershipHolder: NexusMembershipHolder | null = null;
   // The dial's re-presentation check — set once the dial stands (below); a board change or a refresh calls it.
-  let representIfMoved: (() => Promise<void>) | null = null;
+  let representIfMoved: ((ward?: WardCredential) => Promise<void>) | null = null;
   // THE CHARTER'S HEARTH, at the other end of a socket THIS vessel dialed. The realm's return lane reads it:
   // the operator pinned that gate key out of band and imported that hearth's charter, so the realm's own
   // registered books federate back toward it. Filled by the dial below; empty on a vessel that dials nobody.
@@ -1433,12 +1438,12 @@ async function prepareNodeBootOn(
     },
     refoldEdgeShadows: async () => { await edgeShadows?.refold(); },
     reverdict: () => reverdict(),
-    representIfMoved: async () => { await representIfMoved?.(); },
+    representIfMoved: async (ward) => { await representIfMoved?.(ward); },
     log: (line) => console.log(`[nexus] ${line}`),
   });
-  const afterRoll = (nexusAid?: string): Promise<boolean> => {
+  const afterRoll = (nexusAid?: string, ward?: WardCredential): Promise<boolean> => {
     if (nexusAid) ownHostingDocs.add(interpretAsDocumentId(hostingDocUrl(nexusAid, vesselIdentity.verifyingKey)) as DocumentId);
-    return afterRollQueue(nexusAid);
+    return afterRollQueue(nexusAid, ward);
   };
 
   // Replay every socket that presented before the holder stood.
@@ -2520,7 +2525,8 @@ async function prepareNodeBootOn(
     // one re-dials through the adapter's own close-and-reconnect path.
     // THE DIAL STANDS FROM A CHOICE of url and pin (`chooseHearthDial`): at composition from what the bootstrap and the kept
     // bundles name, and LATER, when a bundle is taken into a RUNNING vessel (`afterRoll`, below), from what it names then.
-    const standFaceDial = async (hd: HearthDialChoice, live: () => boolean = () => !dialStoodDown): Promise<void> => {
+    const standFaceDial = async (hd: HearthDialChoice, live: () => boolean = () => !dialStoodDown, ward?: WardCredential): Promise<void> => {
+      const dialWard = ward ?? bootWard;
       try {
         // THE FACE DIAL. The dial presents the face's chain through `dialFaceGate` at the pin the pair index holds for the
         // hearth and Nexus it stands at; the pins and the presentation are composed just below, and the dial stands idle,
@@ -2539,7 +2545,7 @@ async function prepareNodeBootOn(
         // of the proof, the dial stands idle and the log names the piece.
         const dialSessions = opts.dialSessions ?? { table: new SessionTable(`dial-${globalThis.crypto.randomUUID()}`), binding: sessionBinding("socket"), profile: "face" };
         const composed = dialPin !== null
-          ? await composeDialPresentation({ sealHome, pin: dialPin, personaGroup: personaGroupId, ...dialSessions, ...(bootWard ? { doors: { founder: { ward: bootWard } } } : {}) })
+          ? await composeDialPresentation({ sealHome, pin: dialPin, personaGroup: personaGroupId, ...dialSessions, ...(dialWard ? { doors: { founder: { ward: dialWard } } } : {}) })
           : null;
         // THE WALKER ROUTE SHIPS SHUT BY NAME (the routes ruling, stable-founding-road: "Walker arms ... ship SHUT by name"; a closed
         // route grants no silent authority): a vessel that walks at a hearth with no admit-carried pin presents no walk at the sealed gate.
@@ -2617,7 +2623,7 @@ async function prepareNodeBootOn(
     // that already stands keeps what it presents (a moved board re-dials through the adapter). A herm dials no hearth, and a floor
     // composition holds no key to present with, so its attempt names `CustodyLocked` and stands nothing.
     if (placeClass !== "herm") {
-      representIfMoved = lateDialOnce({ standing: () => nexusDial !== null, tornDown: () => dialStoodDown, stand: async (live) => {
+      representIfMoved = lateDialOnce({ standing: () => nexusDial !== null, tornDown: () => dialStoodDown, stand: async (live, ward) => {
         const late = chooseHearthDial({
           explicitUrl: opts.joinSyncUrl ?? null,
           hearthPin:   hearthPin ? { syncUrl: hearthPin.syncUrl, ...(hearthPin.gatePin ? { gatePin: hearthPin.gatePin } : {}) } : null,
@@ -2627,7 +2633,7 @@ async function prepareNodeBootOn(
         });
         if (late.syncUrl === null || !live()) return;
         for (const note of late.notes) console.log(`[nexus-join] ${note}`);
-        await standFaceDial(late, live);
+        await standFaceDial(late, live, ward);
       } });
     }
     // ── THE BOOTSTRAP SEEDS; THE CATALOG PLANE REGISTERS ────────────────────────────────────────

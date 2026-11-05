@@ -63,7 +63,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import { duringUnlockAct, takeWardTicket } from "./ward-credential.js";
+import { takeWardTicket, type WardCredential } from "./ward-credential.js";
 import { runPromoteVerb } from "./commands/promote.js";
 import { runSwarmVerb } from "./commands/swarm.js";
 import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
@@ -131,7 +131,8 @@ export interface StoreDoorDeps {
    * outcome. Every row that fires this awaits it through `awaitOnRolled` (below), which bounds the wait by
    * `ON_ROLLED_BUDGET_MS` and never lets a slow or rejected refold throw through the row that triggered it.
    */
-  readonly onRolled?:  (nexusAid?: string) => boolean | void | Promise<boolean | void>;
+  /** `ward`: the route of the act that rolled (a take's), carried to the re-present it asks for, as an argument (seat-harness#/the-ward). */
+  readonly onRolled?:  (nexusAid?: string, ward?: WardCredential) => boolean | void | Promise<boolean | void>;
   /**
    * Ask the daemon island's `seat-duties` verb as the vessel, with the facts handed in: the standing vessel's main
    * thread signs the ask (`askSeatDuties`). Absent where no sovereign vessel stands: a direct act holds no
@@ -532,8 +533,8 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     }),
 
     // A TAKE STANDS A LATE DIAL at a Nexus this face may present at for the first time: the founder's certificate there is a ward
-    // act, so the row runs inside the route its ticket names, for the row's own length alone (`duringUnlockAct`).
-    "nexus-admit-take": (args) => answer("nexus-admit-take", async () => { const ward = takeWardTicket(args["wardTicket"]); const run = async () => {
+    // act, so the take hands its ticket's route to the re-present it asks for, as an argument, and to nothing else.
+    "nexus-admit-take": (args) => answer("nexus-admit-take", async () => { const ward = takeWardTicket(args["wardTicket"]);
       const raw = need("nexus-admit-take", args, "raw");
       const r = await takeAdmitBundle({ sealHome, raw });
       // RE-PRESENT through the live hook when a vessel stands over this row; `storeDoorDirect` supplies none,
@@ -541,9 +542,9 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       // `represented` reads `awaitOnRolled`'s OWN bounded claim, never merely whether a vessel stands to call
       // it: a vessel standing proves this row COULD try to re-present, not that it DID. Past the budget the
       // refold keeps running unseen, and this reads `"pending"` rather than guessing either way.
-      const represented = deps.onRolled === undefined ? false : await awaitOnRolled(deps.onRolled(r.aid));
+      const represented = deps.onRolled === undefined ? false : await awaitOnRolled(deps.onRolled(r.aid, ward));
       return { aid: r.aid, nym: r.nym, admitCid: r.admitCid, gatePubKey: r.gatePubKey, lineage: r.lineage, path: r.path, represented };
-    }; return ward ? duringUnlockAct(ward, run) : run(); }),
+    }),
 
     // A HERM'S EXPLICIT JOIN (lar:///ha.ka.ba/lararium/node/carry-bundle): the quorum's counted carry over this vessel's own key, taken by
     // hand onto its own replica of that Nexus's carriage board; the refold the take fires stands its floor gate there at once.

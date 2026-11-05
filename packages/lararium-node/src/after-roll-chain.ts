@@ -22,6 +22,7 @@
  * completes in at most one pass per holder plus the pass that was already running (H + 1), and a holder waits
  * behind at most one pass of each other holder: no holder starves.
  */
+import type { WardCredential } from "./ward-credential.js";
 
 export interface AfterRollStages {
   /** Re-derive any hosting acts still owed from the sealed state. A throw rejects the rolls that pass answers. */
@@ -31,21 +32,22 @@ export interface AfterRollStages {
   refreshRealmPlane?: () => Promise<void>;
   refoldEdgeShadows?: () => Promise<void>;
   reverdict: () => void;
-  representIfMoved?: () => Promise<void>;
+  /** Re-present the dial. `ward` is the route of the act that asked for this pass (a take's), for a founder's first presentation at a new scope. */
+  representIfMoved?: (ward?: WardCredential) => Promise<void>;
   log: (line: string) => void;
   /** Fires as a pass starts, naming the holder whose queued pass this is. A vector reads the order off it. */
   onPass?: (holder: string | undefined) => void;
 }
 
 /** `roll(holder)`: queue (or fold into) the holder's pass; resolves with that pass's truthful answer. */
-export type AfterRoll = (holder?: string) => Promise<boolean>;
+export type AfterRoll = (holder?: string, ward?: WardCredential) => Promise<boolean>;
 
-interface Waiter { resolve: (answer: boolean) => void; reject: (cause: unknown) => void }
+interface Waiter { resolve: (answer: boolean) => void; reject: (cause: unknown) => void; ward?: WardCredential }
 
 const says = (e: unknown): string => (e instanceof Error ? e.message : String(e));
 
 /** One full pass, the house order. Resolves `true` iff `representIfMoved` ran without throwing. */
-async function runPass(stages: AfterRollStages): Promise<boolean> {
+async function runPass(stages: AfterRollStages, ward?: WardCredential): Promise<boolean> {
   await stages.landOwedHostingActs?.();
   try {
     await stages.refoldAntigen();
@@ -65,7 +67,7 @@ async function runPass(stages: AfterRollStages): Promise<boolean> {
   }
   stages.reverdict();
   try {
-    await stages.representIfMoved?.();
+    await stages.representIfMoved?.(ward);
     return true;
   } catch (e) {
     stages.log(`after-roll refold failed (re-present): ${says(e)}`);
@@ -90,7 +92,8 @@ export function createAfterRoll(stages: AfterRollStages): AfterRoll {
         waiting.delete(holder);
         try {
           stages.onPass?.(holder);
-          const answer = await runPass(stages);
+          // The pass carries the route of the act that queued it, if one did; it re-presents once, for every waiter.
+          const answer = await runPass(stages, waiters.find((w) => w.ward !== undefined)?.ward);
           for (const w of waiters) w.resolve(answer);
         } catch (cause) {
           for (const w of waiters) w.reject(cause);
@@ -101,12 +104,13 @@ export function createAfterRoll(stages: AfterRollStages): AfterRoll {
     }
   };
 
-  return (holder) =>
+  return (holder, ward) =>
     new Promise<boolean>((resolve, reject) => {
       const queued = waiting.get(holder);
-      if (queued) queued.push({ resolve, reject });
+      const waiter: Waiter = { resolve, reject, ...(ward ? { ward } : {}) };
+      if (queued) queued.push(waiter);
       else {
-        waiting.set(holder, [{ resolve, reject }]);
+        waiting.set(holder, [waiter]);
         ready.push(holder);
       }
       void drain();

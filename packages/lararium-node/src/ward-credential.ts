@@ -63,22 +63,6 @@ export function wardCredentialOfArgs(raw: unknown): WardCredential | undefined {
   return wardCredential(creds);
 }
 
-// ── the unlock act's own route ───────────────────────────────────────────────────────────────────────────────────────
-
-/**
- * THE UNLOCK ACT CARRIES ITS ROUTE FOR ITS OWN LENGTH. A face unlock is a hand act: the person typed the face's route for it. The
- * composition that unlock stands (its boot dial among it) may issue the founder's own certificate at a scope it dials for the
- * first time, a ward act, under that same route. The token lives exactly as long as the unlock act (`duringUnlockAct`), and only
- * the founder certificate's default root door reads it (`unlockActWard`); nothing holds it after the act settles.
- */
-let unlockAct: WardCredential | null = null;
-export async function duringUnlockAct<T>(ward: WardCredential, act: () => Promise<T>): Promise<T> {
-  const prior = unlockAct;
-  unlockAct = ward;
-  try { return await act(); } finally { unlockAct = prior; }
-}
-export function unlockActWard(): WardCredential | undefined { return unlockAct ?? undefined; }
-
 // ── the one-use ticket a store verb names ────────────────────────────────────────────────────────────────────────────
 
 /** The most tickets parked at once: a caller that parked and left never builds a store of routes. */
