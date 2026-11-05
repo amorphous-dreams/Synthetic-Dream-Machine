@@ -38,7 +38,7 @@ import { userInfo } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { leadStepBrief, peekStep, writeState } from "./lane-state.mjs";
-import { heldOver, mkdirHeld, openHeldSync, openLogHeld, readHeld, writeHeld } from "./held-dir.mjs";
+import { copyBack, heldOver, mkdirHeld, openHeldSync, openLogHeld, readHeld, writeHeld } from "./held-dir.mjs";
 import { globalStampPath, packageStampPath, sourceDigest, workspacePackageDirs } from "./stamp-build.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -168,7 +168,7 @@ export function findRollout(home, { marker, before, seen = new Set() }) {
  */
 export async function watchSeat({ seatDir, pid, ceiling, mode, tokens, advanced = () => true, alive, kill, sleep, note, graceTicks = 10, hardTicks = 20, blindTicks = 200 }) {
   let blind = 0;
-  const writeNote = note ?? ((text) => writeFileSync(join(seatDir, "ceiling.md"), text));
+  const writeNote = note ?? (() => {});
   const stop = async (why, verdict) => {
     try { writeNote(`# Ceiling reached\n\nThe ${mode} seat (pid ${pid}) ${why} The supervisor stops it (SIGTERM, then SIGKILL, then waits for the exit).\n`); } catch { /* the stop still runs */ }
     try { kill("SIGTERM"); } catch { /* the ladder goes on */ }
@@ -282,7 +282,7 @@ export function seatLaw(canonText) {
 /** The lead's separate wall permits work a builder's canon law forbids. */
 export function leadLaw() {
   return `## LEAD LAW (appended by tools/launch-codex.mjs to a lead brief; it binds this lead)
-* You hold no git write access and no credential. Every git act goes through the broker: write a request file \`req-<id>.json\` (zero-padded, in order) into \`<lane-root>/relay/\` and read its \`res-<id>.json\` on your next step. The doors are \`commit\` (named paths, a message file in the lane root, the expected old head), \`push\` (only when the controller's go names the branch and the head), \`worktree\`, \`worktree-remove\`, \`install\` and \`launch\`.
+* You hold no git write access and no credential. Every git act goes through the broker: write a request file \`req-<id>.json\` (zero-padded, in order) into \`<lane-root>/relay/\` and read its \`res-<id>.json\` on your next step. The doors are \`commit\` (\`paths\`, the commit message as inline \`message\` text up to 16 KiB, and \`expectHead\`), \`push\` (only when the controller's go names the branch and the head), \`worktree\`, \`worktree-remove\`, \`install\` and \`launch\`.
 * A commit message follows the \`lar:///w1.w2.w3 — summary\` convention and ends with the two trailers the session's attribution reminder gives. No \`git stash\` in any form, no \`--no-verify\`, no \`git push -u\`, no force-push, no edit of .git/config.
 * Never write the main checkout (~/Synthetic-Dream-Machine) or its submodule worktrees; work in your own worktree under ~/.lares-scratch only.
 * Never read a credential file or the controller's directory.
@@ -374,7 +374,7 @@ export function preflight({ mode, model, seatDir, worktree, briefless }, readers
 
 function parse(argv) {
   const o = { dryRun: false };
-  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--marker": "marker", "--held-fd": "heldFd", "--home": "home", "--blind-ticks": "blindTicks", "--lane-root": "laneRoot" };
+  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--marker": "marker", "--held-fd": "heldFd", "--home": "home", "--blind-ticks": "blindTicks", "--lane-fd": "laneFd", "--broker-dir": "brokerDir", "--lane-root": "laneRoot" };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--dry-run") o.dryRun = true;
     else if (argv[i] === "--supervise") o.supervise = true;
@@ -407,13 +407,18 @@ function parse(argv) {
  */
 export async function superviseSeat(o, deps = {}) {
   const signal = deps.signal ?? ((pid, sig) => process.kill(pid, sig));
+  const groupAlive = deps.groupAlive ?? ((pgid) => { try { process.kill(-pgid, 0); return true; } catch (error) { return error.code !== "ESRCH"; } });
   const held = o.held;
   const marker = o.marker, before = new Set(JSON.parse(readHeld(held, "rollouts-before.json"))), home = o.home ?? realHome();
   const prompt = readHeld(held, "prompt.txt");
   const logFd = openLogHeld(held, "run.log");
   const child = (deps.spawn ?? nodeSpawn)("codex", [...(o.rest ?? []), prompt], { cwd: held.at(), env: o.env ?? process.env, detached: true, stdio: ["ignore", logFd, logFd] });
   let exited = false;
-  const gone = new Promise((resolve) => { child.on("exit", () => { exited = true; resolve(); }); child.on("error", () => { exited = true; resolve(); }); });
+  // The moment the child's exit lands, its process group gets SIGKILL (ESRCH is fine): a descendant that outlives its parent dies here, before the pgid could be reused.
+  const gone = new Promise((resolve) => {
+    const done = () => { if (!exited) { exited = true; try { process.kill(-child.pid, "SIGKILL"); } catch { /* an empty group */ } } resolve(); };
+    child.on("exit", done); child.on("error", done);
+  });
   let tail = null;
   const seen = new Set();
   let verdict = "error";
@@ -431,12 +436,18 @@ export async function superviseSeat(o, deps = {}) {
   // The last resort uses the real group signal (not the injected one), then the child handle, so descendants die with it.
   if (!exited) { try { process.kill(-child.pid, "SIGKILL"); } catch { /* the handle below */ } try { child.kill("SIGKILL"); } catch { /* gone */ } }
   await gone;
+  // A stop reads as stopped only when the group answers ESRCH.
+  for (let i = 0; i < (deps.groupPolls ?? 50) && groupAlive(child.pid); i++) { try { process.kill(-child.pid, "SIGKILL"); } catch { /* gone */ } await new Promise((r) => setTimeout(r, deps.pollMs ?? 100)); }
+  if (groupAlive(child.pid)) return "unstopped";
+  // The hand-back: Codex's own outputs sit in the broker-owned directory; they reach the lane's seat dir only now, through its held handle.
+  if (o.laneHeld) { try { copyBack(held, o.laneHeld); } catch { /* the broker-owned copy stands */ } }
   return verdict;
 }
 
 function superviseMain(o) {
   const held = heldOver(Number(o.heldFd));
-  return superviseSeat({ held, marker: o.marker, home: o.home, ceiling: o.ceiling, mode: o.mode, rest: o.rest, blindTicks: o.blindTicks ? Number(o.blindTicks) : undefined }).then(() => 0, () => 1);
+  const laneHeld = o.laneFd ? heldOver(Number(o.laneFd)) : undefined;
+  return superviseSeat({ held, laneHeld, marker: o.marker, home: o.home, ceiling: o.ceiling, mode: o.mode, rest: o.rest, blindTicks: o.blindTicks ? Number(o.blindTicks) : undefined }).then(() => 0, () => 1);
 }
 
 /** The launcher over injected readers, spawn and writers; returns the exit code. */
@@ -460,13 +471,17 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     log(`${verdict.fired ? "COMPACTION-FIRED" : "COMPACTION-NOT-FIRED"} events=${verdict.events} calls=${verdict.calls} tokens=${verdict.tokens}`);
     return verdict.fired ? 0 : 1;
   }
-  let stepPlan;
+  const guard = (fn) => { try { return fn(); } catch (e) { if (e.refused) throw e; throw refuse(e.message); } };
+  let stepPlan, laneHeld;
   if (o.leadStep) {
     try {
+      // The lane root is held open once: the state, the steps dir and the step claim all go through it.
       const laneRoot = real(o.laneRoot);
-      stepPlan = { ...peekStep(laneRoot), laneRoot };
+      laneHeld = openHeldSync(laneRoot, laneRoot);
+      readers?.afterLaneHold?.();
+      stepPlan = { ...peekStep(laneHeld, laneRoot), laneRoot };
       o.seatDir = stepPlan.stepDir;
-    } catch (e) { err(`SEAT-REFUSED: ${e.message}`); return 2; }
+    } catch (e) { laneHeld?.close(); err(`SEAT-REFUSED: ${e.message}`); return 2; }
   }
   const seatDir = real(o.seatDir);
   try {
@@ -475,53 +490,64 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     if (o.blindTicks !== undefined) ceilingFor(o.mode, o.blindTicks);
     readers ??= realReaders();
     const worktree = o.worktree ? real(o.worktree) : undefined;
-    if (stepPlan) {
-      const scratch = real(join((readers ??= realReaders()).realHome, ".lares-scratch"));
-      if (!stepPlan.laneRoot.startsWith(`${scratch}/`)) throw refuse(`the lane root must sit under ${scratch}/<lane>: ${o.laneRoot}`);
-    }
+    const scratchReal = real(join(readers.realHome, ".lares-scratch"));
+    if (stepPlan && !stepPlan.laneRoot.startsWith(`${scratchReal}/`)) throw refuse(`the lane root must sit under ${scratchReal}/<lane>: ${o.laneRoot}`);
     const { pool } = preflight({ ...o, seatDir, worktree, briefless: Boolean(stepPlan) }, readers);
+    // THE SEAT RUNS IN A BROKER-OWNED DIRECTORY outside every lane tree: Codex's own writes (-o final.md, TMPDIR, run.log, ceiling.md) land where no lead can write, and reach the lane's seat dir only through the held hand-back copy.
+    const laneDir = join(scratchReal, seatDir.slice(scratchReal.length + 1).split("/")[0]);
+    const brokerDir = guard(() => { const d = o.brokerDir ? resolve(o.brokerDir) : join(scratchReal, ".broker-seats"); mkdirSync(d, { recursive: true }); return real(d); }); // broker-owned
+    const laneTop = (p) => join(scratchReal, p.slice(scratchReal.length + 1).split("/")[0]);
+    for (const guarded of [seatDir, worktree].filter(Boolean)) {
+      if (brokerDir === guarded || brokerDir.startsWith(`${guarded}/`) || guarded.startsWith(`${brokerDir}/`)) throw refuse(`the broker seat dir ${brokerDir} must sit outside ${guarded}`);
+      if (guarded.startsWith(`${scratchReal}/`) && brokerDir.startsWith(`${scratchReal}/`) && laneTop(brokerDir) === laneTop(guarded)) throw refuse(`the broker seat dir ${brokerDir} must sit outside the lane tree ${laneTop(guarded)}`);
+    }
+    const bsdName = `seat-${randomUUID()}`;
+    const bsdPath = join(brokerDir, o.dryRun ? "seat-DRYRUN" : bsdName);
     const laneRoot = o.mode === "lead" ? (stepPlan?.laneRoot ?? dirname(seatDir)) : undefined;
-    const args = seatArgs({ ...o, seatDir, worktree, laneRoot, compactLimit: o.canary ? 50_000 : undefined });
+    const args = seatArgs({ ...o, seatDir: bsdPath, worktree, laneRoot, compactLimit: o.canary ? 50_000 : undefined });
     log(pool);
     if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...args, "<brief>"])}`); return 0; }
-    // EVERY write below lands in the seat directory through ONE handle opened here and verified under the lane: no pathname write follows, so a planted symlink or a swapped parent redirects nothing.
-    const guard = (fn) => { try { return fn(); } catch (e) { if (e.refused) throw e; throw refuse(e.message); } };
-    const scratchReal = real(join(readers.realHome, ".lares-scratch"));
-    const laneDir = join(scratchReal, seatDir.slice(scratchReal.length + 1).split("/")[0]);
-    let held;
-    if (stepPlan) {
-      guard(() => { mkdirSync(join(stepPlan.laneRoot, "steps"), { recursive: true }); });
-      const steps = guard(() => openHeldSync(join(stepPlan.laneRoot, "steps"), laneDir));
-      try {
-        // The dir is the claim: two launches reading the same counter cannot both make step N.
-        try { mkdirSync(steps.at(basename(stepPlan.stepDir))); } catch (e) { throw refuse(`step ${stepPlan.n} is already claimed (${stepPlan.stepDir}): ${e.code ?? e.message}`); }
-        held = guard(() => openHeldSync(steps.at(basename(stepPlan.stepDir)), laneDir));
-      } finally { steps.close(); }
-      guard(() => writeHeld(held, "brief.md", leadStepBrief(stepPlan.state, { laneRoot: stepPlan.laneRoot, stepDir: stepPlan.stepDir })));
-      writeState(stepPlan.laneRoot, { ...stepPlan.state, step: stepPlan.n });
-    } else {
-      held = guard(() => openHeldSync(seatDir, laneDir));
-    }
+    let held, bsd;
     try {
+      if (stepPlan) {
+        guard(() => mkdirHeld(laneHeld, "steps"));
+        const steps = guard(() => openHeldSync(laneHeld.at("steps"), stepPlan.laneRoot));
+        try {
+          // The dir is the claim: two launches reading the same counter cannot both make step N.
+          try { mkdirSync(steps.at(basename(stepPlan.stepDir))); } catch (e) { throw refuse(`step ${stepPlan.n} is already claimed (${stepPlan.stepDir}): ${e.code ?? e.message}`); }
+          held = guard(() => openHeldSync(steps.at(basename(stepPlan.stepDir)), stepPlan.laneRoot));
+        } finally { steps.close(); }
+        guard(() => writeHeld(held, "brief.md", leadStepBrief(stepPlan.state, { laneRoot: stepPlan.laneRoot, stepDir: stepPlan.stepDir })));
+        guard(() => writeState(laneHeld, { ...stepPlan.state, step: stepPlan.n }));
+      } else {
+        held = guard(() => openHeldSync(seatDir, laneDir));
+      }
+      guard(() => mkdirSync(join(brokerDir, bsdName), { mode: 0o700 })); // broker-owned
+      bsd = guard(() => openHeldSync(join(brokerDir, bsdName), brokerDir));
       readers.afterHold?.();
       if (o.canary) guard(() => writeHeld(held, "brief.md", canaryBrief()));
       const law = o.mode === "lead" ? leadLaw() : seatLaw(readers.canon());
-      guard(() => mkdirHeld(held, ".tmp"));
+      guard(() => mkdirHeld(bsd, ".tmp"));
       const brief = appendSeatLaw(guard(() => readHeld(held, "brief.md")), law, o.mode === "lead" ? "LEAD LAW" : "SEAT LAW");
       guard(() => writeHeld(held, "brief.md", brief));
       guard(() => writeHeld(held, "attempts.log", `attempt model=${o.model} effort=${o.effort} mode=${o.mode}\n`, "a"));
-      const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(seatDir, ".tmp"), TMPPREFIX: join(seatDir, ".tmp", "zsh") };
-      guard(() => writeHeld(held, "rollouts-before.json", JSON.stringify(listRollouts(readers.realHome))));
+      const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(bsdPath, ".tmp"), TMPPREFIX: join(bsdPath, ".tmp", "zsh") };
+      const snapshot = JSON.stringify(listRollouts(readers.realHome));
       const marker = `SEAT-MARKER ${randomUUID()}`;
-      guard(() => writeHeld(held, "marker.txt", `${marker}\n`));
-      guard(() => writeHeld(held, "prompt.txt", `${marker}\n\n${brief}`));
-      // The supervisor is the seat's parent and spawns codex itself (see superviseSeat); it inherits the held directory as fd 3.
-      const supervisor = spawn(process.execPath, [fileURLToPath(import.meta.url), "--supervise", "--held-fd", "3", "--ceiling", String(ceiling), "--mode", o.mode, "--marker", marker, "--home", readers.realHome, ...(o.blindTicks ? ["--blind-ticks", String(o.blindTicks)] : []), "--", ...args], { cwd: held.at(), env, detached: true, stdio: ["ignore", "ignore", "ignore", held.fd] });
+      for (const h of [held, bsd]) {
+        guard(() => writeHeld(h, "rollouts-before.json", snapshot));
+        guard(() => writeHeld(h, "marker.txt", `${marker}\n`));
+        guard(() => writeHeld(h, "prompt.txt", `${marker}\n\n${brief}`));
+        guard(() => writeHeld(h, "brief.md", brief));
+      }
+      // The supervisor is the seat's parent and spawns codex itself (see superviseSeat); it inherits the broker-owned directory as fd 3 and the lane's seat directory as fd 4 for the hand-back.
+      const supervisor = spawn(process.execPath, [fileURLToPath(import.meta.url), "--supervise", "--held-fd", "3", "--lane-fd", "4", "--ceiling", String(ceiling), "--mode", o.mode, "--marker", marker, "--home", readers.realHome, ...(o.blindTicks ? ["--blind-ticks", String(o.blindTicks)] : []), "--", ...args], { cwd: bsd.at(), env, detached: true, stdio: ["ignore", "ignore", "ignore", bsd.fd, held.fd] });
       supervisor.unref?.();
       log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${supervisor.pid}; wait on: until [ -f ${join(seatDir, "final.md")} ]`);
       return 0;
-    } finally { held.close(); }
+    } finally { held?.close(); bsd?.close(); laneHeld?.close(); }
   } catch (e) {
+    laneHeld?.close();
     if (!e.refused) throw e;
     err(`SEAT-REFUSED: ${e.message}`);
     return 2;

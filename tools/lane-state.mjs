@@ -5,7 +5,8 @@
  * worktree map, the next step and the step counter. A lead reads it, does ONE step, writes it back and stops; the next
  * launch is a fresh lead over the new state. A missing, torn or misshapen file refuses by name, never reads as empty.
  */
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { renameSync } from "node:fs";
+import { openHeldSync, readHeld, writeHeld } from "./held-dir.mjs";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
@@ -27,37 +28,47 @@ export function validateState(s) {
   return s;
 }
 
-export function readState(laneRoot) {
-  const p = join(laneRoot, "state.json");
-  let text;
-  try { text = readFileSync(p, "utf8"); } catch { throw new Error(`no state.json at ${p}`); }
-  let s;
-  try { s = JSON.parse(text); } catch (e) { throw new Error(`state.json at ${p} fails to parse (JSON): ${e.message}`); }
-  return validateState(s);
+/** The lane root as a held directory: a path opens (and later closes) one here; a held handle passes through. Every read and write of the state goes through it. */
+function viaHeld(root, fn) {
+  if (typeof root !== "string") return fn(root, root);
+  const held = openHeldSync(root, root);
+  try { return fn(held, root); } finally { held.close(); }
 }
 
-/** Validates, then writes through a temp name and a rename, so a reader never sees a torn file. */
-export function writeState(laneRoot, state) {
+export function readState(root) {
+  return viaHeld(root, (held, label) => {
+    let text;
+    try { text = readHeld(held, "state.json"); } catch { throw new Error(`no state.json at ${typeof label === "string" ? label : "the lane root"}`); }
+    let s;
+    try { s = JSON.parse(text); } catch (e) { throw new Error(`state.json fails to parse (JSON): ${e.message}`); }
+    return validateState(s);
+  });
+}
+
+/** Validates, then writes a temp file INSIDE the held lane root and renames it there, so a reader never sees a torn file and no pathname re-resolves. */
+export function writeState(root, state) {
   validateState(state);
-  const p = join(laneRoot, "state.json"), tmp = `${p}.tmp-${process.pid}-${randomUUID()}`;
-  writeFileSync(tmp, `${JSON.stringify(state, null, 2)}\n`, { flag: "wx" });
-  renameSync(tmp, p);
+  viaHeld(root, (held) => {
+    const tmp = `state.json.tmp-${process.pid}-${randomUUID()}`;
+    writeHeld(held, tmp, `${JSON.stringify(state, null, 2)}\n`, "x");
+    renameSync(held.at(tmp), held.at("state.json"));
+  });
 }
 
 export const stepDirName = (n) => `steps/step-${String(n).padStart(3, "0")}`;
 
-/** The state and the dir of the NEXT step, spending nothing. */
-export function peekStep(laneRoot) {
-  const state = readState(laneRoot);
+/** The state and the name of the NEXT step, spending nothing; `stepDir` joins the label when the root came as a path. */
+export function peekStep(root, label = root) {
+  const state = readState(root);
   const n = state.step + 1;
-  return { state, n, stepDir: join(laneRoot, stepDirName(n)) };
+  return { state, n, stepName: stepDirName(n), stepDir: typeof label === "string" ? join(label, stepDirName(n)) : undefined };
 }
 
 /** Spends the step: bumps the counter on disk and returns the new state and the step dir. */
-export function beginStep(laneRoot) {
-  const { state, n, stepDir } = peekStep(laneRoot);
+export function beginStep(root) {
+  const { state, n, stepDir } = peekStep(root);
   const next = { ...state, step: n };
-  writeState(laneRoot, next);
+  writeState(root, next);
   return { state: next, stepDir };
 }
 

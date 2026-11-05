@@ -24,12 +24,12 @@ export async function openHeld(dir, root) {
   } catch (error) { await fh.close(); throw error; }
   return {
     at: (name = "") => (name === "" ? `/proc/self/fd/${fh.fd}` : `/proc/self/fd/${fh.fd}/${name}`),
-    close: () => fh.close(),
+    close: () => fh.close().catch(() => {}),
   };
 }
 
 // ---- the synchronous door, for the launcher and the supervisor ----
-import { closeSync, constants as FSC, fstatSync, ftruncateSync, lstatSync, mkdirSync, openSync, readFileSync, realpathSync, writeSync } from "node:fs";
+import { closeSync, constants as FSC, fstatSync, ftruncateSync, lstatSync, mkdirSync, openSync, readFileSync, readSync as fsReadSync, realpathSync, writeSync } from "node:fs";
 
 /** Like `openHeld`, but synchronous: returns `{ fd, at, close }` with the directory held open under `root`. */
 export function openHeldSync(dir, root) {
@@ -48,10 +48,11 @@ export function openHeldSync(dir, root) {
 
 /** A held directory over an fd the caller inherited (the supervisor's), which it does not close. */
 export function heldOver(fd, owns = false) {
+  let closed = false;
   return {
     fd,
     at: (name = "") => (name === "" ? `/proc/self/fd/${fd}` : `/proc/self/fd/${fd}/${name}`),
-    close: () => { if (owns) closeSync(fd); },
+    close: () => { if (owns && !closed) { closed = true; try { closeSync(fd); } catch { /* already closed */ } } },
   };
 }
 
@@ -95,4 +96,34 @@ export function mkdirHeld(held, name) {
   try { mkdirSync(held.at(name)); } catch (error) { if (error.code !== "EEXIST") throw error; }
   const st = lstatSync(held.at(name));
   if (st.isSymbolicLink() || !st.isDirectory()) throw new Error(`${name}: not a real directory`);
+}
+
+import { readdirSync, unlinkSync } from "node:fs";
+
+const COPY_CAP = 8 * 1024 * 1024;
+const COPY_COUNT = 64;
+const LANE_OWNS = new Set(["brief.md", "prompt.txt", "marker.txt", "rollouts-before.json", "attempts.log"]);
+
+/**
+ * The hand-back: copies the regular top-level files a seat left in its broker-owned directory into the lane's seat directory
+ * through the held handle (an old entry unlinked first, then O_NOFOLLOW|O_EXCL), each capped at 8 MiB, at most 64 files, never
+ * the inputs the lane already holds. Returns the names copied.
+ */
+export function copyBack(from, to) {
+  const copied = [];
+  for (const name of readdirSync(from.at()).sort().slice(0, COPY_COUNT)) {
+    if (LANE_OWNS.has(name) || name.startsWith(".")) continue;
+    const src = from.at(name);
+    const st = lstatSync(src);
+    if (!st.isFile() || st.nlink > 1) continue;
+    let data;
+    const rfd = openSync(src, FSC.O_RDONLY | FSC.O_NOFOLLOW);
+    try { const buf = Buffer.alloc(Math.min(st.size, COPY_CAP)); const n = fsReadSync(rfd, buf, 0, buf.length, 0); data = buf.subarray(0, n); } finally { closeSync(rfd); }
+    try { unlinkSync(to.at(name)); } catch (error) { if (error.code !== "ENOENT") continue; }
+    let wfd;
+    try { wfd = openSync(to.at(name), FSC.O_WRONLY | FSC.O_CREAT | FSC.O_EXCL | FSC.O_NOFOLLOW, 0o644); } catch { continue; }
+    try { writeSync(wfd, data); if (st.size > COPY_CAP) writeSync(wfd, `\n[truncated at ${COPY_CAP} bytes by the broker]\n`); } finally { closeSync(wfd); }
+    copied.push(name);
+  }
+  return copied;
 }

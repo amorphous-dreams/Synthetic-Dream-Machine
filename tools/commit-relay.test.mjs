@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, symlinkSync, chmodSync, readdirSync, linkSync, renameSync } from 'node:fs';
 import { createServer } from 'node:net';
 import os from 'node:os';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -126,7 +126,7 @@ test('launch validates fields and forwards exact arguments to the launcher', () 
   x.request('3', { ...valid, seatDir: x.root }); x.request('4', valid); x.run();
   for (const id of ['1', '2', '3']) assert.equal(x.response(id).ok, false);
   assert.equal(x.response('4').ok, true); assert.match(x.response('4').output, /SEAT-LAUNCHED 123/);
-  assert.deepEqual(JSON.parse(readFileSync(path.join(x.root, 'argv.json'), 'utf8')), ['--seat-dir', seat, '--model', valid.model, '--effort', 'high', '--mode', 'build', '--worktree', wt]);
+  assert.deepEqual(JSON.parse(readFileSync(path.join(x.root, 'argv.json'), 'utf8')), ['--broker-dir', path.join(x.home, 'controller', 'broker-iso', 'seats'), '--seat-dir', seat, '--model', valid.model, '--effort', 'high', '--mode', 'build', '--worktree', wt]);
 });
 test('unknown fields and invalid path forms refuse', () => {
   const x = setup(), seat = path.join(x.lane, 'seat'); mkdirSync(seat); writeFileSync(path.join(seat, 'brief.md'), 'brief');
@@ -155,7 +155,7 @@ test('read launch omits worktree and requires a brief', () => {
   x.request('1', req); x.run(); assert.equal(x.response('1').ok, false);
   writeFileSync(path.join(seat, 'brief.md'), 'brief'); x.request('2', req); x.run();
   assert.equal(x.response('2').ok, true);
-  assert.deepEqual(JSON.parse(readFileSync(path.join(x.root, 'argv.json'), 'utf8')), ['--seat-dir', seat, '--model', 'gpt-6-luna', '--effort', 'medium', '--mode', 'read']);
+  assert.deepEqual(JSON.parse(readFileSync(path.join(x.root, 'argv.json'), 'utf8')), ['--broker-dir', path.join(x.home, 'controller', 'broker-iso', 'seats'), '--seat-dir', seat, '--model', 'gpt-6-luna', '--effort', 'medium', '--mode', 'read']);
 });
 
 
@@ -521,7 +521,7 @@ test('P2-3 a bad broker-iso with a missing relay/ leaves the lane byte-identical
   const ctl = path.join(x.home, 'ctl3'); mkdirSync(ctl);
   mkdirSync(path.join(x.lane, 'inside'));
   symlinkSync(path.join(x.lane, 'inside'), path.join(ctl, 'broker-iso'));
-  const snap = (d) => readdirSync(d, { withFileTypes: true, recursive: true }).map((e) => `${e.parentPath ?? e.path}/${e.name}${e.isFile() ? `:${readFileSync(path.join(e.parentPath ?? e.path, e.name), 'utf8').length}` : ''}`).sort();
+  const snap = (d) => readdirSync(d, { withFileTypes: true, recursive: true }).map((e) => `${e.parentPath ?? e.path}/${e.name}${e.isFile() ? `:${createHash('sha256').update(readFileSync(path.join(e.parentPath ?? e.path, e.name))).digest('hex')}` : ''}`).sort();
   const before = snap(x.lane);
   const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', path.join(ctl, 'push-go'), '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
   assert.notEqual(r.status, 0); assert.match(r.stderr, /broker state must sit outside/);
