@@ -68,3 +68,37 @@ describe("a browser founding ends with the promote board's plane act", () => {
     expect(r.first).toBe((seen.foundings[0]!.result["founderEdge"] as { deviceVerifyingKey: string }).deviceVerifyingKey);
   }, 120_000);
 });
+
+describe("a one-device browser fleet lowers a kāpae under the fresh unlock alone (row 7, S2)", () => {
+  test("RED: a lower with no ward route refuses `ward-needs-fresh-unlock` and lands nothing; CONTROL: the passphrase typed for the act lowers it, with no second device asked", async () => {
+    const { sealBrowserKeystore, lockBrowserCustody } = await import("../src/browser-custody.js");
+    const { generateOrLoadBrowserPersonaRoot } = await import("../src/browser-vessel-identity.js");
+    const { runWardAct } = await import("../src/ward-core.js");
+    const { browserWardSigner, BrowserWardRefused } = await import("../src/browser-ward.js");
+    const { promoteBoardDoor, readPromoteBoard, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } = await import("@lararium/mesh");
+    const idbName = `lares:lower-${globalThis.crypto.randomUUID()}`, PASS = "one device's route", GROUP = "one-device-face", D = "d".repeat(64);
+    await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
+    const root = await generateOrLoadBrowserPersonaRoot(idbName, 0);
+    lockBrowserCustody(idbName);
+    const atom = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(4)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(4)) };
+    const face = { group: GROUP, grant: (k: string) => k === root.verifyingKey, device: (k: string) => k === atom.key };
+    const spawn = () => ({
+      postMessage(_m: unknown, transfer: Transferable[]) { const port = transfer[0] as MessagePort; port.onmessage = async (m) => { port.postMessage(await runWardAct(m.data)); }; },
+      terminate() {},
+    });
+    const acts: unknown[] = [];
+    const doorWith = (askWardRoute?: () => Promise<string>) => promoteBoardDoor({
+      group: GROUP, face, atom, epoch: () => 0,
+      rootSigner: async () => { if (!askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock"); return browserWardSigner(idbName, 0, await askWardRoute(), spawn); },
+      board: { records: async () => acts, land: async (a) => { acts.push(a); } },
+      projection: () => ({ planes: {} }),
+    });
+    const hand = { kind: "hand" as const, id: atom.key };
+    await doorWith().kapae({ action: "raise", wiki: "daemon", digest: D, who: hand });
+    expect(readPromoteBoard(acts, face).kapae("daemon", D)).toBe("held");
+    await expect(doorWith().kapae({ action: "lower", wiki: "daemon", digest: D, who: hand })).rejects.toMatchObject({ code: "ward-needs-fresh-unlock" });
+    expect(acts).toHaveLength(1);
+    await doorWith(async () => PASS).kapae({ action: "lower", wiki: "daemon", digest: D, who: hand });
+    expect(readPromoteBoard(acts, face).kapae("daemon", D)).toBe("withdrawn");
+  });
+});
