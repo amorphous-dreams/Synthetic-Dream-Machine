@@ -376,16 +376,38 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     });
   }
 
-  /** Start the drain now (releasing a trigger's held turn) and await every generation marked so far. */
-  private async _drainNow(close = false): Promise<DrainOutcome> {
-    this._firing++;
-    try {
+  /** THE one resting loop while a boundary drain pends: every further boundary or handsRested caller joins it, none starts its own. */
+  private _resting: Promise<DrainOutcome> | null = null;
+  /** A caller joined the resting loop after its last ask: the loop asks once more, so that caller's marks-so-far rest before it answers. */
+  private _restAgain = false;
+
+  /**
+   * Start the drain now (releasing a trigger's held turn) and await every generation marked so far. While one such wait pends, a further
+   * call JOINS it: repeated production signals under a hung receipt (an act's boundary, handsRested) hold one loop, never one re-ask loop each.
+   */
+  private _drainNow(close = false): Promise<DrainOutcome> {
+    const release = (): void => {
       const held = this._heldRun; this._heldRun = null;
       held?.();
       this.drain.kick();
-      if (close) return await this.drain.close();
-      return await this._whenAllRested();
-    } finally { this._firing--; }
+    };
+    if (!close && this._resting) { this._restAgain = true; release(); return this._resting; }
+    this._firing++;
+    release();
+    if (close) return this.drain.close().finally(() => { this._firing--; });
+    return (this._resting = this._restingLoop());
+  }
+
+  /** The shared loop: `_whenAllRested`, asked once more for a caller that joined after the last ask. It clears its own seat before it answers. */
+  private async _restingLoop(): Promise<DrainOutcome> {
+    try {
+      for (;;) {
+        this._restAgain = false;
+        const outcome = await this._whenAllRested();
+        if (outcome.kind === "acked" && this._restAgain) continue;
+        return outcome;
+      }
+    } finally { this._firing--; this._resting = null; }
   }
 
   /** Every generation marked so far rests: a `superseded` whole-drain target was handed forward to a newer one and never read as rested, so ask again for the generation marked by now. */
