@@ -208,6 +208,22 @@ export function makeNodeCasResolver(opts: { readonly cidDir: string; readonly co
   return makeCidResolver(local, shore, (cid, bytes) => { writeCasEntriesFs([{ cid, bytes }], cidDir); });
 }
 
+/**
+ * The reading `cas-fetch` answers: whether the cid resolved (`held`), whether the vessel FETCHED it (`fetched`) and its size. `fetched`
+ * compares against a VERIFIED local read of either local tier: a file that no longer recomputes to its address is not held, so
+ * the resolver's fetch from the shore (and its write-through repair) reads as the fetch it was.
+ */
+export async function casFetchReading(
+  cid: string,
+  dirs: { readonly cidDir: string; readonly corpusCasDir: string | null },
+  resolve: (cid: string) => Promise<Uint8Array | null>,
+): Promise<{ readonly held: boolean; readonly fetched: boolean; readonly bytes: number }> {
+  const before = readVerifiedCasBlobFromFs(cid, dirs.cidDir) !== null
+    || (dirs.corpusCasDir !== null && readVerifiedCasBlobFromFs(cid, dirs.corpusCasDir) !== null);
+  const bytes = await resolve(cid);
+  return { held: bytes !== null, fetched: bytes !== null && !before, bytes: bytes?.byteLength ?? 0 };
+}
+
 // ── PIN and RELEASE (tiddler-carriage #/pin-and-release) ─────────────────────
 //
 // A blob is RETAINED while any locally-held record references its cid (`casReferences`, derived —

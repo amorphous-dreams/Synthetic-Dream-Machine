@@ -14,7 +14,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import { nodeContentReader } from "../src/vessel-island-pool.js";
 import { createHash } from "node:crypto";
-import { corpusCasDirFromEnv, makeNodeCasResolver } from "../src/node-cas.js";
+import { casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver } from "../src/node-cas.js";
 
 const made: string[] = [];
 const tmp = (): string => { const d = mkdtempSync(join(tmpdir(), "cas-construction-")); made.push(d); return d; };
@@ -57,10 +57,25 @@ describe("the CAS dirs are fixed at construction", () => {
     expect(src.split("casDirForStorage(").length - 1).toBe(1);
   });
 
-  test("C7 — cas-fetch reads `before` across both local tiers, so a corpus hit reports fetched:false", () => {
-    const src = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
-    const m = /registry\.register\("cas-fetch"[\s\S]*?const before = ([^;]+);/.exec(src);
-    expect(m?.[1]).toMatch(/cidDir\)[\s\S]*corpusCasDir/);
+  test("C7 — cas-fetch: a corrupt local file with good shore bytes reads fetched:true; a sound local or corpus hit reads fetched:false", async () => {
+    const good = new TextEncoder().encode("the bytes the address names");
+    const cid = "sha256:" + createHash("sha256").update(good).digest("hex");
+    const runtime = tmp(), corpus = tmp();
+    const shore = { discover: async () => ["herm"], fetchBlock: async () => good };
+    const dirs = { cidDir: runtime, corpusCasDir: corpus };
+    const resolve = makeNodeCasResolver({ ...dirs, shore });
+    writeFileSync(join(runtime, cid), new TextEncoder().encode("rotted at rest"));
+    expect(await casFetchReading(cid, dirs, resolve)).toEqual({ held: true, fetched: true, bytes: good.byteLength });
+    // the write-through repaired the file, so the next read holds it locally
+    expect(await casFetchReading(cid, dirs, resolve)).toEqual({ held: true, fetched: false, bytes: good.byteLength });
+    // CONTROL: a sound corpus-tier hit fetched nothing
+    const other = new TextEncoder().encode("a staged carrier body");
+    const otherCid = "sha256:" + createHash("sha256").update(other).digest("hex");
+    writeFileSync(join(corpus, otherCid), other);
+    expect(await casFetchReading(otherCid, dirs, resolve)).toEqual({ held: true, fetched: false, bytes: other.byteLength });
+    // CONTROL: absent everywhere with no shore holder is a miss
+    const none = makeNodeCasResolver({ ...dirs, shore: { discover: async () => [], fetchBlock: async () => null } });
+    expect(await casFetchReading("sha256:" + "00".repeat(32), dirs, none)).toEqual({ held: false, fetched: false, bytes: 0 });
   });
 
   test("C3 — the record's cas answers from the corpus dir as its second tier", async () => {

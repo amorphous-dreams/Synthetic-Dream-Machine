@@ -293,9 +293,12 @@ test.each([false, true])("recovery retry rechecks the file without another edit 
     releaseRender();
     await projector.idle();
     capability.answer({ type: "receipt:issued", requestId: asks[0]!.requestId, issued: true });
-    // WAIT ON THE CONDITION, never a turn count: a recheck rides real disk I/O (the render, the file read), which `setImmediate`
-    // turns outrun under load. Quiet means the recheck count and the ask count held still across several rounds, each round
-    // letting a slice of real time pass (a receipt left unanswered holds the drain, so no idle edge can stand in for this).
+    // A HEURISTIC, named as one. No settled signal serves here: measured, `handsRested` never resolves under the standing conflict
+    // (the refused title stays owed), and once a retry stands a fresh receipt ask unanswered the drain is held, so neither
+    // `landingIdle` nor `projector.idle` can signal rest either. A recheck rides real disk I/O that `setImmediate` turns outrun
+    // under load, so the evidence left is that the recheck and ask counts hold still across a stretch of real time (12 rounds
+    // of 5 ms). A host slower than that stretch could still pass or fail this on timing; the stretch replaced a turn count that
+    // failed 2 runs in 50 under load.
     const quiet = async (): Promise<void> => {
       let still = 0, mark = "";
       for (let round = 0; round < 400 && still < 12; round++) {

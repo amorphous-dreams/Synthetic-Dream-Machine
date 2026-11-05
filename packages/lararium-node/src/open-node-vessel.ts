@@ -67,7 +67,7 @@ import type { JoinedFaceAuth, WikiActivationCap, PortIslandToVesselMsg } from "@
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
-import { casDirForStorage, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
+import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
 import { answerReceiptWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest, ownEntry } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
@@ -3408,11 +3408,8 @@ async function prepareNodeBootOn(
     registry.register("cas-fetch", async (args) => {
       const cid = typeof args["cid"] === "string" ? (args["cid"] as string) : "";
       if (!cid) throw new Error("cas-fetch: `cid` required");
-      // Held before = either LOCAL tier (the runtime `cid/` dir or the corpus store): a hit in either fetched nothing.
-      const before = readCasBlobFromFs(cid, cidDir) !== null || (corpusCasDir !== null && readCasBlobFromFs(cid, corpusCasDir) !== null);
-      const bytes = await resolveCid(cid);
-      return { verb: "cas-fetch", cid, held: bytes !== null, fetched: bytes !== null && !before, bytes: bytes?.byteLength ?? 0,
-               door: hermShore ? "herm-shore" : "local-only" };
+      const reading = await casFetchReading(cid, { cidDir, corpusCasDir }, resolveCid);
+      return { verb: "cas-fetch", cid, ...reading, door: hermShore ? "herm-shore" : "local-only" };
     });
 
     // cad-seal — REGISTER a carrier body the content-key holder sealed. The holder lives in the daemon island,
