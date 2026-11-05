@@ -149,3 +149,31 @@ describe("the product ward door answers from no file (S2 cold read, P3)", () => 
     }
   });
 });
+
+describe("the product founds no face from a marker (S2 re-read, P2)", () => {
+  test("RED: under a root carrying the harness's marker, the product's face-route prompt refuses with no terminal and never answers the published test route; CONTROL: the harness import seats the test route explicitly", async () => {
+    const { mkdtempSync, writeFileSync, rmSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join, resolve } = await import("node:path");
+    const { pathToFileURL } = await import("node:url");
+    const { gatherNewFaceRoute } = await import("../src/face-route-prompt.js");
+    const root = mkdtempSync(join(tmpdir(), "face-route-marker-"));
+    writeFileSync(join(root, ".lar-test-scratch"), "");
+    const prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
+    try {
+      const answer = await gatherNewFaceRoute({ label: "h0" }).then((slots) => JSON.stringify(slots), (e: Error) => e.name);
+      expect(answer, "the product never binds a face to the published test route").not.toContain("test-founding-passphrase");
+      expect(answer).toBe("CredentialTtyRefusal");
+      const node = await import("@lararium/node");
+      node.seatFaceRoute(null);
+      const harness = await import(pathToFileURL(resolve(import.meta.dirname, "../../../tools/test-ward-route.mjs")).href) as { seatHarnessRoutes: (n: unknown) => void };
+      expect(node.faceRouteSeated(), "importing the harness module into a process that is no CLI seats nothing").toBe(false);
+      harness.seatHarnessRoutes(node);
+      expect(await node.gatherFaceRoute("h0")).toEqual([{ t: 1, pins: [{ kind: "passphrase", passphrase: "test-founding-passphrase" }] }]);
+    } finally {
+      if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
