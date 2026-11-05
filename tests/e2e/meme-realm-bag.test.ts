@@ -136,6 +136,21 @@ let bPut = false;
 const errorOf = (text: string): string =>
   JSON.stringify((JSON.parse(text.split("\n").find((l) => l.startsWith("{")) ?? "{}") as Record<string, unknown>)["error"] ?? null);
 
+/**
+ * Copy a store whose daemon still runs. The automerge store compacts `incremental` chunks while the walk reads the tree, so a
+ * file the walk listed can leave before it is stat-ed (`ENOENT` mid-copy: CI run 42102707425). A copy that meets a vanishing
+ * file starts over on a clean target; a store that never settles fails loudly after six tries.
+ */
+function copyLiveStore(from: string, to: string): void {
+  for (let attempt = 1; ; attempt++) {
+    try { cpSync(from, to, { recursive: true }); return; }
+    catch (e) {
+      if (attempt >= 6 || (e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+      rmSync(to, { recursive: true, force: true });
+    }
+  }
+}
+
 describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relation ★", () => {
   beforeAll(async () => {
     rootB = mkdtempSync(join(stageDir(), "lares-staged-Bop-"));
@@ -648,7 +663,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const daemonUrl = bootDocUrl(A!, "daemon");
     expect(daemonUrl, "A's boot names her daemon document").toBeTruthy();
     const copyA = mkdtempSync(join(stageDir(), "lares-ledger-copyA-"));
-    cpSync(vesselStorageDir(A!), copyA, { recursive: true });
+    copyLiveStore(vesselStorageDir(A!), copyA);
     const repoCopy = new Repo({ storage: new NodeFSStorageAdapter(copyA) });
     let atomKeyA = "";
     let ownLedgerA = "";
@@ -700,7 +715,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     expect(ford.json?.["ok"], `CONTROL — B still reads A's ford through the realm: ${said(ford)}`).toBe(true);
     // B's own store, read from a COPY (her daemon keeps running for the steps after): no row of A's ledger stands there.
     const copyB = mkdtempSync(join(stageDir(), "lares-ledger-copyB-"));
-    cpSync(vesselStorageDir(B), copyB, { recursive: true });
+    copyLiveStore(vesselStorageDir(B), copyB);
     const repoCopyB = new Repo({ storage: new NodeFSStorageAdapter(copyB) });
     try {
       const body = await Promise.race([
