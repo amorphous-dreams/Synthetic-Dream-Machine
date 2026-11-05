@@ -102,6 +102,59 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-swarm-slices`>>
+!! Row 7's slices ~ order, state and the design of S3 to S6
+
+The wiki-daemon key cap stands in six slices, each red-first with its control. The operator ruled it at standing (2026-11-04) and ruled the ward's reach (2026-11-04 and 2026-11-05; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). The founding waits on `S1` to `S3`, `S2b`, `S3-pre-b` and `S3b`; `S4` to `S6` follow the standing.
+
+|! Slice |! Holds |! State, 2026-11-05 |
+| `S1` | the swarm tiddler model and the hand-only verbs | built; rides the `S2` lane |
+| `S2` | the ward: a `ward-slots.bin` tree under each face, a fresh unlock per act, passkey refused | built with its cold-read cures and the marker cure (the product founds no face from a marker file); on its lane, CI green at its earlier head |
+| `S2b` | the browser root under the ward | owed before the rite |
+| `S3a` | the co-sign judge, the self-answer cure, `ask --detail`, the blinded per-face vessel tag | built on its own lane |
+| `S3-pre-b` | the founding and join wiring of the vessel tag, default `required` | building on the `S3a` lane; founding-critical |
+| `S3b` | the gate hook that calls the judge | owed before the rite, after `S2` |
+| `S4` | the capability channel and the AF_UNIX probe | designed below |
+| `S5` | vessel-signed roster and receipt, the broker swap | designed below |
+| `S6` | canon | designed below |
+
+!!! Live holes the scouts found
+
+Each cure rides the slice named.
+* `S3`: the intent plane approves a SELF-answer. Any enrolled device signs an answer, and the read checks only that the answer's executor equals the acting atom, so the asker approves its own ask.
+* `S4`: `tools/launch-codex.mjs` hands the supervisor fds 3 and 4 without close-on-exec, and the bwrap spawn probably carries them into bwrap and Codex. Treat it as red until a witness measures that the seat sees only fds 0 to 2.
+* A same-uid process can open `session:open` with hand `cli` and wear the unlocked face (the connector defaults the hand to `cli`, and `cli` maps to the `verb` profile, which reaches every hand-only act, since the socket refuses hand-only acts for the `seat` profile alone). The ward closes that for bound acts. The lift posture for user wikis stays advisory by ruling.
+* Node has no `socketpair(2)` and cannot pass an fd to an unrelated live process.
+
+!!! S3 ~ the co-sign
+
+* A pure judge, `judgeCosign({view, intentId, requester, projection, standing, digest})` in `lararium-mesh/src/ward-cosign.ts`. The device count reads the projection's signed admission fold: zero or one device answers `none` (the fresh unlock alone), two or more answer `cosign`.
+* A co-sign approves only when the answer carries a signature by an enrolled device that differs from the requester and whose standing reads `stands`; the ask's signer equals the requester; the ask's detail equals the digest of (act, face, wiki, head cid); the answer stands uncontested; and the intent stands unspent. Set-aside devices count toward the total and never co-sign. The co-signing device fresh-unlocks too.
+* `ward-kapae-lower`, `ward-house-cap` and `ward-push-go` register as single-effect face intent verbs with audience `asks`. The outcome slot spends the intent.
+* The gate (an `S2` ward act) calls the judge. When a co-sign applies, it writes the ask and refuses `ward-awaiting-cosign: <ask cid>`: no clock, no timeout, no fallback. An offline second device refuses for good until it answers.
+* Reds: a self-answer must not approve; a digest mismatch, an aside answerer and a contested pair refuse; a replay after the outcome refuses `spent`; with two devices and a peer that never answers, a thousand retries stay `ward-awaiting-cosign`. Controls: a second device approves, and a one-device fleet lands on the unlock alone. A table-driven case runs over node and browser vessels.
+
+!!! S4 ~ the capability channel
+
+* The swarm verbs form their own `swarmDoor` and never join the session acts the custody socket admits, so a session of any hand (`cli`, `tab`, `seat`) that reaches for a swarm act refuses `act-rides-the-custody-door`.
+* A ward act, `swarm-holder-start {kind: broker|watchdog}`, makes the daemon spawn the holder from a pinned tool path with `stdio[3]="pipe"` (libuv's socketpair) through an `sh` double fork, so the holder reparents to init: the holder stands beside the daemon, never under it. A ppid-chain witness proves the daemon pid sits in no seat's or holder's ancestry, with a direct-child spawn as its red control. Only if that witness cannot hold does a daemon-minted bearer ride the broker's inherited pipe, zeroed after use.
+* The daemon identifies a holder by which end of the pair spoke, and no token rides a frame. The broker holds go-read, go-spend, receipt-sign, receipt-verify and cap-read; the watchdog holds roster-write alone. An EOF or a dead daemon reads `cap-gone`, and a restart mints fresh pairs.
+* The probe measures first. A fixture server (never the daemon) takes a connect under bwrap plus Codex's sandbox with the network off and workspace write (`codex sandbox linux` or `codex debug landlock`; no model call). `tools/seat-socket-probe.expect.json` pins the measured result, and the hermetic arms assert both outcomes: a connect that succeeds without a capability gets `no-cap`, and a denied connect gets EPERM. Until the probe measures, a Codex seat counts as able to reach the socket, so the verbs ride the fd and never the face-wearing socket path.
+* The fd cure closes fds 3 and up before `exec bwrap`.
+
+!!! S5 ~ the broker swap
+
+* A client over the inherited capability fd, `tools/swarm-door.mjs`, carries the frames: `go-read` (the daemon verifies the hand's `wardSig` and the co-sign outcome, spends once and returns branch and head), `receipt-sign` (a vessel signature in the domain `swarm-receipt`, writing `receipt/<tree>`), `receipt-verify`, `cap-read` and, for the watchdog, `roster-write`. A locked custody answers `swarm-vessel-locked`.
+* The flat go file, the relay's HMAC key, its receipts map and the go lane directory retire (`push-go.mjs` goes; the isolated state stays). With no capability fd the relay refuses at start, before it makes a broker root, with "no standing daemon: swarm controls need the founded wiki", and writes nothing. The watchdog stops a seat on a capability EOF, and the ceiling still rides the launch argument.
+* Reds, against a stub daemon pair end: a push whose go came only from the stub pushes (control); no record gives "no push-go"; a wrong head, a replay after the spend and a forged receipt all refuse; with no fd the relay exits non-zero and the broker root shows nothing new. A retirement witness (`tools/swarm-retired-witness.sh`) greps for `push-go`, `createHmac`, a `randomBytes(32)` key in the relay, the go file and the go lane directory, with a positive fixture. On the node side, a receipt signature verifies under the vessel's public key, and a go that was never warded answers `go-unsigned`.
+* The residual: the receipt trust root names the daemon's vessel key.
+
+!!! S6 ~ canon
+
+This carrier gains its standing sections and rewrites the broker bullets and the trust-model line that name an in-memory key; the first owed row's in-memory-key residual retargets to the vessel-key residual; `kahua-memory-stage` closes the lift tension for the daemon and kahua wikis once the ward stands and keeps it open for user wikis; the road's `L22` row and the `F11` note follow.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/edges`>>
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
@@ -111,6 +164,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1GDHHpSoMR1JRmDN2Sok5h6dHDWlbhXOZz1qpMDnrbk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ja_40gkT1xDHOSNKGhRdONDrUYL2tD2w9-IlYc5YqnE`>>
 
 <<^ code=`&#x0004;` to=`?`>>
