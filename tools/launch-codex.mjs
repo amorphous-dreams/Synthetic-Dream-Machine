@@ -62,11 +62,12 @@ export function ceilingFor(mode, override) {
 }
 
 /** The last total_token_usage.total_tokens in a rollout's lines, or null when none. */
-/** A reader of one rollout's running token total that reads only the bytes appended since its last call. */
+/** A reader of one rollout's running token total that reads only the bytes appended since its last call; `.fresh` marks a call that parsed a new token_count event. */
 export function tokenTail(file) {
   let pos = 0, carry = "", total = null;
   const buf = Buffer.alloc(262144);
-  return () => {
+  const read = () => {
+    let fresh = false;
     const fd = openSync(file, "r");
     try {
       for (;;) {
@@ -77,11 +78,14 @@ export function tokenTail(file) {
         const lines = carry.split("\n");
         carry = lines.pop();
         const t = rolloutTokens(lines);
-        if (t !== null) total = t;
+        if (t !== null) { total = t; fresh = true; }
       }
     } finally { closeSync(fd); }
+    read.fresh = fresh;
     return total;
   };
+  read.fresh = false;
+  return read;
 }
 
 export function rolloutTokens(lines) {
@@ -159,7 +163,7 @@ export function findRollout(home, { marker, before, seen = new Set() }) {
  * ticks) and writes ceiling.md; fails closed (the same stop) when no token reading appears for `blindTicks` ticks.
  * Returns "ceiling", "blind" or "exited".
  */
-export async function watchSeat({ seatDir, pid, ceiling, mode, tokens, alive, kill, sleep, graceTicks = 10, blindTicks = 200 }) {
+export async function watchSeat({ seatDir, pid, ceiling, mode, tokens, advanced = () => true, alive, kill, sleep, graceTicks = 10, blindTicks = 200 }) {
   let blind = 0;
   const stop = async (why) => {
     kill("SIGTERM");
@@ -167,12 +171,18 @@ export async function watchSeat({ seatDir, pid, ceiling, mode, tokens, alive, ki
     if (alive()) kill("SIGKILL");
     writeFileSync(join(seatDir, "ceiling.md"), `# Ceiling reached\n\nThe ${mode} seat (pid ${pid}) ${why} The supervisor stopped it (SIGTERM, then SIGKILL if it lived).\n`);
   };
-  while (alive()) {
-    const t = tokens();
-    if (typeof t === "number") blind = 0; else blind++;
-    if (typeof t === "number" && t >= ceiling) { await stop(`read ${t} total tokens in its rollout (total_token_usage.total_tokens, cached input counted) against a ceiling of ${ceiling}.`); return "ceiling"; }
-    if (blind >= blindTicks) { await stop(`showed no token reading in any rollout for ${blindTicks} ticks, so no ceiling could be enforced (failing closed; ceiling ${ceiling}).`); return "blind"; }
-    await sleep();
+  try {
+    while (alive()) {
+      const t = tokens();
+      // Blindness resets on a NEW token event only; a re-read of the last total is a stale reading.
+      if (typeof t === "number" && advanced()) blind = 0; else blind++;
+      if (typeof t === "number" && t >= ceiling) { await stop(`read ${t} total tokens in its rollout (total_token_usage.total_tokens, cached input counted) against a ceiling of ${ceiling}.`); return "ceiling"; }
+      if (blind >= blindTicks) { await stop(`showed no new token event for ${blindTicks} ticks (no reading, or a stale one), so no ceiling could be enforced (failing closed; ceiling ${ceiling}).`); return "blind"; }
+      await sleep();
+    }
+  } catch (error) {
+    await stop(`could not be watched (${error?.message ?? error}); failing closed.`);
+    return "error";
   }
   return "exited";
 }
@@ -404,6 +414,7 @@ function superviseMain(o) {
     kill: (sig) => { if (!exited) { try { process.kill(-child.pid, sig); } catch { /* gone */ } } },
     sleep: () => new Promise((r) => setTimeout(r, 3000)),
     tokens: () => { if (!tail) { const file = findRollout(home, { marker, before, seen }); if (file) tail = tokenTail(file); } return tail ? tail() : null; },
+    advanced: () => Boolean(tail?.fresh),
   }).then(() => (exited ? 0 : new Promise((r) => child.on("exit", () => r(0)))));
 }
 

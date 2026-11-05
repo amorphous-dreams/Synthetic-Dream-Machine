@@ -648,7 +648,7 @@ test("P1-4 the supervisor fails closed: a seat with no token reading for blindTi
   const signals = []; let up = true;
   const r = await watchSeat({ seatDir, pid: 5, ceiling: 1e9, mode: "build", tokens: () => null, alive: () => up, kill: (s) => { signals.push(s); up = false; }, sleep: async () => {}, blindTicks: 3, graceTicks: 1 });
   assert.equal(r, "blind"); assert.deepEqual(signals, ["SIGTERM"]);
-  assert.match(readFileSync(join(seatDir, "ceiling.md"), "utf8"), /no token reading.*failing closed/s);
+  assert.match(readFileSync(join(seatDir, "ceiling.md"), "utf8"), /no new token event.*failing closed/s);
   let n = 0;
   const ok = await watchSeat({ seatDir: mkdtempSync(join(tmpdir(), "blind-")), pid: 5, ceiling: 1e9, mode: "build", tokens: () => (n++ < 2 ? null : 5), alive: () => n < 10, kill() { throw new Error("killed"); }, sleep: async () => {}, blindTicks: 3 });
   assert.equal(ok, "exited", "CONTROL a reading that appears in time resets the count");
@@ -660,10 +660,10 @@ test("P1-4 tokenTail reads only the bytes appended since its last call and holds
   const tail = tokenTail(f);
   assert.equal(tail(), 10);
   appendFileSync(f, `${tc(20)}\n${tc(30)}`);
-  assert.equal(tail(), 20, "a line not yet newline-terminated waits");
+  assert.equal(tail(), 20, "a line not yet newline-terminated waits"); assert.equal(tail.fresh, true);
   appendFileSync(f, "\n");
-  assert.equal(tail(), 30);
-  assert.equal(tail(), 30, "nothing new reads the same total");
+  assert.equal(tail(), 30); assert.equal(tail.fresh, true);
+  assert.equal(tail(), 30, "nothing new reads the same total"); assert.equal(tail.fresh, false, "a re-read of the last total is stale");
 });
 
 test("P1-4 findRollout remembers the rollouts whose prompt carries another marker and skips them next tick", () => {
@@ -676,4 +676,36 @@ test("P1-4 findRollout remembers the rollouts whose prompt carries another marke
   const mine = join(dir, "rollout-mine.jsonl");
   writeFileSync(mine, `${cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ text: "SEAT-MARKER mine" }] } })}\n`);
   assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before: new Set(), seen }), mine);
+});
+
+test("P1-4 a STALE reading never resets the blind counter: token events stop while the seat lives and the supervisor stops it at the blind limit", async () => {
+  const seatDir = mkdtempSync(join(tmpdir(), "stale-"));
+  const signals = []; let up = true, n = 0;
+  const r = await watchSeat({ seatDir, pid: 5, ceiling: 1e9, mode: "build", tokens: () => 500, advanced: () => n++ < 2, alive: () => up, kill: (s) => { signals.push(s); up = false; }, sleep: async () => {}, blindTicks: 4, graceTicks: 1 });
+  assert.equal(r, "blind"); assert.deepEqual(signals, ["SIGTERM"]);
+  assert.match(readFileSync(join(seatDir, "ceiling.md"), "utf8"), /no new token event.*stale/s);
+});
+
+test("P1-3 a rollout read error fails closed: any error while watching stops the seat's group and names the error; CONTROL a healthy watch stops nothing", async () => {
+  const seatDir = mkdtempSync(join(tmpdir(), "err-"));
+  const signals = []; let up = true, n = 0;
+  const r = await watchSeat({ seatDir, pid: 5, ceiling: 1e9, mode: "build", tokens: () => { if (n++ > 1) throw new Error("EACCES: rollout unreadable"); return 5; }, alive: () => up, kill: (s) => { signals.push(s); up = false; }, sleep: async () => {}, graceTicks: 1 });
+  assert.equal(r, "error"); assert.deepEqual(signals, ["SIGTERM"]);
+  assert.match(readFileSync(join(seatDir, "ceiling.md"), "utf8"), /EACCES: rollout unreadable.*failing closed/s);
+  let m = 0;
+  const ok = await watchSeat({ seatDir: mkdtempSync(join(tmpdir(), "err-")), pid: 5, ceiling: 1e9, mode: "build", tokens: () => 5, alive: () => m++ < 3, kill() { throw new Error("killed"); }, sleep: async () => {} });
+  assert.equal(ok, "exited");
+});
+
+test("P1-3 live: a rollout that turns unreadable mid-run stops the stub seat through the real supervisor", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "supx-"));
+  const home = join(dir, "home"), seat = join(dir, "seat"), sess = join(home, ".codex", "sessions", "2026", "11", "04"); mkdirSync(sess, { recursive: true }); mkdirSync(seat);
+  const bin = join(dir, "bin"); mkdirSync(bin);
+  const roll = join(sess, "rollout-live.jsonl");
+  writeFileSync(join(bin, "codex"), `#!/bin/sh\nsleep 2\nchmod 000 '${roll}'\nsleep 60\n`, { mode: 0o755 });
+  writeFileSync(join(seat, "prompt.txt"), "SEAT-MARKER x\n\nbrief"); writeFileSync(join(seat, "before.json"), "[]");
+  writeFileSync(roll, `${cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ text: "SEAT-MARKER x\n\nbrief" }] } })}\n${tc(5)}\n`);
+  const r = spawnSync(process.execPath, [TOOL, "--supervise", "--seat-dir", seat, "--ceiling", "100000", "--mode", "read", "--marker", "SEAT-MARKER x", "--before", join(seat, "before.json"), "--prompt-file", join(seat, "prompt.txt"), "--home", home, "--", "exec"], { encoding: "utf8", timeout: 40000, env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, HOME: home } });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(readFileSync(join(seat, "ceiling.md"), "utf8"), /could not be watched.*failing closed/s);
 });

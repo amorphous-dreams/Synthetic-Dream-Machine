@@ -183,21 +183,6 @@ async function pathIsMissing(file) {
   }
 }
 
-async function readRegularNoSymlink(file) {
-  let fh;
-  try {
-    fh = await open(file, FS.O_RDONLY | FS.O_NOFOLLOW);
-    const st = await fh.stat();
-    if (!st.isFile()) throw new Error('not a regular file');
-    if (st.nlink > 1) throw new Error('hardlink');
-    return await fh.readFile();
-  } catch (error) {
-    if (error?.code === 'ELOOP') throw new Error('symlink');
-    throw error;
-  } finally {
-    await fh?.close();
-  }
-}
 
 export async function readSafe(worktree, rel) {
   assertRelPath(rel);
@@ -294,7 +279,8 @@ function runTarExtract(ctx, tarBytes, dir) {
   return { ok: result.status === 0, output: combineOutput(result), stdout: result.stdout ?? '' };
 }
 
-export async function commitWithReceipt(ctx, { paths, messageFile, expectHead }) {
+export const MESSAGE_CAP = 16384;
+export async function commitWithReceipt(ctx, { paths, message: messageText, expectHead }) {
   if (!Array.isArray(paths) || paths.length === 0) return fail('paths required');
   let head = git(ctx, ['rev-parse', `refs/heads/${ctx.branch}`]);
   if (!head.ok) return fail(head.output);
@@ -359,12 +345,11 @@ export async function commitWithReceipt(ctx, { paths, messageFile, expectHead })
     if (!receipt1.ok) return fail('check receipt verification failed');
   }
 
-  let message;
-  try {
-    message = await readRegularNoSymlink(messageFile);
-  } catch (error) {
-    return fail(error instanceof Error ? error.message : String(error));
-  }
+  // The message rides the request as text: the broker opens no lead-controlled file for it.
+  if (typeof messageText !== 'string' || messageText.length === 0) return fail('commit requires message text');
+  const message = Buffer.from(messageText, 'utf8');
+  if (message.length > MESSAGE_CAP) return fail(`commit message is ${message.length} bytes, over the ${MESSAGE_CAP} cap`);
+
 
   const commit = git(ctx, ['commit-tree', tree, '-p', head, '-F', '-'], {
     input: message,

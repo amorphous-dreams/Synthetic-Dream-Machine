@@ -38,6 +38,14 @@ await (await import('node:fs/promises')).mkdir(relayDir, { recursive: true });
 const relay = await openHeld(relayDir, lane);
 // THE BROKER'S OWN STATE lives where the lead cannot write: beside the go file.
 const iso = path.join(goDir, 'broker-iso');
+// The broker's OWN state dir is checked by real path, not only its parent: it must lie outside the lane, every worktree, and the whole scratch lane tree a lead can write.
+await (await import('node:fs/promises')).mkdir(iso, { recursive: true });
+const isoReal = await realpath(iso);
+const laneTop = target => path.join(scratch, path.relative(scratch, target).split(path.sep)[0]);
+for (const guarded of [lane, worktree]) {
+  if (isoReal === guarded || inside(guarded, isoReal) || inside(isoReal, guarded)) throw new Error('broker state must sit outside the lane root and the worktree (and hold neither)');
+  if (isoReal === laneTop(guarded) || inside(laneTop(guarded), isoReal)) throw new Error('broker state must sit outside the scratch lane tree a lead can write');
+}
 // THE RECEIPT KEY NEVER TOUCHES DISK: a workspace-write sandbox fences writes, not reads, so any key file the user can read a lead can read. The key and the receipts live in this process's memory alone.
 const key = randomBytes(32);
 const receipts = new Map();
@@ -117,11 +125,9 @@ async function handle(request) {
   }
   if (request.kind === 'commit') {
     if (!Array.isArray(request.paths) || request.paths.length === 0) throw new Error('commit requires nonempty paths');
-    if (typeof request.message !== 'string' || !request.message) throw new Error('commit requires a message file');
-    const message = await realpath(path.resolve(lane, request.message));
-    if (!inside(lane, message)) throw new Error('message file resolves outside lane-root');
+    if (typeof request.message !== 'string' || !request.message) throw new Error('commit requires message text');
     if (checks.length === 0) throw new Error('no checks configured for the check seat');
-    const done = await commitWithReceipt(await brokerCtx(), { paths: request.paths, messageFile: message, expectHead: request.expectHead ?? (git('rev-parse', `refs/heads/${branch}`).stdout || '').trim() });
+    const done = await commitWithReceipt(await brokerCtx(), { paths: request.paths, message: request.message, expectHead: request.expectHead ?? (git('rev-parse', `refs/heads/${branch}`).stdout || '').trim() });
     return { ok: done.ok, head: done.head, output: cap(done.output) };
   }
   if (request.kind === 'push') {
