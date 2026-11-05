@@ -38,15 +38,16 @@ export async function runSwarmVerb(opts: {
   }
   const str = (key: string): string => (typeof opts.args[key] === "string" ? opts.args[key] as string : "");
   const request: SwarmRequest = opts.action === "show" ? { action: "show", ...(str("branch") && str("head") ? { branch: str("branch"), head: str("head") } : {}) }
-    : opts.action === "cap-set" ? { action: "cap-set", value: opts.args["value"] }
-    : opts.action === "share-set" ? { action: "share-set", lane: str("lane"), value: opts.args["value"] }
+    : opts.action === "cap-set" ? { action: "cap-set", value: opts.args["value"], ...(opts.args["supersede"] === true ? { supersede: true } : {}) }
+    : opts.action === "share-set" ? { action: "share-set", lane: str("lane"), value: opts.args["value"], ...(opts.args["supersede"] === true ? { supersede: true } : {}) }
     : { action: "go-issue", branch: str("branch"), head: str("head") };
   return await swarmCommand(request, {
     group, face: { group, grant }, signer: signing, epoch: () => face.lineage[face.lineage.length - 1]!.epoch, wiki: opts.wiki,
     // The vessel and lead trust join at the slices that sign roster, receipt and lane state; at S1 the hand alone signs.
     trust: { hand: grant, vessel: () => false, lead: () => false },
     board: { records: async () => swarmBoardRecords(handle.doc(), group), land: async (act) => { handle.change((d) => writeSwarmBoardAct(d, act)); await opts.repo.flush(); } },
-    // A local process names its own hand; the session gate refuses declared seat hands before custody reads.
+    // A local process names its own hand; the session gate refuses declared seat hands before custody reads. That `who` is
+    // ADVISORY: a script holding the face's unlocked custody names the same hand, until the ward binds the signing rows.
     who: { kind: "hand", id: signer.key },
   });
 }

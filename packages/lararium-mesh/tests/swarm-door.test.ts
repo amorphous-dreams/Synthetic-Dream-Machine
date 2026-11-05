@@ -11,6 +11,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed255
 import { SWARM_VERB_HAND_CODES, swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import { signSwarmCap, swarmBoardActCid, swarmBoardRecords, writeSwarmBoardAct, type SignedSwarmBoardAct } from "../src/swarm-board.js";
 import { swarmGoTitle, readGo, type SwarmWikiPort } from "../src/swarm-tiddlers.js";
+import { storedLarRecord } from "../src/stored-record.js";
 
 const GROUP = "face-group", HEAD = "a".repeat(40);
 const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -116,5 +117,40 @@ describe("hand, grant and the standing daemon", () => {
   test("RED: the hand codes name the three mutating verbs and leave show open; CONTROL: every code reads swarm-needs-hand", () => {
     expect(SWARM_VERB_HAND_CODES).toEqual({ "swarm-cap-set": "swarm-needs-hand", "swarm-share-set": "swarm-needs-hand", "swarm-go-issue": "swarm-needs-hand" });
     expect(Object.hasOwn(SWARM_VERB_HAND_CODES, "swarm-show")).toBe(false);
+  });
+});
+
+describe("an unavailable line refuses by name (S1 cold read, P2-2)", () => {
+  test("RED: a cap line citing a missing parent shows unavailable with its reason, and cap-set refuses; CONTROL: a hand's supersede starts a new line that reads its value", async () => {
+    const s = await stand();
+    writeSwarmBoardAct(s.doc, await signSwarmCap({ group: GROUP, epoch: 0, value: 9, parents: ["e".repeat(64)] }, s.root));
+    const shown = await swarmCommand({ action: "show" }, s.deps);
+    expect(shown).toMatchObject({ ok: false, unavailable: { cap: "parent-missing" } });
+    await expect(swarmCommand({ action: "cap-set", value: 10 }, s.deps)).rejects.toMatchObject({ code: "swarm-line-unavailable" });
+    await swarmCommand({ action: "cap-set", value: 10, supersede: true }, s.deps);
+    expect(await swarmCommand({ action: "show" }, s.deps)).toMatchObject({ cap: 10, ok: true });
+    await swarmCommand({ action: "cap-set", value: 12 }, s.deps);
+    expect(await swarmCommand({ action: "show" }, s.deps)).toMatchObject({ cap: 12 });
+  });
+
+  test("RED: a share line citing a missing parent refuses share-set; a seat's supersede refuses; CONTROL: the hand's supersede lands", async () => {
+    const s = await stand();
+    await swarmCommand({ action: "cap-set", value: 10 }, s.deps);
+    const { signSwarmShare } = await import("../src/swarm-board.js");
+    writeSwarmBoardAct(s.doc, await signSwarmShare({ group: GROUP, epoch: 0, lane: "a", value: 2, parents: ["f".repeat(64)] }, s.root));
+    expect(await swarmCommand({ action: "show" }, s.deps)).toMatchObject({ unavailable: { shares: { a: "parent-missing" } } });
+    await expect(swarmCommand({ action: "share-set", lane: "a", value: 3 }, s.deps)).rejects.toMatchObject({ code: "swarm-line-unavailable" });
+    await expect(swarmCommand({ action: "share-set", lane: "a", value: 3, supersede: true }, { ...s.deps, who: { kind: "seat", id: "x" } })).rejects.toMatchObject({ code: "swarm-needs-hand" });
+    await swarmCommand({ action: "share-set", lane: "a", value: 3, supersede: true }, s.deps);
+    expect(await swarmCommand({ action: "show" }, s.deps)).toMatchObject({ shares: { a: 3 } });
+  });
+
+  test("RED: a torn record on the board enters refused; CONTROL: the whole records still read", async () => {
+    const s = await stand();
+    await swarmCommand({ action: "cap-set", value: 10 }, s.deps);
+    const key = `lar:///ha.ka.ba/dreamnet/swarm-act/${encodeURIComponent(GROUP)}/${"9".repeat(64)}`;
+    (s.doc.tiddlers as Record<string, unknown>)[key] = storedLarRecord(key, { text: "{torn" }, "9".repeat(64));
+    const shown = await swarmCommand({ action: "show" }, s.deps);
+    expect(shown).toMatchObject({ cap: 10, refused: 1 });
   });
 });

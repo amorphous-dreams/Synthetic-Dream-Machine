@@ -355,9 +355,10 @@ export function isControlPlaneUri(title: string): boolean {
 /** The swarm's live controls (house cap, lane shares, go, lane state, roster, receipts) rest in the daemon wiki under this prefix. */
 export const SWARM_URI_PREFIX = "$:/lares/swarm/";
 
-/** True for a title that resolves under `SWARM_URI_PREFIX`, read the way `isControlPlaneUri` reads a path. */
+/** True for a title that starts with `SWARM_URI_PREFIX` as spelled, or resolves under it the way `isControlPlaneUri` reads a path: a dot
+ *  segment that folds the title out of the prefix still reads as the swarm's, so no spelling of either side slips past the law. */
 export function isSwarmUri(title: string): boolean {
-  return resolvedTitlePath(title).startsWith(SWARM_URI_PREFIX);
+  return title.startsWith(SWARM_URI_PREFIX) || resolvedTitlePath(title).startsWith(SWARM_URI_PREFIX);
 }
 
 /**

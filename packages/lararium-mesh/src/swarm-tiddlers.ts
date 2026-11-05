@@ -37,7 +37,8 @@ export interface SwarmWikiPort {
 export interface SwarmTrust {
   readonly hand: (key: string) => boolean;
   readonly vessel: (key: string) => boolean;
-  readonly lead: (seat: string, key: string) => boolean;
+  /** A lead signs one lane's state alone: the trust binds the seat, its lane and its key together. */
+  readonly lead: (seat: string, lane: string, key: string) => boolean;
 }
 
 export class SwarmRefused extends Error {
@@ -45,18 +46,45 @@ export class SwarmRefused extends Error {
   constructor(public code: string, detail: string) { super(`${code}: ${detail}`); }
 }
 
-/** A name that rides one title segment: never empty, never a dot segment, never a control character. */
-function segment(name: unknown): string {
-  if (typeof name !== "string" || name.length === 0 || name.length > 200 || name === "." || name === ".." || /[\u0000-\u001f\u007f]/.test(name)) {
-    throw new SwarmRefused("swarm-name-malformed", "a swarm name is a non-empty segment: not a dot, no control character");
+const malformed = (detail: string): never => { throw new SwarmRefused("swarm-name-malformed", detail); };
+
+/** The name, and the name as a reader decodes it (a percent escape it spells), each split on `/`. */
+function spellings(name: string): string[] {
+  const out = [name];
+  try { out.push(decodeURIComponent(name)); } catch { /* a malformed escape keeps its bytes */ }
+  return out;
+}
+
+/**
+ * A name that rides title segments. Neither the name nor its decoded form may hold an empty, `.` or `..` segment, since
+ * `resolvedTitlePath` decodes before it folds dots and a dot segment would carry the title out of the prefix. `slashes` names
+ * the one family whose name spans segments (a branch); every other name rides one segment and refuses a `/` in either spelling.
+ */
+function segment(name: unknown, slashes = false): string {
+  if (typeof name !== "string" || name.length === 0 || name.length > 200 || /[\u0000-\u001f\u007f]/.test(name)) malformed("a swarm name is a non-empty name of at most 200 characters, with no control character");
+  for (const spelling of spellings(name as string)) {
+    if (!slashes && spelling.includes("/")) malformed("this swarm name rides one title segment and holds no slash, in any spelling");
+    if (spelling.split("/").some((s) => s === "" || s === "." || s === "..")) malformed("a swarm name holds no empty, `.` or `..` segment, in any spelling");
   }
-  return encodeURIComponent(name);
+  return encodeURIComponent(name as string);
+}
+
+/**
+ * A branch as git reads a ref name (`git check-ref-format`, the rules a branch name keeps): no `..`, no component that starts
+ * with `.` or ends `.lock`, no trailing `.`, no `@{`, not `@` alone, none of space `~ ^ : ? * [ \\`, and no control character.
+ */
+function branchSegment(branch: unknown): string {
+  const named = segment(branch, true);
+  const b = branch as string;
+  if (b.includes("..") || b.includes("@{") || b === "@" || b.endsWith(".") || /[\s~^:?*[\\]/.test(b)) malformed("a go's branch is a git ref name (git check-ref-format)");
+  if (b.split("/").some((c) => c.startsWith(".") || c.endsWith(".lock"))) malformed("a go's branch is a git ref name: no component starts with `.` or ends `.lock`");
+  return named;
 }
 
 export const swarmHouseCapTitle = (): string => `${SWARM_URI_PREFIX}house-cap`;
 export const swarmShareTitle = (lane: string): string => `${SWARM_URI_PREFIX}lane/${segment(lane)}/share`;
 export const swarmLaneStateTitle = (lane: string): string => `${SWARM_URI_PREFIX}lane/${segment(lane)}/state`;
-export const swarmGoTitle = (branch: string): string => `${SWARM_URI_PREFIX}go/${segment(branch)}`;
+export const swarmGoTitle = (branch: string): string => `${SWARM_URI_PREFIX}go/${branchSegment(branch)}`;
 export const swarmGoSpentTitle = (goCid: string): string => `${SWARM_URI_PREFIX}go-spent/${segment(goCid)}`;
 export const swarmRosterTitle = (seat: string): string => `${SWARM_URI_PREFIX}roster/${segment(seat)}`;
 export const swarmReceiptTitle = (tree: string): string => `${SWARM_URI_PREFIX}receipt/${segment(tree)}`;
@@ -115,7 +143,7 @@ export async function signSwarmAct(parts: SwarmBodyParts, signer: SwarmSignerPor
 const allowed = (b: SwarmBody, key: string, trust: SwarmTrust): boolean => {
   switch (b.act) {
     case "go": return trust.hand(key);
-    case "lane-state": return trust.lead(b.seat, key);
+    case "lane-state": return trust.lead(b.seat, b.lane, key);
     case "go-spent": case "roster": case "receipt": return trust.vessel(key);
   }
 };

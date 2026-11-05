@@ -11,15 +11,15 @@ import { neverProjects } from "../src/verb-tiddler.js";
 const TITLES = ["house-cap", "lane/lane-a/share", "go/feature%2Fx", "lane/lane-a/state", "roster/seat-1", `receipt/${"a".repeat(40)}`].map((t) => `$:/lares/swarm/${t}`);
 
 describe("the swarm prefix is control plane", () => {
-  test("RED: every swarm title reads as control plane and never projects; every spelling that resolves under the prefix does too", () => {
-    for (const title of [...TITLES, "$:/lares/./swarm/go/x", "$:/lares/other/../swarm/go/x", "$:/lares/%73warm/go/x", "$:/lares//swarm/go/x"]) {
+  test("RED: every swarm title reads as control plane and never projects; every spelling that resolves under the prefix or starts with it does too, a dot escape included", () => {
+    for (const title of [...TITLES, "$:/lares/./swarm/go/x", "$:/lares/other/../swarm/go/x", "$:/lares/%73warm/go/x", "$:/lares//swarm/go/x", "$:/lares/swarm/../other/x", "$:/lares/swarm/go/a%2F..%2F..%2F..%2Fx"]) {
       expect(isControlPlaneUri(title), title).toBe(true);
       expect(neverProjects(title), title).toBe(true);
     }
   });
 
   test("CONTROL: a title beside the prefix, a TW5 system title and a plain title read as neither", () => {
-    for (const title of ["$:/lares/swarmish/x", "$:/lares/swarm", "$:/lares/other/x", "$:/lares/swarm/../other/x", "$:/core/x", "Plain Note"]) {
+    for (const title of ["$:/lares/swarmish/x", "$:/lares/swarm", "$:/lares/other/x", "$:/core/x", "Plain Note"]) {
       expect(isControlPlaneUri(title), title).toBe(false);
       expect(neverProjects(title), title).toBe(false);
     }

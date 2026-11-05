@@ -26,7 +26,7 @@ function wikiPort(): SwarmWikiPort & { rows: Map<string, string> } {
 
 async function fixture() {
   const hand = await keyed(1), vessel = await keyed(2), lead = await keyed(3), outsider = await keyed(4);
-  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: (seat: string, k: string) => seat === "lead-a" && k === lead.key };
+  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: (seat: string, lane: string, k: string) => seat === "lead-a" && lane === "lane-a" && k === lead.key };
   const goBody = (over: Record<string, unknown> = {}) => ({ group: GROUP, branch: "feature/x", head: HEAD, nonce: "1".repeat(32), ...over });
   return { hand, vessel, lead, outsider, trust, wiki: wikiPort(), goBody };
 }
@@ -160,5 +160,35 @@ describe("a go binds branch and head and is spent once", () => {
     await issue(f);
     await expect(spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.outsider)).rejects.toMatchObject({ code: "swarm-spend-role" });
     expect([...f.wiki.rows.keys()].filter((k) => k.includes("go-spent"))).toEqual([]);
+  });
+});
+
+describe("a name escapes no segment (S1 cold read, P2-1)", () => {
+  test("RED: a branch that decodes to a dot, empty or dot-dot segment refuses, and so does one git refuses as a ref; CONTROL: an honest branch with slashes stands under the prefix", () => {
+    for (const bad of ["a/../../../x", "../x", "a/./b", "a//b", "/a", "a/", "%2e%2e", "a/%2e%2e/b", "feature..x", ".hidden", "a/.b", "x.lock", "a.lock/b", "x.", "a@{b", "@", "a b", "a~b", "a^b", "a:b", "a?b", "a*b", "a[b", "a\\b"]) {
+      expect(() => swarmGoTitle(bad), JSON.stringify(bad)).toThrow(SwarmRefused);
+    }
+    for (const good of ["feature/x", "feature/green-jello-dinosaur-5--row7-s2", "main", "v1.2"]) expect(swarmGoTitle(good).startsWith(SWARM_URI_PREFIX), good).toBe(true);
+  });
+
+  test("RED: a one-segment name (lane, seat, tree, a spend cid) refuses a slash and every dot spelling; CONTROL: a plain name stands", () => {
+    for (const make of [swarmShareTitle, swarmLaneStateTitle, swarmRosterTitle, swarmReceiptTitle, swarmGoSpentTitle]) {
+      for (const bad of ["a/b", "..", "%2e%2e", "a%2Fb", "%2F"]) expect(() => make(bad), `${make.name} ${bad}`).toThrow(SwarmRefused);
+      expect(make("lane-a").startsWith(SWARM_URI_PREFIX)).toBe(true);
+    }
+  });
+});
+
+describe("a lead's trust binds its lane (S1 cold read, P2-3)", () => {
+  test("RED: a lead's key signing another lane's state refuses by role; CONTROL: its own lane reads", async () => {
+    const hand = await keyed(1), lead = await keyed(3);
+    const trust = { hand: (k: string) => k === hand.key, vessel: () => false, lead: (seat: string, lane: string, k: string) => seat === "lead-a" && lane === "lane-a" && k === lead.key };
+    const wiki = wikiPort();
+    const other = await signSwarmAct({ act: "lane-state", group: GROUP, lane: "lane-b", seat: "lead-a", state: { phase: "build" } }, lead);
+    await putSwarmAct(wiki, swarmLaneStateTitle("lane-b"), other);
+    expect(await readSwarmRecord(wiki, swarmLaneStateTitle("lane-b"), trust, GROUP)).toEqual({ ok: false, refusal: "role" });
+    const own = await signSwarmAct({ act: "lane-state", group: GROUP, lane: "lane-a", seat: "lead-a", state: { phase: "build" } }, lead);
+    await putSwarmAct(wiki, swarmLaneStateTitle("lane-a"), own);
+    expect(await readSwarmRecord(wiki, swarmLaneStateTitle("lane-a"), trust, GROUP)).toMatchObject({ ok: true });
   });
 });

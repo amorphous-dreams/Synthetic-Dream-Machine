@@ -21,8 +21,9 @@ export const SWARM_VERB_HAND_CODES: Readonly<Record<string, string>> = {
 
 export type SwarmRequest =
   | { readonly action: "show"; readonly branch?: string; readonly head?: string }
-  | { readonly action: "cap-set"; readonly value: unknown }
-  | { readonly action: "share-set"; readonly lane: string; readonly value: unknown }
+  /** `supersede`: the hand starts an unavailable line again, citing its dangling heads; on a line that folds it refuses. */
+  | { readonly action: "cap-set"; readonly value: unknown; readonly supersede?: boolean }
+  | { readonly action: "share-set"; readonly lane: string; readonly value: unknown; readonly supersede?: boolean }
   | { readonly action: "go-issue"; readonly branch: string; readonly head: string };
 
 export interface SwarmDoorDeps {
@@ -48,6 +49,10 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
     const go = req.branch !== undefined && req.head !== undefined ? await readGo(wiki, { branch: req.branch, head: req.head }, deps.trust, deps.group) : undefined;
     return {
       cap: r.cap, ok: r.ok, ...(r.refusal ? { refusal: r.refusal } : {}), shares: Object.fromEntries([...r.shares].sort(([a], [b]) => a.localeCompare(b))), refused: r.refused.length,
+      ...(r.unavailable.cap || r.unavailable.shares.size > 0 ? { unavailable: {
+        ...(r.unavailable.cap ? { cap: r.unavailable.cap } : {}),
+        shares: Object.fromEntries([...r.unavailable.shares].sort(([a], [b]) => a.localeCompare(b))),
+      } } : {}),
       ...(go ? { go: go.ok ? { standing: true } : { standing: false, refusal: go.refusal } } : {}),
     };
   }
@@ -60,17 +65,28 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
     return { branch: req.branch, head: req.head };
   }
   const r = await reading();
+  /** The parents a write cites: the line's heads where it folds; on an unavailable line, a hand's supersede alone, citing its dangling heads. */
+  const parentsOf = (line: string, unavailable: string | undefined, heads: string[], dangling: string[], supersede: boolean | undefined): { parents: string[]; supersede?: true } => {
+    if (unavailable === undefined) {
+      if (supersede) throw new SwarmRefused("swarm-supersede-unneeded", `the ${line} line folds; a supersede starts only a line that cannot`);
+      return { parents: heads };
+    }
+    if (!supersede) throw new SwarmRefused("swarm-line-unavailable", `the ${line} line cannot fold (${unavailable}); a hand's supersede starts it again`);
+    return { parents: dangling, supersede: true };
+  };
   if (req.action === "cap-set") {
     const refusal = swarmCapRefusal(req.value, r.raw);
     if (refusal) throw new SwarmRefused(refusal, `the cap ${String(req.value)} cannot stand against the shares the board holds`);
-    const act = await signSwarmCap({ group: deps.group, epoch: deps.epoch(), value: req.value as number, parents: r.capHeads() }, deps.signer);
+    const line = parentsOf("cap", r.unavailable.cap, r.capHeads(), r.capDangling(), req.supersede);
+    const act = await signSwarmCap({ group: deps.group, epoch: deps.epoch(), value: req.value as number, ...line }, deps.signer);
     await deps.board.land(act);
     return { cap: req.value, cid: swarmBoardActCid(act) };
   }
   swarmShareTitle(req.lane);   // a lane rides one title segment, so it refuses where a title would
   const refusal = swarmShareRefusal(r.cap, r.raw, req.lane, req.value);
   if (refusal) throw new SwarmRefused(refusal, `the share ${String(req.value)} for "${req.lane}" cannot stand against the cap ${String(r.cap)}`);
-  const act = await signSwarmShare({ group: deps.group, epoch: deps.epoch(), lane: req.lane, value: req.value as number, parents: r.shareHeads(req.lane) }, deps.signer);
+  const line = parentsOf(`share "${req.lane}"`, r.unavailable.shares.get(req.lane), r.shareHeads(req.lane), r.shareDangling(req.lane), req.supersede);
+  const act = await signSwarmShare({ group: deps.group, epoch: deps.epoch(), lane: req.lane, value: req.value as number, ...line }, deps.signer);
   await deps.board.land(act);
   return { lane: req.lane, share: req.value, cid: swarmBoardActCid(act) };
 }

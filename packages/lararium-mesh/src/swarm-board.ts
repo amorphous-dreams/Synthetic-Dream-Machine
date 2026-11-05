@@ -6,8 +6,11 @@
  * slice). The family has its own prefix and its own `swarm-act` signing domain, so a promote act never reads as a swarm act nor the reverse.
  *
  * Each LINE (the cap, one lane's share) folds by causal heads. Concurrent heads take the MINIMUM, so a fork can only tighten the swarm;
- * a line that cites a parent it lacks, or has no head, reads zero; shares that sum past the cap close every share to zero. The reading
- * names why (`refusal`), and a reader that cannot fold spends nothing.
+ * a line that cites a parent it lacks, or has no head, reads zero and UNAVAILABLE with its reason (`parent-missing`, `no-head`); shares
+ * that sum past the cap close every share to zero. The reading names why (`refusal`, `unavailable`), and a reader that cannot fold
+ * spends nothing. A write onto an unavailable line refuses by name (`swarm-door`); only a hand's SUPERSEDE starts the line again: an
+ * act marked `supersede` cites the line's dangling heads, needs no parent to stand, and the fold drops every act it descends from.
+ * A record whose bytes do not parse rides out as a TORN entry and enters `refused`, never silence.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
@@ -19,14 +22,18 @@ import { verifyEd25519 } from "./ed25519-door.js";
 import { storedLarRecord } from "./stored-record.js";
 
 export const SWARM_BOARD_PREFIX = "lar:///ha.ka.ba/dreamnet/swarm-act/";
-interface Base { readonly kind: typeof SWARM_ACT_DOMAIN; readonly group: string; readonly epoch: number; readonly value: number; readonly parents: readonly string[] }
+interface Base { readonly kind: typeof SWARM_ACT_DOMAIN; readonly group: string; readonly epoch: number; readonly value: number; readonly parents: readonly string[]; readonly supersede?: true }
 export interface SwarmCapBody extends Base { readonly act: "cap" }
 export interface SwarmShareBody extends Base { readonly act: "share"; readonly lane: string }
 export type SwarmBoardBody = SwarmCapBody | SwarmShareBody;
 export interface SignedSwarmBoardAct { readonly body: SwarmBoardBody; readonly signer: string; readonly sig: string }
 type Signer = { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> };
 export interface SwarmBoardFace { readonly group: string; readonly grant: (key: string) => boolean }
-export type SwarmBoardRefusal = "shape" | "domain" | "group" | "signature" | "grant";
+export type SwarmBoardRefusal = "torn" | "shape" | "domain" | "group" | "signature" | "grant";
+/** Why a line folds to nothing. */
+export type SwarmLineUnavailable = "parent-missing" | "no-head";
+/** The entry a torn board record rides as, so the reader names it among the refused. */
+export interface SwarmBoardTorn { readonly torn: true; readonly key: string }
 
 const object = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
 const str = (x: unknown): x is string => typeof x === "string";
@@ -36,6 +43,7 @@ function shape(b: Record<string, unknown>): boolean {
   if (!str(b["group"]) || !Number.isSafeInteger(b["epoch"]) || (b["epoch"] as number) < 0) return false;
   if (!Number.isSafeInteger(b["value"]) || (b["value"] as number) < 0) return false;
   if (!Array.isArray(b["parents"]) || !b["parents"].every(hex) || new Set(b["parents"]).size !== b["parents"].length) return false;
+  if (Object.hasOwn(b, "supersede") && b["supersede"] !== true) return false;
   if (b["act"] === "cap") return true;
   return b["act"] === "share" && str(b["lane"]) && (b["lane"] as string).length > 0;
 }
@@ -52,6 +60,7 @@ export const signSwarmShare = (parts: Omit<SwarmShareBody, "kind" | "act">, sign
   sign({ ...parts, parents: Array.isArray(parts.parents) ? [...parts.parents] : parts.parents, kind: SWARM_ACT_DOMAIN, act: "share" }, signer);
 
 export function readSwarmBoardAct(raw: unknown, face: SwarmBoardFace): { ok: true; act: SignedSwarmBoardAct; cid: string } | { ok: false; refusal: SwarmBoardRefusal } {
+  if (object(raw) && raw["torn"] === true && !Object.hasOwn(raw, "body")) return { ok: false, refusal: "torn" };
   if (!object(raw) || !object(raw["body"]) || !hex(raw["signer"]) || !str(raw["sig"]) || !shape(raw["body"])) return { ok: false, refusal: "shape" };
   if (raw["body"]["kind"] !== SWARM_ACT_DOMAIN) return { ok: false, refusal: "domain" };
   if (raw["body"]["group"] !== face.group) return { ok: false, refusal: "group" };
@@ -71,20 +80,33 @@ export function swarmBoardRecords(doc: LarDoc | undefined | null, group: string)
   for (const [title, record] of Object.entries(doc?.tiddlers ?? {})) {
     if (!title.startsWith(prefix)) continue;
     const text = tiddlerText(record);
-    if (text !== null) try { out.push(JSON.parse(text)); } catch { /* torn carriage */ }
+    if (text === null) continue;
+    try { out.push(JSON.parse(text)); } catch { out.push({ torn: true, key: title } satisfies SwarmBoardTorn); }
   }
   return out;
 }
 
-interface Line { readonly acts: { readonly cid: string; readonly value: number; readonly parents: readonly string[] }[] }
-/** One line's reading: the heads' minimum, 0 where the line cannot fold, and the heads a next act cites as its parents. */
-function foldLine(line: Line): { value: number; heads: string[]; state: "settled" | "concurrent" | "unavailable" } {
-  const ids = new Set(line.acts.map((a) => a.cid));
-  if (line.acts.some((a) => a.parents.some((p) => !ids.has(p)))) return { value: 0, heads: [], state: "unavailable" };
-  const cited = new Set(line.acts.flatMap((a) => a.parents));
-  const heads = line.acts.filter((a) => !cited.has(a.cid));
-  if (heads.length === 0) return { value: 0, heads: [], state: "unavailable" };
-  return { value: Math.min(...heads.map((h) => h.value)), heads: heads.map((h) => h.cid).sort(), state: heads.length > 1 ? "concurrent" : "settled" };
+interface Line { readonly acts: { readonly cid: string; readonly value: number; readonly parents: readonly string[]; readonly supersede: boolean }[] }
+type Fold = { value: number; heads: string[]; dangling: string[]; state: "settled" | "concurrent" | "unavailable"; unavailable?: SwarmLineUnavailable };
+/**
+ * One line's reading: the heads' minimum, 0 where the line cannot fold, the heads a next act cites as its parents, and the DANGLING
+ * heads (acts no other act cites) a supersede cites when the line cannot fold. A supersede act roots the line again: every act it
+ * descends from leaves the fold, and its own parents need not stand.
+ */
+function foldLine(line: Line): Fold {
+  const byCid = new Map(line.acts.map((a) => [a.cid, a] as const));
+  const dropped = new Set<string>();
+  const drop = (cid: string): void => { if (dropped.has(cid)) return; dropped.add(cid); for (const p of byCid.get(cid)?.parents ?? []) drop(p); };
+  for (const a of line.acts) if (a.supersede) for (const p of a.parents) drop(p);
+  const live = line.acts.filter((a) => !dropped.has(a.cid));
+  const allCited = new Set(line.acts.flatMap((a) => a.parents));
+  const dangling = line.acts.filter((a) => !allCited.has(a.cid)).map((a) => a.cid).sort();
+  const ids = new Set(live.map((a) => a.cid));
+  if (live.some((a) => !a.supersede && a.parents.some((p) => !ids.has(p)))) return { value: 0, heads: [], dangling, state: "unavailable", unavailable: "parent-missing" };
+  const cited = new Set(live.flatMap((a) => a.parents));
+  const heads = live.filter((a) => !cited.has(a.cid));
+  if (heads.length === 0) return { value: 0, heads: [], dangling, state: "unavailable", unavailable: "no-head" };
+  return { value: Math.min(...heads.map((h) => h.value)), heads: heads.map((h) => h.cid).sort(), dangling, state: heads.length > 1 ? "concurrent" : "settled" };
 }
 
 export function readSwarmBoard(records: readonly unknown[], face: SwarmBoardFace) {
@@ -92,6 +114,7 @@ export function readSwarmBoard(records: readonly unknown[], face: SwarmBoardFace
   for (const raw of records) {
     const r = readSwarmBoardAct(raw, face);
     if (r.ok) acts.set(r.cid, r.act);
+    else if (r.refusal === "torn") refused.push({ cid: null, refusal: "torn" });
     else {
       let cid: string | null = null;
       try { if (object(raw) && object(raw["body"]) && str(raw["signer"])) cid = swarmBoardActCid(raw as unknown as SignedSwarmBoardAct); } catch { /* shape refused */ }
@@ -101,7 +124,7 @@ export function readSwarmBoard(records: readonly unknown[], face: SwarmBoardFace
   refused.sort((a, b) => (a.cid ?? "").localeCompare(b.cid ?? "") || a.refusal.localeCompare(b.refusal));
   const capLine: Line = { acts: [] }, laneLines = new Map<string, Line>();
   for (const [cid, act] of [...acts].sort(([a], [b]) => a.localeCompare(b))) {
-    const entry = { cid, value: act.body.value, parents: act.body.parents };
+    const entry = { cid, value: act.body.value, parents: act.body.parents, supersede: act.body.supersede === true };
     if (act.body.act === "cap") capLine.acts.push(entry);
     else { const line = laneLines.get(act.body.lane) ?? { acts: [] }; line.acts.push(entry); laneLines.set(act.body.lane, line); }
   }
@@ -110,7 +133,7 @@ export function readSwarmBoard(records: readonly unknown[], face: SwarmBoardFace
   const lanes = new Map([...laneLines].map(([lane, line]) => [lane, foldLine(line)] as const));
   const sum = [...lanes.values()].reduce((total, l) => total + l.value, 0);
   const over = cap !== null && sum > cap;
-  const ok = !over;
+  const ok = !over && capRead?.unavailable === undefined && [...lanes.values()].every((l) => l.unavailable === undefined);
   const shares = new Map([...lanes].map(([lane, l]) => [lane, over || cap === null ? 0 : l.value] as const));
   return {
     cap, ok, ...(over ? { refusal: "swarm-shares-over-cap" as const } : {}),
@@ -122,6 +145,14 @@ export function readSwarmBoard(records: readonly unknown[], face: SwarmBoardFace
     /** The heads a next act on this line cites as its parents (`"cap"` or a lane name for a share). */
     capHeads: (): string[] => capRead?.heads ?? [],
     shareHeads: (lane: string): string[] => lanes.get(lane)?.heads ?? [],
+    /** The acts no other act cites: what a hand's supersede cites when the line cannot fold. */
+    capDangling: (): string[] => capRead?.dangling ?? [],
+    shareDangling: (lane: string): string[] => lanes.get(lane)?.dangling ?? [],
+    /** Each line that cannot fold, by its reason: a writer refuses onto it, a reader names it. */
+    unavailable: {
+      ...(capRead?.unavailable ? { cap: capRead.unavailable } : {}),
+      shares: new Map([...lanes].flatMap(([lane, l]) => (l.unavailable ? [[lane, l.unavailable] as const] : []))) as ReadonlyMap<string, SwarmLineUnavailable>,
+    },
     state: { cap: capRead?.state ?? null, shares: new Map([...lanes].map(([lane, l]) => [lane, l.state] as const)) },
     refused,
   };
