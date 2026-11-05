@@ -1,4 +1,7 @@
 /** A completed face's orphan keeps its atom and archive; an interrupted founding keeps its checkpoint. */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { askRowPath, faceRowNames, groupRowPath } from "./face-paths.js";
 import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

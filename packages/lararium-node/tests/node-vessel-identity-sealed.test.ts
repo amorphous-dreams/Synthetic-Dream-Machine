@@ -26,6 +26,9 @@
  * V20 A KEY FILE WHOSE SEED DERIVES ANOTHER KEY REFUSES AT EVERY DOOR, the found act's load among them, though its
  *    public key and its inception still agree. Control: the intact file answers at every door.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { createPrivateKey, createPublicKey } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";

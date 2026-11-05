@@ -4,6 +4,9 @@
  * standing vessel's reactor the island's cap answer gates apart from the grant; the root's grant lifts and withdraws.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

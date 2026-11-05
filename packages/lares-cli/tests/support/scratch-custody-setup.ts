@@ -24,8 +24,13 @@ import {
 } from "@lararium/node";
 import { TEST_PASSPHRASE } from "./found-route.js";
 
-// A ward act a suite drives asks the suite's "person", who answers the routes its faces are founded under (seat-harness#/the-ward).
-seatWardGatherer(async () => [TEST_PASSPHRASE, "fixture-custody-passphrase"].map((passphrase) => ({ kind: "passphrase" as const, passphrase })));
+/**
+ * OPT IN, PER SUITE: seat a "person" who answers a ward act with the routes the suite's faces are founded under
+ * (seat-harness#/the-ward). No suite has one unless it asks, so a command that forgets to carry its ward reads RED.
+ */
+export function seatSuiteWard(): void {
+  seatWardGatherer(async () => [TEST_PASSPHRASE, "fixture-custody-passphrase"].map((passphrase) => ({ kind: "passphrase" as const, passphrase })));
+}
 
 // A write to a face the floor index does not name founds that face under the scratch route (the product seats no such policy).
 seatFaceAutoFounder(() => [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] }]);

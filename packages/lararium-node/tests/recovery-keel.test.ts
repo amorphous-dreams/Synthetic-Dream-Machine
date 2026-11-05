@@ -4,6 +4,9 @@
  * two custodians {recorded-code, escrow} to re-admit a fresh device — whose edge verifies against the
  * original pinned root. The device-share (dead with the device) is never the recovery path.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeAll, beforeEach, describe, test, expect } from "vitest";
 import { generateKeyPairSync } from "node:crypto";
 import { mkdtempSync, rmSync } from "node:fs";

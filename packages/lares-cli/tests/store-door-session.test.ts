@@ -3,6 +3,9 @@
  * whose answer returns on that socket alone (`session:act`, K20); a row of the place rides the maintenance frame; with no
  * vessel standing every row runs here (session-contract#/the-hands).
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../src/local-connector.js", async (importOriginal) => {

@@ -17,6 +17,9 @@
  *   · THE FLOOR — with the vessel key unopened, `circle add` and `circle list` refuse and name `lares vault unlock`, the daemon
  *     sees no follow and no byte of the book moves (control: the same add on an opened key lands).
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync, existsSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";

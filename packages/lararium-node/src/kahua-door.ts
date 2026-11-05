@@ -92,7 +92,11 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     try { signer = await ports.rootSigner(); }
     catch (e) { throw new KahuaRefused(`operator-grant-absent: the operator's grant opens here no root of the face (${e instanceof Error ? e.message : String(e)})`); }
     if (!ports.currentSigner(signer.key)) throw new KahuaRefused("operator-grant-absent: the hand holds no current root of the face; an AI seat proposes with `lares kahua propose`");
-    return signer;
+    // The ward signer opens the root at its signature, so a hand that holds no root (an AI seat's atom alone) learns it there.
+    return { key: signer.key, sign: async (bytes) => {
+      try { return await signer.sign(bytes); }
+      catch (e) { throw new KahuaRefused(`operator-grant-absent: the operator's grant opens here no root of the face (${e instanceof Error ? e.message : String(e)})`); }
+    } };
   };
   const cap = async (): Promise<void> => {
     if (!ports.cap) throw new KahuaRefused("lokahi-cap-unread: no daemon island stands to read the face's cap on the stage; lift on a standing vessel");

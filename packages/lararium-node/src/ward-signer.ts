@@ -7,7 +7,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-ward
  */
-import { ed25519SignerFromSeed, WardRefused } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, WardRefused } from "@lararium/mesh";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 import { wardCredentialsOf, wardOrGather, type WardCredential } from "./ward-credential.js";
 
@@ -27,7 +27,11 @@ export async function wardRootSigner(handleIndex: number, ward: WardCredential |
       if (spent) throw new WardRefused("ward-signer-spent", `${what} signed once already; a ward signer signs one act`);
       spent = true;
       const seed = await loadPersonaGroupRootSeed(handleIndex, held);
-      try { return await ed25519SignerFromSeed(seed)(bytes); } finally { seed.fill(0); }
+      try {
+        // The seed signs only as the key this signer named: a seed that derives another key signs nothing.
+        if ((await ed25519VerifyingKeyFromSeed(seed)).toLowerCase() !== key.toLowerCase()) throw new WardRefused("ward-root-mismatch", `${what}: the opened seed derives another key than the face root's`);
+        return await ed25519SignerFromSeed(seed)(bytes);
+      } finally { seed.fill(0); }
     },
   };
 }
@@ -47,7 +51,11 @@ export async function wardRootSession(handleIndex: number, ward: WardCredential 
     key,
     async sign(bytes) {
       if (closed) throw new WardRefused("ward-signer-spent", `${what} settled; its root signs nothing more`);
-      seed ??= await loadPersonaGroupRootSeed(handleIndex, held);
+      if (seed === null) {
+        const opened = await loadPersonaGroupRootSeed(handleIndex, held);
+        if ((await ed25519VerifyingKeyFromSeed(opened)).toLowerCase() !== key.toLowerCase()) { opened.fill(0); throw new WardRefused("ward-root-mismatch", `${what}: the opened seed derives another key than the face root's`); }
+        seed = opened;
+      }
       return ed25519SignerFromSeed(seed)(bytes);
     },
     close() { closed = true; seed?.fill(0); seed = null; },

@@ -7,6 +7,9 @@
  *   L2  RED: the verbs refuse before anything moves: no --nexus, no --threshold, no --out, --out naming the input,
  *       a file of the wrong kind, a card typed off a staged root; CONTROL: L1.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
