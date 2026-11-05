@@ -17,6 +17,16 @@ set -euo pipefail
 image="${PW_IMAGE:?pw-container: PW_IMAGE names the pinned Playwright image}"
 [ "$#" -gt 0 ] || { echo "pw-container: no command" >&2; exit 2; }
 
+# THE ONE IMAGE. The pin is read from the file tools/workflow-law.test.mjs reads, and `PW_IMAGE` must EQUAL it: a caller
+# can name the image but never swap it, so an unpinned tag, a changed digest or another image refuses before docker runs.
+root="$(git rev-parse --show-toplevel)"
+pin="$(grep -oE 'mcr\.microsoft\.com/playwright:v[0-9.]+-noble@sha256:[0-9a-f]{64}' "$root/docker-compose.capability-probe.yml" | head -1)"
+[ -n "$pin" ] || { echo "pw-container: docker-compose.capability-probe.yml names no pinned Playwright image" >&2; exit 2; }
+if [ "$image" != "$pin" ]; then
+  echo "pw-container: refusing PW_IMAGE=$image; the one pinned image is $pin" >&2
+  exit 2
+fi
+
 # The pull is the one network step left; it takes three attempts, each bounded, so a stall names itself.
 if ! docker image inspect "$image" >/dev/null 2>&1; then
   pulled=0
@@ -27,7 +37,6 @@ if ! docker image inspect "$image" >/dev/null 2>&1; then
   [ "$pulled" -eq 1 ] || { echo "pw-container: the image never pulled" >&2; exit 1; }
 fi
 
-root="$(git rev-parse --show-toplevel)"
 args=(--rm --network host --ipc=host --init --user "$(id -u):$(id -g)" -w "$(pwd)" -v "$root:$root")
 if [ -n "${RUNNER_TEMP:-}" ]; then args+=(-v "$RUNNER_TEMP:$RUNNER_TEMP"); fi
 for m in ${PW_MOUNTS:-}; do args+=(-v "$m:$m"); done
