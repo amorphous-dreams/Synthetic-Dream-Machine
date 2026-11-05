@@ -19,7 +19,9 @@ export type CustodyFrame =
   /** One face's backup cut: the vessel's own route, the face's handle-index and the bundle key (64 lower hex). */
   | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string }
   /** The human route the next new face this vessel founds will bind (passphrase pins; one use). */
-  | { readonly op: "face-route"; readonly slots: readonly SlotSpec[] };
+  | { readonly op: "face-route"; readonly slots: readonly SlotSpec[] }
+  /** One ward act's route: the vessel parks it under a one-use ticket the verb names (seat-harness#/the-ward). */
+  | { readonly op: "ward"; readonly credentials: readonly Credential[] };
 
 /** The daemon's answer, as the door spells it (`custody-frames` in the node package). */
 export type CustodyDoorAnswer = Record<string, unknown> & { readonly op?: string };

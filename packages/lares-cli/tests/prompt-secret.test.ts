@@ -112,3 +112,18 @@ describe("promptSecret keeps the rest of a pasted chunk", () => {
     await expect(promptSecret("a: ", tty as never)).rejects.toThrow(/not a TTY/);
   });
 });
+
+describe("the ward door reads a hand's route from a terminal alone (row 7, S2)", () => {
+  test("RED: a passphrase in the environment refuses `ward-needs-tty`, and so does a piped stdin; CONTROL: a TTY stream answers", async () => {
+    quiet();
+    const { readWardPassphrase } = await import("../src/prompt-secret.js");
+    const tty = new FakeTty();
+    await expect(readWardPassphrase("lares promote commit", { stream: tty as never, env: { LARES_WARD_PASSPHRASE: "typed-by-a-script" } })).rejects.toThrow(/ward-needs-tty/);
+    await expect(readWardPassphrase("lares promote commit", { stream: tty as never, env: { LARES_PASSPHRASE: "typed-by-a-script" } })).rejects.toThrow(/ward-needs-tty/);
+    const piped = Object.assign(new FakeTty(), { isTTY: false });
+    await expect(readWardPassphrase("lares promote commit", { stream: piped as never, env: {} })).rejects.toThrow(/ward-needs-tty/);
+    const answered = readWardPassphrase("lares promote commit", { stream: tty as never, env: {} });
+    tty.feed("the hand's route\r");
+    expect(await answered).toBe("the hand's route");
+  });
+});

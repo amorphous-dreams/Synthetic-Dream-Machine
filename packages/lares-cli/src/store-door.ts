@@ -11,6 +11,7 @@
  * caller names exactly as it names a refusal on the direct path.
  */
 
+import { wardTicketFor } from "./ward-door.js";
 import { storeDoorDirect, storeRowFace, StoreHeld, STORE_DOOR_FACE_ROWS, type StoreDoorVerb } from "@lararium/node";
 import { openLocalSession, SessionRefused } from "./session-connector.js";
 import { sealedAct } from "./sealed-act-door.js";
@@ -253,9 +254,11 @@ export async function storeVerb(
   const face = daemonUp && STORE_DOOR_FACE_ROWS.has(verb)
     ? named ?? (await sealedAct<{ face: number }>("face.resolve", {})).face
     : undefined;
-  const rowArgs = face !== undefined && named === undefined ? { ...args, face } : args;
+  // A WARD ACT names a one-use ticket for the route a person typed at this terminal; the route itself rides no verb argument.
+  const ward = await wardTicketFor(verb, args, daemonUp);
+  const rowArgs = { ...(face !== undefined && named === undefined ? { ...args, face } : args), ...ward };
   const r = await throughStoreDoor({ verb, args: rowArgs, daemonUp, ...(face !== undefined ? { face } : {}),
-    direct: () => storeDoorDirect(verb, args, { sealHome: larSealHome() }) });
+    direct: () => storeDoorDirect(verb, { ...args, ...ward }, { sealHome: larSealHome() }) });
   if (typeof r.output["refused"] === "string") {
     const refusal = new Refusal(r.output["refused"]);
     if (typeof r.output["refusal"] === "string") REFUSAL_NAMES.set(refusal, r.output["refusal"]);

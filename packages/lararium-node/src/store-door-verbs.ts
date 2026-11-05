@@ -63,6 +63,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
+import { takeWardTicket } from "./ward-credential.js";
 import { runPromoteVerb } from "./commands/promote.js";
 import { runSwarmVerb } from "./commands/swarm.js";
 import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
@@ -303,7 +304,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
   /** The worn fleet the composer lent, as the edge-seat rows spread it; none on a direct act. */
   const wornOf = (): { worn?: WornFleet } => { const worn = deps.wornFleet?.(); return worn ? { worn } : {}; };
   const intent = (action: IntentCommandOptions["action"], args: Readonly<Record<string, unknown>>) =>
-    runIntentCommand({ repo, ...opt("catalogUrl", deps.catalogUrl), action,
+    runIntentCommand({ repo, ...opt("catalogUrl", deps.catalogUrl), action, ...opt("ward", takeWardTicket(args["wardTicket"])),
       ...opt("face", int(args["face"])), ...opt("target", str(args["target"])),
       ...opt("verb", str(args["intentVerb"])), ...opt("args", args["args"]),
       ...opt("nonce", str(args["nonce"])), ...opt("to", str(args["to"])),
@@ -325,7 +326,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
   const kahua = (action: KahuaAction, args: Readonly<Record<string, unknown>>) => {
     const list = (v: unknown): string[] | undefined => (Array.isArray(v) && v.every((x) => typeof x === "string") ? v as string[] : undefined);
     const parent = args["parent"] === null || args["parent"] === "none" ? null : str(args["parent"]);
-    return runKahuaCommand({ repo, ...opt("catalogUrl", deps.catalogUrl), action,
+    return runKahuaCommand({ repo, ...opt("catalogUrl", deps.catalogUrl), action, ...opt("ward", takeWardTicket(args["wardTicket"])),
       ...opt("face", int(args["face"])), ...opt("title", str(args["title"])),
       ...opt("text", typeof args["text"] === "string" ? args["text"] : undefined),
       ...opt("fields", args["fields"] && typeof args["fields"] === "object" && !Array.isArray(args["fields"]) ? args["fields"] as Record<string, string> : undefined),
@@ -340,9 +341,9 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     });
   };
   const promoteRow = (action: PromoteCommandRequest["action"], args: Readonly<Record<string, unknown>>) =>
-    runPromoteVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("restartWiki", deps.restartWiki) });
+    runPromoteVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("restartWiki", deps.restartWiki), ...opt("ward", takeWardTicket(args["wardTicket"])) });
   const swarmRow = (action: "show" | "cap-set" | "share-set" | "go-issue", args: Readonly<Record<string, unknown>>) =>
-    runSwarmVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, ...opt("wiki", deps.swarmWiki) });
+    runSwarmVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, ...opt("wiki", deps.swarmWiki), ...opt("ward", takeWardTicket(args["wardTicket"])) });
   return {
     "swarm-show": (args) => answer("swarm-show", () => swarmRow("show", args)),
     "swarm-cap-set": (args) => answer("swarm-cap-set", () => swarmRow("cap-set", args)),
@@ -564,7 +565,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     }),
 
     "edge-kapae": (args) => answer("edge-kapae", async () => ({
-      ...(await runEdgeKapae({
+      ...(await runEdgeKapae({ ...opt("ward", takeWardTicket(args["wardTicket"])),
         raised: args["raised"] !== false, sealHome, repo,
         ...opt("edgeId", str(args["edgeId"])), ...opt("member", str(args["member"])), ...opt("device", str(args["device"])),
         ...(args["hand"] === "quorum" ? { hand: "quorum" as const } : {}), ...opt("realm", str(args["realm"])),
@@ -638,29 +639,29 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // The answer notes the certificates it issued beside the joining device; the refold it sets off resweeps a standing
     // vessel's gates, and each sweep reads that issued book again, so the gate binds the device's face-scoped key.
     "fleet-join-answer": (args) => answer("fleet-join-answer", async () => {
-      const issued = await runFleetJoinAnswer({ repo, sealHome, catalogUrl: deps.catalogUrl, request: args["request"], ...opt("syncUrl", str(args["syncUrl"])), ...opt("docUrl", str(args["docUrl"])), ...joinFace(args) });
+      const issued = await runFleetJoinAnswer({ repo, sealHome, catalogUrl: deps.catalogUrl, request: args["request"], ...opt("syncUrl", str(args["syncUrl"])), ...opt("docUrl", str(args["docUrl"])), ...joinFace(args), ...opt("ward", takeWardTicket(args["wardTicket"])) });
       await awaitOnRolled(deps.onRolled?.());
       return { answer: issued };
     }),
     "handle-publish": (args) => answer("handle-publish", async () => ({
-      card: await runHandlePublish({ glamour: need("handle-publish", args, "glamour"), repo, ...opt("handleIndex", int(args["handleIndex"])) }),
+      card: await runHandlePublish({ glamour: need("handle-publish", args, "glamour"), repo, ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", takeWardTicket(args["wardTicket"])) }),
     })),
     "handle-burn": (args) => answer("handle-burn", async () => ({
-      card: await runHandleBurn({ repo, ...opt("handleIndex", int(args["handleIndex"])), ...(args["fromPersona"] === true ? { fromPersona: true } : {}) }),
+      card: await runHandleBurn({ repo, ...opt("handleIndex", int(args["handleIndex"])), ...(args["fromPersona"] === true ? { fromPersona: true } : {}), ...opt("ward", takeWardTicket(args["wardTicket"])) }),
     })),
     "handle-rotate": (args) => answer("handle-rotate", async () => ({
-      card: await runHandleRotate({ repo, ...opt("handleIndex", int(args["handleIndex"])) }),
+      card: await runHandleRotate({ repo, ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", takeWardTicket(args["wardTicket"])) }),
     })),
     "handle-attest": (args) => answer("handle-attest", async () => ({
-      statement: await runHandleAttest({ claim: args["claim"] as HandleClaim, repo, ...opt("handleIndex", int(args["handleIndex"])) }),
+      statement: await runHandleAttest({ claim: args["claim"] as HandleClaim, repo, ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", takeWardTicket(args["wardTicket"])) }),
     })),
     // A SIGNED LEASE ADVANCE for a face (`lares persona lease`): the root signs effective + 1 into its own slot and the
     // sealed anchor's frontier rises to what verified.
     "persona-lease": (args) => answer("persona-lease", async () => ({
-      ...(await runPersonaLease({ repo, ...opt("handleIndex", int(args["handleIndex"])) })),
+      ...(await runPersonaLease({ repo, ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", takeWardTicket(args["wardTicket"])) })),
     })),
     "persona-new": (args) => answer("persona-new", async () => {
-      try { return { ...(await runFoundTheFace({ repo, ...opt("handleIndex", int(args["handleIndex"])) })) }; }
+      try { return { ...(await runFoundTheFace({ repo, ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", takeWardTicket(args["wardTicket"])) })) }; }
       // A route handed for this founding serves this founding alone, whether or not the face needed one.
       finally { parkFaceRoute(null); }
     }),
@@ -673,7 +674,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       return { head, ...(seq !== null ? { seq } : {}) };
     }),
     "nexus-publish": (args) => answer("nexus-publish", async () => ({
-      ...(await runNexusPublishPlugins({ repo, storageDir, source: need("nexus-publish", args, "source"), ...opt("handleIndex", int(args["handleIndex"])) })),
+      ...(await runNexusPublishPlugins({ repo, storageDir, source: need("nexus-publish", args, "source"), ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", takeWardTicket(args["wardTicket"])) })),
     })),
     "nexus-offering-inspect": (args) => answer("nexus-offering-inspect", async () => ({
       ...(await runNexusInspectOffering({ offeringCid: need("nexus-offering-inspect", args, "offeringCid"), storageDir, repo })),
