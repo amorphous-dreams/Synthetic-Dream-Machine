@@ -192,6 +192,8 @@ export async function standMirror(options: {
     get tw() { return mirror!.tw; },
     /** How many writes the mirror sent and holds no answer for: the page holds its leave while this reads above zero. */
     pending: () => (ended ? 0 : mirror!.adaptor.pendingWrites().length),
+    /** True while no write stands unanswered and no edit waits behind one: a test reads it to know the port has gone still. */
+    quiescent: () => (ended ? true : mirror!.adaptor.quiescent()),
     /** Send every unanswered write again under its own txId: the road to a new leader re-opened. An island that saw the txId applies it once; a vessel the hand-off re-opened holds a fresh ledger (named in the kit, owed to D4). */
     resendPending() { if (!ended) mirror!.adaptor.resendPending(); },
     unmount() { if (!ended) { ended = true; standing(false); mirror!.unmount(); settle({ width: "none", why: "unmounted" }); } },

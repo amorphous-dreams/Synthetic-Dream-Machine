@@ -59,4 +59,25 @@ describe("port listener timing", () => {
       expect(entries.find((entry) => entry.title === "Foreign")?.causedBy).toEqual([]);
     } finally { await r.close(); }
   });
+  test("port-token-outlives-notify: the store notifies inside writeFamily, before it resolves, so the token still names the tx; CONTROL: a foreign write carries no cause", async () => {
+    const repo = new Repo({ network: [] });
+    const real = new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), "real");
+    const order: string[] = [];
+    real.subscribe((change) => order.push(`notify:${change.title}`));
+    const inner = real.writeFamily.bind(real);
+    real.writeFamily = async (...args: Parameters<typeof inner>) => {
+      order.push("write:start"); const result = await inner(...args); order.push("write:resolved"); return result;
+    };
+    const r = await realPort();
+    r.composite.addLayer({ bagId: "real", store: real, writable: true, defaultWritable: false });
+    try {
+      await r.send(open);
+      await r.send(write("order-tx", "Ordered", "real"));
+      expect(order).toEqual(["write:start", "notify:Ordered", "write:resolved"]);   // measured: the change fires before the write promise resolves
+      const entries = ofType(r.messages, "port:changes").flatMap((message) => message.entries);
+      expect(entries.filter((entry) => entry.title === "Ordered").map((entry) => entry.causedBy)).toEqual([["order-tx"]]);
+      await real.writeFamily([{ tiddler: { title: "Foreign", text: "outside" } }], [], { kind: "tw-local", instanceId: "foreign" });
+      expect(ofType(r.messages, "port:changes").flatMap((message) => message.entries).find((entry) => entry.title === "Foreign")?.causedBy).toEqual([]);
+    } finally { await r.close(); }
+  });
 });

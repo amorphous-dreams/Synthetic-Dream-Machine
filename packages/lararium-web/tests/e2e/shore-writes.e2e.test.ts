@@ -70,7 +70,12 @@ test("served wiki saves a draft tiddler without worker errors", async () => {
   await bodyEditor.fill("newer local composition — 漢字");
   // A title edit writes the draft again; the returned echo must not replace the newer text the person typed.
   await wiki.locator("input.tc-titlebar").fill("Shore Write Probe Updated");
-  await page.waitForTimeout(80);
+  // Wait for the port to go still (no write pending, no edit deferred), never for the value to equal the text: a poll-until-equal would hide the race.
+  await page.waitForFunction(() => (document.querySelector("#mirror") as unknown as { larMirrorQuiescent?: boolean }).larMirrorQuiescent === true,
+    undefined, { timeout: 20_000 });
+  assert.equal(await bodyEditor.inputValue(), "newer local composition — 漢字");
+  // The value holds across a further stretch: an echo read as a peer would blank it after the port went still.
+  await page.waitForTimeout(500);
   assert.equal(await bodyEditor.inputValue(), "newer local composition — 漢字");
 
   // The editor's TW5 save action receives a worker-local view contract, never a global window.

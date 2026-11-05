@@ -29,6 +29,8 @@ export async function standPageMirror(root: {
     ...(root.onState ? { onState: root.onState } : {}) }, seams);
   if (result.kind === "floor") { mark(`none:${result.why}`); return result; }
   mark(result.width);
+  // A read-only reading for tests: true once no mirror write waits for its answer and no edit waits behind one.
+  Object.defineProperty(root.host, "larMirrorQuiescent", { configurable: true, get: () => result.quiescent() });
   // THE PAGE HOLDS ITS LEAVE while a mirror write waits for its answer (the answer comes once the write rests), the law the
   // worker-rendered view kept for a confirmed edit. The browser's own prompt carries it; the pending count at the moment of the leave decides.
   const hold = (event: BeforeUnloadEvent): void => { if (result.pending() > 0) { event.preventDefault(); event.returnValue = ""; } };
