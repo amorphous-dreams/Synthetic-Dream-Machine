@@ -716,7 +716,7 @@ test("P1-3 live: a rollout that turns unreadable mid-run stops the stub seat thr
   const L = liveSeat("sleep 2\nchmod 000 \"$ROLL\"\nsleep 60", () => `${userLine()}${tc(5)}\n`);
   writeFileSync(join(L.bin, "codex"), `#!/bin/sh\nsleep 2\nchmod 000 '${L.roll}'\nsleep 60\n`, { mode: 0o755 });
   const r = cli(L, []);
-  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.status, 1, "an error verdict exits 1");
   assert.match(readFileSync(join(L.seat, "ceiling.md"), "utf8"), /could not be watched.*failing closed/s);
 });
 
@@ -803,7 +803,7 @@ test("P1-2 a stub child that ignores SIGTERM under a signal function that throws
   const signals = [];
   const verdict = await superviseSeat({ held, marker: "SEAT-MARKER live", home: L.home, ceiling: 100, mode: "read", rest: ["exec"], env: L.env, graceTicks: 1, hardTicks: 2 }, { sleep: () => new Promise((r) => setTimeout(r, 60)), signal: (pid, sig) => { signals.push(sig); throw new Error("EPERM"); } });
   assert.deepEqual(signals, ["SIGTERM", "SIGKILL"], "both rungs were tried and both threw");
-  assert.equal(verdict, "unstopped", "a throwing signal never reads as stopped");
+  assert.equal(verdict, "forced", "a throwing signal never reads as stopped; the parent's own SIGKILL ended the group");
   assert.match(readFileSync(join(L.seat, "ceiling.md"), "utf8"), /900 total tokens/);
   const pid = Number(readFileSync(join(tmpdir(), "stub-pid-" + process.pid), "utf8").trim());
   assert.throws(() => process.kill(pid, 0), /ESRCH/, "the supervisor SIGKILLed its own child as parent");
@@ -929,4 +929,21 @@ test("P1 a --broker-dir inside the lane tree refuses, and CONTROL one outside la
   assert.equal(run([...launchArgs(w), "--broker-dir", join(w.home, ".lares-scratch", "lane", "inside")], { readers: w.readers, spawn, log() {}, err: (e) => err.push(e) }), 2);
   assert.match(err.join("\n"), /broker seat dir/);
   assert.equal(run([...launchArgs(w), "--broker-dir", join(w.home, ".lares-scratch", ".other-broker")], { readers: w.readers, spawn, log() {} }), 0);
+});
+
+test("a refusal after the lead-step claim point spends no step: a bad broker dir refuses before the state is touched", () => {
+  const w = world(); const laneRoot = join(w.home, ".lares-scratch", "lane");
+  writeFileSync(join(laneRoot, "state.json"), JSON.stringify({ head: "e6aa31a8e", owed: [], seats: [], worktrees: {}, next: "x", step: 0 }));
+  const { spawn } = spawnMock();
+  assert.equal(run(["--lead-step", "--lane-root", laneRoot, "--model", "gpt-6.1-terra", "--effort", "high", "--worktree", w.wt, "--broker-dir", join(laneRoot, "bsd")], { readers: w.readers, spawn, log() {}, err() {} }), 2);
+  assert.equal(JSON.parse(readFileSync(join(laneRoot, "state.json"), "utf8")).step, 0);
+  assert.equal(existsSync(join(laneRoot, "bsd")), false, "the bad broker dir was never created");
+  assert.equal(existsSync(join(laneRoot, "steps")), false);
+});
+
+test("the hand-back's 64-file cap counts only copyable names: 70 dotfiles never crowd out final.md", () => {
+  const dir = mkdtempSync(join(tmpdir(), "hb2-")); const bsd = join(dir, "bsd"), lane = join(dir, "lane"); mkdirSync(bsd); mkdirSync(lane);
+  for (let i = 0; i < 70; i++) writeFileSync(join(bsd, `.a${i}`), "x");
+  writeFileSync(join(bsd, "final.md"), "ok");
+  assert.deepEqual(copyBack(openHeldSync(bsd, dir), openHeldSync(lane, dir)), ["final.md"]);
 });

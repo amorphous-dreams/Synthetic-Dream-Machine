@@ -439,6 +439,7 @@ export async function superviseSeat(o, deps = {}) {
   // A stop reads as stopped only when the group answers ESRCH.
   for (let i = 0; i < (deps.groupPolls ?? 50) && groupAlive(child.pid); i++) { try { process.kill(-child.pid, "SIGKILL"); } catch { /* gone */ } await new Promise((r) => setTimeout(r, deps.pollMs ?? 100)); }
   if (groupAlive(child.pid)) return "unstopped";
+  if (verdict === "unstopped") verdict = "forced";
   // The hand-back: Codex's own outputs sit in the broker-owned directory; they reach the lane's seat dir only now, through its held handle.
   if (o.laneHeld) { try { copyBack(held, o.laneHeld); } catch { /* the broker-owned copy stands */ } }
   return verdict;
@@ -447,7 +448,7 @@ export async function superviseSeat(o, deps = {}) {
 function superviseMain(o) {
   const held = heldOver(Number(o.heldFd));
   const laneHeld = o.laneFd ? heldOver(Number(o.laneFd)) : undefined;
-  return superviseSeat({ held, laneHeld, marker: o.marker, home: o.home, ceiling: o.ceiling, mode: o.mode, rest: o.rest, blindTicks: o.blindTicks ? Number(o.blindTicks) : undefined }).then(() => 0, () => 1);
+  return superviseSeat({ held, laneHeld, marker: o.marker, home: o.home, ceiling: o.ceiling, mode: o.mode, rest: o.rest, blindTicks: o.blindTicks ? Number(o.blindTicks) : undefined }).then((v) => (v === "unstopped" || v === "error" ? 1 : 0), () => 1);
 }
 
 /** The launcher over injected readers, spawn and writers; returns the exit code. */
@@ -495,12 +496,17 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const { pool } = preflight({ ...o, seatDir, worktree, briefless: Boolean(stepPlan) }, readers);
     // THE SEAT RUNS IN A BROKER-OWNED DIRECTORY outside every lane tree: Codex's own writes (-o final.md, TMPDIR, run.log, ceiling.md) land where no lead can write, and reach the lane's seat dir only through the held hand-back copy.
     const laneDir = join(scratchReal, seatDir.slice(scratchReal.length + 1).split("/")[0]);
-    const brokerDir = guard(() => { const d = o.brokerDir ? resolve(o.brokerDir) : join(scratchReal, ".broker-seats"); mkdirSync(d, { recursive: true }); return real(d); }); // broker-owned
+    // Placement is checked on the real path of the deepest existing ancestor BEFORE anything is created.
+    const wanted = o.brokerDir ? resolve(o.brokerDir) : join(scratchReal, ".broker-seats");
+    let ancestor = wanted, rest = "";
+    while (!existsSync(ancestor)) { rest = join(basename(ancestor), rest); ancestor = dirname(ancestor); }
+    const brokerDir = join(real(ancestor), rest);
     const laneTop = (p) => join(scratchReal, p.slice(scratchReal.length + 1).split("/")[0]);
-    for (const guarded of [seatDir, worktree].filter(Boolean)) {
+    for (const guarded of [seatDir, worktree, stepPlan?.laneRoot].filter(Boolean)) {
       if (brokerDir === guarded || brokerDir.startsWith(`${guarded}/`) || guarded.startsWith(`${brokerDir}/`)) throw refuse(`the broker seat dir ${brokerDir} must sit outside ${guarded}`);
       if (guarded.startsWith(`${scratchReal}/`) && brokerDir.startsWith(`${scratchReal}/`) && laneTop(brokerDir) === laneTop(guarded)) throw refuse(`the broker seat dir ${brokerDir} must sit outside the lane tree ${laneTop(guarded)}`);
     }
+    guard(() => mkdirSync(brokerDir, { recursive: true, mode: 0o700 })); // broker-owned
     const bsdName = `seat-${randomUUID()}`;
     const bsdPath = join(brokerDir, o.dryRun ? "seat-DRYRUN" : bsdName);
     const laneRoot = o.mode === "lead" ? (stepPlan?.laneRoot ?? dirname(seatDir)) : undefined;
@@ -509,6 +515,9 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...args, "<brief>"])}`); return 0; }
     let held, bsd;
     try {
+      // The broker-owned seat dir comes first, so a refusal here spends no step and claims none.
+      guard(() => mkdirSync(join(brokerDir, bsdName), { mode: 0o700 })); // broker-owned
+      bsd = guard(() => openHeldSync(join(brokerDir, bsdName), brokerDir));
       if (stepPlan) {
         guard(() => mkdirHeld(laneHeld, "steps"));
         const steps = guard(() => openHeldSync(laneHeld.at("steps"), stepPlan.laneRoot));
@@ -522,8 +531,6 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
       } else {
         held = guard(() => openHeldSync(seatDir, laneDir));
       }
-      guard(() => mkdirSync(join(brokerDir, bsdName), { mode: 0o700 })); // broker-owned
-      bsd = guard(() => openHeldSync(join(brokerDir, bsdName), brokerDir));
       readers.afterHold?.();
       if (o.canary) guard(() => writeHeld(held, "brief.md", canaryBrief()));
       const law = o.mode === "lead" ? leadLaw() : seatLaw(readers.canon());

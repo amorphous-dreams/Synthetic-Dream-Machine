@@ -111,8 +111,7 @@ const LANE_OWNS = new Set(["brief.md", "prompt.txt", "marker.txt", "rollouts-bef
  */
 export function copyBack(from, to) {
   const copied = [];
-  for (const name of readdirSync(from.at()).sort().slice(0, COPY_COUNT)) {
-    if (LANE_OWNS.has(name) || name.startsWith(".")) continue;
+  for (const name of readdirSync(from.at()).filter((n) => !LANE_OWNS.has(n) && !n.startsWith(".")).sort().slice(0, COPY_COUNT)) {
     const src = from.at(name);
     const st = lstatSync(src);
     if (!st.isFile() || st.nlink > 1) continue;
