@@ -13,7 +13,7 @@ const T = vi.hoisted(() => ({
   daemon: "lar:///ha.ka.ba/bags/daemon",
   kel: "lar:///ha.ka.ba/lares/persona-kel-prefix",
 }));
-const seam = vi.hoisted(() => ({ bootstrapPath: "", edge: null as Record<string, unknown> | null, seeds: [] as number[], anchorsAsked: [] as number[], observed: 0, anchorPrefix: "kel-zero", anchorLease: 0, anchorSeq: -1, projectedWith: null as Record<string, unknown> | null, cids: [] as string[], anchorCid: null as string | null, vesselTags: [] as string[] }));
+const seam = vi.hoisted(() => ({ bootstrapPath: "", edge: null as Record<string, unknown> | null, seeds: [] as number[], anchorsAsked: [] as number[], observed: 0, anchorPrefix: "kel-zero", anchorLease: 0, anchorSeq: -1, projectedWith: null as Record<string, unknown> | null, cids: [] as string[], anchorCid: null as string | null, vesselTags: [] as string[], records: [] as unknown[], admissions: [] as Array<{ deviceKey: string; cid: string }> }));
 
 vi.mock("../src/vessel-paths.js", () => ({ larBootstrapPath: () => seam.bootstrapPath, larSealHome: () => "seal-home-under-test" }));
 // The admit pins the Nexus the vessel's sovereign gate stands at (`stoodSovereignPin`, hearth-stood-pin P1-P3); this
@@ -78,14 +78,15 @@ vi.mock("@lararium/mesh", async (real) => {
       leaseEpoch: () => Math.max(seam.observed, anchor?.frontier.leaseEpoch ?? 0),
       project: () => {
         seam.projectedWith = { acceptedThrough: anchor?.frontier.actSeq };
-        return { founded: true, fork: null, head: { seq: 3, cid: "head" }, cids: seam.cids, vesselTags: seam.vesselTags };
+        return { founded: true, fork: null, head: { seq: 3, cid: "head" }, cids: seam.cids, vesselTags: seam.vesselTags, admissions: seam.admissions };
       },
     }),
   };
 });
-vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async () => [], appendPersonaActs: () => {} }));
+vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async () => seam.records, appendPersonaActs: () => {} }));
 
 import { DeviceAdmitTagRefused, runDeviceAdmit } from "../src/commands/device-admit.js";
+import { actCid } from "@lararium/mesh";
 import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" } } };
@@ -102,7 +103,7 @@ const admissionOf = () => (seam.edge!["personaActs"] as { body: Record<string, u
 
 describe("runDeviceAdmit names the face whose root signs", () => {
   beforeEach(() => {
-    seam.edge = null; seam.seeds = []; seam.anchorsAsked = []; seam.observed = 0; seam.anchorPrefix = "kel-zero"; seam.anchorLease = 0; seam.anchorSeq = -1; seam.projectedWith = null; seam.cids = []; seam.anchorCid = null; seam.vesselTags = [];
+    seam.edge = null; seam.seeds = []; seam.anchorsAsked = []; seam.observed = 0; seam.anchorPrefix = "kel-zero"; seam.anchorLease = 0; seam.anchorSeq = -1; seam.projectedWith = null; seam.cids = []; seam.anchorCid = null; seam.vesselTags = []; seam.records = []; seam.admissions = [];
     seam.bootstrapPath = join(tmpdir(), `lar-device-admit-face-${process.pid}.json`);
     writeFileSync(seam.bootstrapPath, JSON.stringify({ text: JSON.stringify({ tiddlers: {
       [T.group]: { text: "group-zero" }, [T.cabal]: { text: "cabal-zero" }, [T.daemon]: { text: "automerge:daemon" },
@@ -178,5 +179,17 @@ describe("runDeviceAdmit names the face whose root signs", () => {
     const fresh = await testVesselTag(6, "group-zero", JOINEE);
     await admitAt(undefined, fresh);
     expect(admissionOf()).toMatchObject({ deviceKey: JOINEE, vesselTag: fresh.vesselTag, vesselSig: fresh.vesselSig });
+  });
+
+  test("RED: a retried answer for the atom that already holds the tag is a replay and seats nothing twice; CONTROL: the same vessel under another atom still refuses", async () => {
+    const mine = await testVesselTag(5, "group-zero", JOINEE);
+    const body = { act: "admission", deviceKey: JOINEE, vesselTag: mine.vesselTag, vesselSig: mine.vesselSig };
+    seam.vesselTags = [mine.vesselTag]; seam.records = [{ body }]; seam.admissions = [{ deviceKey: JOINEE, cid: actCid(body as never) }];
+    await admitAt(undefined, mine);
+    expect(seam.edge).not.toBeNull();
+    seam.edge = null;
+    seam.vesselTags = [(await testVesselTag(5, "group-zero", OTHER_ATOM)).vesselTag];
+    seam.records = [{ body: { ...body, deviceKey: OTHER_ATOM } }]; seam.admissions = [{ deviceKey: OTHER_ATOM, cid: actCid({ ...body, deviceKey: OTHER_ATOM } as never) }];
+    await expect(admitAt()).rejects.toMatchObject({ refusal: "vessel-already-admitted" });
   });
 });

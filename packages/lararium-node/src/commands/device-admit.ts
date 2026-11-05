@@ -399,7 +399,13 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   const { vesselTag, vesselSig } = opts.vesselTag;
   if (vesselTag === undefined || vesselSig === undefined) throw new DeviceAdmitTagRefused("vessel-tag-absent", "the join carries no blinded vessel tag for this face");
   if (!vesselFaceTagHolds(personaGroupId, deviceKey, { vesselTag, vesselSig })) throw new DeviceAdmitTagRefused("vessel-tag-invalid", "the vessel tag's signature covers another face or atom");
-  if (projection.vesselTags.includes(vesselTag as string)) throw new DeviceAdmitTagRefused("vessel-already-admitted", "this vessel already holds a seat in this face");
+  // A retried answer for the atom that already holds this tag is a replay, not a second seat: the same vessel under another atom refuses.
+  const seatedBySameAtom = records.some((r) => {
+    const b = (r as { body?: Record<string, unknown> } | null)?.body;
+    return b?.["act"] === "admission" && b["deviceKey"] === deviceKey && b["vesselTag"] === vesselTag
+      && projection.admissions.some((a) => a.cid === actCid(b as never));
+  });
+  if (projection.vesselTags.includes(vesselTag as string) && !seatedBySameAtom) throw new DeviceAdmitTagRefused("vessel-already-admitted", "this vessel already holds a seat in this face");
   const signer = { key: signerKey, sign: ed25519SignerFromSeed(signerSeed) };
   const epoch = personaKelChain[personaKelChain.length - 1]!.seq;
   const admission = await signPersonaAct(projection.head, { group: personaGroupId, act: "admission", epoch,
