@@ -49,6 +49,8 @@ const CANON = "bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem";
 const FLOOR = 20;
 /** A read seat's own floor: the operator lets readers spend the pool to its end for now (2026-10-31: "temp bump that limit to 0%"; it stood at 5); builders and research keep FLOOR. */
 const READ_FLOOR = 0;
+/** The seat-harness carrier that holds the spend limits as a machine-readable table (#/the-spend-guard). */
+const SPEND_CANON = "bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem";
 const MODES = ["build", "lead", "read", "research"];
 export const COMPACT_LIMIT = 120000;
 export const TOOL_OUTPUT_LIMIT = 8000;
@@ -248,9 +250,42 @@ CANARY DONE 100 calls
 `;
 }
 
-/** The newest rollout's rate_limits record, from its lines: the pool, or null when no line carries one. */
-export function readPool(lines, mode = "build") {
-  const floor = mode === "read" ? READ_FLOOR : FLOOR;
+/**
+ * The spend table in seat-harness#/the-spend-guard, strict: one fenced `spend-limits` block of rows
+ *   default <mode> max-used=<0..100> floor=<0..100>        exactly one per mode (lead, build, read, research)
+ *   ruling <YYYY-MM-DD> window=<resets_at | pending> max-used=<0..100> floor=<0..100>
+ * Any other line, a duplicate, a missing default or a second ruling for one window refuses by name.
+ */
+export function parseSpendTable(carrierText) {
+  const bad = (why) => refuse(`spend table in ${SPEND_CANON}#/the-spend-guard is malformed: ${why}`);
+  if (typeof carrierText !== "string") throw refuse(`spend table unreadable: ${SPEND_CANON}`);
+  const ahu = /<<~ ahu slot=`#\/the-spend-guard`>>([\s\S]*?)<<~\/ahu>>/.exec(carrierText);
+  const blocks = ahu ? [...ahu[1].matchAll(/^```spend-limits[ \t]*\n([\s\S]*?)^```[ \t]*$/gm)] : [];
+  if (blocks.length !== 1) throw bad(`expected exactly one spend-limits block, found ${blocks.length}`);
+  const pct = (v) => (/^(0|[1-9][0-9]?|100)$/.test(v) ? Number(v) : null);
+  const defaults = {}, rulings = [];
+  for (const line of blocks[0][1].split("\n")) {
+    if (!line.trim()) continue;
+    let m;
+    if ((m = /^default (lead|build|read|research) max-used=([0-9]+) floor=([0-9]+)$/.exec(line))) {
+      const maxUsed = pct(m[2]), floor = pct(m[3]);
+      if (maxUsed === null || floor === null) throw bad(`percent out of range: ${line}`);
+      if (defaults[m[1]]) throw bad(`duplicate default for ${m[1]}`);
+      defaults[m[1]] = { maxUsed, floor };
+    } else if ((m = /^ruling ([0-9]{4}-[0-9]{2}-[0-9]{2}) window=(pending|[1-9][0-9]*) max-used=([0-9]+) floor=([0-9]+)$/.exec(line))) {
+      const maxUsed = pct(m[3]), floor = pct(m[4]);
+      if (maxUsed === null || floor === null || Number.isNaN(Date.parse(m[1]))) throw bad(`bad ruling row: ${line}`);
+      const window = m[2] === "pending" ? null : Number(m[2]);
+      if (window !== null && rulings.some((r) => r.window === window)) throw bad(`two rulings for window ${window}`);
+      rulings.push({ date: m[1], window, maxUsed, floor });
+    } else throw bad(`unrecognized row: ${line.slice(0, 80)}`);
+  }
+  for (const mode of MODES) if (!defaults[mode]) throw bad(`no default row for ${mode}`);
+  return { defaults, rulings };
+}
+
+/** The newest rollout's rate_limits record, from its lines: the pool, or null when no line carries one. `table` is the parsed spend table; its ruling row for this pool's window (resets_at) replaces the mode's defaults, and a pending or other-window row applies nothing. */
+export function readPool(lines, mode = "build", table = null) {
   let primary = null;
   for (const line of lines ?? []) {
     if (!line.includes('"rate_limits"')) continue;
@@ -260,11 +295,14 @@ export function readPool(lines, mode = "build") {
     if (p && typeof p.used_percent === "number" && p.window_minutes && p.resets_at) primary = p;
   }
   if (!primary) return null;
+  const base = table ? table.defaults[mode] : { maxUsed: MAX_USED[mode] ?? 100, floor: mode === "read" ? READ_FLOOR : FLOOR };
+  const ruling = table?.rulings.find((r) => r.window !== null && r.window === primary.resets_at) ?? null;
+  const floor = ruling ? ruling.floor : base.floor, maxUsed = ruling ? ruling.maxUsed : base.maxUsed;
   const left = 100 - primary.used_percent;
   const above = left > floor;
   const winDays = Math.floor(primary.window_minutes / 1440);
-  const summary = `codex pool: ${primary.used_percent.toFixed(1)}% used of a ${winDays}-day window, resets ${new Date(primary.resets_at * 1000).toISOString().slice(0, 16)}Z; ${left.toFixed(1)}% left, floor ${floor}% -> ${above ? "ABOVE FLOOR" : "AT OR BELOW FLOOR: launch no new Codex seat"}`;
-  return { used: primary.used_percent, winDays, reset: primary.resets_at, left, above, summary };
+  const summary = `codex pool: ${primary.used_percent.toFixed(1)}% used of a ${winDays}-day window, resets ${new Date(primary.resets_at * 1000).toISOString().slice(0, 16)}Z; ${left.toFixed(1)}% left, floor ${floor}% -> ${ruling ? `RULED (${ruling.date}, window ${ruling.window}): limits max-used=${ruling.maxUsed} floor=${ruling.floor}${above ? "" : "; AT OR BELOW FLOOR: launch no new Codex seat"}` : above ? "ABOVE FLOOR" : "AT OR BELOW FLOOR: launch no new Codex seat"}`;
+  return { used: primary.used_percent, winDays, reset: primary.resets_at, left, above, maxUsed, ruled: Boolean(ruling), summary };
 }
 
 /** Whether the tree's dists were built from its source: the global stamp, else every built package's own stamp (a `--pkg` build). */
@@ -344,6 +382,7 @@ export function realReaders(home = realHome(), repo = REPO) {
     rolloutLines: () => { try { return newestRolloutLines(home); } catch { return null; } },
     distFresh: (wt) => { try { return distFresh(wt); } catch { return false; } },
     canon: () => readFileSync(join(repo, CANON), "utf8"),
+    spendCarrier: () => { try { return readFileSync(join(repo, SPEND_CANON), "utf8"); } catch { return null; } },
   };
 }
 
@@ -364,10 +403,11 @@ export function preflight({ mode, model, seatDir, worktree, briefless }, readers
   const cache = readers.modelsCache();
   if (!cache || !new RegExp(`"slug": *"${model.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`).test(cache)) throw refuse(`model ${model} is not in Codex's models cache`);
   // An empty read names itself and reads once more; it never stands in for a pool at zero.
-  const pool = readPool(readers.rolloutLines(), mode) ?? readPool(readers.rolloutLines(), mode);
+  const table = parseSpendTable(readers.spendCarrier?.());
+  const pool = readPool(readers.rolloutLines(), mode, table) ?? readPool(readers.rolloutLines(), mode, table);
   if (!pool) throw refuse("Codex pool line unreadable (no rate_limits record in the newest rollout, read twice); read it by hand before launching");
   if (!pool.above) throw refuse(`Codex pool at or below its floor: ${pool.summary}`);
-  if (MAX_USED[mode] !== undefined && pool.used > MAX_USED[mode]) throw refuse(`Codex pool used ${pool.used.toFixed(1)}%, above the ${mode} seat's ${MAX_USED[mode]}% used ceiling: ${pool.summary}`);
+  if (pool.used > pool.maxUsed) throw refuse(`Codex pool used ${pool.used.toFixed(1)}%, above the ${mode} seat's ${pool.maxUsed}% used ceiling: ${pool.summary}`);
   if (mode === "build" || mode === "lead") {
     const role = mode === "lead" ? "lead" : "builder";
     if (!worktree) throw refuse(`a ${role} needs its worktree`);
