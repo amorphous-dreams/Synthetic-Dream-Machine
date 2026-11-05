@@ -17,6 +17,7 @@ function fixture() {
   let failIngest = false;
   let failLift = false;
   let skipLift = 0;
+  let arrival: Promise<unknown> | undefined;
   let refuse = false;
   const logs: string[] = [];
   const seat = makeFaceSeat({
@@ -26,7 +27,7 @@ function fixture() {
     readLease: async () => lease ? { kind: "epoch", n: 0 } : { kind: "unavailable", why: "no layer" },
     verify: async () => { verifies++; return refuse ? { ok: false, reason: "refused" } : { ok: true }; },
     ingest: async () => { ingests++; if (failIngest) throw new Error("ingest"); known = true; },
-    lift: async () => { lifts++; if (failLift) throw new Error("lift"); return { skipped: skipLift }; },
+    lift: async () => { lifts++; if (failLift) throw new Error("lift"); return { skipped: skipLift, ...(arrival ? { arrivals: [arrival] } : {}) }; },
     log: (message) => { logs.push(message); },
   });
   return {
@@ -35,6 +36,7 @@ function fixture() {
     failIngest: (value: boolean) => { failIngest = value; },
     failLift: (value: boolean) => { failLift = value; },
     skipLift: (count: number) => { skipLift = count; },
+    arrival: (p: Promise<unknown> | undefined) => { arrival = p; },
     refuse: () => { refuse = true; },
     counts: () => ({ ingests, lifts, verifies }),
     seated: () => known,
@@ -61,6 +63,16 @@ describe("a causal face seat", () => {
     expect(f.counts().lifts).toBe(3);
     f.seat.wake(); await f.seat.settled();
     expect(f.counts().lifts, "a clean lift latches").toBe(3);
+  });
+  test("O3 the skipped floor document's own ARRIVAL wakes the seat: the lift runs again with no other wake", async () => {
+    const f = fixture(); f.leaseArrives(); f.arrive();
+    let arrive!: () => void; f.arrival(new Promise<void>((resolve) => { arrive = resolve; })); f.skipLift(1);
+    await f.seat.run(); await f.seat.settled();
+    expect(f.counts().lifts).toBe(1);
+    f.skipLift(0); f.arrival(undefined);
+    arrive();                                         // the silent document answers
+    await new Promise((r) => setImmediate(r)); await f.seat.settled();
+    expect(f.counts().lifts, "the arrival alone drew the second pass").toBe(2);
   });
   test("R2 a grant waits unjudged for the daemon lease layer", async () => {
     const f = fixture(); f.arrive();
@@ -171,7 +183,7 @@ test("R6 the resolver's lift never waits on the seat act", async () => {
     personaGroupId: group, faceSeated: async () => false, faceDoor: {} as never,
     seatSettled: async () => { settledCalls++; await new Promise(() => {}); },
   });
-  expect(await resolver.liftFloor()).toEqual({ moved: [], finished: [], skipped: [] });
+  expect(await resolver.liftFloor()).toEqual({ moved: [], finished: [], skipped: [], skippedUrls: [] });
   expect(settledCalls).toBe(0);
 });
 

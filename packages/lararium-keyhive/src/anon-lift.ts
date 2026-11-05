@@ -72,7 +72,7 @@ export interface LiftArgs {
 }
 
 /** `skipped`: the records a silent floor document held back this pass; the next pass lifts them once the document answers. */
-export interface LiftResult { readonly moved: readonly string[]; readonly finished: readonly string[]; readonly skipped: readonly string[] }
+export interface LiftResult { readonly moved: readonly string[]; readonly finished: readonly string[]; readonly skipped: readonly string[]; readonly skippedUrls: readonly string[] }
 
 const PREFIXES = [
   { prefix: PERSONAL_BINDINGS_PREFIX, kind: "personal-binding" },
@@ -185,6 +185,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
   const moved: string[] = [];
   const finished: string[] = [];
   const skipped: string[] = [];
+  const skippedUrls: string[] = [];
   const entries = await args.daemonStore.entries();
 
   // 1 — a burn a crash left: a binding still holding its floor URL finishes the burn, moving nothing.
@@ -207,7 +208,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
     const oldUrl = tiddlerText(record);
     if (!fields || !oldUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
     let next: { url: string; keyhiveDocId: string };
-    try { next = await rehome(args, oldUrl); } catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); skipped.push(title); continue; } throw error; }
+    try { next = await rehome(args, oldUrl); } catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); skipped.push(title); skippedUrls.push(oldUrl); continue; } throw error; }
     await putBinding(args, title, {
       ...carried(fields), text: next.url, "face-reach": "face", "keyhive-doc-id": next.keyhiveDocId,
       "lifted-from": digestOf(title), "lifted-from-url": oldUrl,
@@ -244,11 +245,11 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
         try {
           const into = await boundedRead(args, standingUrl, async () => { const h = await args.repo.find(standingUrl); await h.whenReady?.(); return h; });
           carryTiddlers(await readDoc(args, oldUrl), into as unknown as { change(fn: (doc: LarDoc) => void): void });
-        } catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); skipped.push(floorKey); continue; } throw error; }
+        } catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); skipped.push(floorKey); skippedUrls.push(oldUrl); continue; } throw error; }
         url = standingUrl; keyhiveDocId = String(fieldsOf(standing)?.["keyhive-doc-id"] ?? "");
       } else {
         let next: { url: string; keyhiveDocId: string };
-        try { next = await rehome(args, oldUrl); } catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); skipped.push(floorKey); continue; } throw error; }
+        try { next = await rehome(args, oldUrl); } catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); skipped.push(floorKey); skippedUrls.push(oldUrl); continue; } throw error; }
         url = next.url; keyhiveDocId = next.keyhiveDocId;
       }
       await putBinding(args, bindingKey, {
@@ -282,7 +283,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
           // The floor source is read FIRST: a silent one opens no destination, so no blank document stands at the derived address.
           let source: Awaited<ReturnType<LiftRepo["find"]>>;
           try { source = await boundedRead(args, oldUrl, async () => { const h = await args.repo.find(oldUrl); await h.whenReady?.(); return h; }); }
-          catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); skipped.push(floorKey); continue; } throw error; }
+          catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); skipped.push(floorKey); skippedUrls.push(oldUrl); continue; } throw error; }
           try {
             const into = await working.open(url, slug);
             const carriedTo = tiddlerText(ownEntry(source.doc()?.tiddlers, WORKING_CARRY_MARK));
@@ -325,7 +326,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
               }
               throw error;
             }
-          } catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); skipped.push(floorKey); continue; } throw error; }
+          } catch (error) { if (error instanceof FloorDocumentUnavailable) { console.warn(error.message); skipped.push(floorKey); skippedUrls.push(oldUrl); continue; } throw error; }
           await args.faceDoor.mint(url, "admin");
           // MARK, BURN, THEN DELETE: the key keeps the lift's mark until the floor document burns.
           handle.change((doc) => {
@@ -341,7 +342,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
       }
     }
   }
-  return { moved, finished, skipped };
+  return { moved, finished, skipped, skippedUrls };
 }
 
 /** Remove the catalog floor record whose key digests to `digest`, if one still stands. */
