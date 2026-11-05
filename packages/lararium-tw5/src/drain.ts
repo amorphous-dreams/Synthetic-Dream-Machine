@@ -15,7 +15,8 @@
  * An act's removal rides a dependency edge (`markAfter`): it stays parked until the target's receipts cover the act's own generation,
  * then rides as an ordinary owed title. A removal behind a refused target reads that refusal as its own terminal outcome.
  *
- * Memory stays bounded by titles: one slot per owed title, at most two live waiters per title (the generation in flight and the latest; a newer mark settles a displaced generation `superseded`, a non-ack), and a slot leaves once its receipts cover it.
+ * Memory stays bounded by titles: one slot per owed title, at most two live waiters per title (the generation in flight and the latest; a newer mark settles a displaced generation `superseded`, a non-ack; a request for a generation the flight carries waits on the flight's waiter), and a slot leaves once its receipts cover it.
+ * The pump is FAIR by generation: among the owed titles the oldest owed generation flies first, so a title re-marked during every one of its flights never starves another.
  * Writes stay idempotent by (title, generation): a retry after an ambiguous failure writes the title's latest state again.
  *
  * THE KICK RULE (operator ruling 2026-11-04): `kick()` is a REQUEST, never a write. It sets flight-eligible state (releases a standing refusal,
@@ -251,15 +252,20 @@ export class Drain {
     return slot.owedFrom !== 0 && slot.blocked === null && slot.flying === 0 && (slot.after === null || this.#edgeMet(slot.after));
   }
 
-  /** The next title to write: fresh owed work first, then a released refusal's retry, each in mark order. */
+  /**
+   * The next title to write: fresh owed work first, then a released refusal's retry; within each, the OLDEST OWED GENERATION flies first.
+   * A title re-marked during its flight owes from a generation younger than the titles that waited behind it, so it takes its next turn
+   * after them: steady edits of one title never starve another (slot insertion order would keep the re-marked title first forever).
+   */
   #pick(): Slot | null {
+    let fresh: Slot | null = null;
     let retry: Slot | null = null;
     for (const slot of this.#slots.values()) {
       if (!this.#pumpable(slot)) continue;
-      if (!slot.retry) return slot;
-      retry ??= slot;
+      if (!slot.retry) { if (fresh === null || slot.owedFrom < fresh.owedFrom) fresh = slot; }
+      else if (retry === null || slot.owedFrom < retry.owedFrom) retry = slot;
     }
-    return retry;
+    return fresh ?? retry;
   }
 
   /** The ONE schedule() site. */
@@ -342,6 +348,12 @@ export class Drain {
   }
 
   #wait(title: string | null, generation: number, pinned = false): Promise<DrainOutcome> {
+    // A request for a generation the flight CARRIES (coalesced into the write in progress) waits on the flight's own waiter: per title only
+    // the generation in flight and the latest stay live, so a late historical request never adds a third.
+    if (title !== null) {
+      const slot = this.#slots.get(title);
+      if (slot && slot.flying !== 0 && generation >= slot.owedFrom && generation < slot.flying) generation = slot.flying;
+    }
     const key = `${title ?? "\u0000"}\u0001${generation}`;
     const standing = this.#waiters.get(key);
     if (standing) { if (pinned) standing.pinned = true; return standing.promise; }

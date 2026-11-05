@@ -376,4 +376,40 @@ describe("Drain", () => {
     writes[0]!.reject(new Error("refused"));
     await settle();
   });
+
+  test("FAIRNESS: a title re-marked during every one of its flights never starves another owed title; the oldest owed generation flies first — CONTROL: with no re-marks the two leave in mark order", async () => {
+    // CONTROL
+    const control = rig();
+    control.drain.mark("A"); await settle(); control.drain.mark("B");
+    control.writes[0]!.resolve(); await settle();
+    expect(control.writes.map((w) => w.title)).toEqual(["A", "B"]);
+    // RED: B owes an OLDER generation than any A re-mark, so B's turn comes before A's follow-up.
+    const { drain, writes } = rig();
+    drain.mark("A");
+    await settle();                                   // A flies
+    const b = drain.mark("B");                        // B owed, behind A's flight
+    const whole = drain.whenAcked();
+    for (let round = 0; round < 20; round++) {
+      drain.mark("A");                                // an edit of A lands during every flight
+      writes[writes.length - 1]!.resolve();           // each receipt succeeds
+      await settle();
+    }
+    expect(writes.map((w) => w.title), "B leaves right after the flight it waited behind").toContain("B");
+    expect(writes[1]!.title).toBe("B");
+    expect(kind(await drain.whenSettled("B", b))).toBe("acked");
+    for (const w of writes) w.resolve();
+    await settle();
+    expect(kind(await whole), "the whole-drain target acks once every title's receipts cover it").toBe("acked");
+  });
+
+  test("a late request for a generation the FLIGHT carries waits on the flight's own waiter: two live waiters per title at most", async () => {
+    const { drain, writes } = rig();
+    const g1 = drain.mark("t"); const g2 = drain.mark("t"); const g3 = drain.mark("t");
+    await settle();                                   // the flight at g3 carries g1..g3
+    const asked = [drain.whenSettled("t", g1), drain.whenSettled("t", g2), drain.whenSettled("t", g3)];
+    expect(drain.waiters("t"), "the generation in flight (carrying the earlier two) and nothing else").toBeLessThanOrEqual(2);
+    expect(await pending(asked[0]!), "the carried generation still waits for the receipt").toBe(true);
+    writes[0]!.resolve(); await settle();
+    expect((await Promise.all(asked)).map(kind)).toEqual(["acked", "acked", "acked"]);
+  });
 });
