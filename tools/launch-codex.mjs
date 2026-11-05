@@ -407,9 +407,29 @@ function parse(argv) {
  * rollout until the seat exits, crosses its ceiling, or goes blind; a watch that ends with the child alive gets a SIGKILL
  * to its own child and waits for the exit event.
  */
+/**
+ * Signal a process GROUP, never "every process": `kill(-1)` reaches every process the user owns (it killed the
+ * operator's systemd user manager, VS Code and Claude Code twice on 2026-11-04, from a test fake whose pid was 1),
+ * and `kill(-0)` reaches the caller's own group. A pgid that is not an integer above 1 refuses by name.
+ */
+export function killGroup(pgid, sig) {
+  if (!Number.isInteger(pgid) || pgid <= 1) throw new Error(`killGroup refuses pgid ${pgid}: only an integer above 1 names one process group`);
+  process.kill(-pgid, sig);
+}
+
 export async function superviseSeat(o, deps = {}) {
-  const signal = deps.signal ?? ((pid, sig) => process.kill(pid, sig));
-  const groupAlive = deps.groupAlive ?? ((pgid) => { try { process.kill(-pgid, 0); return true; } catch (error) { return error.code !== "ESRCH"; } });
+  // A completion marker stands even when the supervision itself fails, so a wait on it never hangs on a thrown error.
+  try { return await superviseInner(o, deps); } catch (error) {
+    if (o.laneHeld && o.doneName) { try { writeHeld(o.laneHeld, o.doneName, `${JSON.stringify({ verdict: "supervisor-error", error: String(error?.message ?? error) })}\n`, "x"); } catch { /* the wait also watches the pid */ } }
+    throw error;
+  }
+}
+
+async function superviseInner(o, deps) {
+  // A test injects `signal` (it receives the negated pgid); the real path signals the group through killGroup alone.
+  const signal = deps.signal ?? ((negPgid, sig) => killGroup(-negPgid, sig));
+  const hit = (pgid, sig) => signal(-pgid, sig);
+  const groupAlive = deps.groupAlive ?? ((pgid) => { try { killGroup(pgid, 0); return true; } catch (error) { return error.code !== "ESRCH"; } });
   const held = o.held;
   const marker = o.marker, before = new Set(JSON.parse(readHeld(held, "rollouts-before.json"))), home = o.home ?? realHome();
   const prompt = readHeld(held, "prompt.txt");
@@ -419,9 +439,10 @@ export async function superviseSeat(o, deps = {}) {
   const child = (deps.spawn ?? nodeSpawn)(command[0], command[1], { cwd: held.at(), env: o.env ?? process.env, detached: true, stdio: ["ignore", logFd, logFd] });
   let exited = false;
   // The moment the child's exit lands, its process group gets SIGKILL (ESRCH is fine): a descendant that outlives its parent dies here, before the pgid could be reused.
+  let exitCode = null;
   const gone = new Promise((resolve) => {
-    const done = () => { if (!exited) { exited = true; try { process.kill(-child.pid, "SIGKILL"); } catch { /* an empty group */ } } resolve(); };
-    child.on("exit", done); child.on("error", done);
+    const done = (code) => { if (typeof code === "number") exitCode = code; if (!exited) { exited = true; try { hit(child.pid, "SIGKILL"); } catch { /* an empty group */ } } resolve(); };
+    child.on("exit", done); child.on("error", () => done(null));
   });
   let tail = null;
   const seen = new Set();
@@ -438,17 +459,19 @@ export async function superviseSeat(o, deps = {}) {
     });
   } catch { /* the child is dealt with below */ }
   // The last resort uses the real group signal (not the injected one), then the child handle, so descendants die with it.
-  if (!exited) { try { process.kill(-child.pid, "SIGKILL"); } catch { /* the handle below */ } try { child.kill("SIGKILL"); } catch { /* gone */ } }
+  if (!exited) { try { hit(child.pid, "SIGKILL"); } catch { /* the handle below */ } try { child.kill("SIGKILL"); } catch { /* gone */ } } // the handle is bound to this very child, so it can never reach another process
   await gone;
   // A stop reads as stopped only when the group answers ESRCH.
-  for (let i = 0; i < (deps.groupPolls ?? 50) && groupAlive(child.pid); i++) { try { process.kill(-child.pid, "SIGKILL"); } catch { /* gone */ } await new Promise((r) => setTimeout(r, deps.pollMs ?? 100)); }
+  for (let i = 0; i < (deps.groupPolls ?? 50) && groupAlive(child.pid); i++) { try { hit(child.pid, "SIGKILL"); } catch { /* gone */ } await new Promise((r) => setTimeout(r, deps.pollMs ?? 100)); }
   if (groupAlive(child.pid)) return "unstopped";
   if (verdict === "unstopped") verdict = "forced";
   // The hand-back: Codex's own outputs sit in the broker-owned directory; they reach the lane's seat dir only now, through its held handle.
-  let copied = [];
-  if (o.laneHeld) { try { copied = copyBack(held, o.laneHeld); } catch { /* the broker-owned copy stands */ } }
+  // A containment command that fails before Codex runs (no rollout ever matched, a nonzero exit) is a setup failure, never a finished seat.
+  if (o.contain && exitCode !== 0 && !tail && verdict === "exited") verdict = "setup-failed";
+  const copied = []; let handbackError = null;
+  if (o.laneHeld) { try { copyBack(held, o.laneHeld, copied); } catch (error) { handbackError = String(error?.message ?? error); } }
   // The completion marker is written LAST, so a wait on it never reads a stale or partial hand-back.
-  if (o.laneHeld && o.doneName) { try { writeHeld(o.laneHeld, o.doneName, `${JSON.stringify({ verdict, copied, finalMd: copied.includes("final.md") })}\n`, "x"); } catch { /* the hand-back stands */ } }
+  if (o.laneHeld && o.doneName) { try { writeHeld(o.laneHeld, o.doneName, `${JSON.stringify({ verdict, exitCode, copied, finalMd: copied.includes("final.md"), handbackError })}\n`, "x"); } catch { /* the hand-back stands */ } }
   // After the hand-back the broker-owned directory goes: its contents through the held fd, then the directory.
   if (o.bsdPath) { try { removeHeldContents(held); rmdirSync(o.bsdPath); } catch { /* the size bound catches leftovers */ } } // broker-owned
   return verdict;
@@ -457,7 +480,7 @@ export async function superviseSeat(o, deps = {}) {
 function superviseMain(o) {
   const held = heldOver(Number(o.heldFd));
   const laneHeld = o.laneFd ? heldOver(Number(o.laneFd)) : undefined;
-  return superviseSeat({ held, laneHeld, doneName: o.doneName, bsdPath: o.bsdPath, contain: o.contain === "bwrap", marker: o.marker, home: o.home, ceiling: o.ceiling, mode: o.mode, rest: o.rest, blindTicks: o.blindTicks ? Number(o.blindTicks) : undefined }).then((v) => (v === "unstopped" || v === "error" ? 1 : 0), () => 1);
+  return superviseSeat({ held, laneHeld, doneName: o.doneName, bsdPath: o.bsdPath, contain: o.contain === "bwrap", marker: o.marker, home: o.home, ceiling: o.ceiling, mode: o.mode, rest: o.rest, blindTicks: o.blindTicks ? Number(o.blindTicks) : undefined }).then((v) => (v === "unstopped" || v === "error" || v === "setup-failed" ? 1 : 0), () => 1);
 }
 
 /** The launcher over injected readers, spawn and writers; returns the exit code. */
@@ -559,7 +582,7 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
       const supervisor = spawn(process.execPath, [fileURLToPath(import.meta.url), "--supervise", "--held-fd", "3", "--lane-fd", "4", "--done-name", doneName, "--bsd-path", bsdPath, "--contain", "bwrap", "--ceiling", String(ceiling), "--mode", o.mode, "--marker", marker, "--home", readers.realHome, ...(o.blindTicks ? ["--blind-ticks", String(o.blindTicks)] : []), "--", ...args], { cwd: bsd.at(), env, detached: true, stdio: ["ignore", "ignore", "ignore", bsd.fd, held.fd] });
       supervisor.unref?.();
       launched = true;
-      log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${supervisor.pid}; wait on: until [ -f ${join(seatDir, doneName)} ] (the completion marker, written last; the hand-back is final.md beside it)`);
+      log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${supervisor.pid}; wait on: until [ -f ${join(seatDir, doneName)} ] || ! kill -0 ${supervisor.pid} (the completion marker, written last, carries the verdict; the hand-back is final.md beside it)`);
       return 0;
     } finally {
       held?.close(); bsd?.close(); laneHeld?.close();

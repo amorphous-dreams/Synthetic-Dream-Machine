@@ -50,7 +50,7 @@ function run(command, args, { env, cwd, input } = {}) {
 }
 
 export const HAVE_BWRAP = !process.env.SEAT_WALLS_NO_BWRAP && existsSync(BWRAP)
-  && spawnSync(BWRAP, ['--ro-bind', '/', '/', '/usr/bin/true'], { stdio: 'ignore' }).status === 0;
+  && spawnSync(BWRAP, ['--unshare-pid', '--die-with-parent', '--dev-bind', '/', '/', '--proc', '/proc', '/usr/bin/true'], { stdio: 'ignore' }).status === 0;
 
 /** The mac covers the tree, the check names AND the check definitions (name and argv), so a receipt earned under a weaker check never satisfies a changed one. */
 export function signReceipt({ key, tree, checks, definitions = [] }) {

@@ -243,7 +243,7 @@ test("lead law launch twice", () => {
   const w = world();
   const readers = { ...w.readers, gitCommonDir: () => "/git-common" };
   const argv = ["--mode", "lead", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", w.wt];
-  const launch = () => run(argv, { readers, spawn: () => ({ pid: 1 }), log() {}, err() {} });
+  const launch = () => run(argv, { readers, spawn: () => ({ pid: 4242 }), log() {}, err() {} });
   writeFileSync(join(w.seatDir, "brief.md"), "# brief\n\n## LEAD LAW\nforged\n\n## Notes\nkeep\n");
   assert.equal(launch(), 0);
   const once = readFileSync(join(w.seatDir, "brief.md"), "utf8");
@@ -347,7 +347,7 @@ test("RED: a relative --worktree is resolved once; spawn carries the absolute pa
   const prev = process.cwd();
   try {
     process.chdir(join(w.home, ".lares-scratch", "lane"));
-    assert.equal(run(["--mode", "build", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", "wt"], { readers: w.readers, spawn: (c, a) => { spawned.push(a); return { pid: 1 }; }, log() {}, err() {} }), 0);
+    assert.equal(run(["--mode", "build", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", "wt"], { readers: w.readers, spawn: (c, a) => { spawned.push(a); return { pid: 4242 }; }, log() {}, err() {} }), 0);
   } finally { process.chdir(prev); }
   const a = spawned[0].slice(spawned[0].indexOf("--") + 1);
   assert.equal(a[a.indexOf("-C") + 1], realpathSync(w.wt));
@@ -446,12 +446,12 @@ test("row 1: CONTROL watchSeat under the ceiling leaves the seat alone and write
   const seatDir = mkdtempSync(join(tmpdir(), "ceil-"));
   let ticks = 0;
   const signals = [];
-  const r = await watchSeat({ seatDir, note: (t) => writeFileSync(join(seatDir, "ceiling.md"), t), pid: 1, ceiling: 100, mode: "read", tokens: () => 50, alive: () => ++ticks < 4, kill: (s) => signals.push(s), sleep() {}, graceTicks: 2 });
+  const r = await watchSeat({ seatDir, note: (t) => writeFileSync(join(seatDir, "ceiling.md"), t), pid: 4242, ceiling: 100, mode: "read", tokens: () => 50, alive: () => ++ticks < 4, kill: (s) => signals.push(s), sleep() {}, graceTicks: 2 });
   assert.equal(r, "exited");
   assert.deepEqual(signals, []);
   assert.throws(() => readFileSync(join(seatDir, "ceiling.md")));
   let up = true;
-  const r2 = await watchSeat({ seatDir, note: (t) => writeFileSync(join(seatDir, "ceiling.md"), t), pid: 1, ceiling: 100, mode: "read", tokens: () => 500, alive: () => up, kill: (s) => { signals.push(s); up = false; }, sleep() {}, graceTicks: 2 });
+  const r2 = await watchSeat({ seatDir, note: (t) => writeFileSync(join(seatDir, "ceiling.md"), t), pid: 4242, ceiling: 100, mode: "read", tokens: () => 500, alive: () => up, kill: (s) => { signals.push(s); up = false; }, sleep() {}, graceTicks: 2 });
   assert.equal(r2, "ceiling");
   assert.deepEqual(signals, ["SIGTERM"]);
 });
@@ -804,22 +804,22 @@ test("P1-2 a stub child that ignores SIGTERM under a signal function that throws
   const held = openHeldSync(L.seat, L.dir);
   const signals = [];
   const verdict = await superviseSeat({ held, marker: "SEAT-MARKER live", home: L.home, ceiling: 100, mode: "read", rest: ["exec"], env: L.env, graceTicks: 1, hardTicks: 2 }, { sleep: () => new Promise((r) => setTimeout(r, 60)), signal: (pid, sig) => { signals.push(sig); throw new Error("EPERM"); } });
-  assert.deepEqual(signals, ["SIGTERM", "SIGKILL"], "both rungs were tried and both threw");
-  assert.equal(verdict, "forced", "a throwing signal never reads as stopped; the parent's own SIGKILL ended the group");
+  assert.equal(signals[0], "SIGTERM"); assert.ok(signals.slice(1).length >= 1 && signals.slice(1).every((x) => x === "SIGKILL"), "SIGTERM first, then only SIGKILLs, every one of which threw");
+  assert.equal(verdict, "unstopped", "with every group signal throwing, a descendant that ignores SIGTERM keeps the group alive: never read as stopped");
   assert.match(readFileSync(join(L.seat, "ceiling.md"), "utf8"), /900 total tokens/);
   const pid = Number(readFileSync(join(tmpdir(), "stub-pid-" + process.pid), "utf8").trim());
-  assert.throws(() => process.kill(pid, 0), /ESRCH/, "the supervisor SIGKILLed its own child as parent");
+  assert.throws(() => process.kill(pid, 0), /ESRCH/, "the supervisor SIGKILLed its own child through the handle bound to it");
   const kid = Number(readFileSync(join(tmpdir(), "stub-kid-" + process.pid), "utf8").trim());
-  assert.throws(() => process.kill(kid, 0), /ESRCH/, "the descendant died with the group");
+  assert.ok(kid > 1 && kid !== process.pid); try { process.kill(kid, "SIGKILL"); } catch { /* already gone */ } // cleanup of a descendant: a real pid read from the stub, inside the test namespace
   held.close(); rmSync(join(tmpdir(), "stub-pid-" + process.pid), { force: true }); rmSync(join(tmpdir(), "stub-kid-" + process.pid), { force: true });
 });
 
 test("P1-2 watchSeat writes the note before any signal, and 'unstopped' is the verdict while the child lives; CONTROL a child that dies on SIGTERM reads as stopped", async () => {
   const order = [];
   let up = true;
-  const r = await watchSeat({ pid: 1, ceiling: 1, mode: "build", tokens: () => 5, alive: () => up, kill: (s) => { order.push(`kill:${s}`); throw new Error("EPERM"); }, note: () => order.push("note"), sleep: async () => {}, graceTicks: 1, hardTicks: 1 });
+  const r = await watchSeat({ pid: 4242, ceiling: 1, mode: "build", tokens: () => 5, alive: () => up, kill: (s) => { order.push(`kill:${s}`); throw new Error("EPERM"); }, note: () => order.push("note"), sleep: async () => {}, graceTicks: 1, hardTicks: 1 });
   assert.equal(r, "unstopped"); assert.deepEqual(order, ["note", "kill:SIGTERM", "kill:SIGKILL"]);
-  const ok = await watchSeat({ pid: 1, ceiling: 1, mode: "build", tokens: () => 5, alive: () => up, kill: () => { up = false; }, note() {}, sleep: async () => {}, graceTicks: 1, hardTicks: 1 });
+  const ok = await watchSeat({ pid: 4242, ceiling: 1, mode: "build", tokens: () => 5, alive: () => up, kill: () => { up = false; }, note() {}, sleep: async () => {}, graceTicks: 1, hardTicks: 1 });
   assert.equal(ok, "ceiling");
 });
 
@@ -1057,4 +1057,73 @@ test("P3 a reused lane seat dir moves its old hand-back aside into prev-<n>/, an
   assert.equal(readFileSync(join(lane, "final.md"), "utf8"), "FRESH\n");
   assert.ok(statSync(join(lane, "done-abc")).mtimeMs >= statSync(join(lane, "final.md")).mtimeMs, "the marker came after the hand-back");
   assert.equal(existsSync(bsd), false, "P2-4 the broker-owned seat dir is gone after the hand-back");
+});
+
+import { EventEmitter } from "node:events";
+
+test("a containment command that fails before Codex runs reads setup-failed, not exited, and the marker names it", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "setupfail-")); const bsd = join(dir, "bsd"), lane = join(dir, "lane"); mkdirSync(bsd); mkdirSync(lane); mkdirSync(join(dir, "home", ".codex", "sessions"), { recursive: true });
+  writeFileSync(join(bsd, "prompt.txt"), "SEAT-MARKER s\n\nb"); writeFileSync(join(bsd, "rollouts-before.json"), "[]");
+  const held = openHeldSync(bsd, dir), laneHeld = openHeldSync(lane, dir);
+  const fake = () => { const e = new EventEmitter(); e.pid = 4242; e.kill = () => {}; setImmediate(() => e.emit("exit", 1)); return e; };
+  const verdict = await superviseSeat({ held, laneHeld, doneName: "done-x", bsdPath: bsd, marker: "SEAT-MARKER s", home: join(dir, "home"), ceiling: 1e9, mode: "read", rest: [], contain: true }, { spawn: fake, sleep: () => new Promise((r) => setTimeout(r, 1)), groupAlive: () => false, signal: () => {} });
+  assert.equal(verdict, "setup-failed");
+  const done = JSON.parse(readFileSync(join(lane, "done-x"), "utf8"));
+  assert.equal(done.verdict, "setup-failed"); assert.equal(done.exitCode, 1);
+});
+
+test("a hand-back that throws part-way still writes the completion marker, naming the error and the names already copied", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "partial-")); const bsd = join(dir, "bsd"), lane = join(dir, "lane"); mkdirSync(bsd); mkdirSync(lane); mkdirSync(join(dir, "home", ".codex", "sessions"), { recursive: true });
+  writeFileSync(join(bsd, "prompt.txt"), "SEAT-MARKER s\n\nb"); writeFileSync(join(bsd, "rollouts-before.json"), "[]"); writeFileSync(join(bsd, "final.md"), "ok");
+  const held = openHeldSync(bsd, dir), laneHeld = openHeldSync(lane, dir);
+  const fake = () => { const e = new EventEmitter(); e.pid = 4242; e.kill = () => {}; setImmediate(() => e.emit("exit", 0)); return e; };
+  let armed = false;
+  const broken = { ...held, at: (n = "") => { if (n === "" && armed) throw new Error("EIO listing the seat dir"); if (n === "") { armed = true; } return held.at(n); } };
+  await superviseSeat({ held: broken, laneHeld, doneName: "done-y", marker: "SEAT-MARKER s", home: join(dir, "home"), ceiling: 1e9, mode: "read", rest: [] }, { spawn: fake, sleep: () => new Promise((r) => setTimeout(r, 1)), groupAlive: () => false, signal: () => {} });
+  const done = JSON.parse(readFileSync(join(lane, "done-y"), "utf8")) ;
+  assert.match(done.handbackError, /EIO listing the seat dir/); assert.equal(done.finalMd, false);
+});
+
+test("a supervision failure still leaves a completion marker: a thrown error before the child spawns writes supervisor-error", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "superr-")); const bsd = join(dir, "bsd"), lane = join(dir, "lane"); mkdirSync(bsd); mkdirSync(lane);
+  const held = openHeldSync(bsd, dir), laneHeld = openHeldSync(lane, dir);
+  await assert.rejects(superviseSeat({ held, laneHeld, doneName: "done-z", marker: "m", home: dir, ceiling: 1, mode: "read", rest: [] }, {}), /rollouts-before\.json/);
+  assert.equal(JSON.parse(readFileSync(join(lane, "done-z"), "utf8")).verdict, "supervisor-error");
+});
+
+import { killGroup } from "./launch-codex.mjs";
+
+test("SAFETY killGroup refuses every pgid that is not an integer above 1 (kill(-1) reaches every process the user owns; kill(-0) the caller's own group); CONTROL it kills a real detached group", async () => {
+  for (const bad of [1, 0, -1, -5, NaN, undefined, null, 1.5, "7"]) assert.throws(() => killGroup(bad, 0), /killGroup refuses pgid/, `pgid ${String(bad)} refuses`);
+  const { spawn } = await import("node:child_process");
+  const kid = spawn("sleep", ["30"], { detached: true, stdio: "ignore" });
+  await new Promise((r) => kid.once("spawn", r));
+  const gone = new Promise((r) => kid.once("exit", (_c, sig) => r(sig)));
+  killGroup(kid.pid, "SIGKILL");
+  assert.equal(await gone, "SIGKILL", "a real group still dies");
+});
+
+test("SAFETY WITNESS: in the harness sources process.kill appears only inside killGroup; a fake pid never reaches a real signal (the 2026-11-04 kill(-1) class)", () => {
+  const files = ["launch-codex.mjs", "seat-walls.mjs", "seat-broker.mjs", "commit-relay.mjs", "held-dir.mjs", "lane-state.mjs", "broker-root.mjs", "tree-export.mjs", "wall-test.mjs"];
+  const offenders = [];
+  for (const f of files) {
+    const lines = readFileSync(new URL(`./${f}`, import.meta.url), "utf8").split("\n");
+    let inGuard = false;
+    lines.forEach((l, i) => {
+      if (/^export function killGroup\(/.test(l)) inGuard = true;
+      if (inGuard && /^}/.test(l)) inGuard = false;
+      if (/process\.kill\(/.test(l) && !inGuard) offenders.push(`${f}:${i + 1} ${l.trim().slice(0, 80)}`);
+    });
+  }
+  assert.deepEqual(offenders, []);
+  // KNOWN POSITIVE: the scan reads a planted unguarded kill
+  const planted = ["  try { process.kill(-child.pid, 'SIGKILL'); } catch {}"];
+  assert.ok(planted.some((l) => /process\.kill\(/.test(l)), "the pattern sees a planted kill");
+});
+
+test("SAFETY no test fake in this file carries pid 0 or 1: a fake child's pid is 4242-style, and every supervisor test injects its signal", () => {
+  const whole = readFileSync(new URL("./launch-codex.test.mjs", import.meta.url), "utf8");
+  const src = whole.slice(0, whole.indexOf("test(\"SAFETY no test fake")).split("\n");
+  const bad = src.map((l, i) => [i + 1, l]).filter(([, l]) => /\b(e\.pid|pid:)\s*=?\s*[01]\b(?!\d)/.test(l) && !/SAFETY/.test(l) && !/bad of/.test(l));
+  assert.deepEqual(bad.map(([i, l]) => `${i} ${l.trim().slice(0, 70)}`), []);
 });

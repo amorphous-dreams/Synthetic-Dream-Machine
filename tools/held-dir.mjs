@@ -109,8 +109,7 @@ const LANE_OWNS = new Set(["brief.md", "prompt.txt", "marker.txt", "rollouts-bef
  * through the held handle (an old entry unlinked first, then O_NOFOLLOW|O_EXCL), each capped at 8 MiB, at most 64 files, never
  * the inputs the lane already holds. Returns the names copied.
  */
-export function copyBack(from, to) {
-  const copied = [];
+export function copyBack(from, to, copied = []) {
   // Filter to copyable names FIRST (regular, single-link, not a dot name or a lane-owned input), then cap; final.md goes first.
   const names = readdirSync(from.at()).filter((n) => {
     if (LANE_OWNS.has(n) || n.startsWith(".")) return false;
