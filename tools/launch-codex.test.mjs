@@ -800,7 +800,10 @@ test("P1-1 the supervisor writes run.log and ceiling.md through the held fd: sym
 });
 
 test("P1-2 a stub child that ignores SIGTERM under a signal function that throws still ends dead, and ceiling.md was written BEFORE the stop began", async () => {
-  const L = liveSeat(`trap '' TERM\necho $$ > '${join(tmpdir(), "stub-pid-" + process.pid)}'\n(trap '' TERM; echo $$ > '${join(tmpdir(), "stub-kid-" + process.pid)}'; while true; do sleep 1; done) &\nwhile true; do sleep 1; done`, () => `${userLine()}${tc(900)}\n`);
+  const pidf = join(tmpdir(), "stub-pid-" + process.pid), kidf = join(tmpdir(), "stub-kid-" + process.pid);
+  const L = liveSeat("true", () => `${userLine()}${tc(5)}\n`);
+  // The stub records both pids FIRST, then lifts the rollout over the ceiling, so the test never races the stub's start.
+  writeFileSync(join(L.bin, "codex"), `#!/bin/sh\ntrap '' TERM\necho $$ > '${pidf}'\n(trap '' TERM; echo $$ > '${kidf}'; while true; do sleep 1; done) &\nwhile [ ! -s '${kidf}' ]; do sleep 0.1; done\necho '${tc(900)}' >> '${L.roll}'\nwhile true; do sleep 1; done\n`, { mode: 0o755 });
   const held = openHeldSync(L.seat, L.dir);
   const signals = [];
   const verdict = await superviseSeat({ held, marker: "SEAT-MARKER live", home: L.home, ceiling: 100, mode: "read", rest: ["exec"], env: L.env, graceTicks: 1, hardTicks: 2 }, { sleep: () => new Promise((r) => setTimeout(r, 60)), signal: (pid, sig) => { signals.push(sig); throw new Error("EPERM"); } });
@@ -904,7 +907,9 @@ test("P1 WITNESS: no fs write in launch-codex.mjs or lane-state.mjs names a path
 
 test("P1-2 a child that exits promptly on SIGTERM leaving a SIGTERM-ignoring grandchild: the group is killed on the exit and the verdict waits for it; CONTROL a group that never empties reads unstopped", async () => {
   const kid = join(tmpdir(), "p2-kid-" + process.pid);
-  const L = liveSeat(`trap 'exit 0' TERM\n(trap '' TERM; echo $$ > '${kid}'; while true; do sleep 1; done) &\nwhile true; do sleep 1; done`, () => `${userLine()}${tc(900)}\n`);
+  const L = liveSeat("true", () => `${userLine()}${tc(5)}\n`);
+  // The stub starts the SIGTERM-ignoring grandchild, WAITS until it has written its pid, and only then lifts the rollout over the ceiling.
+  writeFileSync(join(L.bin, "codex"), `#!/bin/sh\ntrap 'exit 0' TERM\n(trap '' TERM; echo $$ > '${kid}'; while true; do sleep 1; done) &\nwhile [ ! -s '${kid}' ]; do sleep 0.1; done\necho '${tc(900)}' >> '${L.roll}'\nwhile true; do sleep 1; done\n`, { mode: 0o755 });
   const held = openHeldSync(L.seat, L.dir);
   const verdict = await superviseSeat({ held, marker: "SEAT-MARKER live", home: L.home, ceiling: 100, mode: "read", rest: ["exec"], env: L.env, graceTicks: 3, hardTicks: 3 }, { sleep: () => new Promise((r) => setTimeout(r, 80)), pollMs: 20 });
   assert.equal(verdict, "ceiling");
