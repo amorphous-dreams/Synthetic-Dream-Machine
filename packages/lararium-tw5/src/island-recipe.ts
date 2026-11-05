@@ -56,6 +56,11 @@ export interface BuildIslandRecipeInput {
   kahuaFaceWatch?: (fn: () => void) => () => void;
 }
 
+/** The islands bound by the code wards: the daemon wiki and a face's kahua stage (`kahua-<tag>`). A user's own wiki is not bound. */
+export function startupGated(slug: string): boolean {
+  return slug === "daemon" || slug.startsWith("kahua-");
+}
+
 /**
  * Build the sovereign island recipe and return the adaptor.
  *
@@ -156,6 +161,10 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
       // A StartupAction lifted from the kahua stage stays inert data: it carries `kahua-cid`, and only a promotion puts a rite among the
       // preloads, where the boot pass above ran it. The seed pass never runs code a hand has not promoted.
       if (tw.wiki.getTiddler(title)?.fields["kahua-cid"] !== undefined) continue;
+      // THE LAYER GATE (operator ruling 2026-11-04). The daemon island and the kahua stage hold the module gate's law: code runs only from
+      // genesis or the promoted set, and both are preloads the boot pass ran. Every record the seed landed rides inert there, whatever
+      // layer it came from and whatever fields it wears, and names itself. A user's own wiki keeps full caps.
+      if (startupGated(slug)) { console.warn(`[startup-gate] ${slug}: ${title} rides inert (a StartupAction runs only from genesis or the promoted set)`); continue; }
       tw.rootWidget.invokeActionString(tw.wiki.getTiddlerText(title) ?? "", tw.rootWidget, undefined, {});
     }
   });
