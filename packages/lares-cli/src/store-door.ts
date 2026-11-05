@@ -254,9 +254,11 @@ export async function storeVerb(
   const face = daemonUp && STORE_DOOR_FACE_ROWS.has(verb)
     ? named ?? (await sealedAct<{ face: number }>("face.resolve", {})).face
     : undefined;
-  // A WARD ACT names a one-use ticket for the route a person typed at this terminal; the route itself rides no verb argument.
-  const ward = await wardTicketFor(verb, args, daemonUp);
-  const rowArgs = { ...(face !== undefined && named === undefined ? { ...args, face } : args), ...ward };
+  // A WARD ACT names a one-use ref for the route a person typed at this terminal, bound to the act as the row will read it (the
+  // face included); the route itself rides no verb argument.
+  const sent = face !== undefined && named === undefined ? { ...args, face } : args;
+  const ward = await wardTicketFor(verb, sent, daemonUp);
+  const rowArgs = { ...sent, ...ward };
   const r = await throughStoreDoor({ verb, args: rowArgs, daemonUp, ...(face !== undefined ? { face } : {}),
     direct: () => storeDoorDirect(verb, { ...args, ...ward }, { sealHome: larSealHome() }) });
   if (typeof r.output["refused"] === "string") {

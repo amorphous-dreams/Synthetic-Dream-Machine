@@ -73,8 +73,8 @@ describe("a ticket names its act (S2 cold read, P2-1)", () => {
     const c = park();
     expect(String(tryTake(c, "promote-commit", { ...ARGS, wiki: "kahua" }))).toMatch(/ward-ticket-mismatch/);
     expect(tryTake(c, "promote-commit", ARGS)).toBeUndefined();
-    // CONTROL: the act it names spends it, once; the session's own face keys never move the binding.
-    const d = park();
+    // CONTROL: the act it names spends it, once, at the face it was parked for (the CLI parks with the face it sends).
+    const d = park({ ...ARGS, face: 0 } as typeof ARGS);
     const spent = tryTake(d, "promote-commit", { ...ARGS, face: 0, handleIndex: 0, wardRef: d });
     expect(wardCredentialsOf(spent as never)).toEqual(route("the hand's route"));
     expect(tryTake(d, "promote-commit", ARGS), "a ticket spends once").toBeUndefined();
@@ -111,5 +111,16 @@ describe("the ward's token and signer (S2 cold read, P3)", () => {
       expect(verifyEd25519(await signer.sign(bytes), bytes, signer.key)).toBe(true);
       await expect(signer.sign(bytes)).rejects.toThrow(/ward-signer-spent/);
     } finally { setMountedFace(undefined); await seat.drop(); }
+  });
+});
+
+describe("a ticket names its face too (S2 re-read, P3)", () => {
+  test("RED: a ref parked for face 0's act spends on face 1's act nowhere; CONTROL: the session's own keys at that face spend it", async () => {
+    const wc = await import("../src/ward-credential.js");
+    const args = { digest: "d".repeat(64) };
+    const ref = wc.parkWardTicket(wardCredential(route("r")), { verb: "kapae-lower", args: { ...args, face: 0 } });
+    expect(() => wc.takeWardTicket(ref, { verb: "kapae-lower", args: { ...args, face: 1, handleIndex: 1 } })).toThrow(/ward-ticket-mismatch/);
+    const again = wc.parkWardTicket(wardCredential(route("r")), { verb: "kapae-lower", args: { ...args, face: 0 } });
+    expect(wc.takeWardTicket(again, { verb: "kapae-lower", args: { ...args, face: 0, handleIndex: 0 } })).toBeDefined();
   });
 });

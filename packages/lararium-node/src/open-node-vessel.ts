@@ -17,6 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
+import { WardRefused } from "@lararium/mesh";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
 function takeSummonedWard(raw: unknown): WardCredential | undefined {
@@ -471,12 +472,17 @@ export function lateDialOnce(deps: {
   readonly stand:    (live: () => boolean, ward?: WardCredential) => Promise<void>;
 }): (ward?: WardCredential) => Promise<void> {
   let flight: Promise<void> | null = null;
+  let flightWard = false;
   const live = (): boolean => !deps.standing() && !deps.tornDown();
   return (ward) => {
     if (!live()) return Promise.resolve();
+    // A TAKE'S ROUTE IS NEVER DROPPED SILENTLY: a take that joins a dial already in flight with no route of its own refuses by
+    // name, since that dial cannot issue the founder's certificate the take's route would (seat-harness#/the-ward).
+    if (flight !== null && ward !== undefined && !flightWard) return Promise.reject(new WardRefused("ward-dial-in-flight", "a dial with no ward route stands in flight; take again once it settles"));
     if (flight !== null) return flight;
-    const mine: Promise<void> = Promise.resolve().then(() => deps.stand(live, ward)).finally(() => { if (flight === mine) flight = null; });
+    const mine: Promise<void> = Promise.resolve().then(() => deps.stand(live, ward)).finally(() => { if (flight === mine) { flight = null; flightWard = false; } });
     flight = mine;
+    flightWard = ward !== undefined;
     return mine;
   };
 }

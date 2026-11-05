@@ -75,7 +75,7 @@ const TICKETS_HELD = 4;
 /** What a ticket binds: the verb and a digest of its arguments (the session's own face keys and the ref itself left out). */
 export interface WardBind { readonly verb: string; readonly args: Readonly<Record<string, unknown>> }
 
-/** The keys a binding leaves out: the ticket's own ref, and the face keys a session lends a row (the session decides the face). */
+/** The keys a binding reads apart: the ticket's own ref (never bound), and the face keys, bound as ONE face (see below). */
 const UNBOUND_KEYS = new Set(["wardRef", "wardTicket", "face", "handleIndex"]);
 
 /** A canonical digest of one act's verb and arguments: the same act spells the same digest, whatever order its keys came in. */
@@ -83,7 +83,10 @@ export function wardBindDigest(bind: WardBind): string {
   const canon = (v: unknown): unknown => Array.isArray(v) ? v.map(canon)
     : v && typeof v === "object" ? Object.fromEntries(Object.keys(v as object).sort().map((k) => [k, canon((v as Record<string, unknown>)[k])])) : v;
   const args = Object.fromEntries(Object.entries(bind.args).filter(([k]) => !UNBOUND_KEYS.has(k)));
-  return createHash("sha256").update(JSON.stringify({ verb: bind.verb, args: canon(args) })).digest("hex");
+  // THE FACE BINDS TOO, as one value: the face the act names (`face`, else `handleIndex`), so a ref parked for one face spends on no
+  // other. A session lends a row both keys at the same ordinal, so the CLI, the row and a summoned verb all read the same face.
+  const face = bind.args["face"] ?? bind.args["handleIndex"] ?? null;
+  return createHash("sha256").update(JSON.stringify({ verb: bind.verb, face, args: canon(args) })).digest("hex");
 }
 
 const tickets = new Map<string, { readonly ward: WardCredential; readonly verb: string; readonly digest: string }>();

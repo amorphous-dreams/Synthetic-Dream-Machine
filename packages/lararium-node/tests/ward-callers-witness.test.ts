@@ -13,13 +13,16 @@ import { join, relative } from "node:path";
 import { describe, expect, test } from "vitest";
 
 const SRC = join(import.meta.dirname, "..", "src");
+/** The browser's ward doors live in its own package: its callers name their typed route the same way. */
+const BROWSER_SRC = join(import.meta.dirname, "..", "..", "lararium-browser", "src");
 /** Each door and the argument count that carries its ward. */
 const DOORS: Readonly<Record<string, number>> = {
   loadPersonaGroupRootSeed: 2, generateOrLoadPersonaGroupRoot: 2, landPersonaRoot: 3, orphanPersonaRootKey: 2,
   wardRootSigner: 2, wardRootSession: 2, withWardKeyCustody: 2, makeNodeFsPersonaVault: 1,
+  browserWardSign: 4, browserWardSigner: 3,
 };
 /** The files that DEFINE a door (their own inner calls thread the ward they were handed). */
-const DEFINERS = new Set(["node-vessel-identity.ts", "ward-signer.ts", "custody-seat.ts"]);
+const DEFINERS = new Set(["node-vessel-identity.ts", "ward-signer.ts", "custody-seat.ts", "browser-ward.ts"]);
 /** The vault's listing callers: they read roots' presence and public keys, never a root. */
 const VAULT_LISTERS = new Set(["nexus-leaf.ts", "worn-mount.ts"]);
 
@@ -47,7 +50,8 @@ export function wardlessCalls(text: string, file: string): string[] {
       const before = text.slice(Math.max(0, m.index! - 40), m.index!);
       if (/function\s+$|import\s*\{[^}]*$|export\s*\{[^}]*$/.test(before)) continue;
       const args = argsAt(text, m.index! + door.length);
-      if (args.length < need) out.push(`${file}: ${door}(${args.join(", ")})`);
+      // A ward position that spells `undefined` hands on no route while reading as if it did: it refuses as a missing one.
+      if (args.length < need || args[need - 1] === "undefined") out.push(`${file}: ${door}(${args.join(", ")})`);
     }
   }
   return out;
@@ -63,12 +67,14 @@ describe("every root opener names its ward", () => {
     expect(wardlessCalls("const s = await loadPersonaGroupRootSeed(handleIndex, opts.ward);", "planted.ts")).toEqual([]);
     expect(wardlessCalls("rootSigner: () => wardRootSigner(index, ward(f(1, 2)), \"x\"),", "planted.ts")).toEqual([]);
     expect(wardlessCalls("const v = await makeNodeFsPersonaVault();", "recovery-keel.ts")).toEqual(["recovery-keel.ts: makeNodeFsPersonaVault()"]);
+    expect(wardlessCalls("await loadPersonaGroupRootSeed(0, undefined);", "planted.ts")).toEqual(["planted.ts: loadPersonaGroupRootSeed(0, undefined)"]);
+    expect(wardlessCalls("await browserWardSigner(idb, 0);", "planted.ts")).toEqual(["planted.ts: browserWardSigner(idb, 0)"]);
   });
 
   test("every call in src names its ward, and the witness read the callers it must", () => {
     const found: string[] = [];
     let calls = 0;
-    for (const path of sources(SRC)) {
+    for (const path of [...sources(SRC), ...sources(BROWSER_SRC)]) {
       const file = relative(SRC, path).split("/").pop()!;
       if (DEFINERS.has(file)) continue;
       const text = readFileSync(path, "utf8");
