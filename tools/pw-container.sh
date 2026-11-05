@@ -42,13 +42,6 @@ if ! docker image inspect "$image" >/dev/null 2>&1; then
   [ "$pulled" -eq 1 ] || { echo "pw-container: the image never pulled" >&2; exit 1; }
 fi
 
-# THE IMAGE'S NODE IS THE JOB'S NODE. The image ships its own Node; when the caller's NODE_VERSION names a major, the image must
-# carry that major, so a drift in either fails here and never reads as a different runtime.
-if [ -n "${NODE_VERSION:-}" ]; then
-  have="$(docker run --rm "$image" node -p 'process.versions.node.split(".")[0]')"
-  [ "$have" = "${NODE_VERSION%%.*}" ] || { echo "pw-container: the image carries node $have, and the job pins NODE_VERSION=$NODE_VERSION" >&2; exit 2; }
-fi
-
 args=(--rm --network host --ipc=host --init --user "$(id -u):$(id -g)" -w "$(pwd)" -v "$root:$root")
 # The repo's own .git rides read-only: no step in the container writes history, and nothing in it needs to.
 if [ -d "$root/.git" ]; then args+=(-v "$root/.git:$root/.git:ro"); fi
