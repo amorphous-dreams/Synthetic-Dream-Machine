@@ -1,4 +1,5 @@
 /** The node store holder's face-scoped intent door. */
+import type { WardCredential } from "../ward-credential.js";
 import { CustodyLocked } from "../custody-holder.js";
 import { randomBytes } from "node:crypto";
 import type { Repo } from "@automerge/automerge-repo";
@@ -48,6 +49,8 @@ export function intentDelegationCite(raw: string): DelegationCite {
 }
 
 export interface IntentCommandOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
   readonly repo: Repo;
   readonly catalogUrl?: string;
   readonly face?: number;
@@ -225,8 +228,12 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
       case "cancel": case "supersede": case "release-root": case "delegate": case "delegate-revoke": {
         if (opts.action !== "delegate" && !target) throw new IntentRefused("intent-id-absent");
         let seed: Uint8Array;
-        try { seed = await loadPersonaGroupRootSeed(index); }
-        catch { throw new IntentRefused("root-absent: ask the root's hearth with `lares intent ask <intent-id>`"); }
+        try { seed = await loadPersonaGroupRootSeed(index, opts.ward); }
+        catch (err) {
+          // A root act is a ward act: a missing or wrong route names itself, never as an absent root.
+          if (err instanceof Error && /^ward-/.test(err.message)) throw new IntentRefused(err.message);
+          throw new IntentRefused("root-absent: ask the root's hearth with `lares intent ask <intent-id>`");
+        }
         const key = await ed25519VerifyingKeyFromSeed(seed);
         if (!face.currentSigner(key)) throw new IntentRefused("root-rotated: ask the root's hearth with `lares intent ask <intent-id>`");
         const rootSigner = { key, sign: ed25519SignerFromSeed(seed) };

@@ -49,6 +49,7 @@
  * Node-main only: a worker never imports this module.
  * Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore
  */
+import { wardCredentialOfRoute, type WardCredential } from "./ward-credential.js";
 import { createPrivateKey, createPublicKey } from "node:crypto";
 import { existsSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
@@ -222,7 +223,7 @@ export async function restorePendingRoot(): Promise<string | null> {
 }
 
 /** PREFLIGHT every target row and relation. Writes nothing. */
-async function preflight(body: FaceBundleBody, target: number, founding = false): Promise<void> {
+async function preflight(body: FaceBundleBody, target: number, founding: boolean, ward: WardCredential | undefined): Promise<void> {
   if (!existsSync(larBootstrapPath())) refuse("place-unfounded", "no founded place stands here: a restore lands a face onto a vessel `lares vessel found` already stood. Nothing moved.");
   // A RESTORED FACE BINDS THE HEARTH IT LANDS ON: its device edge names this vessel's seed charter, so a place with
   // none holds no hearth for it. The person founds the fresh hearth first (`lares vessel found --hearth`), and the
@@ -236,7 +237,7 @@ async function preflight(body: FaceBundleBody, target: number, founding = false)
   }
   const line = roster.find((l) => l.handleIndex === target);
   if (line) refuse("roster-names-another-key", `this vessel's roster names another root at h${target}. Nothing moved; name a free index with --as <N>.`);
-  const orphan = await orphanPersonaRootKey(target);
+  const orphan = await orphanPersonaRootKey(target, ward!);
   if (orphan !== null && orphan !== body.root.verifyingKey) refuse("orphan-names-another-key", `a root row stands at h${target} under another key, with no roster line. Nothing moved.`);
   if ((await loadIdentityAnchors(target)) !== null || (target === 0 && faceStands())) refuse("index-held", `a face already stands lit at h${target}. Nothing moved; name a free index with --as <N>.`);
   if (target > 0 && !faceStands()) refuse("founding-face-unlit", `no founding face stands on this vessel, and a face at h${target} rides beside one. Nothing moved; restore at index 0 (--as 0), or light the founding face first.`);
@@ -270,7 +271,7 @@ function recoveryContactRecordOf(body: FaceBundleBody): RecoveryContactSetRecord
 }
 
 /** LAND each row a pending restore holds. Each lands only where nothing stands or where the same bytes stand. */
-async function land(pending: Pending, head: { readonly seq: number; readonly eventCid: string; readonly from: "board" | "bundle" }): Promise<FaceBundleRestored["landed"] & { readonly recoveryContactSet: "landed" | "held" | null }> {
+async function land(pending: Pending, head: { readonly seq: number; readonly eventCid: string; readonly from: "board" | "bundle" }, ward: WardCredential | undefined): Promise<FaceBundleRestored["landed"] & { readonly recoveryContactSet: "landed" | "held" | null }> {
   const { body, target } = pending;
   // THE PROVISIONAL MARK lands first among the rows: a face never stands restored here without it.
   await markProvisional(target, { prefix: body.anchors.personaKelPrefix, head: { seq: head.seq, eventCid: head.eventCid }, from: head.from });
@@ -307,7 +308,7 @@ async function land(pending: Pending, head: { readonly seq: number; readonly eve
   }
   // THE ROOT AND ITS ROSTER LINE LAND LAST among the rows: every reader that asks "does this vessel hold the face"
   // reads the roster, so a restore that stopped sooner still reads as one that owes.
-  await landPersonaRoot(target, { signingKey: body.root.signingKey, verifyingKey: body.root.verifyingKey });
+  await landPersonaRoot(target, { signingKey: body.root.signingKey, verifyingKey: body.root.verifyingKey }, ward!);
   return { faceProofKeys: body.faceProofKeys.length, petname, handle, handleBook, recoveryContactSet };
 }
 
@@ -323,6 +324,7 @@ export async function restoreFaceBundle(args: {
   readonly withRepo:   <T>(act: (repo: Repo) => Promise<T>) => Promise<T>;
   readonly genesisDir?: string;
   readonly founding?:   () => Promise<void>;
+  readonly ward?:       WardCredential;
 }): Promise<FaceBundleRestored> {
   const { sealedBody, bundleKey, ...rest } = args;
   return restoreFaceBody({ body: openRestoreBody(sealedBody, bundleKey), ...rest });
@@ -335,6 +337,8 @@ export async function restoreFaceBundle(args: {
  */
 export async function restoreFaceBody(args: {
   readonly body:     FaceBundleBody;
+  /** The target face's ward route (seat-harness#/the-ward): landing a root is a ward act. Absent, the route the target face is born under. */
+  readonly ward?:    WardCredential;
   readonly as?:      number;
   readonly fromPaper?: boolean;
   readonly withRepo: <T>(act: (repo: Repo) => Promise<T>) => Promise<T>;
@@ -362,6 +366,7 @@ export async function restoreFaceBody(args: {
     refuse("restore-pending", "another face's restore stands pending on this vessel. Run that face's own restore again first: it completes, and this one follows. Nothing moved.");
   }
 
+  let ward: WardCredential | undefined = args.ward;
   return args.withRepo(async (repo) => {
     // The head check runs on every run, a resumed one too, over EVERY event in reach: this vessel's board, the
     // pending row's log, and the log of the bundle handed in now (another cut of the face may carry a newer head).
@@ -372,13 +377,13 @@ export async function restoreFaceBody(args: {
     if (pending === null) {
       const target = args.as ?? body.rosterLine.handleIndex;
       if (args.founding && target !== 0) refuse("index-held", `the founding act lands its restored face as persona zero, at h0, never at h${target}. Nothing moved.`);
-      await preflight(body, target, args.founding !== undefined);
+      await preflight(body, target, args.founding !== undefined, ward);
       // ONE DURABLE COMMIT. Before this write nothing moved; after it the restore completes, in this run or the next.
       pending = { target, body };
       const row = canonicalJsonBytes(pending);
       // THE TARGET FACE'S CUSTODY COMES FIRST: its slot and owner binding stand (reserved at the handle index, under the route
       // the face asks for), and the pending row rests under that face's own key.
-      await ensureFaceCustodyAtHandle(target, `h${target}`);
+      await ensureFaceCustodyAtHandle(target, `h${target}`, (slots) => { ward ??= wardCredentialOfRoute(slots) ?? undefined; });
       try {
         await updateColdCustodyRow("identity", restorePendingFile(target), (standing) => {
           if (standing !== null) throw new RestoreRefused("restore-pending", "a restore's commit row appeared while this one checked its rows. Run the restore again.");
@@ -386,7 +391,7 @@ export async function restoreFaceBody(args: {
         });
       } finally { row.fill(0); }
     }
-    const { recoveryContactSet: setLanded, ...landed } = await land(pending, checked);
+    const { recoveryContactSet: setLanded, ...landed } = await land(pending, checked, ward);
     // RE-ADMIT. The carried history seats on this vessel's own board, then the face lights under this vessel's own
     // veil. `runFoundTheFace` reads the root the roster now names and founds: the same fixed prefix, a fresh key
     // group, a device edge the root signs for this vessel's key. A face that already stands lit reads so and moves nothing.
@@ -395,7 +400,7 @@ export async function restoreFaceBody(args: {
     const carried = pending.body.addressSecret ? Uint8Array.from(Buffer.from(pending.body.addressSecret, "hex")) : null;
     let lit: Awaited<ReturnType<typeof runFoundTheFace>>;
     try {
-      lit = await runFoundTheFace({ repo, handleIndex: pending.target, addressSecret: carried, ...(args.genesisDir ? { genesisDir: args.genesisDir } : {}) });
+      lit = await runFoundTheFace({ repo, handleIndex: pending.target, addressSecret: carried, ...(args.genesisDir ? { genesisDir: args.genesisDir } : {}), ...(ward ? { ward } : {}) });
     } finally { carried?.fill(0); }
     if (!lit.alreadyStood && lit.personaKelPrefix !== pending.body.anchors.personaKelPrefix) {
       throw new Error(`face-bundle-restore: the face lit under prefix ${lit.personaKelPrefix}, and the bundle carried ${pending.body.anchors.personaKelPrefix}; the pending row stays for a person to read`);

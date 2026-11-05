@@ -28,6 +28,7 @@
  * publish in a human's name; an unset selector therefore refuses instead of choosing handle zero.
  */
 
+import type { WardCredential } from "../ward-credential.js";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import type { Repo } from "@automerge/automerge-repo";
@@ -60,6 +61,8 @@ import { nodeNexusIsland } from "../nexus-standing.js";
 export class NexusPublishError extends Error {}
 
 export interface NexusPublishPluginsOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo: Repo;
   /** This vessel's own storage root — where the publisher's CAS (`casDirForStorage`) lives. */
@@ -200,7 +203,7 @@ export async function runNexusPublishPlugins(
     const pluginsCid = computePluginsCid(blobs);
     offering = await signPluginOffering(
       { offeror: offeror.toLowerCase(), pluginsCid, blobs },
-      ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex)),
+      ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex, opts.ward)),
     );
   }
 

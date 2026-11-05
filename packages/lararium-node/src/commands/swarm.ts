@@ -6,17 +6,20 @@
  * The wiki is checked first: with no standing daemon every row refuses by name before a face loads.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
+import { wardRootSigner } from "../ward-signer.js";
+import type { WardCredential } from "../ward-credential.js";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  SwarmRefused, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceRecordsOf, promotePlaneUrl, swarmBoardRecords, swarmCommand, writeSwarmBoardAct,
+  SwarmRefused, faceRecordsOf, promotePlaneUrl, swarmBoardRecords, swarmCommand, writeSwarmBoardAct,
   type LarDoc, type SwarmRequest, type SwarmSignerPort, type SwarmWikiPort,
 } from "@lararium/mesh";
 import { loadIntentFace, IntentRefused } from "./intent.js";
-import { loadPersonaGroupRootSeed } from "../node-vessel-identity.js";
 
 export async function runSwarmVerb(opts: {
   repo: Repo; catalogUrl?: string; face?: number; action: SwarmRequest["action"];
   args: Readonly<Record<string, unknown>>; wiki?: SwarmWikiPort;
+  /** The face's ward route for this act: the house cap, a lane share and a push go each sign under it alone (seat-harness#/the-ward). */
+  ward?: WardCredential;
 }): Promise<Record<string, unknown>> {
   if (!opts.wiki) throw new SwarmRefused("swarm-no-daemon", "no standing daemon: swarm controls need the founded wiki");
   let loaded: Awaited<ReturnType<typeof loadIntentFace>>;
@@ -30,11 +33,12 @@ export async function runSwarmVerb(opts: {
   if (!url) throw new SwarmRefused("swarm-board-unpinned", "the face pins no board for the swarm's cap and shares");
   const handle = await opts.repo.find<LarDoc>(url as never);
   const grant = (key: string) => face.currentSigner(key);
-  // `show` signs nothing, so it never reads the root seed; a signing row loads it once, here.
+  // `show` signs nothing, so it never opens the ward; a signing row signs through the ward signer (S1's SwarmSignerPort), the root
+  // seed opening fresh under this act's ward route for each signature and zeroing after it.
   let signing: SwarmSignerPort = { key: "", sign: async () => { throw new SwarmRefused("swarm-show-signs-nothing", "show holds no signer"); } };
   if (opts.action !== "show") {
-    const seed = await loadPersonaGroupRootSeed(index);
-    signing = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
+    try { signing = await wardRootSigner(index, opts.ward, "a swarm control"); }
+    catch (e) { if (e instanceof Error && /^ward-/.test(e.message)) throw new SwarmRefused(e.message.split(":")[0]!, e.message); throw e; }
   }
   const str = (key: string): string => (typeof opts.args[key] === "string" ? opts.args[key] as string : "");
   const request: SwarmRequest = opts.action === "show" ? { action: "show", ...(str("branch") && str("head") ? { branch: str("branch"), head: str("head") } : {}) }
@@ -47,7 +51,7 @@ export async function runSwarmVerb(opts: {
     trust: { hand: grant, vessel: () => false, lead: () => false },
     board: { records: async () => swarmBoardRecords(handle.doc(), group), land: async (act) => { handle.change((d) => writeSwarmBoardAct(d, act)); await opts.repo.flush(); } },
     // A local process names its own hand; the session gate refuses declared seat hands before custody reads. That `who` is
-    // ADVISORY: a script holding the face's unlocked custody names the same hand, until the ward binds the signing rows.
+    // advisory for `show` alone: every signing row now signs under the ward, which no unlocked custody opens.
     who: { kind: "hand", id: signer.key },
   });
 }

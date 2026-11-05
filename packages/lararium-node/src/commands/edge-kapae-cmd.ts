@@ -30,6 +30,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae
  */
 
+import type { WardCredential } from "../ward-credential.js";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   signEdgeKapae, writeEdgeKapae, edgeLineHeads, nextFleetFrontier, landFleetFrontier, fleetRaiseCids, realmRaiseCids,
@@ -57,6 +58,8 @@ export class EdgeKapaeError extends Error {}
 const HEX64 = /^[0-9a-f]{64}$/;
 
 export interface EdgeKapaeOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
   /** The relationship to act on, by id — a vouch edge id, a member edge id, a device edge id. */
   readonly edgeId?:      string;
   /** Or by its far end: a MEMBER's key, naming that member's whole relation to `realm` (the quorum's edge). */
@@ -221,7 +224,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     if (!signerDid) {
       throw new EdgeKapaeError(`persona root ${handleIndex} surfaces no usable verifying key — nothing to sign with.`);
     }
-    signers = [{ signer: signerDid, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex)) }];
+    signers = [{ signer: signerDid, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex, opts.ward)) }];
     authority = { holder: signerDid };
     if (device !== undefined) edgeId = deviceEdgeId(signerDid, device);   // the fleet root and the device key name it
     scope = signerDid;

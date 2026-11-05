@@ -9,6 +9,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
+import type { WardCredential } from "../ward-credential.js";
 import { randomBytes } from "node:crypto";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
@@ -23,6 +24,8 @@ export type KahuaAction = "mint" | "propose" | "lift" | "withdraw" | "carry" | "
 export type KahuaCapPort = (presenter: string) => Promise<{ readonly held: boolean; readonly reason?: string }>;
 
 export interface KahuaCommandOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
   readonly repo: Repo;
   readonly catalogUrl?: string;
   readonly face?: number;
@@ -61,7 +64,7 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
     signedAt: (epoch, key) => face.signsAt(epoch, key),
     atom: signer, intents: plane as DocHandle<LarDoc>,
     rootSigner: async () => {
-      const seed = await loadPersonaGroupRootSeed(index);
+      const seed = await loadPersonaGroupRootSeed(index, opts.ward);
       return { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
     },
     cap: opts.cap ?? null,

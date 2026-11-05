@@ -466,7 +466,7 @@ async function main(): Promise<void> {
     // A BACKUP'S CUT RUNS HERE TOO, against the same seated holder, once the frame's own route proves: the
     // standing composition lends it the mounted face, its own edge's shadow, the island's memory section and the
     // board's key history (custody#/the-cut).
-    backup: (face, bundleKey) => cutFaceBundle({ face, bundleKey, door: composition?.backup ?? null }),
+    backup: (face, bundleKey, ward) => cutFaceBundle({ face, bundleKey, door: composition?.backup ?? null, ward }),
     standing: () => composition?.standing ?? "recomposing",
     onLog: (line) => console.log(`[custody] ${line}`),
   });

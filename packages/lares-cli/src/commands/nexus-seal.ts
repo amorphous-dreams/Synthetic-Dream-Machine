@@ -35,6 +35,7 @@
  * the class behind would have made this module import from its own parent — the one shape that turns
  * a clean parent-to-child split into a cycle.
  */
+import { gatherWardRoute } from "../ward-door.js";
 import {
   readNexusDoc, parseNexusDoc, nexusCharterStands, writeNexusDoc, nexusCharterDocPath,
   importCarriedCharter, CarriedCharterError,
@@ -504,7 +505,7 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
     case "witness": {
       const note = args.options["note"];
       if (!note) throw new UsageError("a witness mark carries a note — what stood observed (--note)");
-      const witnessed = await crossingStep<{ by: string }>("crossing.witness", { handleIndex: handIndex(args), note });
+      const witnessed = await crossingStep<{ by: string }>("crossing.witness", { handleIndex: handIndex(args), note, ward: await gatherWardRoute("lares nexus seal grow witness") });
       emit(args, { ok: true, data: { witnessed }, human: () => console.log(`witnessed by ${witnessed.by.slice(0, 16)}… — "${note}"`) });
       return 0;
     }

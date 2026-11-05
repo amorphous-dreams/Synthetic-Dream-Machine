@@ -18,6 +18,7 @@
  * A second OPERATOR joins a Nexus by carriage contract (`lares nexus accept-carriage` + `lares nexus contract`) — a different axis (ceremony.ts stubs).
  */
 
+import type { WardCredential } from "../ward-credential.js";
 import { existsSync, readFileSync } from "fs";
 import { type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
 import {
@@ -170,6 +171,8 @@ export async function assertDyadBinds(repo: Repo, joineeVerifyingKey: string, fa
 }
 
 export interface DeviceAdmitOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
   readonly signedRequest?: Uint8Array;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:           Repo;
@@ -329,7 +332,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (!opts.joineeVerifyingKey) {
     throw new Error("[lares fleet join answer] the request names no joinee key — the joining vessel's public verifying key.");
   }
-  const signerSeed     = await loadPersonaGroupRootSeed(face);
+  const signerSeed     = await loadPersonaGroupRootSeed(face, opts.ward);
   // THE BINDING GATE READS THE DYAD'S SHADOW (kapae#/reach): no seat, no bind.
   await assertDyadBinds(repo, opts.joineeVerifyingKey, face);
   // The joinee's edge binds THIS hearth: the AID of its seed charter, the true name its own face's edge names.
