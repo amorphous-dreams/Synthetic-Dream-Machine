@@ -364,8 +364,6 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   // after an unlock, or answers nothing refuses here by name: no passphrase gets prompted, and no parked pin rests in
   // the vessel's memory for a founding that was never going to run.
   const standing = await vesselStanding();
-  const refusal = standingRefusal(standing);
-  if (refusal !== null) throw refusal;
   // A ROOT SPLIT NEVER RIDES A STANDING VESSEL. Its two off-device shares rebuild the root, so no door hands them
   // to a caller: the split runs in a person's own process, under a key session that person opens. Beside a
   // standing vessel the command refuses here, before anything founds.
@@ -375,6 +373,9 @@ async function personaNew(args: ParsedArgs): Promise<number> {
       "Stop the vessel (`lares vessel stop`), run this command again, then stand the vessel.",
     );
   }
+  // The same reading refuses a vessel that cannot found: locked, recomposing or silent, by name, before anything is asked.
+  const refusal = standingRefusal(standing);
+  if (refusal !== null) throw refusal;
   const { petnames, declarations } = fleetStores();
   if (!stands && chair.length > 0 && (await declarations.get(index))?.seat !== true) {
     throw new UsageError("--chair labels a seat claim: pass it with --seat");
