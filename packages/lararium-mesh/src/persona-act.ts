@@ -13,6 +13,7 @@
 
 import { PERSONA_ACT_DOMAIN } from "./domains.js";
 import { currentRoster, rosterAt, type HandLineage } from "./hand-lineage.js";
+import { vesselFaceTagHolds } from "./vessel-face-tag.js";
 import { foldActs, type ActBody, type ActFold, type SignedAct } from "./signed-act.js";
 
 export type PersonaActKind = "founding" | "admission" | "device-edge" | "plane";
@@ -39,6 +40,8 @@ export interface PersonaProjection {
   readonly devices: readonly string[];
   /** Verified admission acts in chain order. */
   readonly admissions: readonly { readonly deviceKey: string; readonly cid: string }[];
+  /** Verified admissions the fold seated no device for, each by name: `vessel-tag-absent`, `vessel-tag-invalid`, `vessel-already-admitted`. */
+  readonly admissionRefusals: readonly { readonly refusal: "vessel-tag-absent" | "vessel-tag-invalid" | "vessel-already-admitted"; readonly cid: string }[];
   /** device key -> edge digest, from verified device-edge acts. */
   readonly edges: Readonly<Record<string, string>>;
   /** a fork the fold stopped at, else null. */
@@ -62,6 +65,12 @@ export function projectPersonaLog(records: readonly unknown[], opts: {
    * accepted (seq at or below the pin) keeps its own epoch's roster.
    */
   readonly acceptedThrough?: number;
+  /**
+   * `required`: an admission seats a device only with a blinded vessel tag whose signature covers this face and that atom
+   * (a tagless one refuses `vessel-tag-absent`). Unset, a tagless admission still seats; a tag that stands is always checked,
+   * and one vessel never takes two seats in one face (`vessel-already-admitted`).
+   */
+  readonly vesselTags?: "required";
 }): PersonaProjection {
   const fold = foldActs(records, {
     domain: PERSONA_ACT_DOMAIN, group: opts.group,
@@ -82,6 +91,8 @@ export function projectPersonaLog(records: readonly unknown[], opts: {
   let foundingClosed = false;
   const devices = new Set<string>();
   const admissions: { deviceKey: string; cid: string }[] = [];
+  const admissionRefusals: { refusal: "vessel-tag-absent" | "vessel-tag-invalid" | "vessel-already-admitted"; cid: string }[] = [];
+  const tagsStanding = new Set<string>(), barred = new Set<string>();
   for (const { act, cid } of fold.chain) {
     const b = act.body as PersonaActBody & Record<string, unknown>;
     switch (b.act) {
@@ -89,8 +100,24 @@ export function projectPersonaLog(records: readonly unknown[], opts: {
         if (typeof b["personaKelPrefix"] === "string") personaKelPrefix = b["personaKelPrefix"];
         if (typeof b["rootCommitment"] === "string") rootCommitment = b["rootCommitment"];
         break;
-      case "admission": foundingClosed = true; if (typeof b["deviceKey"] === "string") { devices.add(b["deviceKey"]); admissions.push({ deviceKey: b["deviceKey"], cid }); } break;
-      case "device-edge": if (typeof b["deviceKey"] === "string" && typeof b["edgeDigest"] === "string") edges[b["deviceKey"]] = b["edgeDigest"]; break;
+      case "admission": {
+        foundingClosed = true;
+        const deviceKey = b["deviceKey"];
+        if (typeof deviceKey !== "string") break;
+        const refuse = (refusal: (typeof admissionRefusals)[number]["refusal"]): void => { admissionRefusals.push({ refusal, cid }); if (!devices.has(deviceKey)) barred.add(deviceKey); };
+        if (b["vesselTag"] === undefined && b["vesselSig"] === undefined) {
+          if (opts.vesselTags === "required") { refuse("vessel-tag-absent"); break; }
+        } else {
+          if (!vesselFaceTagHolds(opts.group, deviceKey, { vesselTag: b["vesselTag"], vesselSig: b["vesselSig"] })) { refuse("vessel-tag-invalid"); break; }
+          const tag = b["vesselTag"] as string;
+          if (tagsStanding.has(tag)) { refuse("vessel-already-admitted"); break; }
+          tagsStanding.add(tag);
+        }
+        barred.delete(deviceKey);
+        devices.add(deviceKey); admissions.push({ deviceKey, cid });
+        break;
+      }
+      case "device-edge": if (typeof b["deviceKey"] === "string" && !barred.has(b["deviceKey"]) && typeof b["edgeDigest"] === "string") edges[b["deviceKey"]] = b["edgeDigest"]; break;
       case "plane":
         if (typeof b["plane"] === "string" && typeof b["url"] === "string") {
           // A pinned plane takes its FIRST pin only: no code path re-pins a plane after the founding mints it (a rotation carries the pins forward),
@@ -103,7 +130,7 @@ export function projectPersonaLog(records: readonly unknown[], opts: {
   }
   const last = fold.chain[fold.chain.length - 1];
   return {
-    founded: fold.chain.length > 0, personaKelPrefix, rootCommitment, planes, planeRewrites, devices: [...devices].sort(), admissions, edges,
+    founded: fold.chain.length > 0, personaKelPrefix, rootCommitment, planes, planeRewrites, devices: [...devices].sort(), admissions, admissionRefusals, edges,
     fork: fold.fork, head: last ? { seq: last.act.body.seq, cid: last.cid } : null, cids: fold.chain.map((e) => e.cid),
   };
 }

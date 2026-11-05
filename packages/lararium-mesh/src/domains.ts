@@ -564,6 +564,10 @@ export const FACE_LEAF_BOND_DOMAIN = mint("face-leaf-bond");
 export const REALM_FEED_ASK_DOMAIN = mint("realm-feed-ask");
 /** The digest a ward co-sign ask names its act by: (act, face, wiki, head cid). Its own name, so no other digest reads as one. */
 export const WARD_COSIGN_DIGEST_DOMAIN = mint("ward-cosign-digest");
+/** The per-face key a vessel derives from its device secret and one face's group id: its public half is the blinded vessel tag an admission carries. */
+export const VESSEL_FACE_TAG_SEED_DOMAIN = mint("vessel-face-tag-seed");
+/** What the per-face tag key signs: the admission it rides (group and device atom), so a tag never vouches for another admission or face. */
+export const VESSEL_FACE_TAG_PROOF_DOMAIN = mint("vessel-face-tag-proof");
 
 /**
  * Every domain this house mints, in declaration order. DERIVED: each `mint` and `frozen` call above lands
