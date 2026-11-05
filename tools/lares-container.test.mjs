@@ -33,6 +33,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth" } = {}) {
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
       `case " $* " in *" vault status --json "*) printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; exit 0;; esac\n` +
+      `case " $* " in *" ps -q lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit 0;; esac\n` +
+      `case " $* " in *"inspect --format"*) printf '%s\\n' "\${FAKE_IMAGE_REV:-}"; exit 0;; esac\n` +
       `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
     const compose = join(dir, "docker-compose.surface.yml");
@@ -151,6 +153,21 @@ for (const [name, shim] of shims) {
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":true}}}' } });
     assert.equal(r.status, 0, r.stderr);
     assert.doesNotMatch(r.stderr, /holding no vessel key/);
+  });
+
+  test(`${name}: up warns when the image's revision label differs from HEAD, naming both`, async () => {
+    const head = spawnSync("git", ["-C", ROOT, "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim();
+    const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: "0123456789abcdef0123456789abcdef01234567", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}' } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stderr, /image names revision 0123456789abcdef0123456789abcdef01234567 and the checkout stands at /);
+    assert.ok(r.stderr.includes(head), "the warning names the checkout's head");
+  });
+
+  test(`${name}: CONTROL up stays silent when the image names the checkout's head`, async () => {
+    const head = spawnSync("git", ["-C", ROOT, "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim();
+    const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: head, FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}' } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.stderr, /image names revision/);
   });
 
   test(`${name}: a restart the shim performs names vault unlock again`, async () => {

@@ -70,6 +70,21 @@ function KeyHeld {
   return (($out -join "`n") -match '"unlocked"\s*:\s*true')
 }
 
+# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD: warns and stands.
+$script:GitRev = (& git -C $PSScriptRoot rev-parse HEAD 2>$null)
+if ($LASTEXITCODE -ne 0) { $script:GitRev = '' }
+if ($script:GitRev) { $env:GIT_REV = $script:GitRev }
+function WarnImageRevision {
+  if (-not $script:GitRev) { return }
+  $cid = (& docker compose @Base ps -q lares 2>$null) -join ''
+  if ([string]::IsNullOrWhiteSpace($cid)) { return }
+  $label = ((& docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $cid 2>$null) -join '').Trim()
+  if ($label -ne $script:GitRev) {
+    $named = if ($label) { $label } else { 'none' }
+    [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout stands at $($script:GitRev); rebuild the image (``docker compose build``) before trusting this vessel as the checkout")
+  }
+}
+
 # The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached; without one, name
 # it. A refused or abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it.
 function UnlockOrName {
@@ -149,6 +164,7 @@ switch ($verb) {
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       } finally { Remove-Item -Force $override -ErrorAction SilentlyContinue }
     } else { Compose @('up', '-d', '--wait', 'lares') }
+    WarnImageRevision
     UnlockOrName
   }
   'down'  { Compose (@('down', '--remove-orphans') + $rest) }
