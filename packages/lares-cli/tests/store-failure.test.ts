@@ -5,6 +5,9 @@
  * faults (another holder, a door that never answered, a wait that ended) each read under their own code. No store
  * refusal reaches a script as a bare `refused` or `error`.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its ward acts ask the suite's person (seat-harness#/the-ward).
+seatSuiteWard();
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../src/local-connector.js", async (importOriginal) => {
