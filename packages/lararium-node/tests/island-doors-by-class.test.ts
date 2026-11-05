@@ -42,12 +42,13 @@ function island(): { worker: Worker; said: Array<Record<string, unknown>>; ask(m
 
 const custodyAsk = (requestId: string) => ({ type: "custody:write", requestId, carrier: "veil", bytes: new Uint8Array([7, 7, 7]) });
 const receiptAsk = (requestId: string) => ({ type: "receipt:request", requestId, documentIds: ["doc-a"] });
+const dyadAsk = (requestId: string) => ({ type: "dyad:ask", requestId, fleetRoot: "fleet", deviceKey: "device" });
 const casAsk = (requestId: string) => ({ type: "cas:want", requestId, cid: "sha256:" + "ab".repeat(32) });
 
 afterEach(() => { vi.restoreAllMocks(); });
 
 describe("the vessel's doors answer by island class", () => {
-  test("D1 — a wiki island's custody write reaches no door and refuses by name, once in the log", async () => {
+  test("D1 — a wiki island's custody write reaches no capability and refuses by name, once in the log", async () => {
     const sealed: Array<[string, Uint8Array]> = [];
     const caps: CapabilityRecord = { custodyWrite: async (carrier, bytes) => { sealed.push([carrier, bytes]); } };
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -107,26 +108,27 @@ describe("the vessel's doors answer by island class", () => {
       custodyWrite: async () => { reached.push("custody"); },
       receipt: async () => { reached.push("receipt"); },
       cas: async () => { reached.push("cas"); return null; },
+      dyad: () => { reached.push("dyad"); return "clear"; },
     };
 
     const session = island();
     nodeWorkerHandle(session.worker, { island: "session", caps });
-    for (const ask of [custodyAsk("s1"), receiptAsk("s2"), casAsk("s3")]) await session.ask(ask);
+    for (const ask of [custodyAsk("s1"), receiptAsk("s2"), casAsk("s3"), dyadAsk("s4")]) await session.ask(ask);
     expect(reached).toEqual([]);
     expect(session.said).toEqual([]);
 
     const daemon = island();
     nodeWorkerHandle(daemon.worker, { island: "daemon", caps });
-    for (const ask of [custodyAsk("d1"), receiptAsk("d2"), casAsk("d3")]) await daemon.ask(ask);
-    expect(reached.sort()).toEqual(["cas", "custody", "receipt"]);
-    expect(daemon.said).toHaveLength(3);
+    for (const ask of [custodyAsk("d1"), receiptAsk("d2"), casAsk("d3"), dyadAsk("d4")]) await daemon.ask(ask);
+    expect(reached.sort()).toEqual(["cas", "custody", "dyad", "receipt"]);
+    expect(daemon.said).toHaveLength(4);
   });
 
   test("D7 — two vessels in one process keep separate capabilities", async () => {
     const sealedA: string[] = [];
     const sealedB: string[] = [];
-    const capsA: CapabilityRecord = { custodyWrite: async () => { sealedA.push("a"); }, cas: async () => new Uint8Array([1]) };
-    const capsB: CapabilityRecord = { custodyWrite: async () => { sealedB.push("b"); }, cas: async () => new Uint8Array([2]) };
+    const capsA: CapabilityRecord = { custodyWrite: async () => { sealedA.push("a"); }, cas: async () => new Uint8Array([1]), receipt: async () => { sealedA.push("ra"); }, dyad: () => "clear" };
+    const capsB: CapabilityRecord = { custodyWrite: async () => { sealedB.push("b"); }, cas: async () => new Uint8Array([2]), receipt: async () => { sealedB.push("rb"); }, dyad: () => "owing" };
     const a = island();
     const b = island();
     nodeWorkerHandle(a.worker, { island: "daemon", caps: capsA });
@@ -137,12 +139,19 @@ describe("the vessel's doors answer by island class", () => {
     expect(sealedB).toEqual(["b"]);
     expect(a.said.find((m) => m["requestId"] === "a2")).toMatchObject({ bytes: new Uint8Array([1]) });
     expect(b.said.find((m) => m["requestId"] === "b2")).toMatchObject({ bytes: new Uint8Array([2]) });
+    await a.ask(receiptAsk("a4")); await b.ask(receiptAsk("b4"));
+    await a.ask(dyadAsk("a5")); await b.ask(dyadAsk("b5"));
+    expect(sealedA).toEqual(["a", "ra"]);
+    expect(sealedB).toEqual(["b", "rb"]);
+    expect(a.said.find((m) => m["requestId"] === "a5")).toMatchObject({ standing: "clear" });
+    expect(b.said.find((m) => m["requestId"] === "b5")).toMatchObject({ standing: "owing" });
+    sealedA.length = 0; sealedB.length = 0;
     // control: dropping vessel A's capability leaves vessel B's standing
     capsA.custodyWrite = undefined;
     await a.ask(custodyAsk("a3")); await b.ask(custodyAsk("b3"));
     expect(a.said.find((m) => m["requestId"] === "a3")).toMatchObject({ written: false });
     expect(b.said.find((m) => m["requestId"] === "b3")).toMatchObject({ written: true });
-    expect(sealedB).toEqual(["b", "b"]);
+    expect(sealedB).toEqual(["b"]);
   });
 
   test("D8 — a daemon island handed no receipt capability refuses a receipt ask by name", async () => {
