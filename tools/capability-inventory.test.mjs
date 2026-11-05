@@ -80,7 +80,7 @@ test("CONTROL: a widened capability, a new, extra or departed seam and a new ask
   assert.deepEqual(differences(same, committed), []);
   const widened = structuredClone(committed);
   widened.islands["node wiki"].receipt = "grants";
-  assert.ok(differences(widened, committed).some((d) => d === "node wiki receipt: the table says refused, the vessel GRANTS"));
+  assert.ok(differences(widened, committed).some((d) => d === "node wiki receipt: the table says silent, the vessel GRANTS"));
   const seam = structuredClone(committed);
   seam.callSites.push("packages/lararium-node/src/somewhere.ts: nodeSpawnDaemonWorker");
   assert.ok(differences(seam, committed).some((d) => d.includes("somewhere.ts") && d.includes("names no seam")));
