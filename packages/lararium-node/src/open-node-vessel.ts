@@ -54,7 +54,7 @@ import {
   faceAtomKeyFromSeed, type FaceAtomKey,
   carriageFloorDutyOf, type PlaceSigner,
   genesisCasCidsFromOracle, provenVesselKeyOf,
-  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed, type GateSweepSeat,
+  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, type GateSweepSeat,
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { registerStoreDoorReactors } from "./store-door-registry.js";
@@ -140,7 +140,7 @@ import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-store.js";
 import { raiseAnchorFromSlots } from "./lease-observation.js";
 import { readFacePersonaRecords } from "./persona-act-store.js";
-import { CustodyLocked } from "./custody-holder.js";
+import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { standingCustody } from "./custody-seat.js";
 import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
@@ -200,7 +200,7 @@ import {
   makeVesselResidency, type VesselResidency,
   replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
-import { loadPersonaGroupRootSeed, loadVesselIdentity, vesselPlaceSignerDoor, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
+import { loadVesselIdentity, vesselPlaceSignerDoor, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
 import { socketsNoLongerHeld, ownPlacePosture, sameOperatorStands, seatedDeviceKey, type PlaceClass, type SeatedPresenter } from "./socket-sorter.js";
 import { faceGateServer, gateSessionRegistry, timerGateDeadlines } from "./face-gate-server.js";
 import { gateSyncServer, type GateSyncSocket }    from "./gate-sync-server.js";
@@ -2361,13 +2361,10 @@ async function prepareNodeBootOn(
           const boardFace = { group: personaGroupId, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
           const boardDoor = promoteBoardDoor({ group: personaGroupId, face: boardFace, atom,
             epoch: () => readFace(personaKelChain ?? [], faceAnchor)?.lineage.at(-1)?.epoch ?? 0,
+            // THE PANEL CARRIES NO WARD ROUTE. Its verbs ride the daemon document (a synced record), and a passphrase never rests
+            // there; so the panel's root acts (a daemon or kahua commit, a kāpae-lower) refuse by name and point at the terminal.
             rootSigner: async () => {
-              const seed = await loadPersonaGroupRootSeed(wornMount?.handleIndex ?? 0);
-              try { return { key: await ed25519VerifyingKeyFromSeed(seed), sign: async (bytes: Uint8Array) => {
-                const fresh = await loadPersonaGroupRootSeed(wornMount?.handleIndex ?? 0);
-                try { return await ed25519SignerFromSeed(fresh)(bytes); } finally { fresh.fill(0); }
-              } }; }
-              finally { seed.fill(0); }
+              throw new WardNeedsFreshUnlock("the panel's kāpae-lower (the panel carries no ward route: run `lares kapae lower <digest>` at a terminal)");
             },
             board: { records: async () => promoteActRecords(handle.doc(), personaGroupId), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
             projection: () => proof.projection,
@@ -2376,7 +2373,10 @@ async function prepareNodeBootOn(
           const core = promotePanelApi({ who,
             wikis: async () => ["daemon", ...vmManager.inspect().filter(slot => slot.temperature === "wela" && slot.wikiId !== "daemon").map(slot => slot.wikiId)],
             promotionsFor: wiki => promotions({ wiki, ...nodePromoteStores(personaGroupId), who,
-              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(casDirForStorage(storageDir), atom.key) }), boardDoor,
+              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(casDirForStorage(storageDir), atom.key),
+              // The panel carries no ward route (its verbs ride the daemon document), so a bound commit refuses by name, toward the terminal.
+              wardSigner: async () => { throw new WardNeedsFreshUnlock(`the panel's commit in ${wiki} (the panel carries no ward route: run \`lares promote commit <digest> --wiki ${wiki}\` at a terminal)`); },
+              face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false } }), boardDoor,
           });
           const push = async (data: string) => { daemonVm.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
           // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.

@@ -233,6 +233,9 @@ export const INTENT_ADMISSION_DOMAIN = mint("intent-admission");
 /** One lift or withdraw on a face's kahua stage, signed under the operator's grant (the face's current persona root). */
 export const KAHUA_ACT_DOMAIN = mint("kahua-act");
 export const PROMOTE_ACT_DOMAIN = mint("promote-act");
+/** A daemon or kahua promotion's ward signature: the face root over (wiki, digest, seq), made under a fresh ward unlock
+ *  (seat-harness#/the-ward). Its own name, so no promote act, kahua act or swarm act verifies as one. */
+export const PROMOTE_WARD_DOMAIN = mint("promote-ward");
 /** One signed swarm control: the house cap, a lane share, a go, a go's spend, a lane's state, a roster row or a check receipt.
  *  Its own name, so no swarm record verifies as a promote or kahua act and none of those as a swarm control. */
 export const SWARM_ACT_DOMAIN = mint("swarm-act");
