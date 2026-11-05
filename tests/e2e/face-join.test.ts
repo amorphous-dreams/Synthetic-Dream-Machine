@@ -46,6 +46,7 @@ import { faceJoinOutcome, requestFaceJoin } from "../harness/face-join-intent.js
 import { countersignDeviceDelegation, type DeviceDelegationRootHalf, type DeviceDelegationTiddler } from "../../packages/lararium-mesh/src/device-delegation.js";
 import { composeFleetJoinRequest, fleetJoinSealPair, readFleetJoinOffer } from "../../packages/lararium-mesh/src/fleet-join.js";
 import { mintVesselFaceKey } from "../../packages/lararium-mesh/src/face-authority.js";
+import { testVesselTagDoor } from "../../packages/lararium-mesh/tests/vessel-tag-fixture.js";
 import { createPrivateKey, sign as edSign } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -191,6 +192,7 @@ beforeAll(async () => {
     mintFaceKey: async () => { const m = await mintVesselFaceKey(); faceKeys.set(m.publicKey, m.secret); return m.publicKey; },
     custody: { signAsVesselFace: async (_scope, key, image) => signUnder(faceKeys.get(key)!, image) },
     sign: async (image) => Buffer.from(signUnder(seed, image)).toString("hex"),
+    vesselTag: testVesselTagDoor(88),
   });
   if ("refusal" in request) throw new Error(`the joinee's request refuses: ${request.refusal}`);
   writeFileSync(files.request, JSON.stringify(request));

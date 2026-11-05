@@ -23,7 +23,7 @@ export const ENTRIES = [
   { rule: 'allowed', file: 'packages/lararium-node/src/main.ts', match: 'vesselFloorKeyDoor', count: 2, reason: 'The main floor pin uses the scoped floor door.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/commands/fleet-join.ts', match: 'vesselFloorKeyDoor', count: 2, reason: 'Fleet join carries the place floor pin.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/commands/nexus-contract.ts', match: 'vesselFloorKeyDoor', count: 2, reason: 'Nexus carriage names the floor pin door.' },
-  { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'vesselFloorKeyDoor', count: 1, reason: 'The key-file module defines the scoped floor door.' },
+  { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'vesselFloorKeyDoor', count: 2, reason: 'The key-file module defines the scoped floor door and derives the vessel face-tag secret through it.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'floorKeyDoor', count: 2, reason: 'The key-file module imports and calls the floor adapter.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'loadVesselSigningSeed', count: 2, reason: 'The private key-file reader feeds the place signer.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'placeSignerFromSeed', count: 2, reason: 'The key-file door constructs the scoped signer.' },
