@@ -24,6 +24,8 @@ import type { CustodyIo } from "@lararium/mesh";
 export const FACE_INDEX_FILE = "face-index.json";
 export const FACES_DIR = "faces";
 export const FACE_TREE_FILE = "fk-slots.bin";
+/** The face's WARD tree: it wraps the ward key the face root seed rests under, over that face's human routes (seat-harness#/the-ward). */
+export const WARD_TREE_FILE = "ward-slots.bin";
 
 const FCID = /^[0-9a-f]{32}$/;
 const DIGEST = /^[0-9a-f]{64}$/;
@@ -42,6 +44,7 @@ export class FaceIndexRefused extends Error {
 export const faceIndexPath = (identityDir: string): string => join(identityDir, FACE_INDEX_FILE);
 export const faceDir = (identityDir: string, fcid: string): string => join(identityDir, FACES_DIR, fcid);
 export const faceTreePath = (identityDir: string, fcid: string): string => join(faceDir(identityDir, fcid), FACE_TREE_FILE);
+export const wardTreePath = (identityDir: string, fcid: string): string => join(faceDir(identityDir, fcid), WARD_TREE_FILE);
 
 /** Read the index's bytes strictly: only the contract's fields, in well-formed shapes. `null` reads as no faces. */
 export function decodeFaceIndex(bytes: Uint8Array | null): FaceIndex {

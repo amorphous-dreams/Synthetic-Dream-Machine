@@ -23,6 +23,8 @@ const reading = { sealed: (head: Uint8Array): boolean => Buffer.from(head).subar
 const sealedBytes = (body: string): Buffer => Buffer.concat([FIXTURE_MAGIC, Buffer.from(body)]);
 /** A frame that reads sealed to the face-key reader: its magic over a body long enough to hold a nonce and a tag. */
 const fckSealedBytes = (body: string): Buffer => Buffer.concat([Buffer.from("lares-fck-seal"), Buffer.alloc(48, 5), Buffer.from(body)]);
+/** A warded row's frame: the ward's magic, a nonce and a tag (the face root seed rests under the ward key, seat-harness#/the-ward). */
+const wardSealedBytes = (body: string): Buffer => Buffer.concat([Buffer.from("lares-ward-seal"), Buffer.alloc(48, 6), Buffer.from(body)]);
 /** A seal of the house family under a scheme this build does not frame: the family prefix, a scheme name, a frame. */
 const otherSchemeBytes = (scheme: string): Buffer => Buffer.concat([Buffer.from(`lares-${scheme}-seal`), Buffer.alloc(48, 7)]);
 /** The S key magic standing in a face row (another house scheme), over a frame long enough to hold a nonce and a tag. */
@@ -172,7 +174,7 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
         "identity/.vessel-key.json": "{}",
         "identity/s-slots.bin": "slots",
         "identity/gate-root.bin": sealedBytes("root"),
-        [`identity/faces/${"ab".repeat(16)}/.persona-group-root-h0.json`]: fckSealedBytes("seed"),
+        [`identity/faces/${"ab".repeat(16)}/.persona-group-root-h0.json`]: wardSealedBytes("seed"),
         [`identity/faces/${"ab".repeat(16)}/.handle-book-h0.json`]: fckSealedBytes("book"),
         "vessel/hosting/0123456789abcdef0123456789abcdef/state.json": sealedBytes("state"),
         "nexus/founding-roster.mem": "charter",

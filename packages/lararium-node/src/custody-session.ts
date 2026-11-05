@@ -32,7 +32,7 @@
 import { mkdirSync } from "node:fs";
 import {
   assertStoreUnoccupied, bindSlot, commitSlotTree, decodeSlotTree, mintServingKey, mintTreeKey,
-  openTreeKey, readFckCarrier, readSCarrier, settleRotation, unbindSlot,
+  openTreeKey, readFckCarrier, readWardCarrier, readSCarrier, settleRotation, unbindSlot,
   type Credential, type CustodyIo, type KdfPort, type ServingKey, type SlotSpec, type SlotTree, type TreeKey, type SCarrierReading,
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
@@ -338,8 +338,10 @@ export async function custodyStatus(args: { readonly io: CustodyIo; readonly hom
   for (const e of carrierCensus(args.homes)) {
     const bytes = await args.io.read(e.path);
     const faceRow = e.custody === "face-hot" || e.custody === "face-cold";
-    const reading = faceRow ? readFckCarrier(bytes) : readSCarrier(bytes);
-    const underKey = e.custody === "serving" || e.custody === "hot" || e.custody === "cold" || faceRow;
+    // A warded row reads under the ward's own frame alone, so an FCK seal where a warded row belongs reads unopenable: a fault.
+    const wardRow = e.custody === "ward-cold";
+    const reading = wardRow ? readWardCarrier(bytes) : faceRow ? readFckCarrier(bytes) : readSCarrier(bytes);
+    const underKey = e.custody === "serving" || e.custody === "hot" || e.custody === "cold" || faceRow || wardRow;
     // An outbox parcel rests under the outbox key's own seal, never the vessel key's: its row's check reads that seal.
     const failsHolds = e.holds !== null && bytes !== null && !e.holds(e.file, bytes);
     const fault = underKey

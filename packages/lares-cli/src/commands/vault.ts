@@ -135,7 +135,7 @@ function printCustody(c: CustodyStatus): void {
   }
   // A face's rows fold into ONE line per face: its handle index, its custody id, the count of rows that rest under its key and
   // the two digests the floor index names for it. A face row never prints by name here; only a fault does.
-  const faceRows = c.rows.filter((r) => r.custody === "face-hot" || r.custody === "face-cold");
+  const faceRows = c.rows.filter((r) => r.custody === "face-hot" || r.custody === "face-cold" || r.custody === "ward-cold");
   const floorIndex = readFaceIndexSync(larIdentityDir()).faces;
   floorIndex.forEach((f, ordinal) => {
     if (!("fcid" in f)) return;
@@ -143,7 +143,7 @@ function printCustody(c: CustodyStatus): void {
     const sealedHere = mine.filter((r) => r.reading === "sealed" && !r.fault).length;
     const faultsHere = mine.filter((r) => r.fault).length;
     const dg = (d: string | null): string => (d === null ? "-" : `${d.slice(0, 12)}…`);
-    console.log(`  face h${ordinal}        ${f.fcid.slice(0, 12)}…  ${mine.length} row(s): ${sealedHere} sealed under its key, ${faultsHere} at fault   group ${dg(f.group)}  ask ${dg(f.ask)}`);
+    console.log(`  face h${ordinal}        ${f.fcid.slice(0, 12)}…  ${mine.length} row(s): ${sealedHere} sealed under its keys, ${faultsHere} at fault   group ${dg(f.group)}  ask ${dg(f.ask)}`);
   });
   const sealed = c.rows.filter((r) => r.reading === "sealed" && !r.fault).length;
   const byLaw = c.rows.filter((r) => r.bare !== null && !r.fault).length;
@@ -153,7 +153,7 @@ function printCustody(c: CustodyStatus): void {
     : `  carriers       ${c.rows.length} standing: ${sealed} sealed under the vessel key, ${byLaw} outside it by law, ${faults.length} at fault`);
   // A row that names many files (a spend per burn, a rest file per record) folds into one counted line per reading.
   const groups = new Map<string, CustodyStatusRow[]>();
-  for (const r of c.rows.filter((x) => !(x.custody === "face-hot" || x.custody === "face-cold") || x.fault)) {
+  for (const r of c.rows.filter((x) => !(x.custody === "face-hot" || x.custody === "face-cold" || x.custody === "ward-cold") || x.fault)) {
     const key = `${r.row}\u0000${r.reading}`;
     groups.set(key, [...(groups.get(key) ?? []), r]);
   }
