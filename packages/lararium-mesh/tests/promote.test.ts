@@ -154,3 +154,26 @@ describe("the ward binds a daemon or kahua promotion (row 7, S2)", () => {
     expect(verifyPromotionRows([user]).verified).toEqual([user]);
   });
 });
+
+describe("a dropped bound row stays dropped (S2 cold read, P2-2)", () => {
+  test("RED: a ward-signed daemon row, dropped and re-inserted with its old signature, voids at boot; CONTROL: a fresh commit of the same bytes, signed anew, stands", async () => {
+    const { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } = await import("../src/ed25519-door.js");
+    const { signPromotionWard } = await import("../src/promote.js");
+    const root = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(7)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(7)) };
+    const face = { grant: (k: string) => k === root.key };
+    const digest = promoteDigest(rite);
+    const unsigned = commit(HAND, EMPTY_LEDGER, "daemon").rows[0]!;
+    const wardSig = await signPromotionWard(unsigned, root);
+    const committed = ledgerCommit(EMPTY_LEDGER, { wiki: "daemon", digest, item: rite, revision: R, wardSig }, HAND);
+    const signed = committed.rows[0]!;
+    expect(verifyPromotionRows(committed.rows, face, committed).verified).toEqual([signed]);
+    const dropped = ledgerUnpromote(committed, { wiki: "daemon", digest }, HAND);
+    // A writer of the face's custody puts the old signed row back.
+    const replayed = { ...dropped, rows: [...dropped.rows, signed] };
+    const back = decodeLedger(encodeLedger(replayed));
+    expect(verifyPromotionRows(back.rows, face, back).voided).toEqual([{ digest, reason: "ward-dropped" }]);
+    // CONTROL: the hand commits the same bytes again under a fresh ward signature; the new row stands.
+    const again = ledgerCommit(dropped, { wiki: "daemon", digest, item: rite, revision: R, wardSig: await signPromotionWard({ wiki: "daemon", digest, seq: dropped.seq + 1 }, root) }, HAND);
+    expect(verifyPromotionRows(again.rows, face, again).verified.map((r) => r.seq)).toEqual([again.seq]);
+  });
+});

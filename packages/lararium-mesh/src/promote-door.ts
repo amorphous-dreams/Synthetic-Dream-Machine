@@ -101,7 +101,7 @@ export function promotions(ports: PromotionPorts) {
         // and the brake decide those), and rides out by name for the caller to report.
         try { readings = states(own(ledger), await ports.items()); } catch (error) { itemsError = error; }
       } else { edges = kapaeBootSet(local, null); }
-      const { verified, voided } = verifyPromotionRows(own(ledger), ports.face);
+      const { verified, voided } = verifyPromotionRows(own(ledger), ports.face, ledger);
       const runnable = verified.filter(row => !edges.has(promoteEdgeKey(wiki, row.digest)));
       for (const row of runnable) { await ports.cas.put(row.digest, new TextEncoder().encode(row.bytes)); await ports.cas.pin(row.digest); }
       return { itemsError, pluginCids: runnable.map(row => row.digest), voided, orphans: readings.filter(r => r.state === "orphaned").map(r => r.row.digest), updateWaits: readings.filter(r => r.state === "update-waits").map(r => r.row.digest), shadowed: shadows(edges) };
