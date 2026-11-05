@@ -8,7 +8,7 @@ export function refuseBrowserDyadAsks(handle: Pick<VesselWorkerHandle, "post" | 
     if (!message || message.type !== "dyad:ask" || typeof message.requestId !== "string") return;
     if (!logged) {
       logged = true;
-      console.warn("[vessel-door] DyadDoorRefused: a wiki island asked for a fleet edge reading. The ask refused and nothing ran.");
+      console.warn("[vessel-caps] DyadRefused: a wiki island asked for a fleet edge reading. The ask refused and nothing ran.");
     }
     const reply: IslandMsg_DyadRead = { type: "dyad:read", requestId: message.requestId, standing: "aside" };
     try { handle.post(reply); } catch { /* the worker went away */ }

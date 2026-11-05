@@ -13,7 +13,9 @@ describe("a kapae-driven restart is flagged an emergency", () => {
   for (const [name, rel] of [["node", "../src/open-node-vessel.ts"], ["browser", "../../lararium-browser/src/open-browser-vessel.ts"]] as const) {
     test(`RED: the ${name} vessel's arrival restart passes the constant, never prose`, () => {
       const src = read(rel);
-      expect(src).toMatch(/daemonHolder\.restart\(KAPAE_EMERGENCY_REASON\)/);
+      // The node's restart takes its reason as a parameter defaulting to the constant (a hand's verb passes the routine reason).
+      if (name === "node") expect(src).toMatch(/restartDaemonNow = async \(reason: string = KAPAE_EMERGENCY_REASON\)[\s\S]*?daemonHolder\.restart\(reason\)/);
+      else expect(src).toMatch(/daemonHolder\.restart\(KAPAE_EMERGENCY_REASON\)/);
       expect(src).not.toContain(KAPAE_EMERGENCY_REASON.length ? `restart("${KAPAE_EMERGENCY_REASON}")` : "");
     });
   }

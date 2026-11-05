@@ -1396,8 +1396,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const core = promotePanelApi({ who,
             wikis: async () => ["daemon", ...vmManager.inspect().filter(slot => slot.temperature === "wela" && slot.wikiId !== "daemon").map(slot => slot.wikiId)],
             promotionsFor: wiki => promotions({ wiki, ...browserPromoteStores(idbName, wornGroup), who,
-              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: browserPromoteCas(),
-              loaded: () => wiring.loadedFor(wiki), restart: async () => { await wiring.restart(wiki); } }), boardDoor,
+              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: browserPromoteCas() }), boardDoor,
           });
           const push = async (data: string) => { daemon.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
           // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.

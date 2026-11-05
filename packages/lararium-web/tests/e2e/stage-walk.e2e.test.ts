@@ -33,11 +33,11 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
-import { foundStagedHearth, openStaged, stageDir, stagedHearthGroup, type LarInstance } from "../../../../tests/harness/instance.js";
+import { foundStagedHearth, openStaged, stageDir, stagedHearthRelation, type LarInstance } from "../../../../tests/harness/instance.js";
 import { mintStagedNexusKey } from "../../../../tests/harness/vessel-key.js";
 // The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
 import { armTestCustody } from "../../../lararium-node/dist/probes/browser-test-custody.js";
-import { kahuaFaceFolder, kahuaFaceTag } from "../../../lararium-node/dist/src/bag-paths.js";
+import { kahuaFaceFolder } from "../../../lararium-node/dist/src/bag-paths.js";
 
 const REPO = resolve(import.meta.dirname, "../../../..");
 const WEB_ROOT = join(REPO, "packages/lararium-web/dist");
@@ -65,14 +65,14 @@ const projection = (): Map<string, number> =>
 
 const tail = (): string => lines.filter((l) => !l.startsWith("Warning: Global assignment")).slice(-80).join("\n");
 
-/** The worn face's folder (`kahua-<tag>`), its tag derived from the hearth's founding group as its persona plane derives it. */
-const faceFolder = (): string => kahuaFaceFolder(kahuaFaceTag(stagedHearthGroup(hearth!.root)));
+/** The worn face's folder (`kahua-<F>`), its tag derived from the hearth's founding group as its persona plane derives it. */
+const faceFolder = (): string => kahuaFaceFolder(stagedHearthRelation(hearth!.root));
 /**
- * WHERE A NODE-SIDE DRAFT PROJECTS: the worn face's kahua working top under the state root (`<root>/wikis/kahua-<tag>`).
+ * WHERE A NODE-SIDE DRAFT PROJECTS: the worn face's kahua working top under the state root (`<root>/wikis/kahua-<F>`).
  * One helper, so the lane repoints every read when the top moves.
  */
 const draftPath = (titlePath: string, ext: string): string => join(hearth!.root, "wikis", faceFolder(), `${titlePath}${ext}`);
-/** Where a LIFTED kahua item projects: the face's stage under the state root (`<root>/bags/kahua-<tag>`), sited by title. */
+/** Where a LIFTED kahua item projects: the face's stage under the state root (`<root>/bags/kahua-<F>`), sited by title. */
 const stagePath = (titlePath: string): string => join(hearth!.root, "bags", faceFolder(), `${titlePath}.tid`);
 
 /** Poll a predicate on the hearth's disk or CLI to a bound; answer its last reading. */

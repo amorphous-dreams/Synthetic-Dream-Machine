@@ -33,6 +33,22 @@ describe("the browser's trust record at rest", () => {
     expect(await readKeystoreRow(idbName, promotedRow("group-b"))).toBeUndefined();
   });
 
+  test("RED: two commits of different wikis at once through the store's update both land", async () => {
+    const idbName = `promoted-concurrent-${crypto.randomUUID()}`;
+    await bindSyntheticBrowserCustodySlot(idbName);
+    const stores = browserPromoteStores(idbName, "group-a");
+    const W2 = "lar:///ha.ka.ba/wikis/garden";
+    const OTHER = { title: "rites/b", text: "exports.startup = function(){}", fields: { "module-type": "startup" } };
+    const commit = (wiki: string, item: typeof RITE) => (standing: typeof EMPTY_LEDGER) => ledgerCommit(standing, { wiki, digest: promoteDigest(item), item, revision: "b".repeat(64) }, { kind: "hand", id: "hand-1" });
+    // CONTROL (the harness discriminates): a NAIVE read-then-write update over the same rows loses a row under the same two commits.
+    const naiveStore = browserPromoteStores(idbName, "group-naive");
+    const naive = async (fn: (standing: typeof EMPTY_LEDGER) => typeof EMPTY_LEDGER) => { const standing = await naiveStore.ledger.read(); await new Promise((r) => setTimeout(r, 0)); await naiveStore.ledger.write(fn(standing)); };
+    await Promise.all([naive(commit(W1, RITE)), naive(commit(W2, OTHER))]);
+    expect((await naiveStore.ledger.read()).rows, "a naive update loses a row").toHaveLength(1);
+    await Promise.all([stores.ledger.update(commit(W1, RITE)), stores.ledger.update(commit(W2, OTHER))]);
+    expect((await stores.ledger.read()).rows.map((r) => r.wiki).sort()).toEqual([W1, W2].sort());
+  });
+
   test("RED: a vessel with no custody slot refuses the read and the write and never reads empty; CONTROL: the slotted vessel reads", async () => {
     const bare = `promoted-bare-${crypto.randomUUID()}`;
     const stores = browserPromoteStores(bare, "group-a");

@@ -23,13 +23,13 @@ import { createServer } from "node:net";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
 import { ed25519VerifyingKeyFromSeed } from "../../packages/lararium-mesh/src/ed25519-door.js";
 import { randomBytes } from "node:crypto";
-import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, writeFileSync, appendFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { performance } from "node:perf_hooks";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
 import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
-import { kahuaFaceFolder, kahuaFaceTag } from "../../packages/lararium-node/src/bag-paths.js";
+import { kahuaFaceFolder } from "../../packages/lararium-node/src/bag-paths.js";
 
 /**
  * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
@@ -290,6 +290,13 @@ const hearthCards = new Map<string, string>();
 const hearthGroups = new Map<string, string>();
 
 /** Persona zero's PersonaGroup id on a staged hearth `foundStagedHearth` founded; a root it never founded throws by name. */
+export function stagedHearthRelation(root: string): string {
+  const index = readFileSync(join(root, "kahua-index.toml"), "utf8");
+  const relation = /^\[faces\."([^"\n]+)"\]/m.exec(index)?.[1];
+  if (!relation) throw new Error("kahua index contains no face relation");
+  return relation;
+}
+
 export function stagedHearthGroup(root: string): string {
   const group = hearthGroups.get(root);
   if (!group) throw new Error(`no staged hearth founding answered a PersonaGroup id for ${root}`);
@@ -301,7 +308,7 @@ export function stagedHearthGroup(root: string): string {
  * rides the folder's name, `<root>/wikis/kahua-<tag>`, the tag the founded face's derived persona tag.
  */
 export function daemonWikiDir(root: string): string {
-  return join(root, "wikis", kahuaFaceFolder(kahuaFaceTag(stagedHearthGroup(root))));
+  return join(root, "wikis", kahuaFaceFolder(stagedHearthRelation(root)));
 }
 
 /**

@@ -57,6 +57,7 @@ test("repeated dispatches over one pending generation attach one fault reaction"
     isFoam: () => false,
     saveTiddler: () => pending,
     deleteTiddler: () => pending,
+    dispatchEnded: () => {},
   };
   const warns: string[] = [];
   const spy = vi.spyOn(console, "warn").mockImplementation((...args: unknown[]) => { warns.push(args.join(" ")); });
@@ -258,7 +259,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — draft recovery follows the idle d
     const held = new Promise<void>((resolve) => { release = resolve; });
     const firstAck = new Promise<void>((resolve) => { asked = resolve; });
     let acknowledgements = 0;
-    adaptor.restDoor = {
+    adaptor.caps.receipt = {
       ack: async () => { if (++acknowledgements === 1) { asked(); await held; } },
       begin: () => ({ done: () => {} }), held: () => null, idle: async () => {},
       answer: () => false, stalledAsks: () => 0, close: () => {},

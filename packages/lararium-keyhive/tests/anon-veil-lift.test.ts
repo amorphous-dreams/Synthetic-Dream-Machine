@@ -352,6 +352,34 @@ describe("the anon-veil lift on join", () => {
     expect(await textOf(v, derived, "Saved")).toBe("working layer");
   }, 30_000);
 
+  test("O3 — a destination flush that FAILS leaves the floor source whole and its carry mark empty of skips: a restart that lost the destination carries everything, and nothing burns", async () => {
+    const v = await vessel();
+    const joined = { on: false };
+    const a = await newFace(v, joined);
+    const catalog = makeCatalogAccessor(v.repo, v.catalogUrl);
+    const { workingUrl } = await resolverFor(v, a.face).bindings(v.fp, { wikiDocId: v.wikiUrl, libraryBagDocIds: [] }, "garden");
+    await write(v, workingUrl, "Saved", "working layer");
+    await write(v, workingUrl, "Second", "second layer");
+    joined.on = true;
+    const derived = faceWorkingDocUrl(SECRET(), "garden", "working");
+    const failing = { create: v.repo.create.bind(v.repo), find: v.repo.find.bind(v.repo), delete: v.repo.delete.bind(v.repo),
+      flush: (ids?: string[]) => (ids ?? []).some((id) => derived.endsWith(id)) ? Promise.reject(new Error("the destination disk refused")) : v.repo.flush(ids as never) };
+    await expect(resolverFor(v, a.face, failing).liftFloor()).rejects.toThrow(/destination disk refused/);
+    const source = await v.repo.find<LarDoc>(workingUrl as never);
+    await source.whenReady?.();
+    const mark = (source.doc()?.tiddlers as Record<string, LarTiddlerRecord> | undefined)?.["$:/lares/anon-lift/working-carried-to"];
+    const skips = String(mark === undefined ? "" : plainField(mark, "skip-titles") ?? "");
+    expect(skips, "no title is recorded as carried while the destination never rested").not.toContain("Saved");
+    expect(await opens(v, workingUrl), "the floor source stays").toBe(true);
+    expect(await catalog.urlOf(wikiWorkingFloorKey("garden", PLACE)), "the place's key stands").not.toBeNull();
+    // RESTART: the destination document the failed pass half-wrote is gone, and the reopened Repo is a fresh instance with no memory of it.
+    try { v.repo.delete(derived as never); } catch { /* the address may not stand */ }
+    const rerun = await resolverFor(v, a.face).liftFloor();
+    expect(rerun.moved).toContain(wikiWorkingFloorKey("garden", PLACE));
+    expect(await textOf(v, derived, "Saved"), "everything carried").toBe("working layer");
+    expect(await textOf(v, derived, "Second")).toBe("second layer");
+  }, 30_000);
+
   test("L9 — a burn that faults in the working floor's lift leaves the place's key marked, and the rerun burns it and takes the key out last", async () => {
     const v = await vessel();
     const joined = { on: false };

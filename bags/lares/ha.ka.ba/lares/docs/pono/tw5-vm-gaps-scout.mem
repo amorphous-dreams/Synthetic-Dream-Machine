@@ -64,7 +64,7 @@ TW5 no longer lives in the page. It boots inside a module Web Worker (browser) o
  │  CompositeStore [temp > draft > personal > working > bags/* > libraries > oracle]     │
  │       │ IslandAdaptor → WaveLanding → $tw.lares.applyNalu                │            │
  │  ┌────▼──── $tw (browser = node = null) ──────────────────────────┐    │            │
- │  │ $tw.wiki ── "change" ─┬─► outbound-bridge → HandGate → bag-paths cascade → CRDT │
+ │  │ $tw.wiki ── "change" ─┬─► outbound-bridge → Drain → bag-paths cascade → CRDT │
  │  │                       ├─► CoalesceGate 24ms → serialize RootTemplate ─┘           │
  │  │                       └─► reaction-router → tm-verse-event → vessel               │
  │  │ ridMap: data-lar-rid → TW5's stored handler ◄── dispatchProjectedEvent/Input      │
@@ -87,7 +87,7 @@ TW5 no longer lives in the page. It boots inside a module Web Worker (browser) o
 ### 3.2 Store and direction of truth (TIDDLY)
 - **Truth is the CRDT**, one Automerge doc per bag (`sovereign-kernel.ts:292-313`). `buildIslandRecipe` (`island-recipe.ts:52-130`) stacks the CompositeStore and replays every doc.
 - **In:** doc → MemeProvider → `IslandAdaptor.onUriChanged` → `WaveLanding` → `$tw.lares.applyNalu` (sync add/delete stamped `$origin-bag`).
-- **Out:** `change` → `bridgeWikiToAdaptor` (`outbound-bridge.ts:27-47`) skips "foam" (values the LandedLedger just landed), HandGate paces writes (400 ms trailing, 2 s cap, `hand-gate.ts:18-38`), and the in-wiki `bag-paths` cascade routes each title (`$:/temp`, `$:/state`, history to temp; drafts to draft; personal to personal; everything else to working). Draft save, rename and cancel are discrete acts (`island-adaptor.ts:968-1127`).
+- **Out:** `change` → `bridgeWikiToAdaptor` (`outbound-bridge.ts:27-47`) skips "foam" (values the LandedLedger just landed), the HandGate paced writes at scouting (400 ms trailing, 2 s cap, `hand-gate.ts:18-38`; since retired for the Drain, which paces by the durable ack), and the in-wiki `bag-paths` cascade routes each title (`$:/temp`, `$:/state`, history to temp; drafts to draft; personal to personal; everything else to working). Draft save, rename and cancel are discrete acts (`island-adaptor.ts:968-1127`).
 - **Disk** is a one-way projection, store → disk (`lararium-node/src/disk-projector.ts`). `bags/*` is canon, written only by residency verbs.
 - The plugin also ships tiddlyweb routes, door-charm and backstop for a stock-TW5-server mode, a second, syncer-based integration that stays inert inside islands.
 
@@ -96,7 +96,7 @@ TW5 no longer lives in the page. It boots inside a module Web Worker (browser) o
 - Lifecycle: `manifest`, `teardown`, `hooanu` in; `ready`, `breath`, `ea`, `fault`, `teardown:ack` out.
 - Wiki island: `wiki:place-verb` → VerbTable → `wiki:verb-result`; `wiki:dom-event` / `wiki:dom-input` → projection return leg (`has-island-watches.ts:38-60`). Both DOM messages are fire-and-forget, no requestId (`vessel-island-pool-core.ts:854-878`). The input value is capped at 65 536 chars, checked three times.
 - Daemon island: `daemon:place-verb` / `telemetry:place-verb` → VerbDispatcher; functors on `$tw.lares.*` (derive-skeleton, worldline-compare, verify, resolve-binding, residency-op, evict).
-- Back-channels: `cas:want/block`, `doc:rest`, `custody:write`, `dyad:ask`, `view:*`.
+- Back-channels: `cas:want/block`, `receipt:request`, `custody:write`, `dyad:ask`, `view:*`.
 - **No generic filter, render or eval RPC exists on the live island.** The only such surface, `meme-worker-script.ts`, is orphaned.
 
 ### 3.4 Rendering (both)
@@ -261,6 +261,6 @@ These scratch files die with this container; the probes are described well enoug
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yv_4v0E9zzo9vurw0wpJDSp7vlMl-y_KHYZ0kVzkEtU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vfRprhT8aDljQAawOrNPXPfiH1T-ZtAqbFfxEyCVUlU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -729,7 +729,7 @@ export type VesselToIslandMsg =
   | WikiMsg_SensoriumSignal
   | IslandMsg_CasBlock
   | IslandMsg_DyadRead
-  | IslandMsg_DocRested
+  | IslandMsg_ReceiptIssued
   | IslandMsg_CustodyWritten
   | IslandMsg_SessionSigned
   | IslandMsg_ViewCatalogResult
@@ -877,12 +877,12 @@ export interface IslandMsg_ViewSettled {
 }
 
 /**
- * Island → vessel: THE REST DOOR's ask. An island mints a document its own Repo holds no store for; the vessel's
- * Repo alone saves it. Before the island records any pointer to that document it asks the vessel to rest the
- * named documents durably, and waits for `doc:rested` on the same `requestId`.
+ * Island → vessel: THE RECEIPT CAPABILITY's ask. An island mints a document its own Repo holds no store for; the
+ * vessel's Repo alone saves it. Before the island records any pointer to that document it asks the vessel for a
+ * durability receipt over the named documents, and waits for `receipt:issued` on the same `requestId`.
  */
-export interface IslandMsg_DocRest {
-  type: "doc:rest";
+export interface IslandMsg_ReceiptRequest {
+  type: "receipt:request";
   requestId: string;
   documentIds: string[];
   /**
@@ -892,14 +892,14 @@ export interface IslandMsg_DocRest {
   heads?: Record<string, string[]>;
 }
 
-/** Vessel → island: the rest door's answer — every named document rests in the vessel's store, or `why` it does not. */
-export interface IslandMsg_DocRested {
-  type: "doc:rested";
+/** Vessel → island: the receipt — every named document rests in the vessel's store (`issued`), or `why` it does not. */
+export interface IslandMsg_ReceiptIssued {
+  type: "receipt:issued";
   requestId: string;
-  rested: boolean;
-  /** The vessel names the documents its rest door finished flushing before this acknowledgment. */
+  issued: boolean;
+  /** The vessel names the documents it finished flushing before this receipt. */
   proof?: { documentIds: string[] };
-  /** True when the vessel's copy changed `REST_STALL_ROUNDS` times and still lacked the island's heads: a named stall, never a silent hang. */
+  /** True when the vessel's copy changed `RECEIPT_STALL_ROUNDS` times and still lacked the island's heads: a named stall, never a silent hang. */
   stalled?: boolean;
   why?: string;
 }
@@ -1044,7 +1044,7 @@ export type IslandToVesselMsg =
   | DaemonMsg_WikiAlert
   | IslandMsg_CasWant
   | IslandMsg_DyadAsk
-  | IslandMsg_DocRest
+  | IslandMsg_ReceiptRequest
   | IslandMsg_CustodyWrite
   | IslandMsg_SessionSign
   | IslandMsg_ViewCatalog
@@ -1070,7 +1070,7 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], "wiki:request-drain" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
@@ -1086,7 +1086,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
   if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }

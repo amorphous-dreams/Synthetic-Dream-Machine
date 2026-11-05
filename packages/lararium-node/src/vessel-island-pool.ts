@@ -20,23 +20,25 @@ import {
   type IslandStorageConfig,
   type WikiRecipe,
   type PortIslandToVesselMsg,
+  type CapabilityRecord,
 } from "@lararium/mesh";
 import type { PortPolicy } from "@lararium/mesh/port-lease";
-import { fetchThroughCasDoor, nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWikiWorker } from "./worker-handle.js";
+import { nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWikiWorker } from "./worker-handle.js";
 import { casDirFromIslandStorageDir, readCasBlobFromFs } from "./node-cas.js";
 
 /**
  * The vessel's content store, as a session island's scoped view reads it: the runtime CID plane beside the
- * islands' storage root, then the corpus store, then the vessel's fetch door. A session island holds no
+ * islands' storage root, then the corpus store, then the vessel's `cas` capability, read off the record at ask time
+ * (absent, or faulting, reads a miss). A session island holds no
  * store of its own, so every content read it makes arrives here, after its view has passed the address.
  */
-export function nodeContentReader(storageRoot: string | null): (cid: string) => Promise<Uint8Array | null> {
+export function nodeContentReader(storageRoot: string | null, caps: CapabilityRecord): (cid: string) => Promise<Uint8Array | null> {
   const runtime = storageRoot ? casDirFromIslandStorageDir(join(storageRoot, "island")) : null;
   return async (cid) => {
     const corpus = process.env["LAR_CAS"] ?? (process.env["LAR_ROOT"] ? join(process.env["LAR_ROOT"], "cas") : null);
     return (runtime ? readCasBlobFromFs(cid, runtime) : null)
       ?? (corpus ? readCasBlobFromFs(cid, corpus) : null)
-      ?? fetchThroughCasDoor(cid);
+      ?? (caps.cas ? caps.cas(cid).catch(() => null) : null);
   };
 }
 
@@ -47,6 +49,11 @@ export const NODE_WIKI_ACTIVATION_CAP = 4;
 const DEFAULT_WORKER_URL = new URL("./node-wiki-island.js", import.meta.url);
 
 export interface VesselIslandPoolOptions {
+  /**
+   * THE CAPABILITY RECORD the vessel hands every island this pool spawns. A wiki island reaches its `cas` alone (its
+   * receipt, custody and dyad asks refuse by name); a session island reaches none. The members read at ask time.
+   */
+  caps: CapabilityRecord;
   /** Compiled island entry script. Defaults to node-wiki-island.js alongside this module. */
   workerScriptUrl?: URL;
   /** Called when an island outside any session emits an `event` (RE reaction) or one of the camera's kinds
@@ -90,13 +97,13 @@ export class VesselIslandPool extends VesselIslandPoolCore {
     const storageRoot = options.storageRoot ?? null;
     super({
       host: {
-        spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl) : nodeSpawnWikiWorker(workerUrl)),
+        spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl, options.caps) : nodeSpawnWikiWorker(workerUrl, options.caps)),
         newSyncChannel: nodeNewSyncChannel,
         storage: (wikiId): IslandStorageConfig | undefined =>
           storageRoot ? { type: "nodefs", dir: join(storageRoot, _sanitizeWikiId(wikiId)) } : undefined,
       },
       mainRepo: options.mainRepo ?? null,
-      readContent: nodeContentReader(storageRoot),
+      readContent: nodeContentReader(storageRoot, options.caps),
       diskMirrorGrant: options.diskMirrorGrant ?? [],
       resolvePluginCids: options.resolvePluginCids,
       ...(options.onWorkerEvent ? { onWorkerEvent: options.onWorkerEvent } : {}),

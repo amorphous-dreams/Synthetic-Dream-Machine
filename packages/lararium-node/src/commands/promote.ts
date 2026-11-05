@@ -44,7 +44,6 @@ export async function runPromoteVerb(opts: {
         .flatMap(item => item.heads.map(head => ({ title: head.title, text: head.text, fields: head.fields, revision: head.cid, origin: head.origin })));
     },
     board: async () => readPromoteBoard(await board.records(), boardFace), cas: nodePromoteCas(opts.casDir, signer.key),
-    loaded: () => new Set(), restart: async () => {},
   });
   const value = (key: string) => typeof opts.args[key] === "string" ? opts.args[key] as string : undefined;
   const wiki = value("wiki") ?? "daemon";

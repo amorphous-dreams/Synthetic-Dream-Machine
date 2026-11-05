@@ -1,45 +1,49 @@
 #!/usr/bin/env node
-// capability-inventory — which vessel doors each composed island REACHES, measured, held against one committed table.
+// capability-inventory — which members of its vessel's capability record each composed island REACHES, measured, held
+// against one committed table.
 //
-// An island reaches the vessel through four doors: FETCH (`cas:want`, the blobs its tiddlers name), REST (`doc:rest`,
-// the vessel's store saves a document it minted), CUSTODY WRITE (`custody:write`, the main thread seals bytes under
-// the vessel key) and DYAD (`dyad:ask`, what a device's edge reads on the fleet board). Which doors an island
-// reaches decides what code running inside it can make the vessel do.
+// A vessel hands each island ONE capability record at construction (`CapabilityRecord`, mesh), with four members: CAS
+// (`cas:want`, the blobs its tiddlers name), RECEIPT (`receipt:request`, the vessel's store saves a document it minted
+// and issues a durability receipt), CUSTODY WRITE (`custody:write`, the main thread seals bytes under the vessel key)
+// and DYAD (`dyad:ask`, what a device's edge reads on the fleet board). Which members an island reaches decides what
+// code running inside it can make the vessel do.
 //
-// THE TABLE MEASURES REACH, NEVER A DOOR'S POLICY. A cell reads `grants` when the ask reached a door (on node the
-// door itself counts the call) or drew a reply in a granting shape, `refused` when only a refusal answered, and
-// `silent` when nothing answered and no door ran. On node every door stands as a stand-in that grants every ask and
-// counts each call against the row open at the call, so a cell says whether an ask from that class arrives at a door
-// at all; what the real door would
+// THE TABLE MEASURES REACH, NEVER A CAPABILITY'S POLICY. A cell reads `grants` when the ask reached a member (on node
+// the member itself counts the call) or drew a reply in a granting shape, `refused` when only a refusal answered, and
+// `silent` when nothing answered and no member ran. On node the witness hands every spawn a record whose four members
+// stand as stand-ins that grant every ask and count each call against the row open at the call, so a cell says whether
+// an ask from that class arrives at a member at all; what the real capability would
 // answer a real ask (a miss, a refusal, `aside`) stays outside this table. Every reply on a request id counts, the
 // first and the last alike.
 //
 // Each row drives the real code that builds that class's handle:
 //
 //   node daemon         `nodeSpawnDaemonWorker`, the one spawn function the daemon VM's seam calls (the seam reading
-//                       below holds that the seam still calls it), around a worker_threads probe.
-//   node wiki/session   `VesselIslandPool`'s OWN host spawn, called exactly as the pool core calls it (no argument
-//                       for a wiki, `{ session: true }` for a session), around the same probe.
+//                       below holds that the seam still calls it), handed the counting record, around a worker_threads
+//                       probe.
+//   node wiki/session   `VesselIslandPool`'s OWN host spawn, the pool constructed with the same counting record and
+//                       called exactly as the pool core calls it (no argument for a wiki, `{ session: true }` for a
+//                       session), around the same probe.
 //   web wiki/session    `BrowserVesselIslandPool`'s OWN host spawn, called the same way, over a stand-in Web Worker:
 //                       Node runs no Web Worker, so the stand-in takes the `Worker` constructor's place and posts the
 //                       asks as the island would; `browserSpawnWorker`, `browserWorkerHandle` and every listener the
-//                       pool attaches run whole. The browser holds no door module to stand in for, so these rows read
+//                       pool attaches run whole. The browser pool holds no capability record to stand in for, so these rows read
 //                       replies, and they also count the message listeners the spawn attached: a new responder on the
 //                       handle moves that count even where its answer would arrive late.
-//   web daemon          UNMEASURED. Its spawn seam (the dedicated worker or the shared holder's port, then the dyad
-//                       door) stands as a closure inside `openBrowserVessel`, which Node cannot open. A row this
+//   web daemon          UNMEASURED. Its spawn seam (the dedicated worker or the shared holder's port, then its dyad
+//                       reading) stands as a closure inside `openBrowserVessel`, which Node cannot open. A row this
 //                       tool cannot drive reads `unmeasured` in every cell, never `silent`.
 //
 // OUTSIDE EVERY ROW: the pool core's own listener on each island (VesselIslandPoolCore `_wireWorkerListeners`), which
 // answers a session island's view asks (`view:catalog`, `view:content`) behind that session's view gate. On node the
-// content reader behind `view:content` ends at the fetch door, so a session island reaches fetched bytes through its
+// content reader behind `view:content` ends at the record's `cas`, so a session island reaches fetched bytes through its
 // view, as the view's gate decides. The source readings below hold that route's spelling; no row drives it.
 //
 // A node probe learns "no reply" by HANDSHAKE, never by a clock: it posts `probe:done` after its asks, the vessel side
-// answers `probe:end` one event-loop turn later, and the port delivers in order. A stand-in door counts its call when
-// a handler calls it: a door called before its reply still reads `grants` however late the reply, and a door called
+// answers `probe:end` one event-loop turn later, and the port delivers in order. A stand-in member counts its call when
+// a handler calls it: a member called before its reply still reads `grants` however late the reply, and a member called
 // after its row closed reads red as `node late` one turn on. A handler that waits longer than that before it calls a
-// door reads `silent`: the turn bounds what a row sees, and the source readings carry the rest. Each row closes one
+// member reads `silent`: the turn bounds what a row sees, and the source readings carry the rest. Each row closes one
 // turn before the next opens, so a late call never counts under the next row. The stand-in Web
 // Worker reads replies one event-loop turn after its last ask, through `addEventListener` and `onmessage` alike; a
 // browser responder that answers later reads `silent` there, and its listener count and the source readings carry it.
@@ -48,17 +52,17 @@
 // TWO SOURCE READINGS hold what no row drives, each as a MULTISET per file (a second call in one file reads as a
 // change; a move between two places in ONE file does not):
 //   seams     every reference under packages/*/src to a function that spawns or wraps an island, attaches it a
-//             door, or answers a door's ask, called or passed by reference (`spawnWorker ?? browserSpawnWorker`),
+//             capability, or answers a capability's ask, called or passed by reference (`spawnWorker ?? browserSpawnWorker`),
 //             every reference to `Worker` or `SharedWorker`, and every rename of one of those functions (an import
 //             `as`, a `const x = name`, a destructured `name: x`) with each later use of the new name; import and
 //             re-export clauses, comments and the defined name itself aside (a scanner tracks strings, so a `/*`
 //             inside a string or a `//` comment hides nothing);
-//   asks      every quoted ask or answer type of the island protocol's doors and view: a new responder anywhere (the
+//   asks      every quoted ask or answer type of the island protocol's capabilities and view: a new responder anywhere (the
 //             mesh core, a vessel's spawn closure, the shared holder) adds one.
 // A LIMIT OF THE SOURCE READINGS: they count names, not values. A local that already holds a seam (a lifted closure, a
 // `let` assigned later, an object property) passed on to a second consumer moves no count; a row that drives the
 // consumer reads it, and a row this tool cannot drive does not.
-// A door a class reaches where the table says it did not, a new or extra seam, a seam that left, or a new ask
+// A capability a class reaches where the table says it did not, a new or extra seam, a seam that left, or a new ask
 // mention reads RED, naming the row. A deliberate change re-writes the table (`--write`) in the commit that makes it.
 //
 //   node tools/capability-inventory.mjs           measure, print the table, and hold it against the committed one
@@ -73,55 +77,56 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const TABLE = join(ROOT, "tools/capability-inventory.json");
-export const DOORS = ["fetch", "rest", "custody", "dyad"];
-export const UNMEASURED = Object.freeze(Object.fromEntries(DOORS.map((d) => [d, "unmeasured"])));
+/** The table's columns: the four members of the capability record, as `CapabilityRecord` names them. */
+export const CAPS = ["cas", "receipt", "custodyWrite", "dyad"];
+export const UNMEASURED = Object.freeze(Object.fromEntries(CAPS.map((d) => [d, "unmeasured"])));
 
 // ── the outcome of one ask ────────────────────────────────────────────────────────────────────────
-/** Whether one reply carries the granting shape of its door's answer. */
-export function grantingReply(door, reply) {
-  switch (door) {
-    case "fetch":   return reply?.type === "cas:block" && reply.bytes != null;
-    case "rest":    return reply?.type === "doc:rested" && reply.rested === true;
-    case "custody": return reply?.type === "custody:written" && reply.written === true;
-    case "dyad":    return reply?.type === "dyad:read" && reply.standing === "clear";
-    default:        throw new Error(`unknown door ${door}`);
+/** Whether one reply carries the granting shape of its capability's answer. */
+export function grantingReply(cap, reply) {
+  switch (cap) {
+    case "cas":          return reply?.type === "cas:block" && reply.bytes != null;
+    case "receipt":      return reply?.type === "receipt:issued" && reply.issued === true;
+    case "custodyWrite": return reply?.type === "custody:written" && reply.written === true;
+    case "dyad":         return reply?.type === "dyad:read" && reply.standing === "clear";
+    default:             throw new Error(`unknown capability ${cap}`);
   }
 }
 
 /**
- * Read one ask: `grants` when the door ran for it or any reply carries the granting shape, `refused` when replies
- * came and none grants, `silent` when nothing answered and no door ran. `replies` holds EVERY reply on the request id.
+ * Read one ask: `grants` when the capability ran for it or any reply carries the granting shape, `refused` when replies
+ * came and none grants, `silent` when nothing answered and no capability ran. `replies` holds EVERY reply on the request id.
  */
-export function outcomeOf(door, replies, doorRan = false) {
+export function outcomeOf(cap, replies, capRan = false) {
   const all = replies === undefined ? [] : Array.isArray(replies) ? replies : [replies];
-  if (doorRan || all.some((r) => grantingReply(door, r))) return "grants";
+  if (capRan || all.some((r) => grantingReply(cap, r))) return "grants";
   return all.length ? "refused" : "silent";
 }
 
-/** The four asks an island posts, one per door, each on its own request id. */
+/** The four asks an island posts, one per capability, each on its own request id. */
 export function asksOf() {
   return [
-    { door: "fetch",   msg: { type: "cas:want", requestId: "probe-fetch", cid: "bafkprobe" } },
-    { door: "rest",    msg: { type: "doc:rest", requestId: "probe-rest", documentIds: ["probe-document"] } },
-    { door: "custody", msg: { type: "custody:write", requestId: "probe-custody", carrier: "veil", bytes: new Uint8Array([1]) } },
-    { door: "dyad",    msg: { type: "dyad:ask", requestId: "probe-dyad", fleetRoot: "probe-fleet", deviceKey: "probe-device" } },
+    { cap: "cas",          msg: { type: "cas:want", requestId: "probe-cas", cid: "bafkprobe" } },
+    { cap: "receipt",      msg: { type: "receipt:request", requestId: "probe-receipt", documentIds: ["probe-document"] } },
+    { cap: "custodyWrite", msg: { type: "custody:write", requestId: "probe-custody", carrier: "veil", bytes: new Uint8Array([1]) } },
+    { cap: "dyad",         msg: { type: "dyad:ask", requestId: "probe-dyad", fleetRoot: "probe-fleet", deviceKey: "probe-device" } },
   ];
 }
 
 // ── the source readings ───────────────────────────────────────────────────────────────────────────
-/** The functions that spawn or wrap an island, attach it a door, or answer a door's ask. */
+/** The functions that spawn or wrap an island, attach it a capability, or answer a capability's ask. */
 export const SEAM_NAMES = [
   "nodeSpawnDaemonWorker", "nodeSpawnWikiWorker", "nodeSpawnSessionWorker", "nodeWorkerHandle",
-  "attachBrowserDyadDoor", "refuseBrowserDyadAsks", "browserSpawnWorker", "browserWorkerHandle", "holderWorkerHandle",
-  "answerDocRest", "answerCustodyWrite", "answerDyadAsk", "answerBrowserDyadAsk", "fetchThroughCasDoor",
+  "refuseBrowserDyadAsks", "browserSpawnWorker", "browserWorkerHandle", "holderWorkerHandle",
+  "answerReceipt", "answerCustodyWrite", "answerDyad", "answerBrowserDyadAsk",
 ];
 const SEAM_REF = new RegExp(`\\b(${SEAM_NAMES.join("|")})\\b`, "g");
 const WORKER_REF = /\b(Worker|SharedWorker)\b/g;
 const CODE_ALIAS = new RegExp(`(?:\\b(?:const|let|var)\\s+([\\w$]+)\\s*=\\s*(?:await\\s+)?(${SEAM_NAMES.join("|")})\\b(?!\\s*\\()|\\b(${SEAM_NAMES.join("|")})\\s*:\\s*([\\w$]+))`, "g");
 const SEAM_ALIAS = new RegExp(`\\b(${SEAM_NAMES.join("|")})\\s+as\\s+([\\w$]+)`, "g");
-/** The ask and answer types of the four doors and of a session's view, as source spells them. */
+/** The ask and answer types of the four capabilities and of a session's view, as source spells them. */
 export const ASK_TYPES = [
-  "cas:want", "cas:block", "doc:rest", "doc:rested", "custody:write", "custody:written", "dyad:ask", "dyad:read",
+  "cas:want", "cas:block", "receipt:request", "receipt:issued", "custody:write", "custody:written", "dyad:ask", "dyad:read",
   "view:catalog", "view:catalog-result", "view:content", "view:content-result", "view:settle", "view:settled",
 ];
 const ASK_REF = new RegExp(`["'\`](${ASK_TYPES.join("|")})["'\`]`, "g");
@@ -267,11 +272,12 @@ export function poolSpawnOf(pool, label) {
 
 const resolveNoPlugins = async () => ({ ok: true, pluginCids: [] });
 
-/** Each node row and the spawn that builds its handle: the daemon's spawn function, then the pool's OWN host spawn per class. */
-export function nodeSpawnPlan(handleMod, VesselIslandPool, probe) {
-  const spawn = poolSpawnOf(new VesselIslandPool({ workerScriptUrl: probe, resolvePluginCids: resolveNoPlugins }), "VesselIslandPool");
+/** Each node row and the spawn that builds its handle: the daemon's spawn function, then the pool's OWN host spawn per class,
+ *  each handed the one capability record `caps` (the vessel's, at construction). */
+export function nodeSpawnPlan(handleMod, VesselIslandPool, probe, caps = {}) {
+  const spawn = poolSpawnOf(new VesselIslandPool({ caps, workerScriptUrl: probe, resolvePluginCids: resolveNoPlugins }), "VesselIslandPool");
   return [
-    ["node daemon", () => handleMod.nodeSpawnDaemonWorker(probe)],
+    ["node daemon", () => handleMod.nodeSpawnDaemonWorker(probe, caps)],
     ...POOL_SPAWN_ARGS.map(([cls, args]) => [`node ${cls}`, () => spawn(args)]),
   ];
 }
@@ -284,21 +290,24 @@ export function webSpawnPlan(BrowserVesselIslandPool) {
 }
 
 /**
- * Stand-in doors that grant every ask and count each call against the row open at the call. `ran` names the doors
- * called since the last `open`; a call that lands while no row stands open joins `late`, by door, and reads red.
+ * A stand-in capability record whose members grant every ask and count each call against the row open at the call.
+ * `record` is the `CapabilityRecord` the witness hands each spawn; `ran` names the members called since the last
+ * `open`; a call that lands while no row stands open joins `late`, by member, and reads red.
  */
-export function countingDoors() {
+export function countingCaps() {
   const ran = new Set(); const late = [];
   let row = null;
-  const hit = (door) => { if (row === null) late.push(door); else ran.add(door); };
+  const hit = (cap) => { if (row === null) late.push(cap); else ran.add(cap); };
   return {
     ran, late,
     open: (name) => { ran.clear(); row = name; },
     close: () => { row = null; },
-    cas: async () => { hit("fetch"); return new Uint8Array([7]); },
-    rest: async () => { hit("rest"); },
-    custody: async () => { hit("custody"); },
-    dyad: () => { hit("dyad"); return "clear"; },
+    record: {
+      cas: async () => { hit("cas"); return new Uint8Array([7]); },
+      receipt: async () => { hit("receipt"); },
+      custodyWrite: async () => { hit("custodyWrite"); },
+      dyad: () => { hit("dyad"); return "clear"; },
+    },
   };
 }
 
@@ -306,11 +315,8 @@ async function measureNode(dist) {
   const handleMod = await import(pathToFileURL(join(dist.node, "worker-handle.js")).href);
   const { VesselIslandPool } = await import(pathToFileURL(join(dist.node, "vessel-island-pool.js")).href);
   const asks = asksOf();
-  const doors = countingDoors();
-  handleMod.setCasDoor(doors.cas);
-  handleMod.setRestDoor(doors.rest);
-  handleMod.setCustodyWriteDoor(doors.custody);
-  handleMod.setDyadDoor(doors.dyad);
+  // ONE record, handed to every spawn as a vessel hands its islands one at construction: no setter, no module state.
+  const caps = countingCaps();
   const dir = mkdtempSync(join(tmpdir(), "capability-probe-"));
   const probe = pathToFileURL(join(dir, "probe.mjs"));
   writeFileSync(probe, probeSource(asks));
@@ -318,26 +324,25 @@ async function measureNode(dist) {
     const handle = spawn();
     handle.onError(reject);
     handle.listen((m) => {
-      // One event-loop turn after the probe's last ask: every door answer the vessel side owed stands posted.
+      // One event-loop turn after the probe's last ask: every answer the vessel side owed stands posted.
       if (m && m.type === "probe:done") setImmediate(() => handle.post({ type: "probe:end" }));
       else if (m && m.type === "probe:result") { handle.terminate(); resolve(m.replies); }
     });
   });
   const rows = {};
   try {
-    for (const [row, spawn] of nodeSpawnPlan(handleMod, VesselIslandPool, probe)) {
-      doors.open(row);
+    for (const [row, spawn] of nodeSpawnPlan(handleMod, VesselIslandPool, probe, caps.record)) {
+      caps.open(row);
       const replies = await spawnOne(spawn);
-      doors.close();
-      // One turn with no row open: a door a handler calls this late lands in `late`, never under the next row.
+      caps.close();
+      // One turn with no row open: a member a handler calls this late lands in `late`, never under the next row.
       await new Promise((r) => setImmediate(r));
-      rows[row] = Object.fromEntries(asks.map((a) => [a.door, outcomeOf(a.door, replies[a.msg.requestId], doors.ran.has(a.door))]));
+      rows[row] = Object.fromEntries(asks.map((a) => [a.cap, outcomeOf(a.cap, replies[a.msg.requestId], caps.ran.has(a.cap))]));
     }
-    // One more turn: a door a handler called after its row closed lands here and reads red, never as another row's.
+    // One more turn: a member a handler called after its row closed lands here and reads red, never as another row's.
     await new Promise((r) => setImmediate(r));
-    if (doors.late.length) rows["node late"] = Object.fromEntries(DOORS.map((d) => [d, doors.late.includes(d) ? "grants" : "silent"]));
+    if (caps.late.length) rows["node late"] = Object.fromEntries(CAPS.map((d) => [d, caps.late.includes(d) ? "grants" : "silent"]));
   } finally {
-    handleMod.setCasDoor(null); handleMod.setRestDoor(null); handleMod.setCustodyWriteDoor(null); handleMod.setDyadDoor(null);
     rmSync(dir, { recursive: true, force: true });
   }
   return rows;
@@ -378,11 +383,11 @@ export async function measureBrowserSpawn(spawn, asks, label) {
     const w = spawned[0];
     const listeners = (w.listeners.get("message") ?? []).length + (typeof w.onmessage === "function" ? 1 : 0);
     for (const a of asks) w.emit(a.msg);
-    // The door code answers through promises: one event-loop turn lets every one of them settle.
+    // The answering code runs through promises: one event-loop turn lets every one of them settle.
     await new Promise((r) => setImmediate(r));
     const replies = {};
     for (const m of w.posted) if (m && typeof m.requestId === "string") (replies[m.requestId] ??= []).push(m);
-    return { doors: Object.fromEntries(asks.map((a) => [a.door, outcomeOf(a.door, replies[a.msg.requestId])])), listeners };
+    return { caps: Object.fromEntries(asks.map((a) => [a.cap, outcomeOf(a.cap, replies[a.msg.requestId])])), listeners };
   } finally {
     if (had) globalThis.Worker = prior; else delete globalThis.Worker;
   }
@@ -396,7 +401,7 @@ async function measureWeb(dist) {
   try {
     for (const [row, spawn] of webSpawnPlan(BrowserVesselIslandPool)) {
       const read = await measureBrowserSpawn(spawn, asks, row);
-      rows[row] = read.doors; listeners[row] = read.listeners;
+      rows[row] = read.caps; listeners[row] = read.listeners;
     }
   } finally { console.warn = warn; }
   // The daemon island's seam stands inside openBrowserVessel, which Node cannot open: no reading, never `silent`.
@@ -452,7 +457,7 @@ export function differences(measured, committed) {
     const m = measured.islands[row]; const c = committed.islands[row];
     if (!m) { out.push(`${row}: the table names it, and nothing measured it`); continue; }
     if (!c) { out.push(`${row}: measured, and the table never names it`); continue; }
-    for (const d of DOORS) if (m[d] !== c[d]) out.push(`${row} ${d}: the table says ${c[d]}, the vessel ${m[d] === "grants" ? "GRANTS" : m[d]}`);
+    for (const d of CAPS) if (m[d] !== c[d]) out.push(`${row} ${d}: the table says ${c[d]}, the vessel ${m[d] === "grants" ? "GRANTS" : m[d]}`);
   }
   const ml = measured.webListeners ?? {}; const cl = committed.webListeners ?? {};
   for (const row of [...new Set([...Object.keys(ml), ...Object.keys(cl)])].sort()) {
@@ -470,8 +475,8 @@ export function differences(measured, committed) {
 }
 
 function table(inv) {
-  const lines = [`island            ${DOORS.map((d) => d.padEnd(11)).join("")}listeners`];
-  for (const [row, doors] of Object.entries(inv.islands)) lines.push(`${row.padEnd(18)}${DOORS.map((d) => doors[d].padEnd(11)).join("")}${inv.webListeners?.[row] ?? ""}`);
+  const lines = [`island            ${CAPS.map((d) => d.padEnd(13)).join("")}listeners`];
+  for (const [row, caps] of Object.entries(inv.islands)) lines.push(`${row.padEnd(18)}${CAPS.map((d) => caps[d].padEnd(13)).join("")}${inv.webListeners?.[row] ?? ""}`);
   return lines.join("\n");
 }
 
@@ -494,5 +499,5 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     console.log("  A deliberate change re-writes the table in the commit that makes it: node tools/capability-inventory.mjs --write");
     process.exit(1);
   }
-  console.log("PASS capability-inventory: every island holds exactly the doors the committed table names (reach, not policy)");
+  console.log("PASS capability-inventory: every island reaches exactly the capabilities the committed table names (reach, not policy)");
 }

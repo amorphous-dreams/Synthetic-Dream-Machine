@@ -9,7 +9,8 @@
  *   write    → change a document it holds
  *   catalog  → ask the scoped view for a catalog name (`view:catalog`)
  *   content  → ask the scoped view about a content address (`view:content`)
- *   door     → post one of the vessel's own door asks (`cas:want`, `doc:rest`, `custody:write`) and report
+ *   caps     → post one of the asks the vessel's capability record answers (`cas:want`, `receipt:request`,
+ *              `custody:write`) and report
  *              whether anything answered
  *
  * NOT production code — gate fixture only. It holds no rule of its own: an adversary Repo, nothing more.
@@ -51,7 +52,7 @@ parentPort.on("message", async (msg) => {
     return;
   }
 
-  if (msg.type === "cas:block" || msg.type === "doc:rested" || msg.type === "custody:written") {
+  if (msg.type === "cas:block" || msg.type === "receipt:issued" || msg.type === "custody:written") {
     const resolve = parked.get(msg.requestId);
     parked.delete(msg.requestId);
     resolve?.(msg);
@@ -84,7 +85,7 @@ parentPort.on("message", async (msg) => {
       } else if (verb === "content") {
         const answer = await askView("view:content", { cid: args.cid });
         result = { ok: answer.bytes instanceof Uint8Array && answer.bytes.length > 0, refusal: answer.refusal ?? null };
-      } else if (verb === "door") {
+      } else if (verb === "caps") {
         // An ask the caller expects an answer to waits for that answer, with no clock beside it. Only a caller that
         // reads SILENCE names a window (`silentAfterMs`): silence has no event of its own to wait on.
         const asked = askView(args.type, args.fields ?? {});

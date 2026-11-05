@@ -271,7 +271,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     slotDoc,
     draft: async (slug) => (await slotDoc(slug, "draft"))!,
     liftFloor: async () => {
-      if (!args.faceDoor || !args.personaGroupId || !(await seated())) return { moved: [], finished: [] };   // no seat, nothing to lift into
+      if (!args.faceDoor || !args.personaGroupId || !(await seated())) return { moved: [], finished: [], skipped: [], skippedDocs: [] };   // no seat, nothing to lift into
       const repo = args.repo as unknown as Partial<LiftRepo>;
       if (typeof repo.find !== "function" || typeof repo.delete !== "function") throw new Error("slot-doc: the lift needs a repo that finds and deletes documents");
       // THE SECRET STANDS FIRST: the face's address secret must stand before the lift's first step, or the lift refuses by

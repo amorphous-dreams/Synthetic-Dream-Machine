@@ -60,9 +60,9 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     await r.adaptor.armSeedCheckpoint();
     const order: string[] = [];
     let ackOk = false;
-    r.adaptor.restDoor = {
+    r.adaptor.caps.receipt = {
       begin: () => ({ done: () => {} }), held: () => null, idle: async () => {}, answer: () => false, stalledAsks: () => 0, close: () => {},
-      ack: async (slots: readonly string[]) => { order.push(`ack:${slots.join(",")}`); if (!ackOk) throw new Error("the vessel did not rest the written documents"); },
+      ack: async (slots: readonly string[]) => { order.push(`ack:${slots.join(",")}`); if (!ackOk) throw new Error("the vessel issued no receipt for the written documents"); },
     } as never;
     const d = openDraft(r, x, "keystroke 0");
     await afterDispatch();
@@ -783,7 +783,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     await seedRecords(r, [{ title: x, text: "landed" }, { title: child, text: "child", "$fragment-parent": x }]);
     await r.adaptor.armSeedCheckpoint();
     let ackOk = false;
-    r.adaptor.restDoor = {
+    r.adaptor.caps.receipt = {
       begin: () => ({ done: () => {} }), held: () => null, idle: async () => {}, answer: () => false, stalledAsks: () => 0, close: () => {},
       ack: async () => { if (!ackOk) throw new Error("ack refused"); },
     } as never;
@@ -813,7 +813,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     await seedRecords(r, [{ title: x, text: "landed" }]);
     await r.adaptor.armSeedCheckpoint();
     let ackOk = false;
-    r.adaptor.restDoor = {
+    r.adaptor.caps.receipt = {
       begin: () => ({ done: () => {} }), held: () => null, idle: async () => {}, answer: () => false, stalledAsks: () => 0, close: () => {},
       ack: async () => { if (!ackOk) throw new Error("ack refused"); },
     } as never;
@@ -841,7 +841,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     await seedRecords(r, [{ title: x, text: "landed" }, { title: child, text: "child", "$fragment-parent": x }]);
     await r.adaptor.armSeedCheckpoint();
     let ackOk = !deferred;
-    r.adaptor.restDoor = {
+    r.adaptor.caps.receipt = {
       begin: () => ({ done: () => {} }), held: () => null, idle: async () => {}, answer: () => false, stalledAsks: () => 0, close: () => {},
       ack: async () => { if (!ackOk) throw new Error("ack refused"); },
     } as never;
@@ -883,7 +883,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     await seedRecords(r, [{ title: a, text: "first" }, { title: b, text: "second" }]);
     await r.adaptor.armSeedCheckpoint();
     let ackOk = false;
-    r.adaptor.restDoor = {
+    r.adaptor.caps.receipt = {
       begin: () => ({ done: () => {} }), held: () => null, idle: async () => {}, answer: () => false, stalledAsks: () => 0, close: () => {},
       ack: async () => { if (!ackOk) throw new Error("ack refused"); },
     } as never;
@@ -905,13 +905,15 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     await afterDispatch(); await turns(24);
     saveSequence(r, second);
     await afterDispatch(); await turns(24);
+    // ONE write in flight across the shore: the second target waits behind the first removal's held store call.
+    expect(storeText(r, workingBag, y), "no second write runs beside the held removal").toBe("first rename");
+    r.failures.holdDelete = null;
+    release();
+    await retry; await turns(24);
     expect(storeText(r, workingBag, y), "the second target write reached the store").toBe("second rename");
     expect(storeText(r, draftBag, second), "the second draft remains as recovery").toBe("second rename");
     expect(r.wiki.getTiddler(b), "the second source returns while its removal waits").toBeDefined();
     expect(storeDeleted(r, workingBag, b), "second removal waits for acknowledgement").toBe(false);
-    r.failures.holdDelete = null;
-    release();
-    await retry; await turns(24);
     ackOk = true;
     await r.adaptor.handsRested().catch(() => {});
     await turns(24); await r.adaptor.landingIdle();
@@ -927,7 +929,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     await seedRecords(r, [{ title: x, text: "landed" }, { title: child, text: "child", "$fragment-parent": x }]);
     await r.adaptor.armSeedCheckpoint();
     let ackOk = false;
-    r.adaptor.restDoor = {
+    r.adaptor.caps.receipt = {
       begin: () => ({ done: () => {} }), held: () => null, idle: async () => {}, answer: () => false, stalledAsks: () => 0, close: () => {},
       ack: async () => { if (!ackOk) throw new Error("ack refused"); },
     } as never;

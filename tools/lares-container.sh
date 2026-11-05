@@ -67,7 +67,7 @@ compose() {
   if [ -n "$ENV_ARGS" ]; then
     docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" "$@"
   else
-    docker compose -f "$COMPOSE_FILE_PATH" "$@"
+    docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" "$@"
   fi
 }
 
@@ -184,7 +184,7 @@ case "$verb" in
       if [ -n "$ENV_ARGS" ]; then
         docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares
       else
-        docker compose -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares
+        docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares
       fi
     else
       compose up -d --wait lares

@@ -58,7 +58,6 @@ import { readNexusDoc } from "../src/nexus-doc.js";
 import { readFaceAddressSecret } from "../src/fleet-join-custody.js";
 import { SealedActRefused, runSealedAct } from "../src/sealed-acts.js";
 import { loadIdentityAnchors, persistIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
-import { kahuaFaceFolder, kahuaFaceTag } from "../src/bag-paths.js";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "../src/node-circle-store.js";
 import {
@@ -306,9 +305,9 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     const anchors = (await loadIdentityAnchors(1))!;
     expect(anchors.personaKelPrefix, "CONTROL: the identifier stays").toBe(a.prefix);
     expect(await workingUrlOf(anchors.personaGroupId), "CONTROL: the working address stays").toBe(a.workingUrl);
-    expect({ tag: kahuaFaceTag(anchors.personaGroupId), plane: personaBagIdFor(anchors.personaGroupId), folder: kahuaFaceFolder(kahuaFaceTag(anchors.personaGroupId)) },
+    expect({ plane: personaBagIdFor(anchors.personaGroupId) },
       "the restore re-minted the PersonaGroup: the face's tag, plane and kahua folders moved")
-      .toEqual({ tag: kahuaFaceTag(a.group), plane: personaBagIdFor(a.group), folder: kahuaFaceFolder(kahuaFaceTag(a.group)) });
+      .toEqual({ plane: personaBagIdFor(a.group) });
   });
 
   test("R16 — the bundle carries the face's address secret, so the face restored on B derives the working address it derived on A; CONTROL: a second face derives another; a bundle without the secret refuses no-address-secret before any write", async () => {

@@ -1,4 +1,4 @@
-import { holdDaemonVm, KAPAE_EMERGENCY_REASON, type DaemonVmCore, type DaemonVmHolder } from "@lararium/tw5";
+import { holdDaemonVm, KAPAE_EMERGENCY_REASON, PROMOTE_RESTART_REASON, type DaemonVmCore, type DaemonVmHolder } from "@lararium/tw5";
 import type { JoinedFaceAuth } from "@lararium/mesh";
 
 /** The emergency brake is the ONE exported reason, matched exactly: a prose or prefix match would leave the brake open. */
@@ -22,5 +22,5 @@ export async function standDaemonIsland(o: {
   };
   const openNow = async (prepared: { pluginCids: readonly string[] }) => o.open({ ...prepared, joinedFaces: await o.readJoinedFaces() });
   const vm = await openNow(await resolve());
-  return holdDaemonVm({ vm, prepare: resolve, reopen: (_reason, prepared) => openNow(prepared), emergency: isEmergency, faces: "manifest" });
+  return holdDaemonVm({ vm, prepare: resolve, reopen: (_reason, prepared) => openNow(prepared), emergency: isEmergency, follows: (reason) => reason === PROMOTE_RESTART_REASON, faces: "manifest" });
 }

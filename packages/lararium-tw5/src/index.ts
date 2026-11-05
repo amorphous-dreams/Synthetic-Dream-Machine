@@ -232,7 +232,7 @@ export type {
   WikiSlotComponent, DaemonCapDeps,
 } from "./core-caps.js";
 export { openDaemonVmCore, HostWorkingBindingRefusal } from "./daemon-vm-core.js";
-export { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON } from "./daemon-vm-holder.js";
+export { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, PROMOTE_RESTART_REASON } from "./daemon-vm-holder.js";
 export type { DaemonVmHolder } from "./daemon-vm-holder.js";
 export type {
   DaemonVmHost,

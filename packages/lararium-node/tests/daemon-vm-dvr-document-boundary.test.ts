@@ -94,7 +94,7 @@ describe("D-VR-C document-owned physical boundary", () => {
     });
     const events: IslandMsg_Event[] = [];
     const daemon = repo.create<LarDoc>(emptyLarDoc());
-    const core = await openDaemonVm({
+    const core = await openDaemonVm({ caps: {},
       repo,
       daemonUrl: daemon.url,
       coreHash: null,

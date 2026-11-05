@@ -32,7 +32,7 @@ import {
   carriedCharterHome, seatFaceRoute, storeSeatKey, loadIdentityAnchors,
 } from "../../dist/src/index.js";
 import { mountHttpFaceDispatcher } from "../../dist/src/http-face-dispatcher.js";
-import { answerDyadAsk } from "../../dist/src/worker-handle.js";
+import { answerDyad } from "../../dist/src/worker-handle.js";
 import { hearthSovereignPin } from "../../dist/src/hearth-sovereign-pin.js";
 import type { NodeVesselResult } from "../../dist/src/open-node-vessel.js";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
@@ -89,7 +89,7 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     await withLarRoot(ROOT, () => direct(runInit)({ storageDir: STORAGE, genesisDir: GENESIS, custody: TEST_CUSTODY, placeFoundingCard: { readBack: async () => {} } }));
     await withLarRoot(ROOT, () => foundSeedCharter({ name: "carrier", readBack: async () => {} }));
     await withLarRoot(ROOT, () => direct(runFoundTheFace)({ storageDir: STORAGE, genesisDir: GENESIS }));
-    // The founded face's own device edge: the dyad door answers this vessel's own seat through a standing door.
+    // The founded face's own device edge: the vessel's dyad capability answers this vessel's own seat.
     const edge = (await withLarRoot(ROOT, async () => loadIdentityAnchors(0)))?.deviceEdge;
     if (!edge) throw new Error("[carried-nexus-posture] the founded face carries no device edge");
     ownEdge = { fleetRoot: edge.personaRootDid.trim().toLowerCase().replace(/^0x/, ""), deviceKey: edge.deviceVerifyingKey };
@@ -198,7 +198,7 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     }
   }, 60_000);
 
-  test("T27-b/c: a teardown that meets a gate sweep in flight leaves no knock, and the island's doors stand until the island shuts; CONTROLS: the standing vessel holds its knocks and its dyad door", async () => {
+  test("T27-b/c: a teardown that meets a gate sweep in flight leaves no knock, and the island's capabilities stand until the island shuts; CONTROLS: the standing vessel holds its knocks and its dyad capability", async () => {
     // CONTROL: the standing composition holds a knock for each gate it stands.
     for (let i = 0; i < 50 && knocks.size === 0; i++) await turn(100);
     expect(knocks.size, "the standing vessel holds no knock").toBeGreaterThan(0);
@@ -207,11 +207,11 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     const second = heldCharter({ keys: [ownSeat, ...foreign], threshold: 2 });
     await withLarRoot(ROOT, async () => { writeNexusDoc(carriedCharterHome(larSealHome(), second.aid), { ...second.doc(), federationPosture: "open" }); });
     await withLarRoot(ROOT, () => vessel.hostingDoor.rolled(second.aid));
-    // T27-c: the dyad door the daemon island asks through, read at the moment the island shuts down. This vessel's own
-    // seat reads through a standing door; with no door every ask answers `aside`.
-    const dyadNow = async (): Promise<string> => (await answerDyadAsk({ requestId: "t27c", fleetRoot: ownEdge.fleetRoot, deviceKey: ownEdge.deviceKey })).standing;
-    // barrier: the dyad door's own answer, awaited through the vessel's door for this vessel's own seat
-    expect(await dyadNow(), "T27-c control: the standing vessel answers through its dyad door").not.toBe("aside");
+    // T27-c: the dyad capability the daemon island asks through (the vessel's own record), read at the moment the island
+    // shuts down. This vessel's own seat reads through a standing `dyad`; with none every ask answers `aside`.
+    const dyadNow = async (): Promise<string> => (await answerDyad(vessel.islandCaps, { requestId: "t27c", fleetRoot: ownEdge.fleetRoot, deviceKey: ownEdge.deviceKey })).standing;
+    // barrier: the dyad capability's own answer, awaited through the vessel's record for this vessel's own seat
+    expect(await dyadNow(), "T27-c control: the standing vessel answers through its dyad capability").not.toBe("aside");
     const daemon = vessel.daemon as unknown as { shutdown: (...a: unknown[]) => Promise<unknown> };
     const shutdown = daemon.shutdown.bind(daemon);
     let atShutdown: string | null = null;
@@ -221,7 +221,7 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     await turn(3_000);                                  // any sweep still in flight lands here
     // barrier: the teardown's own resolution (every stood entry stood down, the sweep owner closed), then a settle
     expect([...knocks], "a sweep in flight registered a knock after the teardown drained them").toEqual([]);
-    // barrier: the door's answer read inside the island's shutdown call, which the teardown awaited
-    expect(atShutdown, "T27-c RED: the dyad door dropped before the daemon island shut down").not.toBe("aside");
+    // barrier: the capability's answer read inside the island's shutdown call, which the teardown awaited
+    expect(atShutdown, "T27-c RED: the dyad capability dropped before the daemon island shut down").not.toBe("aside");
   }, 90_000);
 });

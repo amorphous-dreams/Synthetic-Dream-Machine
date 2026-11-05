@@ -39,8 +39,6 @@ async function world() {
     items: async () => state.items.get(wiki) ?? [],
     board: async () => { if (!state.boardReadable) throw new Error("board-unreadable"); return readPromoteBoard(state.acts, face); },
     cas: { put: (d, b) => { state.cas.set(d, b); }, pin: (d) => { state.pinned.add(d); } },
-    loaded: () => state.loaded,
-    restart: async () => { if (state.failRestart) { state.failRestart = false; throw new Error("restart refused"); } state.restarts += 1; state.loaded = new Set(); },
     who,
   });
   return {
@@ -93,6 +91,41 @@ describe("the commit", () => {
     expect(w.state.ledger.rows).toHaveLength(1);
     await promotions(w.ports(W1, HAND)).unpromote({ digest: D });
     expect(w.state.ledger.rows).toEqual([]);
+  });
+});
+
+describe("the ledger takes concurrent commits whole", () => {
+  /** One device's ledger: a read and a write each yield, so two unserialized read-compute-write passes interleave. */
+  const slowLedger = (state: { ledger: PromotionLedger }) => ({
+    read: async () => { const standing = state.ledger; await new Promise((r) => setImmediate(r)); return standing; },
+    write: async (l: PromotionLedger) => { await new Promise((r) => setImmediate(r)); state.ledger = l; },
+  });
+
+  test("RED: two wikis promote at once over one ledger and BOTH rows land; CONTROL: run one after the other, the same two rows land", async () => {
+    const OTHER = { title: "rites/garden", text: "exports.garden = 1", fields: { "module-type": "startup" } };
+    const run = async (together: boolean) => {
+      const w = await world();
+      w.state.items.set(W1, [itemOf(RITE)]);
+      w.state.items.set(W2, [itemOf(OTHER)]);
+      const ledger = slowLedger(w.state);
+      const a = promotions({ ...w.ports(W1, HAND), ledger }), b = promotions({ ...w.ports(W2, HAND), ledger });
+      if (together) await Promise.all([a.promote({ digest: D }), b.promote({ digest: promoteDigest(OTHER) })]);
+      else { await a.promote({ digest: D }); await b.promote({ digest: promoteDigest(OTHER) }); }
+      return w.state.ledger.rows.map((r) => r.wiki).sort();
+    };
+    expect(await run(false)).toEqual([W1, W2].sort());
+    expect(await run(true), "a concurrent commit never loses its neighbour").toEqual([W1, W2].sort());
+  });
+
+  test("RED: a commit and an unpromote of another wiki at once keep both effects", async () => {
+    const OTHER = { title: "rites/garden", text: "exports.garden = 1", fields: { "module-type": "startup" } };
+    const w = await world();
+    w.state.items.set(W1, [itemOf(RITE)]);
+    w.state.items.set(W2, [itemOf(OTHER)]);
+    await promotions(w.ports(W2, HAND)).promote({ digest: promoteDigest(OTHER) });
+    const ledger = slowLedger(w.state);
+    await Promise.all([promotions({ ...w.ports(W1, HAND), ledger }).promote({ digest: D }), promotions({ ...w.ports(W2, HAND), ledger }).unpromote({ digest: promoteDigest(OTHER) })]);
+    expect(w.state.ledger.rows.map((r) => r.wiki)).toEqual([W1]);
   });
 });
 
@@ -183,36 +216,5 @@ describe("the kāpae over (wiki, digest)", () => {
     w.state.acts.push(await w.kapae(W1, D, false, [promoteActCid(raise)]));
     expect((await promotions(w.ports(W1, HAND)).boot()).pluginCids).toEqual([D]);
     expect(w.state.ledger.rows).toHaveLength(2);
-  });
-
-  test("RED: a raise read for an edge the running island loaded restarts it once; CONTROL: an edge in another wiki, or never loaded, restarts nothing", async () => {
-    const w = await world();
-    w.state.items.set(W1, [itemOf(RITE)]);
-    await promotions(w.ports(W1, HAND)).promote({ digest: D });
-    w.state.loaded = new Set([promoteEdgeKey(W1, D)]);
-    w.state.acts.push(await w.kapae(W1, D, true, []));
-    expect(await promotions(w.ports(W1, HAND)).arrive()).toEqual({ restarted: true });
-    expect(w.state.restarts).toBe(1);
-    expect(await promotions(w.ports(W1, HAND)).arrive()).toEqual({ restarted: false });
-    const w2 = await world();
-    w2.state.acts.push(await w2.kapae(W2, D, true, []));
-    w2.state.loaded = new Set([promoteEdgeKey(W1, D)]);
-    expect(await promotions(w2.ports(W1, HAND)).arrive()).toEqual({ restarted: false });
-    expect(w2.state.restarts).toBe(0);
-  });
-});
-
-describe("a restart that fails converges", () => {
-  test("RED: a restart that throws leaves the edge loaded (the cache still records the shadow), and the next arrive restarts again; CONTROL: after the restart the island no longer holds the edge and a further arrive restarts nothing", async () => {
-    const w = await world();
-    w.state.items.set(W1, [itemOf(RITE)]);
-    await promotions(w.ports(W1, HAND)).promote({ digest: D });
-    w.state.loaded = new Set([promoteEdgeKey(W1, D)]);
-    w.state.acts.push(await w.kapae(W1, D, true, []));
-    w.state.failRestart = true;
-    await expect(promotions(w.ports(W1, HAND)).arrive()).rejects.toThrow(/restart refused/);
-    expect(w.state.local.shadowed).toEqual([promoteEdgeKey(W1, D)]);
-    expect(await promotions(w.ports(W1, HAND)).arrive()).toEqual({ restarted: true });
-    expect(await promotions(w.ports(W1, HAND)).arrive()).toEqual({ restarted: false });
   });
 });

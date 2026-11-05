@@ -11,7 +11,7 @@
 //                                                                 control: holding the vessel key and handed the
 //                                                                 seated readers, the composition runs each boot
 //                                                                 reader, reads the face's archive row, lands the island's
-//                                                                 archive export through the custody write door, and
+//                                                                 archive export through the custodyWrite capability, and
 //                                                                 the archive rests sealed afterward
 //   T3  a boot that refuses frees its store name, whether the refusal lands while the prep stands the Repo or
 //       later while the caps compose.                             control: a standing composition holds the name
@@ -21,8 +21,9 @@
 //   T5  every teardown completes on its daemon island's ack: the composition reaches the island's shutdown by two
 //       roads, the handshake runs once, and no road waits out its bound on a worker already terminated.
 //                                                                 control: the capture reads this process's warnings
-//   T6  a composition that refuses after it opened the fetch door, and before its teardown entry for it, leaves no door:
-//       a worker's later `cas:want` reads a miss (T27, test-recut-road).   control: a whole teardown leaves no door either
+//   T6  a composition hands its islands its OWN capability record and its teardown clears the record's `cas`; a
+//       composition that refuses leaves no capability in module state, so no later island reads it (T27,
+//       test-recut-road).                                              control: a standing composition's `cas` stands
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs, { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from "node:fs";
@@ -236,7 +237,7 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     for (const name of ["wornMount", "personaRoots", "walkRecords", "veilArchive", "writeVeilArchive", "outboxKey"]) {
       assert.ok(first.calls[name] >= 1, `T2 control: the ${name} reader ran (${first.calls[name]})`);
     }
-    // The island's export landed through the custody write door: the face's archive row moved and rests sealed.
+    // The island's export landed through the custodyWrite capability: the face's archive row moved and rests sealed.
     for (const [name, at] of [["veil", veilAt]]) {
       const now = readFileSync(at);
       assert.equal(name === "veil" ? mesh.readFckCarrier(now) : mesh.readSCarrier(now), "sealed", `T2 control: the ${name} archive rests sealed under its key`);
@@ -259,22 +260,19 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     assert.equal(existsSync(floor.storeClaim.socketPath), true, "T1: the floor's name stands between compositions");
     assert.equal(await nameAnswers(floor.storeClaim.socketPath), true, "T1: the floor's name answers between compositions");
 
-    // ── T6: a refusal past the fetch door leaves no door behind (T27) ─────────────────────────────────────────
-    const workerHandle = await import(pathToFileURL(join(repo, "packages/lararium-node/dist/src/worker-handle.js")).href);
-    const blob = node.listCasBlobs(node.casDirForStorage(storageDir))[0];
-    assert.ok(blob, "T6 control: the founded store holds a cas blob the door could answer");
-    // The door's answer reads as a word: an inspected multi-megabyte buffer would stall the assertion's own message.
-    const doorSays = async () => { const got = await workerHandle.fetchThroughCasDoor(blob.cid); return got === null ? "a miss" : `${got.length} bytes`; };
-    assert.equal(await doorSays(), "a miss", "T6 control: a whole teardown leaves no fetch door");
+    // ── T6: a composition's capabilities ride its own record, never module state (T27) ─────────────────────────
+    assert.equal(one.islandCaps.cas, undefined, "T6: a whole teardown clears its record's cas");
     const refusing = { ...first.readers, walkRecords: async () => { throw new Error("t6: a walk row it cannot read"); } };
     await assert.rejects(open({ floor, sovereign: refusing }), /t6: a walk row it cannot read/, "T6: the walk read refuses the boot");
-    assert.equal(await doorSays(), "a miss", "T6: the refused composition's fetch door still answers");
     assert.deepEqual(held(), baseline, "T6: the refused boot leaves no listener behind");
 
     // A third composition stands on the same floor: the teardown left nothing a later stand trips on.
     const three = await open({ floor, sovereign: null });
     await three.daemon.workerEa;
+    assert.notEqual(three.islandCaps, one.islandCaps, "T6: each composition hands its islands its own record");
+    assert.equal(typeof three.islandCaps.cas, "function", "T6 control: a standing composition's record holds its cas");
     await three.teardown();
+    assert.equal(three.islandCaps.cas, undefined, "T6: the third composition's teardown clears its cas");
     assert.deepEqual(unackedTeardowns(), [], "T5: a third composition's teardown completes on its island's ack");
     assert.deepEqual(held(), baseline);
 

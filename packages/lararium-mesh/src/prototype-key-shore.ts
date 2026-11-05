@@ -18,7 +18,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/stored-value
  */
-import { decodeChange, decodeSyncMessage, load } from "@automerge/automerge";
+import { decodeChange, decodeSyncMessage, getAllChanges, load } from "@automerge/automerge";
 import { isPrototypeKey, prototypeKeyFault } from "./stored-value.js";
 import { PROTOTYPE_KEY_CODE } from "./stored-record.js";
 import { VerbRefusal } from "./verb-refusal.js";
@@ -34,7 +34,8 @@ export function chunkPrototypeKey(bytes: Uint8Array): string | null {
     return op ? `change ${change.hash} writes a \`${String(op.key)}\` key` : null;
   } catch { /* not a raw change: a document chunk, read below */ }
   try {
-    return prototypeKeyFault(load(bytes), "chunk");
+    // A document chunk reads through its OPERATIONS as well as its view: a string-valued `__proto__` leaves no trace in the view.
+    return docPrototypeKeyFault(load(bytes));
   } catch {
     return null;
   }
@@ -51,10 +52,40 @@ export function syncMessagePrototypeKey(data: Uint8Array): string | null {
   return null;
 }
 
-/** THE LOAD DOOR'S CHECK: throws a named refusal where a loaded view carries a prototype key. */
+/**
+ * A document's prototype-key fault read from its OPERATIONS beside its view. A merge or applyChanges result's materialized
+ * view can read clean while the operations still write `__proto__` (a later clean deletion then resolves a phantom through
+ * the prototype), so the view check alone leaves the merge and apply paths open. Answers the first fault, or null.
+ */
+export function docPrototypeKeyFault(doc: unknown): string | null {
+  const view = prototypeKeyFault(doc);
+  if (view) return view;
+  let changes: Uint8Array[];
+  try { changes = getAllChanges(doc as never); } catch { return null; }   // not an automerge document: the view check above judged it
+  for (const bytes of changes) {
+    const fault = chunkPrototypeKey(bytes);
+    if (fault) return fault;
+  }
+  return null;
+}
+
+/** THE LOAD DOOR'S CHECK: throws a named refusal where a loaded, merged or applied document carries a prototype key in its view or its operations. */
 export function assertNoPrototypeKeys(doc: unknown, where: string): void {
-  const fault = prototypeKeyFault(doc);
+  const fault = docPrototypeKeyFault(doc);
   if (fault) throw new VerbRefusal(PROTOTYPE_KEY_CODE, `${PROTOTYPE_KEY_CODE}: ${where}: ${fault} — a by-key map never holds one; the bytes refuse`);
+}
+
+interface MergeHandle { doc(): unknown; merge(other: never): void }
+/**
+ * A DIRECT HANDLE MERGE, GUARDED. The sync shore cuts hostile bytes at the wire and the storage shore at rest; a handle merging
+ * another handle (a late remote into a fallback, a live genesis handle taking the incoming one) crosses neither. The SOURCE
+ * reads through the operations door before the merge, so the target never takes the bytes, and the MERGED result reads again
+ * after, since a merge result's view can hide the key. Refuses by name (`prototype-key`).
+ */
+export function mergeGuarded(target: MergeHandle, source: MergeHandle, where: string): void {
+  assertNoPrototypeKeys(source.doc(), `${where}: incoming document`);
+  target.merge(source as never);
+  assertNoPrototypeKeys(target.doc(), `${where}: merged document`);
 }
 
 /** One message the shore dropped. */

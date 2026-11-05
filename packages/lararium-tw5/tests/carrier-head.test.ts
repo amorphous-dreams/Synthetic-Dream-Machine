@@ -428,7 +428,8 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
 
   test("★ weave reads the check off a probed ETX ★", async () => {
     await withProbes(({ markdown }) => {
-      expect(markdown.transposeMarkdown(probed).check).toBe("ni:///sha-256;probe");
+      // The weave names the check the body EARNS, never the stored slot: a probed ETX still frames the span (not "unchecked").
+      expect(markdown.transposeMarkdown(probed).check).toMatch(/^ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}$/);
     });
   });
 
@@ -455,7 +456,7 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
       expect({ stx: m.stx, etx: m.etx, eot: m.eot }).toEqual({ stx: true, etx: true, eot: true });
       expect(frame.frameStanding(canon).kind).toBe("framed");
       expect(frame.checkSpan(canon)).not.toBeNull();
-      expect(markdown.transposeMarkdown(canon).check).toBe("ni:///sha-256;probe");
+      expect(markdown.transposeMarkdown(canon).check).toMatch(/^ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}$/);
       expect(deser.carrierText(canon, "canon")?.text).toMatch(/<<\^ code=`&#x0003;`( bcc=`[^`]*`)?>>$/);
       const text = String(deser.memeticWikitextDeserializer(canon, { title: "canon" })[0]?.["text"] ?? "");
       expect(text).toContain("the body stands here.");

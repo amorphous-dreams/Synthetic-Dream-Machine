@@ -28,6 +28,13 @@ export interface VesselWorkerHandle {
   listen(onMessage: (raw: unknown) => void): () => void;
   onError(cb: (err: Error) => void): () => void;
   terminate(): void;
+  /**
+   * What the island's BOUND RECORD grants, read at ask time (a lift may stand a member late and drop it at teardown).
+   * The pool answers a `receipt:request` from its main Repo only where this reads `receipt: true`; a handle that
+   * declares none grants none. Where the record lacks `receipt` the pool stays silent and the island's own worker
+   * answers with its named refusal: exactly one party answers each requestId.
+   */
+  readonly grants?: () => { readonly receipt: boolean };
 }
 
 // ── VesselIslandHost — the pool's platform shore ──────────────────────────────
@@ -40,7 +47,7 @@ export interface VesselWorkerHandle {
 export interface VesselIslandHost {
   /**
    * Spawn a fresh island worker (closes over the platform worker URL). `session: true` names a SESSION's
-   * island: the host hands that worker NONE of the vessel's own doors (the fetch door, the rest door, the
+   * island: the host hands that worker NONE of the vessel's own doors (the fetch door, the receipt capability, the
    * custody write door). A session island reaches the vessel through its scoped view alone.
    */
   spawnWorker(opts?: { readonly session?: boolean }): VesselWorkerHandle;

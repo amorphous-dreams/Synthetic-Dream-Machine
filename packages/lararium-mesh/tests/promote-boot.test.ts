@@ -20,7 +20,7 @@ const RITE = { title: "rites/a", text: "exports.startup = function(){}", fields:
 const D = promoteDigest(RITE);
 const itemOf = (i: typeof RITE): PromoteItem => ({ ...i, revision: "r1", origin: { seat: "s", device: "d", session: "s-1" } });
 
-async function boot(opts: { locked?: boolean } = {}) {
+async function boot(opts: { locked?: boolean; shared?: { local: KapaeLocal }; store?: { read(): Promise<KapaeLocal>; write(l: KapaeLocal): Promise<void> } } = {}) {
   const hooks = { itemsReject: false, tornLocalRead: false, failLocalWrite: false, rotated: false, boardDown: false };
   const root = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(1)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(1)) };
   const face = { group: GROUP, grant: (k: string) => k === root.key, device: () => false };
@@ -32,7 +32,7 @@ async function boot(opts: { locked?: boolean } = {}) {
   const b = promoteBoot({
     stores: {
       ledger: { read: async () => { if (opts.locked) throw new Error("CustodyLocked"); return st.ledger; }, write: async (l) => { st.ledger = l; } },
-      local: { read: async () => { if (opts.locked) throw new Error("CustodyLocked"); if (hooks.tornLocalRead) throw new Error("torn cache"); return st.local; }, write: async (l) => { if (hooks.failLocalWrite) throw new Error("disk full"); st.local = l; } },
+      local: opts.store ?? { read: async () => { if (opts.locked) throw new Error("CustodyLocked"); if (hooks.tornLocalRead) throw new Error("torn cache"); return st.local; }, write: async (l) => { if (hooks.failLocalWrite) throw new Error("disk full"); st.local = l; } },
     },
     cas: { put: (d, bytes) => { st.cas.set(d, bytes); }, pin: (d) => { st.pinned.add(d); } },
     board: async () => { if (hooks.boardDown) throw new Error("board unreadable"); return readPromoteBoard(st.acts, hooks.rotated ? { ...face, grant: () => false } : face); },
@@ -344,5 +344,42 @@ describe("an UNREAD cache is never replaced (Sol: a cache read failure erases an
     await b.promotedFor(W1);
     await b.arrive();
     expect(st.local.shadowed.sort()).toEqual([OLD, promoteEdgeKey(W1, D)].sort());
+  });
+
+  test("RED: two arrivals at once over one slow cache keep BOTH shadows (the production arrive recomputes inside the store's hold); CONTROL: in turn they do", async () => {
+    const both = [promoteEdgeKey(W1, D), promoteEdgeKey(W2, D)].sort();
+    const run = async (together: boolean) => {
+      const shared = { local: EMPTY_KAPAE_LOCAL as KapaeLocal };
+      const store = { read: async () => { const standing = shared.local; await new Promise((r) => setImmediate(r)); return standing; }, write: async (l: KapaeLocal) => { await new Promise((r) => setImmediate(r)); shared.local = l; } };   // ONE store object, as a process holds
+      const first = await boot({ store }), newer = await boot({ store });
+      for (const b of [first, newer]) { await b.b.promotedFor(W1); await b.b.promotedFor(W2); }   // loaded before any raise exists
+      first.st.acts.push(await first.raise(W1));
+      newer.st.acts.push(await newer.raise(W1), await newer.raise(W2));
+      if (together) await Promise.all([newer.b.arrive(), first.b.arrive()]); else { await newer.b.arrive(); await first.b.arrive(); }
+      return [...shared.local.shadowed].sort();
+    };
+    expect(await run(false)).toEqual(both);
+    expect(await run(true), "a concurrent arrival never loses its neighbour's shadow").toEqual(both);
+  });
+});
+
+describe("the kāpae cache is written only where the arrive changes it", () => {
+  test("RED: a second arrive on an UNCHANGED board writes the cache no second time; CONTROL: a raise that lands between the arrives writes it once more", async () => {
+    let writes = 0;
+    let local: KapaeLocal = EMPTY_KAPAE_LOCAL;
+    const r = await boot({ store: { read: async () => local, write: async (l) => { writes++; local = l; } } });
+    await r.b.promotedFor(W1);
+    r.st.acts.push(await r.raise(W1));
+    const before = writes;
+    expect(await r.b.arrive()).toEqual([W1]);
+    expect(writes - before, "the first arrive records the shadow").toBe(1);
+    expect(await r.b.arrive(), "control: nothing restarts").toEqual([]);
+    expect(writes - before, "an unchanged board costs no custody write").toBe(1);
+    expect(local.shadowed).toEqual([promoteEdgeKey(W1, D)]);
+    r.st.acts.push(await r.raise(W2));
+    await r.b.promotedFor(W2);
+    await r.b.arrive();
+    expect(writes - before, "a new shadow writes once more").toBe(2);
+    expect(local.shadowed.sort()).toEqual([promoteEdgeKey(W1, D), promoteEdgeKey(W2, D)].sort());
   });
 });

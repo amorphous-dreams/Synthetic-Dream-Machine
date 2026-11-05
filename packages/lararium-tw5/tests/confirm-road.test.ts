@@ -258,7 +258,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     let releaseAck!: () => void;
     const ackHeld = new Promise<void>((resolve) => { releaseAck = resolve; });
     let ackCount = 0;
-    r.adaptor.restDoor = {
+    r.adaptor.caps.receipt = {
       begin: () => ({ done: () => {} }),
       held: () => null,
       idle: async () => {},

@@ -83,4 +83,44 @@ describe.skipIf(wikiSkip)(`startup actions after the seed drains${skipNote}`, ()
     expect(wiki.getTiddler(PLAIN)?.fields["text"], "a plain seeded action runs").toBe("ran");
     expect(wiki.getTiddler(LIFTED), "a lifted action never runs without a promotion").toBeUndefined();
   }, 120_000);
+
+  // THE LAYER GATE (operator ruling 2026-11-04): the daemon island and the kahua stage run a StartupAction only from genesis (the
+  // oracle floor) or the promoted set (a preload, which TW5's own boot pass ran); every other layer's StartupAction rides inert. A
+  // user's own wiki keeps full caps: its StartupActions run as before.
+  for (const slug of ["daemon", "kahua-q7k2m9x4"]) {
+    test(`RED: the ${slug} island runs a genesis StartupAction and a promoted one once, and leaves a working-layer one inert with or without kahua-cid; CONTROL: a user wiki runs the same working-layer action`, async () => {
+      const WORKING = "$:/temp/lararium/gate-working", FIELDED = "$:/temp/lararium/gate-fielded", GENESIS = "$:/temp/lararium/gate-genesis", PROMOTED = "$:/temp/lararium/gate-promoted";
+      const act = (probe: string): string => `<$action-setfield $tiddler="${probe}" text={{{ [{${probe}}else[0]add[1]] }}}/>`;
+      engine = await bootTestWiki();
+      // Genesis and a promoted rite are PRELOADS: TW5's own startup pass ran each once before any record landed (this test engine runs no
+      // StartupAction at boot, so the vector plants the post-boot state: each probe already reads 1). The seed pass must leave them be.
+      for (const [probe, title] of [[GENESIS, "lar:///t/gate/genesis"], [PROMOTED, "lar:///t/gate/promoted"]] as const) {
+        engine.setTiddler({ title: probe, text: "1" });
+        engine.setTiddler({ title, tags: ["$:/tags/StartupAction"], text: act(probe) });
+      }
+      const working = wikiSlotUri(slug, "working");
+      const workingRecords: LarTiddlerRecord[] = [
+        { tiddler: { title: "lar:///t/gate/working", tags: ["$:/tags/StartupAction"], text: act(WORKING) } },
+        { tiddler: { title: "lar:///t/gate/fielded", tags: ["$:/tags/StartupAction"], "kahua-cid": "d".repeat(64), text: act(FIELDED) } },
+      ];
+      const composite = new CompositeStore();
+      buildIslandRecipe({ tw5: engine, composite, recipe: { wikiSlug: slug }, ready: [{ slot: working, handle: handleOver(workingRecords) }] });
+      await seedDrained(engine);
+      const wiki = engine.$tw.wiki;
+      expect(wiki.getTiddler("lar:///t/gate/working"), "the working-layer action landed as data").toBeDefined();
+      expect(wiki.getTiddler(GENESIS)?.fields["text"], "the seed pass never re-runs the genesis rite").toBe("1");
+      expect(wiki.getTiddler(PROMOTED)?.fields["text"], "nor the promoted one").toBe("1");
+      expect(wiki.getTiddler(WORKING), "a working-layer action stays inert").toBeUndefined();
+      expect(wiki.getTiddler(FIELDED), "a working-layer action with kahua-cid stays inert").toBeUndefined();
+
+      // CONTROL: the same working-layer action over a user's own wiki runs.
+      const user = await bootTestWiki();
+      try {
+        const userWorking = wikiSlotUri("user-wiki", "working");
+        buildIslandRecipe({ tw5: user, composite: new CompositeStore(), recipe: { wikiSlug: "user-wiki" }, ready: [{ slot: userWorking, handle: handleOver(workingRecords.slice(0, 1)) }] });
+        await seedDrained(user);
+        expect(user.$tw.wiki.getTiddler(WORKING)?.fields["text"], "a user wiki keeps full caps").toBe("1");
+      } finally { user.dispose(); }
+    }, 120_000);
+  }
 });

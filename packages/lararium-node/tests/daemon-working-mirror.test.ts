@@ -1,7 +1,7 @@
 /**
- * daemon-working-mirror — the daemon wiki's working layer projects to `wikis/kahua-<tag>/`, and its private bag to nowhere.
+ * daemon-working-mirror — the daemon wiki's working layer projects to `wikis/kahua-<F>/`, and its private bag to nowhere.
  *
- * THE KAHUA TREE (operator ruling, 2026-11-01): the wiki the operator works in projects to `<state>/wikis/kahua-<tag>`, and a
+ * THE KAHUA TREE (operator ruling, 2026-11-01): the wiki the operator works in projects to `<state>/wikis/kahua-<F>`, and a
  * standalone `wikis/daemon` folds into it. The layer keeps its bag (`wikis/daemon/working`); only its disk tree moves.
  * The kahua recipe (its `bags/daemon` workbench over the fleet `bags/kahua`) stays design: `docs/pono/kahua-memory-stage`.
  *
@@ -19,15 +19,15 @@ import { mkdtempSync, rmSync, existsSync, readFileSync, readdirSync } from "node
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
-import { daemonWorkingMirror, kahuaFaceTag, kahuaFaceFolder } from "../src/bag-paths.js";
+import { daemonWorkingMirror, kahuaFaceFolder } from "../src/bag-paths.js";
 import { wikiSlotUri, DAEMON_BAG_ID } from "@lararium/mesh";
 import type { CarrierFile } from "@lararium/tw5";
 
 const URI = "lar:///ha.ka.ba/t/daemon/note";
 const REL = "ha.ka.ba/t/daemon/note.mem";
 const DAEMON_WORKING = wikiSlotUri("daemon", "working");
-/** The worn face: its derived tag names the working top's folder (`kahua-<tag>`). */
-const TAG = kahuaFaceTag("0f9e8d7c6b5a49382716a5b4c3d2e1f0");
+/** The worn face: its relation names the working top's folder (`kahua-<F>`). */
+const TAG = "7b0f6c1e-4a52-4d3b-9c18-2e5a6f0d8b31";
 const FACE = kahuaFaceFolder(TAG);
 type Flushable = { flush: (b: string, u: string) => Promise<void>; _scheduleUnlinkByTitle: (t: string) => Promise<void> };
 
@@ -45,7 +45,7 @@ function rig(bagsHolding?: (uri: string) => Promise<string[]>): { projector: Flu
   return { projector, root };
 }
 
-describe("the daemon wiki projects to wikis/kahua-<tag>/", () => {
+describe("the daemon wiki projects to wikis/kahua-<F>/", () => {
   test("★ the daemon working mirror keeps its bag and projects under the kahua tree ★", () => {
     const rootDir = "/vessel/root";
     const minted = daemonWorkingMirror(rootDir, TAG);
@@ -54,7 +54,7 @@ describe("the daemon wiki projects to wikis/kahua-<tag>/", () => {
     expect(minted.mirrorRoot).toBe(join(rootDir, "wikis", FACE));
   });
 
-  test("★ a record landing in wikis/daemon/working projects to <root>/wikis/kahua-<tag>/<uri-path>.mem ★", async () => {
+  test("★ a record landing in wikis/daemon/working projects to <root>/wikis/kahua-<F>/<uri-path>.mem ★", async () => {
     const { projector, root } = rig();
     await projector.flush(DAEMON_WORKING, URI);
     const at = join(root, "wikis", FACE, REL);
@@ -74,7 +74,7 @@ describe("the daemon wiki projects to wikis/kahua-<tag>/", () => {
    * projector's `sited` memory carries the unlink for the mirror whose bag no longer holds it, and
    * keeps the file where a bag still does (the shadow-aware gate).
    */
-  test("★ a carrier that LEFT wikis/daemon/working unlinks from wikis/kahua-<tag>/; one still held there stays ★", async () => {
+  test("★ a carrier that LEFT wikis/daemon/working unlinks from wikis/kahua-<F>/; one still held there stays ★", async () => {
     let holding: string[] = [DAEMON_WORKING];
     const { projector, root } = rig(async () => holding);
     await projector.flush(DAEMON_WORKING, URI);

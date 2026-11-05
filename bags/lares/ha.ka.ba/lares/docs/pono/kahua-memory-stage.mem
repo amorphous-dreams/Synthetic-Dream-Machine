@@ -212,7 +212,7 @@ Promote enacts the face intent-plane law a second time (<<~ loulou uri=`lar:///h
 * ''The floor until then.'' The lift refuses `module-type` and executable types today. That refusal BURNS when promote lands (the alpha line keeps no back-compat).
 * ''The code class.'' `module-type`; the executable types; `$:/tags/StartupAction*`; RawMarkup (on the save path alone); the fields the tw5-module gate reads (a `stack` naming `tw5-module`, beside `source-sha256`).
 * ''The module gate reads genesis and the promoted set alone.'' The gate that defines tw5 modules reads genesis-sourced tiddlers and the device's own preloaded set, never the composite, so no stage or wiki layer seeds a module (the promote lane builds it).
-* ''StartupAction rides inert tonight.'' No refusal: the stage mounts after boot and never preloads, so a startup action on the stage never runs, the same load order that keeps a module inert.
+* ''StartupAction rides inert by layer.'' The daemon island and the kahua stage run a StartupAction only from genesis or the promoted set, both preloads the boot pass ran; the seed pass runs none, so a StartupAction in any other layer (working, stage, with or without `kahua-cid`) rides inert and names itself in the boot log. A user's own wiki keeps full caps and runs its StartupActions (operator, 2026-11-04). The code: `startupGated` in `island-recipe.ts`.
 
 * ''Kāpae, the emergency cap.'' A `kāpae` cap on the edge (face, wiki, digest), raised on the face's board, shadows every device's promotion of that digest: remove wins, the hand raises it and the AI prepares it, and a device restarts its island when the cap arrives. Withdraw stays a separate act.
 
@@ -299,6 +299,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZmgZd0p_oMRRMx1VgFp9ulbFNkNa6PfO6PRAkadCc94`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;53-RYW42jKuCdEtj6FHVxvn0wwtIhawRephbL2RrMmk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
