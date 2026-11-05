@@ -71,6 +71,20 @@ Use `tools/lares-container.sh` on Unix-like hosts or `tools/lares-container.ps1`
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/pre-rite`>>
+
+!! 2b · The pre-rite, three acts before the first `found`
+
+Three acts stand between a landed head and the first `found --hearth`. Each one closes a failure the walks measured, and each one waits for the one before it.
+
+# ''Rebuild the image LAST, at the landed head.'' Land every branch the rite needs, then check out that head, and only then run `docker build -f Dockerfile --target serve -t lares-surface:local .` (the compose surface passes `GIT_REV` through, and the shim exports it from `git rev-parse HEAD`). An image built before the last landing runs older code than the checkout holds, and nothing else tells the operator. The image carries `org.opencontainers.image.revision`; `tools/lares-container.sh up` compares that label to `git rev-parse HEAD` and warns, naming both, when they differ. A warning means the rebuild stays owed: rebuild, then `up` again.
+# ''Move old homes aside by RENAME alone.'' A state home or workspace mirror from an earlier walk gets a new name (`mv ~/lares-state ~/lares-state.before-rite`), never a delete, never an overwrite. The rename keeps the old bytes readable for a repair or a comparison, and the fresh `LARES_STATE` starts empty so the founding reads no leftover. Nothing in this runbook removes a home.
+# ''Check the projection before trusting the layout.'' The canon source (`bags/` under the checkout) sources no `daemon` slug, and the face's working top projects under `<state>/wikis/kahua-<tag>`, never under `wikis/daemon/`. After the first `persona new 0`, look for `<state>/wikis/kahua-<tag>` and for `<state>/bags/kahua-<tag>`; a `bags/daemon` directory on disk means the control plane projected, and the rite stops there. The bag-paths suite pins both placements (`projectionRoots` and `daemonWorkingMirror`), so a mismatch on a live disk names a stale image first.
+
+''Proves'': the image names the revision the checkout holds, the old bytes rest beside the new home under their own names, and the projection lands where the ruled layout says.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/the-hands`>>
 
 !! 2a · The operator's hands before the two-hearth day
@@ -370,6 +384,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mYVQBTlUmMESOXYPEslEbB6vvYA8L2SqEsTekXNCeDM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RtyNDGgYtN7Qyp-YVKJCgp2cmaVuqGz1DYXxSAW0Yxs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
