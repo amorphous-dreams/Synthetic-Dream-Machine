@@ -272,6 +272,53 @@ describe("ward co-sign (S3a)", () => {
     expect(r.judge(r.fold([r.call, r.ask, await r.answerBy(r.b)]))).toMatchObject({ approved: true });
   });
 
+  test("RED: a ward verb pinned to its issuer's own atom acts with no co-sign; CURE: issue refuses cosign-needs-asks, the plane refuses it and mayAct fails closed; CONTROL: a plain single-effect verb still pins", async () => {
+    const r = await rig();
+    for (const verb of WARD_COSIGN_VERBS) {
+      expect(issueCheck(r.verbs, verb, { mode: "pinned", atom: r.a.key })).toEqual({ ok: false, refusal: "cosign-needs-asks" });
+      expect(issueCheck(r.verbs, verb, { mode: "asks" })).toMatchObject({ ok: true });
+    }
+    expect(issueCheck(r.verbs, "face-join", { mode: "pinned", atom: r.a.key })).toMatchObject({ ok: true });
+    const pinned = await entry(r.a, { entry: "intent", issuer: r.a.key, verb: VERB, args: { head: "h1" }, nonce: "p", audience: { mode: "pinned", atom: r.a.key } });
+    const pid = intentId({ issuer: r.a.key, verb: VERB, args: { head: "h1" }, nonce: "p" });
+    const view = r.fold([pinned]);
+    expect(view.refused).toContainEqual({ refusal: "cosign-needs-asks" });
+    expect(mayAct(view, pid, r.a.key).act).toBe(false);
+    // A reader whose table lost the cosign flag (a peer that skipped the issue check) folds the pinned intent; mayAct still refuses it.
+    const stale = r.fold([pinned], [r.a.key, r.b.key], () => "stands", fixtureIntentVerbs({ [VERB]: "single-effect" }));
+    expect(stale.intents.map((i) => i.id)).toEqual([pid]);
+    expect(mayAct(stale, pid, r.a.key)).toEqual({ act: false, reason: "cosign-needs-asks" });
+    const flagged = { ...stale, intents: stale.intents.map((i) => ({ ...i, verb: "other", cosign: true })) };
+    expect(mayAct(flagged, pid, r.a.key)).toEqual({ act: false, reason: "cosign-needs-asks" });
+    // CONTROL: a plain pinned single-effect verb acts for its pinned atom.
+    const plain = await entry(r.a, { entry: "intent", issuer: r.a.key, verb: "face-join", args: {}, nonce: "j", audience: { mode: "pinned", atom: r.a.key } });
+    expect(mayAct(r.fold([plain]), intentId({ issuer: r.a.key, verb: "face-join", args: {}, nonce: "j" }), r.a.key)).toEqual({ act: true });
+  });
+
+  test("RED: another device asks on the issuer's ward intent and approves its own ask; CURE: the plane counts only answers to the issuer's ask, from a standing other device naming the issuer; CONTROL: a plain verb counts any device's ask", async () => {
+    const r = await rig();
+    const bAsk = await entry(r.b, { entry: "asks", intent: r.id, needs: "approval", detail: digestOf() });
+    const bApproves = await entry(r.b, { entry: "answer", ask: intentEntryCid(bAsk), verdict: "approve", executor: r.a.key });
+    const view = r.fold([r.call, bAsk, bApproves]);
+    expect(view.intents[0]!.answer).toBeNull();
+    expect(mayAct(view, r.id, r.a.key)).toEqual({ act: false, reason: "awaiting-answer" });
+    expect(r.judge(view)).toEqual({ need: "cosign", approved: false, reason: "ask-signer" });
+    // An approve naming another executor counts nothing for a ward verb.
+    const elsewhere = r.fold([r.call, r.ask, await r.answerBy(r.b, { executor: r.b.key })]);
+    expect(elsewhere.intents[0]!.answer).toBeNull();
+    expect(mayAct(elsewhere, r.id, r.b.key)).toEqual({ act: false, reason: "awaiting-answer" });
+    expect(r.judge(elsewhere)).toEqual({ need: "cosign", approved: false, reason: "executor-mismatch" });
+    // An aside answerer counts nothing in the plane, and the judge names why.
+    const aside = (atom: string) => (atom === r.b.key ? "aside" as const : "stands" as const);
+    const asideView = r.fold([r.call, r.ask, await r.answerBy(r.b)], [r.a.key, r.b.key], aside);
+    expect(asideView.intents[0]!.answer).toBeNull();
+    expect(r.judge(asideView, [r.a.key, r.b.key], aside)).toEqual({ need: "cosign", approved: false, reason: "answerer-aside" });
+    // CONTROL: the issuer's ask with a second device's approve acts; a plain single-effect verb keeps counting another device's ask.
+    expect(mayAct(r.fold([r.call, r.ask, await r.answerBy(r.b)]), r.id, r.a.key)).toEqual({ act: true });
+    const old = fixtureIntentVerbs({ [VERB]: "single-effect" });
+    expect(mayAct(r.fold([r.call, bAsk, bApproves], [r.a.key, r.b.key], () => "stands", old), r.id, r.a.key)).toEqual({ act: true });
+  });
+
   test("a face with 0 or 1 device needs no co-sign; aside devices count toward the total", async () => {
     const r = await rig(), view = r.fold([r.call, r.ask]);
     expect(r.judge(view, [])).toEqual({ need: "none" });

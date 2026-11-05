@@ -59,7 +59,14 @@ export function judgeCosign(input: {
     // Nothing counted: say why the nearest answer fails, else wait.
     const own = named.find((a) => a.entry.signer === requester);
     if (own) return refuse("self-answer");
-    return refuse(named.length > 0 ? "digest-mismatch" : "awaiting-answer");
+    const near = named[0];
+    if (!near) return refuse("awaiting-answer");
+    const nearSigner = near.entry.signer.toLowerCase(), nearStanding = input.standing(nearSigner);
+    if (!devices.has(nearSigner)) return refuse("signer-not-in-face");
+    if (nearStanding === "aside") return refuse("answerer-aside");
+    if (nearStanding !== "stands") return refuse("answerer-not-standing");
+    if (near.entry.body["verdict"] === "approve" && String(near.entry.body["executor"] ?? "").toLowerCase() !== requester) return refuse("executor-mismatch");
+    return refuse("digest-mismatch");
   }
   const answer = state.answer;
   const signer = answer.entry.signer.toLowerCase();

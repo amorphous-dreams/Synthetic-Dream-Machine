@@ -36,10 +36,12 @@ export function fixtureIntentVerbs(rows: Readonly<Record<string, IntentVerbClass
   for (const [verb, classification] of Object.entries(rows)) registry.declareIntentVerb(verb, classification);
   return registry;
 }
-export type IssueRefusal = "unclassified-verb" | "single-effect-unpinned";
+export type IssueRefusal = "unclassified-verb" | "single-effect-unpinned" | "cosign-needs-asks";
 export function issueCheck(registry: IntentVerbRegistry, verb: string, audience: IntentAudience): { readonly ok: true; readonly classification: IntentVerbDeclaration } | { readonly ok: false; readonly refusal: IssueRefusal } {
   const classification = registry.classOfVerb(verb);
   if (!classification) return { ok: false, refusal: "unclassified-verb" };
   if (classification.class === "single-effect" && audience.mode !== "pinned" && audience.mode !== "asks") return { ok: false, refusal: "single-effect-unpinned" };
+  // A cosign verb's second device speaks only through an answer, and only the asks audience reads one: a pin skips it.
+  if (classification.cosign && audience.mode !== "asks") return { ok: false, refusal: "cosign-needs-asks" };
   return { ok: true, classification };
 }
