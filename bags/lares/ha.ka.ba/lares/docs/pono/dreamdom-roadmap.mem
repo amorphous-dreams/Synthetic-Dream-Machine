@@ -38,7 +38,7 @@ written           = "2026-10-16"
 |! Piece |! Stands today |! Reads against the model |
 | the third runtime | TW5 boots in a module Worker or a `worker_thread` with `$tw.browser = $tw.node = null` through one forge on both paths (the engine named by its own bytes, the CSS escape, an error reporter that surfaces and continues, every lent global non-enumerable); the core evaluates by `new Function` under a `require` allowlist and an `fs`-denying proxy; the kernel re-hashes core and plugins by CID and lends the boot shadows as tiddlers; the genesis boot harness (`packages/lararium-tw5/tests/genesis-boot.harness.ts`) boots the same bytes on either path in any suite | the ENGINE, host-neutral; the floor every host must lend |
 | the store | one Automerge document per bag; island Repo ⇄ vessel Repo over a MessageChannel; a WebSocket relay adapter; a Node disk projector one way | the STORE; the store↔engine waist at record grain already stands |
-| the outbound bridge | `change` → foam skip → Drain (one owed title at a time, each write awaiting the rest door's durable ack) → `bag-paths` cascade → the CRDT | the record waist's engine side; no syncer stands and none will |
+| the outbound bridge | `change` → foam skip → Drain (landed on PR #157 at `8e8cc613e`: one latest-state queue across all hand titles, lifecycle-requested and durable-ack paced, no timer) → `bag-paths` cascade → the CRDT, through `caps.receipt` on the island capability record | the record waist's engine side; no syncer stands and none will |
 | the projection | `mountProjection` renders RootTemplate plus PageStylesheet into `$tw.fakeDocument`; a 24 ms gate ships the whole story HTML and the whole CSS per change and prunes the render-id maps to the painted nodes at each flush; the page morphs into a shadow root | the browser DOM sink at width none, with one surface-wide revision, no mount epoch, no sensed revision, the CSS not yet a key of its own |
 | the return leg | the patched fake `addEventListener` stamps `data-lar-rid`; the page relays click (always cancelled), a sliver of keydown, `input` and `change` as a whole value, composition guards; no event id | one third of TW5's interactions work, one third paint but act wrongly, one third have no road |
 | the camera | `mountCamera(engine, {rootTiddler, document, container})` takes `window.document` or a fake document | the camera as root plus sink already stands as code |
@@ -243,6 +243,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3sZlK3fW_SzCqPk8o9-cF--JUctW6zyJUaF2h7zu2YE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aEd1Nkyxo99HU9FIuTqReCopMwKs-BDk1JxJM1jqGgg`>>
 
 <<^ code=`&#x0004;` to=`?`>>
