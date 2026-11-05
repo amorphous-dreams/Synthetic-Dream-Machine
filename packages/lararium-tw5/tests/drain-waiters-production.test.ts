@@ -1,12 +1,16 @@
 /**
- * The Drain's waiters stay bounded on the PRODUCTION save path: a receipt stays pending while many edits of one title arrive, and the
- * adaptor holds one live waiter for that title, never one per generation.
+ * The Drain's waiters stay bounded on the PRODUCTION save path: a receipt hangs while many edits of one title and repeated boundaries
+ * arrive. The adaptor holds at most the generation in flight plus the latest for the title (plus the whole-drain targets), every
+ * displaced save's returned promise has SETTLED (so its reaction chain is released), and a superseded save never reads as saved:
+ * the latest write acks only after its receipt.
  */
 import { describe, expect, test } from "vitest";
 import { ManualBoundary, shoreRig, turns } from "./wiki-shore-rig.js";
 
+const isPending = async (p: Promise<unknown>): Promise<boolean> => { let done = false; void p.then(() => { done = true; }, () => { done = true; }); await turns(2); return !done; };
+
 describe("drain waiters on the save path", () => {
-  test("many edits of one title under a pending receipt retain one waiter", async () => {
+  test("many edits under a hung receipt hold at most two waiters for the title; displaced saves settle; the latest acks only after its receipt", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
     const title = "lar:///t/drain/waiters-bounded";
@@ -22,10 +26,17 @@ describe("drain waiters on the save path", () => {
     boundary.fire();
     await turns(24);
     expect(asks, "control: the first receipt is pending").toBeGreaterThan(0);
-    for (let i = 1; i <= 300; i++) saves.push(r.adaptor.saveTiddler({ fields: { title, text: `v${i}` } }));
-    await turns(8);
+    for (let i = 1; i <= 300; i++) {
+      saves.push(r.adaptor.saveTiddler({ fields: { title, text: `v${i}` } }));
+      if (i % 25 === 0) { boundary.fire(); void r.adaptor.boundary().catch(() => {}); }
+    }
+    await turns(16);
     const drain = (r.adaptor as unknown as { drain: { waiters(title?: string): number } }).drain;
-    expect(drain.waiters(title), "one live waiter per title however many edits").toBe(1);
+    expect(drain.waiters(title), "the generation in flight plus the latest").toBeLessThanOrEqual(2);
+    expect(drain.waiters(), "plus the whole-drain targets").toBeLessThanOrEqual(5);
+    let live = 0;
+    for (const save of saves) if (await isPending(save)) live++;
+    expect(live, "every displaced save has settled, so its reactions are released").toBeLessThanOrEqual(2);
     release();
     boundary.fire();
     await turns(48);

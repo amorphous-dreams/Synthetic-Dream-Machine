@@ -15,7 +15,7 @@
  * An act's removal rides a dependency edge (`markAfter`): it stays parked until the target's receipts cover the act's own generation,
  * then rides as an ordinary owed title. A removal behind a refused target reads that refusal as its own terminal outcome.
  *
- * Memory stays bounded by titles: one slot per owed title, one shared waiter per title (it settles when the title's latest generation is terminal), and a slot leaves once its receipts cover it.
+ * Memory stays bounded by titles: one slot per owed title, at most two live waiters per title (the generation in flight and the latest; a newer mark settles a displaced generation `superseded`, a non-ack), and a slot leaves once its receipts cover it.
  * Writes stay idempotent by (title, generation): a retry after an ambiguous failure writes the title's latest state again.
  *
  * THE KICK RULE (operator ruling 2026-11-04): `kick()` is a REQUEST, never a write. It sets flight-eligible state (releases a standing refusal,
@@ -66,7 +66,9 @@ interface Slot {
 
 interface Waiter {
   readonly title: string | null;
-  generation: number;
+  readonly generation: number;
+  /** A close target: never displaced. */
+  pinned: boolean;
   /** A terminal word a forget laid on this waiter: it reads this where the slots would read acked. */
   verdict: DrainOutcome | null;
   readonly promise: Promise<DrainOutcome>;
@@ -77,7 +79,8 @@ const ACKED: DrainOutcome = { kind: "acked" };
 const SUPERSEDED: DrainOutcome = { kind: "superseded" };
 const ABANDONED: DrainOutcome = { kind: "abandoned" };
 const PENDING = Symbol("pending");
-type Status = typeof PENDING | Error | null;
+const DISPLACED = Symbol("displaced");
+type Status = typeof PENDING | typeof DISPLACED | Error | null;
 
 /** The default schedule() door: a macrotask yield, never a timer. */
 export function macrotask(): (run: () => void) => void {
@@ -125,6 +128,10 @@ export class Drain {
     slot.dirty = gen;
     if (slot.owedFrom === 0) slot.owedFrom = gen;
     if (slot.flying !== 0 && slot.nextFrom === 0) slot.nextFrom = gen;
+    // The newer mark displaces this title's waiters no flight carries: they settle `superseded` at once (a non-ack, handed forward).
+    for (const [key, waiter] of this.#waiters) {
+      if (waiter.title === title && waiter.generation < gen && waiter.generation > slot.flying) { this.#waiters.delete(key); waiter.resolve(SUPERSEDED); }
+    }
     this.#ask();
     return gen;
   }
@@ -157,13 +164,15 @@ export class Drain {
 
   /** Resolves once `title`'s generations up to `generation` (default: now) reach a terminal outcome; one shared waiter per (title, generation). */
   whenSettled(title: string, generation: number = this.#generation): Promise<DrainOutcome> {
-    return this.#wait(title, generation);
+    // A request past the title's latest mark waits on that latest mark: one waiter per (title, generation), never one per global tick.
+    const slot = this.#slots.get(title);
+    return this.#wait(title, slot ? Math.min(generation, slot.dirty) : generation);
   }
 
   /** Refuse new marks (they read abandoned) and await the owed work; a failed write answers failed, never a hang. */
   close(): Promise<DrainOutcome> {
     if (this.#closeGeneration === null) this.#closeGeneration = this.#generation;
-    return this.whenAcked(this.#closeGeneration);
+    return this.#wait(null, this.#closeGeneration, true);
   }
 
   /**
@@ -305,51 +314,54 @@ export class Drain {
       const target = this.#slots.get(slot.after.target);
       if (target?.blocked) return target.blocked;
     }
+    // A generation no flight carries and a newer mark displaced is DISPLACED: coalescing never writes it on its own, so it settles as a
+    // non-ack `superseded`, handed forward to the newer generation. Per title only the generation in flight and the latest stay live.
+    if (generation > slot.flying && slot.dirty > generation) return DISPLACED;
     return PENDING;
   }
 
   #outcome(waiter: Waiter): DrainOutcome | null {
     let failed: Error | null = null;
+    let displaced = false;
     if (waiter.title !== null) {
       const slot = this.#slots.get(waiter.title);
       const status = slot ? this.#status(slot, waiter.generation) : null;
       if (status === PENDING) return null;
-      failed = status;
+      if (status === DISPLACED) displaced = true; else failed = status;
     } else {
       for (const slot of this.#slots.values()) {
         const status = this.#status(slot, waiter.generation);
         if (status === PENDING) return null;
-        failed ??= status;
+        if (status === DISPLACED) displaced = true; else failed ??= status;
       }
     }
     if (failed) return { kind: "failed", error: failed };
     if (waiter.verdict) return waiter.verdict;
     if (this.#abandonedFrom !== 0 && waiter.generation >= this.#abandonedFrom) return ABANDONED;
-    return ACKED;
+    return displaced ? SUPERSEDED : ACKED;
   }
 
-  #wait(title: string | null, generation: number): Promise<DrainOutcome> {
-    // ONE SHARED WAITER PER TITLE. A write carries the title's latest state, so one promise answers every caller of the title: a newer
-    // generation raises the standing waiter, and an older request reads it. It settles when the title's LATEST generation is terminal, never
-    // earlier, so no caller reads `acked` for a state a newer write has yet to make durable (a caller may read a later failure for its own
-    // earlier generation; that errs toward refusing). Memory stays bounded by titles.
-    const key = title === null ? `\u0000\u0001${generation}` : title;
+  #wait(title: string | null, generation: number, pinned = false): Promise<DrainOutcome> {
+    const key = `${title ?? "\u0000"}\u0001${generation}`;
     const standing = this.#waiters.get(key);
-    if (standing) {
-      if (generation > standing.generation) {
-        standing.generation = generation;
-        const now = this.#outcome(standing);
-        if (now) { this.#waiters.delete(key); standing.resolve(now); }
-      }
-      return standing.promise;
-    }
+    if (standing) { if (pinned) standing.pinned = true; return standing.promise; }
     let resolve!: (outcome: DrainOutcome) => void;
     const promise = new Promise<DrainOutcome>((done) => { resolve = done; });
-    const waiter: Waiter = { title, generation, verdict: null, promise, resolve };
+    const waiter: Waiter = { title, generation, verdict: null, pinned, promise, resolve };
     const now = this.#outcome(waiter);
     if (now) return Promise.resolve(now);
     this.#waiters.set(key, waiter);
+    if (title === null && !pinned) this.#capWholeDrain();
     return promise;
+  }
+
+  /**
+   * WHOLE-DRAIN TARGETS stay bounded the way a title's generations do: the oldest target (the one riding the flight in progress) and the
+   * newest stay live, and every target between them is displaced `superseded` (handed forward to the newest). A close target is pinned.
+   */
+  #capWholeDrain(): void {
+    const live = [...this.#waiters.entries()].filter(([, w]) => w.title === null && !w.pinned).sort((x, y) => x[1].generation - y[1].generation);
+    for (const [key, waiter] of live.slice(1, -1)) { this.#waiters.delete(key); waiter.resolve(SUPERSEDED); }
   }
 
   #settle(): void {

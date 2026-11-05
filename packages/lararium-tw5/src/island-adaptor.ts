@@ -381,7 +381,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       const held = this._heldRun; this._heldRun = null;
       held?.();
       this.drain.kick();
-      return await (close ? this.drain.close() : this.drain.whenAcked());
+      if (close) return await this.drain.close();
+      // A `superseded` target was handed forward to a newer one and never read as rested: ask again for the generation marked by now.
+      for (;;) {
+        const outcome = await this.drain.whenAcked();
+        if (outcome.kind !== "superseded") return outcome;
+      }
     } finally { this._firing--; }
   }
 
@@ -394,7 +399,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       held?.();
       // A wave arriving after a refusal is a request: the refused hand tries again ahead of it. A wave meeting the flight asks nothing of it.
       this.drain.kick({ demand: false, only: title });
-      return await this.drain.whenSettled(title, gen);
+      // `superseded` hands the title forward to its newer hand, which this turn then awaits; it never reads as written.
+      let outcome = await this.drain.whenSettled(title, gen);
+      while (outcome.kind === "superseded" && this.drain.owes(title)) outcome = await this.drain.whenSettled(title);
+      return outcome;
     } finally { this._firing--; }
   }
 
@@ -403,6 +411,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return this.drain.whenSettled(title, gen).then((outcome) => {
       if (outcome.kind === "failed") throw outcome.error;
       if (outcome.kind === "abandoned") throw new Error(`[island-adaptor] the shore closed before "${title}" left`);
+      // `acked`: this generation rests. `superseded`: a newer hand of the title displaced it and carries its state forward; the call is
+      // neither saved nor failed, and the title's saved/unsaved state reads the title's LATEST outcome (the drain's slot and its alerts),
+      // never this promise.
     });
   }
 

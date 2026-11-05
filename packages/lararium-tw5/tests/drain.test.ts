@@ -304,47 +304,76 @@ describe("Drain", () => {
     expect([kind(await all), kind(await one), kind(await closing)]).toEqual(["failed", "failed", "failed"]);
   });
 
-  test("one shared waiter per title: callers share it, it settles only when the title's LATEST generation is terminal, never acked early", async () => {
+  const pending = async (p: Promise<unknown>): Promise<boolean> => { let done = false; void p.then(() => { done = true; }); await macrotask(); return !done; };
+
+  test("a generation a newer mark displaces settles `superseded` AT ONCE, a non-ack; the generation in flight and the latest stay live and ack only after their receipt", async () => {
     const { drain, writes } = rig();
     const g1 = drain.mark("t");
-    await settle();
-    const a = drain.whenSettled("t", g1);
-    expect(drain.whenSettled("t", g1)).toBe(a);
-    expect(drain.whenAcked(g1)).toBe(drain.whenAcked(g1));
+    await settle();                                   // g1 flies
+    const flying = drain.whenSettled("t", g1);
     const g2 = drain.mark("t");
-    const b = drain.whenSettled("t", g2);
-    expect(b, "one promise answers the title").toBe(a);
-    expect(drain.whenSettled("t", g1), "an older request reads the same waiter").toBe(a);
-    let settled = false;
-    void a.then(() => { settled = true; });
+    const middle = drain.whenSettled("t", g2);
+    const g3 = drain.mark("t");                       // displaces g2 (not carried by the flight)
+    const latest = drain.whenSettled("t", g3);
+    expect(kind(await middle), "g2 never writes on its own").toBe("superseded");
+    expect(await pending(flying), "the flight's own generation waits for its receipt").toBe(true);
+    expect(await pending(latest), "the latest waits for its receipt").toBe(true);
+    expect(kind(await drain.whenSettled("t", g2)), "a late request for a displaced generation reads superseded at once").toBe("superseded");
     writes[0]!.resolve(); await settle();
-    expect(settled, "g1 durable, g2 still owed: no caller reads acked yet").toBe(false);
+    expect(kind(await flying)).toBe("acked");
+    expect(await pending(latest), "g1 durable does not ack g3").toBe(true);
     writes[1]!.resolve();
-    expect(kind(await a)).toBe("acked");
+    expect(kind(await latest)).toBe("acked");
+    expect(writes[1]!.gen).toBe(g3);
   });
 
-  test("a newer write's refusal reaches the earlier caller too: nothing reads acked for a state that never rested", async () => {
+  test("steady edits under SUCCESSFUL receipts: every earlier caller settles (superseded or acked), none starves", async () => {
     const { drain, writes } = rig();
-    const g1 = drain.mark("t");
+    const calls: Array<Promise<DrainOutcome>> = [];
+    for (let i = 0; i < 200; i++) {
+      calls.push(drain.whenSettled("t", drain.mark("t")));
+      await settle();
+      const live = writes.filter((w, idx) => idx === writes.length - 1 && w.gen > 0);
+      for (const w of live) w.resolve();               // each flight lands while the next edit arrives
+    }
     await settle();
-    const early = drain.whenSettled("t", g1);
-    drain.whenSettled("t", drain.mark("t"));
-    writes[0]!.resolve(); await settle();
-    writes[1]!.reject(new Error("receipt refused"));
-    expect(kind(await early)).toBe("failed");
+    for (const w of writes) w.resolve();
+    await settle();
+    for (const w of writes) w.resolve();
+    const outcomes = await Promise.all(calls);
+    expect(outcomes.every((o) => o.kind === "superseded" || o.kind === "acked")).toBe(true);
+    expect(outcomes.some((o) => o.kind === "acked")).toBe(true);
   });
 
-  test("waiter memory stays bounded by titles: ten thousand marks and waits of one title under a pending write hold one live waiter", async () => {
+  test("HUNG receipt, ten thousand edits and boundaries: live waiters stay at two per title plus the whole-drain targets, every displaced caller has settled", async () => {
     const { drain, writes } = rig();
     drain.mark("t");
-    await settle();                                   // the write stays pending: its receipt never comes
-    const waits: Array<Promise<DrainOutcome>> = [];
-    for (let i = 0; i < 10_000; i++) waits.push(drain.whenSettled("t", drain.mark("t")));
-    expect(drain.waiters()).toBe(1);
-    expect(new Set(waits).size, "every caller shares one promise").toBe(1);
+    await settle();                                   // the write hangs: its receipt never comes
+    const titled: Array<Promise<DrainOutcome>> = [];
+    const whole: Array<Promise<DrainOutcome>> = [];
+    for (let i = 0; i < 10_000; i++) {
+      titled.push(drain.whenSettled("t", drain.mark("t")));
+      whole.push(drain.whenAcked());
+    }
+    expect(drain.waiters("t"), "the generation in flight plus the latest").toBeLessThanOrEqual(2);
+    expect(drain.waiters(), "plus the in-flight whole-drain target and the newest").toBeLessThanOrEqual(4);
+    for (const old of titled.slice(0, -1)) expect(kind(await old)).toBe("superseded");
+    for (const old of whole.slice(1, -1)) expect(kind(await old)).toBe("superseded");
+    expect(await pending(titled[titled.length - 1]!), "the latest still waits").toBe(true);
     writes[0]!.resolve(); await settle();
     writes[1]!.resolve();
-    expect(kind(await waits[waits.length - 1]!)).toBe("acked");
+    expect(kind(await titled[titled.length - 1]!)).toBe("acked");
     expect(drain.waiters()).toBe(0);
+  });
+
+  test("superseded never produces an ack: a displaced caller reads no `acked` while the latest write is unresolved", async () => {
+    const { drain, writes } = rig();
+    drain.mark("t"); await settle();
+    const early = drain.whenSettled("t", drain.mark("t"));
+    drain.mark("t");
+    expect(kind(await early)).toBe("superseded");
+    expect(writes).toHaveLength(1);                   // nothing but the hung flight ever wrote
+    writes[0]!.reject(new Error("refused"));
+    await settle();
   });
 });
