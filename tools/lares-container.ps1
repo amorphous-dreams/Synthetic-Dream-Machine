@@ -70,19 +70,31 @@ function KeyHeld {
   return (($out -join "`n") -match '"unlocked"\s*:\s*true')
 }
 
-# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD: warns and stands.
-$script:GitRev = (& git -C $PSScriptRoot rev-parse HEAD 2>$null)
-if ($LASTEXITCODE -ne 0) { $script:GitRev = '' }
-if ($script:GitRev) { $env:GIT_REV = $script:GitRev }
+# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD: warns and stands. Read only here, on `up`; no git, or no
+# checkout, skips the check with a note and never dies. A dirty tree labels `<sha>-dirty`.
 function WarnImageRevision {
-  if (-not $script:GitRev) { return }
+  $rev = ''; $dirty = $false
+  try {
+    $head = (& git -C $PSScriptRoot rev-parse HEAD 2>$null) -join ''
+    if ($LASTEXITCODE -eq 0 -and $head) {
+      $rev = $head.Trim()
+      $porcelain = (& git -C $PSScriptRoot status --porcelain 2>$null) -join ''
+      if ($porcelain) { $dirty = $true; $rev = "$rev-dirty" }
+      $env:GIT_REV = $rev
+    }
+  } catch { $rev = '' }
+  if (-not $rev) {
+    [Console]::Error.WriteLine('lares-container: no git checkout answers here, so the image revision check is skipped')
+    return
+  }
   $cid = (& docker compose @Base ps -q lares 2>$null) -join ''
   if ([string]::IsNullOrWhiteSpace($cid)) { return }
-  $label = ((& docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $cid 2>$null) -join '').Trim()
-  if ($label -ne $script:GitRev) {
+  $label = ((& docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $cid 2>$null) -join '') -replace '[\x00-\x1f\x7f]', ''
+  if ($label -ne $rev) {
     $named = if ($label) { $label } else { 'none' }
-    [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout stands at $($script:GitRev); rebuild the image (``docker compose build``) before trusting this vessel as the checkout")
+    [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout stands at $rev; rebuild with ``GIT_REV=$rev docker compose -f $ComposeFile build lares``, then ``up`` again")
   }
+  if ($dirty) { [Console]::Error.WriteLine('lares-container: the checkout holds uncommitted changes; an image built from it labels <sha>-dirty, so commit before the rite rebuild') }
 }
 
 # The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached; without one, name

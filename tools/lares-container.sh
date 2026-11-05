@@ -110,19 +110,30 @@ unlock_or_name() {
   fi
 }
 
-# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD. A rebuild bakes the head into the image (`GIT_REV`); an image
-# that names another revision, or none, runs older code than the checkout holds. It warns and stands: the operator
-# decides whether the rebuild is owed.
+# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD. A rebuild bakes `GIT_REV` into the image; an image that names
+# another revision, or none, runs older code than the checkout holds. A dirty tree labels `<sha>-dirty`, which no clean
+# build matches. It warns and stands: the operator decides whether the rebuild is owed. No git, or no checkout: it skips.
 SHIM_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
-GIT_REV=$(git -C "$SHIM_DIR" rev-parse HEAD 2>/dev/null) || GIT_REV=""
-[ -z "$GIT_REV" ] || export GIT_REV
+GIT_REV=""; GIT_DIRTY=""
+if GIT_REV=$(git -C "$SHIM_DIR" rev-parse HEAD 2>/dev/null) && [ -n "$GIT_REV" ]; then
+  if [ -n "$(git -C "$SHIM_DIR" status --porcelain 2>/dev/null)" ]; then GIT_DIRTY=yes; GIT_REV="$GIT_REV-dirty"; fi
+  export GIT_REV
+else
+  GIT_REV=""
+fi
 warn_image_revision() {
-  [ -n "$GIT_REV" ] || return 0
+  if [ -z "$GIT_REV" ]; then
+    printf '%s\n' 'lares-container: no git checkout answers here, so the image revision check is skipped' >&2
+    return 0
+  fi
   cid=$(compose ps -q lares 2>/dev/null) || return 0
   [ -n "$cid" ] || return 0
-  label=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$cid" 2>/dev/null) || return 0
+  label=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$cid" 2>/dev/null | tr -d '[:cntrl:]') || return 0
   if [ "$label" != "$GIT_REV" ]; then
-    printf 'lares-container: the image names revision %s and the checkout stands at %s; rebuild the image (`docker compose build`) before trusting this vessel as the checkout\n' "${label:-none}" "$GIT_REV" >&2
+    printf 'lares-container: the image names revision %s and the checkout stands at %s; rebuild with `GIT_REV=%s docker compose -f %s build lares`, then `up` again\n' "${label:-none}" "$GIT_REV" "$GIT_REV" "$COMPOSE_FILE_PATH" >&2
+  fi
+  if [ -n "$GIT_DIRTY" ]; then
+    printf '%s\n' 'lares-container: the checkout holds uncommitted changes; an image built from it labels <sha>-dirty, so commit before the rite rebuild' >&2
   fi
 }
 

@@ -37,7 +37,7 @@ import {
 import { requireTty } from "../custody-prompt.js";
 import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { promptSecret } from "../prompt-secret.js";
-import { storeVerb, storeFailure } from "../store-door.js";
+import { storeVerb, storeFailure, standingRefusal } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { vesselStanding } from "../custody-door.js";
 import { larDataDir } from "../env.js";
@@ -360,10 +360,16 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   const stands = args.flags["seat"] === true;
   const chair = typeof args.options["chair"] === "string" ? args.options["chair"].trim() : "";
   const splitRoot = args.flags["split-root"] === true;
+  // ONE CUSTODY PROBE PER COMMAND, taken before anything is asked or written. A vessel that stands locked, recomposes
+  // after an unlock, or answers nothing refuses here by name: no passphrase gets prompted, and no parked pin rests in
+  // the vessel's memory for a founding that was never going to run.
+  const standing = await vesselStanding();
+  const refusal = standingRefusal(standing);
+  if (refusal !== null) throw refusal;
   // A ROOT SPLIT NEVER RIDES A STANDING VESSEL. Its two off-device shares rebuild the root, so no door hands them
   // to a caller: the split runs in a person's own process, under a key session that person opens. Beside a
   // standing vessel the command refuses here, before anything founds.
-  if (splitRoot && (await vesselStanding()).reading !== "none") {
+  if (splitRoot && standing.reading !== "none") {
     throw new UsageError(
       "--split-root hands out shares that rebuild this persona's root, so it never rides a standing vessel. " +
       "Stop the vessel (`lares vessel stop`), run this command again, then stand the vessel.",
@@ -393,8 +399,8 @@ async function personaNew(args: ParsedArgs): Promise<number> {
     throw new UsageError("no face stands on this place yet — light it with `lares persona new 0 --name '<label>'` first.");
   }
   // A face that founds INSIDE a standing vessel takes its route over the custody door first (the route rides that frame alone).
-  if (!(index === 0 && faceStands()) && (await vesselStanding()).reading === "vessel") await handFaceRouteToVessel(`h${index}`);
-  const founded = (await storeVerb("persona-new", { handleIndex: index })).output as unknown as FoundFaceResult;
+  if (!(index === 0 && faceStands()) && standing.reading === "vessel") await handFaceRouteToVessel(`h${index}`);
+  const founded = (await storeVerb("persona-new", { handleIndex: index }, undefined, standing)).output as unknown as FoundFaceResult;
 
   // THE SPLIT RUNS IN THIS PROCESS ALONE (the guard above refused it beside a standing vessel): its shares
   // print to the person at this terminal and ride no door. THE PERSON HOLDS BOTH OFF-DEVICE SHARES BEFORE THE

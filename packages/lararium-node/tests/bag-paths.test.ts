@@ -1,5 +1,5 @@
-import { describe, test, expect } from "vitest";
-import { mkdirSync, mkdtempSync } from "node:fs";
+import { describe, test, expect, afterEach } from "vitest";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { carrierBaseRelPath, projectionRoots, daemonWorkingMirror } from "../src/bag-paths.js";
@@ -35,8 +35,11 @@ describe("carrierBaseRelPath — the extension-less carrier siting function", ()
 
 describe("the projection pre-check — what the founding rite reads before it trusts the layout", () => {
   const TAG = "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d";
+  const made: string[] = [];
+  afterEach(() => { for (const d of made.splice(0)) rmSync(d, { recursive: true, force: true }); });
   const fixtureCanon = (): string => {
     const dir = mkdtempSync(join(tmpdir(), "bag-paths-canon-"));
+    made.push(dir);
     for (const slug of ["lares", "lararium"]) mkdirSync(join(dir, "bags", slug), { recursive: true });
     return join(dir, "bags");
   };
@@ -46,6 +49,13 @@ describe("the projection pre-check — what the founding rite reads before it tr
     const roots = projectionRoots({ stateRoot: "/state", canonBags });
     expect(roots.sourcedSlugs()).not.toContain("daemon");
     expect(daemonWorkingMirror("/state", TAG).mirrorRoot).toBe(`/state/wikis/kahua-${TAG}`);
+  });
+
+  test("the checkout's real bags/ sources no `daemon` slug either", () => {
+    const realBags = join(import.meta.dirname, "..", "..", "..", "bags");
+    const roots = projectionRoots({ stateRoot: "/state", canonBags: realBags });
+    expect(roots.sourcedSlugs().length, "the checkout's bags/ stands").toBeGreaterThan(0);
+    expect(roots.sourcedSlugs()).not.toContain("daemon");
   });
 
   test("CONTROL: a sourced slug lands under the canon parent, its wiki beside the canon source", () => {

@@ -24,12 +24,12 @@ vi.mock("../src/local-connector.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/local-connector.js")>();
   return { ...actual, udsAlive: vi.fn(), whoHolds: vi.fn(), udsSocketPresent: vi.fn(() => true), invokeLocal: vi.fn() };
 });
-vi.mock("../src/custody-door.js", () => ({ vesselStanding: vi.fn(async () => ({ reading: "vessel", unlocked: true })) }));
+vi.mock("../src/custody-door.js", () => ({ vesselStanding: vi.fn(async () => ({ reading: "vessel", unlocked: true, composing: false })) }));
 vi.mock("../src/env.js", () => ({ vesselDid: vi.fn(async () => "did:test"), larSealHome: vi.fn(() => "/tmp/unused-seal") }));
 
 import { udsAlive, whoHolds, invokeLocal } from "../src/local-connector.js";
 import { vesselStanding } from "../src/custody-door.js";
-import { throughStoreDoor, pokeSealHomeRefold, SlowBootTimeout, storeVerb, storeFailure, VesselLocked } from "../src/store-door.js";
+import { throughStoreDoor, pokeSealHomeRefold, SlowBootTimeout, storeVerb, storeFailure, VesselLocked, VesselComposing, VesselSilent } from "../src/store-door.js";
 
 const FAST_PHASES = [
   { name: "unbound", budgetMs: 30 },
@@ -170,7 +170,7 @@ describe("pokeSealHomeRefold says what the refold did, one word per outcome", ()
 describe("storeVerb — a locked vessel refuses by name before the door parks (L7)", () => {
   it("RED: a vessel that stands locked refuses `persona-new` as vessel-locked and no verb reaches the socket", async () => {
     vi.mocked(udsAlive).mockResolvedValue(true);
-    vi.mocked(vesselStanding).mockResolvedValue({ reading: "vessel", unlocked: false });
+    vi.mocked(vesselStanding).mockResolvedValue({ reading: "vessel", unlocked: false, composing: false });
     vi.mocked(invokeLocal).mockClear();
     vi.mocked(invokeLocal).mockImplementation(() => new Promise(() => { /* the parked line: never answers */ }));
     const err = await storeVerb("persona-new", { handleIndex: 1 }).then(() => null, (e: unknown) => e);
@@ -183,7 +183,7 @@ describe("storeVerb — a locked vessel refuses by name before the door parks (L
   it("CONTROL: an unlocked vessel carries the row through the door", async () => {
     vi.mocked(udsAlive).mockResolvedValue(true);
     vi.mocked(whoHolds).mockResolvedValue(null);
-    vi.mocked(vesselStanding).mockResolvedValue({ reading: "vessel", unlocked: true });
+    vi.mocked(vesselStanding).mockResolvedValue({ reading: "vessel", unlocked: true, composing: false });
     vi.mocked(invokeLocal).mockClear();
     vi.mocked(invokeLocal).mockResolvedValue({ status: "done", requestId: "r9", results: { summary: { ok: true, output: { verb: "persona-new", alreadyStood: false } } } });
     const r = await storeVerb("persona-new", { handleIndex: 1 });
@@ -194,7 +194,7 @@ describe("storeVerb — a locked vessel refuses by name before the door parks (L
   it("CONTROL: a row of the place (a herm's carry) keeps its way through a locked vessel", async () => {
     vi.mocked(udsAlive).mockResolvedValue(true);
     vi.mocked(whoHolds).mockResolvedValue(null);
-    vi.mocked(vesselStanding).mockResolvedValue({ reading: "vessel", unlocked: false });
+    vi.mocked(vesselStanding).mockResolvedValue({ reading: "vessel", unlocked: false, composing: false });
     vi.mocked(invokeLocal).mockClear();
     vi.mocked(invokeLocal).mockResolvedValue({ status: "done", requestId: "r8", results: { summary: { ok: true, output: { verb: "nexus-offering-inspect" } } } });
     const r = await storeVerb("nexus-offering-inspect", { offeringCid: "x" });
@@ -204,7 +204,7 @@ describe("storeVerb — a locked vessel refuses by name before the door parks (L
 
   it("a face row refuses a locked vessel by name as persona-new does", async () => {
     vi.mocked(udsAlive).mockResolvedValue(true);
-    vi.mocked(vesselStanding).mockResolvedValue({ reading: "vessel", unlocked: false });
+    vi.mocked(vesselStanding).mockResolvedValue({ reading: "vessel", unlocked: false, composing: false });
     await expect(storeVerb("persona-lease", { handleIndex: 0 })).rejects.toBeInstanceOf(VesselLocked);
   });
 
@@ -212,6 +212,37 @@ describe("storeVerb — a locked vessel refuses by name before the door parks (L
     vi.mocked(udsAlive).mockResolvedValue(false);
     vi.mocked(vesselStanding).mockClear();
     await storeVerb("persona-new", { handleIndex: 1 }).catch(() => { /* the direct run needs a store; only the ask matters */ });
+    expect(vesselStanding).not.toHaveBeenCalled();
+  });
+});
+
+describe("storeVerb — composing and silent vessels refuse by name, and the probe runs once (L7)", () => {
+  it("RED: a vessel that holds its key and still recomposes refuses persona-new as vessel-composing, no verb sent", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(vesselStanding).mockResolvedValue({ reading: "vessel", unlocked: true, composing: true });
+    vi.mocked(invokeLocal).mockClear();
+    const err = await storeVerb("persona-new", { handleIndex: 1 }).then(() => null, (e: unknown) => e);
+    expect(err).toBeInstanceOf(VesselComposing);
+    expect(storeFailure(err).code).toBe("vessel-composing");
+    expect(invokeLocal).not.toHaveBeenCalled();
+  });
+
+  it("RED: a custody door that answers nothing refuses by name, never parks the row", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(vesselStanding).mockResolvedValue({ reading: "silent" });
+    vi.mocked(invokeLocal).mockClear();
+    const err = await storeVerb("persona-new", { handleIndex: 1 }).then(() => null, (e: unknown) => e);
+    expect(err).toBeInstanceOf(VesselSilent);
+    expect(storeFailure(err).code).toBe("vessel-silent");
+    expect(invokeLocal).not.toHaveBeenCalled();
+  });
+
+  it("CONTROL: a reading the caller already took rides down, and the door never probes a second time", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(null);
+    vi.mocked(vesselStanding).mockClear();
+    vi.mocked(invokeLocal).mockResolvedValue({ status: "done", requestId: "r7", results: { summary: { ok: true, output: { verb: "persona-new" } } } });
+    await storeVerb("persona-new", { handleIndex: 1 }, undefined, { reading: "vessel", unlocked: true, composing: false });
     expect(vesselStanding).not.toHaveBeenCalled();
   });
 });

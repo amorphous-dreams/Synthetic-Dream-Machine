@@ -155,19 +155,35 @@ for (const [name, shim] of shims) {
     assert.doesNotMatch(r.stderr, /holding no vessel key/);
   });
 
-  test(`${name}: up warns when the image's revision label differs from HEAD, naming both`, async () => {
+  /** The revision the shim computes: HEAD, marked `-dirty` while the tree holds changes. */
+  const checkoutRev = () => {
     const head = spawnSync("git", ["-C", ROOT, "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim();
+    const dirty = spawnSync("git", ["-C", ROOT, "status", "--porcelain"], { encoding: "utf8" }).stdout.trim() !== "";
+    return dirty ? `${head}-dirty` : head;
+  };
+
+  test(`${name}: up warns when the image's revision label differs from HEAD, naming both`, async () => {
+    const head = checkoutRev();
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: "0123456789abcdef0123456789abcdef01234567", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}' } });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.stderr, /image names revision 0123456789abcdef0123456789abcdef01234567 and the checkout stands at /);
     assert.ok(r.stderr.includes(head), "the warning names the checkout's head");
+    assert.match(r.stderr, /GIT_REV=\S+ docker compose -f \S+ build lares/, "the hint names the build that bakes the label");
+    assert.doesNotMatch(r.stderr, /rebuild the image \(`docker compose build`\)/);
   });
 
-  test(`${name}: CONTROL up stays silent when the image names the checkout's head`, async () => {
-    const head = spawnSync("git", ["-C", ROOT, "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim();
+  test(`${name}: a label carrying control characters prints without them`, async () => {
+    const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: "\u001b[31mevil\u001b[0m", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}' } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.stderr, /\u001b/);
+  });
+
+  test(`${name}: CONTROL up stays silent about the revision when the image names the checkout's rev`, async () => {
+    const head = checkoutRev();
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: head, FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}' } });
     assert.equal(r.status, 0, r.stderr);
     assert.doesNotMatch(r.stderr, /image names revision/);
+    assert.doesNotMatch(r.stderr, /no git checkout/);
   });
 
   test(`${name}: a restart the shim performs names vault unlock again`, async () => {

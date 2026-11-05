@@ -29,10 +29,12 @@ export type CustodyDoorAnswer = Record<string, unknown> & { readonly op?: string
  * answers (no socket, a refused connect, a closed line with no answer). An unlock waits as long as the vessel
  * takes to compose again: nothing here times it out.
  */
-export function sendCustodyFrame(frame: CustodyFrame, dataDir?: string | null): Promise<CustodyDoorAnswer | null> {
+export function sendCustodyFrame(frame: CustodyFrame, dataDir?: string | null, signal?: AbortSignal): Promise<CustodyDoorAnswer | null> {
   const path = udsSocketPath(dataDir);
   return new Promise((settle) => {
     const sock = createConnection(path);
+    // A caller that stops waiting hangs up: its socket never rests open beside a vessel that cannot answer.
+    signal?.addEventListener("abort", () => { sock.destroy(); settle(null); }, { once: true });
     let buf = "";
     sock.setEncoding("utf8");
     sock.once("connect", () => { sock.write(JSON.stringify(frame) + "\n"); });
@@ -49,7 +51,7 @@ export function sendCustodyFrame(frame: CustodyFrame, dataDir?: string | null): 
 /** What stands at the socket, as far as the custody door says. */
 export type VesselStanding =
   /** A vessel's custody door answered: it holds its key, or rests locked. */
-  | { readonly reading: "vessel"; readonly unlocked: boolean }
+  | { readonly reading: "vessel"; readonly unlocked: boolean; /** An unlock or a lock still recomposes: the verb channel has not stood yet. */ readonly composing: boolean }
   /** Something accepted the connection and gave no answer inside the wait: a holder nobody can name. */
   | { readonly reading: "silent" }
   /** No custody door answers: nothing listens, or another command holds the store for one act. */
@@ -63,8 +65,9 @@ export type VesselStanding =
  */
 export function vesselStanding(dataDir?: string | null, waitMs = 5_000): Promise<VesselStanding> {
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const silent = new Promise<VesselStanding>((resolve) => { timer = setTimeout(() => resolve({ reading: "silent" }), waitMs); });
-  const asked = sendCustodyFrame({ op: "custody" }, dataDir).then((a): VesselStanding =>
-    (a !== null && a["op"] === "custody" ? { reading: "vessel", unlocked: a["unlocked"] === true } : { reading: "none" }));
+  const abort = new AbortController();
+  const silent = new Promise<VesselStanding>((resolve) => { timer = setTimeout(() => { abort.abort(); resolve({ reading: "silent" }); }, waitMs); });
+  const asked = sendCustodyFrame({ op: "custody" }, dataDir, abort.signal).then((a): VesselStanding =>
+    (a !== null && a["op"] === "custody" ? { reading: "vessel", unlocked: a["unlocked"] === true, composing: a["composing"] === true } : { reading: "none" }));
   return Promise.race([asked, silent]).finally(() => { if (timer) clearTimeout(timer); });
 }
