@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 17
-manao     = 17
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "transclusion-family edge sugar — live transclusion; subscription-fresh embed; dual form: URI edge and name-call invocation"
 tags      = ["api/pono/pranala", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kahea"]
@@ -156,6 +153,6 @@ canonical-roles = []   # held — transclusion role vocab deferred with the pono
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sB9dqOULE8qlJtaAdy0IdswATTgqWVCWyAG8Kh1cEPI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hG_qXQw996sDLNSV9H0zc0-bGq1y-0RNAEMiu6Tx96M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

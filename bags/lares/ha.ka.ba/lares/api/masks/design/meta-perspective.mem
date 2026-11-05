@@ -8,9 +8,6 @@ cacheable = true
 created   = "Invalid Date"
 family    = "design"
 l-space   = "stable"
-mana      = 13
-manao     = 14
-manaoio   = 12
 name      = "Meta-Perspective"
 namespace = "&#x0950; &#x0901;"
 rating    = "meme"
@@ -64,6 +61,6 @@ step-in licenses standpoints of ''place''; one discipline, two axes.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Hq2nTOA5wz4wDbUa7iFZ5rWwBYEglQafjvZubkOAzj4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZBD3-7f7HgmQX-Nb28I6wdLuOLK2RtMRNcm4HXnn8iQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

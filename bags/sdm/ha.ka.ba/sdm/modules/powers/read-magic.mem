@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "Read Magic"
 l-space   = "sdm"
-mana      = 15
-manao     = 17
-manaoio   = 16
 role      = "Power module: Read Magic — decode a magical inscription's interface layer; the first proof of the v0.1 composition chain"
 tags      = ["components/domain/divination", "components/function/magic-decode", "components/function/ecm-scan", "components/function/archive", "components/hook/dangerous", "mount-points/trait"]
 title     = "lar:///ha.ka.ba/sdm/modules/powers/read-magic"
@@ -93,6 +90,6 @@ A botched read mis-recognizes: the operator marks the wrong meaning as trusted, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zzGn1p2aOSfxCItKPvIdQ-HILjV3S0yi7MkRzFtChvA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gw5QMHOoqplqdIQA1iwakNbD0wNCmzxnb0OOFBoPhEo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

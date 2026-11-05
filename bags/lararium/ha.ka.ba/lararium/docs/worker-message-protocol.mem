@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 15
-manao     = 16
-manaoio   = 14
 role      = "the vessel-to-island message protocol — the structured-clone boundary, the schema-versioned envelope (GP-1..6), and the message set the island protocol source defines; for operator + agent review"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/worker-message-protocol"
@@ -136,6 +133,6 @@ A browser camera renders inside the island and crosses the boundary twice, under
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;g6KR_Ck94T1UYNDTgBK0Muy8DyWlN3qcgzib5Bj67FU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;J1uDz2KtVMYk4-OqDv5TME9pxGdDe8EX3reAxImUWUo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

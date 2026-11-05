@@ -1,37 +1,41 @@
 import { digestsEqual, formatDigest, SHA256_ALGO } from "@lararium/mesh/agile-digest";
 import { hex } from "@lararium/mesh/crypto";
-import { parsePonoLevel } from "./pono-level.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
+import { stackOf } from "./has-stack.js";
 
-// Module gate thresholds on the 0–20 Level scale: mana ≥ 18, manao ≥ 17, manaoio ≥ 17.
-const MODULE_MANA_THRESHOLD = 18;
-const MODULE_MANAO_THRESHOLD = 17;
-const MODULE_MANAOIO_THRESHOLD = 17;
 // The has-stack model: a kernel-injectable module WEARS the
 // tw5-module component in its stack (tags), never "implements an interface".
 const MODULE_COMPONENT_URI = "lar:///ha.ka.ba/lararium/tw5/tw5-module";
 
-export async function bootTrustedModules(tw: TW5Instance): Promise<void> {
+/** Read genesis and promoted preloads alone, never the composite a stage item joins after boot. */
+export async function bootTrustedModules(tw: TW5Instance, preloaded: ReadonlySet<string>, granted: ReadonlyMap<string, Record<string, unknown>>): Promise<void> {
   const wiki = tw.wiki;
 
+  let at = "(the module list)";
   try {
-    const titles: string[] = wiki.filterTiddlers(`[all[tiddlers]stack:has[${MODULE_COMPONENT_URI}]]`) ?? [];
+    const titles = new Set(wiki.filterTiddlers(`[all[tiddlers]stack:has[${MODULE_COMPONENT_URI}]]`) ?? []);
+    for (const [title, record] of granted) {
+      const rawTags = record["tags"];
+      const tags = Array.isArray(rawTags) ? rawTags.filter((tag): tag is string => typeof tag === "string") : typeof rawTags === "string" ? rawTags.split(" ").filter(Boolean) : [];
+      if (stackOf(tags, title).some(entry => entry.uri === MODULE_COMPONENT_URI)) titles.add(title);
+    }
     for (const title of titles) {
-      const t = wiki.getTiddler(title);
-      if (!t) continue;
-      const f = t.fields as Record<string, string>;
-
-      const mana       = parsePonoLevel(f["mana"]);
-      const manao      = parsePonoLevel(f["manao"]);
-      const manaoio    = parsePonoLevel(f["manaoio"]);
-      if (
-        mana === null ||
-        manao === null ||
-        manaoio === null ||
-        mana < MODULE_MANA_THRESHOLD ||
-        manao < MODULE_MANAO_THRESHOLD ||
-        manaoio < MODULE_MANAOIO_THRESHOLD
-      ) continue;
+      at = title;
+      if (!preloaded.has(title)) continue;
+      if (!granted.has(title)) {
+        console.warn(`[module-gate] refused ${title}: no local grant (promote it by hand)`);
+        continue;
+      }
+      const record = granted.get(title)!;
+      const captured = new tw.Tiddler(record);
+      const f = captured.fields as Record<string, string>;
+      const live = wiki.getTiddler(title)?.fields as Record<string, unknown> | undefined;
+      if (live && [...new Set([...Object.keys(f), ...Object.keys(live)])].some(key => JSON.stringify(live[key]) !== JSON.stringify(f[key]))) {
+        console.warn(`[module-gate] ignored a replacement at ${title}: only the granted bytes admit`);
+      }
+      const rawTags = f["tags"] as unknown;
+      const tags = Array.isArray(rawTags) ? rawTags.filter((tag): tag is string => typeof tag === "string") : typeof rawTags === "string" ? rawTags.split(" ").filter(Boolean) : [];
+      if (!stackOf(tags, title).some(entry => entry.uri === MODULE_COMPONENT_URI)) continue;
 
       const body = f["text"] ?? "";
       if (!body.trim() || body.startsWith("// Body injected")) continue;
@@ -58,8 +62,10 @@ export async function bootTrustedModules(tw: TW5Instance): Promise<void> {
       // defines each trusted module under that name, `define(name, moduleType, definition)`.
       tw.modules.define(title, moduleType, body);
     }
-  } catch {
-    /* filter unavailable — fall through */
+  } catch (error) {
+    // The walk stops here and fails closed for every later title; the modules admitted before it stay. Say where it died so a
+    // half-admitted set never goes unseen.
+    console.warn(`[module-gate] walk stopped at ${at}: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 

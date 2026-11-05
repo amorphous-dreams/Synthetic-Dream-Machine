@@ -6,9 +6,6 @@
 ```toml meta
 source-sha256   = "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 cacheable       = true
-mana            = 19
-manao           = 18
-manaoio         = 18
 module-type     = "library"
 role            = "the module AGGREGATE the boot gate defines: the one library tiddler tw5-module-gate hands to tw.modules.define after any gated module injects"
 source-file     = "packages/lararium-tw5/src/tw5-module-gate.ts"
@@ -41,6 +38,6 @@ The sigil declarations and render templates that make up the wikitext surface tr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;dgsaVbths6EpHdFLkJtVIewkiidkz9fMbMxYi_wsBRI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sitpCB85N7MqTo2Q5TYS-6f-_exCoT_rM5DMLnzhz5g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

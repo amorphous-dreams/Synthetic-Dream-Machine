@@ -6,11 +6,8 @@
 ```toml meta
 cacheable = true
 docs      = "lar:///ha.ka.ba/lararium/docs/verse-mesh"
-mana      = 18
-manao     = 18
-manaoio   = 17
 namespace = "&#x0950; &#x0901;"
-role      = "TS wiki shore between CompositeStore and the wiki's in-process nalu engine — owns the landing queue and its door, the landed ledger, the per-title hand gate and the draft book; lands each inbound change as the composition resolves it and routes a hand's saveTiddler/deleteTiddler at or above the working layer; the outbound bridge reads the wiki's change dispatches for it; the law it enacts lives at docs/pono/outbound-bridge"
+role      = "TS wiki shore between CompositeStore and the wiki's in-process nalu engine — owns the landing queue and its door, the landed ledger, the one drain and the draft book; lands each inbound change as the composition resolves it and routes a hand's saveTiddler/deleteTiddler at or above the working layer; the outbound bridge reads the wiki's change dispatches for it; the law it enacts lives at docs/pono/outbound-bridge"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/api/island-adaptor"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -44,7 +41,7 @@ own invariants and no more.
 | Apply ONE change to the wiki | nalu-engine (`$tw.lares.applyNalu`, in-wiki) |
 | The landed ledger: per title the value, bag and heads the last wave left | IslandAdaptor (`LandedLedger`, `landed-ledger.ts`) |
 | Read a live wiki `change` dispatch: discrete acts first, then foam or a hand per title | the outbound bridge (`outbound-bridge.ts`) |
-| Pace a hand per title (trailing window + non-resetting cap), flush at teardown | IslandAdaptor through `HandGate` (`hand-gate.ts`) |
+| Hold every owed hand write, send one at a time awaiting the durable ack, close at teardown | IslandAdaptor through `Drain` (`drain.ts`) |
 | Outbound save → the meme family through `store.writeFamily` in the layer the cascade names at or above the working layer, or the higher layer where the title already lives | IslandAdaptor (`_saveBag`, `_writeMeme`) |
 | Outbound delete → `tombstoneInBag` in the bag the composition's layer order picks | IslandAdaptor (`_tombstoneBag`) |
 | A draft's target, wanted title and draft-open base | IslandAdaptor (the draft book, `draft-book.ts`) |
@@ -83,7 +80,7 @@ the queue and its slices.
 ''I-4 Outbound save.''
 `saveTiddler` refuses a title that never persists (`neverPersists`: the volatile VM plane and the
 alert rail, ahead of any cascade edit), teaches the draft book when the tiddler carries `draft.of`,
-and marks the title in the hand gate. The flush reads the title's state in the wiki (a direct caller that hands in a tiddler the wiki does not hold rides pinned, its value standing in), routes BY KIND
+and marks the title in the Drain. The flight reads the title's state in the wiki (a direct caller that hands in a tiddler the wiki does not hold rides pinned, its value standing in), routes BY KIND
 through the cascade (`lar-bag-paths.tid`): a `draft.of` tiddler to the draft slot, `$:/temp/*` and
 most `$:/state/*` to the temp store, the personal kind to the personal slot, the catch-all to
 `current-wiki-bag`. `_settle` accepts only a layer the composition mounts at or above the working
@@ -137,6 +134,6 @@ its tracked work settle and turns the shore resident (a seed landing that fails 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JZRqYpbk8sLkgtlE54oW2R7tVO6QbQihIigqVD1Pm94`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gv7OIBqpQhMshJrHDIxTkUvA5-kkuhYWdtEqfesJdKs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

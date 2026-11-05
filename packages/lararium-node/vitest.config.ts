@@ -56,6 +56,8 @@ export const heavy = [
   // Surfaced by `tests/heavy-roster-is-complete.test.ts`, which applies the criteria above to every
   // suite in the directory. These four stood a live listener or a nested island while running in the
   // parallel project — the exact condition the split exists to prevent.
+  // a nested island booting the full TW5 kernel (the production rest-door wiring proof)
+  "tests/island-doors-by-class.test.ts",
   "tests/carriage-cap.test.ts",
   "tests/flow-map-read-face.test.ts",
   "tests/ea-breath-watchdog.test.ts",

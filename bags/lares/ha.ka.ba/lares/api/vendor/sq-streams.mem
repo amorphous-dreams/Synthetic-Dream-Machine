@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable          = true
-mana               = 18
-manao              = 18
-manaoio            = 17
 role               = "deferred-offering record: Streams plugin by Saq Imtiaz — hierarchical tree-of-tiddlers TW5 UI, not yet packed"
 tags               = ["api/pono/meme"]
 title              = "lar:///ha.ka.ba/lares/api/vendor/sq-streams"
@@ -76,6 +73,6 @@ record saying one thing and the offering carrying another.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ffpc1vfGgInX-i_cjYSN1dHlp08WIG5lhPLq_FdT8es`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YM2ZsiR6to74TxD0IV6mYK9nIAcI1hhhxS0PfBQZLx0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

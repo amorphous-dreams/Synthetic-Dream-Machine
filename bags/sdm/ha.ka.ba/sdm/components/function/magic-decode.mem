@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "magic-decode"
 l-space   = "sdm"
-mana      = 13
-manao     = 16
-manaoio   = 13
 role      = "component (function): Magic Decode — turning a magical inscription into active, readable meaning"
 title     = "lar:///ha.ka.ba/sdm/components/function/magic-decode"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -69,6 +66,6 @@ Depends on `domain/divination`; pairs with `function/archive` for the handshake 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5N7VhhLNJXQSJtBq_TYeEUWwXkEiMZpZHx49jlcg7m8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IzOHldp0hOYtDm9QUy1Jq317307Cn6fu628altXC9A8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,8 +7,8 @@
  * INBOUND. The landed ledger records each wave's absolute result. WaveLanding meets queued waves with
  * unsent hands before the synchronous engine applier receives a change. A landed record also teaches the draft book.
  *
- * OUTBOUND, THE PER-TITLE PATH. A mark names a TITLE. HandGate coalesces until a boundary or count cap; what leaves at the flush is the title's
- * state in the wiki at that flush. A state
+ * OUTBOUND, THE PER-TITLE PATH. A mark names a TITLE. The one Drain (`drain.ts`) holds every owed title and writes one at a time: what
+ * leaves at the flush is the title's state in the wiki at that flush. A state
  * equal to the landed value with nothing sent since leaves nothing; a title the store never saw and the
  * wiki does not hold raises no tombstone; a state that differs from a write still in flight leaves after
  * it. A value handed in that the wiki does not hold (`saveTiddler` with a free-standing tiddler) is the one
@@ -36,13 +36,13 @@
  *
  * DISCRETE ACTS. One `change` dispatch holding a known draft's deletion is a SAVE (the target is written),
  * a RENAME (`draft.title` names another title: that title is created or overwritten, the source is
- * tombstoned where the ledger says it lives) or a CANCEL (the deletion stands alone). The act consumes every
- * gate entry of its titles synchronously, builds each written title as its meme family through the one
- * builder the per-title flush shares, and issues its store calls inside the handler, in the turn of the
- * dispatch: one `writeFamily` per (bag, base), no await between them. The draft's own tombstone rides the
- * draft's bag at the draft's landed base and is issued only for a draft that reached the store. A save
- * builds on the draft-open base; a rename onto a standing title builds on that title's landed base; the
- * source's tombstone builds on the draft-open base. An act whose call is refused leaves its titles owed.
+ * tombstoned where the ledger says it lives) or a CANCEL (the deletion stands alone). The act registers its
+ * writes through the Drain and starts an idle pump inside the handler, so the target leaves in the turn of the
+ * dispatch. Its removals (the draft's own tombstone, a rename's source) ride dependency edges on the target:
+ * each waits until the target's durable receipt covers the act, then leaves as an ordinary owed title. The
+ * draft's own tombstone rides the draft's bag at the draft's landed base and is issued only for a draft that
+ * reached the store. A save builds on the draft-open base; a rename onto a standing title builds on that
+ * title's landed base; the source's tombstone builds on the draft-open base. A refused write leaves its title owed.
  *
  * THE CROSS-BAG CHECK. A write whose destination bag differs from the bag its base names reads the source
  * bag at the base heads and at its current heads, immediately before the destination write is issued. An
@@ -51,8 +51,8 @@
  * awaited and tracked) and the source's record lands in the wiki again. Source heads never ride into the
  * destination.
  *
- * TEARDOWN. `stop()` never drops a hand: it awaits acts and parallel-draft persistence and flushes every
- * marked title. `awaitWikiDispatch()` lets a teardown deliver the wiki's queued `change` dispatch to the
+ * TEARDOWN. `stop()` never drops a hand: it closes the Drain, which writes every owed title (a failure answers
+ * by name, never a hang), and awaits parallel-draft persistence. `awaitWikiDispatch()` lets a teardown deliver the wiki's queued `change` dispatch to the
  * bridge before the bridge unhooks.
  *
  * Schema: lar:///ha.ka.ba/lares/api/lararium/schema/island-adaptor
@@ -75,15 +75,15 @@ import { toLarTiddlerRecord, isVolatileVmUri, draftsOffLive, parallelDraftTitle 
 import { maskedExecAll } from "@lararium/memetic-frame";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
 import type { TW5Engine } from "./tw5-vm.js";
-import type { RestDoor } from "./rest-door.js";
+import { ReceiptCapabilityUnavailable, type ReceiptCapability } from "./receipt.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
 import { KAHEA_REF_RE } from "./meme-ast/ahu-scan.js";
 import { LandedLedger, same, sameWithStamp } from "./landed-ledger.js";
 import { WaveLanding } from "./wave-landing.js";
-import { HandGate } from "./hand-gate.js";
+import { Drain, macrotask, type DrainOutcome } from "./drain.js";
 import {
-  DRAFT_BASE_BAG, DRAFT_BASE_HEADS, contentKey, draftBaseFields, readDraftBase, sameHeads, withoutDraftBase,
+  DRAFT_BASE_BAG, DRAFT_BASE_HEADS, contentKey, draftBaseFields, readDraftBase, withoutDraftBase,
   type DraftBase, type DraftEntry,
 } from "./draft-book.js";
 
@@ -192,6 +192,29 @@ function extractFields(tw5: TW5Engine, tiddler: unknown): Record<string, string>
   return toTW5FieldStrings(tw5, tiddler);
 }
 
+/**
+ * THE ONE NAMED TRIGGER SEAM. The Drain decides what leaves and in what state; WHEN an idle pump starts at the end of a change dispatch
+ * belongs to the trigger. Unattached (production), the dispatch's end starts it. An attached trigger's `fire` drains every owed title and
+ * resolves on their outcome. A discrete act, a boundary, handsRested and teardown start the pump themselves either way.
+ */
+export interface RecoveryTrigger {
+  attach(fire: (titles?: readonly string[]) => Promise<void>): () => void;
+}
+
+/** An act's removal of one title (the draft's tombstone, a rename's source): where it lands, and the target it waits behind. */
+interface ActRemoval {
+  readonly bag: string;
+  readonly base: readonly string[] | undefined;
+  readonly target: string;
+  readonly targetGeneration: number;
+  /** The value the wiki held when the act took the title (null for a draft): a different value later reads as a newer hand. */
+  readonly before: unknown | null;
+  /** A rename's source: the wiki shows it again while its removal waits or after a refusal, and loses it with its acknowledged removal. */
+  readonly source: boolean;
+  /** A draft that never reached the store: its recovery copy leaves first, and the removal waits behind the target after it. */
+  recovery?: LarTiddlerRecord;
+}
+
 // ---------------------------------------------------------------------------
 // IslandAdaptor
 // ---------------------------------------------------------------------------
@@ -205,7 +228,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * the heads a gesture landed through this account (`landedCovers`).
    */
   private readonly landedHeads = new Map<string, readonly string[]>();
-  private readonly gate: HandGate;
+  /** THE one drain: every owed title, one write in flight across the shore. */
+  private drain: Drain = this._newDrain();
   private landing: WaveLanding | null = null;
   private engineApply: ((change: LarTiddlerChange) => void) | null = null;
   /** The queue door this shore installed at `$tw.lares.enqueueNalu`; null while it holds none. */
@@ -213,17 +237,19 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private readonly sent = new Map<string, unknown>();
   private readonly handBase = new Map<string, { bag: string; heads: readonly string[] }>();
   private readonly lastWriteBag = new Map<string, string>();
+  private readonly recoveryWrites = new Map<string, { bag: string; fields: Record<string, unknown> | null }>();
   /** Titles this shore wrote whose wave has not landed: the store stands ahead of the ledger for them. */
   private readonly unlanded = new Set<string>();
   private readonly handed = new Map<string, unknown | null>();
-  private readonly pendingHand = new Set<string>();
   private resident = false;
-  private readonly flushes = new Set<Promise<unknown>>();
-  private readonly activeFlushCounts = new Map<string, number>();
   /** What the shore knows of each draft, keyed by the draft's title (see `draft-book.ts`). */
   private readonly draftBook = new Map<string, DraftEntry>();
-  /** Discrete acts in flight (a save, a rename, a cancel). */
-  private readonly acts = new Set<Promise<void>>();
+  /** Last draft fields seen for each draft title, used when a save outruns draft persistence. */
+  private readonly draftSnapshots = new Map<string, Record<string, string>>();
+  /** The removals acts registered, by removed title; each rides the Drain behind its target. */
+  private readonly actRemovals = new Map<string, ActRemoval>();
+  /** The rest holds of the acts this change dispatch began; they rest with what the dispatch marked. */
+  private readonly actHolds: Array<{ hold: { done(slots: readonly string[] | null): void }; members: readonly string[] }> = [];
   /** Parallel-draft persistence in flight. */
   private readonly surfacings = new Set<Promise<void>>();
 
@@ -233,17 +259,20 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     private readonly tw5:   TW5Engine,
     private readonly store: IslandStore,
     readonly instanceId:    string,
-  ) {
-    this.gate = new HandGate();
-  }
+  ) {}
 
   /**
    * Install the shore queue door before seed replay or any other inbound caller. One shore owns an
    * engine's door: a second shore on the same engine refuses by `LandingDoorOccupiedError`. A shore that
    * stopped installs a fresh queue and its door again.
    */
-  /** The rest door a save act waits on before its result leaves; absent where no vessel answers one. */
-  restDoor: RestDoor | null = null;
+  /** The capabilities the kernel hands this adaptor: the receipt a save act waits on before its result leaves, null where no vessel issues one. */
+  caps: { receipt: ReceiptCapability | null } = { receipt: null };
+  /**
+   * True when the vessel declared a receipt grant for this island and it stands as no view (production storage-backed islands): a durable
+   * acknowledgement then refuses by name (`ReceiptCapabilityUnavailable`) while `caps.receipt` stays absent.
+   */
+  receiptRequired = false;
 
   installLandingQueue(yieldHost?: () => Promise<void>): void {
     if (this.landing) return;
@@ -278,32 +307,194 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   armSeedCheckpoint(): Promise<void> {
     this.installLandingQueue();
-    return this.landing!.checkpoint().then(() => { this.resident = true; });
+    return this.landing!.checkpoint().then(() => {
+      this.resident = true;
+      const waiting = [...this.residentWaiters]; this.residentWaiters.clear();
+      for (const fn of waiting) fn();
+    });
+  }
+
+  private readonly residentWaiters = new Set<() => void>();
+  /** The slot children a family call put, by address, until a landing wave or a different state replaces them. */
+  private readonly familyPlaced = new Map<string, LarTiddlerRecord>();
+  /** Run `fn` once the shore stands resident (at once when it does): the outbound bridge holds a pre-resident write here. */
+  whenResident(fn: () => void): void {
+    if (this.resident) fn(); else this.residentWaiters.add(fn);
   }
 
   landingIdle(): Promise<void> { return this.landing?.idle() ?? Promise.resolve(); }
 
-  /** Flush hands marked before this island boundary. */
-  boundary(): Promise<void> { return this.gate.boundary(); }
-  pendingTitles(): string[] { return this.gate.titles(); }
+  /** Every hand marked before this island boundary leaves; rejects with the first refusal among them. */
+  async boundary(): Promise<void> {
+    const outcome = await this._drainNow();
+    if (outcome.kind === "failed") throw outcome.error;
+  }
+
+  /**
+   * A lifecycle REQUEST (the end of a change dispatch, the page's visibilitychange/pagehide over its port): an idle pump starts now and a
+   * refused title may try again. Best effort, never the guarantee. An attached recovery trigger owns this clock instead.
+   */
+  requestDrain(): void { if (this._trigger === null) this.drain.kick(); }
+
+  /** The bridge read one change dispatch whole: the drain starts, and the acts it began rest with what the dispatch marked. */
+  dispatchEnded(): void {
+    if (this._trigger === null) this.drain.kick({ retry: false });
+    if (this.actHolds.length === 0) return;
+    const holds = this.actHolds.splice(0);
+    const marked = this.drain.titles();
+    // A whole-drain target the Drain displaced (`superseded`: it keeps the oldest and the newest) never says the acts' writes rest: the hold
+    // asks again for the generation marked by now. An empty bag list releases the receipt at once, so the hold waits on a real rest.
+    void this._whenAllRested().then(() => {
+      for (const { hold, members } of holds) {
+        const bags = [...new Set([...members, ...marked])].filter((title) => !this.drain.owes(title)).map((title) => this.lastWriteBag.get(title));
+        hold.done([...new Set(bags.filter((bag): bag is string => bag !== undefined))]);
+      }
+    });
+  }
+
+  private _trigger: RecoveryTrigger | null = null;
+  private _triggerOff: (() => void) | null = null;
+  /** The drain's next turn while an attached trigger holds the clock. */
+  private _heldRun: (() => void) | null = null;
+  /** Lifecycle drains in progress: while any runs, the drain's turns pass straight through. */
+  private _firing = 0;
+
+  /** Hand WHEN an idle drain starts at a dispatch's end to another trigger (null restores the dispatch's own start). */
+  setRecoveryTrigger(trigger: RecoveryTrigger | null): void {
+    this._triggerOff?.(); this._triggerOff = null;
+    this._trigger = trigger;
+    if (trigger) { this._triggerOff = trigger.attach(async () => { const outcome = await this._drainNow(); if (outcome.kind === "failed") throw outcome.error; }); return; }
+    const held = this._heldRun; this._heldRun = null;
+    if (held) this._yield(held);
+  }
+
+  private readonly _yield = macrotask();
+  private _newDrain(): Drain {
+    return new Drain({
+      write: (title) => this._drainWrite(title),
+      schedule: (run) => { if (this._trigger !== null && this._firing === 0) this._heldRun = run; else this._yield(run); },
+    });
+  }
+
+  /** THE one resting loop while a boundary drain pends: every further boundary or handsRested caller joins it, none starts its own. */
+  private _resting: Promise<DrainOutcome> | null = null;
+  /** A caller joined the resting loop after its last ask: the loop asks once more, so that caller's marks-so-far rest before it answers. */
+  private _restAgain = false;
+
+  /**
+   * Start the drain now (releasing a trigger's held turn) and await every generation marked so far. While one such wait pends, a further
+   * call JOINS it: repeated production signals under a hung receipt (an act's boundary, handsRested) hold one loop, never one re-ask loop each.
+   */
+  private _drainNow(close = false): Promise<DrainOutcome> {
+    const release = (): void => {
+      const held = this._heldRun; this._heldRun = null;
+      held?.();
+      this.drain.kick();
+    };
+    if (!close && this._resting) { this._restAgain = true; release(); return this._resting; }
+    this._firing++;
+    release();
+    if (close) return this.drain.close().finally(() => { this._firing--; });
+    return (this._resting = this._restingLoop());
+  }
+
+  /** The shared loop: `_whenAllRested`, asked once more for a caller that joined after the last ask. It clears its own seat before it answers. */
+  private async _restingLoop(): Promise<DrainOutcome> {
+    try {
+      for (;;) {
+        this._restAgain = false;
+        const outcome = await this._whenAllRested();
+        if (outcome.kind === "acked" && this._restAgain) continue;
+        return outcome;
+      }
+    } finally { this._firing--; this._resting = null; }
+  }
+
+  /** Every generation marked so far rests: a `superseded` whole-drain target was handed forward to a newer one and never read as rested, so ask again for the generation marked by now. */
+  private async _whenAllRested(): Promise<DrainOutcome> {
+    for (;;) {
+      const outcome = await this.drain.whenAcked();
+      if (outcome.kind !== "superseded") return outcome;
+    }
+  }
+
+  /** One title's turn in the drain: an owed title keeps its own generation, an unmarked hand marks; the pump starts, the landing awaits. */
+  private async _drainTitle(title: string): Promise<DrainOutcome> {
+    this._firing++;
+    try {
+      const gen = this.drain.owes(title) ? undefined : this.drain.mark(title);
+      const held = this._heldRun; this._heldRun = null;
+      held?.();
+      // A wave arriving after a refusal is a request: the refused hand tries again ahead of it. A wave meeting the flight asks nothing of it.
+      this.drain.kick({ demand: false, only: title });
+      // `superseded` hands the title forward to its newer hand, which this turn then awaits; it never reads as written.
+      let outcome = await this.drain.whenSettled(title, gen);
+      while (outcome.kind === "superseded" && this.drain.owes(title)) outcome = await this.drain.whenSettled(title);
+      return outcome;
+    } finally { this._firing--; }
+  }
+
+  /** A caller's answer for a title: resolves when its latest state rests, rejects with the refusal that holds it. */
+  private _answer(title: string, gen?: number): Promise<void> {
+    return this.drain.whenSettled(title, gen).then((outcome) => {
+      if (outcome.kind === "failed") throw outcome.error;
+      if (outcome.kind === "abandoned") throw new Error(`[island-adaptor] the shore closed before "${title}" left`);
+      // `acked`: this generation rests. `superseded`: a newer hand of the title displaced it and carries its state forward; the call is
+      // neither saved nor failed, and the title's saved/unsaved state reads the title's LATEST outcome (the drain's slot and its alerts),
+      // never this promise.
+    });
+  }
+
+  /**
+   * THE DRAIN'S ONE WRITE: the title's flush, then its DURABLE receipt. A refusal anywhere keeps the title owed in the drain, and a
+   * rename's source waiting behind this target returns to the wiki.
+   */
+  private async _drainWrite(title: string): Promise<void> {
+    try { await this._flushHand(title); }
+    catch (error) { this._restoreSourcesOf(title); throw error; }
+    try { await this._ackDurably([title]); }
+    catch (error) {
+      this.failedAtTeardown.set(title, error);
+      this._raiseUnsaved(title, this.lastWriteBag.get(title), error);
+      this._restoreSourcesOf(title);
+      throw error;
+    }
+  }
+
+  /** The projection receipt checks the snapshot handed to the store by this pass. */
+  recoveryAtRest: ((bag: string, title: string, fields: Record<string, unknown> | null) => Promise<void>) | null = null;
+
+  private async _ackDurably(fired: readonly string[]): Promise<void> {
+    const receipt = this.caps.receipt;
+    const written = [...new Set(fired.map((title) => this.lastWriteBag.get(title)).filter((bag): bag is string => bag !== undefined))];
+    if (!receipt && this.receiptRequired && written.length > 0) throw new ReceiptCapabilityUnavailable();
+    // A bag the island holds no replica of (the vessel's own temp plane) names no heads here: the store call that wrote it already answered.
+    const slots = receipt ? written.filter((bag) => receipt.holds?.(bag) ?? true) : written;
+    const checks = fired.flatMap((title) => {
+      const written = this.recoveryWrites.get(title);
+      return written && this.recoveryAtRest ? [this.recoveryAtRest(written.bag, title, written.fields)] : [];
+    });
+    // Attach rejection handling immediately while the storage receipt remains in flight.
+    const projection = Promise.allSettled(checks);
+    if (receipt && slots.length > 0) await receipt.ack(slots);
+    const outcomes = await projection;
+    const failed = outcomes.find((outcome): outcome is PromiseRejectedResult => outcome.status === "rejected");
+    if (failed) throw failed.reason;
+  }
+  /** The titles waiting for a write (owed, not in flight at their latest state, not parked behind an act's target). */
+  pendingTitles(): string[] { return this.drain.pending(); }
 
   /**
    * Resolves once every hand the wiki raised before this call rests in the store. The wiki's own pending
-   * `change` dispatch runs first, so every edit made so far has marked its title; each marked title then leaves
-   * at once, and the flushes, acts and parallel-draft persistence those start run to their end. A
-   * fault in a flush rejects the call. A test or a teardown asks this to rest every hand already marked.
+   * `change` dispatch runs first, so every edit made so far has marked its title; the drain then answers for every
+   * generation marked so far, and parallel-draft persistence runs to its end. A refusal among them rejects the
+   * call. A test or a teardown asks this to rest every hand already marked.
    */
   async handsRested(): Promise<void> {
     await this.awaitWikiDispatch();
-    const marked = new Set([...this.pendingHand, ...this.gate.titles()]);
-    await Promise.all([...marked].map(async (title) => {
-      if (this.gate.has(title)) await this.gate.flush(title);
-      else if (!this.activeFlushCounts.has(title)) await this._flushHand(title);
-    }));
-    while (this.gate.titles().length > 0 || this.flushes.size > 0 || this.acts.size > 0 || this.surfacings.size > 0) {
-      await this.gate.flushAll();
-      await Promise.allSettled([...this.flushes, ...this.acts, ...this.surfacings]);
-    }
+    const outcome = await this._drainNow();
+    await Promise.allSettled([...this.surfacings]);
+    if (outcome.kind === "failed") throw outcome.error;
   }
 
   isResident(): boolean { return this.resident; }
@@ -323,9 +514,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return new Promise<void>((resolve) => this.tw5.$tw.utils.nextTick(resolve));
   }
 
-  /** True while a hand stands for the title: marked for a flush, or sent and not yet landed by its wave. */
+  /** True while a hand stands for the title: owed to the drain (a removal parked behind its target owes no hand), or sent and not yet landed. */
   holdsHand(title: string): boolean {
-    return this.gate.has(title) || this.pendingHand.has(title) || this.sent.has(title);
+    return (this.drain.owes(title) && !this.drain.parked(title)) || this.sent.has(title);
   }
 
   private async _landOne(change: LarTiddlerChange, handSettled = false): Promise<void> {
@@ -335,10 +526,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     let heads = change.heads;
     let record = change.record;
     let bag = change.bag;
+    let resolvedTop: { readonly bagId: string; readonly record: LarTiddlerRecord } | null | undefined;
     // THE WIKI SHOWS WHAT THE COMPOSITION RESOLVES: the topmost layer holding any record for the title, a
     // tombstone included (kāpae), never the emitting layer's record over a higher layer's.
     if (change.bag) {
       const resolved = await this.store.resolveLayered(title);
+      resolvedTop = resolved;
       record = resolved?.record ?? null;
       bag = resolved?.bagId ?? change.bag;
       heads = resolved ? resolved.heads : this._headsOfBag(change.bag);
@@ -361,20 +554,28 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (this.landing?.isStopped()) return;
     // A marked title holds a hand even when its state has returned to the landed value: the flush decides
     // from the state at flush, and a write still in flight for it must be superseded before this wave lands.
-    const marked = this.gate.has(title) || this.pendingHand.has(title);
+    const marked = this.drain.owes(title) && !this.drain.parked(title);
     // A SHADOW CARRIES NO HAND. TiddlyWiki answers a plugin's shadow where the wiki holds no record of its
     // own; nobody wrote it and no wave landed it. A hand that reveals a shadow marks the title (the bridge
     // saves what the wiki shows), so an unmarked shadow meets a wave as an empty title does and the wave
     // lands over it.
+    // AN ACT'S REMOVAL OWNS THE WIKI'S VIEW of its title until it leaves: a queued wave of the title's earlier write never lands it back.
+    const removal = this.actRemovals.get(title);
+    if (!handSettled && this.resident && removal && this._removalStands(title, removal)) return;
     const shadowOnly = standing !== null && typeof wiki.tiddlerExists === "function" && !wiki.tiddlerExists(title);
     const isHand = !handSettled && this.resident
       && (marked || (!shadowOnly && !same(standing, known) && !(this.sent.has(title) && this.sent.get(title) === standing)));
     if (isHand) {
+      // The hand leaves through the drain ahead of the wave, never around the write in flight: the wave lands only once the hand's
+      // own write answers, and a newer hand marked meanwhile goes first again.
       for (let pass = 0; pass < 8; pass++) {
-        const wrote = await this._leaveNow(title);
+        const outcome = await this._drainTitle(title);
+        // A refused hand stays owed and carries the title's state on its next request; the wave never lands over it.
+        if (outcome.kind === "failed") { if (this.drain.owes(title)) return; throw outcome.error; }
+        const wrote = this.lastFlushWrote.get(title) === true;
         const latest = wiki.getTiddler(title) ?? null;
         const currentEntry = this.ledger.landedOf(title);
-        const unsent = this.gate.has(title) || this.pendingHand.has(title)
+        const unsent = (this.drain.owes(title) && !this.drain.parked(title))
           || (!same(latest, currentEntry ? currentEntry.tiddler : null) && !(this.sent.has(title) && this.sent.get(title) === latest));
         if (wrote) {
           if (unsent) continue;
@@ -389,29 +590,29 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       if (!this.engineApply) throw new LandingDoorUnavailableError();
       this.engineApply({ ...change, record: applied, ...(bag !== undefined ? { bag } : {}) });
     }
+    this.familyPlaced.delete(title);
     this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null, ...(bag !== undefined ? { bag } : {}), ...(heads !== undefined ? { heads } : {}) });
     if (change.bag !== undefined && envelopeHeads !== undefined && envelopeHeads.length > 0) this._noteLanded(change.bag, envelopeHeads);
     this._learnDraft(title, live ? record : null, bag);
-    await this._stampKahuaShadow(title);
+    await this._stampKahuaShadow(title, change.bag ? (resolvedTop ?? null) : undefined);
     this.sent.delete(title);
     this.handBase.delete(title);
     this.unlanded.delete(title);
     if (applies) this.lastWriteBag.delete(title);
-    void this.boundary().catch(() => {});
   }
 
   /**
    * Stamp or clear the "local draft over shared" record for a title the wave just landed: the temp-plane
    * stamp carries the kahua body the draft covers and exists only while a shadow stands on this device.
    */
-  private async _stampKahuaShadow(title: string): Promise<void> {
+  private async _stampKahuaShadow(title: string, resolved?: { readonly bagId: string; readonly record: LarTiddlerRecord } | null): Promise<void> {
     if (neverPersists(title)) return;
     // A shadow stands only where the composition lays the kahua stage: a pool wiki (or any store composing no
     // `bags/kahua` layer) asks nothing per landing.
     if (typeof this.store.layerIndexOf !== "function" || this.store.layerIndexOf(KAHUA_BAG) === -1) return;
     const wiki = this.tw5.$tw.wiki;
     const stamp = kahuaShadowTitle(title);
-    const shadow = await kahuaShadowOf(this.store, title);
+    const shadow = await kahuaShadowOf(this.store, title, resolved);
     if (!shadow) {
       if (wiki.getTiddler(stamp)) wiki.deleteTiddler(stamp);
       return;
@@ -749,19 +950,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   async stop(): Promise<void> {
-    while (this.acts.size) await Promise.allSettled([...this.acts]);
     await this.landing?.stop();
-    const gated = new Set(this.gate.titles());
-    const marked = new Set([...this.pendingHand, ...gated]);
-    await this.gate.flushAll().catch(() => {});
-    await Promise.all([...marked].map(async (title) => {
-      if (gated.has(title) || this.activeFlushCounts.has(title)) return;
-      try { await this._flushHand(title); }
-      catch (error) { this.failedAtTeardown.set(title, error); }
-    }));
-    while (this.flushes.size || this.acts.size || this.surfacings.size) {
-      await Promise.allSettled([...this.flushes, ...this.acts, ...this.surfacings]);
-    }
+    // The drain closes: every owed title leaves (a refused one tries once more), and a failure answers by name rather than hanging.
+    await this._drainNow(true);
+    await Promise.allSettled([...this.surfacings]);
     for (const [title, error] of this.failedAtTeardown) console.warn(`[island-adaptor] teardown write for "${title}" failed: ${String(error)}`);
     this.failedAtTeardown.clear();
     // The door leaves with the shore that installed it, and only that one.
@@ -773,17 +965,23 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // A stopped shore holds no account of the wiki: a restart seeds its ledger afresh and turns resident
     // again at its own seed checkpoint, so no stale landed value reads a later change as foam.
     this.resident = false;
+    this.residentWaiters.clear();
     this.ledger.clear();
     this.landedHeads.clear();
     this.sent.clear();
     this.handBase.clear();
     this.lastWriteBag.clear();
+    this.recoveryWrites.clear();
     this.unlanded.clear();
+    this.draftSnapshots.clear();
+    this.actRemovals.clear();
+    this.actHolds.length = 0;
+    // A restarted shore drains through a fresh drain.
+    this.drain = this._newDrain();
     this._unsubscribe?.();
     this._unsubscribe = null;
   }
 
-  private readonly inFlight = new Map<string, Promise<void>>();
   private readonly failedAtTeardown = new Map<string, unknown>();
   private readonly writeAcks = new Map<string, number>();
 
@@ -857,7 +1055,11 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const hand = this.handBase.get(title);
     const source = from ?? hand ?? (entry?.bag && entry.heads ? { bag: entry.bag, heads: entry.heads } : undefined);
     if (!source) return {};
-    if (source.bag === dest) return source.heads.length > 0 ? { base: source.heads } : {};
+    if (source.bag === dest) {
+      // A failed hand may outlive a MOVE that hard-removes its original record.
+      if (!this.unlanded.has(title) && this.failedAtTeardown.has(title) && !this._holdsRecord(source.bag, title) && this._sourceMoved(title, source.bag, source.heads)) return { moved: source.bag };
+      return source.heads.length > 0 ? { base: source.heads } : {};
+    }
     if (!this.unlanded.has(title) && this._sourceMoved(title, source.bag, source.heads)) return { moved: source.bag };
     // The destination's record NOW, whatever the ledger says: a peer's copy-up may sit in the document with
     // its wave still queued. A record there that differs, as content, from the source as the hand saw it
@@ -982,6 +1184,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private _teachDraft(title: string, fields: Record<string, string>): void {
     const of = (fields["draft.of"] ?? "").trim();
     const wanted = fields["draft.title"] ?? "";
+    this.draftSnapshots.set(title, structuredClone(fields));
     const known = this.draftBook.get(title);
     if (known && known.of === of) {
       if (known.title !== wanted) this.draftBook.set(title, { ...known, title: wanted });
@@ -1004,7 +1207,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private _learnDraft(title: string, record: LarTiddlerRecord | null, bag: string | undefined): void {
     const fields = record && !record.meta?.deleted ? record.tiddler as Record<string, unknown> : null;
     const of = fields ? String(fields["draft.of"] ?? "").trim() : "";
-    if (!fields || !of) { this.draftBook.delete(title); return; }
+    if (!fields || !of) { this.draftBook.delete(title); this.draftSnapshots.delete(title); return; }
     const known = this.draftBook.get(title);
     if (known) {
       // A foreign wave refreshes the target and title the draft names; this shore's own write never does.
@@ -1039,8 +1242,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    *   a SAVE   when it also holds the write of the draft's target (`draft.title` equal to `draft.of`),
    *   a RENAME when it holds the write of `draft.title`, a title other than `draft.of`,
    *   a CANCEL when the deletion stands alone.
-   * The act consumes every gate entry of its titles and issues its store calls inside this call, in the
-   * turn of the dispatch. The answer names the titles the act took, so the per-title loop skips them.
+   * The act registers its writes through the drain and starts an idle pump inside this call, so the target
+   * leaves in the turn of the dispatch. The answer names the titles the act took, so the per-title loop skips them.
    */
   handleChangeDispatch(changes: Readonly<Record<string, unknown>>): ReadonlySet<string> {
     const consumed = new Set<string>();
@@ -1061,155 +1264,147 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       // overridden shadow revealed by the delete) falls to the per-title loop, which writes what the wiki holds.
       const members = [draftTitle, ...(saves ? [target] : []), ...(rename && Object.hasOwn(changes, entry.of) && wiki.getTiddler(entry.of) === undefined ? [entry.of] : [])];
       for (const member of members) consumed.add(member);
-      void this._track(this.acts, this._act(draftTitle, entry, saves, target, rename, members));
+      this._act(draftTitle, entry, saves, target, rename, members);
     }
+    // A discrete act starts its own writes, whoever owns the dispatch's clock.
+    if (consumed.size > 0) this.drain.kick();
     return consumed;
   }
 
-  /** Runs an act with its members registered in `inFlight`, so a per-title flush of a member waits for it. */
-  private _act(draftTitle: string, entry: DraftEntry, saves: boolean, target: string, rename: boolean, members: readonly string[]): Promise<void> {
-    let finish!: () => void;
-    const done = new Promise<void>((resolve) => { finish = resolve; });
-    for (const member of members) this.inFlight.set(member, done);
-    const run = this._actBody(draftTitle, entry, saves, target, rename, members);
-    return run.finally(() => {
-      for (const member of members) if (this.inFlight.get(member) === done) this.inFlight.delete(member);
-      finish();
-    });
-  }
-
-  private async _actBody(draftTitle: string, entry: DraftEntry, saves: boolean, target: string, rename: boolean, members: readonly string[]): Promise<void> {
+  /**
+   * THE SAVE ORDER (operator ruling 2026-11-04): the target family leaves first and must be DURABLY acknowledged (the receipt capability's heads
+   * ack from the vessel's storage-backed Repo); only then do the draft and a rename's source leave. Each removal rides a dependency edge
+   * on the target's generation, so a refused target keeps the store copy of the draft (the recovery copy) and its removal waits for the
+   * target's next acknowledged write. The act writes nothing itself: it marks.
+   */
+  private _act(draftTitle: string, entry: DraftEntry, saves: boolean, target: string, rename: boolean, members: readonly string[]): void {
     const wiki = this.tw5.$tw.wiki;
-    const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
-    const taken = this.gate.consume(members);
-    void this.boundary().catch(() => {});
-    for (const member of members) { this.pendingHand.add(member); this.handed.delete(member); }
-
-    interface Group { bag: string; base: readonly string[] | undefined; puts: LarTiddlerRecord[]; deletes: string[]; titles: string[]; from?: { bag: string; heads: readonly string[] } }
-    const groups: Group[] = [];
-    const strays: Array<{ slot: SlotUri; uri: string }> = [];
-    const sentValues = new Map<string, unknown | null>();
-    const group = (bag: string, base: readonly string[] | undefined, puts: LarTiddlerRecord[], deletes: string[], titles: string[], from?: { bag: string; heads: readonly string[] }): void => {
-      const found = groups.find((g) => g.bag === bag && sameHeads(g.base, base));
-      if (found) { found.puts.push(...puts); found.deletes.push(...deletes); found.titles.push(...titles); if (from && !found.from) found.from = from; }
-      else groups.push({ bag, base, puts, deletes, titles, ...(from ? { from } : {}) });
-    };
-    let surfaced: Promise<void> | null = null;
-    let tombstonedSource = false;
+    const hold = this.caps.receipt?.begin();   // in the turn of the dispatch, so the act's result can wait
+    if (hold) this.actHolds.push({ hold, members });
+    for (const member of members) this.handed.delete(member);
+    let targetGeneration = 0;
     const draftBase = entry.baseBag ? { bag: entry.baseBag, heads: entry.baseHeads } : undefined;
+    const behind = (title: string): number => targetGeneration > 0 ? this.drain.markAfter(title, target, targetGeneration) : this.drain.mark(title);
     try {
       // A title that never persists (the volatile plane, the alert rail) takes no store call as a member.
       if (saves && !neverPersists(target)) {
-        const value = wiki.getTiddler(target)!;
-        const fields = extractFields(this.tw5, value);
         const dest = this._saveBag(target);
         if (dest !== null) {
           const landed = this.ledger.landedOf(target);
           const standsAtY = rename && landed?.tiddler != null && landed.bag !== undefined && landed.heads !== undefined;
+          // A save builds on the draft-open base, a rename onto a standing title on that title's landed base; a retry keeps it.
           const from = standsAtY ? { bag: landed!.bag!, heads: landed!.heads! } : draftBase;
-          // The read of the source sits immediately before the destination write is issued.
-          const plan = from ? this._basePlan(target, dest, from) : {};
-          sentValues.set(target, value);
-          if (plan.moved !== undefined) {
-            surfaced = this._surfaceHand(target, fields, plan.moved);
-          } else {
-            const family = this._buildFamily(target, fields, dest);
-            group(dest, plan.base, family.puts, family.tombstones, [target], from);
-            strays.push(...family.strays);
-          }
+          if (from) this.handBase.set(target, from);
+          targetGeneration = this.drain.mark(target);
         }
       }
       if (rename && members.includes(entry.of) && !wiki.getTiddler(entry.of) && !neverPersists(entry.of)) {
         const standing = this.ledger.landedOf(entry.of);
         const stood = (standing?.tiddler ?? null) !== null || (this.sent.has(entry.of) && this.sent.get(entry.of) !== null);
-        if (stood) {
-          const landedBag = this.lastWriteBag.get(entry.of) ?? standing?.bag ?? entry.baseBag;
-          if (landedBag) {
-            const bag = this._tombstoneBag(entry.of, landedBag);
-            const base = bag === entry.baseBag ? entry.baseHeads : standing?.bag === bag ? standing.heads : undefined;
-            group(bag, base && base.length > 0 ? base : undefined, [], [entry.of], [entry.of]);
-            sentValues.set(entry.of, null);
-            tombstonedSource = true;
-          }
+        const landedBag = stood ? this.lastWriteBag.get(entry.of) ?? standing?.bag ?? entry.baseBag : undefined;
+        if (landedBag) {
+          const bag = this._tombstoneBag(entry.of, landedBag);
+          const base = bag === entry.baseBag ? entry.baseHeads : standing?.bag === bag ? standing.heads : undefined;
+          this.actRemovals.set(entry.of, { bag, base: base && base.length > 0 ? base : undefined, target, targetGeneration, before: standing?.tiddler ?? null, source: true });
+          behind(entry.of);
         }
       }
-      if (this._reachedStore(draftTitle)) {
-        const bag = entry.bag ?? this.ledger.landedOf(draftTitle)?.bag ?? this.handBase.get(draftTitle)?.bag;
-        if (bag) {
-          const draftBag = this._tombstoneBag(draftTitle, bag);
-          group(draftBag, this._handBaseFor(draftTitle, draftBag), [], [draftTitle], [draftTitle]);
-          sentValues.set(draftTitle, null);
-        }
-      } else this._clearUnsaved(draftTitle);
+      const bag = entry.bag ?? this.ledger.landedOf(draftTitle)?.bag ?? this.handBase.get(draftTitle)?.bag;
+      const snapshot = this.draftSnapshots.get(draftTitle);
+      if (this._reachedStore(draftTitle) && bag) {
+        const draftBag = this._tombstoneBag(draftTitle, bag);
+        this.actRemovals.set(draftTitle, { bag: draftBag, base: this._handBaseFor(draftTitle, draftBag), target, targetGeneration, before: null, source: false });
+        behind(draftTitle);
+      } else if (!this._reachedStore(draftTitle) && snapshot && bag && targetGeneration > 0) {
+        // The draft never reached the store before the save dispatch: its recovery copy leaves first, its removal behind the target after.
+        const { "$origin-bag": _originBag, ...persisted } = snapshot;
+        const recovery = toLarTiddlerRecord({ ...withoutDraftBase(persisted), ...draftBaseFields(entry), title: draftTitle });
+        this.actRemovals.set(draftTitle, { bag, base: this._handBaseFor(draftTitle, bag), target, targetGeneration, before: null, source: false, recovery });
+        this.drain.mark(draftTitle);
+      } else {
+        // Nothing of the draft stands in the store: the act supersedes whatever it still owed.
+        this._clearUnsaved(draftTitle);
+        this.drain.forget(draftTitle);
+        this.draftBook.delete(draftTitle);
+        this.draftSnapshots.delete(draftTitle);
+      }
     } catch (error) {
-      taken.settle(error instanceof Error ? error : new Error(String(error)));
+      // A refused route stands on the alert rail; the member stays owed so the next request meets the same refusal by name.
+      if (!(error instanceof UnroutedSaveRefusal)) console.warn(`[island-adaptor] act on "${draftTitle}" faulted: ${String(error)}`);
+      if (saves && targetGeneration === 0 && !neverPersists(target)) this.drain.mark(target);
+    }
+  }
+
+  /** True while an act's removal still stands for `title`: the wiki holds no newer hand of it than the value the act took. */
+  private _removalStands(title: string, removal: ActRemoval): boolean {
+    const current = this.tw5.$tw.wiki.getTiddler(title);
+    return !current || (removal.before !== null && same(current, removal.before));
+  }
+
+  /** TW5 removed a rename's source optimistically; the wiki shows it again while its removal waits or after its refusal. */
+  private _restoreSource(title: string, removal: ActRemoval): void {
+    const wiki = this.tw5.$tw.wiki;
+    if (!removal.source || removal.before === null || wiki.getTiddler(title)) return;
+    wiki.addTiddler(removal.before as Parameters<typeof wiki.addTiddler>[0]);
+  }
+
+  /** A target's write was refused: every rename source waiting behind it returns to the wiki. */
+  private _restoreSourcesOf(target: string): void {
+    for (const [title, removal] of this.actRemovals) if (removal.target === target) this._restoreSource(title, removal);
+  }
+
+  /**
+   * An act's removal leaves: one `writeFamily` tombstone in the removal's bag at the act's base (a draft that never reached the store
+   * first leaves its recovery copy, then its removal waits behind the target). Its acknowledgement clears the source from the wiki with
+   * its slot children; its refusal keeps the source in the wiki and the title owed, named on the rail under itself and its target.
+   */
+  private async _flushRemoval(title: string, removal: ActRemoval): Promise<void> {
+    const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
+    const ackBefore = this.writeAcks.get(title) ?? 0;
+    if (removal.recovery) {
+      try { await this._issueGroup(removal.bag, this._handBaseFor(title, removal.bag), [removal.recovery], [], origin); }
+      catch (error) {
+        this.failedAtTeardown.set(title, error);
+        this._raiseUnsaved(title, removal.bag, error);
+        throw error;
+      }
+      delete removal.recovery;
+      this.lastWriteBag.set(title, removal.bag);
+      if ((this.writeAcks.get(title) ?? 0) > ackBefore) this.unlanded.add(title);
+      this.lastFlushWrote.set(title, true);
+      this.drain.markAfter(title, removal.target, removal.targetGeneration);
       return;
     }
-
-    for (const [title, value] of sentValues) this.sent.set(title, value);
-    const ackBefore = new Map([...sentValues.keys()].map((title) => [title, this.writeAcks.get(title) ?? 0]));
-    // Every store call of the act is issued here, before the first await.
-    const hold = groups.length > 0 ? this.restDoor?.begin() : undefined;   // in the turn of the dispatch, so the act's result can wait
-    const issued = groups.map((g) => this._issueGroup(g.bag, g.base, g.puts, g.deletes, origin));
-    const issuedStrays = strays.map(({ slot, uri }) => this.store.tombstoneInBag(slot, uri, origin));
-    const settled = await Promise.allSettled([...issued, ...issuedStrays, ...(surfaced ? [surfaced] : [])]);
-    let handBags: string[] = [];
-    if (hold) {
-      // The act's result waits on the rest door, so the hands the act's dispatch left marked on the gate (the story
-      // list the navigator rewrote, for one) leave now and rest with it: a reload that follows reads the story the
-      // person left, never the one from before the confirm.
-      const others = this.gate.titles().filter((title) => !members.includes(title));
-      await Promise.allSettled(others.map((title) => this._leaveNow(title)));
-      handBags = others.map((title) => this.lastWriteBag.get(title)).filter((bag): bag is string => bag !== undefined);
-    }
-    hold?.done([...new Set([...groups.filter((_, index) => settled[index]!.status === "fulfilled").map((g) => g.bag), ...handBags])]);
-    let fault: Error | null = null;
-    const asError = (reason: unknown): Error => reason instanceof Error ? reason : new Error(String(reason));
-    const refused = new Set<string>();
-    groups.forEach((g, index) => {
-      const outcome = settled[index]!;
-      if (outcome.status === "rejected") {
-        fault ??= asError(outcome.reason);
-        for (const title of g.titles) {
-          refused.add(title);
-          this.sent.delete(title);
-          this.failedAtTeardown.set(title, outcome.reason);
-          // The retry builds on the act's own base, never on the ledger's current heads.
-          const retryFrom = title === target ? g.from : undefined;
-          if (retryFrom) this.handBase.set(title, retryFrom);
-          else if (g.base) this.handBase.set(title, { bag: g.bag, heads: g.base });
-          this._raiseUnsaved(title, g.bag, outcome.reason);
-        }
-        return;
+    this.sent.set(title, null);
+    try { await this._issueGroup(removal.bag, removal.base, [], [title], origin); }
+    catch (error) {
+      this.sent.delete(title);
+      this.lastFlushWrote.set(title, false);
+      this.failedAtTeardown.set(title, error);
+      this._raiseUnsaved(title, removal.bag, error);
+      if (removal.source) {
+        this._raiseUnsaved(removal.target, removal.bag, error);
+        this._restoreSource(title, removal);
       }
-      for (const title of g.titles) {
-        const acknowledged = (this.writeAcks.get(title) ?? 0) > (ackBefore.get(title) ?? 0);
-        this.lastWriteBag.set(title, g.bag);
-        // Only an acknowledged write stands ahead of the ledger; a noop raises no wave to clear the mark.
-        if (acknowledged) this.unlanded.add(title);
-        else this.sent.delete(title);
-        this.pendingHand.delete(title);
-        this.failedAtTeardown.delete(title);
-        this._clearUnsaved(title);
-      }
-    });
-    strays.forEach(({ slot, uri }, index) => {
-      const outcome = settled[groups.length + index]!;
-      if (outcome.status !== "rejected") return;
-      fault ??= asError(outcome.reason);
-      // Owed as absent: the retry leaves a tombstone though the wiki still holds the orphan at its landed value.
-      this.pendingHand.add(uri);
-      this.handed.set(uri, null);
-      this.failedAtTeardown.set(uri, outcome.reason);
-      this._raiseUnsaved(uri, slot, outcome.reason);
-    });
-    if (surfaced && settled[settled.length - 1]!.status === "rejected") fault ??= asError((settled[settled.length - 1] as PromiseRejectedResult).reason);
-    if (tombstonedSource && !refused.has(entry.of)) this._removeSlotChildren(entry.of);
-    for (const member of members) {
-      if (!refused.has(member)) this.pendingHand.delete(member);
+      throw error;
     }
-    if (fault === null) this.draftBook.delete(draftTitle);
-    taken.settle(fault ?? undefined);
+    const acknowledged = (this.writeAcks.get(title) ?? 0) > ackBefore;
+    if (this.actRemovals.get(title) === removal) this.actRemovals.delete(title);
+    this.lastFlushWrote.set(title, acknowledged);
+    this.lastWriteBag.set(title, removal.bag);
+    if (acknowledged) this.unlanded.add(title); else this.sent.delete(title);
+    this.recoveryWrites.set(title, { bag: removal.bag, fields: null });
+    this.failedAtTeardown.delete(title);
+    this._clearUnsaved(title);
+    this.draftBook.delete(title);
+    this.draftSnapshots.delete(title);
+    if (!removal.source) return;
+    this._clearUnsaved(removal.target);
+    const wiki = this.tw5.$tw.wiki;
+    // A newer hand of the source made meanwhile stands: it leaves as its own owed title, children and all.
+    if (!this._removalStands(title, removal)) return;
+    this._removeSlotChildren(title);
+    if (wiki.getTiddler(title)) wiki.deleteTiddler(title);
   }
 
   /** One `writeFamily` call for one (bag, base); a base outside the document's history retries without it. */
@@ -1225,37 +1420,28 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   // The per-title flush
   // ---------------------------------------------------------------------------
 
-  /**
-   * The hand at `title` leaves at once, crossing the gate. Answers whether THIS flush's own
-   * write was acknowledged by the store: writes of one title never overlap, and a flush queued behind
-   * this one cannot finish before this await resumes, so the title's last finished flush is this one.
-   */
-  private async _leaveNow(title: string): Promise<boolean> {
-    if (this.gate.has(title)) await this.gate.flush(title);
-    else await this._flushHand(title);
-    return this.lastFlushWrote.get(title) === true;
-  }
-
   /** Whether the last finished flush of each title had its own write acknowledged. */
   private readonly lastFlushWrote = new Map<string, boolean>();
 
-  private _flushHand(title: string): Promise<void> {
-    this.activeFlushCounts.set(title, (this.activeFlushCounts.get(title) ?? 0) + 1);
-    const task = this._flushHandImpl(title);
-    this.flushes.add(task);
-    void task.finally(() => {
-      this.flushes.delete(task);
-      const remaining = (this.activeFlushCounts.get(title) ?? 1) - 1;
-      if (remaining === 0) this.activeFlushCounts.delete(title);
-      else this.activeFlushCounts.set(title, remaining);
-    }).catch(() => {});
-    return task;
+  /** True when the wiki's state for a slot child carries the persisted fields the family call put for it. */
+  private _matchesPlaced(placed: LarTiddlerRecord, state: unknown): boolean {
+    const { "$origin-bag": _bag, ...fields } = extractFields(this.tw5, state);
+    const put = placed.tiddler as unknown as Record<string, unknown>;
+    const keys = new Set([...Object.keys(fields), ...Object.keys(put)]);
+    for (const key of keys) {
+      if (Object.hasOwn(fields, key) !== Object.hasOwn(put, key) || String(fields[key]) !== String(put[key])) return false;
+    }
+    return true;
   }
 
-  private async _flushHandImpl(title: string): Promise<void> {
-    // A flush queued behind a failed one still tries: the earlier write's fault belongs to its own waiters.
-    const prior = this.inFlight.get(title);
-    if (prior) await prior.catch(() => {});
+  /** The drain's write of one title: its state at flush leaves (an act's standing removal leaves as its tombstone). */
+  private async _flushHand(title: string): Promise<void> {
+    const removal = this.actRemovals.get(title);
+    if (removal) {
+      if (this._removalStands(title, removal)) return this._flushRemoval(title, removal);
+      // A later hand supersedes the act's removal: the title's own state leaves.
+      this.actRemovals.delete(title);
+    }
     // ABSOLUTE STATE: what leaves is the title's state at flush. A caller that handed a value the wiki does
     // not hold (`handed`) is the one exception, and its value stands in for the wiki's.
     const state = this.handed.has(title) ? this.handed.get(title)! : this.tw5.$tw.wiki.getTiddler(title) ?? null;
@@ -1265,12 +1451,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const landed = this.ledger.landedOf(title);
     // The ledger answers only once the seed wave has rebuilt it (a resident shore), and never for a title
     // this shore wrote whose wave has not landed: there the state leaves and the store decides.
-    const settled = this.sent.has(title)
+    const placed = this.familyPlaced.get(title);
+    const placedByFamily = placed !== undefined && state !== null && this._matchesPlaced(placed, state);
+    const settled = placedByFamily || (this.sent.has(title)
       ? this.sent.get(title) === state
-      : this.resident && !this.unlanded.has(title) && same(state, landed ? landed.tiddler : null);
+      : this.resident && !this.unlanded.has(title) && same(state, landed ? landed.tiddler : null));
+    if (!placedByFamily) this.familyPlaced.delete(title);
     if (settled) {
       if (this.handed.get(title) === state) this.handed.delete(title);
-      this.pendingHand.delete(title);
       if (!this.sent.has(title)) this.handBase.delete(title);
       this.lastFlushWrote.set(title, false);
       this.failedAtTeardown.delete(title);
@@ -1296,7 +1484,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       }
       if (dest === null) {
         this.handed.delete(title);
-        this.pendingHand.delete(title);
         this.lastFlushWrote.set(title, false);
         return;
       }
@@ -1306,7 +1493,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       this.sent.set(title, state);
       if (plan.moved !== undefined) {
         if (this.handed.get(title) === state) this.handed.delete(title);
-        this.pendingHand.delete(title);
         this.lastFlushWrote.set(title, false);
         await this._surfaceHand(title, fields, plan.moved);
         return;
@@ -1322,7 +1508,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       const landedBag = this.lastWriteBag.get(title) ?? entry?.bag ?? this.handBase.get(title)?.bag ?? this._routeAtOrAboveWorking(title) ?? this.store.defaultWritableBagId();
       if (!landedBag) {
         this.handed.delete(title);
-        this.pendingHand.delete(title);
         this.lastFlushWrote.set(title, false);
         return;
       }
@@ -1337,9 +1522,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
           await this.store.tombstoneInBag(bag, title, origin);
         }).then(() => { this._removeSlotChildren(title); });
     }
-    this.inFlight.set(title, task);
     try {
       await task;
+      if (writeBag && this.receiptRequired && !this.caps.receipt) throw new ReceiptCapabilityUnavailable();
       // The store took this state for `writeBag`: the title's state stands there, by this write or because
       // an equal state already stood (a noop). A noop fires no envelope, so no return wave lands over `sent`
       // and none clears `unlanded`: only an acknowledged write stands ahead of the ledger.
@@ -1349,20 +1534,20 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       if (acknowledged) this.unlanded.add(title);
       else this.sent.delete(title);
       if (this.handed.get(title) === state) this.handed.delete(title);
-      this.pendingHand.delete(title);
       this.failedAtTeardown.delete(title);
       this._clearUnsaved(title);
-      if (state === null) this.draftBook.delete(title);
+      if (state === null && writeBag) {
+        this.recoveryWrites.set(title, { bag: writeBag, fields: null });
+        this.draftBook.delete(title);
+      }
     } catch (error) {
-      // The title stays marked (pendingHand keeps it) so the next change, wave or teardown tries again;
+      // The title stays owed in the drain, so the next change, wave or teardown tries again;
       // no timer is armed, because a timer would decide when the refusal ends.
       this.sent.delete(title);
       this.lastFlushWrote.set(title, false);
       this.failedAtTeardown.set(title, error);
       this._raiseUnsaved(title, writeBag, error);
       throw error;
-    } finally {
-      if (this.inFlight.get(title) === task) this.inFlight.delete(title);
     }
   }
 
@@ -1397,15 +1582,17 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       catch (error) { return Promise.reject(error); }
     } else this.draftBook.delete(title);
 
-    if (!this.gate.has(title) && !this.handBase.has(title)) {
+    // The wiki showing a rename's source again while its removal waits is no newer hand: the removal stays owed.
+    const removal = this.actRemovals.get(title);
+    if (removal && removal.before !== null && same(tiddler, removal.before)) return this._answer(title);
+    if (!this.drain.owes(title) && !this.handBase.has(title)) {
       const entry = this.ledger.landedOf(title);
       if (entry?.bag && entry.heads) this.handBase.set(title, { bag: entry.bag, heads: entry.heads });
     }
-    this.pendingHand.add(title);
     // A mark names the title; the flush reads the wiki. Only a value the wiki does not hold rides pinned.
     if ((this.tw5.$tw.wiki.getTiddler(title) ?? null) === tiddler) this.handed.delete(title);
     else this.handed.set(title, tiddler);
-    return this.gate.mark(title, () => this._flushHand(title));
+    return this._answer(title, this.drain.mark(title));
   }
 
   saveRecord(record: LarTiddlerRecord): Promise<void> {
@@ -1421,14 +1608,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // seen this session falls back to the cascade's title read. `_tombstoneBag` then picks the bag by the
     // composition's layer order: the landed layer when it sits at or above the working layer, the working
     // layer when the title landed beneath it.
-    if (!this.gate.has(title) && !this.handBase.has(title)) {
+    if (!this.drain.owes(title) && !this.handBase.has(title)) {
       const entry = this.ledger.landedOf(title);
       if (entry?.bag && entry.heads) this.handBase.set(title, { bag: entry.bag, heads: entry.heads });
     }
-    this.pendingHand.add(title);
     if (this.tw5.$tw.wiki.getTiddler(title)) this.handed.set(title, null);
     else this.handed.delete(title);
-    return this.gate.mark(title, () => this._flushHand(title));
+    return this._answer(title, this.drain.mark(title));
   }
 
   // ---------------------------------------------------------------------------
@@ -1436,6 +1622,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   // ---------------------------------------------------------------------------
 
   /** True while the wiki holds `uri`, or the last wave landed it live. */
+  /** Refuse new outbound hands while a faulted shore detaches. */
+  dropResidency(): void { this.resident = false; this.residentWaiters.clear(); }
+
   private _stands(uri: string): boolean {
     return this.tw5.$tw.wiki.getTiddler(uri) !== undefined || (this.ledger.landedOf(uri)?.tiddler ?? null) !== null;
   }
@@ -1478,6 +1667,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     base?: readonly string[],
   ): Promise<void> {
     const { puts, tombstones, strays, split } = this._buildFamily(title, fields, targetBag);
+    // The family call carries these children: a later flush of a child whose wiki state matches the record the family put owes the
+    // store nothing, so a carrier placed across several change batches leaves its children once, with the root.
+    for (const record of puts) if (record.tiddler.title !== title) this.familyPlaced.delete(record.tiddler.title);
 
     // A PLACED ROOT CARRIES ITS MARKED SLOTS. The flush reads the wiki's state, and a root the wiki already
     // holds in placed form splits into no children: its slot children stand as their own wiki tiddlers, each
@@ -1487,9 +1679,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const rode: Array<{ uri: string; value: unknown | null; acks: number }> = [];
     if (!split && title.indexOf("#") < 0 && fields["draft.of"] === undefined) {
       const wiki = this.tw5.$tw.wiki;
-      const marked = (uri: string): boolean => (this.gate.has(uri) || this.pendingHand.has(uri)) && !this.handed.has(uri);
+      const marked = (uri: string): boolean => this.drain.owes(uri) && !this.handed.has(uri);
       // Slot children carry the root's address plus a fragment, so the marked titles alone name them.
-      for (const uri of this.pendingHand) {
+      for (const uri of this.drain.titles()) {
         if (!uri.startsWith(`${title}#`) || !marked(uri)) continue;
         const entry = this.ledger.landedOf(uri);
         if (((entry?.bag as SlotUri | undefined) ?? targetBag) !== targetBag) continue;
@@ -1514,15 +1706,35 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
     try {
       await this.store.writeFamily(puts, tombstones, origin, { bag: targetBag, ...(base ? { base } : {}) });
+      const written = puts.find((record) => record.tiddler.title === title);
+      if (written) this.recoveryWrites.set(title, { bag: targetBag, fields: structuredClone(written.tiddler) });
+      for (const { uri, slot } of strays) {
+        // A refused stray already has its own absent hand; that hand owns its retry.
+        if (this.drain.owes(uri) && this.handed.has(uri) && this.handed.get(uri) === null) continue;
+        try { await this.store.tombstoneInBag(slot, uri, origin); }
+        catch (strayError) {
+          // Owed as absent: its own hand retries the tombstone though the wiki still holds the orphan at its landed value.
+          this.handed.set(uri, null);
+          this.failedAtTeardown.set(uri, strayError);
+          this._raiseUnsaved(uri, slot, strayError);
+          this.drain.mark(uri);
+        }
+      }
     } catch (error) {
-      for (const member of rode) if (this.sent.get(member.uri) === member.value) this.sent.delete(member.uri);
+      for (const member of rode) {
+        if (this.sent.get(member.uri) !== member.value) continue;
+        this.sent.delete(member.uri);
+        this.drain.mark(member.uri);
+        this._raiseUnsaved(member.uri, targetBag, error);
+      }
+      for (const record of puts) if (record.tiddler.title !== title) this.familyPlaced.delete(record.tiddler.title);
       throw error;
     }
+    for (const record of puts) if (record.tiddler.title !== title) this.familyPlaced.set(record.tiddler.title, record);
     // A member the store took as a noop raises no envelope, so no return wave will clear its `sent`.
     for (const member of rode) {
       if ((this.writeAcks.get(member.uri) ?? 0) === member.acks && this.sent.get(member.uri) === member.value) this.sent.delete(member.uri);
     }
-    for (const { uri, slot } of strays) await this.store.tombstoneInBag(slot, uri, origin);
   }
 
   /**

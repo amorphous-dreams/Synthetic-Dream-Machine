@@ -124,4 +124,44 @@ describe("adoption at boot", () => {
     expect(rows).toEqual({ [KAHUA_BAG]: url });
     expect(repo.handles[(await repo.find<LarDoc>(url!)).documentId]).toBeDefined();
   });
+
+describe("the stage projection is folded once per snapshot (P5: every landed title re-folded the whole stage)", () => {
+  test("RED: N reads of a standing stage fold the document once; CONTROL: a new act, and a face that moved, each fold again", async () => {
+    const { face, lift, device } = await fixture();
+    const d = await device();
+    for (let i = 0; i < 4; i++) land(d.stage, await lift(`t${i}`, `x${i}`, null));
+    let folds = 0;
+    const counting = new Proxy(d.stage, { get(target, key) {
+      if (key === "doc") return () => { folds += 1; return target.doc(); };
+      const value = Reflect.get(target, key);
+      return typeof value === "function" ? value.bind(target) : value;
+    } }) as DocHandle<LarDoc>;
+    let standing = face;
+    const store = kahuaStageStore({ handle: counting, bagId: KAHUA_BAG, face: () => standing });
+    for (let i = 0; i < 25; i++) { await store.get(`unrelated-${i}`); await store.listVisible(); }
+    expect(folds, "one fold for the standing snapshot").toBe(1);
+    land(d.stage, await lift("t-new", "y", null));
+    await store.get("unrelated-after");
+    expect(folds, "a new act moved the heads: it folds again").toBe(2);
+    standing = { ...face };                         // the authority moved (a new face object): the memory does not carry a revoked reading
+    await store.get("unrelated-face");
+    expect(folds, "a moved face folds again").toBe(3);
+  });
+});
+
+describe("the projection memory never outlives its authority", () => {
+  test("RED: a signer the face revokes loses its acts at the next read (the moved face is a NEW reading); CONTROL: the same face object keeps the memory", async () => {
+    const { root, face, lift, device } = await fixture();
+    const d = await device();
+    land(d.stage, await lift("Item", "shared body", null));
+    let standing = face;
+    const store = kahuaStageStore({ handle: d.stage, bagId: KAHUA_BAG, face: () => standing });
+    expect((await store.get("Item"))?.tiddler.text, "the grant holder's lift reads").toBe("shared body");
+    expect(await store.get("Item"), "the same face and heads: the memory answers").not.toBeNull();
+    standing = { group: GROUP, grant: (key: string) => key !== root.key };          // the roster dropped the signer: a new reading
+    expect(await store.get("Item"), "the revoked signer's act reads as nothing at the next get").toBeNull();
+    standing = face;                                                                // the grant returns (a carry): the act reads again
+    expect((await store.get("Item"))?.tiddler.text).toBe("shared body");
+  });
+});
 });

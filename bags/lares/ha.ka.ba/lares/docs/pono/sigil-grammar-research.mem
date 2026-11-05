@@ -6,8 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 17
-manao     = 16
 role      = "research doc: Hawaiian-inspired control sigil grammar — naming rationale, precedent alignment, parser notes, open questions"
 tags      = ["api/pono/memetic-wikitext"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/sigil-grammar-research"
@@ -414,6 +412,6 @@ When editing grammar meme or parser:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vB9eeBkdKZQ1I0c4wUCaaJhfucnunVPmo3YF6aqZ_i0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aE7ZPvbZaN6agg17iTzYZePmalfd4c7PlZlxELIbQSE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

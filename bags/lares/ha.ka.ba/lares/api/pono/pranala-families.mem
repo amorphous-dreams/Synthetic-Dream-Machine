@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = true
 l-space       = "stable"
-mana          = 18
-manao         = 17
-manaoio       = 17
 namespace     = "&#x2299;"
 role          = "canonical pranala edge-family taxonomy: eight families, role vocabularies, contract flags"
 source-symbol = "KNOWN_FAMILIES FAMILY_ROLES FAMILY_CONTRACTS"
@@ -169,6 +166,6 @@ spatial    = "light-blue"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fz5UoFwvSqTHOS6AUD0Yula_C_SIkzJNNrvm0BsR4ME`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;odtvrpxqPADbh2X1cctqh6ytkYZmnA-oq9XMngnF5Rg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -67,30 +67,18 @@ describe("kahua lift and withdraw acts", () => {
     expect(readKahuaAct(await lift("lares-dev/notes/draft", "x", null, root), { group: GROUP, grant }).ok).toBe(true);
   });
 
-  test("RED (security read L2): a lift carrying `module-type`, an executable type or a reserved `kahua-*` field refuses `shape` at the signer and every reader; CONTROL: a plain wikitext lift reads", async () => {
-    // A lifted item lands on every device of the face; a field that makes TW5 execute it, or one that mimics the fold's own
-    // stamps, would ride the fleet as code or as a forged verdict.
+  test("RED (promote burn): a lift carrying `module-type` or an executable type reads (code lifts as inert data; each device's hand promotes it); CONTROL: a reserved `kahua-*` field still refuses `shape`", async () => {
     const { root, grant, origin } = await fixture();
     const base = { group: GROUP, epoch: 0, title: "notes/a", text: "x", parent: null, origin, taint: [] as string[], sources: [{ title: "d", revision: "r" }] };
-    for (const fields of [{ "module-type": "startup" }, { type: "application/javascript" }, { type: "text/javascript" }, { type: "application/ecmascript" }, { "kahua-siblings": "x" }, { "kahua-standing": "yes" }]) {
+    for (const fields of [{ "module-type": "startup" }, { type: "application/javascript" }, { type: "text/javascript; charset=utf-8" }, { type: " Text/JavaScript " }, { type: "module" }]) {
+      expect(readKahuaAct(await signKahuaLift({ ...base, fields }, root), { group: GROUP, grant }), JSON.stringify(fields)).toMatchObject({ ok: true });
+    }
+    for (const fields of [{ "kahua-siblings": "x" }, { "kahua-standing": "yes" }, { title: "x" }, { text: "x" }]) {
       await expect(signKahuaLift({ ...base, fields }, root), JSON.stringify(fields)).rejects.toThrow(/shape/);
       const signed = await signKahuaLift({ ...base, fields: {} }, root);
       expect(readKahuaAct({ ...signed, body: { ...signed.body, fields } }, { group: GROUP, grant }), JSON.stringify(fields)).toEqual({ ok: false, refusal: "shape" });
     }
     expect(readKahuaAct(await signKahuaLift({ ...base, fields: { type: "text/vnd.tiddlywiki", tags: "notes" } }, root), { group: GROUP, grant }).ok).toBe(true);
-  });
-
-  test("RED (LOW-3): an executable type with mime parameters refuses shape; CONTROL: a stylesheet and a tagged raw-markup item lift", async () => {
-    const { root, grant, origin } = await fixture();
-    const base = { group: GROUP, epoch: 0, title: "notes/a", text: "x", parent: null, origin, taint: [] as string[], sources: [{ title: "d", revision: "r" }] };
-    for (const type of ["application/javascript; charset=utf-8", " Text/JavaScript "]) {
-      await expect(signKahuaLift({ ...base, fields: { type } }, root), type).rejects.toThrow(/shape/);
-      const signed = await signKahuaLift({ ...base, fields: {} }, root);
-      expect(readKahuaAct({ ...signed, body: { ...signed.body, fields: { type } } }, { group: GROUP, grant }), type).toEqual({ ok: false, refusal: "shape" });
-    }
-    for (const fields of [{ type: "text/css", tags: "$:/tags/Stylesheet" }, { type: "text/vnd.tiddlywiki", tags: "$:/tags/RawMarkup" }]) {
-      expect(readKahuaAct(await signKahuaLift({ ...base, fields }, root), { group: GROUP, grant }), JSON.stringify(fields)).toMatchObject({ ok: true });
-    }
   });
 
   test("RED (security read L1): a lift title carrying a dot segment refuses by name before any prefix reads it", async () => {

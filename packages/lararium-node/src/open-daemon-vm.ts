@@ -18,6 +18,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/open-daemon-vm
  */
 
+import { writeKahuaIndex } from "./kahua-index.js";
 import { daemonDiskMirrors } from "./bag-paths.js";
 import { daemonBagsDir } from "./lares-config.js";
 import { parseAutomergeUrl } from "@automerge/automerge-repo";
@@ -35,12 +36,18 @@ import {
 } from "@lararium/tw5";
 import { isStillJoining, resolveBootDoc } from "./repo-helpers.js";
 import { nodeNewSyncChannel, nodeSpawnDaemonWorker } from "./worker-handle.js";
-import { PLANE_LABELS, personaTagFromBagId } from "@lararium/mesh";
+import { PLANE_LABELS, personaScopeTag, type CapabilityRecord } from "@lararium/mesh";
 
 const DEFAULT_ADMIN_WORKER_URL = new URL("./node-daemon-island.js", import.meta.url);
 
 export interface DaemonVmOptions {
   repo:              Repo;
+  /**
+   * THE CAPABILITY RECORD the vessel hands its daemon island at the spawn (`receipt`, `cas`, `dyad`, `custodyWrite`).
+   * The island reads each member from this record at ask time, so the vessel may stand a member after the spawn; a
+   * member it never stands answers absent. One record per vessel: no process-global stands behind it.
+   */
+  caps:              CapabilityRecord;
   daemonUrl:          string;
   /** The persona plane's doc URL (the PersonaGroup veiled identity) — resolved alongside the daemon doc.
    *  ABSENT on a PLACE that never grew a face: there is no persona doc to resolve, and the VM
@@ -49,6 +56,9 @@ export interface DaemonVmOptions {
   /** The mounted plane's bag id, resolved once at the boot path — carried, never re-derived here.
    *  Absent with `personaUrl`; the two stand or fall together. */
   personaBagId?:      string;
+  faceRelation?: string | null;
+  faceGroup?: string;
+  faceLabel?: string;
   /**
    * THE PERSONA PLANE ARRIVES LATE: this composition holds no vessel key, so the sealed dial that carries a joinee's
    * persona plane from its hearth cannot present, and the plane may stand on the hearth alone. The VM then asks for it
@@ -95,8 +105,20 @@ export interface DaemonVmOptions {
   guardCrossroadsNexusHandles?: boolean;
 }
 
+/**
+ * THE FACE'S FOLDER STANCE. `faceRelation` (F) reads from the face's VERIFIED founding record alone, and the vessel names the
+ * worn face (`faceGroup`) only after that proof. So: no persona plane -> `no-face`; a plane with no proof yet (a locked key, a
+ * joinee still syncing) -> `unproven`, mirroring no private layer until the unlocked composition proves it; a proven face
+ * -> `worn`. A proven face carrying no F refuses by name: the founding act pins F, and no path derives it.
+ */
+export function faceRelationStance(input: { personaBagId?: string | null | undefined; faceGroup?: string | null | undefined; faceRelation?: string | null | undefined }): "no-face" | "unproven" | "worn" {
+  if (input.faceGroup && !input.faceRelation) throw new Error("openDaemonVm: worn face requires faceRelation");
+  if (input.faceRelation && input.faceGroup) return "worn";
+  return input.personaBagId ? "unproven" : "no-face";
+}
+
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
-  const { repo, daemonUrl, personaUrl, personaBagId, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, rootDir, workerScriptUrl,
+  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, rootDir, workerScriptUrl,
           guardCrossroadsNexusHandles = true } = opts;
 
   // An explicitly supplied empty path must not silently downgrade the worker to
@@ -131,12 +153,10 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     console.log(`[daemon] ${PLANE_LABELS.persona} still joining — this composition holds no vessel key, so the plane stands on the hearth until the unlocked composition dials it`);
   }
 
-  // THE WORN FACE NAMES THE PRIVATE FOLDERS: its persona plane `bags/persona-<tag>` lends `<tag>` to `kahua-<tag>`.
-  const faceTag = personaBagId ? personaTagFromBagId(personaBagId) : null;
-  if (personaBagId && faceTag === null) throw new Error(`openDaemonVm: the worn face's plane ${personaBagId} carries no derived persona tag`);
-  if (rootDir && faceTag === null) {
-    console.log("[kahua] no face stands worn in this composition: the daemon VM mirrors no private kahua layer until a face is worn");
-  }
+  const stance = faceRelationStance({ personaBagId, faceGroup, faceRelation });
+  if (rootDir && stance === "no-face") console.log("[kahua] no face worn; no private kahua mirrors");
+  if (rootDir && stance === "unproven") console.log("[kahua] the face's founding record stands unproven in this composition (the key rests locked or the face is still joining); no private kahua mirrors until the unlocked composition proves it");
+  if (rootDir && faceRelation && faceGroup) await writeKahuaIndex(rootDir, [{ relation: faceRelation, tag: personaScopeTag(faceGroup), label: faceLabel ?? "", group: faceGroup }]);
 
   // The daemon holds NO standing system-bag mount: it reaches a deep target bag
   // by ACCESS per residency action (ephemeral mount, released after — the
@@ -153,7 +173,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   const host: DaemonVmHost = {
     newSyncChannel: nodeNewSyncChannel,
     ...(ownedDocument ? { newOwnedSyncChannel: nodeNewSyncChannel } : {}),
-    spawnWorker:    (url) => nodeSpawnDaemonWorker(url),
+    spawnWorker:    (url) => nodeSpawnDaemonWorker(url, caps),
   };
 
   // The wrapper IS the shore — host pieces + recipe/storage + merge-on-arrival daemonHandle;
@@ -169,11 +189,11 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
       documentUrl: daemonUrl,
       storage: { type: "nodefs" as const, dir: join(storageDir!, "daemon-owned") },
     } } : {}),
-    // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the worn face's working top under `<root>/wikis/kahua-<tag>/`,
-    // its kahua stage under `<root>/bags/kahua-<tag>/`, crossroads back to its canon source where one stands; the control
-    // plane holds none. The tag reads off the worn face's persona plane, so it names the folders that face projects on
+    // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the worn face's working top under `<root>/wikis/kahua-<F>/`,
+    // its kahua stage under `<root>/bags/kahua-<F>/`, crossroads back to its canon source where one stands; the control
+    // plane holds none. The verified founding relation names the folders that face projects on
     // every device; no worn face projects no private kahua layer.
-    ...(rootDir ? { diskMirrors: daemonDiskMirrors({ rootDir, canonBags: daemonBagsDir(), faceTag, guardCrossroadsNexusHandles }) } : {}),
+    ...(rootDir ? { diskMirrors: daemonDiskMirrors({ rootDir, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, guardCrossroadsNexusHandles }) } : {}),
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
   });
 }

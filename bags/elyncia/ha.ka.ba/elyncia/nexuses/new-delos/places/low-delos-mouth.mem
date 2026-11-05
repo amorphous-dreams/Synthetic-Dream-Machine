@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "place, below — the Low Delos megadungeon mouth where Rinia rose; three stabilized town-levels, names open"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth"
@@ -36,6 +33,6 @@ bottom · what the nineteen-minute cycle breathes FOR.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AYugN2c-xvJ_qN7o-wbU-IdFmEcFKNyeDVeVIEQqcXM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;U6KLnOQcw2Tl1ljdNc6xVRmMtmTF-LY7Hd7qr2xmBHs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable  = true
 hydrate    = true
 l-space    = "stable"
-mana       = 10
-manao      = 12
-manaoio    = 12
 namespace  = "&#x2299;"
 revised-on = "2026-09-22"
 role       = "hearths — the ledger of the sessions that share one tree: which hearth holds which ground, what each owes the others, and the seams that crossed between them by a pasted message instead of a carrier. Re-trued at every commit that crosses a hearth, and at every hearth that opens or closes; never a shift hand-off, never a roster of people (a hearth names a session by its commit trailer). A hearth that closes keeps its row — the ledger answers 'which ground was whose, what crossed, and what each owed', and every one of those questions outlives the concurrency that raised it."
@@ -286,6 +283,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kq6tnhEsXeIMXcEvPUI6ExCviArq8HX3DnT5ZehsNE0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZdMpxa313-Akbw51QDZSoufxpUWHrA1lFnU_ZoGYMTo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

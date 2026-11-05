@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 16
-manao     = 16
-manaoio   = 14
 namespace = "&#x2299;"
 role      = "index and law for named failure modes; parent of the failure-states/ subtree"
 tags      = ["api/pono/meme"]
@@ -73,6 +70,6 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Rker23TdhHN34qBk76jhA5FjoM0D-UaMyH1oGIJbLvc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cagqpaVBIzRoVXVSFypCxloSImFa7uLo8MPTbeNMTQw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

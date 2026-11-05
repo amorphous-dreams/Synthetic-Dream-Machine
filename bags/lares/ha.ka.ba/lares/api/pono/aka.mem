@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 17
-manao     = 17
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "transclusion-family edge sugar — the INFORMATIVE pin; pairs with kanawai, the BINDING pin; pins a lar: target, rendering follows the target (citation for a reference, frozen image for content); shorthand for pranala family:transclusion"
 tags      = ["api/pono/pranala", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-aka"]
@@ -170,6 +167,6 @@ confidence-bounded = true
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;add0impMFgMZNgqBlmI2tgqUVSM_DrGtA0ntfuStEVk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VQi-GHAgwF6ybioEPsIwJeC_tXYOGMleGJ2ScguxiD4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

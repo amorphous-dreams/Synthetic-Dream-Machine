@@ -7,9 +7,9 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/pool-lifecycle
  */
 
-import { describe, test, expect, afterEach } from "vitest";
+import { describe, test, expect, afterEach, vi } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { BrowserVesselIslandPool } from "../src/browser-vessel-island-pool.js";
+import { BrowserVesselIslandPool, listenForPageDrains } from "../src/browser-vessel-island-pool.js";
 
 const FIXTURE_URL = new URL("./fixtures/browser-repo-in-island-echo.mjs", import.meta.url);
 
@@ -147,4 +147,21 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
     expect(snapshot[0].wikiId).toBe(WIKI_A);
     expect(snapshot[0].temperature).toBe("wela");
   });
+});
+
+test("hidden and pagehide request drains; visible and disposal do not", () => {
+  const page = new EventTarget();
+  const document = Object.assign(new EventTarget(), { visibilityState: "visible" });
+  const request = vi.fn();
+  const stop = listenForPageDrains(page, document, request);
+  document.dispatchEvent(new Event("visibilitychange"));
+  expect(request).not.toHaveBeenCalled();
+  document.visibilityState = "hidden";
+  document.dispatchEvent(new Event("visibilitychange"));
+  page.dispatchEvent(new Event("pagehide"));
+  expect(request).toHaveBeenCalledTimes(2);
+  stop();
+  page.dispatchEvent(new Event("pagehide"));
+  document.dispatchEvent(new Event("visibilitychange"));
+  expect(request).toHaveBeenCalledTimes(2);
 });

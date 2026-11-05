@@ -93,17 +93,23 @@ describe.skipIf(wikiSkip)(`wiki shore cross-bag check${skipNote}`, () => {
 });
 
 describe.skipIf(wikiSkip)(`a foreign family takes a waiting hand${skipNote}`, () => {
-  test("an inbound family flushes the prior save, while a lone mark rests", async () => {
+  test("a lone hand leaves at its batch boundary and an inbound family meets another hand", async () => {
     const r = await shoreRig({ boundary: new ManualBoundary() });
     try {
       await r.adaptor.armSeedCheckpoint();
       const hand = "lar:///t/cross/waiting-hand";
       r.wiki.addTiddler(new r.Tiddler({ title: hand, text: "typed" }));
       await afterDispatch();
-      expect(r.calls.filter((call) => call.puts.includes(hand))).toEqual([]);
-      await peerWrite(r, workingBag, [{ tiddler: { title: "lar:///t/cross/foreign", text: "peer" } }]);
+      expect(r.calls.filter((call) => call.puts.includes(hand))).toHaveLength(1);
+      const overlap = "lar:///t/cross/overlap-hand";
+      await peerWrite(r, workingBag, [{ tiddler: { title: "lar:///t/cross/foreign", text: "peer" } }], () => {
+        r.wiki.addTiddler(new r.Tiddler({ title: overlap, text: "overlap" }));
+      });
       await turns(24);
       expect(r.calls.filter((call) => call.puts.includes(hand))).toHaveLength(1);
+      expect(r.calls.filter((call) => call.puts.includes(overlap))).toHaveLength(1);
+      expect(storeText(r, workingBag, overlap)).toBe("overlap");
+      expect(r.wiki.getTiddler("lar:///t/cross/foreign")?.fields.text).toBe("peer");
     } finally {
       await r.stop();
     }

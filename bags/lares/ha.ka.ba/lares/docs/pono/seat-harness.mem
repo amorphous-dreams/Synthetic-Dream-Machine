@@ -1,0 +1,110 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+namespace = "&#x2299;"
+role      = "seat-harness — how the house stands an AI seat: who holds each capability and under whose authority each act runs, the one seat spec across lineages, the lead that runs fresh per step, the broker that lands a walled lead's commits, the spend guard that reads true usage, and the rows still owed"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/seat-harness"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/seat-harness"
+written   = "2026-11-04"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Seat harness ~ a capability never lent by ambient authority
+
+A seat holds only the capabilities its wall grants. Every act runs under exactly one authority, and the harness names it. Each lineage (Codex, Copilot, Claude) wears the same seat spec, so a wall keeps one meaning across them. The crew shapes and the lane law stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>; this carrier holds the machinery beneath them.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-trust-model`>>
+!! The trust model ~ who holds each capability, whose authority runs each act
+
+|! Actor |! Holds |! Runs under its own authority |! Never |
+| ''Operator'' | rulings, credentials, the push of the span and `main`, every founding and custody act | anything | delegates a credential to a seat |
+| ''Controller'' | the one go per push, seat assignment, the lane's merge, the read of every chunk | its own commits and pushes | executes code from a lane tree it has not read |
+| ''Broker'' (`tools/commit-relay.mjs`) | fixed data acts a lead requests: a commit of named paths, a push the controller's go names, a builder worktree, a walled seat's launch | git and the launcher, from a path outside the lane | grants a go; launches a lead; touches a path outside the lane root |
+| ''Lead'' | its worktree, the repo's git dir for reads, its lane root, network | edits, tests, briefs, requests to the broker | commits or pushes itself; writes the main checkout |
+| ''Builder'' | its worktree alone | edits, typecheck, single-file tests | commits; reaches the network |
+| ''Reader'' | nothing writable | reads | writes any file; its final message carries the hand-back |
+
+''The trust boundary of the broker, as ruled.'' The broker runs `pnpm install` and git hooks inside a lead's tree, so the broker trusts that tree's code at its own authority. The house holds that boundary as a ruled exception for a single-operator dev tool. A lane whose tree carries code the operator has not trusted runs with a Claude lead instead, or waits for the ratcheted broker (#/owed).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-seat-spec`>>
+!! The seat spec ~ one shape, rendered per lineage
+
+A seat names its lineage, model, effort, mode, wall, seat directory under `~/.lares-scratch/<lane>/`, and its brief file. `tools/launch-codex.mjs` renders it into Codex flags and `tools/launch-copilot.mjs` into Copilot tool gates.
+
+|! Mode |! Writes |! Network |! Commits |
+| `read` | nothing (the final message carries the hand-back) | off | never |
+| `research` | its seat directory | on, with search | never |
+| `build` | its worktree and seat directory | off | never; its lead lands the diff |
+| `lead` (Codex) | its worktree, the repo's git dir, its lane root | on | through the broker alone |
+
+''Walls that hold by measure.'' The Codex sandbox keeps `.git` read-only inside every granted root, so no sandboxed Codex seat commits. A seat launched inside another seat's sandbox inherits that sandbox and cannot initialize its own runtime state, so the broker launches every seat a lead asks for. A Copilot build seat's tool gate may deny `node` and `pnpm`; its lead or the controller then runs the tests.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-lead`>>
+!! The lead ~ fresh per step, never one long session
+
+* A lead runs ONE step per launch: it reads its lane's state file (head, owed rows, live seats, worktree map), does that step, writes the state file and its hand-back, and stops. The next step launches a fresh lead over the new state.
+* A step stays short: about 10 to 15 minutes or 40 tool calls. An agentic session re-sends its whole transcript on every call, so one long session grows its draw roughly with the square of its length.
+* A lead dispatches and waits outside the model: the broker or the controller's watcher blocks on a seat, and the next lead step reads the result path. A lead never polls inside its own context.
+* A failing test counts as work. A lead stops only at a wall, at a design question that needs an operator ruling (named with its options), or at the push go.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-broker`>>
+!! The broker ~ the hands outside a walled lead
+
+* ''Requests'' arrive as `req-<id>.json` files in `<lane-root>/relay/`, zero-padded and in order, one at a time; each answer lands as `res-<id>.json` before the next request runs. Unknown kinds and unknown fields refuse by name.
+* ''Doors'': `commit` (named relative paths inside the worktree, a message file inside the lane root, `--only`, hooks run); `push` (only when the go file names the branch; never `-u`, never force; the go spends on the attempt); `worktree` (a new path under the lane root, a branch carrying the lane prefix, then submodule init and an offline frozen install); `worktree-remove` (a registered, clean tree, never the broker's own, never `--force`); `launch` (`build`, `read` or `research` alone, never `lead`; allowlisted models; a seat directory inside the lane root with its brief).
+* ''The go'' lives outside the lane root and the worktree, at a path the controller names when it starts the broker, so a lead cannot grant its own push.
+* ''The broker runs'' from a copy outside the lane and with a launcher outside the lane; a lead's edit to the lane's own copy never reaches the running broker.
+* ''A crew cap'' may ride the broker: it refuses a `launch` while a seat of the same kind stays live, naming the cap, so a lead adapts by reading the answer.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-spend-guard`>>
+!! The spend guard ~ true usage, read where each tool writes it
+
+* ''True usage'' reads from each Codex rollout's `token_count` events (`total_token_usage`: input, cached input, output, reasoning) and from each rollout's `rate_limits.primary.used_percent`. A seat's printed "tokens used" line understates the draw by orders of magnitude, so no tally reads it.
+* ''Cached input counts.'' Caching lowers the price of a token, never its weight against a rate limit or a plan pool.
+* ''The floors'': the Codex pool keeps 20% for a build, research or lead seat and 0% for a read seat; the launcher refuses at or under the floor. A Copilot run reads its spend from its log's `Requests N Premium` line, and a log without one reads UNMETERED, never zero.
+* ''Reasoning effort'' moves little of the draw; context length moves most of it. Effort follows the step's difficulty, never the budget.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed`>>
+!! Owed ~ the rows this design still lacks
+
+# The launcher tails a live seat's rollout and stops it at a per-seat ceiling (about 15M tokens for a lead step, about 8M for a read or build), naming the ceiling.
+# Pool-aware launching: a lead step refuses above about 50% of the weekly pool used and any build above about 60%, naming the reading.
+# An explicit `model_auto_compact_token_limit` and `tool_output_token_limit`, with a canary seat proving compaction fires inside `codex exec`.
+# The ratcheted broker: data-only git plumbing with a fixed environment and pinned binaries, a commit bound to an expected old head and an exact tree, hooks and validators in a separate check seat whose receipt the broker verifies, installs in an isolated install seat, a go bound to branch and head, and one outer wall that means the same for Codex and Copilot, proved by planted hooks, filters, a hostile `.npmrc`, a poisoned `PATH` and malicious config.
+# The lane state file and the fresh-per-step lead as launcher modes, replacing the long-session lead.
+# The swarm's live controls (the crew cap, the push go, the lane state, the seat roster and its spend readings) move out of flat files into the live Lararium wiki once it stands: tiddlers the controller's hand signs and every seat reads through its capability, so a cap or a go carries an author and a history instead of a file mode.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HlVXyrN5varDUZDW2rX3u4zGV7bD6NFGupll4mnV2-A`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 17
-manao     = 17
-manaoio   = 16
 namespace = "&#x0950; &#x0901;"
 role      = "lararium panel law — the turn-frame panel, the attention + loop gauges, the ward and register surfacing"
 tags      = ["api/pono/meme"]
@@ -120,6 +117,6 @@ The docs room carries the full line-composition examples, the stance and tool gl
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wI-hz-Vf6O3riD7FkwCKEWy-3Smg5ZNaGv53pepdo6o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sdCHFG1TP6OSGE9ea1AQ6bVU1ul_GGjHXbmhJq1E57o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

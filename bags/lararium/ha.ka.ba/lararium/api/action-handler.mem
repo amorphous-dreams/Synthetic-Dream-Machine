@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "stable"
-mana        = 16
-manao       = 16
-manaoio     = 15
 namespace   = "&#x0950; &#x0901;"
 role        = "source-of-truth: the Residency Model ACTION verb handler family — six verbs, withEffectRecord wrapping, cap-gate law, dispatch shore (Sprint 5)"
 source-file = "packages/lararium-tw5/src/action-handler.ts"
@@ -137,6 +134,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CUDKdOS1ognyqR_ojhAUUMOPMA-vMpEgiOHjGUqyPYI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WLtKyncxIH-YseqcwDMFvDAqSYRqw_EASiU21awmesY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

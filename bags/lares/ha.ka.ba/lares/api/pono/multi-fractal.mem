@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 17
-manao             = 16
-manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "multi-fractal — the pattern integrity where one entity IS a private container binding many scope-bound instances of a single primitive, each instance itself a container (recursion → fractal, never merely plural)"
@@ -93,6 +90,6 @@ The shape above says the recursion happens. This says WHY it must.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CvKX0U7XdE1c5cxGqP6pOzvt41PxRL8Fi708yk4_Q04`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3X8vhy5aCPOFfzi3GzxcdX7IZbS13_EuBUI-BOz9yFk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

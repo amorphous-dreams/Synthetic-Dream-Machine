@@ -7,11 +7,8 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 18
-manao     = 17
-manaoio   = 17
 namespace = "&#x0950; &#x0901;"
-role      = "invariant spec for the outbound TW5→CRDT save path: the per-title pacing gate, draft routing, ephemeral truncation"
+role      = "invariant spec for the outbound TW5→CRDT save path: the one drain, draft routing, ephemeral truncation"
 title     = "lar:///ha.ka.ba/lararium/api/save-path"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/save-path"
@@ -51,28 +48,32 @@ The law this path enacts stands at `lar:///ha.ka.ba/lares/docs/pono/outbound-bri
 
 !! Invariants
 
-!!! SP-1 — The Pacing Gate
+!!! SP-1 — The Drain
 
-`saveTiddler` and `deleteTiddler` MUST mark their TITLE in one per-title gate (`HandGate`,
-`packages/lararium-tw5/src/hand-gate.ts`): a trailing window of ''400 ms'' under a non-resetting cap
-of ''2 s''.
+`saveTiddler` and `deleteTiddler` MUST mark their TITLE in the shore's ONE `Drain`
+(`packages/lararium-tw5/src/drain.ts`). A mark records that the title owes the store its latest
+state at a fresh generation; it starts no work.
 
-* A later mark of the same title restarts the trailing window and leaves the cap running, so
-  continuous typing reaches the store within the cap.
-* What leaves at the flush MUST equal the title's state in the wiki at that flush, never the value
-  a mark carried. A state equal to the landed value with nothing sent since leaves nothing. One
-  exception: a direct caller that hands in a tiddler the wiki does not hold rides pinned, and its
-  value stands in for the wiki's.
-* The returned promise settles at flush time, not at call time; every caller that marked the title
-  settles with that flush. Callers MUST tolerate asynchronous settlement.
-* A discrete act (a draft's save, rename or cancel) MUST take its titles out of the gate and leave
-  in the dispatch turn, with no wait.
-* `stop()` MUST flush every marked title and MUST NOT drop a pending write.
-* The timers pace and decide nothing; a refused write arms no timer.
+* ONE write stays in flight across the whole shore, and it awaits the receipt capability's DURABLE ack (`caps.receipt`).
+* Coalescing falls out of the generations: a title marked during a flight leaves once more with
+  its latest state, and a title whose acks cover its latest mark costs no write.
+* What leaves in the flight MUST equal the title's state in the wiki at that moment, never the
+  value a mark carried. A state equal to the landed value with nothing sent since leaves nothing.
+  One exception: a direct caller that hands in a tiddler the wiki does not hold rides pinned, and
+  its value stands in for the wiki's.
+* The returned promise settles when the Drain settles the title's mark (acked, failed,
+  superseded or abandoned), not at call time. Callers MUST tolerate asynchronous settlement.
+* A discrete act (a draft's save, rename or cancel) marks its titles in the same Drain; its
+  removals (a draft tombstone, a rename source) wait as `markAfter` dependency edges on the
+  target's ack, so nothing leaves without the ack it waited on.
+* A failed write stays owed until the next request (any later mark, or a causal `kick`); it
+  re-arms nothing by itself.
+* `stop()` MUST close the Drain and MUST NOT drop an owed write.
+* The Drain holds no timer: a completion reschedules through one macrotask `schedule()`.
 
-Rationale: human keystroke rate typically runs 3–8 chars/sec. A 400 ms window
-coalesces a full word or short phrase into a single store write. Stays below
-perceived lag threshold (< 1 s).
+Rationale: human keystroke rate typically runs 3–8 chars/sec. While one write awaits its ack,
+the marks of a typing burst gather into the title's next generation, so a word or short phrase
+leaves as one write, and the store's own pace sets the rhythm instead of a clock.
 
 !!! SP-2 — Ephemeral Truncation
 
@@ -130,37 +131,37 @@ site.
 
 <<~ ahu slot=`#/debounce-design`>>
 
-!! Gate Design
+!! Drain Design
 
-This section, anchored `#/debounce-design`, holds the pacing gate's design: the save flow, the flush and the state the gate keeps per marked title.
+This section, anchored `#/debounce-design`, holds the Drain's design: the save flow, the flight and the state the Drain keeps per owed title.
 
 ```
 saveTiddler(tiddler): Promise<void>
   → refuse a title that never persists (the volatile VM plane · the alert rail)
   → teach the draft book when the tiddler carries draft.of
   → remember the hand's base (the ledger's bag + heads) at the first mark
-  → gate.mark(title, flush)        trailing 400 ms · cap 2 s
+  → drain.mark(title)              records the owed generation, starts no work
 
-_flushHand(title)
-  → wait for any in-flight write of the title
+_drainWrite(title) = _flushHand(title) then _ackDurably
+  → the Drain's one flight takes the title
   → read the title's state in the wiki
   → settled (equal to the landed value, or to the value already sent)? leave nothing
   → _saveBag(title) · _basePlan(title, bag)      a refused route stays owed
   → _writeMeme(title, fields, origin, bag, base) → store.writeFamily
-  → settle every waiter of the mark on resolve/reject
+  → await the receipt capability's durable ack, then settle every waiter of the mark
 ```
 
-State the gate holds per marked title (`hand-gate.ts`):
+State the Drain holds per owed title (`drain.ts`):
 
 | Field | Lifecycle |
 |---|---|
-| `trailing` | the resetting timer; cleared at flush or when a discrete act consumes the title |
-| `cap` | the non-resetting timer armed at the first mark; cleared the same way |
-| `flush` | the latest flush closure for the title |
-| `waiters` | every caller's resolve/reject pair, settled together |
+| dirty generation | raised by each mark; never starts work |
+| acked generation | raised to the flight's snapshot on the durable ack; the slot leaves once acks cover it |
+| waiters | one shared set per title, settled together with a terminal outcome |
+| dependency edges | `markAfter` removals parked on a target's ack |
 
-On `stop()`: the adaptor awaits discrete acts in flight, stops the landing queue, flushes every
-marked title, and unsubscribes from the projection bus. A write that fails at teardown reports its
+On `stop()`: the adaptor awaits discrete acts in flight, stops the landing queue, closes the Drain over every
+owed title, and unsubscribes from the projection bus. A write that fails at teardown reports its
 title on the console.
 
 <<~/ahu>>
@@ -177,6 +178,6 @@ title on the console.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4mrrMHYeGtBl6NvYUmNkGV1-Or9YsLaj5qGtIRrmaKA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PKgpGdIUll_wGm5WHaQpVGLbvARrBP3JDM1IaoX2m4M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

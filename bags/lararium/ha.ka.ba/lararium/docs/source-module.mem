@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 16
-manao     = 16
-manaoio   = 15
 role      = "capability meme for source-module carrier: package TypeScript source files emitted as memes into the graph"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/source-module"
@@ -106,6 +103,6 @@ The `write-source-memes.ts` script MUST:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6Nx6cv-_YT5iRfqTaWi4VmBgxWyysTNBSqhCF1NtL9A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MYPdk9ugLye1DUzkEnLFkcAGhSj2DzRzPy-R9wGm1_A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

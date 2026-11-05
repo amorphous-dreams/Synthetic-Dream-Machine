@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 15
-manao     = 16
-manaoio   = 14
 namespace = "&#x2299;"
 role      = "invariant law for the Reference-Fusion tell — a world-claim warranted only by context text, reality predicated past a lit ward with no token to catch"
 tags      = ["api/pono/meme"]
@@ -70,6 +67,6 @@ If the node refuses a true context claim outright rather than re-marking it, sig
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ES0oiZkGNlEpWDXy3k_P-nG-D_7ecijq3ev-WRaGTKY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xO33nX72yqKhk1jtlpREbj0gM4eo-Dm5YTbzJ3jkI2g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -78,6 +78,7 @@
     "tiddlywiki": "workspace:*"
   },
   "devDependencies": {
+    "fast-check": "4.10.2",
     "tsx": "4.23.15",
     "tw5-typed": "1.1.5",
     "vite": "8.3.4",

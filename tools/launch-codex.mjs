@@ -2,13 +2,14 @@
 /**
  * launch-codex — the Codex seat's one launcher (mixed-model-swarm#/the-launch, #/the-seat-law).
  *
- *   node tools/launch-codex.mjs --seat-dir <dir> --model <slug> --effort <level> --mode build|read|research [--worktree <dir>] [--dry-run]
+ *   node tools/launch-codex.mjs --seat-dir <dir> --model <slug> --effort <level> --mode build|lead|read|research [--worktree <dir>] [--dry-run]
  *
  * One walled `codex exec`, after a preflight. The brief is `<seat-dir>/brief.md`; the hand-back lands in `final.md`
- * (`-o`), the log in `run.log`, each attempt in `attempts.log`. The seat law (the canon section #/the-seat-law) rides
+ * (`-o`), the log in `run.log`, each attempt in `attempts.log`. The canon seat law or the lead law rides
  * the brief once, appended here. Hand-back: wait on `until [ -f <seat-dir>/final.md ]`.
  *
  *   build    workspace-write in the worktree, network off, both tmp excludes, `-C <worktree> --add-dir <seat-dir>`
+ *   lead     workspace-write in a scratch worktree, network on, with seat, common Git, and lane root dirs added
  *   read     `-s read-only -C <seat-dir>`
  *   research workspace-write in the seat dir alone, networked, the only mode with `--search`
  *
@@ -16,8 +17,8 @@
  * of the sandbox; no mode carries `--ephemeral`, so each seat keeps the rollout the spend tally counts.
  * PREFLIGHT refuses (exit 2, `SEAT-REFUSED: …`): a seat dir outside `<scratch>/<lane>/`, a missing brief, a model absent
  * from Codex's models cache, `gpt-6-sol`, a Codex pool line unreadable twice (never read as zero), a pool at or under
- * its floor (20% for a build or research seat, 0% for a read seat), a build seat on the main checkout, a build seat over a
- * stale dist.
+ * its floor (20% for build, lead or research, 0% for read), a build or lead seat on the main checkout, a lead worktree
+ * outside scratch, or a build seat over a stale dist.
  * `--dry-run` runs the preflight and prints the argument array, spawns nothing and writes nothing.
  *
  * The Codex cache, auth and rollouts live under the PASSWD home (`os.userInfo().homedir`), never `$HOME`: a lead runs
@@ -35,19 +36,23 @@ const CANON = "bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem";
 const FLOOR = 20;
 /** A read seat's own floor: the operator lets readers spend the pool to its end for now (2026-10-31: "temp bump that limit to 0%"; it stood at 5); builders and research keep FLOOR. */
 const READ_FLOOR = 0;
-const MODES = ["build", "read", "research"];
+const MODES = ["build", "lead", "read", "research"];
 
 /** The passwd home, never `$HOME`. */
 export function realHome() { return userInfo().homedir; }
 
 /** The argument array after `codex` and before the brief. */
-export function seatArgs({ mode, model, effort, seatDir, worktree }) {
-  if (!MODES.includes(mode)) throw new Error(`mode must be build, read or research (got "${mode}")`);
+export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir, laneRoot }) {
+  if (!MODES.includes(mode)) throw new Error(`mode must be build, lead, read or research (got "${mode}")`);
   const common = ["exec", "-m", model, "-c", `model_reasoning_effort=${effort}`, "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", join(seatDir, "final.md")];
   const tmpWall = ["-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true"];
   if (mode === "build") {
     if (!worktree) throw new Error("a builder needs its worktree");
     return [...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=false", "-C", worktree, "--add-dir", seatDir];
+  }
+  if (mode === "lead") {
+    if (!worktree) throw new Error("a lead needs its worktree");
+    return [...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=true", "-C", worktree, "--add-dir", seatDir, ...(gitDir ? ["--add-dir", gitDir] : []), ...(laneRoot ? ["--add-dir", laneRoot] : [])];
   }
   if (mode === "research") return ["--search", ...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=true", "-C", seatDir];
   return [...common, "-s", "read-only", "-C", seatDir];
@@ -89,11 +94,28 @@ export function seatLaw(canonText) {
   return `## SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)\n${bullets.join("\n")}\n`;
 }
 
-/** The brief carrying the canon law exactly once: every section under the SEAT LAW heading that is not the law alone is replaced, never trusted. */
-export function appendSeatLaw(brief, law) {
-  const heading = /^## SEAT LAW(?: \(|$)[^\n]*\n?/gm;
+/** The lead's separate wall permits work a builder's canon law forbids. */
+export function leadLaw() {
+  return `## LEAD LAW (appended by tools/launch-codex.mjs to a lead brief; it binds this lead)
+* No \`git stash\` in any form, no \`--no-verify\`, no \`git push -u\`, no force-push, no edit of .git/config.
+* Commit by \`git commit -F <file> --only -- <paths>\` with the \`lar:///w1.w2.w3 — summary\` message convention and the two trailers the session's attribution reminder gives.
+* Never write the main checkout (~/Synthetic-Dream-Machine) or its submodule worktrees; work in your own worktree under ~/.lares-scratch only.
+* Never read a credential file.
+* Never boot a daemon in-tree bare; any boot uses a scratch LAR_ROOT and no global LAR_BAGS.
+* No local e2e loops (unit first; e2e in CI via tools/e2e-shards.mjs or a raw ci/* branch).
+* Launch seats ONLY through tools/launch-codex.mjs; a Sol seat only through the controller.
+* A stop that needs more than this wall names itself in out.md and stops.
+* Report to the controller (final.md) for any push beyond the lane's go, and never push without its go.
+`;
+}
+
+/** Replace sections under the selected law heading, preserving the exact law once. */
+export function appendSeatLaw(brief, law, title = "SEAT LAW") {
+  const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const heading = new RegExp(`^## ${escaped}(?: \\(|$)[^\\n]*\\n?`, "gm");
   if (brief.includes(law) && (brief.match(heading) ?? []).length === 1) return brief;
-  const kept = brief.replace(/^## SEAT LAW(?: \(|$)[^\n]*\n[\s\S]*?(?=^## (?!SEAT LAW(?: \(|$))|(?![\s\S]))/gm, "");
+  const section = new RegExp(`^## ${escaped}(?: \\(|$)[^\\n]*\\n[\\s\\S]*?(?=^## (?!${escaped}(?: \\(|$))|(?![\\s\\S]))`, "gm");
+  const kept = brief.replace(section, "");
   return `${kept}${kept.endsWith("\n") ? "" : "\n"}\n${law}`;
 }
 
@@ -132,6 +154,7 @@ export function realReaders(home = realHome(), repo = REPO) {
     rolloutLines: () => { try { return newestRolloutLines(home); } catch { return null; } },
     distFresh: (wt) => { try { return distFresh(wt); } catch { return false; } },
     canon: () => readFileSync(join(repo, CANON), "utf8"),
+    gitCommonDir: (worktree) => execFileSync("git", ["-C", worktree, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).trim(),
   };
 }
 
@@ -146,7 +169,7 @@ export function preflight({ mode, model, seatDir, worktree }, readers) {
   const rel = there.startsWith(`${scratch}/`) ? there.slice(scratch.length + 1).split("/") : [];
   if (rel.length < 2) throw refuse(`seat dir must sit under ${scratch}/<lane>/ (the spend tally reads the lane from it): ${seatDir}`);
   if (!existsSync(join(seatDir, "brief.md"))) throw refuse(`no ${join(seatDir, "brief.md")}`);
-  if (!MODES.includes(mode)) throw refuse("mode must be build, read or research");
+  if (!MODES.includes(mode)) throw refuse("mode must be build, lead, read or research");
   if (model === "gpt-6-sol") throw refuse("gpt-6-sol never launches; use gpt-6.1-sol");
   const cache = readers.modelsCache();
   if (!cache || !new RegExp(`"slug": *"${model.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`).test(cache)) throw refuse(`model ${model} is not in Codex's models cache`);
@@ -154,10 +177,12 @@ export function preflight({ mode, model, seatDir, worktree }, readers) {
   const pool = readPool(readers.rolloutLines(), mode) ?? readPool(readers.rolloutLines(), mode);
   if (!pool) throw refuse("Codex pool line unreadable (no rate_limits record in the newest rollout, read twice); read it by hand before launching");
   if (!pool.above) throw refuse(`Codex pool at or below its floor: ${pool.summary}`);
-  if (mode === "build") {
-    if (!worktree) throw refuse("a builder needs its worktree");
-    if (real(worktree) === real(readers.repo)) throw refuse("a builder never writes the main checkout");
-    if (!readers.distFresh(worktree)) throw refuse(`the worktree's dist is stale (or unreadable): the lead runs 'pnpm build' in ${worktree} before launching a build seat`);
+  if (mode === "build" || mode === "lead") {
+    const role = mode === "lead" ? "lead" : "builder";
+    if (!worktree) throw refuse(`a ${role} needs its worktree`);
+    if (real(worktree) === real(readers.repo)) throw refuse(`a ${role} never writes the main checkout`);
+    if (mode === "lead" && !real(worktree).startsWith(`${scratch}/`)) throw refuse(`a lead worktree must sit under ${scratch}/: ${worktree}`);
+    if (mode === "build" && !readers.distFresh(worktree)) throw refuse(`the worktree's dist is stale (or unreadable): the lead runs 'pnpm build' in ${worktree} before launching a build seat`);
   }
   return { pool: pool.summary };
 }
@@ -183,13 +208,15 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     readers ??= realReaders();
     const worktree = o.worktree ? real(o.worktree) : undefined;
     const { pool } = preflight({ ...o, seatDir, worktree }, readers);
-    const args = seatArgs({ ...o, seatDir, worktree });
+    const gitDir = o.mode === "lead" ? readers.gitCommonDir(worktree) : undefined;
+    const laneRoot = o.mode === "lead" ? dirname(seatDir) : undefined;
+    const args = seatArgs({ ...o, seatDir, worktree, gitDir, laneRoot });
     log(pool);
     if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...args, "<brief>"])}`); return 0; }
-    const law = seatLaw(readers.canon());
+    const law = o.mode === "lead" ? leadLaw() : seatLaw(readers.canon());
     mkdirSync(join(seatDir, ".tmp"), { recursive: true });
     const briefPath = join(seatDir, "brief.md");
-    const brief = appendSeatLaw(readFileSync(briefPath, "utf8"), law);
+    const brief = appendSeatLaw(readFileSync(briefPath, "utf8"), law, o.mode === "lead" ? "LEAD LAW" : "SEAT LAW");
     writeFileSync(briefPath, brief);
     appendFileSync(join(seatDir, "attempts.log"), `attempt model=${o.model} effort=${o.effort} mode=${o.mode}\n`);
     const fd = openSync(join(seatDir, "run.log"), "w");

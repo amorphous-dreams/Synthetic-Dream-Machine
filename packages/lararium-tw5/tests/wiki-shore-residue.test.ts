@@ -42,7 +42,7 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
     expect(storeText(r, workingBag, x), "the refused save wrote nothing").toBe("landed");
     expect(storeDeleted(r, draftBag, d), "the refused tombstone wrote nothing").toBe(false);
     expect(r.adaptor.holdsHand(x)).toBe(true);
-    expect(r.adaptor.holdsHand(d), "the draft's tombstone stays owed").toBe(true);
+    expect(r.adaptor.holdsHand(d), "the recovery copy waits behind the owed target").toBe(false);
     r.failures.family = null;
     await r.stop();
     expect(storeText(r, workingBag, x), "the teardown lands the owed save").toBe("hand value");

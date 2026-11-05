@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "barrier"
 l-space   = "sdm"
-mana      = 13
-manao     = 16
-manaoio   = 12
 role      = "component (function): Barrier — raising a physical or force wall"
 title     = "lar:///ha.ka.ba/sdm/components/function/barrier"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -69,6 +66,6 @@ Pairs with `domain/abjuration` (defensive intent) and `domain/stuckforce` (a wal
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;91YPmCOCeHixFZMTn-KtyPk381aq2-90hC3YqdtNxxg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;v0wHyoduUBHFRdoPy42gD2xZVmixJgwrDpWrTMD9iuc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 19
-manao             = 19
-manaoio           = 19
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "FFZ pono constitutional law — MIND, ISLAND, AUTHORITY, CODEC, SYSTEM, PENTADIC, GENESIS, PEER, and THRESHOLD (Janus: every threshold keeps two faces, never merged) pattern-integrities for the Lararium causal-island system; attention-scale register names Pulse/Beat/Measure/Arc/Theme grounded in PENTA_2_CLOCK_ALIGNMENT"
@@ -410,6 +407,6 @@ desc  = "A rejection confesses that something understood the question (siege-res
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6bj1SKpwFJ6D49vFwtNkvUJgJNnFWX7n3ioFwFf46xY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1Prn37szMAOaEba02oWrN3x2NIcNMPg5fb-jD6tcZHw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

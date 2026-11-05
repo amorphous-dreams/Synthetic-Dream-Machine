@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "Shield Ward"
 l-space   = "sdm"
-mana      = 14
-manao     = 17
-manaoio   = 15
 role      = "Power module: Shield Ward — a skin-close abjuration barrier that filters incoming attacks"
 tags      = ["components/domain/abjuration", "components/function/ward", "components/function/barrier", "components/hook/imbued", "mount-points/trait"]
 title     = "lar:///ha.ka.ba/sdm/modules/powers/shield-ward"
@@ -91,6 +88,6 @@ On a botched or breached ward, choose one: it flares and reveals the operator; g
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HvtmkL7s7_dBHQ7ZEL4o0T2dqEug0wXaMGaQDze1ED4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RBRKN8f88YPHN39AraVGxJ3_tc-3JjS9iGLbtB76iqQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

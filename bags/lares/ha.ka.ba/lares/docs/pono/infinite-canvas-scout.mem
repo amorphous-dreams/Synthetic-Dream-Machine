@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "infinite-canvas-scout — DRAFT for the controller: the canvas camera (dreamdom-roadmap D7) read through the four layers, the keyed contract, the sink's keep, the width dial; the house seed collided, ruled where the doctrine already rules, held open where it does not."
@@ -160,6 +157,6 @@ Each needs two README verbs: `pan` (a viewport sense) and `place` (a drag gestur
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;oaSxVjcTGGuJViwDedFV2w-XoJ6v6WcCxuOAuNydWgY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zf09M_gBTrC8e767Hcz79Mf1E4l7u3ALTvtUju5mK0k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

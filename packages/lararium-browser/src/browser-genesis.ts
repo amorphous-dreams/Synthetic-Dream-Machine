@@ -27,7 +27,7 @@ import {
 // worker via resolveByCid — NEVER CRDT-synced over the port. OPFS is origin-shared, so a
 // worker reads what the main thread wrote. Canon: lararium-identity#the-oracle-plane.
 
-const OPFS_CAS_DIR = "cas";
+export const OPFS_CAS_DIR = "cas";
 
 /** Write each blob entry to the OPFS CAS, keyed by its sha256 (CID). No-ops if OPFS is
  *  unavailable. Returns the count written. */

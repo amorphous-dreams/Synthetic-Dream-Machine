@@ -6,7 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 14
 role        = "the verb/summons/outcome task surface — verb (invocation), summons (edge transport), outcome (result); LANGUAGE-protocol register internal, the UCAN Invocation/Receipt/Task ontology held as boundary projection for lineage + interop"
 source-file = "packages/lararium-mesh/src/verb-tiddler.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/verb-tiddler"
@@ -81,6 +80,6 @@ Audit/ledger note: durable residency audit lives at `@<bag>/ledger/residency/<ev
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KQaRtnvKLCkNC1OgpCEHcxeqTb9Tff-uDxfMDcx1Pzc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sMLz3iKJci-yjYOx_Q22m3O0ASkqmYQDZHtYEoTueGo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

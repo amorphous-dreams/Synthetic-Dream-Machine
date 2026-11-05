@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: THE SELECTIVE-DISCLOSURE ADDRESS BOOK — findings. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -199,6 +196,6 @@ Cwtch does ship multiple profiles, one Tor v3 onion each — but **nowhere claim
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_CONBXNwiRFaBQRycuCHBjb_9q9h8WXy0W_AxH2Wdro`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hD0LIdQ2hsY1UeGvPvQ4BQJGZugEyiZiXiAYgtGHL2Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

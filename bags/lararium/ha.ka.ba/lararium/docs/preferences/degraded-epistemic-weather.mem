@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 17
 role      = "staging docs shelf for named epistemic failure-weather, collapse patterns, and possible short-invariant promotion targets; the live frame reads at lar:///ha.ka.ba/lares/api/noosphere-boot#/off-true"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/preferences/degraded-epistemic-weather"
@@ -74,6 +71,6 @@ Current comparison surfaces:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;US9GR_skhr-8N3Pgwx1vqLp-kcgqkLTjF8uyRG1FIoI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8eONa5pXSP4ogPzOwVM2Ow1YM_As96eXIr8LRJMSPe0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

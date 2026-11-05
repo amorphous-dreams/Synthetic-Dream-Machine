@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "stable"
-mana       = 14
-manao      = 14
-manaoio    = 12
 namespace  = "&#x2B21;"
 role       = "group-as-closure: a group names no central object — it names the reciprocal-edge closure over signed, typed, lar:-named individual edges, EVALUATED never instantiated; quorum = a composed threshold subject; eviction = kāpae on the membership stack; maps PersonaGroup/Plurality/Kowloon-Admins onto #has-stack composition; PROPOSED, mostly unbuilt"
 status-why = "design intent, mostly unbuilt by its own status line"
@@ -197,6 +194,6 @@ group-object, the closure model carries a real pattern integrity, not a stylisti
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5jeWT_VsbmtrXiUv82hQiJKykCbb1HNJa6f00MtdoFs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H2adWkiPsxIFqd9_oChGNIUocSfogcK63A6SONgb7Hk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

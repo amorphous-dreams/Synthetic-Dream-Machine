@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 14
-manao     = 14
-manaoio   = 13
 rating    = "ano"
 role      = "faction meme — the Order of Amaranth: sanctuary law, iron convoys under the unfading flower, field medicine, the livery and the sacrament"
 title     = "lar:///ha.ka.ba/elyncia/factions/order-of-amaranth"
@@ -55,6 +52,6 @@ honey into sacred shapes, shared and eaten.)//
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5GDvA4vinZ2aIVHb8BhJyK4CQfFIqXDeISzKnJ_uGQs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;W9sUJQwcfjvubs3izl5LeysfmbgujlsKavVg9qwkUoU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

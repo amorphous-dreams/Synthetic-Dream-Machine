@@ -907,7 +907,8 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     expect(root.fields.text).toContain("<<~ kahea ahu slot=`#/a`>>");
     expect(root.fields.text).not.toContain("! body");
     expect(child.fields).toMatchObject({ title: `${title}#/a`, type: CARRIER_TYPE, text: "! body", "uri-path": "t/shore/backstop-unsplit#/a", "$fragment-parent": title, "$slot": "#/a" });
-    expect(placeWrites.map((write) => write.title).filter((writtenTitle) => writtenTitle === title || writtenTitle === `${title}#/a`)).toEqual([title, `${title}#/a`]);
+    expect(placeWrites.filter((write) => !write.stamped).map((write) => write.title)).toEqual([title, `${title}#/a`]);
+    expect(placeWrites.filter((write) => write.stamped).map((write) => write.title).sort()).toEqual([title, `${title}#/a`]);
     boundary.fire();
     await settleTurns(r, [title, `${title}#/a`], () => familyWrites.length);
     // The family call records its two member titles; separate member calls are not one atomic placement.
@@ -917,8 +918,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     expect(familyWrites).toHaveLength(1);
     const afterPlacement = wikiWrites.slice(placeWrites.length);
     expect(afterPlacement.every((write) => write.action === "add" && write.stamped), "every later wiki write is a wave landing with its bag stamp").toBe(true);
-    expect(afterPlacement.map((write) => write.title).sort()).toEqual([title, `${title}#/a`]);
-    expect(placeWrites.every((write) => !write.stamped)).toBe(true);
+    expect(afterPlacement).toEqual([]);
     const changeCounts = [r.wiki.getChangeCount(title), r.wiki.getChangeCount(`${title}#/a`)];
     const settledWrites = wikiWrites.length;
     await turns(40);
@@ -930,6 +930,70 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     measuring = false;
     r.wiki.addTiddler = nativeAdd;
     (r.engine.$tw.wiki as unknown as { deleteTiddler(title: string): void }).deleteTiddler = nativeDelete;
+    await r.repo.shutdown();
+  }, 120_000);
+
+  test("G(c) CONTROL: a child the family call put owes the store nothing only while its state matches the put; a changed child still stores", async () => {
+    const boundary = new ManualBoundary();
+    const r = await rig(boundary);
+    await r.adaptor.armSeedCheckpoint();
+    const child = "lar:///t/shore/family-child#/a";
+    const placed = { tiddler: { title: child, text: "! body", type: CARRIER_TYPE } } as never;
+    const adaptor = r.adaptor as unknown as {
+      familyPlaced: Map<string, unknown>;
+      _matchesPlaced(record: unknown, state: unknown): boolean;
+    };
+    const same = new r.Tiddler({ title: child, text: "! body", type: CARRIER_TYPE });
+    const changed = new r.Tiddler({ title: child, text: "! body, edited after the root left", type: CARRIER_TYPE });
+    expect(adaptor._matchesPlaced(placed, same), "the same state matches the put").toBe(true);
+    expect(adaptor._matchesPlaced(placed, changed), "a changed child no longer matches, so its own flush stores it").toBe(false);
+    expect(adaptor._matchesPlaced(placed, new r.Tiddler({ title: child, text: "! body", type: CARRIER_TYPE, extra: "" })), "an added empty field changes the state").toBe(false);
+    expect(adaptor._matchesPlaced({ tiddler: { title: child, text: "! body", type: CARRIER_TYPE, extra: "" } }, same), "a missing field changes the state").toBe(false);
+    r.unbridge();
+    await r.adaptor.stop();
+    await r.repo.shutdown();
+  }, 120_000);
+
+  test("failed hand retry surfaces a record moved out of its original bag", async () => {
+    const r = await rig();
+    const title = "lar:///t/shore/retry-moved";
+    await r.working.put({ tiddler: { title, text: "base" } }, remote);
+    r.working.emitInitialReplay();
+    await r.adaptor.armSeedCheckpoint();
+    r.unbridge();
+    const original = r.composite.writeFamily.bind(r.composite);
+    vi.spyOn(r.composite, "writeFamily").mockRejectedValueOnce(new Error("refused")).mockImplementation(original);
+    const internal = r.adaptor as unknown as { _flushHand(title: string): Promise<void>; _surfaceHand(title: string, fields: Record<string, string>, bag: string): Promise<void> };
+    const surface = vi.spyOn(internal, "_surfaceHand");
+    r.wiki.addTiddler(new r.Tiddler({ title, text: "hand" }));
+    await expect(internal._flushHand(title)).rejects.toThrow("refused");
+    r.workingHandle.change(doc => { delete doc.tiddlers[title]; });
+    await internal._flushHand(title);
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[title], "retry must not recreate the moved record").toBeUndefined();
+    expect(surface, "the hand surfaces").toHaveBeenCalledOnce();
+    await r.adaptor.stop();
+    await r.repo.shutdown();
+  }, 120_000);
+
+  test("a rejected family write never settles its child", async () => {
+    const r = await rig();
+    await r.adaptor.armSeedCheckpoint();
+    r.unbridge();
+    const title = "lar:///t/shore/family-rejection";
+    let childRecord: LarTiddlerRecord | undefined;
+    const write = r.composite.writeFamily.bind(r.composite);
+    const spy = vi.spyOn(r.composite, "writeFamily").mockImplementationOnce(async (puts) => {
+      childRecord = puts.find((record) => record.tiddler.title !== title);
+      throw new Error("family refused");
+    }).mockImplementation(write);
+    const internal = r.adaptor as unknown as { _writeMeme(title: string, fields: Record<string, string>, origin: typeof local, bag: typeof workingBag): Promise<void>; _flushHand(title: string): Promise<void> };
+    await expect(internal._writeMeme(title, { title, type: CARRIER_TYPE, text: framed(title) }, local, workingBag)).rejects.toThrow("family refused");
+    expect(childRecord).toBeDefined();
+    const child = childRecord!.tiddler.title;
+    r.wiki.addTiddler(new r.Tiddler(childRecord!.tiddler as Record<string, unknown>));
+    await internal._flushHand(child);
+    expect(spy.mock.calls.some(([puts]) => puts.some((record) => record.tiddler.title === child) && puts.length === 1), "the child writes after its family fails").toBe(true);
+    await r.adaptor.stop();
     await r.repo.shutdown();
   }, 120_000);
 
@@ -946,7 +1010,6 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
       return write(puts, deletes, origin, options);
     });
     r.wiki.addTiddler(new r.Tiddler({ title, text: "briefly present" }));
-    await turns(2);
     (r.wiki as unknown as { deleteTiddler(title: string): void }).deleteTiddler(title);
     await turns(2);
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "ordinary hand" }));
@@ -979,7 +1042,6 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
       return write(puts, deletes, origin, options);
     });
     r.wiki.addTiddler(new r.Tiddler({ title, text: "b" }));
-    await turns(2);
     r.wiki.addTiddler(new r.Tiddler({ title, text: "a" }));
     await turns(2);
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "ordinary hand" }));
@@ -1057,7 +1119,6 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
       return tombstone(bag, deletedTitle, origin, options);
     });
     (r.wiki as unknown as { deleteTiddler(title: string): void }).deleteTiddler(title);
-    await turns(2);
     r.wiki.addTiddler(new r.Tiddler(fields));
     await turns(2);
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "ordinary hand" }));

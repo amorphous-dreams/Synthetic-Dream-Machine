@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 16
-manao             = 16
-manaoio           = 16
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "registry-filter — the hard design law (operator, 2026-09-06): any fork whose downstream builds a compiled-about registry at ANY scope, even one Nexus, is REJECTED. The mechanical test (carriage passes: announced-by, causal, as-of-last-sync), the first audit's verdicts, the private-room refinement (a cabal realm venues what a board must not), and the shadow-case (correlation-by-signature-reuse is a registry built without a table)"
@@ -99,6 +96,6 @@ Two deployed systems compile the registry this law forbids, and their measured p
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hOH8wfCZ0Bqj4qVwlf-Gjni9HpZStNNG7gaLdZIB_kk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lWfxjbmLG2gxIczUFzB3CACpG20TgtMHnQCMqByykmM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

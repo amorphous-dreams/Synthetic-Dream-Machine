@@ -1,7 +1,7 @@
 /**
  * daemon-hand-boundary — a hand in the daemon surface lands on the next island boundary, as it does in every pool wiki.
  *
- * The hand gate gathers a title's hands until an island boundary or eight marks (`hand-gate.ts`). A pool wiki island
+ * The shore's one drain (`drain.ts`) holds a title's hands until it writes them, one at a time. A pool wiki island
  * fires that boundary on every control event, resend, placed verb and port signal (`wiki-hand-boundary`); the daemon
  * island must fire it on the same cues, or a tiddler the person saves in the daemon surface (one save, one mark) stays
  * in the wiki alone: the composite never holds it, and a `kahua-propose` over it answers `kahua-proposal-no-draft`
@@ -51,7 +51,7 @@ function eventsDelivered(engine: { $tw: { wiki: unknown; Tiddler: unknown } }): 
   });
 }
 const turns = async (n = 16): Promise<void> => { for (let i = 0; i < n; i++) await new Promise<void>((resolve) => setImmediate(resolve)); };
-const gated = (adaptor: unknown): string[] => (adaptor as { gate: { titles(): string[] } }).gate.titles().filter((t) => !t.startsWith("$:/test/barrier"));
+const gated = (adaptor: unknown): string[] => (adaptor as { pendingTitles(): string[] }).pendingTitles().filter((t) => !t.startsWith("$:/test/barrier"));
 
 /** A one-top island (working over the wiki's own bag), the shape the daemon surface mounts, under `behavior`. */
 async function rig(slug: string, make: (attach: () => Promise<void>) => IslandBehavior) {
@@ -98,8 +98,8 @@ describe.skipIf(wikiSkip)(`a hand in the daemon surface lands on the island boun
   test("RED: one saved tiddler stays marked until a control event; the daemon island's boundary then lands it in working", async () => {
     const r = await rig("daemon", () => makeDaemonBehavior({ runnableHulls: HULLS_TS_ONLY, verifierFactory: async () => undefined }));
     await r.hand();
-    expect(gated(r.adaptor), "the save marks the hand; one mark flushes on no timer").toEqual([HAND]);
-    expect(held(r.working)).not.toContain(HAND);
+    expect(gated(r.adaptor), "the batch closes the hand gate").toEqual([]);
+    expect(held(r.working)).toContain(HAND);
     await r.signal(LAR_CONTROL_EVENT);
     expect(gated(r.adaptor), "the control event never fired the daemon island's hand boundary").toEqual([]);
     expect(held(r.working), "the hand never reached the working document").toContain(HAND);
@@ -111,7 +111,8 @@ describe.skipIf(wikiSkip)(`a hand in the daemon surface lands on the island boun
   test("CONTROL: a pool wiki island lands the same hand on the same signal", async () => {
     const r = await rig("lares", () => makeWikiBehavior({}));
     await r.hand();
-    expect(gated(r.adaptor)).toEqual([HAND]);
+    expect(gated(r.adaptor)).toEqual([]);
+    expect(held(r.working)).toContain(HAND);
     await r.signal(LAR_CONTROL_EVENT);
     expect(gated(r.adaptor)).toEqual([]);
     expect(held(r.working)).toContain(HAND);

@@ -215,6 +215,35 @@ describe("the anon-veil lift on join", () => {
     expect(await textOf(v, String(binding["text"]), "Draft")).toBe("never asked for again");
   });
 
+  test("L11 — a floor draft whose old document never arrives is named and skipped within the read bound: the lift returns, moves nothing, burns nothing, and the next pass lifts it once the document answers", async () => {
+    const v = await vessel();
+    const joined = { on: false };
+    const a = await newFace(v, joined);
+    const anon = await resolverFor(v, a.face).draft("garden");
+    await write(v, anon.url, "Draft", "waits for its document");
+    joined.on = true;
+    // The old floor document is a document no peer answers for: its find stands pending for ever.
+    const silent = { create: v.repo.create.bind(v.repo), flush: v.repo.flush.bind(v.repo), delete: v.repo.delete.bind(v.repo),
+      find: (url: string) => (url === anon.url ? new Promise<never>(() => {}) : v.repo.find(url as never)) };
+    const stuck = makeSlotDocResolver({
+      repo: silent as unknown as Repo, daemonStore: v.daemon, keyhive: v.kh, catalog: makeCatalogAccessor(v.repo, v.catalogUrl),
+      vesselDid: () => DID, mintedByHex: () => MINTED_BY, floorAnchor: () => PLACE, faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(v.repo, url as never, label),
+      personaGroupId: a.face.group, faceSeated: async () => a.face.seated(), faceDoor: a.face.door, faceAddressSecret: async () => SECRET(), liftReadBoundMs: 100,
+    });
+    const warned: string[] = [];
+    const warn = console.warn; console.warn = (...m: unknown[]) => { warned.push(m.join(" ")); };
+    let first: Awaited<ReturnType<SlotDocResolver["liftFloor"]>>;
+    try { first = await stuck.liftFloor(); } finally { console.warn = warn; }
+    expect(warned.join("\n"), "the silent document is named").toContain(anon.url);
+    expect(a.minted, "nothing minted").toEqual([]);
+    expect(first.moved, "nothing moved while the document is silent").toEqual([]);
+    expect(await opens(v, anon.url), "nothing burned").toBe(true);
+    // CONTROL: the same lift over the honest repo moves it.
+    const second = await resolverFor(v, a.face).liftFloor();
+    expect(second.moved).toHaveLength(1);
+    expect(await textOf(v, (await resolverFor(v, a.face).draft("garden")).url, "Draft")).toBe("waits for its document");
+  }, 30_000);
+
   test("L6 — a crash between the binding and the burn finishes on the next pass, with no second copy", async () => {
     const v = await vessel();
     const joined = { on: false };
@@ -259,6 +288,97 @@ describe("the anon-veil lift on join", () => {
     // A second pass moves nothing.
     expect((await resolver.liftFloor()).moved).toEqual([]);
   });
+
+  test("L12 — a working-floor source that never arrives is named and skipped BEFORE the face's destination opens: no blank document stands at the derived address, and the next pass lifts it", async () => {
+    const v = await vessel();
+    const joined = { on: false };
+    const a = await newFace(v, joined);
+    const resolver = resolverFor(v, a.face);
+    const { workingUrl } = await resolver.bindings(v.fp, { wikiDocId: v.wikiUrl, libraryBagDocIds: [] }, "garden");
+    await write(v, workingUrl, "Saved", "working layer");
+    joined.on = true;
+    const silent = { create: v.repo.create.bind(v.repo), flush: v.repo.flush.bind(v.repo), delete: v.repo.delete.bind(v.repo),
+      find: (url: string) => (url === workingUrl ? new Promise<never>(() => {}) : v.repo.find(url as never)) };
+    const opened: string[] = [];
+    const warned: string[] = [];
+    const warn = console.warn; console.warn = (...m: unknown[]) => { warned.push(m.join(" ")); };
+    let first: Awaited<ReturnType<SlotDocResolver["liftFloor"]>>;
+    try {
+      first = await makeSlotDocResolver({
+        repo: silent as unknown as Repo, daemonStore: v.daemon, keyhive: v.kh, catalog: makeCatalogAccessor(v.repo, v.catalogUrl),
+        vesselDid: () => DID, mintedByHex: () => MINTED_BY, floorAnchor: () => PLACE,
+        faceWorkingDoc: (url, label) => { opened.push(url); return materializeFaceWorkingDoc(v.repo, url as never, label); },
+        personaGroupId: a.face.group, faceSeated: async () => a.face.seated(), faceDoor: a.face.door, faceAddressSecret: async () => SECRET(), liftReadBoundMs: 100,
+      }).liftFloor();
+    } finally { console.warn = warn; }
+    expect(first.moved, "the silent working floor does not move").not.toContain(wikiWorkingFloorKey("garden", PLACE));
+    expect(opened, `no destination opened while the source is silent: ${opened.join(",")}`).toEqual([]);
+    expect(warned.join("\n"), "the silent document is named").toContain(workingUrl);
+    expect(a.minted, "no document minted for the derived working address").not.toContain(faceWorkingDocUrl(SECRET(), "garden", "working"));
+    expect(await opens(v, workingUrl), "nothing burned").toBe(true);
+    // CONTROL: the honest repo lifts it.
+    expect((await resolverFor(v, a.face).liftFloor()).moved).toContain(wikiWorkingFloorKey("garden", PLACE));
+  }, 30_000);
+
+  test("L13 — a flush of the face's working destination that never answers is named and deferred: nothing minted, no mark, nothing burned, the floor source stays, and the next pass completes the lift", async () => {
+    const v = await vessel();
+    const joined = { on: false };
+    const a = await newFace(v, joined);
+    const resolver = resolverFor(v, a.face);
+    const { workingUrl } = await resolver.bindings(v.fp, { wikiDocId: v.wikiUrl, libraryBagDocIds: [] }, "garden");
+    await write(v, workingUrl, "Saved", "working layer");
+    joined.on = true;
+    const derived = faceWorkingDocUrl(SECRET(), "garden", "working");
+    let hung = 0;
+    const stuckFlush = { create: v.repo.create.bind(v.repo), find: v.repo.find.bind(v.repo), delete: v.repo.delete.bind(v.repo),
+      flush: (ids?: string[]) => { hung += 1; return new Promise<never>(() => {}); } };
+    const warned: string[] = [];
+    const warn = console.warn; console.warn = (...m: unknown[]) => { warned.push(m.join(" ")); };
+    let first: Awaited<ReturnType<SlotDocResolver["liftFloor"]>>;
+    try {
+      first = await makeSlotDocResolver({
+        repo: stuckFlush as unknown as Repo, daemonStore: v.daemon, keyhive: v.kh, catalog: makeCatalogAccessor(v.repo, v.catalogUrl),
+        vesselDid: () => DID, mintedByHex: () => MINTED_BY, floorAnchor: () => PLACE, faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(v.repo, url as never, label),
+        personaGroupId: a.face.group, faceSeated: async () => a.face.seated(), faceDoor: a.face.door, faceAddressSecret: async () => SECRET(), liftReadBoundMs: 100,
+      }).liftFloor();
+    } finally { console.warn = warn; }
+    expect(hung, "the flush was asked and never answered").toBeGreaterThan(0);
+    expect(first.moved, "the working floor did not move").not.toContain(wikiWorkingFloorKey("garden", PLACE));
+    expect(warned.join("\n"), "the stuck flush is named").toMatch(/flush|never arrived/);
+    expect(a.minted, "the derived working address is not minted").not.toContain(derived);
+    expect(await opens(v, workingUrl), "the floor source stays").toBe(true);
+    // CONTROL: the honest repo finishes the lift.
+    expect((await resolverFor(v, a.face).liftFloor()).moved).toContain(wikiWorkingFloorKey("garden", PLACE));
+    expect(await textOf(v, derived, "Saved")).toBe("working layer");
+  }, 30_000);
+
+  test("O3 — a destination flush that FAILS leaves the floor source whole and its carry mark empty of skips: a restart that lost the destination carries everything, and nothing burns", async () => {
+    const v = await vessel();
+    const joined = { on: false };
+    const a = await newFace(v, joined);
+    const catalog = makeCatalogAccessor(v.repo, v.catalogUrl);
+    const { workingUrl } = await resolverFor(v, a.face).bindings(v.fp, { wikiDocId: v.wikiUrl, libraryBagDocIds: [] }, "garden");
+    await write(v, workingUrl, "Saved", "working layer");
+    await write(v, workingUrl, "Second", "second layer");
+    joined.on = true;
+    const derived = faceWorkingDocUrl(SECRET(), "garden", "working");
+    const failing = { create: v.repo.create.bind(v.repo), find: v.repo.find.bind(v.repo), delete: v.repo.delete.bind(v.repo),
+      flush: (ids?: string[]) => (ids ?? []).some((id) => derived.endsWith(id)) ? Promise.reject(new Error("the destination disk refused")) : v.repo.flush(ids as never) };
+    await expect(resolverFor(v, a.face, failing).liftFloor()).rejects.toThrow(/destination disk refused/);
+    const source = await v.repo.find<LarDoc>(workingUrl as never);
+    await source.whenReady?.();
+    const mark = (source.doc()?.tiddlers as Record<string, LarTiddlerRecord> | undefined)?.["$:/lares/anon-lift/working-carried-to"];
+    const skips = String(mark === undefined ? "" : plainField(mark, "skip-titles") ?? "");
+    expect(skips, "no title is recorded as carried while the destination never rested").not.toContain("Saved");
+    expect(await opens(v, workingUrl), "the floor source stays").toBe(true);
+    expect(await catalog.urlOf(wikiWorkingFloorKey("garden", PLACE)), "the place's key stands").not.toBeNull();
+    // RESTART: the destination document the failed pass half-wrote is gone, and the reopened Repo is a fresh instance with no memory of it.
+    try { v.repo.delete(derived as never); } catch { /* the address may not stand */ }
+    const rerun = await resolverFor(v, a.face).liftFloor();
+    expect(rerun.moved).toContain(wikiWorkingFloorKey("garden", PLACE));
+    expect(await textOf(v, derived, "Saved"), "everything carried").toBe("working layer");
+    expect(await textOf(v, derived, "Second")).toBe("second layer");
+  }, 30_000);
 
   test("L9 — a burn that faults in the working floor's lift leaves the place's key marked, and the rerun burns it and takes the key out last", async () => {
     const v = await vessel();

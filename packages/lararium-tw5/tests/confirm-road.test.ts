@@ -248,6 +248,76 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     await r.stop();
   }, 120_000);
 
+  test("A draft edit arriving while a save receipt is pending is neither lost nor wrongly confirmed", async () => {
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
+    const z = "lar:///t/confirm/discard-receipt-race";
+    await seedRecords(r, [{ title: z, text: "landed" }]);
+    await r.adaptor.armSeedCheckpoint();
+    const nav = standNavigator(r);
+    let releaseAck!: () => void;
+    const ackHeld = new Promise<void>((resolve) => { releaseAck = resolve; });
+    let ackCount = 0;
+    r.adaptor.caps.receipt = {
+      begin: () => ({ done: () => {} }),
+      held: () => null,
+      idle: async () => {},
+      answer: () => false,
+      stalledAsks: () => 0,
+      close: () => {},
+      ack: async () => { ackCount++; await ackHeld; },
+    } as never;
+
+    nav.dispatchEvent({ type: "tm-edit-tiddler", tiddlerTitle: z });
+    const d = draftTitleOf(z);
+    await afterDispatch();
+    typeInto(r, d, "first save value");
+    await afterDispatch();
+    boundary.fire();
+    await turns(24);
+
+    nav.dispatchEvent({ type: "tm-save-tiddler", tiddlerTitle: d });
+    await afterDispatch();
+    await turns(24);
+    expect(ackCount, "control: the save receipt is pending").toBeGreaterThan(0);
+    expect(storeDeleted(r, draftBag, d), "the draft's recovery copy still stands while the save receipt is pending").toBe(false);
+    expect(r.wiki.getTiddler(z)?.fields["text"]).toBe("first save value");
+
+    nav.dispatchEvent({ type: "tm-edit-tiddler", tiddlerTitle: z });
+    await afterDispatch();
+    typeInto(r, d, "second typed value");
+    nav.dispatchEvent({ type: "tm-cancel-tiddler", tiddlerTitle: d });
+    const first = standingQuestion(r);
+    expect(first.fields["confirm-type"]).toBe("cancel");
+    typeInto(r, d, "third typed value");
+    await afterDispatch();
+
+    answer(nav, first.title, "yes");
+    expect(r.wiki.getTiddler(d), "a stale confirm must not remove the newer draft").toBeDefined();
+    expect(r.wiki.getTiddler(d)!.fields["text"]).toBe("third typed value");
+    expect(r.wiki.getTiddler(z)?.fields["text"]).toBe("first save value");
+    expect(storeDeleted(r, draftBag, d), "the recovery copy stays while the first save receipt is still pending").toBe(false);
+
+    releaseAck();
+    await turns(48);
+    boundary.fire();
+    await turns(24);
+    expect(storeText(r, draftBag, d), "the newer draft edit survives receipt completion").toBe("third typed value");
+
+    nav.dispatchEvent({ type: "tm-cancel-tiddler", tiddlerTitle: d });
+    const second = standingQuestion(r);
+    expect(second.title).not.toBe(first.title);
+    answer(nav, second.title, "yes");
+    expect(r.wiki.getTiddler(d)).toBeUndefined();
+    expect(r.wiki.getTiddler(z)?.fields["text"]).toBe("first save value");
+    await afterDispatch();
+    boundary.fire();
+    await turns(24);
+    expect(storeDeleted(r, draftBag, d)).toBe(true);
+    expect(storeText(r, workingBag, z)).toBe("first save value");
+    await r.stop();
+  }, 120_000);
+
   test("a rename onto a standing title whose content changed underneath refuses on the alert rail and writes nothing", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });

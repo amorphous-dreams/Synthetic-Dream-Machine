@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 15
-manao     = 15
-manaoio   = 14
 rating    = "ano"
 role      = "concept canon — the Necrospire: the Oort needle, the Pale Emperor's prison bound onto it, the aeons adrift, the fall, and the caldera in the Accursed Mountains"
 title     = "lar:///ha.ka.ba/elyncia/concepts/the-necrospire"
@@ -65,6 +62,6 @@ sinking.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;a3i5iuwwePSNORSWbxqJfXSY-KLZQVKrJiDGUtIRUj4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ws63_cmOe_eBRJgAYSa7ye_g5VG7VQmHFfGCwTrsgtk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

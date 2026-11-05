@@ -8,9 +8,6 @@ approved-on   = "2026-06-02"
 cacheable     = true
 hydrate       = true
 l-space       = "stable"
-mana          = 17
-manao         = 17
-manaoio       = 15
 namespace     = "&#x0950; &#x0901;"
 revised-on    = "2026-09-13"
 revision-note = "the `disk-leaning` grading reads as GRAIN, never as a write door — two grounds under one word, the authoring grain holding and the alpha-era surviving-copy retiring, pointed at wiki-layer-ontology#/alpha-transition; prior: working↔canon split (shore-law): a wiki's saved edits land in the typed working-slot live layer (wikis/, tracked); canon (bags/) is reached only by a cap-gated promotion MOVE; the general lararium shore law (working↔canon · plane↔plane · host↔lararium) governs every causal-island crossing, host-agnostic surface contract; prior: oracle-floor/@lararium split (#/oracle-split) — the runtime system island (@oracle) separates from the memetic corpus (@lararium); projection-law trued to running code; co-projection rewrite; carrier-whole at rest"
@@ -47,7 +44,7 @@ The distinction reads ''definition vs instance''. An FTLS Power Card //definitio
 
 !! Bag roles — which bags project, which ride the mesh
 
-Disk projection serves ''content'' bags (definitions + instances). ''State / view / runtime'' bags carry no `BagMirrorConfig` and so never write to disk — they ride the CRDT sync mesh.
+Disk projection serves ''content'' bags (definitions + instances). State and view bags normally ride the CRDT sync mesh without a `BagMirrorConfig`; an explicit recovery grant also projects the draft bag into its separate recovery subtree.
 
 | Bag | Role | Disk surface |
 |---|---|---|
@@ -56,11 +53,13 @@ Disk projection serves ''content'' bags (definitions + instances). ''State / vie
 | `@oracle` | ''runtime system island'' — genesis-loaded engine BLOBs + bag→doc oracle + genesis-cid | ''none'' — genesis-loaded + federated read-only; regenerable (see #oracle-split) |
 | `@personal` | operator view-state, wiki-instance-bound | ''none'' — mesh-synced (see #personal) |
 | `@working` | per-wiki ''saved'' working layer (saved tiddlers, pre-promotion) | `wikis/{slug}/` — live, tracked |
-| `@draft` | per-wiki ''unsaved'' drafts (TW5 draft state) | ''none'' — runtime |
+| `@draft` | per-wiki ''unsaved'' drafts (TW5 draft state) | `wikis/{slug}/recovery/` only under an explicit recovery grant; never canon or publication |
 | `@temp` | volatile session layer | ''none'' — runtime |
 | `@daemon` | operator's sovereign authority doc | ''none'' — private; syncs to operator devices via the admin-doc surface |
 
 The daemon wiki's working layer projects under `wikis/daemon/`, while the daemon control bag projects nowhere. The records the daemon seeds from source at every boot, its UI surfaces and its flow set, carry the per-record opt-out below (`SEED_OFF_DISK`, `packages/lararium-tw5/src/daemon-ui-tiddlers.ts`): a file of one would hold nothing the source lacks, and the next boot's seed would write over a hand's edit to it. So a founding leaves no file under `wikis/daemon/`, and a record a person writes into that layer projects like any other.
+
+''Draft recovery and rest.'' A granted recovery mirror reads the draft bag's own record, including `draft.of`, `draft.title` and the open-base fields, even when another bag shadows its wiki view. The recovery subtree carries no canon or publication authority. The shore uses one keyed latest-state drain: one write runs at a time, its durable acknowledgement paces the next coalesced state, and lifecycle signals only request a pass. One drain state machine owns each title's generation: callers only mark or await, one pump issues the writes and yields to a macrotask between them, one typed flight closes each generation as `acked`, `failed`, `superseded` or `abandoned`, an act's removals wait on an explicit edge to their target's acknowledgement, and memory stays bounded by the number of titles. No timer decides a flush. A draft reaches recovery rest only after the storage-backed repository acknowledges its heads and the projector confirms the file hash; a warning or the worker's in-memory flush never supplies that acknowledgement. SAVE and RENAME retain the recovery copy until the target receives durable acknowledgement.
 
 The projector enforces this structurally: ''a bag absent from the mirror list never writes to disk.'' A tiddler MAY also opt out per-record with `disk-projection: no`. The opt-out holds in both directions: an address whose records never project (a receipt fact, a verb summons, a ward audit; `neverProjects`) and a carrier that declares `disk-projection: no` never ingest, so a file standing there refuses by name (`never-projected-path`), creates nothing, and leaves the wave's other carriers to land.
 
@@ -212,7 +211,7 @@ The operator drives the disk-projection Artifact through the `@lares/cli` surfac
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/disk-projector`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>
 
-''Tie ~ bags/ holds the formal register.'' This surface (the seed/canon `bags/`, mana-entrenched) carries exactly
+''Tie ~ bags/ holds the formal register.'' This surface (the seed/canon `bags/`, curation-entrenched) carries exactly
 the FORMAL register of the living grammar ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace#/three-registers]]) — the curated band
 between casual chat-use and the defined parser core.
 
@@ -222,6 +221,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IooYIKbGgKI5VirkeiNPHeKjmobcbPJPtfkwCELoz2M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2xRESJWuz7qIqBLsgARz1tOIBslEcShEzqWtVm17chY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

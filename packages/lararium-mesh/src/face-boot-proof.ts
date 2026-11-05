@@ -50,6 +50,8 @@ export function proveFaceFromLog(input: {
   if (projection.personaKelPrefix !== input.anchor.personaKelPrefix) return { ok: false, refusal: { why: "prefix" } };
   // The founding commits the root it was founded under (a rotation since moves the anchor, which the KEL head attests).
   if (projection.rootCommitment === null) return { ok: false, refusal: { why: "root" } };
+  // A pinned plane takes its first pin only: a later root-signed act over one refuses the boot by that plane's name.
+  if (projection.planeRewrites.length) return { ok: false, refusal: { why: "plane", plane: projection.planeRewrites[0]!.plane } };
   for (const [plane, url] of Object.entries(input.planes)) {
     if (url && projection.planes[plane] !== url) return { ok: false, refusal: { why: "plane", plane } };
   }

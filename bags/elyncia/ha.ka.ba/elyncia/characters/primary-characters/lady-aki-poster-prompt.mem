@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 13
 rating    = "ano"
 role      = "Lady Aki poster-sheet render prompt — palette and mood lines for image generation"
 title     = "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt"
@@ -51,6 +48,6 @@ No spider legs on Ichi. No tall ritual hat. No generic witch hat. No polished fi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;X92nAJ5KWQa_spzxVUyuvLrTDacVzxiszfvpAYigzKg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;F_uWocPzeMa_rNQEB-RJVlodqFvOjVetZs7Wy5hQw94`>>
 
 <<^ code=`&#x0004;` to=`?`>>

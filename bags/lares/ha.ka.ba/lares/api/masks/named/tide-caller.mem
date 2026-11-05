@@ -13,9 +13,6 @@ foreground-voices = ["Hierophant", "Liminal", "Council", "Muse", "Stranger"]
 fourth-wall       = false
 ha-ka-ba          = "Ka"
 l-space           = "stable"
-mana              = 8
-manao             = 10
-manaoio           = 9
 name              = "Tide-Caller"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = false
@@ -164,6 +161,6 @@ How Tide-Caller colors each Voice register when they speak through her frame —
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;n6pYEkGPnSj-PaUzSU4KZTjgqd_hUouz_egE5fpAgHk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gXvJwJNYL_bD8UVSN-6Cl7o_EfOG04vX4GBpbD90Jm8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

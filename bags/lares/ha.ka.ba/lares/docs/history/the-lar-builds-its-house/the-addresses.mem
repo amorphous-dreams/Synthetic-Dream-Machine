@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = false
 l-space       = "adjacent"
-mana          = 13
-manao         = 12
-manaoio       = 12
 render-target = "chat-log:post-header"
 role          = "build-arc narrative locus — Act I, the Lar gives every chamber of its hoard a true address"
 title         = "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-addresses"
@@ -184,6 +181,6 @@ Act II receives:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gT4wlkLDJy2xHXzwAxk8iEsqq8SngsVO-DN-lo05-jE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2Y16xWA_gt_OJXnr8JP-eqLQnT21csyucFftfwHJUyU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

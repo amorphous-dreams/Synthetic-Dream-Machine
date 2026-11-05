@@ -7,7 +7,6 @@
 cacheable   = true
 grammar-key = "x-tiddlywiki-filter"
 guest-mime  = "text/x-tiddlywiki-filter"
-mana        = 18
 namespace   = "&#x2299;"
 role        = "pointer meme: x-tiddlywiki-filter is fully implemented by wikitext-filter; this meme routes to the canonical extension"
 tags        = ["api/pono/meme"]
@@ -127,6 +126,6 @@ interchangeable in `hana` blocks. Prefer `"wikitext-filter"` for new authoring.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qbf4KumoCPXhNM4YC9sHl0alEL-HizxxPjo5jTptiWY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vMJoX1uEYgvrwIez3gr3riVnU5cCunuHlICPGAysjBI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

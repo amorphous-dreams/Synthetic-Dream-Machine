@@ -588,9 +588,10 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   {
     let rooted = 0;
     const mask = fencedSpans(seat.text);
+    const liveSigils = [...seat.text.matchAll(/<<[^<>]*>>/g)].filter((m) => !inMask(mask, m.index!));
     const LAR_FRAGMENT_RE = /(lar:\/\/\/[^\s"'`#>)\]]+)#(?!\/)([^\s"'`>)\]|]+)/g;
     const next = seat.text.replace(LAR_FRAGMENT_RE, (whole, path: string, name: string, offset: number) => {
-      if (inMask(mask, offset)) return whole;
+      if (inMask(mask, offset) && !liveSigils.some((m) => offset > m.index! && offset < m.index! + m[0].length)) return whole;
       rooted += 1;
       return `${path}#/${name}`;
     });

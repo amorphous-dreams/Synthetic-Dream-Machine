@@ -194,11 +194,23 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium
+      # The apt libraries and the engine download ride two steps, so a stall names which one stalled; the download
+      # takes three attempts of 180 s each inside its ten minutes.
+      - name: Install the Playwright system dependencies (chromium)
+        id: chromium-deps
+        if: ${{ !cancelled() }}
+        timeout-minutes: 5
+        run: pnpm exec playwright install-deps chromium
       - name: Install the Chromium engine
         id: chromium
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.chromium-deps.outcome == 'success' }}
         timeout-minutes: 10
-        run: pnpm exec playwright install --with-deps chromium
+        run: |
+          for attempt in 1 2 3; do
+            if timeout 180s pnpm exec playwright install chromium; then exit 0; fi
+            echo "Playwright engine install attempt $attempt failed; retrying"
+          done
+          exit 1
       # ── the browser floor crossing (W23) ──
       # A real Chromium on the page a staged hearth serves, crossing that hearth's gates
       # (`packages/lararium-web/tests/e2e/floor-crossing.e2e.test.ts`). It rides its own config
@@ -292,10 +304,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # `engines` names the Playwright engines the cell's suites launch (measured against the suite configs:
+          # node holds none; `@lararium/web` runs all three and tw5's e2e walks launch Chromium; `@lararium/browser`
+          # runs Chromium and Firefox). An empty value skips the cache and both installs.
           - cell: node-a
+            engines: ''
           - cell: node-b
+            engines: ''
           - cell: web-tw5
+            engines: chromium firefox webkit
           - cell: cli-mesh
+            engines: chromium firefox
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -339,17 +358,27 @@ jobs:
       # which the root `requirements.txt` (the operator's ~/.venv manifest) includes. The root list's
       # prose-tier NLP stack stays out: it needs downloaded models and the router degrades through it.
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        id: py
         with:
           python-version: '3.12'
+      - id: mempalace-pin
+        run: echo "sha=$(git rev-parse HEAD:mempalace)" >> "$GITHUB_OUTPUT"
+
+      # The key carries the exact interpreter PATCH: a restored venv's bin/python3 symlinks to the hostedtoolcache path of the patch that built
+      # it, so on a runner carrying another 3.12.x it dangles (exit 127).
       - name: Cache the holder venv
         id: venv-cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.venv
-          key: holder-venv-${{ runner.os }}-py312-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
+          key: holder-venv-${{ runner.os }}-py${{ steps.py.outputs.python-version }}-${{ steps.mempalace-pin.outputs.sha }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
       - name: Stand the holder venv (~/.venv)
-        if: steps.venv-cache.outputs.cache-hit != 'true'
+        env:
+          CACHE_HIT: ${{ steps.venv-cache.outputs.cache-hit }}
         run: |
+          # A restored venv whose interpreter does not answer is no venv: stand it again (belt beside the patch-keyed cache).
+          if [ "$CACHE_HIT" = 'true' ] && ~/.venv/bin/python3 -V >/dev/null 2>&1; then exit 0; fi
+          rm -rf ~/.venv
           python3 -m venv ~/.venv
           ~/.venv/bin/python3 -m pip install --upgrade pip
           ~/.venv/bin/python3 -m pip install -e ./mempalace -r packages/lararium-sensorium/requirements.txt
@@ -369,22 +398,32 @@ jobs:
         run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
       # The engine directory restores by the pinned Playwright version; a bump re-downloads. The install below
       # still runs apt for the system libraries, so it carries its own timeout and a stall there fails fast.
-      - name: Cache the Playwright engines (chromium firefox webkit)
-        if: ${{ !cancelled() && steps.holder.outcome == 'success' }}
+      - name: Cache this cell's Playwright engines
+        if: ${{ !cancelled() && steps.holder.outcome == 'success' && matrix.engines != '' }}
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium-firefox-webkit
-      - name: Install Playwright engines (browser-vessel suite, three engines)
-        if: ${{ !cancelled() && steps.holder.outcome == 'success' }}
+          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-${{ matrix.cell }}-${{ matrix.engines }}
+      - name: Install this cell's Playwright system dependencies
+        id: browser-deps
+        if: ${{ !cancelled() && steps.holder.outcome == 'success' && matrix.engines != '' }}
+        timeout-minutes: 5
+        run: pnpm exec playwright install-deps ${{ matrix.engines }}
+      - name: Install this cell's Playwright engines
         id: browser
+        if: ${{ !cancelled() && steps.holder.outcome == 'success' && matrix.engines != '' && steps.browser-deps.outcome == 'success' }}
         timeout-minutes: 10
-        run: pnpm exec playwright install --with-deps chromium firefox webkit
+        run: |
+          for attempt in 1 2 3; do
+            if timeout 180s pnpm exec playwright install ${{ matrix.engines }}; then exit 0; fi
+            echo "Playwright engine install attempt $attempt failed; retrying"
+          done
+          exit 1
       # ONE SERIALIZATION INSIDE A CELL. The cell runs its packages one after another because packages share a
       # build tree and a rendezvous directory; running them in parallel measures a different repository than the
       # one an operator measures locally. Parallelism lives between cells, each with a tree of its own.
       - name: Run this cell's package suites
-        if: ${{ !cancelled() && steps.holder.outcome == 'success' && steps.browser.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.holder.outcome == 'success' && (matrix.engines == '' || steps.browser.outcome == 'success') }}
         run: node tools/ci-cells.mjs run-test "${{ matrix.cell }}" --out "$RUNNER_TEMP/cell"
       - name: Upload this cell's JSON reports (always, even on a red cell)
         if: always()

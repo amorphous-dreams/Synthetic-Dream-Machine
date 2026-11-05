@@ -19,7 +19,7 @@
 import type { DocHandle }                        from "@lararium/mesh";
 import type { CompositeStore, IslandToVesselMsg, LarDoc, Repo, WikiRecipe } from "@lararium/mesh";
 import type { TW5Engine }                        from "./tw5-vm.js";
-import type { RestDoor }                        from "./rest-door.js";
+import type { ReceiptCapability }                        from "./receipt.js";
 
 export interface IslandContext {
   wikiUri:   string;
@@ -27,6 +27,8 @@ export interface IslandContext {
   tw5:       TW5Engine;
   handles:   Map<string, DocHandle<LarDoc>>;
   post:      (msg: IslandToVesselMsg) => void;
+  /** Request a best-effort drain; no persistence acknowledgement follows. */
+  requestDrain?: () => void;
   /**
    * The island-side Automerge Repo. Island behaviors that mint docs (e.g. the
    * daemon island's personal/draft binding resolver) create them here; the docs
@@ -79,8 +81,8 @@ export interface IslandContext {
    * `cid == hash(bytes)` — content-addressed trust, never host trust.
    */
   resolveByCid?: (cid: string) => Promise<Uint8Array | null>;
-  /** The island's half of the vessel's rest door: a save act's result and the coherence fold wait on it. Absent where no vessel answers it. */
-  rest?: RestDoor;
+  /** The island's half of the vessel's receipt capability: a save act's result and the coherence fold wait on it. Absent where no vessel issues one. */
+  receipt?: ReceiptCapability;
   /**
    * True when this island mounted from a RESOLVED recipe (a session surface): every slot arrived with its
    * absolute id, the island reaches no catalog, and its composition never changes while it stands. A recipe
@@ -107,7 +109,16 @@ export interface IslandContext {
  * - `onSignal` — called for every non-lifecycle message. Return true if handled.
  * - `onHooAnu` — called before drain loop stops.
  */
+/**
+ * THE WRITABLE OUTCOME. The `lararium-writable` startup marker settles by NAME: `standing` once the working route stands, `no-route` with
+ * the reason where none can (a faceless daemon). The marker never hangs on a missing route; promoted modules run either way, and a write
+ * made against `no-route` meets the refuse-by-name floor.
+ */
+export type WritableOutcome = { readonly state: "standing" } | { readonly state: "no-route"; readonly reason: string };
+
 export interface IslandBehavior {
+  /** Runs INSIDE the `lararium-writable` marker, after the recipe, bridge and resident seed and before any promoted module: stand the working route (authority, archive, working-only attachment, pointer landed). Absent: the route stands as the recipe left it. */
+  onWritable?(ctx: IslandContext): Promise<WritableOutcome>;
   onEa(ctx: IslandContext): void | Promise<void>;
   onSignal(type: string, raw: unknown, ctx: IslandContext): boolean;
   onHooAnu(ctx: IslandContext): void | Promise<void>;

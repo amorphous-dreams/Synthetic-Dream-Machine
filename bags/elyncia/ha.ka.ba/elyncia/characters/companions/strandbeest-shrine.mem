@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 13
 rating    = "ano"
 role      = "companion sheet — the Faerie-Ring Strandbeest Shrine: walking hokora, mycelium sails, Mother Spore ring"
 title     = "lar:///ha.ka.ba/elyncia/characters/companions/strandbeest-shrine"
@@ -334,6 +331,6 @@ The strandbeest legs lock into aggressive posture — stabbing, sweeping, and tr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Dt_9P4dR4N3mmzAY1qpna909gdftlEvdL61MOW7Hv3M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Lller8G7gtxlCSLpxRg-Ej5A_00aiicRl2hIP7G1Z-o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

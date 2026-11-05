@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 hydrate   = false
-mana      = 18
-manao     = 18
-manaoio   = 18
 title     = "lar:///ha.ka.ba/lararium/api/graceful-parsing"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/graceful-parsing"
@@ -425,6 +422,6 @@ the grain a write actually lands in.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;d5YAhJzQJevzeBd3MCBeq7OrpKdBi309iFueTrJnBao`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JpRDTsXMm3XrZnyECT6KGwwwNKgJJcoKiz1xp38pIxk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

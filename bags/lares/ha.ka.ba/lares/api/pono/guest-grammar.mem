@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 15
-manao     = 16
-manaoio   = 14
 namespace = "&#x2299;"
 role      = "guest-grammar invariant law for explicit admission, hana worksite use, and host-guest boundary discipline"
 tags      = ["api/pono/meme"]
@@ -131,6 +128,6 @@ Schema detail, fixture families, and execution procedure belong in the companion
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Fw2BKokmZUD6mrqwH6OruwVvKoi7cX2z1BOIoUvX9VA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bq5ggYvIlRU12Q76ow4nDY2-mySkbbVvnLzI0fhoEtM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

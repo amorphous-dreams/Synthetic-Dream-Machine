@@ -7,9 +7,6 @@
 cacheable   = true
 hydrate     = true
 l-space     = "lararium"
-mana        = 18
-manao       = 18
-manaoio     = 18
 role        = "Genesis & the two planes: immutable seed-derived CAS inventory + a living oracle-floor pointer-doc. The oracle-floor is soft-coupled to, and never authorizes, the immutable CID plane."
 source-file = "packages/lararium-mesh/src/genesis-doc.ts"
 tags        = ["mesh/alignment-plan", "mesh/dreamnet-architecture"]
@@ -199,6 +196,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PxLdb1AKRGlw5AKm-MJVfa08lVxHoZP7JMTHE2hw6tk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;txDAPFlhZxTFqF6-Wo1DXhqYKgNf9h5VlydZheAbeLA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 16
-manao     = 16
-manaoio   = 16
 role      = "lararium canvas room registry — default rooms, portals, layout types"
 tags      = ["lar:///ha.ka.ba/lares/api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/tw5/canvas/rooms"
@@ -133,6 +130,6 @@ label      = "← System"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yuiO_OOt_aecUuRFcs-OBmprUS2Mu6hT0AEOKxT6yXw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uqAHg050WseUVQsNvnnyEePzqJuqdqSi11a2px19xOs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

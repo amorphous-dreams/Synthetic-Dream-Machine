@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "ritual"
 l-space   = "sdm"
-mana      = 13
-manao     = 16
-manaoio   = 12
 role      = "component (posture): Ritual — activation requires extended procedure and time, not an instant"
 title     = "lar:///ha.ka.ba/sdm/components/posture/ritual"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -69,6 +66,6 @@ A posture, not a hook — it gates //how// a module is reached, akin to Sera's b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zSg3KEXbpaL-JsMe-62ykdK8KuCWz_3kZGJZfej8q2s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xnp5ZNV-pPEhcta-K43UiCmdwNC3iJJzFfZUSzFRfp8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

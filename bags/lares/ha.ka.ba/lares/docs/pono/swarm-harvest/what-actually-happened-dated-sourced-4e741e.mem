@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: WHAT ACTUALLY HAPPENED (dated, sourced). Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -125,6 +122,6 @@ Why this is survivable, per Ayer: clients require SCTs from **multiple logs acro
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1Idun274EcyHpKqmElQfPvc0-RvfL8Mo6VReGRxo_q0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OkvmPWZNiCG0xaqnyyO6bpkYuLM21aADGqWz-jNQwO4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

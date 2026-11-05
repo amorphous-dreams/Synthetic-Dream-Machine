@@ -5,9 +5,6 @@
 
 ```toml meta
 l-space                                = "stable:@elyncia"
-mana                                   = 17
-manao                                  = 16
-manaoio                                = 16
 sdm-character-ability-scores-agility   = 1
 sdm-character-ability-scores-aura      = 2
 sdm-character-ability-scores-charisma  = 2
@@ -717,6 +714,6 @@ Do not collapse these roles.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1d02hNJcLa1wZt-elUt3-KodLPsQS6yXvQwt-y353DA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;44zM9brf8R-HNi8_v92vzK9jPg49WKnuCyvtJj72dnU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

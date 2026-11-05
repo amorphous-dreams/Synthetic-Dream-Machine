@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 14
-manaoio           = 12
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "test-recut-road — train T's kit: the measured ground, the god-method's lift map sorted by capability, the floor that settled its forks and the two-wave reads behind its rows. The rows, rulings, order and open items stand in stable-founding-road (#/stride-t-recut, #/rulings, #/the-order); this kit folds when T's last row lands."
@@ -31,7 +28,7 @@ written           = "2026-10-31"
 
 ''How it rides the house roadmap.'' The train runs ''beside'' the six paths of `stable-founding-road#/the-road`, never stalling them. The compose hunks of `open-node-vessel.ts` and `open-browser-vessel.ts` keep their named owners (`stable-founding-road` owner law): a row here reaches them only through a module boundary, or through the one named single-owner step `T12` holds.
 
-''The lane law binds every lane here'' (`controller-handoff#/the-lane-law`, `mixed-model-swarm`): one lead per lane in its own worktree; red first, with a control; suites under a scratch `HOME` and a scratch `LAR_ROOT` with `LAR_BAGS` unset; never a boot in the tracked tree; canon lines in each commit, L-Prime kept.
+''The lane law binds every lane here'' (`controller-handoff#/the-lane-law`, `mixed-model-swarm`): one lead per lane in its own worktree; red-first, homed, with a control; suites under a scratch `HOME` and a scratch `LAR_ROOT` with `LAR_BAGS` unset; never a boot in the tracked tree; canon lines in each commit, L-Prime kept.
 
 ''Train letter and rows.'' This train reads as ''T''. Its rows, their numbers and their statuses stand in the road's stride alone (#/the-rows), and this kit copies none: wave 0 holds the cures the cut reads found, and waves A to C the re-cut itself, and its lanes read `recut-<ground>`.
 
@@ -54,7 +51,7 @@ Train T's rulings stand in the road: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/
 | heaviest packages by ratio | `lararium-web` 2.02 · `lararium-node` 1.88 · `lararium-keyhive` 1.60 · `lararium-tw5` 1.50; node, mesh and tw5 carry 74% of test lines |
 | where the weight comes from | repeated setup and breadth, never giant test files (p90 223 lines): 1,032 `mkdtemp` calls in 389 files; node runs 2.1 test files per source file |
 | the god-method | `prepareNodeBootOn` (`open-node-vessel.ts`, about 709 to 3546): about 2,840 lines, 164 closures, 49 `let`s; 185 commits touched the file since 2026-10-01 |
-| what blocks a small test | four process-global doors in `worker-handle.ts` (`setRestDoor`, `setCasDoor`, `setDyadDoor`, `setCustodyWriteDoor`): two vessels in one process overwrite each other's doors, so a test stands up nothing smaller than a whole boot; about 40 forward-declared cells tie the stages together |
+| what blocks a small test | four process-global setters in `worker-handle.ts` once let two vessels in one process overwrite each other's capabilities; one capability record (`caps.receipt`, `caps.cas`, `caps.dyad`, `caps.custodyWrite`) now rides each island at construction (floor courses first, the lift's on top; `receipt` rides the lift, and one party answers each ask), so a test stands an island with exactly the capabilities it names; about 40 forward-declared cells tie the stages together |
 | mutation testing | no Stryker config; a 14-mutant hand catalog for `lares-cli` (`tools/law-mutants-witness.sh`); fast-check rides the CLI laws suite alone. StrykerJS 10.1.0 (PR #6214, 2026-10-23) carries a vitest 5 fix tested against vitest 4.1.11; the repo pins vitest 5.0.3, so only the `T1` probe proves it here |
 | dead exports | 53 names nothing references; 16 more ride barrel re-exports |
 | flake families | the wiki-shore 2 s poll (`LandedLedger` fires no event) · the staged unlock answering before the store acknowledges · the TW5 dropdown e2e with no ready signal |
@@ -137,13 +134,15 @@ T21: burning the one-use claim alone would leave a removed member re-entering on
 
 The scouts and readers wrote to the controller's scratch, outside the memegraph, on 2026-10-31: the testability scout in two waves and its cold refinement; the god-method lift map; the root-map read; six cut reads by seam (pure readers, doors and cells, cap-stack stages, orchestration, browser twins, exports and homes) and a collision read beside each. What survived both waves stands in the rows above. Outside precedent they leaned on: fail-safe defaults (Saltzer and Schroeder), the new-enemy ordering in authorization systems (whose global timestamps the house's no-global-now law declines; refresh-then-drop inside the serial refold chain stands as the house analogue), characterization tests before extraction (Feathers), named exemptions for held seats in dead-code tools, TiddlyWiki's own boot sequencing (read whole), and the Automerge Repo share configuration. Most sources stood at search-summary level; each row's red decides, never the citation.
 
+The 2026-11-04 fold-in adds three standing inputs. First, red-first, homed now governs every new row: each fix lands its behavior red and control in the narrowest existing home, and a new file opens only at a distinct runtime, boundary, harness or suite class (the Luna procedure read, 2026-11-04). Second, the Luna growth read measured fast test-surface growth with most added case declarations landing in newly added files, which sets a consolidation pressure for this train. Third, the same procedure read carries the home rule this train now enforces on every new case placement (the Luna procedure read, 2026-11-04).
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/laws`>>
 
 !! The laws each row keeps
 
-* ''Red first, with a control'' (`working-procedures#/red-first`): mutation kill data never deletes a control, which by design kills no unique mutant.
+* ''Red-first, homed, with a control'' (`working-procedures#/red-first`): mutation kill data never deletes a control, which by design kills no unique mutant, and each fix lands in the narrowest existing home unless a distinct boundary demands a new file.
 * ''No key on a surface'': no custody, transport or key path lifts into a shared-plugin module the mirror loads.
 * ''Custody and identity read by capability, never by host'': every stage and port carries a capability name.
 * ''One owner per registry'': the process-global doors break it per process, and `T9` cures it.
@@ -181,6 +180,6 @@ Train T's complete rows move to the road's own #/o-takiage at each land. This ki
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rGiIPY1YMXzybe6A8R1Fk9yJ20KdaToNsmYdWpKtE8g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;P--82w_QM1Io9OAKCBVuvlLt1sFFaf_P4crkVobm_3Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

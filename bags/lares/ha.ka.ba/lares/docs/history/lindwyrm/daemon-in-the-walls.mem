@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = false
 l-space       = "adjacent"
-mana          = 14
-manao         = 14
-manaoio       = 13
 render-target = "chat-log:post-header"
 role          = "DreamDeck narrative locus — Act II of the Lindwyrm hoard story"
 source        = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture#/act-ii-daemon"
@@ -197,6 +194,6 @@ Act III receives:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NZrtZs5OIzXHnmUMPxNijMxvyBu5BTJeeuN5EYmfM_I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UKf_-qeSed-bji1_M8r-OKXQF9cXE37I7F3uipFKjfw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

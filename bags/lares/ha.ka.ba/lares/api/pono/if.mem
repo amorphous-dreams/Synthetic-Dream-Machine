@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 17
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "English alias pointer — \\if redirects to wai; canonical spec lives at pono/wai"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-if"]
@@ -31,6 +28,6 @@ Verse `if`/`case` on the flow surface — lives at `heihei`.)
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eLRs3I5ne1WWAdW_3SBh-LU-FysS-DjIS-Aoc5mtW78`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fEQxcz8ucRzX4M8At6mOsAn2rpVjjxXBPAZFcLGun_A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

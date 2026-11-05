@@ -134,22 +134,17 @@ describe("carrierFiles — the corpus, from the declarations that make it", () =
    * sweep reaches frozen fixtures"). They pin a grammar version, never the corpus, and every
    * per-carrier law that met them read their older form as a straggler.
    */
-  test("RED→GREEN — a frozen specimen stays out; CONTROL — a real bags carrier rides in", () => {
-    expect(found).not.toContain("packages/tree-sitter-memetic-wikitext/fixtures/specimens/wild-01-voices.mem");
+  test("CONTROL — a real bags carrier rides in", () => {
     // The sensorium fixtures come from a live writer in the kupono frame, so they ride in as carriers.
     expect(found).toContain("packages/lararium-sensorium/scripts/fixtures/placebo-kumulipo/kumulipo-beckwith.mem");
     expect(found).toContain("bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
   });
 
-  test("no frozen-specimen path rides in — and the dirs hold declaring files, so the skip bites", () => {
+  test("no frozen-specimen path rides in", () => {
     expect(FROZEN_SPECIMENS.length).toBeGreaterThan(0);
     for (const dir of FROZEN_SPECIMENS) {
-      // A KNOWN POSITIVE: the dir holds at least one file that declares, so an empty exclusion
-      // below reads as a skip, never as a dir with nothing to skip.
-      const declaring = execSync(`git ls-files -z -- '${dir}'`, { cwd: REPO, encoding: "utf8" })
-        .split("\0").filter(Boolean)
-        .filter((f) => declaresCarrier(readFileSync(join(REPO, f), "utf8")) !== null);
-      expect(declaring.length, `${dir} holds a declaring specimen`).toBeGreaterThan(0);
+      // The specimens now stand as plain text and declare nothing; the exclusion still guards the dir
+      // against a future specimen that does declare.
       expect(found.filter((f) => f.startsWith(dir + "/"))).toEqual([]);
     }
   });

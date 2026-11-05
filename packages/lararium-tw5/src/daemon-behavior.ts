@@ -18,6 +18,7 @@
 
 import { makeDelegationBook } from "./delegation-book.js";
 import {
+  PROMOTE_PANEL_HAND_CODES,
   mkDaemonResolveBindingResult,
   mkDaemonGateVerbResult,
   mkDaemonWorldlineCompareResult,
@@ -42,7 +43,7 @@ import { hasEngineWatch, hasHandBoundary, hasProjection } from "./has-island-wat
 import { hasCapture } from "./capture/has-capture.js";
 import { VerbDispatcher, VerbTable } from "./verb-dispatcher.js";
 import type { IslandCap } from "./island-caps.js";
-import type { IslandContext, IslandBehavior } from "./island-context.js";
+import type { IslandContext, IslandBehavior, WritableOutcome } from "./island-context.js";
 import type { RunnableHulls } from "@lararium/mesh";
 import { seedDaemonProtocol } from "./daemon-protocol-seed.js";
 import { canonicalJson, wikiSlotUri, VERB_URI_PREFIX } from "@lararium/mesh";
@@ -78,6 +79,8 @@ function writeLayerPointerStands(ctx: IslandContext): Promise<void> {
 export interface DaemonBehaviorOptions {
   /** A ready verifier (e.g. tests, or a host-provided one). */
   verifier?: CapabilityVerifier;
+  /** Stand the daemon working route during the writable startup marker. */
+  onWritable?: (ctx: IslandContext) => Promise<WritableOutcome>;
   onHostMessage?: (msg: DaemonMsg_FaceLit | DaemonMsg_FaceDrop, ctx: IslandContext) => Promise<void>;
   /**
    * Projection mount shore — the daemon INHERITS the wiki's render cap (hasProjection). When the worker
@@ -156,6 +159,11 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
   // whole behavior, minus the engine-watch (now its own shared cap).
   const dispatchCap: IslandCap = {
     name: "daemon-dispatch",
+    async onWritable(ctx: IslandContext) {
+      const outcome = await opts.onWritable?.(ctx) ?? { state: "standing" as const };
+      if (outcome.state === "standing" && opts.onWritable) await writeLayerPointerStands(ctx);
+      return outcome;
+    },
     async onEa(ctx: IslandContext) {
       const { tw5, composite, post } = ctx;
       _post = post;
@@ -169,6 +177,9 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
       // preserving old behavior for non-operator callers). Idempotent (each seed setTiddler-overwrites).
       if (opts.runnableHulls) seedDaemonProtocol(tw5, opts.runnableHulls, opts.faceIntents === true);
       const registry = new VerbTable();
+      // The panel's six verbs and the store door's `promote-orphan` row answer an ask that arrived on the surface path alone; every other
+      // origin (a session call, a meme put, a synced verb tiddler) refuses by the verb's own code before anything routes to main.
+      registry.handOnly({ ...PROMOTE_PANEL_HAND_CODES, "promote-orphan": "promote-needs-hand" });
       // Sovereign-worker: the data-plane reactors register HERE, in-worker, over the
       // IslandContext (ctx.composite/ctx.repo) — so they ride the dispatcher's
       // verify-then-delegate gate FOR FREE (a gate a main-thread jobRegistry
@@ -182,6 +193,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         ...(verifier ? { verifier } : {}),
         ...(opts.presenterOf ? { presenterOf: (inv: Verb) => opts.presenterOf!(inv, localAsks.has(inv)) } : {}),
         localOf: (inv: Verb) => localAsks.has(inv),
+        surfaceOf: (inv: Verb) => localAsks.isSurface(inv),
       });
       _dispatcher.start();
       // A local id serves its own invocation alone: it retires once the verb concludes and its tiddler leaves the VM.
@@ -227,7 +239,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             ...(msg.effectKey ? { effectKey:  msg.effectKey             } : {}),
             ...(msg.face      ? { face:       msg.face                  } : {}),
           });
-          if (placedAskIsLocal(msg)) localAsks.add({ requestId: placed, action: msg.verb, args: msg.args, requestedBy: msg.requestedBy });
+          if (placedAskIsLocal(msg)) localAsks.add({ requestId: placed, action: msg.verb, args: msg.args, requestedBy: msg.requestedBy, origin: msg.origin === "surface" ? "surface" : "channel" });
         }
         return true;
       }
@@ -360,7 +372,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
 }
 
 /** One placed ask, as the local book reads it: its id and the act it names. */
-export interface LocalAsk { readonly requestId: string; readonly action: string; readonly args: unknown; readonly requestedBy: string }
+export interface LocalAsk { readonly requestId: string; readonly action: string; readonly args: unknown; readonly requestedBy: string; readonly origin?: "channel" | "surface" }
 
 /**
  * THE LOCAL ASKS, each the exact invocation the vessel's channel or a surface leg placed, standing only while it does
@@ -371,13 +383,15 @@ export interface LocalAsk { readonly requestId: string; readonly action: string;
 export function makeLocalAskBook(bound = 4096): {
   add(ask: LocalAsk): void;
   has(ask: LocalAsk): boolean;
+  isSurface(ask: LocalAsk): boolean;
   onWikiChange(changes: Record<string, { deleted?: boolean }>): void;
 } {
-  const acts = new Map<string, string>();
+  const acts = new Map<string, { act: string; origin?: "channel" | "surface" }>();
   const actOf = (ask: LocalAsk): string => canonicalJson([ask.action, JSON.parse(JSON.stringify(ask.args ?? {})), ask.requestedBy]);
   return {
-    add: (ask) => { acts.delete(ask.requestId); acts.set(ask.requestId, actOf(ask)); if (acts.size > bound) acts.delete(acts.keys().next().value as string); },
-    has: (ask) => acts.get(ask.requestId) === actOf(ask),
+    add: (ask) => { acts.delete(ask.requestId); acts.set(ask.requestId, { act: actOf(ask), ...(ask.origin ? { origin: ask.origin } : {}) }); if (acts.size > bound) acts.delete(acts.keys().next().value as string); },
+    has: (ask) => acts.get(ask.requestId)?.act === actOf(ask),
+    isSurface: (ask) => { const entry = acts.get(ask.requestId); return entry?.origin === "surface" && entry.act === actOf(ask); },
     onWikiChange: (changes) => {
       for (const [title, change] of Object.entries(changes)) {
         if (change?.deleted && title.startsWith(VERB_URI_PREFIX)) acts.delete(title.slice(VERB_URI_PREFIX.length));

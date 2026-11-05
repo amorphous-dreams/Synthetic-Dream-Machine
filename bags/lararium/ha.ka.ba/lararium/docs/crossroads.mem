@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "lararium"
-mana      = 5
-manao     = 5
-manaoio   = 4
 role      = "attractor: crossroads-plane — the public/infrastructure oracle plane (ring-1); third leg of the three-plane oracle model; UNBUILT, this meme holds the bearing"
 title     = "lar:///ha.ka.ba/lararium/docs/crossroads"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -100,6 +97,6 @@ Who writes crossroads-plane (community authority shape), how Nexus-level federat
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_ySji5tGuZpHJuz3NY9HTHcV97KRs00Xa5pN4RR6tSQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mEQpDlTzYACXLMyabhW1dPsowMFoQZRp-d_ZrD9z14g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -42,9 +42,9 @@ test("the QA runner builds the pinned harness and never binds the repository", (
   const compose = readFileSync(join(ROOT, "docker-compose.browser-ci.yml"), "utf8");
   assert.deepEqual(inspectBrowserQa(compose), []);
   const dockerfile = readFileSync(join(ROOT, "Dockerfile"), "utf8");
-  const target = dockerfile.slice(dockerfile.indexOf("FROM mcr.microsoft.com/playwright:v1.64.1-noble AS browser-harness"));
+  const target = dockerfile.slice(dockerfile.search(/FROM mcr\.microsoft\.com\/playwright:v1\.64\.1-noble(?:@sha256:[0-9a-f]{64})? AS browser-harness/));
   assert.ok(target.length > 0 && target.startsWith("FROM"), "the browser-harness target stands in the Dockerfile");
-  assert.match(target, /FROM mcr\.microsoft\.com\/playwright:v1\.64\.1-noble AS browser-harness/);
+  assert.match(target, /FROM mcr\.microsoft\.com\/playwright:v1\.64\.1-noble@sha256:[0-9a-f]{64} AS browser-harness/);
   for (const path of ["tools/browser-ci-smoke.mjs", "tools/browser-ci-join.mjs", "packages/lararium-web/tests/live-wiki.mjs", "browser-test-custody.js"])
     assert.ok(target.includes(path), `${path} absent from browser-harness target`);
   assert.match(target, /COPY --from=build .*browser-test-custody\.js/);

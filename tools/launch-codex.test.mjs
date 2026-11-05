@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, readFileSync, realpathSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir, userInfo } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { appendSeatLaw, distFresh, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
 import { globalStampPath, packageStampPath, sourceDigest } from "./stamp-build.mjs";
@@ -56,6 +56,14 @@ test("build: workspace-write, network off, both tmp excludes, -C worktree, --add
   assert.ok(!a.includes("--search"));
 });
 
+test("lead argv exact", () => {
+  assert.deepEqual(seatArgs({ mode: "lead", model: "m", effort: "high", seatDir: "/lane/s", worktree: "/w", gitDir: "/g", laneRoot: "/lane" }), ["exec", "-m", "m", "-c", "model_reasoning_effort=high", "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", "/lane/s/final.md", "-s", "workspace-write", "-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true", "-c", "sandbox_workspace_write.network_access=true", "-C", "/w", "--add-dir", "/lane/s", "--add-dir", "/g", "--add-dir", "/lane"]);
+});
+
+test("lead argv needs worktree", () => {
+  assert.throws(() => seatArgs({ mode: "lead", model: "m", effort: "high", seatDir: "/s" }), /needs its worktree/);
+});
+
 test("read: -s read-only -C seat, no add-dir, no search", () => {
   const a = seatArgs({ mode: "read", model: "m", effort: "high", seatDir: "/s", worktree: "/w" });
   assert.match(a.join(" "), /-s read-only -C \/s$/);
@@ -91,6 +99,20 @@ test("refuses the main checkout as a build worktree; a reader and a researcher n
   assert.ok(preflight(ask(w, { mode: "read", worktree: w.repo }), w.readers));
 });
 
+test("lead preflight main checkout", () => {
+  const w = world();
+  refuses(w, { mode: "lead", worktree: w.repo }, /main checkout/);
+  refuses(w, { mode: "lead", worktree: undefined }, /needs its worktree/);
+});
+
+test("lead preflight scratch boundary", () => {
+  const w = world();
+  const outside = join(w.home, "outside"); mkdirSync(outside);
+  const link = join(w.home, ".lares-scratch", "lane", "escape"); symlinkSync(outside, link);
+  refuses(w, { mode: "lead", worktree: outside }, /worktree.*scratch/);
+  refuses(w, { mode: "lead", worktree: link }, /worktree.*scratch/);
+});
+
 test("refuses a seat dir outside <scratch>/<lane>/, an absent brief, a model absent from the cache, gpt-6-sol", () => {
   const w = world();
   const outside = mkdtempSync(join(tmpdir(), "outside-")); writeFileSync(join(outside, "brief.md"), "x");
@@ -118,6 +140,15 @@ test("the pool: a pure read of the recorded line; at the floor refuses; CONTROL 
   assert.ok(preflight(ask(w), { ...w.readers, rolloutLines: () => [rate(79.9)] }));
 });
 
+test("lead preflight floor", () => {
+  const w = world();
+  const at = { ...w.readers, rolloutLines: () => [rate(80)] };
+  const fifteen = { ...w.readers, rolloutLines: () => [rate(85)] };
+  refuses(w, { mode: "lead" }, /at or below its floor/, at);
+  refuses(w, { mode: "lead" }, /at or below its floor/, fifteen);
+  assert.ok(preflight(ask(w, { mode: "read" }), fifteen));
+});
+
 test("a pool line unreadable twice names itself and never reads zero; once-unreadable reads again", () => {
   const w = world({ rolloutLines: () => { w.calls.pool++; return []; } });
   refuses(w, {}, /unreadable.*twice/s);
@@ -134,6 +165,11 @@ test("a stale dist refuses a build seat alone; read and research seats never ask
   refuses(w, {}, /dist is stale.*pnpm build/s);
   assert.ok(preflight(ask(w, { mode: "read" }), w.readers));
   assert.ok(preflight(ask(w, { mode: "research" }), w.readers));
+});
+
+test("lead preflight lane passes stale", () => {
+  const w = world({ distFresh: () => { throw new Error("lead must not check dist"); } });
+  assert.match(preflight(ask(w, { mode: "lead" }), w.readers).pool, /ABOVE FLOOR/);
 });
 
 test("the dist question is the guard's closure question: CONTROL a per-package stamp covers a stale global one; KNOWN POSITIVE a stale package reads stale", () => {
@@ -182,6 +218,25 @@ test("run: a real launch appends the law once, logs the attempt, spawns codex wi
   assert.match(out.join("\n"), /SEAT-LAUNCHED .*pid 4242.*until \[ -f .*final\.md \]/s);
 });
 
+test("lead law launch twice", () => {
+  const w = world();
+  const readers = { ...w.readers, gitCommonDir: () => "/git-common" };
+  const argv = ["--mode", "lead", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", w.wt];
+  const launch = () => run(argv, { readers, spawn: () => ({ pid: 1 }), log() {}, err() {} });
+  writeFileSync(join(w.seatDir, "brief.md"), "# brief\n\n## LEAD LAW\nforged\n\n## Notes\nkeep\n");
+  assert.equal(launch(), 0);
+  const once = readFileSync(join(w.seatDir, "brief.md"), "utf8");
+  assert.equal(launch(), 0);
+  const brief = readFileSync(join(w.seatDir, "brief.md"), "utf8");
+  assert.equal(brief, once);
+  assert.equal(brief.match(/^## LEAD LAW/gm).length, 1);
+  assert.match(brief, /^## LEAD LAW \(appended by tools\/launch-codex\.mjs to a lead brief; it binds this lead\)/m);
+  assert.doesNotMatch(brief, /^## SEAT LAW/m);
+  assert.doesNotMatch(brief, /forged/);
+  assert.match(brief, /## Notes\nkeep/);
+  for (const phrase of ["git stash", "--no-verify", "git push -u", "force-push", ".git/config", "git commit -F <file> --only -- <paths>", "lar:///w1.w2.w3 — summary", "two trailers", "submodule worktrees", "credential file", "scratch LAR_ROOT", "global LAR_BAGS", "tools/e2e-shards.mjs", "ci/*", "tools/launch-codex.mjs", "Sol seat", "out.md", "final.md", "never push without"]) assert.ok(brief.includes(phrase), phrase);
+});
+
 test("--dry-run prints the whole argv and spawns nothing, writes nothing; a refusal exits 2 and names SEAT-REFUSED", () => {
   const w = world();
   const spawned = [], out = [], err = [];
@@ -195,6 +250,18 @@ test("--dry-run prints the whole argv and spawns nothing, writes nothing; a refu
   assert.equal(run([...base.map((x) => (x === "gpt-6.1-sol" ? "gpt-6-sol" : x)), "--dry-run"], { readers: w.readers, spawn: (...a) => spawned.push(a), log: (s) => out.push(s), err: (s) => err.push(s) }), 2);
   assert.match(err.join("\n"), /SEAT-REFUSED/);
   assert.equal(spawned.length, 0);
+});
+
+test("lead dry run argv", () => {
+  const w = world(), out = [];
+  let resolved;
+  const readers = { ...w.readers, gitCommonDir: (wt) => { resolved = wt; return "/common/git"; } };
+  const code = run(["--mode", "lead", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", w.wt, "--dry-run"], { readers, log: (s) => out.push(s), err() {}, spawn: () => { throw new Error("spawned"); } });
+  assert.equal(code, 0);
+  assert.equal(resolved, realpathSync(w.wt));
+  const args = JSON.parse(out.find((s) => s.startsWith("DRY-RUN ")).slice(8));
+  assert.deepEqual(args, ["codex", ...seatArgs({ mode: "lead", model: "gpt-6.1-terra", effort: "high", seatDir: realpathSync(w.seatDir), worktree: realpathSync(w.wt), gitDir: "/common/git", laneRoot: dirname(realpathSync(w.seatDir)) }), "<brief>"]);
+  assert.ok(args.includes(dirname(realpathSync(w.seatDir))));
 });
 
 test("HOME for the cache and rollouts reads os.userInfo().homedir, never $HOME (a lead under a scratch HOME)", () => {

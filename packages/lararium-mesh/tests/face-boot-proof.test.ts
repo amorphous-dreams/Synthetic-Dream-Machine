@@ -125,4 +125,14 @@ describe("face-boot-proof", () => {
     expect(forged).toMatchObject({ ok: false, refusal: { why: "plane", plane: "persona" } });
     expect(proveFaceFromLog({ records, chain: f.chain, group: G, anchor: f.anchor, planes: { persona: f.planes.persona } }).ok).toBe(true);
   });
+
+  test("RED: a root-signed plane act over a founding pin refuses the boot by plane name whichever url the bootstrap names; CONTROL: the honest log proves", async () => {
+    const f = await founded();
+    const head = f.log[f.log.length - 1]!;
+    const rewrite = await signPersonaAct({ seq: head.body.seq, cid: actCid(head.body) }, { group: G, act: "plane", epoch: 0, fields: { plane: "intents", url: "automerge:evil" } }, f.root);
+    const base = { chain: f.chain, group: G, anchor: f.anchor, planes: { intents: f.planes.intents } };
+    expect(proveFaceFromLog({ ...base, records: docRecords([...f.log, rewrite]) })).toEqual({ ok: false, refusal: { why: "plane", plane: "intents" } });
+    expect(proveFaceFromLog({ ...base, planes: { intents: "automerge:evil" }, records: docRecords([...f.log, rewrite]) }), "a bootstrap naming the rewritten url fares no better").toEqual({ ok: false, refusal: { why: "plane", plane: "intents" } });
+    expect(proveFaceFromLog({ ...base, records: docRecords(f.log) }).ok).toBe(true);
+  });
 });

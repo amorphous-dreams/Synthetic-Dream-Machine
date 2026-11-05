@@ -6,7 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 12
 role        = "invariant law: the two-layer TOML engine behind a carrier's meta fence. A SYNC spec-compliant reader on the read path, a comment-preserving WASM writer lazily loaded on the write path, and a graceful fall back to the raw string where the WASM cannot load. Names the flattening contract a TW5 field imposes."
 source-file = "packages/lararium-tw5/src/toml-ast.ts"
 title       = "lar:///ha.ka.ba/lararium/tw5/toml-ast"
@@ -69,6 +68,6 @@ fields stay its projection.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/lib-smol-toml`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wo7UUmdozJmYDXZL7iRzVNtwWWa38kZtSXPnZ_rHw1M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uUENI6O-LzOSEoXqgGnOuzGAWeP8wxzRhyjF95xsHLc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

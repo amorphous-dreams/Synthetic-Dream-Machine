@@ -6,8 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 12
-manao       = 12
 role        = "bag-compact + rotate-recipe — DXOS-style snapshot-restart on a bag; the only local-first mechanism that bounds CRDT history"
 source-file = "packages/lararium-tw5/src/compaction-handlers.ts"
 title       = "lar:///ha.ka.ba/lararium/tw5/compaction-handlers"
@@ -129,6 +127,6 @@ is free recovery until growth on a long-lived high-churn bag actually bites
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RnDAAw5mXleFU5oTc0kq7zeo0LGAzFrxVfd6HFOmf1Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;unZd6A_pfl_ieXBPtKtL0oqEVzWGeWprSS06h581hiA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

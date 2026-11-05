@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "sdm"
-mana      = 11
-manao     = 16
-manaoio   = 17
 role      = "OSR spell witness for Read Magic — Basic/Expert/Rules-Cyclopedia provenance, cold-load"
 title     = "lar:///ha.ka.ba/sdm/witness/powers/osr-spells/read-magic"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -90,6 +87,6 @@ The spellcaster may read — not speak — magical words or runes on scrolls and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Tf5fQ1ewFPg0Jp1V15b-smfp0Z_f1oqwcuGQhdtaQb4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;STnrwfEe3SzPFNeEnrxeTRF9IwbCqx3NT2MC6jL5Esc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

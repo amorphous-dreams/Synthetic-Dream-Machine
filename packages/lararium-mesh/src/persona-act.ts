@@ -31,8 +31,10 @@ export interface PersonaProjection {
   /** The founding act's persona-KEL prefix and root commitment. */
   readonly personaKelPrefix: string | null;
   readonly rootCommitment: string | null;
-  /** plane name -> the URL a verified act put there (the last verified `plane` act wins within ONE log; a fork stops the log). */
+  /** plane name -> the URL the FIRST verified `plane` act put there (a fork stops the log). */
   readonly planes: Readonly<Record<string, string>>;
+  /** Verified `plane` acts that tried to move a pinned plane, or to pin a plane after the founding span: they changed nothing, and the boot proof refuses by plane name. */
+  readonly planeRewrites: readonly { readonly plane: string; readonly cid: string }[];
   /** device keys a verified admission act seated. */
   readonly devices: readonly string[];
   /** Verified admission acts in chain order. */
@@ -75,6 +77,9 @@ export function projectPersonaLog(records: readonly unknown[], opts: {
   });
   let personaKelPrefix: string | null = null, rootCommitment: string | null = null;
   const planes: Record<string, string> = {}, edges: Record<string, string> = {};
+  const planeRewrites: { plane: string; cid: string }[] = [];
+  // The founding span: the founding act and its plane acts, up to the first admission. A plane takes its pin inside it and nowhere later.
+  let foundingClosed = false;
   const devices = new Set<string>();
   const admissions: { deviceKey: string; cid: string }[] = [];
   for (const { act, cid } of fold.chain) {
@@ -84,14 +89,21 @@ export function projectPersonaLog(records: readonly unknown[], opts: {
         if (typeof b["personaKelPrefix"] === "string") personaKelPrefix = b["personaKelPrefix"];
         if (typeof b["rootCommitment"] === "string") rootCommitment = b["rootCommitment"];
         break;
-      case "admission": if (typeof b["deviceKey"] === "string") { devices.add(b["deviceKey"]); admissions.push({ deviceKey: b["deviceKey"], cid }); } break;
+      case "admission": foundingClosed = true; if (typeof b["deviceKey"] === "string") { devices.add(b["deviceKey"]); admissions.push({ deviceKey: b["deviceKey"], cid }); } break;
       case "device-edge": if (typeof b["deviceKey"] === "string" && typeof b["edgeDigest"] === "string") edges[b["deviceKey"]] = b["edgeDigest"]; break;
-      case "plane": if (typeof b["plane"] === "string" && typeof b["url"] === "string") planes[b["plane"]] = b["url"]; break;
+      case "plane":
+        if (typeof b["plane"] === "string" && typeof b["url"] === "string") {
+          // A pinned plane takes its FIRST pin only: no code path re-pins a plane after the founding mints it (a rotation carries the pins forward),
+          // so a later root-signed act over a pinned plane to another url reads as no act and surfaces by name.
+          if (!(b["plane"] in planes) && !foundingClosed) planes[b["plane"]] = b["url"];
+          else if (planes[b["plane"]] !== b["url"]) planeRewrites.push({ plane: b["plane"], cid });
+        }
+        break;
     }
   }
   const last = fold.chain[fold.chain.length - 1];
   return {
-    founded: fold.chain.length > 0, personaKelPrefix, rootCommitment, planes, devices: [...devices].sort(), admissions, edges,
+    founded: fold.chain.length > 0, personaKelPrefix, rootCommitment, planes, planeRewrites, devices: [...devices].sort(), admissions, edges,
     fork: fold.fork, head: last ? { seq: last.act.body.seq, cid: last.cid } : null, cids: fold.chain.map((e) => e.cid),
   };
 }

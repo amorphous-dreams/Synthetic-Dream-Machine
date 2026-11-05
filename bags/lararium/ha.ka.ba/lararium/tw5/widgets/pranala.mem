@@ -6,7 +6,6 @@
 ```toml meta
 cacheable     = true
 heleuma       = "ka"
-mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/pranala"
 role          = "render surface: the pranala edge sigil — \\widget ~pranala in sigil-pranala.tid, rendering through the pranala template cascade"
 source-file   = "packages/lararium-tw5/tiddlers/sigil-pranala.tid"
@@ -67,6 +66,6 @@ The shipped template renders a `<span class="lar-pranala">` carrying `data-from`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kB5Cro8K6sC90fwoIGsFSeBzNGyl2zBuAAr4BGwScyo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iOmcBaDs4JZwAcSwYizmEd21en7FuPMtTDP_XWH7b08`>>
 
 <<^ code=`&#x0004;` to=`?`>>

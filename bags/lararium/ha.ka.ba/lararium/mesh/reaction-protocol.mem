@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 17
-manao       = 17
-manaoio     = 16
 namespace   = "&#x0950; &#x0901;"
 role        = "invariant: within-island reaction dispatch substrate — ReactionGraph, ReactionBinding, ReactionHandler, extractReactionBindings; scope boundary = one TW5 wiki instance"
 source-file = "packages/lararium-mesh/src/reaction-graph.ts"
@@ -169,6 +166,6 @@ appears in production paths.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;52O4eZi8XLbMVxC1GPzReIZK3Kvidu6a2AuV-YCAd6Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qwbhqPApljsjRqeACxJ-DGqbTnSwy_o2WIDH9vu2COc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,8 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 17
-manao       = 17
 role        = "MemoryTiddlerStore — in-memory LarTiddlerStore, body of the temp-slot slot in every WikiRecipe"
 source-file = "packages/lararium-tw5/src/memory-store.ts"
 title       = "lar:///ha.ka.ba/lararium/tw5/memory-store"
@@ -140,6 +138,6 @@ same change record any AutomergeDocStore would emit.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HR7BFlVEoAF4DtQhNSV0pcOzLaqNC0Fopbf-qKH0SVU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JRSjKpBe4RvYPzAtV9US4qmaC2-HjCdtH5HowHg6Llw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable      = true
-mana           = 14
-manao          = 14
-manaoio        = 13
 namespace      = "&#x2299;"
 reference-kind = "rfc"
 role           = "reference meme — cites IETF RFC 9498 by its own bibliographic metadata"
@@ -39,6 +36,6 @@ never invented — in `[reference]` above, so a pin at this address cites the wo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;i-nSSzdTKha5cMZELWfMXcgF1PlI5pEEYotxqTq5HSU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_CkBT8phJz35cw3kUwq5tKMKFT6ptoE1yA_pMgeEwvg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

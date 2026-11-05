@@ -6,7 +6,6 @@
 ```toml meta
 cacheable     = true
 heleuma       = "ka"
-mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/lele"
 role          = "render surface: the lele side-flow sigil — \\procedure ~lele in sigil-lele.tid, a hidden data annotation the compile layer reads"
 source-file   = "packages/lararium-tw5/tiddlers/sigil-lele.tid"
@@ -56,6 +55,6 @@ The declaration rides in `packages/lararium-tw5/tiddlers/sigil-lele.tid` with `l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gUIHLo973CLPQ4FELP0wql6lR7qZ6pJ74IlPpMz_FWQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MH8-zQJuvhHSPGW26EzanDL-AIz3um4lod8r57uz4_E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

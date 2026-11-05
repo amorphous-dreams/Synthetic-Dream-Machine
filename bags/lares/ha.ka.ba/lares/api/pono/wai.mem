@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 16
-manao     = 16
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "wikispace conditional block-container — the TW5 `\\if` filter cascade; first non-empty filter renders its body; the water cascade with kahawai (`elseif`) + mukuwai (`else`); content selection on the document surface"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-wai"]
@@ -119,6 +116,6 @@ close-pattern = '<<~\/wai\s*>>'
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VgQgSGkz3CpP2x1vVld345r2qfQl7arghWb6TlmKsOY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oUAchMjHeI9b4gXhrLY4glziWJE37WUBUQVAFxwJZYI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

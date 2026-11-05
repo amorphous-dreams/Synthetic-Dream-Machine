@@ -27,7 +27,7 @@ import {
 } from "./genesis-doc.js";
 import { resolveBootDoc } from "./boot-resolver.js";
 import { storedLarRecord } from "./stored-record.js";
-import { assertNoPrototypeKeys } from "./prototype-key-shore.js";
+import { assertNoPrototypeKeys, mergeGuarded } from "./prototype-key-shore.js";
 
 /** Read a region content-CID recorded in a live/incoming island doc, or null when absent. */
 function regionCid(handle: DocHandle<LarDoc>, title: string): string | null {
@@ -245,7 +245,7 @@ export function reconcileGenesisCid(
     return { updated: false, incomingEngineCid, incomingGrammarCid, incomingPluginsCid, previousEngineCid, previousGrammarCid, previousPluginsCid };
   }
 
-  liveHandle.merge(incomingHandle);
+  mergeGuarded(liveHandle, incomingHandle, "genesis reconcile");
   liveHandle.change((doc) => {
     if (incomingEngineCid !== null) {
       doc.tiddlers[GENESIS_CID_ENGINE_TIDDLER] = storedLarRecord(

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "stable"
-mana        = 18
-manao       = 18
-manaoio     = 17
 namespace   = "&#x2299;"
 role        = "invariant doctrine: VmPool→Projection Messaging Standard; dispatchEvent/addEventListener pattern; TW5Engine.onVerseEvent design"
 status-date = "2026-05-02"
@@ -174,6 +171,6 @@ The projection bus serves as a ''Scope-1'' mesh surface under the two-scopes rul
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ymq0ckTXSqq-yBycebx0DNLerESAUHC6-H5teHxJlf8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bWTgk_8ON1Kat1vOCF_JrzH04BmxDQYin0zpAWy4S5c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

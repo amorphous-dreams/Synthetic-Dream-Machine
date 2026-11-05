@@ -6,9 +6,6 @@
 ```toml meta
 cacheable      = true
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
-mana           = 17
-manao          = 17
-manaoio        = 14
 namespace      = "&#x2299;"
 role           = "meme invariant law, copy-shape authority, and rating posture root — nameless-entity / has-stack ontology (interfaces-and-implements REJECTED 2026-06-12)"
 title          = "lar:///ha.ka.ba/lares/api/pono/meme"
@@ -110,7 +107,7 @@ Five structural buckets — law-of-5s. Rating derives from schema compliance, no
 
 Rating runs as a ''predicate'': a bucket names a query that succeeds or fails on the carrier — typing = running the query, never consulting a class.
 `confidence` gives the operator-facing band.
-`mana`, `manao`, and `manaoio` stay distinct and should not collapse into one blended score.
+No scalar field carries house-wide meaning: a wiki operator may omit any field name or give it a local meaning and type, and no gate, panel or federation check derives authority from one.
 An ano meme may wear several components at once; a bare (declared-unresolved) entry reads fertile, not broken.
 Promotion to lares/ canon follows a separate ceremony and carries no change to rating.
 Subtype predicates belong in the component definitions themselves.
@@ -174,6 +171,6 @@ its own ceremony.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EbTe_l87AQvCMVvm4o9zsILBiHs1cJlCmrNmiJdAaQY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fikLj4X2-99vN2nA08zoDvvWuv-nr-boxzPsKk5-mBo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

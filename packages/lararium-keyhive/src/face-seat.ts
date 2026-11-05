@@ -14,7 +14,8 @@ export interface FaceSeatPorts {
   readonly readLease: () => Promise<LeaseFrontier>;
   readonly verify: (record: FaceGrantRecord, context: FaceGrantVerifyContext) => Promise<FaceGrantVerdict>;
   readonly ingest: (record: FaceGrantRecord) => Promise<void>;
-  readonly lift: () => Promise<void>;
+  /** Lifts the floor under the face; answers how many records a silent floor document held back, so the next pass tries again. */
+  readonly lift: () => Promise<void | { readonly skipped: number; /** One promise per skipped document, settling when it arrives (a read peers never answered) or rests (a flush storage never confirmed): that wakes the seat. */ readonly arrivals?: readonly Promise<unknown>[] }>;
   readonly log: (message: string) => void;
 }
 
@@ -107,15 +108,20 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
   const lift = async () => {
     if (lifted) return;
     lifted = true;
-    try { await ports.lift(); }
-    catch (error) {
+    try {
+      const result = await ports.lift();
+      // A floor record the lift skipped (its document silent) has not moved: the latch stays open, so a later pass lifts it.
+      if (result && result.skipped > 0) { lifted = false; ports.log(`face lift skipped ${result.skipped} floor record(s) its document held back; the document's arrival wakes the next pass`); for (const arrival of result.arrivals ?? []) void arrival.then(() => wake(), () => {}); }
+    } catch (error) {
       lifted = false;
       ports.log(`face lift faulted: ${String(error)}`);
     }
   };
   const pass = async (): Promise<boolean> => {
     waitingOnLease = false;
-    if (await seated()) { announcedUnseated = false; await lift(); return true; }
+    // The SEATED VERDICT is what the bindings wait on; the lift moves floor documents under the face afterwards and stands off that path
+    // (guarded by `lifted`, its faults named, retried by the next pass).
+    if (await seated()) { announcedUnseated = false; void lift(); return true; }
     let taken = false;
     const settle = async (): Promise<boolean> => {
       const answer = await seated();
@@ -153,7 +159,7 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
         taken = true;
         const nowSeated = await seated();
         ports.log(`face-join grant record taken from the PersonaGroup plane (${record.capEvents.length} cap events, ${record.reSealed?.length ?? 0} chunks re-sealed) — face ${nowSeated ? "SEATED" : "still unseated after ingest"}`);
-        if (nowSeated) { announcedUnseated = false; await lift(); return true; }
+        if (nowSeated) { announcedUnseated = false; void lift(); return true; }
         announcedUnseated = true;
       }
     } catch (error) { ports.log(`face-join grant read faulted: ${String(error)}`); }

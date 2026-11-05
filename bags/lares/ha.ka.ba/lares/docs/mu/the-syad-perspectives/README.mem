@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 17
 role      = "extracted syad source shelf, archive-consumed derivation store, register-metaphysics provenance locus"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives/README"
@@ -187,6 +184,6 @@ They do not govern the live fold.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DFyin6TICBXv7AGkVclHtAGL6HdiTQy-SWKVrQvprIk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-ZwillFBwbwKgedBetYEQ-eTLlkXeYY5AsCdQF3qJG4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

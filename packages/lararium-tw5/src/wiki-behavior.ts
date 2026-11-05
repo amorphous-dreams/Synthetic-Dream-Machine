@@ -138,6 +138,7 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
     },
 
     onSignal(type: string, raw: unknown, ctx: IslandContext): boolean {
+      if (type === "wiki:request-drain") { ctx.requestDrain?.(); return true; }
       if (type !== "wiki:place-verb") return false;
       if (!_registry) return false;
       const msg = raw as WikiMsg_PlaceVerb;

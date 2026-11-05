@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 17
 role      = "review memo for lararium signal branch boundaries, settlement pressure, and rewrite sequencing"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/signal-review"
@@ -250,6 +247,6 @@ That order should reduce churn and keep the branch from freezing unresolved FFZ 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KbOD9qDzNouspK3Cq1WJ-m7K1xXG1bUhu-Hao3gkG7E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;W9kWzIJjvmy1juXdx4sQUCrxLqbd9R_J-8h6vVj7c2A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

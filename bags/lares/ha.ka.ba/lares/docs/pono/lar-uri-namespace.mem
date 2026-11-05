@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 19
-manao     = 18
-manaoio   = 18
 role      = "lar: URI authority map — hostless vs hostful, domain namespaces, Quine sync candidates"
 tags      = ["api/pono/meme", "api/pono/local-first"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/lar-uri-namespace"
@@ -115,6 +112,6 @@ a network hop for DID resolution but the content itself is local (CRDT store).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3UQWuLFM_vF2DrO1NASQWyxLWC98oR1wmXOJwDMs0z4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rRWilWeLAP4fJ93eFia0sAAVlrj0p8O-uDO_B8Efi2I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

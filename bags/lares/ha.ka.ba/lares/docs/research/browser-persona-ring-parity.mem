@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "lares"
-mana      = 17
-manao     = 17
-manaoio   = 16
 role      = "local and external engineering research with a red-first capability-parity contract for Node and Browser PersonaGroup identity rings"
 status    = "the parity this report sought stands on both shores: the gate signs its verdict, `LarWSClientAdapter.provenKeyOf` names the gate key, and the Browser path composes the PersonaGroup ring through `assemblePersonaGroupRing`"
 tags      = ["research", "vessel-parity", "persona-ring", "identity-as-relation", "causal-island"]
@@ -143,5 +140,5 @@ No code deletion, browser import, inbound transport, grant format change, or enf
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KrjEo-1E6Hdbp5ABAHLjPS9P3jINedaiud_MPDXx2RU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MRnykzzV9uI10Q-NtRHOV_O3VT45-ahBU4LrhUhCtaI`>>
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 12
-manao             = 13
-manaoio           = 12
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-12"
@@ -189,6 +186,6 @@ The leans as first written, kept for the record:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SY5CuZO6YXFR4UyOZygXAYn6NZ4cuJdLZwAUIBvgslM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;i9VtCadt-lxcTs4k8yLh38iQm9Tpu00cbTdUXN-Rl1I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

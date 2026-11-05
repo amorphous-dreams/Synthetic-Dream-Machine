@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = true
 l-space       = "lararium"
-mana          = 16
-manao         = 15
-manaoio       = 14
 research-date = "2026-06-30"
 role          = "moʻokūʻauhau — the genealogy of the one recursive #has-cap fractal: ancestors, the three pillars, the cousins, the anti-pattern corpse, and the weld verdict"
 title         = "lar:///ha.ka.ba/lararium/mesh/mookuauhau"
@@ -112,6 +109,6 @@ No one has made ''one composition primitive serve simultaneously as the code-wir
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;w1KlLL4B_qcM0s2-ztqmRGdnfv6RyZX7O4RByn0dqys`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7Jb8K0kxIsiN3PNI0UDHM9o-_SuTqHamzxKqQXlGJPo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

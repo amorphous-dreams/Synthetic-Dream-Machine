@@ -4,7 +4,7 @@
  * The daemon protocol seed writes the wiki as a hand. Its saves route through the write-layer pointer,
  * which the daemon's working-layer attach re-seeds; a seed that runs ahead of the attach routes through an
  * empty pointer and refuses as unrouted. Driven over a real wiki and the real recipe, with the attach
- * released by hand after the hand gate's trailing window has elapsed.
+ * released by hand after the pending attach has been observed.
  */
 import { describe, expect, test } from "vitest";
 import { AutomergeDocStore, CompositeStore, HULLS_TS_ONLY, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
@@ -45,7 +45,7 @@ function eventsDelivered(engine: { $tw: { wiki: unknown; Tiddler: unknown } }): 
     wiki.addTiddler(new Tiddler({ title, text: "barrier" }));
   });
 }
-const markedHands = (adaptor: unknown): string[] => (adaptor as { gate: { titles(): string[] } }).gate.titles().filter((t) => !t.startsWith("$:/test/barrier"));
+const markedHands = (adaptor: unknown): string[] => (adaptor as { pendingTitles(): string[] }).pendingTitles().filter((t) => !t.startsWith("$:/test/barrier"));
 
 async function rig(releaseAttach: Promise<void>, attach: boolean) {
   const engine = await bootTestWiki();
@@ -82,13 +82,16 @@ describe.skipIf(wikiSkip)(`daemon behavior boot order${skipNote}`, () => {
     const booting = r.behavior.onEa(r.ctx);
     await eventsDelivered(r.engine);
     expect(markedHands(r.adaptor), "a seed write was owed before the working layer stood").toEqual([]);
+    expect(held(r.working)).toEqual([]);
+    const wiki = r.engine.$tw.wiki as never as { filterTiddlers(f: string): string[]; getTiddlerText(t: string, d?: string): string };
+    const alertsBeforeAttach = wiki.filterTiddlers("[all[tiddlers]tag[$:/tags/Alert]field:alert-kind[unrouted-save]]");
+    expect(alertsBeforeAttach).toHaveLength(1); // The barrier itself routes before the pointer stands.
     release();
     await booting;
     await eventsDelivered(r.engine);
     await r.adaptor.stop();
-    const wiki = r.engine.$tw.wiki as never as { filterTiddlers(f: string): string[]; getTiddlerText(t: string, d?: string): string };
     expect(wiki.getTiddlerText(POINTER, "")).toBe(wikiSlotUri("daemon", "working"));
-    expect(wiki.filterTiddlers("[all[tiddlers]tag[$:/tags/Alert]field:alert-kind[unrouted-save]]")).toEqual([]);
+    expect(wiki.filterTiddlers("[all[tiddlers]tag[$:/tags/Alert]field:alert-kind[unrouted-save]]")).toEqual(alertsBeforeAttach);
     expect(held(r.working).length, "no seed tiddler reached the working document").toBeGreaterThan(0);
     expect(held(r.canon), "a seed tiddler fell into the daemon bag").toEqual([]);
     r.stop();
@@ -98,7 +101,8 @@ describe.skipIf(wikiSkip)(`daemon behavior boot order${skipNote}`, () => {
     const r = await rig(Promise.resolve(), false);
     await r.behavior.onEa(r.ctx);
     await eventsDelivered(r.engine);
-    expect(markedHands(r.adaptor).length, "the seed owed no write").toBeGreaterThan(0);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(markedHands(r.adaptor).length, "the refused seed writes stay owed in the drain until a write is acknowledged").toBeGreaterThan(0);
     await r.adaptor.stop();
     const wiki = r.engine.$tw.wiki as never as { filterTiddlers(f: string): string[] };
     expect(wiki.filterTiddlers("[all[tiddlers]tag[$:/tags/Alert]field:alert-kind[unrouted-save]]").length).toBeGreaterThan(0);

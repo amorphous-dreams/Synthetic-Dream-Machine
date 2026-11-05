@@ -241,7 +241,7 @@ export interface IslandMsg_Manifest {
    * via `namedBagMirror(scope, mirrorRoot)` from `bag-paths`.
    * Absent = no disk projection for this island.
    */
-  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean; titlePaths?: boolean }[];
+  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; guardNexusHandles?: boolean; titlePaths?: boolean }[];
   /**
    * DAEMON-ISLAND ONLY — operator authn/z material for in-worker keyhive boot
    * (isomorphic-vessel epic, Stage 1). The daemon worker's `onEa` calls
@@ -707,6 +707,7 @@ export function isSensoriumSignalType(value: unknown): value is SensoriumSignalT
 /** All messages the vessel may send to a causal island. */
 export type VesselToIslandMsg =
   | IslandMsg_Manifest
+  | { type: "wiki:request-drain" }
   | IslandMsg_HooAnu
   | IslandMsg_Teardown
   | DaemonMsg_PlaceVerb
@@ -728,7 +729,7 @@ export type VesselToIslandMsg =
   | WikiMsg_SensoriumSignal
   | IslandMsg_CasBlock
   | IslandMsg_DyadRead
-  | IslandMsg_DocRested
+  | IslandMsg_ReceiptIssued
   | IslandMsg_CustodyWritten
   | IslandMsg_SessionSigned
   | IslandMsg_ViewCatalogResult
@@ -876,12 +877,12 @@ export interface IslandMsg_ViewSettled {
 }
 
 /**
- * Island → vessel: THE REST DOOR's ask. An island mints a document its own Repo holds no store for; the vessel's
- * Repo alone saves it. Before the island records any pointer to that document it asks the vessel to rest the
- * named documents durably, and waits for `doc:rested` on the same `requestId`.
+ * Island → vessel: THE RECEIPT CAPABILITY's ask. An island mints a document its own Repo holds no store for; the
+ * vessel's Repo alone saves it. Before the island records any pointer to that document it asks the vessel for a
+ * durability receipt over the named documents, and waits for `receipt:issued` on the same `requestId`.
  */
-export interface IslandMsg_DocRest {
-  type: "doc:rest";
+export interface IslandMsg_ReceiptRequest {
+  type: "receipt:request";
   requestId: string;
   documentIds: string[];
   /**
@@ -891,14 +892,14 @@ export interface IslandMsg_DocRest {
   heads?: Record<string, string[]>;
 }
 
-/** Vessel → island: the rest door's answer — every named document rests in the vessel's store, or `why` it does not. */
-export interface IslandMsg_DocRested {
-  type: "doc:rested";
+/** Vessel → island: the receipt — every named document rests in the vessel's store (`issued`), or `why` it does not. */
+export interface IslandMsg_ReceiptIssued {
+  type: "receipt:issued";
   requestId: string;
-  rested: boolean;
-  /** The vessel names the documents its rest door finished flushing before this acknowledgment. */
+  issued: boolean;
+  /** The vessel names the documents it finished flushing before this receipt. */
   proof?: { documentIds: string[] };
-  /** True when the vessel's copy changed `REST_STALL_ROUNDS` times and still lacked the island's heads: a named stall, never a silent hang. */
+  /** True when the vessel's copy changed `RECEIPT_STALL_ROUNDS` times and still lacked the island's heads: a named stall, never a silent hang. */
   stalled?: boolean;
   why?: string;
 }
@@ -1043,7 +1044,7 @@ export type IslandToVesselMsg =
   | DaemonMsg_WikiAlert
   | IslandMsg_CasWant
   | IslandMsg_DyadAsk
-  | IslandMsg_DocRest
+  | IslandMsg_ReceiptRequest
   | IslandMsg_CustodyWrite
   | IslandMsg_SessionSign
   | IslandMsg_ViewCatalog
@@ -1061,6 +1062,7 @@ function _hasType(v: unknown): v is { type: string } {
 
 export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (!_hasType(v)) return false;
+  if (v.type === "wiki:request-drain") return Object.keys(v).length === 1;
   // THE CAMERA'S KINDS READ WHOLE AT THE ISLAND DOOR, the one gate every island message passes (the sovereign
   // kernel's listen). A control event reads through the contract's own reader: two targets, an unknown
   // crossing or a whole value past its bound vanish here exactly as a malformed message does, so no behavior,
@@ -1068,8 +1070,8 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
-    .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
+    .includes(v.type as Exclude<VesselToIslandMsg["type"], "wiki:request-drain" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
 export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
@@ -1084,7 +1086,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
   if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }
@@ -1121,7 +1123,7 @@ export function mkManifest(
   opts?: {
     storage?:        IslandStorageConfig;
     ownedDocument?:  IslandOwnedDocumentScope;
-    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean; titlePaths?: boolean }[];
+    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; guardNexusHandles?: boolean; titlePaths?: boolean }[];
     daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
     pluginCids?:     readonly string[];
     view?:           IslandViewStanding;

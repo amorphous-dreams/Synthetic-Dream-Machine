@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 17
-manao     = 17
-manaoio   = 18
 role      = "docs room for definitional lar l-space semantics and address-slot framing"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/signal/l-space"
@@ -70,6 +67,6 @@ Working definition:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;b9rTaQE32q3h7hcV6a5vQeTUYuNDmJv9qKighZPwvHI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TjeVUbu37umsJyNHfJ5uogeLYgsD7UjrfiZxh0zYC5o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

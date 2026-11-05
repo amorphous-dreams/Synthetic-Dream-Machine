@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "Neural Whip"
 l-space   = "sdm"
-mana      = 14
-manao     = 17
-manaoio   = 15
 role      = "Ability module: Neural Whip — the Cave Octopus's stuckforce tentacle-lash; first proof the Power template covers a non-spell monster affordance, first exerciser of hook/attack"
 tags      = ["components/domain/stuckforce", "components/function/restrain", "components/hook/attack", "mount-points/trait"]
 title     = "lar:///ha.ka.ba/sdm/modules/abilities/neural-whip"
@@ -89,6 +86,6 @@ On a botched strike or interfered control, choose one: the tentacle grips the wr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;OuiAVoQ0cm4P7fpoW-EIKUiik80ptxsGfDKvGzq87iE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1r9X9gIBIf-unZiW6M_vK6Mmk801Lx7WeI0rbi4X2Fc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

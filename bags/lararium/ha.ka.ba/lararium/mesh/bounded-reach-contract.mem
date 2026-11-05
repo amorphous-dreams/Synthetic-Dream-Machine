@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "lararium"
-mana       = 14
-manao      = 14
-manaoio    = 13
 role       = "the bounded reach contract: a local operator contracts into one DreamNet DNS subtree without taking identity, membership, read, or apex-zone authority"
 status-why = "design and red-first consistency control; DNS-provider, ACME, and deployment implementation remain held"
 tags       = ["mesh/reach-plane", "mesh/attestation-plane", "mesh/causal-islands", "lifecycle/designed"]
@@ -260,6 +257,6 @@ before any deployment path opens.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jHLqRVfH6ripPMgyOu5cdz4a6j4U9CR4vYH4IywCHbc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3SvLgOa7X2iWdGMI2r8WAhKCcd-e3ZF3Rfq_zpLM7TA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

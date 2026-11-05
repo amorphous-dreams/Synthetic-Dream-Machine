@@ -297,7 +297,7 @@ export function efeSelect(
 export interface DisagreementSurfacing {
   /** the obstruction dimension — the count of independent no-common-witness cocycles. */
   readonly dimH1: number;
-  /** the reconciliation cost `R*_sem = log₂ dim H¹` (Thomas–Chen) — the mana/federation rating axis. */
+  /** the reconciliation cost `R*_sem = log₂ dim H¹` (Thomas–Chen) — the federation reconciliation-cost axis. */
   readonly cost: number;
   /** the H¹ representative cocycles (each a 1-cochain over the nerve edges) — the disagreement, carried whole. */
   readonly basis: readonly number[][];

@@ -25,8 +25,17 @@ import {
 } from "@lararium/mesh";
 import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
-import { refuseBrowserDyadAsks } from "./browser-dyad-door.js";
+import { refuseBrowserDyadAsks } from "./browser-dyad-refusal.js";
 import { readCasBlobFromOpfs } from "./browser-genesis.js";
+
+/** Page departure only asks the workers to drain; the browser may suspend them at any point. */
+export function listenForPageDrains(page: EventTarget, document: EventTarget & { readonly visibilityState: string }, request: () => void): () => void {
+  const onVisibility = () => { if (document.visibilityState === "hidden") request(); };
+  const onHide = () => request();
+  document.addEventListener("visibilitychange", onVisibility);
+  page.addEventListener("pagehide", onHide);
+  return () => { document.removeEventListener("visibilitychange", onVisibility); page.removeEventListener("pagehide", onHide); };
+}
 
 export interface BrowserVesselIslandPoolOptions {
   /**
@@ -68,10 +77,13 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
               "Pass workerScriptUrl when constructing the pool (requires genesis island for TW5 core bytes).",
             );
           }
-          // A wiki island reaches no dyad door: its ask draws `aside` and one named warning.
+          // A wiki island reaches no dyad capability: its ask draws `aside` and one named warning.
           const handle = browserSpawnWorker(workerUrl);
           refuseBrowserDyadAsks(handle);
-          return handle;
+          // The browser vessel's lift stands its main Repo beside the pool, and that Repo is the browser's receipt
+          // capability: a wiki island's receipt ask draws the pool's answer (the one answerer) exactly where the pool holds
+          // one, since the page carries no record a worker could refuse from. A pool built with no Repo grants none.
+          return { ...handle, grants: () => ({ receipt: opts.mainRepo != null }) };
         },
         newSyncChannel: browserNewSyncChannel,
         storage: () => undefined,
@@ -84,7 +96,7 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
       ...(opts.portPolicy ? { portPolicy: opts.portPolicy } : {}),
       ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
       ...(opts.onPortDrop ? { onPortDrop: opts.onPortDrop } : {}),
-      // The page shows what the vessel read of its rest asks, so a person's tooling waits on the vessel's own word.
+      // The page shows what the vessel read of its receipt requests, so a person's tooling waits on the vessel's own word.
       onRest: (state) => { if (typeof document !== "undefined") document.documentElement.dataset["larRest"] = `${state.asked}/${state.rested}/${state.stalled}`; },
     });
   }

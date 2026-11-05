@@ -19,7 +19,9 @@
  * A face's working document has no record: its address derives from the face's secret and the wiki's slug. The lift carries
  * each floor working document's tiddlers into the face's document for that wiki (additively: a title the face's document
  * holds stays), rests it, marks the anchor's key `lifted-from`, burns the floor document, and takes the key out of the catalog
- * last. The anchor's key then names nothing. A stop before the mark runs again whole, its carry adding nothing twice; a stop
+ * last. A durable floor marker records the destination only after the destination flush. A failed destination flush
+ * still writes a durable skip history to the floor source, so a retry after restart never re-carries titles that left.
+ * A retry skips titles already listed there or covered by the durable destination marker. A stop
  * after the mark finds the marked key on the next pass, which burns the floor document and removes the key, carrying nothing.
  *
  * ── THE SECRET STANDS FIRST ─────────────────────────────────────────────────────────────────────
@@ -34,14 +36,14 @@
 import {
   DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
   mutableLarRecord, tiddlerText, sha256HexBytesSync, utf8Bytes, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord, storedLarRecord,
-  floorAnchorSegment, type WorkingFloorAnchor, type ChangeOrigin, type CompositeStore, type LarDoc, ownEntry} from "@lararium/mesh";
+  floorAnchorSegment, type WorkingFloorAnchor, type ChangeOrigin, type CompositeStore, type LarDoc, ownEntry, plainField, DOCUMENT_READY_TIMEOUT_MS} from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { FaceBagDoor } from "./face-bag-door.js";
 
 /** The repo surface the lift needs: mint, read, flush and delete a document. */
 export interface LiftRepo {
   create<T = LarDoc>(initialValue: T): { readonly url: string; readonly documentId: string; whenReady?(): Promise<unknown>; change(fn: (doc: LarDoc) => void): void };
-  find(url: string): Promise<{ whenReady?(): Promise<unknown>; doc(): LarDoc | undefined }>;
+  find(url: string): Promise<{ readonly documentId: string; whenReady?(): Promise<unknown>; doc(): LarDoc | undefined; change(fn: (doc: LarDoc) => void): void }>;
   flush(documents?: string[]): Promise<void>;
   delete(url: string): unknown;
 }
@@ -53,6 +55,8 @@ export interface LiftArgs {
   readonly faceDoor: FaceBagDoor;
   readonly mintedByHex: string;
   readonly vesselDid: string;
+  /** How long a floor document may stay silent before the lift names it and skips it (default: the house's document-ready bound). */
+  readonly readBoundMs?: number;
   /** The labels a faceless floor gave its documents (the public place key and its DID): a lit face lifts those too. */
   readonly floor?: { readonly mintedByHex: string; readonly vesselDid: string };
   /** The binding slot a wiki's draft floor belongs to: its fingerprint and trace, or null where the wiki is unregistered. */
@@ -61,11 +65,20 @@ export interface LiftArgs {
     readonly anchor: WorkingFloorAnchor | null;
     readonly urlOf: (slug: string) => Promise<string>;
     readonly open?: (url: string, label: string) => Promise<{ readonly documentId: string; change(fn: (doc: LarDoc) => void): void }>;
+    /** Swap a live mounted floor writer synchronously before any further asynchronous work. */
+    readonly rebind?: (slug: string, oldUrl: string, newUrl: string, into: { readonly documentId: string; change(fn: (doc: LarDoc) => void): void }) => void;
   };
   readonly traceOf: (slug: string) => Promise<{ readonly fingerprint: string; readonly recipeTrace: { readonly wikiDocId: string; readonly libraryBagDocIds: readonly string[] } } | null>;
 }
 
-export interface LiftResult { readonly moved: readonly string[]; readonly finished: readonly string[] }
+/**
+ * The document a skipped record waits on, and WHAT it waits for: `arrival` (a read of a document peers have not delivered yet: its
+ * `whenReady` wakes the next pass) or `rest` (a flush of a document the lift holds that storage has not confirmed: its flush wakes the
+ * next pass). A waker that mapped every skip to a READY document's arrival would resolve at once and re-run the lift every bound.
+ */
+export interface SkippedDoc { readonly url: string; readonly waits: "arrival" | "rest" }
+/** `skipped`: the records a silent floor document held back this pass; `skippedDocs` names, per skip, the document whose arrival or rest wakes the next pass. */
+export interface LiftResult { readonly moved: readonly string[]; readonly finished: readonly string[]; readonly skipped: readonly string[]; readonly skippedDocs: readonly SkippedDoc[] }
 
 const PREFIXES = [
   { prefix: PERSONAL_BINDINGS_PREFIX, kind: "personal-binding" },
@@ -77,31 +90,74 @@ const mintedHere = (args: LiftArgs, by: unknown): boolean => by === args.mintedB
 
 const digestOf = (text: string): string => sha256HexBytesSync(utf8Bytes(text));
 const originFor = (tag: string): ChangeOrigin => ({ kind: "lares-verb", requestId: `anon-lift-${tag}`.slice(0, 32) });
+const WORKING_CARRY_MARK = "$:/lares/anon-lift/working-carried-to";
+const WORKING_CARRY_SKIP = "skip-titles";
+/**
+ * In-process memory of the titles a pass carried whose destination never rested; never persisted. It belongs to ONE Repo instance (a
+ * WeakMap key), so a reopened Repo, which has lost every unflushed destination, forgets it and carries the source whole. Per repo, keyed by
+ * source and destination URL.
+ */
+const pendingCarrySkips = new WeakMap<object, Map<string, Set<string>>>();
+const pendingFor = (repo: object): Map<string, Set<string>> => { let held = pendingCarrySkips.get(repo); if (!held) { held = new Map(); pendingCarrySkips.set(repo, held); } return held; };
+
+function readWorkingCarrySkip(value: unknown): Set<string> {
+  const text = typeof value === "string" ? value : (value == null ? "" : String(value));
+  if (text.trim() === "") return new Set();
+  try {
+    const parsed = JSON.parse(text);
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(parsed.filter((title): title is string => typeof title === "string"));
+  } catch { return new Set(); }
+}
 
 /** Copy `from`'s tiddlers into `into` where `into` holds none of that title: read through the read door, written through the write door. */
-function carryTiddlers(from: LarDoc | undefined, into: { change(fn: (doc: LarDoc) => void): void }): void {
+function carryTiddlers(from: LarDoc | undefined, into: { change(fn: (doc: LarDoc) => void): void }, skip?: Set<string>): void {
   const source = plainEntries(from?.tiddlers);
   if (source.length === 0) return;
   into.change((doc) => {
     for (const [title, record] of source) {
-      if (ownEntry(doc.tiddlers, title) === undefined) doc.tiddlers[title] = storedRecord(record);
+      if (!skip?.has(title) && ownEntry(doc.tiddlers, title) === undefined) doc.tiddlers[title] = storedRecord(record);
     }
   });
 }
 
-async function readDoc(repo: LiftRepo, url: string): Promise<LarDoc | undefined> {
-  const handle = await repo.find(url);
-  await handle.whenReady?.();
-  return handle.doc();
+/** A document that neither arrived nor rested within the read bound: the lift names it and what it waits for, leaves the floor where it stands and moves on. */
+export class FloorDocumentUnavailable extends Error {
+  constructor(readonly url: string, readonly waits: SkippedDoc["waits"], readonly waitedMs: number) {
+    super(`[anon-lift] document ${url} never ${waits === "arrival" ? "arrived" : "rested (its flush never answered)"} (${waitedMs}ms); the lift skips the floor record it holds and leaves it unburned, to lift on a later pass`);
+    this.name = "FloorDocumentUnavailable";
+  }
+}
+
+/** One read of a document the lift does not own, bounded: automerge-repo's `find` waits for ever while a peer stays silent, and the lift runs inside the daemon island's boot. */
+async function boundedRead<T>(args: LiftArgs, url: string, waits: SkippedDoc["waits"], read: () => Promise<T>): Promise<T> {
+  const waitedMs = args.readBoundMs ?? DOCUMENT_READY_TIMEOUT_MS;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const out = await Promise.race([read(), new Promise<typeof TIMED_OUT>((resolve) => { timer = setTimeout(() => resolve(TIMED_OUT), waitedMs); })]);
+    if (out === TIMED_OUT) throw new FloorDocumentUnavailable(url, waits, waitedMs);
+    return out;
+  } finally { if (timer !== undefined) clearTimeout(timer); }
+}
+const TIMED_OUT = Symbol("timed-out");
+
+async function readDoc(args: LiftArgs, url: string): Promise<LarDoc | undefined> {
+  return boundedRead(args, url, "arrival", async () => {
+    const handle = await args.repo.find(url);
+    await handle.whenReady?.();
+    return handle.doc();
+  });
 }
 
 /** Mint a fresh document under the face and carry the floor document's tiddlers into it. */
 async function rehome(args: LiftArgs, oldUrl: string): Promise<{ url: string; keyhiveDocId: string }> {
+  // The floor document is read FIRST: a silent one leaves nothing minted behind it.
+  const old = await readDoc(args, oldUrl);
   const fresh = args.repo.create<LarDoc>(emptyLarDoc());
   await fresh.whenReady?.();
   const { docId } = await args.faceDoor.mint(fresh.url, "admin");
-  carryTiddlers(await readDoc(args.repo, oldUrl), fresh);
-  await args.repo.flush([fresh.documentId]);
+  carryTiddlers(old, fresh);
+  await boundedRead(args, fresh.url, "rest", () => args.repo.flush([fresh.documentId]));
   return { url: fresh.url, keyhiveDocId: docId };
 }
 
@@ -134,6 +190,9 @@ async function putBinding(args: LiftArgs, title: string, fields: Record<string, 
 export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult> {
   const moved: string[] = [];
   const finished: string[] = [];
+  const skipped: string[] = [];
+  const skippedDocs: SkippedDoc[] = [];
+  const held = (error: FloorDocumentUnavailable, key: string): void => { console.warn(error.message); skipped.push(key); skippedDocs.push({ url: error.url, waits: error.waits }); };
   const entries = await args.daemonStore.entries();
 
   // 1 — a burn a crash left: a binding still holding its floor URL finishes the burn, moving nothing.
@@ -155,7 +214,8 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
     const fields = fieldsOf(record);
     const oldUrl = tiddlerText(record);
     if (!fields || !oldUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
-    const next = await rehome(args, oldUrl);
+    let next: { url: string; keyhiveDocId: string };
+    try { next = await rehome(args, oldUrl); } catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, title); continue; } throw error; }
     await putBinding(args, title, {
       ...carried(fields), text: next.url, "face-reach": "face", "keyhive-doc-id": next.keyhiveDocId,
       "lifted-from": digestOf(title), "lifted-from-url": oldUrl,
@@ -189,12 +249,14 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
       let url: string; let keyhiveDocId: string;
       if (standingUrl && fieldsOf(standing)?.["face-reach"] === "face") {
         // The face already holds a draft for this wiki: the floor draft joins it, additively.
-        const into = await args.repo.find(standingUrl);
-        await into.whenReady?.();
-        carryTiddlers(await readDoc(args.repo, oldUrl), into as unknown as { change(fn: (doc: LarDoc) => void): void });
+        try {
+          const into = await boundedRead(args, standingUrl, "arrival", async () => { const h = await args.repo.find(standingUrl); await h.whenReady?.(); return h; });
+          carryTiddlers(await readDoc(args, oldUrl), into as unknown as { change(fn: (doc: LarDoc) => void): void });
+        } catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, floorKey); continue; } throw error; }
         url = standingUrl; keyhiveDocId = String(fieldsOf(standing)?.["keyhive-doc-id"] ?? "");
       } else {
-        const next = await rehome(args, oldUrl);
+        let next: { url: string; keyhiveDocId: string };
+        try { next = await rehome(args, oldUrl); } catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, floorKey); continue; } throw error; }
         url = next.url; keyhiveDocId = next.keyhiveDocId;
       }
       await putBinding(args, bindingKey, {
@@ -222,17 +284,64 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
         if (!oldUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
         // A key already marked: a stop interrupted its burn or its removal; finish both, carrying nothing again.
         const interrupted = typeof fields["lifted-from"] === "string" && fields["lifted-from"] !== "";
+        const slug = floorKey.slice(0, -mark.length).replace(/^.*\/wikis\//, "");
+        const url = await working.urlOf(slug);
         if (!interrupted) {
-          const slug = floorKey.slice(0, -mark.length).replace(/^.*\/wikis\//, "");
-          const url = await working.urlOf(slug);
-          const into = await working.open(url, slug);
-          carryTiddlers(await readDoc(args.repo, oldUrl), into);
-          await args.repo.flush([into.documentId]);
+          // The floor source is read FIRST: a silent one opens no destination, so no blank document stands at the derived address.
+          let source: Awaited<ReturnType<LiftRepo["find"]>>;
+          try { source = await boundedRead(args, oldUrl, "arrival", async () => { const h = await args.repo.find(oldUrl); await h.whenReady?.(); return h; }); }
+          catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, floorKey); continue; } throw error; }
+          try {
+            const into = await working.open(url, slug);
+            const carriedTo = tiddlerText(ownEntry(source.doc()?.tiddlers, WORKING_CARRY_MARK));
+            if (carriedTo && carriedTo !== url) throw new Error("[anon-lift] working floor already carried to a different destination");
+            const skip = readWorkingCarrySkip(plainField(ownEntry(source.doc()?.tiddlers, WORKING_CARRY_MARK), WORKING_CARRY_SKIP));
+            // Skips a failed pass of THIS process left in memory: the rebound store took the user's edits since, so a retry here never
+            // resurrects a title they removed. A restart forgets them with the process, and the source (never marked) carries whole.
+            const carryKey = `${oldUrl}\u0001${url}`;
+            for (const title of pendingFor(args.repo).get(carryKey) ?? []) skip.add(title);
+            if (!carriedTo) {
+              skip.add(WORKING_CARRY_MARK);
+              const titles = plainEntries(source.doc()?.tiddlers).map(([title]) => title);
+              carryTiddlers(source.doc(), into, skip);
+              for (const title of titles) skip.add(title);
+            }
+            working.rebind?.(slug, oldUrl, url, into);
+            // SKIPS ARE RECORDED ONLY AFTER THE DESTINATION RESTS. A destination flush that fails leaves the source mark untouched, so a
+            // restart that lost the half-written destination carries every title again and the burn never takes the only copy.
+            let destinationRested = false;
+            try {
+              await boundedRead(args, url, "rest", () => args.repo.flush([into.documentId]));
+              destinationRested = true;
+              pendingFor(args.repo).delete(carryKey);
+              if (!carriedTo) source.change((doc) => {
+                doc.tiddlers[WORKING_CARRY_MARK] = storedLarRecord(WORKING_CARRY_MARK, {
+                  text: url,
+                  [WORKING_CARRY_SKIP]: canonicalJson([...skip].sort()),
+                }, "anon-lift:working-floor");
+              });
+              await boundedRead(args, oldUrl, "rest", () => args.repo.flush([source.documentId]));
+            } catch (error) {
+              if (!carriedTo && !destinationRested) pendingFor(args.repo).set(carryKey, new Set(skip));
+              if (!carriedTo && destinationRested) {
+                source.change((doc) => {
+                  doc.tiddlers[WORKING_CARRY_MARK] = storedLarRecord(WORKING_CARRY_MARK, {
+                    [WORKING_CARRY_SKIP]: canonicalJson([...skip].sort()),
+                  }, "anon-lift:working-floor");
+                });
+                await boundedRead(args, oldUrl, "rest", () => args.repo.flush([source.documentId]));
+              }
+              throw error;
+            }
+          } catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, floorKey); continue; } throw error; }
           await args.faceDoor.mint(url, "admin");
           // MARK, BURN, THEN DELETE: the key keeps the lift's mark until the floor document burns.
           handle.change((doc) => {
             if (ownEntry(doc.tiddlers, floorKey)) doc.tiddlers[floorKey] = storedLarRecord(floorKey, { ...carried(fields), "lifted-from": digestOf(floorKey) }, "anon-lift:working-floor");
           });
+        } else if (working.rebind) {
+          const into = await working.open(url, slug);
+          working.rebind(slug, oldUrl, url, into);
         }
         await burn(args, oldUrl);
         handle.change((doc) => { delete doc.tiddlers[floorKey]; });
@@ -240,7 +349,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
       }
     }
   }
-  return { moved, finished };
+  return { moved, finished, skipped, skippedDocs };
 }
 
 /** Remove the catalog floor record whose key digests to `digest`, if one still stands. */

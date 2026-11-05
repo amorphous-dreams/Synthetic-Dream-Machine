@@ -70,6 +70,9 @@ export interface SurfacePluginInputs {
   readonly islandBlobs: Record<string, CasBlobLike> | undefined;
   readonly lookup:      OfferingLookup;
   readBytes(cid: string): Uint8Array | null | Promise<Uint8Array | null>;
+  promoted?: (wikiSlug: string) => Promise<readonly string[]>;
+  /** Promoted digests whose bytes failed the local store check: dropped from the union and named here. */
+  onPromotedVoided?: (wikiSlug: string, digests: readonly string[]) => void;
 }
 
 export interface SurfaceRecipeInput {
@@ -154,10 +157,11 @@ function documentIdOf(document: string): string | null {
 /**
  * The plugin CIDs one recipe selects: the fixed floor's own, then the recipe's verified offerings whose bytes
  * the local content store holds whole. The one selection both platforms run.
+ * A promoted hook adds the wiki’s promoted digests that pass the local byte check; one that fails drops out and is named.
  */
 export async function resolveRecipePluginCids(
   recipe: Pick<WikiRecipe, "wikiSlug" | "pluginOfferings" | "pluginOfferingsFault">,
-  inputs: Pick<SurfacePluginInputs, "islandBlobs" | "lookup" | "readBytes">,
+  inputs: Pick<SurfacePluginInputs, "islandBlobs" | "lookup" | "readBytes" | "promoted" | "onPromotedVoided">,
 ): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
   if (recipe.pluginOfferingsFault) {
     return { ok: false, error: `${recipe.wikiSlug}: malformed-offerings-field: ${recipe.pluginOfferingsFault}` };
@@ -168,7 +172,16 @@ export async function resolveRecipePluginCids(
   const selectedCids = selectedPluginCids(selection.blobs);
   const bytes = await verifyCasBytesAsync(selectedCids, async (cid) => inputs.readBytes(cid), (b) => sha256HexBytesSync(b));
   if (!bytes.ok) return { ok: false, error: `${recipe.wikiSlug}: ${JSON.stringify(bytes.failure)}` };
-  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids])] };
+  const promoted = [...new Set(await inputs.promoted?.(recipe.wikiSlug) ?? [])];
+  // A promoted digest stands or falls alone: one whose bytes fail the local check drops out of the union and is named, so a bad
+  // promoted blob never takes the floor and the selected plugins down with it.
+  const sound: string[] = [], voided: string[] = [];
+  for (const cid of promoted) {
+    const checked = await verifyCasBytesAsync([cid], async (c) => inputs.readBytes(c), (b) => sha256HexBytesSync(b));
+    (checked.ok ? sound : voided).push(cid);
+  }
+  if (voided.length > 0) inputs.onPromotedVoided?.(recipe.wikiSlug, voided);
+  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids, ...sound])] };
 }
 
 /** Resolve a session's effective recipe for one surface mount. */

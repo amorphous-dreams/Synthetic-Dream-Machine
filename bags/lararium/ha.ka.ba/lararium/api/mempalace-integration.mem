@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 17
-manao     = 15
-manaoio   = 14
 namespace = "&#x0950; &#x0901;"
 role      = "the pono model for mempalace as the lararium's memory-library — tensegrity, the daemon-plane shore, the lar_ net, the surfaces, the boundary"
 tags      = ["api/pono/meme", "api/lararium"]
@@ -215,6 +212,6 @@ CloudEvents [source plus id](https://github.com/cloudevents/spec/blob/v1.0.2/clo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xVaw1_Cwj1-jdqS2EbIYDgZQk4wSg4a0I1JQTBpaCI0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HHUCo1ibi9HzU5mEQcGHrFSHghbNK5qO2RzEnO4BKvE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

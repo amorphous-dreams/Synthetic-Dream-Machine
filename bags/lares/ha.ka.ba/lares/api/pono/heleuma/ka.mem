@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 17
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "invariant capability: heleuma-ka — soul/fire anchor; promotion-eligible compiled artifact with quine record and ceremony path"
 tags      = ["api/pono/heleuma"]
@@ -59,7 +56,7 @@ This forms gate layer 2 (content integrity). `sync-heleuma --commit` writes it o
 
 Gate layer 3 (operator authorization) will take the form of a ''keyhive capability proof'' — an Ed25519-signed capability from a keyhive principal authorizing corpus injection. Layer 3 stands planned, unbuilt; as built, the gate passes on layers 1–2 only.
 
-Signal fields (`mana`, `manao`, `manaoio`) SHALL approach 16 / 16 / 15 as the source matures. The boot gate reads these fields directly.
+Maturity shows in the carrier's `confidence` and its verified `source-sha256`; admission to load rides a local grant (the promote ledger), never a field value.
 
 <<~/ahu>>
 
@@ -81,6 +78,6 @@ When `source-sha256` stands present and the signals meet every threshold, `_boot
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7ioy3ZgOCfW4Og7Hh9LxarYQA1gIKlQBaQdHyh8jdJA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FYgdfytv00OmcKUMuq_kLz4wfpO1jA8i5qK_tUmv5W4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

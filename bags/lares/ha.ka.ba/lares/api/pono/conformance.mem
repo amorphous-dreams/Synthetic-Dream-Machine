@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 12
-manao     = 13
-manaoio   = 12
 namespace = "&#x2299;"
 role      = "invokable lens --- conformance-checks external content against the OODA-HA reference loop"
 tags      = ["api/pono/meme"]
@@ -118,6 +115,6 @@ By the speech-act test the invocation reads as a first-person present-tense act 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;l_g89MMdL1MztlQX7n4eio_ze-k2P_RRmSZuEVzaa1U`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y5Y82IFgBCNEegQfH3jZtBC9UzLtFaHawrB5667sNts`>>
 
 <<^ code=`&#x0004;` to=`?`>>

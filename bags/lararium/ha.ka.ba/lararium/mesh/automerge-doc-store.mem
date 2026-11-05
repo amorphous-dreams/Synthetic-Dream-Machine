@@ -6,7 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 3
 role        = "self-documentation: the one tiddler store over an Automerge document — every string of a record rests as an immutable scalar, a write merges field by field, and a family lands as one change"
 source-file = "packages/lararium-mesh/src/automerge-doc-store.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/automerge-doc-store"
@@ -42,6 +41,6 @@ A write merges a record field by field at its base. A field whose value did not 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;OpwTXpV5SlK0gIsqpbYIzcm1lwhf11_kAjcFjHBG9Tk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nDflw8Laup1n2l_mE1WY2PlYp3YCdac1BPrvtqTws7I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

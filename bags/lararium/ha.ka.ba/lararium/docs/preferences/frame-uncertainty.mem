@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 17
 role      = "docs concept room for declaring interpretive forks before costly response commitment"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/preferences/frame-uncertainty"
@@ -66,6 +63,6 @@ Where the branch matters, the fork must surface.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;beo4ps76a7fWKiSBjLzdk7Yqa9dGaFTyZxxAxSOiJ0Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0jSoZK2SDwxoiL3alNeooR0tmsBQ0Td_6TYVzpuQ6KE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

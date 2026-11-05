@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = false
 l-space       = "adjacent"
-mana          = 18
-manao         = 17
-manaoio       = 17
 render-target = "docs"
 role          = "side-car to the genesis arc — the 8-system prior-art comparison battery and 7 open design tests that shaped kahea/ahu/loulou design pressure and the W3C lineage verdict. Reference, not narrative."
 title         = "lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art"
@@ -119,6 +116,6 @@ The W3C research additionally surfaced: the grammar still lacks its own canonica
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NZJV0we3H8rAcKahba5ShcwYRWdym1QvdXhgowMF6cs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fRZB7KR89tcZMKKUbgHfIQqGMXoUpZW-5VjhZWHIZO4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

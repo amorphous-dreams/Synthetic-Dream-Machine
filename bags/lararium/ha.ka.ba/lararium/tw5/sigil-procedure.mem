@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 16
-manao     = 16
-manaoio   = 16
 role      = "design record: \\procedure pragma-alias sigil — pono(right) to TW5 procedure definition and call patterns, wehe cross-ref, declaration form"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-procedure"]
 title     = "lar:///ha.ka.ba/lararium/tw5/sigil-procedure"
@@ -73,6 +70,6 @@ the body runs through the pragma handler (TW5 parse-time, not render-time).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MjWqHfdPiyoejJnrSCZYscF17A0k7R28rtabnf258LQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;g4sSSzW-4XLo6Lpfa_CpRFYCZNBwln-AdX6Eqq3lnZw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

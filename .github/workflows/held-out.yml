@@ -194,10 +194,19 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium
+      - name: Install Playwright system dependencies (chromium)
+        if: matrix.driver == 'browser-weld'
+        timeout-minutes: 5
+        run: pnpm exec playwright install-deps chromium
       - name: Install Playwright Chromium
         if: matrix.driver == 'browser-weld'
         timeout-minutes: 10
-        run: pnpm exec playwright install --with-deps chromium
+        run: |
+          for attempt in 1 2 3; do
+            if timeout 180s pnpm exec playwright install chromium; then exit 0; fi
+            echo "Playwright engine install attempt $attempt failed; retrying"
+          done
+          exit 1
 
       # Regression for the status bug that held this runner back. The fake Docker seam runs no
       # container and checks both a quiet failed compose result and a quiet successful one.

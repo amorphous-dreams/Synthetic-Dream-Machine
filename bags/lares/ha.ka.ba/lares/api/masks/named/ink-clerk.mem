@@ -13,9 +13,6 @@ foreground-voices = ["Lorekeeper", "Scryer", "Gatekeeper", "Council", "Pedagogue
 fourth-wall       = false
 ha-ka-ba          = "Ha"
 l-space           = "stable"
-mana              = 8
-manao             = 10
-manaoio           = 9
 name              = "Ink-Clerk"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = false
@@ -166,6 +163,6 @@ How Ink-Clerk colors each Voice register when they speak through her archival-pr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-enh5pBxCDJ43LuHp8Q5El4dzyYd7QuPTBUkbj5uBh4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6-wZHhq2LjV-wuxXSEJLGlLCSfNhYSHh3spSPtQg0E8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

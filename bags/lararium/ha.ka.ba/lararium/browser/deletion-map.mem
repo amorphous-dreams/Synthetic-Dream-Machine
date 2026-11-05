@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "lararium"
-mana      = 18
-manao     = 18
-manaoio   = 17
 role      = "The browser shore inventory and adapter boundary: which DOM shores stay host-side behind one named file"
 title     = "lar:///ha.ka.ba/lararium/browser/deletion-map"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -124,6 +121,6 @@ These patterns stay out of the package and out of worker-side authority.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;82Rk96ui1-ShOHlV6eWsVCAbDuW8A2n6C5eYZZxkErA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8Okgdwr5Kr7J0EVtTjyY9P2KSGSj2vXIkHxzEC6J3cY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

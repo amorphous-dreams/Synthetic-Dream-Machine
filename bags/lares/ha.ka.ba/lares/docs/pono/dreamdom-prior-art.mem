@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 15
-manao             = 17
-manaoio           = 14
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-02"
@@ -251,6 +248,6 @@ Every delta-based system in the corpus must queue; you can drop precisely becaus
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/two-integrities`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2Nb5FGpMS2qJ86W-yVt2QlFjwEV6e8UfKqBgpapo0sU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WpFAULJ1UvEbp5mVAsFI_YJZw5EodGMuKrDI02hv3ls`>>
 
 <<^ code=`&#x0004;` to=`?`>>

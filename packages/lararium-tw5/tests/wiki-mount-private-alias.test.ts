@@ -13,7 +13,8 @@
  *   M1c CONTROL: an ordinary wiki canon still resolves and teaches its spec.
  */
 import { describe, expect, test } from "vitest";
-import { deterministicDocUrl, storedLarRecord, wikiBagUri, type LarDoc } from "@lararium/mesh";
+import { deterministicDocUrl, storedLarRecord, wikiBagUri, wikiSlotUri, type LarDoc } from "@lararium/mesh";
+import { buildWikiMountSpec } from "../src/vessel-steps.js";
 import { makeVesselResidency } from "../src/vessel-residency-wiring.js";
 
 let n = 0;
@@ -62,4 +63,15 @@ describe("a catalog pointer never resolves a wiki onto a vessel-private document
     await cap.ensureActive("ordinary").catch(() => undefined);
     expect(taught.map((t) => t.wikiUrl), "M1c: the ordinary canon resolves").toContain(ORDINARY);
   });
+});
+
+test("a wiki designates its draft for a held recovery grant alongside its working and canon bags", async () => {
+  const { spec } = await buildWikiMountSpec(
+    { resolveBinding: async () => ({ personalUrl: "personal", draftUrl: "draft", workingUrl: "working" }) },
+    { activeWikiId: "wiki", wikiSlug: "notes", coreHash: null, islandUrl: "island", wikiUrl: "wiki", catalogUrl: "catalog" },
+  );
+  expect(spec.recipe.mirrorBags).toContain(wikiSlotUri("notes", "working"));
+  expect(spec.recipe.mirrorBags).toContain(wikiBagUri("notes"));
+  expect(spec.recipe.mirrorBags).not.toContain(wikiSlotUri("notes", "personal"));
+  expect(spec.recipe.mirrorBags).toContain(wikiSlotUri("notes", "draft"));
 });

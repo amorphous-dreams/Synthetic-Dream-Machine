@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 17
-manao     = 16
-manaoio   = 16
 role      = "nine-category glyph codeset: Unicode ranges, semantic roles, authority matrix, UCAN attenuation, parsing pseudocode, validation rules, three-layer encoding"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/glyph-codeset"
@@ -332,6 +329,6 @@ Round-trip fidelity: Storage → Interchange → Storage MUST produce identical 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TFH6Rmk-kFmpfAOdY05vl7i32ERwEZxrDYs8gSWZPU0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AS51yOnW7ZrogyrZ2IRj5pyWAjP02b9X8mq3pOD0pxs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

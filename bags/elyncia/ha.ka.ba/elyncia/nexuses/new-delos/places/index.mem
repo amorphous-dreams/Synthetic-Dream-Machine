@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "place-shelf index for the New Delos Nexus — the fractal worksheet law and the Destination roster across all strata"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/index"
@@ -49,6 +46,6 @@ miles (near the Izmir-coast) — constellation members hanging over other Realms
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KTGIWGmRHbB7AC5nFmEPdKZDSSnBhdI1HvvuZM3gE_0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jThVmB9CiMeyd-Fb_o9zQELDXHezsZW5KXrltVAdCxw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

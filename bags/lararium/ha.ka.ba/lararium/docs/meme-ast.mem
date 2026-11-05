@@ -6,9 +6,6 @@
 ```toml meta
 source-sha256 = "sha256:a31316c2e25c7209328b72006b8cfa76a65365403452a630b397508083e9a2ad"
 heleuma       = "ka"
-mana          = 18
-manao         = 17
-manaoio       = 16
 module-ref    = "lar:///ha.ka.ba/lararium/docs/meme-ast"
 role          = "heleuma ka: isomorphic memetic-wikitext AST parser bundle"
 source-symbol = "parseMemeText"
@@ -58,6 +55,6 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;B-X3R6EW-Ikz4aDb6zbWjT-o8hA32eaQxqvfLKwjPzY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SH-vhl6ympowhwMFyrzTYSNbm8IBdIpifla7VTcGhGU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

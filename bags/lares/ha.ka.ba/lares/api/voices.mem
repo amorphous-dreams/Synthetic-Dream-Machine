@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 17
-manao     = 17
-manaoio   = 16
 namespace = "&#x0950; &#x0901;"
 role      = "load-bearing invariant for the three-layer lararium voice-house: Voice house (the Thirteen), worker swarm, and mask layer"
 tags      = ["api/pono/meme"]
@@ -394,6 +391,6 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8VLzvPguDLpBt0UUvc7yOc2Klr5uXdDPu0oFixwKOUA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FTO1phT7KQT-51sfpl4QCB-4UiiTTWcCn3EzdNESCpo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

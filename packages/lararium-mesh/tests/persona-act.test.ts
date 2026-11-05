@@ -107,3 +107,47 @@ describe("persona-act", () => {
     expect(projectPersonaLog([f, a, fresh], { group: G, lineage, authorize: () => true, acceptedThrough: 1 }).devices).toEqual(["dev1", "dev2"]);
   });
 });
+
+describe("a pinned plane takes its first pin only, and only inside the founding span", () => {
+  const lineageFor = (root: { key: string }) => lineageOf([root.key]);
+  /** founding, the persona plane, then one more plane act inside the span, then the founder device's admission */
+  async function foundedWith(plane: string) {
+    const root = await who(1);
+    const f = await signAct(act(0, null, "founding", { personaKelPrefix: "kel1", rootCommitment: "rc" }), root);
+    const p = await signAct(act(1, actCid(f.body), "plane", { plane: "persona", url: "automerge:p" }), root);
+    const pin = await signAct(act(2, actCid(p.body), "plane", { plane, url: `automerge:${plane}-first` }), root);
+    const a = await signAct(act(3, actCid(pin.body), "admission", { deviceKey: "dev1" }), root);
+    return { root, log: [f, p, pin, a] };
+  }
+  test("RED: a later root-signed persona plane act over a pinned plane moves nothing and surfaces by name; CONTROL: the same url repeated is no rewrite", async () => {
+    const { root, log } = await honest();
+    const lineage = lineageFor(root);
+    const rewrite = await signAct(act(4, actCid(log[3]!.body), "plane", { plane: "persona", url: "automerge:evil" }), root);
+    const pr = projectPersonaLog([...log, rewrite], { group: G, lineage, authorize: () => true });
+    expect(pr.planes, "the first pin stands").toEqual({ persona: "automerge:p" });
+    expect(pr.planeRewrites).toEqual([{ plane: "persona", cid: actCid(rewrite.body) }]);
+    const same = await signAct(act(4, actCid(log[3]!.body), "plane", { plane: "persona", url: "automerge:p" }), root);
+    const ok = projectPersonaLog([...log, same], { group: G, lineage, authorize: () => true });
+    expect(ok.planes).toEqual({ persona: "automerge:p" });
+    expect(ok.planeRewrites).toEqual([]);
+  });
+  for (const plane of ["face", "kahua", "promote"]) {
+    test(`RED: a rewrite of the founding-pinned ${plane} plane reads as no act; a LATE first pin of it (after the first admission) is refused by name; CONTROL: the pin made inside the founding span stands`, async () => {
+      const { root, log } = await foundedWith(plane);
+      const lineage = lineageFor(root);
+      const rewrite = await signAct(act(4, actCid(log[3]!.body), "plane", { plane, url: `automerge:${plane}-evil` }), root);
+      const pr = projectPersonaLog([...log, rewrite], { group: G, lineage, authorize: () => true });
+      expect(pr.planes[plane], "the first pin stands").toBe(`automerge:${plane}-first`);
+      expect(pr.planeRewrites).toEqual([{ plane, cid: actCid(rewrite.body) }]);
+      const control = projectPersonaLog(log, { group: G, lineage, authorize: () => true });
+      expect(control.planes[plane]).toBe(`automerge:${plane}-first`);
+      expect(control.planeRewrites).toEqual([]);
+      // a LATE first pin: the same plane named for the first time after the admission
+      const base = await honest();
+      const late = await signAct(act(4, actCid(base.log[3]!.body), "plane", { plane, url: `automerge:${plane}-late` }), base.root);
+      const lp = projectPersonaLog([...base.log, late], { group: G, lineage: lineageFor(base.root), authorize: () => true });
+      expect(lp.planes[plane], "a late first pin pins nothing").toBeUndefined();
+      expect(lp.planeRewrites).toEqual([{ plane, cid: actCid(late.body) }]);
+    });
+  }
+});

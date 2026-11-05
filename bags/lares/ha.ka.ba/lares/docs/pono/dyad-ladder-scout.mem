@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 16
-manao             = 17
-manaoio           = 14
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-03"
@@ -325,6 +322,6 @@ Confirmed ''unresolved rather than absent'': Khera / Drèze primary sources and 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0_7jJpMWmj3SpDIJOauKvJdeCCrJC57x6jleypv0MXY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CtzDCfFkpqOedqJXatDL-yiVE6RpTky8uhAo_wX4NLk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

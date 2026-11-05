@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "archive"
-mana      = 15
-manao     = 15
-manaoio   = 13
 role      = "where the early research landed — which scratch note became which doctrine, and what the consume pass could not recover"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/history/consume-archive"
@@ -113,7 +110,7 @@ Every file below was read before it burned. Where a row names living carriers, t
 |---|---|---|
 | `eprime_audit.py` | a 194-line deterministic copula scanner | lifted to `lares/api/mu/l-prime/SKILL#/loop` |
 | `github-instructions/lares-operations.instructions.md` | operating modes, the five-season loop, a resolution table, KAIROS | lifted (`⊕`) to `lararium/docs/preferences/proactive-surfacing`; the rest at `docs/preferences/operating-modes` · `frame-uncertainty` · `collaboration-model` · `docs/signal/sa-display` · `lares/api/mu/ooda-ha`, which supersedes the `p` table and the older glyph set |
-| `memes/meme-structure-research.md` | a 5,462-line thread dump — a boot file, the loop, the Forge and Validator | lifted (dual-zoom) to `lares/docs/pono/meme`; the rest at `api/mu/ooda-ha` · `api/pono/meme` · `has-stack`. Its composite-rating idea stands REFUSED by `meme#/rating-posture` — mana, manao and manaoio stay distinct |
+| `memes/meme-structure-research.md` | a 5,462-line thread dump — a boot file, the loop, the Forge and Validator | lifted (dual-zoom) to `lares/docs/pono/meme`; the rest at `api/mu/ooda-ha` · `api/pono/meme` · `has-stack`. Its composite-rating idea stands REFUSED by `meme#/rating-posture` — the retired triad field names stay open for each operator |
 | `ARCHITECTURE.md` | the forward-commitment rig and its control arms | `lares/api/pono/gold-anchor#/rig-disciplines`; the grader lexicon at `packages/lararium-sensorium/scripts/qa_anchor/lexicons/` |
 | `ENVIRONMENT-AND-STACK.md` | a 2026-06 workstation materials record | `lares/docs/infrastructure-as-myth` compresses the load-bearing parts; the machine no longer exists |
 | `the-kumulipo-test-campaign.md` | a torn terminal capture of a long session | `lares/api/corpus#/the-dial-findings` · `api/pono/pattern-integrities-cultural` · `lararium/mesh/ffz-clock#/the-self-labeling-corpus` |
@@ -161,6 +158,6 @@ Every file below was read before it burned. Where a row names living carriers, t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8HxJwU8130512iOj5FWaqtzSQoHLc5X6s8d6VG5GPec`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zYZKAM0KOE0p8TwVtw3-5_M5rWI9Gi0uhaPjaT_KmNs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

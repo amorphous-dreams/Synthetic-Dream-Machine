@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "dangerous"
 l-space   = "sdm"
-mana      = 14
-manao     = 16
-manaoio   = 13
 role      = "component (hook): Dangerous — forces a Danger Roll; modifies the activation protocol itself"
 title     = "lar:///ha.ka.ba/sdm/components/hook/dangerous"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -69,6 +66,6 @@ Composes with any domain or function. ''Vertical-vs-flat pressure lives here:'' 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;awAVFWNIf-jK5DBeDzzleH0knk8JFrUyXKqXtCCl_mg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sHsC3kxxKxzC_e_TH8CPqpOYjw5C-zdXnJVmGXNk6Ls`>>
 
 <<^ code=`&#x0004;` to=`?`>>

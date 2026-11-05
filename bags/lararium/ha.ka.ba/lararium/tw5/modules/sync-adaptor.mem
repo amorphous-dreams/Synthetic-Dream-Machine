@@ -5,9 +5,6 @@
 
 ```toml meta
 heleuma       = "ha"
-mana          = 18
-manao         = 17
-manaoio       = 17
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor"
 role          = "the CRDT-to-wiki shore: IslandAdaptor — inbound projection through its own landing queue, outbound saves through the bag-path cascade and the composition's layer order"
 source-file   = "packages/lararium-tw5/src/island-adaptor.ts"
@@ -82,7 +79,7 @@ The ledger stays volatile: one adaptor, one session. A stopped adaptor clears it
 <<~ pranala slot=`#source-engine` from=`?` to=`packages/lararium-tw5/src/modules/nalu-engine.ts` family=`code` role=`has`>>
 <<~ pranala slot=`#source-landing` from=`?` to=`packages/lararium-tw5/src/wave-landing.ts` family=`code` role=`has`>>
 <<~ pranala slot=`#source-ledger` from=`?` to=`packages/lararium-tw5/src/landed-ledger.ts` family=`code` role=`has`>>
-<<~ pranala slot=`#source-gate` from=`?` to=`packages/lararium-tw5/src/hand-gate.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-drain` from=`?` to=`packages/lararium-tw5/src/drain.ts` family=`code` role=`has`>>
 <<~ pranala slot=`#source-bridge` from=`?` to=`packages/lararium-tw5/src/outbound-bridge.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
@@ -97,6 +94,6 @@ The ledger stays volatile: one adaptor, one session. A stopped adaptor clears it
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ksXjx-anI7rylOeyCB8rEDhma7kW9HK_MGxJTSwaIXw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pllb-l7ecwcJSGS574dP4ZuUP96l3fzukGUC4VfxEKI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

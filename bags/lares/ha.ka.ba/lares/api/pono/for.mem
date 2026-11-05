@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 17
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "English alias pointer — \\for redirects to huli; canonical spec lives at pono/huli"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-for"]
@@ -29,6 +26,6 @@ rendering a body template once per result. Use whichever reads more naturally in
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qmP97J_NGF5msaS_gYun5HQTW6BdE9nxcofSgLAjvYs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Atu6_jzHFpd2x6sA9ZEbPhDXaFtHcuCqKfQxJOD-tqM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

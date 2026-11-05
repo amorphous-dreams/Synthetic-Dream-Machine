@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "daemon-surface — a talk-story on the camera that holds the vessel's wikis, told by a tasked spirit for the Episkopos of train D (2026-10-16) and held VERBATIM: six panes a person sees and acts on (catalog, recipe, breath, alerts, custody, residency), the records that back each pane and the crossing each act takes, activation and projection held apart as two acts with two answers, the width dial read for the daemon, two stories (a switch mid-edit; a boot fault read from the plate), ten questions for the operator each with the house reading and what flips it, and the phase that carries each piece. Held as a collision surface; dreamdom carries the house's reading of it."
@@ -173,6 +170,6 @@ Later that day the hearth-wiki itself boots with one dead module. The island kee
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-q8DlO3SvrII_GdtyMl00lHiezVrpu2VVE4YWsB7K6g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sNh1Q5xkj5NHugJBZx5sG__GmUARrqfQWbpZZwP4NyE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

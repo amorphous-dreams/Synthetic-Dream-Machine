@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 17
-manao             = 16
-manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "face-proof — how a session proves ONE face at a gate without naming its vessel, under the PER-VESSEL shape: the face proof key per (PersonaGroup, Nexus) stays with the root-holding vessel and no private face key travels; each joined vessel mints its own face-scoped key, certified once at the join; a session signer chains beneath it. The gate reads face key → vessel's face-scoped key → session key, under one Nexus admit per face. Carries the key hierarchy, the gate exchange (a minimal Noise IK first flight in the WebSocket subprotocol token, provisional work only, a signed finish before any verdict), what the gate, a herm, a co-member and an observer each learn, the named leaks, causal deny-only withdrawal, the sibling channel's move to face scope, and what an offline root holder means"
@@ -397,6 +394,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xE9gMPBPBKDrIcF_2J0OSxHo1b1n63itei--qEJQe40`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qWFvd95co_zUC93sO_YLq-S93EQhewaFRM7dTtmPyQg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

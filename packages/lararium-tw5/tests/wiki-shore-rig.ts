@@ -119,12 +119,14 @@ export async function shoreRig(opts: RigOptions = {}) {
   const ownSlots = new Set<string>([workingBag, draftBag, wikiSlotUri("shore-road", "temp"), wikiSlotUri("shore-road", "personal")]);
   const writeFamily = composite.writeFamily.bind(composite);
   const tombstoneInBag = composite.tombstoneInBag.bind(composite);
-  const failures: { family: Error | null; tombstone: Error | null; gate: Promise<void> | null; hold: Promise<void> | null } = { family: null, tombstone: null, gate: null, hold: null };
+  const failures: { family: Error | null; tombstone: Error | null; gate: Promise<void> | null; hold: Promise<void> | null; deleteTitle: string | null; holdDelete: { title: string; until: Promise<void> } | null } = { family: null, tombstone: null, gate: null, hold: null, deleteTitle: null, holdDelete: null };
   vi.spyOn(composite, "writeFamily").mockImplementation((puts, deletes, origin, options) => {
     const destination = options?.bag ?? composite.defaultWritableBagId() ?? undefined;
     if (destination && !ownSlots.has(destination) && origin.kind === "tw-local") outsideSlots.push(`family ${destination}`);
     calls.push({ kind: "family", bag: destination, puts: puts.map((p) => p.tiddler.title), deletes: [...deletes], base: options?.base });
+    if (failures.holdDelete && deletes.includes(failures.holdDelete.title)) return failures.holdDelete.until.then(() => writeFamily(puts, deletes, origin, options));
     if (failures.hold && options?.bag === draftBag) { const held = failures.hold; return held.then(() => writeFamily(puts, deletes, origin, options)); }
+    if (failures.deleteTitle && deletes.includes(failures.deleteTitle)) return Promise.reject(new Error("source removal refused"));
     if (failures.family) { const fault = failures.family; return (failures.gate ?? Promise.resolve()).then(() => { throw fault; }); }
     return writeFamily(puts, deletes, origin, options);
   });
@@ -169,12 +171,13 @@ export async function shoreRig(opts: RigOptions = {}) {
 }
 
 /** A second actor over its own Repo: imports the bag's doc, writes, and merges back into the shore's handle. */
-export async function peerWrite(r: Rig, bag: string, records: readonly LarTiddlerRecord[]): Promise<void> {
+export async function peerWrite(r: Rig, bag: string, records: readonly LarTiddlerRecord[], beforeMerge?: () => void): Promise<void> {
   const peerRepo = new Repo({ network: [] });
   const peerHandle = peerRepo.import<LarDoc>(automerge.save(r.handles[bag]!.doc()));
   const peerStore = new AutomergeDocStore(peerHandle, bag);
   for (const record of records) await peerStore.put(record, { kind: "crdt-remote", edgeIsland: `peer-of-${r.instanceId}` });
   const before = r.arrivals.length;
+  beforeMerge?.();
   r.handles[bag]!.merge(peerHandle);
   await arrived(r, before, records.map((record) => record.tiddler.title));
   await peerRepo.shutdown();

@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable      = true
-mana           = 14
-manao          = 14
-manaoio        = 13
 namespace      = "&#x2299;"
 reference-kind = "rfc"
 role           = "reference meme — cites IETF RFC 6962 by its own bibliographic metadata"
@@ -43,6 +40,6 @@ both versions.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iOxJuDuojTu0EqX6_bJrUJz885oyRFApWvg4kI_0940`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5UC--o9hGJUgLIgQENiMfoYjKTgYAMuYCXv0wO_nFv4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

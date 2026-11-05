@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "lararium"
-mana      = 19
-manao     = 18
-manaoio   = 18
 role      = "Package alignment law: mesh as isomorphic spine; dep graph and consistency rules for the monorepo"
 title     = "lar:///ha.ka.ba/lararium/mesh/alignment-plan"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -126,6 +123,6 @@ These items name known inconsistencies in the current tree. Each carries a resol
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SJA0hEqtk0MPu-Pvq-Zwh68S2iL0MCnwpWjGYxYSbP8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xCj0b93GKm7ssrwyjLltXddN-nijf5VIiJR8DhVKE90`>>
 
 <<^ code=`&#x0004;` to=`?`>>

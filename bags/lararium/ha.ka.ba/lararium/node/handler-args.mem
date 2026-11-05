@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 heleuma   = "ba"
-mana      = 17
-manao     = 17
-manaoio   = 16
 role      = "heleuma: command-handler argument coercers + requestId factory"
 title     = "lar:///ha.ka.ba/lararium/node/handler-args"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -36,6 +33,6 @@ These helpers carry no side effects or platform assumptions. They could become a
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ASnMPOUClgWo4oXOOQjbVLdigCmZ0fsL3j5CQHCkTD0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SJqIPPeZubey43_MntAoZcPCLDq8mgCfLnutdsADtkA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

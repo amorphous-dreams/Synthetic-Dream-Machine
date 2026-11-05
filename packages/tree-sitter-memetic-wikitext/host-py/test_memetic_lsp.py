@@ -7,7 +7,7 @@ _DOC = (
     "! The Hearth\n"
     "prose rides beneath the carrier\n"
     "```toml meta\n"
-    "mana = 16\n"
+    "gauge = 16\n"
     "```\n"
     "<<~/ahu >>\n"
 ).encode("utf-8")

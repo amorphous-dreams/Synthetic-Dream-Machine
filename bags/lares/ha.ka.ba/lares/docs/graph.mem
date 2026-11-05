@@ -5,9 +5,6 @@
 
 ```toml meta
 l-space          = "stable"
-mana             = 17
-manao            = 17
-manaoio          = 16
 research-sources = ["Bazel depsets and Skyframe (Google 2024)", "Buck2 architecture (Meta 2024)", "Nix derivations and lazy evaluation", "Graphiti temporal knowledge graph (Zep 2025, arXiv:2501.13956)", "TerminusDB append-only delta model", "UEFN Scene Graph ECS model (entity/component/prefab, Fortnite dev 2025)", "Anthropic context engineering (2025)", "Context7 / Upstash (2025)"]
 role             = "spine for the pranala-edge DAG graph redesign — research synthesis, committed decisions, child locus map"
 status-date      = "2026-04-24"
@@ -156,6 +153,6 @@ The graph-traversal model this carrier cluster describes (`Locus`/`LociGraph`, B
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JY1H5yOnC2FEDOebnO9Mqr-h0zrayGRMq2jRTJeaIQU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;c3hvgl8jdjvup1PPQn1-OEUT3Ah6IFdeU2w7RQmrQI0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

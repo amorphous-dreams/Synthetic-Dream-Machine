@@ -7,9 +7,6 @@
 cacheable   = true
 hydrate     = true
 l-space     = "lararium"
-mana        = 18
-manao       = 17
-manaoio     = 16
 role        = "Causal-island ontological law: the four-tier boundary model, the ACCESS axis (a MODEL, never a checked tier — the live gate is binary), and the share-substrate-not-sovereignty law that governs co-located vessels"
 source-file = "packages/lararium-mesh/src/island-protocol.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/causal-island"
@@ -166,6 +163,6 @@ Related (project tiddlers): [[project_no_vm_on_main_thread]], [[feedback_isomorp
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6E75vm5Ctf2KDRPASKDyUOeeiAf3QKRW1nurlHXpjRQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;m9QUwmoMlcrzfXQ_FWZciKLzfLubNJE1UF7653kEKWQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

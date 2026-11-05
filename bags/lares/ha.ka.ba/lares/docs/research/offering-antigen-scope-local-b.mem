@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "lares"
-mana       = 15
-manao      = 15
-manaoio    = 14
 role       = "local research: Offering Antigen scope and identity contract; board rendezvous versus cryptographic Nexus binding"
 status-why = "Wave 1 local scout; recommendation ready for collision with internet research"
 tags       = ["research/offering-antigen", "api/pono/causal-islands", "mesh/identity-as-relation", "mesh/charter-scope"]
@@ -208,6 +205,6 @@ those movements silently changes which Nexus the record speaks for.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AX-LivrCTSdtwMoPgCIUbjUXLVCPRts23xPmcwoKY5U`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WfMNmdP-XMR5mpllDVo14YqmvpTXDAErsKYQDTbD5Q8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

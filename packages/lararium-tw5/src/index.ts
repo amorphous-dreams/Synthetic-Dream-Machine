@@ -110,7 +110,7 @@ export type {
 } from "./types/tiddlywiki.d.ts";
 
 export { IslandAdaptor } from "./island-adaptor.js";
-export { buildIslandRecipe, wikiLandedCovers } from "./island-recipe.js";
+export { buildIslandRecipe, wikiLandedCovers, bindRecoveryAtRest } from "./island-recipe.js";
 export type { BuildIslandRecipeInput, RecipeReadyBinding } from "./island-recipe.js";
 export { placeVerb, patchVerb, removeVerb, writeOutcome, dispatchVerb } from "./verb-vm.js";
 export type { VerbPlacement } from "./verb-vm.js";
@@ -141,7 +141,7 @@ export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 
 export { recipeUri } from "@lararium/mesh/lar-uris";
 
-export type { IslandContext, IslandBehavior } from "./island-context.js";
+export type { IslandContext, IslandBehavior, WritableOutcome } from "./island-context.js";
 export { composeIsland } from "./island-caps.js";
 export type { IslandCap, CapTeardown } from "./island-caps.js";
 export { hasCapture, TELEMETRY_FRAME } from "./capture/has-capture.js";
@@ -232,6 +232,8 @@ export type {
   WikiSlotComponent, DaemonCapDeps,
 } from "./core-caps.js";
 export { openDaemonVmCore, HostWorkingBindingRefusal } from "./daemon-vm-core.js";
+export { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, PROMOTE_RESTART_REASON } from "./daemon-vm-holder.js";
+export type { DaemonVmHolder } from "./daemon-vm-holder.js";
 export type {
   DaemonVmHost,
   DaemonVmCore,
@@ -297,3 +299,5 @@ export {
 export type { CarrierLifecycle, LifecycleStage } from "./carrier-lifecycle.js";
 
 export { placedAskIsLocal } from "./daemon-behavior.js";
+
+export { makePromoteStateReactor, seedPromoteUiTiddlers, PROMOTE_PANEL_TITLE, PROMOTE_STATE_TITLE } from "./promote-ui-tiddlers.js";

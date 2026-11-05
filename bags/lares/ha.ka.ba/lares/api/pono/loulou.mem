@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 17
-manao     = 17
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "relation-family edge sugar — outgoing semantic link; no execution pulse; shorthand for pranala family:relation"
 tags      = ["api/pono/pranala", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-loulou"]
@@ -122,6 +119,6 @@ confidence-bounded = false
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;p96dBent25AwaCbn4-XVsv8X64X5lE4sHVb5L0NLK7A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;t0fRvbD_G-xiueUwX5X0o5RCnJ2Zzz1j4UOttVnBhok`>>
 
 <<^ code=`&#x0004;` to=`?`>>

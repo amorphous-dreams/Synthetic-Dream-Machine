@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 13
-manao     = 15
-manaoio   = 12
 role      = "wire law (kānāwai): the reified edge — one wire, one addressable entity; semantics worn as stack components; the verse-messaging and canvas substrate under the has-stack model"
 tags      = ["api/pono/has-stack"]
 title     = "lar:///ha.ka.ba/lares/api/pono/wire"
@@ -86,6 +83,6 @@ Co-projection applied to wires: the operator's mind originates; the carrier body
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HcK-Zjygdnvr_nVgxYGUXPQN4H0Qqutd4DKpvQxX828`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WcJeTVNQWaSv-ATMqFzi7PwJ3346TYsydUUV40RemGA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

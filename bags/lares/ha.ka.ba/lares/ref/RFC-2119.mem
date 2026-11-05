@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable      = true
-mana           = 14
-manao          = 14
-manaoio        = 13
 namespace      = "&#x2299;"
 reference-kind = "rfc"
 role           = "reference meme — cites IETF RFC 2119 by its own bibliographic metadata; the house's usage law lives at api/pono/RFC-2119"
@@ -44,6 +41,6 @@ normative verb set carrier laws cite rather than re-declare.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;si223DtPMSi3Z1PFs3vizrqylSBhWBj1hExWKTUNgmk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;x3agOkb0qgmxvEgOKqoyO-Z6952NlB8HhUy55924Jp8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

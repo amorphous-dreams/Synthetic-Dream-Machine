@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 17
-manao     = 17
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "\\widget pragma-alias sigil — declares a named ~widget callable via the ~ dispatcher; operator extension point"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-widget"]
@@ -68,6 +65,6 @@ the body uses TW5 widget syntax (`<$...>`) and `\procedure` when the body is pur
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NTvBwUUqn3uqXpd47zunkb2dhvquRjLXjUJauaAd-lI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H2gOh7LcqaTMq8mu4fys80AY4dPvGZKvJNFtNdjMtKU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

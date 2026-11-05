@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "archive"
-mana      = 14
-manao     = 14
-manaoio   = 14
 rating    = "meme"
 role      = "skinny handle for the Discordian Oracle AppleKation reliquary — bytes ride the genesis/cas KIND-plane by content address; this meme carries the names, cids, provenance, and rites"
 title     = "lar:///ha.ka.ba/lares/library/oracles/doa/index"
@@ -71,6 +68,6 @@ opening the DOA.html blob in any browser, offline, forever.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lX5U81JVsDhRV23IPGR8EygHxVeu3tsWC9W1Y3_kBdA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VDy7FdXlRYr5DXquwl0G9cjA2vDV7-aWJ1ohkn8MRjg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

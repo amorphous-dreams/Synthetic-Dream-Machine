@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 17
-manao       = 17
-manaoio     = 16
 namespace   = "&#x0950; &#x0901;"
 role        = "canonical pipeline invariant: five-layer reactive architecture from CRDT patch to observable outcome — nalu, live-query, IslandMsg_Event, CRDT-as-distributed-promise"
 status-date = "2026-05-28"
@@ -168,6 +165,6 @@ One wave. All observers. Same synchronous context.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DnIdSBOVtbVc1XrFp9fk8DfENBXnTKmOTbUAIgYBrKk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6dy6NXu-RV1BpJpRjhdxjrv6d-3EHpMki2YgMv_i40A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

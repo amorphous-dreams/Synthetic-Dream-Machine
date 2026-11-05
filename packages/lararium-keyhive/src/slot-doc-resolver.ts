@@ -44,6 +44,8 @@ export interface SlotDocRepo extends DocMinter {
 }
 
 export interface SlotDocResolverArgs {
+  /** How long the floor lift waits on a silent floor document before it names it and skips it (default: the house document-ready bound). */
+  readonly liftReadBoundMs?: number;
   readonly repo: SlotDocRepo;
   /** The daemon-bag composite — binding records live here. */
   readonly daemonStore: CompositeStore;
@@ -70,6 +72,7 @@ export interface SlotDocResolverArgs {
   readonly floorAnchor?: () => WorkingFloorAnchor | null | Promise<WorkingFloorAnchor | null>;
   /** Find or materialize the face's working document under its derived address, and rest it. */
   readonly faceWorkingDoc?: (url: string, label: string) => Promise<FaceWorkingHandle>;
+  readonly rebindWorking?: (slug: string, oldUrl: string, newUrl: string, into: FaceWorkingHandle) => void;
 }
 
 /** The face's working document as the resolver and the lift touch it. */
@@ -268,7 +271,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     slotDoc,
     draft: async (slug) => (await slotDoc(slug, "draft"))!,
     liftFloor: async () => {
-      if (!args.faceDoor || !args.personaGroupId || !(await seated())) return { moved: [], finished: [] };   // no seat, nothing to lift into
+      if (!args.faceDoor || !args.personaGroupId || !(await seated())) return { moved: [], finished: [], skipped: [], skippedDocs: [] };   // no seat, nothing to lift into
       const repo = args.repo as unknown as Partial<LiftRepo>;
       if (typeof repo.find !== "function" || typeof repo.delete !== "function") throw new Error("slot-doc: the lift needs a repo that finds and deletes documents");
       // THE SECRET STANDS FIRST: the face's address secret must stand before the lift's first step, or the lift refuses by
@@ -279,6 +282,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       return liftVesselOnlyIntoFace({
         repo: args.repo as unknown as LiftRepo, daemonStore: args.daemonStore, catalog: args.catalog, faceDoor: args.faceDoor,
         mintedByHex: args.mintedByHex(), vesselDid: String(await args.vesselDid()),
+        ...(args.liftReadBoundMs !== undefined ? { readBoundMs: args.liftReadBoundMs } : {}),
         ...(args.floorMinter ? { floor: args.floorMinter() } : {}),
         // THE WORKING FLOOR LIFTS TO THE FACE'S DERIVED ADDRESS: by the floor's own anchor, into the document the face's
         // secret names for each wiki.
@@ -286,6 +290,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
           anchor: (await args.floorAnchor?.()) ?? null,
           urlOf: faceWorkingUrl,
           ...(args.faceWorkingDoc ? { open: args.faceWorkingDoc } : {}),
+          ...(args.rebindWorking ? { rebind: args.rebindWorking } : {}),
         },
         traceOf: async (slug) => {
           const url = await args.catalog?.urlOf(wikiBagUri(slug)).catch(() => null);

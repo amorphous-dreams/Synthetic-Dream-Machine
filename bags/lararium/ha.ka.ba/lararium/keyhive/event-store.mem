@@ -6,7 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 12
 role        = "invariant law: EventStore — durable persistence for Keyhive ops, and the island slice a boot may load without losing decryptability. Names why an event carries an island, which events carry NONE and must co-load with every slice, and why causality needs no sorting here."
 source-file = "packages/lararium-keyhive/src/event-store.ts"
 title       = "lar:///ha.ka.ba/lararium/keyhive/event-store"
@@ -54,6 +53,6 @@ caller that has not reasoned about slices gets the whole record rather than a si
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/keyhive-provider`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;h_L12BaFwntLhvoNgRX8MjSDf8mFHwqCXGClJCBEiZM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pKg6GOBTLTZ2d5v_lswHzJfaoPjszwbtPqSHZjadeBU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

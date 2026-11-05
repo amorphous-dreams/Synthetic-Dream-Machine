@@ -6,8 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "stable"
-mana        = 18
-manao       = 17
 namespace   = "&#x2299;"
 role        = "architectural invariant: nalu as changeset delivery wave — the pulse below the grammar; maps TW5 refresh(changedTiddlers) ↔ Verse OnSimulate(StagedUpdates) ↔ in-wiki nalu engine; yin-collapse law"
 status-date = "2026-05-30"
@@ -180,7 +178,7 @@ The TS layer forms the minimal shore around it — only what TW5 cannot do from 
 ''TS-side shore (irreducible — TW5 cannot do these):''
 * `AutomergeDocStore` — CRDT, patch subscription, MemeProvider fan-out
 * `IslandAdaptor` — the wiki shore: the landing queue and its door, the landed ledger (what each
-  wave left under each title), the per-title hand gate, the draft book, and the outbound routing of a
+  wave left under each title), the shore's one drain, the draft book, and the outbound routing of a
   hand's save and delete by the composition's own layer order
 * Network / WebRTC / WebSocket — browser/Node APIs
 * Keyhive capabilities — cryptographic operations
@@ -294,7 +292,7 @@ home; every other carrier on the surface points back here.
 | the gate families | `lar:///ha.ka.ba/lararium/api/projection-nalu` | accumulate and coalesce, their guards, the level-triggered reconcile queue |
 | the engine | `lar:///ha.ka.ba/lararium/api/nalu-engine` | the in-wiki applier: one change, landed synchronously |
 | the Automerge shore | `lar:///ha.ka.ba/lararium/docs/meme-provider` | the fan-out between a document and its projections |
-| the wiki shore, its law | `lar:///ha.ka.ba/lares/docs/pono/outbound-bridge` | a tiddler replaces a tiddler; the landed ledger, the base, the pacing gate, the discrete acts |
+| the wiki shore, its law | `lar:///ha.ka.ba/lares/docs/pono/outbound-bridge` | a tiddler replaces a tiddler; the landed ledger, the base, the drain, the discrete acts |
 | the wiki shore, its adaptor | `lar:///ha.ka.ba/lararium/api/island-adaptor` · `lar:///ha.ka.ba/lararium/api/save-path` · `lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor` | the adaptor's invariants, the outbound save path, the file's own account |
 | the layers a hand lands in | `lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model` | the composition's order, the working layer, the routing table |
 | the disk shore | `lar:///ha.ka.ba/lararium/api/disk-projection` · `lar:///ha.ka.ba/lararium/node/disk-projector` | the projection law and the node hand that enacts it |
@@ -334,6 +332,6 @@ lands and what refuses follow from state alone (`lar:///ha.ka.ba/lares/docs/pono
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GTjG7-dU1wH3MTx5ZgzmVz92_obLBw7TRqLedV94t8g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;shP7DtoCtsbmoy3ionoxnTLwpoo0ksN8uIbvC5mGwvs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

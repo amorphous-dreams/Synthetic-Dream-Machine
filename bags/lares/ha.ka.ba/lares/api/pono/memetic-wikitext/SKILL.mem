@@ -13,9 +13,6 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 cacheable          = true
 constraints        = ["S1: the parent invariant stays the semantic root; this skill does not widen or outrank it", "S2: primitive roles stay distinct — ahu, loulou, aka, kahea, kapu, ui, hana, and ? do not silently trade jobs", "S3: uncertainty stays explicit and bounded; kapu qualifies an act instead of replacing it", "S4: boot grammar stays minimal but sufficient for identity, body thresholds, relation, invocation, query, and honest residue", "S5: parse legality, normalization detail, render lowering, long examples, and archive commentary move outward when they stop earning invariant residency"]
 covers             = ["lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"]
-mana               = 15
-manao              = 16
-manaoio            = 14
 role               = "memetic-wikitext operational skill — authoring, compression, audit, and companion-meme split discipline"
 skill-package-root = "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext"
 tags               = ["api/pono/meme"]
@@ -220,6 +217,6 @@ If parser or render-pipeline law still lacks its own stable carrier, leave the b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Di2kyB4C0AblfU86wxmUc9DVyqS9HwG0GvQ0HeaU-2c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;D9kO2PnTgYrXhKGE5quaDwRlH2VaeZSwVz_Qn4thOZs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

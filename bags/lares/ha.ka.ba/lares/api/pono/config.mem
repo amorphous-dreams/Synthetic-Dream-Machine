@@ -6,9 +6,6 @@
 ```toml meta
 l-prime       = true
 l-space       = "adjacent"
-mana          = 17
-manao         = 15
-manaoio       = 14
 ooda-ha-level = 10
 role          = "configuration surface, behind-the-curtain dial room, session-config"
 tags          = ["api/pono/meme"]
@@ -113,6 +110,6 @@ Live stage positions — shift inline with `[Stage: mask-name 15]`; edits here p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sVFVUsUV35k6qSv4elWAOaK7ppmoZ5DCYoN0rVzJcZQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;O-uRMsIiKwP0gMcZTBcjws8WIpLUYQR-caKyaHnYK8Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

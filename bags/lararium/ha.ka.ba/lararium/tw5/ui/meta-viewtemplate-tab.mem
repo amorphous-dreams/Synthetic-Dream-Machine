@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 list-after = "$:/core/ui/ViewTemplate/body"
-mana       = 18
-manao      = 18
-manaoio    = 17
 role       = "ViewTemplate tab: injects #meta character sheet as a Metadata tab on all lar: tiddlers"
 tags       = ["$:/tags/ViewTemplate", "lar:///ha.ka.ba/lares/api/pono/meme"]
 title      = "lar:///ha.ka.ba/lararium/tw5/ui/meta-viewtemplate-tab"
@@ -28,6 +25,6 @@ uri-path   = "ha.ka.ba/lararium/tw5/ui/meta-viewtemplate-tab"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WaYfHQuvYNpRmzUj8IgNKLF25kMihycg5ypRQFGx3pM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZTD7n-yBARsLmACSQJBW-BHQpbCMbmHOBaB5MQ-jTqU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

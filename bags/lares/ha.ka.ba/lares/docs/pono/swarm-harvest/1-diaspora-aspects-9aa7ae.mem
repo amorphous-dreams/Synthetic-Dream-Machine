@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: 1. Diaspora 'aspects'. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -255,6 +252,6 @@ Across all four systems, **the same measurement gap recurs**: every one ships th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4P1BAZHaEu9ddx8CcZVvTCM9SPp7xV7sA3VPf-ei62I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7BVFT41g9sFZSETT6X7tzMdpfjgkedBlCzEKz7lgWss`>>
 
 <<^ code=`&#x0004;` to=`?`>>

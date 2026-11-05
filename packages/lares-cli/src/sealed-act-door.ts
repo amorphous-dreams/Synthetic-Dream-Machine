@@ -47,6 +47,7 @@ export type SealedActVia = "vessel" | "direct";
  */
 const directContext: SealedActContext = {
   personaSelves: null,
+  island: null,
   // No composition stands in a command's own process, so no island takes a bundle's memory section: an import
   // there refuses by name and names the standing vessel.
   backup: null,

@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 16
-manao             = 16
-manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "field-collision — the outside field collided against our three models (identity-as-relation · no-global-now · carriage-not-registry), 2026-09-08: prior art that BUILT our shape, golden principles we must hold, measured anti-patterns, deep pattern-integrities, and the standing tensions the field leaves open (moderation, beneficial-ownership). The CONIKS #1-exposure RESOLVED at primary source."
@@ -124,6 +121,6 @@ The identity roadmap thrown at the deployed federated / p2p field. Each survivor
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bks2diGN_REckUpV6BTxTaqXGGne_XBSO5Kx7i01mUM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kiShfqArmdrtu8ewFzvb3EqfS0maUVHSP4GAHuA7wBU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

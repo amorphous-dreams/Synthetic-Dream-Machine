@@ -25,9 +25,6 @@ type = "text/x-memetic-wikitext"
 cacheable = false
 file-path = "packages/lararium-sensorium/scripts/fixtures/shuffled-kumulipo/kumulipo-beckwith.mem"
 l-space   = "stable"
-mana      = 18
-manao     = 18
-manaoio   = 18
 retain    = false
 role      = "hawaiian source witness meme, Kumulipo Beckwith-1951 translation+commentary locus, koʻihonua cosmogony shelf"
 tags      = ["api/pono/meme", "api/pono/loci"]
@@ -11770,6 +11767,6 @@ MAKEMSON, MAUD. The Morning Star Rises. New Haven, 1941.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xYkEVW6SmzH5iqpbWF-8fag55YBSI346PQFSmU3q-Tk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_igQRZ1-VNBmnlhinhGeImlDZE9lZ5Fti0LstGGFd4Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

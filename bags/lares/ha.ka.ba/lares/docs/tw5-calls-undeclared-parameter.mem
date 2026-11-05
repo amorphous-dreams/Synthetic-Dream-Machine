@@ -6,9 +6,6 @@
 ```toml meta
 cacheable  = true
 l-space    = "stable"
-mana       = 12
-manao      = 14
-manaoio    = 12
 namespace  = "&#x2299;"
 role       = "the upstream docs correction for TiddlyWiki's `Procedure Parameter Handling` tiddler — a named parameter the definition never declared reaches nothing, and a misspelt name reads identically to a forgotten one"
 status-why = "every example rendered against the vendored TiddlyWiki core through the lararium VM on 2026-09-08; not yet opened upstream"
@@ -117,6 +114,6 @@ render tells them apart.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;daGRs4FmddeUH0WGlqfOCSMCZvfOw6XvrNwlLdB_JUY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UDbUDDIBsfQMc6HVXyLnJmiLw9bvPC8yuzaiR11zdRM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

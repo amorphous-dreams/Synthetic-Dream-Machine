@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 17
-manao     = 17
-manaoio   = 18
 role      = "staging docs shelf for epistemic residue, promotion planning, and the still-unsettled register/stance and degraded-weather material left after foundation-braid migration"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/preferences/epistemology"
@@ -223,6 +220,6 @@ It still needs to witness what has already promoted, what remains braided, and w
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PSqqw4B5ddxq_U1MU9R0mhixu-v3BcRmW6VMJtsozbo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1xw5M10EWdRZIwGS4vw1gZLhBJOLhYc5rfrL6_WbVvY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

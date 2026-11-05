@@ -5,10 +5,7 @@
 
 ```toml meta
 last-reviewed = "2026-07-18"
-mana          = 17
-manao         = 17
-manaoio       = 17
-role          = "design doc: TW5 boot module corpus-gate — 3-layer trust check for corpus-carried JS modules (layers 1–2 built; layer 3 = keyhive, UNBUILT)"
+role          = "design doc: TW5 boot module corpus-gate — local-grant trust check for corpus-carried JS modules (grant, digest and module type built; a keyhive proof stays UNBUILT)"
 status-date   = "2026-04-30"
 title         = "lar:///ha.ka.ba/lararium/docs/tw5-boot-gate"
 type          = "text/memetic-wikitext+tiddlywiki"
@@ -19,46 +16,46 @@ uri-path      = "ha.ka.ba/lararium/docs/tw5-boot-gate"
 
 !! TW5 Boot Gate — Contract
 
-`bootTrustedModules(tw)` (`packages/lararium-tw5/src/tw5-module-gate.ts`) runs inside `TW5Engine.boot`, in the host boot callback. It adds JavaScript tiddlers from the ''live corpus'' (tiddlers the wiki holds from `preloadTiddlers`), after TW5 completes its own module collection — so execution of a gated body during that boot reads UNBUILT. When no corpus meme passes the gate it injects nothing; the gate carries no imperative fallback of its own.
+`bootTrustedModules(tw, preloaded, granted)` (`packages/lararium-tw5/src/tw5-module-gate.ts`) runs inside `TW5Engine.boot`, in the host boot callback. It adds JavaScript tiddlers from the ''live corpus'' (tiddlers the wiki holds from `preloadTiddlers`), after TW5 completes its own module collection — so execution of a gated body during that boot reads UNBUILT. When no corpus meme passes the gate it injects nothing; the gate carries no imperative fallback of its own.
 
 ```
-bootTrustedModules(tw)
+bootTrustedModules(tw, preloaded, granted)
     │
     ├─ wiki.filterTiddlers([all[tiddlers]stack:has[MODULE_COMPONENT_URI]])
     │       │  for each matching tiddler:
-    │       ├─ Layer 1: mana ≥ 18 · manao ≥ 17 · manaoio ≥ 17 (an unparseable level fails)
+    │       ├─ skip a title the genesis preload did not hold
+    │       ├─ Layer 1: the title sits in the granted set (the promote ledger digest, hand-committed, not shadowed by kāpae) — otherwise refuse and warn
     │       ├─ skip an empty body
     │       ├─ Layer 2: tagged SHA-256(text) equals the source-sha256 field
-    │       └─ Layer 3: keyhive capability proof — UNBUILT
+    │       └─ Layer 3: module-type is library — any other type refuses by name
     │
     ├─ each pass → wiki.addTiddler({ type: application/javascript, module-type, text })
     │
-    ├─ if any passed → tw.modules.define(moduleText, "library", "lararium-tw5-modules")
-    │                  (TW5 reads the first argument as the module NAME, so the aggregate
-    │                   body does not become the library definition)
+    ├─ each pass → tw.modules.define(title, "library", text)
+    │                  (TW5 reads a module by the name another module requires: its title)
     │
     └─ if none passed → nothing injects; the packed plugin's own module tiddlers
                         carry the parser, the deserializer and the widgets
 ```
 
-''Why two paths?'' The corpus path names the target steady state: all logic lives as `lar:` memes, verified by hash and (UNBUILT) keyhive capability proof. The packed plugin keeps the app booting and working offline, on cold start, and before any meme passes every gate layer.
+''Why two paths?'' The corpus path names the target steady state: all logic lives as `lar:` memes, verified by hash and a local promote grant. The packed plugin keeps the app booting and working offline, on cold start, and before any meme passes every gate layer.
 
 <<~/ahu>>
 
 <<~ ahu slot=`#/thresholds`>>
 
-!! Gate Thresholds
+!! Gate Conditions
 
-Three signal fields must meet or exceed these floor values before the gate injects a meme as a live JS module. The constants live in `packages/lararium-tw5/src/tw5-module-gate.ts` as `MODULE_*_THRESHOLD`.
+No score gates execution. A carrier runs only when this device holds a local grant for it:
 
-| Field | Constant | Floor |
-|---|---|---|
-| `mana` | `MODULE_MANA_THRESHOLD` | 18 |
-| `manao` | `MODULE_MANAO_THRESHOLD` | 17 |
-| `manaoio` | `MODULE_MANAOIO_THRESHOLD` | 17 |
-| `confidence` | — | UNBUILT: no `MODULE_CONFIDENCE_THRESHOLD` stands, and the gate reads no `confidence` field |
+| Condition | Reading |
+|---|---|
+| preload | the title came in with the genesis preload, never joined after boot |
+| grant | the title appears in the granted set, the promote ledger's hand-committed digest for that wiki, not shadowed by a kāpae revocation |
+| digest | `source-sha256` verifies against the `text` field (integrity relative to the claim, never authenticity or consent) |
+| type | `module-type` reads `library` |
 
-Additionally: `source-sha256` must verify (the tagged SHA-256 digest of the `text` field). Gate layer 3 (keyhive capability proof) reads UNBUILT; as built the gate passes on layers 1–2 alone.
+Fail closed: a carrier missing any condition injects nothing. The promote lane's gate (`tw5-module-gate.ts` at the promote branch) removed the level parser; no field value on a carrier authorizes execution. A keyhive capability proof reads UNBUILT.
 
 <<~/ahu>>
 
@@ -68,12 +65,12 @@ Additionally: `source-sha256` must verify (the tagged SHA-256 digest of the `tex
 
 `bootTrustedModules` requires a live `$tw` reference to call `wiki.filterTiddlers()`, `wiki.addTiddler()`, and `tw.modules.define()` — runtime calls against the TW5 instance `boot()` creates. No wikitext expresses the gate logic and no tiddler loads it: the gate decides which memes become executable.
 
-''The gate queries a COMPONENT, and a meme carries that component'': `lar:///ha.ka.ba/lararium/tw5/tw5-module`. The gate asks `[stack:has[…]]` — which carriers WEAR it — never what kind a carrier claims. Any carrier wearing that component, passing the signal fields and the content hash, gets injected by the corpus path.
+''The gate queries a COMPONENT, and a meme carries that component'': `lar:///ha.ka.ba/lararium/tw5/tw5-module`. The gate asks `[stack:has[…]]` — which carriers WEAR it — never what kind a carrier claims. Any carrier wearing that component, holding a local grant and passing the content hash, gets injected by the corpus path.
 
 The distinction makes the whole gate. ''Authority rides on what a carrier holds and who granted it, never on its kind'': a carrier cannot declare itself executable, it can only wear a component whose own meme states what wearing it costs, and the stack entry carries no verb of its own.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hrk0WmFPvgDUgvIeRATkObECsPQYfAC_1FswyEyh-iE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_7Aam5LewByP1u2XGELfEQabH03zQLHiYATllGS_jv0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

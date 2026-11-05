@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 15
-manao     = 15
-manaoio   = 14
 namespace = "&#x2299;"
 role      = "w28-gate-lane — the lane kit for roadmap rows `W28` and `W10`: the sealed channel's frame table stands frozen before the bake, and the research pair's reading of the knock's offline test"
 tags      = ["api/pono/meme"]
@@ -67,6 +64,6 @@ Both rows touch the sealed channel's dial bytes, so each settles before the X0 b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ps5zrER5oy1Lbw1OpmbHa3kDElvheGqjQaE4MCJmGV4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-ANAXviel81nx7E4m2vRaaQtH7vC02JiidqOoQrmlCg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

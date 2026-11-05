@@ -6,7 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 3
 role        = "self-documentation: TODO describe init.ts"
 source-file = "packages/lararium-node/src/commands/init.ts"
 title       = "lar:///ha.ka.ba/lararium/node/commands/init"
@@ -20,6 +19,6 @@ TODO: describe the load-bearing surface this file owns.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cUcxRWR4HnltA-hG5vf5YYtvEx8BD2UUPBe91NlaYYg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;im6OxixGAouxxIVt_u1LTLVRMFV8HzCUDktx9nzk3PQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

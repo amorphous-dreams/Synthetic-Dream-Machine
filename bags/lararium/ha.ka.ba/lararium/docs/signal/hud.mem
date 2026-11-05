@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 16
-manaoio   = 16
 role      = "signal-branch framing for the HUD as the situational-awareness surface; the instrument law + teaching live in the api/lares/hud + docs/lares/hud pair"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/signal/hud"
@@ -62,6 +59,6 @@ The instrument grammar itself stays in the pair; this room holds only the signal
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1OKG7e3CC2jbgXZ6jhLDvLkabdFO6IYf_Gg2EsniJos`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6g-BP_rtr8CRviicdYNO9wRTABQuMGBDbJwJHwo0r6A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

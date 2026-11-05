@@ -20,7 +20,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const grammar = path.join(root, "tree-sitter-memetic_wikitext.wasm");
 const runtime = path.join(root, "node_modules/web-tree-sitter/web-tree-sitter.wasm");
 const repo = path.resolve(root, "../..");
-const names = ["authored-01-unreached-constructs.mem", "authored-02-comment.mem", "wild-01-voices.mem", "wild-02-pragma.mem"];
+const names = ["authored-01-unreached-constructs.mem", "authored-02-comment.mem"];
 
 /** Shared reduction: authored ahu slots and loulou targets, in preorder. A block loulou sigil is the childless
  * `link-handle`; an inline `[[wikilink]]` carries its text as a child, and the host fold keeps wikilinks inside
@@ -64,7 +64,7 @@ function fromHost(rootNode, bytes, read = LIVE) {
   return tokens;
 }
 
-test("widget-tree-parity: reviewed source and seven fixture-derived specimens agree; CONTROL: excluded constructs preserve the shared remainder; known positive: mutated token disagrees", async () => {
+test("widget-tree-parity: reviewed source and the fixture-derived specimens agree; CONTROL: excluded constructs preserve the shared remainder; known positive: mutated token disagrees", async () => {
   assert.ok(existsSync(grammar) && existsSync(runtime), `tree-sitter artifact absent: ${grammar} or ${runtime}`);
     const artifact = await loadArtifact();
     const fixtures = names.map((name) => new TextDecoder().decode(heldBytes(readFileSync(path.join(root, "fixtures/specimens", name)))));
@@ -89,8 +89,6 @@ test("widget-tree-parity: reviewed source and seven fixture-derived specimens ag
     const corpus = [
       "! Start\n\nSee [[Alpha]] and [[Beta]].", // widget-tree.test.ts reviewed source
       ...fixtures.slice(1).map((f) => kupono(canon(f))),
-      kupono(canon(fixtures[2].slice(fixtures[2].indexOf("<<~ ahu #meme-header"), fixtures[2].indexOf("<<~ ahu #architecture")))),
-      kupono(canon(fixtures[3].slice(fixtures[3].indexOf("<<~ ahu #the-ground"), fixtures[3].indexOf("<<~ ahu #the-rhizome")))),
       '<<~ ahu slot=`#/control`>>\n<<<quote\nbody\n<<<\n```fence\nbody\n```\n| A | B |\n<$button>Go</$button>\n<<~/ahu>>',
     ];
     for (const [index, source] of corpus.entries()) {

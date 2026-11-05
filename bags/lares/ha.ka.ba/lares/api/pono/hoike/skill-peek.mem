@@ -40,9 +40,6 @@ description: File or reopen a hoike (\testimony) — a kept record of a conteste
 ```toml meta
 cacheable = true
 invariant = false
-mana      = 16
-manao     = 16
-manaoio   = 16
 register  = "Synthesis-Canon"
 retain    = true
 role      = "practice face of hoike — triggers, the five steps, three worked examples; law lives at the parent meme"
@@ -154,9 +151,6 @@ type = "text/markdown"
 ```toml meta
 cacheable = true
 invariant = false
-mana      = 16
-manao     = 16
-manaoio   = 16
 register  = "Synthesis-Canon"
 retain    = true
 role      = "canon law of the hoike layer — kept records of contested rulings: hoike (\\testimony), kue (\\dissent), saksi (\\witness); the eight laws, the witness law, degraded states, lineage"
@@ -266,6 +260,6 @@ The layer carries the Eduyot pattern: minority opinions kept with attribution so
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;upojO1NTklwTTlJfBVG5hXjYuR8oWK7EdT_vjD_cODo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gtad_Qx-BYP5pnMRlvr3-PQPD2U5OW57tR7VSSNS-vA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

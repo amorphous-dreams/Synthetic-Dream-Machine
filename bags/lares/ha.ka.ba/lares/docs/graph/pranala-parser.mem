@@ -9,9 +9,6 @@
 
 ```toml meta
 l-space     = "stable"
-mana        = 17
-manao       = 17
-manaoio     = 16
 open-gate   = "closed: fragment-level resolution (Option A) confirmed by canonical pranala kānāwai"
 role        = "parser design for pranala block and inline forms, sugar expansion, ? -> resolution, and field normalization"
 status-date = "2026-04-24"
@@ -220,6 +217,6 @@ Unresolvable TO expressions produce a `DeclaredUnresolved` record rather than an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MxQaOD3a4oqmppIosiV7-jv5B5iEoreEMH7uPuwkeKo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4aE3n7gD5kPRFEIVhu-OR2e1rlY8cxpV5ndNx2pNCgw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

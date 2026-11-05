@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: PART A — KEYBASE. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -144,6 +141,6 @@ All three systems that market themselves as "no single key" arrive at the *same*
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;H_hv5tWd2SHj5RS1vpU0GCX14zDZnKIHlOrdPmatrKw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BRPg8Har3Psr_JbXEDVwZtwqgWUfKFWsYx9Qsf7Gkyk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

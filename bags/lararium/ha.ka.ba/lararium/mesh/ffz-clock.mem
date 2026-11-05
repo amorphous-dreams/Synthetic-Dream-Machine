@@ -7,10 +7,7 @@
 cacheable   = true
 hydrate     = true
 l-space     = "lararium"
-mana        = 16
-manao       = 16
-manaoio     = 17
-role        = "FfzClock (Fuller-Fontany-Zelenka Chronometer) — the domain-general RHYTHMIC pattern integrity: a 5-level bounded hierarchical clock (Pulse→Theme) read as a MEMBERSHIP TREE / meet-semilattice (the keystone — a containment path carrying the ultrametric d=co-depth(LCA), never a shared tick-count) naming the rhythmic POSITION — WHERE a drawer SITS, a dimensionless order-free membership coordinate; it holds NO decaying scalar, no 'as of last sync', no age (the manaoio freshness/decay serves MEMES — the wiki / on-disk bags — NEVER this chat-session clock) — for EVERY non-Automerge domain (agent-worldline cadence · external streams: game·Mudlet·video·DAW·market·CI/CD·IoT · capability-leases), profile-scoped by FFZ_PROFILES. The two-domain boundary: FfzClock NEVER carries causal order INSIDE Automerge docs/wiki-CRDTs (Automerge logical time owns that); it carries the grain everywhere else. NOT a causality court — the worldline's happened-before rides the reified edge-DAG, not ffzCompare's LWW. Its serializer yields a prefix-truncatable rhythmic ADDRESS (Theme.Arc.Measure.Beat.Segment[.block] — segment ticks, block addresses, Loom-grounded, #rhythmic-address); local work-memory drawers carry lar_ffz as a nested-membership address (profile/Theme.Arc.Measure.Beat.Pulse)"
+role        = "FfzClock (Fuller-Fontany-Zelenka Chronometer) — the domain-general RHYTHMIC pattern integrity: a 5-level bounded hierarchical clock (Pulse→Theme) read as a MEMBERSHIP TREE / meet-semilattice (the keystone — a containment path carrying the ultrametric d=co-depth(LCA), never a shared tick-count) naming the rhythmic POSITION — WHERE a drawer SITS, a dimensionless order-free membership coordinate; it holds NO decaying scalar, no 'as of last sync', no age (any freshness or decay a wiki keeps rides its own memes under its operator's own fields — NEVER this chat-session clock) — for EVERY non-Automerge domain (agent-worldline cadence · external streams: game·Mudlet·video·DAW·market·CI/CD·IoT · capability-leases), profile-scoped by FFZ_PROFILES. The two-domain boundary: FfzClock NEVER carries causal order INSIDE Automerge docs/wiki-CRDTs (Automerge logical time owns that); it carries the grain everywhere else. NOT a causality court — the worldline's happened-before rides the reified edge-DAG, not ffzCompare's LWW. Its serializer yields a prefix-truncatable rhythmic ADDRESS (Theme.Arc.Measure.Beat.Segment[.block] — segment ticks, block addresses, Loom-grounded, #rhythmic-address); local work-memory drawers carry lar_ffz as a nested-membership address (profile/Theme.Arc.Measure.Beat.Pulse)"
 source-file = "packages/lararium-mesh/src/ffz-clock.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/ffz-clock"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -42,7 +39,7 @@ it up). The five bands read as nested MEMBERSHIP — a containment path, never a
 
 ''The clock holds no decaying scalar.'' It names rhythmic POSITION — //where// a drawer
 sits in the cadence — never freshness, never age, never an "as of last sync." The
-''manaoio'' freshness/decay register serves the MEMES (the wiki / the on-disk bags, which
+A wiki's own freshness or decay register, when its operator keeps one, serves the MEMES (the wiki / the on-disk bags, which
 ripen and stale); it NEVER welds onto this chat-session clock. Position carries no decay:
 a coordinate stays exactly as fresh whenever it gets read, because it counts nothing.
 
@@ -144,8 +141,8 @@ sharpens the boundary rather than weakening it.
 !! Rhythm, not causality ~ the two-domain boundary (the operator's cut, 2026-06-25)
 
 ''FfzClock measures rhythmic POSITION — //where// a moment sits in the cadence — never''
-''causal order as a CRDT verdict, and never a decay/freshness scalar (the manaoio register''
-''serves the MEMES, never this clock).'' The boundary follows the actor-boundary; it splits
+''causal order as a CRDT verdict, and never a decay/freshness scalar (any freshness register''
+''a wiki keeps rides the MEMES, never this clock).'' The boundary follows the actor-boundary; it splits
 clean in two:
 
 <<~ scale name=`domain` ranks=```inside-automerge ~ docs · wiki-CRDTs: ''Automerge logical time'' owns causal order (`<counter,actorId>` · `getHeads` · the `drifted` frontier as a fork). FfzClock NEVER carries causal order here, and `ffzCompare`'s LWW total-order MUST NOT drive a revocation or fork decision inside the CRDT — a rhythmic total-order ruling a causal question manufactures a global-now the mesh cannot hold (#three-instruments, lar:///ha.ka.ba/lares/api/pono/causal-islands) -> everywhere-else ~ all non-Automerge domains where its rhythmic position applies: the ''agent-worldline cadence'' (the worldline's happened-before itself rides the reified edge-DAG, NOT FfzClock — see lar:///ha.ka.ba/lararium/api/agent-worldline#/time; FfzClock paces the worldline's grain only) · ''external streams'' pulled across the causal-island boundary (game · Mudlet · video · DAW · market feed · CI/CD · IoT) · ''capability-leases'' (epoch-cadence decay). FfzClock serves as the temporal instrument for all of them, profile-scoped```>>
@@ -428,7 +425,7 @@ The DreamNet mesh keeps time on three instruments, never one:
   //because// it only ratchets the whole resource forward, never singles out a principal.
 * ''FfzClock'' — the rhythmic POSITION grain: the cadence the epoch-lease rolls on,
   naming //where in the rhythm// a reading sits. It carries no decay and no "as of last
-  sync" of its own (that freshness register — manaoio — rides the memes, never this clock).
+  sync" of its own (any freshness register rides the memes, never this clock).
 
 A lease rides the ''epoch-counter'' for its value, ''FfzClock'' for its cadence; a
 wall-clock `exp` stays a replay backstop only. ''Revocation runs on NO clock'': two modes
@@ -471,6 +468,6 @@ targeted revocation MUST ride Keyhive's convergent removal, never the counter
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EfIYLsq6X89kA3gjOzUEfH8GuUvwYsMy87GqkEL5Q3w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hjbizGqFk5vW8U9448G_Usor12TZEhToYiHLP05jhHY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

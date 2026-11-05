@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-06"
@@ -207,6 +204,6 @@ moved.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;K_uk8mFbioANwH_Ig6LYaQQLH3HRDbvyz12aJCav9FQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QKqRkuXwOWj8wBAZgElO5kbYCrJH87viI9C-z5Au_Qo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

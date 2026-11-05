@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 15
-manao     = 17
-manaoio   = 16
 role      = "condensed syad research shelf, stance-reading summary, bridge to the archive bundle"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives"
@@ -114,6 +111,6 @@ The archive-derived research bundle lives at:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mwqIiS0ovyto3BSdnz5dwjBUqc572K_H3UlaQpEbghw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3B4UKbIFjfb0LgBRUpVmMWe3Dq82D0Q2iNCUdTQgjg4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

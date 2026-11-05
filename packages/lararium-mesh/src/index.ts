@@ -82,6 +82,16 @@ export * from "./intent-read.js";
 export * from "./intent-view.js";
 export * from "./intent-issue.js";
 export * from "./kahua-stage.js";
+export * from "./promote.js";
+export * from "./promote-kapae.js";
+export * from "./promote-board.js";
+export * from "./face-relation.js";
+export * from "./promote-door.js";
+export * from "./promote-command.js";
+export * from "./promote-board-door.js";
+export * from "./promote-boot.js";
+export * from "./promote-wiring.js";
+export * from "./promote-wiki-items.js";
 export * from "./kahua-stage-store.js";
 export * from "./kahua-adopt.js";
 export * from "./intent-relay-door.js";
@@ -275,9 +285,10 @@ export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag } from "./surf
 export type { WikiRecipeDerivation } from "./surface-recipe.js";
 export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, markIslandArrival } from "./island-repo.js";
 export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
-export { answerRestWithHeads, REST_STALL_ROUNDS } from "./rest-with-heads.js";
+export { answerReceiptWithHeads, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";
+export type { CapabilityRecord, ReceiptIssuer, CasFetcher, DyadReader, CustodyWriter } from "./capability-record.js";
 export { GatedSyncLeg, oneWayDocumentsGate, carriesPrototypeKeyReason } from "./gated-sync-leg.js";
-export { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
+export { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey, docPrototypeKeyFault, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
 export type { SyncLegGate, LegRefusal } from "./gated-sync-leg.js";
 export type { IslandRepoConfig } from "./island-repo.js";
 export { assembleVessel, mountWikiSlot } from "./open-vessel-core.js";
@@ -631,3 +642,8 @@ export { parseNexusDoc, readNexusDocFence, nexusDocFenceRe, NEXUS_DOC_FENCES } f
 
 export * from "./intent-admission.js";
 export { censusOutcomeLinkage, type OutcomeLinkage } from "./outcome-census.js";
+
+export * from "./promote-panel-api.js";
+
+
+export * from "./promote-main-verbs.js";

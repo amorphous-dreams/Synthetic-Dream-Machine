@@ -16,6 +16,7 @@
 
 import { HULLS_TS_ONLY, type RunnableHulls } from "@lararium/mesh";
 import type { TW5Engine } from "./tw5-vm.js";
+import { seedPromoteUiTiddlers } from "./promote-ui-tiddlers.js";
 import { seedDaemonUiTiddlers } from "./daemon-ui-tiddlers.js";
 import { seedDaemonPersonaTiddlers } from "./daemon-persona-tiddlers.js";
 import { seedDaemonCircleTiddlers } from "./daemon-circle-tiddlers.js";
@@ -31,6 +32,7 @@ import { seedDaemonIntentTiddlers } from "./daemon-intent-tiddlers.js";
  */
 export function seedDaemonProtocol(tw5: TW5Engine, runnableHulls: RunnableHulls = HULLS_TS_ONLY, faceIntents = false): void {
   seedDaemonUiTiddlers(tw5);
+  seedPromoteUiTiddlers(tw5);
   seedDaemonPersonaTiddlers(tw5);
   seedDaemonCircleTiddlers(tw5);
   seedDaemonRosterTiddlers(tw5);

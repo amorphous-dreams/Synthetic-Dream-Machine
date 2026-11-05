@@ -6,7 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 14
 role        = "invariant law: CompositeStore — a recipe-ordered overlay of store layers under standard TW5 recipe law. Reads fan out and the highest priority wins; every write routes to ONE designated writable store. Names the async-layer hazard a caller must order around, and why a subscriber must read origin."
 source-file = "packages/lararium-mesh/src/composite-store.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/composite-store"
@@ -64,6 +63,6 @@ empty bag rather than as a missed window'' — the failure this note exists to n
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/tiddler-store`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/lararium-doc-stack`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kLHCkI-wlR7ND1QmMCS4M5u7B0CQuQhEUBCaMzh0pik`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xoEQu4pG035-7zwnr0wCzbewEKvXI00Sxt15EBBYsYU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

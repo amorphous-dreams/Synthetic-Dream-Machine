@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 15
-manao     = 16
-manaoio   = 14
 role      = "extended documentation surface for guest-grammar examples, ownership notes, fixture seeds, and migration residue"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/guest-grammar"
@@ -93,6 +90,6 @@ The current shape keeps:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;U7YzAXcz_GKFlfx8KgwK6lHFDl2bvDdHTLJJ6oNojzM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y7U6yKDgyljEuzUT5yQ0JpXG-31VomsQAKFOqC75P3Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

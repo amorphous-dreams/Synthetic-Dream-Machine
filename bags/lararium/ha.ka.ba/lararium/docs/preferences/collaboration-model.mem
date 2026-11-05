@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 18
-manao     = 17
-manaoio   = 17
 role      = "docs concept room for operator-node collaboration, steering authority, and non-sycophantic co-navigation in the recovered Lares stack"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/preferences/collaboration-model"
@@ -82,6 +79,6 @@ This room leans toward future deeper articulation in:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7_UVGiDJHk2KD2EdSMJ6k1CgSIdDw4UVhrZyeuQGjjo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;z6tVMu8I1U94E6BnbMCesMCFuqPzhg15g38TEO1XNB0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

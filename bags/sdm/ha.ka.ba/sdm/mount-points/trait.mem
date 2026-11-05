@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "trait"
 l-space   = "sdm"
-mana      = 16
-manao     = 17
-manaoio   = 16
 role      = "mount-point: Trait — Power engraved in body, mind, or aura"
 title     = "lar:///ha.ka.ba/sdm/mount-points/trait"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -86,6 +83,6 @@ Past capacity, additional patterns become Burdens (−1 to all rolls each) or wa
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;J97DBd5iumg9dm_sj9CmpmDiefkN67zmz7pu0SvlEBM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;frcmEQPrItyZTFfrQMyPPHYBk0ubhn8B-w1NBYeE_Xg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

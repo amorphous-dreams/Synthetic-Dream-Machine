@@ -7,9 +7,6 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-mana      = 17
-manao     = 16
-manaoio   = 15
 namespace = "&#x0950; &#x0901;"
 role      = "null-oracle core shore, grammar-surface authority, mandatory core-hydration contract"
 tags      = ["api/pono/meme", "api/pono/kapu"]
@@ -105,6 +102,6 @@ Mu does not hold:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cl79u0ib9jCquNoTxOUXr-Y16xTs5W8nMVvbP3d9peA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9TIH3GRbEZfos1GRATZ5r25nJTBfzM9yYyE-jJMdKXg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

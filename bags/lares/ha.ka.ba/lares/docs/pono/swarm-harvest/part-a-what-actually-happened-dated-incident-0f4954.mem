@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: PART A — WHAT ACTUALLY HAPPENED (dated incidents). Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -204,6 +201,6 @@ Tooling note: `WebSearch` was exhausted and Brave/DDG returned 429/CAPTCHA to We
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;y3pd8vZ8_FKcLPOy2mot5lgSIuLA_qLJhHyJ2MxZ-OE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-ByqmXTiqx_uurXilR9bFDtPXgHX2GkP1TYUaEY1ByY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

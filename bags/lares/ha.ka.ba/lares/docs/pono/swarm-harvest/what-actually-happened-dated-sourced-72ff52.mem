@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: WHAT ACTUALLY HAPPENED (dated, sourced). Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -182,6 +179,6 @@ https://www.iana.org/dnssec/procedures/ksk-operator/KSK_Key_Management_Procedure
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7rmGjwOUykWNIylBmyFznlrkYlHjnuPsmsD76yIbVEM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZaYnPxUQ8Kvv43HD6dMPdqbqE8F0BcZ0ebr9RhgG0rQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

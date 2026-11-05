@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 12
-manao             = 13
-manaoio           = 11
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-11"
@@ -241,6 +238,6 @@ Owed measurements: owner-kill, one-tab lock fallback, long background, PRF deriv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vINJfqvY2RN3XonCYYY1hGMgAs4dR2yuBAJtf8BoUQY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;00Ok1lE4tE37ky5cIyWkzudOHhgfVOZz9ZocW_RoFrY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

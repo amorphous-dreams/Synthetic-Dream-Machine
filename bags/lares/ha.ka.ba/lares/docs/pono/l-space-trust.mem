@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 15
-manao     = 16
-manaoio   = 13
 role      = "docs sister for l-space trust law — explanation, examples, and implementation pressure"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/l-space-trust"
@@ -150,6 +147,6 @@ Speaker role and truth tier must stay separate.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;g_oHbAS4Chx0tcF8nBlgaHvRcNC9YzdXMz0qphYR2uU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jHu4ZFMfjnuZa9NeufqQpVwd_XHCJxM_QyKKlYR_TwU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

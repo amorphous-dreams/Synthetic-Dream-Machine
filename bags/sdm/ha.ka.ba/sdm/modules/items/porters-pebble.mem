@@ -7,9 +7,6 @@
 cacheable = true
 caption   = "Porter's Pebble"
 l-space   = "sdm"
-mana      = 14
-manao     = 17
-manaoio   = 15
 role      = "Item module: Porter's Pebble — a found stuckforce relic that holds the Floating Disc Power; first proof an item is an entity that #has a Power through the item mount-point (module nesting)"
 tags      = ["mount-points/item", "components/domain/stuckforce", "modules/powers/floating-disc"]
 title     = "lar:///ha.ka.ba/sdm/modules/items/porters-pebble"
@@ -87,6 +84,6 @@ A botched activation or a sundered pebble follows the `item` mount-point's failu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2WWN7wLdK09LCErrPwX2YOhDnZkFNtWRkhuAYcNp14E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QtSaUT6uo0kdmCoJA5TUOX9RjTENBCtEDGIiHxe_KHY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

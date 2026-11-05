@@ -6,8 +6,6 @@
 ```toml meta
 authors    = "Joshua Fontany; Lares (four tasked spirits: Marrow-Reader · Chain-Warden · Lattice-Walker · Guild-Keeper)"
 cacheable  = true
-mana       = 11
-manao      = 11
 namespace  = "&#x2299;"
 revised-on = "2026-07-25"
 role       = "the OUTLINE — Admission on a Lineage: a sybil-bounded, seed-rooted, one-pass trust fold over an acyclic vouch DAG under eventual consistency. Four research ropes braided (biology · cryptography · mathematics · history), each cross-validating the others. THE MECHANISM STANDS MEASURED, THE SYNTHESIS DOES NOT: the fold is built and attacked (the sybil bound held; the distortion measurement refuted the outline's own prediction), while the bound's re-derivation under our model, the dangling-sink policy, the C4 counterexample, and the shadow's instrument all remain undone. This meme exists to be REFUTED, not to be believed."
@@ -327,6 +325,6 @@ model, (3) settles the sink, (4) hunts C4's counterexample, and (6) instruments 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wzbGjB_CrHi_aBj85oepiZ9yoA4y5AHxQm2qOsQvp7M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oUTqbr3db9QrArtVz6doqRpTDAwuKxtkG7scHPLzQL4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 13
 rating    = "kapu"
 role      = "referee worksheet — Neo-Thracia region: tilt-history, zones, guide roster, watershed canon"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet"
@@ -262,6 +259,6 @@ Purpose: turn metaphysics into handles: rift types, necro-fog effects, iron-curs
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ujt9bInDNOaSKFV8R3ptbfXzv4iCRHJoKA7IgnxUlbY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;280GJF0B8YD2TXyq_I-sAkX0Y0MoDA4rmnqJCq5c8jY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

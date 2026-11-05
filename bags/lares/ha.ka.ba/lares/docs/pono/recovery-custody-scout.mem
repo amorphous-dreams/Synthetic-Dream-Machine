@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 16
-manao             = 17
-manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-13"
@@ -208,6 +205,6 @@ Read from `persona-kel.ts` and `recovery-keel-core.ts` at their current heads. â
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3NpxxNeYQjJztHZA0cRYny6LDL5JWyD0bzVayM1tEns`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;O2dxRgmVWRdc2G90WiYS903BYTSYpaT1YtkBOVIVTRw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

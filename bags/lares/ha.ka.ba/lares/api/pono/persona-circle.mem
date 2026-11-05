@@ -7,9 +7,6 @@
 cacheable         = true
 hydrate           = true
 l-space           = "stable"
-mana              = 17
-manao             = 16
-manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "persona-circle — the identity model (WHO-plane), re-cut on two axes: COMPOSITION (bottom-up emergent Circles: the device's face atom → handle-Circle → me-Circle) ⊥ DISCLOSURE (veiled↔known, a per-join dial). Three keys, none derived from another (the place key, the persona root, the face atom); the dyad has one end, the atom; key-layer unlinkability only"
@@ -222,6 +219,6 @@ And the substrate itself, by canon, has ''no forward-secrecy and no retroactive 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/mookuauhau`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ub7AGvLHEtq16FltbBUphBH7KdgVlw7fCwqlrOCaTJw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tOWypKDpfNlKmpMhI9bzCZuQHHb_bHaiGd9_TvDJ0_E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

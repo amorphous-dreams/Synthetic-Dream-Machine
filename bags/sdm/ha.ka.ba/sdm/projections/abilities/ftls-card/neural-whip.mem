@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "sdm"
-mana      = 14
-manao     = 17
-manaoio   = 15
 role      = "FTLS card projection: Neural Whip — playable surface with clickable component pills"
 tags      = ["components/domain/stuckforce", "components/function/restrain", "components/hook/attack", "mount-points/trait"]
 title     = "lar:///ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip"
@@ -56,6 +53,6 @@ A neural tentacle of stuckforce lashes out and strikes ''against Defense'' — n
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9nL8t0rq5ZtZeyPEWpR-9PVo-U3NGu8FGwUaB9aK8SM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FacSVD8wHdoX9yjcvP7152Apby5FNhfuoVJ6TpjZHaw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

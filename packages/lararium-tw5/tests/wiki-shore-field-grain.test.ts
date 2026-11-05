@@ -49,14 +49,15 @@ describe.skipIf(wikiSkip)(`wiki shore field grain${skipNote}`, () => {
       const mark = r.calls.length;
       saveSequence(r, d);
       await afterDispatch();
-      const act = r.calls.slice(mark).filter((c) => c.bag === workingBag);
-      // Y's write and X's tombstone ride one call when their bases agree, else one call each, Y first.
-      expect(act.flatMap((c) => c.puts.concat(c.deletes)), "Y's write, then X's tombstone").toEqual([y, x]);
-      expect(act[0]!.puts).toEqual([y]);
-      expect(act[0]!.base, "Y's write carries Y's landed base").toEqual(yBase);
+      const initial = r.calls.slice(mark).filter((c) => c.bag === workingBag);
+      expect(initial.flatMap((c) => c.puts.concat(c.deletes)), "only Y leaves in the dispatch").toEqual([y]);
+      expect(initial[0]!.base, "Y's write carries Y's landed base").toEqual(yBase);
       if (raced !== "none") { hold = false; release(); }
       await turns(24);
       await r.adaptor.landingIdle();
+      const act = r.calls.slice(mark).filter((c) => c.bag === workingBag);
+      expect(act.flatMap((c) => c.puts.concat(c.deletes)), "Y's write precedes X's tombstone").toEqual([y, x]);
+      expect(act).toHaveLength(2);
       const now = stored(r, y);
       expect(storeDeleted(r, workingBag, x), "X reads deleted").toBe(true);
       expect(storeDeleted(r, draftBag, d)).toBe(true);

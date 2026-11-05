@@ -122,3 +122,16 @@ describe("resolveDiskMirrors — a per-wiki grant's root splits by the slug's or
     expect(out.find((m) => m.bagId === wikiBagUri("notes"))?.mirrorRoot).toBe("/state/bags/notes");
   });
 });
+
+test("a recovery grant sites designated drafts separately from working", () => {
+  const draft = wikiSlotUri("garden", "draft");
+  const working = wikiSlotUri("garden", "working");
+  const recoveryGrant = [
+    { bagId: "working", mirrorRoot: "/state/wikis", scope: "working", wikiSlot: "working" as const },
+    { bagId: "draft", mirrorRoot: "/state/wikis", scope: "draft", wikiSlot: "draft" as const, mirrorClass: "recovery" as const },
+  ];
+  const mirrors = resolveDiskMirrors(recoveryGrant, [draft, working], "garden");
+  expect(mirrors.find((m) => m.bagId === draft)?.mirrorRoot).toBe("/state/wikis/garden/recovery");
+  expect(mirrors.find((m) => m.bagId === working)?.mirrorRoot).toBe("/state/wikis/garden");
+  expect(resolveDiskMirrors(recoveryGrant.slice(0, 1), [draft], "garden")).toEqual([]);
+});

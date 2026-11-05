@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 12
-manao     = 14
-manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: 7. NOSTR · BLUESKY · MATRIX — multi-account yes, mutual blindness no. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
@@ -306,6 +303,6 @@ Briar's FAQ is the only place any of these projects writes the general law down,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;m9_ZgJtYVNrEkcTNsi1PyeRmqJDBbKqPmiUo6Lu4sZg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JskIUCkuSumf7-F_nKhQECsJy6GXVs5tBsL7MMQhy2Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

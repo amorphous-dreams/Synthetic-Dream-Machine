@@ -6,8 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-mana        = 12
-manao       = 12
 role        = "RecipeTiddler schema + bag-stack parsing — the stored shape of a wiki's composition record"
 source-file = "packages/lararium-mesh/src/recipe.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/recipe"
@@ -77,6 +75,6 @@ class, where the alert stays the permanent mechanism.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BHoPgkDp5pKQMj-5sFj-_Xmk1D0drycmXi6ZyaooBLg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;snmFezcLIWYt1O968K-YO-5cFRN3jLa9RJyrfm-PLVo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

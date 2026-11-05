@@ -51,9 +51,21 @@ export function kahuaStageStore(opts: {
   readonly faceChanges?: (fn: () => void) => () => void;
 }): KahuaStageStore {
   const { handle } = opts;
+  // THE PROJECTION FOLDS ONCE PER SNAPSHOT. The fold judges every act (a signature each), and every `get`, miss included, and every
+  // enumeration asks for it: a floor replay that lands N titles would re-fold the whole stage N times and starve the island before `ea`.
+  // The memory holds while BOTH the document's heads and the authority (the face object the live reading hands out, one per KEL
+  // board snapshot) are the ones it folded under; a new act or a moved face folds again, so no revoked reading outlives its authority.
+  let memo: { readonly heads: string; readonly face: KahuaStageFace; readonly out: Items } | null = null;
   const items = (): Items => {
     const face = opts.face();
     if (!face || handle.url !== kahuaStageDocUrl(face.group)) return new Map();
+    const heads = handle.heads().join(",");
+    if (memo && memo.face === face && memo.heads === heads) return memo.out;
+    const out = fold(face);
+    memo = { heads, face, out };
+    return out;
+  };
+  const fold = (face: KahuaStageFace): Items => {
     const reading = readKahuaStage(kahuaActRecords(handle.doc(), face.group), face);
     const out = new Map<string, LarTiddlerRecord>();
     for (const [title, fields] of Object.entries(kahuaItemTiddlers(reading))) {

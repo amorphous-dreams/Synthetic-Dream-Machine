@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "adjacent"
-mana      = 14
-manao     = 15
-manaoio   = 14
 mode      = "narrate-to-self"
 role      = "consumption ledger for Lindwyrm / DreamDeck narrative loci migration"
 title     = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger"
@@ -109,6 +106,6 @@ Likely next slices:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sPgH1ATCJhXLWy7-CRAomtB9Gfb1rgII49G04SvtGCw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kR28uBxQe7HLloiNWXE5YwvUaZyhzDlcN1pD6rMWIlc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "sdm"
-mana      = 19
-manao     = 19
-manaoio   = 18
 role      = "epic plan: SDM+ Powers as navigable composition space"
 title     = "lar:///ha.ka.ba/sdm/epic/powers-composition-rewrite"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -777,6 +774,6 @@ history if ever needed.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iVbwNkG_1XYlU9DpI1k0aXYnmh06-8eBk-rR-adxj1w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5IA5iJ_x6O5ALFsN8_Q4g1yl8ZmnvkUGQMmg0RD3Ro4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

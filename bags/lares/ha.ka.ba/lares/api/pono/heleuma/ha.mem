@@ -5,9 +5,6 @@
 
 ```toml meta
 cacheable = true
-mana      = 18
-manao     = 17
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "invariant capability: heleuma-ha — body/structure anchor; permanent compiled artifact with quine record"
 tags      = ["api/pono/heleuma"]
@@ -56,6 +53,6 @@ It SHALL NOT declare `source-sha256` — ha does not promote.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eS2HyTidBcyUSvHdhNthQPoIhbYB12oa9wi8ML6kNzw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QJMRKat0b9lFgRnli0P6NjCaCrf9kIh2cEw8bfhiBjk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

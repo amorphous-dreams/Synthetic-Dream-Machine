@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "sdm"
-mana      = 14
-manao     = 17
-manaoio   = 15
 role      = "root template meme for mount-point (storage-class) memes — the contract a seating implies"
 title     = "lar:///ha.ka.ba/sdm/templates/mount-points/storage-class"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -63,6 +60,6 @@ A mount-point meme names ''where a module seats on an entity'' and the contract 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Nm8gkBgUeKyDX8hmn8U0fIElC5tn1Qnn-9t1lkM5osY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4_b7LzxLUuHXqxeS5zqZdDHVXifFkmv2rj4ro300u9Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

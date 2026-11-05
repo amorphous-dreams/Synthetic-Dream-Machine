@@ -6,9 +6,6 @@
 ```toml meta
 cacheable     = false
 l-space       = "adjacent"
-mana          = 14
-manao         = 15
-manaoio       = 15
 render-target = "docs"
 role          = "read-only consumer handback (2026-10-29): a warm Fable read of the face intent plane (I1) and the relay seat (I2) collided with a COLD Fable reader briefed on the code alone, then each attacked the other's claims; the surviving takes, ranked, each anchored to a line; nothing edited in the plane, no test run (the tree held no node_modules and the lane law forbids an install in the main checkout). Feeds i1-intent-lane #owed, i2-relay-lane #owed, face-intent-plane #/the-reds; the operator decides what folds and where it lands."
 title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-intent-plane-collision"
@@ -75,6 +72,6 @@ The entry image and its domain split; signature coverage of audience, bound and 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;E0fPoy1kE0-hFTpA4xpNz0PmFZjbW523288dXtyELQY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VCqWoICexok4cedAZdiIj_kOaLtRZYMQCc4sxtgkxrE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

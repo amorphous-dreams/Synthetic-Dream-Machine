@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 16
 role      = "extraction shelf for durable concepts recovered from Lares_Preferences.system-prompt and adjacent lararium witnesses"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/preferences"
@@ -77,6 +74,6 @@ This pass only promotes concepts that recur strongly enough to feel load-bearing
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LlOB5WI6ei20J34W38k-f--r3Rxso-XCpTmLGcv55Xk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xJVDJOqE1cMtenBQYfBIbvUTKXC3HkyFYsW9nRL-gKY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

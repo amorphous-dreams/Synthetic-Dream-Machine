@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 16
 role      = "parent docs shelf for lararium-side signal framing, extracted README residue, and branch routing"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/signal"
@@ -169,6 +166,6 @@ Settled child rooms in this branch:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sejIbkiZgdHFbs-zc2om6NMphHyyvRdOGWDONJBoZwU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lQDBVno648Cnor6MdcYY0z3SUk_BieCycxBaWXnqzN8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,9 +6,6 @@
 ```toml meta
 cacheable   = true
 l-space     = "stable"
-mana        = 18
-manao       = 18
-manaoio     = 17
 namespace   = "&#x0950; &#x0901;"
 role        = "invariant doctrine: Fuller's 5 pattern integrities applied to Lararium — tensegrity, wave/water, synergy, ephemeralization, trim tab"
 status-date = "2026-05-02"
@@ -143,7 +140,7 @@ in its `#source` ahu MAY be a candidate for ephemeralization once the meme is st
 Stage 0: logic in external TypeScript only (no meme representation)
 Stage 1: TypeScript file has a Heleuma anchor; meme exists with source-sha256
 Stage 2: meme body contains the compiled CJS; imperative fallback still present
-Stage 3: boot-time gate checks mana/confidence/source-sha256; corpus path preferred
+Stage 3: boot-time gate checks confidence/source-sha256 and the local grant; corpus path preferred
 Stage 4: external TypeScript serves as fallback only; meme carries authority
 ```
 
@@ -220,6 +217,6 @@ Run this against any new code before merging:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3hslbB-7Jg9aZfc6Q7ny0cDr7lLCLUNhmUzkFYF_0II`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6lvXUH0M1B_iwIG54Xpwh9oo3m1Gwokgk1lynHpHQmU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

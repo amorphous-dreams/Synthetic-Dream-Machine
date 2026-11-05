@@ -4,9 +4,6 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-mana        = 17
-manao       = 17
-manaoio     = 16
 role        = "design doc: TW5 widget module protocol — two-phase stub preload + prototype chain wiring"
 source      = "lar:///ha.ka.ba/lares/api/lararium/modules/widget-module"
 status-date = "2026-04-30"
@@ -43,6 +40,6 @@ When the boot gate passes at least one corpus meme, `tw5-modules` is loaded as a
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UpzxwfJLbBNKIKRn2WpozZnQQ3zZkjZP43aHIbR7px8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HVH2Dy2vHg_k9nOwRNMhv_TfKsmbqmX1kWcb5n9qGjA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

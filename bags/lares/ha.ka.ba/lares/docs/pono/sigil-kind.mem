@@ -6,9 +6,6 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-mana      = 18
-manao     = 18
-manaoio   = 17
 role      = "lar-kind taxonomy: all SharktoothSigil kind values, dispatch behavior, grammar-cache classification, family rule properties"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/sigil-kind"
@@ -196,6 +193,6 @@ The TypeScript validator `validatePranalaEdge` (in `@lararium/mesh`) enforces th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0mUlZzJE1-y5jvz9Dk941ZIf1-qXXv5TYk342OZjc1s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lL-JcgMYXlnV88mCZI_bGYSMvunIGKFdr1IlUMMp3ik`>>
 
 <<^ code=`&#x0004;` to=`?`>>
