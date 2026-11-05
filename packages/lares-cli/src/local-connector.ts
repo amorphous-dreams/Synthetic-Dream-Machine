@@ -14,7 +14,7 @@
  */
 
 import { createConnection } from "node:net";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, readlinkSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
 import { newRequestId } from "@lararium/mesh";
@@ -135,8 +135,41 @@ export function socketHolderPids(path: string): number[] {
       const pid = Number(line.trim().split(/\s+/)[1]);
       if (Number.isFinite(pid)) pids.push(pid);
     }
-    return uniq(pids);
+    if (pids.length > 0) return uniq(pids);
+  } catch { /* lsof absent or refused — fall to the kernel's own tables */ }
+  return uniq(procHolderPids(prefix));
+}
+
+/**
+ * PIDs holding a UNIX listener bound under `prefix`, read off the kernel's own tables: `/proc/net/unix` names each bound
+ * path with its socket inode, and `/proc/<pid>/fd/*` links a descriptor to `socket:[inode]`. It needs neither `ss` nor
+ * `lsof` (a minimal container image carries neither), and it reads only the descriptors this user may read, so a holder of
+ * another user stays unnamed, as it does for `lsof`. Empty = none found, or no `/proc`.
+ */
+export function procHolderPids(prefix: string): number[] {
+  const inodes = new Set<string>();
+  try {
+    for (const line of readFileSync("/proc/net/unix", "utf8").split("\n").slice(1)) {
+      const cols = line.trim().split(/\s+/);
+      const bound = cols[7] ?? "";
+      if (bound.startsWith(prefix)) inodes.add(cols[6] ?? "");
+    }
   } catch { return []; }
+  if (inodes.size === 0) return [];
+  const pids: number[] = [];
+  let procs: string[] = [];
+  try { procs = readdirSync("/proc").filter((n) => /^\d+$/.test(n)); } catch { return []; }
+  for (const pid of procs) {
+    let fds: string[] = [];
+    try { fds = readdirSync(`/proc/${pid}/fd`); } catch { continue; }
+    for (const fd of fds) {
+      let link = "";
+      try { link = readlinkSync(`/proc/${pid}/fd/${fd}`); } catch { continue; }
+      const m = /^socket:\[(\d+)\]$/.exec(link);
+      if (m && inodes.has(m[1]!)) { pids.push(Number(pid)); break; }
+    }
+  }
+  return pids;
 }
 
 /**

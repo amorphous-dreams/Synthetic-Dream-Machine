@@ -297,17 +297,18 @@ jobs:
           # runs Chromium and Firefox). An empty value runs the cell on the bare runner. A cell that names engines also names
           # `container`, the pinned official Playwright image (the same string as env.PLAYWRIGHT_IMAGE; a job container cannot read
           # `env`), so the system libraries and the engines are already there and no apt or download step runs. `--ipc=host`
-          # keeps Chromium off the container's 64 MB /dev/shm.
+          # keeps Chromium off the container's 64 MB /dev/shm. `--user 1001` is the runner's uid and the image's `pwuser`: the
+          # steps run as the workspace's owner (git trusts the tree; Firefox refuses to run as root over a home it does not own).
           - cell: node-a
             engines: ''
           - cell: node-b
             engines: ''
           - cell: web-tw5
             engines: chromium firefox webkit
-            container: { image: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f", options: "--ipc=host --init" }
+            container: { image: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f", options: "--ipc=host --init --user 1001" }
           - cell: cli-mesh
             engines: chromium firefox
-            container: { image: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f", options: "--ipc=host --init" }
+            container: { image: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f", options: "--ipc=host --init --user 1001" }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
