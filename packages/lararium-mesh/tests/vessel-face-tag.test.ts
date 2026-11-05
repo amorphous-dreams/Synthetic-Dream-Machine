@@ -1,6 +1,6 @@
 /**
  * vessel-face-tag: one vessel never takes two seats in one face, and its tags stay unlinkable across faces.
- * Reds run against the fold WITHOUT the tag law first (an untagged log seats the same vessel twice); controls admit two distinct vessels.
+ * The fold holds the tag law always: an untagged admission seats nothing; controls admit two distinct vessels.
  */
 import { describe, expect, test } from "vitest";
 import { PERSONA_ACT_DOMAIN } from "../src/domains.js";
@@ -23,7 +23,7 @@ async function face(group: string, admissions: ReadonlyArray<Record<string, unkn
     head = await signAct(act(group, i + 1, actCid(head.body), "admission", fields), root);
     log.push(head);
   }
-  const project = (vesselTags?: "required") => projectPersonaLog(log, { group, lineage, authorize: () => true, ...(vesselTags ? { vesselTags } : {}) });
+  const project = () => projectPersonaLog(log, { group, lineage, authorize: () => true });
   return { project, log, root };
 }
 
@@ -34,8 +34,6 @@ describe("vessel face tag", () => {
       { deviceKey: atomA, ...(await vesselFaceTagFields(vessel, "faceA", atomA)) },
       { deviceKey: atomB, ...(await vesselFaceTagFields(vessel, "faceA", atomB)) },
     ]);
-    const bare = await face("faceA", [{ deviceKey: atomA }, { deviceKey: atomB }]);
-    expect(bare.project().devices).toEqual([atomA, atomB].sort());   // before the tag: the same metal takes two seats and nothing says so
     const read = twice.project();
     expect(read.devices).toEqual([atomA]);
     expect(read.admissionRefusals).toEqual([{ refusal: "vessel-already-admitted", cid: actCid(twice.log[2]!.body) }]);
@@ -56,13 +54,16 @@ describe("vessel face tag", () => {
     expect(read.admissionRefusals.map((r) => r.refusal)).toEqual(["vessel-already-admitted"]);
   });
 
-  test("RED: a tagless admission refuses vessel-tag-absent under the required law; CONTROL: a tagged one seats", async () => {
-    const atom = (await who(21)).key;
-    const bare = await face("faceA", [{ deviceKey: atom }]);
-    expect(bare.project("required").devices).toEqual([]);
-    expect(bare.project("required").admissionRefusals).toEqual([{ refusal: "vessel-tag-absent", cid: actCid(bare.log[1]!.body) }]);
+  test("RED: a tagless admission refuses vessel-tag-absent with no option asked; CONTROL: a tagged one seats", async () => {
+    const atom = (await who(21)).key, atomB = (await who(22)).key;
+    const bare = await face("faceA", [{ deviceKey: atom }, { deviceKey: atomB }]);
+    expect(bare.project().devices).toEqual([]);
+    expect(bare.project().admissionRefusals).toEqual([
+      { refusal: "vessel-tag-absent", cid: actCid(bare.log[1]!.body) }, { refusal: "vessel-tag-absent", cid: actCid(bare.log[2]!.body) },
+    ]);
     const tagged = await face("faceA", [{ deviceKey: atom, ...(await vesselFaceTagFields(seed(7), "faceA", atom)) }]);
-    expect(tagged.project("required").devices).toEqual([atom]);
+    expect(tagged.project().devices).toEqual([atom]);
+    expect(tagged.project().vesselTags).toEqual([(await vesselFaceTagFields(seed(7), "faceA", atom)).vesselTag]);
   });
 
   test("RED: a tag that vouches for another atom or another face refuses vessel-tag-invalid", async () => {

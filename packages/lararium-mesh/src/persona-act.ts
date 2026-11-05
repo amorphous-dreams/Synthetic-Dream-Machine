@@ -38,6 +38,8 @@ export interface PersonaProjection {
   readonly planeRewrites: readonly { readonly plane: string; readonly cid: string }[];
   /** device keys a verified admission act seated. */
   readonly devices: readonly string[];
+  /** The blinded vessel tags the seated admissions carry, in chain order: one per vessel, so a second admission of one vessel refuses. */
+  readonly vesselTags: readonly string[];
   /** Verified admission acts in chain order. */
   readonly admissions: readonly { readonly deviceKey: string; readonly cid: string }[];
   /** Verified admissions the fold seated no device for, each by name: `vessel-tag-absent`, `vessel-tag-invalid`, `vessel-already-admitted`. */
@@ -65,12 +67,6 @@ export function projectPersonaLog(records: readonly unknown[], opts: {
    * accepted (seq at or below the pin) keeps its own epoch's roster.
    */
   readonly acceptedThrough?: number;
-  /**
-   * `required`: an admission seats a device only with a blinded vessel tag whose signature covers this face and that atom
-   * (a tagless one refuses `vessel-tag-absent`). Unset, a tagless admission still seats; a tag that stands is always checked,
-   * and one vessel never takes two seats in one face (`vessel-already-admitted`).
-   */
-  readonly vesselTags?: "required";
 }): PersonaProjection {
   const fold = foldActs(records, {
     domain: PERSONA_ACT_DOMAIN, group: opts.group,
@@ -105,14 +101,13 @@ export function projectPersonaLog(records: readonly unknown[], opts: {
         const deviceKey = b["deviceKey"];
         if (typeof deviceKey !== "string") break;
         const refuse = (refusal: (typeof admissionRefusals)[number]["refusal"]): void => { admissionRefusals.push({ refusal, cid }); if (!devices.has(deviceKey)) barred.add(deviceKey); };
-        if (b["vesselTag"] === undefined && b["vesselSig"] === undefined) {
-          if (opts.vesselTags === "required") { refuse("vessel-tag-absent"); break; }
-        } else {
-          if (!vesselFaceTagHolds(opts.group, deviceKey, { vesselTag: b["vesselTag"], vesselSig: b["vesselSig"] })) { refuse("vessel-tag-invalid"); break; }
-          const tag = b["vesselTag"] as string;
-          if (tagsStanding.has(tag)) { refuse("vessel-already-admitted"); break; }
-          tagsStanding.add(tag);
-        }
+        // THE TAG LAW: an admission seats a device only under a blinded vessel tag whose signature covers this face and that
+        // atom, and one vessel never takes two seats in one face.
+        if (b["vesselTag"] === undefined && b["vesselSig"] === undefined) { refuse("vessel-tag-absent"); break; }
+        if (!vesselFaceTagHolds(opts.group, deviceKey, { vesselTag: b["vesselTag"], vesselSig: b["vesselSig"] })) { refuse("vessel-tag-invalid"); break; }
+        const tag = b["vesselTag"] as string;
+        if (tagsStanding.has(tag)) { refuse("vessel-already-admitted"); break; }
+        tagsStanding.add(tag);
         barred.delete(deviceKey);
         devices.add(deviceKey); admissions.push({ deviceKey, cid });
         break;
@@ -130,7 +125,7 @@ export function projectPersonaLog(records: readonly unknown[], opts: {
   }
   const last = fold.chain[fold.chain.length - 1];
   return {
-    founded: fold.chain.length > 0, personaKelPrefix, rootCommitment, planes, planeRewrites, devices: [...devices].sort(), admissions, admissionRefusals, edges,
+    founded: fold.chain.length > 0, personaKelPrefix, rootCommitment, planes, planeRewrites, devices: [...devices].sort(), vesselTags: [...tagsStanding], admissions, admissionRefusals, edges,
     fork: fold.fork, head: last ? { seq: last.act.body.seq, cid: last.cid } : null, cids: fold.chain.map((e) => e.cid),
   };
 }

@@ -566,6 +566,8 @@ export const REALM_FEED_ASK_DOMAIN = mint("realm-feed-ask");
 export const WARD_COSIGN_DIGEST_DOMAIN = mint("ward-cosign-digest");
 /** The per-face key a vessel derives from its device secret and one face's group id: its public half is the blinded vessel tag an admission carries. */
 export const VESSEL_FACE_TAG_SEED_DOMAIN = mint("vessel-face-tag-seed");
+/** The vessel secret a vessel's tags derive from: an HKDF `info` over the vessel's signing seed (the node's floor key door, the browser's held seed). */
+export const VESSEL_FACE_TAG_SECRET_DOMAIN = mint("vessel-face-tag-secret");
 /** What the per-face tag key signs: the admission it rides (group and device atom), so a tag never vouches for another admission or face. */
 export const VESSEL_FACE_TAG_PROOF_DOMAIN = mint("vessel-face-tag-proof");
 
