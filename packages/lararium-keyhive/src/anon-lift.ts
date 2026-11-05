@@ -86,6 +86,10 @@ const digestOf = (text: string): string => sha256HexBytesSync(utf8Bytes(text));
 const originFor = (tag: string): ChangeOrigin => ({ kind: "lares-verb", requestId: `anon-lift-${tag}`.slice(0, 32) });
 const WORKING_CARRY_MARK = "$:/lares/anon-lift/working-carried-to";
 const WORKING_CARRY_SKIP = "skip-titles";
+/** In-process memory of the titles a pass carried whose destination never rested; never persisted (a restart carries the source whole). Keyed by source and destination URL. */
+const pendingCarrySkips = new Map<string, Set<string>>();
+/** Forget that memory, as a process restart does. */
+export function forgetPendingCarry(): void { pendingCarrySkips.clear(); }
 
 function readWorkingCarrySkip(value: unknown): Set<string> {
   const text = typeof value === "string" ? value : (value == null ? "" : String(value));
@@ -281,6 +285,10 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
             const carriedTo = tiddlerText(ownEntry(source.doc()?.tiddlers, WORKING_CARRY_MARK));
             if (carriedTo && carriedTo !== url) throw new Error("[anon-lift] working floor already carried to a different destination");
             const skip = readWorkingCarrySkip(plainField(ownEntry(source.doc()?.tiddlers, WORKING_CARRY_MARK), WORKING_CARRY_SKIP));
+            // Skips a failed pass of THIS process left in memory: the rebound store took the user's edits since, so a retry here never
+            // resurrects a title they removed. A restart forgets them with the process, and the source (never marked) carries whole.
+            const carryKey = `${oldUrl}\u0001${url}`;
+            for (const title of pendingCarrySkips.get(carryKey) ?? []) skip.add(title);
             if (!carriedTo) {
               skip.add(WORKING_CARRY_MARK);
               const titles = plainEntries(source.doc()?.tiddlers).map(([title]) => title);
@@ -294,6 +302,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
             try {
               await boundedRead(args, url, () => args.repo.flush([into.documentId]));
               destinationRested = true;
+              pendingCarrySkips.delete(carryKey);
               if (!carriedTo) source.change((doc) => {
                 doc.tiddlers[WORKING_CARRY_MARK] = storedLarRecord(WORKING_CARRY_MARK, {
                   text: url,
@@ -302,6 +311,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
               });
               await boundedRead(args, oldUrl, () => args.repo.flush([source.documentId]));
             } catch (error) {
+              if (!carriedTo && !destinationRested) pendingCarrySkips.set(carryKey, new Set(skip));
               if (!carriedTo && destinationRested) {
                 source.change((doc) => {
                   doc.tiddlers[WORKING_CARRY_MARK] = storedLarRecord(WORKING_CARRY_MARK, {
