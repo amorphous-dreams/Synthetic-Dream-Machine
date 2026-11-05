@@ -84,6 +84,29 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-swarm-controls`>>
+!! The swarm's controls ~ signed tiddlers in the daemon wiki, at standing
+
+The swarm's live controls rest in the live daemon wiki as signed records, verified when read. The operator ruled it at standing, built before the founding (2026-11-04): capability, not account; identity-as-relation; no key on a surface and no key file a seat can read. The flat go file and the relay's in-memory HMAC key retire as the later slices land.
+
+| Control | Signed by, as relation | Writer |
+| `$:/lares/swarm/house-cap` | the operator's face, by hand | the hand only (a hand-only verb, surface origin) |
+| `$:/lares/swarm/lane/<lane>/share` | the face by hand, or the controller under a cap the hand granted | hand / controller |
+| `$:/lares/swarm/go/<branch>` | the face by hand, or the controller under a granted cap | binds branch and head; spent on the attempt |
+| `$:/lares/swarm/lane/<lane>/state` | the lead, under its own seat name | the lead |
+| `$:/lares/swarm/roster/<seat>` | the VESSEL (the daemon's device to face relation), as witness | the watchdog reports; the daemon signs; never the measured lead |
+| `$:/lares/swarm/receipt/<tree>` | the VESSEL, same | the broker asks after the walled checks pass; the daemon signs |
+
+A lead may add note rows beside its roster rows under its own seat name; it never signs spend.
+
+* ''The model stands'' (`swarm-tiddlers`, `swarm-board`). Every record signs under the `swarm-act` domain, its own name, so no swarm record verifies as a promote or kahua act. A read checks shape, domain, face group, signature, the title the body belongs at and the signer's role; any failure reads as absent, so a read fails closed. The house cap and the lane shares ride the face-private promote board as a sibling record family (they cross devices: the whole swarm answers to one cap); each line folds by causal heads and concurrent heads take the minimum, so a fork only tightens the swarm. Shares never sum past the cap: the write refuses it, and a board whose shares sum past the cap folds every share to zero. A go binds a branch and a head, carries a nonce, and is spent once: the vessel claims one spend record per go atomically, so racing spenders land one. Go, lane state, roster and receipts rest in the daemon document, device-local by its anchor.
+* ''Off disk.'' The `$:/lares/swarm/` prefix reads as control plane (`isControlPlaneUri`) and never projects (`neverProjects`), under every spelling that resolves beneath it; each record also carries `disk-projection: "no"`.
+* ''The verbs.'' `swarm-show` reads (open to a seat); `swarm-cap-set`, `swarm-share-set` and `swarm-go-issue` are hand-only (`swarm-needs-hand`), at the socket and on the daemon island. They sign through `SwarmSignerPort`: the face's root signer now, the ward's signer at S2. The refusal stays advisory until the ward binds it (a script holding unlocked custody can still sign), as the promote panel's hand gate stays.
+* ''Before the wiki stands'', every swarm act refuses by name: "no standing daemon: swarm controls need the founded wiki". There is no flat-file fallback.
+* ''Still to land'': the ward (S2); the co-sign of a second device for the house cap and the push go (S3); the capability channel and the unix-socket probe (S4); the vessel-signed roster and receipt, the broker swap and the retirement of the flat go and the HMAC key (S5). A two-device witness that swarm tiddlers stay device-local, and a live probe of the store-door rows against a founded face, stay owed.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/owed`>>
 !! Owed ~ the rows this design still lacks
 
@@ -92,7 +115,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 # An explicit `model_auto_compact_token_limit` and `tool_output_token_limit`, with a canary seat proving compaction fires inside `codex exec`.
 # The ratcheted broker: data-only git plumbing with a fixed environment and pinned binaries, a commit bound to an expected old head and an exact tree, hooks and validators in a separate check seat whose receipt the broker verifies, installs in an isolated install seat, a go bound to branch and head, and one outer wall that means the same for Codex and Copilot, proved by planted hooks, filters, a hostile `.npmrc`, a poisoned `PATH` and malicious config.
 # The lane state file and the fresh-per-step lead as launcher modes, replacing the long-session lead.
-# The swarm's live controls (the crew cap, the push go, the lane state, the seat roster and its spend readings) move out of flat files into the live Lararium wiki once it stands: tiddlers the controller's hand signs and every seat reads through its capability, so a cap or a go carries an author and a history instead of a file mode.
 
 <<~/ahu>>
 
@@ -105,6 +127,6 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HlVXyrN5varDUZDW2rX3u4zGV7bD6NFGupll4mnV2-A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bu4cW8srK40px4BqMzNkvRZIiHeGs6kSvtzABVb_AYU`>>
 
 <<^ code=`&#x0004;` to=`?`>>
