@@ -96,6 +96,41 @@ describe("the commit", () => {
   });
 });
 
+describe("the ledger takes concurrent commits whole", () => {
+  /** One device's ledger: a read and a write each yield, so two unserialized read-compute-write passes interleave. */
+  const slowLedger = (state: { ledger: PromotionLedger }) => ({
+    read: async () => { const standing = state.ledger; await new Promise((r) => setImmediate(r)); return standing; },
+    write: async (l: PromotionLedger) => { await new Promise((r) => setImmediate(r)); state.ledger = l; },
+  });
+
+  test("RED: two wikis promote at once over one ledger and BOTH rows land; CONTROL: run one after the other, the same two rows land", async () => {
+    const OTHER = { title: "rites/garden", text: "exports.garden = 1", fields: { "module-type": "startup" } };
+    const run = async (together: boolean) => {
+      const w = await world();
+      w.state.items.set(W1, [itemOf(RITE)]);
+      w.state.items.set(W2, [itemOf(OTHER)]);
+      const ledger = slowLedger(w.state);
+      const a = promotions({ ...w.ports(W1, HAND), ledger }), b = promotions({ ...w.ports(W2, HAND), ledger });
+      if (together) await Promise.all([a.promote({ digest: D }), b.promote({ digest: promoteDigest(OTHER) })]);
+      else { await a.promote({ digest: D }); await b.promote({ digest: promoteDigest(OTHER) }); }
+      return w.state.ledger.rows.map((r) => r.wiki).sort();
+    };
+    expect(await run(false)).toEqual([W1, W2].sort());
+    expect(await run(true), "a concurrent commit never loses its neighbour").toEqual([W1, W2].sort());
+  });
+
+  test("RED: a commit and an unpromote of another wiki at once keep both effects", async () => {
+    const OTHER = { title: "rites/garden", text: "exports.garden = 1", fields: { "module-type": "startup" } };
+    const w = await world();
+    w.state.items.set(W1, [itemOf(RITE)]);
+    w.state.items.set(W2, [itemOf(OTHER)]);
+    await promotions(w.ports(W2, HAND)).promote({ digest: promoteDigest(OTHER) });
+    const ledger = slowLedger(w.state);
+    await Promise.all([promotions({ ...w.ports(W1, HAND), ledger }).promote({ digest: D }), promotions({ ...w.ports(W2, HAND), ledger }).unpromote({ digest: promoteDigest(OTHER) })]);
+    expect(w.state.ledger.rows.map((r) => r.wiki)).toEqual([W1]);
+  });
+});
+
 describe("the boot union, one wiki at a time", () => {
   test("RED: boot answers the wiki's own promoted digests; a pool wiki loads its own rite and none of W1's; CONTROL: the same digest promoted in both wikis loads in both", async () => {
     const w = await world();

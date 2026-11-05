@@ -19,10 +19,23 @@ export function browserPromoteStores(idbName: string, group: string) {
     ledger: {
       async read() { const bytes = await readKeystoreRow(idbName, ledgerRow); return bytes === undefined ? EMPTY_LEDGER : decodeLedger(bytes as Uint8Array); },
       async write(value: PromotionLedger) { await withCustodyRows(idbName, rows => rows.write(ledgerRow, encodeLedger(value))); },
+      // One exclusive keystore hold across the read, the decision and the write: two commits never lose each other.
+      update: (fn: (standing: PromotionLedger) => PromotionLedger): Promise<PromotionLedger> => withCustodyRows(idbName, async rows => {
+        const bytes = await rows.read(ledgerRow);
+        const next = fn(bytes === undefined ? EMPTY_LEDGER : decodeLedger(bytes as Uint8Array));
+        await rows.write(ledgerRow, encodeLedger(next));
+        return next;
+      }),
     },
     local: {
       async read() { const bytes = await readKeystoreRow(idbName, localRow); return bytes === undefined ? EMPTY_KAPAE_LOCAL : decodeKapaeLocal(bytes as Uint8Array); },
       async write(value: KapaeLocal) { await withCustodyRows(idbName, rows => rows.write(localRow, encodeKapaeLocal(value))); },
+      update: (fn: (standing: KapaeLocal) => KapaeLocal): Promise<KapaeLocal> => withCustodyRows(idbName, async rows => {
+        const bytes = await rows.read(localRow);
+        const next = fn(bytes === undefined ? EMPTY_KAPAE_LOCAL : decodeKapaeLocal(bytes as Uint8Array));
+        await rows.write(localRow, encodeKapaeLocal(next));
+        return next;
+      }),
     },
   };
 }

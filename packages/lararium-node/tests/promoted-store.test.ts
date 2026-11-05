@@ -41,6 +41,19 @@ describe("the ledger and the cache at rest", () => {
     expect(promotedFile("group-a")).not.toBe(promotedFile("group-b"));
   });
 
+  test("RED: two commits of different wikis at once through the store's update both land; CONTROL: the same two commits in turn land", async () => {
+    seat = await seatHostingCustody("promoted-concurrent");
+    const W2 = "lar:///ha.ka.ba/wikis/garden";
+    const OTHER = { title: "rites/b", text: "exports.startup = function(){}", fields: { "module-type": "startup" } };
+    const commit = (wiki: string, item: typeof RITE) => (standing: typeof EMPTY_LEDGER) => ledgerCommit(standing, { wiki, digest: promoteDigest(item), item, revision: "b".repeat(64) }, HAND);
+    const turn = nodePromoteStores("group-turn");
+    await turn.ledger.update(commit(W1, RITE)); await turn.ledger.update(commit(W2, OTHER));
+    expect((await turn.ledger.read()).rows.map((r) => r.wiki).sort()).toEqual([W1, W2].sort());
+    const together = nodePromoteStores("group-together");
+    await Promise.all([together.ledger.update(commit(W1, RITE)), together.ledger.update(commit(W2, OTHER))]);
+    expect((await together.ledger.read()).rows.map((r) => r.wiki).sort()).toEqual([W1, W2].sort());
+  });
+
   test("RED: the ledger file rests sealed (no promoted body in the clear anywhere under the homes); CONTROL: the opened row holds the body", async () => {
     seat = await seatHostingCustody("promoted-rest");
     const stores = nodePromoteStores("group-a");
