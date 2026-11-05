@@ -1301,7 +1301,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const lifted = await slotDocsOf(ctx).liftFloor();
             if (lifted.moved.length + lifted.finished.length > 0)
               console.log(`[daemon] the seat landed: ${lifted.moved.length} floor record(s) moved under the face, ${lifted.finished.length} burn(s) finished`);
-            return { skipped: lifted.skipped.length, arrivals: lifted.skippedUrls.map((url) => ctx.repo.find<LarDoc>(url as never).then((handle) => (handle as { whenReady?: () => Promise<unknown> }).whenReady?.())) };
+            // One wake per skipped document, on what it waits for: a document peers have not delivered wakes on its arrival (`whenReady`); a
+            // document whose flush storage never confirmed wakes when a flush of it rests. A ready document's arrival would resolve at once.
+            const arrivals = lifted.skippedDocs.map(({ url, waits }) => ctx.repo.find<LarDoc>(url as never).then((handle) =>
+              waits === "arrival" ? (handle as { whenReady?: () => Promise<unknown> }).whenReady?.() : ctx.repo.flush([handle.documentId])));
+            return { skipped: lifted.skipped.length, arrivals };
           },
           log: (message) => console.log(`[daemon] ${message}`),
         });

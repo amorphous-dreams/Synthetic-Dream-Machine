@@ -159,3 +159,64 @@ test("destination flush completes before marker, and a marker fault permits a sa
   expect(Object.keys(face.doc().tiddlers)).toEqual(["saved"]);
   expect(String(face.doc().tiddlers.saved.tiddler.text)).toBe("content");
 });
+
+test("a STALLED destination flush names the DESTINATION as waiting on rest, so the seat does not re-lift every bound — CONTROL: a pending SOURCE names itself as waiting on arrival, and its arrival wakes exactly one more lift", async () => {
+  const anchor = { kind: "place", aid: "Etest" } as const;
+  const key = wikiWorkingFloorKey("daemon", anchor);
+  const bag = wikiSlotUri("daemon", "working");
+  const docs = new Map<string, LarDoc>([["floor", emptyLarDoc()], ["face", emptyLarDoc()], ["catalog", emptyLarDoc()]]);
+  let floorArrives: (() => void) | null = null;
+  const floorReady = new Promise<void>((resolve) => { floorArrives = resolve; });
+  const handle = (url: string) => {
+    const state = docs.get(url)!;
+    return { url, documentId: url, doc: () => state, heads: () => [], on: () => () => {}, change: (fn: (d: LarDoc) => void) => fn(state), remove: () => {},
+      whenReady: async () => { if (url === "floor" && floorArrives) await floorReady; } };
+  };
+  handle("floor").change(d => { d.tiddlers.kept = storedLarRecord("kept", { text: "keep" }, "test"); });
+  handle("catalog").change(d => { d.tiddlers[key] = storedLarRecord(key, { text: "floor", "face-reach": "vessel-only", "minted-by": "vessel" }, "test"); });
+  let stallFaceFlush = true;
+  const repo = {
+    find: async (u: string) => handle(u), create: () => { throw Error("unexpected create"); },
+    flush: (ids?: string[]) => stallFaceFlush && ids?.includes("face") ? new Promise<void>(() => {}) : Promise.resolve(), delete: () => {},
+  };
+  const composite = new CompositeStore();
+  composite.addLayer({ bagId: bag, store: new AutomergeDocStore(handle("floor") as never, bag), writable: true });
+  const args = {
+    repo, daemonStore: composite, catalog: { handle: async () => handle("catalog") }, faceDoor: { mint: async () => ({ docId: "face" }) },
+    mintedByHex: "vessel", vesselDid: didFromVerifyingKey("ab".repeat(32)), traceOf: async () => null, readBoundMs: 20,
+    working: { anchor, urlOf: async () => "face", open: async () => handle("face"), rebind: () => {} },
+  } as never;
+  const warn = console.warn; console.warn = () => {};
+  try {
+    let lifts = 0;
+    const results: Array<{ url: string; waits: string }[]> = [];
+    // The daemon's mapping: an arrival waits on `whenReady`, a rest waits on a flush of the document.
+    const seat = makeFaceSeat({
+      group: "g", leasePrefix: "lease/", selfVerifyingKey: "self", personaRootDid: "root",
+      knowsAgent: async () => true, grants: async () => [], readLease: async () => ({ kind: "epoch", n: 0 }), verify: async () => ({ ok: true }), ingest: async () => {},
+      lift: async () => {
+        lifts++;
+        const r = await liftVesselOnlyIntoFace(args);
+        results.push(r.skippedDocs.map(({ url, waits }) => ({ url, waits })));
+        return { skipped: r.skipped.length, arrivals: r.skippedDocs.map(({ url, waits }) => repo.find(url).then((h) => waits === "arrival" ? h.whenReady() : repo.flush([h.documentId]))) };
+      },
+      log: () => {},
+    } as never);
+    // CONTROL: the floor (source) has not arrived: the skip names the SOURCE, waiting on arrival; nothing re-lifts until it arrives.
+    await seat.run();
+    await new Promise(r => setTimeout(r, 150));
+    expect(results[0]).toEqual([{ url: "floor", waits: "arrival" }]);
+    expect(lifts, "a pending source wakes nothing on its own").toBe(1);
+    floorArrives!(); floorArrives = null;
+    await new Promise(r => setTimeout(r, 150));
+    expect(lifts, "the source's arrival wakes exactly one more lift").toBe(2);
+    // RED: that lift read the source and stalled on the DESTINATION flush: the skip names the destination, waiting on rest (never the ready source).
+    expect(results[1]).toEqual([{ url: "face", waits: "rest" }]);
+    await new Promise(r => setTimeout(r, 300));
+    expect(lifts, "a stalled destination flush never re-lifts by itself (the old code re-lifted every bound)").toBe(2);
+    // The destination rests: its flush wakes one more pass, which carries the floor through.
+    stallFaceFlush = false;
+    await new Promise(r => setTimeout(r, 200));
+    expect(lifts).toBeGreaterThanOrEqual(2);
+  } finally { console.warn = warn; }
+});

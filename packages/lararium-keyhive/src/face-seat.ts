@@ -15,7 +15,7 @@ export interface FaceSeatPorts {
   readonly verify: (record: FaceGrantRecord, context: FaceGrantVerifyContext) => Promise<FaceGrantVerdict>;
   readonly ingest: (record: FaceGrantRecord) => Promise<void>;
   /** Lifts the floor under the face; answers how many records a silent floor document held back, so the next pass tries again. */
-  readonly lift: () => Promise<void | { readonly skipped: number; /** One promise per silent floor document, settling when it arrives: its arrival wakes the seat. */ readonly arrivals?: readonly Promise<unknown>[] }>;
+  readonly lift: () => Promise<void | { readonly skipped: number; /** One promise per skipped document, settling when it arrives (a read peers never answered) or rests (a flush storage never confirmed): that wakes the seat. */ readonly arrivals?: readonly Promise<unknown>[] }>;
   readonly log: (message: string) => void;
 }
 

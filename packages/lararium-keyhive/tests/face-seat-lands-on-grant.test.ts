@@ -183,7 +183,7 @@ test("R6 the resolver's lift never waits on the seat act", async () => {
     personaGroupId: group, faceSeated: async () => false, faceDoor: {} as never,
     seatSettled: async () => { settledCalls++; await new Promise(() => {}); },
   });
-  expect(await resolver.liftFloor()).toEqual({ moved: [], finished: [], skipped: [], skippedUrls: [] });
+  expect(await resolver.liftFloor()).toEqual({ moved: [], finished: [], skipped: [], skippedDocs: [] });
   expect(settledCalls).toBe(0);
 });
 
