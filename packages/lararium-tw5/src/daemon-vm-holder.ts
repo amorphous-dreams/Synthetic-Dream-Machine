@@ -61,6 +61,21 @@ export function holdDaemonVm<P = void>(o: {
   const asyncMethods = new Set(["mountHostWorkingLayer", "syncLegReady", "runAsFace", "lightFace", "dropFace", "worldlineCompare", "worldlineTrajectory", "resolveBinding"]);
   const registrationMethods = new Set(["mountMainVerbs", "onEvictRequest", "onResidencyOp", "onWikiAlert", "onFrame", "onControlResult", "onVerbEvent"]);
 
+  // A restart's resolution and its queued follow-up never wait on listeners: the replacement is ready, the follow-up starts, and the listeners are
+  // told after, in restart order, on their own chain. A listener that never settles, or one that awaits a restart, stalls only later notices.
+  let notifying: Promise<void> | undefined;
+  const notifyRestarted = (info: { reason: string; restarts: number }) => {
+    const run = async () => {
+      for (const listener of [...listeners]) {
+        try { await listener(info); }
+        catch (err) { console.error("[daemon] restart listener failed", err); }
+      }
+    };
+    const chain: Promise<void> = notifying ? notifying.then(run) : run();
+    notifying = chain;
+    void chain.finally(() => { if (notifying === chain) notifying = undefined; });
+  };
+
   const check = () => {
     if (state !== "ready") throw new DaemonRestarting(state === "down" ? "daemon-down" : "daemon-restarting");
   };
@@ -263,10 +278,7 @@ export function holdDaemonVm<P = void>(o: {
           if (disposed) throw new DaemonRestarting("daemon-down");
           restarts += 1;
           state = "ready";
-          for (const listener of listeners) {
-            try { await listener({ reason, restarts }); }
-            catch (err) { console.error("[daemon] restart listener failed", err); }
-          }
+          notifyRestarted({ reason, restarts });
           return { restarts };
         } catch (err) {
           // A replacement already open when replay or a later step fails closes here, so a recovering restart leaks no island.
