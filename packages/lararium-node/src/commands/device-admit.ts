@@ -375,8 +375,6 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (!operationStore) throw new Error("the face's PersonaGroup plane is unresolved");
   const atomSeed = await loadFaceAtomOfGroup(personaGroupId);
   if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
-  const signedEdge = await buildDeviceDelegationRootHalf({ personaRootSeed: signerSeed,
-    deviceVerifyingKey: opts.joineeVerifyingKey.toLowerCase(), hearthTrueName, boundEpoch });
   const personaHandle = await repo.find<LarDoc>(personaUrl as AutomergeUrl);
   const records = await readFacePersonaRecords(repo, { personaUrl, group: personaGroupId,
     extraDocs: [daemonDoc as LarDoc | undefined] });
@@ -400,20 +398,35 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (vesselTag === undefined || vesselSig === undefined) throw new DeviceAdmitTagRefused("vessel-tag-absent", "the join carries no blinded vessel tag for this face");
   if (!vesselFaceTagHolds(personaGroupId, deviceKey, { vesselTag, vesselSig })) throw new DeviceAdmitTagRefused("vessel-tag-invalid", "the vessel tag's signature covers another face or atom");
   // A retried answer for the atom that already holds this tag is a replay, not a second seat: the same vessel under another atom refuses.
-  const seatedBySameAtom = records.some((r) => {
-    const b = (r as { body?: Record<string, unknown> } | null)?.body;
+  const bodyOf = (r: unknown): Record<string, unknown> | undefined => (r as { body?: Record<string, unknown> } | null)?.body;
+  const seatedAdmission = records.find((r) => {
+    const b = bodyOf(r);
     return b?.["act"] === "admission" && b["deviceKey"] === deviceKey && b["vesselTag"] === vesselTag
       && projection.admissions.some((a) => a.cid === actCid(b as never));
   });
-  if (projection.vesselTags.includes(vesselTag as string) && !seatedBySameAtom) throw new DeviceAdmitTagRefused("vessel-already-admitted", "this vessel already holds a seat in this face");
-  const signer = { key: signerKey, sign: ed25519SignerFromSeed(signerSeed) };
-  const epoch = personaKelChain[personaKelChain.length - 1]!.seq;
-  const admission = await signPersonaAct(projection.head, { group: personaGroupId, act: "admission", epoch,
-    fields: { deviceKey, vesselTag, vesselSig } }, signer);
-  const edgeAct = await signPersonaAct({ seq: admission.body.seq, cid: actCid(admission.body) },
-    { group: personaGroupId, act: "device-edge", epoch,
-      fields: { deviceKey: opts.joineeVerifyingKey.toLowerCase(), edgeDigest: edgeBodyDigest(signedEdge) } }, signer);
-  const personaActs = [...records, admission, edgeAct];
+  if (projection.vesselTags.includes(vesselTag as string) && !seatedAdmission) throw new DeviceAdmitTagRefused("vessel-already-admitted", "this vessel already holds a seat in this face");
+  // The replay returns the seat as it stands: the admission and the edge linked to it, and appends nothing, so a lease roll
+  // between the answer and its retry never replaces the edge a joinee holding the first answer boots against.
+  const seatedCid = seatedAdmission ? actCid(bodyOf(seatedAdmission) as never) : null;
+  const seatedEdge = seatedCid === null ? undefined : records.find((r) => {
+    const b = bodyOf(r);
+    return b?.["act"] === "device-edge" && b["deviceKey"] === deviceKey && b["prior"] === seatedCid;
+  });
+  // THE ROOT SIGNS ONLY PAST THE TAG LAW: every refusal above reaches no signature over the joinee's edge.
+  const signedEdge = await buildDeviceDelegationRootHalf({ personaRootSeed: signerSeed,
+    deviceVerifyingKey: deviceKey, hearthTrueName, boundEpoch });
+  let appended: Awaited<ReturnType<typeof signPersonaAct>>[] = [];
+  if (!seatedEdge) {
+    const signer = { key: signerKey, sign: ed25519SignerFromSeed(signerSeed) };
+    const epoch = personaKelChain[personaKelChain.length - 1]!.seq;
+    const admission = await signPersonaAct(projection.head, { group: personaGroupId, act: "admission", epoch,
+      fields: { deviceKey, vesselTag, vesselSig } }, signer);
+    const edgeAct = await signPersonaAct({ seq: admission.body.seq, cid: actCid(admission.body) },
+      { group: personaGroupId, act: "device-edge", epoch,
+        fields: { deviceKey, edgeDigest: edgeBodyDigest(signedEdge) } }, signer);
+    appended = [admission, edgeAct];
+  }
+  const personaActs = [...records, ...appended];
   const operation = { store: operationStore, atomSeed,
     signedInput: opts.signedRequest ?? new TextEncoder().encode(JSON.stringify(signedEdge)) };
   const fleetRoot = (await ed25519VerifyingKeyFromSeed(signerSeed)).toLowerCase();
@@ -438,7 +451,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     hearthDaemonUrl: opts.hearthDaemonUrl ?? daemonUrl,
     personaUrl,
   });
-  appendPersonaActs(personaHandle, [admission, edgeAct]);
+  if (appended.length) appendPersonaActs(personaHandle, appended);
 
   // THE PIN NAMES THE DIAL (hearth-dial-pin.ts): the hearth's full sovereign sync pin at the Nexus its own sync gate
   // STANDS at (`stoodSovereignPin`: the primary charter's AID, the hearth's true name above), never the island standing's
