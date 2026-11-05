@@ -17,7 +17,7 @@ vi.mock("../src/session-connector.js", async (importOriginal) => {
 // A ward row takes its route over the standing vessel's custody door and gets a one-use ticket back (ward-door#wardTicketFor).
 vi.mock("../src/custody-door.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/custody-door.js")>();
-  return { ...actual, sendCustodyFrame: vi.fn(async (frame: { op: string }) => (frame.op === "ward" ? { ticket: "ward-ticket-1" } : null)) };
+  return { ...actual, sendCustodyFrame: vi.fn(async (frame: { op: string }) => (frame.op === "ward" ? { ref: "ward-ticket-1" } : null)) };
 });
 vi.mock("../src/sealed-act-door.js", () => ({ sealedAct: vi.fn() }));
 vi.mock("@lararium/node", async (importOriginal) => {
@@ -60,7 +60,7 @@ describe("store rows on a running vessel", () => {
     expect(opened).toEqual(["h2"]);
     // handle-publish is a ward act: the route rode the custody door and the session act carries the one-use ticket it answered.
     expect(sendCustodyFrame).toHaveBeenCalledWith(expect.objectContaining({ op: "ward" }));
-    expect(acted).toEqual([{ act: "handle-publish", args: { glamour: "g", handleIndex: 2, wardTicket: "ward-ticket-1" } }]);
+    expect(acted).toEqual([{ act: "handle-publish", args: { glamour: "g", handleIndex: 2, wardRef: "ward-ticket-1" } }]);
     expect(closed).toBe(1);
     expect(invokeLocal).not.toHaveBeenCalled();
   });

@@ -10,12 +10,13 @@
  * Where the route comes from is the caller's door: a TTY prompt in the CLI (`ward-needs-tty` refuses an environment variable and a
  * piped stdin), the per-act ward worker in a browser, the founding's own route while a face is born. A store verb never carries the
  * route itself (a verb's arguments get hashed into a receipt): the route rides ONE custody frame (`op: "ward"`), the door parks it
- * under a random one-use TICKET, and the verb names the ticket (`wardTicket`). A sealed act rides the custody door already, so it
+ * under a random one-use REF bound to the act it names (verb and arguments), and the verb names the ref (`wardRef`). A sealed act rides the custody door already, so it
  * carries the route in its own `ward` argument.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-ward
  */
-import { isWardBoundWiki, type Credential, type SlotSpec } from "@lararium/mesh";
+import { createHash, randomBytes } from "node:crypto";
+import { isWardBoundWiki, WardRefused, type Credential, type SlotSpec } from "@lararium/mesh";
 import { WardNeedsFreshUnlock } from "./custody-holder.js";
 
 declare const wardBrand: unique symbol;
@@ -67,23 +68,49 @@ export function wardCredentialOfArgs(raw: unknown): WardCredential | undefined {
 
 /** The most tickets parked at once: a caller that parked and left never builds a store of routes. */
 const TICKETS_HELD = 4;
-const tickets = new Map<string, WardCredential>();
 
-/** Park one act's route under a random ticket; the oldest falls out past `TICKETS_HELD`. */
-export function parkWardTicket(ward: WardCredential): string {
-  wardCredentialsOf(ward, "a parked route");
-  const ticket = Array.from(globalThis.crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
-  tickets.set(ticket, ward);
-  while (tickets.size > TICKETS_HELD) tickets.delete(tickets.keys().next().value!);
-  return ticket;
+/** What a ticket binds: the verb and a digest of its arguments (the session's own face keys and the ref itself left out). */
+export interface WardBind { readonly verb: string; readonly args: Readonly<Record<string, unknown>> }
+
+/** The keys a binding leaves out: the ticket's own ref, and the face keys a session lends a row (the session decides the face). */
+const UNBOUND_KEYS = new Set(["wardRef", "wardTicket", "face", "handleIndex"]);
+
+/** A canonical digest of one act's verb and arguments: the same act spells the same digest, whatever order its keys came in. */
+export function wardBindDigest(bind: WardBind): string {
+  const canon = (v: unknown): unknown => Array.isArray(v) ? v.map(canon)
+    : v && typeof v === "object" ? Object.fromEntries(Object.keys(v as object).sort().map((k) => [k, canon((v as Record<string, unknown>)[k])])) : v;
+  const args = Object.fromEntries(Object.entries(bind.args).filter(([k]) => !UNBOUND_KEYS.has(k)));
+  return createHash("sha256").update(JSON.stringify({ verb: bind.verb, args: canon(args) })).digest("hex");
 }
 
-/** Take the route a ticket names, once: the ticket leaves on its first read, whatever the act then does. */
-export function takeWardTicket(raw: unknown): WardCredential | undefined {
+const tickets = new Map<string, { readonly ward: WardCredential; readonly verb: string; readonly digest: string }>();
+
+/**
+ * Park one act's route under a random REF, bound to that act: its verb and the digest of its arguments. The ref is a name, not a
+ * key: it may ride a verb's arguments (and so the daemon document, on a summoned verb) because only the act it names can spend it.
+ * The oldest falls out past `TICKETS_HELD`.
+ */
+export function parkWardTicket(ward: WardCredential, bind: WardBind | { readonly verb: string; readonly digest: string }): string {
+  wardCredentialsOf(ward, "a parked route");
+  const ref = randomBytes(32).toString("hex");
+  tickets.set(ref, { ward, verb: bind.verb, digest: "digest" in bind ? bind.digest : wardBindDigest(bind) });
+  while (tickets.size > TICKETS_HELD) tickets.delete(tickets.keys().next().value!);
+  return ref;
+}
+
+/**
+ * Take the route a ref names for the act at hand, once. The ticket leaves on its first read whatever follows; a read by any act
+ * other than the one it was parked for (another verb, other arguments) refuses `ward-ticket-mismatch` and the ticket burns.
+ */
+export function takeWardTicket(raw: unknown, use: WardBind): WardCredential | undefined {
   if (typeof raw !== "string" || !/^[0-9a-f]{64}$/.test(raw)) return undefined;
-  const ward = tickets.get(raw);
+  const parked = tickets.get(raw);
   tickets.delete(raw);
-  return ward;
+  if (!parked) return undefined;
+  if (parked.verb !== use.verb || parked.digest !== wardBindDigest(use)) {
+    throw new WardRefused("ward-ticket-mismatch", `a ticket parked for "${parked.verb}" was spent on another act; it burned`);
+  }
+  return parked.ward;
 }
 
 /** Drop every parked ticket (a lock, a stand-down). */
@@ -92,7 +119,7 @@ export function dropWardTickets(): void { tickets.clear(); }
 // ── which store verbs are ward acts ───────────────────────────────────────────────────────────────────────────────────
 
 /**
- * The store verbs that read a face's root seed: each is a ward act and names a ticket (`wardTicket`). The rule is one table: every
+ * The store verbs that read a face's root seed: each is a ward act and names a bound ref (`wardRef`). The rule is one table: every
  * act that changes who belongs to the face or what it trusts, and the daemon realm's bound acts (seat-harness#/the-ward).
  */
 const WARD_VERBS: ReadonlySet<string> = new Set([

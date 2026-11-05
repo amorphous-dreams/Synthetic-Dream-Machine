@@ -25,13 +25,13 @@ export const FIXTURE_PASSPHRASE = "fixture-custody-passphrase";
 
 /**
  * The ward route of a face founded under this fixture (seat-harness#/the-ward): a fresh token per act, as a person types one per act.
- * `fixtureWardTicket` parks it for a store verb, as the CLI's ward door does over the custody frame.
+ * `fixtureWardRef(verb, args)` parks it for one store verb's act, bound to that verb and those arguments, as the CLI's ward door does.
  */
 /** The routes a suite's faces are founded under: this fixture's synthetic one, and `found-route`'s test founding route. */
 const SUITE_ROUTES = [FIXTURE_PASSPHRASE, "test-founding-passphrase"] as const;
 export const fixtureWard = (passphrase?: string): WardCredential =>
   wardCredential((passphrase === undefined ? [...SUITE_ROUTES] : [passphrase]).map((p) => ({ kind: "passphrase" as const, passphrase: p })));
-export const fixtureWardTicket = (passphrase?: string): string => parkWardTicket(fixtureWard(passphrase));
+export const fixtureWardRef = (verb: string, args: Readonly<Record<string, unknown>>, passphrase?: string): string => parkWardTicket(fixtureWard(passphrase), { verb, args });
 
 // A face founded under this fixture asks its own route; the fixture answers with the same synthetic passphrase.
 seatFaceRoute(async () => [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }]);

@@ -49,3 +49,47 @@ describe("no route outlives its act (S2 cold read, P1-1)", () => {
     expect(wardCredentialsOf(handed[0] as never)).toEqual(route("the unlock's route"));
   });
 });
+
+describe("a ticket names its act (S2 cold read, P2-1)", () => {
+  const W = () => wardCredential(route("the hand's route"));
+  const ARGS = { digest: "d".repeat(64), wiki: "daemon" };
+  test("RED: a ticket spent on another verb, on other arguments, or by a racer who read its ref refuses and burns; CONTROL: its own act spends it once", async () => {
+    const wc = await import("../src/ward-credential.js") as unknown as {
+      parkWardTicket: (w: unknown, bind?: unknown) => string; takeWardTicket: (raw: unknown, use?: unknown) => unknown; wardBindOf?: unknown;
+    };
+    const park = (args = ARGS, verb = "promote-commit") => wc.parkWardTicket(W(), { verb, args });
+    const tryTake = (ref: string, verb: string, args: Record<string, unknown>): unknown => {
+      try { return wc.takeWardTicket(ref, { verb, args }); } catch (e) { return e; }
+    };
+    // Another verb.
+    const a = park();
+    expect(String(tryTake(a, "kapae-lower", ARGS))).toMatch(/ward-ticket-mismatch/);
+    expect(tryTake(a, "promote-commit", ARGS), "a mismatch burns the ticket").toBeUndefined();
+    // Other arguments.
+    const b = park();
+    expect(String(tryTake(b, "promote-commit", { ...ARGS, digest: "e".repeat(64) }))).toMatch(/ward-ticket-mismatch/);
+    expect(tryTake(b, "promote-commit", ARGS)).toBeUndefined();
+    // A racer who read the ref off the daemon document and spends it on its own act.
+    const c = park();
+    expect(String(tryTake(c, "promote-commit", { ...ARGS, wiki: "kahua" }))).toMatch(/ward-ticket-mismatch/);
+    expect(tryTake(c, "promote-commit", ARGS)).toBeUndefined();
+    // CONTROL: the act it names spends it, once; the session's own face keys never move the binding.
+    const d = park();
+    const spent = tryTake(d, "promote-commit", { ...ARGS, face: 0, handleIndex: 0, wardRef: d });
+    expect(wardCredentialsOf(spent as never)).toEqual(route("the hand's route"));
+    expect(tryTake(d, "promote-commit", ARGS), "a ticket spends once").toBeUndefined();
+  });
+
+  test("RED: a lock drops every parked ticket, and no more than four stand; CONTROL: a ticket parked after the lock spends", async () => {
+    const wc = await import("../src/ward-credential.js") as unknown as {
+      parkWardTicket: (w: unknown, bind?: unknown) => string; takeWardTicket: (raw: unknown, use?: unknown) => unknown; dropWardTickets: () => void;
+    };
+    const bind = { verb: "swarm-go-issue", args: { branch: "x", head: "h" } };
+    const parked = wc.parkWardTicket(W(), bind);
+    wc.dropWardTickets();
+    expect(wc.takeWardTicket(parked, bind)).toBeUndefined();
+    const five = [1, 2, 3, 4, 5].map(() => wc.parkWardTicket(W(), bind));
+    expect(wc.takeWardTicket(five[0], bind), "the oldest falls out past four").toBeUndefined();
+    expect(wc.takeWardTicket(five[4], bind)).toBeDefined();
+  });
+});

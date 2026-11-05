@@ -17,6 +17,14 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
+
+/** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
+function takeSummonedWard(raw: unknown): WardCredential | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const w = raw as { ref?: unknown; verb?: unknown; args?: unknown };
+  if (typeof w.verb !== "string" || !w.args || typeof w.args !== "object") return undefined;
+  return takeWardTicket(w.ref, { verb: w.verb, args: w.args as Record<string, unknown> });
+}
 import { wardRootSigner } from "./ward-signer.js";
 import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-registration.js";
 import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
@@ -2376,7 +2384,7 @@ async function prepareNodeBootOn(
             // there; so the panel's root acts (a daemon or kahua commit, a kāpae-lower) refuse by name and point at the terminal.
             // A summoned lower carries the CLI's one-use ward ticket; a panel click carries none and refuses by name toward the terminal.
             rootSigner: async (ward?: unknown) => {
-              const held = takeWardTicket(ward);
+              const held = takeSummonedWard(ward);
               if (!held) throw new WardNeedsFreshUnlock("the panel's kāpae-lower (the panel carries no ward route: run `lares kapae lower <digest>` at a terminal)");
               return wardRootSigner(wornMount?.handleIndex ?? 0, held, "a kāpae-lower");
             },
@@ -2390,7 +2398,7 @@ async function prepareNodeBootOn(
               items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(casDirForStorage(storageDir), atom.key),
               // The panel carries no ward route (its verbs ride the daemon document), so a bound commit refuses by name, toward the terminal.
               wardSigner: async () => {
-                const held = takeWardTicket(ward);
+                const held = takeSummonedWard(ward);
                 if (!held) throw new WardNeedsFreshUnlock(`the panel's commit in ${wiki} (the panel carries no ward route: run \`lares promote commit <digest> --wiki ${wiki}\` at a terminal)`);
                 return wardRootSigner(wornMount?.handleIndex ?? 0, held, `a commit in ${wiki}`);
               },

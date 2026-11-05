@@ -10,7 +10,7 @@
  * Meme: lar:///ha.ka.ba/lares/cli/vessel-door
  */
 import type { Credential } from "@lararium/mesh";
-import { gatherSeatedWardRoute, parkWardTicket, wardCredential, wardGathererSeated, storeVerbNeedsWard, type WardCredential } from "@lararium/node";
+import { gatherSeatedWardRoute, parkWardTicket, wardBindDigest, wardCredential, wardGathererSeated, storeVerbNeedsWard, type WardCredential } from "@lararium/node";
 import { readWardPassphrase } from "./prompt-secret.js";
 import { RoutedVerbRefused } from "./store-door.js";
 import { TEST_ROUTE_PASSPHRASE, testScratchRoot } from "./offline-custody.js";
@@ -35,16 +35,17 @@ export async function gatherWard(verb: string): Promise<WardCredential> {
 }
 
 /**
- * The `wardTicket` a store verb names when it is a ward act, or nothing when it is not. A standing vessel parks the route over its
- * custody door; with none standing, the route parks in this process, where the direct row takes it.
+ * The `wardRef` a store verb names when it is a ward act, or nothing when it is not. The ref is bound to this verb and these
+ * arguments, so only this act spends it. A standing vessel parks the route over its custody door; with none standing, the route
+ * parks in this process, where the direct row takes it.
  */
 export async function wardTicketFor(verb: string, args: Readonly<Record<string, unknown>>, daemonUp: boolean): Promise<Record<string, unknown>> {
   if (!storeVerbNeedsWard(verb, args)) return {};
   const route = await gatherWardRoute(`lares ${verb}`);
-  if (!daemonUp) return { wardTicket: parkWardTicket(wardCredential(route)) };
+  if (!daemonUp) return { wardRef: parkWardTicket(wardCredential(route), { verb, args }) };
   const { sendCustodyFrame } = await import("./custody-door.js");
-  const answer = await sendCustodyFrame({ op: "ward", credentials: route });
-  const ticket = answer && typeof (answer as { ticket?: unknown }).ticket === "string" ? (answer as { ticket: string }).ticket : null;
+  const answer = await sendCustodyFrame({ op: "ward", credentials: route, verb, argsDigest: wardBindDigest({ verb, args }) });
+  const ticket = answer && typeof (answer as { ref?: unknown }).ref === "string" ? (answer as { ref: string }).ref : null;
   if (ticket === null) throw new RoutedVerbRefused("the standing vessel did not take the ward route over its custody door; nothing acted", "ward-route-unparked");
-  return { wardTicket: ticket };
+  return { wardRef: ticket };
 }

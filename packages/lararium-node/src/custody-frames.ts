@@ -62,7 +62,7 @@ export type CustodyFrame =
   /** Park the human route a NEW face will ask for, for the next face this vessel founds (one use). */
   | { readonly op: "face-route"; readonly slots: readonly SlotSpec[] }
   /** One ward act's route: the door parks it under a one-use ticket a store verb then names (`ward-credential`). */
-  | { readonly op: "ward"; readonly credentials: readonly Credential[] };
+  | { readonly op: "ward"; readonly credentials: readonly Credential[]; readonly verb: string; readonly argsDigest: string };
 
 /** What stands after a custody act: the composition's standing, or the fault that left the floor standing. */
 export interface CustodyStanding {
@@ -79,7 +79,7 @@ export type CustodyAnswer =
   | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly testScratch: boolean }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
   | { readonly op: "face-route"; readonly parked: true }
-  | { readonly op: "ward"; readonly ticket: string }
+  | { readonly op: "ward"; readonly ref: string }
   | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
   | { readonly op: string; readonly status: "error"; readonly errorMessage: string; readonly refusal: { readonly reason: string; readonly home?: string; readonly file?: string; readonly reading?: string; readonly attemptsLeft?: number } };
 
@@ -108,7 +108,7 @@ export interface CustodyFrameDeps {
 }
 
 const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "custody", "act", "backup", "face-route", "ward"]);
-const WARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials"]);
+const WARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "verb", "argsDigest"]);
 /** The keys a `face-route` frame may carry. */
 const FACE_ROUTE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "slots"]);
 /** The keys a `backup` frame may carry. */
@@ -379,12 +379,13 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     } else if (op === "ward") {
       const frame = parsed as Record<string, unknown>;
       const credentials = credentialsOf(frame["credentials"]);
-      if (Object.keys(frame).some((k) => !WARD_FRAME_KEYS.has(k)) || !credentials) {
-        answer(sock, { op, status: "error", errorMessage: "a ward frame carries `op` and `credentials` (a passphrase or paper sheets), and nothing beside them", refusal: { reason: "bad-custody-frame" } });
+      const verb = frame["verb"], argsDigest = frame["argsDigest"];
+      if (Object.keys(frame).some((k) => !WARD_FRAME_KEYS.has(k)) || !credentials || typeof verb !== "string" || !verb || typeof argsDigest !== "string" || !/^[0-9a-f]{64}$/.test(argsDigest)) {
+        answer(sock, { op, status: "error", errorMessage: "a ward frame carries `op`, `credentials` (a passphrase or paper sheets), the `verb` it binds and its `argsDigest`, and nothing beside them", refusal: { reason: "bad-custody-frame" } });
         return true;
       }
-      // THE ROUTE RIDES THIS FRAME AND NO VERB: the door parks it under a one-use ticket, answered on this socket alone.
-      act = async () => { deps.onLog("ward: a route parked for one act"); return { op: "ward", ticket: parkWardTicket(wardCredential(credentials)) }; };
+      // THE ROUTE RIDES THIS FRAME AND NO VERB: the door parks it under a one-use ref bound to the act it names (verb, arguments).
+      act = async () => { deps.onLog("ward: a route parked for one act"); return { op: "ward", ref: parkWardTicket(wardCredential(credentials), { verb, digest: argsDigest }) }; };
     } else if (op === "face-route") {
       const frame = parsed as Record<string, unknown>;
       const stray = Object.keys(frame).find((k) => !FACE_ROUTE_FRAME_KEYS.has(k));
