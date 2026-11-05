@@ -63,7 +63,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import { takeWardTicket } from "./ward-credential.js";
+import { duringUnlockAct, takeWardTicket } from "./ward-credential.js";
 import { runPromoteVerb } from "./commands/promote.js";
 import { runSwarmVerb } from "./commands/swarm.js";
 import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
@@ -531,7 +531,9 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       return { posture, path, wrote: true };
     }),
 
-    "nexus-admit-take": (args) => answer("nexus-admit-take", async () => {
+    // A TAKE STANDS A LATE DIAL at a Nexus this face may present at for the first time: the founder's certificate there is a ward
+    // act, so the row runs inside the route its ticket names, for the row's own length alone (`duringUnlockAct`).
+    "nexus-admit-take": (args) => answer("nexus-admit-take", async () => { const ward = takeWardTicket(args["wardTicket"]); const run = async () => {
       const raw = need("nexus-admit-take", args, "raw");
       const r = await takeAdmitBundle({ sealHome, raw });
       // RE-PRESENT through the live hook when a vessel stands over this row; `storeDoorDirect` supplies none,
@@ -541,7 +543,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       // refold keeps running unseen, and this reads `"pending"` rather than guessing either way.
       const represented = deps.onRolled === undefined ? false : await awaitOnRolled(deps.onRolled(r.aid));
       return { aid: r.aid, nym: r.nym, admitCid: r.admitCid, gatePubKey: r.gatePubKey, lineage: r.lineage, path: r.path, represented };
-    }),
+    }; return ward ? duringUnlockAct(ward, run) : run(); }),
 
     // A HERM'S EXPLICIT JOIN (lar:///ha.ka.ba/lararium/node/carry-bundle): the quorum's counted carry over this vessel's own key, taken by
     // hand onto its own replica of that Nexus's carriage board; the refold the take fires stands its floor gate there at once.

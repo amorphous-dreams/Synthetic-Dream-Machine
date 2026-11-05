@@ -116,6 +116,8 @@ const WARD_VERBS: ReadonlySet<string> = new Set([
   "kahua-lift", "kahua-withdraw", "kahua-carry", "intent-root",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest",
   "persona-lease", "nexus-publish", "fleet-join-answer",
+  // A take stands a late dial, where the founder's certificate at a new Nexus is a ward act (it issues inside the row's route).
+  "nexus-admit-take",
 ]);
 export function storeVerbNeedsWard(verb: string, args: Readonly<Record<string, unknown>>): boolean {
   if (verb === "promote-commit") return isWardBoundWiki(typeof args["wiki"] === "string" && args["wiki"].length > 0 ? args["wiki"] : "daemon");

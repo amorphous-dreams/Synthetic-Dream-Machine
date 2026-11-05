@@ -16,6 +16,11 @@ vi.mock("../src/sealed-act-door.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/sealed-act-door.js")>();
   return { ...actual, sealedAct: vi.fn(async () => ({ face: 0 })) };
 });
+// `handle rotate` is a ward act: the standing vessel parks the typed route over one custody frame and answers a ticket.
+vi.mock("../src/custody-door.js", async (importOriginal) => {
+  const real = await importOriginal<typeof import("../src/custody-door.js")>();
+  return { ...real, sendCustodyFrame: vi.fn(async (frame: { op: string }) => (frame.op === "ward" ? { op: "ward", ticket: "ward-ticket-1" } : null)) };
+});
 vi.mock("../src/session-connector.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/session-connector.js")>();
   return { ...actual, openLocalSession: vi.fn() };

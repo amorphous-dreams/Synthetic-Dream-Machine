@@ -12,6 +12,7 @@
 import type { Credential } from "@lararium/mesh";
 import { gatherSeatedWardRoute, parkWardTicket, wardCredential, wardGathererSeated, storeVerbNeedsWard, type WardCredential } from "@lararium/node";
 import { readWardPassphrase } from "./prompt-secret.js";
+import { RoutedVerbRefused } from "./store-door.js";
 import { TEST_ROUTE_PASSPHRASE, testScratchRoot } from "./offline-custody.js";
 
 /** One ward act's route, as this process asks it: the gatherer the process seated (the binary seats `ttyWardRoute`). */
@@ -44,6 +45,6 @@ export async function wardTicketFor(verb: string, args: Readonly<Record<string, 
   const { sendCustodyFrame } = await import("./custody-door.js");
   const answer = await sendCustodyFrame({ op: "ward", credentials: route });
   const ticket = answer && typeof (answer as { ticket?: unknown }).ticket === "string" ? (answer as { ticket: string }).ticket : null;
-  if (ticket === null) throw new Error("the standing vessel did not take the ward route over its custody door; nothing acted");
+  if (ticket === null) throw new RoutedVerbRefused("the standing vessel did not take the ward route over its custody door; nothing acted", "ward-route-unparked");
   return { wardTicket: ticket };
 }

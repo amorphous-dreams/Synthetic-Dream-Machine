@@ -16,6 +16,8 @@
  * The node vessel holds no semantic privilege. It carries roads, docks, and sync; live VM state lives
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
+import { takeWardTicket, unlockActWard } from "./ward-credential.js";
+import { wardRootSigner } from "./ward-signer.js";
 import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-registration.js";
 import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 
@@ -749,6 +751,10 @@ async function prepareNodeBootOn(
   // Each member stands below as its transport stands (`receipt`, `cas`, `dyad`, `custodyWrite`) and its teardown entry
   // clears that member: an island reads the member off this record at ask time, and no other vessel ever sees it.
   const islandCaps: CapabilityRecord = {};
+  // THE UNLOCK ACT'S ROUTE, held for THIS composition's boot dial alone: a founder's first presentation at a scope issues its
+  // certificate, a ward act, under the route the person typed for the unlock that stands this composition. It drops once that
+  // dial settles; a later dial (a take's) carries its own act's route (seat-harness#/the-ward).
+  let bootWard = unlockActWard();
   // THE GATE: sovereign only when the node key stands held AND the mounted face stands unlocked; otherwise the floor composes.
   const sovereignOpen = sovereignStands();
   await sweepUnderTheGate(sovereignOpen, sweepFoundingSeeds);
@@ -2363,8 +2369,11 @@ async function prepareNodeBootOn(
             epoch: () => readFace(personaKelChain ?? [], faceAnchor)?.lineage.at(-1)?.epoch ?? 0,
             // THE PANEL CARRIES NO WARD ROUTE. Its verbs ride the daemon document (a synced record), and a passphrase never rests
             // there; so the panel's root acts (a daemon or kahua commit, a kāpae-lower) refuse by name and point at the terminal.
-            rootSigner: async () => {
-              throw new WardNeedsFreshUnlock("the panel's kāpae-lower (the panel carries no ward route: run `lares kapae lower <digest>` at a terminal)");
+            // A summoned lower carries the CLI's one-use ward ticket; a panel click carries none and refuses by name toward the terminal.
+            rootSigner: async (ward?: unknown) => {
+              const held = takeWardTicket(ward);
+              if (!held) throw new WardNeedsFreshUnlock("the panel's kāpae-lower (the panel carries no ward route: run `lares kapae lower <digest>` at a terminal)");
+              return wardRootSigner(wornMount?.handleIndex ?? 0, held, "a kāpae-lower");
             },
             board: { records: async () => promoteActRecords(handle.doc(), personaGroupId), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
             projection: () => proof.projection,
@@ -2372,10 +2381,14 @@ async function prepareNodeBootOn(
           const who = { kind: "hand" as const, id: atom.key };
           const core = promotePanelApi({ who,
             wikis: async () => ["daemon", ...vmManager.inspect().filter(slot => slot.temperature === "wela" && slot.wikiId !== "daemon").map(slot => slot.wikiId)],
-            promotionsFor: wiki => promotions({ wiki, ...nodePromoteStores(personaGroupId), who,
+            promotionsFor: (wiki, ward) => promotions({ wiki, ...nodePromoteStores(personaGroupId), who,
               items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(casDirForStorage(storageDir), atom.key),
               // The panel carries no ward route (its verbs ride the daemon document), so a bound commit refuses by name, toward the terminal.
-              wardSigner: async () => { throw new WardNeedsFreshUnlock(`the panel's commit in ${wiki} (the panel carries no ward route: run \`lares promote commit <digest> --wiki ${wiki}\` at a terminal)`); },
+              wardSigner: async () => {
+                const held = takeWardTicket(ward);
+                if (!held) throw new WardNeedsFreshUnlock(`the panel's commit in ${wiki} (the panel carries no ward route: run \`lares promote commit <digest> --wiki ${wiki}\` at a terminal)`);
+                return wardRootSigner(wornMount?.handleIndex ?? 0, held, `a commit in ${wiki}`);
+              },
               face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false } }), boardDoor,
           });
           const push = async (data: string) => { daemonVm.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
@@ -2526,7 +2539,7 @@ async function prepareNodeBootOn(
         // of the proof, the dial stands idle and the log names the piece.
         const dialSessions = opts.dialSessions ?? { table: new SessionTable(`dial-${globalThis.crypto.randomUUID()}`), binding: sessionBinding("socket"), profile: "face" };
         const composed = dialPin !== null
-          ? await composeDialPresentation({ sealHome, pin: dialPin, personaGroup: personaGroupId, ...dialSessions })
+          ? await composeDialPresentation({ sealHome, pin: dialPin, personaGroup: personaGroupId, ...dialSessions, ...(bootWard ? { doors: { founder: { ward: bootWard } } } : {}) })
           : null;
         // THE WALKER ROUTE SHIPS SHUT BY NAME (the routes ruling, stable-founding-road: "Walker arms ... ship SHUT by name"; a closed
         // route grants no silent authority): a vessel that walks at a hearth with no admit-carried pin presents no walk at the sealed gate.
@@ -2587,7 +2600,7 @@ async function prepareNodeBootOn(
       }
     };
     if (joinSyncUrl) {
-      await standFaceDial(hearthDial);
+      try { await standFaceDial(hearthDial); } finally { bootWard = undefined; }
     }
     else if (placeClass === "herm") {
       // A herm dials no hearth. Its standing at a Nexus is the counted `carry` that travels by hand
@@ -2597,6 +2610,8 @@ async function prepareNodeBootOn(
     } else if (readKeptAdmitBundles(sealHome).length > 0) {
       console.log("[nexus-join] dial-idle: sync-url-absent — a kept admit bundle names no address the hearth listens at (re-take a bundle issued with --sync-url)");
     }
+    // No boot dial stood, or it settled: the unlock act's route leaves this composition either way.
+    bootWard = undefined;
     // THE LATE DIAL. `admit-take` on a RUNNING vessel keeps a bundle that names a hearth, its sync url and the sovereign pin to dial,
     // and fires `afterRoll`, and the take stands that dial: the choice is made again over the bundles kept at that moment, and a dial
     // that already stands keeps what it presents (a moved board re-dials through the adapter). A herm dials no hearth, and a floor

@@ -14,11 +14,11 @@
 import { browserKeystoreCustodyIo, CUSTODY_TREE_ROW, sealedCarrierOf } from "./browser-custody.js";
 import type { WardActAnswer, WardActRequest } from "./ward-core.js";
 
-/** One worker for one act. The default spawns `ward-worker.ts`; a witness passes a spawn that runs the pure core in-process. */
+/** One worker for one act. The default spawns `ward.worker.ts`; a witness passes a spawn that runs the pure core in-process. */
 export interface WardWorkerHandle { postMessage(msg: unknown, transfer: Transferable[]): void; terminate(): void }
 export type WardWorkerSpawn = () => WardWorkerHandle;
 
-const defaultSpawn: WardWorkerSpawn = () => new Worker(new URL("./ward-worker.js", import.meta.url), { type: "module" });
+const defaultSpawn: WardWorkerSpawn = () => new Worker(new URL("./ward.worker.ts", import.meta.url), { type: "module" });
 
 /** Refused ward acts answer by name: no credential and no byte of the root rides the error. */
 export class BrowserWardRefused extends Error {

@@ -146,7 +146,7 @@ function printCustody(c: CustodyStatus): void {
     const sealedHere = mine.filter((r) => r.reading === "sealed" && !r.fault).length;
     const faultsHere = mine.filter((r) => r.fault).length;
     const dg = (d: string | null): string => (d === null ? "-" : `${d.slice(0, 12)}…`);
-    console.log(`  face h${ordinal}        ${f.fcid.slice(0, 12)}…  ${mine.length} row(s): ${sealedHere} sealed under its keys, ${faultsHere} at fault   group ${dg(f.group)}  ask ${dg(f.ask)}`);
+    console.log(`  face h${ordinal}        ${f.fcid.slice(0, 12)}…  ${mine.length} row(s): ${sealedHere} sealed under its key, ${faultsHere} at fault   group ${dg(f.group)}  ask ${dg(f.ask)}`);
   });
   const sealed = c.rows.filter((r) => r.reading === "sealed" && !r.fault).length;
   const byLaw = c.rows.filter((r) => r.bare !== null && !r.fault).length;

@@ -4,7 +4,7 @@ import type { PromoteWho } from "./promote.js";
 
 type Signer = { readonly key: string; sign(bytes: Uint8Array): Promise<string> };
 export type PromoteBoardDoorPorts = {
-  group: string; face: PromoteFace; atom: Signer; epoch(): number; rootSigner(): Promise<Signer>;
+  group: string; face: PromoteFace; atom: Signer; epoch(): number; rootSigner(ward?: unknown): Promise<Signer>;
   board: { records(): Promise<readonly unknown[]>; land(act: SignedPromoteAct): Promise<void> };
   projection(): { planes: Readonly<Record<string, string | undefined>> };
 };
@@ -21,7 +21,7 @@ export function promoteBoardDoor(ports: PromoteBoardDoorPorts) {
     async flag(input: { wiki: string; digest: string; title: string; classes: readonly string[]; why: string }) {
       return land(await signPromotePrepare({ ...input, intent: "kapae", group: ports.group, epoch: ports.epoch() }, ports.atom));
     },
-    async kapae(input: { action: "raise" | "lower"; wiki: string; digest: string; who: PromoteWho }) {
+    async kapae(input: { action: "raise" | "lower"; wiki: string; digest: string; who: PromoteWho; ward?: unknown }) {
       assertKapaeHand(input.action, input.who);
       let signer: Signer;
       if (input.action === "raise") {
@@ -30,7 +30,7 @@ export function promoteBoardDoor(ports: PromoteBoardDoorPorts) {
         if (!ports.face.device(signer.key)) throw new KapaeRefused("device-not-enrolled", "this device's atom stands in no enrolment of the face");
       } else {
         // A LOWER RELEASES A BRAKE: the face root signs it, opened under a fresh ward unlock (seat-harness#/the-ward).
-        try { signer = await ports.rootSigner(); }
+        try { signer = await ports.rootSigner(input.ward); }
         catch (e) {
           const m = e instanceof Error ? e.message : String(e);
           const ward = /^ward-[a-z-]+/.exec(m)?.[0];

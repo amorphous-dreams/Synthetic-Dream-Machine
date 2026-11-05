@@ -94,8 +94,12 @@ export class WardNeedsTty extends Error {
   }
 }
 
-/** An environment name that reads as a passphrase's carrier: the ward refuses to run while one stands, so nobody mistakes it for a route. */
-const ROUTE_IN_ENV = /PASS(?:WORD|PHRASE)?|WARD/i;
+/**
+ * An environment name that reads as a ward route's carrier: a house name (`LAR_`, `LARES_`) naming a pass or a ward, or any
+ * `PASSPHRASE`. The ward refuses to run while one stands, so nobody mistakes it for a route. A tool's own helper variables
+ * (`GIT_ASKPASS`, `SSH_ASKPASS`) name a program, not a route, and stay out.
+ */
+const ROUTE_IN_ENV = /^LAR(?:ES)?_\w*(?:PASS|WARD)|PASSPHRASE/i;
 
 /**
  * THE WARD DOOR (seat-harness#/the-ward): read one ward act's passphrase from a TTY, never echoed. It refuses `ward-needs-tty` while a
