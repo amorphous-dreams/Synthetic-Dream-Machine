@@ -146,3 +146,15 @@ export function moveAside(held) {
 export function removeHeldContents(held) {
   for (const name of readdirSync(held.at())) rmSync(held.at(name), { recursive: true, force: true });
 }
+
+/** Total bytes of the regular files under a held directory (a bounded walk through the handle; nothing followed). */
+export function heldBytes(held, rel = "", depth = 0) {
+  let total = 0;
+  let names; try { names = readdirSync(rel ? held.at(rel) : held.at()); } catch { return 0; }
+  for (const name of names) {
+    const p = rel ? `${rel}/${name}` : name;
+    let st; try { st = lstatSync(held.at(p)); } catch { continue; }
+    if (st.isDirectory()) { if (depth < 4) total += heldBytes(held, p, depth + 1); } else total += st.size;
+  }
+  return total;
+}

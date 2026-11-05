@@ -1127,3 +1127,70 @@ test("SAFETY no test fake in this file carries pid 0 or 1: a fake child's pid is
   const bad = src.map((l, i) => [i + 1, l]).filter(([, l]) => /\b(e\.pid|pid:)\s*=?\s*[01]\b(?!\d)/.test(l) && !/SAFETY/.test(l) && !/bad of/.test(l));
   assert.deepEqual(bad.map(([i, l]) => `${i} ${l.trim().slice(0, 70)}`), []);
 });
+
+// ======================= Terra round 7 =======================
+import { checkBrokerRoot } from "./broker-root.mjs";
+
+test("P3 a BUILD worktree outside ~/.lares-scratch refuses (the house law), and a granted root that is an ancestor of the fixed root refuses; CONTROL passes", () => {
+  const w = world();
+  const outside = join(w.home, "outside-wt"); mkdirSync(outside);
+  refuses(w, { mode: "build", worktree: outside }, /builder worktree must sit under/);
+  assert.ok(preflight(ask(w), w.readers), "CONTROL a worktree under scratch passes");
+  const home = realpathSync(w.home), root = join(home, ".local/state/lares-broker");
+  for (const ancestor of [home, join(home, ".local"), join(home, ".local/state")]) assert.throws(() => checkBrokerRoot(root, { realHome: home, guarded: [ancestor] }), /must sit outside/, `ancestor ${ancestor} refuses`);
+  assert.doesNotThrow(() => checkBrokerRoot(root, { realHome: home, guarded: [join(home, ".lares-scratch/lane/wt")] }));
+});
+
+const bareSeat = () => {
+  const dir = mkdtempSync(join(tmpdir(), "fin-")); const bsd = join(dir, "bsd"), lane = join(dir, "lane"), home = join(dir, "home");
+  mkdirSync(bsd); mkdirSync(lane); mkdirSync(join(home, ".codex", "sessions"), { recursive: true });
+  writeFileSync(join(bsd, "prompt.txt"), "SEAT-MARKER f\n\nb"); writeFileSync(join(bsd, "rollouts-before.json"), "[]");
+  return { dir, bsd, lane, home, held: openHeldSync(bsd, dir), laneHeld: openHeldSync(lane, dir) };
+};
+const fakeChild = (code) => () => { const e = new EventEmitter(); e.pid = 4242; e.kill = () => {}; setTimeout(() => e.emit("exit", code), 5); return e; };
+const sleep1 = () => new Promise((r) => setTimeout(r, 1));
+const doneOf = (S, name) => JSON.parse(readFileSync(join(S.lane, name), "utf8"));
+
+test("P2 EVERY exit path writes the FULL marker (verdict, exitCode, copied, finalMd, handbackError, error, kept) and removes the broker seat dir: a throw, a clean exit; CONTROL fields all present", async () => {
+  const keys = ["copied", "error", "exitCode", "finalMd", "handbackError", "kept", "verdict"];
+  { // a throw before the child spawns
+    const S = bareSeat(); rmSync(join(S.bsd, "rollouts-before.json"));
+    await assert.rejects(superviseSeat({ held: S.held, laneHeld: S.laneHeld, doneName: "done-t", bsdPath: S.bsd, marker: "m", home: S.home, ceiling: 1, mode: "read", rest: [] }, {}), /rollouts-before/);
+    const d = doneOf(S, "done-t");
+    assert.deepEqual(Object.keys(d).sort(), keys); assert.equal(d.verdict, "supervisor-error"); assert.match(d.error, /rollouts-before/); assert.equal(d.kept, null);
+    assert.equal(existsSync(S.bsd), false, "the broker seat dir is removed on a throw");
+  }
+  { // a clean exit
+    const S = bareSeat(); writeFileSync(join(S.bsd, "final.md"), "ok");
+    const v = await superviseSeat({ held: S.held, laneHeld: S.laneHeld, doneName: "done-c", bsdPath: S.bsd, marker: "m", home: S.home, ceiling: 1e9, mode: "read", rest: [] }, { spawn: fakeChild(0), sleep: sleep1, groupAlive: () => false, signal: () => {} });
+    const d = doneOf(S, "done-c");
+    assert.equal(v, "exited"); assert.deepEqual(Object.keys(d).sort(), keys); assert.equal(d.finalMd, true); assert.equal(d.exitCode, 0);
+    assert.equal(existsSync(S.bsd), false);
+  }
+});
+
+test("P2 an UNSTOPPED seat (its group still lives) keeps its broker dir, names it in the full marker, and copies nothing back; once the group is gone the dir is removed", async () => {
+  const S = bareSeat(); writeFileSync(join(S.bsd, "final.md"), "partial");
+  const v = await superviseSeat({ held: S.held, laneHeld: S.laneHeld, doneName: "done-u", bsdPath: S.bsd, marker: "m", home: S.home, ceiling: 1e9, mode: "read", rest: [] }, { spawn: fakeChild(0), sleep: sleep1, groupAlive: () => true, signal: () => {}, groupPolls: 2, pollMs: 1 });
+  assert.equal(v, "unstopped");
+  const d = doneOf(S, "done-u");
+  assert.equal(d.verdict, "unstopped"); assert.equal(d.kept, S.bsd); assert.deepEqual(d.copied, []);
+  assert.equal(existsSync(join(S.bsd, "final.md")), true, "nothing alive loses its cwd");
+  assert.equal(existsSync(join(S.lane, "final.md")), false, "no hand-back while the group lives");
+});
+
+test("P2 a running seat's output has a live bound: a seat dir over the cap is stopped with verdict size-ceiling and named; CONTROL under the cap exits normally", async () => {
+  const S = bareSeat();
+  let kid; const sig = [];
+  const v = await superviseSeat({ held: S.held, laneHeld: S.laneHeld, doneName: "done-s", bsdPath: S.bsd, marker: "m", home: S.home, ceiling: 1e9, mode: "read", rest: [], maxBytes: 1000, graceTicks: 1, hardTicks: 1 }, {
+    spawn: () => { kid = new EventEmitter(); kid.pid = 4242; kid.kill = () => {}; setTimeout(() => writeFileSync(join(S.bsd, "run.log"), Buffer.alloc(5000, 65)), 1); return kid; },
+    sleep: () => new Promise((r) => setTimeout(r, 15)), groupAlive: () => false,
+    signal: (neg, s) => { sig.push(s); if (s === "SIGTERM") setTimeout(() => kid.emit("exit", 143), 1); },
+  });
+  assert.equal(v, "size-ceiling");
+  assert.equal(doneOf(S, "done-s").verdict, "size-ceiling");
+  assert.ok(sig.includes("SIGTERM"));
+  const S2 = bareSeat();
+  const v2 = await superviseSeat({ held: S2.held, laneHeld: S2.laneHeld, doneName: "done-n", bsdPath: S2.bsd, marker: "m", home: S2.home, ceiling: 1e9, mode: "read", rest: [], maxBytes: 1e6 }, { spawn: fakeChild(0), sleep: sleep1, groupAlive: () => false, signal: () => {} });
+  assert.equal(v2, "exited");
+});

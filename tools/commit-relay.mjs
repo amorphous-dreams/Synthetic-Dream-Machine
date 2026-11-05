@@ -5,6 +5,7 @@ import os from 'node:os';
 import { randomBytes } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { openHeld } from './held-dir.mjs';
+import { brokerRootPath, ensureBrokerRoot, ensureLaneDir } from './broker-root.mjs';
 import { addWorktree, commitWithReceipt, pushWithGo, removeWorktree } from './seat-broker.mjs';
 import { runInstallSeat } from './seat-walls.mjs';
 
@@ -13,36 +14,34 @@ const options = {};
 for (let i = 0; i < args.length; i++) {
   const arg = args[i];
   if (arg === '--once') options.once = true;
-  else if (['--lane-root', '--worktree', '--branch', '--go-file', '--launcher', '--checks', '--installer', '--store-dir', '--author-name', '--author-email', '--remote-url'].includes(arg) && args[i + 1] && !args[i + 1].startsWith('--')) options[arg.slice(2)] = args[++i];
+  else if (['--lane-root', '--worktree', '--branch', '--launcher', '--checks', '--installer', '--store-dir', '--author-name', '--author-email', '--remote-url'].includes(arg) && args[i + 1] && !args[i + 1].startsWith('--')) options[arg.slice(2)] = args[++i];
   else throw new Error(`invalid argument: ${arg}`);
 }
 if (!options['remote-url']) throw new Error('--remote-url is required: the push target comes from the controller, never from the lane\'s config');
-if (!options['lane-root'] || !options.worktree || !options.branch || !options['go-file'] || !options.launcher) throw new Error('usage: --lane-root <dir> --worktree <wt> --branch <branch> --go-file <path outside lane-root> --launcher <path> [--once]');
+if (!options['lane-root'] || !options.worktree || !options.branch || !options.launcher) throw new Error('usage: --lane-root <dir> --worktree <wt> --branch <branch> --launcher <path> [--once]');
 const lane = await realpath(options['lane-root']);
 const worktree = await realpath(options.worktree);
 const scratch = await realpath(path.join(os.homedir(), '.lares-scratch'));
 const inside = (root, target) => target !== root && !path.relative(root, target).startsWith(`..${path.sep}`) && path.relative(root, target) !== '..' && !path.isAbsolute(path.relative(root, target));
 if (!inside(scratch, worktree)) throw new Error('worktree must sit under the real home .lares-scratch');
-// THE GO LIVES WHERE THE LEAD CANNOT WRITE: a lead's wall covers its lane root, so a go inside it would let a lead grant its own push.
-const goFile = path.resolve(options['go-file']);
-const goDir = await realpath(path.dirname(goFile));
-if (goDir === lane || inside(lane, goDir) || goDir === worktree || inside(worktree, goDir)) throw new Error('go-file must sit outside the lane root and the worktree');
+// THE GO AND THE BROKER'S STATE LIVE UNDER THE ONE FIXED BROKER ROOT (the same root the seat dirs use), and no caller names either path:
+// <root>/go/<lane>/push-go and <root>/iso/<lane>. One verifier (broker-root.mjs) checks the root before anything is created: ours, exactly
+// 0700, no symlinked or group/other-writable component, nothing under ~/.lares-scratch (every lane included), no ancestor of a granted root.
+const homeReal = await realpath(os.homedir());
+const brokerRoot = brokerRootPath(homeReal, process.env);
+const rootOpts = { realHome: homeReal, guarded: [lane, worktree, scratch] };
+ensureBrokerRoot(brokerRoot, rootOpts);
+const goDir = ensureLaneDir(brokerRoot, 'go', lane, rootOpts);
+const goFile = path.join(goDir, 'push-go');
+const iso = ensureLaneDir(brokerRoot, 'iso', lane, rootOpts);
+// A made worktree is a GRANTED root for its builder, so it lives under the scratch tree (house law) but in a broker-owned dir no lane grants: .broker-worktrees/<lane>.
+const stageRoot = path.join(scratch, '.broker-worktrees', path.basename(lane));
+await (await import('node:fs/promises')).mkdir(stageRoot, { recursive: true, mode: 0o700 });
 const launcher = await realpath(options.launcher);
 if (launcher === scratch || inside(scratch, launcher)) throw new Error('launcher must sit outside the scratch tree entirely: a lead can write anywhere a lane or worktree lives under it');
 const branch = options.branch;
 const git = (...argv) => spawnSync('/usr/bin/git', ['-C', worktree, ...argv], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, env: { PATH: '/usr/bin:/bin', HOME: '/nonexistent', LC_ALL: 'C', GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null', GIT_TERMINAL_PROMPT: '0' } });
 if (branch.startsWith('-') || git('check-ref-format', `refs/heads/${branch}`).status !== 0) throw new Error('invalid branch');
-// THE BROKER'S OWN STATE lives where the lead cannot write: beside the go file.
-const iso = path.join(goDir, 'broker-iso');
-// The broker's OWN state dir is checked by real path, not only its parent: it must lie outside the lane, every worktree, and the whole scratch lane tree a lead can write.
-const isoReal = await realpath(iso).catch(() => iso);
-const laneTop = target => path.join(scratch, path.relative(scratch, target).split(path.sep)[0]);
-for (const guarded of [lane, worktree]) {
-  if (isoReal === guarded || inside(guarded, isoReal) || inside(isoReal, guarded)) throw new Error('broker state must sit outside the lane root and the worktree (and hold neither)');
-  if (isoReal === laneTop(guarded) || inside(laneTop(guarded), isoReal)) throw new Error('broker state must sit outside the scratch lane tree a lead can write');
-}
-// Nothing is created before the placement stands checked.
-await (await import('node:fs/promises')).mkdir(iso, { recursive: true });
 const relayDir = path.join(lane, 'relay');
 await (await import('node:fs/promises')).mkdir(relayDir, { recursive: true });
 // The request directory is held open by handle: a lead that swaps `relay` for a symlink afterwards redirects nothing.
@@ -51,12 +50,11 @@ const relay = await openHeld(relayDir, lane);
 // THE RECEIPT KEY NEVER TOUCHES DISK: a workspace-write sandbox fences writes, not reads, so any key file the user can read a lead can read. The key and the receipts live in this process's memory alone.
 const key = randomBytes(32);
 const receipts = new Map();
-for (const guarded of [iso]) { await (await import('node:fs/promises')).mkdir(path.dirname(guarded), { recursive: true }); const parent = await realpath(path.dirname(guarded)); if (parent === lane || inside(lane, parent) || inside(worktree, parent)) throw new Error('broker state must sit outside the lane root and the worktree'); }
 const checks = options.checks ? JSON.parse(await readFile(options.checks, 'utf8')) : [];
 const gitDirOf = async () => { const dot = path.join(worktree, '.git'); try { const text = await readFile(dot, 'utf8'); const m = /^gitdir: (.+)$/m.exec(text); return m ? path.resolve(worktree, m[1].trim()) : dot; } catch (error) { if (error.code === 'EISDIR') return dot; throw error; } };
 const identity = () => { const read = key => (spawnSync('/usr/bin/git', ['config', '--global', key], { encoding: 'utf8', env: { PATH: '/usr/bin:/bin', HOME: os.homedir(), GIT_CONFIG_NOSYSTEM: '1' } }).stdout || '').trim(); return { name: options['author-name'] || read('user.name') || 'Relay', email: options['author-email'] || read('user.email') || 'relay@example.invalid' }; };
 const pinnedGitDir = await gitDirOf();
-const brokerCtx = async () => ({ gitDir: pinnedGitDir, laneRoot: lane, worktree, iso, branch, author: identity(), receipts, key, remoteUrl: options['remote-url'], requiredChecks: checks.map(c => c.name), checks, bwrap: true, goFile: path.join(goDir, path.basename(goFile)) });
+const brokerCtx = async () => ({ gitDir: pinnedGitDir, laneRoot: lane, worktree, iso, stageRoot, branch, author: identity(), receipts, key, remoteUrl: options['remote-url'], requiredChecks: checks.map(c => c.name), checks, bwrap: true, goFile: path.join(goDir, path.basename(goFile)) });
 const cap = value => new TextDecoder().decode(Buffer.from(value).subarray(0, 8192), { stream: true });
 const result = run => ({ ok: run.status === 0, head: (git('rev-parse', '--short', 'HEAD').stdout || '').trim(), output: cap((run.stdout || '') + (run.stderr || '') + (run.error ? String(run.error) : '')) });
 

@@ -10,7 +10,9 @@
 import { lstatSync, mkdirSync, mkdtempSync, readdirSync, realpathSync } from "node:fs";
 import path from "node:path";
 
-export const BROKER_SUBPATH = ".local/state/lares-broker/seats";
+export const BROKER_SUBPATH = ".local/state/lares-broker";
+/** The four directories under the root: seat dirs, the controller's pushes, the relay's state. */
+export const BROKER_PARTS = ["seats", "go", "iso"];
 export const DEFAULT_MAX_GB = 10;
 
 /** The broker root path: the controller's env, else the fixed default under the real home. */
@@ -41,16 +43,51 @@ export function checkBrokerRoot(root, { realHome, guarded = [] }) {
     if (!last && (st.mode & 0o022) !== 0) throw new Error(`${next} is group- or world-writable above the broker root`);
     cursor = next;
   }
+  if (missing.length === 0) checkParts(root);
   return { root, missing };
 }
 
-/** Makes the missing components (0700) and re-verifies the whole path. */
+/** Verifies the existing sub-directories under the root: real, ours, exactly 0700. */
+function checkParts(root) {
+  for (const part of BROKER_PARTS) {
+    const p = path.join(root, part);
+    let st; try { st = lstatSync(p); } catch (error) { if (error.code === "ENOENT") continue; throw error; }
+    if (st.isSymbolicLink() || !st.isDirectory()) throw new Error(`${p} is not a real directory`);
+    if (st.uid !== uid()) throw new Error(`${p} is not owned by this user`);
+    if ((st.mode & 0o777) !== 0o700) throw new Error(`${p} must be mode 0700 (it reads ${(st.mode & 0o777).toString(8)})`);
+  }
+}
+
+/** The per-lane subdirectory name: the lane root's own base name, so lanes never share a go or a state dir. */
+export function laneId(laneRoot) {
+  const id = path.basename(laneRoot);
+  if (!/^[A-Za-z0-9._-]+$/.test(id) || id === "." || id === "..") throw new Error(`lane root ${laneRoot} has no safe base name`);
+  return id;
+}
+
+/** `<root>/go/<lane>/push-go` and `<root>/iso/<lane>`: the broker's own authority and state, nowhere a lead can write. */
+export const goPathFor = (root, laneRoot) => path.join(root, "go", laneId(laneRoot), "push-go");
+export const isoPathFor = (root, laneRoot) => path.join(root, "iso", laneId(laneRoot));
+
+/** Makes the missing components (0700), the four parts, and re-verifies the whole path. */
 export function ensureBrokerRoot(root, opts) {
   const { missing } = checkBrokerRoot(root, opts);
   let cursor = missing.length ? root.split(path.sep).slice(0, root.split(path.sep).length - missing.length).join(path.sep) || path.sep : root;
   for (const part of missing) { cursor = path.join(cursor, part); mkdirSync(cursor, { mode: 0o700 }); } // broker-owned
   checkBrokerRoot(root, opts);
+  for (const part of BROKER_PARTS) { try { mkdirSync(path.join(root, part), { mode: 0o700 }); } catch (error) { if (error.code !== "EEXIST") throw error; } } // broker-owned
+  checkParts(root);
   return root;
+}
+
+/** Makes `<root>/<part>/<lane>` (0700) after the root verifies. */
+export function ensureLaneDir(root, part, laneRoot, opts) {
+  ensureBrokerRoot(root, opts);
+  const dir = path.join(root, part, laneId(laneRoot));
+  try { mkdirSync(dir, { mode: 0o700 }); } catch (error) { if (error.code !== "EEXIST") throw error; } // broker-owned
+  const st = lstatSync(dir);
+  if (st.isSymbolicLink() || !st.isDirectory() || st.uid !== uid() || (st.mode & 0o777) !== 0o700) throw new Error(`${dir} must be a real 0700 directory of ours`);
+  return dir;
 }
 
 /** Total bytes under the root (a walk, no symlink followed). */
@@ -69,11 +106,11 @@ export function brokerRootBytes(root) {
 
 /** Refuses (by name) while the root holds more than `maxGb` gigabytes. */
 export function checkBrokerRootSize(root, maxGb = Number(process.env.LARES_BROKER_MAX_GB) || DEFAULT_MAX_GB) {
-  const bytes = brokerRootBytes(root);
+  const bytes = brokerRootBytes(path.join(root, "seats"));
   if (bytes > maxGb * 1024 ** 3) throw new Error(`the broker root ${root} holds ${(bytes / 1024 ** 3).toFixed(2)} GB, over the ${maxGb} GB bound; remove finished seat dirs first`);
 }
 
 /** A fresh seat directory (mkdtemp, 0700) inside a verified root. */
 export function newSeatDir(root) {
-  return mkdtempSync(path.join(root, "seat-")); // broker-owned
+  return mkdtempSync(path.join(root, "seats", "seat-")); // broker-owned
 }

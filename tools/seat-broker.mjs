@@ -450,7 +450,7 @@ export async function addWorktree(ctx, { path: dest, branch, base }) {
   try { parent = await openHeld(path.dirname(dest), ctx.laneRoot); } catch (error) { return fail(`destination parent: ${error.message}`); }
   try {
     ensureIso(ctx.iso);
-    const stageRoot = path.join(ctx.iso, 'staging');
+    const stageRoot = ctx.stageRoot ?? path.join(ctx.iso, 'staging');
     mkdirSync(stageRoot, { recursive: true });
     const stage = path.join(await mkdtemp(path.join(stageRoot, 'wt-')), 'wt');
     const undo = () => { git(ctx, ['worktree', 'remove', '--force', stage]); git(ctx, ['branch', '-D', branch]); rmSync(path.dirname(stage), { recursive: true, force: true }); };

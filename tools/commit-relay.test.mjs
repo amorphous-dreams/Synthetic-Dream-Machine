@@ -1,10 +1,12 @@
 import { test, afterEach } from 'node:test';
 import { wallTest } from './wall-test.mjs';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, symlinkSync, chmodSync, readdirSync, linkSync, renameSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, symlinkSync, chmodSync, readdirSync, linkSync, renameSync, realpathSync, statSync } from 'node:fs';
 import { createServer } from 'node:net';
 import os from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
+import { ensureLaneDir, goPathFor } from './broker-root.mjs';
+const scratchOf = (home) => path.join(realpathSync(home), '.lares-scratch');
 import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,7 +33,8 @@ function setup() {
   execFileSync('git', ['init', '--bare', remote], { stdio: 'ignore' }); git('remote', 'add', 'origin', remote);
   writeFileSync(path.join(lane, 'message'), 'relay test\n');
   const request = (id, data) => writeFileSync(path.join(lane, 'relay', `req-${id}.json`), typeof data === 'string' ? data : JSON.stringify(data));
-  const goDir = path.join(home, 'controller'); mkdirSync(goDir); const goFile = path.join(goDir, 'push-go');
+  const brokerRoot = path.join(home, '.local/state/lares-broker'); const goFile = goPathFor(brokerRoot, lane);
+  const ensureGo = () => ensureLaneDir(brokerRoot, 'go', lane, { realHome: realpathSync(home), guarded: [lane, wt, scratchOf(home)] });
   const launcher = path.join(home, 'launcher.mjs'); writeFileSync(launcher, `import { writeFileSync } from 'node:fs';
 writeFileSync(${JSON.stringify(path.join(root, 'argv.json'))}, JSON.stringify(process.argv.slice(2)));
 console.log('SEAT-LAUNCHED 123');
@@ -41,9 +44,9 @@ console.log('SEAT-LAUNCHED 123');
   const checksFile = path.join(root, 'checks.json'); writeFileSync(checksFile, JSON.stringify([{ name: 'true', argv: ['/usr/bin/true'] }]));
   const storeDir = path.join(root, 'store'); mkdirSync(storeDir);
   const brokerArgs = ['--installer', path.join(bin, 'pnpm'), '--store-dir', storeDir, '--checks', checksFile, '--author-name', 'Relay', '--author-email', 'relay@example.invalid'];
-  const run = () => { const r = spawnSync(process.execPath, [script, '--lane-root', lane, '--worktree', wt, '--branch', 'relay-test', '--go-file', goFile, '--launcher', launcher, ...brokerArgs, '--remote-url', remote, '--once'], { encoding: 'utf8', env: relayEnv }); assert.equal(r.status, 0, r.stderr); };
+  const run = () => { const r = spawnSync(process.execPath, [script, '--lane-root', lane, '--worktree', wt, '--branch', 'relay-test', '--launcher', launcher, ...brokerArgs, '--remote-url', remote, '--once'], { encoding: 'utf8', env: relayEnv }); assert.equal(r.status, 0, r.stderr); };
   const response = id => JSON.parse(readFileSync(path.join(lane, 'relay', `res-${id}.json`), 'utf8'));
-  const go = value => writeFileSync(goFile, value);
+  const go = value => { ensureGo(); writeFileSync(goFile, value); };
   return { home, root, wt, lane, remote, git, request, run, response, go, goFile, launcher, bin, relayEnv, brokerArgs };
 }
 
@@ -92,12 +95,6 @@ wallTest('bad JSON, unknown kinds, a message PATH field and an over-cap message 
 });
 
 
-test('a go file inside the lane root refuses to start, so a lead can never grant its own push', () => {
-  const x = setup();
-  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', path.join(x.lane, 'relay', 'push-go'), '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
-  assert.notEqual(r.status, 0);
-  assert.match(r.stderr, /go-file must sit outside the lane root/);
-});
 
 
 test('worktree validates path and branch then creates and initializes', () => {
@@ -464,9 +461,9 @@ test('P1-1 the relay request directory is held by handle: swapping `relay` for a
 test('P1-5 the trusted launcher must sit outside the scratch tree entirely', () => {
   const x = setup();
   const inScratch = path.join(x.lane, 'wt', 'launcher.mjs'); writeFileSync(inScratch, '// planted');
-  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', x.goFile, '--launcher', inScratch, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
+  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--launcher', inScratch, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
   assert.notEqual(r.status, 0); assert.match(r.stderr, /launcher must sit outside the scratch tree/);
-  const ok = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', x.goFile, '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
+  const ok = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
   assert.equal(ok.status, 0, ok.stderr);
 });
 
@@ -474,7 +471,7 @@ test('a worktree the broker made is a first-class lane worktree: the install doo
   const x = setup(), dest = path.join(x.lane, 'builder');
   x.request('1', { kind: 'worktree', path: dest, branch: 'relay-test-build', base: 'HEAD' }); x.run();
   assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1')));
-  const made = JSON.parse(readFileSync(path.join(x.home, 'controller', 'broker-iso', 'made.json'), 'utf8'));
+  const made = JSON.parse(readFileSync(path.join(x.home, '.local/state/lares-broker/iso/lane/made.json'), 'utf8'));
   assert.equal(Object.keys(made)[0], dest);
   x.request('2', { kind: 'install', path: dest }); x.run();
   assert.doesNotMatch(x.response('2').output, /outside lane-root/, 'the install door follows the registry to the stage');
@@ -482,29 +479,7 @@ test('a worktree the broker made is a first-class lane worktree: the install doo
   assert.equal(x.response('3').ok, false);
 });
 
-test('P1-1 the broker state dir is checked by real path: a lane named broker-iso under the go dir refuses, and so does a state dir inside the scratch lane tree', () => {
-  const x = setup();
-  const ctl = path.join(x.root, 'ctl'), lane2 = path.join(ctl, 'broker-iso'), wt2 = path.join(lane2, 'wt');
-  mkdirSync(wt2, { recursive: true }); execFileSync('git', ['-C', wt2, 'init', '-q', '-b', 'relay-test']);
-  const r = spawnSync(process.execPath, [script, '--lane-root', lane2, '--worktree', wt2, '--branch', 'relay-test', '--go-file', path.join(ctl, 'push-go'), '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
-  assert.notEqual(r.status, 0); assert.match(r.stderr, /broker state must sit outside the lane root/);
-  const inTree = path.join(x.root, 'controller'); mkdirSync(inTree);
-  const r2 = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', path.join(inTree, 'push-go'), '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
-  assert.notEqual(r2.status, 0); assert.match(r2.stderr, /scratch lane tree/);
-  const ok = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', x.goFile, '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
-  assert.equal(ok.status, 0, ok.stderr);
-});
 
-test('P1-1 a broker-iso that is a symlink into the lane refuses BEFORE anything is created inside the lane', () => {
-  const x = setup();
-  const ctl = path.join(home_of(x), 'ctl2'); mkdirSync(ctl);
-  mkdirSync(path.join(x.lane, 'inside'));
-  symlinkSync(path.join(x.lane, 'inside'), path.join(ctl, 'broker-iso'));
-  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', path.join(ctl, 'push-go'), '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
-  assert.notEqual(r.status, 0); assert.match(r.stderr, /broker state must sit outside/);
-  assert.deepEqual(readdirSync(path.join(x.lane, 'inside')), [], 'nothing was created inside the lane');
-});
-const home_of = (x) => x.home;
 
 test('P1-2 a commit message with a lone surrogate or a NUL refuses; a multibyte message under the byte cap commits', async () => {
   const x = brokerFixture(); writeFileSync(path.join(x.wt, 'a'), 'v2\n');
@@ -516,16 +491,56 @@ test('P1-2 a commit message with a lone surrogate or a NUL refuses; a multibyte 
   assert.equal(r.ok, true, JSON.stringify(r)); assert.equal(x.git('log', '-1', '--format=%s'), 'lar:/// — café');
 });
 
-test('P2-3 a bad broker-iso with a missing relay/ leaves the lane byte-identical: the placement check runs before ANY create', () => {
+
+const relayRun = (x, env = {}, extra = []) => spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, ...extra, '--once'], { encoding: 'utf8', env: { ...x.relayEnv, ...env } });
+
+test('P1 the go and the broker state live under the ONE fixed broker root: a root anywhere under ~/.lares-scratch (another lane included), a symlinked component, a 0755 root and a group-writable ancestor each refuse; CONTROL passes', () => {
   const x = setup();
+  const scratch = scratchOf(x.home);
+  const otherLane = path.join(scratch, 'other-lane'); mkdirSync(otherLane);
+  let r = relayRun(x, { LARES_BROKER_ROOT: path.join(otherLane, 'broker') });
+  assert.notEqual(r.status, 0); assert.match(r.stderr, /outside .*\.lares-scratch entirely/);
+  assert.equal(existsSync(path.join(otherLane, 'broker')), false, 'nothing was created in the other lane');
+  const real = path.join(x.home, 'realdir'); mkdirSync(real, { mode: 0o700 }); symlinkSync(real, path.join(x.home, 'linked'));
+  r = relayRun(x, { LARES_BROKER_ROOT: path.join(x.home, 'linked', 'broker') });
+  assert.notEqual(r.status, 0); assert.match(r.stderr, /not a real directory/);
+  const open = path.join(x.home, 'open'); mkdirSync(open); chmodSync(open, 0o755);
+  r = relayRun(x, { LARES_BROKER_ROOT: open });
+  assert.notEqual(r.status, 0); assert.match(r.stderr, /mode 0700/);
+  const wide = path.join(x.home, 'wide'); mkdirSync(wide); chmodSync(wide, 0o777); mkdirSync(path.join(wide, 'broker'), { mode: 0o700 });
+  r = relayRun(x, { LARES_BROKER_ROOT: path.join(wide, 'broker') });
+  assert.notEqual(r.status, 0); assert.match(r.stderr, /group- or world-writable/);
+  r = relayRun(x);
+  assert.equal(r.status, 0, r.stderr);
+  const root = path.join(realpathSync(x.home), '.local/state/lares-broker');
+  for (const part of ['seats', 'go', 'iso']) assert.equal(statSync(path.join(root, part)).mode & 0o777, 0o700, `${part} is 0700`);
+  assert.ok(existsSync(path.join(root, 'go', 'lane')) && existsSync(path.join(root, 'iso', 'lane')));
+});
+
+test('P1 no caller names the go or the state path: --go-file is an unknown option, and a bad root with a missing relay/ leaves the lane byte-identical', () => {
+  const x = setup();
+  let r = relayRun(x, {}, ['--go-file', '/tmp/x']);
+  assert.notEqual(r.status, 0); assert.match(r.stderr, /invalid argument: --go-file/);
   rmSync(path.join(x.lane, 'relay'), { recursive: true });
-  const ctl = path.join(x.home, 'ctl3'); mkdirSync(ctl);
-  mkdirSync(path.join(x.lane, 'inside'));
-  symlinkSync(path.join(x.lane, 'inside'), path.join(ctl, 'broker-iso'));
   const snap = (d) => readdirSync(d, { withFileTypes: true, recursive: true }).map((e) => `${e.parentPath ?? e.path}/${e.name}${e.isFile() ? `:${createHash('sha256').update(readFileSync(path.join(e.parentPath ?? e.path, e.name))).digest('hex')}` : ''}`).sort();
   const before = snap(x.lane);
-  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', path.join(ctl, 'push-go'), '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
-  assert.notEqual(r.status, 0); assert.match(r.stderr, /broker state must sit outside/);
+  const otherLane = path.join(scratchOf(x.home), 'other-lane'); mkdirSync(otherLane);
+  r = relayRun(x, { LARES_BROKER_ROOT: path.join(otherLane, 'broker') });
+  assert.notEqual(r.status, 0);
   assert.deepEqual(snap(x.lane), before, 'the whole lane tree is byte-identical');
-  assert.equal(existsSync(path.join(x.lane, 'relay')), false, 'no relay/ was made');
+  assert.equal(existsSync(path.join(x.lane, 'relay')), false);
+});
+
+test('the controller go tool writes under the broker root, refuses a root under scratch, and the relay spends what it wrote', () => {
+  const x = setup();
+  const tool = fileURLToPath(new URL('./push-go.mjs', import.meta.url));
+  const head = x.git('rev-parse', 'HEAD');
+  const w = spawnSync(process.execPath, [tool, '--lane-root', x.lane, '--branch', 'relay-test', '--head', head], { encoding: 'utf8', env: x.relayEnv });
+  assert.equal(w.status, 0, w.stderr);
+  assert.equal(readFileSync(x.goFile, 'utf8'), `relay-test\n${head}\n`);
+  const bad = spawnSync(process.execPath, [tool, '--lane-root', x.lane, '--branch', 'relay-test', '--head', head], { encoding: 'utf8', env: { ...x.relayEnv, LARES_BROKER_ROOT: path.join(scratchOf(x.home), 'other', 'b') } });
+  assert.notEqual(bad.status, 0); assert.match(bad.stderr, /push-go refused/);
+  x.request('1', { kind: 'push' }); x.run();
+  assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1')));
+  assert.equal(existsSync(x.goFile), false, 'the go spends on the attempt');
 });
