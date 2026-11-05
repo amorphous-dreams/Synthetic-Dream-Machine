@@ -492,7 +492,7 @@ jobs:
   witness-cells:
     name: Witness cell ${{ matrix.cell }}
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
       fail-fast: false
@@ -538,6 +538,16 @@ jobs:
       # naming itself has become an unmeasured gate wearing a green check. The self-tests are each
       # `tools/*.test.mjs`, planting the reds their tool owes against fakes and scratch trees, so they need no docker,
       # no browser and no standing app; the glob reads the live set, and each joins without a hand edit.
+      # THE WALL TESTS RUN LIVE HERE. The broker's check and install seats and the launcher's PID-namespace containment all stand on
+      # bubblewrap; Ubuntu 24.04 bars unprivileged user namespaces by default, so the step lifts that and PROVES the exact wall the
+      # tests use. A failed proof stops the job before any test can skip over an unexercised wall, and on CI (CI=true) a missing
+      # wall fails the wall tests by name instead of skipping them (tools/wall-test.mjs).
+      - name: Install and prove bubblewrap user and PID namespaces
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y bubblewrap
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          bwrap --unshare-user --unshare-pid --ro-bind / / --proc /proc --dev /dev --tmpfs /tmp -- /usr/bin/true
       - name: Run this cell
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: node tools/ci-cells.mjs run-witness "${{ matrix.cell }}" --out "$RUNNER_TEMP/cell"
@@ -570,6 +580,13 @@ jobs:
       - name: Gate — fails closed on any missing, red or unexpected cell
         if: always()
         run: node tools/ci-cells.mjs verify-witnesses --artifacts-dir artifacts
+      - name: Gate — the wall tests ran live (no bubblewrap skip in any cell log)
+        if: always()
+        run: |
+          if grep -rl "no bubblewrap on this host" artifacts; then
+            echo "::error::a wall test skipped for want of bubblewrap; the runner step must prove it"
+            exit 1
+          fi
       - name: Gate — every cell job itself succeeded
         if: always()
         env:
