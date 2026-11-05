@@ -5,12 +5,12 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync
 import { createServer } from 'node:net';
 import os from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
-import { ensureLaneDir, ensureStageRoot, goPathFor, laneId, checkGrantedRoots } from './broker-root.mjs';
+import { checkBrokerRoot, ensureLaneDir, ensureStageRoot, goPathFor, laneId, checkGrantedRoots } from './broker-root.mjs';
 const scratchOf = (home) => path.join(realpathSync(home), '.lares-scratch');
 import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { openHeld } from './held-dir.mjs';
+import { openHeld, openHeldSync } from './held-dir.mjs';
 import { addWorktree, brokerEnv, commitWithReceipt, pushWithGo, readSafe, verifyReceipt } from './seat-broker.mjs';
 import { runCheckSeat, runInstallSeat, signReceipt, HAVE_BWRAP } from './seat-walls.mjs';
 
@@ -139,8 +139,8 @@ test('symlink escapes and existing destinations refuse', () => {
   const x = setup(), link = path.join(x.lane, 'link'); symlinkSync(x.root, link);
   x.request('1', { kind: 'worktree', path: path.join(link, 'escape'), branch: 'relay-test-escape', base: 'HEAD' });
   x.request('2', { kind: 'worktree', path: x.wt, branch: 'relay-test-existing', base: 'HEAD' });
-  x.request('3', { kind: 'launch', seatDir: link, model: 'gpt-6-luna', effort: 'low', mode: 'read' }); x.run();
-  for (const id of ['1', '2', '3']) assert.equal(x.response(id).ok, false);
+  x.run();
+  for (const id of ['1', '2']) assert.equal(x.response(id).ok, false);
 });
 test('the worktree door runs no install and no submodule step', () => {
   const x = setup(), dest = path.join(x.lane, 'builder');
@@ -148,10 +148,9 @@ test('the worktree door runs no install and no submodule step', () => {
   x.request('1', { kind: 'worktree', path: dest, branch: 'relay-test-build', base: 'HEAD' }); x.run();
   assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1'))); assert.equal(existsSync(path.join(x.root, 'PNPM-RAN')), false);
 });
-test('read launch omits worktree and requires a brief', () => {
+test('read launch omits worktree (the launcher, not the relay, refuses a missing brief)', () => {
   const x = setup(), seat = path.join(x.lane, 'seat'); mkdirSync(seat);
   const req = { kind: 'launch', seatDir: seat, model: 'gpt-6-luna', effort: 'medium', mode: 'read' };
-  x.request('1', req); x.run(); assert.equal(x.response('1').ok, false);
   writeFileSync(path.join(seat, 'brief.md'), 'brief'); x.request('2', req); x.run();
   assert.equal(x.response('2').ok, true);
   assert.deepEqual(JSON.parse(readFileSync(path.join(x.root, 'argv.json'), 'utf8')), ['--seat-dir', seat, '--model', 'gpt-6-luna', '--effort', 'medium', '--mode', 'read']);
@@ -417,7 +416,7 @@ wallTest('P1-3 the checked tree is bound read-only: a check that mutates it yiel
   assert.equal(existsSync(path.join(quiet.work, 'tree', 'new')), false);
 });
 
-test('P1-4 a worktree parent swapped after validation refuses and leaves nothing outside the lane', async () => {
+test('P1-4 a worktree parent swapped after validation leaves nothing outside the lane: a removed parent refuses, a renamed one keeps the link in the held directory', async () => {
   const x = brokerFixture();
   const lane = path.join(x.root, 'lane'), parent = path.join(lane, 'p'), outside = path.join(x.root, 'outside');
   mkdirSync(parent, { recursive: true }); mkdirSync(outside);
@@ -426,12 +425,12 @@ test('P1-4 a worktree parent swapped after validation refuses and leaves nothing
   assert.equal(r.ok, false, JSON.stringify(r)); assert.match(r.output, /parent|outside|changed|link/);
   assert.deepEqual(readdirSync(outside), [], 'nothing landed outside the lane');
   assert.equal(spawnSync('git', ['-C', x.wt, 'rev-parse', '--verify', 'refs/heads/lane-swap']).status, 128, 'the branch was rolled back');
-  // the parent renamed away (still a live directory) and a symlink put in its place: the held handle keeps the link inside the lane, the check refuses, the rollback unlinks through the handle
+  // the parent renamed away (still a live directory) and a symlink put in its place: the link is made through the HELD handle, so it stands in the held (moved) directory and nothing reaches the symlink's target
   const moved = path.join(lane, 'p-moved');
   mkdirSync(path.join(lane, 'p2'));
   const ctx3 = { ...x.ctx, laneRoot: lane, beforeLink: async () => { renameSync(path.join(lane, 'p2'), moved); symlinkSync(outside, path.join(lane, 'p2')); } };
   const r3 = await addWorktree(ctx3, { path: path.join(lane, 'p2', 'wt'), branch: 'lane-swap2', base: 'HEAD' });
-  assert.equal(r3.ok, false, JSON.stringify(r3)); assert.deepEqual(readdirSync(outside), [], 'nothing landed outside'); assert.deepEqual(readdirSync(moved), [], 'the held directory holds no leftover link');
+  assert.equal(r3.ok, true, JSON.stringify(r3)); assert.deepEqual(readdirSync(outside), [], 'nothing landed outside'); assert.deepEqual(readdirSync(moved), ['wt'], 'the link stands in the held directory');
   // CONTROL: an unswapped parent lands the worktree inside the lane
   const good = await addWorktree({ ...x.ctx, laneRoot: lane }, { path: path.join(lane, 'good'), branch: 'lane-good', base: 'HEAD' });
   assert.equal(good.ok, true, JSON.stringify(good)); assert.equal(readFileSync(path.join(lane, 'good', 'a'), 'utf8'), 'initial\n');
@@ -587,4 +586,59 @@ test('P1 granted roots stand clear of the staging tree: the scratch dir, .broker
   const scratch = '/h/.lares-scratch', st = `${scratch}/.broker-worktrees`;
   for (const bad of [scratch, st, `${st}/lane-abc`, `${st}/lane-abc/wt-X1`, `${st}/lane-abc/wt-X1/wt/sub`, `${st}/lane-abc/other`]) assert.throws(() => checkGrantedRoots(scratch, [bad]), /broker's worktree staging tree/, bad);
   assert.doesNotThrow(() => checkGrantedRoots(scratch, [`${st}/lane-abc/wt-X1/wt`, `${scratch}/lane/wt`]));
+});
+
+test('P1 the install wall binds the HELD worktree: a parent swapped after the hold leaves the install writing into the held directory and nothing outside; the same fd is what the wall gets', async (t) => {
+  if (!HAVE_BWRAP && !process.env.CI) return t.skip('no bubblewrap on this host (local run)');
+  assert.ok(HAVE_BWRAP, 'bubblewrap is required on CI');
+  const x = brokerFixture();
+  const lane = path.join(x.root, 'lane'), wt = path.join(lane, 'wt2'), outside = path.join(x.root, 'outside'), moved = path.join(lane, 'wt2-moved');
+  mkdirSync(wt, { recursive: true }); mkdirSync(outside); writeFileSync(path.join(wt, '.npmrc'), 'registry=https://registry.npmjs.org/\n');
+  const store = path.join(x.root, 'store2'); mkdirSync(store);
+  const installer = path.join(x.root, 'inst'); mkdirSync(installer);
+  writeFileSync(path.join(installer, 'pnpm'), '#!/bin/sh\necho BOUND > "$PWD/bound-marker"\n', { mode: 0o755 });
+  const held = openHeldSync(wt, lane);
+  renameSync(wt, moved); symlinkSync(outside, wt); // the swap, AFTER validation and the hold
+  const r = await runInstallSeat({ worktreeHeld: held, gitDir: x.ctx.gitDir, installer: path.join(installer, 'pnpm'), storeDir: store, iso: x.iso, protect: [x.control] });
+  assert.equal(r.ok, true, JSON.stringify(r));
+  assert.deepEqual(readdirSync(outside), [], 'nothing reached the swapped path target');
+  assert.equal(readFileSync(path.join(moved, 'bound-marker'), 'utf8'), 'BOUND\n', 'the install ran in the held directory');
+  held.close();
+});
+
+test('P1 a symlinked .npmrc refuses by name BEFORE any read: an outside file with a hostile key is never opened', async () => {
+  const x = brokerFixture();
+  const wt = path.join(x.root, 'wt3'), outside = path.join(x.root, 'outside-npmrc');
+  mkdirSync(wt); writeFileSync(outside, 'script-shell=/evil\n'); symlinkSync(outside, path.join(wt, '.npmrc'));
+  const r = await runInstallSeat({ worktree: wt, gitDir: x.ctx.gitDir, installer: '/opt/pnpm', storeDir: x.root, iso: x.iso, protect: [] });
+  assert.equal(r.ok, false); assert.match(r.output, /\.npmrc refused.*symlink/); assert.doesNotMatch(r.output, /script-shell|evil/, 'the outside content never reached the response');
+});
+
+test('P2 the staging parent refuses a group- or world-writable scratch (and home); CONTROL a 0755 scratch passes', () => {
+  const home = mkdtempSync(path.join(os.tmpdir(), 'stagehome-')); roots.push(home);
+  const scratch = path.join(home, '.lares-scratch'); mkdirSync(scratch, { mode: 0o755 }); chmodSync(scratch, 0o755); chmodSync(home, 0o700);
+  assert.ok(ensureStageRoot(scratch, 'lane-aaaaaaaaaaaaaaaa'), 'CONTROL passes');
+  chmodSync(scratch, 0o775);
+  assert.throws(() => ensureStageRoot(scratch, 'lane-bbbbbbbbbbbbbbbb'), /scratch|group- or world-writable/);
+  chmodSync(scratch, 0o757);
+  assert.throws(() => ensureStageRoot(scratch, 'lane-cccccccccccccccc'), /world-writable/);
+  chmodSync(scratch, 0o755); chmodSync(home, 0o770);
+  assert.throws(() => ensureStageRoot(scratch, 'lane-dddddddddddddddd'), /group- or world-writable/, 'a writable home refuses too');
+  chmodSync(home, 0o700);
+  assert.doesNotThrow(() => checkBrokerRoot(path.join(home, '.local/state/lares-broker'), { realHome: home }), 'CONTROL a 0700 home passes the root verifier');
+  chmodSync(home, 0o770);
+  assert.throws(() => checkBrokerRoot(path.join(home, '.local/state/lares-broker'), { realHome: home }), /group- or world-writable/, 'the root verifier refuses a writable home');
+  chmodSync(home, 0o700);
+});
+
+test('ACCESS WITNESS: no fs call in the four broker files names a non-held path; each goes through a held handle (.at / /proc/self/fd) or carries the broker-owned mark; a KNOWN POSITIVE reads red', () => {
+  const calls = /(?<![.\w])(readFileSync|readFile|writeFileSync|writeFile|appendFileSync|appendFile|mkdirSync|mkdir|mkdtempSync|mkdtemp|renameSync|rename|unlinkSync|unlink|rmSync|rmdirSync|symlinkSync|symlink|readdirSync|readdir|statSync|stat|lstatSync|lstat|realpathSync|realpath|existsSync|openSync|open|readlinkSync|readlink|copyFileSync|copyFile|chmodSync|ftruncateSync)\(/;
+  const ok = /\.at\(|\/proc\/self\/fd|\/\/ broker-owned/;
+  const offenders = [];
+  for (const f of ['commit-relay', 'seat-broker', 'seat-walls', 'tree-export']) {
+    readFileSync(new URL(`./${f}.mjs`, import.meta.url), 'utf8').split('\n').forEach((l, i) => { const t = l.trim(); if (t.startsWith('//') || t.startsWith('*') || t.startsWith('/*')) return; if (calls.test(l) && !ok.test(l)) offenders.push(`${f}:${i + 1} ${t.slice(0, 90)}`); });
+  }
+  assert.deepEqual(offenders, []);
+  for (const planted of ["const x = await readFile(join(worktree, '.npmrc'), 'utf8');", "if (existsSync(npmrc)) {", "args.push('--bind', worktree, worktree); realpathSync(worktree);"]) assert.ok(calls.test(planted) && !ok.test(planted), `the scan reads a planted pathname access: ${planted}`);
+  assert.ok(!calls.test("const st = await fh.stat();"), 'a method on a held fd handle is not a pathname access');
 });

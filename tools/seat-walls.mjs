@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { exportTree } from './tree-export.mjs';
+import { openHeldSync, readHeld } from './held-dir.mjs';
 import { createHash, createHmac } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync } from 'node:fs';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
@@ -11,8 +12,8 @@ const TAR = '/usr/bin/tar';
 const BWRAP = '/usr/bin/bwrap';
 const CAP = 8192;
 
-const HAVE_GIT = existsSync(GIT);
-const HAVE_TAR = existsSync(TAR);
+const HAVE_GIT = existsSync(GIT); // broker-owned
+const HAVE_TAR = existsSync(TAR); // broker-owned
 
 function capOutput(value) {
   return new TextDecoder().decode(Buffer.from(String(value ?? '')).subarray(0, CAP), { stream: true });
@@ -49,7 +50,7 @@ function run(command, args, { env, cwd, input } = {}) {
   return { ok: result.status === 0, output: mergeOutput(result), result };
 }
 
-export const HAVE_BWRAP = !process.env.SEAT_WALLS_NO_BWRAP && existsSync(BWRAP)
+export const HAVE_BWRAP = !process.env.SEAT_WALLS_NO_BWRAP && existsSync(BWRAP) // broker-owned
   && spawnSync(BWRAP, ['--unshare-pid', '--die-with-parent', '--dev-bind', '/', '/', '--proc', '/proc', '/usr/bin/true'], { stdio: 'ignore' }).status === 0;
 
 /** The mac covers the tree, the check names AND the check definitions (name and argv), so a receipt earned under a weaker check never satisfies a changed one. */
@@ -69,14 +70,14 @@ export async function runCheckSeat({ gitDir, tree, checks, key, receipts, iso, b
   const named = (checks ?? []).map((c) => c?.name).join(', ') || '<none>';
   if (!bwrap || !HAVE_GIT || !HAVE_TAR || !HAVE_BWRAP) return { ok: false, output: `no wall available: refusing to run check ${named} unwalled` };
 
-  mkdirSync(path.join(iso, 'tmp'), { recursive: true });
-  mkdirSync(path.join(iso, 'home'), { recursive: true });
+  mkdirSync(path.join(iso, 'tmp'), { recursive: true }); // broker-owned
+  mkdirSync(path.join(iso, 'home'), { recursive: true }); // broker-owned
 
-  const work = await mkdtemp(path.join(iso, 'tmp', 'check-seat-'));
+  const work = await mkdtemp(path.join(iso, 'tmp', 'check-seat-')); // broker-owned
   const treeDir = path.join(work, 'tree');
   const scratchDir = path.join(work, 'scratch');
-  mkdirSync(treeDir, { recursive: true });
-  mkdirSync(scratchDir, { recursive: true });
+  mkdirSync(treeDir, { recursive: true }); // broker-owned
+  mkdirSync(scratchDir, { recursive: true }); // broker-owned
 
   let kept = false;
   try {
@@ -123,7 +124,7 @@ export async function runCheckSeat({ gitDir, tree, checks, key, receipts, iso, b
     }
     return { ok: true, output: '' };
   } finally {
-    if (!kept) rmSync(work, { recursive: true, force: true });
+    if (!kept) rmSync(work, { recursive: true, force: true }); // broker-owned
   }
 }
 
@@ -152,57 +153,72 @@ function parseNpmrcKeys(text) {
 /** The home's credential dirs read empty and its credential files read as /dev/null; only what exists, since a bind needs its target. */
 function hideCredentials() {
   const home = os.userInfo().homedir, out = [];
-  const real = (p) => { try { return realpathSync(p); } catch { return null; } };
-  for (const d of ['.ssh', '.gnupg', '.aws', '.config', '.codex', '.claude', '.azure', '.kube']) { const r = real(path.join(home, d)); if (r && statSync(r).isDirectory()) out.push('--tmpfs', r); }
-  for (const f of ['.netrc', '.npmrc', '.git-credentials']) { const r = real(path.join(home, f)); if (r && statSync(r).isFile()) out.push('--ro-bind', '/dev/null', r); }
+  const real = (p) => { try { return realpathSync(p); } catch { return null; } }; // broker-owned
+  for (const d of ['.ssh', '.gnupg', '.aws', '.config', '.codex', '.claude', '.azure', '.kube']) { const r = real(path.join(home, d)); if (r && statSync(r).isDirectory()) out.push('--tmpfs', r); } // broker-owned
+  for (const f of ['.netrc', '.npmrc', '.git-credentials']) { const r = real(path.join(home, f)); if (r && statSync(r).isFile()) out.push('--ro-bind', '/dev/null', r); } // broker-owned
   return out;
 }
 
-export async function runInstallSeat({ worktree, gitDir, installer, storeDir, iso, protect = [], env, extraRw = [], bwrap = HAVE_BWRAP }) {
+/**
+ * The install seat. The worktree (and the store, the git dir, every extra root, every protected path) is HELD open once and bound
+ * into the wall by bubblewrap's fd binds (`--bind-fd`, `--ro-bind-fd`), so a parent a lead swaps after validation changes
+ * nothing: the installer gets exactly the directories that were opened. `.npmrc` is read through the held worktree handle with
+ * O_NOFOLLOW before the wall opens (a symlink there refuses by name).
+ */
+export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer, storeDir, iso, protect = [], env, extraRw = [], bwrap = HAVE_BWRAP }) {
   void env;
-  if (!bwrap || !HAVE_BWRAP) return { ok: false, output: `no wall available: refusing to run the install of ${installer} in ${worktree} unwalled` };
-
-  const npmrc = path.join(worktree, '.npmrc');
-  if (existsSync(npmrc)) {
-    const keys = parseNpmrcKeys(await readFile(npmrc, 'utf8'));
-    for (const key of keys) {
-      if (!ALLOWED_NPMRC.has(key)) return { ok: false, output: `disallowed .npmrc key: ${key}` };
+  const label = worktree ?? "the held worktree";
+  if (!bwrap || !HAVE_BWRAP) return { ok: false, output: `no wall available: refusing to run the install of ${installer} in ${label} unwalled` };
+  const opened = [];
+  const hold = (dir) => { const h = openHeldSync(dir, dir); opened.push(h); return h; }; // broker-owned: a controller-supplied path, verified as a real directory
+  try {
+    const wt = worktreeHeld ?? hold(worktree);
+    let npmrc = null;
+    try { npmrc = readHeld(wt, '.npmrc'); } catch (error) { if (!/ENOENT/.test(error.message)) return { ok: false, output: `.npmrc refused: ${error.message}` }; }
+    if (npmrc !== null) {
+      for (const key of parseNpmrcKeys(npmrc)) {
+        if (!ALLOWED_NPMRC.has(key)) return { ok: false, output: `disallowed .npmrc key: ${key}` };
+      }
     }
-  }
 
-  mkdirSync(path.join(iso, 'home'), { recursive: true });
-  mkdirSync(path.join(iso, 'tmp'), { recursive: true });
-
-  // A protected path reads as an empty read-only directory: the controller's go, key and receipts stay unreadable and unwritable.
-  const emptyDir = path.join(iso, 'empty'); mkdirSync(emptyDir, { recursive: true });
-  const args = [
-    '--die-with-parent',
-    '--unshare-net',
-    '--unshare-pid',
-    '--clearenv',
-    '--ro-bind', '/', '/',
-    ...extraRw.flatMap((p) => ['--bind', p, p]),
-    '--bind', worktree, worktree,
-    '--bind', storeDir, storeDir,
-    '--ro-bind', gitDir, gitDir,
-    ...protect.flatMap((p) => ['--ro-bind', emptyDir, p]),
-    ...hideCredentials(),
-    '--dev', '/dev',
-    '--proc', '/proc',
-    '--chdir', worktree,
-    '--setenv', 'PATH', `/usr/bin:/bin:${path.dirname(installer)}`,
-    '--setenv', 'HOME', path.join(iso, 'home'),
-    '--setenv', 'LC_ALL', 'C',
-    installer,
-    'install',
-    '--offline',
-    '--frozen-lockfile',
-    '--ignore-scripts',
-    '--ignore-pnpmfile',
-    '--store-dir',
-    storeDir,
-  ];
-
-  const ran = run(BWRAP, args);
-  return { ok: ran.ok, output: ran.output };
+    mkdirSync(path.join(iso, 'home'), { recursive: true }); // broker-owned
+    mkdirSync(path.join(iso, 'tmp'), { recursive: true }); // broker-owned
+    // A protected path reads as an empty read-only directory: the controller's go, key and receipts stay unreadable and unwritable.
+    const emptyDir = path.join(iso, 'empty'); mkdirSync(emptyDir, { recursive: true }); // broker-owned
+    const empty = hold(emptyDir);
+    const fds = [];
+    const bind = (flag, held, dest) => { fds.push(held.fd); return [flag, String(2 + fds.length), dest]; };
+    // With only a held handle (no path), the worktree mounts at a neutral place inside a tmpfs; a given path keeps its own name inside the wall.
+    const dest = worktree ?? '/mnt/worktree';
+    const args = [
+      '--die-with-parent',
+      '--unshare-net',
+      '--unshare-pid',
+      '--clearenv',
+      '--ro-bind', '/', '/',
+      ...(worktree ? [] : ['--tmpfs', '/mnt']),
+      ...extraRw.flatMap((p) => bind('--bind-fd', hold(p), p)),
+      ...bind('--bind-fd', wt, dest),
+      ...bind('--bind-fd', hold(storeDir), storeDir),
+      ...bind('--ro-bind-fd', hold(gitDir), gitDir),
+      ...protect.flatMap((p) => bind('--ro-bind-fd', empty, p)),
+      ...hideCredentials(),
+      '--dev', '/dev',
+      '--proc', '/proc',
+      '--chdir', dest,
+      '--setenv', 'PATH', `/usr/bin:/bin:${path.dirname(installer)}`,
+      '--setenv', 'HOME', path.join(iso, 'home'),
+      '--setenv', 'LC_ALL', 'C',
+      installer,
+      'install',
+      '--offline',
+      '--frozen-lockfile',
+      '--ignore-scripts',
+      '--ignore-pnpmfile',
+      '--store-dir',
+      storeDir,
+    ];
+    const ran = spawnSync(BWRAP, args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe', ...fds] });
+    return { ok: ran.status === 0, output: capOutput(`${ran.stdout ?? ''}${ran.stderr ?? ''}${ran.error ? String(ran.error) : ''}`) };
+  } finally { for (const h of opened) h.close(); }
 }

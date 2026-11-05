@@ -13,7 +13,7 @@ const GIT = '/usr/bin/git';
 const TAR = '/usr/bin/tar';
 const CAP = 8192;
 
-if (!existsSync(GIT)) throw new Error(`${GIT} is required`);
+if (!existsSync(GIT)) throw new Error(`${GIT} is required`); // broker-owned
 
 function capOutput(value) {
   return new TextDecoder().decode(Buffer.from(String(value ?? '')).subarray(0, CAP), { stream: true });
@@ -51,8 +51,8 @@ export function brokerEnv(iso) {
 }
 
 function ensureIso(iso) {
-  mkdirSync(path.join(iso, 'home'), { recursive: true });
-  mkdirSync(path.join(iso, 'tmp'), { recursive: true });
+  mkdirSync(path.join(iso, 'home'), { recursive: true }); // broker-owned
+  mkdirSync(path.join(iso, 'tmp'), { recursive: true }); // broker-owned
 }
 
 function git(ctx, args, { input, env, cwd } = {}) {
@@ -149,33 +149,11 @@ function staticGitEnv() {
   };
 }
 
-function headModeForWorktree(worktree, rel) {
-  const run = spawnSync(
-    GIT,
-    [
-      '-c', 'core.hooksPath=/dev/null',
-      '-c', 'core.fsmonitor=false',
-      '-c', 'core.attributesFile=/dev/null',
-      '-c', 'credential.helper=',
-      '-c', 'core.sshCommand=/usr/bin/ssh',
-      '--git-dir',
-      path.join(worktree, '.git'),
-      'ls-tree',
-      'HEAD',
-      '--',
-      rel,
-    ],
-    { env: staticGitEnv(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
-  );
-  if (run.status !== 0) return null;
-  const entries = parseLsTree(run.stdout ?? '', rel);
-  return entries[0]?.mode ?? null;
-}
 
 
-async function pathIsMissing(file) {
+async function pathIsMissing(held, rel) {
   try {
-    await lstat(file);
+    await lstat(held.at(rel));
     return false;
   } catch (error) {
     if (error?.code === 'ENOENT' || error?.code === 'ENOTDIR') return true;
@@ -183,60 +161,57 @@ async function pathIsMissing(file) {
   }
 }
 
-
-export async function readSafe(worktree, rel) {
+/**
+ * Reads one file of a worktree. The worktree is a HELD directory (a path opens one for the call): every component is checked
+ * and the file opens through `/proc/self/fd/<n>/...`, O_NOFOLLOW, and the opened file's own resolved path must equal
+ * `<worktree real path>/<rel>` (so a parent swapped mid-walk refuses), one hard link, a regular file.
+ */
+export async function readSafe(worktreeOrHeld, rel) {
   assertRelPath(rel);
-  const root = await realpath(worktree);
-  if (headModeForWorktree(root, rel) === '160000') throw new Error('gitlink');
-  const parts = rel.split('/');
-  let cursor = root;
-  for (const part of parts) {
-    cursor = path.join(cursor, part);
-    let st;
-    try {
-      st = await lstat(cursor);
-    } catch (error) {
-      if (error?.code === 'ENOENT' || error?.code === 'ENOTDIR') throw error;
-      throw error;
-    }
-    if (st.isSymbolicLink()) throw new Error('symlink');
-  }
-
-  const target = path.join(root, rel);
-  const st0 = await lstat(target);
-  if (st0.isDirectory()) {
-    try {
-      await lstat(path.join(target, '.git'));
-      throw new Error('gitlink');
-    } catch (error) {
-      if (error instanceof Error && error.message === 'gitlink') throw error;
-      if (error?.code === 'ENOENT' || error?.code === 'ENOTDIR') throw new Error('not a regular file');
-      throw error;
-    }
-  }
-  if (!st0.isFile()) throw new Error('not a regular file');
-
-  let fh;
+  const own = typeof worktreeOrHeld === 'string';
+  const held = own ? await openHeld(worktreeOrHeld, worktreeOrHeld) : worktreeOrHeld;
   try {
-    fh = await open(target, FS.O_RDONLY | FS.O_NOFOLLOW);
-    const linked = await readlink(`/proc/self/fd/${fh.fd}`);
-    if (linked !== target) throw new Error('outside');
-    const st = await fh.stat();
-    if (!st.isFile()) throw new Error('not a regular file');
-    if (st.nlink > 1) throw new Error('hardlink');
-    const content = await fh.readFile();
-    const mode = (st.mode & 0o111) !== 0 ? '100755' : '100644';
-    return { mode, content };
-  } catch (error) {
-    if (error?.message === 'outside' || error?.message === 'hardlink') throw error;
-    if (error?.code === 'ELOOP') throw new Error('symlink');
-    if (error?.code === 'EISDIR' || error?.code === 'ENOTDIR') throw new Error('not a regular file');
-    if (error?.code === 'ENOENT') throw error;
-    if (error?.message === 'not a regular file') throw error;
-    throw error;
-  } finally {
-    await fh?.close();
-  }
+    const root = await realpath(held.at());
+    const parts = rel.split('/');
+    for (let i = 1; i <= parts.length; i++) {
+      let st;
+      try { st = await lstat(held.at(parts.slice(0, i).join('/'))); } catch (error) { throw error; }
+      if (st.isSymbolicLink()) throw new Error('symlink');
+    }
+    const target = path.join(root, rel);
+    const st0 = await lstat(held.at(rel));
+    if (st0.isDirectory()) {
+      try {
+        await lstat(held.at(`${rel}/.git`));
+        throw new Error('gitlink');
+      } catch (error) {
+        if (error instanceof Error && error.message === 'gitlink') throw error;
+        if (error?.code === 'ENOENT' || error?.code === 'ENOTDIR') throw new Error('not a regular file');
+        throw error;
+      }
+    }
+    if (!st0.isFile()) throw new Error('not a regular file');
+
+    let fh;
+    try {
+      fh = await open(held.at(rel), FS.O_RDONLY | FS.O_NOFOLLOW);
+      const linked = await readlink(`/proc/self/fd/${fh.fd}`);
+      if (linked !== target) throw new Error('outside');
+      const st = await fh.stat();
+      if (!st.isFile()) throw new Error('not a regular file');
+      if (st.nlink > 1) throw new Error('hardlink');
+      const content = await fh.readFile();
+      const mode = (st.mode & 0o111) !== 0 ? '100755' : '100644';
+      return { mode, content };
+    } catch (error) {
+      if (error?.message === 'outside' || error?.message === 'hardlink') throw error;
+      if (error?.code === 'ELOOP') throw new Error('symlink');
+      if (error?.code === 'EISDIR' || error?.code === 'ENOTDIR') throw new Error('not a regular file');
+      throw error;
+    } finally {
+      await fh?.close();
+    }
+  } finally { if (own) await held.close(); }
 }
 
 function headMode(ctx, rel) {
@@ -287,30 +262,34 @@ export async function commitWithReceipt(ctx, { paths, message: messageText, expe
   head = head.stdout.trim();
   if (expectHead !== head) return fail(`expected old head ${expectHead}`);
 
-  const workRoot = await realpath(ctx.worktree);
+  const ownHeld = !ctx.worktreeHeld;
+  const workHeld = ctx.worktreeHeld ?? await openHeld(ctx.worktree, ctx.worktree);
   const unique = [...new Set(paths)];
   const entries = [];
 
-  for (const rel of unique) {
-    try {
-      assertRelPath(rel);
-    } catch (error) {
-      return fail(error.message);
-    }
-    const modeAtHead = headMode(ctx, rel);
-    if (modeAtHead === '160000') return fail(`gitlink: ${rel}`);
-    try {
-      const file = await readSafe(workRoot, rel);
-      entries.push({ path: rel, remove: false, mode: file.mode, content: file.content });
-    } catch (error) {
-      const missing = await pathIsMissing(path.join(workRoot, rel));
-      if (missing && modeAtHead) {
-        entries.push({ path: rel, remove: true });
-        continue;
+  try {
+    for (const rel of unique) {
+      try {
+        assertRelPath(rel);
+      } catch (error) {
+        return fail(error.message);
       }
-      return fail(error instanceof Error ? error.message : String(error));
+      const modeAtHead = headMode(ctx, rel);
+      if (modeAtHead === '160000') return fail(`gitlink: ${rel}`);
+      try {
+        const file = await readSafe(workHeld, rel);
+        entries.push({ path: rel, remove: false, mode: file.mode, content: file.content });
+      } catch (error) {
+        const missing = await pathIsMissing(workHeld, rel);
+        if (missing && modeAtHead) {
+          entries.push({ path: rel, remove: true });
+          continue;
+        }
+        return fail(error instanceof Error ? error.message : String(error));
+      }
     }
-  }
+
+  } finally { if (ownHeld) await workHeld.close(); }
 
   const tmpIndex = path.join(ctx.iso, 'tmp', `broker-index-${process.pid}-${Math.random().toString(16).slice(2)}`);
   const idxEnv = { GIT_INDEX_FILE: tmpIndex };
@@ -381,13 +360,13 @@ export async function commitWithReceipt(ctx, { paths, message: messageText, expe
 export async function pushWithGo(ctx) {
   let go;
   try {
-    go = await readFile(ctx.goFile, 'utf8');
+    go = await readFile(ctx.goFile, 'utf8'); // broker-owned
   } catch (error) {
     if (error?.code === 'ENOENT') return { ok: false, output: 'no push-go from the controller' };
     return fail(error instanceof Error ? error.message : String(error));
   }
 
-  try { await unlink(ctx.goFile); } catch {}
+  try { await unlink(ctx.goFile); } catch {} // broker-owned
 
   const lines = go.replace(/\r/g, '').split('\n');
   if (lines[lines.length - 1] === '') lines.pop();
@@ -408,10 +387,10 @@ export async function pushWithGo(ctx) {
   if (!common.ok) return fail(common.output);
   const objects = path.resolve(ctx.gitDir, common.stdout.trim());
   const pushRepo = path.join(ctx.iso, 'pushrepo');
-  rmSync(pushRepo, { recursive: true, force: true });
+  rmSync(pushRepo, { recursive: true, force: true }); // broker-owned
   const made = git({ ...ctx, gitDir: pushRepo }, ['init', '--bare', '-q', pushRepo]);
   if (!made.ok) return fail(made.output);
-  writeFileSync(path.join(pushRepo, 'objects', 'info', 'alternates'), `${objects}\n`);
+  writeFileSync(path.join(pushRepo, 'objects', 'info', 'alternates'), `${objects}\n`); // broker-owned
   const shell = { ...ctx, gitDir: pushRepo };
   const placed = git(shell, ['update-ref', `refs/heads/${ctx.branch}`, head]);
   if (!placed.ok) return fail(placed.output);
@@ -442,23 +421,24 @@ function listGitlinks(ctx, base) {
 export async function addWorktree(ctx, { path: dest, branch, base }) {
   if (typeof ctx.laneRoot !== 'string') return fail('worktree needs the lane root');
   const name = path.basename(dest);
-  try {
-    await lstat(dest);
-    return fail('destination exists');
-  } catch (error) {
-    if (error?.code !== 'ENOENT') return fail(error instanceof Error ? error.message : String(error));
-  }
   let parent;
   try { parent = await openHeld(path.dirname(dest), ctx.laneRoot); } catch (error) { return fail(`destination parent: ${error.message}`); }
   try {
+    await lstat(parent.at(name));
+    await parent.close();
+    return fail('destination exists');
+  } catch (error) {
+    if (error?.code !== 'ENOENT') { await parent.close(); return fail(error instanceof Error ? error.message : String(error)); }
+  }
+  try {
     ensureIso(ctx.iso);
     const stageRoot = ctx.stageRoot ?? path.join(ctx.iso, 'staging');
-    mkdirSync(stageRoot, { recursive: true });
-    const stage = path.join(await mkdtemp(path.join(stageRoot, 'wt-')), 'wt');
-    const undo = () => { git(ctx, ['worktree', 'remove', '--force', stage]); git(ctx, ['branch', '-D', branch]); rmSync(path.dirname(stage), { recursive: true, force: true }); };
+    mkdirSync(stageRoot, { recursive: true }); // broker-owned
+    const stage = path.join(await mkdtemp(path.join(stageRoot, 'wt-')), 'wt'); // broker-owned
+    const undo = () => { git(ctx, ['worktree', 'remove', '--force', stage]); git(ctx, ['branch', '-D', branch]); rmSync(path.dirname(stage), { recursive: true, force: true }); }; // broker-owned
 
     const added = git(ctx, ['worktree', 'add', '--no-checkout', '-b', branch, stage, base]);
-    if (!added.ok) { rmSync(path.dirname(stage), { recursive: true, force: true }); return fail(added.output); }
+    if (!added.ok) { rmSync(path.dirname(stage), { recursive: true, force: true }); return fail(added.output); } // broker-owned
     const baseTree = git(ctx, ['rev-parse', `${base}^{tree}`]);
     if (!baseTree.ok) { undo(); return fail(baseTree.output); }
     const exported = exportTree({ gitDir: ctx.gitDir, tree: baseTree.stdout.toString('utf8').trim(), to: stage, iso: ctx.iso });
@@ -473,8 +453,8 @@ export async function addWorktree(ctx, { path: dest, branch, base }) {
     if (typeof ctx.beforeLink === 'function') await ctx.beforeLink();
     try { symlinkSync(stage, parent.at(name)); } catch (error) { undo(); return fail(`link: ${error.code ?? error.message}`); }
     let shown = null;
-    try { shown = await readlink(dest); } catch { /* the path leads elsewhere */ }
-    if (shown !== stage) { try { unlinkSync(parent.at(name)); } catch { /* gone */ } undo(); return fail('destination parent changed after it was opened; the worktree was rolled back'); }
+    try { shown = await readlink(parent.at(name)); } catch { /* the held directory lost the link */ }
+    if (shown !== stage) { try { unlinkSync(parent.at(name)); } catch { /* gone */ } undo(); return fail('the link did not stand in the held directory; the worktree was rolled back'); }
     return { ok: true, output: '', stage };
   } finally {
     await parent.close();
@@ -488,7 +468,7 @@ export async function removeWorktree(ctx, { path: target }) {
   if (!list.stdout.split('\0').includes(`worktree ${target}`)) return fail('not a registered worktree');
   let gitDir = path.join(target, '.git');
   try {
-    const dot = readFileSync(gitDir, 'utf8');
+    const dot = readFileSync(gitDir, 'utf8'); // broker-owned
     const m = /^gitdir: (.+)$/m.exec(dot);
     if (m) gitDir = path.resolve(target, m[1].trim());
   } catch { /* a plain dir */ }

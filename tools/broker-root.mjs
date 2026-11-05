@@ -31,6 +31,8 @@ export function checkBrokerRoot(root, { realHome, guarded = [] }) {
   if (!within(home, root)) throw new Error(`the broker root ${root} must sit under the real home ${home}`);
   if (within(scratch, root)) throw new Error(`the broker root ${root} must sit outside ${scratch} entirely (a lead can write anywhere a lane lives under it)`);
   for (const g of guarded) if (within(g, root) || within(root, g)) throw new Error(`the broker root ${root} must sit outside ${g}`);
+  const homeStat = lstatSync(home);
+  if ((homeStat.mode & 0o022) !== 0) throw new Error(`the home ${home} is group- or world-writable (mode ${(homeStat.mode & 0o777).toString(8)})`);
   const parts = path.relative(home, root).split(path.sep).filter(Boolean);
   let cursor = home, missing = [];
   for (let i = 0; i < parts.length; i++) {
@@ -138,8 +140,12 @@ export function checkGrantedRoots(scratch, roots) {
 
 /** The staging parent `<scratch>/.broker-worktrees/<lane-id>`: every component a real directory of ours, mode exactly 0700, none group- or world-writable; made (0700) when absent. */
 export function ensureStageRoot(scratch, id) {
-  const st0 = lstatSync(scratch);
-  if (st0.isSymbolicLink() || !st0.isDirectory() || st0.uid !== uid()) throw new Error(`${scratch} is not a real directory of ours`);
+  // The scratch dir and every ancestor up to the home must be real, ours, and not group- or world-writable: whoever can write the parent can replace the staging entry whatever its children's modes.
+  for (const dir of [scratch, path.dirname(scratch)]) {
+    const st = lstatSync(dir);
+    if (st.isSymbolicLink() || !st.isDirectory() || st.uid !== uid()) throw new Error(`${dir} is not a real directory of ours`);
+    if ((st.mode & 0o022) !== 0) throw new Error(`${dir} is group- or world-writable (mode ${(st.mode & 0o777).toString(8)}): the staging tree would sit under a parent others can write`);
+  }
   let cursor = scratch;
   for (const part of [".broker-worktrees", id]) {
     cursor = path.join(cursor, part);
