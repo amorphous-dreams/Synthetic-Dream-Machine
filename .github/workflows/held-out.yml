@@ -185,8 +185,8 @@ jobs:
         run: |
           echo "COMPOSE_PROJECT_NAME=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
           echo "MESH_PROJECT=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
-      # The browser weld's two drivers run inside the pinned official Playwright image (tools/browser-weld-witness.sh reads
-      # `WELD_PW_IMAGE`), so the system libraries and Chromium are already there and no apt or download step runs. The pull
+      # The browser weld's two drivers run inside the pinned official Playwright image (the driver step names it
+      # `WELD_PW_IMAGE`, for tools/browser-weld-witness.sh alone: its entry-contract test runs fakes and must see none), so the system libraries and Chromium are already there and no apt or download step runs. The pull
       # is its own step, so a stall names itself.
       - name: Pull the pinned Playwright image and find its Chromium
         if: matrix.driver == 'browser-weld'
@@ -194,7 +194,6 @@ jobs:
         run: |
           export PW_IMAGE="$PLAYWRIGHT_IMAGE"
           tools/pw-container.sh node -e 'const p = require("playwright"); const e = p.chromium.executablePath(); require("node:fs").accessSync(e); console.log("chromium:", e, "playwright", require("playwright/package.json").version)'
-          echo "WELD_PW_IMAGE=$PLAYWRIGHT_IMAGE" >> "$GITHUB_ENV"
 
       # Regression for the status bug that held this runner back. The fake Docker seam runs no
       # container and checks both a quiet failed compose result and a quiet successful one.
@@ -248,7 +247,7 @@ jobs:
           SECONDS=0
           case "${{ matrix.driver }}" in
             browser-weld)
-              run_logged 40m bash tools/browser-weld-witness.sh
+              WELD_PW_IMAGE="$PLAYWRIGHT_IMAGE" run_logged 40m bash tools/browser-weld-witness.sh
               status=$?
               ;;
             civic)
