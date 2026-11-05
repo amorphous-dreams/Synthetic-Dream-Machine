@@ -210,7 +210,7 @@ export function makeNodeCasResolver(opts: { readonly cidDir: string; readonly co
 
 /**
  * The reading `cas-fetch` answers: whether the cid resolved (`held`), whether the vessel FETCHED it (`fetched`) and its size. `fetched`
- * compares against a VERIFIED local read of either local tier: a file that no longer recomputes to its address is not held, so
+ * compares against a VERIFIED local read of either local tier: a file whose bytes fail their address is not held, so
  * the resolver's fetch from the shore (and its write-through repair) reads as the fetch it was.
  */
 export async function casFetchReading(
