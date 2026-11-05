@@ -39,8 +39,6 @@ async function world() {
     items: async () => state.items.get(wiki) ?? [],
     board: async () => { if (!state.boardReadable) throw new Error("board-unreadable"); return readPromoteBoard(state.acts, face); },
     cas: { put: (d, b) => { state.cas.set(d, b); }, pin: (d) => { state.pinned.add(d); } },
-    loaded: () => state.loaded,
-    restart: async () => { if (state.failRestart) { state.failRestart = false; throw new Error("restart refused"); } state.restarts += 1; state.loaded = new Set(); },
     who,
   });
   return {
@@ -218,57 +216,5 @@ describe("the kāpae over (wiki, digest)", () => {
     w.state.acts.push(await w.kapae(W1, D, false, [promoteActCid(raise)]));
     expect((await promotions(w.ports(W1, HAND)).boot()).pluginCids).toEqual([D]);
     expect(w.state.ledger.rows).toHaveLength(2);
-  });
-
-  test("RED: a raise read for an edge the running island loaded restarts it once; CONTROL: an edge in another wiki, or never loaded, restarts nothing", async () => {
-    const w = await world();
-    w.state.items.set(W1, [itemOf(RITE)]);
-    await promotions(w.ports(W1, HAND)).promote({ digest: D });
-    w.state.loaded = new Set([promoteEdgeKey(W1, D)]);
-    w.state.acts.push(await w.kapae(W1, D, true, []));
-    expect(await promotions(w.ports(W1, HAND)).arrive()).toEqual({ restarted: true });
-    expect(w.state.restarts).toBe(1);
-    expect(await promotions(w.ports(W1, HAND)).arrive()).toEqual({ restarted: false });
-    const w2 = await world();
-    w2.state.acts.push(await w2.kapae(W2, D, true, []));
-    w2.state.loaded = new Set([promoteEdgeKey(W1, D)]);
-    expect(await promotions(w2.ports(W1, HAND)).arrive()).toEqual({ restarted: false });
-    expect(w2.state.restarts).toBe(0);
-  });
-});
-
-describe("the shadow cache takes concurrent arrivals whole", () => {
-  test("RED: two arrivals at once, the second reading a newer raise, leave BOTH shadows in the cache; CONTROL: in turn they do", async () => {
-    const run = async (together: boolean) => {
-      const w = await world();
-      w.state.acts.push(await w.kapae(W1, D, true, []), await w.kapae(W2, D, true, []));
-      const local = {
-        read: async () => { const standing = w.state.local; await new Promise((r) => setImmediate(r)); return standing; },
-        write: async (l: KapaeLocal) => { await new Promise((r) => setImmediate(r)); w.state.local = l; },
-      };
-      const one = promotions({ ...w.ports(W1, HAND), local, board: async () => readPromoteBoard(w.state.acts.slice(0, 1), { group: GROUP, grant: () => true, device: () => false }) });
-      const two = promotions({ ...w.ports(W2, HAND), local, board: async () => readPromoteBoard(w.state.acts, { group: GROUP, grant: () => true, device: () => false }) });
-      if (together) await Promise.all([two.arrive(), one.arrive()]);
-      else { await two.arrive(); await one.arrive(); }
-      return [...w.state.local.shadowed].sort();
-    };
-    const both = [promoteEdgeKey(W1, D), promoteEdgeKey(W2, D)].sort();
-    expect(await run(false)).toEqual(both);
-    expect(await run(true), "a concurrent arrival never loses its neighbour's shadow").toEqual(both);
-  });
-});
-
-describe("a restart that fails converges", () => {
-  test("RED: a restart that throws leaves the edge loaded (the cache still records the shadow), and the next arrive restarts again; CONTROL: after the restart the island no longer holds the edge and a further arrive restarts nothing", async () => {
-    const w = await world();
-    w.state.items.set(W1, [itemOf(RITE)]);
-    await promotions(w.ports(W1, HAND)).promote({ digest: D });
-    w.state.loaded = new Set([promoteEdgeKey(W1, D)]);
-    w.state.acts.push(await w.kapae(W1, D, true, []));
-    w.state.failRestart = true;
-    await expect(promotions(w.ports(W1, HAND)).arrive()).rejects.toThrow(/restart refused/);
-    expect(w.state.local.shadowed).toEqual([promoteEdgeKey(W1, D)]);
-    expect(await promotions(w.ports(W1, HAND)).arrive()).toEqual({ restarted: true });
-    expect(await promotions(w.ports(W1, HAND)).arrive()).toEqual({ restarted: false });
   });
 });

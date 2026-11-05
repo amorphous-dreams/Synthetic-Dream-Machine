@@ -49,6 +49,11 @@ describe("the ledger and the cache at rest", () => {
     const turn = nodePromoteStores("group-turn");
     await turn.ledger.update(commit(W1, RITE)); await turn.ledger.update(commit(W2, OTHER));
     expect((await turn.ledger.read()).rows.map((r) => r.wiki).sort()).toEqual([W1, W2].sort());
+    // CONTROL (the harness discriminates): a NAIVE read-then-write update over the same rows loses a row under the same two commits.
+    const naiveStore = nodePromoteStores("group-naive");
+    const naive = async (fn: (standing: typeof EMPTY_LEDGER) => typeof EMPTY_LEDGER) => { const standing = await naiveStore.ledger.read(); await new Promise((r) => setImmediate(r)); await naiveStore.ledger.write(fn(standing)); };
+    await Promise.all([naive(commit(W1, RITE)), naive(commit(W2, OTHER))]);
+    expect((await naiveStore.ledger.read()).rows, "a naive update loses a row").toHaveLength(1);
     const together = nodePromoteStores("group-together");
     await Promise.all([together.ledger.update(commit(W1, RITE)), together.ledger.update(commit(W2, OTHER))]);
     expect((await together.ledger.read()).rows.map((r) => r.wiki).sort()).toEqual([W1, W2].sort());

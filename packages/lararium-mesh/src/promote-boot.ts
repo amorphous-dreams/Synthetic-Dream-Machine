@@ -1,6 +1,6 @@
-import { promotions, type PromoteItem, type PromotionPorts } from "./promote-door.js";
+import { mutate, promotions, type PromoteItem, type PromotionPorts, type Store } from "./promote-door.js";
 import { promoteEdgeKey } from "./promote.js";
-import { EMPTY_KAPAE_LOCAL, encodeKapaeLocal, kapaeNoteArrival, kapaeStanding } from "./promote-kapae.js";
+import { EMPTY_KAPAE_LOCAL, kapaeNoteArrival, kapaeStanding } from "./promote-kapae.js";
 
 export interface PromoteBootReport {
   orphans: string[];
@@ -32,14 +32,16 @@ export function promoteBoot(opts: {
     loadedFor: (wiki: string): ReadonlySet<string> => loaded.get(wiki) ?? new Set(),
     async promotedFor(wiki: string): Promise<readonly string[]> {
       let storeFailed = false;
-      const wrap = <T>(store: { read(): Promise<T>; write(value: T): Promise<void> }) => ({
+      // The wrapper keeps the store's atomic `update` (or the serial queue on the UNDERLYING store), so a boot's writes serialize with the verbs'.
+      const wrap = <T>(store: Store<T>) => ({
         read: async () => { try { return await store.read(); } catch (error) { storeFailed = true; throw error; } },
         write: async (value: T) => { try { await store.write(value); } catch (error) { storeFailed = true; throw error; } },
+        update: async (fn: (standing: T) => T) => { try { return await mutate(store, fn); } catch (error) { storeFailed = true; throw error; } },
       });
       try {
         const result = await promotions({ wiki, ledger: wrap(opts.stores.ledger), local: wrap(opts.stores.local),
           items: () => opts.itemsOf(wiki), board: opts.board, cas: opts.cas,
-          loaded: () => new Set(), restart: async () => {}, who: { kind: "seat", id: "boot" } }).boot();
+          who: { kind: "seat", id: "boot" } }).boot();
         loaded.set(wiki, new Set(result.pluginCids.map(digest => promoteEdgeKey(wiki, digest))));
         opts.onReport?.(wiki, { orphans: result.orphans, updateWaits: result.updateWaits, voided: result.voided, shadowed: result.shadowed });
         if (result.itemsError !== null) opts.onItemsFault?.(wiki, result.itemsError);
@@ -64,7 +66,6 @@ export function promoteBoot(opts: {
       try { local = await opts.stores.local.read(); } catch { localRead = false; opts.onFault?.("ledger-unreadable"); }
       const edges = board ? kapaeStanding(local, board) : new Set(local.shadowed);
       const allLoaded = new Set([...loaded.values()].flatMap(set => [...set]));
-      const next = kapaeNoteArrival(local, edges, allLoaded).local;
       const restarted: string[] = [];
       for (const [wiki, held] of [...loaded]) {
         const pending = pendingRestart.get(wiki);
@@ -88,9 +89,11 @@ export function promoteBoot(opts: {
         for (const edge of hit) held.delete(edge);
         restarted.push(wiki);
       }
-      // An UNREAD cache is never replaced: the board-only reading would erase an older shadow the board does not show.
-      if (board && localRead && new TextDecoder().decode(encodeKapaeLocal(local)) !== new TextDecoder().decode(encodeKapaeLocal(next))) {
-        try { await opts.stores.local.write(next); } catch { opts.onFault?.("ledger-unreadable"); }
+      // An UNREAD cache is never replaced: the board-only reading would erase an older shadow the board does not show. The cache is recomputed
+      // from its STANDING value under the store's hold, so a concurrent arrival never overwrites a newer shadow.
+      if (board && localRead) {
+        try { await mutate(opts.stores.local, (standing) => kapaeNoteArrival(standing, kapaeStanding(standing, board!), allLoaded).local); }
+        catch { opts.onFault?.("ledger-unreadable"); }
       }
       return restarted.sort();
     },

@@ -12,9 +12,9 @@ export type PromoteItem = { title: string; text: string; fields: Readonly<Record
  * over the standing value and writes what it answers, so two commits never lose each other. A store without it takes the door's
  * serial queue (one chain per store object), which serves one process holding one store.
  */
-type Store<T> = { read(): Promise<T>; write(value: T): Promise<void>; update?(fn: (standing: T) => T): Promise<T> };
+export type Store<T> = { read(): Promise<T>; write(value: T): Promise<void>; update?(fn: (standing: T) => T): Promise<T> };
 const chains = new WeakMap<object, Promise<unknown>>();
-async function mutate<T>(store: Store<T>, fn: (standing: T) => T): Promise<T> {
+export async function mutate<T>(store: Store<T>, fn: (standing: T) => T): Promise<T> {
   if (store.update) return store.update(fn);
   const turn = (chains.get(store) ?? Promise.resolve()).then(async () => { const next = fn(await store.read()); await store.write(next); return next; });
   chains.set(store, turn.catch(() => undefined));
@@ -24,7 +24,7 @@ export type PromotionPorts = {
   wiki: string; ledger: Store<PromotionLedger>; local: Store<KapaeLocal>;
   items(): Promise<readonly PromoteItem[]>; board(): Promise<PromoteBoardReading>;
   cas: { put(digest: string, bytes: Uint8Array): void | Promise<void>; pin(digest: string): void | Promise<void> };
-  loaded(): ReadonlySet<string>; restart(): Promise<void>; who: PromoteWho;
+  who: PromoteWho;
 };
 
 export function promotions(ports: PromotionPorts) {
@@ -84,17 +84,6 @@ export function promotions(ports: PromotionPorts) {
       const runnable = verified.filter(row => !edges.has(promoteEdgeKey(wiki, row.digest)));
       for (const row of runnable) { await ports.cas.put(row.digest, new TextEncoder().encode(row.bytes)); await ports.cas.pin(row.digest); }
       return { itemsError, pluginCids: runnable.map(row => row.digest), voided, orphans: readings.filter(r => r.state === "orphaned").map(r => r.row.digest), updateWaits: readings.filter(r => r.state === "update-waits").map(r => r.row.digest), shadowed: shadows(edges) };
-    },
-    async arrive() {
-      // The shadow is cached first (an offline boot honors it); the island restarts while it LOADED any shadowed edge, so a restart that
-      // failed is tried again by the next arrive.
-      // The cache is recomputed from its STANDING value under the store's hold, so a concurrent arrival never overwrites a newer shadow.
-      const board = await ports.board();
-      let edges: ReadonlySet<string> = new Set();
-      await mutate(ports.local, (standing) => { edges = kapaeStanding(standing, board); return kapaeNoteArrival(standing, edges, ports.loaded()).local; });
-      const hit = [...edges].some(edge => ports.loaded().has(edge));
-      if (hit) await ports.restart();
-      return { restarted: hit };
     },
   };
 }
