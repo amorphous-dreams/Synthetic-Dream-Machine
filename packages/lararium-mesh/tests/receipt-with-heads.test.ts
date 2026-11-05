@@ -156,7 +156,7 @@ function countedRepo() {
 describe("exactly one answer per receipt requestId", () => {
   const settle = async (): Promise<void> => { for (let i = 0; i < 6; i++) await pause(); };
 
-  test("RED: a granted island draws ONE receipt:issued from the pool, issued true — CONTROL: a malformed ask from it draws one issued false", async () => {
+  test("RED: a granted island draws ONE receipt:issued from the pool, issued true — and a headless ask from it draws one issued false (the old pool drew none; the ungranted worker owns the refusal)", async () => {
     const { repo, doc, consulted } = countedRepo();
     const rig = poolRig(repo, () => () => ({ receipt: true }));
     await rig.mount("w");

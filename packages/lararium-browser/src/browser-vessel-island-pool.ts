@@ -80,9 +80,10 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
           // A wiki island reaches no dyad capability: its ask draws `aside` and one named warning.
           const handle = browserSpawnWorker(workerUrl);
           refuseBrowserDyadAsks(handle);
-          // The browser vessel's lift stands its main Repo beside the pool: a wiki island's receipt ask draws the pool's
-          // answer (the one answerer), since the page carries no record a worker could refuse from.
-          return { ...handle, grants: () => ({ receipt: true }) };
+          // The browser vessel's lift stands its main Repo beside the pool, and that Repo is the browser's receipt
+          // capability: a wiki island's receipt ask draws the pool's answer (the one answerer) exactly where the pool holds
+          // one, since the page carries no record a worker could refuse from. A pool built with no Repo grants none.
+          return { ...handle, grants: () => ({ receipt: opts.mainRepo != null }) };
         },
         newSyncChannel: browserNewSyncChannel,
         storage: () => undefined,
