@@ -6,6 +6,11 @@
 # that runs here installs nothing. The image is pinned by tag AND digest (`PW_IMAGE`, the workflows' `PLAYWRIGHT_IMAGE`),
 # and tools/workflow-law.test.mjs holds that pin to the repo's `playwright` version and to docker-compose.capability-probe.yml.
 #
+# THIS IS NOT A SANDBOX. The container shares the host network and IPC, mounts the workspace writable and runs as the caller's
+# uid: it supplies system libraries and engines, and nothing more. A step must not run untrusted code here on the strength of it.
+# Only the workspace (its .git read-only) and the paths named in `PW_MOUNTS` are mounted: never the runner's whole temp dir
+# (which holds the runner's file-command and credential files).
+#
 # WHAT IT CHANGES, AND WHAT IT LEAVES. The workspace, the runner temp dir and the extra mounts in `PW_MOUNTS` (space-separated
 # absolute paths) ride in at their own paths, so every path a step names reads the same inside. The command runs as the
 # caller's uid and gid (nothing root-owned lands in the workspace) on the host network (a dev server on localhost answers).
@@ -37,8 +42,16 @@ if ! docker image inspect "$image" >/dev/null 2>&1; then
   [ "$pulled" -eq 1 ] || { echo "pw-container: the image never pulled" >&2; exit 1; }
 fi
 
+# THE IMAGE'S NODE IS THE JOB'S NODE. The image ships its own Node; when the caller's NODE_VERSION names a major, the image must
+# carry that major, so a drift in either fails here and never reads as a different runtime.
+if [ -n "${NODE_VERSION:-}" ]; then
+  have="$(docker run --rm "$image" node -p 'process.versions.node.split(".")[0]')"
+  [ "$have" = "${NODE_VERSION%%.*}" ] || { echo "pw-container: the image carries node $have, and the job pins NODE_VERSION=$NODE_VERSION" >&2; exit 2; }
+fi
+
 args=(--rm --network host --ipc=host --init --user "$(id -u):$(id -g)" -w "$(pwd)" -v "$root:$root")
-if [ -n "${RUNNER_TEMP:-}" ]; then args+=(-v "$RUNNER_TEMP:$RUNNER_TEMP"); fi
+# The repo's own .git rides read-only: no step in the container writes history, and nothing in it needs to.
+if [ -d "$root/.git" ]; then args+=(-v "$root/.git:$root/.git:ro"); fi
 for m in ${PW_MOUNTS:-}; do args+=(-v "$m:$m"); done
 scratch_home="$(mktemp -d)"
 trap 'rm -rf "$scratch_home"' EXIT

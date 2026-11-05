@@ -207,7 +207,7 @@ jobs:
           scratch="$RUNNER_TEMP/crossing"
           mkdir -p "$scratch/home" "$scratch/root" "$scratch/stage"
           cd packages/lararium-web
-          env PW_IMAGE="$PLAYWRIGHT_IMAGE" PW_ENV="LAR_ROOT LAR_STAGE_DIR" HOME_INSIDE="$scratch/home" LAR_ROOT="$scratch/root" LAR_STAGE_DIR="$scratch/stage" \
+          env PW_IMAGE="$PLAYWRIGHT_IMAGE" PW_MOUNTS="$scratch" PW_ENV="LAR_ROOT LAR_STAGE_DIR" HOME_INSIDE="$scratch/home" LAR_ROOT="$scratch/root" LAR_STAGE_DIR="$scratch/stage" \
             "$GITHUB_WORKSPACE/tools/pw-container.sh" npx vitest run --config vitest.crossing.config.ts
       # ── pristine upstream (the plugin drops into a PUBLISHED tiddlywiki) ──
       # THE INSTRUMENT AND ITS INVOKER. `meme-routes.e2e` takes `LARES_TW5_JS` and runs the whole contact against any
@@ -247,8 +247,9 @@ jobs:
         run: |
           export LARES_TW5_JS=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package/tiddlywiki.js
           export LARES_E2E_TMP="$RUNNER_TEMP/pristine-e2e"
+          mkdir -p "$LARES_E2E_TMP"
           cd packages/lararium-tw5
-          env PW_IMAGE="$PLAYWRIGHT_IMAGE" PW_MOUNTS="$HOME/.cache/lares-pristine" PW_ENV="LARES_TW5_JS LARES_E2E_TMP" \
+          env PW_IMAGE="$PLAYWRIGHT_IMAGE" PW_MOUNTS="$HOME/.cache/lares-pristine $LARES_E2E_TMP" PW_ENV="LARES_TW5_JS LARES_E2E_TMP" \
             "$GITHUB_WORKSPACE/tools/pw-container.sh" npx vitest run tests/meme-routes.e2e.test.ts tests/standalone-single-file.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
           test "${PIPESTATUS[0]}" -eq 0
       - name: The log names the engine it met
@@ -320,11 +321,6 @@ jobs:
           # root. Without them the tw5 build cannot run, so every downstream job fails on an
           # artifact the repo never had a chance to produce.
           submodules: recursive
-      # THE CONTAINER RUNS AS ROOT OVER A WORKSPACE THE RUNNER USER OWNS, and git refuses such a tree ("dubious ownership"), so every
-      # `git` the build and the tools run would die. The checkout's own exception ends with the checkout; this one stands for the job.
-      - name: Trust the workspace (container cells run git as another user than its owner)
-        if: ${{ matrix.container }}
-        run: git config --global --add safe.directory '*'
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}

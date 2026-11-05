@@ -141,7 +141,7 @@ export function socketHolderPids(path: string): number[] {
 }
 
 /**
- * PIDs holding a UNIX listener bound under `prefix`, read off the kernel's own tables: `/proc/net/unix` names each bound
+ * PIDs holding a LISTENING UNIX socket bound under `prefix`, read off the kernel's own tables: `/proc/net/unix` names each bound
  * path with its socket inode, and `/proc/<pid>/fd/*` links a descriptor to `socket:[inode]`. It needs neither `ss` nor
  * `lsof` (a minimal container image carries neither), and it reads only the descriptors this user may read, so a holder of
  * another user stays unnamed, as it does for `lsof`. Empty = none found, or no `/proc`.
@@ -152,7 +152,9 @@ export function procHolderPids(prefix: string): number[] {
     for (const line of readFileSync("/proc/net/unix", "utf8").split("\n").slice(1)) {
       const cols = line.trim().split(/\s+/);
       const bound = cols[7] ?? "";
-      if (bound.startsWith(prefix)) inodes.add(cols[6] ?? "");
+      // Flags column: __SO_ACCEPTCON (0x10000) marks a LISTENING socket, the same set `ss -xl` names.
+      const listening = (Number.parseInt(cols[3] ?? "0", 16) & 0x10000) !== 0;
+      if (listening && bound.startsWith(prefix)) inodes.add(cols[6] ?? "");
     }
   } catch { return []; }
   if (inodes.size === 0) return [];
