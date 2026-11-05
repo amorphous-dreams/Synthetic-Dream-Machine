@@ -42,11 +42,13 @@ import { larIdentityDir } from "./vessel-paths.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { readJoinedFaceProof, type JoinedFaceAbsence, type JoinedFaceProof } from "./joined-face-proof.js";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "./node-vessel-identity.js";
+import { unlockActWard, type WardCredential } from "./ward-credential.js";
 
 export const FOUNDER_CERTIFICATE_REFUSALS = [
   "face-provisional",           // a restored face adds no vessel to its authority until a party confirms its head
   "root-other-group",           // the face whose root would sign does not own the PersonaGroup the grant names
   "root-absent",                // this vessel holds no root for the face: a joiner is certified by its root holder
+  "ward-needs-fresh-unlock",    // issuing a certificate at a new scope is a ward act, and no route for one rides this call
   "record-other",               // the face's record stands under another root key
   "face-key-absent",            // no face key at the scope in custody, or one that answers another key
   "history-unfolded",           // the face's withdrawal history does not fold
@@ -67,6 +69,8 @@ export class FounderCertificateRefused extends Error {
 export interface FounderCertificateDoors {
   readonly guard?:    (face: number, act: string) => Promise<void>;
   readonly loadRoot?: (face: number) => Promise<{ readonly seed: Uint8Array; readonly verifyingKey: string } | null>;
+  /** The ward route an issuing act carries; absent, the default root door reads the face-unlock act's own (`unlockActWard`). */
+  readonly ward?: WardCredential;
   readonly vesselKey?: () => Promise<string>;
   /** The PersonaGroup face `face` owns (its anchors' `personaGroupId`), or null where it owns none. */
   readonly groupOf?:  (face: number) => Promise<string | null>;
@@ -74,11 +78,25 @@ export interface FounderCertificateDoors {
 
 const defaultGroupOf = async (face: number): Promise<string | null> => (await loadIdentityAnchors(face))?.personaGroupId ?? null;
 
-const defaultRoot = async (face: number): Promise<{ seed: Uint8Array; verifyingKey: string } | null> => {
-  const key = (await loadPersonaGroupRootVerifyingKey(face))?.toLowerCase().replace(/^0x/, "");
+const rosterKey = async (face: number): Promise<string | null> => (await loadPersonaGroupRootVerifyingKey(face))?.toLowerCase().replace(/^0x/, "") ?? null;
+
+/** THE ROOT SIGNS UNDER THE WARD: issuing a certificate changes what the face trusts (a face key at a Nexus), so it is a ward act. */
+const wardedRoot = (ward: WardCredential | undefined) => async (face: number): Promise<{ seed: Uint8Array; verifyingKey: string } | null> => {
+  const key = await rosterKey(face);
   if (!key) return null;
-  return { seed: await loadPersonaGroupRootSeed(face), verifyingKey: key };
+  if (!ward) throw new FounderCertificateRefused("ward-needs-fresh-unlock", `issuing face h${face}'s certificate at a new scope is a ward act; it runs inside a face unlock (\`lares vault unlock --face ${face}\`), whose route opens the ward`);
+  return { seed: await loadPersonaGroupRootSeed(face, ward), verifyingKey: key };
 };
+
+/** Whether this vessel's certificate and the root's grant both stand at `scope` under `rootKey`, read without the root seed. */
+async function standsAt(personaGroup: string, scope: FaceScope, rootKey: string): Promise<boolean> {
+  const record = await readFaceJoinRecord(personaGroup);
+  if (record === null || record.rootKey !== rootKey) return false;
+  const standingKey = await readVesselFaceKeyPublic(scope);
+  const certificate = record.certificates.find((c) => atScope(c, scope)) as { vesselFaceKey?: unknown } | undefined;
+  if (certificate === undefined || standingKey === null || typeof certificate.vesselFaceKey !== "string" || certificate.vesselFaceKey.toLowerCase() !== standingKey.toLowerCase()) return false;
+  return record.grants.some((g) => { const read = readFaceKeyGrant(g, rootKey); return read !== null && atScope(read, scope); });
+}
 
 const atScope = (value: unknown, scope: FaceScope): boolean => {
   try {
@@ -105,7 +123,12 @@ export async function ensureFounderCertificate(
   if (owns !== personaGroup) {
     throw new FounderCertificateRefused("root-other-group", `face h${face} does not own the PersonaGroup this grant would name; its root signs nothing for another face.`);
   }
-  const root = await (doors.loadRoot ?? defaultRoot)(face);
+  // A certificate and grant that already stand need no root: the dial reads them under the roster's public key, and no ward opens.
+  if (!doors.loadRoot) {
+    const key = await rosterKey(face);
+    if (key !== null && await standsAt(personaGroup, scope, key)) return { state: "standing" };
+  }
+  const root = await (doors.loadRoot ?? wardedRoot(doors.ward ?? unlockActWard()))(face);
   if (root === null) throw new FounderCertificateRefused("root-absent", "this vessel holds no root for the face; its root holder certifies a joiner.");
   try {
     const record = await readFaceJoinRecord(personaGroup);

@@ -42,6 +42,7 @@
  * table does not name refuses by name, and no act takes a credential of this vessel. The door logs the act's NAME and how it
  * ended, and never an argument, an answer or a refusal's own words.
  */
+import { dropWardTickets, duringUnlockAct, parkWardTicket, wardCredential, type WardCredential } from "./ward-credential.js";
 import type { Socket } from "node:net";
 import type { Credential, SlotSpec } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
@@ -59,7 +60,9 @@ export type CustodyFrame =
   /** Cut face `face`'s bundle body, sealed under `key` (a bundle key, 64 lower hex), once `credentials` prove the vessel's own route. */
   | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string }
   /** Park the human route a NEW face will ask for, for the next face this vessel founds (one use). */
-  | { readonly op: "face-route"; readonly slots: readonly SlotSpec[] };
+  | { readonly op: "face-route"; readonly slots: readonly SlotSpec[] }
+  /** One ward act's route: the door parks it under a one-use ticket a store verb then names (`ward-credential`). */
+  | { readonly op: "ward"; readonly credentials: readonly Credential[] };
 
 /** What stands after a custody act: the composition's standing, or the fault that left the floor standing. */
 export interface CustodyStanding {
@@ -76,6 +79,7 @@ export type CustodyAnswer =
   | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly testScratch: boolean }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
   | { readonly op: "face-route"; readonly parked: true }
+  | { readonly op: "ward"; readonly ticket: string }
   | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
   | { readonly op: string; readonly status: "error"; readonly errorMessage: string; readonly refusal: { readonly reason: string; readonly home?: string; readonly file?: string; readonly reading?: string; readonly attemptsLeft?: number } };
 
@@ -99,14 +103,16 @@ export interface CustodyFrameDeps {
    * Cut one face's bundle body under the bundle key handed in (`cutFaceBundle`, bound to what the standing
    * composition lends a cut). Absent, every `backup` frame refuses `backup-unavailable`.
    */
-  readonly backup?: (face: number, bundleKey: Uint8Array) => Promise<FaceBundleCut>;
+  /** Cut a face's bundle; the cut hands the root off the vessel, so it opens under the face's ward (`ward`, one act). */
+  readonly backup?: (face: number, bundleKey: Uint8Array, ward: WardCredential) => Promise<FaceBundleCut>;
 }
 
-const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "custody", "act", "backup", "face-route"]);
+const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "custody", "act", "backup", "face-route", "ward"]);
+const WARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials"]);
 /** The keys a `face-route` frame may carry. */
 const FACE_ROUTE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "slots"]);
 /** The keys a `backup` frame may carry. */
-const BACKUP_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face", "key"]);
+const BACKUP_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face", "key", "ward"]);
 const BUNDLE_KEY_HEX = /^[0-9a-f]{64}$/;
 /** The keys an `act` frame may carry. Any other key refuses the frame, so nothing rides beside an act's own arguments. */
 const ACT_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "act", "args"]);
@@ -240,7 +246,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       }
       return { op: "unlock", ...u, standing: deps.standing(), held: true };
     }
-    const stood = await deps.recompose(true);
+    // THE UNLOCK IS A HAND ACT: its route rides the composition it stands for that act's length alone, so the boot dial may issue the
+    // founder's own certificate at a new scope (a ward act) and nothing holds the route once the composition settles.
+    const stood = await duringUnlockAct(wardCredential(credentials), () => deps.recompose(true));
     // A KEY NEVER RESTS OVER A FLOOR. When the composition that should have stood on the key refused, the vessel
     // stands at the floor and the holder drops what it opened: held and standing never disagree.
     if (stood.refused !== undefined) {
@@ -280,6 +288,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
   const lock = async (): Promise<CustodyAnswer> => {
     if (!holder.isUnlocked()) return { op: "lock", locked: true, was: "locked", standing: deps.standing() };
     await holder.lock();
+    dropWardTickets();
     deps.onLog("locked: the vessel key dropped");
     const stood = await deps.recompose(false);
     return { op: "lock", locked: true, was: "unlocked", ...stood };
@@ -306,7 +315,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
   };
 
   /** One cut, run on the door's one chain. The route proves first; nothing of a row opens before it does. */
-  const runBackup = (credentials: readonly Credential[], face: number, keyHex: string) => async (): Promise<CustodyAnswer> => {
+  const runBackup = (credentials: readonly Credential[], face: number, keyHex: string, wardRoute: readonly Credential[]) => async (): Promise<CustodyAnswer> => {
     const refuse = (reason: string, errorMessage: string, extra: object = {}): CustodyAnswer => {
       deps.onLog(`backup: refused (${reason})`);
       return { op: "backup", status: "error", errorMessage, refusal: { reason, ...extra } };
@@ -322,7 +331,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     }
     const bundleKey = Uint8Array.from(Buffer.from(keyHex, "hex"));
     try {
-      const cut = await deps.backup(face, bundleKey);
+      const cut = await deps.backup(face, bundleKey, wardCredential(wardRoute));
       deps.onLog("backup: done");
       return { op: "backup", sealedBody: Buffer.from(cut.sealedBody).toString("base64"), holds: cut.holds, face: cut.face, carries: cut.carries };
     } catch (e) {
@@ -347,7 +356,10 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         answer(sock, { op, status: "error", errorMessage: "a backup frame carries `op`, the vessel's own `credentials`, a `face` (a handle-index) and a `key` (a bundle key, 64 lower hex), and nothing beside them", refusal: { reason: "bad-custody-frame" } });
         return true;
       }
-      act = runBackup(credentials, face as number, key);
+      // The face's ward route rides `ward` where the face asks its own; absent, the vessel's route presented for this act.
+      const wardRoute = frame["ward"] === undefined ? credentials : credentialsOf(frame["ward"]);
+      if (!wardRoute) { answer(sock, { op, status: "error", errorMessage: "a backup frame's `ward` carries one or more credentials (a passphrase or paper sheets)", refusal: { reason: "bad-custody-frame" } }); return true; }
+      act = runBackup(credentials, face as number, key, wardRoute);
     } else if (op === "act") {
       const frame = parsed as Record<string, unknown>;
       const stray = Object.keys(frame).find((k) => !ACT_FRAME_KEYS.has(k));
@@ -364,6 +376,15 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         return true;
       }
       act = runAct(frame["act"], frame["args"]);
+    } else if (op === "ward") {
+      const frame = parsed as Record<string, unknown>;
+      const credentials = credentialsOf(frame["credentials"]);
+      if (Object.keys(frame).some((k) => !WARD_FRAME_KEYS.has(k)) || !credentials) {
+        answer(sock, { op, status: "error", errorMessage: "a ward frame carries `op` and `credentials` (a passphrase or paper sheets), and nothing beside them", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      // THE ROUTE RIDES THIS FRAME AND NO VERB: the door parks it under a one-use ticket, answered on this socket alone.
+      act = async () => { deps.onLog("ward: a route parked for one act"); return { op: "ward", ticket: parkWardTicket(wardCredential(credentials)) }; };
     } else if (op === "face-route") {
       const frame = parsed as Record<string, unknown>;
       const stray = Object.keys(frame).find((k) => !FACE_ROUTE_FRAME_KEYS.has(k));

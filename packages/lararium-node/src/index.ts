@@ -506,6 +506,13 @@ export type { GateGrantRing, GateGrantRingReaders, GateRootHolding } from "./gat
 export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
 export type { RowUpdate } from "./custody-holder.js";
 export type { CustodyOpener } from "./custody-seat.js";
+// The ward (seat-harness#/the-ward): the face root seed opens fresh under a human route for one act.
+export { WardNeedsFreshUnlock, WardAbsent } from "./custody-holder.js";
+export type { WardSeat } from "./custody-holder.js";
+export { rewrapWardCustody, withWardKeyCustody } from "./custody-seat.js";
+export { wardCredential, wardCredentialOfRoute, parkWardTicket, storeVerbNeedsWard } from "./ward-credential.js";
+export type { WardCredential } from "./ward-credential.js";
+export { wardRootSigner } from "./ward-signer.js";
 export { seatFaceAutoFounder } from "./custody-holder.js";
 export { faceDir, faceFileNames, faceFilePathSync, listFaceFiles, readFaceIndexSync } from "./face-index.js";
 export { bindFaceSlot, unbindFaceSlot, FaceTreeUnreadable } from "./face-slot-ops.js";

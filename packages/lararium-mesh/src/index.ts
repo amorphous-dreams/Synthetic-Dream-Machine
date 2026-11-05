@@ -608,10 +608,11 @@ export {
   writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, openSealedCarrier, commitSlotTree, rotateTreeKey, settleRotation, assertStoreUnoccupied,
   CustodyRefusal, TreeKeyRefusal, CensusRefusal, OccupiedStoreRefusal, SEALING_SUFFIX, ROTATING_SUFFIX,
   writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, openFaceCarrier, rotateFck, settleFaceRotation, assertFaceStoreUnoccupied, commitFaceTree,
+  writeWardCarrier, updateWardCarrier, openWardCarrier, commitWardTree,
 } from "./sealed-writer.js";
 export type {
   CustodyIo, SealedCarrier, SealedCarrierUpdate, StandingCarrier, TreeKeyReading, WriteSealedCarrierArgs, CommitSlotTreeArgs, RotateTreeKeyArgs, SettleRotationArgs,
-  WriteFaceCarrierArgs, RotateFckArgs, CommitFaceTreeArgs,
+  WriteFaceCarrierArgs, RotateFckArgs, CommitFaceTreeArgs, WriteWardCarrierArgs,
 } from "./sealed-writer.js";
 export { bindSlot, unbindSlot, openTreeKey, nobleKdf, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper, mintPasskeySalt, openPasskeyPin, PIN_KINDS } from "./keyslot.js";
 export type { KdfPort, ScryptCost, PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, PinKind, PinRecord, PasskeyPinRecord, Credential, TreeKeyUnlock, SlotTreeReading } from "./keyslot.js";
