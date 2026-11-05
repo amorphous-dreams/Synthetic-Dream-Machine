@@ -38,6 +38,7 @@ import { userInfo } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { leadStepBrief, peekStep, writeState } from "./lane-state.mjs";
+import { heldOver, mkdirHeld, openHeldSync, openLogHeld, readHeld, writeHeld } from "./held-dir.mjs";
 import { globalStampPath, packageStampPath, sourceDigest, workspacePackageDirs } from "./stamp-build.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -159,31 +160,34 @@ export function findRollout(home, { marker, before, seen = new Set() }) {
 }
 
 /**
- * The supervisor's loop over injected readers: stops the seat at its ceiling (SIGTERM, then SIGKILL after `graceTicks`
- * ticks) and writes ceiling.md; fails closed (the same stop) when no token reading appears for `blindTicks` ticks.
- * Returns "ceiling", "blind" or "exited".
+ * The supervisor's loop over injected readers. At its ceiling, or when no NEW token event shows for `blindTicks` ticks, or
+ * on any error while watching, it writes ceiling.md FIRST (so a failing stop still names itself), then runs the ladder:
+ * SIGTERM to the group, `graceTicks` of grace, SIGKILL to the group, `hardTicks` more. A stop counts only when `alive()`
+ * reads false (the child's exit event landed); a signal that throws never counts as stopped. Returns "ceiling", "blind",
+ * "error" or "exited" once stopped, "unstopped" when the child still lives after the ladder.
  */
-export async function watchSeat({ seatDir, pid, ceiling, mode, tokens, advanced = () => true, alive, kill, sleep, graceTicks = 10, blindTicks = 200 }) {
+export async function watchSeat({ seatDir, pid, ceiling, mode, tokens, advanced = () => true, alive, kill, sleep, note, graceTicks = 10, hardTicks = 20, blindTicks = 200 }) {
   let blind = 0;
-  const stop = async (why) => {
-    // Every step of the stop runs even if an earlier one throws.
-    try { kill("SIGTERM"); } catch { /* the next step still runs */ }
+  const writeNote = note ?? ((text) => writeFileSync(join(seatDir, "ceiling.md"), text));
+  const stop = async (why, verdict) => {
+    try { writeNote(`# Ceiling reached\n\nThe ${mode} seat (pid ${pid}) ${why} The supervisor stops it (SIGTERM, then SIGKILL, then waits for the exit).\n`); } catch { /* the stop still runs */ }
+    try { kill("SIGTERM"); } catch { /* the ladder goes on */ }
     try { for (let i = 0; i < graceTicks && alive(); i++) await sleep(); } catch { /* fall through to SIGKILL */ }
-    try { if (alive()) kill("SIGKILL"); } catch { /* last resort below in the supervisor */ }
-    try { writeFileSync(join(seatDir, "ceiling.md"), `# Ceiling reached\n\nThe ${mode} seat (pid ${pid}) ${why} The supervisor stopped it (SIGTERM, then SIGKILL if it lived).\n`); } catch { /* the child is stopped; the note is best effort */ }
+    try { if (alive()) kill("SIGKILL"); } catch { /* the hard wait below decides */ }
+    try { for (let i = 0; i < hardTicks && alive(); i++) await sleep(); } catch { /* alive() decides */ }
+    return alive() ? "unstopped" : verdict;
   };
   try {
     while (alive()) {
       const t = tokens();
       // Blindness resets on a NEW token event only; a re-read of the last total is a stale reading.
       if (typeof t === "number" && advanced()) blind = 0; else blind++;
-      if (typeof t === "number" && t >= ceiling) { await stop(`read ${t} total tokens in its rollout (total_token_usage.total_tokens, cached input counted) against a ceiling of ${ceiling}.`); return "ceiling"; }
-      if (blind >= blindTicks) { await stop(`showed no new token event for ${blindTicks} ticks (no reading, or a stale one), so no ceiling could be enforced (failing closed; ceiling ${ceiling}).`); return "blind"; }
+      if (typeof t === "number" && t >= ceiling) return await stop(`read ${t} total tokens in its rollout (total_token_usage.total_tokens, cached input counted) against a ceiling of ${ceiling}.`, "ceiling");
+      if (blind >= blindTicks) return await stop(`showed no new token event for ${blindTicks} ticks (no reading, or a stale one), so no ceiling could be enforced (failing closed; ceiling ${ceiling}).`, "blind");
       await sleep();
     }
   } catch (error) {
-    await stop(`could not be watched (${error?.message ?? error}); failing closed.`);
-    return "error";
+    return await stop(`could not be watched (${error?.message ?? error}); failing closed.`, "error");
   }
   return "exited";
 }
@@ -370,7 +374,7 @@ export function preflight({ mode, model, seatDir, worktree, briefless }, readers
 
 function parse(argv) {
   const o = { dryRun: false };
-  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--marker": "marker", "--before": "before", "--prompt-file": "promptFile", "--home": "home", "--lane-root": "laneRoot" };
+  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--marker": "marker", "--held-fd": "heldFd", "--home": "home", "--blind-ticks": "blindTicks", "--lane-root": "laneRoot" };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--dry-run") o.dryRun = true;
     else if (argv[i] === "--supervise") o.supervise = true;
@@ -396,27 +400,42 @@ function parse(argv) {
 
 /**
  * The supervisor: the seat's PARENT. It spawns codex itself, so the child's pid stays its own until the supervisor reaps it
- * (no reuse, no looked-up pid), signals only its own child's process group, and tails the seat's rollout every few seconds
- * until the seat exits or crosses its ceiling.
+ * (no reuse, no looked-up pid), and it works only through the seat directory the launcher held open and handed down as an
+ * inherited fd (run.log, ceiling.md, the prompt and the snapshot all go through it, never a pathname). It tails the seat's
+ * rollout until the seat exits, crosses its ceiling, or goes blind; a watch that ends with the child alive gets a SIGKILL
+ * to its own child and waits for the exit event.
  */
-function superviseMain(o) {
-  const marker = o.marker, before = new Set(JSON.parse(readFileSync(o.before, "utf8"))), home = o.home ?? realHome();
-  const prompt = readFileSync(o.promptFile, "utf8");
-  const fd = openSync(join(o.seatDir, "run.log"), "w");
-  const child = nodeSpawn("codex", [...(o.rest ?? []), prompt], { cwd: o.seatDir, env: process.env, detached: true, stdio: ["ignore", fd, fd] });
+export async function superviseSeat(o, deps = {}) {
+  const signal = deps.signal ?? ((pid, sig) => process.kill(pid, sig));
+  const held = o.held;
+  const marker = o.marker, before = new Set(JSON.parse(readHeld(held, "rollouts-before.json"))), home = o.home ?? realHome();
+  const prompt = readHeld(held, "prompt.txt");
+  const logFd = openLogHeld(held, "run.log");
+  const child = (deps.spawn ?? nodeSpawn)("codex", [...(o.rest ?? []), prompt], { cwd: held.at(), env: o.env ?? process.env, detached: true, stdio: ["ignore", logFd, logFd] });
   let exited = false;
-  child.on("exit", () => { exited = true; });
-  child.on("error", () => { exited = true; });
+  const gone = new Promise((resolve) => { child.on("exit", () => { exited = true; resolve(); }); child.on("error", () => { exited = true; resolve(); }); });
   let tail = null;
   const seen = new Set();
-  return watchSeat({
-    seatDir: o.seatDir, pid: child.pid, ceiling: Number(o.ceiling), mode: o.mode,
-    alive: () => !exited,
-    kill: (sig) => { if (!exited) { try { process.kill(-child.pid, sig); } catch { /* gone */ } } },
-    sleep: () => new Promise((r) => setTimeout(r, 3000)),
-    tokens: () => { if (!tail) { const file = findRollout(home, { marker, before, seen }); if (file) tail = tokenTail(file); } return tail ? tail() : null; },
-    advanced: () => Boolean(tail?.fresh),
-  }).then(() => (exited ? 0 : new Promise((r) => child.on("exit", () => r(0))))).catch(() => { if (!exited) { try { process.kill(-child.pid, "SIGKILL"); } catch { /* gone */ } } return 1; });
+  let verdict = "error";
+  try {
+    verdict = await watchSeat({
+      seatDir: undefined, pid: child.pid, ceiling: Number(o.ceiling), mode: o.mode, blindTicks: o.blindTicks, graceTicks: o.graceTicks, hardTicks: o.hardTicks,
+      alive: () => !exited,
+      kill: (sig) => { if (!exited) signal(-child.pid, sig); },
+      sleep: deps.sleep ?? (() => new Promise((r) => setTimeout(r, 3000))),
+      note: (text) => writeHeld(held, "ceiling.md", text),
+      tokens: () => { if (!tail) { const file = findRollout(home, { marker, before, seen }); if (file) tail = tokenTail(file); } return tail ? tail() : null; },
+      advanced: () => Boolean(tail?.fresh),
+    });
+  } catch { /* the child is dealt with below */ }
+  if (!exited) { try { child.kill("SIGKILL"); } catch { /* gone */ } }
+  await gone;
+  return verdict;
+}
+
+function superviseMain(o) {
+  const held = heldOver(Number(o.heldFd));
+  return superviseSeat({ held, marker: o.marker, home: o.home, ceiling: o.ceiling, mode: o.mode, rest: o.rest, blindTicks: o.blindTicks ? Number(o.blindTicks) : undefined }).then(() => 0, () => 1);
 }
 
 /** The launcher over injected readers, spawn and writers; returns the exit code. */
@@ -452,6 +471,7 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
   try {
     if (o.canary && o.mode !== "read") throw refuse("--canary only runs with --mode read");
     const ceiling = ceilingFor(o.mode, o.ceiling);
+    if (o.blindTicks !== undefined) ceilingFor(o.mode, o.blindTicks);
     readers ??= realReaders();
     const worktree = o.worktree ? real(o.worktree) : undefined;
     if (stepPlan) {
@@ -463,33 +483,43 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const args = seatArgs({ ...o, seatDir, worktree, laneRoot, compactLimit: o.canary ? 50_000 : undefined });
     log(pool);
     if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...args, "<brief>"])}`); return 0; }
-    if (o.canary) writeFileSync(join(seatDir, "brief.md"), canaryBrief());
+    // EVERY write below lands in the seat directory through ONE handle opened here and verified under the lane: no pathname write follows, so a planted symlink or a swapped parent redirects nothing.
+    const guard = (fn) => { try { return fn(); } catch (e) { if (e.refused) throw e; throw refuse(e.message); } };
+    const scratchReal = real(join(readers.realHome, ".lares-scratch"));
+    const laneDir = join(scratchReal, seatDir.slice(scratchReal.length + 1).split("/")[0]);
+    let held;
     if (stepPlan) {
-      // The dir is the claim: two launches reading the same counter cannot both make step N.
-      mkdirSync(dirname(stepPlan.stepDir), { recursive: true });
-      try { mkdirSync(stepPlan.stepDir); } catch (e) { throw refuse(`step ${stepPlan.n} is already claimed (${stepPlan.stepDir}): ${e.code ?? e.message}`); }
-      writeFileSync(join(stepPlan.stepDir, "brief.md"), leadStepBrief(stepPlan.state, { laneRoot: stepPlan.laneRoot, stepDir: stepPlan.stepDir }));
+      guard(() => { mkdirSync(join(stepPlan.laneRoot, "steps"), { recursive: true }); });
+      const steps = guard(() => openHeldSync(join(stepPlan.laneRoot, "steps"), laneDir));
+      try {
+        // The dir is the claim: two launches reading the same counter cannot both make step N.
+        try { mkdirSync(steps.at(basename(stepPlan.stepDir))); } catch (e) { throw refuse(`step ${stepPlan.n} is already claimed (${stepPlan.stepDir}): ${e.code ?? e.message}`); }
+        held = guard(() => openHeldSync(steps.at(basename(stepPlan.stepDir)), laneDir));
+      } finally { steps.close(); }
+      guard(() => writeHeld(held, "brief.md", leadStepBrief(stepPlan.state, { laneRoot: stepPlan.laneRoot, stepDir: stepPlan.stepDir })));
       writeState(stepPlan.laneRoot, { ...stepPlan.state, step: stepPlan.n });
+    } else {
+      held = guard(() => openHeldSync(seatDir, laneDir));
     }
-    const law = o.mode === "lead" ? leadLaw() : seatLaw(readers.canon());
-    mkdirSync(join(seatDir, ".tmp"), { recursive: true });
-    const briefPath = join(seatDir, "brief.md");
-    const brief = appendSeatLaw(readFileSync(briefPath, "utf8"), law, o.mode === "lead" ? "LEAD LAW" : "SEAT LAW");
-    writeFileSync(briefPath, brief);
-    appendFileSync(join(seatDir, "attempts.log"), `attempt model=${o.model} effort=${o.effort} mode=${o.mode}\n`);
-    const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(seatDir, ".tmp"), TMPPREFIX: join(seatDir, ".tmp", "zsh") };
-    const beforeFile = join(seatDir, "rollouts-before.json");
-    writeFileSync(beforeFile, JSON.stringify(listRollouts(readers.realHome)));
-    const marker = `SEAT-MARKER ${randomUUID()}`;
-    writeFileSync(join(seatDir, "marker.txt"), `${marker}\n`);
-    // The supervisor is the seat's parent and spawns codex itself (see superviseMain); the prompt rides a file because it can run long.
-    const promptFile = join(seatDir, "prompt.txt");
-    writeFileSync(promptFile, `${marker}\n\n${brief}`);
-    const supervisor = spawn(process.execPath, [fileURLToPath(import.meta.url), "--supervise", "--seat-dir", seatDir, "--ceiling", String(ceiling), "--mode", o.mode, "--marker", marker, "--before", beforeFile, "--prompt-file", promptFile, "--home", readers.realHome, "--", ...args], { cwd: seatDir, env, detached: true, stdio: "ignore" });
-    supervisor.unref?.();
-    const child = supervisor;
-    log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${child.pid}; wait on: until [ -f ${join(seatDir, "final.md")} ]`);
-    return 0;
+    try {
+      readers.afterHold?.();
+      if (o.canary) guard(() => writeHeld(held, "brief.md", canaryBrief()));
+      const law = o.mode === "lead" ? leadLaw() : seatLaw(readers.canon());
+      guard(() => mkdirHeld(held, ".tmp"));
+      const brief = appendSeatLaw(guard(() => readHeld(held, "brief.md")), law, o.mode === "lead" ? "LEAD LAW" : "SEAT LAW");
+      guard(() => writeHeld(held, "brief.md", brief));
+      guard(() => writeHeld(held, "attempts.log", `attempt model=${o.model} effort=${o.effort} mode=${o.mode}\n`, "a"));
+      const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(seatDir, ".tmp"), TMPPREFIX: join(seatDir, ".tmp", "zsh") };
+      guard(() => writeHeld(held, "rollouts-before.json", JSON.stringify(listRollouts(readers.realHome))));
+      const marker = `SEAT-MARKER ${randomUUID()}`;
+      guard(() => writeHeld(held, "marker.txt", `${marker}\n`));
+      guard(() => writeHeld(held, "prompt.txt", `${marker}\n\n${brief}`));
+      // The supervisor is the seat's parent and spawns codex itself (see superviseSeat); it inherits the held directory as fd 3.
+      const supervisor = spawn(process.execPath, [fileURLToPath(import.meta.url), "--supervise", "--held-fd", "3", "--ceiling", String(ceiling), "--mode", o.mode, "--marker", marker, "--home", readers.realHome, ...(o.blindTicks ? ["--blind-ticks", String(o.blindTicks)] : []), "--", ...args], { cwd: held.at(), env, detached: true, stdio: ["ignore", "ignore", "ignore", held.fd] });
+      supervisor.unref?.();
+      log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${supervisor.pid}; wait on: until [ -f ${join(seatDir, "final.md")} ]`);
+      return 0;
+    } finally { held.close(); }
   } catch (e) {
     if (!e.refused) throw e;
     err(`SEAT-REFUSED: ${e.message}`);

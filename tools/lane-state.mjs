@@ -6,6 +6,7 @@
  * launch is a fresh lead over the new state. A missing, torn or misshapen file refuses by name, never reads as empty.
  */
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
 const KEYS = ["head", "owed", "seats", "worktrees", "next", "step"];
@@ -38,8 +39,8 @@ export function readState(laneRoot) {
 /** Validates, then writes through a temp name and a rename, so a reader never sees a torn file. */
 export function writeState(laneRoot, state) {
   validateState(state);
-  const p = join(laneRoot, "state.json"), tmp = `${p}.tmp-${process.pid}`;
-  writeFileSync(tmp, `${JSON.stringify(state, null, 2)}\n`);
+  const p = join(laneRoot, "state.json"), tmp = `${p}.tmp-${process.pid}-${randomUUID()}`;
+  writeFileSync(tmp, `${JSON.stringify(state, null, 2)}\n`, { flag: "wx" });
   renameSync(tmp, p);
 }
 

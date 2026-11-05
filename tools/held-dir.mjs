@@ -27,3 +27,72 @@ export async function openHeld(dir, root) {
     close: () => fh.close(),
   };
 }
+
+// ---- the synchronous door, for the launcher and the supervisor ----
+import { closeSync, constants as FSC, fstatSync, ftruncateSync, lstatSync, mkdirSync, openSync, readFileSync, realpathSync, writeSync } from "node:fs";
+
+/** Like `openHeld`, but synchronous: returns `{ fd, at, close }` with the directory held open under `root`. */
+export function openHeldSync(dir, root) {
+  const rootReal = realpathSync(root);
+  const before = lstatSync(dir);
+  if (before.isSymbolicLink() || !before.isDirectory()) throw new Error(`${dir} is not a real directory`);
+  const fd = openSync(dir, FSC.O_RDONLY | FSC.O_DIRECTORY | FSC.O_NOFOLLOW);
+  try {
+    const st = fstatSync(fd);
+    if (st.ino !== before.ino || st.dev !== before.dev) throw new Error(`${dir} changed while it opened`);
+    const resolved = realpathSync(`/proc/self/fd/${fd}`);
+    if (resolved !== rootReal && !resolved.startsWith(`${rootReal}${path.sep}`)) throw new Error(`${dir} resolves outside ${rootReal}`);
+  } catch (error) { closeSync(fd); throw error; }
+  return heldOver(fd, true);
+}
+
+/** A held directory over an fd the caller inherited (the supervisor's), which it does not close. */
+export function heldOver(fd, owns = false) {
+  return {
+    fd,
+    at: (name = "") => (name === "" ? `/proc/self/fd/${fd}` : `/proc/self/fd/${fd}/${name}`),
+    close: () => { if (owns) closeSync(fd); },
+  };
+}
+
+/**
+ * Writes `data` to `name` inside a held directory: opened with O_NOFOLLOW (a planted symlink refuses), O_EXCL for mode "x", a
+ * single hard link required before any truncate (a file linked to somewhere else refuses), O_APPEND for mode "a".
+ */
+export function writeHeld(held, name, data, mode = "w") {
+  if (/[/\0]/.test(name) || name === "." || name === "..") throw new Error(`invalid output name ${name}`);
+  const flags = FSC.O_WRONLY | FSC.O_CREAT | FSC.O_NOFOLLOW | (mode === "x" ? FSC.O_EXCL : 0) | (mode === "a" ? FSC.O_APPEND : 0);
+  let fd;
+  try { fd = openSync(held.at(name), flags, 0o644); } catch (error) { throw new Error(`${name}: ${error.code === "ELOOP" ? "a symlink stands at this output name" : error.code ?? error.message}`); }
+  try {
+    const st = fstatSync(fd);
+    if (!st.isFile()) throw new Error(`${name}: not a regular file`);
+    if (st.nlink > 1) throw new Error(`${name}: hard-linked elsewhere`);
+    if (mode === "w") ftruncateSync(fd, 0);
+    writeSync(fd, data);
+  } finally { closeSync(fd); }
+}
+
+/** Opens a log for the child's stdio: O_NOFOLLOW, one link, truncated; returns the fd the caller closes. */
+export function openLogHeld(held, name) {
+  let fd;
+  try { fd = openSync(held.at(name), FSC.O_WRONLY | FSC.O_CREAT | FSC.O_NOFOLLOW, 0o644); } catch (error) { throw new Error(`${name}: ${error.code === "ELOOP" ? "a symlink stands at this output name" : error.code ?? error.message}`); }
+  const st = fstatSync(fd);
+  if (!st.isFile() || st.nlink > 1) { closeSync(fd); throw new Error(`${name}: not a lone regular file`); }
+  ftruncateSync(fd, 0);
+  return fd;
+}
+
+/** Reads `name` from a held directory without following a symlink. */
+export function readHeld(held, name) {
+  let fd;
+  try { fd = openSync(held.at(name), FSC.O_RDONLY | FSC.O_NOFOLLOW); } catch (error) { throw new Error(`${name}: ${error.code === "ELOOP" ? "a symlink stands at this name" : error.code ?? error.message}`); }
+  try { return readFileSync(fd, "utf8"); } finally { closeSync(fd); }
+}
+
+/** Makes a subdirectory inside a held one (an existing real directory passes; a symlink or file refuses). */
+export function mkdirHeld(held, name) {
+  try { mkdirSync(held.at(name)); } catch (error) { if (error.code !== "EEXIST") throw error; }
+  const st = lstatSync(held.at(name));
+  if (st.isSymbolicLink() || !st.isDirectory()) throw new Error(`${name}: not a real directory`);
+}

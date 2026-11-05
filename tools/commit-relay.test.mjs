@@ -514,3 +514,17 @@ test('P1-2 a commit message with a lone surrogate or a NUL refuses; a multibyte 
   const r = await commitWithReceipt(x.ctx, commitReq(x, { message: 'lar:/// — café\n' }));
   assert.equal(r.ok, true, JSON.stringify(r)); assert.equal(x.git('log', '-1', '--format=%s'), 'lar:/// — café');
 });
+
+test('P2-3 a bad broker-iso with a missing relay/ leaves the lane byte-identical: the placement check runs before ANY create', () => {
+  const x = setup();
+  rmSync(path.join(x.lane, 'relay'), { recursive: true });
+  const ctl = path.join(x.home, 'ctl3'); mkdirSync(ctl);
+  mkdirSync(path.join(x.lane, 'inside'));
+  symlinkSync(path.join(x.lane, 'inside'), path.join(ctl, 'broker-iso'));
+  const snap = (d) => readdirSync(d, { withFileTypes: true, recursive: true }).map((e) => `${e.parentPath ?? e.path}/${e.name}${e.isFile() ? `:${readFileSync(path.join(e.parentPath ?? e.path, e.name), 'utf8').length}` : ''}`).sort();
+  const before = snap(x.lane);
+  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--go-file', path.join(ctl, 'push-go'), '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
+  assert.notEqual(r.status, 0); assert.match(r.stderr, /broker state must sit outside/);
+  assert.deepEqual(snap(x.lane), before, 'the whole lane tree is byte-identical');
+  assert.equal(existsSync(path.join(x.lane, 'relay')), false, 'no relay/ was made');
+});

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { appendFileSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
+import { appendFileSync, closeSync, openSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir, userInfo } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +17,7 @@ const rate = (used) => `{"timestamp":"2026-10-30T18:16:34.877Z","type":"event_ms
 const CACHE = '{"models":[{"slug": "gpt-6.1-sol"},{"slug": "gpt-6.1-terra"},{"slug": "gpt-6-luna"},{"slug": "gpt-6-sol"}]}';
 
 /** A scratch world: a fake real home, a seat dir with a brief under it, a worktree, a main checkout. */
+let CURRENT = null;
 function world(over = {}) {
   const home = mkdtempSync(join(tmpdir(), "launch-codex-"));
   const repo = join(home, "repo"), wt = join(home, ".lares-scratch", "lane", "wt"), seatDir = join(home, ".lares-scratch", "lane", "seats", "s1");
@@ -31,11 +32,12 @@ function world(over = {}) {
     canon: () => readFileSync(CANON, "utf8"),
     ...over,
   };
+  CURRENT = { seatDir };
   return { home, repo, wt, seatDir, readers, calls };
 }
 /** The supervisor spawn, and the codex invocation it carries after `--` with the prompt file's text last. */
 const sup = (spawned) => spawned.find((x) => x.args?.includes?.("--supervise"));
-const codexOf = (spawned) => { const s = sup(spawned); if (!s) return undefined; return { cmd: "codex", args: [...s.args.slice(s.args.indexOf("--") + 1), readFileSync(s.args[s.args.indexOf("--prompt-file") + 1], "utf8")], opts: s.opts }; };
+const codexOf = (spawned) => { const s = sup(spawned); if (!s) return undefined; return { cmd: "codex", args: [...s.args.slice(s.args.indexOf("--") + 1), readFileSync(join(CURRENT.seatDir, "prompt.txt"), "utf8")], opts: s.opts }; };
 const unwrap = (spawned) => spawned.map((x) => (x.args?.includes?.("--supervise") ? codexOf([x]) : x));
 const ask = (w, o = {}) => ({ mode: "build", model: "gpt-6.1-terra", effort: "high", seatDir: w.seatDir, worktree: w.wt, ...o });
 const refuses = (w, o, re, readers) => assert.throws(() => preflight(ask(w, o), readers ?? w.readers), re);
@@ -555,8 +557,9 @@ test("row 4: --lead-step reads the lane state, bumps the step, writes the step b
   assert.equal(spawned.length, 0);
   writeFileSync(join(laneRoot, "state.json"), JSON.stringify({ head: "e6aa31a8e", owed: ["row 5"], seats: [], worktrees: {}, next: "do row 5", step: 3 }));
   assert.equal(run(argv, { readers, spawn, log() {} }), 0);
-  const codex = codexOf(spawned);
   const stepDir = join(realpathSync(laneRoot), "steps", "step-004");
+  CURRENT = { seatDir: stepDir };
+  const codex = codexOf(spawned);
   assert.ok(codex.args.includes(stepDir), "the step dir is the seat dir");
   assert.ok(codex.args.includes(realpathSync(laneRoot)), "the lane root rides --add-dir so the lead can write state.json");
   assert.ok(codex.args.includes("sandbox_workspace_write.network_access=false") && !codex.args.some((a) => /^\/.*(\.git|git-common)/.test(a) && a !== stepDir), "a lead step carries no git dir and no network flag");
@@ -611,21 +614,32 @@ test("P1-3 the supervisor is the seat's parent: the launcher spawns ONE detached
   const s = sup(spawned);
   assert.equal(s.opts.detached, true);
   assert.equal(s.args[s.args.indexOf("--marker") + 1], readFileSync(join(w.seatDir, "marker.txt"), "utf8").trim());
-  assert.ok(readFileSync(s.args[s.args.indexOf("--prompt-file") + 1], "utf8").startsWith("SEAT-MARKER "));
+  assert.ok(readFileSync(join(w.seatDir, "prompt.txt"), "utf8").startsWith("SEAT-MARKER "));
+  assert.equal(s.opts.stdio[3] > 2, true, "the held seat directory rides down as an inherited fd");
   assert.ok(!s.args.includes("--pid") && !s.args.includes("--born"));
   assert.ok(!readFileSync(new URL("./launch-codex.mjs", import.meta.url), "utf8").includes("startTick"), "no post-spawn start-tick read remains");
 });
 
-test("P1-3 a seat that sleeps past its ceiling is stopped by its parent: the supervisor kills its OWN child group and writes ceiling.md (live, with a stub codex)", async () => {
+/** A scratch lane for the live supervisor tests: a held seat dir with a prompt, a snapshot and a rollout; returns the pieces. */
+function liveSeat(stubBody, rolloutLines) {
   const dir = mkdtempSync(join(tmpdir(), "sup-"));
-  const home = join(dir, "home"), seat = join(dir, "seat"); mkdirSync(join(home, ".codex", "sessions", "2026", "11", "04"), { recursive: true }); mkdirSync(seat);
+  const home = join(dir, "home"), seat = join(dir, "seat"), sess = join(home, ".codex", "sessions", "2026", "11", "04"); mkdirSync(sess, { recursive: true }); mkdirSync(seat);
   const bin = join(dir, "bin"); mkdirSync(bin);
-  writeFileSync(join(bin, "codex"), "#!/bin/sh\nsleep 60\n", { mode: 0o755 });
-  writeFileSync(join(seat, "prompt.txt"), "SEAT-MARKER live\n\nbrief"); writeFileSync(join(seat, "before.json"), "[]");
-  writeFileSync(join(home, ".codex", "sessions", "2026", "11", "04", "rollout-live.jsonl"), `${cevent({ type: "session_meta", payload: { cwd: seat } })}\n${cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ text: "SEAT-MARKER live\n\nbrief" }] } })}\n${tc(900)}\n`);
-  const r = spawnSync(process.execPath, [TOOL, "--supervise", "--seat-dir", seat, "--ceiling", "100", "--mode", "read", "--marker", "SEAT-MARKER live", "--before", join(seat, "before.json"), "--prompt-file", join(seat, "prompt.txt"), "--home", home, "--", "exec"], { encoding: "utf8", timeout: 30000, env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, HOME: home } });
+  writeFileSync(join(bin, "codex"), `#!/bin/sh\n${stubBody}\n`, { mode: 0o755 });
+  writeFileSync(join(seat, "prompt.txt"), "SEAT-MARKER live\n\nbrief"); writeFileSync(join(seat, "rollouts-before.json"), "[]");
+  const roll = join(sess, "rollout-live.jsonl");
+  writeFileSync(roll, rolloutLines(roll));
+  return { dir, home, seat, bin, roll, env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, HOME: home } };
+}
+const userLine = () => `${cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ text: "SEAT-MARKER live\n\nbrief" }] } })}\n`;
+const cli = (L, extra = []) => { const fd = openSync(L.seat, "r"); try { return spawnSync(process.execPath, [TOOL, "--supervise", "--held-fd", "3", "--ceiling", "100", "--mode", "read", "--marker", "SEAT-MARKER live", "--home", L.home, ...extra, "--", "exec"], { encoding: "utf8", timeout: 40000, env: L.env, stdio: ["ignore", "pipe", "pipe", fd] }); } finally { closeSync(fd); } };
+
+test("P1-3 a seat that sleeps past its ceiling is stopped by its parent: the supervisor kills its OWN child group and writes ceiling.md through the held directory (live, stub codex)", () => {
+  const L = liveSeat("sleep 60", () => `${userLine()}${tc(900)}\n`);
+  const r = cli(L);
   assert.equal(r.status, 0, r.stderr);
-  assert.match(readFileSync(join(seat, "ceiling.md"), "utf8"), /900 total tokens/);
+  assert.match(readFileSync(join(L.seat, "ceiling.md"), "utf8"), /900 total tokens/);
+  assert.ok(readFileSync(join(L.seat, "run.log"), "utf8") !== null, "run.log opened through the held fd");
 });
 
 test("P1-4 findRollout parses JSONL events with no byte cap: a prompt past 256 KiB still binds; an echoed marker or a non-user event never does", () => {
@@ -697,17 +711,12 @@ test("P1-3 a rollout read error fails closed: any error while watching stops the
   assert.equal(ok, "exited");
 });
 
-test("P1-3 live: a rollout that turns unreadable mid-run stops the stub seat through the real supervisor", async () => {
-  const dir = mkdtempSync(join(tmpdir(), "supx-"));
-  const home = join(dir, "home"), seat = join(dir, "seat"), sess = join(home, ".codex", "sessions", "2026", "11", "04"); mkdirSync(sess, { recursive: true }); mkdirSync(seat);
-  const bin = join(dir, "bin"); mkdirSync(bin);
-  const roll = join(sess, "rollout-live.jsonl");
-  writeFileSync(join(bin, "codex"), `#!/bin/sh\nsleep 2\nchmod 000 '${roll}'\nsleep 60\n`, { mode: 0o755 });
-  writeFileSync(join(seat, "prompt.txt"), "SEAT-MARKER x\n\nbrief"); writeFileSync(join(seat, "before.json"), "[]");
-  writeFileSync(roll, `${cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ text: "SEAT-MARKER x\n\nbrief" }] } })}\n${tc(5)}\n`);
-  const r = spawnSync(process.execPath, [TOOL, "--supervise", "--seat-dir", seat, "--ceiling", "100000", "--mode", "read", "--marker", "SEAT-MARKER x", "--before", join(seat, "before.json"), "--prompt-file", join(seat, "prompt.txt"), "--home", home, "--", "exec"], { encoding: "utf8", timeout: 40000, env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, HOME: home } });
+test("P1-3 live: a rollout that turns unreadable mid-run stops the stub seat through the real supervisor", () => {
+  const L = liveSeat("sleep 2\nchmod 000 \"$ROLL\"\nsleep 60", () => `${userLine()}${tc(5)}\n`);
+  writeFileSync(join(L.bin, "codex"), `#!/bin/sh\nsleep 2\nchmod 000 '${L.roll}'\nsleep 60\n`, { mode: 0o755 });
+  const r = cli(L, []);
   assert.equal(r.status, 0, r.stderr);
-  assert.match(readFileSync(join(seat, "ceiling.md"), "utf8"), /could not be watched.*failing closed/s);
+  assert.match(readFileSync(join(L.seat, "ceiling.md"), "utf8"), /could not be watched.*failing closed/s);
 });
 
 test("P1-4 an unchanged total is no progress: a token event that repeats the last total leaves the tail stale", () => {
@@ -727,4 +736,93 @@ test("P1-3 a stop that throws part-way still runs every step: kill failures neit
   const r = await watchSeat({ seatDir, pid: 5, ceiling: 10, mode: "build", tokens: () => 50, alive: () => up, kill: () => { throw new Error("EPERM"); }, sleep: async () => { up = false; }, graceTicks: 2 });
   assert.equal(r, "ceiling");
   assert.match(readFileSync(join(seatDir, "ceiling.md"), "utf8"), /50 total tokens/);
+});
+
+// ======================= Terra round 4: held output, a stop that completes, the blind option =======================
+import { superviseSeat } from "./launch-codex.mjs";
+import { heldOver, openHeldSync } from "./held-dir.mjs";
+import { linkSync, readdirSync, renameSync } from "node:fs";
+
+const spawnMock = () => { const spawned = []; return { spawned, spawn: (cmd, args, opts) => { spawned.push({ cmd, args, opts }); return { pid: 4242, unref() {} }; } }; };
+const launchArgs = (w) => ["--mode", "build", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", w.wt];
+
+test("P1-1 a file symlink planted at ANY launcher output name refuses by name and writes nothing outside; CONTROL the clean dir launches", () => {
+  for (const name of ["attempts.log", "rollouts-before.json", "marker.txt", "prompt.txt", "brief.md"]) {
+    const w = world();
+    const outside = join(w.home, `outside-${name}`); writeFileSync(outside, "UNTOUCHED");
+    rmSync(join(w.seatDir, name), { force: true }); symlinkSync(outside, join(w.seatDir, name));
+    const { spawn } = spawnMock(); const err = [];
+    assert.equal(run(launchArgs(w), { readers: w.readers, spawn, log() {}, err: (e) => err.push(e) }), 2, name);
+    assert.match(err.join("\n"), /SEAT-REFUSED.*symlink/s, name);
+    assert.equal(readFileSync(outside, "utf8"), "UNTOUCHED", `${name}: the outside target stands`);
+  }
+  const w = world(), { spawn } = spawnMock();
+  assert.equal(run(launchArgs(w), { readers: w.readers, spawn, log() {} }), 0);
+});
+
+test("P1-1 a file hard-linked to an outside file at an output name refuses before it is truncated", () => {
+  const w = world();
+  const outside = join(w.home, "outside-hard"); writeFileSync(outside, "UNTOUCHED");
+  linkSync(outside, join(w.seatDir, "marker.txt"));
+  const { spawn } = spawnMock(); const err = [];
+  assert.equal(run(launchArgs(w), { readers: w.readers, spawn, log() {}, err: (e) => err.push(e) }), 2);
+  assert.match(err.join("\n"), /hard-linked/);
+  assert.equal(readFileSync(outside, "utf8"), "UNTOUCHED");
+});
+
+test("P1-1 a seat dir swapped for a symlink AFTER validation redirects nothing: every write lands in the held directory", () => {
+  const w = world();
+  const outside = join(w.home, "outside-dir"); mkdirSync(outside);
+  const moved = `${w.seatDir}-moved`;
+  const readers = { ...w.readers, afterHold: () => { renameSync(w.seatDir, moved); symlinkSync(outside, w.seatDir); } };
+  const { spawn } = spawnMock();
+  assert.equal(run(launchArgs(w), { readers, spawn, log() {}, err() {} }), 0);
+  assert.deepEqual(readdirSync(outside), [], "nothing landed outside the lane");
+  assert.ok(readdirSync(moved).includes("marker.txt") && readdirSync(moved).includes("prompt.txt"), "the held (moved) directory took the writes");
+});
+
+test("P1-1 the supervisor writes run.log and ceiling.md through the held fd: symlinks planted at both names redirect nothing", async () => {
+  const L = liveSeat("sleep 60", () => `${userLine()}${tc(900)}\n`);
+  const outside = join(L.dir, "outside"); writeFileSync(outside, "UNTOUCHED");
+  symlinkSync(outside, join(L.seat, "run.log"));
+  const held = openHeldSync(L.seat, L.dir);
+  await assert.rejects(superviseSeat({ held, marker: "SEAT-MARKER live", home: L.home, ceiling: 100, mode: "read", rest: ["exec"], env: L.env }, { sleep: async () => {} }), /symlink/);
+  rmSync(join(L.seat, "run.log"));
+  symlinkSync(outside, join(L.seat, "ceiling.md"));
+  const verdict = await superviseSeat({ held, marker: "SEAT-MARKER live", home: L.home, ceiling: 100, mode: "read", rest: ["exec"], env: L.env, graceTicks: 1, hardTicks: 2 }, { sleep: () => new Promise((r) => setTimeout(r, 30)) });
+  assert.equal(verdict, "ceiling", "the stop ran although the note could not be written");
+  assert.equal(readFileSync(outside, "utf8"), "UNTOUCHED");
+  held.close();
+});
+
+test("P1-2 a stub child that ignores SIGTERM under a signal function that throws still ends dead, and ceiling.md was written BEFORE the stop began", async () => {
+  const L = liveSeat(`trap '' TERM\necho $$ > '${join(tmpdir(), "stub-pid-" + process.pid)}'\nwhile true; do sleep 1; done`, () => `${userLine()}${tc(900)}\n`);
+  const held = openHeldSync(L.seat, L.dir);
+  const signals = [];
+  const verdict = await superviseSeat({ held, marker: "SEAT-MARKER live", home: L.home, ceiling: 100, mode: "read", rest: ["exec"], env: L.env, graceTicks: 1, hardTicks: 2 }, { sleep: () => new Promise((r) => setTimeout(r, 60)), signal: (pid, sig) => { signals.push(sig); throw new Error("EPERM"); } });
+  assert.deepEqual(signals, ["SIGTERM", "SIGKILL"], "both rungs were tried and both threw");
+  assert.equal(verdict, "unstopped", "a throwing signal never reads as stopped");
+  assert.match(readFileSync(join(L.seat, "ceiling.md"), "utf8"), /900 total tokens/);
+  const pid = Number(readFileSync(join(tmpdir(), "stub-pid-" + process.pid), "utf8").trim());
+  assert.throws(() => process.kill(pid, 0), /ESRCH/, "the supervisor SIGKILLed its own child as parent");
+  held.close(); rmSync(join(tmpdir(), "stub-pid-" + process.pid), { force: true });
+});
+
+test("P1-2 watchSeat writes the note before any signal, and 'unstopped' is the verdict while the child lives; CONTROL a child that dies on SIGTERM reads as stopped", async () => {
+  const order = [];
+  let up = true;
+  const r = await watchSeat({ pid: 1, ceiling: 1, mode: "build", tokens: () => 5, alive: () => up, kill: (s) => { order.push(`kill:${s}`); throw new Error("EPERM"); }, note: () => order.push("note"), sleep: async () => {}, graceTicks: 1, hardTicks: 1 });
+  assert.equal(r, "unstopped"); assert.deepEqual(order, ["note", "kill:SIGTERM", "kill:SIGKILL"]);
+  const ok = await watchSeat({ pid: 1, ceiling: 1, mode: "build", tokens: () => 5, alive: () => up, kill: () => { up = false; }, note() {}, sleep: async () => {}, graceTicks: 1, hardTicks: 1 });
+  assert.equal(ok, "ceiling");
+});
+
+test("the blind limit is a launcher option: --blind-ticks N rides to the supervisor, the default stays 200, junk refuses", () => {
+  const w = world(), { spawn, spawned } = spawnMock();
+  assert.equal(run([...launchArgs(w), "--blind-ticks", "7"], { readers: w.readers, spawn, log() {} }), 0);
+  const s = sup(spawned); assert.equal(s.args[s.args.indexOf("--blind-ticks") + 1], "7");
+  spawned.length = 0;
+  assert.equal(run(launchArgs(w), { readers: w.readers, spawn, log() {} }), 0);
+  assert.ok(!sup(spawned).args.includes("--blind-ticks"), "no option, the 200-tick default");
+  assert.equal(run([...launchArgs(w), "--blind-ticks", "x"], { readers: w.readers, spawn, log() {}, err() {} }), 2);
 });

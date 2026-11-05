@@ -32,10 +32,6 @@ if (launcher === scratch || inside(scratch, launcher)) throw new Error('launcher
 const branch = options.branch;
 const git = (...argv) => spawnSync('/usr/bin/git', ['-C', worktree, ...argv], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, env: { PATH: '/usr/bin:/bin', HOME: '/nonexistent', LC_ALL: 'C', GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null', GIT_TERMINAL_PROMPT: '0' } });
 if (branch.startsWith('-') || git('check-ref-format', `refs/heads/${branch}`).status !== 0) throw new Error('invalid branch');
-const relayDir = path.join(lane, 'relay');
-await (await import('node:fs/promises')).mkdir(relayDir, { recursive: true });
-// The request directory is held open by handle: a lead that swaps `relay` for a symlink afterwards redirects nothing.
-const relay = await openHeld(relayDir, lane);
 // THE BROKER'S OWN STATE lives where the lead cannot write: beside the go file.
 const iso = path.join(goDir, 'broker-iso');
 // The broker's OWN state dir is checked by real path, not only its parent: it must lie outside the lane, every worktree, and the whole scratch lane tree a lead can write.
@@ -47,6 +43,11 @@ for (const guarded of [lane, worktree]) {
 }
 // Nothing is created before the placement stands checked.
 await (await import('node:fs/promises')).mkdir(iso, { recursive: true });
+const relayDir = path.join(lane, 'relay');
+await (await import('node:fs/promises')).mkdir(relayDir, { recursive: true });
+// The request directory is held open by handle: a lead that swaps `relay` for a symlink afterwards redirects nothing.
+const relay = await openHeld(relayDir, lane);
+
 // THE RECEIPT KEY NEVER TOUCHES DISK: a workspace-write sandbox fences writes, not reads, so any key file the user can read a lead can read. The key and the receipts live in this process's memory alone.
 const key = randomBytes(32);
 const receipts = new Map();
