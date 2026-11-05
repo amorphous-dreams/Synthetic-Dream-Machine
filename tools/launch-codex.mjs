@@ -428,7 +428,8 @@ export async function superviseSeat(o, deps = {}) {
       advanced: () => Boolean(tail?.fresh),
     });
   } catch { /* the child is dealt with below */ }
-  if (!exited) { try { child.kill("SIGKILL"); } catch { /* gone */ } }
+  // The last resort uses the real group signal (not the injected one), then the child handle, so descendants die with it.
+  if (!exited) { try { process.kill(-child.pid, "SIGKILL"); } catch { /* the handle below */ } try { child.kill("SIGKILL"); } catch { /* gone */ } }
   await gone;
   return verdict;
 }

@@ -635,11 +635,11 @@ const userLine = () => `${cevent({ type: "response_item", payload: { type: "mess
 const cli = (L, extra = []) => { const fd = openSync(L.seat, "r"); try { return spawnSync(process.execPath, [TOOL, "--supervise", "--held-fd", "3", "--ceiling", "100", "--mode", "read", "--marker", "SEAT-MARKER live", "--home", L.home, ...extra, "--", "exec"], { encoding: "utf8", timeout: 40000, env: L.env, stdio: ["ignore", "pipe", "pipe", fd] }); } finally { closeSync(fd); } };
 
 test("P1-3 a seat that sleeps past its ceiling is stopped by its parent: the supervisor kills its OWN child group and writes ceiling.md through the held directory (live, stub codex)", () => {
-  const L = liveSeat("sleep 60", () => `${userLine()}${tc(900)}\n`);
+  const L = liveSeat("echo STUB-OUTPUT\nsleep 60", () => `${userLine()}${tc(900)}\n`);
   const r = cli(L);
   assert.equal(r.status, 0, r.stderr);
   assert.match(readFileSync(join(L.seat, "ceiling.md"), "utf8"), /900 total tokens/);
-  assert.ok(readFileSync(join(L.seat, "run.log"), "utf8") !== null, "run.log opened through the held fd");
+  assert.match(readFileSync(join(L.seat, "run.log"), "utf8"), /STUB-OUTPUT/, "the child's output landed in run.log through the held fd");
 });
 
 test("P1-4 findRollout parses JSONL events with no byte cap: a prompt past 256 KiB still binds; an echoed marker or a non-user event never does", () => {
@@ -796,7 +796,7 @@ test("P1-1 the supervisor writes run.log and ceiling.md through the held fd: sym
 });
 
 test("P1-2 a stub child that ignores SIGTERM under a signal function that throws still ends dead, and ceiling.md was written BEFORE the stop began", async () => {
-  const L = liveSeat(`trap '' TERM\necho $$ > '${join(tmpdir(), "stub-pid-" + process.pid)}'\nwhile true; do sleep 1; done`, () => `${userLine()}${tc(900)}\n`);
+  const L = liveSeat(`trap '' TERM\necho $$ > '${join(tmpdir(), "stub-pid-" + process.pid)}'\n(trap '' TERM; echo $$ > '${join(tmpdir(), "stub-kid-" + process.pid)}'; while true; do sleep 1; done) &\nwhile true; do sleep 1; done`, () => `${userLine()}${tc(900)}\n`);
   const held = openHeldSync(L.seat, L.dir);
   const signals = [];
   const verdict = await superviseSeat({ held, marker: "SEAT-MARKER live", home: L.home, ceiling: 100, mode: "read", rest: ["exec"], env: L.env, graceTicks: 1, hardTicks: 2 }, { sleep: () => new Promise((r) => setTimeout(r, 60)), signal: (pid, sig) => { signals.push(sig); throw new Error("EPERM"); } });
@@ -805,7 +805,9 @@ test("P1-2 a stub child that ignores SIGTERM under a signal function that throws
   assert.match(readFileSync(join(L.seat, "ceiling.md"), "utf8"), /900 total tokens/);
   const pid = Number(readFileSync(join(tmpdir(), "stub-pid-" + process.pid), "utf8").trim());
   assert.throws(() => process.kill(pid, 0), /ESRCH/, "the supervisor SIGKILLed its own child as parent");
-  held.close(); rmSync(join(tmpdir(), "stub-pid-" + process.pid), { force: true });
+  const kid = Number(readFileSync(join(tmpdir(), "stub-kid-" + process.pid), "utf8").trim());
+  assert.throws(() => process.kill(kid, 0), /ESRCH/, "the descendant died with the group");
+  held.close(); rmSync(join(tmpdir(), "stub-pid-" + process.pid), { force: true }); rmSync(join(tmpdir(), "stub-kid-" + process.pid), { force: true });
 });
 
 test("P1-2 watchSeat writes the note before any signal, and 'unstopped' is the verdict while the child lives; CONTROL a child that dies on SIGTERM reads as stopped", async () => {
