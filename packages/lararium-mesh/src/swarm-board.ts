@@ -115,6 +115,8 @@ export function readSwarmBoard(records: readonly unknown[], face: SwarmBoardFace
   return {
     cap, ok, ...(over ? { refusal: "swarm-shares-over-cap" as const } : {}),
     shares: shares as ReadonlyMap<string, number>,
+    /** Each lane's folded value before the sum law closes it: what a writer checks a next act against. */
+    raw: new Map([...lanes].map(([lane, l]) => [lane, l.value] as const)) as ReadonlyMap<string, number>,
     /** A lane's share: 0 for an unknown lane, an unset cap, a line that cannot fold, or a board whose shares sum past the cap. */
     shareOf: (lane: string): number => (cap === null ? 0 : shares.get(lane) ?? 0),
     /** The heads a next act on this line cites as its parents (`"cap"` or a lane name for a share). */

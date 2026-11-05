@@ -87,6 +87,7 @@ export * from "./promote-kapae.js";
 export * from "./promote-board.js";
 export * from "./swarm-tiddlers.js";
 export * from "./swarm-board.js";
+export * from "./swarm-door.js";
 export * from "./promote-door.js";
 export * from "./promote-command.js";
 export * from "./promote-board-door.js";
