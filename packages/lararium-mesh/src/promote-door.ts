@@ -3,7 +3,7 @@ import {
   ledgerCommit, ledgerUnpromote, ledgerDecideOrphan, reconcilePromotions, verifyPromotionRows,
   type PromoteWho, type PromotionLedger,
 } from "./promote.js";
-import { kapaeNoteArrival, kapaeBootSet, kapaeStanding, encodeKapaeLocal, type KapaeLocal } from "./promote-kapae.js";
+import { kapaeNoteArrival, kapaeBootSet, kapaeStanding, type KapaeLocal } from "./promote-kapae.js";
 import type { PromoteBoardReading } from "./promote-board.js";
 
 export type PromoteItem = { title: string; text: string; fields: Readonly<Record<string, string>>; revision: string; origin: { seat: string; device: string; session: string } };
@@ -33,9 +33,6 @@ export function promotions(ports: PromotionPorts) {
   const states = (rows: ReturnType<typeof own>, items: readonly PromoteItem[]) => reconcilePromotions(rows, (_wiki, title) => {
     const item = items.find(i => i.title === title); return item ? promoteDigest(item) : null;
   });
-  const saveLocal = async (before: KapaeLocal, after: KapaeLocal) => {
-    if (new TextDecoder().decode(encodeKapaeLocal(before)) !== new TextDecoder().decode(encodeKapaeLocal(after))) await ports.local.write(after);
-  };
   const shadows = (edges: ReadonlySet<string>) => [...edges].filter(e => e.startsWith(`${wiki}\n`)).sort();
   return {
     async list() {
@@ -76,11 +73,12 @@ export function promotions(ports: PromotionPorts) {
       let itemsError: unknown = null;
       try { board = await ports.board(); } catch { board = null; }
       if (board) {
-        edges = kapaeStanding(local, board);
+        let standingEdges: ReadonlySet<string> = new Set();
+        await mutate(ports.local, (standing) => { standingEdges = kapaeStanding(standing, board); return kapaeNoteArrival(standing, standingEdges, new Set()).local; });
+        edges = standingEdges;
         // The enumeration serves the hand's reconciliation report ONLY: a rejection never reaches the runnable rows below (ledger verify
         // and the brake decide those), and rides out by name for the caller to report.
         try { readings = states(own(ledger), await ports.items()); } catch (error) { itemsError = error; }
-        await saveLocal(local, kapaeNoteArrival(local, edges, new Set()).local);
       } else { edges = kapaeBootSet(local, null); }
       const { verified, voided } = verifyPromotionRows(own(ledger));
       const runnable = verified.filter(row => !edges.has(promoteEdgeKey(wiki, row.digest)));
@@ -90,9 +88,10 @@ export function promotions(ports: PromotionPorts) {
     async arrive() {
       // The shadow is cached first (an offline boot honors it); the island restarts while it LOADED any shadowed edge, so a restart that
       // failed is tried again by the next arrive.
-      const board = await ports.board(), local = await ports.local.read(), edges = kapaeStanding(local, board);
-      const result = kapaeNoteArrival(local, edges, ports.loaded());
-      await saveLocal(local, result.local);
+      // The cache is recomputed from its STANDING value under the store's hold, so a concurrent arrival never overwrites a newer shadow.
+      const board = await ports.board();
+      let edges: ReadonlySet<string> = new Set();
+      await mutate(ports.local, (standing) => { edges = kapaeStanding(standing, board); return kapaeNoteArrival(standing, edges, ports.loaded()).local; });
       const hit = [...edges].some(edge => ports.loaded().has(edge));
       if (hit) await ports.restart();
       return { restarted: hit };

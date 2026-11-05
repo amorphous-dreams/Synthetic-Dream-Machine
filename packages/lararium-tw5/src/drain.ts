@@ -15,7 +15,7 @@
  * An act's removal rides a dependency edge (`markAfter`): it stays parked until the target's receipts cover the act's own generation,
  * then rides as an ordinary owed title. A removal behind a refused target reads that refusal as its own terminal outcome.
  *
- * Memory stays bounded by titles: one slot per owed title, one live waiter per title (a newer generation settles the older ones `superseded`), and a slot leaves once its receipts cover it.
+ * Memory stays bounded by titles: one slot per owed title, one shared waiter per title (it settles when the title's latest generation is terminal), and a slot leaves once its receipts cover it.
  * Writes stay idempotent by (title, generation): a retry after an ambiguous failure writes the title's latest state again.
  *
  * THE KICK RULE (operator ruling 2026-11-04): `kick()` is a REQUEST, never a write. It sets flight-eligible state (releases a standing refusal,
@@ -66,7 +66,7 @@ interface Slot {
 
 interface Waiter {
   readonly title: string | null;
-  readonly generation: number;
+  generation: number;
   /** A terminal word a forget laid on this waiter: it reads this where the slots would read acked. */
   verdict: DrainOutcome | null;
   readonly promise: Promise<DrainOutcome>;
@@ -329,24 +329,25 @@ export class Drain {
   }
 
   #wait(title: string | null, generation: number): Promise<DrainOutcome> {
-    const key = `${title ?? "\u0000"}\u0001${generation}`;
+    // ONE SHARED WAITER PER TITLE. A write carries the title's latest state, so one promise answers every caller of the title: a newer
+    // generation raises the standing waiter, and an older request reads it. It settles when the title's LATEST generation is terminal, never
+    // earlier, so no caller reads `acked` for a state a newer write has yet to make durable (a caller may read a later failure for its own
+    // earlier generation; that errs toward refusing). Memory stays bounded by titles.
+    const key = title === null ? `\u0000\u0001${generation}` : title;
     const standing = this.#waiters.get(key);
-    if (standing) return standing.promise;
+    if (standing) {
+      if (generation > standing.generation) {
+        standing.generation = generation;
+        const now = this.#outcome(standing);
+        if (now) { this.#waiters.delete(key); standing.resolve(now); }
+      }
+      return standing.promise;
+    }
     let resolve!: (outcome: DrainOutcome) => void;
     const promise = new Promise<DrainOutcome>((done) => { resolve = done; });
     const waiter: Waiter = { title, generation, verdict: null, promise, resolve };
     const now = this.#outcome(waiter);
     if (now) return Promise.resolve(now);
-    // At most ONE live waiter per title: the newest generation covers every older one (a write carries the title's latest state), so an
-    // older waiter settles `superseded` and a request older than the standing waiter reads it at once. Memory stays bounded by titles.
-    if (title !== null) {
-      for (const [other, standing] of this.#waiters) {
-        if (standing.title !== title) continue;
-        if (standing.generation > generation) return Promise.resolve(SUPERSEDED);
-        this.#waiters.delete(other);
-        standing.resolve(SUPERSEDED);
-      }
-    }
     this.#waiters.set(key, waiter);
     return promise;
   }

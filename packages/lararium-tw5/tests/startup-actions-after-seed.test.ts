@@ -89,15 +89,15 @@ describe.skipIf(wikiSkip)(`startup actions after the seed drains${skipNote}`, ()
   // user's own wiki keeps full caps: its StartupActions run as before.
   for (const slug of ["daemon", "kahua-q7k2m9x4"]) {
     test(`RED: the ${slug} island runs a genesis StartupAction and a promoted one once, and leaves a working-layer one inert with or without kahua-cid; CONTROL: a user wiki runs the same working-layer action`, async () => {
-      engine = await bootTestWiki();
       const WORKING = "$:/temp/lararium/gate-working", FIELDED = "$:/temp/lararium/gate-fielded", GENESIS = "$:/temp/lararium/gate-genesis", PROMOTED = "$:/temp/lararium/gate-promoted";
       const act = (probe: string): string => `<$action-setfield $tiddler="${probe}" text={{{ [{${probe}}else[0]add[1]] }}}/>`;
-      // A promoted rite sits among the preloads: TW5's boot pass ran it once already.
-      // Genesis is a preload too: the boot pass ran its rite before any record landed.
-      engine.setTiddler({ title: GENESIS, text: "1" });
-      engine.setTiddler({ title: "lar:///t/gate/genesis", tags: ["$:/tags/StartupAction"], text: act(GENESIS) });
-      engine.setTiddler({ title: PROMOTED, text: "1" });
-      engine.setTiddler({ title: "lar:///t/gate/promoted", tags: ["$:/tags/StartupAction"], text: act(PROMOTED) });
+      engine = await bootTestWiki();
+      // Genesis and a promoted rite are PRELOADS: TW5's own startup pass ran each once before any record landed (this test engine runs no
+      // StartupAction at boot, so the vector plants the post-boot state: each probe already reads 1). The seed pass must leave them be.
+      for (const [probe, title] of [[GENESIS, "lar:///t/gate/genesis"], [PROMOTED, "lar:///t/gate/promoted"]] as const) {
+        engine.setTiddler({ title: probe, text: "1" });
+        engine.setTiddler({ title, tags: ["$:/tags/StartupAction"], text: act(probe) });
+      }
       const working = wikiSlotUri(slug, "working");
       const workingRecords: LarTiddlerRecord[] = [
         { tiddler: { title: "lar:///t/gate/working", tags: ["$:/tags/StartupAction"], text: act(WORKING) } },
@@ -108,8 +108,8 @@ describe.skipIf(wikiSkip)(`startup actions after the seed drains${skipNote}`, ()
       await seedDrained(engine);
       const wiki = engine.$tw.wiki;
       expect(wiki.getTiddler("lar:///t/gate/working"), "the working-layer action landed as data").toBeDefined();
-      expect(wiki.getTiddler(GENESIS)?.fields["text"], "the genesis rite ran once, at boot").toBe("1");
-      expect(wiki.getTiddler(PROMOTED)?.fields["text"], "the promoted rite ran once, at boot").toBe("1");
+      expect(wiki.getTiddler(GENESIS)?.fields["text"], "the seed pass never re-runs the genesis rite").toBe("1");
+      expect(wiki.getTiddler(PROMOTED)?.fields["text"], "nor the promoted one").toBe("1");
       expect(wiki.getTiddler(WORKING), "a working-layer action stays inert").toBeUndefined();
       expect(wiki.getTiddler(FIELDED), "a working-layer action with kahua-cid stays inert").toBeUndefined();
 
