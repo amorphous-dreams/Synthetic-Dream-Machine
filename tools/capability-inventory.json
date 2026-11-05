@@ -8,7 +8,7 @@
     },
     "node wiki": {
       "cas": "grants",
-      "receipt": "refused",
+      "receipt": "silent",
       "custodyWrite": "refused",
       "dyad": "refused"
     },

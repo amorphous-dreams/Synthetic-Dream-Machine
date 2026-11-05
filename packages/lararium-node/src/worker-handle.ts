@@ -155,7 +155,7 @@ function attachSessionSignDoor(w: Worker): void {
 export type IslandClass = "daemon" | "wiki" | "session";
 
 /** Answer a capability a wiki island may not use: the same reply shape the capability gives, refused by name, logged once. */
-function attachRefusals(w: Worker): void {
+function attachRefusals(w: Worker, caps: CapabilityRecord): void {
   const logged = new Set<string>();
   const once = (name: string, what: string): void => {
     if (logged.has(name)) return;
@@ -174,10 +174,13 @@ function attachRefusals(w: Worker): void {
       };
       reply(refused);
     } else if (m.type === "receipt:request") {
+      // ONE ANSWERER: where the record grants `receipt`, the pool answers this ask from its main Repo (the handle's
+      // `grants` below), so this worker stays silent. It refuses only when ITS record lacks the capability.
+      if (caps.receipt) return;
       once("ReceiptRefused", "the receipt capability");
       const refused: IslandMsg_ReceiptIssued = {
         type: "receipt:issued", requestId: m.requestId, issued: false,
-        why: "ReceiptRefused: only the daemon island reaches the receipt capability",
+        why: "ReceiptRefused: this island's record carries no receipt capability",
       };
       reply(refused);
     } else if (m.type === "session:sign") {
@@ -208,7 +211,7 @@ export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass
     attachSessionSignDoor(w);
   } else if (opts.island === "wiki") {
     attachCas(w, caps);
-    attachRefusals(w);
+    attachRefusals(w, caps);
   }
   const post = w.postMessage.bind(w) as (msg: unknown, transfer?: unknown[]) => void;
   return {
@@ -216,6 +219,8 @@ export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass
     listen:    (cb) => { w.on("message", cb); return () => { w.off("message", cb); }; },
     onError:   (cb) => { w.on("error",   cb); return () => { w.off("error",   cb); }; },
     terminate: () => { void w.terminate(); },
+    // The record the island holds, read at ask time: the pool answers a wiki island's receipt ask only where it grants one.
+    grants:    () => ({ receipt: opts.island === "wiki" && caps.receipt !== undefined }),
   };
 }
 

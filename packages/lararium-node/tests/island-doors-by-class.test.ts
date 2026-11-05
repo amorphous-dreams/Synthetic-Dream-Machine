@@ -6,8 +6,10 @@
  *       island reads `written: false` naming `CustodyWriteRefused`, and the refusal logs once however often it asks.
  *                                                 control: the DAEMON island's same ask reaches the capability, with
  *                                                 the exact carrier and bytes, and reads `written: true`
- *   D2  a wiki island that posts `receipt:request` reaches no receipt capability and reads `issued: false` naming
- *       `ReceiptRefused`.                         control: the daemon island's ask reaches the capability
+ *   D2  a wiki island whose record carries no receipt reads `issued: false` naming `ReceiptRefused`; where the record
+ *       grants it, its worker stays silent (the pool answers).   control: the daemon island's ask reaches the capability
+ *   D9  exactly ONE party answers each receipt requestId through the real pool: the pool where the record grants `receipt`,
+ *       the island's worker where it lacks it; a vessel whose lift grants none gets none from a neighbour's repo.
  *   D3  a wiki island's `cas:want` reaches its record's `cas` (a wiki reads the blobs its own tiddlers name).
  *                                                 control: with no `cas` standing it reads a miss
  *   D4  a SESSION island reaches none of the three: a custody ask and a receipt ask draw no answer at all, and a
@@ -20,7 +22,9 @@ import { EventEmitter } from "node:events";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test, vi, afterEach } from "vitest";
-import type { CapabilityRecord } from "@lararium/mesh";
+import { next as A } from "@automerge/automerge";
+import { Repo, type DocHandle } from "@automerge/automerge-repo";
+import { VesselIslandPoolCore, emptyLarDoc, mkEa, mkTeardownAck, type CapabilityRecord, type LarDoc, type VesselIslandHost } from "@lararium/mesh";
 import { nodeWorkerHandle } from "../src/worker-handle.js";
 
 /** The worker type the handle wraps, read off the handle itself: this suite stands no thread, only an emitter. */
@@ -70,23 +74,94 @@ describe("the vessel's doors answer by island class", () => {
     expect(daemon.said.map((m) => [m["type"], m["requestId"], m["written"]])).toEqual([["custody:written", "d1", true]]);
   });
 
-  test("D2 — a wiki island's receipt ask reaches no capability and refuses by name", async () => {
+  test("D2 — a wiki island whose record carries no receipt draws the named refusal and reaches no capability; one whose record grants it draws none from its worker (the pool answers)", async () => {
     const rested: string[][] = [];
-    const caps: CapabilityRecord = { receipt: async (ids) => { rested.push([...ids]); } };
     vi.spyOn(console, "warn").mockImplementation(() => {});
 
     const wiki = island();
-    nodeWorkerHandle(wiki.worker, { island: "wiki", caps });
+    const bare = nodeWorkerHandle(wiki.worker, { island: "wiki", caps: {} });
     await wiki.ask(receiptAsk("w1"));
-    expect(rested).toEqual([]);
-    expect(wiki.said.map((m) => [m["type"], m["issued"]])).toEqual([["receipt:issued", false]]);
+    expect(wiki.said.map((m) => [m["type"], m["requestId"], m["issued"]])).toEqual([["receipt:issued", "w1", false]]);
     expect(String(wiki.said[0]!["why"])).toMatch(/ReceiptRefused/);
+    expect(bare.grants?.()).toEqual({ receipt: false });
+
+    // control: with the grant on the record the worker stays silent and the handle declares the grant the pool reads
+    const caps: CapabilityRecord = { receipt: async (ids) => { rested.push([...ids]); } };
+    const lifted = island();
+    const handle = nodeWorkerHandle(lifted.worker, { island: "wiki", caps });
+    await lifted.ask(receiptAsk("w2"));
+    expect(lifted.said).toEqual([]);
+    expect(rested, "a wiki island never reaches the vessel's receipt function itself").toEqual([]);
+    expect(handle.grants?.()).toEqual({ receipt: true });
+    delete caps.receipt;   // the lift withdraws: the refusal and the grant both follow the record at ask time
+    await lifted.ask(receiptAsk("w3"));
+    expect(lifted.said.map((m) => [m["requestId"], m["issued"]])).toEqual([["w3", false]]);
+    expect(handle.grants?.()).toEqual({ receipt: false });
 
     const daemon = island();
-    nodeWorkerHandle(daemon.worker, { island: "daemon", caps });
+    nodeWorkerHandle(daemon.worker, { island: "daemon", caps: { receipt: async (ids) => { rested.push([...ids]); } } });
     await daemon.ask(receiptAsk("d1"));
     expect(rested).toEqual([["doc-a"]]);
     expect(daemon.said.map((m) => [m["type"], m["issued"]])).toEqual([["receipt:issued", true]]);
+  });
+
+  test("D9 — through the real pool exactly ONE party answers each receipt requestId, granted or not, and a vessel whose lift grants none gets none from its neighbour's repo", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const repoOf = (): { repo: Repo; doc: DocHandle<LarDoc>; read: () => number } => {
+      const repo = new Repo({ network: [] });
+      const doc = repo.create<LarDoc>(emptyLarDoc());
+      let reads = 0;
+      const table = repo.handles;
+      Object.defineProperty(repo, "handles", { get() { reads++; return table; } });
+      return { repo, doc, read: () => reads };
+    };
+    const rig = (caps: CapabilityRecord, repo: Repo) => {
+      const emitters = new Map<string, ReturnType<typeof island>>();
+      let next = "";
+      const host: VesselIslandHost = {
+        spawnWorker() {
+          const stand = island();
+          emitters.set(next, stand);
+          // the stand-in answers the pool's own handshake so the mount completes
+          const post = stand.worker.postMessage.bind(stand.worker) as (m: unknown) => void;
+          (stand.worker as unknown as { postMessage: (m: unknown) => void }).postMessage = (m) => {
+            post(m);
+            const type = (m as { type?: string }).type;
+            if (type === "manifest" || type === "teardown") queueMicrotask(() => (stand.worker as unknown as EventEmitter).emit("message", type === "manifest" ? mkEa("wiki") : mkTeardownAck()));
+          };
+          return nodeWorkerHandle(stand.worker, { island: "wiki", caps });
+        },
+        newSyncChannel() { const c = new MessageChannel(); return { mainPort: c.port1, syncPort: c.port2 }; },
+        storage: () => undefined,
+      };
+      const pool = new VesselIslandPoolCore({ host, mainRepo: repo, resolvePluginCids: async () => ({ ok: true, pluginCids: [] }) });
+      return { pool, async mount(id: string) { next = id; await pool.mountWiki(id, { coreHash: null, recipe: { wikiSlug: id }, grants: { islandUrl: "automerge:fixture", wikiUrl: null } }); return emitters.get(id)!; } };
+    };
+    const receipts = (stand: ReturnType<typeof island>, requestId: string) => stand.said.filter((m) => m["type"] === "receipt:issued" && m["requestId"] === requestId);
+
+    // vessel A: a lift that grants receipt, with the document in its repo
+    const a = repoOf();
+    const vesselA = rig({ receipt: async () => {} }, a.repo);
+    const islandA = await vesselA.mount("a");
+    const heads = { [a.doc.documentId]: A.getHeads(a.doc.doc()!) };
+    await islandA.ask({ type: "receipt:request", requestId: "r1", documentIds: [a.doc.documentId], heads });
+    await new Promise((r) => setTimeout(r, 50));
+    expect(receipts(islandA, "r1"), "granted: one answer, from the pool").toEqual([{ type: "receipt:issued", requestId: "r1", issued: true }]);
+    expect(a.read()).toBeGreaterThan(0);
+
+    // vessel B: a floor lift that grants none, in the same process, holding NO copy; the neighbour's repo holds the document
+    const b = repoOf();
+    const vesselB = rig({}, b.repo);
+    const islandB = await vesselB.mount("b");
+    await islandB.ask({ type: "receipt:request", requestId: "r2", documentIds: [a.doc.documentId], heads });
+    await new Promise((r) => setTimeout(r, 50));
+    const answers = receipts(islandB, "r2");
+    expect(answers, "not granted: one answer, the named refusal").toHaveLength(1);
+    expect(answers[0]).toMatchObject({ issued: false });
+    expect(String(answers[0]!["why"])).toMatch(/ReceiptRefused/);
+    expect(b.read(), "the pool's main Repo never consulted for an island without the grant").toBe(0);
+    expect(vesselB.pool.restState().asked).toBe(0);
+    await vesselA.pool.disposeAll(); await vesselB.pool.disposeAll();
   });
 
   test("D3 — a wiki island's fetch reaches its record's cas", async () => {

@@ -227,8 +227,9 @@ describe("a session surface through the node vessel's own parts", () => {
       for (const ask of asks) expect(await v.probe(key, "caps", { ...ask, silentAfterMs: 600 })).toEqual({ answered: false });
       expect(reached).toEqual([]);
       // KNOWN POSITIVE: the same asks from an island mounted through the wiki door each draw an answer. A wiki
-      // island reaches its record's `cas` alone; its receipt ask and its custody write refuse by name and reach no
-      // capability (the daemon island alone reaches those two: `island-doors-by-class.test.ts`).
+      // island reaches its record's `cas` alone; its custody write refuses by name and reaches no capability, and its
+      // receipt ask draws the POOL's one answer (the record grants receipt; this ask names no heads, so it reads unissued).
+      // The daemon island alone reaches the vessel's receipt function: `island-doors-by-class.test.ts`.
       await pool.mountWiki(WIKI, { coreHash: null, recipe: { wikiSlug: SLUG }, grants: { islandUrl: v.oracle.url } });
       expect(await v.probe(WIKI, "caps", asks[0]!)).toEqual({ answered: true, type: "cas:block", bytes: 3 });
       expect(await v.probe(WIKI, "caps", asks[1]!)).toMatchObject({ answered: true, type: "receipt:issued" });

@@ -1132,7 +1132,10 @@ export class VesselIslandPoolCore {
         void this._answerSettle(ask, view).then(land, () => land(false));
         return;
       }
-      if (raw.type === "receipt:request" && !view && (raw as IslandMsg_ReceiptRequest).heads !== undefined) {
+      // ONE ANSWERER PER RECEIPT ASK. The pool answers only where the asking island's bound record grants `receipt`
+      // (read now, off the handle); otherwise it stays silent, never reads its main Repo, and the island's own worker
+      // answers with the named refusal. A durable "acked" never races a refusal on one requestId.
+      if (raw.type === "receipt:request" && !view && worker.grants?.().receipt === true) {
         const ask = raw as IslandMsg_ReceiptRequest;
         if (typeof ask.requestId !== "string") return;
         this._moveRest({ asked: this._restState.asked + 1 });
