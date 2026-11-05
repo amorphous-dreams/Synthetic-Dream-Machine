@@ -191,6 +191,23 @@ describe("storeVerb — a locked vessel refuses by name before the door parks (L
     expect(invokeLocal).toHaveBeenCalled();
   });
 
+  it("CONTROL: a row of the place (a herm's carry) keeps its way through a locked vessel", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(null);
+    vi.mocked(vesselStanding).mockResolvedValue({ reading: "vessel", unlocked: false });
+    vi.mocked(invokeLocal).mockClear();
+    vi.mocked(invokeLocal).mockResolvedValue({ status: "done", requestId: "r8", results: { summary: { ok: true, output: { verb: "nexus-offering-inspect" } } } });
+    const r = await storeVerb("nexus-offering-inspect", { offeringCid: "x" });
+    expect(r.via).toBe("daemon");
+    expect(invokeLocal).toHaveBeenCalled();
+  });
+
+  it("a face row refuses a locked vessel by name as persona-new does", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(vesselStanding).mockResolvedValue({ reading: "vessel", unlocked: false });
+    await expect(storeVerb("persona-lease", { handleIndex: 0 })).rejects.toBeInstanceOf(VesselLocked);
+  });
+
   it("CONTROL: with no vessel standing the custody door is never asked", async () => {
     vi.mocked(udsAlive).mockResolvedValue(false);
     vi.mocked(vesselStanding).mockClear();

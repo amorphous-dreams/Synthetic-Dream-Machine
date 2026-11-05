@@ -244,6 +244,9 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
   return { code: fallback, message };
 }
 
+/** The rows a locked vessel cannot run: each face row, and `persona-new`, which founds a face. */
+const KEY_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([...STORE_DOOR_FACE_ROWS, "persona-new"]);
+
 /**
  * Run one row of the store's door table: through the standing vessel when one stands, or here, holding the
  * store for the moment of the act (`storeDoorDirect`). A row's `{ refused }` answer throws as `Refusal`, so the
@@ -260,9 +263,9 @@ export async function storeVerb(
   Refusal: new (message: string) => Error = StoreDoorRefusal,
 ): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
   const daemonUp = await udsAlive();
-  // A LOCKED VESSEL REFUSES BY NAME BEFORE THE DOOR PARKS. The refold poke is the one row exempt: it writes nothing
-  // the key guards and answers `failed` on its own.
-  if (daemonUp && verb !== "seal-home-refold") {
+  // A LOCKED VESSEL REFUSES BY NAME BEFORE THE DOOR PARKS, for the rows that act as a face or found one: the key
+  // guards every such row. A row of the place (a herm taking a carry bundle) runs at the floor with no key, so it keeps its way.
+  if (daemonUp && KEY_ROWS.has(verb)) {
     const standing = await vesselStanding();
     if (standing.reading === "vessel" && !standing.unlocked) throw new VesselLocked();
   }
