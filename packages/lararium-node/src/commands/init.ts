@@ -51,7 +51,7 @@ import { loadRecoveryDeviceShare } from "../recovery-share-store.js";
 import { provisionRecoveryAtFounding } from "../recovery-keel.js";
 import {
   generateOrLoadVesselIdentity,
-  generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
+  generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, vesselFaceTagDoor,
 } from "../node-vessel-identity.js";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { LarDoc, SlotSpec } from "@lararium/mesh";
@@ -635,6 +635,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     vesselDisplayName:  vesselIdentity.displayName ?? "operator",
     binding: { mode: "self-stood", signerSeed },
     hearthTrueName,
+    vesselTag: await vesselFaceTagDoor(),
     // THE ISLAND, resolved by the SAME mesh ruling the boot composes — the charter this vessel holds, then
     // the hearth it dials, then its own key as a private nexus of one. A face seated on one board while the
     // boot walks another cannot reach a head, and the Binding Gate HALTS.

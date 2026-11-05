@@ -98,7 +98,7 @@ import {
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
   listBrowserPersonaRoots, loadBrowserActivePersona,
   makeBrowserIdbPersonaVault, makeBrowserPersonaPetnameStore,
-  openVesselIdb, idbGet, idbPut, loadBrowserPlaceKel,
+  openVesselIdb, idbGet, idbPut, loadBrowserPlaceKel, browserVesselFaceTagDoor,
 }                                            from "./browser-vessel-identity.js";
 import type { BrowserVesselIdentity }        from "./browser-vessel-identity.js";
 import { personaPanelStateArgs }             from "./persona-panel-state.js";
@@ -782,6 +782,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // The island this leaf stands in keys the KEL board. A FOUNDING leaf dials no anchor, so this resolves to
       // its own key — a private nexus of one, the same value by a different derivation.
       nexusPubkey,
+      vesselTag: browserVesselFaceTagDoor(idbName),
     });
     // THE FACE'S ATOM RESTS BEFORE ITS BOOTSTRAP: the founding minted a random seed, and the face's own custody row keeps it.
     try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); } finally { f.atomSeed.fill(0); }

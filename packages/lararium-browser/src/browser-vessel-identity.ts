@@ -37,6 +37,7 @@ import {
   type PersonaPublicHandleRecord,
   armPlaceInception, verifyPlaceKel, foldPlaceKel, acceptPlaceHead, PlaceFoundingCardUnread,
   type PlaceFoundingCard, type PlaceKelEvent, type PlaceKelReading, type RandomProvider,
+  vesselFaceTagFields, vesselFaceTagSecret, type VesselFaceTagDoor,
 } from "@lararium/mesh";
 import type { SeedWrapRecord } from "./seed-wrap-prf.js";
 
@@ -341,6 +342,22 @@ async function loadBrowserSigningSeed(idbName = "lares:vessel"): Promise<Uint8Ar
     throw new Error("[browser-vessel-identity] no keypair in IDB — call generateOrLoadBrowserVesselIdentity first");
   }
   return signingSeedFromHex(existing.signingKey);
+}
+
+/**
+ * THE BROWSER VESSEL'S TAG DOOR: the blinded per-face tag one admission of this vessel carries (`vessel-face-tag`).
+ * Each call loads the vessel's signing seed, derives the vessel secret beneath it (`vesselFaceTagSecret`, the same
+ * HKDF child a node's floor key door derives), answers only the tag and its signature, and overwrites seed and secret.
+ */
+export function browserVesselFaceTagDoor(idbName = "lares:vessel"): VesselFaceTagDoor {
+  return async (group, deviceKey) => {
+    const seed = await loadBrowserSigningSeed(idbName);
+    let secret: Uint8Array | null = null;
+    try {
+      secret = vesselFaceTagSecret(seed);
+      return await vesselFaceTagFields(secret, group, deviceKey);
+    } finally { seed.fill(0); secret?.fill(0); }
+  };
 }
 
 // ── PersonaGroup root custody — the IDB-backed PersonaVault (over @lararium/mesh) ────────────────

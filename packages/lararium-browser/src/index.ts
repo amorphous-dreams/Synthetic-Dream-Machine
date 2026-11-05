@@ -40,7 +40,7 @@ export type {
 export {
   generateOrLoadBrowserVesselIdentity, foundBrowserPlaceKel, loadBrowserPlaceKel, readBrowserPlaceHead,
   openVesselIdb, idbGet, idbPut, idbDelete, idbKeys,
-  readBrowserSeedWrap, writeBrowserSeedWrap, loadBrowserActivePersona, SEED_WRAP_STORE,
+  readBrowserSeedWrap, writeBrowserSeedWrap, loadBrowserActivePersona, SEED_WRAP_STORE, browserVesselFaceTagDoor,
 } from "./browser-vessel-identity.js";
 // BROWSER CUSTODY: a passphrase or paper slot wraps the keystore's device seed and Keyhive Archives; the
 // clear-password act asks through the confirm door.

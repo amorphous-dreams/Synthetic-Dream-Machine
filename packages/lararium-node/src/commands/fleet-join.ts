@@ -50,7 +50,7 @@ import { FaceHouseholdAdmitRefused, ensureFaceHouseholdAdmit, ensureFaceHousehol
 import { keepHearthFloorPins } from "../hearth-floor-pin-store.js";
 import { stoodFloorPins } from "../hearth-sovereign-pin.js";
 import { nexusCharterDocPath, parseNexusDoc } from "../nexus-doc.js";
-import { vesselFloorKeyDoor } from "../node-vessel-identity.js";
+import { vesselFaceTagDoor, vesselFloorKeyDoor } from "../node-vessel-identity.js";
 import type { NexusLeaf } from "../nexus-leaf.js";
 import { carriedAdmitOfFleetJoin } from "@lararium/keyhive";
 import { standingFaceScopes } from "../face-root-holdings.js";
@@ -65,7 +65,7 @@ import { loadIdentityAnchors } from "../identity-anchors.js";
 import { standFaceAtom } from "../face-atom-store.js";
 import { ensureFaceCustodyOfGroup } from "../face-route.js";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
-import { runDeviceAdmit } from "./device-admit.js";
+import { DeviceAdmitTagRefused, runDeviceAdmit } from "./device-admit.js";
 import { runInit } from "./init.js";
 import { resolveFace, FaceNotNamed } from "../face-selector.js";
 
@@ -215,8 +215,12 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
   // Check before the device edge, certificates, grants, address secret or answer can be made.
   await refuseProvisional(face, "fleet join answer");
 
-  // THE DEVICE EDGE (`runDeviceAdmit`): the root signs the joinee's vessel key into this hearth's fleet.
-  const { payload, hearth } = await runDeviceAdmit({ repo: opts.repo, catalogUrl: opts.catalogUrl, face, joineeVerifyingKey: request.atomKey, signedRequest: new TextEncoder().encode(JSON.stringify(request)), ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}), ...(opts.docUrl ? { islandDocUrl: opts.docUrl } : {}) });
+  // THE DEVICE EDGE (`runDeviceAdmit`): the root signs the joinee's vessel key into this hearth's fleet, its admission under
+  // the joining vessel's blinded tag the request carries.
+  const { payload, hearth } = await (async () => {
+    try { return await runDeviceAdmit({ repo: opts.repo, catalogUrl: opts.catalogUrl, face, joineeVerifyingKey: request.atomKey, vesselTag: { vesselTag: request.vesselTag, vesselSig: request.vesselSig }, signedRequest: new TextEncoder().encode(JSON.stringify(request)), ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}), ...(opts.docUrl ? { islandDocUrl: opts.docUrl } : {}) }); }
+    catch (error) { if (error instanceof DeviceAdmitTagRefused) throw new FleetJoinRefused(error.refusal, error.message); throw error; }
+  })();
 
   // THE DIAL THE JOINEE NEEDS: the face's admit at this hearth's Nexus (minted once, through the contract door), the
   // charter that seats its quorum, and this hearth's floor pins. The admit commits to the pin the edge's hearth stands
@@ -302,6 +306,7 @@ export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Pr
         return minted.publicKey;
       },
       sign: (image) => signHex(image, seed),
+      vesselTag: await vesselFaceTagDoor(),
     });
     if (isRefusal(request)) throw new FleetJoinRefused(request.refusal, "the request this vessel composed does not read back.");
     await keepPendingFleetJoin(offer.personaGroup, { request, offer, sealSecret: hex(seal.secret) });

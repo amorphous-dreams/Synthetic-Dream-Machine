@@ -29,7 +29,7 @@ import {
 } from "@lararium/mesh";
 import { carriedAdmitOfFleetJoin, type CarriedAdmitPayload } from "@lararium/keyhive";
 import {
-  FLEET_JOIN_STORE, idbGet, idbKeys, openVesselIdb,
+  FLEET_JOIN_STORE, browserVesselFaceTagDoor, idbGet, idbKeys, openVesselIdb,
 } from "./browser-vessel-identity.js";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
 import { browserFaceAtom, faceAddressSecretRow } from "./browser-face-atom.js";
@@ -147,6 +147,7 @@ export async function browserFleetJoinRequest(opts: { readonly offer: unknown; r
         } finally { fresh.fill(0); held?.fill(0); }
       },
       sign: (image) => atom.sign(image),
+      vesselTag: browserVesselFaceTagDoor(idbName),
     });
     if (isRefusal(request)) throw new BrowserFleetJoinRefused(request.refusal, "the request this browser composed does not read back.");
     const kept: PendingJoin = { offer, request, sealSecret: hex(seal.secret) };

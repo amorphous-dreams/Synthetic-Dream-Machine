@@ -16,10 +16,10 @@
 import { describe, expect, test } from "vitest";
 import {
   admitCarriageCommit, custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin, faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer, sealAddressSecret,
-  readFleetJoinRequest, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKey,
+  readFleetJoinRequest, vesselFaceTagHolds, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKey,
 } from "@lararium/mesh";
 import { certificateImage } from "../../lararium-mesh/src/face-proof-subjects.js";
-import { generateOrLoadBrowserVesselIdentity, openVesselIdb, idbGet, FLEET_JOIN_STORE } from "../src/browser-vessel-identity.js";
+import { browserVesselFaceTagDoor, generateOrLoadBrowserVesselIdentity, openVesselIdb, idbGet, FLEET_JOIN_STORE } from "../src/browser-vessel-identity.js";
 import { readKeystoreRow, withCustodyRows } from "../src/browser-custody.js";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import {
@@ -97,6 +97,19 @@ describe("the browser's fleet join", () => {
     await expect(browserFleetJoinRequest({ offer: other, idbName: s.idbName })).rejects.toThrow(/join-pending/);
     expect(await browserFleetJoinAbandon(s.idbName)).toBe(true);
     expect(await browserFleetJoinAbandon(s.idbName)).toBe(false);
+  });
+
+  test("RED: the browser's request carries its own vessel's tag for this face, read through the shared reader; another face and another browser vessel tag apart", async () => {
+    const s = await stage();
+    const request = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName });
+    expect(vesselFaceTagHolds(GROUP, request.atomKey, request)).toBe(true);
+    expect(readFleetJoinRequest(JSON.parse(JSON.stringify(request)), s.offer, [s.offer.rootKey])).toEqual(request);
+    const door = browserVesselFaceTagDoor(s.idbName);
+    expect((await door(GROUP, request.atomKey)).vesselTag).toBe(request.vesselTag);
+    expect((await door("0xc3c3c3c3c3c3c3c3", request.atomKey)).vesselTag).not.toBe(request.vesselTag);
+    const other = await stage();
+    expect((await browserVesselFaceTagDoor(other.idbName)(GROUP, request.atomKey)).vesselTag).not.toBe(request.vesselTag);
+    expect(await browserFleetJoinAbandon(s.idbName)).toBe(true);
   });
 
   test("the selected face atom signs its fleet request; the place key and another face fail the request reader", async () => {
