@@ -23,6 +23,7 @@ import { hex, seedDaemonDoc, personaKelBoardDocUrl, materializeSharedLarDoc, per
 import { tiddlerText } from "@lararium/mesh";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 /** The founder's own persona-KEL chain, read back off the per-Nexus board the founding seated — REQUIRED
  *  on every device-admit payload now (early alpha, no back-compat): a payload minted without it would have
  *  the joinee RE-FOUND rather than join, so this reads it the same way the production CLI does. */
@@ -55,7 +56,7 @@ const JOINEE_ATOM  = new Uint8Array(32).fill(12);
 async function found() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({ repo,
+  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo,
     vesselSeed:         FOUNDER_SEED,
     placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "The Strandbeest Shrine",

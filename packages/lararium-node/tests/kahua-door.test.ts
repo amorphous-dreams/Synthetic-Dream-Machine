@@ -14,6 +14,7 @@ import {
 } from "@lararium/mesh";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../src/kahua-door.js";
 import { bridgeBooks, faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
+import { taggedAdmission, testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const who = async (n: number) => {
   const seed = new Uint8Array(32).fill(n);
@@ -33,7 +34,7 @@ async function face(opts: { readonly pinned?: boolean } = {}) {
   const persona = repo.create<LarDoc>(emptyLarDoc()), intents = repo.create<LarDoc>(emptyLarDoc());
   const pinned = opts.pinned !== false;
   const acts = await signFoundingLog({ group: GROUP, personaKelPrefix: "E".repeat(44), rootCommitment: "c", epoch: 0,
-    planes: { persona: persona.url, intents: intents.url, ...(pinned ? { [KAHUA_PLANE]: kahuaStageDocUrl(GROUP) } : {}) }, deviceKey: atomA.key, edgeDigest: "d" }, root);
+    planes: { persona: persona.url, intents: intents.url, ...(pinned ? { [KAHUA_PLANE]: kahuaStageDocUrl(GROUP) } : {}) }, deviceKey: atomA.key, edgeDigest: "d", vesselTag: await testVesselTag(1, GROUP, atomA.key) }, root);
   if (pinned) await materializeSharedLarDoc(repo, kahuaStageDocUrl(GROUP), "kahua:stage");
   persona.change((d) => { for (const a of acts) writePersonaAct(d, a); });
   const catalog: Record<string, string> = {};
@@ -110,7 +111,7 @@ describe("the mint fence", () => {
     const b = replicaB(f);
     // A's replica takes one admission B never sees: the two stand one act apart.
     const third = await who(10);
-    const admissionAct = await signPersonaAct(f.ports().projection().head, { group: GROUP, act: "admission", epoch: 0, fields: { deviceKey: third.key } }, f.root);
+    const admissionAct = await signPersonaAct(f.ports().projection().head, { group: GROUP, act: "admission", epoch: 0, fields: { ...(await taggedAdmission(10, GROUP, third.key)) } }, f.root);
     f.persona.change((d) => writePersonaAct(d, admissionAct));
     const [onA, onB] = await Promise.allSettled([kahuaDoor(f.ports()).mint(), b.door.mint()]);
     expect(onA).toMatchObject({ status: "rejected", reason: { message: expect.stringMatching(/^kahua-mint-outside-founding: /) } });

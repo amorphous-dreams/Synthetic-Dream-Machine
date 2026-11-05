@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { makeIslandRepo, groupSecretOpenerFromSeed, mintFaceAtomSeed } from "@lararium/mesh";
 import { foundTheFace, foundThePlace } from "../src/index.js";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 describe("a place carries no Keyhive identity", () => {
   it("seeds only the daemon and hearth name; a real face founding mints its own identity", async () => {
@@ -17,7 +18,7 @@ describe("a place carries no Keyhive identity", () => {
     const titles = Object.keys(place.daemonHandle.doc()!.tiddlers);
     expect(titles.some((title) => title.includes("/cap/"))).toBe(false);
     expect(JSON.stringify(place.daemonHandle.doc())).not.toContain(placeKey);
-    const face = await foundTheFace({ repo, daemonHandle: place.daemonHandle,
+    const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle,
       placeVerifyingKey: placeKey, vesselDisplayName: "place",
       binding: { mode: "self-stood", signerSeed: rootSeed },
       hearthTrueName: "hearth", nexusPubkey: placeKey, atomSeed });

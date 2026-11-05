@@ -28,6 +28,7 @@ import {
 } from "../src/browser-vessel-identity.js";
 import type { IdentityAnchors, DeviceDelegationTiddler, LarDid } from "@lararium/mesh";
 import { readWornPersonaMount } from "@lararium/mesh";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 let created = 0;
 const freshIdb = (): string => `lares:test-persona:${Date.now()}:${created++}`;
@@ -125,7 +126,7 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
     const signerSeed = await loadBrowserPersonaRootSeed(name, 0);
     await wearBrowserPersona(name, 0);
 
-    const f = await runFoundingCeremony({
+    const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1),
       repo,
       placeVerifyingKey: device.verifyingKey,
       vesselDisplayName: "Test Operator",
@@ -157,7 +158,7 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
     await generateOrLoadBrowserPersonaRoot(name, 0);
     const signer0 = await loadBrowserPersonaRootSeed(name, 0);
     await wearBrowserPersona(name, 0);
-    await runFoundingCeremony({
+    await runFoundingCeremony({ vesselTag: testVesselTagDoor(1),
       repo, placeVerifyingKey: device.verifyingKey,
       vesselDisplayName: "Op", binding: { mode: "self-stood", signerSeed: signer0 }, hearthTrueName: "", nexusPubkey: device.verifyingKey,
     });

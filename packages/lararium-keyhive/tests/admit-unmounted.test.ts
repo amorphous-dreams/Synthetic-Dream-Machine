@@ -7,6 +7,7 @@ import {
 } from "@lararium/mesh";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const pins = [
   SIGNER_DID_TIDDLER, HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER,
@@ -22,7 +23,7 @@ async function admitInput() {
   const signerSeed = new Uint8Array(32).fill(42);
   const atomSeed = new Uint8Array(32).fill(43);
   const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" });
-  const face = await foundTheFace({
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo, daemonHandle: founder.daemonHandle, placeVerifyingKey: key(founderSeed),
     vesselDisplayName: "founder", binding: { mode: "self-stood", signerSeed },
     hearthTrueName: "hearth", nexusPubkey: key(founderSeed), atomSeed: new Uint8Array(32).fill(44),

@@ -9,6 +9,7 @@ import { makeFaceIntentDoor } from "@lararium/keyhive";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
 import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } from "../../lararium-tw5/src/generated-tw5-version.js";
+import { taggedAdmission } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 let engine: TW5Engine;
 beforeAll(async () => { engine = new TW5Engine(); await engine.boot(new Uint8Array(readFileSync(join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME)))); }, 60_000);
@@ -74,7 +75,7 @@ describe("intent rubric witness", () => {
     const inception = mintPersonaInception(`0x${root.key}`, "recovery");
     const records = [] as Awaited<ReturnType<typeof signPersonaAct>>[];
     for (const [act, fields] of [["founding", { personaKelPrefix: inception.prefix, rootCommitment: "root" }],
-      ["admission", { deviceKey: issuer.key }], ["admission", { deviceKey: executor.key }]] as const) {
+      ["admission", { ...(await taggedAdmission(10, group, issuer.key)) }], ["admission", { ...(await taggedAdmission(11, group, executor.key)) }]] as const) {
       const last = records.at(-1);
       records.push(await signPersonaAct(last ? { seq: last.body.seq, cid: actCid(last.body) } : null, { group, act, epoch: 0, fields }, root));
     }

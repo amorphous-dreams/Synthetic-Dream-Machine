@@ -22,6 +22,7 @@ import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 const genesisSource = join(import.meta.dirname, "..", "..", "..", "genesis");
 const foundFace = direct(runFoundTheFace);
 const land = direct(runInit);
@@ -64,7 +65,7 @@ async function founderForB() {
   const founderKey = faceAtomKeyFromSeed(vesselSeed, "founder-vessel").key;
   const hearthTrueName = "hearth-for-face-b";
   const place = await foundThePlace({ repo: founderRepo, vesselSeed, hearthTrueName });
-  const face = await foundTheFace({
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo, daemonHandle: place.daemonHandle,
     placeVerifyingKey: founderKey, vesselDisplayName: "founder B",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName,

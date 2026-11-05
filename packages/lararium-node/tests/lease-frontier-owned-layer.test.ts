@@ -29,6 +29,7 @@ import {
 } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
 import * as ed25519 from "@noble/ed25519";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 const seed  = (n: number): Uint8Array => new Uint8Array(32).fill(n);
@@ -43,7 +44,7 @@ afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /
 async function standIsland(opts: { daemonLayer?: boolean } = {}) {
   const vesselRepo = new Repo({ sharePolicy: async () => true });
   const key = await pubOf(FOUNDER_SEED);
-  const cer = await runFoundingCeremony({ repo: vesselRepo, vesselSeed: FOUNDER_SEED, placeVerifyingKey: key,
+  const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo: vesselRepo, vesselSeed: FOUNDER_SEED, placeVerifyingKey: key,
     vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: key,
   });
   const kelBoard = await materializeSharedLarDoc(vesselRepo, personaKelBoardDocUrl(key), "board:persona-kel");

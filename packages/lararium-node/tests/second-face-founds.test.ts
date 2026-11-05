@@ -26,6 +26,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER,
 } from "@lararium/mesh";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const VESSEL_SEED = new Uint8Array(32).fill(9);
 // The two persona ROOTS — each face its own sovereign signing key (distinct from the vessel and each other).
@@ -52,7 +53,7 @@ async function foundFace(
   repo: Repo, daemonHandle: DaemonHandle, signerSeed: Uint8Array, opts: { mount?: boolean } = {},
 ): Promise<{ groupId: string; cabalId: string; prefix: string; personaUrl: string; identitiesUrl: string; circlesUrl: string; sessionsUrl: string; intentsUrl: string }> {
   const verifyingKey = await pubOf(VESSEL_SEED);
-  const face = await foundTheFace({ repo,
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo,
     daemonHandle,
     vesselSeed:         VESSEL_SEED,
     placeVerifyingKey: verifyingKey,

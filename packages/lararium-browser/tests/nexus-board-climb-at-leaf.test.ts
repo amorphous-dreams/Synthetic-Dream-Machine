@@ -56,6 +56,7 @@ import {
 // The boot's own source — the fault-pin's only reachable witness. `?raw` because this suite runs in a
 // real chromium and holds no fs; the text is the same text `tsc` compiles.
 import bootSrc from "../src/open-browser-vessel.ts?raw";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const signer = (s: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, s).then(hex);
@@ -152,7 +153,7 @@ describe("★ RED — the LEAF BRICKS: the Binding Gate's own read goes blank wh
     const own    = await pubOf(seedOf(111));
     const anchor = await pubOf(seedOf(211));
 
-    // ① the leaf founds OFFLINE. `runFoundingCeremony({…, nexusPubkey})` seats the inception on the board
+    // ① the leaf founds OFFLINE. `runFoundingCeremony({ vesselTag: testVesselTagDoor(1),…, nexusPubkey})` seats the inception on the board
     //    keyed by the island resolved AT THAT MOMENT — for a founding leaf, its own key.
     const before = leafStandsAt(own);
     expect(nexusScopeOrThrow(nexusIdentity(before))).toBe(own);
