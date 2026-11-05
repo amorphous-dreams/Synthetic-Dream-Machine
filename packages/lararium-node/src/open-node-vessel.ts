@@ -2375,8 +2375,7 @@ async function prepareNodeBootOn(
           const core = promotePanelApi({ who,
             wikis: async () => ["daemon", ...vmManager.inspect().filter(slot => slot.temperature === "wela" && slot.wikiId !== "daemon").map(slot => slot.wikiId)],
             promotionsFor: wiki => promotions({ wiki, ...nodePromoteStores(personaGroupId), who,
-              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(casDirForStorage(storageDir), atom.key),
-              loaded: () => wiring.loadedFor(wiki), restart: async () => { await wiring.restart(wiki); } }), boardDoor,
+              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(casDirForStorage(storageDir), atom.key) }), boardDoor,
           });
           const push = async (data: string) => { daemonVm.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
           // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.
