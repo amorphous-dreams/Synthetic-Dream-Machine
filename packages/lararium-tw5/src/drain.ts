@@ -15,7 +15,7 @@
  * An act's removal rides a dependency edge (`markAfter`): it stays parked until the target's receipts cover the act's own generation,
  * then rides as an ordinary owed title. A removal behind a refused target reads that refusal as its own terminal outcome.
  *
- * Memory stays bounded by titles: one slot per owed title, one shared waiter per title, and a slot leaves once its receipts cover it.
+ * Memory stays bounded by titles: one slot per owed title, one live waiter per title (a newer generation settles the older ones `superseded`), and a slot leaves once its receipts cover it.
  * Writes stay idempotent by (title, generation): a retry after an ambiguous failure writes the title's latest state again.
  *
  * THE KICK RULE (operator ruling 2026-11-04): `kick()` is a REQUEST, never a write. It sets flight-eligible state (releases a standing refusal,
@@ -191,6 +191,13 @@ export class Drain {
     }
   }
 
+  /** How many waiters stand live: a title holds at most one; with no title, the whole count. */
+  waiters(title?: string): number {
+    if (title === undefined) return this.#waiters.size;
+    let n = 0;
+    for (const waiter of this.#waiters.values()) if (waiter.title === title) n++;
+    return n;
+  }
   /** How many titles hold a slot. */
   size(): number { return this.#slots.size; }
   /** True while the title owes the store anything (a write in flight, a dirty generation, a parked edge). */
@@ -330,6 +337,16 @@ export class Drain {
     const waiter: Waiter = { title, generation, verdict: null, promise, resolve };
     const now = this.#outcome(waiter);
     if (now) return Promise.resolve(now);
+    // At most ONE live waiter per title: the newest generation covers every older one (a write carries the title's latest state), so an
+    // older waiter settles `superseded` and a request older than the standing waiter reads it at once. Memory stays bounded by titles.
+    if (title !== null) {
+      for (const [other, standing] of this.#waiters) {
+        if (standing.title !== title) continue;
+        if (standing.generation > generation) return Promise.resolve(SUPERSEDED);
+        this.#waiters.delete(other);
+        standing.resolve(SUPERSEDED);
+      }
+    }
     this.#waiters.set(key, waiter);
     return promise;
   }

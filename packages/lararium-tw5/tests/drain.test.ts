@@ -304,7 +304,7 @@ describe("Drain", () => {
     expect([kind(await all), kind(await one), kind(await closing)]).toEqual(["failed", "failed", "failed"]);
   });
 
-  test("one waiter per (title, generation): calls share it, and a later caller's generation never raises an earlier caller's", async () => {
+  test("one live waiter per title: calls share it, a newer generation settles the older waiter superseded, and an older request reads at once", async () => {
     const { drain, writes } = rig();
     const g1 = drain.mark("t");
     await settle();
@@ -314,11 +314,25 @@ describe("Drain", () => {
     const g2 = drain.mark("t");
     const b = drain.whenSettled("t", g2);
     expect(b).not.toBe(a);
-    writes[0]!.resolve();
-    expect(kind(await a)).toBe("acked");              // generation g1 settled; g2 still owed
+    expect(kind(await a)).toBe("superseded");         // g2 covers g1: the older waiter leaves
+    expect(kind(await drain.whenSettled("t", g1))).toBe("superseded");   // an older request behind the standing waiter reads at once
     expect(drain.owes("t")).toBe(true);
-    await settle();
+    writes[0]!.resolve(); await settle();
     writes[1]!.resolve();
     expect(kind(await b)).toBe("acked");
+  });
+
+  test("waiter memory stays bounded by titles: ten thousand marks and waits of one title under a pending write hold one live waiter", async () => {
+    const { drain, writes } = rig();
+    drain.mark("t");
+    await settle();                                   // the write stays pending: its receipt never comes
+    const waits: Array<Promise<DrainOutcome>> = [];
+    for (let i = 0; i < 10_000; i++) waits.push(drain.whenSettled("t", drain.mark("t")));
+    expect(drain.waiters()).toBe(1);
+    for (const old of waits.slice(0, -1)) expect(kind(await old)).toBe("superseded");
+    writes[0]!.resolve(); await settle();
+    writes[1]!.resolve();
+    expect(kind(await waits[waits.length - 1]!)).toBe("acked");
+    expect(drain.waiters()).toBe(0);
   });
 });
