@@ -20,7 +20,7 @@
  */
 import type { SessionOwnChain } from "@lararium/mesh";
 import type { SessionAnchor, UdsSessionSigner } from "./uds-channel.js";
-import type { SessionSignDoor } from "./worker-handle.js";
+import type { SessionSignDoor } from "@lararium/mesh";
 
 /** The session that placed one booked call. */
 export interface BookedSession {

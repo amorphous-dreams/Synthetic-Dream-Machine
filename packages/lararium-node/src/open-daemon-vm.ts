@@ -36,6 +36,7 @@ import {
 } from "@lararium/tw5";
 import { isStillJoining, resolveBootDoc } from "./repo-helpers.js";
 import { nodeNewSyncChannel, nodeSpawnDaemonWorker } from "./worker-handle.js";
+import type { IslandCasData } from "./node-cas.js";
 import { PLANE_LABELS, personaScopeTag, type CapabilityRecord } from "@lararium/mesh";
 
 const DEFAULT_ADMIN_WORKER_URL = new URL("./node-daemon-island.js", import.meta.url);
@@ -88,6 +89,8 @@ export interface DaemonVmOptions {
   daemonAuth?:        IslandMsg_Manifest["daemonAuth"];
   /** Optional storage dir for the daemon island's NodeFS Repo. */
   storageDir?:       string;
+  /** The CAS dirs the vessel resolved at construction, handed to the daemon island as its `workerData` (the island reads no env). */
+  casData?:          IslandCasData;
   /** D-VR-C: persist only the explicit daemon document in its owned scope. */
   ownedDocument?:    boolean;
   /** The vessel root (`<root>/wikis/kahua/` receives the daemon wiki's working layer). */
@@ -118,7 +121,7 @@ export function faceRelationStance(input: { personaBagId?: string | null | undef
 }
 
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
-  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, rootDir, workerScriptUrl,
+  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, rootDir, workerScriptUrl, casData,
           guardCrossroadsNexusHandles = true } = opts;
 
   // An explicitly supplied empty path must not silently downgrade the worker to
@@ -173,7 +176,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   const host: DaemonVmHost = {
     newSyncChannel: nodeNewSyncChannel,
     ...(ownedDocument ? { newOwnedSyncChannel: nodeNewSyncChannel } : {}),
-    spawnWorker:    (url) => nodeSpawnDaemonWorker(url, caps),
+    spawnWorker:    (url) => nodeSpawnDaemonWorker(url, caps, casData),
   };
 
   // The wrapper IS the shore — host pieces + recipe/storage + merge-on-arrival daemonHandle;

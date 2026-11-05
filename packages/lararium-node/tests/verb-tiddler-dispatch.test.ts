@@ -115,7 +115,7 @@ describe.skipIf(skipReason)(
       const pool = new VesselIslandPool({ caps: {},
         workerScriptUrl: ISLAND_JS,
         mainRepo:        vesselRepo,
-        storageRoot:     cas.storageDir,
+        storageRoot:     cas.storageDir, cidDir:     cas.cidDir,
         resolvePluginCids: async () => ({ ok: true as const, pluginCids: cas.pluginCids }),
         onWorkerEvent:   (_id, msg) => { console.log("[test] onWorkerEvent:", JSON.stringify(msg)); events.push(msg); },
       });
@@ -197,7 +197,7 @@ describe.skipIf(skipReason)(
       const pool = new VesselIslandPool({ caps: {},
         workerScriptUrl: ISLAND_JS,
         mainRepo:        vesselRepo,
-        storageRoot:     cas.storageDir,
+        storageRoot:     cas.storageDir, cidDir:     cas.cidDir,
         resolvePluginCids: async () => ({ ok: true as const, pluginCids: cas.pluginCids }),
         onWorkerEvent:   (_id, msg) => {
           if (msg.payload["verb"]) verbEvents.push(msg);

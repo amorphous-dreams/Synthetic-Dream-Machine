@@ -268,7 +268,7 @@ describe("the vessel's doors answer by island class", () => {
       return { ...actual, runSovereignKernel };
     });
     vi.doMock("worker_threads", () => ({
-      parentPort: { postMessage: parentPost, on: parentOn },
+      parentPort: { postMessage: parentPost, on: parentOn }, workerData: null,
     }));
     const { runSovereignWorker } = await import("../src/sovereign-island-model.js");
     runSovereignWorker({} as never);

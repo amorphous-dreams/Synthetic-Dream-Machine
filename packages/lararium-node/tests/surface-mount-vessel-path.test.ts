@@ -135,7 +135,7 @@ async function vessel() {
   // The islands' storage root stands beside the content store, as `casDirForStorage` lays it.
   poolCaps = {};
   pool = new VesselIslandPool({
-    caps: poolCaps, workerScriptUrl: PROBE_URL, mainRepo: repo, storageRoot: storageDir,
+    caps: poolCaps, workerScriptUrl: PROBE_URL, mainRepo: repo, storageRoot: storageDir, cidDir: casDirForStorage(storageDir),
     resolvePluginCids: async () => ({ ok: true as const, pluginCids: [] }),
   });
   // A placement names the session it acts for; the pool passes it only to that session's own island.

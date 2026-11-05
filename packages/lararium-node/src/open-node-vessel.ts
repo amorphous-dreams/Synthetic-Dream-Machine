@@ -67,7 +67,7 @@ import type { JoinedFaceAuth, WikiActivationCap, PortIslandToVesselMsg } from "@
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
-import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
+import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
 import { answerReceiptWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest, ownEntry } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
@@ -99,7 +99,7 @@ import { daemonGenesisDir, daemonCorpusRoot, daemonBagsDir } from "./lares-confi
 import { projectionRoots } from "./bag-paths.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
-import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
+import { DeterministicFederationGate, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, readFace, proveFaceFromLog, adoptKahuaStage, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
@@ -107,8 +107,7 @@ import {
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
-import { setSessionSignDoor } from "./worker-handle.js";
-import { writeCasEntriesFs } from "./node-cas.js";
+import type { SessionSignDoor } from "@lararium/mesh";
 import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass, PersonaGroupIdentityRing } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { classDeviceLedgers, readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
@@ -152,7 +151,7 @@ import type { UdsSessionDoor } from "./uds-channel.js";
 import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type FlowPullResult } from "@lararium/mesh";
 import { gateReadingsFor, layStatementOn, flowFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
 import { readKeptAdmitBundles } from "./admit-bundle.js";
-import { readCasBlobFromFs, readVerifiedCasBlobFromFs } from "./node-cas.js";
+import { readCasBlobFromFs } from "./node-cas.js";
 import { makeSourceCapture, type SourceCapture } from "./capture/capture-source.js";
 import { VesselIslandPool, NODE_WIKI_ACTIVATION_CAP } from "./vessel-island-pool.js";
 import { runFlow } from "./flow-run.js";
@@ -575,7 +574,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   mountManifest: MountManifest;
   /** The session socket's door: each face this vessel holds opens its own session at the Nexus the vessel dials. */
   sessionDoor: UdsSessionDoor;
-  /** The session sign door's book: the UDS seat books each session call, and the daemon island signs through it. */
+  /** The session sign door's book, the LIFT's own: the UDS seat books each session call, and the daemon island signs
+   *  through the door this lift seated on its record (`islandCaps.sessionSign`). */
   sessionSigns: SessionSignBook;
 }
 
@@ -628,6 +628,8 @@ const blankMemeStore = (repo: Repo): (() => DocHandle<LarDoc>) =>
 interface NodeBootPrep {
   /** THE CAPABILITY RECORD this vessel hands every island it constructs (daemon, wiki, session): one per vessel, never global. */
   islandCaps: CapabilityRecord;
+  /** The vessel's ONE runtime `cid/` dir, fixed at construction: every site that reads or serves the CAS reads this. */
+  cidDir: string;
   restartWiki: (wiki: string) => Promise<void>;
   promoteActs: PromoteActGate;
   wornFace: () => { readonly face: number; readonly personaGroup: string } | null;
@@ -654,9 +656,10 @@ interface NodeBootPrep {
   /** What this composition lends a backup bundle's cut: the mounted face, its own edge's shadow, the island's memory section and the board's key history. */
   backupDoor:      BackupDoor;
   sessionDoor:     UdsSessionDoor;
-  /** The session sign door's book: each session call books the session that placed it, so the daemon island signs a
-   *  sealed record through that session's signer, on this thread (`session-sign-door.ts`). */
-  sessionSigns:    SessionSignBook;
+  /** THE SESSION SIGN LIFT, built and seated by the lift alone: each call stands a fresh book and its door over this
+   *  prep's chain and fleet fold, and stands nothing itself. The Lararium lift seats `door` on `islandCaps.sessionSign`
+   *  and owns `down`; a herm never calls it, so a herm's record signs nothing (`session-sign-door.ts`). */
+  liftSessionSign: () => SessionSignLift;
   /** This place's scoped five-duty signer at the standing KEL head. */
   placeSigner:    PlaceSigner;
   /** This vessel's own gate key — the node ANCHORS its confederation, so its gate key doubles as the Nexus
@@ -1696,15 +1699,13 @@ async function prepareNodeBootOn(
   // verify against the cid's own class, and the verified body lands write-through in `cid/`. Every worker (the
   // daemon island, each wiki island) reaches this ONE `islandCaps.cas` through `cas:want`. No shore → it answers every
   // ask from `cid/` alone (PENDING stays PENDING; a dead upstream faults nothing).
+  // The CAS dirs FIX HERE, at construction: the one runtime `cid/` dir and the CORPUS dir (the corpus store rides inside `cas`
+  // as its second tier). The pool and the daemon island are handed them; no content read touches the environment afterward.
   const cidDir = casDirForStorage(storageDir);
+  const corpusCasDir = corpusCasDirFromEnv();
+  const casData: IslandCasData = { cidDir, corpusCasDir };
   const hermShore = hermCasTransitFromEnv();
-  const resolveCid = hermShore
-    ? makeCidResolver(
-        (cid) => readCasBlobFromFs(cid, cidDir),
-        hermShore,
-        (cid, bytes) => { writeCasEntriesFs([{ cid, bytes }], cidDir); },
-      )
-    : async (cid: string) => readVerifiedCasBlobFromFs(cid, cidDir);
+  const resolveCid = makeNodeCasResolver({ cidDir, corpusCasDir, shore: hermShore });
   islandCaps.cas = resolveCid;
   // The capability's stand-down pushes in the next statement (T27): a boot that refuses on any await below leaves no `cas` behind.
   stood.push({ what: "the cas capability", down: () => { delete islandCaps.cas; } });
@@ -1790,16 +1791,21 @@ async function prepareNodeBootOn(
   /** The pin the face dial stands at, once its own presentation composed there; none means the place anchor. */
   const dialAnchor = dialAnchorCell();
   // THE SESSION SIGN DOOR (sealed-store#/the-store): the daemon island holds no session key. A session call books its
-  // signer here, and the island's ask signs through it, under the vessel's own chain at the pin its dial composed at.
-  const sessionSigns = new SessionSignBook();
+  // signer in a book, and the island's ask signs through it, under the vessel's own chain at the pin its dial composed at.
+  // The door rides the LIFT: prep builds only the factory and stands no door, so a herm floor's record carries none.
   // Each read carries the vessel's own fold of the face's fleet board: the raises it counts and those no subscriber
   // took yet, so the holder counts removal versions and owed rolls across a restart.
   // A vessel that wears a face folds that face's fleet off its device edge's root and its own atom; a piece still unread
   // refuses the fold by name (road `T35`). Only a faceless vessel reads unread.
-  setSessionSignDoor(sessionSigns.door(() => dialAnchor.chain(), async () => fleetRaisesOf({
-    repo, worn: custodyGroup ? { fleetRoot: wornFleetRoot, atomKey: activeAtom?.key ?? null } : null,
-  })));
-  stood.push({ what: "the session sign door", down: () => { setSessionSignDoor(null); } });
+  const liftSessionSign = (): SessionSignLift => {
+    const book = new SessionSignBook();
+    return {
+      book,
+      door: book.door(() => dialAnchor.chain(), async () => fleetRaisesOf({
+        repo, worn: custodyGroup ? { fleetRoot: wornFleetRoot, atomKey: activeAtom?.key ?? null } : null,
+      })),
+    };
+  };
   // Set when the vessel stands its dial down: a late dial still in flight then stands nothing.
   let dialStoodDown = false;
   // The dial itself fires in `openDaemon`, once the daemon doc is read — the identity it presents carries this vessel's OWN
@@ -2016,7 +2022,7 @@ async function prepareNodeBootOn(
       // those into the runtime CAS the workers read via resolveByCid (the nodefs face of the
       // browser vessel's OPFS fetch — isomorphic by composition).
       const manifest = readGenesisCasManifest(genesisDir);
-      const runtimeCas = casDirForStorage(storageDir);
+      const runtimeCas = cidDir;
       if (manifest) {
         const casWritten = mirrorGenesisCasFs(manifest, genesisCasDir(genesisDir), runtimeCas);
         if (casWritten > 0) console.log(`[openNodeVessel] fs CAS: mirrored ${casWritten} blob(s) by CID from genesis/cas`);
@@ -2340,7 +2346,7 @@ async function prepareNodeBootOn(
             repo, group: personaGroupId, boardUrl: wornPromote, stageUrl: wornKahua?.url ?? null,
             foldFace: () => { const f = promoteFace.read(); return { group: personaGroupId, grant: f ? f.grant : () => false }; },
             boardFace: () => { const f = promoteFace.read(); return { group: personaGroupId, grant: f ? f.grant : () => false, device: (k) => devices.has(k) }; },
-            stores: nodePromoteStores(personaGroupId), cas: nodePromoteCas(casDirForStorage(storageDir), promoteHolder),
+            stores: nodePromoteStores(personaGroupId), cas: nodePromoteCas(cidDir, promoteHolder),
             wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
             onArrive: async () => { await pushPromoteSnapshot?.(); },
             onFault: (reason) => console.warn(`[promote] ${reason}`),
@@ -2375,7 +2381,7 @@ async function prepareNodeBootOn(
           const core = promotePanelApi({ who,
             wikis: async () => ["daemon", ...vmManager.inspect().filter(slot => slot.temperature === "wela" && slot.wikiId !== "daemon").map(slot => slot.wikiId)],
             promotionsFor: wiki => promotions({ wiki, ...nodePromoteStores(personaGroupId), who,
-              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(casDirForStorage(storageDir), atom.key) }), boardDoor,
+              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(cidDir, atom.key) }), boardDoor,
           });
           const push = async (data: string) => { daemonVm.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
           // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.
@@ -2806,13 +2812,14 @@ async function prepareNodeBootOn(
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe: { wikiSlug: "daemon" },
         lookup: nodeOfferingLookup(offerings.doc()),
-        readBytes: (cid) => readCasBlobFromFs(cid, casDirForStorage(storageDir)),
+        readBytes: (cid) => readCasBlobFromFs(cid, cidDir),
         promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
         onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
       }),
       open: async ({ pluginCids, joinedFaces }) => openDaemonVm({
         repo,
         caps: islandCaps,
+        casData,
         daemonUrl: bootstrap.daemonUrl,
         // The persona plane rides only when a face stands; the daemon VM resolves nothing that is absent.
         ...(bootstrap.personaUrl   ? { personaUrl:   bootstrap.personaUrl }   : {}),
@@ -3318,7 +3325,7 @@ async function prepareNodeBootOn(
     // rows reach the refold, and no standalone CLI-dialed verb does.
     const doors = storeDoorReactors({
       storageDir, sealHome, repo, catalogUrl: assembly.catalogHandle.url,
-      casDir: casDirForStorage(storageDir), restartWiki: reloadWikiAfterVerb,
+      casDir: cidDir, restartWiki: reloadWikiAfterVerb,
       onRolled: afterRoll,
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
@@ -3401,10 +3408,8 @@ async function prepareNodeBootOn(
     registry.register("cas-fetch", async (args) => {
       const cid = typeof args["cid"] === "string" ? (args["cid"] as string) : "";
       if (!cid) throw new Error("cas-fetch: `cid` required");
-      const before = readCasBlobFromFs(cid, cidDir) !== null;
-      const bytes = await resolveCid(cid);
-      return { verb: "cas-fetch", cid, held: bytes !== null, fetched: bytes !== null && !before, bytes: bytes?.byteLength ?? 0,
-               door: hermShore ? "herm-shore" : "local-only" };
+      const reading = await casFetchReading(cid, { cidDir, corpusCasDir }, resolveCid);
+      return { verb: "cas-fetch", cid, ...reading, door: hermShore ? "herm-shore" : "local-only" };
     });
 
     // cad-seal — REGISTER a carrier body the content-key holder sealed. The holder lives in the daemon island,
@@ -3619,7 +3624,7 @@ async function prepareNodeBootOn(
     // through the selector + CAS (`resolveNodeIslandPluginCids`), never one vessel-wide floor.
     // The shared Crossroads board materializes once and is read fresh per mount (a
     // later-announced offering becomes selectable without a vessel restart).
-    const casDir = casDirForStorage(storageDir);
+    const casDir = cidDir;
     vmManager = new VesselIslandPool({
       caps:        islandCaps,
       mainRepo:    repo,
@@ -3627,6 +3632,8 @@ async function prepareNodeBootOn(
       portPolicy: opts.portPolicy ?? ((binding, islandKey) => ({ faceId: wornGateFace()?.personaGroup ?? islandKey, actor: binding, edits: false, bags: [], admin: false })),
       ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
       storageRoot: storageDir,
+      cidDir:      cidDir,
+      corpusCasDir: casData.corpusCasDir,
       // A co-located node wiki island resolves its keyhive grants in the SAME synchronous-WASM
       // slot-resolution the daemon island runs (and on the same machine). A one-time keyhive
       // reconverge (e.g. an OutOfOrderOperation fixed-point after a genesis rebake) blocks the
@@ -3696,6 +3703,7 @@ async function prepareNodeBootOn(
 
   return {
     islandCaps,
+    cidDir,
     repo, storeClaim, catalogHandle, placeSigner, nexusPubkey, floorGates, carriagePull, wornFace: wornGateFace,
     restartWiki: reloadWikiAfterVerb, promoteActs,
     vesselGateKey:   vesselIdentity.verifyingKey,
@@ -3722,7 +3730,7 @@ async function prepareNodeBootOn(
     // lit, this vessel's own edge on that face's fleet board (the reading the dyad door serves the island), the
     // island's memory section under the vessel's own signed ask, and the face's key history off the local board.
     sessionDoor: nodeSessionDoor({ pin: dialAnchor.pin, sealHome, onLog: (line) => console.log(`[session] ${line}`) }),
-    sessionSigns,
+    liftSessionSign,
     backupDoor: {
       wornFace: () => litFace,
       ownEdgeShadowed: async () => {
@@ -3813,6 +3821,18 @@ export async function openNodeVessel(opts: NodeVesselOptions): Promise<NodeVesse
   }
 }
 
+/** One session sign lift: the book the UDS seat books session calls into, and the door the daemon island signs through. */
+export interface SessionSignLift {
+  readonly book: SessionSignBook;
+  readonly door: SessionSignDoor;
+}
+
+/** Seat a lift's session sign door on a record; the returned down removes it (only while it still names this door). */
+export function seatSessionSignLift(caps: CapabilityRecord, door: SessionSignDoor): () => void {
+  caps.sessionSign = door;
+  return () => { if (caps.sessionSign === door) delete caps.sessionSign; };
+}
+
 async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Promise<NodeVesselResult> {
   // A Lararium is a hearth that is ALSO a first-class mesh-node: when self-announce params are supplied,
   // it composes the carriage (meshpalace + carriage) ALONGSIDE the wiki-full core — it carries + navigates
@@ -3852,13 +3872,25 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
       return component;
     },
   }));
+  // THE LIFT SEATS ITS SESSION SIGN DOOR before the keel composes: every island reads `islandCaps` by reference at ask
+  // time, so a daemon island that stands inside the compose reaches it. The door drops with the role caps at teardown,
+  // and at once when the compose refuses (the caller's `p.teardown` runs no role cap).
+  const sessionSign = p.liftSessionSign();
+  const sessionSignDown = seatSessionSignLift(p.islandCaps, sessionSign.door);
+  roleCaps.push(sessionSignDown);
+  // THE COMPOSITION BOUNDARY: whatever refuses from here to the result (the keel, a duplicate porch route) drains every role cap
+  // the lift stood, this door among them, before it rethrows; the caller's `p.teardown` runs no role cap.
+  const drainRoleCaps = async (): Promise<void> => {
+    for (const down of roleCaps.splice(0).reverse()) { try { await down(); } catch { /* the refusal names the cause */ } }
+  };
+  try {
   const result = await composeLararium<VesselIslandPool>(p.orchestration, extraCaps);
   // THE PORCH ANSWERS FOR THE FLOOR: `/floor/<AID>` hands a stranger the release rows this board carries (each with its lineage),
   // and `/cas/<cid>` the blobs the head release names. A hearth with neither a dispatcher nor a server answers no porch.
   if (opts.httpServer || opts.dispatcher) {
     const porch = mountFloorPorch({
       ...(opts.httpServer ? { httpServer: opts.httpServer } : {}), ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), repo: p.repo,
-      nexusPubkey: p.nexusPubkey, casDir: casDirForStorage(opts.storageDir), serveCas: true,
+      nexusPubkey: p.nexusPubkey, casDir: p.cidDir, serveCas: true,
       onLog: (line) => console.log(`[lararium] ${line}`),
     });
     roleCaps.push(() => porch.dispose());
@@ -3889,7 +3921,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     walkDial:         p.walkDial,
     hostingDoor:      p.hostingDoor,
     sessionDoor:     p.sessionDoor,
-    sessionSigns:    p.sessionSigns,
+    sessionSigns:    sessionSign.book,
     backupDoor:      p.backupDoor,
     oracleDocUrl:     result.assembly.islandHandle.url,
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
@@ -3909,6 +3941,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     storeClaim: p.storeClaim,
     mountManifest: result.assembly.mountManifest,
   };
+  } catch (e) { await drainRoleCaps(); throw e; }
 }
 
 /**
@@ -3961,7 +3994,7 @@ async function composeNodeHermOn(
     ...(p.bulb ? { bulb: p.bulb } : {}),
     // THE HERM RE-SHARE: `/cas/<cid>` serves a fleet peer's PUBLIC blob (landed write-through in its `cid/`) IFF the crossroads board — the public plane by construction — names the cid.
     publicCas: publicCasShore({
-      casDir: casDirForStorage(opts.storageDir),
+      casDir: p.cidDir,
       references: () => Object.entries(hermCrossroads.doc()?.tiddlers ?? {}).map(([title, record]) => ({ title, bagId: CROSSROADS_DOC_URI, record: plainRecord(record) })),
       bagTier: (bagUrl) => (bagUrl === CROSSROADS_DOC_URI ? "public" : null),
       // THE REALM LANE: a Herm serves books it never authored, so its own crossroads alone withheld every
@@ -3978,7 +4011,7 @@ async function composeNodeHermOn(
       // stands UNMEASURED against this cure. Its second half is independent and still owed:
       // the Herm holds no carriage CLIENT (it IS the relay), so nothing in the product ever makes it FETCH the
       // body, and the witness plants it by hand at ⑤b to isolate the index half from the byte half.
-      releasedFloor: () => releasedFloorCids({ board: hermCrossroads.doc(), nexus: p.nexusPubkey, casDir: casDirForStorage(opts.storageDir) }),
+      releasedFloor: () => releasedFloorCids({ board: hermCrossroads.doc(), nexus: p.nexusPubkey, casDir: p.cidDir }),
       realmReferences: () => hermRealmShoreBooks({
         realmStanding: () => p.realmStanding(),
         findDoc:       async (docUrl) => (await p.repo.find<LarDoc>(docUrl as AutomergeUrl).catch(() => null))?.doc() ?? null,
@@ -3992,7 +4025,7 @@ async function composeNodeHermOn(
   // face already carries `/cas`, and the released-floor lane above lends it the head's blobs.
   const porch = mountFloorPorch({
     httpServer: opts.httpServer, ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), repo: p.repo,
-    nexusPubkey: p.nexusPubkey, casDir: casDirForStorage(opts.storageDir), serveCas: false,
+    nexusPubkey: p.nexusPubkey, casDir: p.cidDir, serveCas: false,
     onLog: (line) => console.log(`[herm] ${line}`),
   });
   p.emit("vessel-ready");

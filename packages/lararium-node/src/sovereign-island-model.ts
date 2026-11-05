@@ -20,7 +20,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/sovereign-island-model
  */
 
-import { parentPort } from "worker_threads";
+import { parentPort, workerData } from "worker_threads";
 import { join } from "node:path";
 import { mkdirSync, writeFileSync, existsSync } from "node:fs";
 import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
@@ -51,7 +51,7 @@ import {
 import type { IslandBehavior } from "@lararium/tw5";
 import type { IslandSessionProof, SessionReading } from "@lararium/keyhive";
 import type { Signature } from "@lararium/mesh/face-proof-subjects";
-import { casDirFromIslandStorageDir, readCasBlobFromFs } from "./node-cas.js";
+import { casDirFromIslandStorageDir, readCasBlobFromFs, type IslandCasData } from "./node-cas.js";
 
 /** A worker's ask waits this long for the vessel's cas capability before it reads as a miss (PENDING, never a fault). */
 const CAS_WANT_TIMEOUT_MS = 20_000;
@@ -278,21 +278,19 @@ export function runSovereignWorker(
   // (the CID plane is required).
   let casDir: string | null = null;
 
-  // The CORPUS CAS dir — where the operator gesture stages oversized carrier bodies (whole
-  // books) that ride LOAD/INGEST verbs BY REFERENCE, never inline. Read from the inherited
-  // env (LAR_CAS, else <LAR_ROOT>/cas) so the fs-less worker resolves the SAME dir the CLI
-  // stager wrote — process-shared filesystem, no IPC. The `wake` gesture exports LAR_CAS =
-  // larCasDir() when it spawns the daemon, so this stays deterministic across the two processes.
-  // Distinct from the runtime `casDir` (engine/plugin bytes under <storage>/cas, held by the runtime store):
-  // the corpus CAS is repo-relative and persistent.
-  const corpusCasDir: string | null =
-    process.env["LAR_CAS"] ?? (process.env["LAR_ROOT"] ? join(process.env["LAR_ROOT"], "cas") : null);
+  // The CAS dirs the VESSEL handed this island at construction (`workerData`, `IslandCasData`): the vessel's one runtime
+  // `cid/` dir and the CORPUS CAS dir where the operator gesture stages oversized carrier bodies (whole books) that ride
+  // LOAD/INGEST verbs BY REFERENCE, never inline. The island reads no env: a dir the vessel did not hand reads absent.
+  // The runtime `casDir` (engine/plugin bytes) falls back to the sibling of its storage dir where the vessel handed none.
+  const handed = (workerData ?? {}) as Partial<IslandCasData>;
+  const corpusCasDir: string | null = handed.corpusCasDir ?? null;
+  if (handed.cidDir) casDir = handed.cidDir;
 
   const host: IslandHostShore = {
     post:    (msg: IslandToVesselMsg) => port.postMessage(msg),
     listen:  (onMessage) => port.on("message", onMessage),
     storage: (msg) => {
-      if (msg.storage?.type === "nodefs") casDir = casDirFromIslandStorageDir(msg.storage.dir);
+      if (msg.storage?.type === "nodefs" && !handed.cidDir) casDir = casDirFromIslandStorageDir(msg.storage.dir);
       return _buildStorage(msg.storage);
     },
     // Resolve by content-address — the vessel's cas capability (basket-one #/the-fetch-door), composed here as

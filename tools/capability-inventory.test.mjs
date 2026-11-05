@@ -34,6 +34,12 @@ test("CONTROL: each reply reads as the outcome it carries, and no reply reads si
   assert.equal(outcomeOf("dyad", [{ type: "dyad:read", standing: "aside" }, { type: "dyad:read", standing: "owing" }]), "refused");
 });
 
+test("sessionSign reads grants only on a signing reply (a refusal reads refused)", () => {
+  assert.equal(outcomeOf("sessionSign", { type: "session:signed", signature: "s" }), "grants");
+  assert.equal(outcomeOf("sessionSign", { type: "session:signed", refusal: "signer-unavailable" }), "refused");
+  assert.equal(outcomeOf("sessionSign", undefined), "silent");
+});
+
 test("CONTROL: the stand-in record counts each call against the open row, and a call after the row closed reads late", async () => {
   const caps = countingCaps();
   caps.open("a");
@@ -98,7 +104,7 @@ test("CONTROL: a widened capability, a new, extra or departed seam and a new ask
   ears.webListeners["web wiki"] += 1;
   assert.ok(differences(ears, committed).some((d) => d.startsWith("web wiki: the spawn attaches")));
   const extra = structuredClone(committed);
-  extra.islands["web other"] = { cas: "grants", receipt: "silent", custodyWrite: "silent", dyad: "silent" };
+  extra.islands["web other"] = { cas: "grants", receipt: "silent", custodyWrite: "silent", dyad: "silent", sessionSign: "silent" };
   assert.ok(differences(extra, committed).some((d) => d.startsWith("web other: measured")));
   // A row the tool cannot drive reads `unmeasured`; a later reading of `silent` there moves the table, never matches it.
   const read = structuredClone(committed);
@@ -204,14 +210,14 @@ test("CONTROL: a browser spawn over the stand-in Worker reads a planted responde
     });
     return w;
   };
-  assert.deepEqual(await measureBrowserSpawn(planted, asks, "planted"), { caps: { cas: "grants", receipt: "silent", custodyWrite: "refused", dyad: "silent" }, listeners: 1 });
-  assert.deepEqual(await measureBrowserSpawn(() => new globalThis.Worker("file:///x.js"), asks, "bare"), { caps: { cas: "silent", receipt: "silent", custodyWrite: "silent", dyad: "silent" }, listeners: 0 });
+  assert.deepEqual(await measureBrowserSpawn(planted, asks, "planted"), { caps: { cas: "grants", receipt: "silent", custodyWrite: "refused", dyad: "silent", sessionSign: "silent" }, listeners: 1 });
+  assert.deepEqual(await measureBrowserSpawn(() => new globalThis.Worker("file:///x.js"), asks, "bare"), { caps: { cas: "silent", receipt: "silent", custodyWrite: "silent", dyad: "silent", sessionSign: "silent" }, listeners: 0 });
   // A responder that answers only after a macrotask reads silent at the turn, and its listener still counts.
   const late = () => { const w = new globalThis.Worker("file:///x.js"); w.addEventListener("message", () => setTimeout(() => {}, 0)); return w; };
   assert.equal((await measureBrowserSpawn(late, asks, "late")).listeners, 1);
   // A responder hung on `onmessage` hears the asks and counts as a listener.
   const hung = () => { const w = new globalThis.Worker("file:///x.js"); w.onmessage = (e) => { if (e.data?.type === "receipt:request") w.postMessage({ type: "receipt:issued", requestId: e.data.requestId, issued: true }); }; return w; };
-  assert.deepEqual(await measureBrowserSpawn(hung, asks, "hung"), { caps: { cas: "silent", receipt: "grants", custodyWrite: "silent", dyad: "silent" }, listeners: 1 });
+  assert.deepEqual(await measureBrowserSpawn(hung, asks, "hung"), { caps: { cas: "silent", receipt: "grants", custodyWrite: "silent", dyad: "silent", sessionSign: "silent" }, listeners: 1 });
   await assert.rejects(measureBrowserSpawn(() => null, asks, "none"), /made 0 Web Worker/);
   assert.equal(typeof globalThis.Worker, "undefined", "the stand-in Worker leaves the global as it found it");
   const { StandInWorker, spawned } = standInWorkerClass();
@@ -264,6 +270,6 @@ test("CONTROL: the probe's handshake reads an answered ask and an unanswered one
     });
     await w.terminate();
     const read = Object.fromEntries(asks.map((a) => [a.cap, outcomeOf(a.cap, replies[a.msg.requestId])]));
-    assert.deepEqual(read, { cas: "grants", receipt: "refused", custodyWrite: "silent", dyad: "silent" });
+    assert.deepEqual(read, { cas: "grants", receipt: "refused", custodyWrite: "silent", dyad: "silent", sessionSign: "silent" });
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
