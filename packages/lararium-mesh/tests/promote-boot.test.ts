@@ -362,3 +362,24 @@ describe("an UNREAD cache is never replaced (Sol: a cache read failure erases an
     expect(await run(true), "a concurrent arrival never loses its neighbour's shadow").toEqual(both);
   });
 });
+
+describe("the kāpae cache is written only where the arrive changes it", () => {
+  test("RED: a second arrive on an UNCHANGED board writes the cache no second time; CONTROL: a raise that lands between the arrives writes it once more", async () => {
+    let writes = 0;
+    let local: KapaeLocal = EMPTY_KAPAE_LOCAL;
+    const r = await boot({ store: { read: async () => local, write: async (l) => { writes++; local = l; } } });
+    await r.b.promotedFor(W1);
+    r.st.acts.push(await r.raise(W1));
+    const before = writes;
+    expect(await r.b.arrive()).toEqual([W1]);
+    expect(writes - before, "the first arrive records the shadow").toBe(1);
+    expect(await r.b.arrive(), "control: nothing restarts").toEqual([]);
+    expect(writes - before, "an unchanged board costs no custody write").toBe(1);
+    expect(local.shadowed).toEqual([promoteEdgeKey(W1, D)]);
+    r.st.acts.push(await r.raise(W2));
+    await r.b.promotedFor(W2);
+    await r.b.arrive();
+    expect(writes - before, "a new shadow writes once more").toBe(2);
+    expect(local.shadowed.sort()).toEqual([promoteEdgeKey(W1, D), promoteEdgeKey(W2, D)].sort());
+  });
+});

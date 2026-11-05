@@ -1,6 +1,6 @@
 import { mutate, promotions, type PromoteItem, type PromotionPorts, type Store } from "./promote-door.js";
 import { promoteEdgeKey } from "./promote.js";
-import { EMPTY_KAPAE_LOCAL, kapaeNoteArrival, kapaeStanding } from "./promote-kapae.js";
+import { EMPTY_KAPAE_LOCAL, encodeKapaeLocal, kapaeNoteArrival, kapaeStanding } from "./promote-kapae.js";
 
 export interface PromoteBootReport {
   orphans: string[];
@@ -89,11 +89,16 @@ export function promoteBoot(opts: {
         for (const edge of hit) held.delete(edge);
         restarted.push(wiki);
       }
-      // An UNREAD cache is never replaced: the board-only reading would erase an older shadow the board does not show. The cache is recomputed
-      // from its STANDING value under the store's hold, so a concurrent arrival never overwrites a newer shadow.
+      // An UNREAD cache is never replaced: the board-only reading would erase an older shadow the board does not show. The cache is written
+      // only where this arrive's reading CHANGES its encoding (an unchanged board costs no custody write), and then recomputed from its
+      // STANDING value under the store's hold, so a concurrent arrival never overwrites a newer shadow.
       if (board && localRead) {
-        try { await mutate(opts.stores.local, (standing) => kapaeNoteArrival(standing, kapaeStanding(standing, board!), allLoaded).local); }
-        catch { opts.onFault?.("ledger-unreadable"); }
+        const next = kapaeNoteArrival(local, edges, allLoaded).local;
+        const changed = new TextDecoder().decode(encodeKapaeLocal(local)) !== new TextDecoder().decode(encodeKapaeLocal(next));
+        if (changed) {
+          try { await mutate(opts.stores.local, (standing) => kapaeNoteArrival(standing, kapaeStanding(standing, board!), allLoaded).local); }
+          catch { opts.onFault?.("ledger-unreadable"); }
+        }
       }
       return restarted.sort();
     },
