@@ -351,6 +351,17 @@ function offerBootRetry(): void {
   $("status").insertAdjacentElement("afterend", button);
 }
 
+async function probeArrivalWithLocalButton(): Promise<string | undefined> {
+  const button = document.createElement("button");
+  button.id = "boot-local";
+  button.type = "button";
+  button.textContent = "Boot local";
+  const pressed = new Promise<void>((resolve) => { button.addEventListener("click", () => resolve(), { once: true }); });
+  $("status").insertAdjacentElement("afterend", button);
+  try { return await arrivalRelayUrl(location, (input, init) => fetch(input, init), pressed); }
+  finally { button.remove(); }
+}
+
 async function bootVessel(): Promise<void> {
   document.getElementById("retry-unlock")?.remove();
   const phasesEl = $("phases");
@@ -364,7 +375,8 @@ async function bootVessel(): Promise<void> {
   // ?relay=ws://host:port/ws → the node↔browser spore crossing (opt-in; absent = pure local boot).
   const relayParams = new URLSearchParams(location.search);
   // No `?relay=`: an origin that answers as a lararium's Pronaos is dialled at its own relay; any other origin keeps the local boot.
-  const relayUrl = resolveRelayUrl(relayParams) ?? await arrivalRelayUrl(location, (input) => fetch(input));
+  // While the probe pends, a "boot local" button is the person's own word: its press resolves the race and the boot goes local.
+  const relayUrl = resolveRelayUrl(relayParams) ?? await probeArrivalWithLocalButton();
   // #floor=<card> → the hearth's flow floor card, carried by hand off its banner: what a device at the floor reads under.
   const floor = floorCardOf(location.hash, readHearthFloorCard);
   // #anchor=<aid> → the place AID handed across apart from the card (a deliberate transfer), kept for the next arrival; the card
