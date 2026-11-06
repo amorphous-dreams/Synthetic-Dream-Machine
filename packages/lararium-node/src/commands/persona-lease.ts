@@ -74,14 +74,17 @@ export interface PersonaLeaseResult {
   readonly frontier: number;
 }
 
-function bootstrapTiddlers(): Record<string, { text?: string }> {
+/** The packed bootstrap's plain-data entries (a parsed plugin file; no document stands behind them). */
+type BootEntries = Readonly<Record<string, { text?: string }>>;
+
+function bootstrapTiddlers(): BootEntries {
   let text: string;
   try { text = readFileSync(larBootstrapPath(), "utf8"); } catch { throw new PersonaLeaseError("this vessel has no bootstrap: found the place first"); }
   const plugin = JSON.parse(text) as { text?: string };
   return (JSON.parse(plugin.text ?? "{}") as { tiddlers?: Record<string, { text?: string }> }).tiddlers ?? {};
 }
 
-function daemonUrlOf(tiddlers: Record<string, { text?: string }>): string {
+function daemonUrlOf(tiddlers: BootEntries): string {
   const url = ownEntry(tiddlers, DAEMON_BAG_ID)?.text;
   if (!url) throw new PersonaLeaseError("the bootstrap names no daemon doc");
   return url;
