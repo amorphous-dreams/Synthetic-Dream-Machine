@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, type SealedBag, type BookedSession, type OwnPlace, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
+import { WardRefused, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -235,6 +235,7 @@ import { custodyGateDoor }                       from "./custody-seat.js";
 import { intentRelayService, type IntentRelayService } from "./intent-relay.js";
 import { resolveIntentRelayFace } from "./intent-relay-face.js";
 import { vesselFloorKeyDoor, loadPlaceKelChain, loadPlaceAid, placeReadingWatch } from "./node-vessel-identity.js";
+import { placeSessionCell, type PlaceWorn } from "./place-session-cell.js";
 import { hearthFloorPins }                       from "./hearth-sovereign-pin.js";
 import { hearthFloorProof }                      from "./hearth-floor-claims.js";
 import { readKeptHearthFloorPins }               from "./hearth-floor-pin-store.js";
@@ -1982,10 +1983,9 @@ async function prepareNodeBootOn(
   // session does, so a change written with no call in flight books it and its save seals and rests. Held in memory for a
   // later dial, it would not outlive a restart (stable-founding-road#/rulings, "A timer save signs under its session").
   let dialSession: BookedSession | null = null;
-  let placeSession: BookedSession | null = null;
-  /** The worn face's atom at this vessel's place, while that face stands lit and proved here; the chain names it. */
-  let placeScope: OwnPlace | null = null;
-  const reseatStanding = (): void => { dialSeat.stand(dialSession ?? placeSession); sealedRest.store.mapMoved(); };
+  // The worn face's place session (and the atom at this vessel's place its chain names), while that face stands lit and
+  // proved here; the stand-down drops it (place-session-cell).
+  const reseatStanding = (): void => { dialSeat.stand(dialSession ?? placeCell.session()); sealedRest.store.mapMoved(); };
   const standDialSession = (presentation: unknown): void => {
     const signer = (presentation as { signer?: BookedSession["signer"] } | null | undefined)?.signer;
     const chain = dialAnchor.chain();
@@ -1993,45 +1993,37 @@ async function prepareNodeBootOn(
     reseatStanding();
   };
   const placeReading = placeReadingWatch();
-  /** Stand the worn face's place session (null: the face left, or stands unproved): its atom signs the session's
-   *  certificate at this vessel's place, read afresh from custody at the mint and overwritten after. */
-  let placeWorn: string | null = null;
-  const standPlaceSession = async (worn: { readonly group: string; readonly atomKey: string } | null): Promise<void> => {
-    // A re-open that wears the same face keeps the session standing: the saves it booked still sign under it.
-    const wornKey = worn === null ? null : `${worn.group}|${worn.atomKey}`;
-    if (wornKey !== null && wornKey === placeWorn && placeSession !== null && !placeSession.signer.dropped) return;
-    (placeSession?.signer as { drop?: () => void } | undefined)?.drop?.();
-    placeSession = null;
-    placeScope = null;
-    placeWorn = null;
-    if (worn !== null) {
-      const place = await placeReading();
-      const target = preparePlaceFace({
-        personaGroup: worn.group, atomKey: worn.atomKey, place, anchorHead: async () => (await placeReading()).head,
-        signAsAtom: async (image) => {
-          const seed = await loadFaceAtomOfGroup(worn.group);
-          if (seed === null) throw new Error("the face's atom row went before its place session minted");
-          try { return await signAsFaceAtom(seed, image); } finally { seed.fill(0); }
-        },
-      });
-      const table = new SessionTable(`place-${globalThis.crypto.randomUUID()}`);
-      const binding = sessionBinding("socket");
-      const opened = "face" in target ? table.open(binding, target.face, "face") : null;
-      const minted = "face" in target && opened?.ok ? await target.mint({ table, binding, session: opened.session }) : null;
-      if ("face" in target && minted !== null && "signer" in minted) {
-        placeScope = Object.freeze({ atomKey: target.scope.atomKey, place: target.scope.place });
-        placeSession = { signer: minted.signer, anchor: { kind: "place" }, subject: placeProofSubjectRef(target.scope) };
-        placeWorn = wornKey;
-      } else {
-        const refusal = !("face" in target) ? target.refusal : opened && !opened.ok ? opened.refusal : minted && "refusal" in minted ? minted.refusal : "mint-refused";
-        console.log(`[sealed-rest] the place session stands not (${refusal}): the face's saves wait in memory, never clear`);
-      }
-    }
-    reseatStanding();
-  };
+  /** Mint the worn face's place session: its atom signs the session's certificate at this vessel's place, read afresh
+   *  from custody at the mint and overwritten after. */
+  const placeCell = placeSessionCell(async (worn) => {
+    const place = await placeReading();
+    const target = preparePlaceFace({
+      personaGroup: worn.group, atomKey: worn.atomKey, place, anchorHead: async () => (await placeReading()).head,
+      signAsAtom: async (image) => {
+        const seed = await loadFaceAtomOfGroup(worn.group);
+        if (seed === null) throw new Error("the face's atom row went before its place session minted");
+        try { return await signAsFaceAtom(seed, image); } finally { seed.fill(0); }
+      },
+    });
+    if (!("face" in target)) return { refusal: target.refusal };
+    const table = new SessionTable(`place-${globalThis.crypto.randomUUID()}`);
+    const binding = sessionBinding("socket");
+    const opened = table.open(binding, target.face, "face");
+    if (!opened.ok) return { refusal: opened.refusal };
+    const close = (): void => { table.close(opened.session.sessionId); };
+    const minted = await target.mint({ table, binding, session: opened.session });
+    if (!("signer" in minted)) { close(); return { refusal: "refusal" in minted ? String(minted.refusal) : "mint-refused" }; }
+    return {
+      session: { signer: minted.signer, anchor: { kind: "place" }, subject: placeProofSubjectRef(target.scope) },
+      scope: Object.freeze({ atomKey: target.scope.atomKey, place: target.scope.place }),
+      close,
+    };
+  }, reseatStanding);
+  const standPlaceSession = (worn: PlaceWorn | null): Promise<void> => placeCell.stand(worn);
   /** The vessel's own chain at every anchor its worn face meets: the dial's Nexus while one stands, its place beside. */
   const ownChain = (): SessionOwnChain | null => {
     const nexus = dialAnchor.chain();
+    const placeScope = placeCell.scope();
     if (nexus !== null) return placeScope ? { ...nexus, place: placeScope } : nexus;
     return placeScope ? { place: placeScope } : null;
   };
@@ -2255,7 +2247,9 @@ async function prepareNodeBootOn(
   stood.push({ what: "the client dial",       down: async () => {
     dialStoodDown = true; nexusDial?.stop();
     try { await repo.flush(); await sealedRest.store.flush(); } catch { /* a save that refused keeps its change in memory */ }
-    dialAnchor.clear(); dialSeat.stand(null);
+    // The lock drops the place session (session-sign-book: a lock, a close or a switch drops it): its signer drops, its
+    // table closes, the chain names no place, and a mint still in flight seats nothing.
+    dialAnchor.clear(); placeCell.standDown(); dialSeat.stand(null);
   } });
   stood.push({ what: "the residency sweeper", down: () => { residency.stopSweeper(); } });
   stood.push({ what: "the event bus",         down: () => { (eventBus as LarEventBusImpl | undefined)?.stop(); } });
