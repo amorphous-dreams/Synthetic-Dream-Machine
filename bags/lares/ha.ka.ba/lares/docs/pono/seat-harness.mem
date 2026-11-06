@@ -125,6 +125,7 @@ Each cure rides the slice named.
 * `S4`: `tools/launch-codex.mjs` hands the supervisor fds 3 and 4 without close-on-exec, and the bwrap spawn probably carries them into bwrap and Codex. Treat it as red until a witness measures that the seat sees only fds 0 to 2.
 * A same-uid process can open `session:open` with hand `cli` and wear the unlocked face (the connector defaults the hand to `cli`, and `cli` maps to the `verb` profile, which reaches every hand-only act, since the socket refuses hand-only acts for the `seat` profile alone). The ward closes that for bound acts. The lift posture for user wikis stays advisory by ruling.
 * Node has no `socketpair(2)` and cannot pass an fd to an unrelated live process.
+* `S3` (road `L24`), the renewal writer: a joinee seated with its tag that lost its answer and met a lease roll refused `replay-edge-lapsed` on its retry and had no way to boot. The join answer now reads the seated edge off the fold (the latest verified `device-edge` act for that device) and, where the lease rolled past it, the root appends one `device-edge` act for the seated admission at the current epoch and serves that edge; the answer serves what the log holds, and a request whose cached answer the log no longer seats still refuses `replay-edge-lapsed`. It never appends a second admission and never moves the tag, and a device the fleet set aside refuses `DeviceSetAside` ahead of it. Vector: `device-admit-edge-renewal.test.ts`, on the real KEL, fold, lease slot and payload producer. A roll itself still strands every booted device, the rolling vessel's own among them, at its next boot: each one's sealed anchor pins the edge digest it landed, and only founding, admission and recovery move that pin. That law stands declared in the red register (`A LEASE ROLL LEAVES EVERY SEATED DEVICE ABLE TO BOOT`) and waits on the operator's ruling over who moves the pin at a roll.
 
 !!! S3 ~ the co-sign
 
@@ -165,6 +166,6 @@ This carrier gains its standing sections and rewrites the broker bullets and the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EQKcukPASf03n7FPUUM0kZzBZfiUX2tNIOMBzxtVels`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ir5I5STMLe4NctOmw47Tp247ZppssHl-TKdeZu2va7U`>>
 
 <<^ code=`&#x0004;` to=`?`>>
