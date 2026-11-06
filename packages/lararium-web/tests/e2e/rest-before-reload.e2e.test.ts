@@ -45,9 +45,6 @@ async function awaitLive(p: Page): Promise<void> {
   }, undefined, { timeout: WAIT }).then((h) => h.jsonValue()).catch(() => "never live");
   expect(row, `${logs.slice(-60).join("\n")}\n--- hearth ---\n${hearth?.bootLog().slice(-2000)}`).toMatch(/^live/);
   await p.waitForFunction(() => document.querySelector("#mirror")?.getAttribute("data-lar-shown") === "mirror" && (document.querySelector("#mirror")?.shadowRoot?.querySelector(".lar-mirror")?.childElementCount ?? 0) > 0, undefined, { timeout: WAIT });
-  // The person reads and edits once the mirror stands at full: a skinny mirror omits each body, and the promotion's
-  // snapshot repaints the story, so an edit frame open under it takes its focus back to the title field.
-  await p.waitForFunction(() => document.querySelector("#mirror")?.getAttribute("data-lar-mirror") === "full", undefined, { timeout: WAIT });
 }
 
 async function openPage(context: BrowserContext): Promise<Page> {
@@ -159,6 +156,9 @@ async function bodyAfterReload(page: Page, title: string, heldBy?: { holds: numb
   const { holds } = await reloadHonouringHolds(page);
   if (heldBy) heldBy.holds = holds;
   await awaitLive(page);
+  // The read back waits for the full mirror: a skinny one omits each body. The edits above run under the live promotion
+  // (glass-edit-under-promotion holds that road), so only this read waits.
+  await page.waitForFunction(() => document.querySelector("#mirror")?.getAttribute("data-lar-mirror") === "full", undefined, { timeout: WAIT });
   // The page's search finds a title as the wiki indexes it; a slow host indexes late, so ask until the page names it.
   const deadline = Date.now() + WAIT;
   while (!(await openByTitle(page, title))) {

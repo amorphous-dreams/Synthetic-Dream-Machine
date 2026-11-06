@@ -56,6 +56,14 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
   let adaptor: Adaptor | undefined;
   let camera: ReturnType<typeof mountGlassCamera> | undefined;
   let closed = false;
+  // The titles the port landed since the camera last refreshed: a refresh that carries one is a repaint the person never asked for, and it keeps their focus.
+  const landedSince = new Set<string>();
+  const noteLanding = (change: { title: string }): void => { landedSince.add(change.title); };
+  const keepsFocus = (changes: Record<string, unknown>): boolean => {
+    const landing = Object.keys(changes).some(title => landedSince.has(title));
+    landedSince.clear();
+    return landing;
+  };
   const unmount = () => {
     if (closed) return;
     closed = true;
@@ -63,7 +71,7 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
   };
   const paint = () => {
     if (camera || closed) return;
-    try { seams.paint?.(); camera = mountGlassCamera({ tw: engine.$tw, shadowRoot: options.shadowRoot }); }
+    try { seams.paint?.(); camera = mountGlassCamera({ tw: engine.$tw, shadowRoot: options.shadowRoot, keepsFocus }); }
     catch (error) { options.shadowRoot.replaceChildren(); throw new Error(`mirror-paint-threw:${nameOf(error)}`); }
   };
   try {
@@ -79,6 +87,7 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
     } catch (error) { if (error instanceof Error && error.message === "syncer-stood") throw error; throw new Error(`mirror-engine-refused:${nameOf(error)}`); }
     const tw = engine.$tw;
     adaptor = makeGlassPortAdaptor({ ...options, wiki: tw.wiki, Tiddler: tw.Tiddler });
+    adaptor.onLanded(noteLanding);
     if (seams.landed) adaptor.onLanded(seams.landed);
     if (seams.refused) adaptor.onRefused(seams.refused);
     if (!options.deferPaint) paint();
@@ -91,6 +100,7 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
         const inheritDeferred = adaptor!.deferredTitles();
         adaptor!.close();
         adaptor = makeGlassPortAdaptor({ ...options, ...next, wiki: tw.wiki, Tiddler: tw.Tiddler, adopt, inheritTags, inheritDeferred });
+        adaptor.onLanded(noteLanding);
         if (seams.landed) adaptor.onLanded(seams.landed);
         if (seams.refused) adaptor.onRefused(seams.refused);
         return adaptor;
