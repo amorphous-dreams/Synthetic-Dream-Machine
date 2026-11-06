@@ -1,4 +1,4 @@
-// The vessel worker's entry (browser-vessel-lift slice 2): the browser vessel runs here, on this worker's own thread, and the
+// The vessel worker's entry (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift): the browser vessel runs here, on this worker's own thread, and the
 // page talks to it over this worker's port alone. Keyhive's WASM instantiates first (worker-boot.ts), then the vessel chain
 // evaluates; the page's messages that arrive meanwhile wait in order. Wrapped in run().catch (never a top-level await) so a
 // rejection surfaces as a logged error and an `ended` message instead of a silent module-eval failure.

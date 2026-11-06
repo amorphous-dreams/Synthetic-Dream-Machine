@@ -1,12 +1,12 @@
 /**
  * vessel-host — the vessel worker's body: `openBrowserVessel`, unchanged, on this worker's own thread, served to one page
- * over its port (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices, slice 2). The messages read in
+ * over its port (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices). The messages read in
  * `../vessel-protocol.ts`; every key, store and ceremony stays on this thread, and the page receives public readings,
  * frames and port traffic alone.
  *
  * The islands (daemon, wiki) spawn nested from this worker. The shared holder (`?holder`) runs in a SharedWorker, which a
  * dedicated worker cannot construct, so this thread asks the page to build it (`spawn`) and bridges its transferred port;
- * the page never reads that port. The holder dissolves in slice 4.
+ * the page never reads that port.
  *
  * Every custody and ward ask rides the ceremony door (`ceremony-door.ts`): the page hears the ask's public words and opens
  * the ceremony document, and the answer arrives on the ceremony's own brokered port, never on the page's.

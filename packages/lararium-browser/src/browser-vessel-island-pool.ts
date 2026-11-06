@@ -34,7 +34,7 @@ export type PageLife = "hidden" | "pagehide";
 
 /**
  * The page's life signals as the vessel reads them: the page subscribes the listener to its own events and returns the
- * unsubscribe. A vessel thread reads no page object; the page feeds each signal, and slice 2 carries it as `page:life`.
+ * unsubscribe. A vessel thread reads no page object; the page feeds each signal over the vessel port as `page:life`.
  */
 export type PageLifeFeed = (listener: (life: PageLife) => void) => () => void;
 
