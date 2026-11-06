@@ -21,7 +21,7 @@ import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { socketHolderPids } from "../src/local-connector.js";
+import { procHolderPids, socketHolderPids } from "../src/local-connector.js";
 
 /** A standalone script that binds a staging name, hard-links it onto `process.argv[2]`, unlinks the
  *  staging name, prints "ready", then sleeps — the EXACT shape `owned-store.ts`'s `bindClaim`
@@ -69,6 +69,19 @@ describe("socketHolderPids — names a listener the rendezvous hard link only PO
       try { out = execFileSync("lsof", ["-t", rendezvousPath], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }); }
       catch { out = ""; }                          // a non-zero exit (nothing found) is lsof's own normal "no match"
       expect(out.trim()).toBe("");                  // the OLD shape this door retired: names NOTHING
+    } finally {
+      holder.kill("SIGKILL");
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("the kernel-table reading names the same holder with no ss and no lsof (a minimal container carries neither)", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "socket-holder-pids-"));
+    const rendezvousPath = join(dir, "rendezvous.sock");
+    const holder = await spawnHolder(rendezvousPath, join(dir, "holder.cjs"));
+    try {
+      expect(procHolderPids(`${rendezvousPath}.`)).toContain(holder.pid);
+      expect(procHolderPids(`${join(dir, "nothing-listens")}.`), "CONTROL: a prefix nothing binds names no pid").toEqual([]);
     } finally {
       holder.kill("SIGKILL");
       rmSync(dir, { recursive: true, force: true });
