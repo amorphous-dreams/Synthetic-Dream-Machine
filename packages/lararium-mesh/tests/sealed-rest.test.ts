@@ -736,3 +736,28 @@ describe("a restart's hydration: a sealed document's load waits for its map, nev
     await expect(third.rest.store.loadRange([doc.documentId])).rejects.toMatchObject({ refusal: "bag-unmapped" });
   });
 });
+
+describe("D1: the island's door stands before an ask crosses it, and its standing re-drives what waited", () => {
+  it("an attached port answers no ask until the island's door says it stands: an early ask refuses by name at once, never spends a patience; the door's ready event opens the port and tells the vessel once", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const channel = new MessageChannel();
+    let ready = 0;
+    let heard!: () => void;
+    const stood = new Promise<void>((done) => { heard = done; });
+    const cell = docStorePortCell(async () => null, { onReady: () => { ready++; heard(); } });
+    cell.attach(portOf(channel.port1));
+    const door = vesselDocStoreDoor(() => cell.port(), { book: () => () => {}, patienceMs: 600_000, idPrefix: "d1" });
+    const session: Session = { id: "s-a", subject: faceProofSubjectRef(a.chain.scope), signer: a.signer };
+    // THE ISLAND STANDS NO DOOR YET: the ask refuses by name now, and the vessel holds no port to post across.
+    expect(cell.port()).toBeNull();
+    const early = await door.seal({ bagId: BAG, values: [], session } as never);
+    expect(early).toMatchObject({ refusal: "signer-unavailable", cause: "no daemon island answers the document store's door" });
+    expect(ready).toBe(0);
+    // THE DOOR STANDS: the island's answer posts its ready, the cell opens the port and tells the vessel once.
+    answerDocStoreAsks(portOf(channel.port2), { seal: async () => ({ values: [] }), open: (args) => a.holder.openValue(args) });
+    await stood;
+    expect(cell.port()).not.toBeNull();
+    expect(ready).toBe(1);
+  });
+});

@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, type SealedBag, type BookedSession } from "@lararium/mesh";
+import { WardRefused, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, type SealedBag, type BookedSession, type OwnPlace, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -234,7 +234,7 @@ import { gateMemoryRows }                        from "./gate-memory-rows.js";
 import { custodyGateDoor }                       from "./custody-seat.js";
 import { intentRelayService, type IntentRelayService } from "./intent-relay.js";
 import { resolveIntentRelayFace } from "./intent-relay-face.js";
-import { vesselFloorKeyDoor, loadPlaceKelChain, loadPlaceAid } from "./node-vessel-identity.js";
+import { vesselFloorKeyDoor, loadPlaceKelChain, loadPlaceAid, placeReadingWatch } from "./node-vessel-identity.js";
 import { hearthFloorPins }                       from "./hearth-sovereign-pin.js";
 import { hearthFloorProof }                      from "./hearth-floor-claims.js";
 import { readKeptHearthFloorPins }               from "./hearth-floor-pin-store.js";
@@ -866,8 +866,9 @@ async function prepareNodeBootOn(
   // worn face's wiki bags rest sealed under each bag's content key through the holder in the daemon island (the door
   // carries a body and a sealed value, never a key); cleartext rests only in the disk projection and the live wiki in
   // memory. A bag maps sealed while the worn face stands proved (the face cell, below), and with no face lit every
-  // face-half row of the catalog maps sealed under no face. Only a Nexus-anchored session signs a sealed record, so a
-  // save at the vessel's place waits in memory until one stands. Every change books the session whose call stands as
+  // face-half row of the catalog maps sealed under no face. A session reads (face, anchor), whatever the anchor: a
+  // dialed Nexus's session signs, and with no dial the worn face's place session does, so a sovereign node's saves seal
+  // and rest at its own place. Every change books the session whose call stands as
   // it lands (`SessionSignBook`'s hold), each save signs under the session that booked it, a save no session booked
   // waits `save-unbooked` in memory until the next session's call books it, and a session's signer drops only after the Repo and the rest flush (`beforeSignerDrops`).
   type NodeSaveSession = BookedSession & { readonly id: string };
@@ -903,6 +904,15 @@ async function prepareNodeBootOn(
     void sealedRest.sealMapped(documentId, session).then((sealed) => {
       if (sealed) console.log(`[sealed-rest] ${documentId.slice(0, 8)}… mapped sealed after it rested clear: its clear chunks sealed and left rest`);
     }, (e: unknown) => console.log(`[sealed-rest] ${documentId.slice(0, 8)}… keeps its clear chunks until its next booked save: ${e instanceof Error ? e.message : String(e)}`));
+  };
+  // WHAT WAITED ON A DOOR ASKS AGAIN, once per event (the island's door stood, the lift seated its door, the custody key
+  // opened): the map moves, so a hydration waiting on it reads again, and every save of `session`'s face that waits in
+  // memory seals under it now. No clock re-asks; an event that never comes leaves each save waiting by name, never clear.
+  const rebookWaiting = (session: BookedSession | null, why: string): void => {
+    sealedRest.store.mapMoved();
+    if (session === null) return;
+    void sealedRest.rebook(saveSessionOf(session)).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory after ${why}: ${e instanceof Error ? e.message : String(e)}`));
+    for (const named of slotDocsNamed.values()) for (const documentId of named) sealNowMapped(documentId);
   };
   const onSlotNamed = (bagId: string, documentId: string): void => {
     // THE HOST'S WORKING LAYER FOLLOWS THE ISLAND'S: the outcome ledger rests in the daemon working slot, so the side that
@@ -941,7 +951,15 @@ async function prepareNodeBootOn(
     const documentId = sealedDocOf(bagId);
     const handle = documentId ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId] : undefined;
     return handle?.isReady() ? A.save(handle.doc() as A.Doc<unknown>) : null;
-  }, { onSlot: onSlotNamed });
+  }, {
+    onSlot: onSlotNamed,
+    // THE ISLAND'S DOOR STANDS (`docstore:ready`): the map re-reads and the standing session's waiting saves seal, once.
+    onReady: () => rebookWaiting(standingSaveSession(), "the island's door stood"),
+  });
+  // THE CUSTODY KEY OPENED: a save the island refused `wrap-failed` while this vessel's key rested unopened (its wrap
+  // rests the face's Archive through custody) waits in memory, and seals again on the open, never on a timer.
+  const stopCustodyOpened = standingCustody()?.onOpened?.(() => rebookWaiting(standingSaveSession(), "the custody key opened")) ?? null;
+  stood.push({ what: "the custody open watch", down: () => { stopCustodyOpened?.(); } });
   const docStoreDoor: NonNullable<CapabilityRecord["docStore"]> = (port) => docStorePort.attach(port);
   // V2: each island's own store rests no document this rest seals (`islandRestGuard`).
   const restsSealedDoor: NonNullable<CapabilityRecord["restsSealed"]> = (documentId) => sealedRest.restsSealed(documentId);
@@ -1957,11 +1975,63 @@ async function prepareNodeBootOn(
   // stands, it sits seated in the lift's book, so a change written with no CLI call in flight books it and seals, and a
   // save waits `save-unbooked` only where no face stands unlocked. A dial that clears unseats it.
   const dialSeat = standingSessionSeat();
+  // A SESSION READS (FACE, ANCHOR), AND THE ANCHOR READS A NEXUS OR THE PLACE (session-contract#/the-hands). A vessel that
+  // dials nothing still wears its face at its own place: its worn face's PLACE SESSION stands seated while no dial
+  // session does, so a change written with no call in flight books it and its save seals and rests. Held in memory for a
+  // later dial, it would not outlive a restart (stable-founding-road#/rulings, "A timer save signs under its session").
+  let dialSession: BookedSession | null = null;
+  let placeSession: BookedSession | null = null;
+  /** The worn face's atom at this vessel's place, while that face stands lit and proved here; the chain names it. */
+  let placeScope: OwnPlace | null = null;
+  const reseatStanding = (): void => { dialSeat.stand(dialSession ?? placeSession); sealedRest.store.mapMoved(); };
   const standDialSession = (presentation: unknown): void => {
     const signer = (presentation as { signer?: BookedSession["signer"] } | null | undefined)?.signer;
     const chain = dialAnchor.chain();
-    dialSeat.stand(signer && chain ? { signer, anchor: { kind: "nexus" }, subject: faceProofSubjectRef(chain.scope as never) } : null);
-    sealedRest.store.mapMoved();
+    dialSession = signer && chain ? { signer, anchor: { kind: "nexus" }, subject: faceProofSubjectRef(chain.scope as never) } : null;
+    reseatStanding();
+  };
+  const placeReading = placeReadingWatch();
+  /** Stand the worn face's place session (null: the face left, or stands unproved): its atom signs the session's
+   *  certificate at this vessel's place, read afresh from custody at the mint and overwritten after. */
+  let placeWorn: string | null = null;
+  const standPlaceSession = async (worn: { readonly group: string; readonly atomKey: string } | null): Promise<void> => {
+    // A re-open that wears the same face keeps the session standing: the saves it booked still sign under it.
+    const wornKey = worn === null ? null : `${worn.group}|${worn.atomKey}`;
+    if (wornKey !== null && wornKey === placeWorn && placeSession !== null && !placeSession.signer.dropped) return;
+    (placeSession?.signer as { drop?: () => void } | undefined)?.drop?.();
+    placeSession = null;
+    placeScope = null;
+    placeWorn = null;
+    if (worn !== null) {
+      const place = await placeReading();
+      const target = preparePlaceFace({
+        personaGroup: worn.group, atomKey: worn.atomKey, place, anchorHead: async () => (await placeReading()).head,
+        signAsAtom: async (image) => {
+          const seed = await loadFaceAtomOfGroup(worn.group);
+          if (seed === null) throw new Error("the face's atom row went before its place session minted");
+          try { return await signAsFaceAtom(seed, image); } finally { seed.fill(0); }
+        },
+      });
+      const table = new SessionTable(`place-${globalThis.crypto.randomUUID()}`);
+      const binding = sessionBinding("socket");
+      const opened = "face" in target ? table.open(binding, target.face, "face") : null;
+      const minted = "face" in target && opened?.ok ? await target.mint({ table, binding, session: opened.session }) : null;
+      if ("face" in target && minted !== null && "signer" in minted) {
+        placeScope = Object.freeze({ atomKey: target.scope.atomKey, place: target.scope.place });
+        placeSession = { signer: minted.signer, anchor: { kind: "place" }, subject: placeProofSubjectRef(target.scope) };
+        placeWorn = wornKey;
+      } else {
+        const refusal = !("face" in target) ? target.refusal : opened && !opened.ok ? opened.refusal : minted && "refusal" in minted ? minted.refusal : "mint-refused";
+        console.log(`[sealed-rest] the place session stands not (${refusal}): the face's saves wait in memory, never clear`);
+      }
+    }
+    reseatStanding();
+  };
+  /** The vessel's own chain at every anchor its worn face meets: the dial's Nexus while one stands, its place beside. */
+  const ownChain = (): SessionOwnChain | null => {
+    const nexus = dialAnchor.chain();
+    if (nexus !== null) return placeScope ? { ...nexus, place: placeScope } : nexus;
+    return placeScope ? { place: placeScope } : null;
   };
   // THE SESSION SIGN DOOR (sealed-store#/the-store): the daemon island holds no session key. A session call books its
   // signer in a book, and the island's ask signs through it, under the vessel's own chain at the pin its dial composed at.
@@ -1978,20 +2048,28 @@ async function prepareNodeBootOn(
   const liftSessionSign = (): SessionSignLift => {
     // A call of a session books here, and the sealed rest seals every save that waited for one under it (R2); the
     // document store's own seal books here too, and books nothing further.
+    // THE REBOOK WAITS ON THE DOOR: a session seated before the lift seats its door on the record (the place session
+    // stands with the face, ahead of the lift) rebooks once the door stands, so its waiting saves seal through it rather
+    // than meet an island that finds no door.
+    let doorSeated = false;
+    const rebookUnder = (session: BookedSession): void => rebookWaiting(session, "a session booked");
     const book = new SessionSignBook({ onHold: (session, verb) => {
-      if (verb === DOCSTORE_SEAL_VERB) return;
-      sealedRest.store.mapMoved();
-      void sealedRest.rebook(saveSessionOf(session)).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory: ${e instanceof Error ? e.message : String(e)}`));
-      for (const named of slotDocsNamed.values()) for (const documentId of named) sealNowMapped(documentId);
+      if (verb === DOCSTORE_SEAL_VERB || !doorSeated) return;
+      rebookUnder(session);
     } });
     sealedCells.book = book;
     dialSeat.book(book);
     sealedRest.store.mapMoved();
     return {
       book,
-      door: book.door(() => dialAnchor.chain(), async () => fleetRaisesOf({
+      door: book.door(ownChain, async () => fleetRaisesOf({
         repo, worn: custodyGroup ? { fleetRoot: wornFleetRoot, atomKey: activeAtom?.key ?? null } : null,
       })),
+      seated: () => {
+        if (doorSeated) return;
+        doorSeated = true;
+        for (const session of book.seated()) rebookUnder(session);
+      },
     };
   };
   // Set when the vessel stands its dial down: a late dial still in flight then stands nothing.
@@ -3023,6 +3101,7 @@ async function prepareNodeBootOn(
     const faceWikiBags = wornFaceWikiBags({ slot, lit: faceLit && !!personaGroupId && wornFaceProved });
     placeFace = faceLit && !!personaGroupId && wornFaceProved && activeAtom !== null && placeAid !== null
       ? placeProofSubjectRef({ atomKey: activeAtom.key, place: placeAid } as never) : null;
+    await standPlaceSession(placeFace !== null && personaGroupId && activeAtom ? { group: personaGroupId, atomKey: activeAtom.key } : null);
     sealedCells.bags = () => faceWikiBags.sealed;
     sealedRest.store.mapMoved();
     const workingFloorAnchor = workingFloorAnchorOf({ place: placeAid });
@@ -4161,6 +4240,8 @@ export async function openNodeVessel(opts: NodeVesselOptions): Promise<NodeVesse
 export interface SessionSignLift {
   readonly book: SessionSignBook;
   readonly door: SessionSignDoor;
+  /** The lift seated the door on the record: every session seated before it rebooks its waiting saves now. */
+  readonly seated: () => void;
 }
 
 async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Promise<NodeVesselResult> {
@@ -4214,6 +4295,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
       face: p.liftFace, custodyWrite: p.liftCustodyWrite, sessionSign: sessionSign.door, drop: () => {},
     }));
     roleCaps.push(() => lifted.dispose());
+    sessionSign.seated();
   }
   // THE COMPOSITION BOUNDARY: whatever refuses from here to the result (the keel, a duplicate porch route) drains every role cap
   // the lift stood, this door among them, before it rethrows; the caller's `p.teardown` runs no role cap.
@@ -4272,6 +4354,10 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     // no-op when none stood, so no timer / client socket leaks past close.
     stopTick: () => { void result.pool.disposeAll(); void p.carriageRelay?.close(); p.nexusDial?.stop(); },
     teardown: async () => {
+      // THE FLUSH RUNS WHILE THE LIFT'S DOOR STANDS: every save in flight seals under the session that booked it before
+      // the role caps drain the lift (and its session sign door with it), so no last save meets an island that finds no
+      // door. The bookings stay: the stand-down's own flush (the Repo's, below) still reads them.
+      try { await p.repo.flush(); } catch (e) { console.log(`[lararium] teardown: the Repo's flush before the lift drops — ${e instanceof Error ? e.message : String(e)}`); }
       for (const down of roleCaps.splice(0).reverse()) {
         try { await down(); } catch (e) { console.log(`[lararium] teardown: a role cap — ${e instanceof Error ? e.message : String(e)}`); }
       }

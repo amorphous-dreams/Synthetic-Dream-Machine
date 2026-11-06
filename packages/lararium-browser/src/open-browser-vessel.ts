@@ -681,6 +681,15 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const session = sealedCells.session;
       if (session !== null) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
     },
+    // THE ISLAND'S DOOR STANDS (`docstore:ready`), once per island: a hydration waiting on it reads again, and every save
+    // of the standing session's face that waited in memory seals under it now. No clock re-asks.
+    onReady: () => {
+      sealedRest.store.mapMoved();
+      const session = sealedCells.session;
+      if (session === null) return;
+      void sealedRest.rebook(session).catch(() => { /* each keeps waiting, never clear, for the next session */ });
+      for (const named of slotDocsNamed.values()) for (const documentId of named) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
+    },
   });
   const docStoreDoor = vesselDocStoreDoor<BrowserSaveSession>(() => docStorePort.port(), {
     book: (ask, verb) => sealedCells.hold?.(ask, verb) ?? (() => {}),

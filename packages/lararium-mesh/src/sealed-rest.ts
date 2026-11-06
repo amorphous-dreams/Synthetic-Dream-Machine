@@ -121,6 +121,8 @@ export interface DocStoreMsg_Opened {
   readonly refusal?: string; readonly cause?: string;
 }
 export interface DocStoreMsg_Live { readonly type: "docstore:live"; readonly requestId: string; readonly bagId: string }
+/** Island → vessel: the island's door listens beside its holder, and answers every ask from here. */
+export interface DocStoreMsg_Ready { readonly type: "docstore:ready" }
 /** The vessel locked (P2-2): the island's holder overwrites every content key at once, and seals and opens nothing more. */
 export interface DocStoreMsg_Lock { readonly type: "docstore:lock" }
 export interface DocStoreMsg_Lived { readonly type: "docstore:lived"; readonly requestId: string; readonly bytes: Uint8Array | null }
@@ -217,7 +219,7 @@ export function answerDocStoreAsks(port: Port, holder: {
     const name = typeof r?.reason === "string" ? r.reason : typeof r?.refusal === "string" ? r.refusal : "seal-refused";
     return { refusal: name, ...(typeof r?.message === "string" ? { cause: r.message } : {}) };
   };
-  return port.listen((raw) => {
+  const stop = port.listen((raw) => {
     const m = raw as { type?: unknown; requestId?: unknown; bagId?: unknown; ask?: unknown; verb?: unknown; values?: unknown; role?: unknown; ref?: unknown; peer?: unknown } | null;
     if (m?.type === "docstore:lock") { holder.lock?.(); return; }
     if (!m || typeof m.requestId !== "string" || typeof m.bagId !== "string") return;
@@ -238,6 +240,10 @@ export function answerDocStoreAsks(port: Port, holder: {
         (e) => reply({ type: "docstore:opened", requestId, ...refusal(e) }));
     }
   });
+  // THE DOOR STANDS NOW: the island answers its first ask only once it listens, so it says so, and the vessel's cell
+  // opens the port to the door on this word alone.
+  reply({ type: "docstore:ready" } satisfies DocStoreMsg_Ready);
+  return stop;
 }
 
 /** The island asks the vessel for a bag's live document, as the vessel's Repo holds it in memory (the fresh base's cut). */
@@ -268,18 +274,29 @@ export function answerLiveDocAsks(port: Port, liveOf: (bagId: string) => Promise
 export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array | null>, opts: {
   /** V3: the island's slot resolver named `documentId` as `bagId`'s document (`announceSlotDoc`). */
   readonly onSlot?: (bagId: string, documentId: string) => void;
+  /** The attached island's door stood (`docstore:ready`): what waited on it (a hydration, a held save) asks again. */
+  readonly onReady?: () => void;
 } = {}): {
   readonly port: () => Port | null;
   readonly attach: (port: Port) => () => void;
 } {
   let current: Port | null = null;
+  let attached: Port | null = null;
   return {
     port: () => current,
     attach(port) {
-      current = port;
+      // THE DOOR STANDS BEFORE AN ASK CROSSES IT: an island's port answers no ask until its holder stands, so the cell
+      // hands the port to the door only once the island says so, and an ask before then refuses by name at once.
+      attached = port;
+      if (current !== null) current = null;
       const stop = answerLiveDocAsks(port, liveOf);
       const stopSlots = opts.onSlot ? answerSlotNotices(port, opts.onSlot) : () => {};
-      return () => { stop(); stopSlots(); if (current === port) current = null; };
+      const stopReady = port.listen((raw) => {
+        if ((raw as { type?: unknown } | null)?.type !== "docstore:ready" || attached !== port || current === port) return;
+        current = port;
+        try { opts.onReady?.(); } catch { /* a listener's fault never reaches the island */ }
+      });
+      return () => { stop(); stopSlots(); stopReady(); if (attached === port) { attached = null; current = null; } };
     },
   };
 }

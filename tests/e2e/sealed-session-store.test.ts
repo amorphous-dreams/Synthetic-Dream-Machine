@@ -4,14 +4,13 @@
  *
  * THE STAND. A founds its hearth and a Nexus key; B, a vessel of the same face, lands A's fleet-join answer and dials
  * A's Nexus by the pin its landing wrote, so B's sessions anchor at that Nexus (a founder alone anchors at its own place,
- * and a place session reaches no sealed store). The daemon island holds no session key: it signs each record through
+ * and its place session seals there: a session reads (face, anchor), whatever the anchor). The daemon island holds no session key: it signs each record through
  * the session that placed the call, on B's main thread (the session sign door).
  *
  *   W1 — B's `h0` session seals a body into a bag its face registers: the island answers an address, a key version and
  *        the body's digest, and no plaintext rides the outcome
  *   W2 — B restarts over the same root; a fresh `h0` session opens the body by its digest, whole
- *   W3 — CONTROL: A's `h0` session stands at A's own place (A dials no Nexus): its seal refuses `session-anchor-place`
- *        and nothing seals
+ *   W3 — A's `h0` session stands at A's own place (A dials no Nexus): its seal lands there, under its place session
  *
  * The suite runs only in a STAGED target: it founds two vessels and never touches a live hearth.
  */
@@ -81,8 +80,9 @@ describe.runIf(staged)("a face's session reaches the sealed store on a real vess
     expect(opened["bytes"]).toBe(Buffer.byteLength(BODY));
   }, 300_000);
 
-  test("W3 — CONTROL: a place session (A dials no Nexus) reaches no sealed store: `session-anchor-place`, nothing seals", async () => {
+  test("W3 — a place session (A dials no Nexus) seals at A's own place: the outcome names a digest, and no plaintext", async () => {
     const answer = await call(pair!.A, "sealed-seal", { bag: BAG, text: "x" });
-    expect(refusalOf(answer), JSON.stringify(answer).slice(0, 800)).toBe("session-anchor-place");
+    expect(refusalOf(answer), JSON.stringify(answer).slice(0, 800)).toBeUndefined();
+    expect(String(resultOf(answer)["cid"]), JSON.stringify(answer).slice(0, 800)).toMatch(/^blake3:[0-9a-f]{64}$/);
   }, 180_000);
 });

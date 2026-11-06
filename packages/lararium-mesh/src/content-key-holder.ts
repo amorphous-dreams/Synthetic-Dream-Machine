@@ -67,7 +67,7 @@ import {
   KeyLineage, LINEAGE_REFUSALS, factOfPlan, planAdmissionFromNow, planFounding, planJoin, planRemovalRolls, sameFact, versionsToHandOver, writeHead,
   type HistoryDeclaration, type KeyRollPlan, type KeyVersionFact, type RollerPorts, type RollOutcome,
 } from "./content-key-lineage.js";
-import { faceProofSubjectRef, type KeysHeldApart } from "./face-proof-subjects.js";
+import type { KeysHeldApart } from "./face-proof-subjects.js";
 import { openMemorySection, sealMemorySection, type MemoryEntry } from "./memory-section.js";
 import { wrapLockbox, openLockbox, type KeyParcel, type LockboxWrapShore, type ReaderId } from "./lockbox-wrap.js";
 import {
@@ -76,7 +76,7 @@ import {
 } from "./sealed-chunk.js";
 import {
   authorizeFromManifest, bagLocatorOf, entryLocatorOf, factOfRecord, indexRowsOf, joinProofOf, joinProven, readBagLocator, readRecord,
-  recordIdOf, signRecord,
+  recordIdOf, recordWriterSubject, signRecord,
   type BagLocator, type CheckpointBody, type HandOverBody, type KeyVersionBody, type KeyVersionPrivate, type LockboxRecord, type ManifestBody, type ManifestEntry,
   type RecordBodies, type RecordId, type RecordKind, type RecordPrivates, type RecordSigner, type SealedRecord, type VerifiedRecord,
   type WriterStanding,
@@ -240,7 +240,7 @@ export interface OpenedValue {
   readonly plaintext:  Uint8Array;
   readonly keyVersion: KeyVersionId;
   readonly address:    SealedAddress;
-  /** The face proof's subject reference of the manifest's writer (`faceProofSubjectRef`). */
+  /** The proof subject of the manifest's writer at its own anchor (`recordWriterSubject`). */
   readonly writer:     string;
   /** The change's own writer, as the manifest names it under its signature: `session:<session key>` or `peer:<actor>`. */
   readonly changeWriter: string;
@@ -801,7 +801,7 @@ export class ContentKeyHolder {
           if (sealed === null) { met = refuse("value-absent"); continue; }
           const opened = openChunk({ key, context, sealed, authorized });
           if ("plaintext" in opened) {
-            return { plaintext: opened.plaintext, keyVersion, address: authorized.address, writer: faceProofSubjectRef(manifest.certificate.scope), changeWriter: manifest.private.writer };
+            return { plaintext: opened.plaintext, keyVersion, address: authorized.address, writer: recordWriterSubject(manifest.certificate), changeWriter: manifest.private.writer };
           }
           met = refuse("open-refused", opened.refusal);
         }

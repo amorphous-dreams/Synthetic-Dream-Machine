@@ -982,10 +982,27 @@ export interface IslandMsg_SessionSign {
   payload?: Uint8Array;
 }
 
-/** This vessel's own verified face chain, public: the scope its face stands at and its face-scoped key there. */
-export interface SessionOwnChain {
+/**
+ * This vessel's own verified face chain, public, at each anchor its sessions meet the worn face (session-contract#/the-hands):
+ * at a Nexus, the scope its face stands at and its face-scoped key there; at its own place, the face's atom and the
+ * vessel's W29 place. A vessel standing at a Nexus names its place beside it, so what it sealed at its place still reads.
+ */
+export type SessionOwnChain = NexusOwnChain | PlaceOwnChain;
+/** The worn face at the Nexus a dial composed at, with the vessel's own place beside it where the face stands there too. */
+export interface NexusOwnChain {
   readonly scope: { readonly faceKey: string; readonly nexus: string };
   readonly vesselFaceKey: string;
+  readonly place?: OwnPlace;
+}
+/** The worn face at the vessel's own place alone: no Nexus admits it. */
+export interface PlaceOwnChain {
+  readonly place: OwnPlace;
+}
+/** The face's atom at one place, the vessel's W29 place KEL prefix. */
+export interface OwnPlace { readonly atomKey: string; readonly place: string }
+/** The chain's Nexus half, or null where the vessel stands at its place alone. */
+export function nexusOfChain(chain: SessionOwnChain | null): NexusOwnChain | null {
+  return chain !== null && "scope" in chain ? chain : null;
 }
 
 /** Vessel → island: the session sign door's answer, or one refusal by name. */

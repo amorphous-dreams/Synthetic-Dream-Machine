@@ -15,7 +15,7 @@
  */
 import {
   answerReceiptWithHeads, SessionSignBook,
-  type BookedSessionSigner, type CustodyWriter, type IslandLift, type ReceiptIssuer, type Repo, type SessionOwnChain,
+  type BookedSessionSigner, type CustodyWriter, type IslandLift, type ReceiptIssuer, type Repo, type NexusOwnChain,
 } from "@lararium/mesh";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 
@@ -27,10 +27,12 @@ export function browserIslandReceipt(repo: Repo): ReceiptIssuer {
   };
 }
 
-/** The unlocked session a lift stands on: its signer (a Nexus-anchored session's own), and the vessel's own chain. */
+/** The unlocked session a lift stands on: its signer (a Nexus-anchored session's own), and the vessel's own chain at
+ *  that Nexus. A browser holds no place of its own: its unlock's presentation meets the face at a Nexus alone, and the
+ *  book it stands reads (face, anchor) as the node's does. */
 export interface BrowserUnlockedSession {
   readonly signer: BookedSessionSigner;
-  readonly chain: SessionOwnChain;
+  readonly chain: NexusOwnChain;
 }
 
 /** One session's lift, ready for `islandLiftStack`: the lift itself, and the booking its session places. */
