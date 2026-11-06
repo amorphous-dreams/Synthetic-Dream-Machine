@@ -952,3 +952,28 @@ describe("the ward refuses a passkey path to a warded root (row 7, S2)", () => {
     await expect(writeBrowserSeedWrap(clear, 0, wrap)).resolves.toBeUndefined();
   });
 });
+
+describe("the ward's two edge refusals (row 7, S2b custody read)", () => {
+  test("RED: an old roster `{ roots: [0] }` refuses `ward-face-predates` with its cure at every roster read; CONTROL: the present roster shape reads", async () => {
+    const old = `lares:old-roster-${globalThis.crypto.randomUUID()}`;
+    await plant(old, "persona-root-roster", { roots: [0] });
+    const refusal = await listBrowserPersonaRoots(old).then(() => undefined, (e: unknown) => e as Error);
+    expect(refusal?.message).toBe("ward-face-predates: this face predates the ward; found it again");
+    const present = `lares:new-roster-${globalThis.crypto.randomUUID()}`;
+    await plant(present, "persona-root-roster", { roots: [{ handleIndex: 0, verifyingKey: "a".repeat(64) }] });
+    expect(await listBrowserPersonaRoots(present)).toEqual([0]);
+  });
+
+  test("RED: after a clear-password the keystore reads clear while a ward stands, and a PRF wrap refuses `seed-wrap-beside-ward`; CONTROL: a clear keystore with no ward row takes the wrap", async () => {
+    const { writeBrowserSeedWrap } = await import("../src/browser-vessel-identity.js");
+    const v = await plantedVessel("wrap-beside-ward");
+    await sealBrowserKeystore(v.idbName, PASS);
+    await generateOrLoadBrowserPersonaRoot(v.idbName, 0, FIXTURE_WARD);
+    expect((await clearBrowserCustody(v.idbName, [PASS], () => true)).reading).toBe("cleared");
+    expect((await readBrowserCustody(v.idbName)).reading).toBe("clear");
+    const wrap = { keyClass: "relation", info: "x", nonce: "00", wrapped: "00" } as never;
+    await expect(writeBrowserSeedWrap(v.idbName, 0, wrap)).rejects.toThrow(/seed-wrap-beside-ward/);
+    const bare = `lares:wrap-bare-${globalThis.crypto.randomUUID()}`;
+    await expect(writeBrowserSeedWrap(bare, 0, wrap)).resolves.toBeUndefined();
+  }, SLOW);
+});
