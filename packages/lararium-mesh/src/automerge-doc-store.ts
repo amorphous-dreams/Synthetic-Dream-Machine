@@ -141,6 +141,10 @@ export class AutomergeDocStore implements LarTiddlerStore {
   protected readonly handle: DocHandle<LarDoc>;
   readonly provider: MemeProvider;
   readonly bagId: string | undefined;
+  /** The writer's origin while this store applies its own change to the handle. The handle's change event fires inside that
+   *  call; the store fires the writer's envelope itself, and the provider's debounced wave re-reads the title under the same
+   *  origin, marked a redelivery. Undefined outside the store's own change: the event then carries a remote or sync merge. */
+  private _applying: ChangeOrigin | undefined;
   private readonly _draftListeners = new Set<(change: ParallelDraftsChange) => void | Promise<void>>();
 
   constructor(handle: DocHandle<LarDoc>, bagId?: string) {
@@ -161,9 +165,18 @@ export class AutomergeDocStore implements LarTiddlerStore {
       const remapped = (patches ?? [])
         .filter((p) => Array.isArray(p.path) && p.path[0] === "tiddlers")
         .map((p) => ({ ...p, path: (p.path as unknown[]).slice(1) }));
-      this.provider.handleChange(remapped, remoteOrigin);
+      // A change the store made itself keeps its writer's origin on the debounced wave, marked a redelivery (the store fires the
+      // writer's own envelope); only a remote or sync merge arrives as crdt-remote.
+      const own = this._applying;
+      this.provider.handleChange(remapped, own ?? remoteOrigin, own !== undefined);
       this._surfaceConflicts(remapped);
     });
+  }
+
+  private _own<T>(origin: ChangeOrigin, apply: () => T): T {
+    const held = this._applying;
+    this._applying = origin;
+    try { return apply(); } finally { this._applying = held; }
   }
 
   /** Every concurrent operation value on `title`, grouped across distinct fields by writer
@@ -438,9 +451,9 @@ export class AutomergeDocStore implements LarTiddlerStore {
     let madeAt: readonly string[] | undefined;
     try {
       if (based) {
-        const made = this.handle.changeAt(encodeHeads(requestedBase as string[]), change);
+        const made = this._own(origin, () => this.handle.changeAt(encodeHeads(requestedBase as string[]), change));
         if (made) madeAt = Object.freeze([...decodeHeads(made)]);
-      } else this.handle.change(change);
+      } else this._own(origin, () => this.handle.change(change));
     } catch (error) {
       if (requestedBase !== undefined) {
         throw new Error("AutomergeDocStore.writeFamily: requested base could not be applied", { cause: error });
@@ -518,7 +531,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
    *  the cascade), never a kāpae tombstone. The MOVE/promotion source retract. */
   async remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void> {
     let removed = true;
-    this.handle.change((doc) => {
+    this._own(origin, () => this.handle.change((doc) => {
       const tiddlers = doc.tiddlers as unknown as Record<string, MutableLarTiddlerRecord>;
       // THE TEST AND THE REMOVAL SHARE ONE CHANGE: no write lands between them.
       // A title holding a concurrent value the live one hides (a parallel draft, field or whole record) stays: removing
@@ -527,7 +540,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
       if (options?.only && (!holdsOnly(ownEntry(tiddlers, title) as unknown as LarTiddlerRecord | undefined, options.only)
         || this.parallelDrafts(title).length > 0)) { removed = false; return; }
       delete tiddlers[title];
-    });
+    }));
     if (!removed) return;
     // Fire record:null — absence; the adaptor's cross-bag resolution surfaces
     // whatever lower-bag copy now resolves beneath (vs a kāpae stop).
