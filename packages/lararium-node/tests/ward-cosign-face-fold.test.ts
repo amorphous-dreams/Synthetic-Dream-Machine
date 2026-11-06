@@ -62,7 +62,8 @@ const gated = (which: keyof typeof catalogs) => withLarRoot(ROOT, async () => {
   const adapter = new DurableNodeFSStorageAdapter(storage), repo = new Repo({ storage: adapter, network: [] });
   try {
     let ran = 0;
-    const code = await wardCosignGate(await loadNodeWardCosignPort(repo, catalogs[which], { group }), lower, async () => { ran += 1; })
+    // The port loads at the act, inside the gated call: a fold that cannot be read refuses there, as the door's own call would.
+    const code = await (async () => wardCosignGate(await loadNodeWardCosignPort(repo, catalogs[which], { group }), lower, async () => { ran += 1; }))()
       .then(() => null, (e: { reading?: string; message: string }) => e.reading ?? e.message);
     return { ran, code, repo };
   } finally { await repo.shutdown(); await adapter.close(); }

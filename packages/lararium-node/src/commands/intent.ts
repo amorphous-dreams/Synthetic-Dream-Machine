@@ -10,7 +10,7 @@ import {
   readIntentEntry,
   deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetRaiseCids, readFleetFrontier, readFrontierPins, FLEET_HAND,
   personaBagIdFor, personaSiblingBagIds, readIntentPlane, WARD_COSIGN_VERBS, intentPlaneCosignPort, faceRosterForIntents, type WardCosignPort, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
-  type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
+  WardRefused, type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { listAnchoredPersonas, loadIdentityAnchors } from "../identity-anchors.js";
@@ -96,7 +96,12 @@ export interface IntentCommandOptions {
   readonly until?: string;
 }
 
-export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined, selector: { index?: number | undefined } | { group: string }) {
+/**
+ * The face's signed admission fold and its live readers, without its intents plane: the anchors, the KEL-backed lineage, the persona
+ * plane's projection, this vessel's face atom and the fleet's standing and frontier. A co-sign gate reads its device count here, so a
+ * one-device face acts on its unlock alone even where its intents plane cannot load.
+ */
+export async function loadFaceFold(repo: Repo, catalogUrl: string | undefined, selector: { index?: number | undefined } | { group: string }) {
   const held = await listAnchoredPersonas();
   let named: number | undefined;
   if ("group" in selector) {
@@ -113,11 +118,7 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
   const anchor = await loadFaceAnchorOfGroup(group);
   if (!anchor) throw new IntentRefused("face-anchor-absent");
   if (!catalogUrl) throw new IntentRefused("catalog-absent");
-  const bag = personaSiblingBagIds(personaBagIdFor(group))?.intents;
-  if (!bag) throw new IntentRefused("intent-plane-name-absent");
   const catalog = makeCatalogAccessor(repo, catalogUrl);
-  const plane = await catalog.find(bag);
-  if (!plane) throw new IntentRefused("intent-plane-unregistered");
   const faceSource = await fleetFaceChainForVessel(repo, groupRoot(anchors), anchor);
   if (!faceSource) throw new IntentRefused("face-lineage-unreadable");
   // THE LOADED FACE HANDS BACK LIVE READERS, never what stood when the load returned: the chain reads the KEL board's replica at
@@ -128,8 +129,6 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
   const persona = await catalog.find(personaBagIdFor(group));
   const projection = face.project(faceRecordsOf([persona?.doc()], group), group);
   if (!projection.founded || projection.fork) throw new IntentRefused("face-log-unreadable");
-  const planeUrl = await catalog.urlOf(bag);
-  if (!planeUrl || projection.planes["intents"] !== planeUrl) throw new IntentRefused("intent-plane-unproved: the catalog entry lacks the face's signed plane act");
   const atomSeed = await loadFaceAtomOfGroup(group);
   if (!atomSeed) throw new IntentRefused("face-atom-absent");
   const atom = faceAtomKeyFromSeed(atomSeed, group);
@@ -159,19 +158,54 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
   } catch { fleet = null; /* A board that cannot verify leaves standing unknown and no frontier held. */ }
   const standing = (key: string): "stands" | "aside" | "unknown" => fleet?.now()?.standing(key) ?? "unknown";
   const heldFrontiers = (): ReadonlySet<string> => fleet?.now()?.heldFrontiers ?? new Set<string>();
+  // The fleet's signed frontier as the witness reads it now: a board that cannot verify, or a frontier that does not read known.
+  const frontier = (): "known" | "unknown" => (fleet?.now() ? "known" : "unknown");
   const acquisition = fleet?.acquisition;
   if ("group" in selector && group !== selector.group) throw new IntentRefused("face-not-held");
-  return { group, index, anchors, anchor, face, kelChain, projection, plane, personaPlane: persona, standing, heldFrontiers, acquisition, verbs, atom, atomSeed, signer };
+  return { group, index, anchors, anchor, face, kelChain, projection, catalog, personaPlane: persona, standing, heldFrontiers, frontier, acquisition, verbs, atom, atomSeed, signer };
+}
+export type FaceFold = Awaited<ReturnType<typeof loadFaceFold>>;
+
+/** The face's intents plane, proved against the fold's signed plane act. */
+export async function loadFacePlane(fold: FaceFold) {
+  const bag = personaSiblingBagIds(personaBagIdFor(fold.group))?.intents;
+  if (!bag) throw new IntentRefused("intent-plane-name-absent");
+  const plane = await fold.catalog.find(bag);
+  if (!plane) throw new IntentRefused("intent-plane-unregistered");
+  const planeUrl = await fold.catalog.urlOf(bag);
+  if (!planeUrl || fold.projection.planes["intents"] !== planeUrl) throw new IntentRefused("intent-plane-unproved: the catalog entry lacks the face's signed plane act");
+  return plane;
+}
+
+export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined, selector: { index?: number | undefined } | { group: string }) {
+  const fold = await loadFaceFold(repo, catalogUrl, selector);
+  return { ...fold, plane: await loadFacePlane(fold) };
 }
 
 /**
- * The face's intent plane as a ward act's co-sign gate reads it (seat-harness#/the-swarm-slices): the loaded face's own plane,
- * roster and fleet standing, read fresh at each call, and its atom as the act's issuer.
+ * The face's intent plane as a ward act's co-sign gate reads it (seat-harness#/the-swarm-slices): the loaded face's own plane (or
+ * none, where it did not load), roster, fleet standing and frontier, read fresh at each call, and its atom as the act's issuer.
  */
-export function nodeWardCosignPort(repo: Repo, loaded: Awaited<ReturnType<typeof loadIntentFace>>): WardCosignPort {
-  const { group, plane, projection, face, standing, heldFrontiers, verbs, signer } = loaded;
+export function nodeWardCosignPort(repo: Repo, loaded: Pick<FaceFold, "group" | "projection" | "face" | "standing" | "heldFrontiers" | "frontier" | "verbs" | "signer"> & { readonly plane: Awaited<ReturnType<typeof loadFacePlane>> | null }): WardCosignPort {
+  const { group, plane, projection, face, standing, heldFrontiers, frontier, verbs, signer } = loaded;
   return intentPlaneCosignPort({ group, requester: signer, verbs, plane, flush: () => repo.flush(),
-    face: () => faceRosterForIntents(projection, face.lineage), standing, heldFrontiers });
+    face: () => faceRosterForIntents(projection, face.lineage), standing, heldFrontiers, frontier });
+}
+
+/** The gate's port over a loaded fold: the intents plane loads at the act, and a plane that cannot load leaves the port planeless. */
+export async function nodeWardCosignPortOf(repo: Repo, fold: FaceFold): Promise<WardCosignPort> {
+  let plane: Awaited<ReturnType<typeof loadFacePlane>> | null = null;
+  try { plane = await loadFacePlane(fold); }
+  catch (e) { if (!(e instanceof IntentRefused)) throw e; }
+  return nodeWardCosignPort(repo, { ...fold, plane });
+}
+
+/** The gate's port loaded at the act: a fold that cannot be read refuses `ward-cosign-fold-unread` by name. */
+export async function loadNodeWardCosignPort(repo: Repo, catalogUrl: string | undefined, selector: { index?: number | undefined } | { group: string }): Promise<WardCosignPort> {
+  let fold: FaceFold;
+  try { fold = await loadFaceFold(repo, catalogUrl, selector); }
+  catch (e) { if (e instanceof IntentRefused) throw new WardRefused("ward-cosign-fold-unread", e.message); throw e; }
+  return nodeWardCosignPortOf(repo, fold);
 }
 
 export async function runIntentCommand(opts: IntentCommandOptions): Promise<Record<string, unknown>> {

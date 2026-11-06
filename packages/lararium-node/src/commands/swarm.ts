@@ -7,13 +7,14 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { wardRootSigner } from "../ward-signer.js";
+import { loadPersonaGroupRootVerifyingKey } from "../node-vessel-identity.js";
 import type { WardCredential } from "../ward-credential.js";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   SwarmRefused, faceRecordsOf, promotePlaneUrl, swarmBoardRecords, swarmCommand, writeSwarmBoardAct,
   type LarDoc, type SwarmRequest, type SwarmSignerPort, type SwarmWikiPort,
 } from "@lararium/mesh";
-import { loadIntentFace, nodeWardCosignPort, IntentRefused } from "./intent.js";
+import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 
 export async function runSwarmVerb(opts: {
   repo: Repo; catalogUrl?: string; face?: number; action: SwarmRequest["action"];
@@ -22,8 +23,8 @@ export async function runSwarmVerb(opts: {
   ward?: WardCredential;
 }): Promise<Record<string, unknown>> {
   if (!opts.wiki) throw new SwarmRefused("swarm-no-daemon", "no standing daemon: swarm controls need the founded wiki");
-  let loaded: Awaited<ReturnType<typeof loadIntentFace>>;
-  try { loaded = await loadIntentFace(opts.repo, opts.catalogUrl, { index: opts.face }); }
+  let loaded: FaceFold;
+  try { loaded = await loadFaceFold(opts.repo, opts.catalogUrl, { index: opts.face }); }
   catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", e.message); throw e; }
   const { group, index, face, personaPlane, signer } = loaded;
   if (!personaPlane) throw new SwarmRefused("face-log-unreadable", "the catalog names no persona plane for the face");
@@ -34,11 +35,17 @@ export async function runSwarmVerb(opts: {
   const handle = await opts.repo.find<LarDoc>(url as never);
   const grant = (key: string) => face.currentSigner(key);
   // `show` signs nothing, so it never opens the ward; a signing row signs through the ward signer (S1's SwarmSignerPort), the root
-  // seed opening fresh under this act's ward route for each signature and zeroing after it.
+  // seed opening fresh under this act's ward route at its signature and zeroing after it. The route is asked at the signature, so
+  // a co-signed act the gate holds (the house cap, a go) asks no route at all.
   let signing: SwarmSignerPort = { key: "", sign: async () => { throw new SwarmRefused("swarm-show-signs-nothing", "show holds no signer"); } };
+  const wardRefusal = (e: unknown): unknown => (e instanceof Error && /^ward-/.test(e.message) ? new SwarmRefused(e.message.split(":")[0]!, e.message) : e);
   if (opts.action !== "show") {
-    try { signing = await wardRootSigner(index, opts.ward, "a swarm control"); }
-    catch (e) { if (e instanceof Error && /^ward-/.test(e.message)) throw new SwarmRefused(e.message.split(":")[0]!, e.message); throw e; }
+    const key = await loadPersonaGroupRootVerifyingKey(index);
+    if (!key) throw new Error(`[ward-signer] this vessel holds no root at h${index}: a joinee signs as its device, never as the root`);
+    signing = { key, sign: async (bytes) => {
+      try { return await (await wardRootSigner(index, opts.ward, "a swarm control")).sign(bytes); }
+      catch (e) { throw wardRefusal(e); }
+    } };
   }
   const str = (key: string): string => (typeof opts.args[key] === "string" ? opts.args[key] as string : "");
   const request: SwarmRequest = opts.action === "show" ? { action: "show", ...(str("branch") && str("head") ? { branch: str("branch"), head: str("head") } : {}) }
@@ -54,6 +61,6 @@ export async function runSwarmVerb(opts: {
     // advisory for `show` alone: every signing row now signs under the ward, which no unlocked custody opens.
     who: { kind: "hand", id: signer.key },
     // THE CO-SIGN GATE: the house cap and a go wait on a second device of the face where it holds two (seat-harness#/the-swarm-slices).
-    cosign: () => nodeWardCosignPort(opts.repo, loaded),
+    cosign: () => nodeWardCosignPortOf(opts.repo, loaded),
   });
 }

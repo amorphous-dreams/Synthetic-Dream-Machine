@@ -237,7 +237,7 @@ import {
 } from "@lararium/mesh";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { landEveryHostingAct }                    from "./commands/host.js";
-import { loadIntentFace, nodeWardCosignPort }       from "./commands/intent.js";
+import { loadNodeWardCosignPort }                  from "./commands/intent.js";
 import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
 import { daemonSwarmWiki }                        from "./swarm-wiki.js";
@@ -2403,9 +2403,10 @@ async function prepareNodeBootOn(
             },
             board: { records: async () => promoteActRecords(handle.doc(), personaGroupId), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
             projection: () => proof.projection,
-            // THE CO-SIGN GATE: a summoned lower reads the worn face's intent plane at the act and, where the face holds two devices,
-            // waits on a second one's answer (seat-harness#/the-swarm-slices).
-            cosign: async () => nodeWardCosignPort(repo, await loadIntentFace(repo, catalogHandle.url, { group: personaGroupId })),
+            // THE CO-SIGN GATE: a summoned lower reads the worn face's signed admission fold and its intent plane at the act and, where
+            // the face holds two devices, waits on a second one's answer; a one-device face lowers even where its intents plane cannot
+            // load, and a fold that cannot be read refuses by name (seat-harness#/the-swarm-slices).
+            cosign: () => loadNodeWardCosignPort(repo, catalogHandle.url, { group: personaGroupId }),
           });
           const who = { kind: "hand" as const, id: atom.key };
           const core = promotePanelApi({ who,

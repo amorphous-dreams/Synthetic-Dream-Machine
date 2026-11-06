@@ -7,7 +7,7 @@ import {
   promoteActRecords, promoteBoardDoor, promoteCommand, promotePlaneUrl, promotions, promoteWikiItems,
   readKahuaStage, readPromoteBoard, writePromoteAct, PromoteRefused, type LarDoc, type PromoteCommandRequest,
 } from "@lararium/mesh";
-import { loadIntentFace, nodeWardCosignPort, IntentRefused } from "./intent.js";
+import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 import { nodePromoteCas, nodePromoteStores } from "../promoted-store.js";
 
 export async function runPromoteVerb(opts: {
@@ -16,8 +16,9 @@ export async function runPromoteVerb(opts: {
   /** The face's ward route for this act: a daemon or kahua commit and a kāpae-lower sign under it alone (seat-harness#/the-ward). */
   ward?: WardCredential;
 }): Promise<Record<string, unknown>> {
-  let loaded: Awaited<ReturnType<typeof loadIntentFace>>;
-  try { loaded = await loadIntentFace(opts.repo, opts.catalogUrl, { index: opts.face }); }
+  // The fold alone: the co-sign gate loads the intents plane at the act, and a one-device face lowers without one.
+  let loaded: FaceFold;
+  try { loaded = await loadFaceFold(opts.repo, opts.catalogUrl, { index: opts.face }); }
   catch (e) { if (e instanceof IntentRefused) throw new PromoteRefused("face-log-unreadable", e.message); throw e; }
   const { group, index, face, personaPlane, signer } = loaded;
   if (!personaPlane) throw new PromoteRefused("face-log-unreadable", "the catalog names no persona plane for the face");
@@ -34,7 +35,7 @@ export async function runPromoteVerb(opts: {
   } };
   const boardDoor = promoteBoardDoor({ group, face: boardFace, atom: signer, epoch: () => face.lineage[face.lineage.length - 1]!.epoch,
     rootSigner: () => wardRootSigner(index, opts.ward, "a kāpae-lower"),
-    board, projection: () => projection, cosign: () => nodeWardCosignPort(opts.repo, loaded) });
+    board, projection: () => projection, cosign: () => nodeWardCosignPortOf(opts.repo, loaded) });
   // A local process names its own hand; the session gate refuses declared seat hands before custody reads.
   const who = { kind: "hand" as const, id: signer.key };
   const promotionsFor = (wiki: string) => promotions({ wiki, ...nodePromoteStores(group), who,
