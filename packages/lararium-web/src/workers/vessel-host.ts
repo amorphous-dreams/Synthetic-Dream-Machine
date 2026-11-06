@@ -78,6 +78,8 @@ export function standVesselHost(env: VesselHostEnv = {}) {
   let firstBoot: VesselBoot | null = null;
   let idbName = "lares:vessel";
   let lighting: Conn | null = null;
+  /** The session whose admission lit the vessel: it heard every frame live. A later session of the face missed them. */
+  let litBy: string | null = null;
   const bindings = new Map<string, string>();
   const controlSenders = new Map<string, Conn>();
 
@@ -147,6 +149,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     const b = firstBoot;
     if (!conn || !b) throw new VesselSessionRefused("unknown-session");
     lighting = conn;
+    litBy = first.sessionId;
     if (b.sharedHolderUrl) standHolderSpawn((msg) => conn.post(msg));
     const admit = b.admitCarriage ? parseAdmitCarriage(b.admitCarriage) : null;
     if (admit) console.log("[vessel] ADMIT taken from the fleet-join landing — this vessel JOINS an existing PersonaGroup.");
@@ -246,6 +249,8 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     }
     statusTo(conn, { custody: session.admittedBy ? BOOT_READING[session.admittedBy] : "held", ...(session.face ? { face: session.face } : {}) });
     statusTo(conn, vesselStatus(result));
+    // A LATE SESSION MISSED THE FRAMES ALREADY SENT: the vessel repaints the shown surface whole, and the frame reaches it over its own port.
+    if (litVessel && litBy !== session.sessionId && wearsLitFace(conn)) litVessel.resend(litVessel.activeWikiId);
     void seedRestOf(idbName, session.face).then((s) => statusTo(conn, s), () => { /* an unreadable slot reads its own refusal elsewhere */ });
     return result;
   };
