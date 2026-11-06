@@ -254,9 +254,8 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     },
   };
 
-  return {
-    /** Connect one page port: its `hello` opens a session; the caller feeds every page message, in order, to `receive`. */
-    connect(scope: VesselScope): { receive(msg: PageToVessel): void; lost(why: string): void } {
+  /** Connect one page port: its `hello` opens a session; the caller feeds every page message, in order, to `receive`. */
+  const connect = (scope: VesselScope): { receive(msg: PageToVessel): void; lost(why: string): void } => {
       const post = (msg: VesselToPage, transfer: Transferable[] = []): void => scope.postMessage(msg, transfer);
       const conn: Conn = { post, door: standCeremonyDoor(post), session: null, pings: 0 };
       let admitted: Promise<{ h: VesselHouse<BrowserVesselResult>; s: VesselSession }> | null = null;
@@ -333,6 +332,14 @@ export function standVesselHost(env: VesselHostEnv = {}) {
               return;
             }
             case "pong": return;
+            case "port:want": {
+              if (!conn.session) { post({ t: "port:minted", wantId: msg.wantId, refused: "session-unadmitted" }); return; }
+              const { port1, port2 } = new MessageChannel();
+              const c = connect({ postMessage: (m, t = []) => port1.postMessage(m, t) });
+              port1.onmessage = (e: MessageEvent<PageToVessel>) => c.receive(e.data);
+              post({ t: "port:minted", wantId: msg.wantId, port: port2 }, [port2]);
+              return;
+            }
             case "ceremony:port": conn.door.port(msg.askId, msg.port); return;
             case "ceremony:refused": conn.door.refused(msg.askId, msg.refusal); return;
             case "spawned": { const settle = spawns.get(msg.spawnId); spawns.delete(msg.spawnId); settle?.(msg); return; }
@@ -376,8 +383,8 @@ export function standVesselHost(env: VesselHostEnv = {}) {
           }
         },
       };
-    },
   };
+  return { connect };
 }
 
 /** Serve one page: the caller feeds every page message, in order, to the returned `receive`. */

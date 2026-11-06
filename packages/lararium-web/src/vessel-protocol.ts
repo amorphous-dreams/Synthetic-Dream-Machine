@@ -107,6 +107,7 @@ export type PageToVessel =
   | { readonly t: "ceremony:refused"; readonly askId: string; readonly refusal: string }
   | { readonly t: "control-event"; readonly surface: string; readonly ev: LarMsg_ControlEvent }
   | { readonly t: "set-surface"; readonly surface: string }
+  | { readonly t: "port:want"; readonly wantId: string; readonly tabSession: string }
   | { readonly t: "port:place"; readonly surface: string; readonly binding: string; readonly msg: unknown }
   | { readonly t: "port:close"; readonly binding: string }
   | { readonly t: "page:life"; readonly life: PageLife }
@@ -126,6 +127,7 @@ export type VesselToPage =
   | { readonly t: "control-result"; readonly surface: string; readonly result: LarMsg_ControlResult }
   | { readonly t: "coherence"; readonly frame: CoherenceFrameWithRev }
   | { readonly t: "port-msg"; readonly binding: string; readonly islandKey: string; readonly msg: unknown }
+  | { readonly t: "port:minted"; readonly wantId: string; readonly port?: MessagePort; readonly refused?: string }
   | { readonly t: "port:refused"; readonly binding: string; readonly reason: string; readonly opening: boolean; readonly portId?: string }
   /** `face` names the PersonaGroup the ask speaks for (null: this browser itself); a public name, never a key. */
   | { readonly t: "ask"; readonly askId: string; readonly kind: CeremonyAskKind; readonly act: string; readonly words: string; readonly face: string | null }

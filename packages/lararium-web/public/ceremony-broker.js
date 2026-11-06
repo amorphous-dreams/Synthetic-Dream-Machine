@@ -5,6 +5,7 @@
 // and the claim, never starts it and never reads it, and keeps no state past that hand. A claim from any document but the
 // ceremony's own, or an offer from the ceremony document, answers `ceremony:absent`.
 //
+// An unanswered vessel claim ends on its claimant’s withdraw or a later event that finds its client gone.
 // It imports nothing and handles no fetch: it carries no content key and serves no bytes.
 const CEREMONY_PATH = "/ceremony.html";
 const held = new Map();
@@ -16,6 +17,16 @@ const pathOf = (client) => { try { const url = new URL(client.url); return url.o
 self.addEventListener("install", () => { void self.skipWaiting(); });
 self.addEventListener("activate", (event) => { event.waitUntil(self.clients.claim()); });
 self.addEventListener("message", (event) => {
+  event.waitUntil(self.clients.matchAll({ type: "window" }).then((clients) => {
+    const live = new Set(clients.map((client) => client.id));
+    for (const [claimId, claim] of vesselClaims) {
+      if (!live.has(claim.clientId)) { vesselClaims.delete(claimId); claim.release(); }
+    }
+    return route(event);
+  }));
+});
+
+const route = (event) => {
   const msg = event.data;
   const source = event.source;
   if (msg && source && msg.t === "vessel:claim" && typeof msg.tabSession === "string") {
@@ -26,14 +37,22 @@ self.addEventListener("message", (event) => {
     let release = () => {};
     const kept = new Promise((resolve) => { release = resolve; });
     vesselClaims.set(claimId, { clientId: source.id, tabSession: msg.tabSession, release });
-    event.waitUntil(Promise.all([kept, self.clients.matchAll({ type: "window" }).then((clients) => {
+    return Promise.all([kept, self.clients.matchAll({ type: "window" }).then((clients) => {
       for (const client of clients) {
         const path = pathOf(client);
         if (client.id !== source.id && path !== null && path !== CEREMONY_PATH) {
           client.postMessage({ t: "vessel:want", claimId, tabSession: msg.tabSession });
         }
       }
-    })]));
+    })]);
+  }
+  if (msg && source && msg.t === "vessel:withdraw" && typeof msg.tabSession === "string") {
+    for (const [claimId, claim] of vesselClaims) {
+      if (claim.clientId === source.id && claim.tabSession === msg.tabSession) {
+        vesselClaims.delete(claimId);
+        claim.release();
+      }
+    }
     return;
   }
   if (msg && source && msg.t === "vessel:offer" && typeof msg.claimId === "string") {
@@ -43,10 +62,9 @@ self.addEventListener("message", (event) => {
     const claim = vesselClaims.get(msg.claimId);
     if (from === null || !port || !claim) return;
     vesselClaims.delete(msg.claimId);
-    event.waitUntil(self.clients.get(claim.clientId).then((client) => {
+    return self.clients.get(claim.clientId).then((client) => {
       if (client) client.postMessage({ t: "vessel:port", tabSession: claim.tabSession }, [port]);
-    }).finally(claim.release));
-    return;
+    }).finally(claim.release);
   }
   if (!msg || typeof msg.askId !== "string" || !source) return;
   const from = pathOf(source);
@@ -57,8 +75,7 @@ self.addEventListener("message", (event) => {
     const kept = new Promise((resolve) => { release = resolve; });
     held.set(msg.askId, { port, release });
     // The offer keeps this worker standing until the ceremony claims its port; the platform's own cap ends a wait nobody claims.
-    event.waitUntil(kept);
-    return;
+    return kept;
   }
   if (msg.t === "ceremony:claim") {
     const hand = from === CEREMONY_PATH ? held.get(msg.askId) : undefined;
@@ -67,4 +84,4 @@ self.addEventListener("message", (event) => {
     source.postMessage({ t: "ceremony:port", askId: msg.askId }, [hand.port]);
     hand.release();
   }
-});
+};

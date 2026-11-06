@@ -52,6 +52,7 @@ export type CeremonyToVessel = { readonly t: "answer"; readonly askId: string; r
 export type PageToBroker =
   | { readonly t: "ceremony:offer"; readonly askId: string }
   | { readonly t: "vessel:claim"; readonly tabSession: string }
+  | { readonly t: "vessel:withdraw"; readonly tabSession: string }
   | { readonly t: "vessel:offer"; readonly claimId: string };
 export type BrokerToPage =
   | { readonly t: "vessel:want"; readonly claimId: string; readonly tabSession: string }
