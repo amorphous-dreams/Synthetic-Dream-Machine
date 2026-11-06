@@ -44,7 +44,7 @@ export default defineConfig(async () => ({
           exclude: ["tests/e2e/**", "tests/vessel-host-*.test.ts"],
           // Three engines beside the node e2e project starve its 20 s page waits; the engines take their files one at a time.
           fileParallelism: false,
-          browser: { enabled: true, provider: playwright(), instances: await engines() },
+          browser: { enabled: true, headless: true, provider: playwright(), instances: await engines() },
         },
       },
       {
@@ -55,7 +55,7 @@ export default defineConfig(async () => ({
           name: "vessel-host",
           include: ["tests/vessel-host-*.test.ts"],
           fileParallelism: false,
-          browser: { enabled: true, provider: playwright(), instances: [{ browser: "chromium" as const }, { browser: "firefox" as const }] },
+          browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: "chromium" as const }, { browser: "firefox" as const }] },
         },
       },
       {
