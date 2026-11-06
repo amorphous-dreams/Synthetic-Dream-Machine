@@ -111,6 +111,20 @@ function makeBrowserVmShim(): Record<string, unknown> {
     // boot on one broken module; a plain fault that keeps the name, message and stack takes the
     // executor's reporting branch, so the module ends by name and the island boots on.
     try {
+      // TW5's sandbox check enumerates its realm global after the module runs. This shim
+      // executes in the worker realm, so compare against that realm at each invocation.
+      const checkStart = code.lastIndexOf("  Object.defineProperty(Object.prototype, '__temp__', {");
+      if (checkStart >= 0 && code.slice(checkStart).includes('Warning: Global assignment detected')) {
+        const baseline: Set<string>[] = [];
+        const addedGlobals = () => Object.keys(globalThis).filter((key) => !baseline[baseline.length - 1]?.has(key));
+        const compiled = (new Function(...keys, "__larAddedGlobals", "return " +
+          code.slice(0, checkStart) + code.slice(checkStart).replaceAll("Object.keys(__temp__)", "__larAddedGlobals()")) as (...args: unknown[]) => unknown)(...vals, addedGlobals);
+        if (typeof compiled !== "function") return compiled;
+        return function(this: unknown, ...args: unknown[]) {
+          baseline.push(new Set(Object.keys(globalThis)));
+          try { return compiled.apply(this, args); } finally { baseline.pop(); }
+        };
+      }
       return (new Function(...keys, "return " + code) as (...args: unknown[]) => unknown)(...vals);
     } catch (error) {
       throw namedFault(error);
