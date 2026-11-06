@@ -301,7 +301,7 @@ function fake(table) {
     let key;
     if (cmd === "git") key = args.includes("--abbrev-ref") ? "branch" : "rev";
     else if (args[1] === "list") key = `${args[args.indexOf("--workflow") + 1] === "CI" ? "runs" : "heldRuns"}${args.includes("--commit") ? "AtSha" : ""}`;
-    else if (args[0] === "api") key = "branchApi";
+    else if (args[0] === "api") key = args[1] === "rate_limit" ? "rateLimit" : "branchApi";
     else key = `view:${args[2]}`;
     n[key] = (n[key] ?? 0) + 1;
     const v = table[key];
@@ -383,6 +383,21 @@ test("RED: --wait returns once neither reading is unread: unread, unread, green 
   assert.equal(r.code, 0, r.out + r.err);
   assert.equal(r.n.runs, 3);
   assert.deepEqual(r.slept, [300000, 300000], "CONTROL: an interval over the floor paces every wait");
+});
+
+const quotaPending = () => ({ ...GREEN_TABLE(), runs: (n) => n === 1 ? [mkRun({ status: "in_progress", conclusion: null })] : [mkRun()] });
+const reportedQuota = (remaining) => ({ resources: { core: { limit: 5000, remaining, reset: 4102444800 } } });
+
+test("G54: low reported quota widens the next wait", async () => {
+  const low = await door({ ...quotaPending(), rateLimit: reportedQuota(10) }, ["--wait"]);
+  assert.equal(low.code, 0);
+  assert.ok(low.slept[0] > 180000, `low quota should widen the wait, got ${low.slept[0]} ms`);
+});
+
+test("G54 control: full reported quota keeps the floor", async () => {
+  const full = await door({ ...quotaPending(), rateLimit: reportedQuota(5000) }, ["--wait"]);
+  assert.equal(full.code, 0);
+  assert.deepEqual(full.slept, [180000]);
 });
 
 test("RED: the house poll floor holds three minutes; --interval under it refuses by name before any read, and every wait of a --wait vigil reads at least the floor", async () => {
