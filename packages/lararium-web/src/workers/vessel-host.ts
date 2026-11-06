@@ -97,13 +97,15 @@ export function standVesselHost(env: VesselHostEnv = {}) {
   /** The light the vessel's surface callbacks belong to: a vessel the lock closed calls back under none, so it reaches no
    *  session and no fold. */
   let lightNow: object | null = null;
+  /** The lighting tab a holder spawn asks: each light names its own, and retire names none. */
+  let holderPost: ((msg: VesselToPage) => void) | null = null;
   /** The lit vessel's connection listener: it ends with its light. */
   let endConnection: (() => void) | null = null;
   /** THE FOLD ENDS WITH THE LIT VESSEL: the lock and every new light retire the lit vessel, its lighter, its connection
    *  listener and its fold together, so a relight (another face on the same surface slug) hands no late session what the last
    *  vessel showed. */
   const retire = (): void => {
-    lightNow = null; litVessel = null; litBy = null; shownFrames.clear();
+    lightNow = null; litVessel = null; litBy = null; holderPost = null; shownFrames.clear();
     const end = endConnection;
     endConnection = null;
     end?.();
@@ -134,8 +136,10 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     return route?.kind === "passphrase" ? route.passphrase : "";
   };
 
-  /** A SharedWorker the page builds for this thread: the port it transfers back bridges to the one the holder door reads. */
+  /** A SharedWorker the page builds for this thread: the port it transfers back bridges to the one the holder door reads. The
+   *  class stands once; each spawn asks the tab of the light that stands at its construction. */
   const standHolderSpawn = (post: (msg: VesselToPage) => void): void => {
+    holderPost = post;
     if (typeof (globalThis as { SharedWorker?: unknown }).SharedWorker === "function") return;
     class PageBuiltSharedWorker {
       readonly port: MessagePort;
@@ -143,6 +147,11 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       constructor(url: string | URL, opts?: { name?: string }) {
         const channel = new MessageChannel();
         this.port = channel.port1;
+        const ask = holderPost;
+        if (!ask) {
+          queueMicrotask(() => { for (const listener of this.#errors) listener(new Error("spawn-refused: no light stands")); });
+          return;
+        }
         const spawnId = crypto.randomUUID();
         spawns.set(spawnId, (answer) => {
           if (!answer.port) { for (const listener of this.#errors) listener(new Error(answer.refused ?? "spawn-refused")); return; }
@@ -150,7 +159,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
           near.onmessage = (e) => far.postMessage(e.data, [...e.ports]);
           far.onmessage = (e) => near.postMessage(e.data, [...e.ports]);
         });
-        post({ t: "spawn", spawnId, role: "holder", url: String(url), name: opts?.name ?? "" });
+        ask({ t: "spawn", spawnId, role: "holder", url: String(url), name: opts?.name ?? "" });
       }
       addEventListener(type: string, listener: (e: unknown) => void): void { if (type === "error") this.#errors.add(listener); }
     }
