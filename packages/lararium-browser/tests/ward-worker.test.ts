@@ -32,7 +32,7 @@ function spawnCore(idbName: string, seen: { answers: unknown[]; unlockedDuring: 
 async function wardedBrowser() {
   const idbName = fresh();
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
-  const root = await generateOrLoadBrowserPersonaRoot(idbName, 0);
+  const root = await generateOrLoadBrowserPersonaRoot(idbName, 0, PASS);
   lockBrowserCustody(idbName);
   return { idbName, rootKey: root.verifyingKey };
 }

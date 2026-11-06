@@ -1,5 +1,6 @@
 import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
 import { BrowserWardRefused, browserWardSigner } from "./browser-ward.js";
+import type { WardRoute } from "./ward-core.js";
 import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHolder } from "@lararium/tw5";
 /**
  * openBrowserVessel — local-first browser vessel factory.
@@ -208,8 +209,8 @@ async function writeBootKeys(idbName: string, writes: BootKeyWrites): Promise<vo
 export interface BrowserVesselOptions extends LarariumVesselOptions {
   /**
    * THE WARD'S DIALOG (seat-harness#/the-ward): the page asks the person for the face's passphrase for ONE ward act (a daemon or
-   * kahua commit, a kāpae-lower) and answers it; the passphrase goes to a per-act ward worker and nothing keeps it. Absent, every
-   * ward act in this browser refuses `ward-needs-fresh-unlock` by name.
+   * kahua commit, a kāpae-lower, a face's founding or mint, a handle publish, burn or attest) and answers it; the passphrase goes
+   * to that one act and nothing keeps it. Absent, every ward act in this browser refuses `ward-needs-fresh-unlock` by name.
    */
   askWardRoute?: (act: string) => Promise<string>;
   portPolicy?: PortPolicy;
@@ -511,6 +512,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     meshLeaf, admit, walkInvite, siblingHerms,
   } = opts;
   const emit = (p: LarOpenPhase) => onPhase?.(p);
+  /** One ward act's route, asked of the page's ward dialog for this act alone; no dialog refuses by name. */
+  const wardRouteFor = async (act: string): Promise<WardRoute> => {
+    if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock", `${act} rides the face's ward, and this page offers no ward dialog`);
+    return opts.askWardRoute(act);
+  };
 
   emit("boot");
 
@@ -769,28 +775,37 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // A ROOT MINTS ONLY OVER A SLOT: a keystore with no slot asks this tab's person to bind one first, and a boot
     // with no custody door refuses `no-custody-slot` at the mint, by name (#/rulings: a browser leaf holds a
     // passphrase or paper slot before it holds a persona root).
+    // THE FACE IS BORN UNDER ITS WARD (seat-harness#/the-ward): the route the person typed for this founding's custody binds the
+    // face's ward too; a keystore this tab already holds unlocked asks the ward's dialog once. No route, no root.
+    let bornUnder: CustodyAnswer = null;
     if (opts.askCustody) {
-      const custody = await standBrowserCustody({ idbName, ask: opts.askCustody, secretMintDue: true });
+      const ask = opts.askCustody;
+      const custody = await standBrowserCustody({ idbName, ask: async (q) => { const answer = await ask(q); if (answer) bornUnder = answer; return answer; }, secretMintDue: true });
       if (custody.reading !== "bound" && custody.reading !== "opens" && custody.reading !== "held") {
         throw new BrowserCustodyRefused("no-custody-slot", idbName, `persona-root-h${String(FOUNDING_PERSONA_INDEX)}`, `the founding asked for a first slot and read ${custody.reading}`);
       }
     }
-    await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX);
-    const signerSeed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX);
-    await wearBrowserPersona(idbName, FOUNDING_PERSONA_INDEX);   // the selector points at the founded root
-    const f = await runFoundingCeremony({
-      repo,
-      placeVerifyingKey: vesselIdentity.verifyingKey,
-      vesselDisplayName:  displayName ?? "Browser Operator",
-      // The persona-root SIGNS (signerDid == the root DID, DISTINCT from deviceDid). The self-signed anon
-      // The root signer stays distinct from the place KEL seed.
-      binding: { mode: "self-stood", signerSeed },
-      hearthTrueName: "",          // hearth-agnostic: an anon is not yet bound to a place; it binds on upgrade
-      // The island this leaf stands in keys the KEL board. A FOUNDING leaf dials no anchor, so this resolves to
-      // its own key — a private nexus of one, the same value by a different derivation.
-      nexusPubkey,
-      vesselTag: browserVesselFaceTagDoor(idbName),
-    });
+    const wardRoute: WardRoute = bornUnder ?? await wardRouteFor("found this browser's first face");
+    await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX, wardRoute);
+    const signerSeed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX, wardRoute);
+    // THE ROOT SEED LEAVES THE ACT ZEROED: the ceremony signs once with it, and the bytes clear in the finally.
+    let f: Awaited<ReturnType<typeof runFoundingCeremony>>;
+    try {
+      await wearBrowserPersona(idbName, FOUNDING_PERSONA_INDEX);   // the selector points at the founded root
+      f = await runFoundingCeremony({
+        repo,
+        placeVerifyingKey: vesselIdentity.verifyingKey,
+        vesselDisplayName:  displayName ?? "Browser Operator",
+        // The persona-root SIGNS (signerDid == the root DID, DISTINCT from deviceDid). The self-signed anon
+        // The root signer stays distinct from the place KEL seed.
+        binding: { mode: "self-stood", signerSeed },
+        hearthTrueName: "",          // hearth-agnostic: an anon is not yet bound to a place; it binds on upgrade
+        // The island this leaf stands in keys the KEL board. A FOUNDING leaf dials no anchor, so this resolves to
+        // its own key — a private nexus of one, the same value by a different derivation.
+        nexusPubkey,
+        vesselTag: browserVesselFaceTagDoor(idbName),
+      });
+    } finally { signerSeed.fill(0); }
     // THE FACE'S ATOM RESTS BEFORE ITS BOOTSTRAP: the founding minted a random seed, and the face's own custody row keeps it.
     try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); } finally { f.atomSeed.fill(0); }
     // THE FACE'S ADDRESS SECRET MINTS BESIDE ITS ATOM, so its working documents derive their addresses from the first boot.
@@ -1385,10 +1400,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const handle = await repo.find<LarDoc>(provenPromoteUrl as AutomergeUrl);
           const boardFace = { group: wornGroup, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
           /** One ward act's signer: the page's dialog asks the passphrase for this act, and the ward worker signs under it. */
-          const wardRootSignerOf = async (act: string) => {
-            if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock");
-            return browserWardSigner(idbName, FOUNDING_PERSONA_INDEX, await opts.askWardRoute(act));
-          };
+          const wardRootSignerOf = async (act: string) => browserWardSigner(idbName, FOUNDING_PERSONA_INDEX, await wardRouteFor(act));
           const boardDoor = promoteBoardDoor({ group: wornGroup, face: boardFace, atom: wornAtom,
             epoch: () => readFace(personaKelChain)?.lineage.at(-1)?.epoch ?? 0,
             // THE LOWER RIDES THE WARD: the face root signs in a per-act worker, fresh from the passphrase the person types for it.
@@ -1713,7 +1725,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         }
         const roster = await listBrowserPersonaRoots(idbName);
         const nextIndex = roster.length ? Math.max(...roster) + 1 : 0;
-        const root = await generateOrLoadBrowserPersonaRoot(idbName, nextIndex);
+        // The new face is born under its own ward, bound over the route the person types for this mint.
+        const root = await generateOrLoadBrowserPersonaRoot(idbName, nextIndex, await wardRouteFor(`mint face h${String(nextIndex)}`));
         const petnames = await makeBrowserPersonaPetnameStore(idbName);
         await renameOwnPersona(petnames, nextIndex, `persona-h${nextIndex}`);
         void pushPersonaState();
@@ -1773,7 +1786,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!glamour) throw new Error("face-publish: a `glamour` (display name) is required");
         const handleIndex = await resolveFaceIndex(args);
         const board = await resolveWhoBoard("publish");
-        const card = await publishHandleBrowser({ board, kelBoard: await resolveKelBoard(), handleIndex, glamour, idbName });
+        const card = await publishHandleBrowser({ board, kelBoard: await resolveKelBoard(), handleIndex, glamour, idbName, ward: await wardRouteFor(`publish face h${String(handleIndex)}`) });
         return { verb: "face-publish", nym: card.nym, glamour: card.glamour, actCid: card.actCid, parents: card.parents };
       });
 
@@ -1783,7 +1796,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const handleIndex = await resolveFaceIndex(args);
         const board = await resolveWhoBoard("burn");
         const fromPersona = args["from-persona"] === true || args["from-persona"] === "true";
-        const burnOpts: Parameters<typeof burnFaceBrowser>[0] = { board, handleIndex, idbName };
+        const burnOpts: Parameters<typeof burnFaceBrowser>[0] = { board, handleIndex, idbName, ward: await wardRouteFor(`burn face h${String(handleIndex)}`) };
         if (fromPersona) {
           burnOpts.fromPersona = true;
           burnOpts.kelBoard    = await resolveKelBoard();
@@ -1805,7 +1818,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!claim) throw new Error(`[face-attest] no adapter answers that claim — name a surface (${HANDLE_CLAIM_SURFACES.join(" · ")}) and its subject.`);
         const handleIndex = await resolveFaceIndex(args);
         const board = await resolveWhoBoard("attest");
-        const statement = await attestFaceBrowser({ board, handleIndex, claim, idbName });
+        const statement = await attestFaceBrowser({ board, handleIndex, claim, idbName, ward: await wardRouteFor(`attest under face h${String(handleIndex)}`) });
         return { verb: "face-attest", prefix: statement.prefix, headEventCid: statement.headEventCid, claim: statement.claim, sig: statement.sig };
       });
 
