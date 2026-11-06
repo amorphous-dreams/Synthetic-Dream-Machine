@@ -56,14 +56,14 @@ function ownerTab(route: string) {
 
 const boot = (idbName: string): VesselBoot => ({ idbName, hostId: "h", wikiId: "w", genesisSeed: "", genesisCasBaseUrl: "", daemonWorkerUrl: "about:blank", workerScriptUrl: "about:blank" } as unknown as VesselBoot);
 
-function fakeVessel() {
+function fakeVessel(downs = { n: 0 }) {
   return async (o: { idbName: string; face?: string | null }) => ({
     face: o.face ?? null,
     identity: { verifyingKey: "00".repeat(32) },
     connectionState: { getSnapshot: () => ({ status: "local" }), subscribe: () => () => undefined },
     activeWikiId: "w", wikiDocUrl: "automerge:w", oracleDocUrl: "automerge:o",
     faceProviders: { lit: async () => undefined, drop: async () => undefined },
-    flush: async () => undefined, close: async () => undefined,
+    flush: async () => undefined, close: async () => { downs.n++; },
   });
 }
 
@@ -85,11 +85,12 @@ const carriesAnswer = (v: unknown, depth = 0): boolean => {
  * owner page asks its vessel worker for a port and offers it, and whose ceremony port rides the broker's ceremony routes.
  */
 async function standFloor(followerRoute: string) {
+  const downs = { n: 0 };
   const idbName = `host-follower-${crypto.randomUUID()}`;
   const face = `pg-follow-${crypto.randomUUID()}`;
   await bindFirstFaceSlot(idbName, face, { kind: "passphrase", passphrase: ROUTE });
   lockFaceCustody(idbName, face);
-  const host = standVesselHost({ locks: navigator.locks, openVessel: fakeVessel() } as never);
+  const host = standVesselHost({ locks: navigator.locks, openVessel: fakeVessel(downs) } as never);
 
   const owner = ownerTab(ROUTE);
   const oc = host.connect(owner.scope);
@@ -135,7 +136,7 @@ async function standFloor(followerRoute: string) {
     })();
   };
   port.postMessage({ t: "hello", tabSession: "tab-follower", boot: boot(idbName), face });
-  return { face, owner, follower: { heard, asks: () => heard.filter((m): m is Ask => m.t === "ask") }, broker };
+  return { face, owner, oc, downs, follower: { heard, port, asks: () => heard.filter((m): m is Ask => m.t === "ask") }, broker };
 }
 
 describe("a follower tab opens its own session over a brokered port", () => {
@@ -173,5 +174,80 @@ describe("a follower tab opens its own session over a brokered port", () => {
     const refused = bare.heard.find((m) => (m as { t: string }).t === "port:minted") as unknown as Minted;
     expect(refused, "CONTROL: a want with no admitted session mints nothing").toMatchObject({ wantId: "w1", refused: "session-unadmitted" });
     expect(refused.port).toBeUndefined();
+  }, SLOW);
+});
+
+/** THE ENGINE FACT, measured here and never assumed: closing one end of a MessageChannel fires `close` on the other. */
+const portCloseFires = async (): Promise<boolean> => {
+  const { port1, port2 } = new MessageChannel();
+  let fired = false;
+  port1.addEventListener("close", () => { fired = true; });
+  port1.start();
+  port2.close();
+  for (let i = 0; i < 40 && !fired; i++) await new Promise((r) => setTimeout(r, 25));
+  return fired;
+};
+
+const floorHeard = (heard: readonly VesselToPage[]): boolean => heard.some((m) => m.t === "status" && m.status.floor === "floor");
+
+/**
+ * THE CUSTODY SEAM: a follower's session ends with its tab. A minted connection hears its tab go three ways: its port's
+ * `close` (where the engine fires one), the page's own leaving word over its port (`page:life` pagehide), and its lifetime
+ * Web Lock (the platform grants the house that lock when the tab's context goes). The face's last session ending, the
+ * follower's included, runs the lock (the vessel comes down).
+ */
+describe("a follower tab's session ends with its tab", () => {
+  test("FB7 RED the follower held the last session: its minted port closing locks the house", async (ctx) => {
+    if (!(await portCloseFires())) { console.warn("[probe] this engine fires no MessagePort close: FB7 stands a probe item here; FB8/FB9 carry the loss"); ctx.skip(); }
+    const f = await standFloor(ROUTE);
+    await until("the follower admitted", () => f.follower.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
+    f.oc.receive({ t: "page:life", life: "pagehide" } as PageToVessel);
+    await new Promise((r) => setTimeout(r, 300));
+    expect(f.downs.n, "CONTROL: the follower's session keeps the house lit after the owner leaves").toBe(0);
+    expect(floorHeard(f.follower.heard), "CONTROL: the follower hears no floor while its session stands").toBe(false);
+    f.follower.port.close();
+    await until("the house locks at its last session (the follower's port closed)", () => f.downs.n === 1);
+  }, SLOW);
+
+  test("FB7b RED the follower's minted port closing ends its session alone — CONTROL: the owner's session survives it", async (ctx) => {
+    if (!(await portCloseFires())) { console.warn("[probe] this engine fires no MessagePort close: FB7b stands a probe item here"); ctx.skip(); }
+    const f = await standFloor(ROUTE);
+    await until("the follower admitted", () => f.follower.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
+    f.follower.port.close();
+    await new Promise((r) => setTimeout(r, 300));
+    expect(f.downs.n, "CONTROL: a follower's loss leaves the owner's house lit").toBe(0);
+    expect(floorHeard(f.owner.heard), "CONTROL: the owner hears no floor").toBe(false);
+    expect(f.owner.heard.some((m) => m.t === "ended"), "CONTROL: the owner's session stands").toBe(false);
+    // barrier: the owner leaving now leaves no session standing, so the house locks only if the follower's session ended
+    f.oc.receive({ t: "page:life", life: "pagehide" } as PageToVessel);
+    await until("the house locks once the owner leaves (the follower's session ended with its port)", () => f.downs.n === 1);
+  }, SLOW);
+
+  test("FB8 the follower page's leaving word over its own port ends its session; the owner leaving then locks the house", async () => {
+    const f = await standFloor(ROUTE);
+    await until("the follower admitted", () => f.follower.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
+    f.follower.port.postMessage({ t: "page:life", life: "pagehide" } satisfies PageToVessel);
+    await new Promise((r) => setTimeout(r, 300));
+    expect(f.downs.n, "CONTROL: the follower's leaving leaves the owner's house lit").toBe(0);
+    f.oc.receive({ t: "page:life", life: "pagehide" } as PageToVessel);
+    await until("the house locks once the owner leaves", () => f.downs.n === 1);
+  }, SLOW);
+
+  test("FB9 the follower's lifetime lock released (its context gone) ends its session; the owner leaving then locks the house", async () => {
+    const f = await standFloor(ROUTE);
+    await until("the follower admitted", () => f.follower.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
+    const greeting = f.follower.heard.find((m): m is Extract<VesselToPage, { t: "greeting" }> => m.t === "greeting")!;
+    let release!: () => void;
+    const held = new Promise<void>((armed) => {
+      void navigator.locks.request(greeting.lifetimeLock, () => new Promise<void>((r) => { release = r; armed(); }));
+    });
+    await held;
+    f.follower.port.postMessage({ t: "session:armed", sessionId: greeting.sessionId } satisfies PageToVessel);
+    await new Promise((r) => setTimeout(r, 100));
+    release();
+    await new Promise((r) => setTimeout(r, 300));
+    expect(f.downs.n, "CONTROL: the follower's loss leaves the owner's house lit").toBe(0);
+    f.oc.receive({ t: "page:life", life: "pagehide" } as PageToVessel);
+    await until("the house locks once the owner leaves", () => f.downs.n === 1);
   }, SLOW);
 });

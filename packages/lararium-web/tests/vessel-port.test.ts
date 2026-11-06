@@ -3,7 +3,7 @@
  * carries the page's acts across as typed messages (browser-vessel-lift slice 2). A fake worker stands in for the vessel.
  */
 import { expect, test } from "vitest";
-import { standVesselPort, VesselRefused, type VesselWorkerLike } from "../src/vessel-port.js";
+import { standVesselPort, vesselWorkerOfPort, VesselRefused, type VesselWorkerLike } from "../src/vessel-port.js";
 import type { PageToVessel, VesselToPage } from "../src/vessel-protocol.js";
 
 function fakeWorker() {
@@ -147,4 +147,49 @@ test("a hello names an earlier greeting only when the page hands one", () => {
   port.hello(boot, { ownerEpoch: "e0", sessionId: "s0" });
   expect((sent[0]!.msg as { resume?: unknown }).resume).toBeUndefined();
   expect((sent[1]!.msg as { resume?: unknown }).resume).toEqual({ ownerEpoch: "e0", sessionId: "s0" });
+});
+
+/** Every message the far end of a channel hears, in order. */
+function farEnd(port: MessagePort) {
+  const heard: PageToVessel[] = [];
+  port.onmessage = (e: MessageEvent<PageToVessel>) => { heard.push(e.data); };
+  return heard;
+}
+const settle = async (ok: () => boolean): Promise<void> => { for (let i = 0; i < 80 && !ok(); i++) await new Promise((r) => setTimeout(r, 10)); };
+
+test("RED: the owner's page asks its vessel to mint a follower's port and takes the minted end unread — CONTROL: a refusal mints null, another want's reply settles nothing", async () => {
+  const { worker, sent, say } = fakeWorker();
+  const port = standVesselPort(worker, {}, { locks: null });
+  const minted = port.mintPort("w1", "tab-b");
+  expect(sent.at(-1)?.msg, "the want crosses as a typed message").toEqual({ t: "port:want", wantId: "w1", tabSession: "tab-b" });
+  const refused = port.mintPort("w2", "tab-c");
+  const { port1, port2 } = new MessageChannel();
+  let w2: MessagePort | null | "open" = "open";
+  void refused.then((p) => { w2 = p; });
+  say({ t: "port:minted", wantId: "w1", port: port1 } as VesselToPage);
+  await expect(minted, "the owner's page holds the follower's end, to offer it unread").resolves.toBe(port1);
+  await tick();
+  expect(w2, "CONTROL: w1's reply settles w2 not at all").toBe("open");
+  say({ t: "port:minted", wantId: "w2", refused: "session-unadmitted" } as VesselToPage);
+  await expect(refused, "CONTROL: a refused want mints nothing").resolves.toBeNull();
+  port2.close();
+});
+
+test("RED: a follower's vessel port over its brokered port holds its lifetime lock, carries its leaving word, and closes the port at its end", async () => {
+  const { port1, port2 } = new MessageChannel();
+  const heard = farEnd(port2);
+  const held: string[] = [];
+  const locks = { request: (name: string, callback: () => Promise<unknown>) => { held.push(name); return callback(); } };
+  const port = standVesselPort(vesselWorkerOfPort(port1), {}, { locks });
+  port2.postMessage({ t: "greeting", ownerEpoch: "e1", sessionId: "s9", lifetimeLock: "lares:vessel-session:s9" } satisfies VesselToPage);
+  await settle(() => heard.length > 0);
+  expect(held, "the follower's tab holds its own session's lifetime lock").toEqual(["lares:vessel-session:s9"]);
+  expect(heard, "and says armed over the brokered port").toEqual([{ t: "session:armed", sessionId: "s9" }]);
+  port.pageLife("pagehide");
+  await settle(() => heard.length > 1);
+  expect(heard.at(-1), "the follower's leaving word reaches the vessel over its own port").toEqual({ t: "page:life", life: "pagehide" });
+  port.terminate();
+  port.pageLife("hidden");
+  await new Promise((r) => setTimeout(r, 50));
+  expect(heard, "a terminated follower port carries nothing more").toHaveLength(2);
 });
