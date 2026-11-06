@@ -212,8 +212,11 @@ export {
 export type { ContractSecretsPlane, FaceSecretsCatalog, SecretsRegistry, SecretsRegistryReading, SecretsRegistryReason } from "./secrets-registry.js";
 export {
   NO_CONTRACT_SECRETS_PLANE, SECRETS_REGISTRY_ROW, SECRETS_REGISTRY_KIND, SECRETS_PLANE_KIND, SECRETS_REGISTRY_VERSION,
-  SecretsRegistryRefusal, secretsPlaneRow, makeFaceSecretsRegistry,
+  SecretsRegistryRefusal, secretsPlaneRow, makeFaceSecretsRegistry, faceScopedSecrets, secretsDoorsIn,
 } from "./secrets-registry.js";
+// The one tighten predicate every allowing return passes through, and the declared tier read off bag manifests.
+export type { ShareAudience, DocBagBinding, ManifestTierReaders, DeclaredTierReason } from "./share-tighten.js";
+export { audiencePermits, tightenShare, makeManifestTierSource, DeclaredTierRefusal } from "./share-tighten.js";
 // The cad ENCRYPT-ON-CAS primitive — cid = BLAKE3(ciphertext), verify-cap ⊥ read-cap.
 export {
   ciphertextCid, verifyCiphertextCid, sealPrivateBody, openPrivateBody,

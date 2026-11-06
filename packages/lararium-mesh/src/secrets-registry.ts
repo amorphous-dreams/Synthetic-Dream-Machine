@@ -183,3 +183,32 @@ export function makeFaceSecretsRegistry(catalog: FaceSecretsCatalog): SecretsReg
     },
   };
 }
+
+/**
+ * faceScopedSecrets — the registry gates only its OWN face's documents (operator clarification 2026-11-06). A doc
+ * the face does not own (the public shelf, genesis) answers false without asking the registry, so a locked or unread
+ * registry never withholds them; a doc the face owns asks the registry and refuses while it cannot read. An `owns`
+ * that cannot answer throws, and the crossing refuses.
+ */
+export function faceScopedSecrets(plane: ContractSecretsPlane, owns: (documentId: string) => boolean): ContractSecretsPlane {
+  return {
+    isContractSecretsPlane(documentId: string): boolean {
+      return owns(documentId) ? plane.isContractSecretsPlane(documentId) : false;
+    },
+  };
+}
+
+/** The verbs that stand or onboard a secrets store. The store's one door stands on the node vessel (reach-plane#/cred-onboarding). */
+const SECRETS_DOOR_PATTERNS: readonly RegExp[] = [
+  /\bexport\b[^\n;=(]*?\b\w*(?:onboard|reach-?vault|vault-?stand|stand-?vault|secrets-?store|paste-?token|reach-?cred)\w*/gi,
+  /["'`][^"'`\n]*(?:onboard|reach-?vault|vault-?stand|stand-?vault|secrets-?store|paste-?token|reach-?cred)[^"'`\n]*["'`]/gi,
+  /\b\w*secrets\w*\s*\.\s*(?:register|initialize)\s*\(/gi,
+];
+
+/**
+ * secretsDoorsIn — every onboarding or vault-stand door a module's source text holds: an exported verb, a routed verb
+ * string, a secrets registry `register` / `initialize` call. The static witness reads the browser through it.
+ */
+export function secretsDoorsIn(source: string): string[] {
+  return SECRETS_DOOR_PATTERNS.flatMap((pattern) => [...source.matchAll(pattern)].map((m) => m[0]));
+}
