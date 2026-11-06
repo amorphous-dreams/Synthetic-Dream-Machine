@@ -67,6 +67,8 @@ export interface VesselHostEnv {
   readonly livenessBudgetMs?: number;
   /** The vessel the house lights (`openBrowserVessel` by default; a host witness hands a stand-in). */
   readonly openVessel?: typeof openBrowserVessel;
+  /** Hear a session's admission begin its wait on the house's lock in flight (the house's own event). */
+  readonly onAdmissionWaits?: (session: VesselSession) => void;
 }
 
 const BOOT_READING = { unlock: "opens", "bind-first": "bound", clear: "clear" } as const;
@@ -259,6 +261,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       // The lock retires the lit vessel and its fold itself: its last session's close leaves no session to hear the floor.
       onLocked: () => retire(),
       onFloor: (s, floor) => statusTo(conns.get(s.sessionId), { floor }),
+      ...(env.onAdmissionWaits ? { onAdmissionWaits: env.onAdmissionWaits } : {}),
       onDrop: (s, why) => {
         const conn = conns.get(s.sessionId);
         if (conn) conn.session = null;

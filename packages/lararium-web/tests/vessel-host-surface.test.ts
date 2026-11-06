@@ -103,6 +103,9 @@ function fakeVessel() {
   let closeGate: Promise<void> | null = null;
   /** Each light's connection listeners, in light order: a case fires a closed light's own. */
   const connections: Array<Set<(state: unknown) => void>> = [];
+  /** Each light's open, heard as it lands: `opened(n)` settles once the n-th light opens. */
+  const openWaits: Array<{ n: number; heard: () => void }> = [];
+  const opened = (n: number): Promise<void> => new Promise<void>((heard) => { if (connections.length >= n) heard(); else openWaits.push({ n, heard }); });
   let shown = "w";
   /** The camera's mount epoch, as the island's camera keeps it: a resend re-mints it, and an act under another answers stale-target. */
   let epoch = 1;
@@ -114,6 +117,7 @@ function fakeVessel() {
     hooks.onPortMessage = o.onPortMessage;
     const listeners = new Set<(state: unknown) => void>();
     connections.push(listeners);
+    for (const w of openWaits.splice(0)) { if (connections.length >= w.n) w.heard(); else openWaits.push(w); }
     return {
       face: o.face ?? null,
       identity: { verifyingKey: "00".repeat(32) },
@@ -147,7 +151,7 @@ function fakeVessel() {
   };
   return { open, hooks, placed, closed, controlEvents, resent, surfaces, mirrorReads, show: (s: string) => { shown = s; }, paint, answer, epoch: () => epoch, closes: () => closes,
     holdClose: (): (() => void) => { let open = (): void => undefined; closeGate = new Promise<void>((r) => { open = r; }); return () => { closeGate = null; open(); }; },
-    connections };
+    connections, opened };
 }
 
 const until = async (what: string, ok: () => boolean): Promise<void> => {
@@ -401,7 +405,9 @@ describe("surface traffic reaches each session over its own port", () => {
     const faceA = await standFace(idbName, ROUTE);
     const faceB = await standFace(idbName, OTHER_ROUTE);
     const v = fakeVessel();
-    const host = standVesselHost({ locks: navigator.locks, openVessel: v.open } as never);
+    let waitHeard = (): void => undefined;
+    const waits = new Promise<"waits">((r) => { waitHeard = () => r("waits"); });
+    const host = standVesselHost({ locks: navigator.locks, openVessel: v.open, onAdmissionWaits: () => waitHeard() } as never);
     const a = tab(ROUTE);
     const ca = enter(host, a, "tab-a", idbName, faceA);
     await until("A admitted", a.admitted);
@@ -413,8 +419,8 @@ describe("surface traffic reaches each session over its own port", () => {
     await until("A's lock reaches its vessel's close", () => v.closes() === 1);
     const b1 = tab(OTHER_ROUTE), b2 = tab(OTHER_ROUTE);
     enter(host, b1, "tab-b1", idbName, faceB);
-    // B's own unlock runs its KDF: give its admission the room to reach its light while the lock still stands (the old race).
-    for (let i = 0; i < 200 && v.connections.length < 2; i++) await new Promise((r) => setTimeout(r, 25));
+    // The order rides the house's own events: B's admission waits on the lock, or (the old race) B's light opens under it.
+    await Promise.race([waits, v.opened(2)]);
     letGo();
     await until("B1 admitted", b1.admitted);
     await settle();
