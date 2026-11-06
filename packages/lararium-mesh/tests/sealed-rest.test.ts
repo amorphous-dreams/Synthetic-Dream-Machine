@@ -70,11 +70,11 @@ function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (
   const asks = new Map<string, { verb: string; session: Session }>();
   const sealedUnder: { documentAsk: string; session: string }[] = [];
   answerDocStoreAsks(islandSide, {
-    async seal({ bagId, values, ask }) {
+    async seal({ bagId, values, ask, peer }) {
       const booked = asks.get(ask.requestId);
       if (!booked || booked.verb !== ask.verb) return { refusal: "signer-unavailable" } as never;
       sealedUnder.push({ documentAsk: ask.requestId, session: booked.session.id });
-      return a.holder.sealValues({ bagId, values, signer: booked.session.signer });
+      return a.holder.sealValues({ bagId, values, signer: booked.session.signer, ...(peer !== undefined ? { peer } : {}) });
     },
     open: (args) => a.holder.openValue(args),
   });
@@ -306,6 +306,44 @@ describe("T4: a change books its own writer", () => {
     expect(r.rest.book.writerOf(mine.documentId)).toBe("session:s-a");
     await repo.shutdown();
     await peer.shutdown();
+  });
+});
+
+describe("U3: the manifest carries the change's writer, signed with it", () => {
+  it("after a restart drops the book, each sealed value names its writer off its own manifest: the peer's change `peer:<actor>`, the local change the signing session", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const r = standRest(a, inner);
+    const session: Session = { id: "s-a", subject: r.own, signer: a.signer };
+    const peer = new Repo({ network: [], peerId: "peer-replica" as PeerId });
+    const repo = linked(r.rest, peer, "vessel");
+    r.seat(repo);
+    r.rest.watch(repo, () => session);
+    const theirs = peer.create<{ note?: string; ours?: string }>();
+    theirs.change((d) => { d.note = SECRET; });
+    const peerActor = A.getActorId(theirs.doc() as A.Doc<unknown>);
+    const mine = await repo.find<{ note?: string; ours?: string }>(theirs.url);
+    await settle();
+    await repo.flush();
+    await r.rest.store.flush();
+    mine.change((d) => { d.ours = "a local word"; });
+    await repo.flush();
+    await r.rest.store.flush();
+    await repo.shutdown();
+    await peer.shutdown();
+    // THE BOOK GOES: a restart holds no booking, so whatever names a writer now reads it off the sealed record.
+    a.restart();
+    const { logicalRefOf } = await import("../src/sealed-doc-store.js");
+    const keys = [...inner.bytes.keys()].filter((k) => k.startsWith(mine.documentId)).map((k) => k.split("\u0000"));
+    expect(keys.length).toBeGreaterThan(1);
+    const writers = new Set<string>();
+    for (const key of keys) {
+      const opened = await a.holder.openValue({ bagId: BAG, role: key[1] === "snapshot" ? "checkpoint" : "change", ref: logicalRefOf(key) });
+      expect("plaintext" in opened, JSON.stringify(opened)).toBe(true);
+      if ("plaintext" in opened) writers.add(opened.changeWriter);
+    }
+    expect([...writers].sort()).toEqual([`peer:${peerActor}`, `session:${a.signer.certificate.sessionKey}`].sort());
   });
 });
 
