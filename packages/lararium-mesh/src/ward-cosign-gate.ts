@@ -30,7 +30,7 @@ import { intentAdmissionRecordsOfGroup } from "./intent-admission.js";
 import { readIntentPlane, type IntentReadInput, type IntentView } from "./intent-read.js";
 import type { LarDoc } from "./base-doc.js";
 import type { IntentVerbRegistry } from "./intent-verbs.js";
-import { cosignDigest, judgeCosign } from "./ward-cosign.js";
+import { cosignDigest, judgeCosign, wardActWitness, type WardActWitness, type WardCosignAct } from "./ward-cosign.js";
 import { WardRefused } from "./ward-slots.js";
 
 type Standing = "stands" | "aside" | "unknown";
@@ -84,11 +84,11 @@ export function intentPlaneCosignPort(input: {
   };
 }
 
-/** One ward act, as its digest names it. */
-export interface WardCosignAct {
-  readonly verb: "ward-kapae-lower" | "ward-house-cap" | "ward-push-go";
-  readonly wiki: string;
-  readonly head: string;
+export type { WardCosignAct } from "./ward-cosign.js";
+
+/** The readers' witness over the gate's own port: the same plane, roster and standing the gate reads, fresh at each call. */
+export function cosignPortWitness(port: WardCosignPort): WardActWitness {
+  return wardActWitness({ group: port.group, devices: () => port.devices(), view: () => port.view(), standing: (atom) => port.standing(atom) });
 }
 
 /** The intent one act at one head names: the issuer, the verb, the act's own words, and the digest as its nonce. */

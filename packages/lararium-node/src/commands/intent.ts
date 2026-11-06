@@ -68,6 +68,18 @@ export function answerRefusal(asked: ReturnType<typeof askShown>, signer: string
   return null;
 }
 
+/** Sign one answer to an ask. The door signs no ward answer the plane would count as nothing: it refuses before it signs. */
+export async function signIntentAnswer(input: {
+  readonly group: string; readonly signer: IntentSigner; readonly ask: string; readonly executor: string; readonly deny: boolean;
+  readonly asked: ReturnType<typeof askShown>;
+  /** The face's handle index on this vessel, and the act's ward route. */
+  readonly face: number; readonly ward?: WardCredential;
+}): Promise<SignedIntentEntry> {
+  const refusal = answerRefusal(input.asked, input.signer.key, input.executor, input.deny);
+  if (refusal) throw new IntentRefused(refusal);
+  return buildAnswer({ group: input.group, signer: input.signer, ask: input.ask, executor: input.executor, verdict: input.deny ? "deny" : "approve", refs: [input.ask] });
+}
+
 export interface IntentCommandOptions {
   /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
   readonly ward?: WardCredential;
@@ -280,10 +292,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
         if (!target || !opts.executor) throw new IntentRefused("ask-or-executor-absent");
         const asked = askShown(view(), target);
         shown = asked;
-        // The door signs no ward answer the plane would count as nothing: it refuses before it signs.
-        const refusal = answerRefusal(asked, atom.key, opts.executor, !!opts.deny);
-        if (refusal) throw new IntentRefused(refusal);
-        entry = await buildAnswer({ group, signer, ask: target, executor: opts.executor, verdict: opts.deny ? "deny" : "approve", refs: [target] }); break;
+        entry = await signIntentAnswer({ group, signer, ask: target, executor: opts.executor, deny: !!opts.deny, asked, face: index, ...(opts.ward ? { ward: opts.ward } : {}) }); break;
       }
       case "claim":
         if (!target) throw new IntentRefused("intent-id-absent");

@@ -15,11 +15,19 @@
  */
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { WARD_COSIGN_DIGEST_DOMAIN } from "./domains.js";
-import { mayAct, type IntentView } from "./intent-read.js";
+import { intentId } from "./intent-entry.js";
+import { mayAct, type IntentState, type IntentView } from "./intent-read.js";
 import { WARD_COSIGN_VERBS } from "./intent-verbs.js";
 import type { PersonaProjection } from "./persona-act.js";
 
 type Standing = "stands" | "aside" | "unknown";
+
+/** One ward act, as its digest names it: the verb, the wiki it binds and the head it acts over. */
+export interface WardCosignAct {
+  readonly verb: "ward-kapae-lower" | "ward-house-cap" | "ward-push-go";
+  readonly wiki: string;
+  readonly head: string;
+}
 
 /** The digest an ask carries as its `detail`: it names the act, the face, the wiki and the head the act binds. */
 export function cosignDigest(parts: { readonly act: string; readonly face: string; readonly wiki: string; readonly head: string }): string {
@@ -88,4 +96,47 @@ export function judgeCosign(input: {
     return refuse("requester-may-not-act");
   }
   return { need: "cosign", approved: true, cosigner: signer, answer: answer.cid };
+}
+
+/**
+ * What a READER of a ward act's effect asks (a board's kāpae lower, the house cap, a go): does this act stand beside its co-sign?
+ * The gate holds the door; the witness holds every reader, so an act signed outside the door (the root opened through the ward
+ * route, never through the gate) reads as nothing on a face of two devices. `accepts` answers false where the act refuses
+ * (`ward-act-uncosigned`).
+ */
+export interface WardActWitness { readonly accepts: (act: WardCosignAct) => boolean }
+
+/**
+ * The witness over a face's intent plane, read fresh at each call. A face whose signed admission fold holds zero or one device
+ * (set-aside ones counted, as the judge counts them) accepts the act on its own. A face of two or more accepts it only beside a
+ * SPENT co-sign: the intent the act's digest names as its nonce (the act's own verb and words), the issuer's ask naming that
+ * digest, its counted answer an approve from another device of the face that stands, naming the issuer as executor, and the
+ * issuer's outcome in the intent's slot. A plane that did not load, or a fold that throws, accepts nothing on two devices.
+ */
+export function wardActWitness(input: {
+  readonly group: string; readonly devices: () => readonly string[]; readonly view: () => IntentView | null; readonly standing: (atom: string) => Standing;
+}): WardActWitness {
+  return {
+    accepts: (act) => {
+      let devices: readonly string[], view: IntentView | null;
+      try { devices = input.devices(); } catch { return false; }
+      if (devices.length < 2) return true;
+      try { view = input.view(); } catch { return false; }
+      if (!view) return false;
+      const digest = cosignDigest({ act: act.verb, face: input.group, wiki: act.wiki, head: act.head });
+      const args = { wiki: act.wiki, head: act.head }, enrolled = new Set(devices.map((d) => d.toLowerCase()));
+      return view.intents.some((s) => s.verb === act.verb && s.id === intentId({ issuer: s.issuer, verb: s.verb, args, nonce: digest }) && spentCosign(s, digest, enrolled, input.standing));
+    },
+  };
+}
+
+function spentCosign(s: IntentState, digest: string, devices: ReadonlySet<string>, standing: (atom: string) => Standing): boolean {
+  if (s.audience.mode !== "asks") return false;
+  const answer = s.answer;
+  if (answer === null || answer === "contested" || answer.entry.body["verdict"] !== "approve") return false;
+  const signer = answer.entry.signer.toLowerCase();
+  if (signer === s.issuer || !devices.has(signer) || standing(signer) !== "stands") return false;
+  if (String(answer.entry.body["executor"] ?? "").toLowerCase() !== s.issuer) return false;
+  if (!s.asks.some((q) => q.cid === answer.entry.body["ask"] && q.entry.signer === s.issuer && q.entry.body["detail"] === digest)) return false;
+  return s.slots.some((slot) => slot.winner?.entry.signer === s.issuer);
 }
