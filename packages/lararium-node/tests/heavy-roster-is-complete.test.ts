@@ -104,6 +104,10 @@ const EXCLUDED_BY_DESIGN: Record<string, string> = {
     "excluded from `main`, absent from `heavy` — a real `openNodeHerm` and a real `openNodeVessel` in one process: the herm's record " +
     "carries no `sessionSign`, the lift's reaches its own book, and a lift refused after its keel seats no door. Runs in CI's `node` e2e " +
     "shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
+  "tests/e2e/seat-settle-before-mount.test.ts":
+    "excluded from `main`, absent from `heavy` — two full `openNodeVessel` boots: the fold's own `seat-duties` ask goes out before the " +
+    "host working layer mounts and settles once it mounts; a vessel owing no raise asks nothing. Runs in CI's `node` e2e shard " +
+    "(`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
 };
 
 describe("the serial heavy roster detects its own staleness", () => {
