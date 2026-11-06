@@ -1,0 +1,95 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/working/shrinebeest-household-network-design`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space = "stable"
+rating = "ano"
+status = "working-draft"
+role = "ShrineBeest household network diagram and homunculus/ephyra template design"
+title = "lar:///ha.ka.ba/elyncia/working/shrinebeest-household-network-design"
+type = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/elyncia/working/shrinebeest-household-network-design"
+```
+
+<<~ ahu slot=`#/head`>>
+! ShrineBeest Household Network ~ Diagram and Template Notes
+
+!! Provenance and scope
+
+''Operator-specified roster (2026-11-06):'' Aki, Ichi, ShrineBeest, 18 homunculi and 6 Ephyra in groups of three. Proposed structure: six homunculus triads (three paired work units of six) and two Ephyra triads. Role assignments below remain PROPOSAL. The historical Aki working sheet still mentions 6–12 homunculi, but this new operator roster controls this draft. The original ShrineBeest source records one clutch, not a costed 18-plus-6 deployment; reconcile spawning and upkeep before play. Aki operates the shrine Hallmark; Ichi remains an autonomous deuteragonist.
+
+''Sources, ref feature/lady-aki-character-sheet:'' ShrineBeest `bags/elyncia/ha.ka.ba/elyncia/characters/companions/strandbeest-shrine.mem`; Aki `elyncia/working/lady-aki-annotated-character-sheet.mem`; Ichi `elyncia/working/ichi-annotated-character-sheet.mem`; Powers and ECM `ftls/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`.
+
+!! Exact network diagram
+
+```mermaid
+flowchart TB
+  A["Aki — ritual authority and care"] <-->|"consent, field plan"| I["Ichi — soldier, spore-telepathy, training"]
+  A <-->|"offerings, command, rites"| S[["ShrineBeest L2 — lararium, daughter-ring, spore hub"]]
+  I <-->|"security, patterns, feedback"| S
+  S <-->|"attuned relay"| EA["Ephyra triad A: E01 E02 E03"]
+  S <-->|"attuned relay"| EB["Ephyra triad B: E04 E05 E06"]
+  EA <-.->|"alignment / ECM"| EB
+  EA --> H1["H01 H02 H03 — fieldworks"]
+  EA --> H2["H04 H05 H06 — logistics"]
+  EA --> H3["H07 H08 H09 — cultivation"]
+  EB --> H4["H10 H11 H12 — guard"]
+  EB --> H5["H13 H14 H15 — scouts"]
+  EB --> H6["H16 H17 H18 — flex/repair"]
+  classDef core fill:#eee2b9,stroke:#88703e,color:#352b1b,stroke-width:2px
+  classDef eph fill:#e4ddf1,stroke:#8473ad,color:#2e2442
+  classDef hom fill:#dcecdf,stroke:#6b947b,color:#254a35
+  class A,I,S core
+  class EA,EB eph
+  class H1,H2,H3,H4,H5,H6 hom
+```
+
+''Roster check:'' H01–H18 = 18 individuals; E01–E06 = 6 individuals, two groups of three. Six homunculus triads can combine into three formations of six. All work assignments remain swappable rather than fixed roles. Solid links show routine proposed handoffs; dashed links show optional compatible relay / contest, not automatic remote casting. The covered wagon remains a separate cargo vehicle, out of current network scope.
+
+!! Homunculus weapon templates — OPERATOR-SPECIFIED BASES
+
+Physical support, labor and equipment forms use ''summoned or bound equipment'', with six available base templates:
+
+| Base form | Purpose (draft) | Proposed progression |
+|---|---|---|
+| Kanabō | Shock, break, heavy guard | Tetsubō |
+| Light bow | Ranged support / scouting | Yumi |
+| Monk's spade | Engineer, clearing, defense | Upgrade undecided |
+| Naginata | Reach, sweep, formation | Upgrade undecided |
+| Spear | Phalanx, interception | Yari |
+| Wakazashi (wakizashi) | Sidearm and mobile work | Daishō / tachi ensemble |
+
+''Critical recovery boundary:'' Ichi's original yari, tachi, asymmetric bow and rifle remain MISSING pending recovery. Manifesting a weapon template does not restore, duplicate or confer the original item's properties. A homunculus spade does not duplicate Ichi's invested Level 1 Hallmark spade. The user's progressions name future templates; unlock prerequisites, pattern recovery, XP, summoned/bound costs, reconfiguration limits, handling and persistence remain OPEN. Daishō denotes a paired sword arrangement, not merely stronger wakizashi. No rifle template has been granted.
+
+!! Ephyra templates — MAGIC / CONTROL / RESOURCE / INFRASTRUCTURE
+
+The user requests Ephyra analogues focused on the four-part household loop rather than physical combat. The following roles remain PROPOSAL, not newly purchased Powers.
+
+| Ephyra | Template | Domain | Narrow proposed service |
+|---|---|---|---|
+| E01 | Channeler | Magic | Carry prepared ritual anchors and deliver authorized payload |
+| E02 | Coordinator | Control | Relay orders and formation handshakes |
+| E03 | Warden | Control / Magic | Detect interference and watch field integrity |
+| E04 | Cultivator | Resource | Record/gather fungal resources and substrate |
+| E05 | Engineer | Infrastructure | Maintain relay sites and convey repair signals |
+| E06 | Archivist | Infrastructure / Control | Carry route maps, records and task receipts |
+
+''Loop:'' Resources sustain Infrastructure; Infrastructure supports Control and route integrity; Control authorizes Magic; magic/fieldwork may change Resources; report outcomes and costs. No perpetual Mana battery, free spells, or extra actions follow from the diagram. Ephyra keep narrow task mandates; a named template need not grant all adjacent magical abilities.
+
+!! Spore-field errata — OPERATOR DESIGN INTENT
+
+The shrine and Glowkin create a ''living spore territory'', analogous to Warcraft III Undead Blight or StarCraft creep: a field that may seed or persist in suitable environments. Compatible resonances establish local-first Web3-like communication and command-and-control bubbles; misalignment can impede, jam or contest signals. Spore payloads support purchased sustained auras, cleric-like channel bursts, or activated defensive/offensive exposure mechanics. For each exposure-bearing effect specify source/Power, carrier, alignment, Save, onset, frequency, effect, duration and cure/clearance, adapting Pathfinder-style affliction grammar into FTLS.
+
+Keep ''physical spores'', ''noospheric protocol'', and ''paid magical effect'' separate. Existing FTLS Pheromone Beacon, Myrmidon Surge and ECM furnish precedents, not automatically granted powers. Signal radius, propagation and persistence, energy/resource budget, network overlap, authorization, affliction scaling, recoverability and environmental disturbance remain OPEN.
+
+!! Next scope — caravan train
+
+The currently attached covered wagon remains ONE separately towed vehicle with six-sack capacity in the existing sheet, not a free extension of the ShrineBeest's nine *stone*-scale inventory slots. This diagram concerns household network roles rather than towing, wagon defenses or logistics economics.
+
+''Governance:'' Working note only. No promotion of this provisional network diagram, spawned counts, template loadouts or Power mechanics into `bags/` canon without further operator direction.
+<<~/ahu>>
+
+<<^ code=`&#x0004;` to=`?`>>
