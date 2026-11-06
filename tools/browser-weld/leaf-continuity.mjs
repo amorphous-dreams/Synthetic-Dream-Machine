@@ -439,6 +439,15 @@ async function ordinaryWalk() {
   });
 }
 
+// THE FAULT EMPTIES THE BINDING GATE'S BOOT READ ALONE: the anchor the observation route reads. The co-sign port's per-act
+// `liveKelChain` closure reads the same chain later in the same module and stays untouched, so the fault reaches the gate.
+const BOOT_CHAIN_READ = /const personaKelChain = personaKelChainForPrefix\(kelBoard\.doc\(\), personaKelPrefix\);/g;
+
+function emptyBootChainRead(source) {
+  const count = source.match(BOOT_CHAIN_READ)?.length ?? 0;
+  return { count, body: count === 1 ? source.replace(BOOT_CHAIN_READ, "const personaKelChain = null;") : source };
+}
+
 async function faultWalk() {
   return withProfile(async (context) => {
     const page = await context.newPage();
@@ -452,13 +461,12 @@ async function faultWalk() {
       const type = response.headers()["content-type"] ?? "";
       if (!/javascript/.test(type)) return route.fulfill({ response });
       const source = instrumentBootSource(await response.text());
-      const read = /personaKelChainForPrefix\(kelBoard\.doc\(\), personaKelPrefix\)/;
-      const matches = source.match(new RegExp(read.source, "g")) ?? [];
-      if (matches.length === 0) return route.fulfill({ response, body: source });
-      if (matches.length !== 1) throw new Error(`C4 fault route found ${matches.length} chain reads in one fetched module`);
+      const { count, body } = emptyBootChainRead(source);
+      if (count === 0) return route.fulfill({ response, body: source });
+      if (count !== 1) throw new Error(`C4 fault route found ${count} chain reads in one fetched module`);
       replacements += 1;
       if (replacements > 1) throw new Error("C4 fault route found more than one chain read");
-      return route.fulfill({ response, body: source.replace(read, "null") });
+      return route.fulfill({ response, body });
     });
 
     await page.reload({ waitUntil: "domcontentloaded" });
@@ -476,4 +484,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   await faultWalk();
 }
 
-export { instrumentBootSource, observeKelRead };
+export { emptyBootChainRead, instrumentBootSource, observeKelRead };
