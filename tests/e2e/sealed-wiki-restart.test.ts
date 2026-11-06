@@ -15,8 +15,10 @@
  *        island's store nor the daemon island's owned store (V2: an island rests no document the vessel seals)
  *   R4 — B restarts over the same root, unlocks and crosses A's gate again: the restart's hydration rests nothing clear
  *        (a sealed document's load waits for its map), and the marker reads back whole
- *   R5 — after the read-back, the one clear copy outside the projection rests in the daemon document, whose verb outcome
- *        ledger carries the read's answer to the CLI (U1's D half, owed: sealed-store#/owed); no wiki document holds it
+ *   R5 — after the read-back, no store outside the projection holds the marker clear: the verb outcome ledger that carries
+ *        the read's answer to the CLI rests in the daemon wiki's working slot, which seals under the lit face (U1's D
+ *        half), and the daemon document rests no outcome body. The ledger's titles (`bags/daemon/outcomes/<id>`) name
+ *        tiddlers that never project (`disk-projection: no`), so every byte of them rests in a store, never in `bags/`
  *
  * The suite runs only in a STAGED target: it founds two vessels and never touches a live hearth.
  */
@@ -110,15 +112,11 @@ describe.runIf(staged)("a sealed wiki write survives a stand-down at once and a 
     expect(text, B2.bootLog().slice(-3000)).toContain(SEALED_MARK);
   }, 300_000);
 
-  test("R5 — after the read-back, the one clear copy outside the projection rests in the daemon document's verb outcome ledger (U1's D half, owed); no wiki document holds it in any store", async () => {
+  test("R5 — after the read-back, no store outside the disk projection holds the marker clear: the outcome ledger rests sealed under the lit face, and the daemon document rests no outcome body", async () => {
     const daemonUrl = bootDocUrl(B2!, "daemon");
     expect(daemonUrl, "the boot names its daemon document").not.toBeNull();
-    const id = daemonUrl!.slice("automerge:".length);
-    const daemonDir = `${id.slice(0, 2)}/${id.slice(2)}/`;
     await B2!.stopDaemonOnly();
-    // sealed-store#/owed (U1, the D half): the CLI reads a verb's answer off its durable outcome record in the daemon
-    // document, so a read's outcome carries the body there. Every other store rests none.
-    const outside = restingClear(pair!.rootB).filter((rel) => !rel.includes(daemonDir));
-    expect(outside).toEqual([]);
+    // barrier: the stand-down's own exit (stopDaemonOnly resolves once the daemon process left).
+    expect(restingClear(pair!.rootB)).toEqual([]);
   }, 120_000);
 });
