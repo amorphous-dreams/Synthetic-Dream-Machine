@@ -9,8 +9,11 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import {
   DAEMON_BAG_ID, ed25519SignerFromSeed, leaseEpochSlotUri, seedDaemonDoc, signLeaseAdvance, signedLeaseEpoch, raiseFaceFrontier, tiddlerText, type LarDoc,
+  ed25519VerifyingKeyFromSeed, emptyLarDoc, signFoundingLog, signPersonaAct, actCid, faceRootCommitment, edgeBodyDigest, personaBagIdFor,
+  verifyDeviceDelegation, writePersonaAct,
 } from "@lararium/mesh";
-import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
+import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed } from "../src/node-vessel-identity.js";
+import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "../src/face-anchor-store.js";
 import { larBootstrapPath, larDataDir, larSealHome } from "../src/vessel-paths.js";
@@ -40,6 +43,31 @@ afterEach(async () => {
   await new Promise((r) => setTimeout(r, 200));
 });
 
+/** Stand the face's `@persona` log as a founding writes it (this vessel's atom and edge seated), plus one joinee's seat. */
+async function standFaceLog(): Promise<void> {
+  const anchors = (await loadIdentityAnchors(0))!;
+  const group = anchors.personaGroupId, own = anchors.deviceEdge!;
+  const seed = await loadPersonaGroupRootSeed(0);
+  const signer = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
+  const joinee = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(21));
+  await ownedStore(larDataDir(), async (repo) => {
+    const plane = repo.create(emptyLarDoc());
+    const founding = await signFoundingLog({ group, personaKelPrefix: anchors.personaKelPrefix!, rootCommitment: faceRootCommitment(own.personaRootDid),
+      epoch: 0, planes: { persona: plane.url }, deviceKey: own.deviceVerifyingKey, edgeDigest: edgeBodyDigest(own),
+      vesselTag: await testVesselTag(1, group, own.deviceVerifyingKey) }, signer);
+    const last = founding[founding.length - 1]!.body;
+    const admission = await signPersonaAct({ seq: last.seq, cid: actCid(last) }, { group, act: "admission", epoch: 0,
+      fields: { deviceKey: joinee, ...(await testVesselTag(2, group, joinee)) } }, signer);
+    const edge = await signPersonaAct({ seq: admission.body.seq, cid: actCid(admission.body) }, { group, act: "device-edge", epoch: 0,
+      fields: { deviceKey: joinee, edgeDigest: "joinee-edge-at-epoch-0" } }, signer);
+    plane.change((d) => { for (const act of [...founding, admission, edge]) writePersonaAct(d, act); });
+    await repo.flush();
+    const packed = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: daemonUrl, kind: "oracle" },
+      [personaBagIdFor(group)]: { title: personaBagIdFor(group), text: plane.url } };
+    writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: packed }) }), "utf8");
+  });
+}
+
 const roll = () => storeDoorDirect("persona-lease", { handleIndex: 0 }, { sealHome: larSealHome() });
 const slotsOf = async (group: string): Promise<string[]> => ownedStore(larDataDir(), async (repo) => {
   const doc = (await repo.find<LarDoc>(daemonUrl as never)).doc();
@@ -47,6 +75,33 @@ const slotsOf = async (group: string): Promise<string[]> => ownedStore(larDataDi
 });
 
 describe("lares persona lease", () => {
+  it("RED: a roll on a founded face whose edge binds the current epoch refuses by name and writes nothing, since the rolling vessel's next boot would halt stale", async () => {
+    await setup(true);
+    const anchors = (await loadIdentityAnchors(0))!;
+    const own = anchors.deviceEdge!;
+    expect(Number(own.boundEpoch), "the founding seats this vessel's edge at the current epoch").toBe(0);
+    expect((await verifyDeviceDelegation(own, own.personaRootDid, { expectedEpoch: 1 })).reason, "the halt a roll to 1 would cause").toMatch(/stale/);
+    const before = await slotsOf(anchors.personaGroupId);
+    const out = (await roll()) as { refused?: string; refusal?: string; rolled?: number };
+    expect(out.refusal).toBe("persona-lease-refused");
+    expect(out.refused).toMatch(/^lease-roll-strands-devices: .*\b1 seated device\b/);
+    expect(out.refused).toMatch(/L24/);
+    expect(out.refused).toMatch(/device-local cache update, not an identity change/);
+    expect(out.rolled).toBeUndefined();
+    expect(await slotsOf(anchors.personaGroupId), "no slot lands").toEqual(before);
+    expect((await loadFaceAnchorOfGroup(anchors.personaGroupId))!.frontier.leaseEpoch, "the sealed frontier stays").toBe(0);
+  }, 120_000);
+
+  it("RED: the refusal counts every device the face's log seats, the rolling vessel's own among them", async () => {
+    await setup(true);
+    await standFaceLog();
+    const group = (await loadIdentityAnchors(0))!.personaGroupId;
+    const out = (await roll()) as { refused?: string };
+    expect(out.refused).toMatch(/^lease-roll-strands-devices: .*\b2 seated devices\b/);
+    expect(await slotsOf(group)).toEqual([]);
+    expect((await loadFaceAnchorOfGroup(group))!.frontier.leaseEpoch).toBe(0);
+  }, 120_000);
+
   it("RED: unsigned and stranger-signed slots raise nothing; the verb's own advance raises the slot max and the sealed frontier", async () => {
     await setup(true);
     const anchors = (await loadIdentityAnchors(0))!;
