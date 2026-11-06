@@ -111,8 +111,8 @@ The wiki-daemon key cap stands in six slices, each red-first with its control. T
 | `S1` | the swarm tiddler model and the hand-only verbs | built; rides the `S2` lane |
 | `S2` | the ward: a `ward-slots.bin` tree under each face, a fresh unlock per act, passkey refused | built with its cold-read cures and the marker cure (the product founds no face from a marker file); on its lane, CI green at its earlier head |
 | `S2b` | the browser root under the ward | owed before the rite |
-| `S3a` | the co-sign judge, the self-answer cure, `ask --detail`, the blinded per-face vessel tag | built on its own lane |
-| `S3-pre-b` | the founding and join wiring of the vessel tag, default `required` | building on the `S3a` lane; founding-critical |
+| `S3a` | the co-sign judge, the self-answer cure, `ask --detail`, the blinded per-face vessel tag over a random per-face tag secret (a D row, vessel-local, derived from no seed) | built on its own lane |
+| `S3-pre-b` | the founding and join wiring of the vessel tag, default `required`: the founding mints the founder face's tag secret under its ask and its settle moves it onto the group's row; the join request mints the joinee face's | building on the `S3a` lane; founding-critical |
 | `S3b` | the gate hook that calls the judge | owed before the rite, after `S2` |
 | `S4` | the capability channel and the AF_UNIX probe | designed below |
 | `S5` | vessel-signed roster and receipt, the broker swap | designed below |
@@ -132,6 +132,7 @@ Each cure rides the slice named.
 * A co-sign approves only when the answer carries a signature by an enrolled device that differs from the requester and whose standing reads `stands`; the ask's signer equals the requester; the ask's detail equals the digest of (act, face, wiki, head cid); the answer stands uncontested; and the intent stands unspent. Set-aside devices count toward the total and never co-sign. The co-signing device fresh-unlocks too.
 * `ward-kapae-lower`, `ward-house-cap` and `ward-push-go` register as single-effect face intent verbs with audience `asks`. The outcome slot spends the intent.
 * The gate (an `S2` ward act) calls the judge. When a co-sign applies, it writes the ask and refuses `ward-awaiting-cosign: <ask cid>`: no clock, no timeout, no fallback. An offline second device refuses for good until it answers.
+* The device count counts vessels, never atoms: each admission carries the vessel's blinded tag for that face, and the fold refuses a second admission whose tag already stands. The tag rides a random tag secret the device mints per face, at the founding or at the join request, in that face's own D row (`vessel-face-tag`, `bundle: stays`); no seed derives it, so a thief holding the place seed links no two faces, and a re-join on one face presents the same tag. Reds: two faces' tags read apart from any place-seed child, the row sorts D and stays, a re-join re-presents its tag; control: another face tags apart, and the seed census reads any reach named `vesselFaceTagSecret` open.
 * Reds: a self-answer must not approve; a digest mismatch, an aside answerer and a contested pair refuse; a replay after the outcome refuses `spent`; with two devices and a peer that never answers, a thousand retries stay `ward-awaiting-cosign`. Controls: a second device approves, and a one-device fleet lands on the unlock alone. A table-driven case runs over node and browser vessels.
 
 !!! S4 ~ the capability channel
@@ -164,6 +165,6 @@ This carrier gains its standing sections and rewrites the broker bullets and the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ja_40gkT1xDHOSNKGhRdONDrUYL2tD2w9-IlYc5YqnE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EQKcukPASf03n7FPUUM0kZzBZfiUX2tNIOMBzxtVels`>>
 
 <<^ code=`&#x0004;` to=`?`>>
