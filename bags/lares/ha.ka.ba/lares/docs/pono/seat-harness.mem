@@ -139,15 +139,26 @@ Residuals, named: the ward is only as strong as the passphrase, offline; a brows
 The wiki-daemon key cap stands in six slices, each red-first with its control. The operator ruled it at standing (2026-11-04) and ruled the ward's reach (2026-11-04 and 2026-11-05; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). The founding waits on `S1` to `S3`, `S2b`, `S3-pre-b` and `S3b`; `S4` to `S6` follow the standing.
 
 |! Slice |! Holds |! State, 2026-11-05 |
-| `S1` | the swarm tiddler model and the hand-only verbs | built; rides the `S2` lane |
-| `S2` | the ward: a `ward-slots.bin` tree under each face, a fresh unlock per act, passkey refused | built with its cold-read cures and the marker cure (the product founds no face from a marker file); on its lane, CI green at its earlier head |
-| `S2b` | the browser root under the ward | built on its own lane: a per-face ward tree in the keystore, the root `ward-cold` beside it, every custody row door refusing it by name, a one-use signer per route, passkey refused, founding and mint born under the ward, the walk's possession check seedless |
-| `S3a` | the co-sign judge, the self-answer cure, `ask --detail`, the blinded per-face vessel tag over a random per-face tag secret (a D row, vessel-local, derived from no seed) | built on its own lane |
-| `S3-pre-b` | the founding and join wiring of the vessel tag, default `required`: the founding mints the founder face's tag secret under its ask and its settle moves it onto the group's row; the join request mints the joinee face's | building on the `S3a` lane; founding-critical |
-| `S3b` | the gate hook that calls the judge | owed before the rite, after `S2` |
+| `S1` | the swarm tiddler model and the hand-only verbs | landed with `S2` (PR #167, `a9f461bf4`) |
+| `S2` | the ward: a `ward-slots.bin` tree under each face, a fresh unlock per act, passkey refused | landed (PR #167, `a9f461bf4`): the marker cure, the ward-dial-in-flight refusal by name, the witness slot audit |
+| `S2b` | the browser root under the ward | built on lane `row7-s2b` and landing with its merge into the span; a per-face ward tree in the keystore, the root `ward-cold` beside it, every custody row door refusing it by name, a one-use signer per route, passkey refused, founding and mint born under the ward, the walk's possession check seedless |
+| `S3a` | the co-sign judge, the self-answer cure, `ask --detail`, the blinded per-face vessel tag over a random per-face tag secret (a D row, vessel-local, derived from no seed) | landed (PR #168, `f2b786887`) |
+| `S3-pre-b` | the founding and join wiring of the vessel tag, default `required`: the founding mints the founder face's tag secret under its ask and its settle moves it onto the group's row; the join request mints the joinee face's | landed (PR #168, `f2b786887`); founding-critical |
+| `S3b` | the gate hook: each ward act calls `judgeCosign`, never `mayAct` | built on lane `row7-s3b` (the readers enforce the co-sign next); lands before the rite |
 | `S4` | the capability channel and the AF_UNIX probe | designed below |
 | `S5` | vessel-signed roster and receipt, the broker swap | designed below |
 | `S6` | canon | designed below |
+
+!!! The S3 cures the reads found
+
+An Opus co-sign reader read LAND-AFTER-CURES and found the pinned-audience hole; Terra read HOLD, its ranks rolled into C2 to C4 and the owed residues; a Terra re-read of the cures read LAND-AFTER-CURES and found R1 and R2.
+* ''C1.'' The co-sign verbs need audience `asks`.
+* ''C2.'' The plane counts only an ask its issuer signed, answered by a distinct standing device.
+* ''C3.'' The root signs only after the tag checks pass.
+* ''C4.'' A replay appends nothing.
+* ''R1.'' A replay serves the seated edge only when its digest matches; otherwise it refuses `replay-edge-lapsed`.
+* ''R2.'' A stale table fails closed, by ward verb name.
+* ''Owed residues'' rest as road rows in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/stride-0-hearth`>> (`L24` to `L27`).
 
 !!! Live holes the scouts found
 
@@ -199,6 +210,6 @@ This carrier gains its standing sections and rewrites the broker bullets and the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5ECxV87H673-q-YFpzCFrjYwJG6JW-oKqvyl0J-IlGk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dP9FE7avKT-jsQgNQtN3TjKM5cenwOmiluhKzmwqYN8`>>
 
 <<^ code=`&#x0004;` to=`?`>>
