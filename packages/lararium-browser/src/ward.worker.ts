@@ -10,15 +10,21 @@
  * types it reads it. The ward never holds a key on the page; it cannot keep a page script from reading what the page's own
  * dialog collects.
  */
-import { runWardAct, type WardActRequest, type WardKeyActRequest, type WardKeyMintRequest } from "./ward-core.js";
+import type { WardActRequest, WardKeyActRequest, WardKeyMintRequest } from "./ward-core.js";
 
 const scope = globalThis as unknown as { addEventListener(type: "message", listener: (e: MessageEvent) => void): void; close(): void };
-// The listener stands before anything awaits, so the page's port never arrives to an entry that is not listening yet.
+// The listener stands before anything loads: the entry imports no module at evaluation, so the page's port never arrives to an
+// entry that is not listening yet. A bundle evaluates static imports first, and the mesh's wasm init awaits at top level there;
+// a message posted meanwhile reached no listener and dropped, so the act never answered. The ward core loads inside the act.
 scope.addEventListener("message", (e: MessageEvent) => {
   const port = e.ports[0];
   if (!port) return;
   port.onmessage = async (m: MessageEvent) => {
-    const answer = await runWardAct(m.data as WardActRequest | WardKeyActRequest | WardKeyMintRequest);
+    // A core that fails to load answers by name: the act refuses, it never waits.
+    const answer = await import("./ward-core.js").then(
+      ({ runWardAct }) => runWardAct(m.data as WardActRequest | WardKeyActRequest | WardKeyMintRequest),
+      () => ({ refused: "ward-worker-failed" }),
+    );
     port.postMessage(answer);
     port.close();
     scope.close();

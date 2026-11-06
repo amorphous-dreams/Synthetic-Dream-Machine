@@ -25,7 +25,12 @@ export { BrowserWardRefused } from "./browser-custody.js";
 export { WARD_ATTEMPTS_PER_PAGE } from "./browser-ward-tree.js";
 
 /** One worker for one act. The default spawns `ward.worker.ts`; a witness passes a spawn that runs the pure core in-process. */
-export interface WardWorkerHandle { postMessage(msg: unknown, transfer: Transferable[]): void; terminate(): void }
+export interface WardWorkerHandle {
+  postMessage(msg: unknown, transfer: Transferable[]): void;
+  terminate(): void;
+  /** A worker that fails to load or throws refuses its act `ward-worker-failed` at once, never leaves it waiting. */
+  onerror?: ((e: ErrorEvent) => unknown) | null;
+}
 export type WardWorkerSpawn = () => WardWorkerHandle;
 
 const workerSpawn: WardWorkerSpawn = () => new Worker(new URL("./ward.worker.js", import.meta.url), { type: "module" });
@@ -131,7 +136,10 @@ async function browserWardActOnce<A>(request: WardActRequest | WardKeyActRequest
   const worker = spawn();
   const channel = new MessageChannel();
   try {
-    return await new Promise<A>((resolve) => {
+    return await new Promise<A>((resolve, reject) => {
+      const failed = (): void => reject(new BrowserWardRefused("ward-worker-failed", "the ward act's worker failed before it answered"));
+      worker.onerror = failed;
+      channel.port1.onmessageerror = failed;
       channel.port1.onmessage = (m: MessageEvent) => resolve(m.data as A);
       worker.postMessage(null, [channel.port2]);
       channel.port1.postMessage(request);
