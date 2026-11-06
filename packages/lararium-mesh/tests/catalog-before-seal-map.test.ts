@@ -13,12 +13,9 @@
  *            clear: its load refuses by name, and its save lands no byte at rest.
  *   R6b CONTROL: a public floor bag's document loads clear at the floor.
  *   R6c CONTROL: once its face lights and the map moves, the same document opens for that face.
- *   R6d OWED (`test.fails`, flips red once wired): both vessel shores hand their bag map the catalog they read. Wired
- *        today it deadlocks a faced node boot: the node lights `sealedCells.face` off the DIAL's anchor
- *        (open-node-vessel.ts:1973), so a faced vessel with no dial (tests/e2e/seat-settle-before-mount S1/S2,
- *        composer-mounts-working-first R3a/R3c) reads face null, its own wiki's canon bag row reads face-half, and the
- *        island's slot find waits past its silence budget. The shore wiring rides behind the face cell lighting off the
- *        proved face, not the dial alone.
+ *   R6d RED (static): both vessel shores hand their bag map the catalog they read. The wiring stands on the face cell
+ *        reading the proved face (`@lararium/node` tests/e2e/face-cell-lights-proved): a faced vessel with no dial lights
+ *        its face at its own place, so its own wiki's rows map under that face, never `face: null`.
  *
  * No patience is granted and no clock waits: every load answers at once, by bytes or by a refusal's name.
  *
@@ -106,7 +103,7 @@ describe("a sealed bag's catalog row before its face lights", () => {
     expect(A.load<{ note: string }>(chunks[0]!.data!).note).toBe(SECRET);
   });
 
-  test.fails("R6d OWED: both vessel shores hand their bag map the catalog they read (flips once the face cell lights off the proved face)", () => {
+  test("R6d RED: both vessel shores hand their bag map the catalog they read", () => {
     for (const rel of ["../../lararium-node/src/open-node-vessel.ts", "../../lararium-browser/src/open-browser-vessel.ts"]) {
       const src = readFileSync(fileURLToPath(new URL(rel, import.meta.url)), "utf8");
       const call = src.slice(src.indexOf("sealedBagMap({"), src.indexOf("sealedBagMap({") + 600);
