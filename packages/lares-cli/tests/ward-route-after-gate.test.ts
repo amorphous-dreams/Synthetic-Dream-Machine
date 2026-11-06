@@ -75,6 +75,39 @@ describe("a co-signed ward act on a standing vessel", () => {
     expect(acted[1]).toMatchObject({ wardRef: "ward-ticket-1" });
   });
 
+  it("RED: a lower the panel answers (its handler throws `ward-needs-fresh-unlock`, so the session answers an error) asks the route once and runs again under its ticket", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    let calls = 0;
+    vi.mocked(openLocalSession).mockImplementation(async ({ faceRef }) => ({
+      faceRef,
+      act: async (_act: string, args: Record<string, unknown>) => {
+        acted.push(args); calls += 1;
+        return calls === 1
+          ? { status: "error", errorMessage: "ward-needs-fresh-unlock: ward-needs-fresh-unlock: the panel's kāpae-lower rests under the face's ward", reason: "kapae-refused" }
+          : { status: "done", output: { verb: "kapae-lower", done: "kapae-lower" } };
+      },
+      call: async () => { throw new Error("a face row never rides session:call"); },
+      close: async () => undefined,
+    }) as never);
+    expect((await storeVerb("kapae-lower", { digest: "d".repeat(64), face: 0 })).output).toEqual({ done: "kapae-lower" });
+    expect(asked).toBe(1);
+    expect(acted).toHaveLength(2);
+    expect(acted[1]).toMatchObject({ wardRef: "ward-ticket-1" });
+  });
+
+  it("CONTROL: a panel answer naming another refusal throws it and asks no route", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(openLocalSession).mockImplementation(async ({ faceRef }) => ({
+      faceRef,
+      act: async (_act: string, args: Record<string, unknown>) => { acted.push(args); return { status: "error", errorMessage: "ward-awaiting-cosign: " + "c".repeat(64), reason: "kapae-refused" }; },
+      call: async () => { throw new Error("a face row never rides session:call"); },
+      close: async () => undefined,
+    }) as never);
+    await expect(storeVerb("kapae-lower", { digest: "d".repeat(64), face: 0 })).rejects.toThrow(/ward-awaiting-cosign/);
+    expect(asked).toBe(0);
+    expect(acted).toHaveLength(1);
+  });
+
   it("CONTROL: the house cap and a go ride the same order; a lane share, which no gate holds, asks its route first", async () => {
     vi.mocked(udsAlive).mockResolvedValue(true);
     for (const [verb, args] of [["swarm-cap-set", { value: 7, face: 0 }], ["swarm-go-issue", { branch: "b", head: "a".repeat(40), face: 0 }]] as const) {
