@@ -51,6 +51,15 @@ test("RED: a joinee's approve of a ward ask with no fresh unlock refuses `ward-n
   }
 });
 
+test("RED: an answer to an ask this vessel cannot see (it has not synced here) refuses `ward-ask-unseen` before it signs, approve or deny, route or none; CONTROL: the ask in view signs", async () => {
+  const j = await joinee();
+  for (const extra of [{}, { deny: true }, { ward: fixtureWard() }]) {
+    expect(await codeOf(signIntentAnswer({ group: GROUP, signer: j.answerer, ask: "a".repeat(64), executor: j.issuer.key.toLowerCase(), deny: "deny" in extra, asked: null, face: j.ordinal,
+      ...("ward" in extra ? { ward: extra.ward } : {}) }))).toBe("ward-ask-unseen");
+  }
+  expect((await j.answer("ward-house-cap", { ward: fixtureWard() })).body).toMatchObject({ verdict: "approve" });
+});
+
 test("CONTROL: a deny, and an approve of an ask that names no ward act, ask no route", async () => {
   const j = await joinee();
   expect((await j.answer("ward-kapae-lower", { deny: true })).body).toMatchObject({ verdict: "deny" });

@@ -117,4 +117,22 @@ describe("intent command guards", () => {
     const plainAsk = await buildAsks({ group: "scratch-face", signer: other, intent: intentId(plain.body as never), needs: "approval" });
     expect(answerRefusal(askShown(fold([plain, plainAsk]), intentEntryCid(plainAsk)), other.key, other.key, false)).toBeNull();
   });
+
+  test("RED: the answer door signs an answer to an ask it cannot see, and to an ask whose ward act an outcome already spent; CONTROL: a visible, unspent ask passes", async () => {
+    const f = await fixture(), other = await who(4);
+    const lineage = makeHandLineage([{ epoch: 0, signers: [f.root.key], threshold: 1 }])!;
+    const verbs = faceIntentVerbs();
+    const fold = (records: SignedIntentEntry[]) => readIntentPlane({ group: "scratch-face", records, verbs, standing: () => "stands",
+      face: { devices: [f.atom.key, other.key], rosterCids: ["r"], admittedAt: new Map([[f.atom.key, "r"], [other.key, "r"]]), lineage } });
+    const call = await buildIntent({ group: "scratch-face", signer: f.atom, verb: "ward-house-cap", args: { head: "h1" }, nonce: "n", audience: { mode: "asks" }, verbs });
+    const id = intentId(call.body as never);
+    const own = await buildAsks({ group: "scratch-face", signer: f.atom, intent: id, needs: "approval", detail: "d" });
+    const approve = await buildAnswer({ group: "scratch-face", signer: other, ask: intentEntryCid(own), verdict: "approve", executor: f.atom.key });
+    const outcome = await buildOutcome({ group: "scratch-face", signer: f.atom, cause: id, result: { status: "done" } });
+    for (const deny of [false, true]) {
+      expect(answerRefusal(null, other.key, f.atom.key, deny)).toMatch(/^ward-ask-unseen/);
+      expect(answerRefusal(askShown(fold([call, own, approve, outcome]), intentEntryCid(own)), other.key, f.atom.key, deny)).toMatch(/^ward-ask-spent/);
+      expect(answerRefusal(askShown(fold([call, own, approve]), intentEntryCid(own)), other.key, f.atom.key, deny)).toBeNull();
+    }
+  });
 });

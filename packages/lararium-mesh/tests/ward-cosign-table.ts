@@ -24,7 +24,7 @@ import { describe, expect, test } from "vitest";
 import type { LarDoc } from "../src/base-doc.js";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { makeHandLineage, type HandLineage } from "../src/hand-lineage.js";
-import { buildAnswer, buildAsks, buildIntent, faceIntentVerbs } from "../src/index.js";
+import { buildAnswer, buildAsks, buildIntent, buildOutcome, faceIntentVerbs } from "../src/index.js";
 import { intentEntryCid, intentEntryRecordsOfGroup, writeIntentEntry, type SignedIntentEntry } from "../src/intent-entry.js";
 import { kapaeLowerHead, promoteBoardDoor } from "../src/promote-board-door.js";
 import { readPromoteBoard, signPromoteKapae, type SignedPromoteAct } from "../src/promote-board.js";
@@ -46,14 +46,15 @@ export interface CosignVessel {
     readonly devices: readonly string[]; readonly lineage: HandLineage; readonly aside: ReadonlySet<string>;
     /** Atoms whose standing reads `unknown` (a raise owed a roll). */
     readonly unknown: ReadonlySet<string>;
-    /** The fleet's signed frontier as the vessel reads it now. */
-    readonly frontier: { readonly known: boolean };
+    /** The fleet's signed frontier as the vessel reads it now: whether it reads known, its head's cid, and each link's cid with the
+     *  devices the raises it counts set aside (a link counts every raise its predecessor counted). */
+    readonly frontier: { readonly known: boolean; readonly head: string; readonly counted: ReadonlyMap<string, ReadonlySet<string>> };
   }): WardCosignPort;
   /** The face root as this vessel holds it: its key (the grant the fixture names) and a signer opened fresh for one lower. */
   root(fallback: Signer): Promise<{ readonly key: string; signer(): Promise<Signer> }>;
 }
 
-const GROUP = "cosign-face", D = "d".repeat(64), BRANCH = "feature/lane", HEAD = "a".repeat(40);
+const GROUP = "cosign-face", D = "d".repeat(64), BRANCH = "feature/lane", HEAD = "a".repeat(40), F0 = "0".repeat(64);
 
 async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "go", devicesN: 1 | 2 | 3) {
   const a = await keyed(41), b = await keyed(42), c = await keyed(43), held = await vessel.root(await keyed(44));
@@ -62,13 +63,20 @@ async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "go", devices
   const lineage = makeHandLineage([{ epoch: 0, signers: [root.key], threshold: 1 }])!;
   const planeDoc = { tiddlers: {} } as LarDoc;
   const plane = { doc: () => planeDoc, change: (fn: (d: LarDoc) => void) => fn(planeDoc) };
-  const aside = new Set<string>(), unknown = new Set<string>(), frontier = { known: true };
+  const aside = new Set<string>(), unknown = new Set<string>();
+  const frontier = { known: true, head: F0, counted: new Map<string, Set<string>>([[F0, new Set()]]) };
+  /** The fleet's next frontier: it counts every raise its predecessor counted, and the raises that set `atoms` aside. */
+  const advance = (atoms: readonly string[]): string => {
+    const next = sha256HexBytesSync(canonicalJsonBytes({ after: frontier.head, atoms: [...atoms].sort() }));
+    frontier.counted.set(next, new Set([...frontier.counted.get(frontier.head)!, ...atoms])); frontier.head = next;
+    return next;
+  };
   const port = vessel.port({ group: GROUP, atom: a, plane, devices, lineage, aside, unknown, frontier });
   // THE CRASH SEAM: the doors read the table's own port, whose outcome write can die once, after the effect landed. The product
   // holds no such seam; the port a vessel composes writes what the gate hands it.
   const crash = { armed: false };
   const doorPort: WardCosignPort = { group: port.group, requester: port.requester, verbs: port.verbs, view: () => port.view(), devices: () => port.devices(),
-    frontier: () => port.frontier(), standing: (atom) => port.standing(atom),
+    frontier: () => port.frontier(), standing: (atom) => port.standing(atom), stoodAt: (atom: string, f: string) => port.stoodAt(atom, f),
     write: async (e) => { if (crash.armed && e.body.entry === "outcome") { crash.armed = false; throw new Error("killed between the effect and its outcome"); } return port.write(e); } };
   /** What a reader composes: the same plane, roster and standing, read at each call. */
   const witness = cosignPortWitness(port);
@@ -84,7 +92,9 @@ async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "go", devices
     board: { records: async () => acts, land: async (x) => { if (x.body.act === "kapae" && !x.body.raised) effects.n++; acts.push(x); } }, projection: () => ({ planes: {} }), cosign: () => doorPort });
   // the swarm board and wiki
   const swarmDoc = { tiddlers: {} } as LarDoc, rows = new Map<string, string>();
-  const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { if (t === swarmGoTitle(BRANCH)) effects.n++; rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)) };
+  const goEffect = (t: string): void => { if (t.startsWith(swarmGoTitle(BRANCH))) effects.n++; };
+  const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { goEffect(t); rows.set(t, x); },
+    writeNew: async (t, x) => (rows.has(t) ? false : (goEffect(t), rows.set(t, x), true)), list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
   const swarmFace = { group: GROUP, grant: (k: string) => k === root.key };
   const swarmReadFace = { ...swarmFace, ward: witness };
   const trust = { hand: (k: string) => k === root.key, vessel: () => false, lead: () => false };
@@ -109,24 +119,33 @@ async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "go", devices
   const forge = async (): Promise<void> => {
     if (kind === "lower") acts.push(await signPromoteKapae({ group: GROUP, epoch: 0, wiki: "daemon", digest: D, raised: false, parents: readPromoteBoard(acts, readFace).kapaeHeads("daemon", D) }, await held.signer()));
     else if (kind === "cap") writeSwarmBoardAct(swarmDoc, await signSwarmCap({ group: GROUP, epoch: 0, value: 7, parents: [] }, root));
-    else await putSwarmAct(wiki, swarmGoTitle(BRANCH), await signSwarmAct({ act: "go", group: GROUP, branch: BRANCH, head: HEAD, after: null }, root));
+    else {
+      // a go rests at its own row under the branch's family title: the forge lands it there, and at the family title itself
+      const go = await signSwarmAct({ act: "go", group: GROUP, branch: BRANCH, head: HEAD, after: null }, root);
+      await putSwarmAct(wiki, `${swarmGoTitle(BRANCH)}/${swarmActCid(go)}`, go);
+      await putSwarmAct(wiki, swarmGoTitle(BRANCH), go);
+    }
   };
-  /** The cid of the go standing at the branch's title, as its bytes read. */
-  const goCid = (): string | null => { const text = rows.get(swarmGoTitle(BRANCH)); return text ? swarmActCid(JSON.parse(text)) : null; };
+  /** The cid of the go the door wrote last under the branch, as its bytes read. */
+  const goCid = (): string | null => { const text = [...rows].filter(([t]) => t.startsWith(swarmGoTitle(BRANCH))).at(-1)?.[1]; return text ? swarmActCid(JSON.parse(text)) : null; };
   /** The act the door gates, as the gate names it. */
   const act = (): WardCosignAct => kind === "lower"
     ? { verb: "ward-kapae-lower", wiki: "daemon", head: kapaeLowerHead(D, readPromoteBoard(acts, readFace).kapaeHeads("daemon", D)) }
     : kind === "cap" ? { verb: "ward-house-cap", wiki: "daemon", head: sha256HexBytesSync(canonicalJsonBytes({ value: 7, parents: [], supersede: false })) }
     : { verb: "ward-push-go", wiki: "daemon", head: swarmGoHead({ branch: BRANCH, head: HEAD, after: null }) };
-  const answer = async (by: Signer, ask: string, verdict: "approve" | "deny" = "approve") =>
-    write(await buildAnswer({ group: GROUP, signer: by, ask, verdict, executor: a.key, refs: [ask] }));
+  /** One device's answer to an ask, as it signs it; hands back the answer's cid. */
+  const answer = async (by: Signer, ask: string, verdict: "approve" | "deny" = "approve"): Promise<string> => {
+    const entry = await buildAnswer({ group: GROUP, signer: by, ask, verdict, executor: a.key, refs: [ask] });
+    write(entry);
+    return intentEntryCid(entry);
+  };
   /** The first reach: the gate writes the intent and the ask and refuses; hands back the ask cid it named. */
   const firstAsk = async (): Promise<string> => {
     const err = await run().then(() => null, (e: unknown) => e as { code?: string; message: string });
     expect(err?.code).toBe("ward-awaiting-cosign");
     return /ward-awaiting-cosign: ([0-9a-f]{64})/.exec(err!.message)![1]!;
   };
-  return { a, b, c, root, port, entries, write, run, issue, landed, refusal, forge, goCid, act, answer, firstAsk, aside, unknown, frontier, devices, rows, crash, effects };
+  return { a, b, c, root, port, entries, write, run, issue, landed, refusal, forge, goCid, act, answer, firstAsk, aside, unknown, frontier, advance, devices, rows, crash, effects };
 }
 
 const codeOf = async (p: Promise<unknown>): Promise<string | undefined> => p.then(() => undefined, (e: { code?: string; reading?: string }) => e.code ?? e.reading ?? String(e));
@@ -307,6 +326,68 @@ export function wardCosignTable(vessel: CosignVessel): void {
           expect(first).toMatch(/^[0-9a-f]{64}$/);
           expect(await codeOf(s.issue(first))).toBe("ward-awaiting-cosign");
           expect(await codeOf(s.run())).toBe("ward-cosign-spent");
+        });
+
+        test("RED: on a face of three devices, a second approve after the outcome leaves the landed act standing; CONTROL: before it, the act stood", async () => {
+          const s = await stand(vessel, kind, 3);
+          const ask = await s.firstAsk();
+          await s.answer(s.b, ask);
+          await s.run();
+          expect(await s.landed()).toBe(true);
+          await s.answer(s.c, ask);
+          expect(await s.landed()).toBe(true);
+          expect(await s.refusal()).toBeUndefined();
+        });
+
+        test("RED: on a face of three devices, a deny after the outcome leaves the landed act standing; CONTROL: a replay still refuses spent", async () => {
+          const s = await stand(vessel, kind, 3);
+          const ask = await s.firstAsk();
+          const act = s.act();
+          await s.answer(s.b, ask);
+          await s.run();
+          await s.answer(s.c, ask, "deny");
+          expect(await s.landed()).toBe(true);
+          expect(await codeOf(wardCosignGate(s.port, act, async () => undefined))).toBe("ward-cosign-spent");
+        });
+
+        test("RED: the co-signer set aside after the outcome (its raise counted at the fleet's next frontier), or reading `unknown`, leaves the landed act standing", async () => {
+          const s = await stand(vessel, kind, 2);
+          await s.answer(s.b, await s.firstAsk());
+          await s.run();
+          s.aside.add(s.b.key);
+          s.advance([s.b.key]);
+          expect(await s.landed()).toBe(true);
+          const u = await stand(vessel, kind, 2);
+          await u.answer(u.b, await u.firstAsk());
+          await u.run();
+          u.unknown.add(u.b.key);
+          expect(await u.landed()).toBe(true);
+        });
+
+        test("RED: an outcome that cites a frontier counting its own issuer aside never stands (the issuer stands at the cited frontier as the co-signer does); CONTROL: the issuer set aside after a door-made outcome leaves the act standing", async () => {
+          const s = await stand(vessel, kind, 2);
+          const ask = await s.firstAsk();
+          const { id, digest } = wardCosignIntentId(s.port, s.act());
+          const verb = s.act().verb;
+          const answer = await s.answer(s.b, ask);
+          await s.forge();
+          const cited = s.advance([s.a.key]);
+          s.write(await buildOutcome({ group: GROUP, signer: s.a, cause: id, result: { status: "done", act: verb, digest, cosigner: s.b.key.toLowerCase(), answer, frontier: cited } }));
+          expect(await s.landed()).toBe(false);
+          const c = await stand(vessel, kind, 2);
+          await c.answer(c.b, await c.firstAsk());
+          await c.run();
+          c.aside.add(c.a.key);
+          c.advance([c.a.key]);
+          expect(await c.landed()).toBe(true);
+        });
+
+        test("CONTROL: an approved intent with no outcome reads nothing: the act signed beside the approve, outside the door, refuses `ward-act-uncosigned`", async () => {
+          const s = await stand(vessel, kind, 2);
+          await s.answer(s.b, await s.firstAsk());
+          await s.forge();
+          expect(await s.landed()).toBe(false);
+          expect(await s.refusal()).toBe("ward-act-uncosigned");
         });
 
         test("RED: a contested pair refuses: one device approves, another denies", async () => {
