@@ -4,37 +4,43 @@
       "cas": "grants",
       "receipt": "grants",
       "custodyWrite": "grants",
-      "dyad": "grants"
+      "dyad": "grants",
+      "sessionSign": "grants"
     },
     "node wiki": {
       "cas": "grants",
       "receipt": "silent",
       "custodyWrite": "refused",
-      "dyad": "refused"
+      "dyad": "refused",
+      "sessionSign": "refused"
     },
     "node session": {
       "cas": "silent",
       "receipt": "silent",
       "custodyWrite": "silent",
-      "dyad": "silent"
+      "dyad": "silent",
+      "sessionSign": "silent"
     },
     "web wiki": {
       "cas": "silent",
       "receipt": "silent",
       "custodyWrite": "silent",
-      "dyad": "refused"
+      "dyad": "refused",
+      "sessionSign": "silent"
     },
     "web session": {
       "cas": "silent",
       "receipt": "silent",
       "custodyWrite": "silent",
-      "dyad": "refused"
+      "dyad": "refused",
+      "sessionSign": "silent"
     },
     "web daemon": {
       "cas": "unmeasured",
       "receipt": "unmeasured",
       "custodyWrite": "unmeasured",
-      "dyad": "unmeasured"
+      "dyad": "unmeasured",
+      "sessionSign": "unmeasured"
     }
   },
   "webListeners": {
@@ -78,6 +84,7 @@
     "packages/lararium-node/src/worker-handle.ts: Worker",
     "packages/lararium-node/src/worker-handle.ts: answerCustodyWrite",
     "packages/lararium-node/src/worker-handle.ts: Worker",
+    "packages/lararium-node/src/worker-handle.ts: answerSessionSign",
     "packages/lararium-node/src/worker-handle.ts: Worker",
     "packages/lararium-node/src/worker-handle.ts: Worker",
     "packages/lararium-node/src/worker-handle.ts: nodeWorkerHandle",
@@ -96,6 +103,7 @@
     "packages/lararium-browser/src/holder-routes.ts: \"dyad:ask\"",
     "packages/lararium-browser/src/holder-routes.ts: \"receipt:request\"",
     "packages/lararium-browser/src/holder-routes.ts: \"custody:write\"",
+    "packages/lararium-browser/src/holder-routes.ts: \"session:sign\"",
     "packages/lararium-browser/src/holder-routes.ts: \"view:catalog\"",
     "packages/lararium-browser/src/holder-routes.ts: \"view:content\"",
     "packages/lararium-browser/src/holder-routes.ts: \"view:settle\"",
@@ -122,11 +130,17 @@
     "packages/lararium-mesh/src/island-protocol.ts: \"custody:write\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"custody:written\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"dyad:read\"",
+    "packages/lararium-mesh/src/island-protocol.ts: \"session:sign\"",
+    "packages/lararium-mesh/src/island-protocol.ts: \"session:signed\"",
+    "packages/lararium-mesh/src/island-protocol.ts: \"session:signed\"",
+    "packages/lararium-mesh/src/island-protocol.ts: \"session:signed\"",
+    "packages/lararium-mesh/src/island-protocol.ts: \"session:signed\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"dyad:ask\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"cas:block\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"dyad:read\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"receipt:issued\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"custody:written\"",
+    "packages/lararium-mesh/src/island-protocol.ts: \"session:signed\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"view:catalog-result\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"view:content-result\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"view:settled\"",
@@ -134,6 +148,7 @@
     "packages/lararium-mesh/src/island-protocol.ts: \"dyad:ask\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"receipt:request\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"custody:write\"",
+    "packages/lararium-mesh/src/island-protocol.ts: \"session:sign\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"view:catalog\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"view:content\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"view:settle\"",
@@ -149,6 +164,8 @@
     "packages/lararium-node/src/sovereign-island-model.ts: \"cas:want\"",
     "packages/lararium-node/src/sovereign-island-model.ts: \"dyad:read\"",
     "packages/lararium-node/src/sovereign-island-model.ts: \"dyad:ask\"",
+    "packages/lararium-node/src/sovereign-island-model.ts: \"session:signed\"",
+    "packages/lararium-node/src/sovereign-island-model.ts: \"session:sign\"",
     "packages/lararium-node/src/sovereign-island-model.ts: \"receipt:issued\"",
     "packages/lararium-node/src/sovereign-island-model.ts: \"receipt:request\"",
     "packages/lararium-node/src/sovereign-island-model.ts: \"custody:written\"",
@@ -161,10 +178,14 @@
     "packages/lararium-node/src/worker-handle.ts: \"dyad:ask\"",
     "packages/lararium-node/src/worker-handle.ts: \"custody:written\"",
     "packages/lararium-node/src/worker-handle.ts: \"custody:write\"",
+    "packages/lararium-node/src/worker-handle.ts: \"session:signed\"",
+    "packages/lararium-node/src/worker-handle.ts: \"session:sign\"",
     "packages/lararium-node/src/worker-handle.ts: \"custody:write\"",
     "packages/lararium-node/src/worker-handle.ts: \"custody:written\"",
     "packages/lararium-node/src/worker-handle.ts: \"receipt:request\"",
     "packages/lararium-node/src/worker-handle.ts: \"receipt:issued\"",
+    "packages/lararium-node/src/worker-handle.ts: \"session:sign\"",
+    "packages/lararium-node/src/worker-handle.ts: \"session:signed\"",
     "packages/lararium-node/src/worker-handle.ts: \"dyad:ask\"",
     "packages/lararium-node/src/worker-handle.ts: \"dyad:read\"",
     "packages/lararium-tw5/src/receipt.ts: \"receipt:request\"",

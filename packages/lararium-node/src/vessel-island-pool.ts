@@ -24,22 +24,18 @@ import {
 } from "@lararium/mesh";
 import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWikiWorker } from "./worker-handle.js";
-import { casDirFromIslandStorageDir, readCasBlobFromFs } from "./node-cas.js";
+import { readCasBlobFromFs, type IslandCasData } from "./node-cas.js";
 
 /**
- * The vessel's content store, as a session island's scoped view reads it: the runtime CID plane beside the
- * islands' storage root, then the corpus store, then the vessel's `cas` capability, read off the record at ask time
- * (absent, or faulting, reads a miss). A session island holds no
- * store of its own, so every content read it makes arrives here, after its view has passed the address.
+ * The vessel's content store, as a session island's scoped view reads it: the vessel's one runtime `cid/` dir
+ * (`cidDir`, handed at construction), then the vessel's `cas` capability, read off the record at ask time (absent, or
+ * faulting, reads a miss; the corpus store rides inside that capability as its second tier). A session island holds no
+ * store of its own, so every content read it makes arrives here, after its view has passed the address. No env read.
  */
-export function nodeContentReader(storageRoot: string | null, caps: CapabilityRecord): (cid: string) => Promise<Uint8Array | null> {
-  const runtime = storageRoot ? casDirFromIslandStorageDir(join(storageRoot, "island")) : null;
-  return async (cid) => {
-    const corpus = process.env["LAR_CAS"] ?? (process.env["LAR_ROOT"] ? join(process.env["LAR_ROOT"], "cas") : null);
-    return (runtime ? readCasBlobFromFs(cid, runtime) : null)
-      ?? (corpus ? readCasBlobFromFs(cid, corpus) : null)
+export function nodeContentReader(cidDir: string | null, caps: CapabilityRecord): (cid: string) => Promise<Uint8Array | null> {
+  return async (cid) =>
+    (cidDir ? readCasBlobFromFs(cid, cidDir) : null)
       ?? (caps.cas ? caps.cas(cid).catch(() => null) : null);
-  };
 }
 
 /** Node's default live-wiki activation cap — the vessel advertises this as the
@@ -68,6 +64,10 @@ export interface VesselIslandPoolOptions {
   onPortDrop?: (islandKey: string, type: string, reason: "no-port-lease") => void;
   /** Root dir for island-owned NodeFS storage partitions; absent = memory-only. */
   storageRoot?: string;
+  /** The vessel's ONE runtime `cid/` dir, handed at construction: the pool's content reader and every island it spawns read it. */
+  cidDir?: string;
+  /** The CORPUS CAS dir the vessel resolved at construction, handed to each WIKI island it spawns (the islands read no env; a session island gets no dir, it reads through its view). */
+  corpusCasDir?: string | null;
   /** R3/M6 — resolve a mount's OWN recipe into its final pluginCids (the boot-set floor UNION its
    *  verified offering selection). REQUIRED — no flat vessel-wide `pluginCids` floor stands (every island
    *  getting the SAME list); `open-node-vessel.ts` always supplies
@@ -95,15 +95,16 @@ export class VesselIslandPool extends VesselIslandPoolCore {
   constructor(options: VesselIslandPoolOptions) {
     const workerUrl   = options.workerScriptUrl ?? DEFAULT_WORKER_URL;
     const storageRoot = options.storageRoot ?? null;
+    const casData: IslandCasData = { cidDir: options.cidDir ?? null, corpusCasDir: options.corpusCasDir ?? null };
     super({
       host: {
-        spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl, options.caps) : nodeSpawnWikiWorker(workerUrl, options.caps)),
+        spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl, options.caps) : nodeSpawnWikiWorker(workerUrl, options.caps, casData)),
         newSyncChannel: nodeNewSyncChannel,
         storage: (wikiId): IslandStorageConfig | undefined =>
           storageRoot ? { type: "nodefs", dir: join(storageRoot, _sanitizeWikiId(wikiId)) } : undefined,
       },
       mainRepo: options.mainRepo ?? null,
-      readContent: nodeContentReader(storageRoot, options.caps),
+      readContent: nodeContentReader(options.cidDir ?? null, options.caps),
       diskMirrorGrant: options.diskMirrorGrant ?? [],
       resolvePluginCids: options.resolvePluginCids,
       ...(options.onWorkerEvent ? { onWorkerEvent: options.onWorkerEvent } : {}),

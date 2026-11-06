@@ -182,7 +182,7 @@ Each line names what the code does today and where its law lives; the verifier h
 
 ''Pattern integrity: the address derives from a public id.'' Anyone who knows the group computes the stage doc's id, so the facet and the share gate stay its only fence; the fold makes any foreign write read as nothing.
 
-''The lift and the AI, a held tension'' (operator, 2026-11-02). The house exists to improve AI–operator alignment: when the operator drives, the AI lifts with them and for them. The security pull stays a valid capability tension all the same: a prompt injection, or an AI holding a shell with custody unlocked, can reach `lares kahua lift`, and the session refusal (`beyond-profile`) reads advisory since a client names its own hand. Enforcement through code or identity (a hand-only key, a per-call gesture) stays deferred; the tension rides as an open loop, `` ooda-ha=`open 1φ◇:lift.capability-tension` ``, held in view, never a planned block.
+''The lift and the AI, a held tension'' (operator, 2026-11-02). The house exists to improve AI–operator alignment: when the operator drives, the AI lifts with them and for them. The security pull stays a valid capability tension all the same: a prompt injection, or an AI holding a shell with custody unlocked, can reach `lares kahua lift`, and the session refusal (`beyond-profile`) reads advisory since a client names its own hand. Enforcement through code or identity (a hand-only key, a per-call gesture) stays deferred; the tension rides as an open loop, `` ooda-ha=`open 1φ◇:lift.capability-tension` ``, held in view, never a planned block. The ward closes it for the daemon and kahua wikis, and the kahua lift joins the ward (#/the-hearth-lane); the loop stays open for a user's own wiki, where the advisory label holds by ruling.
 
 !! As built ~ promote and kāpae, lane promote, 2026-11-02
 
@@ -222,6 +222,44 @@ Promote enacts the face intent-plane law a second time (<<~ loulou uri=`lar:///h
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-hearth-lane`>>
+
+!! The hearth lane ~ L4f, L17, L19, L21 and the act ward
+
+The lane runs after the founding, since `L4p` needs a stood hearth (road rows `L4f`, `L17`, `L19` and `L21` in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/stride-0-hearth`>>). Its slices land in this order, each red-first with its control, every red shown failing on the old code first.
+
+# ''S1, `L4f`: the page gate and the mount.'' When the page's face proof carries `ownHearth`, the gate admits the hearth daemon document through the face-proven path, and the page's daemon island takes `hearthDaemonUrl` as its working top. Its own `social.daemonUrl` stays the control plane. Every other crossing stays as it stands. Then the `L4p` walk.
+# ''S2: one code classifier.'' `codeClassOf(fields, title)` lands once in `@lararium/mesh` and names the module type, the executable types, `StartupAction*`, RawMarkup and the module-gate fields. The lift, `meme_act` and promote all read it; the slice moves no behaviour.
+# ''S3, `L17`: the anchor verbs.'' `meme-filter`, `meme-render` and `meme-act` on `recipe:"default"`, as MCP tools and as `lares meme filter|render|act`, with the field forms on put and get. A paged answer bounds itself to `AUDIT_ARRAY_CAP` and carries a `next` cursor.
+# ''S4: named-wiki routing.'' A filter, render or act aimed at a named wiki routes through the `wiki-act` envelope, mounting the wiki or refusing (`W27`), and reuses `mountAimedWiki`.
+# ''S5, `L21`: the batch lift.'' `door.liftBatch` and the hand row `kahua-lift-batch`, with `--filter --from-wiki`. All items preflight before any lands, then one flush follows; the epoch pins once per batch; each item still signs its own lift act; a drifted digest refuses by name. One fresh ward unlock covers the batch (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>, 2026-11-05).
+
+''House decisions'' (talked out):
+* The face proof's SIGNED projection names `hearthDaemonUrl`, so the gate never opens an unproven URL.
+* `default` stays the daemon wiki on the page, backed by the hearth's document.
+* A named-wiki filter reuses `mountAimedWiki` and `W27`.
+* The lares MCP reads down until a hearth stands, so the MCP parity tests run after the standing.
+* Lane law: a bwrap PID namespace for every process test, no pid 0 or 1 fakes, single test files only, e2e in CI, a cold Terra read at the punctures, and a blind Opus reader colliding on custody paths.
+
+!!! The lift rides the ward
+
+The lift amends the 2026-11-04 line that named it free (operator, 2026-11-05, after the four-scale talk-story). The working top stays the free local floor the AI writes on. A lift crosses devices, because the stage syncs to every device the face wears, so it takes the face's own hand: one fresh passphrase unlock per verified batch, each item signing its own act. Memory steers the spirit, so it weighs as code does. Civic and shared stages compose several warded hands by threshold, each plane's count resting on its own civic ruling, unbuilt. The ward travels with the face across temples, and the batch lift serves as the household's feeding rite on a cadence the person sets, with no timer and no nudge. The tension of #/as-built closes for the daemon and kahua wikis with the ward (row 7, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-swarm-slices`>>) and stays open for a user's own wiki.
+
+!!! The act ward ~ code-bearing actions on the daemon and kahua wikis
+
+A user's wiki runs actions live with full caps. On the daemon and kahua wikis, `meme-act` stands under these laws:
+* A code-bearing action there REFUSES outright until row 7's ward stands, then rides it. It never rides the advisory hand label.
+* The action string runs in a THROWAWAY COPY of the wiki (a cloned store with its own root widget; plugin shadows read-only). The copy records every create, change and delete, and every message the action dispatched (captured, never executed).
+* The recorded diff gets judged. Any touch to the code class (`codeClassOf`), to a control-plane title (`isControlPlaneUri`) or to a custody verb refuses the whole act by name. Any captured `tm-*` message outside an allowlist refuses; the allowlist starts EMPTY, and a message joins it only when a real act needs it, by name.
+* A clean diff APPLIES AS ITSELF in one batch and never re-runs, which closes the gap between check and use (a transcluded value can change between two runs). Non-determinism such as `<<now>>` stays fine, since the diff records the one result.
+* A static parse never serves as the ward. The slice's first red MEASURES the copy's cost on a realistic daemon wiki.
+
+!!! `L19`, the memory o-takiage ~ its shape
+
+The first copy of the flat memory store lands in the kahua working top, never the daemon wiki, under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` (the slug holds the filename stem, hyphenated; fields `name`, `description`, `type`, `source-file`, `source-sha256`). Dangling links report and stay uninvented. The flat files stay the source of truth until each file's receipt stands; a stale memory burns instead of moving; the pointer file shrinks last. Verification runs in the working top (a `meme_get` round trip against `source-sha256`, a receipt tiddler per file, the filter view, a cold-session sample), and `L21` then lifts the verified batches under the ward. The store measured 286 files (87 feedback, 192 project, 5 reference, 2 user) at 2.2 MB with 464 `[[...]]` links on 2026-11-04. Narration follows the memory into the wiki (`L18`), and the flat store keeps its seat for the harness's own loader until then.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/calls-owed`>>
 
 !! Calls owed
@@ -236,7 +274,7 @@ Each call names the fork and the house lean as a lean only; the operator rules e
 # ''Re-mount on the recovery path.'' A stage pinned after a device boots mounts at that device's next boot, since the island holds no persona-log reader of its own. The founding act mints the stage before the first `up`, so only a recovery path meets this.
 # ''A returning browser on a re-baked genesis.'' RULED for the next lane: the browser re-pins by the person's own act, paired with W26 slice 5 (the accept act); it never refuses forever and never silently follows the hearth. It waits on a genesis pin the browser holds: today its `hearthTrueName` names the Nexus AID, not the engine CID, so nothing a browser holds names its seed. Tonight the page reads SELF-CONSISTENCY alone: the seed its hearth serves against the hearth's own arrival descriptor (`genesis-mismatch`, `arrival-descriptor-missing` on the hearth's own origin).
 # ''Restore against burn.'' RULED (operator, 2026-11-02: //"Approve both"//): a face's private names (its persona planes, its kahua stage, its `kahua-<F>` folders) key off the FACE, derived from its address secret, never the seat group, so a restore keeps them and a burn stays a new face; a revoke-only cold recovery seat takes its own design lane. Built in the lane right after this one: `kahuaStageDocUrl` and the folder tag re-derive from the face there. Until then a bundle restore re-mints the group (`restoreFaceBundle`), and a strict known-red pins the gap.
-# ''The lift capability tension.'' Held open (see the as-built note above): `open 1φ◇:lift.capability-tension`. No enforcement stands planned.
+# ''The lift capability tension.'' Closes for the daemon and kahua wikis with the ward, which binds the kahua lift (#/the-hearth-lane); held open for a user's own wiki: `open 1φ◇:lift.capability-tension`, with no enforcement planned there.
 # ''Proposal taint.'' A proposal lifts once (a second lift citing it refuses `proposal-spent`); its taint list still rides the proposing device's own word, noted.
 # ''A scratch root writing the checkout.'' A scratch `LAR_ROOT` beside `LAR_BAGS` at a checkout writes live canon edits into the tracked tree by design (the origin split); the isolation line for the house's own instructions waits for the operator's hand.
 # ''Genesis from another origin, or by CID.'' The page reads its seed off the hearth's own /genesis alone and reads no genesis key (operator, 2026-11-02); a seed served elsewhere or named by CID waits for the next lane's verify law.
@@ -299,6 +337,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;53-RYW42jKuCdEtj6FHVxvn0wwtIhawRephbL2RrMmk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vMyy_nYFuVguXgwjZEXTG2PQnuCeVdmUR6gxW_nnzjY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

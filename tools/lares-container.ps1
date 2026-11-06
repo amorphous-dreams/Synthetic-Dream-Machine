@@ -70,6 +70,40 @@ function KeyHeld {
   return (($out -join "`n") -match '"unlocked"\s*:\s*true')
 }
 
+# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD: warns and stands. Read only on `up`, BEFORE compose runs so a
+# build it triggers bakes the label; no git, or no checkout, skips the check with a note and never dies. A dirty tree
+# (tracked files only) labels `<sha>-dirty`.
+$script:GitRev = ''; $script:GitDirty = $false
+function ResolveGitRev {
+  try {
+    $head = (& git -C $PSScriptRoot rev-parse HEAD 2>$null) -join ''
+    if ($LASTEXITCODE -eq 0 -and $head) {
+      $rev = $head.Trim()
+      $porcelain = (& git -C $PSScriptRoot status --porcelain --untracked-files=no 2>$null) -join ''
+      if ($porcelain) { $script:GitDirty = $true; $rev = "$rev-dirty" }
+      $script:GitRev = $rev
+      $env:GIT_REV = $rev
+    }
+  } catch { $script:GitRev = '' }
+}
+function WarnImageRevision {
+  $rev = $script:GitRev
+  if (-not $rev) {
+    [Console]::Error.WriteLine('lares-container: no git checkout answers here, so the image revision check is skipped')
+    return
+  }
+  $cid = (& docker compose @Base ps -q lares 2>$null) -join ''
+  if ([string]::IsNullOrWhiteSpace($cid)) { return }
+  $label = ((& docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $cid 2>$null) -join '') -replace '[\x00-\x1f\x7f-\x9f]', ''
+  $named = if ($label) { $label } else { 'none' }
+  if ($label -eq $rev) { return }
+  if ($script:GitDirty) {
+    [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout holds uncommitted changes; commit first, then rebuild with ``" + '$env:GIT_REV = (git rev-parse HEAD); docker compose -f "' + $ComposeFile + '" build lares' + "`` and ``up`` again")
+  } else {
+    [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout stands at $rev; rebuild with ``" + "`$env:GIT_REV='$rev'; docker compose -f `"$ComposeFile`" build lares" + "``, then ``up`` again")
+  }
+}
+
 # The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached; without one, name
 # it. A refused or abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it.
 function UnlockOrName {
@@ -124,6 +158,7 @@ $rest = @(); if ($args.Count -gt 1) { $rest = @($args[1..($args.Count - 1)]) }
 
 switch ($verb) {
   'up' {
+    ResolveGitRev
     $n = 0; $binds = @(); $i = 0
     while ($i -lt $rest.Count) {
       if ($rest[$i] -ne '--capture') { Die "unknown option $($rest[$i]) for up" }
@@ -149,6 +184,7 @@ switch ($verb) {
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       } finally { Remove-Item -Force $override -ErrorAction SilentlyContinue }
     } else { Compose @('up', '-d', '--wait', 'lares') }
+    WarnImageRevision
     UnlockOrName
   }
   'down'  { Compose (@('down', '--remove-orphans') + $rest) }

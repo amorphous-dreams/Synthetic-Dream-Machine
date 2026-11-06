@@ -42,3 +42,22 @@ describe("the default relay of a node-served page", () => {
     expect(asked).toBe(false);
   });
 });
+
+describe("the person's own word over a probe that never answers", () => {
+  test("RED: a fetch that never resolves plus a boot-local press resolves undefined, and aborts the fetch", async () => {
+    let aborted = false;
+    let press!: () => void;
+    const pressed = new Promise<void>((resolve) => { press = resolve; });
+    const out = arrivalRelayUrl(http, (_input, init) => new Promise<Response>(() => {
+      init?.signal.addEventListener("abort", () => { aborted = true; }, { once: true });
+    }), pressed);
+    press();
+    expect(await out).toBeUndefined();
+    expect(aborted).toBe(true);
+  });
+
+  test("CONTROL: the answering descriptor still yields the ws URL beside an unpressed button", async () => {
+    expect(await arrivalRelayUrl(http, answer(descriptor), new Promise<void>(() => {}))).toBe("ws://127.0.0.1:4321/ws");
+  });
+});
+

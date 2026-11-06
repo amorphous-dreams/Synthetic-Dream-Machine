@@ -132,6 +132,8 @@ x-vessel: &vessel
     context: .
     dockerfile: Dockerfile
     target: serve
+    args:
+      GIT_REV: ${GIT_REV:-unknown}
   user: "${LARES_UID:-1000}:${LARES_GID:-1000}"
   volumes:
     - type: bind

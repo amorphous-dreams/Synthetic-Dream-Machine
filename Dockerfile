@@ -179,6 +179,11 @@ EXPOSE 4321
 # so a bind-mounted /state and /workspace stay editable by the host operator. Nothing here pins one.
 USER node
 
+# THE IMAGE NAMES THE REVISION IT WAS BUILT AT, so `tools/lares-container.sh up` can warn when the image lags the checkout.
+# Last in the stage: a new revision rebuilds this layer alone.
+ARG GIT_REV=unknown
+LABEL org.opencontainers.image.revision=$GIT_REV
+
 # The daemon's flags (`--root /x` and `--root=/x` read alike; main.js and the CLI refuse a flag nobody reads).
 ENTRYPOINT ["node", "packages/lararium-node/dist/src/main.js"]
 CMD ["--root", "/workspace", "--genesis", "/app/genesis"]

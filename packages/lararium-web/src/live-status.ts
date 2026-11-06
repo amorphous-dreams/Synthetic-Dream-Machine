@@ -24,21 +24,31 @@ export function sameOriginRelayUrl(location: Pick<ServedLocation, "protocol" | "
  * answers JSON whose `format` reads `lar-arrival`. A Vite dev server answers every unknown path with its
  * index.html at 200, so the status proves nothing and the format decides; a file page has no origin to ask.
  * Every miss reads undefined, the pure local boot. No timer decides: the origin answers or fails on its own.
+ *
+ * `bootLocal` is the person's own word: a promise a "boot local" button resolves. It races the probe, and its press
+ * aborts the fetch and reads undefined, so a probe that never answers never holds the boot.
  */
 export const ARRIVAL_DESCRIPTOR_PATH = "/.well-known/lar";
 export async function arrivalRelayUrl(
   location: Pick<ServedLocation, "origin" | "protocol" | "host">,
-  fetchFn: (input: string) => Promise<Response>,
+  fetchFn: (input: string, init?: { readonly signal: AbortSignal }) => Promise<Response>,
+  bootLocal?: Promise<void>,
 ): Promise<string | undefined> {
   if (location.protocol !== "http:" && location.protocol !== "https:") return undefined;
-  try {
-    const response = await fetchFn(`${location.origin}${ARRIVAL_DESCRIPTOR_PATH}`);
-    if (!response.ok) return undefined;
-    const body: unknown = JSON.parse(await response.text());
-    return (body as { format?: unknown } | null)?.format === "lar-arrival" ? sameOriginRelayUrl(location) : undefined;
-  } catch {
-    return undefined;
-  }
+  const abort = new AbortController();
+  const probe = async (): Promise<string | undefined> => {
+    try {
+      const response = await fetchFn(`${location.origin}${ARRIVAL_DESCRIPTOR_PATH}`, { signal: abort.signal });
+      if (!response.ok) return undefined;
+      const body: unknown = JSON.parse(await response.text());
+      return (body as { format?: unknown } | null)?.format === "lar-arrival" ? sameOriginRelayUrl(location) : undefined;
+    } catch {
+      return undefined;
+    }
+  };
+  if (bootLocal === undefined) return probe();
+  const pressed = bootLocal.then((): undefined => { abort.abort(); return undefined; });
+  return Promise.race([probe(), pressed]);
 }
 
 /**

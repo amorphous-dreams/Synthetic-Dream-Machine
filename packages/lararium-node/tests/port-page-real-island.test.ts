@@ -43,7 +43,7 @@ describe("page port on the real island kernel", () => {
     const received: PortIslandToVesselMsg[] = [];
     const waiting: Array<() => void> = [];
     const pool = new VesselIslandPool({ caps: {},
-      workerScriptUrl: ISLAND_JS, mainRepo: repo, storageRoot: cas.storageDir,
+      workerScriptUrl: ISLAND_JS, mainRepo: repo, storageRoot: cas.storageDir, cidDir: cas.cidDir,
       resolvePluginCids: async () => ({ ok: true as const, pluginCids: cas.pluginCids }),
       portPolicy: (binding) => ({ faceId: "face:port-page", actor: binding, edits, bags: [], admin: false }),
       onPortMessage: (_binding, _key, msg) => { received.push(msg); waiting.shift()?.(); },

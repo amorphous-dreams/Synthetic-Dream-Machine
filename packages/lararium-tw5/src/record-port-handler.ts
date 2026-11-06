@@ -529,6 +529,9 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     transportGone(portId) { drop(portId); },
     onEa(ctx) {
       const unsubscribe = ctx.composite.subscribe(change => {
+        // A redelivery re-reads a write whose own envelope already reached this queue (a port write's, named by its tx, or
+        // any other writer's): every later change of the title fires its own envelope, so the page never misses state.
+        if (change.redelivery) return;
         const tokenId = change.origin.kind === "tw-local" ? change.origin.instanceId : undefined;
         const token = tokenId ? tokens.get(tokenId) : undefined;
         for (const port of ports.values()) if (port.opening) port.dirty.add(change.title);

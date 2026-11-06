@@ -65,3 +65,46 @@ describe.skipIf(wikiSkip)(`a peer's save reaches an open wiki${skipNote}`, () =>
     await peerRepo.shutdown();
   }, 120_000);
 });
+
+describe.skipIf(wikiSkip)(`a wiki's own save comes back stamped with the bag it landed in${skipNote}`, () => {
+  // The S1 path (stage-walk e2e): a CLI put to recipe default writes into the daemon WIKI, the shore saves it to the working
+  // layer, and the disk projector projects only a tiddler whose `$origin-bag` names a mirror. The store's own envelope
+  // reaches the shore inside the write, while the hand still stands, so it lands nothing; the debounced redelivery lands it.
+  test("a hand save lands its `$origin-bag` after the debounce, with no further write; CONTROL: the store took one write", async () => {
+    const r = await shoreRig();
+    try {
+      await r.adaptor.armSeedCheckpoint();
+      await r.adaptor.landingIdle();
+      const title = "lar:///t.stage.walk/cli-put";
+      r.wiki.addTiddler(new r.Tiddler({ title, text: "hello from the CLI\n" }));
+      await r.adaptor.handsRested();
+      await new Promise((resolve) => setTimeout(resolve, 300));                       // past the provider's 40 ms debounce
+      await r.adaptor.landingIdle();
+      expect(r.calls.filter((call) => call.puts.includes(title)).length, "control: one write").toBe(1);
+      expect(r.wiki.getTiddler(title)?.fields["$origin-bag"]).toBe(workingBag);
+    } finally { await r.stop(); }
+  }, 120_000);
+
+  test("a hand that re-touches the title with the same body while the store's own envelope stands queued still lands `$origin-bag`: the re-touch writes nothing, so the debounced redelivery is the wave that lands it", async () => {
+    const r = await shoreRig();
+    try {
+      await r.adaptor.armSeedCheckpoint();
+      await r.adaptor.landingIdle();
+      const title = "lar:///t.stage.walk/cli-put";
+      let touched = false;
+      // Inside the write (the store notifies before writeFamily resolves): the wiki takes the same body again, a second hand.
+      r.working.subscribe((change) => {
+        if (touched || change.title !== title || change.redelivery) return;
+        touched = true;
+        r.wiki.addTiddler(new r.Tiddler({ title, text: "hello from the CLI\n" }));
+      });
+      r.wiki.addTiddler(new r.Tiddler({ title, text: "hello from the CLI\n" }));
+      await r.adaptor.handsRested();
+      await new Promise((resolve) => setTimeout(resolve, 300));                       // past the provider's 40 ms debounce
+      await r.adaptor.handsRested();
+      await r.adaptor.landingIdle();
+      expect(touched, "control: the second hand stood while the envelope was queued").toBe(true);
+      expect(r.wiki.getTiddler(title)?.fields["$origin-bag"]).toBe(workingBag);
+    } finally { await r.stop(); }
+  }, 120_000);
+});

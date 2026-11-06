@@ -67,6 +67,11 @@ env:
   # The published tiddlywiki the plugin proves it drops into (the `pristine-upstream` job). ONE
   # version, one place: the job's name, its cache key, its pack and its log-line check all read it.
   TW5_PRISTINE: "5.4.1"
+  # THE BROWSER LIBRARIES COME IN THE IMAGE, NEVER FROM APT. `playwright install-deps` timed out at its five minutes in the browser
+  # cells at least six times in one day. The official Playwright image carries the system libraries and all three engines, so no
+  # browser step installs anything. Tag AND digest, the pin docker-compose.capability-probe.yml holds; tools/workflow-law.test.mjs
+  # holds both to the repo's `playwright` version. A job `container:` cannot read `env`, so test-cells names the same string literally.
+  PLAYWRIGHT_IMAGE: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f"
 
 jobs:
   # ─── quick (six small gates and the contract witness, ONE runner) ─────────────────────────
@@ -182,48 +187,28 @@ jobs:
         working-directory: packages/tree-sitter-memetic-wikitext
         run: pnpm run gate:fold-ts
       # ── the browser engines: one Chromium for the floor crossing and the pristine suites ──
-      - name: Name the Playwright version (the engine cache key)
-        id: pw-version
-        if: ${{ !cancelled() }}
-        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-      # The engine directory restores by the pinned Playwright version; a bump re-downloads. The install below
-      # still runs apt for the system libraries, so it carries its own timeout and a stall there fails fast.
-      - name: Cache the Playwright engines (chromium)
-        if: ${{ !cancelled() }}
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium
-      # The apt libraries and the engine download ride two steps, so a stall names which one stalled; the download
-      # takes three attempts of 180 s each inside its ten minutes.
-      - name: Install the Playwright system dependencies (chromium)
-        id: chromium-deps
-        if: ${{ !cancelled() }}
-        timeout-minutes: 5
-        run: pnpm exec playwright install-deps chromium
-      - name: Install the Chromium engine
+      # The engines and their system libraries ride in the pinned official image (env.PLAYWRIGHT_IMAGE), so no apt step runs here. The
+      # two browser steps below run inside it through tools/pw-container.sh; everything else in this job stays on the runner.
+      - name: Pull the pinned Playwright image and find its Chromium
         id: chromium
-        if: ${{ !cancelled() && steps.chromium-deps.outcome == 'success' }}
-        timeout-minutes: 10
-        run: |
-          for attempt in 1 2 3; do
-            if timeout 180s pnpm exec playwright install chromium; then exit 0; fi
-            echo "Playwright engine install attempt $attempt failed; retrying"
-          done
-          exit 1
+        if: ${{ !cancelled() }}
+        timeout-minutes: 12
+        env:
+          PW_IMAGE: ${{ env.PLAYWRIGHT_IMAGE }}
+        run: tools/pw-container.sh node -e 'const p = require("playwright"); const e = p.chromium.executablePath(); require("node:fs").accessSync(e); console.log("chromium:", e, "playwright", require("playwright/package.json").version)'
       # ── the browser floor crossing (W23) ──
       # A real Chromium on the page a staged hearth serves, crossing that hearth's gates
       # (`packages/lararium-web/tests/e2e/floor-crossing.e2e.test.ts`). It rides its own config
       # (`vitest.crossing.config.ts`) and no package suite collects it. A scratch HOME, LAR_ROOT and LAR_STAGE_DIR keep the
-      # staged vessels off any real home; Playwright's engine cache stays where the install put it.
+      # staged vessels off any real home; the image's own engines answer (PLAYWRIGHT_BROWSERS_PATH is the image's).
       - name: Run the floor crossing under a scratch home
         if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.chromium.outcome == 'success' }}
         run: |
           scratch="$RUNNER_TEMP/crossing"
           mkdir -p "$scratch/home" "$scratch/root" "$scratch/stage"
           cd packages/lararium-web
-          env PLAYWRIGHT_BROWSERS_PATH="$HOME/.cache/ms-playwright" HOME="$scratch/home" LAR_ROOT="$scratch/root" LAR_STAGE_DIR="$scratch/stage" \
-            npx vitest run --config vitest.crossing.config.ts
+          env PW_IMAGE="$PLAYWRIGHT_IMAGE" PW_MOUNTS="$scratch" PW_ENV="LAR_ROOT LAR_STAGE_DIR" HOME_INSIDE="$scratch/home" LAR_ROOT="$scratch/root" LAR_STAGE_DIR="$scratch/stage" \
+            "$GITHUB_WORKSPACE/tools/pw-container.sh" npx vitest run --config vitest.crossing.config.ts
       # ── pristine upstream (the plugin drops into a PUBLISHED tiddlywiki) ──
       # THE INSTRUMENT AND ITS INVOKER. `meme-routes.e2e` takes `LARES_TW5_JS` and runs the whole contact against any
       # `tiddlywiki.js`; the package suites run it against the FORK. THE SUITE SKIPS LOUDLY WHEN ITS ENGINE IS MISSING, AND A
@@ -262,7 +247,10 @@ jobs:
         run: |
           export LARES_TW5_JS=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package/tiddlywiki.js
           export LARES_E2E_TMP="$RUNNER_TEMP/pristine-e2e"
-          pnpm --filter @lararium/tw5 exec vitest run tests/meme-routes.e2e.test.ts tests/standalone-single-file.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
+          mkdir -p "$LARES_E2E_TMP"
+          cd packages/lararium-tw5
+          env PW_IMAGE="$PLAYWRIGHT_IMAGE" PW_MOUNTS="$HOME/.cache/lares-pristine $LARES_E2E_TMP" PW_ENV="LARES_TW5_JS LARES_E2E_TMP" \
+            "$GITHUB_WORKSPACE/tools/pw-container.sh" npx vitest run tests/meme-routes.e2e.test.ts tests/standalone-single-file.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
           test "${PIPESTATUS[0]}" -eq 0
       - name: The log names the engine it met
         if: ${{ !cancelled() }}
@@ -298,6 +286,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container: ${{ matrix.container }}
     strategy:
       # A red cell must never cancel its siblings: the gate needs every cell's answer to tell one red
       # from one that never got to answer.
@@ -306,15 +295,21 @@ jobs:
         include:
           # `engines` names the Playwright engines the cell's suites launch (measured against the suite configs:
           # node holds none; `@lararium/web` runs all three and tw5's e2e walks launch Chromium; `@lararium/browser`
-          # runs Chromium and Firefox). An empty value skips the cache and both installs.
+          # runs Chromium and Firefox). An empty value runs the cell on the bare runner. A cell that names engines also names
+          # `container`, the pinned official Playwright image (the same string as env.PLAYWRIGHT_IMAGE; a job container cannot read
+          # `env`), so the system libraries and the engines are already there and no apt or download step runs. `--ipc=host`
+          # keeps Chromium off the container's 64 MB /dev/shm. `--user 1001` is the runner's uid and the image's `pwuser`: the
+          # steps run as the workspace's owner (git trusts the tree; Firefox refuses to run as root over a home it does not own).
           - cell: node-a
             engines: ''
           - cell: node-b
             engines: ''
           - cell: web-tw5
             engines: chromium firefox webkit
+            container: { image: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f", options: "--ipc=host --init --user 1001" }
           - cell: cli-mesh
             engines: chromium firefox
+            container: { image: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f", options: "--ipc=host --init --user 1001" }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -371,7 +366,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.venv
-          key: holder-venv-${{ runner.os }}-py${{ steps.py.outputs.python-version }}-${{ steps.mempalace-pin.outputs.sha }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
+          key: holder-venv-${{ runner.os }}-${{ matrix.container && 'pwimage' || 'host' }}-py${{ steps.py.outputs.python-version }}-${{ steps.mempalace-pin.outputs.sha }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
       - name: Stand the holder venv (~/.venv)
         env:
           CACHE_HIT: ${{ steps.venv-cache.outputs.cache-hit }}
@@ -392,33 +387,22 @@ jobs:
       # the venv that holds mempalace, never a bare `pytest`.
       # Keep the package verdict visible if the independent Python suite fails.
       # The holder gates package tests that exercise its real subprocess.
-      - name: Name the Playwright version (the engine cache key)
-        if: ${{ !cancelled() && steps.holder.outcome == 'success' }}
-        id: pw-version
-        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-      # The engine directory restores by the pinned Playwright version; a bump re-downloads. The install below
-      # still runs apt for the system libraries, so it carries its own timeout and a stall there fails fast.
-      - name: Cache this cell's Playwright engines
-        if: ${{ !cancelled() && steps.holder.outcome == 'success' && matrix.engines != '' }}
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-${{ matrix.cell }}-${{ matrix.engines }}
-      - name: Install this cell's Playwright system dependencies
-        id: browser-deps
+      - name: Find this cell's engines in the image (nothing installs)
+        id: browser
         if: ${{ !cancelled() && steps.holder.outcome == 'success' && matrix.engines != '' }}
         timeout-minutes: 5
-        run: pnpm exec playwright install-deps ${{ matrix.engines }}
-      - name: Install this cell's Playwright engines
-        id: browser
-        if: ${{ !cancelled() && steps.holder.outcome == 'success' && matrix.engines != '' && steps.browser-deps.outcome == 'success' }}
-        timeout-minutes: 10
+        env:
+          ENGINES: ${{ matrix.engines }}
         run: |
-          for attempt in 1 2 3; do
-            if timeout 180s pnpm exec playwright install ${{ matrix.engines }}; then exit 0; fi
-            echo "Playwright engine install attempt $attempt failed; retrying"
-          done
-          exit 1
+          node -e '
+            const p = require("playwright");
+            for (const name of process.env.ENGINES.split(" ")) {
+              const e = p[name].executablePath();
+              require("node:fs").accessSync(e);
+              console.log(name + ":", e);
+            }
+            console.log("playwright", require("playwright/package.json").version, "from", process.env.PLAYWRIGHT_BROWSERS_PATH);
+          '
       # ONE SERIALIZATION INSIDE A CELL. The cell runs its packages one after another because packages share a
       # build tree and a rendezvous directory; running them in parallel measures a different repository than the
       # one an operator measures locally. Parallelism lives between cells, each with a tree of its own.
@@ -492,7 +476,7 @@ jobs:
   witness-cells:
     name: Witness cell ${{ matrix.cell }}
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
       fail-fast: false
@@ -538,6 +522,16 @@ jobs:
       # naming itself has become an unmeasured gate wearing a green check. The self-tests are each
       # `tools/*.test.mjs`, planting the reds their tool owes against fakes and scratch trees, so they need no docker,
       # no browser and no standing app; the glob reads the live set, and each joins without a hand edit.
+      # THE WALL TESTS RUN LIVE HERE. The broker's check and install seats and the launcher's PID-namespace containment all stand on
+      # bubblewrap; Ubuntu 24.04 bars unprivileged user namespaces by default, so the step lifts that and PROVES the exact wall the
+      # tests use. A failed proof stops the job before any test can skip over an unexercised wall, and on CI (CI=true) a missing
+      # wall fails the wall tests by name instead of skipping them (tools/wall-test.mjs).
+      - name: Install and prove bubblewrap user and PID namespaces
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y bubblewrap
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          bwrap --unshare-user --unshare-pid --ro-bind / / --proc /proc --dev /dev --tmpfs /tmp -- /usr/bin/true
       - name: Run this cell
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: node tools/ci-cells.mjs run-witness "${{ matrix.cell }}" --out "$RUNNER_TEMP/cell"
@@ -570,6 +564,13 @@ jobs:
       - name: Gate — fails closed on any missing, red or unexpected cell
         if: always()
         run: node tools/ci-cells.mjs verify-witnesses --artifacts-dir artifacts
+      - name: Gate — the wall tests ran live (no bubblewrap skip in any cell log)
+        if: always()
+        run: |
+          if grep -rl "no bubblewrap on this host" artifacts; then
+            echo "::error::a wall test skipped for want of bubblewrap; the runner step must prove it"
+            exit 1
+          fi
       - name: Gate — every cell job itself succeeded
         if: always()
         env:

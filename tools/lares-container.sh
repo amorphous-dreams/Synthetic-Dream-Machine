@@ -110,6 +110,33 @@ unlock_or_name() {
   fi
 }
 
+# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD. A rebuild bakes `GIT_REV` into the image; an image that names
+# another revision, or none, runs older code than the checkout holds. A dirty tree labels `<sha>-dirty`, which no clean
+# build matches. It warns and stands: the operator decides whether the rebuild is owed. No git, or no checkout: it skips.
+SHIM_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+GIT_REV=""; GIT_DIRTY=""
+if GIT_REV=$(git -C "$SHIM_DIR" rev-parse HEAD 2>/dev/null) && [ -n "$GIT_REV" ]; then
+  if [ -n "$(git -C "$SHIM_DIR" status --porcelain --untracked-files=no 2>/dev/null)" ]; then GIT_DIRTY=yes; GIT_REV="$GIT_REV-dirty"; fi
+  export GIT_REV
+else
+  GIT_REV=""
+fi
+warn_image_revision() {
+  if [ -z "$GIT_REV" ]; then
+    printf '%s\n' 'lares-container: no git checkout answers here, so the image revision check is skipped' >&2
+    return 0
+  fi
+  cid=$(compose ps -q lares 2>/dev/null) || return 0
+  [ -n "$cid" ] || return 0
+  label=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$cid" 2>/dev/null | LC_ALL=C sed -e 's/[[:cntrl:]]//g' -e 's/\xc2[\x80-\x9f]//g') || return 0
+  [ "$label" != "$GIT_REV" ] || return 0
+  if [ -n "$GIT_DIRTY" ]; then
+    printf 'lares-container: the image names revision %s and the checkout holds uncommitted changes; commit first, then rebuild with `GIT_REV=$(git rev-parse HEAD) docker compose -f "%s" build lares` and `up` again\n' "${label:-none}" "$COMPOSE_FILE_PATH" >&2
+  else
+    printf 'lares-container: the image names revision %s and the checkout stands at %s; rebuild with `GIT_REV=%s docker compose -f "%s" build lares`, then `up` again\n' "${label:-none}" "$GIT_REV" "$GIT_REV" "$COMPOSE_FILE_PATH" >&2
+  fi
+}
+
 lift_vessel() {
   reason=$(printf '%s\n' "$observe_output" | sed -n 's/.*"standing"[[:space:]]*:[[:space:]]*{[^}]*"reason"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
   printf 'lares-container: %s; restarting the vessel\n' "${reason:-the standing requires a re-stand}" >&2
@@ -189,6 +216,7 @@ case "$verb" in
     else
       compose up -d --wait lares
     fi
+    warn_image_revision
     unlock_or_name ;;
   down)  compose down --remove-orphans "$@" ;;
   logs)  compose logs "$@" lares ;;

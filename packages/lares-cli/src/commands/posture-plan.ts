@@ -9,10 +9,11 @@
  * This table is the only place that knows the difference. It reads NAMES, touches nothing, and
  * returns a plan a caller can print — so the drop becomes a sentence instead of a silence.
  *
- * ── THE ONE REFUSAL ─────────────────────────────────────────────────────────────────────────────
+ * ── THE TWO REFUSALS ─────────────────────────────────────────────────────────────────────────────
  * `--observe` vows the run has no effects, and harnesses, hooks and the wake report lean on that
  * vow. Dropped, it does not degrade — it INVERTS, booting the daemon the caller asked about. So it
- * refuses beside an acting posture. Every other drop warns and stands, because a person who typed
+ * refuses beside an acting posture. `--page` refuses the same way: it asks the bare stand to light the page, no acting
+ * posture reads it, and a warning would let the person believe the page stands. Every other drop warns and stands, because a person who typed
  * one extra flag wants their vessel up more than they want a wall.
  *
  * Meme: lar:///ha.ka.ba/lares/cli/vessel-door
@@ -70,7 +71,10 @@ export function posturePlan(named: readonly string[]): PosturePlan {
   const refuse = posture !== "report" && present.has("observe")
     ? `--observe withholds every act, and \`--${posture}\` performs one — the two cannot ride together. `
       + "Drop one: `lares vessel stand --observe` reports what stands and touches nothing."
-    : null;
+    : posture !== "report" && present.has("page")
+      ? `--page rides the bare stand alone: \`--${posture}\` never lights it. `
+        + "Drop one: `lares vessel stand --page` stands the vessel and lights the page."
+      : null;
 
   return { posture, shadowed, dropped, refuse };
 }

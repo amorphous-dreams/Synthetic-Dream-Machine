@@ -136,6 +136,37 @@ let bPut = false;
 const errorOf = (text: string): string =>
   JSON.stringify((JSON.parse(text.split("\n").find((l) => l.startsWith("{")) ?? "{}") as Record<string, unknown>)["error"] ?? null);
 
+/**
+ * A COHERENT COPY of a store whose daemon still runs, or a loud failure. The automerge store compacts `incremental` chunks
+ * while the walk reads the tree, so a copy can lose a file mid-walk (`ENOENT`, CI run 42102707425) or finish with a chunk set
+ * that holds no whole document. A copy that finished proves nothing about its content, and the absence check below reads
+ * "(unavailable)" as absence, so an incoherent copy would pass it vacuously. Each attempt therefore copies onto a clean target and
+ * then proves the copy by opening it and reading `mustHold`, a document the vessel certainly keeps, as a non-empty document. Only a
+ * copy that answers that known positive returns; six attempts that do not throw.
+ */
+async function copyLiveStore(from: string, to: string, mustHold: string): Promise<void> {
+  let last = "no attempt ran";
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    rmSync(to, { recursive: true, force: true });
+    try { cpSync(from, to, { recursive: true }); }
+    catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+      last = `attempt ${attempt}: a file left the store mid-copy`;
+      continue;
+    }
+    const probe = new Repo({ storage: new NodeFSStorageAdapter(to) });
+    try {
+      const held = await Promise.race([
+        probe.find<LarDoc>(mustHold as AutomergeUrl).then((h) => JSON.stringify(h.doc() ?? {}), () => ""),
+        new Promise<string>((res) => setTimeout(() => res(""), 10_000)),
+      ]);
+      if (held.length > 2) return;
+      last = `attempt ${attempt}: the copy holds no readable ${mustHold}`;
+    } finally { await probe.shutdown().catch(() => undefined); }
+  }
+  throw new Error(`copyLiveStore: no coherent copy of ${from} in six attempts (${last})`);
+}
+
 describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relation ★", () => {
   beforeAll(async () => {
     rootB = mkdtempSync(join(stageDir(), "lares-staged-Bop-"));
@@ -648,7 +679,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const daemonUrl = bootDocUrl(A!, "daemon");
     expect(daemonUrl, "A's boot names her daemon document").toBeTruthy();
     const copyA = mkdtempSync(join(stageDir(), "lares-ledger-copyA-"));
-    cpSync(vesselStorageDir(A!), copyA, { recursive: true });
+    await copyLiveStore(vesselStorageDir(A!), copyA, daemonUrl!);
     const repoCopy = new Repo({ storage: new NodeFSStorageAdapter(copyA) });
     let atomKeyA = "";
     let ownLedgerA = "";
@@ -700,7 +731,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     expect(ford.json?.["ok"], `CONTROL — B still reads A's ford through the realm: ${said(ford)}`).toBe(true);
     // B's own store, read from a COPY (her daemon keeps running for the steps after): no row of A's ledger stands there.
     const copyB = mkdtempSync(join(stageDir(), "lares-ledger-copyB-"));
-    cpSync(vesselStorageDir(B), copyB, { recursive: true });
+    await copyLiveStore(vesselStorageDir(B), copyB, catalogUrlB!);
     const repoCopyB = new Repo({ storage: new NodeFSStorageAdapter(copyB) });
     try {
       const body = await Promise.race([

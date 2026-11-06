@@ -6,7 +6,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { SessionSignBook } from "../src/session-sign-door.js";
-import { answerSessionSign, setSessionSignDoor } from "../src/worker-handle.js";
+import { answerSessionSign } from "../src/worker-handle.js";
 import type { UdsSessionSigner } from "../src/uds-channel.js";
 
 const CHAIN = { scope: { faceKey: "aa".repeat(32), nexus: "nexus-one" }, vesselFaceKey: "bb".repeat(32) };
@@ -103,15 +103,12 @@ describe("the session sign door answers from the session that placed the call", 
     expect(await book.door(() => null)({ op: "read", ask: "req-1", verb: "sealed-seal" })).toEqual({ refusal: "signer-unavailable" });
   });
 
-  test("the worker door: no door standing, or a malformed ask, refuses by name on the same request id", async () => {
-    setSessionSignDoor(null);
-    expect(await answerSessionSign({ requestId: "w1", op: "read", ask: "req-1", verb: "sealed-seal" })).toEqual({ type: "session:signed", requestId: "w1", refusal: "signer-unavailable" });
+  test("the worker door: a record without sessionSign, or a malformed ask, refuses by name on the same request id", async () => {
+    expect(await answerSessionSign({}, { requestId: "w1", op: "read", ask: "req-1", verb: "sealed-seal" })).toEqual({ type: "session:signed", requestId: "w1", refusal: "signer-unavailable" });
     const book = new SessionSignBook();
     book.hold("req-1", "sealed-seal", { signer: signer(), anchor: NEXUS, subject: "subject-1" });
-    setSessionSignDoor(book.door(() => CHAIN));
-    try {
-      expect(await answerSessionSign({ requestId: "w2", op: "sign", ask: "req-1", verb: "sealed-seal" })).toEqual({ type: "session:signed", requestId: "w2", refusal: "signer-unavailable" });
-      expect(await answerSessionSign({ requestId: "w3", op: "sign", ask: "req-1", verb: "sealed-seal", payload })).toEqual({ type: "session:signed", requestId: "w3", signature: "sig-act-3" });
-    } finally { setSessionSignDoor(null); }
+    const caps = { sessionSign: book.door(() => CHAIN) };
+    expect(await answerSessionSign(caps, { requestId: "w2", op: "sign", ask: "req-1", verb: "sealed-seal" })).toEqual({ type: "session:signed", requestId: "w2", refusal: "signer-unavailable" });
+    expect(await answerSessionSign(caps, { requestId: "w3", op: "sign", ask: "req-1", verb: "sealed-seal", payload })).toEqual({ type: "session:signed", requestId: "w3", signature: "sig-act-3" });
   });
 });

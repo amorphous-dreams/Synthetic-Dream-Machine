@@ -289,7 +289,7 @@ export type { WikiRecipeDerivation } from "./surface-recipe.js";
 export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, markIslandArrival } from "./island-repo.js";
 export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
 export { answerReceiptWithHeads, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";
-export type { CapabilityRecord, ReceiptIssuer, CasFetcher, DyadReader, CustodyWriter } from "./capability-record.js";
+export type { CapabilityRecord, ReceiptIssuer, CasFetcher, DyadReader, CustodyWriter, SessionSignDoor } from "./capability-record.js";
 export { GatedSyncLeg, oneWayDocumentsGate, carriesPrototypeKeyReason } from "./gated-sync-leg.js";
 export { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey, docPrototypeKeyFault, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
 export type { SyncLegGate, LegRefusal } from "./gated-sync-leg.js";

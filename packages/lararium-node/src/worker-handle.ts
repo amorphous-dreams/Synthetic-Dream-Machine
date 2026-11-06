@@ -101,21 +101,12 @@ function attachCustodyWrite(w: Worker, caps: CapabilityRecord): void {
 // THE SESSION SIGN DOOR, vessel side (`session-sign-door.ts`). The daemon island names the invocation a session placed;
 // the vessel's book answers from that session's signer, which signs here, behind its owner's table. The DAEMON island's
 // channel alone carries the ask: a wiki island's refuses by name.
-export type SessionSignDoor = (ask: Pick<IslandMsg_SessionSign, "op" | "ask" | "verb" | "payload">) => Promise<
-  { readonly certificate: unknown; readonly subject: string; readonly chain: import("@lararium/mesh").SessionOwnChain; readonly foldRead: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }
-  | { readonly own: true; readonly chain: import("@lararium/mesh").SessionOwnChain; readonly foldRead: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }
-  | { readonly signature: string } | { readonly refusal: string }>;
-let sessionSignDoor: SessionSignDoor | null = null;
-
-/** Stand (or drop) the vessel's session sign door. */
-export function setSessionSignDoor(door: SessionSignDoor | null): void { sessionSignDoor = door; }
-
-/** Answer one `session:sign` ask through the door standing now; no door, a malformed ask or a fault each refuse by name. */
-export async function answerSessionSign(ask: Partial<IslandMsg_SessionSign> & { requestId: string }): Promise<IslandMsg_SessionSigned> {
+/** Answer one `session:sign` ask through the record's `sessionSign`; no door, a malformed ask or a fault each refuse by name. */
+export async function answerSessionSign(caps: CapabilityRecord, ask: Partial<IslandMsg_SessionSign> & { requestId: string }): Promise<IslandMsg_SessionSigned> {
   const base = { type: "session:signed" as const, requestId: ask.requestId };
   if ((ask.op !== "read" && ask.op !== "sign" && ask.op !== "own") || typeof ask.ask !== "string" || typeof ask.verb !== "string" ||
       (ask.op === "sign" && !(ask.payload instanceof Uint8Array))) return { ...base, refusal: "signer-unavailable" };
-  const door = sessionSignDoor;
+  const door = caps.sessionSign;
   if (!door) return { ...base, refusal: "signer-unavailable" };
   try {
     const answer = await door({ op: ask.op, ask: ask.ask, verb: ask.verb, ...(ask.payload ? { payload: ask.payload } : {}) });
@@ -123,11 +114,16 @@ export async function answerSessionSign(ask: Partial<IslandMsg_SessionSign> & { 
   } catch { return { ...base, refusal: ask.op === "sign" ? "signer-refused" : "signer-unavailable" }; }
 }
 
-function attachSessionSignDoor(w: Worker): void {
+function attachSessionSignDoor(w: Worker, caps: CapabilityRecord): void {
+  const logged = { once: false };
   w.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_SessionSign> | null;
     if (!m || m.type !== "session:sign" || typeof m.requestId !== "string") return;
-    void answerSessionSign(m as Partial<IslandMsg_SessionSign> & { requestId: string }).then((reply) => {
+    if (!caps.sessionSign && !logged.once) {
+      logged.once = true;
+      console.warn("[vessel-caps] SessionSignDoorRefused: a daemon island asked for the sessionSign capability; this record carries none (a herm floor signs nothing; only a lifted floor does). The ask refused and nothing ran.");
+    }
+    void answerSessionSign(caps, m as Partial<IslandMsg_SessionSign> & { requestId: string }).then((reply) => {
       try { w.postMessage(reply); } catch { /* the worker went away — nothing to answer */ }
     });
   });
@@ -141,7 +137,7 @@ function attachSessionSignDoor(w: Worker): void {
  *            vessel's store saves), `custodyWrite` (its keyhive archive exports cross to the main thread, which alone
  *            holds the vessel key and seals them) and `dyad` (its gates ask what one device's edge reads on the fleet
  *            board the main thread folds; no `dyad` standing, one that faults and a malformed ask each read `aside`).
- *            It also reaches the session sign door, which stays outside the record.
+ *            It also reaches `sessionSign` where its record carries one: a LIFT member (a herm floor signs nothing).
  *   wiki     an island that runs a wiki's content and plugins. It reaches `cas` alone, for the blobs its own tiddlers
  *            name. Its custody write and its receipt ask each refuse BY NAME on the same request id, and each refusal
  *            logs once per worker: code a wiki loads never writes a row under the vessel key and never drives the
@@ -208,7 +204,7 @@ export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass
     attachDyad(w, caps);
     attachReceipt(w, caps);
     attachCustodyWrite(w, caps);
-    attachSessionSignDoor(w);
+    attachSessionSignDoor(w, caps);
   } else if (opts.island === "wiki") {
     attachCas(w, caps);
     attachRefusals(w, caps);
@@ -238,11 +234,11 @@ export function nodeSpawnDaemonWorker(url: string | URL, caps: CapabilityRecord,
 }
 
 /** Spawn a WIKI island: a worker that reaches its record's `cas` alone. */
-export function nodeSpawnWikiWorker(url: string | URL, caps: CapabilityRecord): VesselWorkerHandle {
-  return nodeWorkerHandle(new Worker(url), { island: "wiki", caps });
+export function nodeSpawnWikiWorker(url: string | URL, caps: CapabilityRecord, workerData?: unknown): VesselWorkerHandle {
+  return nodeWorkerHandle(new Worker(url, workerData !== undefined ? { workerData } : undefined), { island: "wiki", caps });
 }
 
 /** Spawn a SESSION's island: a worker that reaches no member of the record. */
-export function nodeSpawnSessionWorker(url: string | URL, caps?: CapabilityRecord): VesselWorkerHandle {
-  return nodeWorkerHandle(new Worker(url), { island: "session", ...(caps ? { caps } : {}) });
+export function nodeSpawnSessionWorker(url: string | URL, caps?: CapabilityRecord, workerData?: unknown): VesselWorkerHandle {
+  return nodeWorkerHandle(new Worker(url, workerData !== undefined ? { workerData } : undefined), { island: "session", ...(caps ? { caps } : {}) });
 }

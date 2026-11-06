@@ -801,8 +801,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * Own writes return with the heads the next hand must build on; every envelope is a wave.
    * An own-origin envelope IS the store's acknowledgment of this shore's write, whatever the store
    * (a store with no heads names none); `writtenAt` then says where the hand's next write builds.
+   * A redelivery (the store's debounced re-read of a write it already fired) acknowledges nothing: it still lands as a wave.
    */
   private _noteOwnWrite(change: LarTiddlerChange): void {
+    if (change.redelivery) return;
     if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) {
       this.writeAcks.set(change.title, (this.writeAcks.get(change.title) ?? 0) + 1);
       if (change.writtenAt && change.bag) this.handBase.set(change.title, { bag: change.bag, heads: change.writtenAt });

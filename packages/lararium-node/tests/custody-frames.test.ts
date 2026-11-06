@@ -85,6 +85,7 @@ function harness(opts: {
     unlockFace: async (_face: unknown) => ({ reading: "opens", fcid: "00".repeat(16), ordinal: 0, slot: "face-slot" }),
     unlockFaces: async () => [],
     unlockedFaces: () => [],
+    faceStanding: async () => null,
     isUnlocked: () => unlocked,
     attemptsLeft: () => 3 - spent,
     openedSlot: () => (unlocked ? "slot-1" : null),
@@ -198,11 +199,11 @@ describe("the custody door", () => {
     const first = h.send(unlockFrame(RIGHT));                       // holds the chain while it recomposes
     await new Promise((r) => setTimeout(r, 5));                     // its turn began: it no longer waits in line
     const gone = h.send({ op: "lock" }, true);                      // its caller left before its turn
-    const waiting = Array.from({ length: CUSTODY_LINE - 1 }, () => h.send({ op: "custody" }));
-    const over = await h.send({ op: "custody" }).answer;            // one past the line
+    const waiting = Array.from({ length: CUSTODY_LINE - 1 }, () => h.send({ op: "lock", face: 99 }));
+    const over = await h.send({ op: "lock", face: 99 }).answer;            // one past the line
     expect(over).toMatchObject({ status: "error", refusal: { reason: "custody-door-busy" } });
     await first.answer;
-    for (const w of waiting) expect(await w.answer).toMatchObject({ op: "custody", unlocked: true });
+    for (const w of waiting) expect(await w.answer, "a waiting frame ran its turn and answered").toMatchObject({ op: "lock", locked: true, was: "locked", face: 99 });
     void gone;
     expect(h.recomposed, "the departed caller's lock never ran").toEqual([true]);
     expect(h.holder.isUnlocked()).toBe(true);
@@ -464,5 +465,19 @@ describe("the unlock frame names the face the composition mounts", () => {
     expect(bad).toMatchObject({ status: "error", refusal: { reason: "bad-custody-frame" } });
     expect(mountedFaceOrdinal()).toBeUndefined();
     setMountedFace(undefined);
+  });
+});
+
+describe("the custody state query answers beside the chain (L7)", () => {
+  test("RED: a custody query sent mid-unlock answers at once with composing true; after the unlock it reads composing false", async () => {
+    const h = harness({ slowMs: 200 });
+    const unlocking = h.send(unlockFrame(RIGHT));
+    await new Promise((r) => setTimeout(r, 20));
+    const t0 = Date.now();
+    const mid = await h.send({ op: "custody" }).answer;
+    expect(Date.now() - t0, "the query never waits behind the recomposition").toBeLessThan(100);
+    expect(mid).toMatchObject({ op: "custody", composing: true });
+    await unlocking.answer;
+    expect(await h.send({ op: "custody" }).answer).toMatchObject({ op: "custody", unlocked: true, composing: false });
   });
 });
