@@ -58,7 +58,9 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { pathToFileURL } from "node:url";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { DRIVERS } from "./held-out-cells.mjs";
 
 /** The house poll floor in seconds: CI poll rounds stand at least three minutes apart (operator law, 2026-11-05); the calls within one round run back to back. Every wait in
@@ -381,8 +383,27 @@ async function readOnce({ sh, sleep, branch, head, opt }) {
   return { v, heldOut, jm, jobsDark };
 }
 
+/** The push branch patterns `held-out.yml` raises runs on (`!` negates, the last match wins), read off the workflow itself; null where unreadable. */
+export function heldOutBranchPatterns(file = join(dirname(fileURLToPath(import.meta.url)), "..", ".github", "workflows", "held-out.yml")) {
+  try {
+    const m = /^on:\s*\n\s+push:\s*\n\s+branches:\s*\[([^\]]*)\]/m.exec(readFileSync(file, "utf8"));
+    return m ? m[1].split(",").map((x) => x.trim().replace(/^["']|["']$/g, "")).filter(Boolean) : null;
+  } catch { return null; }
+}
+/** Whether any held-out driver will ever measure `branch`: false only where the workflow's push patterns exclude it. */
+export function heldOutMeasures(branch, patterns) {
+  if (!patterns) return true;
+  let on = false;
+  for (const p of patterns) {
+    const neg = p.startsWith("!"), g = neg ? p.slice(1) : p;
+    const re = new RegExp(`^${g.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*\*/g, "\u0000").replace(/\*/g, "[^/]*").replace(/\u0000/g, ".*")}$`);
+    if (re.test(branch)) on = !neg;
+  }
+  return on;
+}
+
 /** The door: returns the exit code. `sh`, `sleep`, `log` and `err` inject, so a test plants a recorded sequence. */
-export async function main(argv, { sh = defaultSh, sleep = defaultSleep, log = console.log, err = console.error } = {}) {
+export async function main(argv, { sh = defaultSh, sleep = defaultSleep, log = console.log, err = console.error, heldOutPatterns = heldOutBranchPatterns() } = {}) {
   const arg = (name, fallback) => { const i = argv.indexOf(`--${name}`); return i >= 0 && argv[i + 1] ? argv[i + 1] : fallback; };
   const opt = { workflow: arg("workflow", "CI"), heldOut: arg("held-out", "held-out.yml"), limit: arg("limit", "30"), retries: arg("retries", "6"), interval: arg("interval", String(POLL_FLOOR_S)) };
   if (!Number.isFinite(Number(opt.retries)) || Number(opt.retries) < 0) { err("ci-verdict: --retries wants a non-negative number"); return 3; }
@@ -395,7 +416,11 @@ export async function main(argv, { sh = defaultSh, sleep = defaultSleep, log = c
     const head = sh("git", ["rev-parse", arg("head", "HEAD")]);
     for (;;) {
       r = await readOnce({ sh, sleep, branch, head, opt });
-      const waiting = r.v.state === "unread" || (r.heldOut.state === "unread" && !r.heldOut.hard);
+      // A branch no held-out driver will ever measure (held-out.yml's push patterns exclude it) ends at its CI verdict: the wait
+      // for a third reading that cannot come would never end. The held-out reading stays UNREAD, never green.
+      const heldOutNever = !heldOutMeasures(branch, heldOutPatterns);
+      if (heldOutNever && r.heldOut.state === "unread") r.heldOut = { ...r.heldOut, why: `${r.heldOut.why}; held-out.yml raises no run on this branch, so no driver will measure it and the wait ends at the CI verdict`, never: true };
+      const waiting = r.v.state === "unread" || (r.heldOut.state === "unread" && !r.heldOut.hard && !heldOutNever);
       if (!argv.includes("--wait") || !waiting) break;
       await sleep(Number(opt.interval) * 1000);
     }
