@@ -1,8 +1,10 @@
 /**
  * persona-lease — the production road of a face's signed lease advance, end to end through the store-door verb
- * (`lares persona lease`). Reds: an unsigned slot and a stranger-signed slot on the daemon doc raise nothing, so the
- * verb reads effective 0 and the sealed anchor's frontier stays; the verb's own advance raises both. Controls: a second
- * advance climbs by one, and a face with no lineage refuses by name.
+ * (`lares persona lease`). Reds: a roll that would leave a seated device's edge stale refuses `lease-roll-strands-devices`
+ * and writes nothing; an unsigned slot and a stranger-signed slot on the daemon doc raise nothing, so the verb reads only
+ * the anchor's floor and the verb's own advance raises the slot and the frontier. The rolls that succeed stand a face whose
+ * edge already halts below the floor (`edgeAlreadyStale`), so they strand no device. Controls: a second advance climbs by
+ * one, and a face with no lineage refuses by name.
  */
 import { afterEach, describe, expect } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -24,6 +26,12 @@ import { seedFleet } from "./fleet-seed-fixture.js";
 import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
 let daemonUrl: string;
+
+/** This device accepted epoch `epoch` above its edge's bound 0, so its edge halts today and the roll strands no seated device. */
+async function edgeAlreadyStale(epoch = 1): Promise<void> {
+  const group = (await loadIdentityAnchors(0))!.personaGroupId;
+  await keepFaceAnchorOfGroup(raiseFaceFrontier((await loadFaceAnchorOfGroup(group))!, { leaseEpoch: epoch }));
+}
 
 async function setup(withFleet: boolean) {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
@@ -104,6 +112,7 @@ describe("lares persona lease", () => {
 
   it("RED: unsigned and stranger-signed slots raise nothing; the verb's own advance raises the slot max and the sealed frontier", async () => {
     await setup(true);
+    await edgeAlreadyStale();
     const anchors = (await loadIdentityAnchors(0))!;
     const group = anchors.personaGroupId;
     await ownedStore(larDataDir(), async (repo) => {
@@ -118,11 +127,11 @@ describe("lares persona lease", () => {
       await repo.flush();
     });
     const out = (await roll()) as { effective: number; rolled: number; frontier: number };
-    expect(out).toMatchObject({ effective: 0, rolled: 1, frontier: 1 });
-    expect((await loadFaceAnchorOfGroup(group))!.frontier.leaseEpoch).toBe(1);
+    expect(out).toMatchObject({ effective: 1, rolled: 2, frontier: 2 });
+    expect((await loadFaceAnchorOfGroup(group))!.frontier.leaseEpoch).toBe(2);
     const slots = await slotsOf(group);
     const authorize = () => true;
-    expect(signedLeaseEpoch(group, ["50", ...slots.filter((s) => s.startsWith("{"))], (w) => w !== "ab".repeat(32) && authorize()), "the unsigned 50 and the stranger's 40 never counted").toBe(1);
+    expect(signedLeaseEpoch(group, ["50", ...slots.filter((s) => s.startsWith("{"))], (w) => w !== "ab".repeat(32) && authorize()), "the unsigned 50 and the stranger's 40 never counted").toBe(2);
   }, 120_000);
 
   it("RED: a roll never reads below the epoch this device's sealed anchor accepted, so an older replica cannot sign a roll that stales nothing; CONTROL: the roll climbs from the floor", async () => {
@@ -137,11 +146,12 @@ describe("lares persona lease", () => {
 
   it("CONTROL: a second advance climbs by one and the anchor follows", async () => {
     await setup(true);
+    await edgeAlreadyStale();
     const group = (await loadIdentityAnchors(0))!.personaGroupId;
     await roll();
     const out = (await roll()) as { effective: number; rolled: number; frontier: number };
-    expect(out).toMatchObject({ effective: 1, rolled: 2, frontier: 2 });
-    expect((await loadFaceAnchorOfGroup(group))!.frontier.leaseEpoch).toBe(2);
+    expect(out).toMatchObject({ effective: 2, rolled: 3, frontier: 3 });
+    expect((await loadFaceAnchorOfGroup(group))!.frontier.leaseEpoch).toBe(3);
   }, 120_000);
 
   it("a face with no verified KEL lineage refuses by name and writes nothing", async () => {
