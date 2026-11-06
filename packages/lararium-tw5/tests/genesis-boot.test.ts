@@ -112,10 +112,9 @@ describe.skipIf(genesisSkip)(`the genesis boot${genesisNote}`, () => {
     expect(leaks, "lent names reported as global assignments").toEqual([]);
     // CONTROL: the fork's leak check still sees a plain enumerable assignment on the global.
     const g = globalThis as Record<string, unknown>;
-    g["larProbeLeak"] = 1;
     try {
       warned.clear();
-      loose(engine).utils.evalSandboxed("exports.ok = true;", { exports: {} }, "control.js");
+      loose(engine).utils.evalSandboxed("globalThis.larProbeLeak = 1; exports.ok = true;", { exports: {} }, "control.js");
       expect(warned.has("larProbeLeak")).toBe(true);
     } finally {
       delete g["larProbeLeak"];
