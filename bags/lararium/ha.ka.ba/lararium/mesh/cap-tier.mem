@@ -81,6 +81,8 @@ The keystone reads back through the code: revert the meet to take the more-OPEN 
 
 ''Every floor answers all three readings, by name.'' `makeTierFloorSource` takes `federatable`, `sealed` and `secrets` as REQUIRED readings: a site that omits one fails to compile, and an untyped caller that omits one refuses at once (`floor-reading-absent`), since an absent secrets reading would floor a federatable secrets plane PUBLIC and read exactly like a plane that holds none. `NO_CONTRACT_SECRETS_PLANE` stands only where absence stands established. A reading that cannot answer throws rather than answering false, and `structuralFloorFor` passes the throw on, the secrets reading first (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane#/the-vault-reads-as-a-bag`>>).
 
+''One predicate tightens every allowing return.'' `tightenShare` (share-tighten.ts) takes the verdict a branch already reached and the AUDIENCE that branch proved (`in-process` · `fleet` · `contract` · `world`), and only withdraws: a structural deny stays deny; `in-process` stays allowed after the structural checks; a same-face sibling crosses a vessel boundary and reads `fleet`; PERSONAGROUP holds the fleet, CONTRACT the fleet and the contracted, PUBLIC anyone, VEIL the island alone. A reading that cannot answer (a `SecretsRegistryRefusal`, a `DeclaredTierRefusal`, any throw) withholds, and so does a vessel crossing that names no document. The ring stands required, so an omitted ring never reads as an inert one. The declared tier reads off the bag's manifest met with every PRESENT tiddler refinement (`makeManifestTierSource`): an absent refinement adds nothing, a torn one reads VEIL, and an unresolved doc, an unread or mismatched manifest or a half-read cascade refuses by name; the inert null answers only for a plane bound explicitly as no bag.
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/declassification`>>
@@ -156,6 +158,6 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DGO6urm5MakfAfC9CU36vdWwgGpAPax3sKehMCFG67Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-IqYJGzYLcVesekf7Hnr35ILLiNIQjA1YFnbJ0kQeQ8`>>
 
 <<^ code=`&#x0004;` to=`?`>>
