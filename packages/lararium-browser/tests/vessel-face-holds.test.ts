@@ -238,8 +238,8 @@ describe("the place tree holds no face secret", () => {
     await bindFirstFaceSlot(idbName, b, OTHER);
     expect((await readBrowserCustody(idbName)).reading, "the place tree reads clear").toBe("clear");
     const wrap = { keyClass: "relation", info: "x", nonce: "00", wrapped: "00" } as never;
-    await expect(writeBrowserSeedWrap(idbName, b as never, wrap), "a face whose tree stands takes no wrap").rejects.toThrow(/ward-passkey-refused/);
-    await expect(writeBrowserSeedWrap(idbName, face("treeless") as never, wrap), "CONTROL").resolves.toBeUndefined();
+    await expect(writeBrowserSeedWrap(idbName, b, wrap), "a face whose tree stands takes no wrap").rejects.toThrow(/ward-passkey-refused/);
+    await expect(writeBrowserSeedWrap(idbName, face("treeless"), wrap), "CONTROL").resolves.toBeUndefined();
   }, SLOW);
 
   test("FH8 RED a walk record refuses a carry receipt — CONTROL: invite, wallet and grant rest", async () => {

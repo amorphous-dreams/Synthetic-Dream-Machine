@@ -1,7 +1,7 @@
 /**
  * browser-face-custody — each face keeps its own fire: a face custody key (FCK) per PersonaGroup, wrapped in that face's own
  * slot tree, and that face's rows sealed under it (lar:///ha.ka.ba/lares/docs/pono/k15-custody-step-zero#/row-census-browser;
- * lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift, slice 3 part ii).
+ * lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices).
  *
  * ── WHAT RESTS WHERE ─────────────────────────────────────────────────────────────────────────────
  * In the vessel's IndexedDB `keystore`, beside the place rows:
@@ -60,7 +60,7 @@ const ROW_NAME = /^[A-Za-z0-9][A-Za-z0-9._:/-]*$/;
 
 export type FaceCustodyRefusalReading =
   | "face-absent" | "face-names-a-handle" | "no-custody-slot" | "face-locked" | "already-bound" | "row-unopened"
-  | "face-index-mismatch" | "tree-unreadable" | "row-name-refused" | "passkey-alone-refused";
+  | "face-index-mismatch" | "tree-unreadable" | "row-name-refused" | "passkey-alone-refused" | "face-name-reserved";
 
 const SAYS: Record<FaceCustodyRefusalReading, string> = {
   "face-absent": "the act names no face; a face custody act names one PersonaGroup",
@@ -73,6 +73,7 @@ const SAYS: Record<FaceCustodyRefusalReading, string> = {
   "tree-unreadable": "this face's slot tree does not read; no route can be judged against it",
   "row-name-refused": "a face row names itself by a plain path, never the anchor, a sidecar or a climb",
   "passkey-alone-refused": "a face's first slot binds a passphrase or paper route; a passkey binds beside one",
+  "face-name-reserved": "the `unnamed:` spelling keys a founding's tree on this thread alone and names no face",
 };
 
 /** A face custody act the face's standing state refuses. Nothing was written. */
@@ -85,8 +86,15 @@ export class FaceCustodyRefused extends Error {
 
 const UNNAMED = "unnamed:";
 
-/** The face an act names, checked: a PersonaGroup, never null, never `h<N>`. */
+/** The face an act names, checked: a PersonaGroup, never null, never `h<N>`, never the reserved founding spelling `unnamed:`. */
 export function checkFaceName(face: unknown): string {
+  const named = checkFaceKey(face);
+  if (named.startsWith(UNNAMED)) throw new FaceCustodyRefused("face-name-reserved");
+  return named;
+}
+
+/** The key a row door seats a face under on this thread: a checked PersonaGroup, or a founding's own `unnamed:<fcid>`. */
+function checkFaceKey(face: unknown): string {
   if (typeof face !== "string" || face.length === 0) throw new FaceCustodyRefused("face-absent");
   if (/^h\d+$/.test(face)) throw new FaceCustodyRefused("face-names-a-handle");
   return face;
@@ -135,6 +143,11 @@ export function overwriteEveryFaceCustody(idbName: string): number {
 /** The named faces this thread holds a key for, for one store: names only, never a key. */
 export function heldFaces(idbName: string): string[] {
   return [...(seated.get(idbName)?.keys() ?? [])].filter((k) => !k.startsWith(UNNAMED)).sort();
+}
+
+/** Every key this thread holds for one store, by the name it seats under (a founding's `unnamed:<fcid>` included): names only. */
+export function heldFaceKeys(idbName: string): string[] {
+  return [...(seated.get(idbName)?.keys() ?? [])].sort();
 }
 
 /** Does this thread hold `face`'s key for this store. */
@@ -186,7 +199,7 @@ function carrierOf(idbName: string, fcid: string, row: string): FaceCarrier {
 
 /** The keystore row a face row rests at (for a census): resolves through the index, routing only. */
 export async function faceRowPath(idbName: string, face: string, row: string): Promise<string> {
-  checkFaceName(face);
+  checkFaceKey(face);
   const fcid = seated.get(idbName)?.get(face)?.fcid ?? (await entryOf(idbName, face))?.fcid;
   if (!fcid) throw new FaceCustodyRefused("no-custody-slot");
   return rowPath(fcid, checkRow(row));
@@ -221,7 +234,7 @@ export async function readFaceCustodyPasskeys(idbName: string, face: string): Pr
 
 /** The held key, copied for one act; refused by name where the face holds no tree or stands locked. */
 async function keyFor(idbName: string, face: string): Promise<Seated> {
-  checkFaceName(face);
+  checkFaceKey(face);
   const held = seated.get(idbName)?.get(face);
   // Each act seals on its own copy, so a lock that overwrites the held key meanwhile never leaves a write sealing under zeros.
   if (held) return { fcid: held.fcid, fck: held.fck.slice() as FaceCustodyKey };

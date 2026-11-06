@@ -8,8 +8,10 @@
  * there, sorted by capability (the 2026-10-19 sort):
  *   `vessel-key`  F: the place KEL seed and its public half. It routes the vessel and signs the place KEL alone, a floor
  *                 duty of the place signer; it grants no face identity. It may stand clear before the place tree binds.
- *   `walk/<gate>` the walk a carried invite opens, taken at the boot before any face stands (D/F split, LEAD: the private
- *                 face receipt in it moves under its face once the split proves; until then it rests with the place).
+ *   `walk/<gate>` F: the walk a carried invite opens, taken at the boot before any face stands. It holds the invite, the
+ *                 wallet's blind tokens and the hearth-signed grant over a per-Nexus public leaf: a walk at that hearth, no
+ *                 face secret. A carry receipt (a document key the face's carry secret derives) would read D, and the walk
+ *                 store refuses one by name (`walk-receipt-unhomed`, `browser-walk.ts`).
  * THE FACE ROWS rest under their own face's tree (`browser-face-custody.ts`, `face-sealed/<fcid>/<row>`), each named by the
  * face's PersonaGroup and never by a handle index: `face-root/<G>` (the persona root), `veil-archive-g<G>`, `face-atom/<G>`,
  * `face-anchor/<G>`, `face-address-secret/<G>`, `fleet-join-pending/<G>`, `vessel-face-key/<G>|<nexus>|<faceKey>`,
@@ -17,10 +19,9 @@
  * rests before its own tree binds (`no-custody-slot`). Every other keystore row (`catalog-url`, public by construction)
  * stays as it stood.
  *
- * ── THE SHARED TREE'S EARLIER SHAPE REFUSES ──────────────────────────────────────────────────────
+ * ── A FACE ROW NEVER RESTS UNDER THE PLACE TREE ──────────────────────────────────────────────────
  * A face row standing under the place tree (clear or sealed), or a row spelled by handle index (`persona-root-h<N>`, the
- * roster, `nexus-key/h<N>/…`), names the shape before each face kept its own tree: the boot refuses `face-row-shared` and the
- * row door `face-names-a-handle`. A face founded in that shape re-founds.
+ * roster, `nexus-key/h<N>/…`), names no face: the boot refuses `face-row-shared` and the row door `face-names-a-handle`.
  *
  * ── ONE WRITER ───────────────────────────────────────────────────────────────────────────────────
  * Every place byte and the tree itself pass through the mesh's one writer (`sealed-writer.ts`) over an IndexedDB
@@ -100,7 +101,7 @@ export function faceRowOf(row: string): { readonly face: string; readonly row: s
   return null;
 }
 
-/** A row the shared tree's earlier shape spelled by handle index, or a vessel Archive: none names a face. */
+/** A row spelled by handle index, or a vessel Archive: none names a face. */
 const HANDLE_ROW = /^(?:persona-root-h\d+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|keyhive-archive)$/;
 
 /** The sealed carrier a custody row rests in once a slot binds. */
@@ -123,12 +124,12 @@ const SAYS: Record<BrowserCustodyRefusalReading, string> = {
   "row-unopened": "the key this page holds does not open the sealed row; nothing was written",
   "torn-without-tree": "a sealed row stands with no slot tree beside it, so no route can open it; nothing was written",
   "face-names-a-handle": "a face's row names its PersonaGroup, never a local handle index h<N>; this row's shape names no face",
-  "face-row-shared": "a face's row rests under this browser's place tree, the shape before each face kept its own tree; this browser re-founds (its site data cleared) and nothing here reads that row",
+  "face-row-shared": "a face's row rests under this browser's place tree, where no face row rests; nothing here reads that row, and this browser founds afresh once its site data clears",
 };
 
 /**
- * Refuse a keystore whose place tree still holds a face's row (clear or sealed), or a row spelled by handle index: the shared
- * tree's earlier shape. A face founded in it re-founds. Nothing is read or written past the row names.
+ * Refuse a keystore whose place tree holds a face's row (clear or sealed), or a row spelled by handle index: each face's rows
+ * rest under its own tree alone. Nothing is read or written past the row names.
  */
 export async function refuseSharedTreeFaceRows(idbName: string): Promise<void> {
   const shared = (await keystoreKeys(idbName)).filter((k) => {

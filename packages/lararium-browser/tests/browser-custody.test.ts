@@ -958,14 +958,14 @@ describe("browser custody seals the place tree's device seed and walk records", 
 });
 
 describe("the ward refuses a passkey path to a warded root (row 7, S2)", () => {
-  test("RED: a PRF seed wrap refuses on a sealed keystore `ward-passkey-refused`; CONTROL: a clear keystore keeps the opt-in wrap door as it stood", async () => {
+  test("RED: a PRF seed wrap refuses over a face whose own tree stands `ward-passkey-refused`; CONTROL: a face with no tree keeps the opt-in wrap door", async () => {
     const { writeBrowserSeedWrap } = await import("../src/browser-vessel-identity.js");
-    const { sealBrowserKeystore: seal } = await import("../src/browser-custody.js");
-    const sealed = `lares:wrap-${globalThis.crypto.randomUUID()}`;
-    await seal(sealed, { kind: "passphrase", passphrase: "a sealed keystore" });
+    const { bindFirstFaceSlot } = await import("../src/browser-face-custody.js");
+    const idbName = `lares:wrap-${globalThis.crypto.randomUUID()}`;
+    const warded = `pg-wrap-${globalThis.crypto.randomUUID()}`;
+    await bindFirstFaceSlot(idbName, warded, { kind: "passphrase", passphrase: "a warded face" });
     const wrap = { keyClass: "relation", info: "x", nonce: "00", wrapped: "00" } as never;
-    await expect(writeBrowserSeedWrap(sealed, 0, wrap)).rejects.toThrow(/ward-passkey-refused/);
-    const clear = `lares:wrap-${globalThis.crypto.randomUUID()}`;
-    await expect(writeBrowserSeedWrap(clear, 0, wrap)).resolves.toBeUndefined();
-  });
+    await expect(writeBrowserSeedWrap(idbName, warded, wrap)).rejects.toThrow(/ward-passkey-refused/);
+    await expect(writeBrowserSeedWrap(idbName, `pg-wrap-${globalThis.crypto.randomUUID()}`, wrap)).resolves.toBeUndefined();
+  }, SLOW);
 });

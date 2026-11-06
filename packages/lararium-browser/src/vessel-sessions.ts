@@ -1,6 +1,6 @@
 /**
  * vessel-sessions — the vessel worker's sessions: one per page port, each admitted by its own unlock, the face's last one
- * closing returning the vessel to its floor (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift, slice 3 part i;
+ * closing returning the vessel to its floor (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices;
  * lar:///ha.ka.ba/lares/api/pono/session-contract#/how-a-session-ends).
  *
  * ── ONE OWNER PER STORE ──────────────────────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@
  * past its budget for three sweeps in a row (a thread the engine froze and thawed hears its pings answered first). The
  * budget frees resources and judges no relation; no wall clock crosses a process.
  *
- * ── ONE FACE PER SESSION (slice 3 part ii) ───────────────────────────────────────────────────────
+ * ── ONE FACE PER SESSION ───────────────────────────────────────────────────────────────────────
  * A session that wears a face (its PersonaGroup, never `h<N>`) admits by its own unlock of THAT face's slot tree
  * (`browser-face-custody.ts`): every ask the house raises names the face it speaks for (null names this browser itself, the
  * floor's place custody), a face with no tree refuses `no-custody-slot` until a secret's mint binds one (`bind-first`, naming
@@ -49,9 +49,9 @@
  * another admitted unlocked session of the SAME face seals, and otherwise the work names `seal-awaits-session`. A clear names
  * one face (`clear`; none refuses `clear-face-absent`). A face switch (row `B8`) runs the five-step fence over the session's
  * own record (`switchFace`): freeze and preflight (the target face admits by the session's own unlock), the intent, the
- * fence of the old generation (its acts end, its bookings retire, its face's provider drops where it held the last
+ * fence of the outgoing generation (its acts end, its bookings retire, its face's provider drops where it held the last
  * session), advance and mount (the generation advances, the target's provider lights), the outcome; a refused preflight
- * leaves the old generation live, and a mount that fails closes the session. The intent and the outcome rest in the session's
+ * leaves the outgoing generation live, and a mount that fails closes the session. The intent and the outcome rest in the session's
  * face-private home: the target face's own tree, at `face-switch/<sessionId>` (the intent before the fence, the outcome over it
  * after the advance), each naming the faces by their digests; the session record itself stays in memory alone.
  */
@@ -61,8 +61,8 @@ import {
 import { standBrowserCustody, type CustodyAnswer, type CustodyAsk } from "./browser-boot-custody.js";
 import { ambientLocks, type LockHost } from "./vessel-lock.js";
 import {
-  FaceCustodyRefused, bindFirstFaceSlot, checkFaceName, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, lockFaceCustody,
-  overwriteEveryFaceCustody, readFaceCustody, readFaceRow, unlockFaceCustody, writeFaceRow, type FaceCustodyClear,
+  FaceCustodyRefused, bindFirstFaceSlot, checkFaceName, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, heldFaceKeys,
+  lockFaceCustody, overwriteEveryFaceCustody, readFaceCustody, readFaceRow, unlockFaceCustody, writeFaceRow, type FaceCustodyClear,
 } from "./browser-face-custody.js";
 import type { ConfirmDoor } from "./browser-custody.js";
 
@@ -70,7 +70,8 @@ export type VesselSessionRefusal =
   | "store-owned" | "no-engine-locks" | "session-unadmitted" | "signer-unavailable" | "stale-owner-epoch" | "unknown-session"
   | "lock-ended" | "admission-declined" | "no-slot-opens" | "custody-unreadable"
   | "no-custody-slot" | "face-locked" | "face-not-worn" | "face-names-a-handle" | "face-index-mismatch" | "session-faceless"
-  | "body-absent" | "request-booked" | "request-unbooked" | "seal-awaits-session" | "clear-face-absent" | "session-switching";
+  | "body-absent" | "request-booked" | "request-unbooked" | "seal-awaits-session" | "clear-face-absent" | "session-switching"
+  | "face-lighting" | "face-name-reserved";
 
 const SAYS: Record<VesselSessionRefusal, string> = {
   "store-owned": "another vessel worker owns this store; one owner per store, and steal never passes",
@@ -95,6 +96,8 @@ const SAYS: Record<VesselSessionRefusal, string> = {
   "seal-awaits-session": "no admitted unlocked session of this face can seal; the work waits for one",
   "clear-face-absent": "a clear names one face, and this one names none",
   "session-switching": "this session is changing face; its calls wait for the switch to settle",
+  "face-lighting": "the vessel lights a face this session has not unlocked; it wears none, and admits once the vessel stands by its own unlock of that face",
+  "face-name-reserved": "the `unnamed:` spelling keys a founding's tree on this thread alone and names no face",
 };
 
 /** A refusal by name. */
@@ -245,6 +248,16 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
   const faceLit = new Map<string, Promise<unknown>>();
   const bookings = new Map<string, FaceBooking>();
   const switching = new Set<string>();
+  /** The session whose admission lights the vessel now; it holds the lighting as an admitted session holds the lit vessel. */
+  let lighter: string | null = null;
+  /** The faces whose keys each session's own acts seat beyond the face it wears (a switch's target, a join's new face, the
+   *  face an admission opens): a key stands only while a session that wears it or seated it stands asking or admitted. */
+  const seatedFor = new Map<string, Set<string>>();
+  const seatedOf = (sessionId: string): Set<string> => {
+    const set = seatedFor.get(sessionId) ?? new Set<string>();
+    seatedFor.set(sessionId, set);
+    return set;
+  };
 
   /** A face custody refusal, read by the house's own name where one stands. */
   const named = (e: unknown): unknown => {
@@ -252,6 +265,7 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
     const map: Partial<Record<FaceCustodyRefused["reading"], VesselSessionRefusal>> = {
       "no-custody-slot": "no-custody-slot", "face-locked": "face-locked", "face-names-a-handle": "face-names-a-handle",
       "face-index-mismatch": "face-index-mismatch", "tree-unreadable": "custody-unreadable", "face-absent": "clear-face-absent",
+      "face-name-reserved": "face-name-reserved",
     };
     const r = map[e.reading];
     return r ? new VesselSessionRefused(r, e.message) : e;
@@ -288,6 +302,23 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
     return s;
   };
   const admittedCount = (): number => [...sessions.values()].filter((s) => s.admission === "admitted").length;
+  /** The sessions that hold the vessel up: every admitted one, and the one whose admission lights it. */
+  const holders = (): number => admittedCount() + (lighter !== null && sessions.get(lighter)?.admission === "asking" ? 1 : 0);
+  const live = (x: VesselSession): boolean => x.admission === "admitted" || x.admission === "asking";
+  /** Does a standing session hold `face`'s key: it wears the face, or its own act seated it, and it stands asking or admitted. */
+  const holdsFace = (face: string): boolean =>
+    [...sessions.values()].some((x) => live(x) && (x.face === face || (seatedFor.get(x.sessionId)?.has(face) ?? false)));
+  /** Drop each face's provider and key where no standing session holds it. */
+  const releaseFaces = async (faces: Iterable<string>, why: string): Promise<void> => {
+    for (const face of new Set(faces)) if (!holdsFace(face)) await dropFace(face, why);
+  };
+  /** AT THE FLOOR every key no standing session holds drops: a face's, a founding's unnamed one, and the place key where no
+   *  session stands asking or admitted. */
+  const releaseOrphans = async (why: string): Promise<void> => {
+    if (floor !== "floor") return;
+    for (const key of heldFaceKeys(opts.idbName)) if (key.startsWith("unnamed:") || !holdsFace(key)) await dropFace(key, why);
+    if (![...sessions.values()].some(live)) await overwriteBrowserCustody(opts.idbName);
+  };
 
   /** Run `body` as an act of `session`: the lock ends it by name when the face's last session closes meanwhile. */
   /** `fence` marks a custody act (an unlock, a bind, a clear, a sealed read): the session's close awaits its body. A person's ask
@@ -314,6 +345,7 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
       inflight.clear();
       const pending = lighting;
       lighting = null;
+      lighter = null;
       const vessel = lit ?? (pending ? await pending.catch(() => null) : null);
       lit = null;
       for (const face of [...faceLit.keys()]) await dropFace(face, why);
@@ -336,7 +368,9 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
   const drop = async (sessionId: string, why: string): Promise<VesselLockReport | null> => {
     const s = sessions.get(sessionId);
     if (!s) return null;
-    const wasAdmitted = s.admission === "admitted";
+    // THE KEYS THIS SESSION HOLDS leave with it: the face it wears and every face its own acts seated.
+    const faces = new Set<string>(seatedFor.get(sessionId) ?? []);
+    if (s.face !== null) faces.add(s.face);
     s.admission = "closed";
     sessions.delete(sessionId);
     heard.delete(sessionId);
@@ -344,25 +378,23 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
     retireBookings(sessionId);
     opts.onDrop?.(s, why);
     // THE CLOSE AWAITS ITS ACTS: each wrapper ends by name, then every body in flight settles before the close goes on, so a key
-    // an act seats lands before the close's own drop overwrites it.
-    // The face's last admitted session leaves its wrappers to the lock, which ends and counts every act in flight.
-    const lockFollows = wasAdmitted && admittedCount() === 0 && floor !== "floor";
-    if (!lockFollows) {
+    // an act seats lands before the close's own drop overwrites it. The last session holding the vessel up leaves its wrappers
+    // to the lock, which ends and counts every act in flight.
+    const endOwn = (): void => {
       for (const end of [...inflight.get(sessionId) ?? []]) end(new VesselSessionRefused("lock-ended", why));
       inflight.delete(sessionId);
-    }
+    };
+    if (!(holders() === 0 && floor !== "floor")) endOwn();
     await Promise.all([...bodies.get(sessionId) ?? []]);
     bodies.delete(sessionId);
-    // AN ASKING SESSION'S DROP RUNS THE DROP PATH TOO: a key its act seated for a face no other session wears drops at once, and
-    // the place key drops where no session stands at all at the floor.
-    if (!wasAdmitted) {
-      if (s.face !== null && ![...sessions.values()].some((x) => x.face === s.face)) lockFaceCustody(opts.idbName, s.face);
-      if (sessions.size === 0 && floor === "floor") await overwriteBrowserCustody(opts.idbName);
-    }
-    // THE FACE'S LAST SESSION drops that face's provider and key; the vessel stands while another face's session stands.
-    if (wasAdmitted && s.face !== null && admittedOf(s.face).length === 0) await dropFace(s.face, why);
-    // The face's last admitted session runs the lock, which ends every act in flight; any other session ends its own.
-    if (wasAdmitted && admittedCount() === 0 && floor !== "floor") return lock(why);
+    for (const face of seatedFor.get(sessionId) ?? []) faces.add(face);
+    seatedFor.delete(sessionId);
+    // The last session holding the vessel up runs the lock, which ends every act in flight and overwrites every key.
+    if (holders() === 0 && floor !== "floor") return lock(why);
+    endOwn();
+    // Each face this session held drops where no standing session holds it; at the floor every unheld key drops.
+    await releaseFaces(faces, why);
+    await releaseOrphans(why);
     return null;
   };
 
@@ -370,6 +402,7 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
     if (lit) return Promise.resolve(lit);
     if (lighting) return lighting;
     setFloor("lighting");
+    lighter = first.sessionId;
     const p = opts.light(first);
     lighting = p;
     return p.then((v) => {
@@ -379,7 +412,7 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
       lit = v;
       setFloor("lit");
       return v;
-    }, (e: unknown) => { if (lighting === p) { lighting = null; setFloor("floor"); } throw e; });
+    }, (e: unknown) => { if (lighting === p) { lighting = null; lighter = null; setFloor("floor"); } throw e; });
   };
 
   const requireLit = (sessionId: string): V => {
@@ -436,42 +469,74 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
 
     /**
      * Admit the session by its OWN unlock, then light the vessel where none stands. Over a sealed keystore it always asks
-     * this session, whatever another session's unlock already holds.
+     * this session, whatever another session's unlock already holds. A SESSION WEARS A FACE ONLY BY ITS OWN UNLOCK OF THAT FACE:
+     * a faceless session over a vessel that lights a face refuses `face-lighting`, and over a lit face it asks its own unlock of
+     * that face before it wears it; only the session whose own bind founded the face the vessel boots wears it from its light.
+     * Admission lands only once the light and the face's provider stand; a failed admission drops every key it seated.
      */
     async admit(sessionId: string, a: AdmitOptions): Promise<V> {
       const s = sessionOf(sessionId);
       if (s.admission === "admitted") return light(s);
-      if (s.face !== null) return admitFace(s, a);
+      const own = s.face;
+      const mine = seatedOf(sessionId);
+      const added = new Set<string>();
+      const seats = (face: string): void => { if (!mine.has(face)) { mine.add(face); added.add(face); } };
       s.admission = "asking";
       try {
-        const status = await readBrowserCustody(opts.idbName);
-        if (status.reading === "unreadable") throw new VesselSessionRefused("custody-unreadable", status.why);
         let by: SessionAdmittedBy;
-        if (status.reading === "clear") {
-          const stood = await act(sessionId, standBrowserCustody({ idbName: opts.idbName, ask: (q) => a.ask({ ...q, face: null }), ...(a.secretMintDue ? { secretMintDue: true } : {}) }));
-          if (stood.reading === "declined") throw new VesselSessionRefused("admission-declined");
-          if (stood.reading === "unreadable") throw new VesselSessionRefused("custody-unreadable", stood.why);
-          if (stood.reading === "no-slot-opens") throw new VesselSessionRefused("no-slot-opens");
-          by = stood.reading === "clear" ? "clear" : stood.reading === "bound" ? "bind-first" : "unlock";
-          // Another tab sealed meanwhile and this thread already held its key: this session still proves its own route.
-          if (stood.reading === "held") by = await askOwnUnlock(sessionId, a);
+        let route: CustodyAnswer = null;
+        let wear: string | null = own;
+        if (own !== null) {
+          seats(own);
+          ({ by, route } = await ownFaceAdmission(s, own, a));
         } else {
-          by = await askOwnUnlock(sessionId, a);
+          by = await placeAdmission(s, a);
+        }
+        if (!sessions.has(sessionId)) throw new VesselSessionRefused("lock-ended", "the session closed while it admitted");
+        if (own === null && lighting) throw new VesselSessionRefused("face-lighting");
+        if (own === null && lit && typeof lit.face === "string" && lit.face.length > 0) {
+          wear = lit.face;
+          seats(wear);
+          ({ by } = await askOwnFaceUnlock(sessionId, wear, a.ask));
+        }
+        // THE PLACE OPENS BY ITS OWN ROUTE WHEN THE LIGHT NEEDS IT: the face's route first, asked for no more where it opens.
+        if (own !== null && !lit && !lighting) await openPlaceForLight(sessionId, a, route);
+        const lightsHere = !lit && !lighting;
+        const before = lightsHere ? new Set(heldFaceKeys(opts.idbName)) : null;
+        const v = await act(sessionId, light(s));
+        if (wear === null && typeof v.face === "string" && v.face.length > 0) {
+          // THE FOUNDER WEARS WHAT ITS OWN BIND FOUNDED: the face's key seated during this session's own light. Any other
+          // faceless session proves its own unlock of the face first.
+          const founded = before !== null && !before.has(v.face) && faceCustodyHeld(opts.idbName, v.face);
+          seats(v.face);
+          if (!founded) ({ by } = await askOwnFaceUnlock(sessionId, v.face, a.ask));
+          wear = v.face;
+        }
+        if (wear !== null) {
+          s.face = wear;
+          await act(sessionId, lightFace(wear, s));
         }
         if (!sessions.has(sessionId)) throw new VesselSessionRefused("lock-ended", "the session closed while it admitted");
         s.admission = "admitted";
         s.admittedBy = by;
+        for (const face of added) if (face === s.face) mine.delete(face);
+        return v;
       } catch (e) {
-        if (s.admission === "asking") s.admission = "unadmitted";
-        throw e;
+        // A FAILED ADMISSION HOLDS NOTHING: the session wears what it wore, and every key it seated drops where no standing
+        // session holds it; at the floor (a failed light) every unheld key drops, the place key and a founding's among them.
+        // A session that closed meanwhile leaves this to its own drop.
+        if (s.admission === "asking") {
+          s.admission = "unadmitted";
+          s.face = own;
+          for (const face of added) mine.delete(face);
+          if (lighter === sessionId) lighter = null;
+          await releaseFaces(added, "admission-failed");
+          await releaseOrphans("admission-failed");
+        }
+        throw named(e);
+      } finally {
+        if (lighter === sessionId) lighter = null;
       }
-      const v = await act(sessionId, light(s));
-      // A FACELESS SESSION THAT LIT THE VESSEL (a founding) wears the face the vessel boots, and that face's provider lights.
-      if (s.face === null && typeof v.face === "string" && v.face.length > 0) {
-        s.face = v.face;
-        await act(sessionId, lightFace(v.face, s));
-      }
-      return v;
     },
 
     /** The lit vessel, for an admitted session; refused by name otherwise. */
@@ -564,8 +629,8 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
 
     /**
      * The face switch (row `B8`), the five-step fence over one session's own record: freeze and preflight (the target face
-     * admits by THIS session's own unlock), the intent, the fence of the old generation, advance and mount, the outcome.
-     * A refused preflight leaves the old generation live; a mount that fails closes the session. Every other session stands.
+     * admits by THIS session's own unlock), the intent, the fence of the outgoing generation, advance and mount, the outcome.
+     * A refused preflight leaves the outgoing generation live; a mount that fails closes the session. Every other session stands.
      */
     async switchFace(sessionId: string, target: string, o: FaceSwitchOptions): Promise<VesselSession> {
       const s = sessionOf(sessionId);
@@ -576,14 +641,20 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
       if (s.face === to) return s;
       // 1. FREEZE AND PREFLIGHT: new calls on this session refuse `session-switching`; the target face admits by this session's own unlock.
       switching.add(sessionId);
-      // A FAILED SWITCH DROPS WHAT ITS PREFLIGHT SEATED: a target key no admitted session held before the switch leaves with it.
-      const targetHeldBefore = faceCustodyHeld(opts.idbName, to) && admittedOf(to).length > 0;
-      const dropPreflight = async (why: string): Promise<void> => {
-        if (!targetHeldBefore && admittedOf(to, sessionId).length === 0 && !(s.face === to && sessions.has(sessionId))) await dropFace(to, why);
-      };
+      // THE PREFLIGHT'S KEY BELONGS TO THIS SESSION until the switch lands: a failed switch drops it where no other standing
+      // session (an asking one included) holds the target, and a close mid-preflight drops it once the unlock in flight settles.
+      const mine = seatedOf(sessionId);
+      const had = mine.has(to);
+      mine.add(to);
       try {
         await preflightFace(s, to, o.ask);
-      } catch (e) { switching.delete(sessionId); await dropPreflight("switch-refused"); throw named(e); }
+      } catch (e) {
+        switching.delete(sessionId);
+        if (!had) mine.delete(to);
+        // A session that closed meanwhile leaves the drop to its own close, which waits for the unlock in flight.
+        if (sessions.has(sessionId)) await releaseFaces([to], "switch-refused");
+        throw named(e);
+      }
       const from = s.face;
       const record = async (phase: "intent" | "outcome"): Promise<void> => {
         const body = { phase, sessionId, from: from === null ? null : await digestOf(from), to: await digestOf(to), generation: s.generation };
@@ -593,19 +664,20 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
         // 2. THE INTENT, rested under the target face before the fence.
         await record("intent");
         await o.intent?.({ sessionId, from, to, generation: s.generation });
-        // 3. FENCE THE OLD GENERATION: its acts end, its bookings retire, and its face's provider drops where this was its last session.
+        // 3. FENCE THE OUTGOING GENERATION: its acts end, its bookings retire, and its face's provider drops where this was its last session.
         for (const end of [...inflight.get(sessionId) ?? []]) end(new VesselSessionRefused("lock-ended", "face-switch"));
         inflight.delete(sessionId);
         retireBookings(sessionId);
         // 4. ADVANCE AND MOUNT.
         s.face = to;
         s.generation += 1;
-        if (from !== null && admittedOf(from).length === 0) await dropFace(from, "face-switch");
+        if (!had) mine.delete(to);
+        if (from !== null) await releaseFaces([from], "face-switch");
         await lightFace(to, s);
       } catch (e) {
         switching.delete(sessionId);
+        // The failed switch's close drops what this session held, the preflight's target among them.
         await drop(sessionId, "switch-failed");
-        await dropPreflight("switch-failed");
         throw named(e);
       }
       switching.delete(sessionId);
@@ -613,6 +685,46 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
       await record("outcome");
       await o.outcome?.({ sessionId, face: to, generation: s.generation });
       return s;
+    },
+
+    /**
+     * A fleet join's face, stood under the session's own fence: the offer's PersonaGroup must be the face the session wears,
+     * or a face this browser holds no tree for (a new face, whose first slot binds by this session's own route). Any other face
+     * refuses `face-not-worn` before an ask or a write. The key the bind seats belongs to this session and drops with it.
+     */
+    async joinFace(sessionId: string, group: string, ask: (question: HouseAsk) => Promise<CustodyAnswer>): Promise<void> {
+      const s = sessionOf(sessionId);
+      if (s.admission !== "admitted") throw new VesselSessionRefused("session-unadmitted");
+      if (switching.has(sessionId)) throw new VesselSessionRefused("session-switching");
+      let face: string;
+      try { face = checkFaceName(group); } catch (e) { throw named(e); }
+      const mine = seatedOf(sessionId);
+      const status = await act(sessionId, readFaceCustody(opts.idbName, face), true);
+      if (status.reading === "unreadable") throw new VesselSessionRefused("custody-unreadable", status.why);
+      if (status.reading === "absent") {
+        const route = await act(sessionId, ask({ kind: "bind-first", why: "face-secret-mint-due", face }));
+        if (route === null) throw new VesselSessionRefused("admission-declined");
+        // A face's first slot binds a human route: a passkey binds beside one, never alone.
+        if (route.kind === "passkey") throw new FaceCustodyRefused("passkey-alone-refused");
+        mine.add(face);
+        await act(sessionId, bindFirstFaceSlot(opts.idbName, face, route), true).catch((e: unknown) => { throw named(e); });
+        return;
+      }
+      if (s.face !== face && !mine.has(face)) throw new VesselSessionRefused("face-not-worn", "a fleet join joins the face its session wears, or a new one");
+      // The session proves its own unlock of the face before any write, where this thread holds no key for it.
+      if (!faceCustodyHeld(opts.idbName, face)) { mine.add(face); await askOwnFaceUnlock(sessionId, face, ask); }
+    },
+
+    /** Run one custody act of `face` under the session's fence: only the face the session wears, or one its own act seated. */
+    faceAct<T>(sessionId: string, group: string, body: () => Promise<T>): Promise<T> {
+      try {
+        const s = sessionOf(sessionId);
+        if (s.admission !== "admitted") throw new VesselSessionRefused("session-unadmitted");
+        if (switching.has(sessionId)) throw new VesselSessionRefused("session-switching");
+        const face = checkFaceName(group);
+        if (s.face !== face && !(seatedFor.get(sessionId)?.has(face) ?? false)) throw new VesselSessionRefused("face-not-worn");
+        return act(sessionId, body(), true);
+      } catch (e) { return Promise.reject(named(e)); }
     },
 
     /** Lit providers and held face keys, counted: never a face's name, never a key. */
@@ -637,43 +749,36 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
     },
   };
 
-  /** A session that wears a face admits by its own unlock of THAT face's tree, then lights the vessel and the face's provider. */
-  async function admitFace(s: VesselSession, a: AdmitOptions): Promise<V> {
-    const face = s.face!;
-    s.admission = "asking";
-    try {
-      const status = await readFaceCustody(opts.idbName, face);
-      if (status.reading === "unreadable") throw new VesselSessionRefused("custody-unreadable", status.why);
-      let by: SessionAdmittedBy;
-      if (status.reading === "absent") {
-        // THE FIRST PERSISTENCE waits on the face's own slot: no tree, no admission, until a secret's mint binds one.
-        if (!a.secretMintDue) throw new VesselSessionRefused("no-custody-slot");
-        const route = await act(s.sessionId, a.ask({ kind: "bind-first", why: "face-secret-mint-due", face }));
-        if (route === null) throw new VesselSessionRefused("admission-declined");
-        // A face's first slot binds a human route: a passkey binds beside one, never alone.
-        if (route.kind === "passkey") throw new FaceCustodyRefused("passkey-alone-refused");
-        await act(s.sessionId, bindFirstFaceSlot(opts.idbName, face, route), true);
-        by = "bind-first";
-      } else {
-        by = await askOwnFaceUnlock(s.sessionId, face, a.ask, true);
-      }
-      if (!sessions.has(s.sessionId)) {
-        // A key seated for a session that closed meanwhile drops at once, where no other session wears the face.
-        if (![...sessions.values()].some((x) => x.face === face)) lockFaceCustody(opts.idbName, face);
-        throw new VesselSessionRefused("lock-ended", "the session closed while it admitted");
-      }
-      s.admission = "admitted";
-      s.admittedBy = by;
-    } catch (e) {
-      if (s.admission === "asking") s.admission = "unadmitted";
-      throw named(e);
-    }
-    const v = await act(s.sessionId, light(s));
-    await act(s.sessionId, lightFace(face, s));
-    return v;
+  /** A session that wears a face proves its own unlock of THAT face's tree, or binds its first slot where a secret's mint falls due. */
+  async function ownFaceAdmission(s: VesselSession, face: string, a: AdmitOptions): Promise<{ readonly by: SessionAdmittedBy; readonly route: CustodyAnswer }> {
+    const status = await readFaceCustody(opts.idbName, face);
+    if (status.reading === "unreadable") throw new VesselSessionRefused("custody-unreadable", status.why);
+    if (status.reading === "bound") return askOwnFaceUnlock(s.sessionId, face, a.ask);
+    // THE FIRST PERSISTENCE waits on the face's own slot: no tree, no admission, until a secret's mint binds one.
+    if (!a.secretMintDue) throw new VesselSessionRefused("no-custody-slot");
+    const route = await act(s.sessionId, a.ask({ kind: "bind-first", why: "face-secret-mint-due", face }));
+    if (route === null) throw new VesselSessionRefused("admission-declined");
+    // A face's first slot binds a human route: a passkey binds beside one, never alone.
+    if (route.kind === "passkey") throw new FaceCustodyRefused("passkey-alone-refused");
+    await act(s.sessionId, bindFirstFaceSlot(opts.idbName, face, route), true);
+    return { by: "bind-first", route };
   }
 
-  /** The switch's preflight: the target face admits by this session's own unlock, before the old face falls. */
+  /** A faceless session's admission over this browser's place custody: its clear reading, a first bind, or its own unlock. */
+  async function placeAdmission(s: VesselSession, a: AdmitOptions): Promise<SessionAdmittedBy> {
+    const status = await readBrowserCustody(opts.idbName);
+    if (status.reading === "unreadable") throw new VesselSessionRefused("custody-unreadable", status.why);
+    if (status.reading !== "clear") return askOwnUnlock(s.sessionId, a);
+    const stood = await act(s.sessionId, standBrowserCustody({ idbName: opts.idbName, ask: (q) => a.ask({ ...q, face: null }), ...(a.secretMintDue ? { secretMintDue: true } : {}) }));
+    if (stood.reading === "declined") throw new VesselSessionRefused("admission-declined");
+    if (stood.reading === "unreadable") throw new VesselSessionRefused("custody-unreadable", stood.why);
+    if (stood.reading === "no-slot-opens") throw new VesselSessionRefused("no-slot-opens");
+    // Another tab sealed meanwhile and this thread already held its key: this session still proves its own route.
+    if (stood.reading === "held") return askOwnUnlock(s.sessionId, a);
+    return stood.reading === "clear" ? "clear" : stood.reading === "bound" ? "bind-first" : "unlock";
+  }
+
+  /** The switch's preflight: the target face admits by this session's own unlock, before the outgoing face falls. */
   async function preflightFace(s: VesselSession, to: string, ask: (q: HouseAsk) => Promise<CustodyAnswer>): Promise<void> {
     const status = await readFaceCustody(opts.idbName, to);
     if (status.reading === "unreadable") throw new VesselSessionRefused("custody-unreadable", status.why);
@@ -681,35 +786,31 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
     await askOwnFaceUnlock(s.sessionId, to, ask);
   }
 
-  /**
-   * The session's own unlock of `face`'s tree. Where the session admits (`place`), the same one route opens this browser's
-   * place tree too when it stands sealed and this thread holds no place key (the place seed the boot reads), the node's "one
-   * typed credential per unlock" read on the browser; a route that opens the face and not the place admits nothing.
-   */
-  async function askOwnFaceUnlock(sessionId: string, face: string, ask: (q: HouseAsk) => Promise<CustodyAnswer>, place = false): Promise<SessionAdmittedBy> {
+  /** The session's own unlock of `face`'s tree: each face's unlock opens its own tree alone. */
+  async function askOwnFaceUnlock(sessionId: string, face: string, ask: (q: HouseAsk) => Promise<CustodyAnswer>): Promise<{ readonly by: SessionAdmittedBy; readonly route: CustodyAnswer }> {
     const attempts = opts.attempts ?? 3;
     let notes: readonly string[] = [];
     for (let attempt = 1; attempt <= attempts; attempt++) {
       const route = await act(sessionId, ask({ kind: "unlock", attempt, of: attempts, notes, face }));
       if (route === null) throw new VesselSessionRefused("admission-declined");
       const opened = await act(sessionId, unlockFaceCustody(opts.idbName, face, [route]), true);
-      if (opened.reading === "opens") {
-        if (place) await openPlaceWith(sessionId, face, route);
-        return "unlock";
-      }
+      if (opened.reading === "opens") return { by: "unlock", route };
       notes = opened.notes;
     }
     throw new VesselSessionRefused("no-slot-opens");
   }
 
-  async function openPlaceWith(sessionId: string, face: string, route: NonNullable<CustodyAnswer>): Promise<void> {
+  /**
+   * The light reads the place seed, so a sealed place this thread holds no key for opens before it: the face's own route
+   * first (the node's "one typed credential per unlock" read on the browser, asked for no more where it opens), and where that
+   * route opens no place slot, the place's own route, asked of this session naming no face.
+   */
+  async function openPlaceForLight(sessionId: string, a: AdmitOptions, route: CustodyAnswer): Promise<void> {
     const status = await readBrowserCustody(opts.idbName);
     if (status.reading === "unreadable") throw new VesselSessionRefused("custody-unreadable", status.why);
     if (status.reading !== "sealed" || status.unlocked) return;
-    const opened = await act(sessionId, unlockBrowserCustody(opts.idbName, [route]), true);
-    if (opened.reading === "opens") return;
-    if (admittedOf(face).length === 0) lockFaceCustody(opts.idbName, face);
-    throw new VesselSessionRefused("no-slot-opens", "the face's route opens no slot of this browser's place tree");
+    if (route !== null && (await act(sessionId, unlockBrowserCustody(opts.idbName, [route]), true)).reading === "opens") return;
+    await askOwnUnlock(sessionId, a);
   }
 
   async function askOwnUnlock(sessionId: string, a: AdmitOptions): Promise<SessionAdmittedBy> {

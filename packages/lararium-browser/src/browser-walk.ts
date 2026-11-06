@@ -6,8 +6,8 @@
  * socket presents, so a browser and a node vessel walk alike. This module keeps the walk record and the face's
  * per-Nexus key as sealed custody rows, local to the browser.
  *
- * WHAT RESTS WHERE: `walk/<gateKey>` carries each walk record, including its invite; `nexus-key/h<N>/<aid>`
- * carries the face's 32-byte key at that Nexus. Each row rests under the slot tree in `keystore`.
+ * WHAT RESTS WHERE: `walk/<gateKey>` carries each walk record (its invite, its wallet, its grant; never a carry receipt), under
+ * the place tree; `nexus-key/<PersonaGroup>/<aid>` carries the face's 32-byte key at that Nexus, under the face's own tree.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
@@ -52,6 +52,11 @@ export function browserWalkStore(idbName: string): WalkStore {
     update(gatePubKey, decide) { return withCustodyRows(idbName, async (rows) => {
       const row = `walk/${gatePubKey.toLowerCase()}`;
       const wrote = decide((await rows.read(row) as WalkRecord | undefined) ?? null);
+      // THE WALK RECORD HOLDS NO FACE SECRET (the 2026-10-19 sort, by capability): its invite, its wallet's blind tokens and the
+      // hearth-signed grant over a per-Nexus public leaf confer a walk at that hearth and name no face, so the record rests
+      // under the place tree. A carry receipt holds a document key the face's own carry secret derives: a face secret, which
+      // the place tree never takes (and the browser's walker route stands shut).
+      if (wrote && (wrote.carried?.length ?? 0) > 0) throw new Error("walk-receipt-unhomed: a carry receipt holds a face secret, and the walk record rests under the place tree");
       if (wrote) await rows.write(row, wrote);
       return wrote;
     }); },

@@ -11,7 +11,7 @@
  * Every custody and ward ask rides the ceremony door (`ceremony-door.ts`): the page hears the ask's public words and opens
  * the ceremony document, and the answer arrives on the ceremony's own brokered port, never on the page's.
  *
- * EACH PORT OPENS A SESSION (`@lararium/browser` vessel-sessions.ts, slice 3). The host stands one house per store: it takes
+ * EACH PORT OPENS A SESSION (`@lararium/browser` vessel-sessions.ts). The host stands one house per store: it takes
  * the store's owner lock (a second worker refuses `store-owned`), opens a session at each port's `hello`, and admits that
  * session by its own unlock through the ceremony. The face's first admitted session lights the vessel; every request waits
  * on its own session's admission and answers by name where none stands (`session-unadmitted`) or where the vessel rests at
@@ -19,22 +19,23 @@
  * budget) runs the lock and the vessel returns to its floor. Surface traffic (frames, phases, port messages) reaches the
  * surface session alone: the session that lit the vessel, then the oldest admitted session after it.
  *
- * EVERY ASK NAMES ITS FACE (slice 3 part ii): each custody and ward ask carries the face its session wears to the ceremony
+ * EVERY ASK NAMES ITS FACE: each custody and ward ask carries the face its session wears to the ceremony
  * (the PersonaGroup; null names this browser itself, the place custody a fresh browser binds at its founding), and the door
  * refuses an ask that names none.
  *
  * EACH SESSION WEARS THE FACE ITS HELLO NAMES: the tab's own selection (a PersonaGroup), or, with none named, the one face the
  * store names (none on a fresh browser, whose founding session then wears the face it founds). A hint grants nothing: the
- * session admits by that face's own unlock, whose one route also opens the place tree. The face's first admitted session
- * lights its provider through the lit vessel's provider door, and its last drops it. A fleet join binds the joinee face's own
- * tree (or opens it) before the join mints its first secret, and the landed answer names the face the tab selects next.
+ * session admits by that face's own unlock, and the place opens by its own route when the light needs it. The face's first
+ * admitted session lights its provider through the lit vessel's provider door, and its last drops it. A fleet join acts as the session's own
+ * face alone, or binds a new face's first slot by the session's own route, under the session's fence; its keys drop with the
+ * session, and the landed answer names the face the tab selects next.
  */
 declare const __LAR_WALK_DOOR__: boolean;
 import {
-  openBrowserVessel, readBrowserCustody, readBrowserSeedWrap, loadBrowserActivePersona,
+  openBrowserVessel, readBrowserCustody, readBrowserSeedWrap,
   parseAdmitCarriage, toAdmitCarriage, readBrowserCustodyPasskeys, readFaceCustodyPasskeys, browserWardSign,
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
-  standVesselHouse, sessionLifetimeLock, VesselSessionRefused, readBrowserVesselFaces, readFaceCustody, bindFirstFaceSlot, unlockFaceCustody,
+  standVesselHouse, sessionLifetimeLock, VesselSessionRefused, readBrowserVesselFaces,
   type BrowserVesselResult, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost,
 } from "@lararium/browser";
 import { didFromVerifyingKey, parseMeshPeer, type MeshPeer } from "@lararium/mesh";
@@ -124,10 +125,10 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     (globalThis as { SharedWorker?: unknown }).SharedWorker = PageBuiltSharedWorker;
   };
 
-  const seedRestOf = async (idbName: string): Promise<{ seedRest: SeedRest; seedWrapClass?: string }> => {
+  const seedRestOf = async (idbName: string, face: string | null): Promise<{ seedRest: SeedRest; seedWrapClass?: string }> => {
     const custody = await readBrowserCustody(idbName);
     if (custody.reading === "sealed") return { seedRest: "wrapped-passphrase" };
-    const wrap = await readBrowserSeedWrap(idbName, (await loadBrowserActivePersona()) ?? 0);
+    const wrap = face === null ? undefined : await readBrowserSeedWrap(idbName, face);
     return wrap ? { seedRest: "wrapped-prf", seedWrapClass: wrap.keyClass } : { seedRest: "open" };
   };
 
@@ -222,43 +223,33 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     statusTo(conn, { custody: session.admittedBy ? BOOT_READING[session.admittedBy] : "held", ...(session.face ? { face: session.face } : {}) });
     moveSurface();
     statusTo(conn, vesselStatus(result));
-    void seedRestOf(idbName).then((s) => statusTo(conn, s), () => { /* an unreadable slot reads its own refusal elsewhere */ });
+    void seedRestOf(idbName, session.face).then((s) => statusTo(conn, s), () => { /* an unreadable slot reads its own refusal elsewhere */ });
     return result;
   };
 
-  /** The joinee face's tree, bound before the join's first secret or opened by this session's own route, asked naming the face. */
-  const standJoineeFace = async (conn: Conn, face: string): Promise<void> => {
-    const status = await readFaceCustody(idbName, face);
-    if (status.reading === "unreadable") throw new Error(`the joinee face's tree does not read (${status.why})`);
-    if (status.reading === "bound" && status.unlocked) return;
-    const ask = askCustodyOf(conn, "fleet-join");
-    if (status.reading === "absent") {
-      const route = await ask({ kind: "bind-first", why: "face-secret-mint-due", face });
-      if (route === null) throw new VesselSessionRefused("admission-declined");
-      // A face's first slot binds a human route: a passkey binds beside one, never alone.
-      if (route.kind === "passkey") throw new Error("keyslot: passkey-alone-refused");
-      await bindFirstFaceSlot(idbName, face, route);
-      return;
-    }
-    const route = await ask({ kind: "unlock", attempt: 1, of: 1, notes: [], face });
-    if (route === null) throw new VesselSessionRefused("admission-declined");
-    if ((await unlockFaceCustody(idbName, face, [route])).reading !== "opens") throw new VesselSessionRefused("no-slot-opens");
-  };
-
+  /**
+   * THE FLEET JOIN ACTS AS THE SESSION'S OWN FACE, under its fence: the house stands the joinee face (the face the session
+   * wears, or a new one whose first slot binds by this session's own route; any other face refuses `face-not-worn` before an
+   * ask or a write), then every custody act of the join runs as that face under the session's fence, and the keys it seats
+   * drop with the session.
+   */
   const join = {
-    offer: async (conn: Conn, text: string, abandonPending: boolean): Promise<unknown> => {
-      // A JOIN MINTS FACE SECRETS (the atom, the face-scoped key, then the address secret) under the JOINEE face's own tree:
-      // that tree binds first (or opens), in this tab, before the join's first secret.
+    offer: async (conn: Conn, h: VesselHouse<BrowserVesselResult>, s: VesselSession, text: string, abandonPending: boolean): Promise<unknown> => {
       const offer = JSON.parse(text) as unknown;
       const group = (offer as { personaGroup?: unknown } | null)?.personaGroup;
       if (typeof group !== "string" || group.length === 0) throw new Error("the offer names no face; a fleet join joins one PersonaGroup");
-      await standJoineeFace(conn, group);
-      if (abandonPending) await browserFleetJoinAbandon(idbName, group);
-      const request = await browserFleetJoinRequest({ offer, idbName });
+      await h.joinFace(s.sessionId, group, askCustodyOf(conn, "fleet-join"));
+      const request = await h.faceAct(s.sessionId, group, async () => {
+        if (abandonPending) await browserFleetJoinAbandon(idbName, group);
+        return browserFleetJoinRequest({ offer, idbName });
+      });
       return { kind: "request", text: JSON.stringify(request, null, 2) };
     },
-    answer: async (text: string): Promise<unknown> => {
-      const { admit } = await browserFleetJoinLand({ answer: JSON.parse(text) as unknown, idbName });
+    answer: async (h: VesselHouse<BrowserVesselResult>, s: VesselSession, text: string): Promise<unknown> => {
+      const answer = JSON.parse(text) as unknown;
+      const group = (answer as { personaGroup?: unknown } | null)?.personaGroup;
+      if (typeof group !== "string" || group.length === 0) throw new Error("the answer names no face; a fleet join lands one PersonaGroup");
+      const { admit } = await h.faceAct(s.sessionId, group, () => browserFleetJoinLand({ answer, idbName }));
       return { kind: "landed", carriage: toAdmitCarriage(admit), signerDid: admit.signerDid, face: admit.personaGroupId };
     },
   };
@@ -276,6 +267,11 @@ export function standVesselHost(env: VesselHostEnv = {}) {
         if (!admitted) throw new VesselSessionRefused("session-unadmitted");
         const { h, s } = await admitted.catch(() => { throw new VesselSessionRefused("session-unadmitted"); });
         return h.require(s.sessionId);
+      };
+      /** This session's house and record, once its own admission stands and its vessel stands lit. */
+      const own = async (): Promise<{ h: VesselHouse<BrowserVesselResult>; s: VesselSession }> => {
+        await vessel();
+        return admitted!.catch(() => { throw new VesselSessionRefused("session-unadmitted"); });
       };
       const reply = (callId: string, work: () => Promise<unknown>): void => {
         void work().then((value) => post({ t: "reply", callId, ok: true, value }), (err: unknown) => post({ t: "reply", callId, ok: false, error: errorOf(err) }));
@@ -358,8 +354,8 @@ export function standVesselHost(env: VesselHostEnv = {}) {
             case "port:close": void vessel().then((v) => v.ports.close(msg.binding)).catch(refusedQuietly("a port close")); return;
             case "read:mirror-inputs": reply(msg.callId, async () => (await vessel()).mirrorInputs(msg.surface)); return;
             case "read:floor": reply(msg.callId, async () => (await vessel()).readFloor(msg.baseUrl)); return;
-            case "join:offer": reply(msg.callId, async () => { await vessel(); return join.offer(conn, msg.text, msg.abandonPending); }); return;
-            case "join:answer": reply(msg.callId, async () => { await vessel(); return join.answer(msg.text); }); return;
+            case "join:offer": reply(msg.callId, async () => { const { h, s } = await own(); return join.offer(conn, h, s, msg.text, msg.abandonPending); }); return;
+            case "join:answer": reply(msg.callId, async () => { const { h, s } = await own(); return join.answer(h, s, msg.text); }); return;
             case "walk:restart":
               // A harness-only door, compiled out of every default build.
               if (!(typeof __LAR_WALK_DOOR__ !== "undefined" && __LAR_WALK_DOOR__)) { post({ t: "reply", callId: msg.callId, ok: false, error: { name: "Error", message: "walk-door-absent" } }); return; }
@@ -369,7 +365,13 @@ export function standVesselHost(env: VesselHostEnv = {}) {
               // A harness-only door, compiled out of every default build: one ward act over the founding face's root, its
               // passphrase asked through the ceremony exactly as the promote board's acts ask it.
               if (!(typeof __LAR_WALK_DOOR__ !== "undefined" && __LAR_WALK_DOOR__)) { post({ t: "reply", callId: msg.callId, ok: false, error: { name: "Error", message: "walk-door-absent" } }); return; }
-              reply(msg.callId, async () => { const v = await vessel(); return browserWardSign(idbName, conn.session?.face ?? v.face, await askWardOf(conn)("a walk ward act"), msg.bytes); });
+              reply(msg.callId, async () => {
+                await vessel();
+                // A ward act signs as the face this session wears by its own unlock, never the vessel's by inheritance.
+                const face = conn.session?.face ?? null;
+                if (face === null) throw new VesselSessionRefused("session-faceless");
+                return browserWardSign(idbName, face, await askWardOf(conn)("a walk ward act"), msg.bytes);
+              });
               return;
           }
         },

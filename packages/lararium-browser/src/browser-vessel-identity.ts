@@ -41,8 +41,8 @@ import {
 import type { SeedWrapRecord } from "./seed-wrap-prf.js";
 
 import { assertCanMint } from "./secure-context-gate.js";
-import { BrowserCustodyRefused, readBrowserCustody, readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
-import { FaceCustodyRefused } from "./browser-face-custody.js";
+import { BrowserCustodyRefused, readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
+import { FaceCustodyRefused, checkFaceName, readFaceCustody } from "./browser-face-custody.js";
 const KEY_RECORD = "vessel-key";
 
 /**
@@ -92,13 +92,15 @@ const PERSONA_DECLARATION_STORE  = "persona-declarations";    // handleIndex →
 export const CIRCLE_STORE           = "circles-follow";      // circleId → nym[] (the IoC follow-graph, private)
 export const HANDLE_BOOK_STORE      = "handle-book";         // "snapshot" → HandleBookSnapshot (others' nyms + labels)
 // The optional PRF wrap uses the persona's `h${N}` key; custody still gates the root row.
-export const SEED_WRAP_STORE        = "seed-wrap";           // handleIndex → SeedWrapRecord
+export const SEED_WRAP_STORE        = "seed-wrap";           // face-root/<PersonaGroup> → SeedWrapRecord
 // The fleet-join store carries signed public material for each joined face.
 export const FLEET_JOIN_STORE       = "fleet-join";          // `record:${group}` · `dial:${group}`
 const ROSTER_RECORD        = "roster";            // the anchor roster key
 
 /** A per-handle-index key shared by persona rows and their adjacent stores. */
 function personaRootKey(handleIndex: number): string { return `h${handleIndex}`; }
+/** A seed wrap's key: the face's PersonaGroup, the root it rides beside. */
+function seedWrapKey(face: string): string { return `face-root/${face}`; }
 
 interface PersistedBrowserKey {
   /** Hex-encoded 32-byte Ed25519 verifying key. */
@@ -524,23 +526,24 @@ export async function loadBrowserPersonaRootSeed(idbName = "lares:vessel", handl
   return loadPersonaRootSeed(await makeBrowserIdbPersonaVault(idbName), handleIndex);
 }
 
-/** Read the opt-in PRF wrap standing beside the persona root at `handleIndex`, or undefined (no wrap; the root rests in the slot tree). */
-export async function readBrowserSeedWrap(idbName = "lares:vessel", handleIndex = 0): Promise<SeedWrapRecord | undefined> {
+/** Read the opt-in PRF wrap standing beside `face`'s root (its PersonaGroup), or undefined (no wrap). */
+export async function readBrowserSeedWrap(idbName: string, face: string): Promise<SeedWrapRecord | undefined> {
   const db = await openVesselIdb(idbName);
-  try { return await idbGet<SeedWrapRecord>(db, SEED_WRAP_STORE, personaRootKey(handleIndex)); } finally { db.close(); }
+  try { return await idbGet<SeedWrapRecord>(db, SEED_WRAP_STORE, seedWrapKey(checkFaceName(face))); } finally { db.close(); }
 }
 
-/** Land a PRF wrap beside the persona root at `handleIndex`. The root stays where it rests, sealed in the slot tree
- *  once a slot binds (`browser-custody.ts`) — the wrap rides beside, never replaces; a status line names the class
- *  the record carries. */
-export async function writeBrowserSeedWrap(idbName: string, handleIndex: number, wrap: SeedWrapRecord): Promise<void> {
+/** Land a PRF wrap beside `face`'s root (its PersonaGroup). The wrap rides beside the root, never replaces it; a status line
+ *  names the class the record carries. */
+export async function writeBrowserSeedWrap(idbName: string, face: string, wrap: SeedWrapRecord): Promise<void> {
   // A WARDED FACE TAKES NO PRF WRAP: a wrap opens the root by a passkey, a registry route the ward never reads
-  // (seat-harness#/the-ward). A keystore whose slot tree stands holds its face root warded, so the wrap refuses by name.
-  if ((await readBrowserCustody(idbName)).reading !== "clear") {
-    throw new Error("ward-passkey-refused: this face's root rests warded under its human routes; a PRF wrap would open it by a passkey");
+  // (seat-harness#/the-ward). The face's root rests warded under its OWN tree's human routes, so the gate reads that tree,
+  // never the place tree: a face whose tree stands refuses the wrap by name.
+  const named = checkFaceName(face);
+  if ((await readFaceCustody(idbName, named)).reading !== "absent") {
+    throw new Error("ward-passkey-refused: this face's root rests warded under its own tree's human routes; a PRF wrap would open it by a passkey");
   }
   const db = await openVesselIdb(idbName);
-  try { await idbPut(db, SEED_WRAP_STORE, personaRootKey(handleIndex), wrap); } finally { db.close(); }
+  try { await idbPut(db, SEED_WRAP_STORE, seedWrapKey(named), wrap); } finally { db.close(); }
 }
 
 /** WEAR a persona — set the active handle-index ("put on a mask"). The custody-by-TYPE wall (uniform, no
