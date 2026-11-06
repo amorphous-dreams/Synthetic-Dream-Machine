@@ -13,7 +13,7 @@ wardCosignTable({
     group, plane, verbs: faceIntentVerbs(), signer: atom,
     projection: { devices, cids: ["admit"], get admissions() { return devices.map((deviceKey) => ({ deviceKey, cid: "admit" })); } },
     face: { lineage }, standing: (k: string) => (aside.has(k) ? "aside" : unknown.has(k) ? "unknown" : "stands"), heldFrontiers: () => new Set<string>(),
-    frontier: () => (frontier.known ? "known" : "unknown"),
+    frontier: () => (frontier.known ? frontier.head : null), stoodAt: (k: string, at: string) => frontier.counted.get(at)?.has(k) === false,
   } as never),
   root: async (key) => ({ key: key.key, signer: async () => key }),
 });

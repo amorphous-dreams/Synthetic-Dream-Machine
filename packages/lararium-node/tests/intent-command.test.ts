@@ -89,7 +89,7 @@ describe("intent command guards", () => {
     const bare = await buildAsks({ group: "scratch-face", signer: f.atom, intent: id, needs: "approval" });
     expect(askShown(fold([call, bare]), intentEntryCid(bare))?.detail).toBeNull();
     const ask = await buildAsks({ group: "scratch-face", signer: f.atom, intent: id, needs: "approval", detail });
-    expect(askShown(fold([call, ask]), intentEntryCid(ask))).toEqual({ intent: id, verb: "ward-push-go", issuer: f.atom.key, askedBy: f.atom.key, detail, cosign: true });
+    expect(askShown(fold([call, ask]), intentEntryCid(ask))).toEqual({ intent: id, verb: "ward-push-go", issuer: f.atom.key, askedBy: f.atom.key, detail, cosign: true, spent: false });
     expect(askShown(fold([call, ask]), "missing")).toBeNull();
     const plain = await buildIntent({ group: "scratch-face", signer: f.atom, verb: "face-join", args: {}, nonce: "p", audience: { mode: "asks" }, verbs });
     const plainAsk = await buildAsks({ group: "scratch-face", signer: f.atom, intent: intentId(plain.body as never), needs: "approval", detail: "x" });

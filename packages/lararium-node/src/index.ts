@@ -514,7 +514,6 @@ export { rewrapWardCustody, withWardKeyCustody } from "./custody-seat.js";
 export { wardCredential, wardCredentialOfRoute, parkWardTicket, wardBindDigest, storeVerbNeedsWard, storeVerbGatesFirst, seatWardGatherer, wardGathererSeated, gatherSeatedWardRoute } from "./ward-credential.js";
 export type { WardCredential } from "./ward-credential.js";
 export { wardRootSigner } from "./ward-signer.js";
-export { seatFaceAutoFounder } from "./custody-holder.js";
 export { faceDir, faceFileNames, faceFilePathSync, listFaceFiles, readFaceIndexSync } from "./face-index.js";
 export { bindFaceSlot, unbindFaceSlot, FaceTreeUnreadable } from "./face-slot-ops.js";
 export { openFaceTree } from "./face-custody.js";

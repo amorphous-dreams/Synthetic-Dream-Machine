@@ -6,8 +6,10 @@
  * shape, domain, face group, signature, the title the body belongs at, and the role of the signer. Any failure reads as refused, and the
  * caller treats a refused record as absent, so a read fails closed.
  *
- *   go/<branch>                a go binds a branch, a head and the go it follows there (`after`: that go's cid, null for the branch's
- *                              first); signed by the face's hand; read only beside its co-sign; spent once (`go-spent/<go cid>`, the vessel's witness)
+ *   go/<branch>/<go cid>       a go binds a branch, a head and the go it follows there (`after`: that go's cid, null for the branch's
+ *                              first); each go rests at its own row; signed by the face's hand; read only beside its co-sign; the
+ *                              branch's standing go ends the longest co-signed `after` chain from its first go (two tips read as a
+ *                              fork, and neither stands); spent once (`go-spent/<go cid>`, the vessel's witness)
  *   lane/<lane>/state          a lead's lane state, signed under the lead's own seat name
  *   roster/<seat>              a seat's spend reading, signed by the VESSEL as witness, never by the measured lead
  *   receipt/<tree>             a check seat's verdict over a tree, signed by the VESSEL
@@ -33,6 +35,8 @@ export interface SwarmWikiPort {
   read(title: string): Promise<string | null>;
   write(title: string, text: string): Promise<void>;
   writeNew(title: string, text: string): Promise<boolean>;
+  /** Every title the wiki holds under a prefix: a branch's gos rest at their own rows, and its reader walks them all. */
+  list(prefix: string): Promise<readonly string[]>;
 }
 
 /** Who may sign what: the face's hand, the vessel as witness, a lead under its own seat name. */
@@ -86,7 +90,9 @@ function branchSegment(branch: unknown): string {
 export const swarmHouseCapTitle = (): string => `${SWARM_URI_PREFIX}house-cap`;
 export const swarmShareTitle = (lane: string): string => `${SWARM_URI_PREFIX}lane/${segment(lane)}/share`;
 export const swarmLaneStateTitle = (lane: string): string => `${SWARM_URI_PREFIX}lane/${segment(lane)}/state`;
+/** The family title a branch's gos rest under; each go rests at its own row beneath it (`swarmGoRowTitle`). */
 export const swarmGoTitle = (branch: string): string => `${SWARM_URI_PREFIX}go/${branchSegment(branch)}`;
+export const swarmGoRowTitle = (branch: string, goCid: string): string => `${swarmGoTitle(branch)}/${segment(goCid)}`;
 export const swarmGoSpentTitle = (goCid: string): string => `${SWARM_URI_PREFIX}go-spent/${segment(goCid)}`;
 export const swarmRosterTitle = (seat: string): string => `${SWARM_URI_PREFIX}roster/${segment(seat)}`;
 export const swarmReceiptTitle = (tree: string): string => `${SWARM_URI_PREFIX}receipt/${segment(tree)}`;
@@ -161,10 +167,12 @@ export function verifySwarmRecord(text: string | null, title: string, trust: Swa
   if (body.kind !== SWARM_ACT_DOMAIN) return { ok: false, refusal: "domain" };
   if (body.group !== group) return { ok: false, refusal: "group" };
   try { if (!verifyEd25519(raw["sig"], canonicalJsonBytes(body), raw["signer"] as string)) return { ok: false, refusal: "signature" }; } catch { return { ok: false, refusal: "signature" }; }
-  if (titleOf(body) !== title) return { ok: false, refusal: "title" };
+  const act = raw as unknown as SignedSwarmAct, cid = swarmActCid(act);
+  let at: string | null;
+  try { at = body.act === "go" ? swarmGoRowTitle(body.branch, cid) : titleOf(body); } catch { at = null; }
+  if (at !== title) return { ok: false, refusal: "title" };
   if (!allowed(body, raw["signer"] as string, trust)) return { ok: false, refusal: "role" };
-  const act = raw as unknown as SignedSwarmAct;
-  return { ok: true, act, cid: swarmActCid(act) };
+  return { ok: true, act, cid };
 }
 
 export async function putSwarmAct(wiki: SwarmWikiPort, title: string, act: SignedSwarmAct): Promise<void> { await wiki.write(title, JSON.stringify(act)); }
@@ -174,20 +182,54 @@ export async function readSwarmRecord(wiki: SwarmWikiPort, title: string, trust:
 export const swarmGoHead = (go: { readonly branch: string; readonly head: string; readonly after: string | null }): string =>
   sha256HexBytesSync(canonicalJsonBytes({ branch: go.branch, head: go.head, after: go.after }));
 
+type GoRow = { readonly act: SignedSwarmAct; readonly cid: string; readonly body: SwarmGoBody };
+
 /**
- * A go for one branch at one head: standing where it verifies, names that head, stands beside its co-sign (`ward`: on a face of
- * two devices, a go the root signed outside the door refuses `ward-act-uncosigned`), and no spend of it rests.
+ * A branch's gos as its reader holds them. `resting`: every row under the branch that verifies as the hand's go for it, co-signed
+ * or not. `cosigned`: those that stand beside their co-sign (`ward`). `tips`: the ends of the LONGEST co-signed `after` chain from
+ * the branch's first go (`after: null`); a go whose `after` no chain go carries (an orphan) stands on no chain, and an older go
+ * written again changes nothing, since the chain it ends stays shorter. `refusal`: the first refusal a row read, where no go rests.
+ */
+export async function readGoChain(wiki: SwarmWikiPort, branch: string, trust: SwarmTrust, group: string, ward: WardActWitness): Promise<{
+  readonly resting: readonly GoRow[]; readonly cosigned: readonly GoRow[]; readonly tips: readonly GoRow[]; readonly refusal: SwarmReadRefusal | "ward-act-uncosigned" | null;
+}> {
+  const resting: GoRow[] = [], refusals: SwarmReadRefusal[] = [];
+  for (const title of [...await wiki.list(`${swarmGoTitle(branch)}/`)].sort()) {
+    const read = verifySwarmRecord(await wiki.read(title), title, trust, group);
+    if (!read.ok) { refusals.push(read.refusal); continue; }
+    const body = read.act.body;
+    if (body.act === "go" && body.branch === branch) resting.push({ act: read.act, cid: read.cid, body });
+  }
+  const cosigned = resting.filter((g) => ward.accepts({ verb: "ward-push-go", wiki: "daemon", head: swarmGoHead(g.body) }));
+  const children = new Map<string | null, GoRow[]>();
+  for (const g of cosigned) children.set(g.body.after, [...(children.get(g.body.after) ?? []), g]);
+  // Walk the chain level by level from the branch's first go: the deepest level holds the tips.
+  let level = children.get(null) ?? [], tips: GoRow[] = [];
+  const seen = new Set<string>();
+  while (level.length > 0) {
+    tips = level;
+    for (const g of level) seen.add(g.cid);
+    level = level.flatMap((g) => children.get(g.cid) ?? []).filter((g) => !seen.has(g.cid));
+  }
+  const refusal = resting.length > cosigned.length && cosigned.length === 0 ? "ward-act-uncosigned" : resting.length === 0 ? refusals[0] ?? null : null;
+  return { resting, cosigned, tips: [...tips].sort((a, b) => a.cid.localeCompare(b.cid)), refusal };
+}
+
+/**
+ * The go standing for one branch at one head: the one go that ends the branch's longest co-signed `after` chain (`readGoChain`),
+ * naming that head, with no spend of it resting. Two tips read as a fork (`forked`) and neither stands until a fresh go names one.
+ * On a face of two devices a go the root signed outside the door stands on no chain (`ward-act-uncosigned` where nothing else rests).
  */
 export async function readGo(wiki: SwarmWikiPort, at: { readonly branch: string; readonly head: string }, trust: SwarmTrust, group: string, ward: WardActWitness):
-  Promise<{ ok: true; act: SignedSwarmAct; cid: string } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | "ward-act-uncosigned" | "spent" }> {
-  const read = await readSwarmRecord(wiki, swarmGoTitle(at.branch), trust, group);
-  if (!read.ok) return read;
-  const body = read.act.body as SwarmGoBody;
-  if (body.branch !== at.branch || body.head !== at.head) return { ok: false, refusal: "head-mismatch" };
-  if (!ward.accepts({ verb: "ward-push-go", wiki: "daemon", head: swarmGoHead(body) })) return { ok: false, refusal: "ward-act-uncosigned" };
+  Promise<{ ok: true; act: SignedSwarmAct; cid: string } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | "ward-act-uncosigned" | "spent" | "forked" }> {
+  const chain = await readGoChain(wiki, at.branch, trust, group, ward);
+  if (chain.tips.length > 1) return { ok: false, refusal: "forked" };
+  const tip = chain.tips[0];
+  if (!tip) return { ok: false, refusal: chain.refusal ?? "absent" };
+  if (tip.body.head !== at.head) return { ok: false, refusal: "head-mismatch" };
   // Any row at the spend title blocks the go, signed or not: a forged spend fails closed.
-  if ((await wiki.read(swarmGoSpentTitle(read.cid))) !== null) return { ok: false, refusal: "spent" };
-  return read;
+  if ((await wiki.read(swarmGoSpentTitle(tip.cid))) !== null) return { ok: false, refusal: "spent" };
+  return { ok: true, act: tip.act, cid: tip.cid };
 }
 
 /** Spend a go: the vessel writes one spend record, claimed atomically, so a second spend of the same go refuses `swarm-go-spent`. */

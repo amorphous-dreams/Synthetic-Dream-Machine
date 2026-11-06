@@ -42,6 +42,8 @@ export interface IntentState {
   readonly slots: readonly IntentSlot[];
   readonly voidAfterAct: readonly IntentRecord[];
   readonly outOfAudience: readonly IntentRecord[];
+  /** Every outcome naming this intent as its cause, in a slot or not: a co-signed ward act's spend reads its own (`wardActWitness`). */
+  readonly outcomes: readonly IntentRecord[];
   readonly claims: readonly IntentRecord[];
 }
 export interface IntentView {
@@ -231,7 +233,7 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     const unknown = (agent ? agent.status === "awaiting" : input.standing(issuer) === "unknown") || slots.some((s) => s.unknownFrontier);
     const status = voidCause ? "void" : unknown ? "unknown-frontier" : slots.some((s) => s.winner) ? "answered" : "open";
     states.push({ cid: source.cid, admissions: admissions.flatMap(r => r.ok && r.admission.body.entry === source.cid ? [{ cid: r.cid, relay: r.admission.body.relay }] : []).sort((a, b) => a.cid.localeCompare(b.cid)), id, issuer, verb: body.verb as string, class: classification.class, fenced: classification.class === "single-effect" || !!classification.fenced, cosign: !!classification.cosign, audience, bound, status, voidCause, agent, asks: ownAsks, answers: everyAnswer,
-      answer, claim, claims: ownClaims, slots, voidAfterAct: voidCause ? ownOutcomes : [], outOfAudience });
+      answer, claim, claims: ownClaims, slots, voidAfterAct: voidCause ? ownOutcomes : [], outOfAudience, outcomes: ownOutcomes });
   }
   refused.sort((a, b) => a.refusal.localeCompare(b.refusal) || (a.cid ?? "").localeCompare(b.cid ?? ""));
   return { intents: states, delegations, refused, refusedAdmissions, collisions, strayAnswers, standing: input.standing, holdsCapability: input.holdsCapability ?? (() => false), face: input.face };

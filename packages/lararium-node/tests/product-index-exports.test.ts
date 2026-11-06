@@ -15,6 +15,7 @@ test("WITNESS: the node index exports no `seatFaceAutoFounder` and the mesh inde
   expect(mesh).not.toContain("WARD_GATE_DECIDED");
   // the nonsense control: the census reads keys the indexes do export
   expect(node.length).toBeGreaterThan(10);
+  expect(Object.keys(await import("../src/testing.js"))).toContain("seatFaceAutoFounder");
   expect(mesh).toContain("cosignPortWitness");
   expect(mesh).toContain("WARD_WITNESS_CLOSED");
 });

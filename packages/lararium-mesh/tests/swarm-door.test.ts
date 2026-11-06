@@ -151,7 +151,7 @@ describe("the hand issues a go", () => {
     const doc = { tiddlers: {} } as LarDoc;
     s.deps = { ...s.deps, cosign: () => intentPlaneCosignPort({ group: GROUP, requester: s.root, verbs: faceIntentVerbs(), plane: { doc: () => doc, change: (fn) => fn(doc) },
       face: () => ({ devices: [s.root.key, other.key], rosterCids: ["admit"], admittedAt: new Map([[s.root.key, "admit"], [other.key, "admit"]]), lineage }),
-      standing: () => "stands", frontier: () => "known" } as never) };
+      standing: () => "stands", frontier: () => "0".repeat(64), stoodAt: () => true }) };
     await rest(s, HEAD, null);
     expect(await swarmCommand({ action: "show", branch: "feature/x", head: HEAD }, s.deps)).toMatchObject({ go: { standing: false, after: null } });
     const c = await stand();

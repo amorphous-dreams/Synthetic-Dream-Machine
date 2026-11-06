@@ -82,7 +82,7 @@ import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
   promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
-  readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
+  readFleetFrontier, fleetFrontierLinks, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
   type WideningRead,
 } from "@lararium/mesh";
 import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
@@ -564,7 +564,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // socket to stand empty in.
   // The fleet's shadows as this leaf last read them. Null until the first read lands: a sibling then reads as
   // aside (fail closed), and no sibling channel stands that early.
-  let fleetShadows: { readonly root: string; readonly readings: ReadonlyMap<string, EdgeReading>; readonly rolled: ReadonlySet<string>; readonly frontier: WideningRead } | null = null;
+  let fleetShadows: { readonly root: string; readonly readings: ReadonlyMap<string, EdgeReading>; readonly rolled: ReadonlySet<string>; readonly frontier: WideningRead; readonly links: ReadonlyMap<string, readonly string[]> } | null = null;
   let fleetBoardFollowed = false;
   // The leaf's fleet reading guards sibling sync. The daemon island reads its own board for gate asks.
   const bareKey = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
@@ -1525,7 +1525,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             pinned: readFrontierPins(read.ledger.doc(), scope)[FLEET_HAND] ?? null,
           }) : { status: "unknown", missing: [{ hand: FLEET_HAND, why: "no-frontier" }] };
           if (frontier.status === "known") read.ledger.change((draft) => { writeFrontierPin(draft, scope, FLEET_HAND, frontier.asOf[FLEET_HAND]!); });
-          fleetShadows = { root: fleetRootOfFace, readings: read.readings, rolled: raisesSeenThrough(read.ledger.doc(), scope, wornAtom.key), frontier };
+          const links = lineage ? fleetFrontierLinks({ fleetRoot: scope, board: read.handle.doc(), lineage }) : new Map<string, readonly string[]>();
+          fleetShadows = { root: fleetRootOfFace, readings: read.readings, rolled: raisesSeenThrough(read.ledger.doc(), scope, wornAtom.key), frontier, links };
         };
         fleetRead = readFleet();
         await fleetRead;

@@ -55,7 +55,8 @@ export function judgeCosign(input: {
   if (!state || !WARD_COSIGN_VERBS.includes(state.verb)) return refuse("not-a-ward-intent");
   if (state.issuer !== requester) return refuse("wrong-requester");
   if (state.voidCause) return refuse("void");
-  if (state.slots.some((s) => s.winner) || state.outOfAudience.length) return refuse("spent");
+  // Any outcome the issuer signed spends the act, in a slot or not: an answer landing after it changes nothing.
+  if (state.slots.some((s) => s.winner) || state.outOfAudience.length || state.outcomes.some((o) => o.entry.signer === requester)) return refuse("spent");
   const asks = state.asks.filter((q) => q.entry.signer === requester && q.entry.body["detail"] === input.digest);
   if (state.asks.length === 0) return refuse("awaiting-ask");
   if (!state.asks.some((q) => q.entry.signer === requester)) return refuse("ask-signer");
@@ -109,12 +110,17 @@ export interface WardActWitness { readonly accepts: (act: WardCosignAct) => bool
 /**
  * The witness over a face's intent plane, read fresh at each call. A face whose signed admission fold holds zero or one device
  * (set-aside ones counted, as the judge counts them) accepts the act on its own. A face of two or more accepts it only beside a
- * SPENT co-sign: the intent the act's digest names as its nonce (the act's own verb and words), the issuer's ask naming that
- * digest, its counted answer an approve from another device of the face that stands, naming the issuer as executor, and the
- * issuer's outcome in the intent's slot. A plane that did not load, or a fold that throws, accepts nothing on two devices.
+ * SPENT co-sign, FROZEN at its outcome: the intent the act's digest names as its nonce (the act's own verb and words), and the
+ * issuer's outcome in it, which cites the answer it spent and the fleet frontier the gate read. That cited answer approves this
+ * act (an answer to the issuer's own ask naming the digest, the issuer as executor) from another device of the face, and both
+ * that device and the issuer stood at the cited frontier (no raise the frontier counts sets either aside). What lands after the
+ * outcome (a second approve, a deny, a raise the next frontier counts) never changes what stands; an approved intent with no
+ * outcome stands nothing. A plane that did not load, or a fold that throws, accepts nothing on two devices.
  */
 export function wardActWitness(input: {
-  readonly group: string; readonly devices: () => readonly string[]; readonly view: () => IntentView | null; readonly standing: (atom: string) => Standing;
+  readonly group: string; readonly devices: () => readonly string[]; readonly view: () => IntentView | null;
+  /** Whether a device stood at one link of the fleet's signed frontier chain (`fleetStoodAt`); a link this reader lacks reads false. */
+  readonly stoodAt: (atom: string, frontier: string) => boolean;
 }): WardActWitness {
   return {
     accepts: (act) => {
@@ -125,18 +131,26 @@ export function wardActWitness(input: {
       if (!view) return false;
       const digest = cosignDigest({ act: act.verb, face: input.group, wiki: act.wiki, head: act.head });
       const args = { wiki: act.wiki, head: act.head }, enrolled = new Set(devices.map((d) => d.toLowerCase()));
-      return view.intents.some((s) => s.verb === act.verb && s.id === intentId({ issuer: s.issuer, verb: s.verb, args, nonce: digest }) && spentCosign(s, digest, enrolled, input.standing));
+      return view.intents.some((s) => s.verb === act.verb && s.id === intentId({ issuer: s.issuer, verb: s.verb, args, nonce: digest }) && spentCosign(s, digest, enrolled, input.stoodAt));
     },
   };
 }
 
-function spentCosign(s: IntentState, digest: string, devices: ReadonlySet<string>, standing: (atom: string) => Standing): boolean {
+const record = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
+
+function spentCosign(s: IntentState, digest: string, devices: ReadonlySet<string>, stoodAt: (atom: string, frontier: string) => boolean): boolean {
   if (s.audience.mode !== "asks") return false;
-  const answer = s.answer;
-  if (answer === null || answer === "contested" || answer.entry.body["verdict"] !== "approve") return false;
-  const signer = answer.entry.signer.toLowerCase();
-  if (signer === s.issuer || !devices.has(signer) || standing(signer) !== "stands") return false;
-  if (String(answer.entry.body["executor"] ?? "").toLowerCase() !== s.issuer) return false;
-  if (!s.asks.some((q) => q.cid === answer.entry.body["ask"] && q.entry.signer === s.issuer && q.entry.body["detail"] === digest)) return false;
-  return s.slots.some((slot) => slot.winner?.entry.signer === s.issuer);
+  return s.outcomes.some((o) => {
+    const result = o.entry.body["result"];
+    if (o.entry.signer !== s.issuer || !record(result) || result["digest"] !== digest) return false;
+    const cited = result["answer"], frontier = result["frontier"];
+    if (typeof cited !== "string" || typeof frontier !== "string") return false;
+    const answer = s.answers.find((a) => a.cid === cited);
+    if (!answer || answer.entry.body["verdict"] !== "approve") return false;
+    const signer = answer.entry.signer.toLowerCase();
+    if (signer === s.issuer || !devices.has(signer)) return false;
+    if (String(answer.entry.body["executor"] ?? "").toLowerCase() !== s.issuer) return false;
+    if (!s.asks.some((q) => q.cid === answer.entry.body["ask"] && q.entry.signer === s.issuer && q.entry.body["detail"] === digest)) return false;
+    return stoodAt(signer, frontier) && stoodAt(s.issuer, frontier);
+  });
 }

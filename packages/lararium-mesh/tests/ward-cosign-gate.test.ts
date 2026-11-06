@@ -14,7 +14,8 @@ wardCosignTable({
   name: "mesh", acts: ["lower", "cap", "go"],
   port: ({ group, atom, plane, devices, lineage, aside, unknown, frontier }) => intentPlaneCosignPort({ group, requester: atom, verbs: faceIntentVerbs(), plane,
     face: () => ({ devices, rosterCids: ["admit"], admittedAt: new Map(devices.map((d) => [d, "admit"])), lineage }),
-    standing: (k) => (aside.has(k) ? "aside" : unknown.has(k) ? "unknown" : "stands"), frontier: () => (frontier.known ? "known" : "unknown") }),
+    standing: (k) => (aside.has(k) ? "aside" : unknown.has(k) ? "unknown" : "stands"), frontier: () => (frontier.known ? frontier.head : null),
+    stoodAt: (k, at) => frontier.counted.get(at)?.has(k) === false }),
   root: async (key) => ({ key: key.key, signer: async () => key }),
 });
 
@@ -58,6 +59,7 @@ test("WITNESS: each reader of a ward act's effect asks the co-sign witness: the 
   const board = code(src("../src/promote-board.ts")), swarm = code(src("../src/swarm-board.ts")), go = code(src("../src/swarm-tiddlers.ts"));
   expect(board).toMatch(/!raw\.body\.raised && !face\.ward\.accepts\(\{ verb: "ward-kapae-lower"/);
   expect(swarm).toMatch(/act\.body\.act === "cap" && !face\.ward\.accepts\(\{ verb: "ward-house-cap"/);
-  expect(go).toMatch(/!ward\.accepts\(\{ verb: "ward-push-go"/);
+  // the go's reader walks only the gos that stand beside their co-sign
+  expect(go).toMatch(/resting\.filter\(\(g\) => ward\.accepts\(\{ verb: "ward-push-go"/);
   expect(swarm).not.toMatch(/act === "share" && !face\.ward/);
 });

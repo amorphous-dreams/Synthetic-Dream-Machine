@@ -8,7 +8,7 @@ import {
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceAtomKeyFromSeed, faceIntentVerbs,
   faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, intentAdmissionRecordsOfGroup, intentId, intentPaneModel,
   readIntentEntry,
-  deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetRaiseCids, readFleetFrontier, readFrontierPins, FLEET_HAND,
+  deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetFrontierLinks, fleetRaiseCids, fleetStoodAt, readFleetFrontier, readFrontierPins, FLEET_HAND,
   personaBagIdFor, personaSiblingBagIds, readIntentPlane, WARD_COSIGN_VERBS, intentPlaneCosignPort, faceRosterForIntents, type WardCosignPort, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
   WardRefused, type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
 } from "@lararium/mesh";
@@ -50,18 +50,23 @@ export function intentDelegationCite(raw: string): DelegationCite {
 
 /** What an answerer reads before signing, the way the edge co-sign door reads a partial: the act an ask names, taken from the
  *  fold's own verified bytes. Null where no ask under that cid stands. */
-export function askShown(view: ReturnType<typeof readIntentPlane>, askCid: string): { readonly intent: string; readonly verb: string; readonly issuer: string; readonly askedBy: string; readonly detail: unknown; readonly cosign: boolean } | null {
+export function askShown(view: ReturnType<typeof readIntentPlane>, askCid: string): { readonly intent: string; readonly verb: string; readonly issuer: string; readonly askedBy: string; readonly detail: unknown; readonly cosign: boolean; readonly spent: boolean } | null {
   for (const state of view.intents) {
     const ask = state.asks.find((q) => q.cid === askCid);
-    if (ask) return { intent: state.id, verb: state.verb, issuer: state.issuer, askedBy: ask.entry.signer, detail: ask.entry.body["detail"] ?? null, cosign: WARD_COSIGN_VERBS.includes(state.verb) };
+    if (ask) return { intent: state.id, verb: state.verb, issuer: state.issuer, askedBy: ask.entry.signer, detail: ask.entry.body["detail"] ?? null, cosign: WARD_COSIGN_VERBS.includes(state.verb),
+      spent: state.outcomes.some((o) => o.entry.signer === state.issuer) };
   }
   return null;
 }
 
-/** The answer door's refusal, or null where it may sign: for a ward verb it signs only what the plane counts, an answer to an ask
- *  the issuer signed, from a device other than the issuer, an approve naming the issuer as executor. */
+/** The answer door's refusal, or null where it may sign. An ask this vessel cannot see (it has not synced here) takes no answer,
+ *  since nothing tells the door whether it names a ward act. For a ward verb it signs only what the plane counts: an answer to an ask
+ *  the issuer signed, from a device other than the issuer, an approve naming the issuer as executor, and never one to an act whose
+ *  outcome already spent it (the spend stands frozen at that outcome). */
 export function answerRefusal(asked: ReturnType<typeof askShown>, signer: string, executor: string, deny: boolean): string | null {
-  if (!asked?.cosign) return null;
+  if (!asked) return "ward-ask-unseen: the ask has not reached this vessel; answer once it syncs";
+  if (!asked.cosign) return null;
+  if (asked.spent) return "ward-ask-spent: the ward act's outcome already spent its co-sign";
   if (asked.issuer === signer) return "self-answer: a ward act takes another device of the face";
   if (asked.askedBy !== asked.issuer) return "ask-signer: a ward act counts an answer only to its issuer's own ask";
   if (!deny && executor.toLowerCase() !== asked.issuer) return "executor-mismatch: a ward act's approve names its issuer as executor";
@@ -83,10 +88,11 @@ export async function signIntentAnswer(input: {
   readonly face: number; readonly ward?: WardCredential;
 }): Promise<SignedIntentEntry> {
   const refusal = answerRefusal(input.asked, input.signer.key, input.executor, input.deny);
-  if (refusal) throw new IntentRefused(refusal);
+  if (refusal || !input.asked) throw new IntentRefused(refusal ?? "ward-ask-unseen");
+  const asked = input.asked;
   const sign = () => buildAnswer({ group: input.group, signer: input.signer, ask: input.ask, executor: input.executor, verdict: input.deny ? "deny" : "approve", refs: [input.ask] });
-  if (!input.asked?.cosign || input.deny) return sign();
-  return withWardKeyCustody({ ordinal: input.face }, input.ward, () => sign(), `the co-sign approve of ${input.asked.verb}`);
+  if (!asked.cosign || input.deny) return sign();
+  return withWardKeyCustody({ ordinal: input.face }, input.ward, () => sign(), `the co-sign approve of ${asked.verb}`);
 }
 
 export interface IntentCommandOptions {
@@ -156,7 +162,8 @@ export async function loadFaceFold(repo: Repo, catalogUrl: string | undefined, s
   const signer: IntentSigner = { key: atom.key, sign: atom.sign };
   const verbs = faceIntentVerbs();
   const fleetRoot = groupRoot(anchors);
-  const fleetRead = async (): Promise<{ readonly standing: (key: string) => "stands" | "aside" | "unknown"; readonly heldFrontiers: ReadonlySet<string> } | null> => {
+  const fleetRead = async (): Promise<{ readonly standing: (key: string) => "stands" | "aside" | "unknown"; readonly heldFrontiers: ReadonlySet<string>;
+    readonly head: string | null; readonly stoodAt: (key: string, frontier: string) => boolean } | null> => {
     const lineage = readFace(kelChain() ?? undefined, anchor)?.lineage;
     if (!lineage) return null;
     const board = await readVesselEdgeBoard({ repo, scope: fleetRoot, kind: "fleet",
@@ -164,8 +171,12 @@ export async function loadFaceFold(repo: Repo, catalogUrl: string | undefined, s
       authorityFor: fleetEdgeAuthority(fleetRoot) });
     const frontier = readFleetFrontier({ fleetRoot, board: board.handle.doc(), lineage,
       seenRaises: fleetRaiseCids(board.counted.acts), pinned: readFrontierPins(board.ledger.doc(), fleetRoot)[FLEET_HAND] ?? null });
-    if (frontier.status !== "known") return null;
-    return { heldFrontiers: new Set([frontier.asOf[FLEET_HAND]?.cid].filter((cid): cid is string => cid !== undefined)),
+    // A frozen spend reads at the link its outcome cites, so the chain's links read even while the head waits on a raise to count.
+    const links = fleetFrontierLinks({ fleetRoot, board: board.handle.doc(), lineage });
+    const stoodAt = (key: string, at: string): boolean => fleetStoodAt({ links, readings: board.readings, fleetRoot, atom: key, frontier: at });
+    const head = frontier.status === "known" ? frontier.asOf[FLEET_HAND]?.cid ?? null : null;
+    if (head === null) return { heldFrontiers: new Set<string>(), head, stoodAt, standing: () => "unknown" };
+    return { heldFrontiers: new Set([head]), head, stoodAt,
       standing: (key) => {
         const verdict = board.readings.get(deviceEdgeId(fleetRoot, key));
         return verdict?.stands === true ? "aside" : verdict && verdict.raiseCids.length > 0 ? "unknown" : "stands";
@@ -179,11 +190,13 @@ export async function loadFaceFold(repo: Repo, catalogUrl: string | undefined, s
   } catch { fleet = null; /* A board that cannot verify leaves standing unknown and no frontier held. */ }
   const standing = (key: string): "stands" | "aside" | "unknown" => fleet?.now()?.standing(key) ?? "unknown";
   const heldFrontiers = (): ReadonlySet<string> => fleet?.now()?.heldFrontiers ?? new Set<string>();
-  // The fleet's signed frontier as the witness reads it now: a board that cannot verify, or a frontier that does not read known.
-  const frontier = (): "known" | "unknown" => (fleet?.now() ? "known" : "unknown");
+  // The fleet's signed frontier head as the witness reads it now: null for a board that cannot verify, or a frontier that does not read known.
+  const frontier = (): string | null => fleet?.now()?.head ?? null;
+  // Whether a device stood at one link of the fleet's frontier chain (a ward act's outcome cites the link it spent at).
+  const stoodAt = (key: string, at: string): boolean => fleet?.now()?.stoodAt(key, at) ?? false;
   const acquisition = fleet?.acquisition;
   if ("group" in selector && group !== selector.group) throw new IntentRefused("face-not-held");
-  return { group, index, anchors, anchor, face, kelChain, projection, catalog, personaPlane: persona, standing, heldFrontiers, frontier, acquisition, verbs, atom, atomSeed, signer };
+  return { group, index, anchors, anchor, face, kelChain, projection, catalog, personaPlane: persona, standing, heldFrontiers, frontier, stoodAt, acquisition, verbs, atom, atomSeed, signer };
 }
 export type FaceFold = Awaited<ReturnType<typeof loadFaceFold>>;
 
@@ -207,10 +220,10 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
  * The face's intent plane as a ward act's co-sign gate reads it (seat-harness#/the-swarm-slices): the loaded face's own plane (or
  * none, where it did not load), roster, fleet standing and frontier, read fresh at each call, and its atom as the act's issuer.
  */
-export function nodeWardCosignPort(repo: Repo, loaded: Pick<FaceFold, "group" | "projection" | "face" | "standing" | "heldFrontiers" | "frontier" | "verbs" | "signer"> & { readonly plane: Awaited<ReturnType<typeof loadFacePlane>> | null }): WardCosignPort {
-  const { group, plane, projection, face, standing, heldFrontiers, frontier, verbs, signer } = loaded;
+export function nodeWardCosignPort(repo: Repo, loaded: Pick<FaceFold, "group" | "projection" | "face" | "standing" | "heldFrontiers" | "frontier" | "stoodAt" | "verbs" | "signer"> & { readonly plane: Awaited<ReturnType<typeof loadFacePlane>> | null }): WardCosignPort {
+  const { group, plane, projection, face, standing, heldFrontiers, frontier, stoodAt, verbs, signer } = loaded;
   return intentPlaneCosignPort({ group, requester: signer, verbs, plane, flush: () => repo.flush(),
-    face: () => faceRosterForIntents(projection, face.lineage), standing, heldFrontiers, frontier });
+    face: () => faceRosterForIntents(projection, face.lineage), standing, heldFrontiers, frontier, stoodAt });
 }
 
 /** The gate's port over a loaded fold: the intents plane loads at the act, and a plane that cannot load leaves the port planeless. */

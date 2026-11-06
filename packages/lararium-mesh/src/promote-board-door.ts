@@ -1,7 +1,8 @@
 import { assertKapaeHand, KapaeRefused } from "./promote-kapae.js";
 import { kapaeLowerHead, promoteBoardMint, readPromoteAct, readPromoteBoard, signPromoteKapae, signPromotePrepare, type PromoteFace, type SignedPromoteAct } from "./promote-board.js";
 import type { PromoteWho } from "./promote.js";
-import { cosignPortWitness, WARD_GATE_DECIDED, WARD_WITNESS_CLOSED, WardActAlreadyRun, wardCosignGate, type WardCosignPort } from "./ward-cosign-gate.js";
+import { cosignPortWitness, WARD_WITNESS_CLOSED, WardActAlreadyRun, wardCosignGate, type WardCosignPort } from "./ward-cosign-gate.js";
+import { WARD_GATE_DECIDED } from "./ward-door-decided.js";
 import { WardRefused } from "./ward-slots.js";
 export { kapaeLowerHead } from "./promote-board.js";
 

@@ -58,7 +58,7 @@ async function standing() {
   const intents = { tiddlers: {} } as LarDoc;
   const port = browserWardCosignPort({ group: G, atom: a, plane: { doc: () => intents, change: (fn) => fn(intents) }, fold,
     lineage: () => readFace(f.chain, f.anchor)!.lineage,
-    fleet: () => ({ root: "fleet-root", readings: new Map(), frontier: { status: "known", asOf: {}, counted: {} } }) });
+    fleet: () => ({ root: "fleet-root", readings: new Map(), frontier: { status: "known", asOf: { fleet: { seq: 0, cid: "0".repeat(64) } }, counted: {} }, links: new Map([["0".repeat(64), []]]) }) });
   /** Land a root-signed admission of `key` after the log's head, on the same persona plane the port folds. */
   const admit = async (n: number, key: string) => {
     const head = f.log.at(-1)!;

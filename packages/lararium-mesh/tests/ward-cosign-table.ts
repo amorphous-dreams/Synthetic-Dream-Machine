@@ -19,6 +19,11 @@
  * A go names the go it follows, so a fresh go for one head asks afresh while a replay of an approved go still refuses spent. A
  * crash between the effect and its outcome (a seam in this table's port, never the product's) leaves the replay running nothing:
  * it refuses `ward-act-already-run` and lands the owed outcome.
+ *
+ * The spend stands FROZEN at its outcome, which cites the answer it spent and the fleet frontier the gate read: a second approve
+ * or a deny from a third device, a co-signer set aside (its raise counted at the next frontier) or reading `unknown`, and the
+ * issuer set aside after it, each leave the landed act standing; an outcome that cites a frontier counting its own issuer aside
+ * stands nothing, and an approved intent with no outcome reads nothing.
  */
 import { describe, expect, test } from "vitest";
 import type { LarDoc } from "../src/base-doc.js";
@@ -76,7 +81,7 @@ async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "go", devices
   // holds no such seam; the port a vessel composes writes what the gate hands it.
   const crash = { armed: false };
   const doorPort: WardCosignPort = { group: port.group, requester: port.requester, verbs: port.verbs, view: () => port.view(), devices: () => port.devices(),
-    frontier: () => port.frontier(), standing: (atom) => port.standing(atom), stoodAt: (atom: string, f: string) => port.stoodAt(atom, f),
+    frontier: () => port.frontier(), standing: (atom) => port.standing(atom), stoodAt: (atom, f) => port.stoodAt(atom, f),
     write: async (e) => { if (crash.armed && e.body.entry === "outcome") { crash.armed = false; throw new Error("killed between the effect and its outcome"); } return port.write(e); } };
   /** What a reader composes: the same plane, roster and standing, read at each call. */
   const witness = cosignPortWitness(port);
@@ -155,7 +160,7 @@ export function soloCosign(group: string, atom: Signer): WardCosignPort {
   const doc = { tiddlers: {} } as LarDoc;
   const lineage = makeHandLineage([{ epoch: 0, signers: [atom.key], threshold: 1 }])!;
   return intentPlaneCosignPort({ group, requester: atom, verbs: faceIntentVerbs(), plane: { doc: () => doc, change: (fn) => fn(doc) },
-    face: () => ({ devices: [atom.key], rosterCids: ["admit"], admittedAt: new Map([[atom.key, "admit"]]), lineage }), standing: () => "stands", frontier: () => "known" });
+    face: () => ({ devices: [atom.key], rosterCids: ["admit"], admittedAt: new Map([[atom.key, "admit"]]), lineage }), standing: () => "stands", frontier: () => F0, stoodAt: () => true });
 }
 
 export function wardCosignTable(vessel: CosignVessel): void {

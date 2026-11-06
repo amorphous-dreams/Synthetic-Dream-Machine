@@ -5,7 +5,7 @@
  */
 import { expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, ownEntry, swarmGoTitle, swarmGoSpentTitle, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, ownEntry, swarmGoRowTitle, swarmGoTitle, swarmGoSpentTitle, type LarDoc } from "@lararium/mesh";
 import { daemonSwarmWiki } from "../src/swarm-wiki.js";
 
 function stand() {
@@ -40,4 +40,14 @@ test("RED: a prototype-keyed title reads as absent, never an inherited member; C
   expect(await wiki.read("__proto__")).toBeNull();
   await wiki.write("$:/lares/swarm/go/constructor", "x");
   expect(await wiki.read("$:/lares/swarm/go/constructor")).toBe("x");
+});
+
+test("RED: a branch's go rows list under its family title, and only its own (a go reader walks them all); CONTROL: another branch's row stays out", async () => {
+  const { wiki } = stand();
+  const rowA = swarmGoRowTitle("feature/x", "a".repeat(64)), rowB = swarmGoRowTitle("feature/x", "b".repeat(64));
+  await wiki.writeNew(rowA, "a");
+  await wiki.writeNew(rowB, "b");
+  await wiki.writeNew(swarmGoRowTitle("feature/x/y", "c".repeat(64)), "c");
+  expect([...await wiki.list(`${swarmGoTitle("feature/x")}/`)].sort()).toEqual([rowA, rowB].sort());
+  expect(await wiki.list(`${swarmGoTitle("feature/z")}/`)).toEqual([]);
 });
