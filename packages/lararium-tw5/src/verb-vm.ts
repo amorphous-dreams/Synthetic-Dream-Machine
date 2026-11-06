@@ -2,7 +2,9 @@
  * verb-vm — volatile verb invocation lifecycle for the daemon causal island.
  *
  * Manages the in-TW5-wiki invocation tiddlers (volatile scratch, never synced)
- * and writes durable outcome tiddlers to the Automerge-backed daemon bag.
+ * and writes durable outcome tiddlers into the daemon wiki's working slot (the daemon
+ * composite's default writable), which seals under the lit face; the clear daemon bag
+ * beneath rests no outcome body (lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed, U1).
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/verb-vm
  */
@@ -184,7 +186,8 @@ export async function writeOutcome(
     inputDigest,
     ...(opts.invocation.effectKey !== undefined && { effectKey: opts.invocation.effectKey }),
   });
-  await daemon.put(outcome, origin, { bag: DAEMON_BAG_ID });
+  // THE LEDGER RESTS IN THE WORKING SLOT: the composite's default writable, never the daemon bag by name.
+  await daemon.put(outcome, origin);
 
   // Effect index — single writer (the daemon worker). Only a `done` outcome with an
   // effect key indexes; an `error` outcome indexes nothing, so a failed effect may be
@@ -199,7 +202,7 @@ export async function writeOutcome(
         "disk-projection": "no",
       },
       meta: { authority: "lares-dispatcher" },
-    }, origin, { bag: DAEMON_BAG_ID });
+    }, origin);
   }
 }
 
@@ -229,7 +232,7 @@ export async function copyEffectOutcome(
     ...(invocation.effectKey !== undefined && { effectKey: invocation.effectKey }),
     effectOf:    opts.priorRequestId,
   });
-  await daemon.put(outcome, origin, { bag: DAEMON_BAG_ID });
+  await daemon.put(outcome, origin);
   removeVerb(tw5, invocation.title);
 }
 

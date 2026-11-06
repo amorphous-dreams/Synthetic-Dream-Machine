@@ -7,8 +7,8 @@
  * fleet-join answer and dials A's Nexus, so B's worn face's wiki bags map sealed while that chain stands, and the dial's
  * own session stands seated in B's book (V6).
  *
- *   R1 — POSITIVE FIRST: a marker put into the daemon wiki (a bag that rests clear) reads back off B's root, so the scan
- *        reads what rests
+ *   R1 — POSITIVE FIRST: a marker placed into the daemon document by name (`--bag daemon`, the floor half that rests
+ *        clear) reads back off B's store, so the scan reads what rests
  *   R2 — B puts a marker into its face's working bag through the meme door, and B stands down at once
  *   R3 — at rest, no file of B's root outside the disk projection (`bags/`, `wikis/`, the operator's cleartext) holds
  *        the sealed marker: not the vessel's own store (V3: the map names the working slot's document), not the wiki
@@ -83,7 +83,8 @@ afterAll(async () => { await B2?.stopDaemonOnly(); await pair?.stop(); });
 describe.runIf(staged)("a sealed wiki write survives a stand-down at once and a restart", () => {
   test("R1-R3 — the positive control reads a clear marker at rest; the sealed marker rests as no clear byte after a stand-down at once", async () => {
     const B = pair!.B!;
-    const clear = await B.cli(["meme", "put", CLEAR_URI, "--recipe", "default", "--file", memeFile(CLEAR_URI, CLEAR_MARK), "--json"]);
+    // The daemon wiki's working slot seals under the lit face (U1's D half); the daemon document beneath stays the floor's.
+    const clear = await B.cli(["meme", "put", CLEAR_URI, "--bag", "daemon", "--file", memeFile(CLEAR_URI, CLEAR_MARK), "--json"]);
     expect(clear.code, clear.stderr + clear.stdout).toBe(0);
     const put = await B.cli(["meme", "put", SEALED_URI, "--recipe", "lares", "--file", memeFile(SEALED_URI, SEALED_MARK), "--json"]);
     expect(put.code, put.stderr + put.stdout).toBe(0);

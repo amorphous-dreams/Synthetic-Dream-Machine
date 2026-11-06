@@ -30,6 +30,9 @@ import {
   CompositeStore,
   AutomergeDocStore,
   computeRecipeFingerprint,
+  documentIdOfUrl,
+  mountedDocumentId,
+  rebindWorkingLayer,
   wikiSlotUri,
   attachMessageChannelSync,
   awaitIslandMsg,
@@ -218,6 +221,12 @@ export interface DaemonVmCore {
   composite:      CompositeStore;
   /** Resolve the worker's daemon binding and mount that exact document as the host default. */
   mountHostWorkingLayer: () => Promise<void>;
+  /**
+   * The island named `url` as the daemon working slot's document (the seat's lift moves it from the floor's document to
+   * the face's derived one): the host's mounted working layer follows, so the outcome ledger the island writes there
+   * reads here. Nothing moves before the host mounts its layer, or where it stands on that document already.
+   */
+  followHostWorkingLayer: (url: string) => Promise<void>;
   workerEa:       Promise<void>;
   /** Resolves once the vessel's Repo has met the daemon island's sync peer on the leg the island now runs on. A
    *  document the island mints reaches the vessel's Repo over that leg alone, so a question of the Repo about it
@@ -745,10 +754,22 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (composite.defaultWritableBagId() !== slot) throw new NoWorkingLayerRefusal("Mounting the host working layer", "The mounted daemon working layer did not become the default writable; restart the vessel.");
   };
 
+  const followHostWorkingLayer = async (url: string): Promise<void> => {
+    const slot = wikiSlotUri("daemon", "working");
+    if (!composite.hasBag(slot) || mountedDocumentId(composite.storeForBag(slot)) === documentIdOfUrl(url)) return;
+    const handle = await findOrThrow(repo, url, `${slot} (the island's working document)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
+    const store = new AutomergeDocStore(handle, slot);
+    if (rebindWorkingLayer(composite, slot, store)) {
+      store.markSyncComplete();
+      console.log(`[daemon] the host working layer follows the island onto ${url.slice(0, 22)}…`);
+    }
+  };
+
   return {
     daemonHandle,
     composite,
     mountHostWorkingLayer,
+    followHostWorkingLayer,
     workerEa,
     worker,
     syncLegReady: () => currentLeg,

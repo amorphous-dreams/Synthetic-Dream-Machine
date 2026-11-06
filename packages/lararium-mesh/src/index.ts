@@ -575,7 +575,7 @@ export { waitHandle, LOCAL_READY_MS } from "./wait-handle.js";
 
 // The registered bag set, derived from the persona BINDING — founded stays private, admitted carries the fleet's.
 export type { FleetMembership, RegisterBagsInput } from "./register-bags.js";
-export { deriveRegisterBags, catalogNamedBags, isVesselGround } from "./register-bags.js";
+export { deriveRegisterBags, catalogNamedBags, isVesselGround, wornFaceWikiBags, DAEMON_WIKI_SLOT_BAGS, type WikiSlotBags } from "./register-bags.js";
 export * from "./persona-scope.js";
 export * from "./persona-planes.js";
 export * from "./holdings-witness.js";

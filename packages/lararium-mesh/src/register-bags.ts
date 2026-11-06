@@ -44,6 +44,7 @@ import { type LarDoc, tiddlerText } from "./base-doc.js";
 import { BAG_IDS, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
 import { isFaceScopedBag, personaScopedBagIds } from "./persona-scope.js";
 import { ownEntry } from "./stored-value.js";
+import { wikiSlotUri } from "./wiki-recipe.js";
 
 /**
  * The bag URIs the `catalog` registry NAMES — the PersonaGroup's own work, read from the projection.
@@ -134,4 +135,36 @@ export function deriveRegisterBags(input: RegisterBagsInput): string[] {
     out.push(face.persona, face.circles, face.identities, face.sessions, face.intents, ...(fleet.catalogNamed ?? []).filter((bag) => !isFaceScopedBag(bag)));
   }
   return [...new Set(out)];
+}
+
+/** A wiki slot's three bags, as a vessel's mounted slot names them. */
+export interface WikiSlotBags {
+  readonly wikiBagId: string;
+  readonly workingBagId: string;
+  readonly draftBagId: string;
+}
+
+/**
+ * THE DAEMON WIKI'S OWN SLOTS: its working and draft slots, the D half of the daemon bag (sealed-store#/owed, U1). The
+ * working slot carries the verb outcome ledger and the receipt facts; each seals under the lit face. The daemon wiki's
+ * canon bag and the daemon document (`DAEMON_BAG_ID`) stand on the floor, clear and signed, and never join this set.
+ */
+export const DAEMON_WIKI_SLOT_BAGS: readonly string[] = [wikiSlotUri("daemon", "working"), wikiSlotUri("daemon", "draft")];
+
+/**
+ * The wiki bags a vessel's worn face carries: `registered`, the wiki bags the face's hive registers (`deriveRegisterBags`'s
+ * `wikiBags`), and `sealed`, the bags the sealed rest seals under that face. `lit` reads true only while the face stands
+ * lit and proved.
+ *
+ * EVERY BAG THE REST SEALS, THE FACE REGISTERS. A record a session seals there carries the face's certificate, and its
+ * reader reads the writer capable only over a bag the face registers (`ownChainStanding`); a sealed bag outside the
+ * register set reads `writer-not-capable`, its seal refuses, and a flush waits on it. The user wiki's slots register at
+ * the floor and lit alike, as a wiki stack stands; the daemon wiki's slots register and seal under the lit face alone.
+ */
+export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefined; readonly lit: boolean }): { readonly registered: string[]; readonly sealed: string[] } {
+  const user = input.slot ? [input.slot.wikiBagId, input.slot.workingBagId, input.slot.draftBagId] : [];
+  return {
+    registered: [...user, ...(input.lit ? DAEMON_WIKI_SLOT_BAGS : [])],
+    sealed: input.lit ? [...user, ...DAEMON_WIKI_SLOT_BAGS] : [],
+  };
 }

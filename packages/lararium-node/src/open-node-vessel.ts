@@ -59,7 +59,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -174,6 +174,8 @@ import { runFlow } from "./flow-run.js";
 const NODE_WIKI_PIN_BUDGET = 3;
 /** How long a sealed document's load waits for its map at a restart (the dial composes, the slot resolver names it). */
 const SEALED_HYDRATION_PATIENCE_MS = 120_000;
+/** The daemon wiki's working slot: the outcome ledger and the receipt facts rest there (sealed-store#/owed, U1). */
+const DAEMON_WORKING_SLOT = wikiSlotUri("daemon", "working");
 
 import { larSealHome, larStructurePalaceDir, larFormPalaceDir, memorySensoriumDir, meshSensoriumDir, larContentDir, sensoriumDir }  from "./vessel-paths.js";
 import { makeFormPalace, type FormPalace, makeStructurePalace, type StructurePalace }  from "./sensorium.js";
@@ -881,12 +883,21 @@ async function prepareNodeBootOn(
     }, (e: unknown) => console.log(`[sealed-rest] ${documentId.slice(0, 8)}… keeps its clear chunks until its next booked save: ${e instanceof Error ? e.message : String(e)}`));
   };
   const onSlotNamed = (bagId: string, documentId: string): void => {
+    // THE HOST'S WORKING LAYER FOLLOWS THE ISLAND'S: the outcome ledger rests in the daemon working slot, so the side that
+    // reads a verb's answer stands on the document the island writes it into (the seat's lift moves it to the face's).
+    if (bagId === DAEMON_WORKING_SLOT) followHostWorking(documentId);
     const named = slotDocsNamed.get(bagId) ?? new Set<string>();
     if (named.has(documentId)) return;
     named.add(documentId);
     slotDocsNamed.set(bagId, named);
     sealedRest.store.mapMoved();
     sealNowMapped(documentId);
+  };
+  const followHostWorking = (documentId: string): void => {
+    let follow: Promise<void>;
+    try { follow = daemonHolder.vm.followHostWorkingLayer(`automerge:${documentId}`); }
+    catch { return; }   // no daemon stands yet, or it restarts: its next mount resolves the island's document afresh
+    void follow.catch((e: unknown) => console.log(`[daemon] the host working layer stays where it stands: ${e instanceof Error ? e.message : String(e)}`));
   };
   // The map as it reads now, named in the log each time it moves: the face, and each sealed bag's document.
   let sealedMapNamed = "";
@@ -2906,8 +2917,10 @@ async function prepareNodeBootOn(
       if (raised !== standingAnchor) { await keepFaceAnchorOfGroup(raised); standingAnchor = raised; }
     }
     const faceLit = activeAtom !== null && atomSeed !== null;
-    // R1: the bags the sealed rest seals, the worn face's own wiki bags, only while that face stands lit and proved.
-    sealedCells.bags = () => (faceLit && personaGroupId && wornFaceProved && slot ? [slot.wikiBagId, slot.workingBagId, slot.draftBagId] : []);
+    // R1: the bags the sealed rest seals, the worn face's own wiki bags and the daemon wiki's slots (U1's D half), only
+    // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`).
+    const faceWikiBags = wornFaceWikiBags({ slot, lit: faceLit && !!personaGroupId && wornFaceProved });
+    sealedCells.bags = () => faceWikiBags.sealed;
     sealedRest.store.mapMoved();
     const workingFloorAnchor = workingFloorAnchorOf({ place: placeAid });
     // A sibling's planes need their own face proof before registration; joinedFaceAuth hands each sibling the vessel ground alone.
@@ -2967,7 +2980,8 @@ async function prepareNodeBootOn(
           personaGroupId,
           catalogNamed: catalogNamedBags(assembly.catalogHandle.doc()),
         }] : [],
-        ...(slot ? { wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId] } : {}),
+        // The user wiki's slots ride as a wiki stands; the daemon wiki's slots ride with the lit face, which seals them.
+        wikiBags: faceWikiBags.registered,
         ...(kahuCanon.lares || kahuCanon.lararium ? { systemCanon: true } : {}),
       }),
       ...(faceLit && signerDid ? { signerDid } : {}),

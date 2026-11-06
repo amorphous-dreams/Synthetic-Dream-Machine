@@ -6,6 +6,9 @@
  *        and the daemon document holds no outcome body
  *   O2 — CONTROL: an outcome that already stands in the working slot answers a re-asked id with no second placement
  *   O3 — the main thread's own island ask (`askIslandVerb`) answers off the working slot alike
+ *   O4 — THE HOST FOLLOWS THE ISLAND: the seat's lift moves the island's working slot from the floor's document to the
+ *        face's; the host's layer rebinds onto it at the same priority (`rebindWorkingLayer`), and the channel answers an
+ *        outcome the island writes there. CONTROL: a rebind onto the document it stands on moves nothing.
  */
 import { describe, test, expect } from "vitest";
 import { mkdtempSync, existsSync, rmSync } from "node:fs";
@@ -14,7 +17,7 @@ import { join } from "node:path";
 import { createConnection } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
 import {
-  emptyLarDoc, concludeVerb, OUTCOME_URI_PREFIX, DAEMON_BAG_ID, AutomergeDocStore, CompositeStore, wikiSlotUri, type LarDoc,
+  emptyLarDoc, concludeVerb, OUTCOME_URI_PREFIX, DAEMON_BAG_ID, AutomergeDocStore, CompositeStore, rebindWorkingLayer, wikiSlotUri, type LarDoc,
 } from "@lararium/mesh";
 import { startUdsChannel } from "../src/uds-channel.js";
 import { askIslandVerb } from "../src/island-verb-ask.js";
@@ -98,5 +101,37 @@ describe("a verb's answer reads off the outcome ledger in the daemon wiki's work
     const out = await Promise.race([ask.answer, new Promise((_, reject) => setTimeout(() => reject(new Error("the ask never answered off the working slot")), 3_000))]);
     expect(out).toEqual({ ran: true });
     expect(outcomeTitles(s.daemonHandle)).toEqual([]);
+  });
+
+  test("O4 — the host's working layer follows the island onto the face's document, and the channel answers there", async () => {
+    const s = stand();
+    const faceHandle = s.repo.create<LarDoc>(emptyLarDoc());
+    const dir = mkdtempSync(join(tmpdir(), "uds-outcome-follow-"));
+    const claim = await claimStore(dir, { holder: "vessel" });
+    // The island writes into the face's document alone, through its own store over it.
+    const island = new AutomergeDocStore(faceHandle, WORKING);
+    const channel = startUdsChannel({
+      daemonHandle: s.daemonHandle, composite: s.composite, claim, repo: s.repo, timeoutMs: 3_000,
+      placeVerb: (o) => { setTimeout(() => {
+        void island.put(concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", cause: "test-island", batchMode: "best-effort", results: { summary: { ok: true, output: { body: "face-heron" } } } }),
+          { kind: "lares-verb", requestId: o.requestId });
+      }, 50); },
+    });
+    try {
+      await socketAt(claim.socketPath);
+      expect(rebindWorkingLayer(s.composite, WORKING, new AutomergeDocStore(s.workingHandle, WORKING)), "CONTROL: the same document moves nothing").toBe(false);
+      const at = s.composite.layerIndexOf(WORKING);
+      expect(rebindWorkingLayer(s.composite, WORKING, new AutomergeDocStore(faceHandle, WORKING))).toBe(true);
+      expect(s.composite.layerIndexOf(WORKING), "the slot keeps its priority").toBe(at);
+      expect(s.composite.defaultWritableBagId(), "the slot stays the default writable").toBe(WORKING);
+      const answer = await send(claim.socketPath, { verb: "get", args: {}, requestedBy: "did:key:test-operator", requestId: "req-follow-1" });
+      expect(answer["status"], JSON.stringify(answer)).toBe("done");
+      expect(JSON.stringify(answer["results"])).toContain("face-heron");
+      expect(outcomeTitles(s.workingHandle), "the floor's document rests no outcome").toEqual([]);
+    } finally {
+      channel.close();
+      await claim.release();
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
