@@ -18,7 +18,9 @@
  * its floor (`signer-unavailable`). The face's last admitted session closing (`pagehide`, a lost port, the house's liveness
  * budget) runs the lock and the vessel returns to its floor. Surface traffic (frames, phases, rest, coherence and control
  * results without a known sender) reaches every admitted session wearing the lit vessel's face over its own port. Control
- * results with a known sender return to that session alone. Port traffic rides its binding
+ * results with a known sender return to that session alone. A session admitted after the light hears the shown surface
+ * whole from the frames already sent, folded (`foldLarFrame`), over its own port alone: one tab's arrival moves no epoch,
+ * so no other tab's act answers stale-target. Port traffic rides its binding
  * to its opening session alone; another session's place refuses `binding-not-owned`. Session loss closes only its own bindings.
  * INBOUND SURFACE ACTS WEAR THE LIT FACE: a control event, a surface switch, a place and a mirror read from a session admitted
  * for another face refuse `face-not-worn` and reach nothing of the vessel; a control event under an eventId still pending refuses.
@@ -41,9 +43,9 @@ import {
   parseAdmitCarriage, toAdmitCarriage, readBrowserCustodyPasskeys, readFaceCustodyPasskeys, browserWardSign,
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
   standVesselHouse, sessionLifetimeLock, VesselSessionRefused, readBrowserVesselFaces, wardAskWords,
-  type BrowserVesselResult, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost, type WardAskKind,
+  type BrowserVesselResult, type ProjectionSurfaceFrame, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost, type WardAskKind,
 } from "@lararium/browser";
-import { didFromVerifyingKey, parseMeshPeer, type MeshPeer } from "@lararium/mesh";
+import { didFromVerifyingKey, foldLarFrame, parseMeshPeer, readLarFrame, type MeshPeer } from "@lararium/mesh";
 import type { PageToVessel, SeedRest, VesselBoot, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
 import { CeremonyRefused, standCeremonyDoor } from "./ceremony-door.js";
 
@@ -83,6 +85,13 @@ export function standVesselHost(env: VesselHostEnv = {}) {
   /** The session whose admission lit the vessel: it heard every frame live. A later session of the face missed them. */
   let litBy: string | null = null;
   const bindings = new Map<string, string>();
+  /** Per surface and camera, the frames already sent folded to one (`foldLarFrame`): a late session's catch-up. */
+  const shownFrames = new Map<string, ProjectionSurfaceFrame>();
+  const holdFrame = (frame: ProjectionSurfaceFrame): void => {
+    if (readLarFrame(frame) === null || typeof frame.surface !== "string") return;
+    const at = `${frame.surface}\u0000${frame.cameraId}`;
+    shownFrames.set(at, foldLarFrame(shownFrames.get(at), frame));
+  };
   const controlSenders = new Map<string, Conn>();
 
   // A session never sees a surface its face does not wear.
@@ -171,7 +180,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       pageLife: (listener) => { lifeListeners.add(listener); return () => { lifeListeners.delete(listener); }; },
       onRest: (rest) => surfaceFanout({ t: "status", status: { rest } }),
       onPhase: (phase) => surfaceFanout({ t: "phase", phase }),
-      onFrame: (frame) => surfaceFanout({ t: "frame", frame }),
+      onFrame: (frame) => { holdFrame(frame); surfaceFanout({ t: "frame", frame }); },
       onControlResult: (surfaceId, result) => {
         const sender = controlSenders.get(result.eventId);
         controlSenders.delete(result.eventId);
@@ -213,7 +222,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
         lit: async (face) => { if (!litVessel) throw new VesselSessionRefused("signer-unavailable"); return litVessel.faceProviders.lit(face); },
         drop: async (face, why) => litVessel?.faceProviders.drop(face, why),
       },
-      onFloor: (s, floor) => { if (floor === "floor") litVessel = null; statusTo(conns.get(s.sessionId), { floor }); },
+      onFloor: (s, floor) => { if (floor === "floor") { litVessel = null; shownFrames.clear(); } statusTo(conns.get(s.sessionId), { floor }); },
       onDrop: (s, why) => {
         const conn = conns.get(s.sessionId);
         if (conn) conn.session = null;
@@ -251,8 +260,12 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     }
     statusTo(conn, { custody: session.admittedBy ? BOOT_READING[session.admittedBy] : "held", ...(session.face ? { face: session.face } : {}) });
     statusTo(conn, vesselStatus(result));
-    // A LATE SESSION MISSED THE FRAMES ALREADY SENT: the vessel repaints the shown surface whole, and the frame reaches it over its own port.
-    if (litVessel && litBy !== session.sessionId && wearsLitFace(conn)) litVessel.resend(litVessel.activeSurface());
+    // A LATE SESSION MISSED THE FRAMES ALREADY SENT: the shown surface's folded frame reaches it over its own port alone,
+    // under the epoch the other sessions act under. The vessel repaints nothing, so no other session's act goes stale.
+    if (litVessel && litBy !== session.sessionId && wearsLitFace(conn)) {
+      const shown = litVessel.activeSurface();
+      for (const frame of shownFrames.values()) if (frame.surface === shown) conn.post({ t: "frame", frame });
+    }
     void seedRestOf(idbName, session.face).then((s) => statusTo(conn, s), () => { /* an unreadable slot reads its own refusal elsewhere */ });
     return result;
   };

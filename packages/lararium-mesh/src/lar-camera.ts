@@ -5,8 +5,9 @@
  * each carrying its WHOLE rendered state and its own monotone revision (dreamdom#/the-ruling). Frames travel
  * DOWN as `lar:frame`; a person's acts travel UP as `lar:control-event` in one of four kinds, and every reliable
  * act gets an answer on `lar:control-result` (dreamdom#/the-crossings, page-controls#/the-wire,
- * session-contract#/the-holder-protocol). A surface switch or a late attach asks `lar:resend`, and the engine
- * answers with a fresh mount epoch and a whole snapshot. The engine asks the surface for a host door with
+ * session-contract#/the-holder-protocol). A surface switch asks `lar:resend`, and the engine answers with a fresh
+ * mount epoch and a whole snapshot; a late reader paints from the frames already sent, folded (`foldLarFrame`), and moves
+ * no epoch. The engine asks the surface for a host door with
  * `lar:service`, answered by a control event of kind `lar:service-result`.
  *
  * Three laws every reader keeps:
@@ -436,6 +437,20 @@ export function readLarService(v: unknown): LarMsg_Service | null {
 // ── Builders ────────────────────────────────────────────────────────────────────────────────────
 
 export function mkLarFrame(f: Omit<LarMsg_Frame, "type">): LarMsg_Frame { return { type: LAR_FRAME, ...f }; }
+
+/**
+ * THE CATCH-UP FOLD: a key paints from nothing, so the frames one camera sent under one epoch fold to one frame that
+ * carries every key at its newest revision and, per control, the newest sensed revision. A reader that joins late paints from that frame
+ * under the epoch the others act under; no epoch moves. A frame of another epoch (or camera, or wiki) starts the fold afresh.
+ */
+export function foldLarFrame<F extends LarMsg_Frame>(held: F | undefined, frame: F): F {
+  if (!held || held.mountEpoch !== frame.mountEpoch || held.cameraId !== frame.cameraId || held.wikiUri !== frame.wikiUri) return frame;
+  const keys = new Map(held.keys.map((k) => [k.key, k]));
+  for (const k of frame.keys) if ((keys.get(k.key)?.rev ?? -1) <= k.rev) keys.set(k.key, k);
+  const sensedRevision: Record<string, number> = { ...held.sensedRevision };
+  for (const [control, rev] of Object.entries(frame.sensedRevision)) sensedRevision[control] = Math.max(sensedRevision[control] ?? -1, rev);
+  return { ...frame, keys: [...keys.values()], sensedRevision };
+}
 export function mkLarControlResult(r: Omit<LarMsg_ControlResult, "type">): LarMsg_ControlResult { return { type: LAR_CONTROL_RESULT, ...r }; }
 export function mkLarResend(cameraId: string = LAR_CAMERA_STORY, manifest?: LarSurfaceManifest): LarMsg_Resend {
   return manifest === undefined ? { type: LAR_RESEND, cameraId } : { type: LAR_RESEND, cameraId, manifest };
