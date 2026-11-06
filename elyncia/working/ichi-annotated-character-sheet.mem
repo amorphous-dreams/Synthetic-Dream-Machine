@@ -35,9 +35,11 @@ uri-path  = "ha.ka.ba/elyncia/working/ichi-annotated-character-sheet"
 * ''RULING:'' Ichi (he/them) holds Level 2 in his own right and stands as Aki's fully fledged deuteragonist, rather than an item owned by Aki. The Aki-Ichi bond lives in Social Inventory with mutual upkeep, agency and respect; physical armor interfaces and mode-switch rules remain subject to the existing Powered Symbiote mechanics.
 * ''RULING:'' Ichi receives one personal ''Level 1 Hallmark'': ''Broken Isles Field Spade'' (working name). Choose the practical military spade direction; the exact single-ended vs crescent-headed geometry and one upgrade feature remain OPEN.
 * ''RULING:'' Reconstructed kabuto, left gauntlet and right greave are present, modeled on surviving blueprints and fashioned from treated chitin shed during Aki's molts. These three components may later undergo recovery of original hardware and/or synthesis with reconstructed structures.
-* ''RULING:'' Ichi's original tachi, asymmetrical bow and rifle are missing. The bokken and tantō stand as current paired fighting weapons. The yari belongs to his originally issued kit, but its survival and current location remain OPEN.
+* ''RULING:'' Ichi's original tachi, asymmetrical bow and rifle are missing. The bokken and tantō stand as current paired fighting weapons. The original yari was issued to Ichi's military kit and is now confirmed MISSING, pending recovery. Its present location, recovery circumstances, original properties and system state remain OPEN.
 * ''OPEN:'' No established account yet explains the missing kit; possibilities include battlefield loss, looting, salvage or deliberate separation. Do not mark any hypothesis canon.
 * ''OPEN:'' The recovered armor, shrine and associated hardware may contain de-leveled, locked, damaged, encrypted, corrupted or Vome-affected features. Diagnose each subsystem individually; higher power production alone does not repair missing hardware, clear corruption or grant extra purchased features.
+
+''Communication — RULING:'' Ichi speaks through spore/pheromone telepathy in the manner of compatible insect- and reptile-kin, carrying sensations, impressions, fragments of recovered memory, proverbs and reflective thoughts rather than conventional audible speech. His words in narrated scenes may appear in italics for readability; this convention does not grant free unlimited-range telepathy or universal mind-reading.
 
 ''Accounting:'' Ichi's original sheet retains four occupied base Trait slots and four legacy equipment entries. The field spade adds a Level 1 invested Hallmark in Ichi's own gear inventory. Its proposed two-stone bulk and physical carriage must count separately; the revised ready-item/packed tally and XP source remain OPEN. No new automatic attacks, Armor/Ward, DT, Powers or free +1 roll are awarded.
 
@@ -220,7 +222,7 @@ malfunction but as a ''jurisdictional question with a person standing in it''.
 
 ---
 
-!! Long-Watch Resonances!! Restoration of Three Reconstructed Armor Sections — RULING
+!! Restoration of Three Reconstructed Armor Sections — RULING
 
 The present ''kabuto'', ''left gauntlet'' and ''right greave'' carry functional reconstructed structures, made from surviving original armor blueprints using ''treated chitin naturally shed during Aki's molts''. These replacements account for the present helmet, sleeve/gauntlet, and greave descriptions; they do not imply the missing original components have been recovered.
 
@@ -422,11 +424,11 @@ Ichi can also ''throw Balefire grenades'': chitin pots holding combustion powder
 
 ---
 
-!! On Aki's Sheet!! Military Kit Recovery Register — RULING and OPEN
+!! Military Kit Recovery Register — RULING and OPEN
 
 | Original item | Current record | Recovery vector |
 |---|---|---|
-| Yari | Originally issued; survival and whereabouts undecided | Determine what happened to original issue before calling it lost or recoverable |
+| Yari | Originally issued; MISSING, pending recovery | Recover or trace the original spear; exact whereabouts, condition, former properties, any locks and loss circumstances remain unknown |
 | Tachi | Missing; original sword absent | Potential later recovery point of interest, without promising its original level or properties |
 | Asymmetrical bow | Missing | Potential later recovery point of interest; special training or gauntlet links remain speculative |
 | Rifle | Missing | Potential story recovery lead; power requirements and former interfaces unknown |
@@ -452,6 +454,8 @@ Ichi can also ''throw Balefire grenades'': chitin pots holding combustion powder
 ---
 
 !! Notes for Play
+
+''Voice and delivery (operator ruling):'' Ichi communicates by spore-and-pheromone telepathy, sharing sensory inflections, olfactory associations, brief images and remembered fragments along with proverbs and considered introspection. When another character receives this signal, narrate the impression and its interpretable meaning rather than putting an audible voice in Ichi's mouth. Recovered snippets do not automatically establish the objective truth of the old war. Range, targets, resistance and mechanical bonuses still require explicit adjudication; the scene's mutual communication grants no free new Power.
 
 ''Two-character management (Freyja):''
 * ''Armor mode:'' Freyja plays Aki with Ichi's armor stats applied. Ichi can perceive and communicate (mycelium link) but cannot act independently. Freyja voices Ichi's reactions, observations, warnings from inside.
