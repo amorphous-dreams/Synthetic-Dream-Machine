@@ -60,10 +60,12 @@ export async function rollSignedLeaseEpochOnBoard(
   signer: { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> },
   authorize: (writerHex: string) => boolean,
   /** The anchor's floor (`FaceReading.floor`): the roll never reads below what this device accepted. */
-  floor: (observed: number) => number = (observed) => observed,
-  /** Read before any signature or write, over the epoch the roll would leave: a throw here refuses the roll whole. */
-  before: (effective: number) => void | Promise<void> = () => {},
+  floor: (observed: number) => number,
+  /** The stranding guard, REQUIRED: read fresh just before the signature, over the epoch the roll would leave; a throw here
+   *  refuses the roll whole. A caller that passes no guard function gets a refusal, never a roll. */
+  before: (effective: number) => void | Promise<void>,
 ): Promise<LeaseRekeyResult> {
+  if (typeof before !== "function") throw new Error("lease-rekey: lease-roll-guard-missing: a face lease rolls only under the stranding guard; the roll wrote nothing");
   if (!authorize(signer.key.toLowerCase())) throw new Error("lease-rekey: signer has no PersonaGroup KEL seat");
   const prefix = leaseEpochPrefix(resource);
   const slots = Object.entries(handle.doc()?.tiddlers ?? {})

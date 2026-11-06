@@ -36,7 +36,7 @@ async function edgeAlreadyStale(epoch = 1): Promise<void> {
   await keepFaceAnchorOfGroup(raiseFaceFrontier((await loadFaceAnchorOfGroup(group))!, { leaseEpoch: epoch }));
 }
 
-async function setup(withFleet: boolean) {
+async function setup(withFleet: boolean, plane: "bare" | "none" = "bare") {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
@@ -46,7 +46,13 @@ async function setup(withFleet: boolean) {
     daemonUrl = handle.url;
     await repo.flush();
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });
-    const packed = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };
+    const packed: Record<string, { title: string; text: string; kind?: string }> = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };
+    if (plane === "bare") {                                   // a readable persona plane that seats no edge
+      const group = (await loadIdentityAnchors(0))!.personaGroupId;
+      const bare = repo.create(emptyLarDoc());
+      await repo.flush();
+      packed[personaBagIdFor(group)] = { title: personaBagIdFor(group), text: bare.url };
+    }
     writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: packed }) }), "utf8");
   });
 }
@@ -155,6 +161,18 @@ describe("lares persona lease", () => {
     const out = (await roll()) as { effective: number; rolled: number; frontier: number };
     expect(out).toMatchObject({ effective: 2, rolled: 3, frontier: 3 });
     expect((await loadFaceAnchorOfGroup(group))!.frontier.leaseEpoch).toBe(3);
+  }, 120_000);
+
+  it("RED: a stale own edge with no readable persona plane refuses lease-roll-log-unread and writes nothing; CONTROL: a readable bare plane rolls (floor-5 control above)", async () => {
+    await setup(true, "none");
+    await edgeAlreadyStale();
+    const group = (await loadIdentityAnchors(0))!.personaGroupId;
+    const out = (await roll()) as { refused?: string; refusal?: string; rolled?: number };
+    expect(out.refusal).toBe("persona-lease-refused");
+    expect(out.refused).toMatch(/^lease-roll-log-unread: /);
+    expect(out.rolled).toBeUndefined();
+    expect(await slotsOf(group)).toEqual([]);
+    expect((await loadFaceAnchorOfGroup(group))!.frontier.leaseEpoch).toBe(1);
   }, 120_000);
 
   it("a face with no verified KEL lineage refuses by name and writes nothing", async () => {

@@ -47,6 +47,15 @@ export class LeaseRollStrandsDevices extends PersonaLeaseError {
   }
 }
 
+/** The face's `@persona` log cannot be read here, so no seated device can be counted: the roll fails closed. */
+export class LeaseRollLogUnread extends PersonaLeaseError {
+  override readonly name = "LeaseRollLogUnread";
+  readonly refusal = "lease-roll-log-unread";
+  constructor(why: string) {
+    super(`lease-roll-log-unread: this vessel cannot read the face's @persona log (${why}), so it cannot count the devices a roll would strand; the roll wrote nothing.`);
+  }
+}
+
 export interface PersonaLeaseOptions {
   readonly repo: Repo;
   /** The face whose root signs; default the founding face. */
@@ -94,10 +103,12 @@ export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<Person
   if (!seated(key)) throw new PersonaLeaseError("this root holds no seat in the face's KEL lineage");
   const tiddlers = bootstrapTiddlers();
   const daemon = await opts.repo.find<LarDoc>(daemonUrlOf(tiddlers) as AutomergeUrl);
-  const seatedEdges = await logSeatedEdges(opts.repo, face, anchors.personaGroupId, ownEntry(tiddlers, personaBagIdFor(anchors.personaGroupId))?.text);
+  const personaUrl = ownEntry(tiddlers, personaBagIdFor(anchors.personaGroupId))?.text;
   const ownEdge = anchors.deviceEdge;
   const ownKey = ownEdge?.deviceVerifyingKey.toLowerCase();
-  const strands = (effective: number): void => {
+  const strands = async (effective: number): Promise<void> => {
+    // Read fresh each call: the roll invokes this just before it signs, so an admission landing earlier counts.
+    const seatedEdges = await logSeatedEdges(opts.repo, face, anchors.personaGroupId, personaUrl);
     // This vessel's own edge strands when it binds the epoch the roll leaves (an edge already below it halts today, roll or no
     // roll); an anchor that carries no edge reads its binding unknown and counts. Every other edge the log seats counts.
     const own = ownEdge === undefined || !(Number(ownEdge.boundEpoch) < effective) ? 1 : 0;
@@ -113,10 +124,10 @@ export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<Person
 }
 
 /** The devices the face's `@persona` log seats an edge for, under this vessel's own face reading. A plane the bootstrap names
- *  no URL for, or this replica cannot open, reads no seat beyond this vessel's own. */
+ *  no URL for, or this replica cannot open, refuses the roll by name: an unread log counts no device, and silence would roll. */
 async function logSeatedEdges(repo: Repo, face: FaceReading, group: string, personaUrl: string | undefined): Promise<string[]> {
-  if (!personaUrl) return [];
+  if (!personaUrl) throw new LeaseRollLogUnread("the bootstrap names no persona plane");
   let records: unknown[];
-  try { records = await readFacePersonaRecords(repo, { personaUrl, group }); } catch { return []; }
+  try { records = await readFacePersonaRecords(repo, { personaUrl, group }); } catch (e) { throw new LeaseRollLogUnread(e instanceof Error ? e.message : String(e)); }
   return Object.keys(face.project(records, group).edges).map((k) => k.toLowerCase());
 }
