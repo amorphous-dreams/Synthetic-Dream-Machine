@@ -283,7 +283,6 @@
     "tests/kahu-steward-succession.test.ts": 4,
     "tests/kahu-wire-reach-live.test.ts": 4,
     "tests/key-class.test.ts": 2,
-    "tests/keyhive-identity-slot.test.ts": 1,
     "tests/kg-cap.test.ts": 1,
     "tests/lan-address.test.ts": 1,
     "tests/lan-discovery.test.ts": 1,
