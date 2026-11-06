@@ -565,8 +565,13 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       // `represented` reads `awaitOnRolled`'s OWN bounded claim, never merely whether a vessel stands to call
       // it: a vessel standing proves this row COULD try to re-present, not that it DID. Past the budget the
       // refold keeps running unseen, and this reads `"pending"` rather than guessing either way.
-      const represented = deps.onRolled === undefined ? false : await awaitOnRolled(deps.onRolled(r.aid, ward));
-      return { aid: r.aid, nym: r.nym, admitCid: r.admitCid, gatePubKey: r.gatePubKey, lineage: r.lineage, path: r.path, represented };
+      // A ROUTE THE WARD REFUSED answers by name (`reason`, e.g. `ward-dial-in-flight`), still failing closed: the bundle
+      // stays kept, `represented` reads false, and the take never rides a wardless dial.
+      let reason: string | undefined;
+      const rolled = deps.onRolled?.(r.aid, ward);
+      const named = rolled instanceof Promise ? rolled.catch((e: unknown) => { if (e instanceof WardRefused) reason = e.reading; throw e; }) : rolled;
+      const represented = deps.onRolled === undefined ? false : await awaitOnRolled(named);
+      return { aid: r.aid, nym: r.nym, admitCid: r.admitCid, gatePubKey: r.gatePubKey, lineage: r.lineage, path: r.path, represented, ...(reason !== undefined ? { reason } : {}) };
     }),
 
     // A HERM'S EXPLICIT JOIN (lar:///ha.ka.ba/lararium/node/carry-bundle): the quorum's counted carry over this vessel's own key, taken by
