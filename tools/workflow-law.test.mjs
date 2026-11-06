@@ -122,6 +122,8 @@ test("WL2 CONTROL: a planted workflow without the caps reads every breach, and a
   assert.deepEqual(breaches("from-step.yml", fromStep), []);
 });
 
+// The pinned Playwright image supplies Node 26 for the browser cells; the other jobs pin Node 24.
+// The browser import boundary must keep product code compatible with Node 24.
 // THE BROWSER LIBRARIES COME IN THE IMAGE. `playwright install-deps` is an apt step; on a hosted runner it timed out at its five
 // minutes in the browser cells at least six times in one day. The pinned official image carries the libraries and the engines,
 // so no workflow runs the install, and EVERY image-bearing field in every workflow EQUALS the one pin the capability probe holds,
