@@ -120,6 +120,9 @@ const EXCLUDED_BY_DESIGN: Record<string, string> = {
     "excluded from `main`, absent from `heavy` — two full `openNodeVessel` boots over one founded root with no dial: the face's save " +
     "seals under its place session, reaches rest, and the restart reads it back. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, " +
     "`tests/e2e/**/*.test.ts`).",
+  "tests/e2e/floor-user-wiki-refuses.test.ts":
+    "excluded from `main`, absent from `heavy` — full `openNodeVessel` boots at the floor: a user wiki refuses by name before any " +
+    "island mounts it, a floor row's wiki boots. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
 };
 
 describe("the serial heavy roster detects its own staleness", () => {
