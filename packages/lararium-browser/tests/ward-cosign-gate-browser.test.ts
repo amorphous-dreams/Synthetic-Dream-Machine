@@ -20,8 +20,9 @@ const spawn = () => ({
 
 wardCosignTable({
   name: "browser", acts: ["lower"],
-  port: ({ group, atom, plane, devices, lineage, aside, unknown, frontier }) => browserWardCosignPort({ group, atom, plane,
-    fold: () => ({ devices, cids: ["admit"], admissions: devices.map((deviceKey) => ({ deviceKey, cid: "admit" })) }) as never,
+  port: ({ group, atom, plane, devices, lineage, aside, unknown, frontier, wardKeys }) => browserWardCosignPort({ group, atom, plane,
+    fold: () => ({ devices, cids: ["admit"], admissions: devices.map((deviceKey) => ({ deviceKey, cid: "admit" })),
+      wardKeys: Object.fromEntries(devices.map((d) => [d.toLowerCase(), wardKeys.get(d)!])) }) as never,
     lineage: () => lineage,
     // The leaf's fleet reading as the board would hand it: a raise per device set aside (the frontier links count the ones they
     // registered), and one owed a roll for a device whose standing reads unknown.

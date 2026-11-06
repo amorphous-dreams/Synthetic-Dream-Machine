@@ -10,16 +10,22 @@
  * an approve of an ask that names no ward act, ask no route; a wrong route opens nothing; a passkey never mints a route. The store
  * door runs `intent-answer` first with no route and asks one only where the answer's signer names `ward-needs-fresh-unlock`.
  *
+ * THE WARD ON THE WIRE: the approve carries this device's per-face ward signature over (the answer, the ask's digest, the fleet
+ * frontier it read), under the ward key the device's admission into the face carries (its tag door's `wardKey`), derived from that
+ * face's own ward key, so two faces of one vessel present ward keys no reader links. Reds: the approve carries no ward signature;
+ * two faces present one key; an approve with no frontier read signs. Control: a deny carries none.
+ *
  * No suite person is seated here: a row that forgets its route reads red.
  */
 import { afterEach, beforeEach, expect, test } from "vitest";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, verifyEd25519, wardAnswerImage } from "@lararium/mesh";
+import { vesselFaceTagDoor } from "../src/vessel-face-tag-store.js";
 import { signIntentAnswer } from "../src/commands/intent.js";
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard, wardCredential } from "../src/ward-credential.js";
 import { fixtureWard, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
-const GROUP = "cosign-answer-face";
+const GROUP = "cosign-answer-face", FRONTIER = "f".repeat(64), DETAIL = "d".repeat(64);
 let c: SeatedScratchCustody;
 beforeEach(async () => { c = await seatScratchCustody("cosign-answer"); });
 afterEach(async () => { await c.drop(); });
@@ -31,9 +37,9 @@ async function joinee() {
   const { ordinal } = await ensureFaceCustodyOfGroup(GROUP);
   const issuer = await keyed(51), answerer = await keyed(52);
   const asked = (verb: string) => ({ intent: "i".repeat(64), verb, issuer: issuer.key.toLowerCase(), askedBy: issuer.key.toLowerCase(), detail: "d".repeat(64), cosign: verb.startsWith("ward-") });
-  const answer = (verb: string, extra: { deny?: boolean; ward?: ReturnType<typeof fixtureWard> } = {}) => signIntentAnswer({
+  const answer = (verb: string, extra: { deny?: boolean; ward?: ReturnType<typeof fixtureWard>; frontier?: string | null } = {}) => signIntentAnswer({
     group: GROUP, signer: answerer, ask: "a".repeat(64), executor: issuer.key.toLowerCase(), deny: extra.deny === true, asked: asked(verb), face: ordinal,
-    ...(extra.ward ? { ward: extra.ward } : {}),
+    frontier: extra.frontier === undefined ? FRONTIER : extra.frontier, ...(extra.ward ? { ward: extra.ward } : {}),
   });
   return { ordinal, issuer, answerer, answer };
 }
@@ -78,4 +84,41 @@ test("RED: the store door runs an approve first with no route and asks one only 
   expect(storeVerbNeedsWard("intent-answer", { target: "a".repeat(64), deny: true })).toBe(false);
   // the nonsense control: a verb outside the table is no ward act
   expect(storeVerbNeedsWard("intent-show", {})).toBe(false);
+});
+
+test("RED: the co-signer's approve carries no ward signature; CONTROL: it carries one over (the answer, the ask's digest, the frontier it read) under the ward key its admission carries, and a deny carries none", async () => {
+  const j = await joinee();
+  const wardKey = (await vesselFaceTagDoor()(GROUP, j.answerer.key)).wardKey;
+  expect(wardKey).toMatch(/^[0-9a-f]{64}$/);
+  const landed = await j.answer("ward-house-cap", { ward: fixtureWard() });
+  expect(landed.body).toMatchObject({ frontier: FRONTIER });
+  const image = wardAnswerImage({ group: GROUP, ask: "a".repeat(64), detail: DETAIL, verdict: "approve", executor: j.issuer.key, frontier: FRONTIER });
+  expect(verifyEd25519(landed.body["wardSig"], image, wardKey)).toBe(true);
+  // the nonsense control: the atom's own key verifies nothing the ward signed
+  expect(verifyEd25519(landed.body["wardSig"], image, j.answerer.key)).toBe(false);
+  const denied = await j.answer("ward-house-cap", { deny: true });
+  expect(denied.body["wardSig"]).toBeUndefined();
+});
+
+test("RED: an approve of a ward ask with no fleet frontier read signs; it refuses `ward-cosign-frontier-unknown` before the ward opens", async () => {
+  const j = await joinee();
+  expect(await codeOf(j.answer("ward-push-go", { ward: fixtureWard(), frontier: null }))).toBe("ward-cosign-frontier-unknown");
+});
+
+test("RED: two faces of one vessel present one ward key, or keys a reader links; CONTROL: each face's key verifies only its own face's approve", async () => {
+  const one = await joinee();
+  const other = "cosign-answer-other-face";
+  const { ordinal } = await ensureFaceCustodyOfGroup(other);
+  const door = vesselFaceTagDoor();
+  const k1 = (await door(GROUP, one.answerer.key)).wardKey, k2 = (await door(other, one.answerer.key)).wardKey;
+  expect(k1).toMatch(/^[0-9a-f]{64}$/);
+  expect(k2).toMatch(/^[0-9a-f]{64}$/);
+  expect(k1).not.toBe(k2);
+  // a re-read presents the same key: the key answers to the face, never to the call
+  expect((await door(GROUP, one.answerer.key)).wardKey).toBe(k1);
+  const signed = await signIntentAnswer({ group: other, signer: one.answerer, ask: "a".repeat(64), executor: one.issuer.key.toLowerCase(), deny: false, face: ordinal, frontier: FRONTIER, ward: fixtureWard(),
+    asked: { intent: "i".repeat(64), verb: "ward-push-go", issuer: one.issuer.key.toLowerCase(), askedBy: one.issuer.key.toLowerCase(), detail: DETAIL, cosign: true, spent: false } });
+  const image = wardAnswerImage({ group: other, ask: "a".repeat(64), detail: DETAIL, verdict: "approve", executor: one.issuer.key, frontier: FRONTIER });
+  expect(verifyEd25519(signed.body["wardSig"], image, k2)).toBe(true);
+  expect(verifyEd25519(signed.body["wardSig"], image, k1)).toBe(false);
 });

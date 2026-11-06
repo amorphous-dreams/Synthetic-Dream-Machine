@@ -12,10 +12,10 @@ import { wardCosignTable } from "./ward-cosign-table.js";
 
 wardCosignTable({
   name: "mesh", acts: ["lower", "cap", "go"],
-  port: ({ group, atom, plane, devices, lineage, aside, unknown, frontier }) => intentPlaneCosignPort({ group, requester: atom, verbs: faceIntentVerbs(), plane,
+  port: ({ group, atom, plane, devices, lineage, aside, unknown, frontier, wardKeys }) => intentPlaneCosignPort({ group, requester: atom, verbs: faceIntentVerbs(), plane,
     face: () => ({ devices, rosterCids: ["admit"], admittedAt: new Map(devices.map((d) => [d, "admit"])), lineage }),
     standing: (k) => (aside.has(k) ? "aside" : unknown.has(k) ? "unknown" : "stands"), frontier: () => (frontier.known ? frontier.head : null),
-    stoodAt: (k, at) => frontier.counted.get(at)?.has(k) === false }),
+    stoodAt: (k, at) => frontier.counted.get(at)?.has(k) === false, wardKey: (k) => wardKeys.get(k) ?? null }),
   root: async (key) => ({ key: key.key, signer: async () => key }),
 });
 

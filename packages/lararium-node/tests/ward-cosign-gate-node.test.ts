@@ -9,9 +9,10 @@ import { wardCosignTable } from "../../lararium-mesh/tests/ward-cosign-table.js"
 
 wardCosignTable({
   name: "node", acts: ["lower", "cap", "go"],
-  port: ({ group, atom, plane, devices, lineage, aside, unknown, frontier }) => nodeWardCosignPort({ flush: async () => undefined } as never, {
+  port: ({ group, atom, plane, devices, lineage, aside, unknown, frontier, wardKeys }) => nodeWardCosignPort({ flush: async () => undefined } as never, {
     group, plane, verbs: faceIntentVerbs(), signer: atom,
-    projection: { devices, cids: ["admit"], get admissions() { return devices.map((deviceKey) => ({ deviceKey, cid: "admit" })); } },
+    projection: { devices, cids: ["admit"], get admissions() { return devices.map((deviceKey) => ({ deviceKey, cid: "admit" })); },
+      get wardKeys() { return Object.fromEntries(devices.map((d) => [d.toLowerCase(), wardKeys.get(d)!])); } },
     face: { lineage }, standing: (k: string) => (aside.has(k) ? "aside" : unknown.has(k) ? "unknown" : "stands"), heldFrontiers: () => new Set<string>(),
     frontier: () => (frontier.known ? frontier.head : null), stoodAt: (k: string, at: string) => frontier.counted.get(at)?.has(k) === false,
   } as never),

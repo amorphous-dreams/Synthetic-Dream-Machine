@@ -83,6 +83,7 @@ export * from "./intent-view.js";
 export * from "./intent-issue.js";
 export * from "./ward-cosign.js";
 export * from "./ward-cosign-gate.js";
+export * from "./ward-answer.js";
 export * from "./vessel-face-tag.js";
 export * from "./kahua-stage.js";
 export * from "./promote.js";
