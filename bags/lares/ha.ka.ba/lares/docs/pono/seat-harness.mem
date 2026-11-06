@@ -88,17 +88,48 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-swarm-controls`>>
+!! The swarm's controls ~ signed tiddlers in the daemon wiki, at standing
+
+The swarm's live controls rest in the live daemon wiki as signed records, verified when read. The operator ruled it at standing, built before the founding (2026-11-04): capability, not account; identity-as-relation; no key on a surface and no key file a seat can read. The flat go file and the relay's in-memory HMAC key retire as the later slices land.
+
+| Control | Signed by, as relation | Writer |
+| the house cap (a line on the face-private board) | the operator's face, by hand | the hand only (a hand-only verb, surface origin) |
+| a lane's share (a line on the face-private board) | the face by hand, or the controller under a cap the hand granted | hand / controller |
+| `$:/lares/swarm/go/<branch>` | the face by hand, or the controller under a granted cap | binds branch and head; spent on the attempt |
+| `$:/lares/swarm/lane/<lane>/state` | the lead, under its own seat name | the lead |
+| `$:/lares/swarm/roster/<seat>` | the VESSEL (the daemon's device to face relation), as witness | the watchdog reports; the daemon signs; never the measured lead |
+| `$:/lares/swarm/receipt/<tree>` | the VESSEL, same | the broker asks after the walled checks pass; the daemon signs |
+
+A lead may add note rows beside its roster rows under its own seat name; it never signs spend. The house cap and the lane shares rest on the face-private promote board, never as daemon-wiki titles: their `$:/lares/swarm/house-cap` and `lane/<lane>/share` titles name the family, and no record rests there. A lead's trust binds its seat, its lane and its key together, so a lead signs its own lane's state alone.
+
+* ''The model stands'' (`swarm-tiddlers`, `swarm-board`). Every record signs under the `swarm-act` domain, its own name, so no swarm record verifies as a promote or kahua act. A read checks shape, domain, face group, signature, the title the body belongs at and the signer's role; any failure reads as absent, so a read fails closed. The house cap and the lane shares ride the face-private promote board as a sibling record family (they cross devices: the whole swarm answers to one cap); each line folds by causal heads and concurrent heads take the minimum, so a fork only tightens the swarm. A line that cites a parent it lacks, or holds no head, reads zero and UNAVAILABLE by its reason (`parent-missing`, `no-head`): `swarm-show` names it, and a write onto it refuses `swarm-line-unavailable` unless it is a hand's explicit `supersede`, which cites the line's dangling heads and starts the line again. A torn record enters the refused, never silence. The board's integrity rests on who can write the face's board doc and the daemon doc: verify-on-read refuses a forged record, but a writer of those docs can still drop records or tear them, which reads as an unavailable line. Shares never sum past the cap: the write refuses it, and a board whose shares sum past the cap folds every share to zero. A go binds a branch and a head, carries a nonce, and is spent once: the vessel claims one spend record per go atomically, so racing spenders land one. Go, lane state, roster and receipts rest in the daemon document, device-local by its anchor.
+* ''Off disk.'' The `$:/lares/swarm/` prefix reads as control plane (`isControlPlaneUri`) and never projects (`neverProjects`), under every spelling that starts with it or resolves beneath it, a dot segment that folds out of it included; each record also carries `disk-projection: "no"`. A name refuses before it can spell such an escape: no swarm name, decoded or not, holds an empty, `.` or `..` segment, a one-segment name (lane, seat, tree, spend) holds no `/`, and a go's branch keeps git's ref-name rules (`git check-ref-format`).
+* ''The verbs.'' `swarm-show` reads (open to a seat); `swarm-cap-set`, `swarm-share-set` and `swarm-go-issue` are hand-only (`swarm-needs-hand`), at the socket and on the daemon island. They sign through `SwarmSignerPort`, wired to the ward's signer (#/the-ward): each signing row opens the face root fresh under the route typed for it, so a script holding unlocked custody signs none. The `who` check stays advisory for `show` alone.
+* ''Before the wiki stands'', every swarm act refuses by name: "no standing daemon: swarm controls need the founded wiki". There is no flat-file fallback.
+* ''Still to land'': the co-sign of a second device for the house cap and the push go (S3); the capability channel and the unix-socket probe (S4); the vessel-signed roster and receipt, the broker swap and the retirement of the flat go and the HMAC key (S5). The go's spend and the vessel's claim are modelled (`spendGo`, `trust.vessel`) and stay unwired until S5. A two-device witness that swarm tiddlers stay device-local, a live probe of the store-door rows against a founded face, and a probe of whether a seat's `meme-put` or a synced tiddler can reach the daemon doc's `$:/lares/swarm/` titles stay owed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-ward`>>
+!! The ward ~ the face root opens fresh for one hand act, never from unlocked custody
+
+The operator ruled it (2026-11-04): users keep full caps over their own wikis, while the daemon wiki and the kahua stage are bound by the ward, their startup actions included. Never a passkey or WebAuthn: that binds the house to a web2.5 registry.
+
+* ''The key.'' Each face holds a WARD key in its own slot tree (`faces/<fcid>/ward-slots.bin`, a floor row), bound over the face's human routes (a passphrase, a paper pin) and never a passkey (`ward-passkey-refused`, at bind, in a hand-edited tree, and as a credential). The face root seed rests `ward-cold`: sealed under the ward key in the ward's own frame (`lares-ward-seal`, domain `custody-carrier-ward`), never under the face key, so the census faults an FCK-framed root where a warded one belongs.
+* ''One act, one unlock.'' No door of unlocked custody reads, writes, moves or removes the root (`ward-needs-fresh-unlock`). A ward act opens the ward key fresh from the route typed for it, through the minted KDF port, spends the face's own unlock attempts on a miss, signs, and zeroes the key; the key never enters the faces the holder holds open, and nothing caches a route or a key between acts.
+* ''Where the route comes from.'' The CLI reads it from a TTY alone (`ward-needs-tty` refuses an environment variable and a piped stdin). It never rides a store verb's arguments (those hash into a receipt): it rides one custody frame bound to the act it names (its verb, its face and a digest of its arguments), and comes back as a one-use ref the verb carries; a ref spent on any other act refuses and burns. No module holds a route between acts: the unlock hands its route to the composition it stands (its boot dial alone), and a take to the re-present it asks for, each as an argument. A sealed act carries it in its own `ward` argument. A founding rides the route its face is born under. The node panel carries none (its verbs ride the daemon document), so its bound acts refuse by name toward the terminal. A browser signs in a per-act ward worker, fresh from the passphrase its page dialog collects, three misses per page. No file answers for a route or a new face's route: a test harness seats its own explicitly (`tools/test-ward-route.mjs`, in its CLI processes alone).
+* ''The bound acts.'' Every act that reads the root: a daemon or kahua `promote-commit` (its ledger row carries `wardSig` over (wiki, digest, seq), and boot voids a bound row without one, however the row reached the ledger), `kapae-lower`, the swarm's house cap, lane shares and push go, and every act that changes who belongs to the face or what it trusts: admit, fleet-join, recovery contacts, the handles, nexus publish, the lease, the intent root, a holder's edge kāpae, the seal witness, backup and restore, the founder's certificate at a new scope. `kapae-raise` only adds a brake, so it fails safe and signs as the device's own atom.
+* ''A face founded before the ward'' refuses `ward-absent` until `lares vault rewrap --face N` binds its ward and moves its root under it (the tree first, so a torn rewrap resumes).
+
+Residuals, named: the ward is only as strong as the passphrase, offline; the browser root still rests under the keystore's tree key (only its bound acts sign through the ward worker), and its page hands the typed passphrase to the worker; the founder certificate at a new scope issues inside the face-unlock act, under the route the person just typed; the kahua lift, withdraw and carry sign with the root and so ride the ward, though the ruling names every lift free (freeing them needs a device-atom lift in the kahua reader, the operator's call); a racer that reads a ward ref off the daemon document can spend it only on the identical act the operator asked for (binding it to the socket waits on S4's channel); a dropped bound promotion leaves a tombstone in the same device-local ledger row the face's custody writes, so ANY plaintext edit by a writer holding unlocked custody can strip that tombstone and replay the dropped row, not only a whole-row rollback; the cure (a floor that writer cannot forge: a board-anchored drop shadow, or a ward-signed ledger head) stands owed after standing as the road's `L23`, and lands with no re-genesis since the ledger is device-local; the co-sign of a second device (S3) is not yet here.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/owed`>>
 !! Owed ~ the rows this design still lacks
 
 # A deep read and debug pass over the whole harness once the wiki server stands (the Terra rounds continue there; the nine rounds so far found their classes by placement and authority, and the residuals named below stand open until then: the host process-group id after a reap, the sampled size ceiling, the ptrace and seccomp assumptions around the in-memory receipt key).
-# The swarm's live controls move out of flat files into the live Lararium wiki once it stands. This row holds the design only; nothing builds until the wiki stands.
-## ''The tiddlers.'' Four families, each a tiddler the controller's hand signs: the ''crew cap'' (one tiddler per seat kind, a count), the ''push go'' (branch and head, one tiddler per push, spent on the attempt), the ''lane state'' (the fields of `state.json`: head, owed rows, live seats, worktree map, next step, step counter), and the ''seat roster'' (one tiddler per seat: lineage, model, mode, seat directory, live or done, and its spend readings from #/the-spend-guard).
-## ''Who writes.'' The controller's hand signs the cap and the go. A lead writes the lane state and the roster rows for its own seats, and its signature names the lead. A seat reads through the capability its wall grants: a read seat reads the cap and its own roster row; a lead reads the lane state; the broker reads the go and nothing else. The watchdog writes the roster's spend reading and `ceiling.md` equivalents under its own signature.
-## ''What each carries.'' Every tiddler carries an author and a history, so a cap or a go answers who set it and when in the causal order, never by a file mode. A go binds branch AND head, and the broker verifies the signature before the push, then writes the spent mark.
-## ''What stays out of the wiki.'' The check receipt's key and the broker's isolated state stay on the controller's disk: a lead's capability never reaches them, and a wiki write never substitutes for the receipt the check seat signs.
-## ''Migration.'' The flat files (`state.json`, the go file, the relay directory) keep serving until the wiki stands; the move then runs as one rite per family, the file read once into a tiddler and burned, with the launcher and broker reading the tiddler through the same capability a seat uses. A causal-island boundary holds any seat that cannot reach the wiki: it falls back to its last signed state and reports the stale reading, never a guess.
-## ''Open questions for the operator.'' Whether a lead may sign its own roster rows or only the controller may; whether the crew cap lives per lane or per house.
 
 <<~/ahu>>
 
@@ -164,6 +195,6 @@ This carrier gains its standing sections and rewrites the broker bullets and the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ja_40gkT1xDHOSNKGhRdONDrUYL2tD2w9-IlYc5YqnE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zdMlynnl-XVd7muYtAcnVJFxhoRDxX-IHlo4ZkbWK-8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

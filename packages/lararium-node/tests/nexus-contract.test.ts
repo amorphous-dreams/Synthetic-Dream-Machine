@@ -18,6 +18,9 @@
  *   · THE CARRIED ADMIT: an admit emits a bundle (entry · lineage · AID · this vessel's gate key) the joinee's
  *     take verifies offline and keeps; a revoke emits none.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { emptyFoundingCharterDoc } from "@lararium/mesh";
 import { beginNexusKeyReissue, faceProofKeyFile, listFaceProofKeys, mintNexusKey, nexusKeyPublicOf } from "../src/face-key-custody.js";
 import { runNexusKeyReissue } from "../src/nexus-key-reissue.js";

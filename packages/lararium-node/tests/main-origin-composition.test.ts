@@ -86,7 +86,7 @@ describe("main leaves the floor standing under a sovereign refusal", () => {
   test("the sovereign refusal recomposes at the floor; a floor refusal frees the store and rethrows", () => {
     expect(start).toBeGreaterThan(-1);
     expect(end).toBeGreaterThan(start);
-    const sovereign = road.indexOf("return { stood: await composeStanding(readers) };");
+    const sovereign = road.indexOf("return { stood: await composeStanding(readers, ward) };");
     const named = road.indexOf("the sovereign composition refused", sovereign);
     const floor = road.indexOf("return { stood: await composeStanding(null).catch(floorRefused), refused };", named);
     expect(sovereign).toBeGreaterThan(-1);
@@ -100,7 +100,8 @@ describe("main leaves the floor standing under a sovereign refusal", () => {
 
   test("the first boot and the custody door's recomposition both compose through that one road", () => {
     expect(SOURCE).toContain("composition = (await composeOrFloor(null)).stood;");
-    expect(SOURCE).toContain("const out = await composeOrFloor(sovereign && sovereignStands() ? seatedSovereignReaders() : null);");
+    // The unlock's ward route rides into the composition as an argument (seat-harness#/the-ward).
+    expect(SOURCE).toContain("const out = await composeOrFloor(sovereign && sovereignStands() ? seatedSovereignReaders() : null, ward);");
     expect(SOURCE.match(/composeStanding\(/g)!.length, "no third road composes past composeOrFloor").toBe(3);
   });
 });

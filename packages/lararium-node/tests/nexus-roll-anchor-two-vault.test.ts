@@ -28,6 +28,9 @@
  *   R4  RED: the same anchor again (`replay`), a partial under another Nexus, a torn file and a kapae partial sign
  *       and land nothing.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 /** A count of every seat signature, so a refusal can show no seat signed. */

@@ -12,6 +12,9 @@
  *   CONTROL   fail closed: the same roll with its anchor taken off the board leaves all three uncounted
  *   CONTROL   a place carried after the roll counts at E'
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";

@@ -41,7 +41,7 @@ import {
 import type { SeedWrapRecord } from "./seed-wrap-prf.js";
 
 import { assertCanMint } from "./secure-context-gate.js";
-import { readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
+import { readBrowserCustody, readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
 const KEY_RECORD = "vessel-key";
 const IDENTITY_CONTINUITY_PREFIX = "lares:vessel:continuity:";
 
@@ -506,6 +506,11 @@ export async function readBrowserSeedWrap(idbName = "lares:vessel", handleIndex 
  *  once a slot binds (`browser-custody.ts`) — the wrap rides beside, never replaces; a status line names the class
  *  the record carries. */
 export async function writeBrowserSeedWrap(idbName: string, handleIndex: number, wrap: SeedWrapRecord): Promise<void> {
+  // A WARDED FACE TAKES NO PRF WRAP: a wrap opens the root by a passkey, a registry route the ward never reads
+  // (seat-harness#/the-ward). A keystore whose slot tree stands holds its face root warded, so the wrap refuses by name.
+  if ((await readBrowserCustody(idbName)).reading !== "clear") {
+    throw new Error("ward-passkey-refused: this face's root rests warded under its human routes; a PRF wrap would open it by a passkey");
+  }
   const db = await openVesselIdb(idbName);
   try { await idbPut(db, SEED_WRAP_STORE, personaRootKey(handleIndex), wrap); } finally { db.close(); }
 }

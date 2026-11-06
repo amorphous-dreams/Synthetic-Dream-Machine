@@ -19,6 +19,10 @@
  *       any crossing; (a) a dial index holding the sovereign pin alone learns A's flow pin over the verified sovereign
  *       session, and both carriers name the same pin
  */
+import { seatWardGatherer } from "../../src/ward-credential.js";
+// This suite stands as the person at the terminal: a root act it drives with no ward route asks it, and it answers the routes
+// its faces were founded under (seat-harness#/the-ward).
+seatWardGatherer(async () => ["test-founding-passphrase", "fixture-custody-passphrase"].map((passphrase) => ({ kind: "passphrase" as const, passphrase })));
 import { createServer, type Server } from "node:http";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, cpSync } from "node:fs";
 import { join } from "node:path";

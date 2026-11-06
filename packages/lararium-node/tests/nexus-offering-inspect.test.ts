@@ -4,6 +4,9 @@
  * The inspection reads the board off the holder's Repo and never shuts that Repo down: run as a door row inside a
  * standing vessel, the Repo it reads IS the vessel's own, and its peers keep syncing after the row answers.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, describe, expect, vi } from "vitest";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

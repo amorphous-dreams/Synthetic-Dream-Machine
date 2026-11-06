@@ -17,7 +17,8 @@
  *   · The table names every act. A name outside it refuses `unknown-act`, by name.
  *   · Each row names its arguments and their types. An argument the row does not name refuses `bad-args`, so a
  *     frame carries nothing a row did not ask for; no row asks for a credential of this vessel, and nothing a row
- *     takes opens the vessel key. The restore's two rows take a BUNDLE's own key, which a person's route already
+ *     takes opens the vessel key. A row that reads a face's root takes that face's WARD route for its one act (`ward`),
+ *     which opens the face's ward key alone and refuses by name where it does not. The restore's two rows take a BUNDLE's own key, which a person's route already
  *     opened in the command's process: it opens that one bundle's body and nothing this vessel holds.
  *   · An act answers a plain record for its caller to print. The door logs the act's name and how it ended, and
  *     never an argument, an answer or a refusal's own words.
@@ -35,8 +36,9 @@
  *
  * Node-main only: a worker never imports this module.
  */
+import { wardCredentialOfArgs, type WardCredential } from "./ward-credential.js";
 import { FaceNotNamed, resolveFace } from "./face-selector.js";
-import { unlockedFaceOrdinals } from "./custody-seat.js";
+import { rewrapWardCustody, unlockedFaceOrdinals } from "./custody-seat.js";
 import {
   HandleBook,
   type HandleBookSnapshot, type PersonaDeclaration,
@@ -245,6 +247,9 @@ const heardSeats: Kind<string[]> = {
   read: (v) => (Array.isArray(v) && v.length <= SEAT_KEYS_ARG_LIMIT && v.every((h) => typeof h === "string" && h.length > 0 && h.length <= LABEL_ARG_LIMIT) ? [...(v as string[])] : undefined),
 };
 const optional = <T>(k: Kind<T>): Kind<T> & { readonly optional: true } => ({ ...k, optional: true });
+/** A face's WARD route for this one act (seat-harness#/the-ward): a passphrase or paper credentials. It opens the face's ward key for
+ *  the act and nothing else; no vessel key, no face key. A row that reads the root seed takes it, and refuses by name without it. */
+const ward: Kind<WardCredential> = { label: "the face's ward route for this act (passphrase or paper credentials)", read: (v) => wardCredentialOfArgs(v) };
 
 type Shape = Readonly<Record<string, Kind<unknown>>>;
 type ArgsOf<S extends Shape> = {
@@ -511,7 +516,7 @@ export const SEALED_ACTS = Object.freeze({
   "crossing.open": act({}, async () => ({ ...(await ceremonyOrRefuse(openCrossing())) })),
   "crossing.bind": act({}, async () => ({ ...(await ceremonyOrRefuse(bindCrossing())) })),
   "crossing.sign": act({ handleIndex: index }, async (a) => ({ ...(await ceremonyOrRefuse(signCrossing(a.handleIndex))) })),
-  "crossing.witness": act({ handleIndex: index, note: label }, async (a) => ({ ...(await ceremonyOrRefuse(witnessCrossing(a.handleIndex, a.note))) })),
+  "crossing.witness": act({ handleIndex: index, note: label, ward: optional(ward) }, async (a) => ({ ...(await ceremonyOrRefuse(witnessCrossing(a.handleIndex, a.note, a.ward))) })),
   "crossing.seal": act({}, async () => ({ ...(await ceremonyOrRefuse(sealCrossing())) })),
   "carriage.accept": act({ handleIndex: index, aid: optional(text) }, async (a) => {
     try {
@@ -631,11 +636,11 @@ export const SEALED_ACTS = Object.freeze({
   // THE FACE'S FIRST RECOVERY CONTACTS. The face's own root signs the typed first enrolment; its record rests sealed and
   // the event lands on the face's KEL board through the store the composition lends. The answer names the set's
   // digest and counts alone.
-  "persona.recovery-contact.enrol": act({ handleIndex: index, offers: text, threshold: count }, async (a, ctx) => {
+  "persona.recovery-contact.enrol": act({ handleIndex: index, offers: text, threshold: count, ward: optional(ward) }, async (a, ctx) => {
     const store = ctx.hosting;
     if (!store) throw refuse("no store stands here to land a recovery contact enrolment on");
     return { ...(await enrolOrRefuse(store.withRepo((repo) => runRecoveryContactEnrolment({
-      repo, handleIndex: a.handleIndex, offers: a.offers.split(/\s+/).filter((o) => o.length > 0), threshold: a.threshold,
+      repo, handleIndex: a.handleIndex, offers: a.offers.split(/\s+/).filter((o) => o.length > 0), threshold: a.threshold, ...(a.ward ? { ward: a.ward } : {}),
     })))) };
   }),
 
@@ -678,10 +683,12 @@ export const SEALED_ACTS = Object.freeze({
 
   // A NAMED REFUSAL ANSWERS, IT DOES NOT THROW: the command prints the refusal's own name (custody#/the-restore),
   // and the door's log carries the act's name and how it ended, never the name of a face or a word of a bundle.
-  "bundle.restore": act({ body: sealedBody, key: bundleKey, as: optional(index) }, async (a, ctx) => {
+  // THE WARD'S REWRAP (seat-harness#/the-ward): a face founded before the ward moves its root under one, over the route this act carries.
+  "ward.rewrap": act({ handleIndex: index, ward }, async (a) => ({ ...(await rewrapWardCustody({ ordinal: a.handleIndex }, a.ward)) })),
+  "bundle.restore": act({ body: sealedBody, key: bundleKey, as: optional(index), ward: optional(ward) }, async (a, ctx) => {
     try {
       if (!ctx.hosting) throw refuse("no store stands to land a face on: stand the vessel, or run the restore with no vessel standing");
-      const restored = await restoreFaceBundle({ sealedBody: a.body, bundleKey: a.key, withRepo: ctx.hosting.withRepo, ...(a.as !== undefined ? { as: a.as } : {}) });
+      const restored = await restoreFaceBundle({ sealedBody: a.body, bundleKey: a.key, withRepo: ctx.hosting.withRepo, ...(a.as !== undefined ? { as: a.as } : {}), ...(a.ward ? { ward: a.ward } : {}) });
       return { ...restored };
     } catch (err) {
       if (err instanceof RestoreRefused) return { refused: err.reason, message: err.message };

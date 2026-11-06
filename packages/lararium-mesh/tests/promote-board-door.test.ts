@@ -47,10 +47,24 @@ describe("the hand's raise and lower", () => {
     expect(read().kapae(W1, D)).toBe("withdrawn");
   });
 
-  test("RED: a hand without the grant in custody refuses `operator-grant-absent`; CONTROL: the held grant signs", async () => {
+  test("RED: a hand without the grant in custody refuses a lower `operator-grant-absent`; CONTROL: the held grant signs", async () => {
     const lost = await door({ grantHeld: false });
-    await expect(lost.d.kapae({ action: "raise", wiki: W1, digest: D, who: HAND })).rejects.toMatchObject({ code: "operator-grant-absent" });
-    expect(lost.acts).toEqual([]);
+    const held = await door();
+    await held.d.kapae({ action: "raise", wiki: W1, digest: D, who: HAND });
+    lost.acts.push(...held.acts);
+    await expect(lost.d.kapae({ action: "lower", wiki: W1, digest: D, who: HAND })).rejects.toMatchObject({ code: "operator-grant-absent" });
+    expect(lost.acts).toHaveLength(1);
+  });
+
+  test("RED (row 7, S2): a raise signs as this device's atom with no root in custody, and the board counts it; CONTROL: a lower the atom signs refuses by grant", async () => {
+    const lost = await door({ grantHeld: false });
+    await lost.d.kapae({ action: "raise", wiki: W1, digest: D, who: HAND });
+    expect([...lost.read().shadowed(W1)]).toEqual([D]);
+    const atom = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(2)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(2)) };
+    const { signPromoteKapae, readPromoteAct } = await import("../src/promote-board.js");
+    const lower = await signPromoteKapae({ group: GROUP, epoch: 0, wiki: W1, digest: D, raised: false, parents: lost.read().kapaeHeads(W1, D) }, atom);
+    const face = { group: GROUP, grant: (k: string) => k !== atom.key && false, device: (k: string) => k === atom.key };
+    expect(readPromoteAct(lower, face)).toEqual({ ok: false, refusal: "grant" });
   });
 });
 

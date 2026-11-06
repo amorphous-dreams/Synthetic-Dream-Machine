@@ -37,6 +37,8 @@ export function promoteWiring(opts: {
     ...(opts.onReport ? { onReport: opts.onReport } : {}), ...(opts.onFault ? { onFault: opts.onFault } : {}),
     ...(opts.onItemsFault ? { onItemsFault: opts.onItemsFault } : {}), ...(opts.onSwallowed ? { onSwallowed: opts.onSwallowed } : {}), ...(opts.onPromoted ? { onPromoted: opts.onPromoted } : {}), ...(opts.onRestartFailed ? { onRestartFailed: opts.onRestartFailed } : {}),
     board, itemsOf,
+    // A bound row's ward signature reads against the face's CURRENT grant, as the stage and the board read theirs.
+    face: { grant: (key: string) => opts.foldFace().grant(key) },
   });
   const boot = {
     promotedFor: (wiki: string): Promise<readonly string[]> => {

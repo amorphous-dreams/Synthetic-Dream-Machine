@@ -56,6 +56,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, renameSy
 import { dirname, join } from "node:path";
 import { faceFileNames } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
+import type { WardCredential } from "./ward-credential.js";
 import {
   generateOrLoadKeypair,
   signingSeedFromHex,
@@ -85,7 +86,7 @@ import { nodeRecoveryShareStore } from "./recovery-share-store.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { readFaceIndexSync } from "./face-index.js";
 import {
-  openedCustody, exclusiveCustody, unlockedFaceOrdinals, standingCustody, readCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow,
+  openedCustody, exclusiveCustody, unlockedFaceOrdinals, standingCustody, readCustodyRow, updateCustodyRow, withWardKeyCustody,
 } from "./custody-seat.js";
 
 /**
@@ -696,13 +697,14 @@ function parseRootRow(bytes: Uint8Array, file: string): PersistedKeypair {
  * Open the root row the roster line `line` commits, for one act. A row that went missing refuses `absent`; a row
  * that names another key than the line refuses `names-another-key`; every other reading refuses by its own name.
  */
-async function openCommittedRoot(line: PersonaRosterLine): Promise<PersistedKeypair> {
+async function openCommittedRoot(line: PersonaRosterLine, ward: WardCredential | undefined): Promise<PersistedKeypair> {
   const file = personaGroupRootFileName(line.handleIndex);
-  return openColdCustodyRow("identity", file, (bytes) => {
+  // THE ROOT RESTS UNDER THE WARD: one fresh unlock of the face's ward key opens it for this act, and the key zeroes after.
+  return withWardKeyCustody({ ordinal: line.handleIndex }, ward, (seat) => seat.open(file, (bytes) => {
     const root = parseRootRow(bytes, file);
     if (root.verifyingKey !== line.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
     return root;
-  });
+  }), `the face root at h${line.handleIndex}`);
 }
 
 /**
@@ -710,15 +712,15 @@ async function openCommittedRoot(line: PersonaRosterLine): Promise<PersistedKeyp
  * line that commits it. Answers the keypair that stands and whether this call wrote it. A roster line that names
  * another key at this index refuses and moves nothing further.
  */
-async function commitRoot(handleIndex: number, keypair: PersistedKeypair): Promise<{ root: PersistedKeypair; wrote: boolean }> {
+async function commitRoot(handleIndex: number, keypair: PersistedKeypair, ward: WardCredential | undefined): Promise<{ root: PersistedKeypair; wrote: boolean }> {
   const idDir = larIdentityDir();
   mkdirSync(idDir, { recursive: true, mode: 0o700 });
   const rootFile = personaGroupRootFileName(handleIndex);
-  const kept = await updateColdCustodyRow("identity", rootFile, (bytes) => {
+  const kept = await withWardKeyCustody({ ordinal: handleIndex }, ward, (seat) => seat.update(rootFile, (bytes) => {
     if (bytes !== null) return { plaintext: null, value: { root: parseRootRow(bytes, rootFile), wrote: false } };
     const persisted = { verifyingKey: keypair.verifyingKey, signingKey: keypair.signingKey };
     return { plaintext: encodeRow(persisted), value: { root: keypair, wrote: true } };
-  });
+  }), `the face root at h${handleIndex}`);
   const rosterFile = personaRosterFileName(handleIndex);
   await updateCustodyRow("identity", rosterFile, (bytes) => {
     const roster = parseRoster(bytes, rosterFile);
@@ -738,7 +740,7 @@ async function commitRoot(handleIndex: number, keypair: PersistedKeypair): Promi
  * takes the root; the same root standing changes nothing; any other root row or roster line at the index refuses
  * `names-another-key` with its bytes untouched. The keypair's public half must derive from its seed.
  */
-export async function landPersonaRoot(handleIndex: number, keypair: { readonly signingKey: string; readonly verifyingKey: string }): Promise<void> {
+export async function landPersonaRoot(handleIndex: number, keypair: { readonly signingKey: string; readonly verifyingKey: string }, ward?: WardCredential): Promise<void> {
   assertHandleIndex(handleIndex);
   const file = personaGroupRootFileName(handleIndex);
   if (!HEX64.test(keypair.signingKey) || !HEX64.test(keypair.verifyingKey) || verifyingKeyOfSeed(keypair.signingKey) !== keypair.verifyingKey) throw malformed(file);
@@ -746,9 +748,9 @@ export async function landPersonaRoot(handleIndex: number, keypair: { readonly s
   // a refused landing adopts no orphan and records no line.
   const line = await readRosterLine(handleIndex) ?? undefined;
   if (line && line.verifyingKey !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
-  const orphan = line ? null : await orphanPersonaRootKey(handleIndex);
+  const orphan = line ? null : await orphanPersonaRootKey(handleIndex, ward);
   if (orphan !== null && orphan !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
-  const kept = await commitRoot(handleIndex, { signingKey: keypair.signingKey, verifyingKey: keypair.verifyingKey });
+  const kept = await commitRoot(handleIndex, { signingKey: keypair.signingKey, verifyingKey: keypair.verifyingKey }, ward);
   if (kept.root.verifyingKey !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
 }
 
@@ -756,11 +758,11 @@ export async function landPersonaRoot(handleIndex: number, keypair: { readonly s
  * The public key of the ORPHAN root row at `handleIndex`: a root row that stands while the roster holds no line
  * for it. Null where no such row stands. Opens that one cold row for the length of this read.
  */
-export async function orphanPersonaRootKey(handleIndex: number): Promise<string | null> {
+export async function orphanPersonaRootKey(handleIndex: number, ward?: WardCredential): Promise<string | null> {
   assertHandleIndex(handleIndex);
   if (!(await orphanPersonaRoots()).includes(handleIndex)) return null;
   const file = personaGroupRootFileName(handleIndex);
-  return openColdCustodyRow("identity", file, (bytes) => parseRootRow(bytes, file).verifyingKey);
+  return withWardKeyCustody({ ordinal: handleIndex }, ward, (seat) => seat.open(file, (bytes) => parseRootRow(bytes, file).verifyingKey), `the orphan root at h${handleIndex}`);
 }
 
 /**
@@ -810,16 +812,19 @@ function nodeMountedFaceStore(): ActivePersonaStore {
  * records) and `undefined` when the roster holds no line there; `save` lands a root and commits its roster line.
  * `hasRoot`/`listRoots` read the roster alone. `anchors`/`recovery` ride their own sealed stores.
  */
-export async function makeNodeFsPersonaVault(): Promise<PersonaVault> {
+export async function makeNodeFsPersonaVault(ward?: WardCredential): Promise<PersonaVault> {
+  // A vault built with no ward token lists and counts roots; a root read or write asks the ward's one choke point, which takes the
+  // process's seated gatherer (a person at this terminal) or refuses `ward-needs-fresh-unlock`.
+  const warded = (): WardCredential | undefined => ward;
   return {
     rootSlot(handleIndex) {
       return {
         async load() {
           const line = await readRosterLine(handleIndex) ?? undefined;
-          return line ? openCommittedRoot(line) : undefined;
+          return line ? openCommittedRoot(line, warded()) : undefined;
         },
         async save(keypair) {
-          const kept = await commitRoot(handleIndex, keypair);
+          const kept = await commitRoot(handleIndex, keypair, warded());
           if (kept.root.verifyingKey !== keypair.verifyingKey) {
             throw new CustodyRowUnavailable("identity", personaGroupRootFileName(handleIndex), "names-another-key");
           }
@@ -846,15 +851,15 @@ export type PersonaGroupRoot = PersonaRoot;
  * keypair, and a root already standing (an orphan an earlier act left, or another process's mint a moment ago)
  * gets adopted and named. The roster line lands last and commits it.
  */
-export async function generateOrLoadPersonaGroupRoot(handleIndex = 0): Promise<PersonaGroupRoot> {
+export async function generateOrLoadPersonaGroupRoot(handleIndex = 0, ward?: WardCredential): Promise<PersonaGroupRoot> {
   assertHandleIndex(handleIndex);
   const line = await readRosterLine(handleIndex) ?? undefined;
   if (line) {
-    await openCommittedRoot(line);
+    await openCommittedRoot(line, ward);
     console.log(`[vessel-identity] loaded PersonaGroup root (persona h${handleIndex})`);
     return { verifyingKey: line.verifyingKey, created: false };
   }
-  const kept = await commitRoot(handleIndex, await nodeKeypairCrypto.generate());
+  const kept = await commitRoot(handleIndex, await nodeKeypairCrypto.generate(), ward);
   if (kept.wrote) {
     console.log(`[vessel-identity] minted PersonaGroup root (persona h${handleIndex})`);
   } else {
@@ -869,7 +874,7 @@ export async function generateOrLoadPersonaGroupRoot(handleIndex = 0): Promise<P
  * for this one act. Throws when the roster holds no line there (a joinee never holds this), and refuses by name
  * when the line's root row went missing or names another key.
  */
-export async function loadPersonaGroupRootSeed(handleIndex = 0): Promise<Uint8Array> {
+export async function loadPersonaGroupRootSeed(handleIndex = 0, ward?: WardCredential): Promise<Uint8Array> {
   assertHandleIndex(handleIndex);
   const line = await readRosterLine(handleIndex) ?? undefined;
   if (!line) {
@@ -878,7 +883,7 @@ export async function loadPersonaGroupRootSeed(handleIndex = 0): Promise<Uint8Ar
       `(founder-only; a joining vessel never holds the root seed)`,
     );
   }
-  return signingSeedFromHex((await openCommittedRoot(line)).signingKey);
+  return signingSeedFromHex((await openCommittedRoot(line, ward)).signingKey);
 }
 
 /**

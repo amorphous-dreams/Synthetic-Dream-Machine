@@ -33,7 +33,7 @@ export function custodyBreaches(custody) {
   const out = [];
   for (const r of custody.rows) {
     // A face row rests under its own face custody key: sealed like an S key row, and it names no bare law.
-    const underS = r.custody === "serving" || r.custody === "hot" || r.custody === "cold" || r.custody === "face-hot" || r.custody === "face-cold";
+    const underS = r.custody === "serving" || r.custody === "hot" || r.custody === "cold" || r.custody === "face-hot" || r.custody === "face-cold" || r.custody === "ward-cold";
     // An outbox parcel rests under the outbox key the vessel key wraps: under a key, yet framed by its own seal.
     const underKey = underS || r.custody === "outbox";
     if (underS && r.reading !== "sealed") out.push(`unsealed: ${r.home}/${r.file} (${r.custody}) reads ${r.reading}`);

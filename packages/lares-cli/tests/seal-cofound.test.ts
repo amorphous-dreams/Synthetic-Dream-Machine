@@ -13,6 +13,9 @@
  *       holding no charter fingerprint names the three it holds). CONTROL: `join` prints its card the same way;
  *       the JSON road (C1) carries the staged code and prints no card line.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { createHash } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";

@@ -1,5 +1,6 @@
 // The custody test door acts only on a root a harness STAGED: the scratch marker is the one proof, and nothing the
 // caller asserts from its environment (TMPDIR, LAR_STAGE_DIR, a `.mesh-test` path) stands in for it.
+import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";

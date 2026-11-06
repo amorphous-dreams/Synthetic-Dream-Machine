@@ -4,6 +4,9 @@
  * empty, and the mint paths answered "empty" by minting a second identity beside the first. Custody resolves its
  * names from its home alone: a host fact never picks which file a vessel reads.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterAll, describe, expect, test, vi } from "vitest";
 import { cpSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

@@ -29,6 +29,9 @@
  *   A12 RED: A COPIED MARKER STANDS IN FOR NO READ-BACK. A root that carries the scratch marker over custody sealed
  *       under another passphrase reads no stand-in.   control: the marker beside custody under the test route does
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

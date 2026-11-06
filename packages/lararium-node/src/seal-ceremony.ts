@@ -35,6 +35,7 @@
  *
  * Node-main only: a worker never imports this module.
  */
+import type { WardCredential } from "./ward-credential.js";
 import {
   CHARTER_SEAT_ROLL_DOMAIN, canonicalJsonBytes, charterInceptionBytes, readCharterInceptionImage, coldKeyFromSeed, seatNextDigest, charterSealState, ed25519SignerFromSeed, emptyFoundingCharterDoc, foundingRoster,
   majorityThreshold, nexusAidOf, personasStandingForSeat, sealKeySetHash, sealLineageHead, seatFingerprint, seatedKahuKeys, weakSeatOf,
@@ -110,8 +111,8 @@ async function heldRoot(handleIndex: number): Promise<string> {
 }
 
 /** Sign `bytes` as the persona root at `handleIndex`; the seed opens for this one signature and zero-fills. */
-async function signAsRoot(handleIndex: number, bytes: Uint8Array): Promise<string> {
-  const seed = await loadPersonaGroupRootSeed(handleIndex);
+async function signAsRoot(handleIndex: number, bytes: Uint8Array, ward: WardCredential | undefined): Promise<string> {
+  const seed = await loadPersonaGroupRootSeed(handleIndex, ward);
   try { return await ed25519SignerFromSeed(seed)(bytes); } finally { seed.fill(0); }
 }
 
@@ -718,7 +719,7 @@ export async function signCrossing(handleIndex: number): Promise<{ readonly as: 
 }
 
 /** WITNESS the bound crossing as the persona root at `handleIndex`: a face that holds a seat in NEITHER set, with a note of what it observed. */
-export async function witnessCrossing(handleIndex: number, note: string): Promise<{ readonly by: string }> {
+export async function witnessCrossing(handleIndex: number, note: string, ward?: WardCredential): Promise<{ readonly by: string }> {
   const { pending, core } = await boundCrossing("no bound crossing stands — a witness attests a closed byte-image");
   if (note.length === 0) throw refuse("no-note", "a witness mark carries a note — what stood observed (--note)");
   const witness = await heldRoot(handleIndex);
@@ -727,7 +728,7 @@ export async function witnessCrossing(handleIndex: number, note: string): Promis
       || [...pending.oldKeys, ...(pending.newKeys ?? [])].some((k) => lower(k) === witness)) {
     throw refuse("keyholder-witness", "a keyholder attests as a party — `grow sign`, never witness");
   }
-  const mark: TransitionWitness = { witness, note, sig: await signAsRoot(handleIndex, witnessSignBytes(core, note)) };
+  const mark: TransitionWitness = { witness, note, sig: await signAsRoot(handleIndex, witnessSignBytes(core, note), ward) };
   return keepCrossingMark(core, (p) => ({
     next: { ...p, witnesses: [...p.witnesses.filter((w) => lower(w.witness) !== witness), mark] }, value: { by: witness },
   }));

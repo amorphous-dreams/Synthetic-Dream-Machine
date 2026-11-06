@@ -15,6 +15,9 @@
  *       signature, a circle off a moved head, a vault that contributed nothing, a file short of the quorum, and the
  *       household seed each refuse by name, and nothing moves.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 /** A count of every seat signature, so a refusal can show no seat signed. */

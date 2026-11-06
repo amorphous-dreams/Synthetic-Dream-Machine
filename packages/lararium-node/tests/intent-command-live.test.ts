@@ -5,6 +5,9 @@
  * pinned `face-join` issues, carries this vessel's own ContactCard and complete device edge, and keeps one id on replay;
  * a face-join pinned to another hearth is its own intent, replayed only by its own pin.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

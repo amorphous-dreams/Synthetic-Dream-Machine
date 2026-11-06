@@ -20,6 +20,9 @@
  * A 2-of-3 control and the whole-quorum and no-seat open refusals wait on a fixture that seats such a roster beside
  * a joint Nexus (train N step 5's add-a-chair roll); the cofound door founds two of two.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 /** A handshake inside every seat signature: a vector may run one step before the next signature completes. */

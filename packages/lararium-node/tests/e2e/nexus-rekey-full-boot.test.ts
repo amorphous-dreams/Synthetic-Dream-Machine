@@ -11,7 +11,7 @@ import { heldCharter } from "../../../lararium-mesh/tests/charter-fixture.js";
 import { direct } from "../direct-store.js";
 import { TEST_CUSTODY, TEST_SLOT } from "../found-route.js";
 import { runInit, runFoundTheFace, foundSeedCharter, openNodeVessel, larSealHome, readNexusDoc, writeNexusDoc,
-  carriedCharterHome, seatFaceRoute } from "../../dist/src/index.js";
+  carriedCharterHome, seatFaceRoute, seatWardGatherer } from "../../dist/src/index.js";
 import { loadVesselVerifyingKey } from "../../dist/src/node-vessel-identity.js";
 import { loadFaceAtomKey } from "../../dist/src/face-atom-store.js";
 import { noteVesselRealm } from "../../dist/src/edge-board.js";
@@ -20,6 +20,8 @@ import { seatedCustody } from "../../dist/src/custody-seat.js";
 import type { NodeVesselResult } from "../../dist/src/open-node-vessel.js";
 
 seatFaceRoute(async () => [TEST_SLOT]);
+// A root act this suite drives with no ward route asks its "person", who answers the same test route (seat-harness#/the-ward).
+seatWardGatherer(async () => TEST_SLOT.pins.flatMap((pin) => (pin.kind === "passphrase" ? [{ kind: "passphrase" as const, passphrase: pin.passphrase }] : [])));
 const root = mkdtempSync(join(tmpdir(), "nexus-rekey-boot-"));
 const genesisDir = join(root, "genesis");
 const storageDir = join(root, "data", "lares", "vessel");

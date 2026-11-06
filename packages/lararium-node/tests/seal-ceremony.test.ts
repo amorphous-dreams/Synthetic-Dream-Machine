@@ -28,6 +28,9 @@
  *       record and no pending row; kept records with no pending row read as a clean state that opens anew.
  *   C5  RED: another shape refuses each row by name; a locked seat still reads public rows.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";

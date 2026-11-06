@@ -607,7 +607,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   vault: {
-    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] [--cards --face <root-key-or-prefix>]> [--passphrase | --paper] [--rotate]",
+    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] [--cards --face <root-key-or-prefix>] | rewrap --face <N>> [--passphrase | --paper] [--rotate]",
     synopsis:
       "The VESSEL KEY custody door (status, unlock, lock, bind, unbind): the key seals the vessel's private rows, the " +
       "keyhive and veil archives among them, and every boot rests at the floor until a person unlocks it. " +
@@ -619,7 +619,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "sealed or reads as a fault, a row outside it names the law it rests bare under, and a private file no row " +
       "names prints by name. `unbind --rotate` runs as one act: the rotation's census passes before any byte moves, " +
       "so a carrier that refuses it leaves the slot bound. A credential rides a TTY alone, typed with no echo: no " +
-      "flag, no environment variable and no pipe carries one.",
+      "flag, no environment variable and no pipe carries one. `rewrap --face N` moves a face founded before the ward " +
+      "under one: its ward tree binds over the typed route, then each root row moves under the ward key.",
     examples: [
       "lares vault status                     # the slot tree, one reading of each standing file, and any private file outside the carrier table",
       "lares vault unlock                     # hand the standing vessel a TTY credential: it opens its key and composes with what the key opens",

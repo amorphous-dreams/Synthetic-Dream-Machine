@@ -14,6 +14,9 @@
  *       charter stands, the same join signs nothing twice (`successor-reused`).
  *   R4  RED: B accepts no half-signed inception, none over another image and none for an offer it never joined.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";

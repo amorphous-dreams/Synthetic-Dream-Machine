@@ -12,6 +12,9 @@
 # enrols itself by existing; leaving one out is a DECLARED act with its reason beside it.
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
+# Every `lares` CLI a witness spawns on a staged root takes the harness's explicit ward and face routes (the product binary answers
+# neither from a file; seat-harness#/the-ward).
+export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=file://$PWD/tools/test-ward-route.mjs"
 
 # Witnesses that stand real containers or drive a real browser. They are entry points of their own
 # (`tools/civic-witness.sh`, `tools/browser-weld-witness.sh`) because they need a runtime this script

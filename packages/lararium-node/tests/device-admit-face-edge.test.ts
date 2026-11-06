@@ -2,6 +2,9 @@
  * runDeviceAdmit at a face an operator added: the edge it mints names that face's group, cabal, KEL prefix and
  * root, read off the face's own anchors, never the founding face's pins in the bootstrap and the daemon doc.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterAll, beforeEach, describe, expect, test, vi } from "vitest";
 import { rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -56,7 +59,8 @@ vi.mock("../src/kahu-realm.js", () => ({ admitCanonDocs: async () => ({}), heart
 vi.mock("../src/hearth-aid.js", () => ({ hearthAid: () => "hearth-aid" }));
 vi.mock("../src/lan-address.js", () => ({ wsUrlForOrigin: () => null }));
 vi.mock("@lararium/keyhive", () => ({
-  runDeviceAdmitEdge: async (args: Record<string, unknown>) => { seam.edge = args; return { kind: "device-admit/v1" }; },
+  // The root seed zero-fills once the admit settles (seat-harness#/the-ward), so the seam keeps its own copy of what it saw.
+  runDeviceAdmitEdge: async (args: Record<string, unknown>) => { seam.edge = { ...args, ...(args["signerSeed"] instanceof Uint8Array ? { signerSeed: Uint8Array.from(args["signerSeed"]) } : {}) }; return { kind: "device-admit/v1" }; },
 }));
 vi.mock("@lararium/mesh", async (real) => {
   const mesh = await real<Record<string, unknown>>();

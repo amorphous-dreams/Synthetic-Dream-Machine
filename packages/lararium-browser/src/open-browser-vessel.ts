@@ -1,4 +1,5 @@
 import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
+import { BrowserWardRefused, browserWardSigner } from "./browser-ward.js";
 import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHolder } from "@lararium/tw5";
 /**
  * openBrowserVessel — local-first browser vessel factory.
@@ -80,7 +81,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
+  promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
   readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
   type WideningRead,
 } from "@lararium/mesh";
@@ -205,6 +206,12 @@ async function writeBootKeys(idbName: string, writes: BootKeyWrites): Promise<vo
 // ── Options / Result ────────────────────────────────────────────────────────────
 
 export interface BrowserVesselOptions extends LarariumVesselOptions {
+  /**
+   * THE WARD'S DIALOG (seat-harness#/the-ward): the page asks the person for the face's passphrase for ONE ward act (a daemon or
+   * kahua commit, a kāpae-lower) and answers it; the passphrase goes to a per-act ward worker and nothing keeps it. Absent, every
+   * ward act in this browser refuses `ward-needs-fresh-unlock` by name.
+   */
+  askWardRoute?: (act: string) => Promise<string>;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   idbName?:        string;
@@ -1376,18 +1383,15 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const wiring = promoteWiringRef;
           const handle = await repo.find<LarDoc>(provenPromoteUrl as AutomergeUrl);
           const boardFace = { group: wornGroup, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
+          /** One ward act's signer: the page's dialog asks the passphrase for this act, and the ward worker signs under it. */
+          const wardRootSignerOf = async (act: string) => {
+            if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock");
+            return browserWardSigner(idbName, FOUNDING_PERSONA_INDEX, await opts.askWardRoute(act));
+          };
           const boardDoor = promoteBoardDoor({ group: wornGroup, face: boardFace, atom: wornAtom,
             epoch: () => readFace(personaKelChain)?.lineage.at(-1)?.epoch ?? 0,
-            rootSigner: async () => {
-              const seed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX);
-              try {
-                const key = await ed25519VerifyingKeyFromSeed(seed);
-                return { key, sign: async (bytes: Uint8Array) => {
-                  const fresh = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX);
-                  try { return await ed25519SignerFromSeed(fresh)(bytes); } finally { fresh.fill(0); }
-                } };
-              } finally { seed.fill(0); }
-            },
+            // THE LOWER RIDES THE WARD: the face root signs in a per-act worker, fresh from the passphrase the person types for it.
+            rootSigner: () => wardRootSignerOf("a kāpae-lower"),
             board: { records: async () => promoteActRecords(handle.doc(), wornGroup), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
             projection: () => proof.projection,
           });
@@ -1396,7 +1400,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const core = promotePanelApi({ who,
             wikis: async () => ["daemon", ...vmManager.inspect().filter(slot => slot.temperature === "wela" && slot.wikiId !== "daemon").map(slot => slot.wikiId)],
             promotionsFor: wiki => promotions({ wiki, ...browserPromoteStores(idbName, wornGroup), who,
-              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: browserPromoteCas() }), boardDoor,
+              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: browserPromoteCas(),
+              wardSigner: () => wardRootSignerOf(`a commit in ${wiki}`), face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false } }), boardDoor,
           });
           const push = async (data: string) => { daemon.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
           // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.

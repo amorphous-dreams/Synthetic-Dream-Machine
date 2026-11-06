@@ -30,6 +30,8 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae
  */
 
+import { wardRootSession } from "../ward-signer.js";
+import type { WardCredential } from "../ward-credential.js";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   signEdgeKapae, writeEdgeKapae, edgeLineHeads, nextFleetFrontier, landFleetFrontier, fleetRaiseCids, realmRaiseCids,
@@ -40,7 +42,7 @@ import {
   type DeviceCertificateHeld, type DeviceWithdrawalReport, type FaceWithdrawal, type EdgeAuthority, type EdgeHand, type EdgeKapaeVerdict, type EdgeSigner,
 } from "@lararium/mesh";
 import {
-  listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
+  listPersonaRoots, loadPersonaGroupRootVerifyingKey,
 } from "../node-vessel-identity.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
@@ -57,6 +59,8 @@ export class EdgeKapaeError extends Error {}
 const HEX64 = /^[0-9a-f]{64}$/;
 
 export interface EdgeKapaeOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
   /** The relationship to act on, by id — a vouch edge id, a member edge id, a device edge id. */
   readonly edgeId?:      string;
   /** Or by its far end: a MEMBER's key, naming that member's whole relation to `realm` (the quorum's edge). */
@@ -134,6 +138,9 @@ export interface EdgeKapaeResult {
 
 /** Land one kāpae act on its board. `now` never enters — an act carries an order, never an instant. */
 export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeResult> {
+  // THE HOLDER'S ROOT LIVES FOR THIS ONE ACT: its seed zeroes when the act settles (seat-harness#/the-ward).
+  let closeRoot: (() => void) | undefined;
+  try {
   const hand: EdgeHand = opts.hand ?? "holder";
   const realm = opts.realm?.trim().toLowerCase();
   const bareKey = (v: string): string => v.trim().toLowerCase().replace(/^0x/, "");
@@ -221,7 +228,10 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     if (!signerDid) {
       throw new EdgeKapaeError(`persona root ${handleIndex} surfaces no usable verifying key — nothing to sign with.`);
     }
-    signers = [{ signer: signerDid, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex)) }];
+    // The holder's root signs this one act under the ward, its seed opened fresh for the signature and zeroed after it.
+    const root = await wardRootSession(handleIndex, opts.ward, "a holder's edge kāpae");
+    closeRoot = () => root.close();
+    signers = [{ signer: signerDid, sign: (bytes: Uint8Array) => root.sign(bytes) }];
     authority = { holder: signerDid };
     if (device !== undefined) edgeId = deviceEdgeId(signerDid, device);   // the fleet root and the device key name it
     scope = signerDid;
@@ -337,5 +347,6 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }
+  } finally { closeRoot?.(); }
 }
 

@@ -12,6 +12,7 @@
  * the recovery quorum IS the impersonation quorum (recovery-share enforces it at the TYPE wall).
  */
 
+import type { WardCredential } from "./ward-credential.js";
 import type { RandomProvider, ReadmissionSecret } from "@lararium/mesh";
 import {
   reconstructAndReadmit as coreReconstructAndReadmit,
@@ -68,8 +69,9 @@ export async function provisionRecoveryAtFounding(
   recoveryEpoch = 1,
   handleIndex = 0,
   handOut?: (off: { readonly recordedCode: string; readonly escrowCarrier: string }) => void | Promise<void>,
+  ward?: WardCredential,
 ): Promise<{ recordedCode: string; escrowCarrier: string }> {
-  return coreProvisionRecoveryAtFounding(await makeNodeFsPersonaVault(), rng, recoveryEpoch, handleIndex, handOut);
+  return coreProvisionRecoveryAtFounding(await makeNodeFsPersonaVault(ward), rng, recoveryEpoch, handleIndex, handOut);
 }
 
 export type { CustodianCard, RecoveryCardsAtFounding } from "@lararium/mesh";
@@ -89,8 +91,9 @@ export async function provisionRecoveryCardsAtFounding(
   rng: RandomProvider,
   recoveryEpoch = 1,
   handleIndex = 0,
+  ward?: WardCredential,
 ): Promise<RecoveryCardsAtFounding> {
   return coreProvisionRecoveryCardsAtFounding(
-    await makeNodeFsPersonaVault(), custodianA, custodianB, rng, recoveryEpoch, handleIndex,
+    await makeNodeFsPersonaVault(ward), custodianA, custodianB, rng, recoveryEpoch, handleIndex,
   );
 }

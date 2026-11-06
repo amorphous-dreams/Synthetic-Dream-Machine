@@ -29,6 +29,10 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/node/two-vessel-mesh
  */
+import { seatWardGatherer } from "../../src/ward-credential.js";
+// This suite stands as the person at the terminal: a root act it drives with no ward route asks it, and it answers the routes
+// its faces were founded under (seat-harness#/the-ward).
+seatWardGatherer(async () => ["test-founding-passphrase", "fixture-custody-passphrase"].map((passphrase) => ({ kind: "passphrase" as const, passphrase })));
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { mkdirSync, rmSync, existsSync, readFileSync, cpSync } from "fs";

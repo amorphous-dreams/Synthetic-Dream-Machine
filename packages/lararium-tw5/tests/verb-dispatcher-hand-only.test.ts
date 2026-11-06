@@ -12,7 +12,7 @@ import { describe, test, expect } from "vitest";
 import { CompositeStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
-import { makeLocalAskBook } from "../src/daemon-behavior.js";
+import { makeLocalAskBook, DAEMON_HAND_ONLY_CODES } from "../src/daemon-behavior.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 type TiddlerFields = Record<string, unknown>;
@@ -168,5 +168,52 @@ describe("hand-only verbs", () => {
     const inv = { requestId: "s1", action: "promote-commit", args: { digest: "d" }, requestedBy: "me" } as never;
     await expect(dispatcher.clearRouted(inv, { local: true, presenter: "me" })).resolves.toBeUndefined();
     await expect(dispatcher.clearRouted(inv)).rejects.toMatchObject({ reason: "promote-needs-hand" });
+  });
+});
+
+describe("the daemon island's hand-only table carries the swarm verbs", () => {
+  const SWARM = ["swarm-cap-set", "swarm-share-set", "swarm-go-issue"] as const;
+  async function standIsland() {
+    const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
+    const daemon = makeDaemon();
+    const book = makeLocalAskBook();
+    const routed: string[] = [];
+    const registry = new VerbTable();
+    registry.handOnly(DAEMON_HAND_ONLY_CODES);
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry, routeFn: async (inv) => { routed.push(inv.action); return { routed: true }; }, localOf: (inv) => book.has(inv), surfaceOf: (inv) => book.isSurface(inv) });
+    dispatcher.start();
+    const place = async (requestId: string, verb: string, origin: "surface" | "channel" | "content") => {
+      const inv = { requestId, action: verb, args: { value: 1 }, requestedBy: "me" };
+      if (origin !== "content") book.add({ ...inv, origin });
+      dispatcher.placeVerb({ verb, args: { value: 1 }, requestedBy: "me", requestId });
+      await settle();
+      return outcomeOf(daemon, requestId);
+    };
+    return { place, routed, dispatcher, stop: () => dispatcher.stop() };
+  }
+
+  test("RED: a seat's channel ask and a meme put or synced verb tiddler of each hand-only swarm verb refuse `swarm-needs-hand` and route nothing; CONTROL: swarm-show routes for the same origins", async () => {
+    const s = await standIsland();
+    for (const verb of SWARM) for (const origin of ["channel", "content"] as const) {
+      const out = await s.place(`${verb}-${origin}`, verb, origin);
+      expect(out?.fields.status, `${verb} ${origin}`).toBe("error");
+      expect(JSON.stringify(out?.results ?? {}), `${verb} ${origin}`).toContain("swarm-needs-hand");
+    }
+    expect(s.routed).toEqual([]);
+    for (const origin of ["channel", "content"] as const) expect((await s.place(`show-${origin}`, "swarm-show", origin))?.fields.status).toBe("done");
+    expect(s.routed).toEqual(["swarm-show", "swarm-show"]);
+    s.stop();
+  });
+
+  test("RED: the surface summons each swarm verb through, and a session-cleared face row passes while an uncleared one refuses; CONTROL: the promote codes still bind", async () => {
+    const s = await standIsland();
+    for (const verb of SWARM) expect((await s.place(`${verb}-surface`, verb, "surface"))?.fields.status, verb).toBe("done");
+    expect(s.routed).toEqual([...SWARM]);
+    const inv = { requestId: "s1", action: "swarm-cap-set", args: { value: 1 }, requestedBy: "me" } as never;
+    await expect(s.dispatcher.clearRouted(inv, { local: true, presenter: "me" })).resolves.toBeUndefined();
+    await expect(s.dispatcher.clearRouted(inv)).rejects.toMatchObject({ reason: "swarm-needs-hand" });
+    expect((await s.place("p1", "promote-commit", "channel"))?.fields.status).toBe("error");
+    expect(DAEMON_HAND_ONLY_CODES["promote-orphan"]).toBe("promote-needs-hand");
+    s.stop();
   });
 });

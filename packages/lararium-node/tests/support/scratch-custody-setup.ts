@@ -25,6 +25,7 @@ import { FsCustodyIo } from "../../src/custody-io.js";
 import { custodyTreeStands, foundCustody } from "../../src/custody-session.js";
 import { makeCustodyHolder, seatFaceAutoFounder, type CustodyHolder } from "../../src/custody-holder.js";
 import { seatCustodyWhenNeeded } from "../../src/custody-seat.js";
+import { seatWardGatherer } from "../../src/ward-credential.js";
 import { vesselCustodyHomes } from "../../src/vault-carriers.js";
 
 // The suites read no person's git config: the vessel's display name reads the global user.name, and a person's own
@@ -43,6 +44,15 @@ seatFaceAutoFounder(() => [{ t: 1, pins: [{ kind: "passphrase", passphrase: SCRA
 let faceRoute = SCRATCH_PASSPHRASE;
 /** A harness that founds faces under its own route seats that route here, beside its `seatFaceRoute`; the faces open by it. */
 export function seatScratchFaceRoute(passphrase: string): void { faceRoute = passphrase; }
+
+/**
+ * OPT IN, PER SUITE: seat a "person" who answers a root act that carries no ward route with the routes the suite's faces were
+ * founded under (seat-harness#/the-ward), as a CLI seats its terminal reader. No suite has one unless it asks, so a source caller
+ * that forgets to hand its ward on reads RED wherever the suite did not ask for a person (`ward-callers-witness` reads src too).
+ */
+export function seatSuiteWard(): void {
+  seatWardGatherer(async () => [...new Set([faceRoute, SCRATCH_PASSPHRASE])].map((passphrase) => ({ kind: "passphrase" as const, passphrase })));
+}
 
 /** Thrown when a suite reaches a sealed row outside a scratch root. */
 export class ScratchCustodyRefused extends Error {
