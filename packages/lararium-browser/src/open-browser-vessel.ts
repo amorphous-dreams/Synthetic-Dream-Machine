@@ -899,7 +899,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     wearFaceOfVessel(idbName, founder);
     const founding = "found this browser's first face";
     const wardRoute: WardRoute = bornUnder ?? (await browserPersonaRootHeld(idbName, FOUNDING_PERSONA_INDEX) ? await wardRouteFor(founding) : await wardBindRouteFor(founding));
-    await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX, wardRoute);
+    await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX, wardRoute, founder);
     const signerSeed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX, wardRoute);
     // THE ROOT SEED LEAVES THE ACT ZEROED: the ceremony signs once with it, and the bytes clear in the finally.
     let f: Awaited<ReturnType<typeof runFoundingCeremony>>;

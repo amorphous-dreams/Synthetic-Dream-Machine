@@ -20,7 +20,7 @@ export { standVesselHouse, sessionLifetimeLock, VesselSessionRefused } from "./v
 export type { VesselHouse, VesselSession, VesselFloorState, VesselLockReport, VesselHouseCensus, LitVessel, SessionKeyHolder, VesselSessionRefusal, HouseAsk, FaceProviderDoor, FaceBooking, FaceSwitchOptions } from "./vessel-sessions.js";
 export {
   FaceCustodyRefused, checkFaceName, readFaceCustody, readFaceCustodyPasskeys, bindFirstFaceSlot, unlockFaceCustody, lockFaceCustody,
-  writeFaceRow, readFaceRow, mintFaceRoot, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, standUnnamedFace, heldUnnamedFace,
+  writeFaceRow, readFaceRow, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, standUnnamedFace, heldUnnamedFace,
 } from "./browser-face-custody.js";
 export type { FaceCustodyStatus, FaceCustodyUnlock, FaceCustodyClear, FaceCustodyRefusalReading } from "./browser-face-custody.js";
 export { mintEmber, answerEmberAsk, emberAskBytes, EmberRefused } from "./browser-ember.js";

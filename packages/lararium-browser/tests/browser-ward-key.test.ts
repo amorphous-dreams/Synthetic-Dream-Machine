@@ -19,7 +19,7 @@ import { seatWardWorkerSpawn } from "../src/testing.js";
 import { ed25519SignerFromSeed, signingSeedFromHex, verifyEd25519, wardAnswerImage, wardKeyPopHolds, wardKeyPopImage, wardPublicKeyOf } from "@lararium/mesh";
 import { browserKeystoreCustodyIo, isCustodyRow, readKeystoreRow, sealBrowserKeystore, withCustodyRows } from "../src/browser-custody.js";
 import { browserVesselFaceTagDoor } from "../src/browser-face-atom.js";
-import { generateOrLoadBrowserPersonaRoot } from "../src/browser-vessel-identity.js";
+import { generateOrLoadBrowserPersonaRoot, wearFaceOfVessel } from "../src/browser-vessel-identity.js";
 import { runWardAct } from "../src/ward-core.js";
 import { keyed } from "../../lararium-mesh/tests/ward-cosign-table.js";
 
@@ -126,6 +126,7 @@ test("CONTROL: the face root's S2b ward rows stand byte for byte across the ward
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
   // The face's own tree binds before its first row (its tag secret rests there).
   await bindFirstFaceSlot(idbName, G, { kind: "passphrase", passphrase: PASS });
+  wearFaceOfVessel(idbName, G);   // the face whose tree stands, worn (the ward mint's face gate)
   await generateOrLoadBrowserPersonaRoot(idbName, 0, PASS);
   const io = browserKeystoreCustodyIo(idbName);
   const rootRows = ["ward/h0/slots", "ward/h0/persona-root", "ward/h0/public-key"];

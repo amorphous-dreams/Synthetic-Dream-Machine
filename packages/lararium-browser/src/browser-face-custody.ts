@@ -48,19 +48,26 @@ import {
   bindSlot, decodeSlotTree, encodeSlotTree, mintFck, nobleKdf, openTreeKey, openUnderFck, sealUnderFck, treeKeyEquals,
   type Credential, type FaceCarrier, type FaceCustodyKey,
 } from "@lararium/mesh";
-import { browserKeystoreCustodyIo, custodyPinOf, type ConfirmDoor, type CustodyBindRoute } from "./browser-custody.js";
+import {
+  BrowserCustodyRefused, browserKeystoreCustodyIo, custodyPinOf, readBrowserCustody, withCustodyRows, type ConfirmDoor, type CustodyBindRoute,
+} from "./browser-custody.js";
+import { WARD_ROW_PREFIX } from "./ward-core.js";
+
+/** The ward's roster row under the place tree (`browser-ward-tree.ts` owns its codec). */
+const PERSONA_ROSTER_ROW = "persona-root-roster";
 
 export const FACE_INDEX_ROW = "face-index";
 export const FACE_TREE_PREFIX = "face-slots/";
 export const FACE_SEALED_PREFIX = "face-sealed/";
 const ANCHOR_ROW = "anchor";
+/** A persona root rests under its face's ward (`ward/h<N>/…`), never under a face key: the row name refuses at every face door. */
 const ROOT_ROW = "persona-root";
 const SIDECAR = ".sealing";
 const ROW_NAME = /^[A-Za-z0-9][A-Za-z0-9._:/-]*$/;
 
 export type FaceCustodyRefusalReading =
   | "face-absent" | "face-names-a-handle" | "no-custody-slot" | "face-locked" | "already-bound" | "row-unopened"
-  | "face-index-mismatch" | "tree-unreadable" | "row-name-refused" | "passkey-alone-refused" | "face-name-reserved";
+  | "face-index-mismatch" | "tree-unreadable" | "row-name-refused" | "passkey-alone-refused" | "face-name-reserved" | "face-not-worn";
 
 const SAYS: Record<FaceCustodyRefusalReading, string> = {
   "face-absent": "the act names no face; a face custody act names one PersonaGroup",
@@ -71,9 +78,10 @@ const SAYS: Record<FaceCustodyRefusalReading, string> = {
   "row-unopened": "the face's key does not open the row standing there; nothing was written",
   "face-index-mismatch": "the tree the index routed to anchors another PersonaGroup; nothing was seated",
   "tree-unreadable": "this face's slot tree does not read; no route can be judged against it",
-  "row-name-refused": "a face row names itself by a plain path, never the anchor, a sidecar or a climb",
+  "row-name-refused": "a face row names itself by a plain path, never the anchor, the persona root (it rests under its ward), a sidecar or a climb",
   "passkey-alone-refused": "a face's first slot binds a passphrase or paper route; a passkey binds beside one",
   "face-name-reserved": "the `unnamed:` spelling keys a founding's tree on this thread alone and names no face",
+  "face-not-worn": "the act names a face this session does not wear; a root mints only for the face the vessel wears",
 };
 
 /** A face custody act the face's standing state refuses. Nothing was written. */
@@ -101,7 +109,7 @@ function checkFaceKey(face: unknown): string {
 }
 
 function checkRow(row: string): string {
-  if (!ROW_NAME.test(row) || row === ANCHOR_ROW || row.endsWith(SIDECAR) || row.split("/").some((p) => p === "" || p === "." || p === "..")) {
+  if (!ROW_NAME.test(row) || row === ANCHOR_ROW || row === ROOT_ROW || row.endsWith(SIDECAR) || row.split("/").some((p) => p === "" || p === "." || p === "..")) {
     throw new FaceCustodyRefused("row-name-refused", row);
   }
   return row;
@@ -223,6 +231,23 @@ export async function readFaceCustody(idbName: string, face: string): Promise<Fa
   return { reading: "bound", unlocked: faceCustodyHeld(idbName, face) };
 }
 
+/** The opaque id of `face`'s own tree (a PersonaGroup through the index, or a founding's `unnamed:` key on this thread), or null. */
+export async function faceTreeIdOf(idbName: string, face: string): Promise<string | null> {
+  checkFaceKey(face);
+  return seated.get(idbName)?.get(face)?.fcid ?? (face.startsWith(UNNAMED) ? null : (await entryOf(idbName, face))?.fcid ?? null);
+}
+
+/**
+ * Whether `face`'s own slot tree stands readable in this store: a PersonaGroup through the index, or a founding's `unnamed:` key
+ * seated on this thread. Routing and decoding only; nothing opens.
+ */
+export async function faceTreeStands(idbName: string, face: string): Promise<boolean> {
+  checkFaceKey(face);
+  const fcid = await faceTreeIdOf(idbName, face);
+  if (!fcid) return false;
+  return decodeSlotTree(await browserKeystoreCustodyIo(idbName).read(treePath(fcid))).reading === "readable";
+}
+
 /** The passkey pins' public halves of one face's tree, for the ceremony's assertion. */
 export async function readFaceCustodyPasskeys(idbName: string, face: string): Promise<readonly { readonly credentialId: Uint8Array; readonly prfSalt: Uint8Array }[]> {
   const entry = await entryOf(idbName, checkFaceName(face));
@@ -309,19 +334,6 @@ export async function faceRowNames(idbName: string, face: string): Promise<strin
   fck.fill(0);
   const prefix = `${FACE_SEALED_PREFIX}${fcid}/`;
   return (await browserKeystoreCustodyIo(idbName).list()).filter((k) => k.startsWith(prefix) && !k.endsWith(SIDECAR)).map((k) => k.slice(prefix.length)).filter((r) => r !== ANCHOR_ROW).sort();
-}
-
-/**
- * A ward act's raw bytes for `face`'s root (seat-harness#/the-ward): the face's own slot tree and its sealed root row, with
- * the context the root sealed under. It opens nothing and holds no key; null where the face holds no tree or no root.
- */
-export async function faceWardRows(idbName: string, face: string): Promise<{ readonly tree: Uint8Array; readonly sealedRoot: Uint8Array; readonly carrier: FaceCarrier } | null> {
-  const entry = await entryOf(idbName, checkFaceName(face));
-  if (!entry) return null;
-  const io = browserKeystoreCustodyIo(idbName);
-  const carrier = carrierOf(idbName, entry.fcid, ROOT_ROW);
-  const [tree, sealedRoot] = await Promise.all([io.read(treePath(entry.fcid)), io.read(carrier.path)]);
-  return tree === null || sealedRoot === null ? null : { tree, sealedRoot, carrier };
 }
 
 /**
@@ -449,27 +461,6 @@ export async function unlockFaceCustody(idbName: string, face: string, credentia
   return { reading: "opens", slot: opened.slot };
 }
 
-// ── the root ──────────────────────────────────────────────────────────────────────────────────────
-
-/** Mint `face`'s persona root under its own key, once. Refuses `no-custody-slot` before the face's tree binds, `face-locked` while it stands locked. */
-export async function mintFaceRoot(idbName: string, face: string): Promise<{ readonly minted: boolean }> {
-  const { fcid, fck } = await keyFor(idbName, face);
-  try {
-    const io = browserKeystoreCustodyIo(idbName);
-    if ((await io.read(rowPath(fcid, ROOT_ROW))) !== null) return { minted: false };
-    const seed = crypto.getRandomValues(new Uint8Array(32));
-    try { await sealRow(idbName, fcid, fck, ROOT_ROW, seed, face); } finally { seed.fill(0); }
-    return { minted: true };
-  } finally { fck.fill(0); }
-}
-
-/** The face's persona root seed, for one act on this thread; the caller zero-fills it. */
-export async function readFaceRoot(idbName: string, face: string): Promise<Uint8Array> {
-  const seed = await readFaceRow(idbName, face, ROOT_ROW);
-  if (seed === null) throw new FaceCustodyRefused("no-custody-slot", ROOT_ROW, "no root minted for this face yet");
-  return seed;
-}
-
 // ── the clear ─────────────────────────────────────────────────────────────────────────────────────
 
 export const CLEAR_FACE_QUESTION =
@@ -497,7 +488,26 @@ export async function clearFaceCustody(idbName: string, face: string | null, cre
   const anchored = anchor === null ? null : new TextDecoder().decode(anchor);
   anchor?.fill(0);
   if (anchored !== named) throw new FaceCustodyRefused("face-index-mismatch");
+  // THE FACE'S ROOT GOES WITH IT: every ward this face's tree owns (`ward/h<N>/face-tree`), its roster line under the place tree,
+  // and its ward key's rows (`ward/sign/<G>/…`). The roster needs the place tree open, so a locked one refuses before the ask.
+  const owned: number[] = [];
+  for (const r of await io.list()) {
+    const m = /^ward\/h(\d+)\/face-tree$/.exec(r);
+    if (m && new TextDecoder().decode((await io.read(r)) ?? new Uint8Array()) === entry.fcid) owned.push(Number(m[1]));
+  }
+  if (owned.length > 0) {
+    const place = await readBrowserCustody(idbName);
+    if (place.reading === "sealed" && !place.unlocked) throw new BrowserCustodyRefused("sealed-locked", idbName, PERSONA_ROSTER_ROW);
+  }
   if (!confirm(CLEAR_FACE_QUESTION)) return { reading: "asked" };
+  if (owned.length > 0) {
+    await withCustodyRows(idbName, async (act) => {
+      const raw = await act.read(PERSONA_ROSTER_ROW) as { roots?: readonly { readonly handleIndex: number }[] } | undefined;
+      if (raw?.roots) await act.write(PERSONA_ROSTER_ROW, { roots: raw.roots.filter((l) => !owned.includes(l.handleIndex)) });
+      for (const r of await io.list()) if (owned.some((h) => r.startsWith(`${WARD_ROW_PREFIX}h${h}/`))) await io.remove(r);
+    });
+  }
+  for (const r of await io.list()) if (r.startsWith(`${WARD_ROW_PREFIX}sign/${named}/`)) await io.remove(r);
   const rows = await io.exclusive(async () => {
     const prefix = `${FACE_SEALED_PREFIX}${entry.fcid}/`;
     const mine = (await io.list()).filter((r) => r.startsWith(prefix));

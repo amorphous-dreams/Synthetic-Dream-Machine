@@ -43,8 +43,10 @@ import type { SeedWrapRecord } from "./seed-wrap-prf.js";
 
 import { assertCanMint } from "./secure-context-gate.js";
 import { BrowserCustodyRefused, BrowserWardRefused, browserKeystoreCustodyIo, readBrowserCustody, readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
-import { checkFaceName, readFaceCustody } from "./browser-face-custody.js";
-import { browserWardStands, mintBrowserWardedRoot, openBrowserWardedRoot, readBrowserPersonaRoster, type PersonaRosterLine } from "./browser-ward-tree.js";
+import { checkFaceName, faceCustodyHeld, faceTreeStands, FaceCustodyRefused, readFaceCustody } from "./browser-face-custody.js";
+import {
+  browserWardStands, mintBrowserWardedRoot, openBrowserWardedRoot, readBrowserPersonaRoster, refuseWardOfAnotherFace, wornFaceTreeOf, type PersonaRosterLine,
+} from "./browser-ward-tree.js";
 import type { WardRoute } from "./ward-core.js";
 const KEY_RECORD = "vessel-key";
 
@@ -242,6 +244,23 @@ function refuseOtherHandle(idbName: string, handleIndex: number): void {
 }
 
 /**
+ * THE WARD MINT'S FACE GATE: a root mints only for the face this vessel wears on this thread, whose own tree stands and whose key
+ * this thread holds. No worn face refuses `face-absent`; a mint naming another face `face-not-worn`; a worn face with no tree
+ * `no-custody-slot`; a worn face locked here `face-locked`. Reads only: nothing binds or writes before the gate passes.
+ */
+async function refuseUnwornFace(idbName: string, handleIndex: number, face: string | undefined): Promise<string> {
+  refuseOtherHandle(idbName, handleIndex);
+  const worn = vesselFaces.get(idbName);
+  if (!worn) throw new FaceCustodyRefused("face-absent", undefined, "this vessel wears no face yet on this thread");
+  if (face !== undefined && face !== worn) throw new FaceCustodyRefused("face-not-worn", undefined, `the mint names ${face}`);
+  if (!(await faceTreeStands(idbName, worn))) throw new FaceCustodyRefused("no-custody-slot", undefined, "the worn face's own tree does not stand");
+  if (!faceCustodyHeld(idbName, worn)) throw new FaceCustodyRefused("face-locked");
+  const tree = await wornFaceTreeOf(idbName);
+  if (tree === null) throw new FaceCustodyRefused("no-custody-slot", undefined, "the worn face's own tree does not stand");
+  return tree;
+}
+
+/**
  * A persona-root slot rides the face's WARD (`browser-ward-tree.ts`), never the keystore's row door: a load opens the root fresh
  * under `ward` for one act and a save lands it under a ward bound over `ward`. With no route, a held root refuses
  * `ward-needs-fresh-unlock`; a root the roster names nowhere loads as absent.
@@ -251,13 +270,14 @@ function idbPersonaRootSlot(idbName: string, handleIndex: number, ward: WardRout
     async load() {
       refuseOtherHandle(idbName, handleIndex);
       if (!(await rosterLineOf(idbName, handleIndex))) return undefined;
+      await refuseWardOfAnotherFace(idbName, handleIndex);
       if (ward === undefined) throw new BrowserWardRefused("ward-needs-fresh-unlock", `the root at h${handleIndex} opens only fresh from its face's ward route, for one act`);
       return openBrowserWardedRoot(idbName, handleIndex, ward);
     },
     async save(kp) {
-      refuseOtherHandle(idbName, handleIndex);
+      const owner = await refuseUnwornFace(idbName, handleIndex, undefined);
       if (ward === undefined) throw new BrowserWardRefused("ward-needs-fresh-unlock", `a root mints at h${handleIndex} only under a ward bound over the route given for it`);
-      const kept = await mintBrowserWardedRoot(idbName, handleIndex, ward, kp);
+      const kept = await mintBrowserWardedRoot(idbName, handleIndex, ward, kp, owner);
       if (kept.verifyingKey !== kp.verifyingKey) throw new BrowserWardRefused("ward-root-names-another-key", `another root already stands under the ward at h${handleIndex}`);
     },
   };
@@ -523,18 +543,21 @@ export type BrowserPersonaRoot = PersonaRoot;
  * delegation edge at admit instead. The browser twin of node's generateOrLoadPersonaGroupRoot.
  *
  * A HELD root answers its public key off the roster and opens nothing. A mint needs the keystore sealed and unlocked (the
- * roster rests under its tree) and the ward route this face is born under: the root lands under a fresh ward bound over it.
+ * roster rests under its tree), the face this vessel wears (`face`, when given, names it: another refuses `face-not-worn`) with its
+ * own tree standing and open on this thread, and the ward route this face is born under: the root lands under a fresh ward bound
+ * over it.
  */
-export async function generateOrLoadBrowserPersonaRoot(idbName = "lares:vessel", handleIndex = 0, ward?: WardRoute): Promise<BrowserPersonaRoot> {
+export async function generateOrLoadBrowserPersonaRoot(idbName = "lares:vessel", handleIndex = 0, ward?: WardRoute, face?: string): Promise<BrowserPersonaRoot> {
   assertHandleIndex(handleIndex);
   refuseOtherHandle(idbName, handleIndex);
   const custody = await readBrowserCustody(idbName);
   if (custody.reading !== "sealed") throw new BrowserCustodyRefused("no-custody-slot", idbName, `persona-root-h${handleIndex}`);
   const line = await rosterLineOf(idbName, handleIndex);
-  if (line) return { verifyingKey: line.verifyingKey, created: false };
+  const owner = await refuseUnwornFace(idbName, handleIndex, face);
+  if (line) { await refuseWardOfAnotherFace(idbName, handleIndex); return { verifyingKey: line.verifyingKey, created: false }; }
   if (ward === undefined) throw new BrowserWardRefused("ward-needs-fresh-unlock", `a root mints at h${handleIndex} only under a ward bound over the route given for it`);
   const fresh = await browserKeypairCrypto.generate();
-  const kept = await mintBrowserWardedRoot(idbName, handleIndex, ward, fresh);
+  const kept = await mintBrowserWardedRoot(idbName, handleIndex, ward, fresh, owner);
   return { verifyingKey: kept.verifyingKey, created: kept.verifyingKey === fresh.verifyingKey };
 }
 
@@ -553,7 +576,8 @@ export async function loadBrowserPersonaRootSeed(idbName = "lares:vessel", handl
  */
 export async function browserPersonaRootHeld(idbName = "lares:vessel", handleIndex = 0): Promise<boolean> {
   assertHandleIndex(handleIndex);
-  return (await rosterLineOf(idbName, handleIndex)) !== undefined && browserWardStands(idbName, handleIndex);
+  if ((await rosterLineOf(idbName, handleIndex)) === undefined || !(await browserWardStands(idbName, handleIndex))) return false;
+  return refuseWardOfAnotherFace(idbName, handleIndex).then(() => true, () => false);
 }
 
 /** Read the opt-in PRF wrap standing beside `face`'s root (its PersonaGroup), or undefined (no wrap). */

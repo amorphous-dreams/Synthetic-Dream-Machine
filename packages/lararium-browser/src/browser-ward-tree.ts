@@ -27,8 +27,31 @@ import {
   writeWardCarrier, WardRefused, type Credential, type SlotTree, type WardKey,
 } from "@lararium/mesh";
 import { browserKeystoreCustodyIo, BrowserCustodyRefused, readBrowserCustody, withCustodyRows } from "./browser-custody.js";
-import { openWardedRoot, wardCredentialOf, wardKeyRowOf, wardPinOf, wardRootCarrier, wardRootRowOf, wardTreeRowOf, type WardRoute } from "./ward-core.js";
-import { openVesselIdb } from "./browser-vessel-identity.js";
+import { openWardedRoot, wardCredentialOf, wardKeyRowOf, wardOwnerRowOf, wardPinOf, wardRootCarrier, wardRootRowOf, wardTreeRowOf, type WardRoute } from "./ward-core.js";
+import { faceOfVessel, openVesselIdb } from "./browser-vessel-identity.js";
+import { faceTreeIdOf } from "./browser-face-custody.js";
+import { BrowserWardRefused } from "./browser-custody.js";
+
+/** The opaque id of the face tree the ward at `handleIndex` belongs to, or null where no owner row stands. */
+export async function browserWardOwnerOf(idbName: string, handleIndex: number): Promise<string | null> {
+  const bytes = await browserKeystoreCustodyIo(idbName).read(wardOwnerRowOf(handleIndex));
+  return bytes === null ? null : new TextDecoder().decode(bytes);
+}
+
+/** The opaque tree id of the face this session wears, or null where it wears none or its tree does not stand. */
+export async function wornFaceTreeOf(idbName: string): Promise<string | null> {
+  const worn = faceOfVessel(idbName);
+  return worn ? faceTreeIdOf(idbName, worn) : null;
+}
+
+/**
+ * THE WARD ANSWERS ONE FACE: a ward act, a held-root read and a re-mint at `handleIndex` refuse `ward-owned-by-another-face` unless
+ * the face this session wears is the face whose tree the ward's owner row names (a second face neither inherits nor collides).
+ */
+export async function refuseWardOfAnotherFace(idbName: string, handleIndex: number): Promise<void> {
+  const [worn, owner] = await Promise.all([wornFaceTreeOf(idbName), browserWardOwnerOf(idbName, handleIndex)]);
+  if (worn === null || owner !== worn) throw new BrowserWardRefused("ward-owned-by-another-face", `the ward at h${handleIndex} belongs to another face than the one this session wears`);
+}
 
 export const PERSONA_ROSTER_ROW = "persona-root-roster";
 
@@ -130,7 +153,7 @@ export async function landBrowserWardRows(idbName: string, rows: readonly (reado
  * Answers the keypair that stands (an earlier torn mint's root is adopted). The keystore must stand sealed and unlocked: the
  * roster rests under its tree. A passkey route, or a route that opens a standing ward tree to nothing, writes nothing.
  */
-export async function mintBrowserWardedRoot(idbName: string, handleIndex: number, route: WardRoute, keypair: { readonly verifyingKey: string; readonly signingKey: string }): Promise<{ readonly verifyingKey: string; readonly signingKey: string }> {
+export async function mintBrowserWardedRoot(idbName: string, handleIndex: number, route: WardRoute, keypair: { readonly verifyingKey: string; readonly signingKey: string }, ownerTree: string): Promise<{ readonly verifyingKey: string; readonly signingKey: string }> {
   const custody = await readBrowserCustody(idbName);
   if (custody.reading !== "sealed") throw new BrowserCustodyRefused("no-custody-slot", idbName, `persona-root-h${handleIndex}`);
   if (!custody.unlocked) throw new BrowserCustodyRefused("sealed-locked", idbName, `persona-root-h${handleIndex}`);
@@ -143,6 +166,13 @@ export async function mintBrowserWardedRoot(idbName: string, handleIndex: number
     const treePath = wardTreeRowOf(handleIndex);
     const carrier = wardRootCarrier(handleIndex);
     const standingTree = await io.read(treePath);
+    // THE OWNER BEFORE ANY BYTE: a ward another face's tree owns (or an unowned standing ward) refuses and writes nothing; a fresh
+    // ward names its owner first, so a mint torn after resumes owned.
+    const standingOwner = await io.read(wardOwnerRowOf(handleIndex));
+    if (standingOwner !== null ? new TextDecoder().decode(standingOwner) !== ownerTree : (standingTree !== null || line !== undefined)) {
+      throw new BrowserWardRefused("ward-owned-by-another-face", `the ward at h${handleIndex} belongs to another face than the one this mint names`);
+    }
+    if (standingOwner === null) await io.write(wardOwnerRowOf(handleIndex), new TextEncoder().encode(ownerTree));
     let key: WardKey;
     if (standingTree !== null) key = await openWardFresh(idbName, treeOf(standingTree), credential);
     else {

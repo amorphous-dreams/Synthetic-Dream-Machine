@@ -26,7 +26,7 @@ import { readyWorker } from "./fixtures/ready-worker.js";
 import { browserKeystoreCustodyIo } from "../src/browser-custody.js";
 import {
   FACE_INDEX_ROW, bindFirstFaceSlot, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, faceRowPath, lockFaceCustody,
-  mintFaceRoot, readFaceCustody, readFaceRoot, readFaceRow, unlockFaceCustody, writeFaceRow,
+  readFaceCustody, readFaceRow, unlockFaceCustody, writeFaceRow,
 } from "../src/browser-face-custody.js";
 import { answerEmberAsk, emberAskBytes, mintEmber } from "../src/browser-ember.js";
 
@@ -64,11 +64,10 @@ describe("each face's rows rest under its own key", () => {
     });
   }, SLOW);
 
-  test("FC2 RED a face's first persistence and its root mint refuse no-custody-slot until its tree binds — CONTROL: bound they land; locked they refuse", async () => {
+  test("FC2 RED a face's first persistence refuses no-custody-slot until its tree binds — CONTROL: bound they land; locked they refuse", async () => {
     const idbName = store("first"), a = face("a");
     expect(await readFaceCustody(idbName, a)).toEqual({ reading: "absent" });
     await expect(writeFaceRow(idbName, a, "outbox/1", bytes("too early"))).rejects.toMatchObject({ reading: "no-custody-slot" });
-    await expect(mintFaceRoot(idbName, a)).rejects.toMatchObject({ reading: "no-custody-slot" });
     const io = browserKeystoreCustodyIo(idbName);
     expect((await io.list()).filter((r) => r.startsWith("face-")), "a refusal writes nothing").toEqual([]);
 
@@ -76,19 +75,12 @@ describe("each face's rows rest under its own key", () => {
     expect(await readFaceCustody(idbName, a)).toEqual({ reading: "bound", unlocked: true });
     await writeFaceRow(idbName, a, "outbox/1", bytes("now it lands"));
     expect(text(await readFaceRow(idbName, a, "outbox/1"))).toBe("now it lands");
-    const root = await mintFaceRoot(idbName, a);
-    expect(root.minted).toBe(true);
-    expect((await mintFaceRoot(idbName, a)).minted, "the mint lands once").toBe(false);
-    const seed = await readFaceRoot(idbName, a);
-    expect(seed.length).toBe(32);
 
     expect(lockFaceCustody(idbName, a)).toBe(true);
     expect(faceCustodyKeysHeld(idbName)).toBe(0);
     await expect(readFaceRow(idbName, a, "outbox/1")).rejects.toMatchObject({ reading: "face-locked" });
-    await expect(mintFaceRoot(idbName, a)).rejects.toMatchObject({ reading: "face-locked" });
     expect(await unlockFaceCustody(idbName, a, [PASS_B])).toMatchObject({ reading: "no-slot-opens" });
     expect(await unlockFaceCustody(idbName, a, [PASS_A])).toMatchObject({ reading: "opens" });
-    expect([...(await readFaceRoot(idbName, a))]).toEqual([...seed]);
   }, SLOW);
 
   test("FC3 RED a clear names one face; a wrong route and an unconfirmed ask clear nothing — CONTROL: the confirmed clear takes A alone", async () => {

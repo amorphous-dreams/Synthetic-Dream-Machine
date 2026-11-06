@@ -17,7 +17,7 @@
  * Residual, named: the ceremony document's own (browser-vessel-lift#/the-ceremony); no page script reads the route.
  */
 import { browserKeystoreCustodyIo, BrowserWardRefused } from "./browser-custody.js";
-import { chargeWardAttempt, landBrowserWardRows, readBrowserWardKey, readBrowserWardRows } from "./browser-ward-tree.js";
+import { chargeWardAttempt, landBrowserWardRows, readBrowserWardKey, readBrowserWardRows, refuseWardOfAnotherFace } from "./browser-ward-tree.js";
 import {
   wardCredentialOf, wardSignRowsOf, type WardActAnswer, type WardActRequest, type WardKeyActRequest, type WardKeyMintAnswer, type WardKeyMintRequest, type WardRoute,
 } from "./ward-core.js";
@@ -77,6 +77,7 @@ const signRowsOf = (group: string): ReturnType<typeof wardSignRowsOf> => { try {
 export async function browserWardSign(idbName: string, handleIndex: number, route: WardRoute, bytes: Uint8Array, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly signature: string }> {
   try { wardCredentialOf(route); } catch (e) { refusedBy(e); }
   const rows = await readBrowserWardRows(idbName, handleIndex).catch(refusedBy);
+  await refuseWardOfAnotherFace(idbName, handleIndex);   // the ward signs only for the face this session wears
   return chargeWardAttempt(idbName, () => browserWardSignOnce({ ...rows, handleIndex, route, bytes }, spawn)).catch(refusedBy);
 }
 
@@ -147,6 +148,7 @@ async function browserWardActOnce<A>(request: WardActRequest | WardKeyActRequest
 export async function browserWardSigner(idbName: string, handleIndex: number, route: WardRoute, spawn?: WardWorkerSpawn): Promise<{ readonly key: string; sign(bytes: Uint8Array): Promise<string> }> {
   try { wardCredentialOf(route); } catch (e) { refusedBy(e); }
   const line = { verifyingKey: await readBrowserWardKey(idbName, handleIndex).catch(refusedBy) };
+  await refuseWardOfAnotherFace(idbName, handleIndex);   // the ward signs only for the face this session wears
   let held: WardRoute | null = route;
   return {
     key: line.verifyingKey,
