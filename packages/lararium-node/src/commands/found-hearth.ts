@@ -36,6 +36,7 @@
  * The founding cites no cadence inception: that record stands SPECIFIED (kahu#/contract, the cadence lineage). It
  * names the Nexus AID and the AID never names it, so its later inception moves no byte this act writes.
  */
+import { wardCredentialOfRoute, type WardCredential } from "../ward-credential.js";
 import { ensureFaceCustodyAtHandle } from "../face-route.js";
 import {
   charterInceptionBytes, charterInceptionImage, emptyFoundingCharterDoc, federationPostureFromDoc, genesisOfInception, mintColdKey, nexusAidOf, sealKeySetHash, seatedKahuKeys, standForKahuSeat,
@@ -62,6 +63,8 @@ export interface HearthCard {
 }
 
 export interface FoundHearthOptions extends Omit<InitOptions, "admitPayload"> {
+  /** The founding's ward route (seat-harness#/the-ward); absent, the route persona zero's custody is born under. */
+  readonly ward?: WardCredential;
   /** Persona zero's private pet-name. Under `restore` it may stand empty: the bundle's own pet-name lands. */
   readonly name:     string;
   /**
@@ -116,6 +119,8 @@ export async function foundSeedCharter(opts: {
   readonly name:     string;
   readonly chair?:   string;
   readonly readBack: FoundHearthOptions["readBack"];
+  /** The founding's own ward route: the act that holds it hands it in, or the route persona zero's custody is born under fills it. */
+  readonly ward?:    { value?: WardCredential | undefined };
 }): Promise<{ readonly nexusAid: string; readonly seatKey: string; readonly nextDigest: string; readonly seated: boolean }> {
   const sealHome = larSealHome();
   const standing = readNexusDoc(sealHome);
@@ -143,8 +148,9 @@ export async function foundSeedCharter(opts: {
   }
 
   // Persona zero's root, its private label, and its claim on the one chair: the roster line lands with the root.
-  await ensureFaceCustodyAtHandle(0, "h0");
-  await generateOrLoadPersonaGroupRoot(0);
+  const ward = opts.ward ?? {};
+  await ensureFaceCustodyAtHandle(0, "h0", (slots) => { ward.value ??= wardCredentialOfRoute(slots) ?? undefined; });
+  await generateOrLoadPersonaGroupRoot(0, ward.value!);
   if (opts.name.length > 0) await renameOwnPersona(await makeNodePersonaPetnameStore(), 0, opts.name);
   const chair = opts.chair?.trim();
   await standForKahuSeat(await makeNodePersonaDeclarationStore(), 0, true, chair && chair.length > 0 ? chair : undefined);
@@ -200,11 +206,13 @@ export async function runFoundHearth(opts: FoundHearthOptions): Promise<FoundHea
   await runInit({ ...init, placeFoundingCard: opts.placeFoundingCard ?? {
     readBack: async (card, fingerprint) => readBack([{ chair: "place", seed: card.seed, digest: card.digest }], fingerprint),
   } });
-  const seed = () => foundSeedCharter({ name: label, ...(chair ? { chair } : {}), readBack });
+  // ONE ROUTE FOR THE FOUNDING'S WARD ACTS: the operator's own (carried in), else the route persona zero's custody is born under.
+  const ward: { value?: WardCredential | undefined } = opts.ward ? { value: opts.ward } : {};
+  const seed = () => foundSeedCharter({ name: label, ...(chair ? { chair } : {}), readBack, ward });
   // The face lights, then the founding admits its group to the hearth's Kahu cabal (a counted 1-of-1 act at the
   // one seat; a group already admitted lands nothing), so persona zero's group holds the Kahu realm from birth.
   const light = async () => {
-    const face = await runFoundTheFace({ repo: opts.repo, ...(opts.genesisDir ? { genesisDir: opts.genesisDir } : {}), handleIndex: 0 });
+    const face = await runFoundTheFace({ repo: opts.repo, ...(opts.genesisDir ? { genesisDir: opts.genesisDir } : {}), handleIndex: 0, ...(ward.value ? { ward: ward.value } : {}) });
     await landFoundingAdmission({ repo: opts.repo, sealHome: larSealHome(), personaGroupId: face.personaGroupId });
     await landKahuRealm({ repo: opts.repo, sealHome: larSealHome() });
     return face;
@@ -232,7 +240,7 @@ export async function runFoundHearth(opts: FoundHearthOptions): Promise<FoundHea
   }
   let charter: Awaited<ReturnType<typeof seed>> | null = null;
   const restored = await asFounding(() => restoreFaceBody({
-    body, as: 0, withRepo: (act) => act(opts.repo), ...(opts.genesisDir ? { genesisDir: opts.genesisDir } : {}),
+    body, as: 0, withRepo: (act) => act(opts.repo), ...(opts.genesisDir ? { genesisDir: opts.genesisDir } : {}), ...(ward.value ? { ward: ward.value } : {}),
     founding: async () => { charter = await seed(); },
   }));
   const face = await light();

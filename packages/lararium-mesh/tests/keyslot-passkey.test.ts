@@ -85,3 +85,13 @@ describe("passkey pins", () => {
     expect(mintPasskeySalt()).toHaveLength(32);
   });
 });
+
+describe("the ward refuses the passkey the plain tree keeps optional", () => {
+  test("RED: the ward's bind refuses a passkey slot the keyslot door binds beside a passphrase; CONTROL: the keyslot door still binds it", async () => {
+    const { bindWardSlot } = await import("../src/ward-slots.js");
+    const key = mintTreeKey();
+    await expect(bindWardSlot(null, key, { t: 1, pins: [passphrase, passkey()] }, nativeKdf)).rejects.toThrow(/ward-passkey-refused/);
+    const { tree } = await bind();
+    expect(tree.slots[0]!.pins.map((p) => p.kind)).toEqual(["passphrase", "passkey"]);
+  });
+});

@@ -85,6 +85,7 @@ const SOWN: Record<string, string> = {
   [`identity/faces/${FCID}/kapae-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/face-owner.bin`]: "x",
   [`identity/faces/${FCID}/fk-slots.bin`]: "tree",
+  [`identity/faces/${FCID}/ward-slots.bin`]: "ward tree",
   "identity/face-index.json":                    "{}",
   [`identity/faces/${FCID}/.persona-group-root-h0.json`]: "{}",
   [`identity/faces/${FCID}/recovery-device-share-h0.bin`]:      "x",
@@ -147,7 +148,8 @@ const RULED: Record<string, CustodyClass> = {
   "public-handles": "face-hot", "handle-book": "face-hot",
   "hosting-state": "face-hot", "hosting-spent": "face-hot", "hosting-carry": "face-hot", "walk": "face-hot", "gate-memory": "face-hot",
   "transition-pending": "floor-plain", "transitions": "floor-plain",
-  "persona-root": "face-cold", "device-share": "face-cold",
+  // The face root seed rests under the face's WARD key, which stays sealed while custody stands unlocked (seat-harness#/the-ward).
+  "persona-root": "ward-cold", "ward-slots": "floor", "device-share": "face-cold",
   // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_ROWS`, mesh `face-authority`).
   "vessel-face-key": "face-hot", "face-proof-key": "face-cold", "face-provisional": "face-hot",
   // The fleet-join door's three rows: a face's address secret, a join half done, and the joined face's record.
@@ -386,7 +388,7 @@ describe("a row that rests outside the vessel key names its law", () => {
     const { homes, root } = freshHomes();
     try {
       sow(homes, SOWN);
-      for (const e of carrierCensus(homes)) expect(e.bare === null, e.file).toBe(e.custody === "serving" || e.custody === "hot" || e.custody === "cold" || e.custody === "outbox" || e.custody === "face-hot" || e.custody === "face-cold");
+      for (const e of carrierCensus(homes)) expect(e.bare === null, e.file).toBe(e.custody === "serving" || e.custody === "hot" || e.custody === "cold" || e.custody === "outbox" || e.custody === "face-hot" || e.custody === "face-cold" || e.custody === "ward-cold");
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 });
@@ -461,5 +463,36 @@ describe("the census names every private file outside the table", () => {
       outsideTheTable(homes);
       expect(treeHash(root)).toBe(before);
     } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+});
+
+describe("the ward's rows (row 7, S2)", () => {
+  const WFCID = "5a".repeat(16);
+  test("RED: the ward tree is a floor row that names why it rests outside every key, and the face root rests ward-cold; CONTROL: the other face-cold rows stay face-cold", () => {
+    const ward = carrierTable().find((r) => r.row === "ward-slots");
+    expect(ward).toMatchObject({ home: "identity", custody: "floor", keyClass: null });
+    expect(typeof ward!.bare === "string" && ward!.bare.length > 20).toBe(true);
+    expect(ward!.match.test(`faces/${WFCID}/ward-slots.bin`)).toBe(true);
+    expect(carrierTable().find((r) => r.row === "persona-root")!.custody).toBe("ward-cold");
+    expect((CUSTODY_CLASSES as readonly string[]).includes("ward-cold")).toBe(true);
+    for (const row of ["face-proof-key", "seat-key", "cadence-key", "restore-pending", "device-share"]) expect(carrierTable().find((r) => r.row === row)!.custody, row).toBe("face-cold");
+  });
+
+  test("RED: the census faults an FCK-framed root where a warded one belongs; CONTROL: a ward-framed root reads sealed and faults nothing", async () => {
+    const { custodyStatus } = await import("../src/custody-session.js");
+    const { sealUnderFck, sealUnderWard, mintTreeKey: mint } = await import("@lararium/mesh");
+    const seat = await seatScratchCustody("ward-census");
+    try {
+      const file = `faces/${WFCID}/.persona-group-root-h0.json`;
+      const path = join(seat.homes.identity, file);
+      mkdirSync(dirname(path), { recursive: true });
+      const carrier = { name: "identity/.persona-group-root-h0.json", path, kind: "persona-root", ref: "identity/.persona-group-root-h0.json", owner: WFCID, store: "lares-vessel" };
+      writeFileSync(path, sealUnderFck(mint(), carrier, new Uint8Array([1])));
+      const fck = (await custodyStatus({ io: seat.io, homes: seat.homes })).rows.find((r) => r.file === file)!;
+      expect(fck).toMatchObject({ row: "persona-root", custody: "ward-cold", fault: true });
+      writeFileSync(path, sealUnderWard(mint(), carrier, new Uint8Array([1])));
+      const warded = (await custodyStatus({ io: seat.io, homes: seat.homes })).rows.find((r) => r.file === file)!;
+      expect(warded).toMatchObject({ row: "persona-root", reading: "sealed", fault: false });
+    } finally { await seat.drop(); }
   });
 });

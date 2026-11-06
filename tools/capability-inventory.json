@@ -51,6 +51,7 @@
   "callSites": [
     "packages/lararium-browser/src/browser-vessel-island-pool.ts: browserSpawnWorker",
     "packages/lararium-browser/src/browser-vessel-island-pool.ts: refuseBrowserDyadAsks",
+    "packages/lararium-browser/src/browser-ward.ts: Worker",
     "packages/lararium-browser/src/open-browser-daemon-vm.ts: browserSpawnWorker",
     "packages/lararium-browser/src/open-browser-vessel.ts: holderWorkerHandle",
     "packages/lararium-browser/src/open-browser-vessel.ts: browserSpawnWorker",

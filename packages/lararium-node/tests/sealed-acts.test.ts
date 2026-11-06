@@ -20,6 +20,9 @@
  *   T7  the restore's two rows answer a named refusal as an ANSWER (`refused`), never a thrown fault: a body that
  *       fails its tag, an import with no composition standing. A restore with no store to land on refuses the act.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { readFileSync, writeFileSync } from "node:fs";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { RESERVE_TRANSITION_DOMAIN, canonicalJsonBytes, hex, readFckCarrier, sealRollBytes } from "@lararium/mesh";

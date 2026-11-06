@@ -31,6 +31,7 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
  */
+import type { WardCredential } from "../ward-credential.js";
 import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
@@ -185,6 +186,8 @@ export async function runFleetJoinOffer(opts: { readonly sealHome: string; reado
 }
 
 export interface FleetJoinAnswerOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
   readonly repo:     Repo;
   /** The catalog named by this store holder; absence names no canon. */
   readonly catalogUrl?: string | undefined;
@@ -219,7 +222,7 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
   // THE DEVICE EDGE (`runDeviceAdmit`): the root signs the joinee's vessel key into this hearth's fleet, its admission under
   // the joining vessel's blinded tag the request carries.
   const { payload, hearth } = await (async () => {
-    try { return await runDeviceAdmit({ repo: opts.repo, catalogUrl: opts.catalogUrl, face, joineeVerifyingKey: request.atomKey, vesselTag: { vesselTag: request.vesselTag, vesselSig: request.vesselSig }, signedRequest: new TextEncoder().encode(JSON.stringify(request)), ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}), ...(opts.docUrl ? { islandDocUrl: opts.docUrl } : {}) }); }
+    try { return await runDeviceAdmit({ repo: opts.repo, catalogUrl: opts.catalogUrl, face, joineeVerifyingKey: request.atomKey, vesselTag: { vesselTag: request.vesselTag, vesselSig: request.vesselSig }, signedRequest: new TextEncoder().encode(JSON.stringify(request)), ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}), ...(opts.docUrl ? { islandDocUrl: opts.docUrl } : {}), ...(opts.ward ? { ward: opts.ward } : {}) }); }
     catch (error) { if (error instanceof DeviceAdmitTagRefused) throw new FleetJoinRefused(error.refusal, error.message); throw error; }
   })();
 
@@ -250,7 +253,7 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
   // names and the answer binds beside these certificates. A note that fails sends no answer.
   await noteIssuedFaceKeys({ personaGroup, rootKey, device: request.atomKey, certificates });
 
-  const seed = await loadPersonaGroupRootSeed(face);
+  const seed = await loadPersonaGroupRootSeed(face, opts.ward);
   try {
     const grants: FaceKeyGrant[] = [];
     for (const q of request.requests) {

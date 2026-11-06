@@ -21,6 +21,9 @@
  *   `face-hot`    — a D row sealed under ONE face's custody key (FCK) and resting in that face's own directory
  *                   (`faces/<fcid>/`). Opened once when its face unlocks, held while the face stays unlocked.
  *   `face-cold`   — as `face-hot`, opened for one act and then dropped.
+ *   `ward-cold`   — a D row sealed under ONE face's WARD key, never its FCK: the face root seed. The ward key stays sealed while
+ *                   the face stands unlocked and opens fresh from a human route for one hand act (`withWardKey`), then zeroes. No
+ *                   unlocked custody reads or writes such a row; its bytes frame as the ward's own seal (`lares-ward-seal`).
  * A private file the floor never reads rides `hot`: sealing costs it nothing and closes the social graph
  * at rest (petnames, the handle book, the anchors).
  *
@@ -82,7 +85,7 @@ import { nativeKdf } from "@lararium/mesh/node";
 import { custodyRootPath } from "./custody-root.js";
 import { VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
 import { FACE_ATOM_GROUP_FILE, FACE_ATOM_ASK_FILE } from "./face-atom-store.js";
-import { FACES_DIR, FACE_INDEX_FILE } from "./face-index.js";
+import { FACES_DIR, FACE_INDEX_FILE, WARD_TREE_FILE } from "./face-index.js";
 import { FACE_ANCHOR_GROUP_FILE } from "./face-anchor-store.js";
 import { PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
 import { OUTBOX_KEY_FILE } from "./outbox-key.js";
@@ -91,7 +94,7 @@ import { RELAY_GATE_SEED_FILE } from "./relay-gate-seed.js";
 import { SWITCH_ACTS_FILE } from "./switch-act-log.js";
 
 /** The custody classes, closed. */
-export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold", "outbox", "face-hot", "face-cold"] as const;
+export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold", "outbox", "face-hot", "face-cold", "ward-cold"] as const;
 export type CustodyClass = (typeof CUSTODY_CLASSES)[number];
 
 /** The homes a row may name. */
@@ -199,7 +202,7 @@ export interface CarrierRow {
    * every other row answers `"vessel"`. A bundle of one face's custody derives from this column.
    */
   readonly face:     (m: RegExpExecArray) => CarrierFace;
-  /** Present on a `face-hot` or `face-cold` row: how a logical file name resolves to its face's directory. */
+  /** Present on a `face-hot`, `face-cold` or `ward-cold` row: how a logical file name resolves to its face's directory. */
   readonly faceRow?: FaceRowAddress;
   /**
    * How a face's backup bundle treats this row. A row that names none `stays`. The bundle's cut and the restore's
@@ -243,7 +246,7 @@ const file = (name: string): RegExp => new RegExp(`^${escape(name)}$`);
  * outside the vessel key states its law, and a row under it states none.
  */
 type RowSpec = Omit<CarrierRow, "name" | "face" | "bundle" | "bare" | "custody" | "holds" | "faceRow"> & Partial<Pick<CarrierRow, "name" | "face" | "bundle" | "holds" | "faceRow">>
-  & ({ readonly custody: "floor" | "floor-plain"; readonly bare: string } | { readonly custody: "serving" | "hot" | "cold" | "outbox" | "face-hot" | "face-cold" });
+  & ({ readonly custody: "floor" | "floor-plain"; readonly bare: string } | { readonly custody: "serving" | "hot" | "cold" | "outbox" | "face-hot" | "face-cold" | "ward-cold" });
 
 /** A row of the identity home's top level: the same line with its home and subtree left to the helper. */
 type IdentityRowSpec = RowSpec extends infer R ? (R extends unknown ? Omit<R, "home" | "under"> : never) : never;
@@ -283,7 +286,7 @@ const faceOf = (m: RegExpExecArray): CarrierFace => Number(m[1]);
  * the row's census match spells the whole path under the identity home. `select` names the face the file belongs to.
  */
 function faceRowOf(spec: {
-  readonly row: string; readonly inner: RegExp; readonly select: FaceRowAddress["select"]; readonly custody: "face-hot" | "face-cold";
+  readonly row: string; readonly inner: RegExp; readonly select: FaceRowAddress["select"]; readonly custody: "face-hot" | "face-cold" | "ward-cold";
   readonly keyClass: KeyClass | null; readonly writer: string; readonly target: CustodyTarget; readonly bundle?: BundleTreatment;
   readonly name: (m: RegExpExecArray) => string; readonly face?: (m: RegExpExecArray) => CarrierFace;
 }): CarrierRow {
@@ -329,6 +332,9 @@ function buildTable(): readonly CarrierRow[] {
     row({ row: "fk-slots", target: tgt(["D"]), home: "identity", under: FACES_DIR, match: new RegExp(`^${FACES_DIR}/[0-9a-f]{32}/fk-slots\\.bin$`),
           custody: "floor", keyClass: null, writer: "face-custody (founding)",
           bare: "a face's slot tree wraps the face custody key under each human route of that face, so the key it wraps cannot seal it" }),
+    row({ row: "ward-slots", target: tgt(["D"]), home: "identity", under: FACES_DIR, match: new RegExp(`^${FACES_DIR}/[0-9a-f]{32}/${escape(WARD_TREE_FILE)}$`),
+          custody: "floor", keyClass: null, writer: "custody-holder (founding, ward rewrap)",
+          bare: "a face's ward tree wraps the ward key under each human route of that face; the ward key opens only fresh from a route, so neither the face key nor the vessel key may wrap it" }),
 
     // ── floor-plain: the floor reads it, or it reads public ────────────────────────────────────
     id({ row: "face-index", target: tgt(["F"]), match: file(FACE_INDEX_FILE), custody: "floor-plain", keyClass: null,
@@ -479,9 +485,10 @@ function buildTable(): readonly CarrierRow[] {
     row({ row: "sealed-outbox", target: tgt(["D"]), home: "storage", under: "sealed", match: new RegExp(`^sealed/outbox/${REST_NAME}$`),
           custody: "outbox", keyClass: null, writer: "sealed-store-fs", holds: restFileHolds }),
 
-    // ── cold: sealed under the S key, opened per act ──────────────────────────────────────────────
-    faceRowOf({ row: "persona-root", target: tgt(["D"]), inner: faceIndexed("persona-group-root"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
+    // ── ward-cold: the face root seed, under the face's ward key alone (seat-harness#/the-ward) ──
+    faceRowOf({ row: "persona-root", target: tgt(["D"]), inner: faceIndexed("persona-group-root"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "ward-cold", keyClass: "seed",
          writer: "node-vessel-identity", name: (m) => `persona-root-h${m[1]}`, face: faceOf, bundle: "whole" }),
+    // ── cold: sealed under the S key, opened per act ──────────────────────────────────────────────
     // One face's proof key at one Nexus, held by the root-holding vessel alone (`face-key-custody`). Its file names
     // the face, so that face's bundle carries it.
     faceRowOf({ row: "face-proof-key", target: tgt(["D"]), inner: /^face-proof-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
@@ -592,7 +599,7 @@ export function sSealedCarriers(homes: CustodyHomes): SealedCarrier[] {
  * over any of them refuses before a byte lands; the face rows ride this list and no rotation, since a face key seals them.
  */
 export function occupantCarriers(homes: CustodyHomes): SealedCarrier[] {
-  const faceRows = carrierCensus(homes).filter((e) => e.custody === "face-hot" || e.custody === "face-cold");
+  const faceRows = carrierCensus(homes).filter((e) => e.custody === "face-hot" || e.custody === "face-cold" || e.custody === "ward-cold");
   return [...sSealedCarriers(homes), ...faceRows.map((e) => ({ name: `${e.home}/${e.file}`, path: e.path, keyClass: e.keyClass }))];
 }
 

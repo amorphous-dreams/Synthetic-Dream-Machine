@@ -7,6 +7,9 @@
  * that still signed, verified, and announced). These tests build real `--source` directories: an
  * UNSIGNED descriptor this persona signs fresh, and a pre-SIGNED gift kept exactly as signed.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";

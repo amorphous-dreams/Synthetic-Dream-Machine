@@ -136,7 +136,7 @@ describe("CustodyHolder", () => {
 
   test("H7 cold plaintext is scoped to the act and zeroed afterward", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
-    const file = ".persona-group-root-h0.json";
+    const file = "recovery-device-share-h0.bin";
     const plain = new TextEncoder().encode('{"secret":"synthetic"}');
     await h.writeRow("identity", file, plain);
     let handed!: Uint8Array;
@@ -235,7 +235,7 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
 });
 
 describe("CustodyHolder.removeColdRow — an act removes the cold row it committed", () => {
-  const COLD = ".persona-group-root-h0.json";
+  const COLD = "recovery-device-share-h0.bin";
   const HOT = ".persona-admissions.json";
   test("C1 a cold row leaves, and a second removal answers that none stood", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
@@ -271,7 +271,7 @@ describe("CustodyHolder.removeColdRow — an act removes the cold row it committ
     const ownPath = handleRowPathIn(homes.identity, COLD);
     writeFileSync(ownPath, readFileSync(handleRowPathIn(other.homes.identity, COLD)));
     const before = readFileSync(ownPath);
-    await expect(h.removeColdRow("identity", COLD)).rejects.toThrow(/custody row identity\/\.persona-group-root-h0\.json reads/);
+    await expect(h.removeColdRow("identity", COLD)).rejects.toThrow(/custody row identity\/recovery-device-share-h0\.bin reads/);
     expect(readFileSync(ownPath).equals(before)).toBe(true);
   });
 });

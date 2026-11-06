@@ -105,3 +105,49 @@ test("RED (Sol: mixed edges): an arrival carrying a raised edge AND another edge
   gate.end(raiseB);
   expect(ran).toEqual(["A", "both"]);
 });
+
+// ── the ward binds the daemon realm's promotions (row 7, S2) ─────────────────────────────────────────────────────────────
+test("RED: a daemon or kahua ledger row written straight into custody, with no ward signature, voids at boot; CONTROL: a user-wiki row with none stands, and a fresh-unlocked commit lands and runs", async () => {
+  const { seatScratchCustody } = await import("./custody-seat-fixture.js");
+  const { personaGroupDigest } = await import("../src/persona-group-file.js");
+  const { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey, setMountedFace } = await import("../src/node-vessel-identity.js");
+  const { wardCredential } = await import("../src/ward-credential.js");
+  const { wardRootSigner } = await import("../src/ward-signer.js");
+  const { nodePromoteStores, promotedFile } = await import("../src/promoted-store.js");
+  const { updateCustodyRow } = await import("../src/custody-seat.js");
+  const { EMPTY_LEDGER, encodeLedger, ledgerCommit, promoteDigest, promotions, readPromoteBoard } = await import("@lararium/mesh");
+  const PASS = "promote-ward-route", GROUP = "promote-ward-group";
+  const seat = await seatScratchCustody("promote-ward");
+  try {
+    setMountedFace(undefined);
+    await seat.holder.foundFace({ group: personaGroupDigest(GROUP), slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: PASS }] }] });
+    await generateOrLoadPersonaGroupRoot(0, wardCredential([{ kind: "passphrase", passphrase: PASS }]));
+    const rootKey = (await loadPersonaGroupRootVerifyingKey(0))!;
+    const rite = { title: "rites/a", text: "exports.startup = function(){}", fields: { "module-type": "startup" } };
+    const digest = promoteDigest(rite);
+    const hand = { kind: "hand" as const, id: "hand-1" };
+    // A script holding unlocked custody writes the ledger straight, under the face key: no ward act signs these rows.
+    let forged = ledgerCommit(EMPTY_LEDGER, { wiki: "daemon", digest, item: rite, revision: "r1" }, hand);
+    forged = ledgerCommit(forged, { wiki: "kahua", digest, item: rite, revision: "r1" }, hand);
+    forged = ledgerCommit(forged, { wiki: "garden", digest, item: rite, revision: "r1" }, hand);
+    await updateCustodyRow("identity", promotedFile(GROUP), () => ({ plaintext: encodeLedger(forged), value: undefined }));
+    const cas = new Map<string, Uint8Array>();
+    const face = { group: GROUP, grant: (k: string) => k === rootKey, device: () => false };
+    const doorOf = (wiki: string, extra: object = {}) => promotions({
+      wiki, ...nodePromoteStores(GROUP), who: hand, items: async () => [{ ...rite, revision: "r1", origin: { seat: "s", device: "d", session: "x" } }],
+      board: async () => readPromoteBoard([], face), cas: { put: (d, b) => { cas.set(d, b); }, pin: () => {} }, face, ...extra,
+    });
+    for (const wiki of ["daemon", "kahua"]) {
+      const booted = await doorOf(wiki).boot();
+      expect(booted.pluginCids, wiki).toEqual([]);
+      expect(booted.voided, wiki).toEqual([{ digest, reason: "ward-unsigned" }]);
+    }
+    expect((await doorOf("garden").boot()).pluginCids).toEqual([digest]);
+    // A commit with no ward route refuses; a fresh-unlocked one signs its row and the row runs.
+    await expect(doorOf("daemon").promote({ digest })).rejects.toMatchObject({ code: "ward-needs-fresh-unlock" });
+    const ward = wardCredential([{ kind: "passphrase", passphrase: PASS }]);
+    const row = await doorOf("daemon", { wardSigner: () => wardRootSigner(0, ward) }).promote({ digest });
+    expect(row.wardSig?.key).toBe(rootKey);
+    expect((await doorOf("daemon").boot()).pluginCids).toEqual([digest]);
+  } finally { setMountedFace(undefined); await seat.drop(); }
+});

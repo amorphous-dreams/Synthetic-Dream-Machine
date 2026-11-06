@@ -43,7 +43,8 @@ export function readPromoteAct(raw: unknown, face: PromoteFace): { ok: true; act
  if (raw.body.kind !== PROMOTE_ACT_DOMAIN) return { ok: false, refusal: "domain" };
  if (raw.body.group !== face.group) return { ok: false, refusal: "group" };
  try { if (!verifyEd25519(raw.sig, canonicalJsonBytes(raw.body), raw.signer)) return { ok: false, refusal: "signature" }; } catch { return { ok: false, refusal: "signature" }; }
- if (raw.body.act === "kapae" && !face.grant(raw.signer)) return { ok: false, refusal: "grant" };
+ // A RAISE ONLY ADDS A BRAKE, so an enrolled device's atom may sign one (it fails safe); a LOWER releases one, and only the grant signs it.
+ if (raw.body.act === "kapae" && !(face.grant(raw.signer) || (raw.body.raised && face.device(raw.signer)))) return { ok: false, refusal: "grant" };
  if (raw.body.act === "prepare" && !face.device(raw.signer)) return { ok: false, refusal: "device" };
  const act = raw as unknown as SignedPromoteAct; return { ok: true, act, cid: promoteActCid(act) };
 }

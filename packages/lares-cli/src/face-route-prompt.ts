@@ -3,14 +3,13 @@
  *
  * Each face seals its custody under a key wrapped in that face's own slot tree, bound under a human route the face
  * asks for when it founds: the vessel's route opens no sibling face and no face's route opens the vessel. A terminal
- * answers with a prompt; a root a harness staged answers with the published test route (the vessel key opens the same way,
- * `offline-custody`); with neither, the act refuses by name and founds nothing.
+ * answers with a prompt; a harness seats its own route explicitly (`tools/test-ward-route.mjs`); with neither, the act
+ * refuses by name and founds nothing. No marker file ever answers for a route.
  */
 import type { SlotSpec } from "@lararium/mesh";
-import { faceRouteSeated, seatFaceRoute } from "@lararium/node";
+import { faceRouteSeated, gatherFaceRoute, seatFaceRoute } from "@lararium/node";
 import { sendCustodyFrame } from "./custody-door.js";
 import { askYesNo, gatherFoundingRoute, requireTty } from "./custody-prompt.js";
-import { TEST_ROUTE_PASSPHRASE, testScratchRoot } from "./offline-custody.js";
 
 /**
  * The node route a founding just gathered, held for the ONE question persona zero's face founding asks next. A face founded any
@@ -19,12 +18,12 @@ import { TEST_ROUTE_PASSPHRASE, testScratchRoot } from "./offline-custody.js";
 let nodeRouteOfThisFounding: readonly SlotSpec[] | null = null;
 export function noteFoundingNodeRoute(slots: readonly SlotSpec[]): void { nodeRouteOfThisFounding = slots; }
 
-/** One new face's route: a prompt on a terminal, the published test route on a staged root. */
+/**
+ * One new face's route: a prompt on a terminal, and nothing else. No file answers for it: a face (and the ward it binds) founds
+ * only under a route a person typed. A test harness seats its route explicitly (`tools/test-ward-route.mjs`, loaded ahead of the
+ * binary); the product never reads a marker here.
+ */
 export async function gatherNewFaceRoute(face: { readonly label: string }): Promise<readonly SlotSpec[]> {
-  if (testScratchRoot()) {
-    process.stderr.write(`[custody] TEST SCRATCH ROOT: binding face ${face.label} under the published test route\n`);
-    return [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }] }];
-  }
   requireTty(`a new face (${face.label})`);
   const nodeRoute = nodeRouteOfThisFounding;
   nodeRouteOfThisFounding = null;
@@ -46,7 +45,8 @@ export function seatNewFaceRoute(): void { if (!faceRouteSeated()) seatFaceRoute
  * The route rides the custody frame alone: a verb's arguments get hashed into a receipt, so the route never rides one.
  */
 export async function handFaceRouteToVessel(label: string): Promise<void> {
-  const slots = await gatherNewFaceRoute({ label });
+  // The gatherer this process seated asks (the binary seats the terminal prompt; a harness seats its own route explicitly).
+  const slots = await gatherFaceRoute(label);
   for (const slot of slots) {
     if (slot.pins.some((pin) => pin.kind !== "passphrase")) {
       throw new Error("a standing vessel takes a passphrase route for a new face over its door; stop the vessel to bind a paper sheet");

@@ -36,6 +36,7 @@ describe("custody ⊥ secret-kind — one reading names both axes", () => {
   const SOWN = {
     ".vessel-key.json": "{}", [`faces/${"ab".repeat(16)}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
     [`faces/${"ab".repeat(16)}/.persona-group-root-h0.json`]: "{}", [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x",
+    [`faces/${"ab".repeat(16)}/ward-slots.bin`]: "x",
   };
 
   test("each key names its class and its custody off the one carrier table", async () => {
@@ -44,7 +45,7 @@ describe("custody ⊥ secret-kind — one reading names both axes", () => {
       const rows = await rowsOf(v.homes, SOWN);
       expect(Object.fromEntries([...rows].map(([name, r]) => [name, `${r.keyClass ?? "-"} ${r.custody}`]))).toEqual({
         "vessel-key": "device-minted floor", [`veil-archive-g${"a".repeat(64)}`]: "device-minted face-hot",
-        "persona-root-h0": "seed face-cold", "recovery-device-share-h0": "seed face-cold",
+        "persona-root-h0": "seed ward-cold", "recovery-device-share-h0": "seed face-cold", "ward-slots": "- floor",
       });
       for (const r of rows.values()) expect(r.keyClass === null || isKeyClass(r.keyClass), r.name).toBe(true);
       expect([...rows.values()].some((r) => r.keyClass === "cloud-synced")).toBe(false);
@@ -58,7 +59,7 @@ describe("custody ⊥ secret-kind — one reading names both axes", () => {
       await foundCustody({ io, homes: v.homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "census-test-route" }] }] });
       const rows = await rowsOf(v.homes, { [`faces/${"ab".repeat(16)}/.persona-group-root-h0.json`]: "{}", [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x" });
       expect(rows.get("gate-root")).toMatchObject({ keyClass: "device-minted", custody: "hot", reading: "sealed", fault: false });
-      expect(rows.get("persona-root-h0")).toMatchObject({ keyClass: "seed", custody: "face-cold", reading: "bare", fault: true });
+      expect(rows.get("persona-root-h0")).toMatchObject({ keyClass: "seed", custody: "ward-cold", reading: "bare", fault: true });
       expect(rows.get("recovery-device-share-h0")).toMatchObject({ keyClass: "seed", custody: "face-cold", reading: "bare", fault: true });
       // CONTROL: the floor's own key reads bare by law, and no fault.
       const floor = await rowsOf(v.homes, { ".vessel-key.json": "{}" });

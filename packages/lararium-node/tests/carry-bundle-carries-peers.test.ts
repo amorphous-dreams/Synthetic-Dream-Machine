@@ -1,3 +1,6 @@
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { CARRIAGE_CARRIER_DOMAIN, DAEMON_BAG_ID } from "@lararium/mesh";
 /**
  * carry-bundle-carries-peers.test.ts — a place carried LAST (a reader that runs no daemon and syncs no board) files the

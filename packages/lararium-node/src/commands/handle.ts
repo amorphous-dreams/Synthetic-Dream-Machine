@@ -10,6 +10,7 @@
  * Only the disk/store shores belong here; the mint logic (the veiled key, the causal publication frontier, the announce)
  * is platform-blind in @lararium/mesh (publishPersonaGlamour), the very code a browser vessel runs.
  */
+import type { WardCredential } from "../ward-credential.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   materializeSharedLarDoc, whoBoardDocUrl,
@@ -30,6 +31,8 @@ import { nodeNexusIsland } from "../nexus-standing.js";
 
 import { resolveFace } from "../face-selector.js";
 export interface HandlePublishOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
   /** The display name the world reads — "Guru-Josh", "The Dread Pirate Roberts". */
   readonly glamour: string;
   /** Which persona publishes; defaults to the worn persona, then 0. */
@@ -50,13 +53,16 @@ export async function runHandlePublish(opts: HandlePublishOptions): Promise<Hand
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
   // THE OWNER RIDES THE SEALED ANCHOR (the door): never the daemon tiddler.
   const owner       = await readHandleOwner(repo, handleIndex, boardIsland, "publish");
-  const seed        = await loadPersonaGroupRootSeed(handleIndex);
+  const seed        = await loadPersonaGroupRootSeed(handleIndex, opts.ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
   const board       = await materializeSharedLarDoc(repo, whoBoardDocUrl(boardIsland), "board:who-face");
   const store       = await makeNodePublicHandleStore();
 
   const card = await publishHandleForFace({ owner, board, seed, handleIndex, glamour: opts.glamour, store });
   await repo.flush();
   return card;
+  } finally { seed.fill(0); }
 }
 
 /**
@@ -103,9 +109,9 @@ interface OwnFaceContext {
  * seed, find the announced nym + one settled verified chain off the board, and derive the seated handle-key signer.
  * The shared boot for burn and attest supplies only its own act over this context.
  */
-async function openOwnFace(verb: string, repo: Repo, handleIndexOpt?: number): Promise<OwnFaceContext> {
+async function openOwnFace(verb: string, repo: Repo, handleIndexOpt: number | undefined, ward: WardCredential | undefined): Promise<OwnFaceContext> {
   const handleIndex = await resolveFace(handleIndexOpt);
-  const seed        = await loadPersonaGroupRootSeed(handleIndex);
+  const seed        = await loadPersonaGroupRootSeed(handleIndex, ward);
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
   const board       = await materializeSharedLarDoc(repo, whoBoardDocUrl(boardIsland), "board:who-face");
@@ -175,6 +181,8 @@ export async function resolveOwnerBurnHand(opts: {
 }
 
 export interface HandleBurnOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
   /** Which persona's face to bury; defaults to the worn persona, then 0. */
   readonly handleIndex?: number;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
@@ -192,7 +200,9 @@ export interface HandleBurnOptions {
  * wants the persona head op-key signer wired.
  */
 export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard> {
-  const face = await openOwnFace("burn", opts.repo, opts.handleIndex);
+  const face = await openOwnFace("burn", opts.repo, opts.handleIndex, opts.ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
 
   // The card re-signs with the seated handle key regardless of hand — a reader refuses a burned chain BEFORE
   // checking the sig, so even an owner-burn of a lost key lands; a well-formed card just keeps the lineage clean.
@@ -226,9 +236,12 @@ export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard
   });
   await face.repo.flush();
   return result.card;
+  } finally { face.seed.fill(0); }
 }
 
 export interface HandleRotateOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
   /** Which persona's face to rotate; defaults to the worn persona, then 0. */
   readonly handleIndex?: number;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
@@ -245,7 +258,9 @@ export interface HandleRotateOptions {
  * causal publication frontier a peer's HandleBook holds to.
  */
 export async function runHandleRotate(opts: HandleRotateOptions): Promise<HandleCard> {
-  const face = await openOwnFace("rotate", opts.repo, opts.handleIndex);
+  const face = await openOwnFace("rotate", opts.repo, opts.handleIndex, opts.ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
 
   // The OWNING PERSONA authorizes rotation. Resolve its verified head op-key off the per-Nexus persona-KEL board.
   const { personaKelPrefix, headOpKeyDid } = await readHandleOwner(face.repo, face.handleIndex, face.boardIsland, "rotate");
@@ -279,9 +294,12 @@ export async function runHandleRotate(opts: HandleRotateOptions): Promise<Handle
   });
   await face.repo.flush();
   return result.card;
+  } finally { face.seed.fill(0); }
 }
 
 export interface HandleAttestOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
   /** The STRUCTURED edge the face signs under its current head — a named surface + the foreign subject it
    *  names (+ optionally where the return leg lives). Prose reaches no adapter, so the type refuses it. */
   readonly claim: HandleClaim;
@@ -303,6 +321,9 @@ export async function runHandleAttest(opts: HandleAttestOptions): Promise<Handle
   if (!normalizeHandleClaim(opts.claim)) {
     throw new Error("[lares handle attest] the claim does not read as a structured edge — name a known surface and its subject.");
   }
-  const face = await openOwnFace("attest", opts.repo, opts.handleIndex);
+  const face = await openOwnFace("attest", opts.repo, opts.handleIndex, opts.ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
   return attestUnderHead(face.chain, opts.claim, face.veiledSigner);
+  } finally { face.seed.fill(0); }
 }

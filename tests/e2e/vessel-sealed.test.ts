@@ -224,12 +224,15 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     expect(custody.rows.filter((r) => r.fault).map((r) => r.file)).toEqual([]);
     expect(new Set(custody.rows.map((r) => `${r.home}/${r.file}`)).size).toBe(custody.rows.length);
     for (const r of custody.rows) {
-      if (r.custody === "hot" || r.custody === "cold" || r.custody === "face-hot" || r.custody === "face-cold") expect(r.reading, r.file).toBe("sealed");
+      if (r.custody === "hot" || r.custody === "cold" || r.custody === "face-hot" || r.custody === "face-cold" || r.custody === "ward-cold") expect(r.reading, r.file).toBe("sealed");
       else expect(typeof r.bare === "string" && r.bare.length > 0, `${r.file} names the law it rests bare under`).toBe(true);
     }
     // CONTROL: the reading holds rows of both kinds, so neither loop above ran over nothing.
     expect(custody.rows.some((r) => r.row === "device-share" && r.reading === "sealed")).toBe(true);
     expect(custody.rows.some((r) => r.row === "s-slots" && r.reading === "bare")).toBe(true);
+    // The face root rests warded, under the ward's own frame, beside the ward tree (seat-harness#/the-ward).
+    expect(custody.rows.some((r) => r.row === "persona-root" && r.custody === "ward-cold" && r.reading === "sealed")).toBe(true);
+    expect(custody.rows.some((r) => r.row === "ward-slots" && r.reading === "bare")).toBe(true);
     expect(readFckCarrier(readFileSync(SHARE()))).toBe("sealed");
   }, 120_000);
 

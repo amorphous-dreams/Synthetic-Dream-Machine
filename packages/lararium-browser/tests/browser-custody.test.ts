@@ -933,3 +933,16 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     expect(await (await makeBrowserIdbPersonaVault(v.idbName)).selector.load()).toBe(0);
   }, SLOW);
 });
+
+describe("the ward refuses a passkey path to a warded root (row 7, S2)", () => {
+  test("RED: a PRF seed wrap refuses on a sealed keystore `ward-passkey-refused`; CONTROL: a clear keystore keeps the opt-in wrap door as it stood", async () => {
+    const { writeBrowserSeedWrap } = await import("../src/browser-vessel-identity.js");
+    const { sealBrowserKeystore: seal } = await import("../src/browser-custody.js");
+    const sealed = `lares:wrap-${globalThis.crypto.randomUUID()}`;
+    await seal(sealed, { kind: "passphrase", passphrase: "a sealed keystore" });
+    const wrap = { keyClass: "relation", info: "x", nonce: "00", wrapped: "00" } as never;
+    await expect(writeBrowserSeedWrap(sealed, 0, wrap)).rejects.toThrow(/ward-passkey-refused/);
+    const clear = `lares:wrap-${globalThis.crypto.randomUUID()}`;
+    await expect(writeBrowserSeedWrap(clear, 0, wrap)).resolves.toBeUndefined();
+  });
+});

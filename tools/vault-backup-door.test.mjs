@@ -10,6 +10,7 @@
 //   B5  the root's seed rests in NO document, outcome or log line of the standing vessel after a cut.
 //                                                               control: the opened body does carry it
 //   B6  the harness door refuses an unmarked root (rc 2) before any socket opens.
+import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";

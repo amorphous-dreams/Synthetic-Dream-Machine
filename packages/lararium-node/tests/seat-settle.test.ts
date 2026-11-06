@@ -28,6 +28,9 @@
  * outcome rejects by the island's words (A2), an outcome that already stands answers with no placement (A3),
  * and an abandoned ask rejects by name and stops listening (A4).
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import {

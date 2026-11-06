@@ -30,6 +30,10 @@ import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { faceRowNames, groupRowPath } from "./face-paths.js";
 import { foundDirect, sealTestCustody, seatSeedCharter } from "./found-route.js";
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+
+// The founding's root acts ask the suite's "person", who answers the routes its faces stood under (seat-harness#/the-ward).
+seatSuiteWard();
 
 const GROUP_A = "0x" + "a1".repeat(16);
 const GROUP_B = "0x" + "b2".repeat(16);

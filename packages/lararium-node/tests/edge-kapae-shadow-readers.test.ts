@@ -8,6 +8,9 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/kapae
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";

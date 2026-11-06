@@ -7,7 +7,7 @@ import { carrierTable, CUSTODY_PARTS, type CarrierRow, type CustodyPart } from "
  * spec adds or drops moves this list in the same commit.
  */
 const SPEC: ReadonlyArray<readonly [row: string, classes: readonly CustodyPart[], lead: boolean]> = [
-  ["vessel-key", ["S"], true], ["relay-gate-seed", ["S"], false], ["vessel-kel", ["F"], false], ["vessel-rotating", ["S"], true], ["s-slots", ["D", "S"], true], ["sk-slots", ["S"], true], ["fk-slots", ["D"], false], ["face-index", ["F"], false],
+  ["vessel-key", ["S"], true], ["relay-gate-seed", ["S"], false], ["vessel-kel", ["F"], false], ["vessel-rotating", ["S"], true], ["s-slots", ["D", "S"], true], ["sk-slots", ["S"], true], ["fk-slots", ["D"], false], ["ward-slots", ["D"], false], ["face-index", ["F"], false],
   ["charter", ["F"], false], ["carried-charter", ["F"], false],
   ["carriage-consent", ["F"], false], ["nexus-key-line", ["F"], false], ["carriage-admit", ["F"], false],
   ["sealed-rest", ["F"], false], ["sealed-own", ["F"], true], ["sealed-chunk", ["F"], false],

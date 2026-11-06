@@ -4,6 +4,9 @@
  * two custodians {recorded-code, escrow} to re-admit a fresh device — whose edge verifies against the
  * original pinned root. The device-share (dead with the device) is never the recovery path.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeAll, beforeEach, describe, test, expect } from "vitest";
 import { generateKeyPairSync } from "node:crypto";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -14,6 +17,7 @@ import { countersignDeviceDelegation, faceAtomKeyFromSeed, mintFaceAtomSeed, typ
 import { splitRootAtFounding, reconstructAndReadmit, provisionRecoveryAtFounding, provisionRecoveryCardsAtFounding } from "../src/recovery-keel.js";
 import { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed } from "../src/node-vessel-identity.js";
 import { loadRecoveryDeviceShare } from "../src/recovery-share-store.js";
+import { fixtureWard } from "./custody-seat-fixture.js";
 
 const ROOT = Uint8Array.from(Array.from({ length: 32 }, (_, i) => (i * 61 + 13) & 0xff));
 const PLACE = "bafkreic7r3jrao44srh5bp47uryotaqp62bnmovzpqccbfy2kclf447bra";
@@ -165,7 +169,7 @@ describe("recovery-keel — founding provision against the real identity store",
   test("provision at founding: split the minted root, seal the device-share, recover from {code, escrow}", async () => {
     const dataDir = root;   // identityDir ignores it — the store resolves under XDG state
     await generateOrLoadPersonaGroupRoot();                    // the founding mint
-    const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(dataDir, seededRng(11));
+    const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(dataDir, seededRng(11), 1, 0, undefined, fixtureWard());
 
     // The device-share landed sealed in the identity home; the two off-device carriers came back.
     expect((await loadRecoveryDeviceShare())?.custodian).toBe("device");
@@ -197,7 +201,7 @@ describe("recovery-keel — identity recovery issues the SHARED custodian cards 
 
   test("founding: split the minted root into mine + custodian-A/B cards, seal 'mine', recover from the two custodians", async () => {
     await generateOrLoadPersonaGroupRoot();                       // the founding mint
-    const { cards, mineSealed } = await provisionRecoveryCardsAtFounding(dir, "Ola", "Kai", seededRng(11));
+    const { cards, mineSealed } = await provisionRecoveryCardsAtFounding(dir, "Ola", "Kai", seededRng(11), 1, 0, fixtureWard());
 
     // The SAME card shape the charter reserve issues: three slots, three distinct custodians, human labels.
     expect(mineSealed).toBe(true);
@@ -222,7 +226,7 @@ describe("recovery-keel — identity recovery issues the SHARED custodian cards 
 
   test("ONE custodian card alone cannot recover — below threshold (fail closed)", async () => {
     await generateOrLoadPersonaGroupRoot();
-    const { cards } = await provisionRecoveryCardsAtFounding(dir, "Ola", "Kai", seededRng(11));
+    const { cards } = await provisionRecoveryCardsAtFounding(dir, "Ola", "Kai", seededRng(11), 1, 0, fixtureWard());
     const one = [custodianShareFromCard(cards.find((c) => c.slot === "custodian-a")!, 1)];
     await expect(reconstructAndReadmit(one, readmitFields(freshDeviceKey()))).rejects.toThrow(/below threshold/);
   });

@@ -18,6 +18,7 @@
  * on disk, the function returns early without re-seeding.
  */
 
+import { wardCredentialOfRoute, type WardCredential } from "../ward-credential.js";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
@@ -441,6 +442,8 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
 // ---------------------------------------------------------------------------
 
 export interface FoundFaceOptions {
+  /** The face's ward route for this founding (seat-harness#/the-ward). Absent, the founding rides the route its face's custody was born under; a face that already stood names one here. */
+  readonly ward?: WardCredential;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:        Repo;
   readonly genesisDir?: string;
@@ -507,13 +510,15 @@ export interface RecoveryArmed {
  */
 export async function armRecoveryAtFounding(
   storageDir: string, handleIndex: number,
-  handOut?: (off: { readonly recordedCode: string; readonly escrowCarrier: string }) => void | Promise<void>,
+  handOut: ((off: { readonly recordedCode: string; readonly escrowCarrier: string }) => void | Promise<void>) | undefined,
+  /** The face's ward route: the split reads the root seed, a ward act (seat-harness#/the-ward). */
+  ward: WardCredential | undefined,
 ): Promise<RecoveryArmed> {
   if (await loadRecoveryDeviceShare(handleIndex)) return { minted: false, recordedCode: "", escrowCarrier: "" };
   // THE PERSON HOLDS THE TWO OFF-DEVICE SHARES BEFORE THE DEVICE SHARE RESTS (`handOut`). A run that stops between
   // the two leaves no device share, and the same command splits afresh; no run leaves a sealed share whose two
   // partners nobody received.
-  const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(storageDir, globalThis.crypto, 1, handleIndex, handOut);
+  const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(storageDir, globalThis.crypto, 1, handleIndex, handOut, ward);
   return { minted: true, recordedCode, escrowCarrier };
 }
 
@@ -617,9 +622,15 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   };
   // THE FACE'S CUSTODY STANDS BEFORE ITS ROOT: the root, like every private row of this face, rests under the face's own key,
   // at the ordinal that is its handle index. The face asks the route it binds (never the vessel's).
-  await ensureFaceCustodyOfAsk(foundingAskDigest(foundingAsk), `h${handleIndex}`, handleIndex);
-  await generateOrLoadPersonaGroupRoot(handleIndex);
-  const signerSeed = await loadPersonaGroupRootSeed(handleIndex);
+  // ONE PROMPT, ONE ACT: the route the face's custody was born under (or the one the caller carried) opens the face's ward for this
+  // founding's root acts; nothing holds it once the founding settles.
+  let born: WardCredential | null = null;
+  await ensureFaceCustodyOfAsk(foundingAskDigest(foundingAsk), `h${handleIndex}`, handleIndex, (slots) => { born = wardCredentialOfRoute(slots); });
+  const ward = opts.ward ?? born ?? undefined;
+  await generateOrLoadPersonaGroupRoot(handleIndex, ward!);
+  const signerSeed = await loadPersonaGroupRootSeed(handleIndex, ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
   // The ask's first row founds the face's own custody (never the vessel's route), keyed by this ask until its group exists;
   // an interrupted founding re-enters the face it already holds.
   const askDigest = foundingAskDigest(foundingAsk);
@@ -713,4 +724,5 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     personaKelPrefix:     face.personaKelPrefix,
     signerDid:            face.signerDid,
   };
+  } finally { signerSeed.fill(0); }
 }

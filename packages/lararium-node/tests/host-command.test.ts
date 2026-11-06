@@ -14,6 +14,9 @@
  *     counts one redemption;
  *   · REFUSALS write nothing: no charter, a Nexus this hearth does not carry, an invite before any roll.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { HOSTING_ACT_DOMAIN, writeHostingAct, mintHostingAct } from "@lararium/mesh";
 import { afterEach, describe, expect } from "vitest";
 import { seatedCustody } from "../src/custody-seat.js";

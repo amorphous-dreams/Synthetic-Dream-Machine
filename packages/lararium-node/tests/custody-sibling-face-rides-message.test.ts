@@ -39,14 +39,14 @@ test("unlocking a sibling with the mounted face unchanged lights it without reco
 test("changing the mounted face recomposes", async () => {
   setMountedFace(0); const h = harness();
   await h.send({ op: "unlock", face: 1, credentials: [{ kind: "passphrase", passphrase: "x" }] });
-  expect(h.recompose).toHaveBeenCalledWith(true);
+  expect(h.recompose).toHaveBeenCalledWith(true, expect.anything());
 });
 test("reopening the mounted face recomposes after its lock", async () => {
   setMountedFace(0); const h = harness();
   await h.send({ op: "lock", face: 0 });
   h.recompose.mockClear();
   await h.send({ op: "unlock", face: 0, credentials: [{ kind: "passphrase", passphrase: "x" }] });
-  expect(h.recompose).toHaveBeenCalledWith(true);
+  expect(h.recompose).toHaveBeenCalledWith(true, expect.anything());
   expect(h.lightFace).not.toHaveBeenCalled();
 });
 test("the sibling key stays open until its provider drops", async () => {
