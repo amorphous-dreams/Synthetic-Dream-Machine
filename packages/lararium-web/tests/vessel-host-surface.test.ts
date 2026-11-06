@@ -34,6 +34,13 @@
  *            left to hear a floor), the worker relights for ANOTHER face on the same surface slug, and that face's late
  *            session hears nothing of the first face's frames, nor any frame the closed vessel sends after its close.
  *            CONTROL: within the second face's own lighting a late session still catches up on its frames.
+ *   SV10 RED a face admitted while another face's lock brings its vessel down keeps its light: that lock's end retires
+ *            nothing of the new light, so face B's frames fan out and its late session catches up. CONTROL: the lock still
+ *            takes face A's fold (B's late session hears nothing of face A).
+ *   SV11 RED a light's connection events reach the sessions wearing its face alone, and its listener ends with it: a closed
+ *            light's late event reaches no session of the relit vessel. CONTROL: each lit face hears its own vessel's.
+ *   SV12 RED a relight's holder spawn (the page builds a dedicated worker's SharedWorker) asks the tab that lights it, never
+ *            the first light's closed tab. CONTROL: the first light asks its own lighting tab.
  *
  * The vessel the host lights stands in (as in vessel-host-faces), with its surface callbacks held so a case can fire them.
  *
@@ -92,6 +99,10 @@ function fakeVessel() {
   const surfaces: string[] = [];
   const mirrorReads: string[] = [];
   let closes = 0;
+  /** A close the case holds open: the lock stands in flight until the case lets it go. */
+  let closeGate: Promise<void> | null = null;
+  /** Each light's connection listeners, in light order: a case fires a closed light's own. */
+  const connections: Array<Set<(state: unknown) => void>> = [];
   let shown = "w";
   /** The camera's mount epoch, as the island's camera keeps it: a resend re-mints it, and an act under another answers stale-target. */
   let epoch = 1;
@@ -101,17 +112,19 @@ function fakeVessel() {
     hooks.onFrame = o.onFrame;
     hooks.onControlResult = o.onControlResult;
     hooks.onPortMessage = o.onPortMessage;
+    const listeners = new Set<(state: unknown) => void>();
+    connections.push(listeners);
     return {
       face: o.face ?? null,
       identity: { verifyingKey: "00".repeat(32) },
-      connectionState: { getSnapshot: () => ({ status: "local" }), subscribe: () => () => undefined },
+      connectionState: { getSnapshot: () => ({ status: "local" }), subscribe: (l: (state: unknown) => void) => { listeners.add(l); return () => { listeners.delete(l); }; } },
       activeWikiId: "w", wikiDocUrl: "automerge:w", oracleDocUrl: "automerge:o",
       faceProviders: { lit: async () => undefined, drop: async () => undefined },
       ports: {
         place: (surface: string, binding: string) => { placed.push({ surface, binding }); return { ok: true as const }; },
         close: (binding: string) => { closed.push(binding); },
       },
-      flush: async () => undefined, close: async () => { closes++; },
+      flush: async () => undefined, close: async () => { closes++; await closeGate; },
       sendControlEvent: (surface: string, ev: { eventId: string; mountEpoch?: number }) => {
         controlEvents.push(ev.eventId);
         acts.set(ev.eventId, { surface, mountEpoch: ev.mountEpoch ?? epoch });
@@ -132,7 +145,9 @@ function fakeVessel() {
     const act = acts.get(eventId)!;
     hooks.onControlResult!(act.surface, { type: "lar:control-result", eventId, cameraId: "lar:story", mountEpoch: epoch, status: act.mountEpoch === epoch ? "applied" : "stale-target" } as never);
   };
-  return { open, hooks, placed, closed, controlEvents, resent, surfaces, mirrorReads, show: (s: string) => { shown = s; }, paint, answer, epoch: () => epoch, closes: () => closes };
+  return { open, hooks, placed, closed, controlEvents, resent, surfaces, mirrorReads, show: (s: string) => { shown = s; }, paint, answer, epoch: () => epoch, closes: () => closes,
+    holdClose: (): (() => void) => { let open = (): void => undefined; closeGate = new Promise<void>((r) => { open = r; }); return () => { closeGate = null; open(); }; },
+    connections };
 }
 
 const until = async (what: string, ok: () => boolean): Promise<void> => {
@@ -150,10 +165,10 @@ const standFace = async (idbName: string, route: string): Promise<string> => {
 };
 
 /** Connect one tab and say its hello. */
-const enter = (host: ReturnType<typeof standVesselHost>, t: ReturnType<typeof tab>, tabSession: string, idbName: string, face: string) => {
+const enter = (host: ReturnType<typeof standVesselHost>, t: ReturnType<typeof tab>, tabSession: string, idbName: string, face: string, extra: Partial<VesselBoot> = {}) => {
   const c = host.connect(t.scope);
   t.bind(c.receive);
-  c.receive({ t: "hello", tabSession, boot: boot(idbName), face } as PageToVessel);
+  c.receive({ t: "hello", tabSession, boot: { ...boot(idbName), ...extra }, face } as PageToVessel);
   return c;
 };
 
@@ -379,6 +394,104 @@ describe("surface traffic reaches each session over its own port", () => {
     await until("CONTROL: a late session within face B's lighting catches up", () => b3.frames().length > 0);
     expect(said(b3)).toContain("face B's own words");
     expect(said(b3)).not.toContain("face A");
+  }, SLOW);
+
+  test("SV10 RED a face admitted while another face's lock brings its vessel down keeps its light: its frames fan out and its late session catches up — CONTROL: the lock takes the first face's fold", async () => {
+    const idbName = `host-surface-lock-race-${crypto.randomUUID()}`;
+    const faceA = await standFace(idbName, ROUTE);
+    const faceB = await standFace(idbName, OTHER_ROUTE);
+    const v = fakeVessel();
+    const host = standVesselHost({ locks: navigator.locks, openVessel: v.open } as never);
+    const a = tab(ROUTE);
+    const ca = enter(host, a, "tab-a", idbName, faceA);
+    await until("A admitted", a.admitted);
+    v.paint({ "lar:surface": "<p>face A's own words</p>" });
+
+    // A's last close runs the lock; its vessel's close stands open while face B's first tab asks.
+    const letGo = v.holdClose();
+    ca.receive({ t: "page:life", life: "pagehide" });
+    await until("A's lock reaches its vessel's close", () => v.closes() === 1);
+    const b1 = tab(OTHER_ROUTE), b2 = tab(OTHER_ROUTE);
+    enter(host, b1, "tab-b1", idbName, faceB);
+    // B's own unlock runs its KDF: give its admission the room to reach its light while the lock still stands (the old race).
+    for (let i = 0; i < 200 && v.connections.length < 2; i++) await new Promise((r) => setTimeout(r, 25));
+    letGo();
+    await until("B1 admitted", b1.admitted);
+    await settle();
+
+    const said = (t: ReturnType<typeof tab>) => JSON.stringify(t.frames());
+    v.paint({ "lar:surface": "<p>face B's own words</p>" });
+    expect(said(b1), "the lock that closed face A's vessel leaves face B's light standing: B's frame fans out").toContain("face B's own words");
+    enter(host, b2, "tab-b2", idbName, faceB);
+    await until("B2 admitted", b2.admitted);
+    await until("B2 catches up on face B's frames", () => b2.frames().length > 0);
+    expect(said(b2)).toContain("face B's own words");
+    expect(said(b2), "CONTROL: face A's fold left with its lock").not.toContain("face A");
+  }, SLOW);
+
+  test("SV11 RED a light's connection events reach its own face's sessions alone and end with it — CONTROL: the lit face hears its own", async () => {
+    const idbName = `host-surface-connection-${crypto.randomUUID()}`;
+    const faceA = await standFace(idbName, ROUTE);
+    const faceB = await standFace(idbName, OTHER_ROUTE);
+    const v = fakeVessel();
+    const host = standVesselHost({ locks: navigator.locks, openVessel: v.open } as never);
+    const connectionsHeard = (t: ReturnType<typeof tab>) => t.heard.filter((m) => m.t === "status" && m.status.vessel === undefined && m.status.connection !== undefined).map((m) => JSON.stringify(m.t === "status" ? m.status.connection : null));
+    const a = tab(ROUTE), g = tab(OTHER_ROUTE);
+    const ca = enter(host, a, "tab-a", idbName, faceA);
+    await until("A admitted", a.admitted);
+    const cg = enter(host, g, "tab-g", idbName, faceB);
+    await until("G admitted (its own face, its own unlock)", g.admitted);
+    for (const l of v.connections[0]!) l({ status: "a-live" });
+    expect(connectionsHeard(a), "CONTROL: the lit face hears its own vessel's connection").toEqual([JSON.stringify({ status: "a-live" })]);
+    expect(connectionsHeard(g), "a session wearing another face hears none of the lit face's connection").toEqual([]);
+
+    const firstLight = [...v.connections[0]!];
+    ca.receive({ t: "page:life", life: "pagehide" });
+    cg.receive({ t: "page:life", life: "pagehide" });
+    await until("the last close brings face A's vessel down", () => v.closes() === 1);
+    await settle();
+    expect(v.connections[0]!.size, "the lock ends the closed light's connection listener").toBe(0);
+    const b1 = tab(OTHER_ROUTE);
+    enter(host, b1, "tab-b1", idbName, faceB);
+    await until("B1 admitted (face B lights anew)", b1.admitted);
+    for (const l of firstLight) l({ status: "a-late" });
+    expect(connectionsHeard(b1), "the closed light's late connection event reaches no session of the relit vessel").toEqual([]);
+    for (const l of v.connections[1]!) l({ status: "b-live" });
+    expect(connectionsHeard(b1), "CONTROL: face B hears its own vessel's connection").toEqual([JSON.stringify({ status: "b-live" })]);
+  }, SLOW);
+
+  test("SV12 RED a relight's holder spawn asks its own lighting tab, never the first light's — CONTROL: the first light asks its own", async () => {
+    const idbName = `host-surface-holder-${crypto.randomUUID()}`;
+    const faceA = await standFace(idbName, ROUTE);
+    const faceB = await standFace(idbName, OTHER_ROUTE);
+    const v = fakeVessel();
+    // The vessel's holder door builds its SharedWorker as a dedicated worker would: with none native, the host's page-built one.
+    const open = async (o: Parameters<typeof v.open>[0] & { sharedHolderUrl?: URL }) => {
+      const r = await v.open(o);
+      if (o.sharedHolderUrl) new (globalThis as unknown as { SharedWorker: new (u: URL, x: { name: string }) => unknown }).SharedWorker(o.sharedHolderUrl, { name: "holder" });
+      return r;
+    };
+    const native = (globalThis as { SharedWorker?: unknown }).SharedWorker;
+    (globalThis as { SharedWorker?: unknown }).SharedWorker = undefined;
+    try {
+      const host = standVesselHost({ locks: navigator.locks, openVessel: open } as never);
+      const holder = { sharedHolderUrl: "https://holder.synthetic/holder.js" } as Partial<VesselBoot>;
+      const spawnsTo = (t: ReturnType<typeof tab>) => t.heard.filter((m) => m.t === "spawn").length;
+      const a = tab(ROUTE);
+      const ca = enter(host, a, "tab-a", idbName, faceA, holder);
+      await until("A admitted", a.admitted);
+      expect(spawnsTo(a), "CONTROL: the first light's holder spawn asks its own lighting tab").toBe(1);
+      ca.receive({ t: "page:life", life: "pagehide" });
+      await until("A's last close brings the vessel down", () => v.closes() === 1);
+      await settle();
+      const b1 = tab(OTHER_ROUTE);
+      enter(host, b1, "tab-b1", idbName, faceB, holder);
+      await until("B1 admitted (face B lights anew)", b1.admitted);
+      expect(spawnsTo(b1), "the relight's holder spawn asks the tab that lights it").toBe(1);
+      expect(spawnsTo(a), "the closed tab hears no second spawn").toBe(1);
+    } finally {
+      (globalThis as { SharedWorker?: unknown }).SharedWorker = native;
+    }
   }, SLOW);
 
   test("SV6 RED a session of another face acts on nothing of the lit face — CONTROL: the lit face's session acts", async () => {
