@@ -10,6 +10,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { wardRootSigner } from "../ward-signer.js";
+import { makeCatalogAccessor } from "@lararium/tw5";
 import type { WardCredential } from "../ward-credential.js";
 import { randomBytes } from "node:crypto";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
@@ -54,7 +55,7 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
   catch (e) { if (e instanceof IntentRefused) throw new KahuaRefused(e.message); throw e; }
   const { group, index, face, personaPlane, plane, verbs, signer } = loaded;
   if (!personaPlane) throw new KahuaRefused("face-log-unreadable: the catalog names no persona plane for the face");
-  const catalog = await opts.repo.find<LarDoc>(opts.catalogUrl as never);
+  const catalog = await makeCatalogAccessor(opts.repo, opts.catalogUrl!).handle();
   const session = opts.session ?? `cli:${randomBytes(8).toString("hex")}`;
   const ports: KahuaDoorPorts = {
     repo: opts.repo, group, verbs,

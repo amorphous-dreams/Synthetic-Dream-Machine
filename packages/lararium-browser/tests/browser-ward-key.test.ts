@@ -13,12 +13,13 @@
  * Controls: the ward worker signs a valid pop and approve under a fresh route; a passkey refuses; S2b's root rows stay as they stood.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-swarm-slices
  */
+import { bindFirstFaceSlot } from "../src/browser-face-custody.js";
 import { afterEach, expect, test } from "vitest";
 import { seatWardWorkerSpawn } from "../src/testing.js";
 import { ed25519SignerFromSeed, signingSeedFromHex, verifyEd25519, wardAnswerImage, wardKeyPopHolds, wardKeyPopImage, wardPublicKeyOf } from "@lararium/mesh";
 import { browserKeystoreCustodyIo, isCustodyRow, readKeystoreRow, sealBrowserKeystore, withCustodyRows } from "../src/browser-custody.js";
 import { browserVesselFaceTagDoor } from "../src/browser-face-atom.js";
-import { generateOrLoadBrowserPersonaRoot } from "../src/browser-vessel-identity.js";
+import { generateOrLoadBrowserPersonaRoot, wearFaceOfVessel } from "../src/browser-vessel-identity.js";
 import { runWardAct } from "../src/ward-core.js";
 import { keyed } from "../../lararium-mesh/tests/ward-cosign-table.js";
 
@@ -37,6 +38,8 @@ const codeOf = (p: Promise<unknown>): Promise<string | undefined> =>
 async function stand() {
   const idbName = `lares:ward-key-${globalThis.crypto.randomUUID()}`;
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
+  // The face's own tree binds before its first row (its tag secret rests there).
+  await bindFirstFaceSlot(idbName, G, { kind: "passphrase", passphrase: PASS });
   const me = await keyed(81);
   const fields = await browserVesselFaceTagDoor(idbName, WARD)(G, me.key);
   return { idbName, me, fields };
@@ -44,7 +47,8 @@ async function stand() {
 
 /** Every signing seed the page's own unlocked custody doors hand it, read row by row: what a page-thread script holds with no ward act. */
 async function pageHeldSeeds(idbName: string): Promise<Uint8Array[]> {
-  const names = (await browserKeystoreCustodyIo(idbName).list()).map((k) => k.replace(/^sealed\//, "")).filter((k) => isCustodyRow(k));
+  // The place rows, and the face's own rows its unlocked tree opens (its tag secret rests there).
+  const names = [...(await browserKeystoreCustodyIo(idbName).list()).map((k) => k.replace(/^sealed\//, "")).filter((k) => isCustodyRow(k)), `vessel-face-tag/${G}`];
   const seeds: Uint8Array[] = [];
   for (const name of new Set(names)) {
     const held = await readKeystoreRow(idbName, name).catch(() => undefined);
@@ -80,6 +84,8 @@ test("RED: an unlocked page reads the face's ward seed through the custody doors
 test("RED: a tag door with no route mints the face's ward key and signs its pop on the page; CONTROL: under a typed route the mint's pop holds and a passkey refuses `ward-passkey-refused`", async () => {
   const idbName = `lares:ward-key-${globalThis.crypto.randomUUID()}`;
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
+  // The face's own tree binds before its first row (its tag secret rests there).
+  await bindFirstFaceSlot(idbName, G, { kind: "passphrase", passphrase: PASS });
   const me = await keyed(82);
   expect(await codeOf(browserVesselFaceTagDoor(idbName)(G, me.key))).toBe("ward-needs-fresh-unlock");
   expect(await codeOf(browserVesselFaceTagDoor(idbName, { route: async () => ({ kind: "passkey", credentialId: "c" }) } as never)(G, me.key))).toBe("ward-passkey-refused");
@@ -118,6 +124,9 @@ test("RED: a re-read opens the face's ward seed on the page to name its key; CON
 test("CONTROL: the face root's S2b ward rows stand byte for byte across the ward key's mint and its re-read, apart from the ward key's own rows", async () => {
   const idbName = `lares:ward-key-${globalThis.crypto.randomUUID()}`;
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
+  // The face's own tree binds before its first row (its tag secret rests there).
+  await bindFirstFaceSlot(idbName, G, { kind: "passphrase", passphrase: PASS });
+  wearFaceOfVessel(idbName, G);   // the face whose tree stands, worn (the ward mint's face gate)
   await generateOrLoadBrowserPersonaRoot(idbName, 0, PASS);
   const io = browserKeystoreCustodyIo(idbName);
   const rootRows = ["ward/h0/slots", "ward/h0/persona-root", "ward/h0/public-key"];

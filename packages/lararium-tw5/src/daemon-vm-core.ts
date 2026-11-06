@@ -30,12 +30,16 @@ import {
   CompositeStore,
   AutomergeDocStore,
   computeRecipeFingerprint,
+  documentIdOfUrl,
+  mountedDocumentId,
+  rebindWorkingLayer,
   wikiSlotUri,
   attachMessageChannelSync,
   awaitIslandMsg,
   mkManifest,
   mkDaemonPlaceVerb,
   mkDaemonFaceLit,
+  mkDaemonFaceBags,
   mkDaemonFaceDrop,
   type JoinedFaceAuth,
   mkTelemetryPlaceVerb,
@@ -218,6 +222,12 @@ export interface DaemonVmCore {
   composite:      CompositeStore;
   /** Resolve the worker's daemon binding and mount that exact document as the host default. */
   mountHostWorkingLayer: () => Promise<void>;
+  /**
+   * The island named `url` as the daemon working slot's document (the seat's lift moves it from the floor's document to
+   * the face's derived one): the host's mounted working layer follows, so the outcome ledger the island writes there
+   * reads here. Nothing moves before the host mounts its layer, or where it stands on that document already.
+   */
+  followHostWorkingLayer: (url: string) => Promise<void>;
   workerEa:       Promise<void>;
   /** Resolves once the vessel's Repo has met the daemon island's sync peer on the leg the island now runs on. A
    *  document the island mints reaches the vessel's Repo over that leg alone, so a question of the Repo about it
@@ -236,6 +246,10 @@ export interface DaemonVmCore {
   runAsFace:      (o: { readonly verb: string; readonly args: Record<string, unknown>; readonly worn: SessionWorn }) => Promise<Record<string, unknown>>;
   lightFace:      (entry: JoinedFaceAuth) => Promise<void>;
   dropFace:       (atomKey: string) => Promise<void>;
+  /** THE LIFT'S RE-REGISTRATION (sealed-store#/owed, U1 · T2): register `bags` (the face's own catalog names them, and it
+   *  opens only once this island's holder stands) on the mounted face's hive. A re-opened island reads them off its
+   *  manifest, so nothing replays. */
+  registerFaceBags: (atomKey: string, bags: readonly string[]) => Promise<void>;
   /** FEED one captured turn to the daemon's telemetry capture cap (the nalu). Fire-and-forget.
    *  `frontier` (optional) carries the turn-DAG fork-frontier so a same-session fork derives a
    *  distinct handle; absent on a non-forked turn. */
@@ -441,7 +455,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   const facePending = new Map<string, Array<{ resolve: () => void; reject: (error: Error) => void }>>();
   const faceKey = (atomKey: string, op: string) => `${atomKey.toLowerCase().replace(/^0x/, "")}:${op}`;
   let faceAsksEnded: string | null = null;
-  function askFace(atomKey: string, op: "lit" | "dropped", msg: unknown): Promise<void> {
+  function askFace(atomKey: string, op: "lit" | "dropped" | "bags", msg: unknown): Promise<void> {
     return new Promise((resolve, reject) => {
       if (faceAsksEnded !== null) { reject(new Error(faceAsksEnded)); return; }
       const key = faceKey(atomKey, op);
@@ -745,10 +759,22 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (composite.defaultWritableBagId() !== slot) throw new NoWorkingLayerRefusal("Mounting the host working layer", "The mounted daemon working layer did not become the default writable; restart the vessel.");
   };
 
+  const followHostWorkingLayer = async (url: string): Promise<void> => {
+    const slot = wikiSlotUri("daemon", "working");
+    if (!composite.hasBag(slot) || mountedDocumentId(composite.storeForBag(slot)) === documentIdOfUrl(url)) return;
+    const handle = await findOrThrow(repo, url, `${slot} (the island's working document)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
+    const store = new AutomergeDocStore(handle, slot);
+    if (rebindWorkingLayer(composite, slot, store)) {
+      store.markSyncComplete();
+      console.log(`[daemon] the host working layer follows the island onto ${url.slice(0, 22)}…`);
+    }
+  };
+
   return {
     daemonHandle,
     composite,
     mountHostWorkingLayer,
+    followHostWorkingLayer,
     workerEa,
     worker,
     syncLegReady: () => currentLeg,
@@ -759,6 +785,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       askIsland("binding", (requestId) => mkDaemonResolveBindingRequest({ requestId, fingerprint, recipeTrace, wikiSlug })),
     lightFace: (entry) => askFace(entry.atom.key, "lit", mkDaemonFaceLit(entry)),
     dropFace: (atomKey) => askFace(atomKey, "dropped", mkDaemonFaceDrop(atomKey)),
+    registerFaceBags: (atomKey, bags) => askFace(atomKey, "bags", mkDaemonFaceBags(atomKey, bags)),
     retireAsk: (requestId: string) => { sessionAsks.delete(requestId); },
     runAsFace: async ({ verb, args, worn }) => {
       const registry = _registry;

@@ -19,7 +19,7 @@
  * answers for a peer, which waits on the wire train (`cabal-realm#/many-realms`, OWED).
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { openStaged, awaitRendezvous, foundStagedHearth, freePort, growStagedQuorum, type LarInstance } from "../harness/instance.js";
 import { seedUserBag } from "../harness/promote.js";
@@ -27,7 +27,6 @@ import { censusOutcomeLinkage, OUTCOME_URI_PREFIX, plainValue, type LarDoc, type
 import { STORE_DOOR_FACE_ROWS } from "../../packages/lararium-node/src/store-door-verbs.js";
 import { ownedStore } from "../../packages/lararium-node/src/owned-store.js";
 import { larDataDir } from "../../packages/lararium-node/src/vessel-paths.js";
-import { daemonDocUrlFromBootstrap } from "../../packages/lararium-node/src/commands/cabal-join.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -163,19 +162,40 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     const fed = await A!.cli(["cabal", "feed", "--realm", REALM_R, "--face", "0", "--json"]);
     console.error(`realm-select MEASURE feed: ${said(fed).trim().slice(0, 300)}`);
     expect(fed.json?.["ok"], said(fed)).toBe(true);
-    // The store rests once the vessel stops; the census reads the daemon document the face fleet syncs.
+    // The store rests once the vessel stops. The census reads EVERY document the store rests: the verb outcome ledger
+    // lands in the daemon wiki's working slot (the daemon composite's default writable, at the face's derived address the
+    // face fleet syncs), never in the daemon document, so a census of one named document reads nothing.
     await A!.stopDaemonOnly();
     const priorRoot = process.env["LAR_ROOT"];
     process.env["LAR_ROOT"] = A!.root;
-    let tiddlers: StoredTiddlers;
+    let tiddlers: StoredTiddlers = {} as StoredTiddlers;
+    let ledgerDocs = 0;
     try {
-      const url = daemonDocUrlFromBootstrap();
-      expect(url, "the bootstrap names the daemon document").toBeTruthy();
-      tiddlers = await ownedStore(larDataDir(), async (repo) =>
-        ({ ...((await repo.find<LarDoc>(url as never)).doc()?.tiddlers ?? {}) }) as StoredTiddlers);
+      const storageDir = larDataDir();
+      const ids: string[] = [];
+      for (const head of readdirSync(storageDir)) {
+        if (head.length !== 2 || !statSync(join(storageDir, head)).isDirectory()) continue;
+        for (const tail of readdirSync(join(storageDir, head))) ids.push(`${head}${tail}`);
+      }
+      expect(ids.length, "the store rests documents").toBeGreaterThan(0);
+      tiddlers = await ownedStore(storageDir, async (repo) => {
+        const out: Record<string, unknown> = {};
+        for (const id of ids) {
+          // A document that never opens here (a sealed rest, a torn one) holds nothing this census can read.
+          const doc = await Promise.race([
+            repo.find<LarDoc>(`automerge:${id}` as never).then((h) => h.doc(), () => undefined),
+            new Promise<undefined>((r) => setTimeout(() => r(undefined), 5_000)),
+          ]);
+          const rows = Object.entries(doc?.tiddlers ?? {}).filter(([t]) => t.startsWith(OUTCOME_URI_PREFIX));
+          if (rows.length > 0) ledgerDocs += 1;
+          for (const [t, r] of rows) out[t] = r;
+        }
+        return out as StoredTiddlers;
+      });
     } finally {
       if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
     }
+    console.error(`realm-select MEASURE ledger: ${ledgerDocs} document(s) of the store hold outcomes`);
     const census = censusOutcomeLinkage(tiddlers, { socketOnly: STORE_DOOR_FACE_ROWS, keys: [leaf] });
     const verbs = Object.entries(tiddlers).filter(([t]) => t.startsWith(OUTCOME_URI_PREFIX)).map(([, r]) => String(plainValue(((r as { tiddler?: Record<string, unknown> }).tiddler ?? {})["verb"])));
     console.error(`realm-select MEASURE census: ${census.outcomes} outcomes (${[...new Set(verbs)].join(",")}), linked ${JSON.stringify(census.linked)}`);

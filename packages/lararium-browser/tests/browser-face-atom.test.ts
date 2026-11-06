@@ -17,8 +17,8 @@ import {
   FaceAtomMissing,
   groupSecretOpenerFromSeed, sealGroupSecret,
 } from "@lararium/mesh";
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
-import { BrowserCustodyRefused, readKeystoreRow } from "../src/browser-custody.js";
+import { bindSyntheticBrowserCustodySlot, bindSyntheticFace } from "./browser-custody-fixture.js";
+import { readKeystoreRow } from "../src/browser-custody.js";
 import {
   browserFaceAtom, faceAtomRow, keepBrowserFaceAtomSeed, readBrowserFaceAtom, requireBrowserFaceAtomSeed,
 } from "../src/browser-face-atom.js";
@@ -31,6 +31,7 @@ const opSeed = new Uint8Array(32).fill(0x22);
 async function vessel(): Promise<string> {
   const idbName = `face-atom-${crypto.randomUUID()}`;
   await bindSyntheticBrowserCustodySlot(idbName);
+  for (const group of [GROUP_A, GROUP_B, "no-face"]) await bindSyntheticFace(idbName, group);
   return idbName;
 }
 
@@ -75,10 +76,10 @@ describe("the browser's face atom", () => {
     expect(thief.seal(own), "CONTROL: sealed to the device key, the device seed opens it").not.toBeNull();
   });
 
-  test("A4 — a vessel with no slot mints no atom", async () => {
-    const idbName = `face-atom-noslot-${crypto.randomUUID()}`;
-    await expect(browserFaceAtom(idbName, GROUP_A)).rejects.toBeInstanceOf(BrowserCustodyRefused);
-    expect(await readKeystoreRow(idbName, faceAtomRow(GROUP_A)), "the refused call left no row").toBeUndefined();
+  test("A4 — a face with no tree of its own mints no atom", async () => {
+    const idbName = await vessel();
+    await expect(browserFaceAtom(idbName, "a-face-never-bound")).rejects.toMatchObject({ reading: "no-custody-slot" });
+    await expect(readKeystoreRow(idbName, faceAtomRow("a-face-never-bound")), "the refused call left no row and no tree").rejects.toMatchObject({ reading: "no-custody-slot" });
   });
 
   test("A5 — requiring a face seed with no row refuses FaceAtomMissing with the same text", async () => {

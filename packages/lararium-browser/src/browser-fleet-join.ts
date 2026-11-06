@@ -29,9 +29,10 @@ import {
 } from "@lararium/mesh";
 import { carriedAdmitOfFleetJoin, type CarriedAdmitPayload } from "@lararium/keyhive";
 import {
-  FLEET_JOIN_STORE, idbGet, idbKeys, openVesselIdb,
+  FLEET_JOIN_STORE, idbGet, openVesselIdb,
 } from "./browser-vessel-identity.js";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
+import { heldFaces } from "./browser-face-custody.js";
 import { browserFaceAtom, browserVesselFaceTagDoor, faceAddressSecretRow, type BrowserTagDoorWard } from "./browser-face-atom.js";
 
 /** A fleet join this browser refused, by name: a mesh reader's refusal, or this door's own. */
@@ -46,7 +47,8 @@ export class BrowserFleetJoinRefused extends Error {
 const PENDING_PREFIX = "fleet-join-pending/";
 const pendingRow = (personaGroup: string): string => `${PENDING_PREFIX}${personaGroup}`;
 const isRefusal = (v: unknown): v is { refusal: string } => typeof v === "object" && v !== null && "refusal" in v;
-const faceKeyRow = (scope: FaceScope): string => `vessel-face-key/${scope.nexus}|${scope.faceKey.toLowerCase()}`;
+/** The face-scoped key's row, named by the face it serves: it rests under that face's own tree. */
+export const faceKeyRow = (personaGroup: string, scope: FaceScope): string => `vessel-face-key/${personaGroup}|${scope.nexus}|${scope.faceKey.toLowerCase()}`;
 
 /** The dial a landed answer carried, kept per face (`dial:<group>`): what the face's presentation reads at its hearth. */
 export interface KeptFleetJoinDial {
@@ -81,10 +83,11 @@ function inOneTransaction<T>(db: IDBDatabase, store: string, act: (os: IDBObject
 
 /** The face-scoped key standing for `scope`, or `fresh` sealed there when none stands, read and written in one
  *  custody act: a key an earlier request left at rest answers again, so the same offer retries clean. */
-async function standOrStoreVesselFaceKey(idbName: string, scope: FaceScope, fresh: Uint8Array): Promise<Uint8Array> {
+async function standOrStoreVesselFaceKey(idbName: string, personaGroup: string, scope: FaceScope, fresh: Uint8Array): Promise<Uint8Array> {
+  const row = faceKeyRow(personaGroup, scope);
   return withCustodyRows(idbName, async (rows) => {
-    const standing = await rows.read(faceKeyRow(scope));
-    if (standing === undefined) { await rows.write(faceKeyRow(scope), fresh); return Uint8Array.from(fresh); }
+    const standing = await rows.read(row);
+    if (standing === undefined) { await rows.write(row, fresh); return Uint8Array.from(fresh); }
     if (!(standing instanceof Uint8Array) || standing.length !== 32) throw new BrowserFleetJoinRefused("face-key-malformed", `the key standing for ${scope.nexus} does not read.`);
     return Uint8Array.from(standing);
   });
@@ -92,10 +95,10 @@ async function standOrStoreVesselFaceKey(idbName: string, scope: FaceScope, fres
 
 /** This browser's custody door for its face-scoped keys (`VesselFaceKeyCustody`): the row at the scope signs, once
  *  its key answers the key the caller named. */
-export function browserVesselFaceKeyCustody(idbName = "lares:vessel"): VesselFaceKeyCustody {
+export function browserVesselFaceKeyCustody(idbName: string, personaGroup: string): VesselFaceKeyCustody {
   return {
     async signAsVesselFace(scope, vesselFaceKey, image) {
-      const secret = await readKeystoreRow(idbName, faceKeyRow(scope));
+      const secret = await readKeystoreRow(idbName, faceKeyRow(personaGroup, scope));
       if (!(secret instanceof Uint8Array) || secret.length !== 32) throw new BrowserFleetJoinRefused("face-key-absent", `no face-scoped key stands for ${scope.nexus}.`);
       const held = Uint8Array.from(secret);
       try {
@@ -110,12 +113,11 @@ async function readPending(idbName: string, personaGroup: string): Promise<Pendi
   return (await readKeystoreRow(idbName, pendingRow(personaGroup)) as PendingJoin | undefined) ?? null;
 }
 
-/** Every face with a join pending in this browser, from the keystore's row names (clear or sealed). */
+/** Every face this thread holds unlocked with a join pending under its own tree: a locked face's pending row reads nowhere. */
 async function pendingGroups(idbName: string): Promise<string[]> {
-  const db = await openVesselIdb(idbName);
-  try {
-    return (await idbKeys(db, "keystore")).map((k) => /^(?:sealed\/)?fleet-join-pending\/(.+)$/.exec(k)?.[1]).filter((g): g is string => g !== undefined).sort();
-  } finally { db.close(); }
+  const out: string[] = [];
+  for (const group of heldFaces(idbName)) if (await readPending(idbName, group) !== null) out.push(group);
+  return out;
 }
 
 /**
@@ -141,12 +143,12 @@ export async function browserFleetJoinRequest(opts: {
   try {
     const request = await composeFleetJoinRequest({
       offer, atomKey: atom.key, sealKey: seal.key,
-      custody: browserVesselFaceKeyCustody(idbName),
+      custody: browserVesselFaceKeyCustody(idbName, offer.personaGroup),
       mintFaceKey: async (scope) => {
         const fresh = crypto.getRandomValues(new Uint8Array(32));
         let held: Uint8Array | null = null;
         try {
-          held = await standOrStoreVesselFaceKey(idbName, scope, fresh);
+          held = await standOrStoreVesselFaceKey(idbName, offer.personaGroup, scope, fresh);
           return hex(await ed25519.getPublicKeyAsync(held));
         } finally { fresh.fill(0); held?.fill(0); }
       },

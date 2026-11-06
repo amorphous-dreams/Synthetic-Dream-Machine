@@ -54,8 +54,6 @@ describe("the browser pet-name stores over IndexedDB (#64 stage 4)", () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
-    await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 1, FIXTURE_WARD);
     const petnames = await makeBrowserPersonaPetnameStore(name);
     const publicStore = await makeBrowserPublicHandleStore(name);
     await renameOwnPersona(petnames, 0, "work");
@@ -64,9 +62,8 @@ describe("the browser pet-name stores over IndexedDB (#64 stage 4)", () => {
     const vault = await makeBrowserIdbPersonaVault(name);
     const view = await personaMultitudeView(vault, petnames, publicHandleViewOf(publicStore));
     const byIndex = Object.fromEntries(view.map((e) => [e.handleIndex, e]));
-    expect(view.map((e) => e.handleIndex)).toEqual([0, 1]);
+    expect(view.map((e) => e.handleIndex)).toEqual([0]);
     expect(byIndex[0]).toMatchObject({ petname: "work", heldHere: true, hasPublicHandle: true, glamour: "Guru-Josh" });
-    expect(byIndex[1]).toMatchObject({ petname: null, heldHere: true, hasPublicHandle: false, glamour: null });
   });
 
   test("the private label never PUBLICLY federates — publishing a glamour leaves the label off the board", async () => {

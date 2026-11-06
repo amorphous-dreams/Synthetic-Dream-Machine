@@ -43,7 +43,7 @@ written           = "2026-10-16"
 | the return leg | the patched fake `addEventListener` stamps `data-lar-rid`; the page relays click (always cancelled), a sliver of keydown, `input` and `change` as a whole value, composition guards; no event id | one third of TW5's interactions work, one third paint but act wrongly, one third have no road |
 | the camera | `mountCamera(engine, {rootTiddler, document, container})` takes `window.document` or a fake document | the camera as root plus sink already stands as code |
 | the confirm road | `$:/temp/confirm/*`, `tm-confirm`, `$dialog`; wired and tested; a fork-only `startup/confirm.js` | one parked question, one answer, one re-dispatch, across the superset |
-| authority | the wiki island's capability check answers `worker-trust`; a second tab refuses without `?holder` and then shares one fake DOM | the actor's manifest and gate stay owed |
+| authority | the wiki island's capability check answers `worker-trust`; each tab holds its own session of the one vessel worker (row `B1`, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift`>>), and the surface shares no fake DOM | the actor's manifest and gate stay owed |
 | the daemon surface | `tm-verse-event` → `placeVerb`; summoned by Ctrl+Shift+D or ☰ | the daemon actor, always awake |
 | the filter and render ask | none on the live island; the one such surface stands orphaned | the port's `ask` kinds, owed |
 
@@ -106,7 +106,7 @@ The train closes when ''every surface of the superset publishes a row'' (`dreamd
 * ''Stands'' (PR #111, kit <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/d3-glass-lane`>>): the mirror opens through one private door over the port grant, never a URL flag; its boot serves as the probe and steps down only by a named event; skinny paints first and a widen row promotes it to full; the landing echo storm cured, full reads 35.6 MiB and 942 ms first paint against a stock tab's 32.2 MiB and 836 ms on one host; the page stands the mirror from the opener's `mirrorInputs` and the person reads and edits through it, the worker-rendered view beneath as the named floor; the mirror takes ONE step (full to skinny), then teardown to that floor; one tab per origin holds the vessel and the others follow it over the bus, each standing its own mirror from the leader's lend, and the next lock holder leads when the leader's page goes with its mirror standing on. Owed: the measures on the shipped setup (the island in the tab), the reference phones, and the operator's width rulings (`docs/research/dreamdom-capability-default-2026`).
 * ''Waits on'': D1 (so none stands as the honest fallback) and D2 (so the glass has a port).
 * ''Spikes'': the three-boot width spike (#/the-spikes 9); the full-width walk (10).
-* ''Rulings'' (`dreamdom#/open-rulings`): the `§9` reading and the confirm road's home per width stand ruled (2026-10-16); the operator ruled full as the default on 2026-10-28, ONE mirror step and then teardown to the named floor; on 2026-10-29 the operator ruled that a page never stands as a vessel (§9 reads "no sovereign VM and no key on a surface", which the mirror honors), Mu on the iframe and realm menu, and the mirror's browser-mode boot.
+* ''Rulings'' (`dreamdom#/open-rulings`): the `§9` reading and the confirm road's home per width stand ruled (2026-10-16); the operator ruled full as the default on 2026-10-28, ONE mirror step and then teardown to the named floor; on 2026-10-29 the operator ruled that a page never stands as a vessel (§9 reads "no sovereign VM and no key on a surface", which the mirror honors), Mu on the iframe and thread menu, and the mirror's browser-mode boot.
 
 !!! D4 · THE WIKI ACTOR ~ the lifecycle layer (lane `dreamdom-actor`; waits on D2; its manifest and gate may start beside D3)
 * ''Builds'': one actor per wiki with an id, one writer and a manifest `{renders[], edits, presence, sensoria[], width[], maxRecordBytes, maxBatchBytes}`; the capability gate on the actor replacing `worker-trust` (admin-auth plus the keyhive check over `requestedBy`), so a lean invoke never bypasses authority; the states daemon · pinned · sleeping · recipe · spawned with their transitions; per-port attachments `{cursor, subscriptions, width, actorKey, localFilter, cameraMount}` serialised at hibernation and restored at wake; wake-on-act with one parked act per surface and a `waking` state beside the control, `superseded` for a second act, `actor-not-spawned` with a `spawn` affordance for a recipe; the holder's refusal to hibernate an actor holding an unanswered reliable act; the first surface's list of wikis by state; `tm-open-window` as `open-surface` (a second camera on the same actor); `$:/state` per surface or shared, by ruling; a warm start measured against `v8.startupSnapshot` in a `worker_thread`.
@@ -176,7 +176,7 @@ The full list with its options stands at `dreamdom#/open-rulings`; this table na
 | the presence lane's home at width none | D2 | ruled 2026-10-16: a separate droppable message |
 | the default width of the first surface | D3's mirror door | ruled full on 2026-10-28; none remains the fallback |
 | `§9` of the Island Sovereignty Law, read as no //sovereign VM// and no //key// on a surface | D3's glass engine | ruled 2026-10-16 (no truth on the main thread) and 2026-10-29 (a page never stands as a vessel); the wording stands in `island-protocol` and `lararium-canonical-model#/the-laws` |
-| the mirror's realm | D3's glass engine | ruled 2026-10-29: Mu on the iframe and realm menu; the page mirror boots in TW5's own browser mode, its syncer, savers and syncadaptor out, a person's syncadaptor plugin refused at mount |
+| the mirror's thread | D3's glass engine | ruled 2026-10-29: Mu on the iframe and thread menu; the page mirror boots in TW5's own browser mode, its syncer, savers and syncadaptor out, a person's syncadaptor plugin refused at mount |
 | people's plugins on the full mirror | D3's glass engine | ruled 2026-10-29: only after sealed-store steps 2 and 3 land for the browser store; no clear row under the full mirror; the browser vessel's opened key in its own worker |
 | the confirm road's home per width | D3 | ruled 2026-10-16: per actor in the worker at none; per tab on the glass engine |
 | the actor manifest shape | D4 | ruled 2026-10-16: `sensoria[]` names planes |
@@ -243,6 +243,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;aEd1Nkyxo99HU9FIuTqReCopMwKs-BDk1JxJM1jqGgg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9DwNupBlp9ixzvYsdAq_6Gtpm_ok4gIgqwRncn-dk2I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -31,6 +31,12 @@ export const wardTreeRowOf = (handleIndex: number): string => `${WARD_ROW_PREFIX
 export const wardRootRowOf = (handleIndex: number): string => `${WARD_ROW_PREFIX}h${handleIndex}/persona-root`;
 /** The root's PUBLIC key beside its ward, so a ward act's signer names its key with the page's custody locked. */
 export const wardKeyRowOf = (handleIndex: number): string => `${WARD_ROW_PREFIX}h${handleIndex}/public-key`;
+/**
+ * THE FACE THE WARD BELONGS TO: the opaque id (fcid) of the face tree that stood worn when the root minted. It lands before the
+ * ward's tree, so a torn mint resumes owned; a ward act, a mint and a possession read answer only for the face whose tree it names,
+ * and that face's clear removes the ward with it.
+ */
+export const wardOwnerRowOf = (handleIndex: number): string => `${WARD_ROW_PREFIX}h${handleIndex}/face-tree`;
 
 /** A face's ward key rows: its own ward tree, its seed under that ward, and its PUBLIC half beside it (plain bytes, opening nothing). */
 export function wardSignRowsOf(group: string): { readonly tree: string; readonly seed: string; readonly key: string } {

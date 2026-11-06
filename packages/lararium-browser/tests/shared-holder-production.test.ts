@@ -1,6 +1,7 @@
 /** Real SharedWorker house lifecycle in Chromium and other supported engines. */
 import { describe, expect, test } from "vitest";
 import { attachSharedHolder, holderWorkerHandle, houseName } from "../src/shared-holder.js";
+import type { PageLifeFeed } from "../src/browser-vessel-island-pool.js";
 import { faceFixture } from "./holder-session-fixture.js";
 
 async function lockHeld(name: string): Promise<boolean> {
@@ -37,12 +38,19 @@ const probe = await attachSharedHolder({ holderUrl: urls(crypto.randomUUID()).ho
 const canAttach = probe.kind === "attached";
 if (probe.kind === "attached") probe.port.close();
 
+// The page's life feed as the page builds it: this test's own `pagehide` on its global feeds the session's leave.
+const testPageLife: PageLifeFeed = (listener) => {
+  const onHide = (): void => listener("pagehide");
+  globalThis.addEventListener("pagehide", onHide);
+  return () => globalThis.removeEventListener("pagehide", onHide);
+};
+
 async function rig(id = crypto.randomUUID(), faceTag = id) {
   const paths = urls(id);
   const face = await faceFixture(`face:web-production:${faceTag}`);
   const namedHouse = await houseName(face.group, face.edge.personaRootDid);
   const attach = async (name = namedHouse) => {
-    const opened = await attachSharedHolder({ holderUrl: paths.holderUrl, houseName: name });
+    const opened = await attachSharedHolder({ holderUrl: paths.holderUrl, houseName: name, pageLife: testPageLife });
     expect(opened.kind, "this engine reached a production holder session").toBe("attached");
     if (opened.kind !== "attached") throw new Error(`holder attachment refused: ${opened.why}`);
     const handle = holderWorkerHandle(opened.port, { personaGroup: face.group, edge: face.edge, atom: face.atom });
@@ -85,7 +93,7 @@ describe("production shared holder lifecycle", () => {
   test.skipIf(!canAttach)("Firefox module graph: pagehide's session:close releases the island lock and house database", async () => {
     const r = await rig(); const tab = await admitFirst(r);
     const store = await houseStore(r.lockName, r.face.group, r.face.edge.personaRootDid);
-    // The attached tab's pagehide listener emits its port-bound session:close envelope.
+    // The page's life feed hands the attached tab its pagehide, and the tab emits its port-bound session:close envelope.
     globalThis.dispatchEvent(new Event("pagehide"));
     await expect.poll(() => lockHeld(r.islandLock), { timeout: 10_000 }).toBe(false);
     await expect(deleteOutcome(store), "pagehide closes the house Repo").resolves.toBe("deleted");

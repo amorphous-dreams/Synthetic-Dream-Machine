@@ -9,7 +9,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocumentId } from "@automerge/automerge-repo";
 import { LARES_DOC_URI, LARARIUM_DOC_URI, admittedJoineeIsland, crossroadsDocUrl } from "@lararium/mesh";
 import { BootHalted, admitNaming, bootOptions, observed, relayPeerArrives, resetObserved } from "./wire-vessel-rig.js";
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, bindSyntheticFace } from "./browser-custody-fixture.js";
 import { openBrowserVessel } from "../src/open-browser-vessel.js";
 
 vi.mock("@lararium/keyhive", async (orig) => {
@@ -44,6 +44,7 @@ async function verdictsUnderPin(pin: string): Promise<{ canon: boolean; board: b
   resetObserved();
   const options = bootOptions(admitNaming(hearth, named), pin);
   await bindSyntheticBrowserCustodySlot(options.idbName!);
+  await bindSyntheticFace(options.idbName!, options.admit!.personaGroupId);
   await expect(openBrowserVessel(options)).rejects.toBeInstanceOf(BootHalted);
   relayPeerArrives("wire-relay-peer");
   const policy = observed.policies[0];

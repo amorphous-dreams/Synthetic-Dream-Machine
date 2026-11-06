@@ -10,12 +10,21 @@
  */
 
 export { BrowserVesselIslandPool } from "./browser-vessel-island-pool.js";
-export type { BrowserVesselIslandPoolOptions } from "./browser-vessel-island-pool.js";
+export type { BrowserVesselIslandPoolOptions, PageLife, PageLifeFeed } from "./browser-vessel-island-pool.js";
 
-export { openBrowserVessel, DAEMON_SURFACE_ID } from "./open-browser-vessel.js";
+export { openBrowserVessel, readBrowserVesselFaces, DAEMON_SURFACE_ID } from "./open-browser-vessel.js";
 export { readHearthFloor, floorNexusOf, porchOriginOf, type HearthFloorRead } from "./browser-floor-read.js";
 export { holdVesselLock, vesselLockName, ambientLocks } from "./vessel-lock.js";
 export type { LockHost, VesselLockHold } from "./vessel-lock.js";
+export { standVesselHouse, sessionLifetimeLock, VesselSessionRefused } from "./vessel-sessions.js";
+export type { VesselHouse, VesselSession, VesselFloorState, VesselLockReport, VesselHouseCensus, LitVessel, SessionKeyHolder, VesselSessionRefusal, HouseAsk, FaceProviderDoor, FaceBooking, FaceSwitchOptions } from "./vessel-sessions.js";
+export {
+  FaceCustodyRefused, checkFaceName, readFaceCustody, readFaceCustodyPasskeys, bindFirstFaceSlot, unlockFaceCustody, lockFaceCustody,
+  writeFaceRow, readFaceRow, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, standUnnamedFace, heldUnnamedFace,
+} from "./browser-face-custody.js";
+export type { FaceCustodyStatus, FaceCustodyUnlock, FaceCustodyClear, FaceCustodyRefusalReading } from "./browser-face-custody.js";
+export { mintEmber, answerEmberAsk, emberAskBytes, EmberRefused } from "./browser-ember.js";
+export type { EmberExchange, EmberAsk } from "./browser-ember.js";
 // The house behind the lock: one daemon island per origin inside a SharedWorker holder, a port per tab.
 export { attachSharedHolder, ambientSharedWorkerHost, holderWorkerHandle, houseName } from "./shared-holder.js";
 export type { SharedWorkerHost, SharedHolderAttach } from "./shared-holder.js";
@@ -45,15 +54,17 @@ export {
 export { browserVesselFaceTagDoor } from "./browser-face-atom.js";
 // THE WARD DIALOG'S WORDS, by the ask's kind (`open`, `bind`, `retype`): a page names each ward ask truly.
 export { wardAskWords, type WardAskKind } from "./browser-ward.js";
-// BROWSER CUSTODY: a passphrase or paper slot wraps the keystore's device seed and Keyhive Archives; the
+// BROWSER CUSTODY: a passphrase, paper or passkey slot (a passkey never alone) wraps the keystore's device seed and Keyhive Archives; the
 // clear-password act asks through the confirm door.
 export {
   sealBrowserKeystore, unlockBrowserCustody, lockBrowserCustody, readBrowserCustody, bindBrowserCustodySlot,
-  unbindBrowserCustodySlot, clearBrowserCustody, BrowserCustodyRefused, CLEAR_CUSTODY_QUESTION,
+  unbindBrowserCustodySlot, clearBrowserCustody, BrowserCustodyRefused, CLEAR_CUSTODY_QUESTION, readBrowserCustodyPasskeys,
 } from "./browser-custody.js";
 export type {
-  BrowserCustodyStatus, BrowserCustodyUnlock, BrowserCustodyClear, BrowserCustodyRefusalReading, ConfirmDoor,
+  CustodyBindRoute, BrowserCustodyStatus, BrowserCustodyUnlock, BrowserCustodyClear, BrowserCustodyRefusalReading, ConfirmDoor,
 } from "./browser-custody.js";
+// ONE WARD ACT: the face root signs in a per-act worker, fresh from the passphrase the ceremony took for it.
+export { browserWardSign, BrowserWardRefused } from "./browser-ward.js";
 // THE BOOT'S CUSTODY STEP: each tab asks the person for its own unlock, or for a first slot before a face secret mints.
 export { standBrowserCustody } from "./browser-boot-custody.js";
 export type { CustodyAsk, CustodyAnswer, BootCustodyVerdict, StandBrowserCustodyOptions } from "./browser-boot-custody.js";
@@ -94,4 +105,5 @@ export {
 } from "./secure-context-gate.js";
 export { SharedHolderRefusal } from "./shared-holder.js";
 export type { HolderRefused } from "./shared-holder-core.js";
-export { browserIdentityContinuityKey } from "./browser-vessel-identity.js";
+export { BROWSER_IDENTITY_CONTINUITY_DB, readBrowserIdentityContinuity } from "./browser-vessel-identity.js";
+export type { BrowserIdentityContinuity } from "./browser-vessel-identity.js";

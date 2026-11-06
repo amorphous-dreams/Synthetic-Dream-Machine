@@ -1,21 +1,23 @@
 /**
- * browser-ward — THE PAGE'S DOOR TO ONE WARD ACT (seat-harness#/the-ward): the face root signs in a per-act worker, fresh from the
- * route a person typed for this act, and the page's own unlock never takes part.
+ * browser-ward — THE VESSEL'S DOOR TO ONE WARD ACT (seat-harness#/the-ward): the face root signs in a per-act worker, fresh from the
+ * route a person typed for this act, and the vessel's own unlock never takes part.
  *
  * The door reads the face's ward tree and its warded root row as raw bytes (it opens nothing; `browser-ward-tree.ts`), spawns one
  * worker, hands the request over a MessagePort, reads one answer and terminates the worker. The answer holds the root's public key
- * and one signature. `readBrowserCustody(...).unlocked` reads the same before, during and after: the act never touches the page's
- * held key, and the keystore's tree key opens no part of the root.
+ * and one signature. `readBrowserCustody(...).unlocked` reads the same before, during and after: the act never touches the vessel's
+ * held key, and the keystore's tree key opens no part of the root. The route arrives from the unlock ceremony's clean document,
+ * down its own brokered port to the vessel worker, which hands it to the act's worker; the surface page never holds it
+ * (browser-vessel-lift#/the-ceremony).
  *
  * A face's WARD KEY (the co-sign signer; logical name `ward-sign/<group>`, which every custody door refuses by name) rests under a
  * ward of its own (`ward/sign/<group>/…`, `ward-core`), which no slot of the keystore's tree wraps: it mints inside one worker act
  * (`browserWardKeyMint`: the ward binds over the route typed for it, the seed seals under it, the pop signs, and the page lands
  * bytes it cannot open) and signs inside one (`browserWardKeySign`). Its public half reads off plain bytes (`browserWardKeyOf`).
  *
- * Residual, named: the page passes the typed route over the port (a page script reads what the page's dialog collects).
+ * Residual, named: the ceremony document's own (browser-vessel-lift#/the-ceremony); no page script reads the route.
  */
 import { browserKeystoreCustodyIo, BrowserWardRefused } from "./browser-custody.js";
-import { chargeWardAttempt, landBrowserWardRows, readBrowserWardKey, readBrowserWardRows } from "./browser-ward-tree.js";
+import { chargeWardAttempt, landBrowserWardRows, readBrowserWardKey, readBrowserWardRows, refuseWardOfAnotherFace } from "./browser-ward-tree.js";
 import {
   wardCredentialOf, wardSignRowsOf, type WardActAnswer, type WardActRequest, type WardKeyActRequest, type WardKeyMintAnswer, type WardKeyMintRequest, type WardRoute,
 } from "./ward-core.js";
@@ -40,20 +42,10 @@ let seatedSpawn: WardWorkerSpawn | null = null;
 export function seatWardWorkerSpawnForTests(spawn: WardWorkerSpawn | null): void { seatedSpawn = spawn; }
 const defaultSpawn: WardWorkerSpawn = () => (seatedSpawn ?? workerSpawn)();
 
-/**
- * THE KIND OF ONE WARD ASK: `open` reads a ward that stands, `bind` binds a fresh ward over the route typed for it, and `retype`
- * asks that route once more, so a bind lands only over a route typed twice alike (a ward bound over a typo opens for nobody).
- */
-export type WardAskKind = "open" | "bind" | "retype";
+import { wardAskWords, type WardAskKind } from "./ward-ask-words.js";
+export { wardAskWords, type WardAskKind };
 /** The page's dialog: the route the person types for one act, asked by its kind. */
 export type WardRouteAsk<R> = (act: string, kind: WardAskKind) => Promise<R>;
-
-/** The words a ward dialog shows for one ask: a bind names a bind, an open names an open. */
-export function wardAskWords(act: string, kind: WardAskKind): string {
-  if (kind === "bind") return `This act will bind a passphrase for this face's ward: ${act}. Type the passphrase every later act of this face asks for.`;
-  if (kind === "retype") return `Type the same passphrase again, so the ward binds only over the one you meant: ${act}.`;
-  return `Type this face's passphrase to open its ward for one act: ${act}. It opens for this act alone.`;
-}
 
 /**
  * The route one BIND rides: asked twice, `bind` then `retype`, and answered only where both match; a mismatch refuses
@@ -85,6 +77,7 @@ const signRowsOf = (group: string): ReturnType<typeof wardSignRowsOf> => { try {
 export async function browserWardSign(idbName: string, handleIndex: number, route: WardRoute, bytes: Uint8Array, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly signature: string }> {
   try { wardCredentialOf(route); } catch (e) { refusedBy(e); }
   const rows = await readBrowserWardRows(idbName, handleIndex).catch(refusedBy);
+  await refuseWardOfAnotherFace(idbName, handleIndex);   // the ward signs only for the face this session wears
   return chargeWardAttempt(idbName, () => browserWardSignOnce({ ...rows, handleIndex, route, bytes }, spawn)).catch(refusedBy);
 }
 
@@ -155,6 +148,7 @@ async function browserWardActOnce<A>(request: WardActRequest | WardKeyActRequest
 export async function browserWardSigner(idbName: string, handleIndex: number, route: WardRoute, spawn?: WardWorkerSpawn): Promise<{ readonly key: string; sign(bytes: Uint8Array): Promise<string> }> {
   try { wardCredentialOf(route); } catch (e) { refusedBy(e); }
   const line = { verifyingKey: await readBrowserWardKey(idbName, handleIndex).catch(refusedBy) };
+  await refuseWardOfAnotherFace(idbName, handleIndex);   // the ward signs only for the face this session wears
   let held: WardRoute | null = route;
   return {
     key: line.verifyingKey,

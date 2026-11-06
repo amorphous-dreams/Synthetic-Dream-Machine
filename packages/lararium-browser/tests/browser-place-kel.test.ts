@@ -29,7 +29,6 @@ const deleteIdb = (name: string): Promise<void> => new Promise((resolve) => {
 afterEach(async () => {
   for (const n of opened) await deleteIdb(n);
   opened.clear();
-  localStorage.clear();
 });
 
 const entropy = (start: number): RandomProvider => {

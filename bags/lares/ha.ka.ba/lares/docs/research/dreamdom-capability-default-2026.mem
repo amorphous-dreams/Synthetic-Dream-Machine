@@ -40,10 +40,10 @@ A browser that carries the full DreamDOM runs it by default, and the boot learns
 
 <<~ ahu slot=`#/rulings-realm`>>
 
-!! The operator's rulings (2026-10-29), after the mirror-realm talk-story
+!! The operator's rulings (2026-10-29), after the mirror-thread talk-story
 
 # ''A page never stands as a vessel.'' Every page holds a surface with a port onto a vessel, in every setup: a browser on a node's own box, an anon-device browser vessel, a fleet of equivalent vessels. The no-VM-on-the-main-thread law reads "no sovereign VM and no key on a surface"; the mirror, a camera carrying a whole engine and no truth, honors it.
-# ''Mu on the realm menu.'' The same-origin iframe, the sandboxed iframe, the ShadowRealm and a core patch all fall away.
+# ''Mu on the thread menu.'' The same-origin iframe, the sandboxed iframe, the ShadowRealm and a core patch all fall away.
 # ''Browser mode, no lends.'' The page mirror boots TW5 in its own browser mode; the page-window lends burn by cure, since they came from the worker island's forge. TW5's syncer, savers and syncadaptor stay out of its boot, and a person's syncadaptor or saver plugin refuses at mount by name.
 # ''The surface owns the URL'' through its `route` door; `#:safe` burns. ''Faults'' go to the alert rail. ''Modals'' paint in the surface's root layer through `lar-root-services`.
 # ''Custody under the mirror.'' The browser vessel's opened key lives in its own worker, never in page memory. The full mirror runs people's plugins only after sealed-store steps 2 and 3 land for the browser store; no clear row stands under it, and the device key rests non-extractable.
@@ -66,7 +66,7 @@ Each finding carries the verdict a second reader gave it against the page.
 * ''Figma probes by behavior.'' Figma renders pixels to a texture and reads them back, blocklists devices "based on their average fallback rates", runs WebGPU tests after startup to avoid hundreds of milliseconds of blocking readback, and will "start a session with WebGPU-based rendering, and fall back to WebGL-based rendering later as needed" (SOURCED, https://www.figma.com/blog/figma-rendering-powered-by-webgpu/). HOLDS, and the start-then-fall-back move supports a default tier that adjusts after the first paint.
 * ''Other products.'' Excalidraw catches quota errors on autosave and records a quota-exceeded state; users lost local work to quota and cleared data, so storage availability never proves durability (SOURCED, https://github.com/excalidraw/excalidraw/discussions/6463). Linear, tldraw and Ink & Switch document sync, fixed environment detection and workload budgets, and none documents an automatic render-tier selector. Nothing reviewed establishes how Obsidian Publish chooses a tier (REASONED).
 * ''Version sniffing fails.'' Chrome and Firefox tested three-digit version strings before version 100, and a parser that read `100` as old changed the experience with feature support unchanged (SOURCED, https://developer.chrome.com/blog/new-in-chrome-100). Identity never establishes support.
-* ''Object capabilities carry authority by reference.'' Unforgeable references carry authority, and attenuating wrappers restrict it (SOURCED, https://papers.agoric.com/assets/pdf/papers/distributed-electronic-rights-in-javascript.pdf). A frozen `{full: true}` stays forgeable by shape (REASONED). A guard in one realm stops a confused caller and never hostile same-realm script; the worker plus the grant stay the truth boundary (REASONED).
+* ''Object capabilities carry authority by reference.'' Unforgeable references carry authority, and attenuating wrappers restrict it (SOURCED, https://papers.agoric.com/assets/pdf/papers/distributed-electronic-rights-in-javascript.pdf). A frozen `{full: true}` stays forgeable by shape (REASONED). A guard in one thread stops a confused caller and never hostile same-thread script; the worker plus the grant stay the truth boundary (REASONED).
 * ''iOS kills no probe survives.'' WebKit: "WebContent processes on iPhone are subject to a 'soft' limit of around 1.5GB", past which jetsam kills them (SOURCED, https://bugs.webkit.org/show_bug.cgi?id=277848); Safari "will try to load it twice then display 'A problem repeatedly occurred'" (SOURCED, https://bugs.webkit.org/show_bug.cgi?id=279637). The kill takes the page's JavaScript with it, depends on system-wide pressure, and repeats through Safari's own reload (REASONED).
 * ''Chromium names a discard.'' `document.wasDiscarded` reports a hidden-tab discard at load; Firefox and Safari do not support it (SOURCED, https://developer.chrome.com/docs/web-platform/page-lifecycle-api). A hidden-tab discard says the system needed memory, never that the mirror failed (REASONED).
 * ''WebKit evicts script-writable storage after seven days.'' A remembered width would vanish on WebKit and stay on Chromium (SOURCED, repo: `secure-context-gate.ts`).
@@ -140,6 +140,6 @@ The greeting decides; no step reads a clock, and `shared-holder.ts` states the l
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/browser-trust-line-2026`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9qClC9B7loRV9qVM57eJ4AmYqZQnkYZ1dWR2bHPVQ_Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_kZT1lzNEsu-ZOg55MdGaWWHhNCheebxmFoBiDTpRoM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

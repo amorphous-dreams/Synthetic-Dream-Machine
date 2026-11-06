@@ -8,7 +8,8 @@ import * as ed25519 from "@noble/ed25519";
 import {
   mintPersonaInception, mintFaceAnchor, writePersonaKelEvent, type LarDoc, type PersonaKelEvent,
 } from "@lararium/mesh";
-import { generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, makeBrowserIdbPersonaVault } from "../src/browser-vessel-identity.js";
+import { generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, makeBrowserIdbPersonaVault, wearFaceOfVessel } from "../src/browser-vessel-identity.js";
+import { bindSyntheticFace } from "./browser-custody-fixture.js";
 import { keepBrowserFaceAnchor } from "../src/browser-face-anchor.js";
 
 const hexOf = (b: Uint8Array): string => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
@@ -30,10 +31,13 @@ export interface SealedOwnerFace {
 export async function sealOwnerFace(
   idbName: string, handleIndex: number, kelBoard: { doc(): LarDoc } = stableBoard(),
 ): Promise<SealedOwnerFace> {
+  const group = `group-h${handleIndex}`;
+  // The root rests under its own face's tree: the face binds, the vessel wears it, and only then the root mints.
+  await bindSyntheticFace(idbName, group);
+  wearFaceOfVessel(idbName, group);
   await generateOrLoadBrowserPersonaRoot(idbName, handleIndex, FIXTURE_WARD);
   const did = "0x" + hexOf(await ed25519.getPublicKeyAsync(await loadBrowserPersonaRootSeed(idbName, handleIndex, FIXTURE_WARD)));
   const inception = mintPersonaInception(did, "recovery-" + handleIndex.toString(16).padStart(2, "0").repeat(30));
-  const group = `group-h${handleIndex}`;
   const vault = await makeBrowserIdbPersonaVault(idbName);
   vault.anchors.save(handleIndex, { personaGroupId: group, meshCabalDocIdHex: "00" });
   // the vault's write-through is fire-and-forget: read until a fresh vault sees the row (a causal read, no clock)

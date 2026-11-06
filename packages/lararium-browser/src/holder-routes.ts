@@ -39,11 +39,18 @@ export const HOLDER_ROUTES = {
   "cas:want": "owner",
   "dyad:ask": "owner",
   "receipt:request": "owner",
+  // V2: an island's rest ask reaches the vessel whose sealed rest answers it.
+  "rest:ask": "owner",
   "custody:write": "owner",
-  // The session sign door (sealed-store#/the-store): the browser island composes no session proof until U4 moves the
-  // daemon kernel into the holder (road F6, slice four), so no browser island asks one; the route stays total.
+  // The record asks reach the owner, the vessel that holds the island's capability record (`browser-island-caps.ts`),
+  // which answers each through the member of its name; a session sign answers there or refuses `signer-unavailable`.
   "session:sign": "owner",
   "view:catalog": "owner",
   "view:content": "owner",
   "view:settle": "owner",
+  // The document store's door answers the vessel that holds the island's capability record, as its other asks do.
+  "docstore:sealed": "owner",
+  "docstore:opened": "owner",
+  "docstore:live": "owner",
+  "docstore:slot": "owner",
 } as const satisfies Record<IslandToVesselMsg["type"], HolderRoute>;

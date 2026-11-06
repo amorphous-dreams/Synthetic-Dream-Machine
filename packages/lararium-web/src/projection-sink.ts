@@ -30,7 +30,7 @@
  *   - A MOUNT NEVER SHOWS BLANK. Until a surface's mount epoch paints its first `lar:surface` key, a loading
  *     plate beside the pane reads the island's latest breath for that surface (`setBreath`). On a switch the
  *     old frame stays visible, inert, under the plate, and the plate drops in the paint that lands the first key.
- *   - NOTHING LEAKS ACROSS A SWITCH. Islands share no render-id space: the old surface's nodes, words and popup
+ *   - NOTHING LEAKS ACROSS A SWITCH. Islands share no render-id space: the outgoing surface's nodes, words and popup
  *     placement end with it; each surface keeps its own revisions, sheet and local revisions.
  *   - A HOST DOOR OPENS UNDER A PERSON'S ACT AND THE SURFACE'S MANIFEST. A `lar:service` ask opens its door only
  *     while the person's last act on the page stands fresh (or the browser's own transient activation does), one
@@ -316,7 +316,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     const waitingOn = awaited ?? shownSurface;
     const up = waitingOn === null || waitingOn !== shownSurface || !stateOf(waitingOn).painted;
     plateEl.hidden = !up;
-    paneEl.inert = up;                         // the old frame stays visible; its nodes reach no island
+    paneEl.inert = up;                         // the outgoing frame stays visible; its nodes reach no island
     if (!up) { plateEl.removeAttribute("data-lar-loading"); plateEl.replaceChildren(); return; }
     const breath = waitingOn === null ? [...surfaces.values()].map((s) => s.breath).findLast((b) => b !== null) ?? null : stateOf(waitingOn).breath;
     plateEl.dataset["larLoading"] = breath?.phase ?? "";
@@ -367,7 +367,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     }
 
     if (switching) {
-      // Another island's frame: its render-ids name other nodes, so the old surface's nodes, the words standing
+      // Another island's frame: its render-ids name other nodes, so the outgoing surface's nodes, the words standing
       // beside them and the popup placement measured there all end with it.
       paneEl.replaceChildren();
       dropAllRefusals();

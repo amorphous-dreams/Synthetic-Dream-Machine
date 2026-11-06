@@ -181,6 +181,9 @@ export class AutomergeDocStore implements LarTiddlerStore {
 
   /** Every concurrent operation value on `title`, grouped across distinct fields by writer
    *  operation identity (`parallel-drafts.ts`). Empty when the record carries no conflict. Reads only. */
+  /** The document this store stands on: the sealed rest's bag map reads a mounted layer's document here (V3). */
+  get documentId(): string { return this.handle.documentId; }
+
   parallelDrafts(title: string): LarTiddlerRecord[] {
     return readParallelDrafts(this.handle.doc()?.tiddlers, title);
   }

@@ -206,16 +206,45 @@ test("a tab held at skinny opens the TW5 search dropdown without worker errors",
 });
 
 async function waitForLivePage(target = page): Promise<void> {
+  const faults = target === page ? browserConsole.filter((line) => line.includes("[daemon-island:fault]")) : [];
+  let signal: (reason: string) => void = () => {};
+  const terminal = new Promise<string>((resolve) => { signal = resolve; });
+  const onConsole = (message: { text(): string }): void => {
+    const line = message.text();
+    if (line.includes("[daemon-island:fault]")) { faults.push(line); signal(line); }
+    if (line.includes("[mirror] stand refused:")) signal(line);
+  };
+  const onPageError = (error: Error): void => { signal(`pageerror: ${error.message}`); };
+  target.on("console", onConsole);
+  target.on("pageerror", onPageError);
   try {
-    await target.waitForFunction(() => [...document.querySelectorAll("#phases .phase")]
-      .some((phase) => phase.textContent === "live"), undefined, { timeout: 20_000 });
-    await target.waitForFunction(() => {
-      const host = document.querySelector("#mirror");
-      const pane = host?.shadowRoot?.querySelector(".lar-mirror");
-      return host?.getAttribute("data-lar-shown") === "mirror" && pane !== null && pane !== undefined && pane.childElementCount > 0;
-    }, undefined, { timeout: 20_000 });
+    const previousError = target === page ? wikiWorkerErrors.find((line) => line.startsWith("[page] ")) : undefined;
+    if (faults.length || previousError) signal(faults[0] ?? previousError!);
+    for (const arrival of ["live", "mirror"] as const) {
+      const result = await Promise.race([
+        terminal,
+        target.waitForFunction((wanted) => {
+          const phases = [...document.querySelectorAll("#phases .phase")];
+          const failed = phases.find((phase) => /refus|fault/i.test(phase.textContent ?? ""));
+          if (failed) return `phase: ${failed.textContent}`;
+          const status = document.querySelector("#status");
+          if (status?.classList.contains("err") || status?.classList.contains("warn")) return `status: ${status.textContent}`;
+          const refusal = document.querySelector(".ceremony-ask[data-refusal]");
+          if (refusal) return `ceremony refusal: ${refusal.getAttribute("data-refusal")}`;
+          const host = document.querySelector("#mirror");
+          const mirrorState = host?.getAttribute("data-lar-mirror");
+          if (mirrorState?.startsWith("none:") && mirrorState !== "none:mirror-inputs-absent") return `mirror: ${mirrorState}`;
+          if (wanted === "live") return phases.some((phase) => phase.textContent === "live") ? "arrived" : false;
+          const pane = host?.shadowRoot?.querySelector(".lar-mirror");
+          return host?.getAttribute("data-lar-shown") === "mirror" && !!pane && pane.childElementCount > 0 ? "arrived" : false;
+        }, arrival, { timeout: 0 }).then((handle) => handle.jsonValue()),
+      ]);
+      assert.equal(result, "arrived", `terminal signal: ${result}`);
+    }
   } catch (error) {
-    const faults = browserConsole.filter((line) => line.includes("[daemon-island:fault]"));
     assert.fail(`${String(error)}\nphases=${await target.locator("#phases").innerText()}\nfaults=${faults.join("\n")}`);
+  } finally {
+    target.off("console", onConsole);
+    target.off("pageerror", onPageError);
   }
 }

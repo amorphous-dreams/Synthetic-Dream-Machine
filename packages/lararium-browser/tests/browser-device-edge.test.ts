@@ -4,7 +4,7 @@ import { deviceAtomProofBytes, hex, verifyDeviceDelegation, type DeviceDelegatio
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { idbGet, openVesselIdb } from "../src/browser-vessel-identity.js";
 import { browserFaceAtom, requireBrowserFaceAtomSeed } from "../src/browser-face-atom.js";
-import { bindSyntheticBrowserCustodySlot, fixtureWardDialog } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, fixtureWardDialog } from "./browser-custody-fixture.js";
 import { placeSeed } from "./browser-place-seed.fixture.js";
 import { BootHalted } from "./wire-vessel-rig.js";
 
@@ -22,6 +22,8 @@ describe("a browser face countersigns its own edge", () => {
     expect(await verifyDeviceDelegation(edge, edge.personaRootDid)).toMatchObject({ ok: true });
     const own = await requireBrowserFaceAtomSeed(idbName, social.personaGroupId);
     expect(own).toHaveLength(32);
+    await bindSyntheticFace(idbName, "another-face");
+    await bindSyntheticFace(idbName, "no-face");
     const other = await browserFaceAtom(idbName, "another-face");
     const otherSeed = await requireBrowserFaceAtomSeed(idbName, "another-face");
     expect(other.key).not.toBe(edge.deviceVerifyingKey);

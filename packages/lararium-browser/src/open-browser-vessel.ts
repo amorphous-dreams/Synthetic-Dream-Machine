@@ -19,11 +19,14 @@ import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHo
  */
 
 import { pagePortGrant } from "./page-port-grant.js";
-import type { PortIslandToVesselMsg } from "@lararium/mesh";
+import { DAEMON_SURFACE_ID } from "./daemon-surface.js";
+import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, vesselDocStoreDoor, type SealedBag } from "@lararium/mesh";
+import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
+import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
 import {
   emptyLarDoc, storedLarRecord, cosignPortWitness, WARD_WITNESS_CLOSED,
@@ -57,6 +60,7 @@ import {
 import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCard, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "./browser-gate-pins.js";
 import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
 import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
+import { composeBrowserIslandCaps, liftBrowserIslandCaps } from "./browser-island-caps.js";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, provenCrossingPlanes, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
 import { readLarControlResult, readLarFrame, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, ownEntry } from "@lararium/mesh";
@@ -100,12 +104,12 @@ import {
   generateOrLoadBrowserVesselIdentity,
   browserPersonaRootHeld, generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
   listBrowserPersonaRoots, loadBrowserActivePersona,
-  makeBrowserIdbPersonaVault, makeBrowserPersonaPetnameStore,
+  makeBrowserIdbPersonaVault, makeBrowserPersonaPetnameStore, wearFaceOfVessel,
   openVesselIdb, idbGet, idbPut, loadBrowserPlaceKel,
 }                                            from "./browser-vessel-identity.js";
 import type { BrowserVesselIdentity }        from "./browser-vessel-identity.js";
 import { personaPanelStateArgs }             from "./persona-panel-state.js";
-import { BrowserVesselIslandPool, listenForPageDrains } from "./browser-vessel-island-pool.js";
+import { BrowserVesselIslandPool, type PageLifeFeed } from "./browser-vessel-island-pool.js";
 import { publishHandleBrowser }              from "./browser-handle-publish.js";
 import { burnFaceBrowser, attestFaceBrowser } from "./browser-handle-verbs.js";
 
@@ -130,9 +134,11 @@ import type { WikiRecipe }                   from "@lararium/mesh";
 
 import { waitHandle } from "@lararium/mesh";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
-import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody } from "./browser-custody.js";
-import { clearCustodyVerb, standBrowserCustody, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
-import { guardedBoot, type BootHold } from "./guarded-boot.js";
+import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody, refuseSharedTreeFaceRows } from "./browser-custody.js";
+import { nameFace } from "./browser-face-custody.js";
+import { clearCustodyVerb, standFounderFace, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
+import { sweepOrphanBrowserWards } from "./browser-ward-tree.js";
+import { guardedBoot, takeDownBoot, BootTeardownRefusal, type BootHold } from "./guarded-boot.js";
 import { attachSharedHolder, holderWorkerHandle, houseName } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
 import { shoreInbound } from "@lararium/mesh";
@@ -192,6 +198,15 @@ async function readBootKeys(idbName: string): Promise<BootKeyReads> {
 
 interface BootKeyWrites { bootstrap?: BrowserBootstrap; catalogUrl?: string }
 
+/**
+ * The faces (PersonaGroups) this browser's store names, public: the bootstrap's face. A session's hello that names no face
+ * wears the one face named here, and none where none stands (a fresh browser founds). Its own unlock still admits it.
+ */
+export async function readBrowserVesselFaces(idbName: string): Promise<string[]> {
+  const { bootstrap } = await readBootKeys(idbName);
+  return bootstrap?.personaGroupId ? [bootstrap.personaGroupId] : [];
+}
+
 async function writeBootKeys(idbName: string, writes: BootKeyWrites): Promise<void> {
   if (!writes.bootstrap && !writes.catalogUrl) return;
   const idb = await openVesselIdb(idbName);
@@ -209,7 +224,7 @@ async function writeBootKeys(idbName: string, writes: BootKeyWrites): Promise<vo
 
 export interface BrowserVesselOptions extends LarariumVesselOptions {
   /**
-   * THE WARD'S DIALOG (seat-harness#/the-ward): the page asks the person for the face's passphrase for ONE ward act (a daemon or
+   * THE WARD'S ASK (seat-harness#/the-ward): the unlock ceremony asks the person for the face's passphrase for ONE ward act (a daemon or
    * kahua commit, a kāpae-lower, a face's founding or mint, a handle publish, burn or attest) and answers it; the passphrase goes
    * to that one act and nothing keeps it. Absent, every ward act in this browser refuses `ward-needs-fresh-unlock` by name. The
    * ask names its kind: `open` reads a standing ward, and a bind asks `bind` then `retype` and binds only where both match.
@@ -281,6 +296,11 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    */
   admit?:           CarriedAdmitPayload;
   /**
+   * The face (PersonaGroup) the first session wears, from its hello: the vessel boots that face, and refuses `face-not-worn`
+   * where its bootstrap (or its admit) names another. Absent or null: the vessel boots the face its store names.
+   */
+  face?:            string | null;
+  /**
    * A carried hosting invite (`lar-invite:…`, membership-doctrine #/the-invite) — a bearer token minted by the
    * hearth whose gate key it names, CARRIED and never fetched (paste, QR, URL fragment). It is written to this
    * vessel's own IndexedDB BEFORE any dial and redeemed at that hearth's OWN gate, which burns it; the grant
@@ -309,6 +329,14 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   askCustody?: (question: CustodyAsk | { readonly kind: "clear" }) => Promise<CustodyAnswer>;
   /** URL of the compiled browser wiki Worker script. */
   workerScriptUrl?: URL;
+  /**
+   * The page's life signals (the lift's `page:life`): the page subscribes to its own `visibilitychange` and `pagehide` and
+   * feeds each one here. A hidden page or a leaving one asks the wiki islands to drain, and a leaving page closes its shared
+   * holder session. Absent, no drain rides a page signal.
+   */
+  pageLife?: PageLifeFeed;
+  /** The vessel's rest reading (the lift's `status`): what it read of its receipt requests, each time it moves. */
+  onRest?: (state: VesselRestState) => void;
   /** Camera sink: a keyed `lar:frame` from the gated surface, named by its transport id. */
   onFrame?:         (frame: ProjectionSurfaceFrame) => void;
   /** Answer rail: a `lar:control-result`; the page correlates it by event id. */
@@ -339,11 +367,7 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   };
 }
 
-/** The surface id the daemon owns in the uniform pin-selector — distinct from any pool wiki slug. Pass it to
- *  `setActiveSurface` to summon the daemon; pass a wiki slug to surface that wiki. It's all the same VM. */
-// THE SENTINEL IS THE SLUG — one string, no decoding at any boundary, so no call site can decode it
-// wrongly. A sentinel that differs from the slug buys a translation everywhere the two must meet.
-export const DAEMON_SURFACE_ID = "daemon";
+export { DAEMON_SURFACE_ID } from "./daemon-surface.js";
 
 /** A keyed `lar:frame` plus the SURFACE (transport id) whose island emitted it. */
 export type ProjectionSurfaceFrame = LarMsg_Frame & { readonly surface: string };
@@ -352,6 +376,22 @@ export type ProjectionSurfaceFrame = LarMsg_Frame & { readonly surface: string }
 export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPool, DaemonVmCore> {
   /** The public identity receipt composed by this vessel. Private signing material never leaves the vessel. */
   identity: BrowserVesselIdentity;
+  /** The face (PersonaGroup) this vessel boots: the one its founding named, its admit joined, or its store holds. */
+  face: string;
+  /**
+   * The provider door (K19): one Keyhive provider per unlocked face. The face the vessel boots lights in its daemon manifest;
+   * another face lights at its first admitted session (`daemon:face-lit`, its `JoinedFaceAuth` read from its own tree) and
+   * drops at its last (`daemon:face-drop`).
+   */
+  faceProviders: { lit(face: string): Promise<unknown>; drop(face: string, why: string): Promise<unknown> };
+  /** Flush the Repo's pending writes to the store. */
+  flush: () => Promise<void>;
+  /**
+   * Bring the vessel down whole (the face's last session, vessel-sessions.ts): the wiki islands drain, then what the boot
+   * stood comes down newest first (the daemon island and its signers, the relay, the Repo), then the store lock goes back.
+   * A thing that will not come down keeps the lock and refuses by name (`BootTeardownRefusal`).
+   */
+  close: () => Promise<void>;
   restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
   /**
    * Has this vessel crossed? True once the hearth it dials answered with a verdict signed by the pinned gate key
@@ -381,7 +421,7 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   /** Read the Nexus's floor off the hearth's porch at `baseUrl` and verify every step here: the genesis epoch re-derives the
    *  Nexus AID, each epoch step verifies, the head release seals as a seat of its epoch under the cabal's approval of the
    *  manifest's exact bytes, and each fetched blob hashes to its CID. It records no acceptance (a face accepts a release by
-   *  a person's own act, W26 slice 5); the running floor stays the genesis floor this vessel booted on. */
+   *  a person's own act, W26, its fifth slice); the running floor stays the genesis floor this vessel booted on. */
   readFloor: (baseUrl: string) => Promise<HearthFloorRead>;
   /** Relay a `lar:control-event` to the surface that PAINTED its target, whatever surface stands active. */
   sendControlEvent: (surface: string, ev: LarMsg_ControlEvent) => ReturnLegVerdict;
@@ -390,6 +430,8 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[] } | null>;
   /** Ask a surface's island to paint whole under a fresh mount epoch (`lar:resend`). */
   resend: (surface: string) => ReturnLegVerdict;
+  /** The surface id the projection gate shows now: the daemon's, or a wiki's slug. */
+  activeSurface: () => string;
   /** The uniform pin-selector: flip which VM owns the singleton #projection sink. DAEMON_SURFACE_ID summons the
    *  daemon; a wiki slug surfaces that wiki. LIVE (synchronous gate flip); the durable bags/daemon/active-wiki
    *  marker persists fire-and-forget, consulted only at next cold boot ("live process state is the boundary"). */
@@ -397,7 +439,7 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
 }
 
 /**
- * Load a PREVIOUSLY-FOUNDED catalog doc by its persisted url — and never re-found it SILENTLY. A stored
+ * Load a ALREADY-FOUNDED catalog doc by its persisted url — and never re-found it SILENTLY. A stored
  * catalogUrl means this vessel already founded + persisted a catalog; a find() rejection here means the
  * LOCAL copy is gone (IndexedDB quota eviction under storage pressure, or corruption). Re-founding a
  * BLANK catalog in that case is data-amnesia — every registered wiki/recipe vanishes from local view
@@ -484,7 +526,18 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // can retry in the same page over one copy of the store. A boot that cannot take its things down keeps the lock and
   // refuses by name (`BootTeardownRefusal`). A booted vessel keeps both.
   const held: BootHold = { lock: null, stood: [] };
-  return guardedBoot(held, () => bootUnderLock(opts, held), opts.teardownBudgetMs);
+  const opened = await guardedBoot(held, () => bootUnderLock(opts, held), opts.teardownBudgetMs);
+  let closing: Promise<void> | null = null;
+  return Object.assign(opened, {
+    flush: () => opened.repo.flush(),
+    close: () => closing ??= (async () => {
+      await opened.pool.disposeAll().catch((e: unknown) => console.warn("[vessel] the wiki islands did not drain whole:", e));
+      const failed = await takeDownBoot(held, opts.teardownBudgetMs);
+      if (failed.length > 0) throw new BootTeardownRefusal(failed, new Error("the vessel's close"));
+      await held.lock?.release();
+      held.lock = null;
+    })(),
+  });
 }
 
 /**
@@ -504,7 +557,7 @@ async function houseOfBoot(idbName: string, admitting: boolean): Promise<string 
   } catch { return null; }
 }
 
-async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promise<BrowserVesselResult> {
+async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promise<Omit<BrowserVesselResult, "flush" | "close">> {
   const {
     wikiId,
     idbName = "lares:vessel", displayName, onPhase, placeFoundingCard,
@@ -543,7 +596,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // several faces held) takes the dedicated-worker floor, and the house stands from the next boot.
   const house = (sharedHolderUrl && daemonWorkerUrl) ? await houseOfBoot(idbName, admit !== undefined) : null;
   const holder = (sharedHolderUrl && daemonWorkerUrl && house)
-    ? await attachSharedHolder({ holderUrl: sharedHolderUrl, houseName: house })
+    ? await attachSharedHolder({ holderUrl: sharedHolderUrl, houseName: house, ...(opts.pageLife ? { pageLife: opts.pageLife } : {}) })
     : null;
   if (holder?.kind === "floor") console.log(`[vessel] shared holder floor: ${holder.why}`);
   const lockHold = await holdVesselLock(idbName, opts.locks === undefined ? ambientLocks() : opts.locks, { attachToHolder: holder?.kind === "attached" ? holder.hello.lockClientId : null, ...(holder?.kind === "attached" && house ? { houseName: house } : {}) });
@@ -555,6 +608,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // a store whose boot cannot read its own device seed, so the refusal gives the lock back with nothing to take
   // down (each tab unlocks for itself, operator ruling 2026-10-18; `standBrowserCustody` asks before this boot).
   const custodyAtBoot = await readBrowserCustody(idbName);
+  // A FACE ROW NEVER RESTS UNDER THE PLACE TREE: a face's row there, or a row spelled by handle index, refuses by name.
+  await refuseSharedTreeFaceRows(idbName);
   if (custodyAtBoot.reading === "sealed" && !custodyAtBoot.unlocked) throw new BrowserCustodyRefused("sealed-locked", idbName, "vessel-key");
 
   // ── Repo — IndexedDB-backed (substrate) ────────────────────────────────────
@@ -590,8 +645,57 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     if (!fleetShadows || fleetShadows.frontier.status !== "known") return true;   // widening waits on the fleet's signed frontier
     return fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, key))?.stands === true;
   };
+  // THE SEALED REST (sealed-store#/owed, R1 · R2), as the node composes its own: the worn face's wiki bags rest sealed
+  // under each bag's content key through the holder in the daemon island (the door carries a body and a sealed value,
+  // never a key); cleartext rests only in the disk projection and the live wiki in memory. A bag maps sealed only while
+  // the face's Nexus session stands lifted. Every change books the vessel's own unlocked session while it stands (a
+  // tab's own session record waits on the lift's third slice), a save no session booked waits `save-unbooked` in memory
+  // until the next lift books it, and the lock flushes the Repo and the rest before the lift drops its signer.
+  type BrowserSaveSession = { readonly id: string; readonly subject: string };
+  const sealedCells: { face: () => string | null; bags: () => readonly string[]; catalog: () => LarDoc | undefined; mounted: (bagId: string) => string | null; session: BrowserSaveSession | null; hold: ((ask: string, verb: string) => () => void) | null } = {
+    face: () => null, bags: () => [], catalog: () => undefined, mounted: () => null, session: null, hold: null,
+  };
+  // V3: a bag's document by every name it carries: the layer the mount resolved (a working slot's derived address, a
+  // draft binding), then the catalog's row.
+  // Each slot document the daemon island's resolver named, by bag (`announceSlotDoc`).
+  const slotDocsNamed = new Map<string, Set<string>>();
+  const sealedMap = sealedBagMap({
+    face: () => sealedCells.face(),
+    bags: () => sealedCells.bags(),
+    docsOf: (bagId) => [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
+  });
+  const sealedBagOf = (documentId: string): SealedBag | null => sealedMap.bagOf(documentId);
+  const docStorePort = docStorePortCell(async (bagId) => {
+    const documentId = sealedMap.docOf(bagId);
+    const handle = documentId ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId] : undefined;
+    return handle?.isReady() ? A.save(handle.doc() as A.Doc<unknown>) : null;
+  }, {
+    onSlot: (bagId, documentId) => {
+      const named = slotDocsNamed.get(bagId) ?? new Set<string>();
+      if (named.has(documentId)) return;
+      named.add(documentId);
+      slotDocsNamed.set(bagId, named);
+      sealedRest.store.mapMoved();
+      const session = sealedCells.session;
+      if (session !== null) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
+    },
+  });
+  const docStoreDoor = vesselDocStoreDoor<BrowserSaveSession>(() => docStorePort.port(), {
+    book: (ask, verb) => sealedCells.hold?.(ask, verb) ?? (() => {}),
+    patienceMs: 30_000, idPrefix: `docstore-${idbName}`,
+  });
+  const sealedRest = composeSealedRest<BrowserSaveSession>({
+    inner: shoreStorage(new IndexedDBStorageAdapter(`${idbName}:repo`)),
+    bagOf: sealedBagOf,
+    sessionFace: () => sealedCells.face(),
+    door: docStoreDoor,
+    flushRepo: async () => { await repo.flush(); },
+    onHeld: ({ refusal, documentId }) => console.log(`[sealed-rest] ${refusal}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
+    // A restart's hydration: a sealed document the engine asks for ahead of the lift waits for its map, never strands.
+    hydrationPatienceMs: 120_000,
+  });
   const repo = new Repo({
-    storage:     shoreStorage(new IndexedDBStorageAdapter(`${idbName}:repo`)),
+    storage: sealedRest.store,
     // The verdict seats on announce AND access (the announce-only lie the node measured in
     // share-policy-is-access.test.ts); `browserShareConfig` composes it through mesh's one law.
     // The gate rides by READER: it arms at the spore crossing below, after this Repo stands.
@@ -603,6 +707,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     }),
   });
   held.stood.push({ what: "repo", down: () => repo.shutdown() });
+  // R2's booking, by the change's own writer (T4): a change this replica made books the vessel's unlocked session while
+  // it stands, and a peer's change books its peer writer and rests as received under that session.
+  sealedRest.watch(repo, () => sealedCells.session);
   emit("repo-open");
 
   // ── Keypair (WebCrypto substrate) + founding (the personaGroup capability) ───
@@ -723,6 +830,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // THE JOINEE'S ATOM: the random seed this browser holds for the face it joins (minted here, or the one a fleet-join
     // request already sealed in the face's own row). The edge the root signed delegates to its key, and the atom
     // countersigns its own half; this browser's device seed signs none of it.
+    if (opts.face && opts.face !== admit.personaGroupId) throw new Error(`face-not-worn: the session wears another face than the one this admit joins`);
+    wearFaceOfVessel(idbName, admit.personaGroupId);
     const atomSeed = await standBrowserFaceAtomSeed(idbName, admit.personaGroupId);
     let a: Awaited<ReturnType<typeof runApplyAdmitPayload>>;
     try {
@@ -783,19 +892,19 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // A ROOT MINTS ONLY OVER A SLOT: a keystore with no slot asks this tab's person to bind one first, and a boot
     // with no custody door refuses `no-custody-slot` at the mint, by name (#/rulings: a browser leaf holds a
     // passphrase or paper slot before it holds a persona root).
-    // THE FACE IS BORN UNDER ITS WARD (seat-harness#/the-ward): the route the person typed for this founding's custody binds the
-    // face's ward too; a keystore this tab already holds unlocked asks the ward's dialog once. No route, no root.
+    // THE FOUNDER FACE'S TREE BINDS BEFORE ITS FIRST ROW: one first bind stands the place tree and the founder's own tree, unnamed
+    // until the ceremony below names its PersonaGroup.
+    // THE FACE IS BORN UNDER ITS WARD (seat-harness#/the-ward): the route the person typed for the founder face's first bind binds
+    // the face's ward too; a face whose tree this vessel already holds asks the ward's ask once. No route, no root.
     let bornUnder: CustodyAnswer = null;
-    if (opts.askCustody) {
-      const ask = opts.askCustody;
-      const custody = await standBrowserCustody({ idbName, ask: async (q) => { const answer = await ask(q); if (answer) bornUnder = answer; return answer; }, secretMintDue: true });
-      if (custody.reading !== "bound" && custody.reading !== "opens" && custody.reading !== "held") {
-        throw new BrowserCustodyRefused("no-custody-slot", idbName, `persona-root-h${String(FOUNDING_PERSONA_INDEX)}`, `the founding asked for a first slot and read ${custody.reading}`);
-      }
-    }
+    const ask = opts.askCustody;
+    const founder = await standFounderFace({ idbName, ...(ask ? { ask: async (q: CustodyAsk) => { const answer = await ask(q); if (answer) bornUnder = answer; return answer; } } : {}) });
+    wearFaceOfVessel(idbName, founder);
+    // A FOUNDING TORN BEFORE ITS CEREMONY NAMED ITS FACE left a ward no face answers again: it sweeps before the root mints.
+    await sweepOrphanBrowserWards(idbName);
     const founding = "found this browser's first face";
     const wardRoute: WardRoute = bornUnder ?? (await browserPersonaRootHeld(idbName, FOUNDING_PERSONA_INDEX) ? await wardRouteFor(founding) : await wardBindRouteFor(founding));
-    await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX, wardRoute);
+    await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX, wardRoute, founder);
     const signerSeed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX, wardRoute);
     // THE ROOT SEED LEAVES THE ACT ZEROED: the ceremony signs once with it, and the bytes clear in the finally.
     let f: Awaited<ReturnType<typeof runFoundingCeremony>>;
@@ -814,9 +923,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         nexusPubkey,
         // The founding mints the face's ward key under a ward of its own, over the route this founding's root rides, and signs its
         // pop inside that ward act; a founding that runs again signs the pop inside a fresh ward act under the same route.
-        vesselTag: browserVesselFaceTagDoor(idbName, { route: async () => wardRoute }),
+        vesselTag: browserVesselFaceTagDoor(idbName, { route: async () => wardRoute }, founder),
       });
     } finally { signerSeed.fill(0); }
+    // THE CEREMONY NAMED THE GROUP: the founder's tree takes its anchor and its index entry, and every later row names the group.
+    await nameFace(idbName, founder, f.personaGroupId);
+    wearFaceOfVessel(idbName, f.personaGroupId);
     // THE FACE'S ATOM RESTS BEFORE ITS BOOTSTRAP: the founding minted a random seed, and the face's own custody row keeps it.
     try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); } finally { f.atomSeed.fill(0); }
     // THE FACE'S ADDRESS SECRET MINTS BESIDE ITS ATOM, so its working documents derive their addresses from the first boot.
@@ -841,6 +953,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     bootKeyWrites.bootstrap = bootstrap;
   }
   const social = bootstrap;   // narrowed (defined past this point)
+  if (opts.face && opts.face !== social.personaGroupId) throw new Error("face-not-worn: the session wears another face than the one this vessel's store names");
+  wearFaceOfVessel(idbName, social.personaGroupId);
   // A pin chooses which gate to knock; the selected face atom's card supplies face peer proof. Name the missing
   // proof here instead of leaving the page pinned while no adapter can stand.
   // THE PINS THE ADMIT CARRIED are filed in the ONE pair index under the hearth's name (the origin of the relay url: the
@@ -975,7 +1089,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   };
   let catalogHandle: DocHandle<LarDoc>;
   if (bootKeys.catalogUrl) {
-    // A catalog was previously founded + persisted — a load failure is DATA-AMNESIA, surfaced LOUD
+    // A catalog stands founded + persisted — a load failure is DATA-AMNESIA, surfaced LOUD
     // (never a silent blank re-founding). See loadFoundedCatalogOrWarn.
     catalogHandle = await loadFoundedCatalogOrWarn<LarDoc>(repo, bootKeys.catalogUrl, blankCatalog);
   } else {
@@ -1008,6 +1122,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let wikiActivation!: WikiActivationCap;     // set in makePool — activation-on-reference cap (minimal grant)
   let daemonHolder!: DaemonVmHolder;
   let daemon!:     DaemonVmCore;      // set in openDaemon
+  /** The booted face's atom key, public: the provider door drops that face's provider by it. */
+  let bootedAtomKey: string | null = null;
   let wikiSense!:  WikiSenseSupervisor;   // set in wireVerbs (post-daemon)
   let slotActiveWikiId = "";
   // R4 — the Crossroads board this vessel materializes ONCE, read by every later per-island
@@ -1268,6 +1384,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const wornEdge = wornMount?.deviceEdge ?? social.deviceEdge;
       const wornAtomSeed = await requireBrowserFaceAtomSeed(idbName, wornGroup);
       const wornAtom = faceAtomKeyFromSeed(wornAtomSeed, wornGroup);
+      bootedAtomKey = wornAtom.key;
       if (wornEdge && wornAtom.key !== wornEdge.deviceVerifyingKey) {
         wornAtomSeed.fill(0);
         throw new Error("this face's atom differs from its device edge; re-found or re-admit it");
@@ -1431,9 +1548,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const wiring = promoteWiringRef;
           const handle = await repo.find<LarDoc>(provenPromoteUrl as AutomergeUrl);
           const boardFace = { group: wornGroup, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
-          /** One ward act's signer: the page's dialog asks the passphrase for this act, and the ward worker signs under it. */
+          /** One ward act's signer: the unlock ceremony asks the passphrase for this act, and the ward worker signs under it. */
           const wardRootSignerOf = async (act: string) => browserWardSigner(idbName, FOUNDING_PERSONA_INDEX, await wardRouteFor(act));
-          // THE ANSWER DOOR: an approve of a ward ask signs inside a fresh ward act of this face, from the route the dialog asks for it.
+          // THE ANSWER DOOR: an approve of a ward ask signs inside a fresh ward act of this face, from the route the ceremony asks for it.
           wardAnswerHandler = async (args) => {
             if (typeof args["ask"] !== "string" || typeof args["executor"] !== "string") throw new BrowserWardRefused("ward-answer-malformed");
             const entry = await browserWardAnswer({ idbName, group: wornGroup, atom: wornAtom, port: await browserCosignPortOf(), ask: args["ask"], executor: args["executor"],
@@ -1563,7 +1680,57 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         await fleetRead;
       }
       let replayManifest: (() => { msg: IslandMsg_Manifest; transfer: MessagePort[] }) | null = null;
+      // THE CAPABILITY RECORD this vessel hands its daemon island (slice 5a), composed as the node composes its own:
+      // receipt and cas at construction (the island reads its own fleet board, so no dyad member stands), and the
+      // LIFT on unlock. The lift seats `custodyWrite` and `sessionSign` while this vessel's custody stands open and a
+      // joined face's Nexus session stands; the lock takes both back and drops the session's signer. A vessel at its
+      // floor carries neither, and its island's `session:sign` answers `signer-unavailable` by name.
+      const islandCaps = composeBrowserIslandCaps({ repo, cas: readCasBlobFromOpfs });
+      // The lift's lock-and-flush, once a lift stands: the stand-down runs it again ahead of the daemon worker (P2-3).
+      let flushLift: (() => Promise<void>) | null = null;
+      islandCaps.docStore = (port) => docStorePort.attach(port);
+      // V2: the daemon island's own store rests no document this rest seals (`islandRestGuard`).
+      islandCaps.restsSealed = (documentId) => sealedRest.restsSealed(documentId);
+      if (facePresentation !== null) {
+        const certificate = facePresentation.certificate;
+        const lift = liftBrowserIslandCaps(islandCaps, {
+          session: { signer: facePresentation.signer, chain: { scope: certificate.scope, vesselFaceKey: certificate.vesselFaceKey } },
+          custodyWrite: (_carrier, bytes) => saveBrowserVeilArchive(idbName, wornGroup, bytes),
+        });
+        // R1 · R2: while the lift stands, the worn face's wiki bags map sealed and the vessel's session books each change;
+        // every save that waited for a session seals under it now.
+        const face = faceProofSubjectRef(certificate.scope as never);
+        const session: BrowserSaveSession = { id: `browser-session-${crypto.randomUUID()}`, subject: face };
+        sealedCells.face = () => face;
+        sealedCells.bags = () => [slot.wikiBagId, slot.workingBagId, slot.draftBagId];
+        sealedCells.catalog = () => catalogHandle.doc() as LarDoc | undefined;
+        sealedCells.mounted = (bagId) => mountedDocumentId(assembly.composite.storeForBag(bagId));
+        sealedCells.hold = (ask, verb) => lift.hold(ask, verb);
+        sealedCells.session = session;
+        sealedRest.store.mapMoved();
+        for (const named of slotDocsNamed.values()) for (const documentId of named) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
+        void sealedRest.rebook(session).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory: ${e instanceof Error ? e.message : String(e)}`));
+        // THE LOCK FLUSHES FIRST: every pending save lands sealed under the lift's session, then the lift drops its signer.
+        // THE LOCK UNMAPS (P2-2): once the flush lands, the face and its bags leave the map, so a later save waits in memory
+        // (`save-unmapped`) and a read refuses; the island's holder overwrites its content keys at once.
+        let locked = false;
+        const lockThenDrop = async (): Promise<void> => {
+          if (locked) return;
+          locked = true;
+          sealedCells.session = null;
+          try { await sealedRest.lock(); } catch { /* a refused flush keeps its changes in memory */ }
+          sealedCells.face = () => null;
+          sealedCells.bags = () => [];
+          sealedCells.hold = null;
+          docStoreDoor.lock();
+          lift.drop();
+        };
+        flushLift = lockThenDrop;
+        held.stood.push({ what: "the island's lift", down: lockThenDrop });
+        held.stood.push({ what: "the lift's lock", down: onBrowserCustodyLock(idbName, () => { void lockThenDrop(); }) });
+      }
       const openOnce = (pluginCids: readonly string[]) => openBrowserDaemonVm({
+        caps: islandCaps,
         repo, daemonUrl: social.daemonUrl, coreHash: assembly.coreHash, ownedDocument: true,
         // The persona plane rides only when a face stands. A browser vessel normally holds one — it IS
         // a person's face — so absence here names an unfinished founding rather than a crossroads, and
@@ -1612,6 +1779,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       failClosed: holder?.kind === "attached" ? (vm) => vm.dispose() : undefined });
       daemon = daemonHolder.vm;
       held.stood.push({ what: "daemon worker", down: () => daemon.dispose() });
+      // THE FLUSH PRECEDES THE ISLAND'S GOING (P2-3): the stand-down runs backward, so this step, pushed after the daemon
+      // worker's, locks and flushes while the island still answers the document store's door.
+      held.stood.push({ what: "the lift's flush", down: async () => { await flushLift?.(); } });
 
       // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ─────────────────
       // The ONE assembly the node vessel composes (`assemblePersonaGroupRing`), over the face this boot
@@ -1752,22 +1922,15 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         return { verb: "persona-refresh", roster, ...(active !== undefined ? { active } : {}) };
       });
 
-      // persona-mint — mint a new persona-root at the NEXT index and set its DEFAULT private
+      // persona-mint — mint the root of the face this vessel wears where it holds none, and set its DEFAULT private
       // pet-name (PRIVATE-all — the label never PUBLICLY federates; only a publicly announced Handle
       // binds a persona to a glamour, and that stays a SEPARATE explicit act, never auto-fired here).
-      // The mint names the face for the human, who renames it through the pet-name store's own private
-      // bag: a label typed into a projected field would travel a render surface with no way to tell a fleet
-      // peer from a stranger, and the label is PRIVATE. Next index = max(held) + 1, or 0 when the
-      // vessel holds no root (a joinee founding its first face).
+      // ONE ROOT PER FACE: a root rests under its own face's tree, so a second root names a second face, which founds through
+      // its own founding; a mint over a face that holds its root refuses `root-names-its-face` by name.
       registry.register("persona-mint", async () => {
-        // A FACE SECRET MINTS ONLY OVER A SLOT: the person binds a passphrase or paper slot first, in this tab.
-        if (!opts.askCustody) throw new Error("persona-mint: this page offers no custody door, so no slot can bind before the root mints");
-        const custody = await standBrowserCustody({ idbName, ask: opts.askCustody, secretMintDue: true });
-        if (custody.reading !== "bound" && custody.reading !== "opens" && custody.reading !== "held") {
-          return { verb: "persona-mint", refused: custody.reading };
-        }
         const roster = await listBrowserPersonaRoots(idbName);
-        const nextIndex = roster.length ? Math.max(...roster) + 1 : 0;
+        if (roster.length > 0) return { verb: "persona-mint", refused: "root-names-its-face" };
+        const nextIndex = 0;
         // The new face is born under its own ward, bound over the route the person types for this mint.
         const root = await generateOrLoadBrowserPersonaRoot(idbName, nextIndex, await wardBindRouteFor(`mint face h${String(nextIndex)}`));
         const petnames = await makeBrowserPersonaPetnameStore(idbName);
@@ -1929,6 +2092,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // D4 lends the actor grant; this vessel opens a read-only port until then.
         portPolicy: opts.portPolicy ?? ((binding, islandKey) => pagePortGrant({ binding, islandKey, faceId: portFaceId, daemonKey: DAEMON_SURFACE_ID })),
         ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
+        ...(opts.onRest ? { onRest: opts.onRest } : {}),
         resolvePluginCids: async (recipe) => {
           crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
           return resolveBrowserIslandPluginCids({
@@ -1944,7 +2108,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           // the gate keys on the transport id (never a payload claim), so a summon that flips activeSurfaceId
           // auto-supersedes the previous surface's frames with no explicit teardown (the wlroots seat / tmux
           // active-pane rhyme: one sink, N emitters, one gate). An answer passes ungated: the page drops one whose
-          // surface or epoch it no longer shows. A host-door ask waits on the root-services slice.
+          // surface or epoch it stops showing. A host-door ask waits on the root-services slice.
           if (msg.type === "lar:frame") {
             if (_id === activeSurfaceId) onFrame?.({ ...msg, surface: _id });
             return;
@@ -2029,8 +2193,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       }
       const stopPromoteWatch = promoteWiringRef?.watch();
       if (stopPromoteWatch) held.stood.push({ what: "the promote watcher", down: stopPromoteWatch });
-      if (typeof window !== "undefined" && typeof document !== "undefined") {
-        const stopPageDrains = listenForPageDrains(window, document, () => vmManager.requestWikiDrains());
+      if (opts.pageLife) {
+        const stopPageDrains = opts.pageLife(() => vmManager.requestWikiDrains());
         held.stood.push({ what: "page drain signals", down: stopPageDrains });
       }
       return vmManager;
@@ -2060,8 +2224,19 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // served page can report which node wiki it rendered instead of treating a live socket as mount proof.
   connectionState.setWikiDocUrl(result.wikiHandle.url);
 
+  const bootedFace = social.personaGroupId;
   return {
     identity: vesselIdentity,
+    face: bootedFace,
+    faceProviders: {
+      // THE BOOTED FACE lights in its daemon manifest; another face's provider needs that face's signed device edge, which
+      // this browser's store does not hold (one bootstrap names one face), so it refuses by name.
+      lit: async (face: string) => {
+        if (face === bootedFace) return "manifest";
+        throw new Error("face-edge-absent: this browser's store names one face's device edge; another face lights once its own bootstrap rests under its tree");
+      },
+      drop: async (face: string) => { if (face === bootedFace && bootedAtomKey) await daemon.dropFace(bootedAtomKey); },
+    },
     restartDaemonIsland: (reason: string) => daemonHolder.restart(reason),
     pool: result.pool,
     repo,
@@ -2102,6 +2277,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     },
     mirrorInputs: (surface) => surface === DAEMON_SURFACE_ID || !vmManager.has(surface) ? Promise.resolve(null) : vmManager.mountInputsOf(surface),
     resend: (surface: string) => returnLeg.resend(surface),
+    activeSurface: () => activeSurfaceId,
     // The uniform pin-selector: flip the live gate synchronously (mount-then-flip — daemon + the pinned wiki
     // are already mounted), then persist the choice fire-and-forget to bags/daemon/active-wiki (read only at next
     // cold boot). No reboot — an active-surface change is a projection-gate flip, not a manifest rebuild.

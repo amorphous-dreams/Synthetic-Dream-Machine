@@ -16,6 +16,7 @@ import { signHolderSessionProof } from "@lararium/mesh/holder-session-proof";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
 import { type HolderHello, type HolderRefused } from "./shared-holder-core.js";
 import { waitsForAdmission } from "./holder-admission.js";
+import type { PageLifeFeed } from "./browser-vessel-island-pool.js";
 
 const portEnvelopes = new WeakMap<MessagePort, SessionEnvelope & { readonly nonce: string }>();
 const sessionLocks = new WeakMap<MessagePort, Promise<void>>();
@@ -74,6 +75,8 @@ export async function attachSharedHolder(args: {
   readonly host?:     SharedWorkerHost;
   /** The CALLER's cancellation (a harness that will not wait on a worker that neither greets nor errors); the door itself sets no deadline. */
   readonly signal?:   AbortSignal;
+  /** The page's life signals; a leaving page (`pagehide`) closes this tab's session on its port. Absent, the session closes with its port alone. */
+  readonly pageLife?: PageLifeFeed;
 }): Promise<SharedHolderAttach> {
   const host = args.host ?? ambientSharedWorkerHost();
   if (typeof host.SharedWorker !== "function") {
@@ -135,9 +138,13 @@ export async function attachSharedHolder(args: {
   }
   portEnvelopes.set(port, { ...envelope, nonce });
   sessionLocks.set(port, holdSessionLock(envelope.sessionId));
-  globalThis.addEventListener?.("pagehide", () => {
-    try { port.postMessage({ type: "session:close", ...envelope }); } catch { /* a gone port already closed */ }
-  }, { once: true });
+  if (args.pageLife) {
+    const stop = args.pageLife((life) => {
+      if (life !== "pagehide") return;
+      stop();
+      try { port.postMessage({ type: "session:close", ...envelope }); } catch { /* a gone port already closed */ }
+    });
+  }
   return { kind: "attached", port, hello: greeting };
 }
 

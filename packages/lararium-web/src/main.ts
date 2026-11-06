@@ -3,8 +3,8 @@ declare const __LAR_WALK_DOOR__: boolean;
  * lararium-web — the Web-surface assembly.
  *
  * This package owns page composition and the visible projection edge: it resolves served Worker assets,
- * opens the browser vessel, paints returned frames, and relays named DOM events and bounded input back to
- * the worker island. It owns no TW5 truth: the one engine it runs in the page is the MIRROR (DreamDOM D3), unprivileged,
+ * builds the vessel worker (the browser vessel runs there, on its own thread: `workers/vessel.worker.ts`), paints returned
+ * frames, and relays named DOM events and bounded input back over the vessel port (`vessel-port.ts`). It owns no TW5 truth: the one engine it runs in the page is the MIRROR (DreamDOM D3), unprivileged,
  * holding no keys and no truth, booted through one private door that takes the D2 port binding and fed by that port alone.
  * Direct web-surface tests remain small; the browser vessel and TW5 seams carry their own focused coverage.
  */
@@ -15,27 +15,25 @@ declare const __LAR_WALK_DOOR__: boolean;
  * A sovereign causal island boots in the browser (its own key, IndexedDB, genesis
  * bytes) and — when a hearth's porch is reachable — reads the Nexus's floor off it (the node-less
  * path: an anon browser vessel consuming the read-only substrate, the elyncia.app
- * story), verifying every step here. Location-agnostic: served from localhost / LAN / elyncia.app, the vessel
- * always runs here; the origin is a static host, never an authority.
+ * story), verifying every step on the vessel worker's thread. Location-agnostic: served from localhost / LAN / elyncia.app,
+ * the vessel always runs in this browser; the origin is a static host, never an authority.
  */
 import { createLoafBuffer } from "./loaf-buffer.js";
 import {
-  openBrowserVessel,
-  parseAdmitCarriage, toAdmitCarriage,
-  browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
-  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona, vesselLockName,
-  standBrowserCustody, readBrowserCustody, type CustodyAsk, type CustodyAnswer, type HearthFloorRead,
-  wardAskWords, type WardAskKind,
-} from "@lararium/browser";
+  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, vesselLockName, type HearthFloorRead,
+} from "@lararium/browser/page";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
-import type { DeviceAdmitPayload } from "@lararium/keyhive";
-import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, readHearthFloorCard, type GenesisSeed, type MeshPeer } from "@lararium/mesh";
+import { standVesselPort, vesselWorkerOfPort, VesselRefused, type VesselAsk, type VesselPort } from "./vessel-port.js";
+import type { VesselStatus } from "./vessel-protocol.js";
+import { openCeremony, standCeremonyBroker } from "./ceremony-page.js";
+import type { GenesisSeed } from "@lararium/mesh";
+import { LAR_WHOLE_VALUE_MAX_CHARS } from "@lararium/mesh/lar-camera";
+import { readHearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
 import { createProjectionSink } from "./projection-sink.js";
+import { pageLifeOf, paintRest } from "./page-life.js";
 import { pagePortDelivery, standPagePort } from "./page-port.js";
 import { standPageMirror } from "./page-mirror.js";
-import { standTabTopology } from "./glass/topology.js";
-import type { Lend } from "./glass/tab-bus.js";
-import { makePortTransport } from "./port-transport.js";
+import { standFloorTab } from "./floor-tab.js";
 import { defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl, arrivalRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json), read off the genesis base the page's URL names
 // (the hearth's Pronaos serves its own). The page carries no seed of its own, and checks the one it reads against the hearth's
@@ -47,26 +45,17 @@ import { arrivalSeedAnchor, genesisCrossingVerdict, genesisSeedBase, readServedS
 // (keyhive-WASM-first, then the chain) cannot resolve — the daemon/wiki boot's silent death.
 import daemonWorkerUrlStr from "./workers/daemon.worker.ts?worker&url";
 import wikiWorkerUrlStr  from "./workers/wiki.worker.ts?worker&url";
-import sharedHolderUrlStr from "./workers/shared-holder.worker.ts?sharedworker&url";
+// The vessel worker: the browser vessel's own thread. The page builds it and talks to it over its port alone.
+import vesselWorkerUrlStr from "./workers/vessel.worker.ts?worker&url";
 
 const daemonWorkerUrl  = new URL(daemonWorkerUrlStr, import.meta.url);
 const workerScriptUrl = new URL(wikiWorkerUrlStr,  import.meta.url);
+const vesselWorkerUrl = new URL(vesselWorkerUrlStr, import.meta.url);
 // C4's explicit diagnostic flag travels only to the daemon Worker. Ordinary
 // browser boots create the exact same worker URL they carried before.
 if (new URL(location.href).searchParams.get("c4trace") === "1") {
   daemonWorkerUrl.searchParams.set("c4trace", "1");
 }
-// THE SHARED HOLDER, OPT-IN BY URL (`?holder`): one daemon island per house inside a SharedWorker, a port per
-// tab. The holder uses the daemon start module and the store's lock name. Absent the flag the vessel
-// boots its dedicated worker exactly as before — the holder's lifetime past the last tab stays measured, not
-// assumed, before it becomes the default.
-const sharedHolderUrl = (() => {
-  if (!new URL(location.href).searchParams.has("holder")) return undefined;
-  const u = new URL(sharedHolderUrlStr, import.meta.url);
-  u.searchParams.set("lock", vesselLockName("lares:vessel"));
-  return u;
-})();
-
 const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
 
 const VESSEL_IDB = "lares:vessel";
@@ -115,65 +104,49 @@ function reportFirstPaint(): void {
 
 /**
  * THIS TAB'S CUSTODY DOOR (operator ruling 2026-10-18: each browser tab asks for its own unlock, and the shared holder
- * carries no unlock between tabs). One small form on the page asks the person; the passphrase lives in this page's
- * memory for the one act and never enters a tiddler, a verb's arguments, a URL or storage. "Not now" answers null.
+ * carries no unlock between tabs; the ceremony, operator ruling 2026-11-05: "Approve"). The vessel worker raises the ask;
+ * the page paints its public words and one button, and the button opens the clean ceremony document, which takes the
+ * secret and sends its bytes down its own brokered port to the vessel worker. The page paints no secret form and holds
+ * no byte of a route. The broker stands at the floor, with no secret held.
  */
-function askCustody(question: CustodyAsk | { readonly kind: "clear" }): Promise<CustodyAnswer> {
-  return new Promise((resolve) => {
-    const form = document.createElement("form");
-    form.className = "custody-ask";
-    form.dataset["ask"] = question.kind;
-    const say = document.createElement("div");
-    say.textContent =
-      question.kind === "unlock" ? `Unlock this browser's vessel (attempt ${String(question.attempt)} of ${String(question.of)})${question.notes.length ? ` — ${question.notes.join("; ")}` : ""}`
-        : question.kind === "bind-first" ? "Bind a passphrase to this browser before it holds a face's secrets. Keep it: nothing here recovers it."
-          : "Enter this browser's passphrase to clear it. Its secrets will then rest in the clear in this browser's storage.";
-    const pass = document.createElement("input");
-    pass.type = "password"; pass.autocomplete = question.kind === "bind-first" ? "new-password" : "current-password"; pass.required = true;
-    const again = question.kind === "bind-first" ? document.createElement("input") : null;
-    if (again) { again.type = "password"; again.autocomplete = "new-password"; again.required = true; again.placeholder = "again"; }
-    const go = document.createElement("button"); go.type = "submit"; go.textContent = question.kind === "clear" ? "clear" : question.kind === "bind-first" ? "bind" : "unlock";
-    const not = document.createElement("button"); not.type = "button"; not.textContent = "not now";
-    const done = (answer: CustodyAnswer): void => { pass.value = ""; if (again) again.value = ""; form.remove(); resolve(answer); };
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      if (again && again.value !== pass.value) { say.textContent = "The two passphrases differ; type them again."; again.value = ""; return; }
-      done({ kind: "passphrase", passphrase: pass.value });
+const ceremonyBroker = standCeremonyBroker();
+
+function paintAsk(ask: VesselAsk, vessel: VesselPort): void {
+  const notice = document.createElement("div");
+  notice.className = "ceremony-ask";
+  notice.dataset["ask"] = ask.kind;
+  notice.dataset["askId"] = ask.askId;
+  const say = document.createElement("div");
+  say.textContent =
+    ask.kind === "unlock" ? `This browser's vessel asks for its unlock (${ask.act}${ask.words ? `, ${ask.words}` : ""}).`
+      : ask.kind === "bind-first" ? "This browser's vessel asks for a first passphrase before it holds a face's secrets."
+        : ask.kind === "ward" ? `This face asks for its passphrase for one ward act (${ask.act}).`
+          : "This browser's vessel asks for its passphrase to clear its custody.";
+  const go = document.createElement("button");
+  go.type = "button"; go.className = "ceremony-open"; go.textContent = "open the unlock ceremony";
+  const refuse = (refusal: string): void => {
+    vessel.ceremonyRefused(ask.askId, refusal);
+    notice.dataset["refusal"] = refusal;
+    say.textContent = `The unlock ceremony cannot stand here: ${refusal}.`;
+    go.remove();
+  };
+  go.addEventListener("click", () => {
+    void ceremonyBroker.then((broker) => {
+      if ("refusal" in broker) { refuse(broker.refusal); return; }
+      openCeremony(ask.askId, broker.worker, (port) => vessel.ceremonyPort(ask.askId, port));
+      go.textContent = "the ceremony stands in its own window";
     });
-    not.addEventListener("click", () => done(null));
-    form.append(say, pass, ...(again ? [again] : []), go, not);
-    document.body.prepend(form);
-    pass.focus();
   });
+  notice.append(say, go);
+  document.body.prepend(notice);
+  // A page that stands no broker refuses at once, by name, and offers no form of its own.
+  void ceremonyBroker.then((broker) => { if ("refusal" in broker) refuse(broker.refusal); });
 }
 
-
-/**
- * THIS TAB'S WARD DIALOG (seat-harness#/the-ward): one small form asks the person for the face's passphrase for ONE ward act (a
- * founding or mint, a daemon or kahua commit, a kāpae-lower, a handle publish, burn or attest). The passphrase goes to that act
- * alone and never enters a tiddler, a verb's arguments, a URL or storage. "Not now" refuses the act by name. Its words follow the
- * ask's kind: an `open` opens a standing ward, a `bind` binds a fresh one, and a `retype` asks the bind's passphrase once more.
- */
-function askWardRoute(act: string, kind: WardAskKind): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const form = document.createElement("form");
-    form.className = "custody-ask";
-    form.dataset["ask"] = "ward";
-    form.dataset["kind"] = kind;
-    const say = document.createElement("div");
-    say.textContent = wardAskWords(act, kind);
-    const pass = document.createElement("input");
-    pass.type = "password"; pass.autocomplete = kind === "open" ? "current-password" : "new-password"; pass.required = true;
-    const go = document.createElement("button"); go.type = "submit"; go.textContent = kind === "open" ? "sign" : kind === "bind" ? "bind" : "confirm";
-    const not = document.createElement("button"); not.type = "button"; not.textContent = "not now";
-    const done = (): void => { form.remove(); };
-    form.addEventListener("submit", (e) => { e.preventDefault(); const typed = pass.value; pass.value = ""; done(); resolve(typed); });
-    not.addEventListener("click", () => { pass.value = ""; done(); reject(new Error(`ward-needs-fresh-unlock: the person declined the ward route for ${act}`)); });
-    form.append(say, pass, go, not);
-    document.body.prepend(form);
-    pass.focus();
-  });
+function settleAsk(askId: string): void {
+  for (const notice of document.querySelectorAll<HTMLElement>(".ceremony-ask")) if (notice.dataset["askId"] === askId) notice.remove();
 }
+
 
 /**
  * The flow read-face this page reads from, when no `?flow=` names one.
@@ -238,17 +211,15 @@ const projectionSink = createProjectionSink($("projection"), { inputMaxChars: LA
  * Handle stand — so a landed admission re-enters through boot rather than reaching behind a live cap stack. This page performs that re-entry itself; the human pastes and taps.
  *
  * The stash rides sessionStorage, never the URL. sessionStorage closes with the tab,
- * and this read REMOVES the entry — the carriage exists for exactly one boot.
+ * and this read REMOVES the entry — the carriage exists for exactly one boot. The vessel worker parses it.
  */
 const ADMIT_STASH_KEY = "lares:admit-carriage";
-function takeStashedAdmit(): DeviceAdmitPayload | null {
+function takeStashedAdmit(): string | null {
   let carriage: string | null = null;
   try { carriage = sessionStorage.getItem(ADMIT_STASH_KEY); } catch { return null; }
   if (!carriage) return null;
   try { sessionStorage.removeItem(ADMIT_STASH_KEY); } catch { /* the read already holds the bytes */ }
-  const payload = parseAdmitCarriage(carriage);
-  if (payload) console.log("[vessel] ADMIT taken from the fleet-join landing — this vessel JOINS an existing PersonaGroup.");
-  return payload;
+  return carriage;
 }
 
 /**
@@ -286,7 +257,7 @@ function fleetJoinFileOf(text: string): { readonly kind: "fleet-join-offer" | "f
  * thing only the node can sign. `fleetJoinFileOf` adjudicates: a refusal states itself and the page
  * stands unchanged, because a garbled paste means the admit DID NOT ARRIVE, never that an attack landed.
  */
-function mountAdmitSurface(verifyingKeyHex: string): void {
+function mountAdmitSurface(verifyingKeyHex: string, vessel: VesselPort): void {
   const keyEl = $("vessel-key"), cmdEl = $("admit-cmd"), statusEl = $("admit-status");
   const paste = document.getElementById("admit-paste") as HTMLTextAreaElement | null;
   const apply = document.getElementById("admit-apply") as HTMLButtonElement | null;
@@ -332,30 +303,27 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
         try {
           if (file.kind === "fleet-join-offer") {
             // Another join standing pending would strand this page: the human may abandon it here, by name.
-            // A JOIN MINTS FACE SECRETS (the face-scoped key, then the address secret): the slot binds first, in this tab.
-            const custody = await standBrowserCustody({ idbName: VESSEL_IDB, ask: askCustody, secretMintDue: true });
-            if (custody.reading !== "bound" && custody.reading !== "opens" && custody.reading !== "held") {
-              throw new Error(`this browser's custody reads ${custody.reading}; a fleet join mints a face's secrets only over a slot`);
-            }
-            const request = await browserFleetJoinRequest({ offer: file.value, ward: { route: askWardRoute } }).catch(async (err: unknown) => {
-              if (!(err instanceof BrowserFleetJoinRefused && err.refusal === "join-pending")) throw err;
+            // A JOIN MINTS FACE SECRETS (the face-scoped key, then the address secret): the vessel binds the slot first, in this tab.
+            const text = paste.value;
+            const request = await vessel.joinOffer(text, false).catch(async (err: unknown) => {
+              if (!(err instanceof VesselRefused && err.refusal === "join-pending")) throw err;
               if (!confirm("Another fleet join stands pending in this browser. Abandon it, and request against this offer instead?")) throw err;
-              await browserFleetJoinAbandon();
-              return browserFleetJoinRequest({ offer: file.value, ward: { route: askWardRoute } });
+              return vessel.joinOffer(text, true);
             });
-            paste.value = JSON.stringify(request, null, 2);
+            paste.value = request.text;
             paste.select();
             statusEl.textContent = "✓ request minted — carry it back to the root holder: `lares fleet join answer <request-file>`, then paste the answer here.";
             statusEl.className = "ok";
             return;
           }
-          const { admit } = await browserFleetJoinLand({ answer: file.value });
-          statusEl.textContent = `✓ answer landed — signed by ${admit.signerDid.slice(0, 12)}… · re-entering boot`;
+          const landed = await vessel.joinAnswer(paste.value);
+          statusEl.textContent = `✓ answer landed — signed by ${landed.signerDid.slice(0, 12)}… · re-entering boot`;
           statusEl.className = "ok";
           paste.value = "";
-          stashAndReboot(toAdmitCarriage(admit));
+          vessel.selectFace(landed.face);
+          stashAndReboot(landed.carriage);
         } catch (err) {
-          statusEl.textContent = err instanceof BrowserFleetJoinRefused ? `✗ refused — ${err.message}` : `✗ ${String(err)}`;
+          statusEl.textContent = err instanceof VesselRefused && err.refusal !== undefined ? `✗ refused — ${err.message}` : `✗ ${String(err)}`;
           statusEl.className = "err";
         } finally { apply.disabled = false; }
       })();
@@ -366,9 +334,9 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
   });
 }
 
-let pendingAdmit: DeviceAdmitPayload | null = null;
+let pendingAdmit: string | null = null;
 /** This tab's place among the origin's tabs: stood once per page, before the first lead or follow. */
-let topology: ReturnType<typeof standTabTopology> | null = null;
+let floorTab: ReturnType<typeof standFloorTab> | null = null;
 function offerBootRetry(): void {
   if (document.getElementById("retry-unlock")) return;
   const button = document.createElement("button");
@@ -451,200 +419,188 @@ async function bootVessel(): Promise<void> {
     );
   }
   // ?mesh=<readface%23gatekey,…> → carry-in as a mesh LEAF, bootstrapping the FLOW-map from peer flow
-  //   read-faces, each pinned by its gate key (opt-in; absent = no carriage / pure local boot). An entry with no
-  //   key is dropped: nothing to knock on. The browser is a LEAF (no endpoint — carries-in, not dial-able).
+  //   read-faces, each pinned by its gate key (opt-in; absent = no carriage / pure local boot). The vessel worker reads the
+  //   entries; one with no key is dropped: nothing to knock on. The browser is a LEAF (no endpoint — carries-in, not dial-able).
   const meshParam = new URLSearchParams(location.search).get("mesh");
-  const meshLeaf = meshParam !== null
-    ? {
-        coordSeed: location.origin,
-        peers: meshParam.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null),
-      }
-    : undefined;
+  const meshLeaf = meshParam !== null ? { coordSeed: location.origin, peers: meshParam } : undefined;
   const boot = { paint, relayUrl, floor, floorAnchor, admit, genesisCasBaseUrl, genesisSeed: served.seed as GenesisSeed, meshLeaf };
-  // THE TAB TOPOLOGY (G4): one tab per origin holds the vessel (the store lock proves one holder); another tab on the same origin
-  // FOLLOWS it over the bus and stands its own mirror from the leader's lend, instead of refusing the vessel by name. The leader
-  // lock queues succession: when the leader's page goes, the next request grants and that tab opens the vessel itself. The shared
-  // holder (`?holder`) is its own topology, every tab a port onto one holder, and takes no election.
-  if (!sharedHolderUrl && typeof BroadcastChannel !== "undefined" && navigator.locks) {
-    if (topology === null) {
-      topology = standTabTopology({ locks: navigator.locks, lockName: `${vesselLockName(VESSEL_IDB)}:leader`,
-        channel: () => new BroadcastChannel(`lararium-mirror:${location.origin}`), tabId: crypto.randomUUID() });
-      // Nothing closes at pagehide: the platform releases the leader lock and the store lock together when the page goes, so a
-      // successor never finds the store still held, and a page the cache keeps stays in its place among the tabs.
-      topology.follower.onParked(() => { if (topology?.role === "follower" && followerMirror === null) set("status", "following the vessel tab on this origin; it has not shown its surface yet"); });
-      topology.follower.onLend((lend) => { if (topology?.role !== "follower" || followerMirror !== null) return; followerMirror = standFollowerMirror(lend); });
-      topology.onLead(() => { void lead(boot); });
-      return;
-    }
-    if (topology.role === "follower") return;   // a retry while following: the lead comes with the lock
-  }
-  await lead(boot);
-}
-
-/** The mirror this tab stood as a follower, if it stood one; a tab that leads after following keeps it. */
-let followerMirror: Promise<void> | null = null;
-/**
- * A follower's mirror: the same door as the leader's, over this tab's follower doors instead of the vessel's own. The leader's
- * lend names the surface, the actor and the engine inputs; every reply reaches this one binding alone. When a new leader
- * answers the doors' hello, the mirror sends its unanswered writes again under their own txIds.
- */
-async function standFollowerMirror(lend: Lend): Promise<void> {
-  const doors = topology!.follower;
-  const host = $("mirror");
-  host.setAttribute("data-lar-tab", "follower");
-  set("status", "following the vessel tab on this origin");
-  const port = makePortTransport({ doors, surface: () => lend.surface });
-  doors.onPortMessage((binding, msg) => { if (binding === port.binding) port.deliver(msg); });
-  const stood = await standPageMirror({ port, host, actor: lend.actor, surface: () => lend.surface, mirrorInputs: () => Promise.resolve(lend.inputs),
-    onState: (state) => console.warn(`[mirror] ${state.kind}`, state) })
-    .catch((err: unknown) => { console.warn("[mirror] the follower's stand refused:", err); return null; });
-  if (stood === null || stood.kind === "floor") {
-    // A follower with no mirror has no surface at all (no vessel, no floor projection): it says so, and the next lend (a successor's) tries again.
-    const why = stood?.why ?? "refused";
-    console.warn(`[mirror] the follower stands no mirror: ${why}`);
-    set("status", `following the vessel tab on this origin; this tab's mirror stands none (${why})`, "warn");
-    followerMirror = null;
+  const broker = await ceremonyBroker;
+  if ("refusal" in broker || !navigator.locks) { await lead(boot); return; }
+  if (floorTab) {
+    if (floorTab.role() === "owner") await lead(boot);
+    else if (floorTab.role() === "follower") location.reload();
     return;
   }
-  doors.onReady(() => stood.resendPending());
+  floorTab = standFloorTab({
+    locks: navigator.locks, lockName: `${vesselLockName(VESSEL_IDB)}:leader`, tabSession: crypto.randomUUID(),
+    broker: {
+      post: (m, t) => broker.worker.postMessage(m, t ?? []),
+      listen: (listener) => {
+        const receive = (e: MessageEvent): void => listener(e.data, e.ports);
+        navigator.serviceWorker.addEventListener("message", receive);
+        return () => navigator.serviceWorker.removeEventListener("message", receive);
+      },
+    },
+    pageLife: pageLifeOf(window, document),
+    lead: () => { void lead(boot); return { mintPort: (w, s) => leading ? leading.vessel.mintPort(w, s) : Promise.resolve(null) }; },
+    follow: (port) => { void lead(boot, port); },
+  });
+}
+
+/** The vessel this tab leads: its worker and the port the page talks to it through. A retry builds a fresh one. */
+let leading: { readonly vessel: VesselPort; readonly stopLife: () => void } | null = null;
+
+/** The vessel worker the page builds: the vessel's whole boot runs on that worker's own thread. */
+function standVessel(handlers: Parameters<typeof standVesselPort>[1], port?: MessagePort): VesselPort {
+  if (leading) { leading.stopLife(); leading.vessel.terminate(); leading = null; }
+  const vessel = standVesselPort(port ? vesselWorkerOfPort(port) : new Worker(vesselWorkerUrl, { type: "module", name: "lares-vessel" }), handlers);
+  // The page's life signals cross to the vessel (`page:life`): a hidden page asks the wiki islands to drain, a leaving one closes its holder session.
+  const stopLife = pageLifeOf(window, document)((life) => vessel.pageLife(life));
+  leading = { vessel, stopLife };
+  return vessel;
+}
+
+/** The seed's resting state as the page says it: the vessel names it, the page words it. */
+function seedRestLine(status: VesselStatus): { readonly text: string; readonly ok: boolean } | null {
+  if (status.seedRest === undefined) return null;
+  if (status.seedRest === "wrapped-passphrase") return { text: "sealed under this browser's passphrase slot", ok: true };
+  const wrap = status.seedRest === "wrapped-prf" ? { keyClass: status.seedWrapClass ?? "unnamed" } : null;
+  return { text: seedRestStatus(wrap), ok: wrap !== null };
 }
 
 async function lead(boot: { paint: (p: string) => void; relayUrl: string | undefined; floor: ReturnType<typeof floorCardOf>; floorAnchor: ReturnType<typeof floorAnchorOf>;
-  admit: DeviceAdmitPayload | null; genesisCasBaseUrl: string; genesisSeed: GenesisSeed; meshLeaf: { coordSeed: string; peers: MeshPeer[] } | undefined }): Promise<void> {
+  admit: string | null; genesisCasBaseUrl: string; genesisSeed: GenesisSeed; meshLeaf: { coordSeed: string; peers: string } | undefined }, port?: MessagePort): Promise<void> {
   const { paint, relayUrl, floor, floorAnchor, admit, genesisCasBaseUrl, genesisSeed, meshLeaf } = boot;
-  $("mirror").setAttribute("data-lar-tab", "leader");
-  let vesselOpened = false;
-  try {
-    // THE BOOT'S CUSTODY STEP, before the vessel opens: a sealed keystore asks this tab's person for its unlock. A boot
-    // that opens over a locked keystore refuses `sealed-locked` and gives the store lock back, so declining here
-    // leaves the page able to try again.
-    const custody = await standBrowserCustody({ idbName: VESSEL_IDB, ask: askCustody });
-    if (custody.reading === "declined" || custody.reading === "no-slot-opens" || custody.reading === "unreadable") {
-      set("status", `this browser's vessel stays locked (${custody.reading})`, "warn");
-      offerBootRetry();
-      return;
-    }
-    // The mirror stands once the first frame names the surface the page shows; the vessel result does not exist until the open returns.
-    let mirrorTrigger: (() => void) | null = null;
-    let mirrorShownSync: (() => void) | null = null;
-    const result = await openBrowserVessel({
-      askCustody,
-      askWardRoute,
-      hostId: "elyncia-browser",
-      wikiId: "lares",
-      genesisSeed,
-      genesisCasBaseUrl,
-      daemonWorkerUrl,
-      ...(sharedHolderUrl ? { sharedHolderUrl } : {}),
-      workerScriptUrl,
-      onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
-      onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) { reportFirstPaint(); mirrorTrigger?.(); } mirrorShownSync?.(); },
-      onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
-      onPortMessage: (binding, islandKey, msg) => { if (binding.startsWith("tab:")) topology?.onPortMessage(binding, islandKey, msg); else pagePortDelivery.onPortMessage(binding, islandKey, msg); },
-      ...(relayUrl ? { relayUrl } : {}),
-      ...(floor ? { floorCard: floor.text } : {}),
-      ...(floorAnchor ? { floorAnchor } : {}),
-      ...(admit ? { admit } : {}),
-      ...(meshLeaf ? { meshLeaf } : {}),
-    });
-    // A harness-only door, compiled out of every default build.
-    if (__LAR_WALK_DOOR__) (window as Window & { __larRestartDaemonIsland?: (reason: string) => Promise<{ restarts: number; leg: string }> }).__larRestartDaemonIsland = async (reason: string) => ({ ...(await result.restartDaemonIsland(reason)), leg: await result.daemon.syncLegReady() });
-    vesselOpened = true;
-    pendingAdmit = null;
-    // Identity custody stays in the browser vessel. The web surface renders the public receipt returned
-    // by that opening instead of opening the key store a second time just to paint it.
-    const did = didFromVerifyingKey(result.identity.verifyingKey);
-    // A landed fleet join leaves its pending row only now that the vessel stood on its admit.
-    if (admit) void browserFleetJoinSettle().catch((err: unknown) => console.warn("[vessel] the landed fleet join did not settle:", err));
-    mountAdmitSurface(result.identity.verifyingKey);
-    if (relayUrl) {
-      console.log(`[vessel] this leaf's key: ${did}`);
-      console.log("[vessel] to join a face's fleet, on the root holder: lares fleet join offer --out offer.json, then paste the offer here");
-    }
-    void readFloor(result.readFloor);           // the vessel stands, so it reads and verifies the hearth's floor
-    // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.
-    projectionSink.arm({ sendControlEvent: result.sendControlEvent });
-    // The page's port road: one transport over the vessel's port doors; replies reach it for its own binding alone.
-    // The mirror serves one wiki for its life: the binding's traffic follows the surface it stood on, never the projection's later switches.
-    let mirrorSurface: string | null = null;
-    const pageBinding = standPagePort(result.ports, () => mirrorSurface);
-    // The mirror: unprivileged, fed by this binding alone, booted from the inputs the vessel names for the shown surface.
-    // A floor leaves the none projection beneath exactly as it stands; the host element carries the outcome in `data-lar-mirror`.
-    let mirrorStanding = false;
-    // The person reads the mirror only while the surface it serves is the surface shown: a summon of another surface (the daemon) shows the floor, and the way back shows the mirror again.
-    mirrorShownSync = () => {
-      const host = $("mirror");
-      const word = host.getAttribute("data-lar-mirror");
-      const standing = word === "skinny" || word === "full";
-      host.setAttribute("data-lar-shown", standing && mirrorSurface !== null && projectionSink.surface() === mirrorSurface ? "mirror" : "floor");
-    };
-    mirrorTrigger = () => {
-      const shown = projectionSink.surface();
-      if (mirrorStanding || shown === null) return;
-      mirrorStanding = true;
-      mirrorSurface = shown;
-      topology?.lend();   // the surface stands: the tabs whose hello parked get their ready
-      // A tab that leads after following keeps the mirror it stood as a follower: its doors re-open through this tab's own serve.
-      if (followerMirror !== null) return;
-      void standPageMirror({ port: pageBinding, host: $("mirror"), actor: did, surface: () => mirrorSurface,
-        mirrorInputs: result.mirrorInputs, onState: (state) => console.warn(`[mirror] ${state.kind}`, state) })
-        .then((stood) => {
-          if (stood.kind !== "floor") return;
-          console.warn(`[mirror] the none projection stays: ${stood.why}`);
-          // Nothing to mirror yet (the daemon shows, or the vessel names no inputs): the next painted frame asks again.
-          if (stood.why === "mirror-inputs-absent") { mirrorStanding = false; mirrorSurface = null; }
-        })
-        .catch((err: unknown) => console.warn("[mirror] stand refused:", err));
-    };
-    // THE TOPOLOGY'S LEADER HALF: the tab that holds the vessel serves the other tabs of this origin over the bus. It lends the
-    // surface its mirror stands on, the actor it writes as and the engine inputs the vessel names for that surface; a follower
-    // frame's own surface value is ignored. A hello that arrives before the surface stands parks until `lend()`.
-    topology?.serve(result.ports, async () => {
-      if (mirrorSurface === null) return null;
-      const inputs = await result.mirrorInputs(mirrorSurface);
-      return inputs === null ? null : { surface: mirrorSurface, actor: did, inputs };
-    });
-    mirrorTrigger();
-    // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
-    // wiki, so this button + chord flips the projection gate to the daemon from any
-    // active surface — a pure gate flip (both surfaces already mounted), no reboot.
-    // Distinct from the daemon-scoped $:/temp/lares/surface toggle inside the widget.
-    const summon = (): void => { projectionSink.awaitSurface(DAEMON_SURFACE_ID); result.setActiveSurface(DAEMON_SURFACE_ID); mirrorShownSync?.(); };
-    const summonBtn = document.getElementById("summon-daemon") as HTMLButtonElement | null;
-    if (summonBtn) { summonBtn.disabled = false; summonBtn.addEventListener("click", summon); }
-    window.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && e.shiftKey && (e.key === "D" || e.key === "d")) { e.preventDefault(); summon(); }
-    });
-    const vesselEl = $("vessel"); vesselEl.replaceChildren();
-    row(vesselEl, "status", "live — sovereign local island", "ok");
-    row(vesselEl, "did", did);
-    row(vesselEl, "origin", location.origin);
-    row(vesselEl, "relay", relayUrl ?? `not pinned · ${sameOriginRelayUrl(location)}`);
-    mountLiveStatus(vesselEl, result.connectionState);
-    row(vesselEl, "wiki", result.activeWikiId);
-    row(vesselEl, "wiki doc", result.wikiDocUrl);
-    row(vesselEl, "oracle doc", result.oracleDocUrl ?? "(local genesis)");
-    showPageInstruments();
-    // THE SEVEN-DAY CLOCK, REPORTED — the eviction class + estimate() as one line (never a fault), and the
-    // PHONE SEAT's offer beneath it, rendered only where the clock stands and the page is not yet installed.
-    void requestDurableStorage().then((reading) => {
-      const floor = storageFloorReport(reading);
-      if (floor) { console.log(floor); row(vesselEl, "storage", floor.replace(/^\[vessel\] storage floor: /, ""), "warn"); }
-      const offer = phoneSeatExplanation(ambientPhoneSeatHost(reading.persistence));
-      if (offer) row(vesselEl, "phone seat", offer, "warn");
-    }).catch(() => { /* an unreadable storage surface reports nothing — never a fault */ });
-    // THE SEED AT REST — sealed under this browser's slot tree, or else a passkey wrap whose class the line names, or the plain word that no wrap stands.
-    void readBrowserCustody(VESSEL_IDB).then(async (custodyNow) => {
-      if (custodyNow.reading === "sealed") { row(vesselEl, "seed", "sealed under this browser's passphrase slot", "ok"); return; }
-      const wrap = await readBrowserSeedWrap(undefined, (await loadBrowserActivePersona()) ?? 0);
-      row(vesselEl, "seed", seedRestStatus(wrap), wrap ? "ok" : "warn");
-    }).catch(() => { /* an unreadable slot reads its own refusal elsewhere; this line stays silent — never a fault */ });
-  } catch (e) {
+  $("mirror").setAttribute("data-lar-tab", port ? "follower" : "owner");
+  // The mirror stands once the first frame names the surface the page shows; the vessel's word that it stands comes after its open returns.
+  let mirrorTrigger: (() => void) | null = null;
+  let mirrorShownSync: (() => void) | null = null;
+  let seedLine: { readonly text: string; readonly ok: boolean } | null = null;
+  let paintSeed: (() => void) | null = null;
+  let openedYet = false;
+  let opened!: (vessel: NonNullable<VesselStatus["vessel"]>) => void;
+  let ended!: (why: { readonly why: string; readonly stage: "custody" | "open" }) => void;
+  const stood = new Promise<NonNullable<VesselStatus["vessel"]>>((resolve) => { opened = resolve; });
+  const stopped = new Promise<{ readonly why: string; readonly stage: "custody" | "open" }>((resolve) => { ended = resolve; });
+  const vessel = standVessel({
+    onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
+    onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) { reportFirstPaint(); mirrorTrigger?.(); } mirrorShownSync?.(); },
+    onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
+    onPortMessage: (binding, islandKey, msg) => pagePortDelivery.onPortMessage(binding, islandKey, msg),
+    onStatus: (status) => {
+      if (status.rest) paintRest(document, status.rest);
+      if (status.vessel) opened(status.vessel);
+      // THE FACE'S LAST SESSION CLOSED (this page left) AND THE VESSEL RESTS AT ITS FLOOR: a page the browser restores from its
+      // back-forward cache holds a session that stands closed, so it boots afresh and asks for its unlock again.
+      if (status.floor === "floor" && openedYet) window.addEventListener("pageshow", (e) => { if (e.persisted) location.reload(); }, { once: true });
+      const line = seedRestLine(status);
+      if (line) { seedLine = line; paintSeed?.(); }
+    },
+    onAsk: (ask) => paintAsk(ask, vessel),
+    onAskSettled: settleAsk,
+    onEnded: (why, stage) => {
+      ended({ why, stage });
+      // A vessel that stood and then ended says so; the retry builds a fresh worker.
+      if (openedYet) { set("status", why, "err"); offerBootRetry(); }
+    },
+  }, port);
+  vessel.hello({
+    idbName: VESSEL_IDB, hostId: "elyncia-browser", wikiId: "lares", genesisSeed, genesisCasBaseUrl,
+    daemonWorkerUrl: daemonWorkerUrl.href, workerScriptUrl: workerScriptUrl.href,
+    ...(relayUrl ? { relayUrl } : {}),
+    ...(floor ? { floorCard: floor.text } : {}),
+    ...(floorAnchor ? { floorAnchor } : {}),
+    ...(admit ? { admitCarriage: admit } : {}),
+    ...(meshLeaf ? { meshLeaf } : {}),
+  });
+  const outcome = await Promise.race([stood.then((v) => ({ kind: "stood" as const, v })), stopped.then((e) => ({ kind: "ended" as const, e }))]);
+  if (outcome.kind === "ended") {
     // A leader whose vessel refused to open keeps the lead (no other tab could open the store either) and offers the retry; its
-    // followers hear `parked` and wait on its surface.
-    set("status", `boot failed: ${e instanceof Error ? e.message : String(e)}`, "err");
-    if (!vesselOpened) offerBootRetry();
+    // followers hear `parked` and wait on its surface. A keystore left locked says so plainly.
+    set("status", outcome.e.why, outcome.e.stage === "custody" ? "warn" : "err");
+    offerBootRetry();
+    return;
   }
+  openedYet = true;
+  const result = outcome.v;
+  // A harness-only door, compiled out of every default build.
+  if (__LAR_WALK_DOOR__) (window as Window & { __larRestartDaemonIsland?: (reason: string) => Promise<{ restarts: number; leg: string }> }).__larRestartDaemonIsland = (reason: string) => vessel.restartDaemonIsland(reason);
+  // and the walk's ward act: one ward act over `bytes`, its passphrase asked through the ceremony like every ward act.
+  if (__LAR_WALK_DOOR__) (window as Window & { __larWalkWardAct?: (bytes: number[]) => Promise<{ key: string; signature: string }> }).__larWalkWardAct = (bytes: number[]) => vessel.walkWardAct(Uint8Array.from(bytes));
+  pendingAdmit = null;
+  // Identity custody stays in the browser vessel. The web surface renders the public receipt the vessel reported.
+  const did = result.did;
+  mountAdmitSurface(result.verifyingKey, vessel);
+  if (relayUrl) {
+    console.log(`[vessel] this leaf's key: ${did}`);
+    console.log("[vessel] to join a face's fleet, on the root holder: lares fleet join offer --out offer.json, then paste the offer here");
+  }
+  void readFloor(vessel.readFloor);           // the vessel stands, so it reads and verifies the hearth's floor
+  // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.
+  projectionSink.arm({ sendControlEvent: vessel.sendControlEvent });
+  // The page's port road: one transport over the vessel's port doors; replies reach it for its own binding alone.
+  // The mirror serves one wiki for its life: the binding's traffic follows the surface it stood on, never the projection's later switches.
+  let mirrorSurface: string | null = null;
+  const pageBinding = standPagePort(vessel.ports, () => mirrorSurface);
+  // The mirror: unprivileged, fed by this binding alone, booted from the inputs the vessel names for the shown surface.
+  // A floor leaves the none projection beneath exactly as it stands; the host element carries the outcome in `data-lar-mirror`.
+  let mirrorStanding = false;
+  // The person reads the mirror only while the surface it serves is the surface shown: a summon of another surface (the daemon) shows the floor, and the way back shows the mirror again.
+  mirrorShownSync = () => {
+    const host = $("mirror");
+    const word = host.getAttribute("data-lar-mirror");
+    const standing = word === "skinny" || word === "full";
+    host.setAttribute("data-lar-shown", standing && mirrorSurface !== null && projectionSink.surface() === mirrorSurface ? "mirror" : "floor");
+  };
+  mirrorTrigger = () => {
+    const shown = projectionSink.surface();
+    if (mirrorStanding || shown === null) return;
+    mirrorStanding = true;
+    mirrorSurface = shown;
+    void standPageMirror({ port: pageBinding, host: $("mirror"), actor: did, surface: () => mirrorSurface,
+      mirrorInputs: vessel.mirrorInputs, onState: (state) => console.warn(`[mirror] ${state.kind}`, state) })
+      .then((stood) => {
+        if (stood.kind !== "floor") return;
+        console.warn(`[mirror] the none projection stays: ${stood.why}`);
+        // Nothing to mirror yet (the daemon shows, or the vessel names no inputs): the next painted frame asks again.
+        if (stood.why === "mirror-inputs-absent") { mirrorStanding = false; mirrorSurface = null; }
+      })
+      .catch((err: unknown) => console.warn("[mirror] stand refused:", err));
+  };
+  mirrorTrigger();
+  // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
+  // wiki, so this button + chord flips the projection gate to the daemon from any
+  // active surface — a pure gate flip (both surfaces already mounted), no reboot.
+  // Distinct from the daemon-scoped $:/temp/lares/surface toggle inside the widget.
+  const summon = (): void => { projectionSink.awaitSurface(DAEMON_SURFACE_ID); vessel.setActiveSurface(DAEMON_SURFACE_ID); mirrorShownSync?.(); };
+  const summonBtn = document.getElementById("summon-daemon") as HTMLButtonElement | null;
+  if (summonBtn) { summonBtn.disabled = false; summonBtn.addEventListener("click", summon); }
+  window.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.shiftKey && (e.key === "D" || e.key === "d")) { e.preventDefault(); summon(); }
+  });
+  const vesselEl = $("vessel"); vesselEl.replaceChildren();
+  row(vesselEl, "status", "live — sovereign local island", "ok");
+  row(vesselEl, "did", did);
+  row(vesselEl, "origin", location.origin);
+  row(vesselEl, "relay", relayUrl ?? `not pinned · ${sameOriginRelayUrl(location)}`);
+  mountLiveStatus(vesselEl, vessel.connectionState);
+  row(vesselEl, "wiki", result.activeWikiId);
+  row(vesselEl, "wiki doc", result.wikiDocUrl);
+  row(vesselEl, "oracle doc", result.oracleDocUrl ?? "(local genesis)");
+  showPageInstruments();
+  // THE SEVEN-DAY CLOCK, REPORTED — the eviction class + estimate() as one line (never a fault), and the
+  // PHONE SEAT's offer beneath it, rendered only where the clock stands and the page is not yet installed. The page alone
+  // offers `navigator.storage.persist()`, so the page asks it.
+  void requestDurableStorage().then((reading) => {
+    const floor = storageFloorReport(reading);
+    if (floor) { console.log(floor); row(vesselEl, "storage", floor.replace(/^\[vessel\] storage floor: /, ""), "warn"); }
+    const offer = phoneSeatExplanation(ambientPhoneSeatHost(reading.persistence));
+    if (offer) row(vesselEl, "phone seat", offer, "warn");
+  }).catch(() => { /* an unreadable storage surface reports nothing — never a fault */ });
+  // THE SEED AT REST — the vessel names its resting state (sealed under this browser's slot tree, a passkey wrap and its class,
+  // or no wrap), and the page words it once the vessel reports it.
+  paintSeed = () => { if (seedLine) { row(vesselEl, "seed", seedLine.text, seedLine.ok ? "ok" : "warn"); seedLine = null; } };
+  paintSeed();
 }
 
 void bootVessel();

@@ -28,7 +28,7 @@ import {
   type SlotUri,
   type WikiRecipe,
   type WikiMountSpec,
-  type IslandGrants, ownEntry} from "@lararium/mesh";
+  type IslandGrants, ownEntry, litFaceCatalogOf} from "@lararium/mesh";
 import type { VerbTable } from "./verb-dispatcher.js";
 import { effectiveRecipe } from "./recipe-planes.js";
 
@@ -168,9 +168,13 @@ export async function buildWikiMountSpec(
   // Typed structural grants — no slot dictionary. Library bags never ride the
   // mount: the island resolves them from the catalog registry itself (boot = first reconcile),
   // so the live composition path and the boot path can never diverge.
+  // The lit face's own catalog rides beside the floor's (sealed-store#/owed, U1): the face this vessel stands lit over its
+  // floor catalog, none at the floor or on a herm.
+  const faceCatalogUrl = litFaceCatalogOf(inputs.catalogUrl);
   const grants: IslandGrants = {
     islandUrl:  inputs.islandUrl,
     catalogUrl: inputs.catalogUrl,
+    ...(faceCatalogUrl ? { faceCatalogUrl } : {}),
     wikiUrl:    inputs.wikiUrl,
     ...(personalUrl     ? { personalUrl } : {}),
     ...(draftUrl        ? { draftUrl    } : {}),

@@ -15,8 +15,8 @@
  *                 invocation, then tombstones the summons tiddler.
  *                 The summons carries edge transport, not durable coordination state.
  *
- * Outcome flow: handler result → concludeVerb → daemon composite store
- *   → IslandAdaptor.saveTiddler → bags/daemon/outcomes/<id> in Automerge → syncs.
+ * Outcome flow: handler result → concludeVerb → daemon composite store (its default writable, the
+ *   daemon wiki's working slot, sealed under the lit face) → bags/daemon/outcomes/<id> in Automerge → syncs.
  *   Durable shared meaning begins at the outcome, not at the summons.
  *
  * Daemon-only law: ONLY the daemon VM runs a VerbDispatcher. Pinned wiki and

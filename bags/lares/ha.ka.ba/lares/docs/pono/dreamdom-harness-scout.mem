@@ -128,9 +128,9 @@ Note: the brief's `TiddlyWiki5/core/modules/startup.js` sits at `core/modules/st
 
 ## #24 — global assignments and globalCheck
 
-**What globalCheck does.** It defines an `Object.prototype.__temp__` getter returning `this`, then logs "Warning: Global assignment detected" with `Object.keys(__temp__)`, meaning every own enumerable key of the realm's global object [boot.js:583-593]. TW5 adds it only when `!$tw.browser && sandbox && !allowGlobals` [610], which holds on both worker paths.
+**What globalCheck does.** It defines an `Object.prototype.__temp__` getter returning `this`, then logs "Warning: Global assignment detected" with `Object.keys(__temp__)`, meaning every own enumerable key of the thread's global object [boot.js:583-593]. TW5 adds it only when `!$tw.browser && sandbox && !allowGlobals` [610], which holds on both worker paths.
 
-**Which global it sees.** On the browser path the shim evaluates code with `new Function` in the worker's own realm, so `__temp__` resolves to the worker `globalThis` (inferred). On Node, real `vm` runs each module in `vm.createContext({})`, so the check enumerates that sandbox, not the worker global (inferred).
+**Which global it sees.** On the browser path the shim evaluates code with `new Function` in the worker's own thread, so `__temp__` resolves to the worker `globalThis` (inferred). On Node, real `vm` runs each module in `vm.createContext({})`, so the check enumerates that sandbox, not the worker global (inferred).
 
 **Each assignment in the host bridge** (all in tw5-host-bridge.ts):
 
@@ -197,6 +197,6 @@ Nothing in any src, test, script, vite config or tsconfig imports it. Its schema
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UTWi4inCB5Yi-S7OG3pCBXd8Cqw2Op-rih8b2_cbBys`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;g7H3PumIfDW7srooHwe6on14txzXizi4YCkXuSptrCY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

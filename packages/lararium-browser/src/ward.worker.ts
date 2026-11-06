@@ -1,14 +1,13 @@
 /**
  * ward.worker — THE PER-ACT WORKER ONE BROWSER WARD ACT RUNS IN (seat-harness#/the-ward).
  *
- * The page spawns one for one act, hands it a MessagePort, posts the act's request (the face's ward tree and its warded root row as
+ * The vessel spawns one for one act, hands it a MessagePort, posts the act's request (the face's ward tree and its warded root row as
  * raw bytes, the typed route, the bytes to sign), reads one answer and terminates it. The ward key and the seed live only in
  * this worker's memory for the act, and the answer carries the public key and the signature alone (`ward-core`); a face's ward key
  * MINTS here too, its answer adding the two sealed rows the page lands and cannot open.
  *
- * Residual, named: the page passes the typed passphrase over the MessagePort, so a script running in the page when the person
- * types it reads it. The ward never holds a key on the page; it cannot keep a page script from reading what the page's own
- * dialog collects.
+ * The vessel worker spawns it: the passphrase reaches that worker from the unlock ceremony's clean document, never from the
+ * surface page (browser-vessel-lift#/the-ceremony).
  */
 import type { WardActRequest, WardKeyActRequest, WardKeyMintRequest } from "./ward-core.js";
 

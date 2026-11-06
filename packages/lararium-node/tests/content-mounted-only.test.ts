@@ -74,7 +74,7 @@ test("a routed wiki-act crosses the same presenter fence before routing", async 
 
 const SEALED = ["sealed-seal", "sealed-open", "sealed-reading", "sealed-choose-head", "sealed-hand-over", "sealed-admit", "sealed-parcels", "sealed-receive", "sealed-serve", "sealed-memory-cut", "sealed-memory-door", "sealed-memory-import", "sealed-rolls", "seat-duties"];
 // The verbs that close over the mounted face's mint, slot documents or catalog (Aftermath M1 on PR #110).
-const MOUNTED_MATERIAL = ["add-bag", "remove-bag", "prune-stale", "bag-compact", "rotate-recipe", "meme-put", "meme-delete", "draft", "pin", "register-cold"];
+const MOUNTED_MATERIAL = ["add-bag", "remove-bag", "prune-stale", "bag-compact", "rotate-recipe", "restamp-bag-tier", "meme-put", "meme-delete", "draft", "pin", "register-cold"];
 
 test("a content verb refuses a presenter that is not the mounted face, by name", async () => {
   const { registry, call, sibling, mounted } = await standTwoFaces();

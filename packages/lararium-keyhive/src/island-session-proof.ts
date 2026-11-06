@@ -18,7 +18,8 @@
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
-import type { RecordSigner, WriterStanding } from "@lararium/mesh";
+import type { IslandMsg_SessionSign, IslandMsg_SessionSigned, RecordSigner, WriterStanding } from "@lararium/mesh";
+import type { Signature } from "@lararium/mesh/face-proof-subjects";
 import type { SessionOwnChain } from "@lararium/mesh";
 
 /** The invocation a session placed, as the island names it: its request id and the verb it placed. */
@@ -78,5 +79,66 @@ export function ownChainStanding(chain: () => SessionOwnChain | null, bags: () =
     holdsWrite: ({ certificate, bagId }) => certificateUnderChain(certificate, chain()) && bags().includes(bagId),
     // No chain before a session asked: the holder takes no reading and settles no roll until one stands.
     chainOf: () => { const c = chain(); return c === null ? null : `${bare(c.scope.faceKey)}|${c.scope.nexus}|${bare(c.vesselFaceKey)}`; },
+  };
+}
+
+/**
+ * THE SESSION SIGN DOOR, island side, over any port onto the vessel's thread (a `worker_threads` port, a Web Worker's
+ * own scope). The island names the invocation a session placed; the vessel answers from that session: its certificate,
+ * its proof subject and the vessel's own verified chain, and each signature on ask, signed on the vessel's thread
+ * behind the owner's table. No answer inside `patienceMs` reads as a refusal by name, never as a signer: the island
+ * holds no key to fall back on.
+ */
+export function islandSessionDoor(
+  port: { post(msg: IslandMsg_SessionSign): void; listen(cb: (msg: unknown) => void): void },
+  opts: { readonly patienceMs: number; readonly idPrefix: string },
+): IslandSessionProof {
+  const pending = new Map<string, (answer: IslandMsg_SessionSigned | null) => void>();
+  port.listen((raw: unknown) => {
+    const m = raw as Partial<IslandMsg_SessionSigned> | null;
+    if (!m || m.type !== "session:signed" || typeof m.requestId !== "string") return;
+    const settle = pending.get(m.requestId);
+    if (!settle) return;
+    pending.delete(m.requestId);
+    settle(m as IslandMsg_SessionSigned);
+  });
+  let seq = 0;
+  const askVessel = (op: "read" | "sign" | "own", ask: SessionAsk, payload?: Uint8Array): Promise<IslandMsg_SessionSigned | null> => new Promise((resolve) => {
+    const requestId = `${opts.idPrefix}-${++seq}`;
+    const timer = setTimeout(() => { pending.delete(requestId); resolve(null); }, opts.patienceMs);
+    (timer as { unref?: () => void }).unref?.();
+    pending.set(requestId, (answer) => { clearTimeout(timer); resolve(answer); });
+    const msg: IslandMsg_SessionSign = { type: "session:sign", requestId, op, ask: ask.requestId, verb: ask.verb, ...(payload ? { payload } : {}) };
+    try { port.post(msg); } catch { pending.delete(requestId); clearTimeout(timer); resolve(null); }
+  });
+  const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((c): c is string => typeof c === "string") : []);
+  return {
+    async own() {
+      const read = await askVessel("own", { requestId: "", verb: "" });
+      if (read === null || !("own" in read)) return { refusal: read !== null && "refusal" in read ? read.refusal : "chain-absent" };
+      return { chain: read.chain, foldRead: read.foldRead === true, counted: strings(read.counted), unanswered: strings(read.unanswered) };
+    },
+    async signer(ask): Promise<SessionReading> {
+      if (ask === null) return { refusal: "signer-unavailable" };
+      const read = await askVessel("read", ask);
+      if (read === null) return { refusal: "signer-unavailable" };
+      if ("refusal" in read) return { refusal: read.refusal };
+      if (!("certificate" in read)) return { refusal: "signer-unavailable" };
+      const certificate = read.certificate as never;
+      return {
+        subject: read.subject, chain: read.chain, foldRead: read.foldRead === true,
+        counted: strings(read.counted), unanswered: strings(read.unanswered),
+        signer: {
+          certificate,
+          async sign(purpose, payload) {
+            if (purpose !== "act") return { refusal: "signer-refused" };
+            const signed = await askVessel("sign", ask, payload);
+            if (signed === null) return { refusal: "signer-refused" };
+            if ("signature" in signed) return { signature: signed.signature as Signature };
+            return { refusal: "refusal" in signed ? signed.refusal : "signer-refused" };
+          },
+        },
+      };
+    },
   };
 }

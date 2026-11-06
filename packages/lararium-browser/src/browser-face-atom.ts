@@ -5,7 +5,7 @@
  * face's atom, a random seed no other seed derives, and the face's group secret seals to it. The seed rests in the
  * face's own custody row, `face-atom/<PersonaGroup>`, under the slot tree beside the face's other secret rows: a
  * face's secret rows take a slot first, so a vessel with no slot mints no atom. A browser that restores onto a
- * fresh origin finds no row and mints a fresh atom; the old one never resurrects.
+ * fresh origin finds no row and mints a fresh atom; the earlier atom never resurrects.
  *
  * The record "this browser holds atom X for group G" rests as that row alone, never on a wire or a board.
  *
@@ -146,9 +146,11 @@ const sweptWardSignRow = (personaGroup: string): string => `${SEALED_ROW_PREFIX}
  * An ask with no route refuses `ward-needs-fresh-unlock`, a passkey `ward-passkey-refused`. Each ask sweeps the face's sealed
  * ward-key row from before the key moved under its own ward.
  */
-export function browserVesselFaceTagDoor(idbName = "lares:vessel", ward: BrowserTagDoorWard = {}): VesselFaceTagDoor {
+export function browserVesselFaceTagDoor(idbName = "lares:vessel", ward: BrowserTagDoorWard = {}, rowFace?: string): VesselFaceTagDoor {
   return async (group, deviceKey) => {
-    const row = vesselFaceTagRow(group);
+    // A FOUNDING'S TAG SECRET MINTS BEFORE ITS GROUP NAMES THE FACE'S TREE: the founding hands the unnamed face it stands, the
+    // row seals under that face's own tree, and the name the ceremony then gives the tree reads the same row by its group.
+    const row = vesselFaceTagRow(rowFace ?? group);
     const secret = await withCustodyRows(idbName, async (rows) => {
       const held = await rows.read(row);
       if (held instanceof Uint8Array && held.length === 32) return Uint8Array.from(held);

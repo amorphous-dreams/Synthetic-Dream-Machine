@@ -29,7 +29,7 @@ import {
   faceAtomKeyFromSeed,
   leaseEpochPrefix, readFace,
   signPersonaAct, actCid, edgeBodyDigest, vesselFaceTagHolds, wardKeyPopHolds, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  tiddlerText, FLEET_HAND, type LarDoc, ownEntry} from "@lararium/mesh";
+  tiddlerText, FLEET_HAND, AutomergeDocStore, type LarDoc, ownEntry} from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
@@ -376,9 +376,12 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (!reading) throw new Error("[lares fleet join answer] Face proof: no-lineage; re-found the face");
   const boundEpoch = reading.leaseEpoch(personaGroupId, leaseSlotValues);
 
-  if (!opts.catalogUrl) throw new Error("the face's PersonaGroup catalog is absent");
-  const operationStore = await makeCatalogAccessor(repo, opts.catalogUrl).storeOf(personaBagIdFor(personaGroupId));
-  if (!operationStore) throw new Error("the face's PersonaGroup plane is unresolved");
+  // THE FACE'S PROOF ANSWERS FOR THE PLANE (sealed-store#/owed, U1): the plane's row rests in the face's own catalog,
+  // sealed, which a door with no vessel standing never opens; the bootstrap names the plane, and the projection below
+  // verifies its records against the face's lineage before any act lands.
+  const rowUrl = opts.catalogUrl ? await makeCatalogAccessor(repo, opts.catalogUrl).urlOf(personaBagIdFor(personaGroupId)).catch(() => null) : null;
+  if (rowUrl !== null && rowUrl !== personaUrl) throw new Error("[lares fleet join answer] Face proof: the catalog names another persona plane than the founding's bootstrap");
+  const operationStore = new AutomergeDocStore(await repo.find<LarDoc>(personaUrl as AutomergeUrl), personaBagIdFor(personaGroupId));
   const atomSeed = await loadFaceAtomOfGroup(personaGroupId);
   if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
   const personaHandle = await repo.find<LarDoc>(personaUrl as AutomergeUrl);

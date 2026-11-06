@@ -37,6 +37,8 @@ function wikiSlugOfBagUri(bagUri: string): string | null {
 export interface RegistryReach {
   repo:       Repo;
   catalogUrl: string | null;
+  /** The lit face's own catalog laid over `catalogUrl` (sealed-store#/owed, U1). */
+  faceCatalogUrl?: string | null;
   oracleUrl:  string | null;
   /** A registered wiki's INSTANCE slot doc (draft · working · personal) by THE ONE slot-doc
    *  resolver — null when none stands. Absent = `where` reaches the registry planes alone. */
@@ -98,7 +100,7 @@ export function makeWhereReactor(composite: CompositeStore, reach?: RegistryReac
     const planes = [reach?.catalogUrl, reach?.oracleUrl].filter((u): u is string => !!u);
     for (const planeUrl of planes) {
       if (!reach?.repo) break;
-      const accessor = makeCatalogAccessor(reach.repo, planeUrl);
+      const accessor = makeCatalogAccessor(reach.repo, planeUrl, planeUrl === reach.catalogUrl ? reach.faceCatalogUrl : null);
       const regDoc   = (await accessor.handle().catch(() => null))?.doc();
       for (const bagUri of listRegisteredDocUris(regDoc)) {
         const mounted = holding.has(bagUri) || composite.hasBag(bagUri);

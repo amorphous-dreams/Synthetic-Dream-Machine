@@ -121,6 +121,7 @@ describe("the face-reading census", () => {
     bootFacePlanes: {
       "lararium-node/src/boot-face-planes.ts": "the definition",
       "lararium-node/src/face-fleet-view.ts": "facet and exclusion reads; the composer feeds it nothing until the worn face proved",
+      "lararium-node/src/commands/intent.ts": "a direct door with no vessel standing reads the worn face's persona plane url off the bootstrap only to PROJECT its records against the face's KEL lineage; a url holding no signed log projects nothing",
       "lararium-node/src/open-node-vessel.ts": "reads the worn group's urls for the proof, which checks each against the signed plane acts",
       "lararium-node/src/vessel-private.ts": "classes every face's plane ids for the share guard to WITHHOLD (lane ralias); it mounts, trusts and serves nothing it reads",
     },

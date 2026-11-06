@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- THE CEREMONY'S POLICY (browser-vessel-lift#/the-ceremony): no inline script, no eval, scripts and styles from this
+         origin alone, no form posting anywhere. The response header carries this policy and `frame-ancestors 'none'` (a meta
+         policy cannot carry that one); the script refuses a frame by name as well. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Lararium — unlock ceremony</title>
+    <link rel="stylesheet" href="/src/ceremony/ceremony.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Lararium — unlock ceremony</h1>
+      <p id="ceremony-state">Waiting for the vessel's ask…</p>
+      <form id="ceremony-form" hidden autocomplete="on">
+        <p id="ceremony-label"></p>
+        <p class="pub"><span class="k">face</span> <span id="ceremony-face"></span></p>
+        <p class="pub"><span class="k">ask digest</span> <span id="ceremony-digest"></span></p>
+        <input id="ceremony-pass" type="password" required />
+        <input id="ceremony-again" type="password" placeholder="again" hidden />
+        <div class="acts">
+          <button id="ceremony-go" type="submit">answer</button>
+          <button id="ceremony-passkey" type="button" hidden>use a passkey</button>
+          <button id="ceremony-decline" type="button">not now</button>
+        </div>
+      </form>
+    </main>
+    <script type="module" src="/src/ceremony/ceremony.ts"></script>
+  </body>
+</html>

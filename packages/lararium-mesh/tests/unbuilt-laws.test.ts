@@ -25,6 +25,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import * as mesh from "../src/index.js";
 import { realmFeedPrefix } from "../src/cabal-realm.js";
@@ -548,7 +549,7 @@ describe("⑫ session, sealed rest and hosting launch gates", () => {
     expect(join).not.toMatch(/`secret:\$\{/);
   });
 
-  test.skip("FRESH_BASE_PRECEDES_FROM_NOW_CHANGE — DEFERRED: `content-key-holder.ts` already refuses an admission without `freshBase`, but the node document store supplies no production callback that writes a fresh checkpoint before the new version's first change; sealed-store step 3 connects and witnesses that callback.", () => {
+  test("FRESH_BASE_PRECEDES_FROM_NOW_CHANGE — `content-key-holder.ts` refuses an admission without `freshBase`, and the node daemon island hands its seat the document store's cut: the island asks the vessel's Repo for the bag's live document across the document store's door (`islandLiveDocDoor`), and `freshBasePort` cuts the base from it. Behaviour in sealed-doc-store.test.ts and content-key-holder.test.ts.", () => {
     const node = stripped(["lararium-node", "src", "node-daemon-island.ts"]);
     expect(node).toMatch(/freshBase\s*:/);
   });
@@ -581,4 +582,16 @@ describe("⑫ session, sealed rest and hosting launch gates", () => {
     expect(verifyWalkerGrant(publicOnly, grant)).toBe(true);
   });
 
+});
+
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+// ⑬ THE PAGE HOLDS NO VESSEL — the browser vessel lift (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift)
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+describe("⑬ the page's main thread holds no vessel", () => {
+  test("THE PAGE REACHES NO VESSEL MODULE — the page's main thread holds the DOM, the projection sink, the mirror, the ask forms and Worker construction alone, so `packages/lararium-web/src/main.ts` reaches none of `@automerge/automerge-repo`, `@lararium/keyhive`, `browser-custody`, `browser-vessel-identity`, `ward-core`, `seed-wrap-prf` (a `?worker&url` import counts as not reached). `tools/page-entry-witness.mjs` walks the graph and names each reach with its chain; the vessel runs on its own worker's thread (`workers/vessel.worker.ts`) and `main.ts` talks to it through `vessel-port.ts`. The real-browser founding through the worker reads in `@lararium/web` `tests/e2e/vessel-worker.e2e.test.ts`.", () => {
+    const repo = join(import.meta.dirname, "..", "..", "..");
+    const r = spawnSync(process.execPath, [join(repo, "tools", "page-entry-witness.mjs"), "--root", repo], { encoding: "utf8" });
+    expect(r.stdout).toMatch(/^page-entry: holds/);
+    expect(r.status).toBe(0);
+  });
 });

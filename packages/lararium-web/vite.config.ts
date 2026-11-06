@@ -68,6 +68,11 @@ function emitPronaosArtifactRecord(): Plugin {
       for (const route of routes) if (route.sha256 === "") route.sha256 = digest(readFileSync(resolve(outDir, route.file)));
       const index = resolve(outDir, "index.html");
       if (existsSync(index)) routes.push({ path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "no-store", sha256: digest(readFileSync(index)) });
+      // The unlock ceremony's two fixed routes: its document and its port broker (a stable service-worker URL).
+      for (const [path, file, contentType] of [["/ceremony.html", "ceremony.html", "text/html; charset=utf-8"], ["/ceremony-broker.js", "ceremony-broker.js", "application/javascript"]] as const) {
+        const at = resolve(outDir, file);
+        if (existsSync(at)) routes.push({ path, file, contentType, cache: "no-store", sha256: digest(readFileSync(at)) });
+      }
       const manifest = resolve(outDir, "manifest.webmanifest");
       if (existsSync(manifest)) {
         const source = readFileSync(manifest);
@@ -80,6 +85,29 @@ function emitPronaosArtifactRecord(): Plugin {
   };
 }
 
+/**
+ * The ceremony document's policy as a response header in the preview server: the policy its own meta names, and
+ * `frame-ancestors 'none'`, which a meta policy cannot carry. The hearth's Pronaos sends the same header
+ * (`CEREMONY_POLICY`; `tools/ceremony-entry-witness.mjs` welds the two).
+ */
+function serveCeremonyPolicy(): Plugin {
+  const meta = readFileSync(resolve(import.meta.dirname, "ceremony.html"), "utf8").match(/<meta\s+http-equiv="Content-Security-Policy"\s+content="([^"]*)"/i);
+  if (!meta) throw new Error("ceremony.html carries no Content-Security-Policy meta");
+  const policy = `${meta[1]!}; frame-ancestors 'none'`;
+  const route: Connect.NextHandleFunction = (req, res, next) => {
+    if ((req.url ?? "").split(/[?#]/)[0] === "/ceremony.html") {
+      res.setHeader("Content-Security-Policy", policy);
+      res.setHeader("X-Frame-Options", "DENY");
+      res.setHeader("Referrer-Policy", "no-referrer");
+    }
+    next();
+  };
+  return {
+    name: "lararium:ceremony-policy",
+    configurePreviewServer(server) { server.middlewares.use(route); },
+  };
+}
+
 // Web-surface capabilities — Automerge WASM + module Web Workers.
 // Config follows the Automerge "Vite" recipe (research-grounded 2026-06-25):
 //   - wasm()        : @automerge/automerge ships its core as .wasm
@@ -89,7 +117,7 @@ function emitPronaosArtifactRecord(): Plugin {
 // native build that snagged pnpm's pre-run deps-check).
 export default defineConfig({
   define: { __LAR_WALK_DOOR__: JSON.stringify(process.env["LAR_WALK_DOOR"] === "1") },
-  plugins: [wasm(), serveGenesisInDev(), emitPronaosArtifactRecord()],
+  plugins: [wasm(), serveGenesisInDev(), serveCeremonyPolicy(), emitPronaosArtifactRecord()],
 
   // The worker is a SEPARATE rollup build — top-level plugins do NOT inherit, so wasm()
   // must be repeated for the worker to instantiate automerge's wasm. format "es" is
@@ -112,7 +140,11 @@ export default defineConfig({
   // import.meta.url)` passed indirectly to openBrowserVessel; small, Vite would INLINE them
   // as `data:` URIs, where dynamic `import()` (keyhive-WASM-first, the chain) cannot resolve
   // (no base URL). Forcing a file asset keeps the worker's dynamic imports resolvable.
-  build: { target: "esnext", assetsInlineLimit: 0 },
+  // Two HTML entries: the surface page, and the unlock ceremony's clean document (its own tiny script, no mirror, no plugins).
+  build: {
+    target: "esnext", assetsInlineLimit: 0,
+    rollupOptions: { input: { index: resolve(import.meta.dirname, "index.html"), ceremony: resolve(import.meta.dirname, "ceremony.html") } },
+  },
 
   server: {
     host: true,        // also bind LAN — the home / intranet serving topology

@@ -48,20 +48,15 @@ afterEach(async () => {
 });
 
 describe("the browser persona multitude over IndexedDB", () => {
-  test("founds a multitude — two DISTINCT roots persist + roster, ascending", async () => {
+  test("one root per face — the founding handle mints under the face the vessel wears; a second handle names no face and refuses", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
     const h0 = await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
-    await bindSyntheticBrowserCustodySlot(name);
-    const h1 = await generateOrLoadBrowserPersonaRoot(name, 1, FIXTURE_WARD);
     expect(h0.created).toBe(true);
-    expect(h1.created).toBe(true);
-    // DISTINCT: each root is the vessel's OWN sovereign secret (crypto.generate), never a copied key.
-    expect(h0.verifyingKey).not.toBe(h1.verifyingKey);
-    expect(await listBrowserPersonaRoots(name)).toEqual([0, 1]);
+    await expect(generateOrLoadBrowserPersonaRoot(name, 1)).rejects.toMatchObject({ reading: "face-names-a-handle" });
+    expect(await listBrowserPersonaRoots(name)).toEqual([0]);
     expect(await browserPersonaRootExists(name, 0)).toBe(true);
-    expect(await browserPersonaRootExists(name, 1)).toBe(true);
-    expect(await browserPersonaRootExists(name, 2)).toBe(false);
+    expect(await browserPersonaRootExists(name, 1)).toBe(false);
   });
 
   test("generate-or-load is idempotent per index — a re-mint LOADS, never a fresh key", async () => {
@@ -76,19 +71,14 @@ describe("the browser persona multitude over IndexedDB", () => {
     expect(await listBrowserPersonaRoots(name)).toEqual([0]);   // one mint → one roster mark, no dup
   });
 
-  test("wears the second — the selector moves, the root never does", async () => {
+  test("wears the face's root — the selector moves, the root never does", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
-    await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 1, FIXTURE_WARD);
-    expect(await loadBrowserActivePersona(name)).toBeUndefined();   // no inference from an empty selector
-    await wearBrowserPersona(name, 1);
-    expect(await loadBrowserActivePersona(name)).toBe(1);
     await wearBrowserPersona(name, 0);
     expect(await loadBrowserActivePersona(name)).toBe(0);
-    // The roster is untouched by wearing — both roots still held.
-    expect(await listBrowserPersonaRoots(name)).toEqual([0, 1]);
+    await expect(wearBrowserPersona(name, 1), "a second handle names no face").rejects.toThrow();
+    expect(await listBrowserPersonaRoots(name)).toEqual([0]);
   });
 
   test("custody-by-type — wearing a persona whose root this vessel does NOT hold REFUSES", async () => {
@@ -106,7 +96,7 @@ describe("the browser persona multitude over IndexedDB", () => {
     const seed = await loadBrowserPersonaRootSeed(name, 0, FIXTURE_WARD);
     expect(seed).toBeInstanceOf(Uint8Array);
     expect(seed.length).toBe(32);
-    await expect(loadBrowserPersonaRootSeed(name, 9, FIXTURE_WARD)).rejects.toThrow(/no persona-root/);
+    await expect(loadBrowserPersonaRootSeed(name, 9, FIXTURE_WARD)).rejects.toMatchObject({ reading: "face-names-a-handle" });
   });
 });
 
@@ -149,7 +139,7 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
     expect(await loadBrowserActivePersona(name)).toBe(0);
   });
 
-  test("the worn root selects which binding feeds the worker — found h0, add + wear h1", async () => {
+  test("the worn root selects which binding feeds the worker — found h0; a second root refuses", async () => {
     const name = idb();
     repo = new Repo({ sharePolicy: async () => true });
 
@@ -163,15 +153,11 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
       vesselDisplayName: "Op", binding: { mode: "self-stood", signerSeed: signer0 }, hearthTrueName: "", nexusPubkey: device.verifyingKey,
     });
 
-    // The multitude grows: mint h1 and WEAR it. The worker-reach selector (browserJoineePersonaIndex)
-    // now names h1 — the worn root the daemonAuth binding threads.
-    await bindSyntheticBrowserCustodySlot(name);
-    const h1 = await generateOrLoadBrowserPersonaRoot(name, 1, FIXTURE_WARD);
-    expect(h1.created).toBe(true);
-    await wearBrowserPersona(name, 1);
-    expect(await browserJoineePersonaIndex(name)).toBe(1);
-    expect(await loadBrowserActivePersona(name)).toBe(1);
-    expect(await listBrowserPersonaRoots(name)).toEqual([0, 1]);
+    // ONE ROOT PER FACE: a second root names a second face, which founds through its own founding; the worn root stays h0.
+    await expect(generateOrLoadBrowserPersonaRoot(name, 1, FIXTURE_WARD)).rejects.toMatchObject({ reading: "face-names-a-handle" });
+    expect(await browserJoineePersonaIndex(name)).toBe(0);
+    expect(await loadBrowserActivePersona(name)).toBe(0);
+    expect(await listBrowserPersonaRoots(name)).toEqual([0]);
   });
 });
 
@@ -236,38 +222,14 @@ describe("the worn mount over the browser IDB vault", () => {
   ...(withMount ? { signerDid: `0xdid${n}`, personaKelPrefix: `EKEL${n}`, deviceEdge: edgeFor(`0xdid${n}`), veilTag: `veil-h${n}` } : {}),
   });
 
-  test("★ a worn NON-founding persona resolves ITS OWN mount material from its anchors ★", async () => {
+  test("CONTROL — the FOUNDING face resolves NO switch (a switch between faces rides row B8)", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
-    await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 1, FIXTURE_WARD);
-    const vault = await makeBrowserIdbPersonaVault(name);
-    vault.anchors.save(1, anchorsFor(1, true));
-    await wearBrowserPersona(name, 1);
-
-    const worn = await readWornPersonaMount(vault);
-    expect(worn?.handleIndex).toBe(1);
-    expect(worn?.signerDid).toBe("0xdid1");
-    expect(worn?.personaKelPrefix).toBe("EKEL1");
-    expect(worn?.personaGroupId, "the switched face's OWN group").toBe("aa1");
-    expect(worn?.deviceEdge.kind).toBe("device-delegation");
-  });
-
-  test("CONTROL — the FOUNDING face resolves NO switch, and a half-anchor never re-pins", async () => {
-    const name = idb();
-    await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
-    await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 1, FIXTURE_WARD);
     const vault = await makeBrowserIdbPersonaVault(name);
 
     vault.anchors.save(0, anchorsFor(0, true));
     await wearBrowserPersona(name, 0);
     expect(await readWornPersonaMount(vault), "h0's pins already name it").toBeNull();
-
-    vault.anchors.save(1, anchorsFor(1, false));   // doc-ids only — no signer, prefix or edge
-    await wearBrowserPersona(name, 1);
-    expect(await readWornPersonaMount(vault), "a half-anchor never re-pins a mount").toBeNull();
   });
 });

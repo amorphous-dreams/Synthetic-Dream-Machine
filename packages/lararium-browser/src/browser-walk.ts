@@ -6,8 +6,8 @@
  * socket presents, so a browser and a node vessel walk alike. This module keeps the walk record and the face's
  * per-Nexus key as sealed custody rows, local to the browser.
  *
- * WHAT RESTS WHERE: `walk/<gateKey>` carries each walk record, including its invite; `nexus-key/h<N>/<aid>`
- * carries the face's 32-byte key at that Nexus. Each row rests under the slot tree in `keystore`.
+ * WHAT RESTS WHERE: `walk/<gateKey>` carries each walk record (its invite, its wallet, its grant; never a carry receipt), under
+ * the place tree; `nexus-key/<PersonaGroup>/<aid>` carries the face's 32-byte key at that Nexus, under the face's own tree.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
@@ -15,7 +15,7 @@
 import * as ed25519 from "@noble/ed25519";
 import { hex, type WalkLeaf, type WalkRecord, type WalkStore } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
-import { browserPersonaRootHeld } from "./browser-vessel-identity.js";
+import { browserPersonaRootHeld, faceOfVessel } from "./browser-vessel-identity.js";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
 
 /**
@@ -53,6 +53,11 @@ export function browserWalkStore(idbName: string): WalkStore {
     update(gatePubKey, decide) { return withCustodyRows(idbName, async (rows) => {
       const row = `walk/${gatePubKey.toLowerCase()}`;
       const wrote = decide((await rows.read(row) as WalkRecord | undefined) ?? null);
+      // THE WALK RECORD HOLDS NO FACE SECRET (the 2026-10-19 sort, by capability): its invite, its wallet's blind tokens and the
+      // hearth-signed grant over a per-Nexus public leaf confer a walk at that hearth and name no face, so the record rests
+      // under the place tree. A carry receipt holds a document key the face's own carry secret derives: a face secret, which
+      // the place tree never takes (and the browser's walker route stands shut).
+      if (wrote && (wrote.carried?.length ?? 0) > 0) throw new Error("walk-receipt-unhomed: a carry receipt holds a face secret, and the walk record rests under the place tree");
       if (wrote) await rows.write(row, wrote);
       return wrote;
     }); },
@@ -60,15 +65,15 @@ export function browserWalkStore(idbName: string): WalkStore {
 }
 
 /**
- * The key the face at `handleIndex` presents in Nexus `nexusAid`: the one standing, or 32 bytes minted at random in
- * one custody act where none stands (a walk presents the face there). Throws where this vessel holds no
- * root at that index: a face it does not hold presents nowhere.
+ * The key `face` (its PersonaGroup) presents in Nexus `nexusAid`: the one standing under the face's own tree, or 32 bytes
+ * minted at random in one custody act where none stands (a walk presents the face there). Throws where this vessel holds no
+ * root for that face: a face it does not hold presents nowhere.
  */
-export async function browserWalkLeaf(idbName: string, nexusAid: string, handleIndex: number): Promise<WalkLeaf> {
-  // POSSESSION, READ WITH NO SEED: the roster names the root and its warded row stands, so an unattended walk opens no ward
-  // and asks for no route.
-  if (!(await browserPersonaRootHeld(idbName, handleIndex))) throw new Error(`browser-walk: this vessel holds no root at h${handleIndex}, so the face presents nowhere`);
-  const row = `nexus-key/h${handleIndex}/${nexusAid.trim().toLowerCase()}`;
+export async function browserWalkLeaf(idbName: string, nexusAid: string, face: string): Promise<WalkLeaf> {
+  // POSSESSION, READ WITH NO SEED: the vessel wears that face, the roster names its root at the founding handle and its warded
+  // row stands, so an unattended walk opens no ward and asks for no route.
+  if (faceOfVessel(idbName) !== face || !(await browserPersonaRootHeld(idbName, 0))) throw new Error("browser-walk: this vessel holds no root for that face, so the face presents nowhere");
+  const row = `nexus-key/${face}/${nexusAid.trim().toLowerCase()}`;
   const seed = await withCustodyRows(idbName, async (rows) => {
     const standing = await rows.read(row);
     if (standing instanceof Uint8Array && standing.length === 32) return Uint8Array.from(standing);

@@ -148,7 +148,11 @@ export interface KeyVersionPrivate {
    *  ascending. Sealed, so every reader of the version reads the debt and no carrier does. */
   readonly unserved:   readonly string[];
 }
-export type ManifestPrivate = Readonly<Record<string, never>>;
+export interface ManifestPrivate {
+  /** The writer of the batch's change: `session:<session key>` where the signing session made it, `peer:<actor>` where a
+   *  peer's change rests as received under the session that holds the rest. Sealed, since it names a party. */
+  readonly writer: string;
+}
 export interface CheckpointPrivate {
   /** The causal frontier in the document engine's own ids: unique, sorted ascending. */
   readonly frontier: readonly string[];
@@ -205,6 +209,11 @@ function sortedUnique<T extends string>(value: unknown, read: (member: unknown) 
 }
 /** Well-formed text of bounded length: an id whose bytes name it alone. */
 const nonEmptyText = (value: unknown): string | null => (isWellFormedText(value) && value.length <= 512 ? value : null);
+/** A change's writer: `session:` or `peer:`, then well-formed text that names it. */
+const readWriter = (value: unknown): string | null => {
+  const text = nonEmptyText(value);
+  return text !== null && /^(session|peer):./.test(text) ? text : null;
+};
 
 function readKeyVersionBody(value: unknown): KeyVersionBody | null {
   if (!isRecord(value) || !exactKeys(value, ["bag", "keyVersion", "parents", "span"])) return null;
@@ -293,7 +302,11 @@ function readKeyVersionPrivate(value: unknown, body: KeyVersionBody): KeyVersion
 function readPrivate<K extends RecordKind>(kind: K, value: unknown, body: RecordBodies[K]): RecordPrivates[K] | null {
   try {
     if (kind === "key-version") return readKeyVersionPrivate(value, body as KeyVersionBody) as RecordPrivates[K] | null;
-    if (kind === "manifest") return (isRecord(value) && exactKeys(value, []) ? {} : null) as RecordPrivates[K] | null;
+    if (kind === "manifest") {
+      if (!isRecord(value) || !exactKeys(value, ["writer"])) return null;
+      const writer = readWriter(value["writer"]);
+      return (writer === null ? null : { writer }) as RecordPrivates[K] | null;
+    }
     if (kind === "hand-over") {
       if (!isRecord(value) || !exactKeys(value, ["reader"])) return null;
       const reader = nonEmptyText(value["reader"]);
@@ -344,7 +357,7 @@ function privateImage<K extends RecordKind>(kind: K, value: RecordPrivates[K]): 
     const acts = p.cause.kind === "removal" ? p.cause.acts : p.cause.kind === "admission" ? [p.cause.act] : [];
     return sealedImage("", utf8Bytes(p.cause.kind), listField(acts.map((act) => utf8Bytes(act))), utf8Bytes(p.history), hexList(p.joinProofs), listField(p.unserved.map((reader) => utf8Bytes(reader))));
   }
-  if (kind === "manifest") return sealedImage("");
+  if (kind === "manifest") return sealedImage("", utf8Bytes((value as ManifestPrivate).writer));
   if (kind === "hand-over") return sealedImage("", utf8Bytes((value as HandOverPrivate).reader));
   if (kind === "memory-import") return sealedImage("", utf8Bytes((value as MemoryImportPrivate).seat));
   return sealedImage("", listField((value as CheckpointPrivate).frontier.map((id) => utf8Bytes(id))));

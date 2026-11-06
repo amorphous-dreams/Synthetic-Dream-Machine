@@ -11,6 +11,7 @@
  * refuses `ward-ask-unseen`; a wrong passphrase opens nothing.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-swarm-slices
  */
+import { bindFirstFaceSlot } from "../src/browser-face-custody.js";
 import { expect, test } from "vitest";
 import { seatWardWorkerSpawn } from "../src/testing.js";
 import {
@@ -33,6 +34,8 @@ seatWardWorkerSpawn(spawn);
 async function stand() {
   const idbName = `lares:answer-${globalThis.crypto.randomUUID()}`;
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
+  // The face's own tree binds before its first row (its tag secret rests there).
+  await bindFirstFaceSlot(idbName, G, { kind: "passphrase", passphrase: PASS });
   const issuer = await keyed(71), me = await keyed(72), root = await keyed(73);
   const wardKey = (await browserVesselFaceTagDoor(idbName, { route: async () => PASS })(G, me.key)).wardKey;
   const doc = { tiddlers: {} } as LarDoc;
@@ -86,6 +89,7 @@ test("CONTROL: a deny asks no route and carries no ward; an ask this browser can
 test("RED: two faces of one browser present one ward key; CONTROL: a re-read of one face presents the same key", async () => {
   const s = await stand();
   const door = browserVesselFaceTagDoor(s.idbName, { route: async () => PASS });
+  await bindFirstFaceSlot(s.idbName, "g-browser-other", { kind: "passphrase", passphrase: PASS });
   const other = (await door("g-browser-other", s.me.key)).wardKey;
   expect(other).toMatch(/^[0-9a-f]{64}$/);
   expect(other).not.toBe(s.wardKey);
@@ -96,6 +100,8 @@ test("RED: the browser's tag door names a ward key it proves nothing of, and a r
   const { wardKeyPopHolds } = await import("@lararium/mesh") as unknown as { wardKeyPopHolds?: (g: string, a: string, f: unknown) => boolean };
   const idbName = `lares:pop-${globalThis.crypto.randomUUID()}`;
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
+  // The face's own tree binds before its first row (its tag secret rests there).
+  await bindFirstFaceSlot(idbName, G, { kind: "passphrase", passphrase: PASS });
   const me = await keyed(74);
   const door = browserVesselFaceTagDoor as unknown as (idb: string, o?: unknown) => (g: string, a: string) => Promise<{ wardKey: string; wardPop?: string }>;
   const minted = await door(idbName, { route: async () => PASS })(G, me.key);

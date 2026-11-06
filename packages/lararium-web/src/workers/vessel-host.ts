@@ -1,0 +1,465 @@
+/**
+ * vessel-host — the vessel worker's body: `openBrowserVessel`, unchanged, on this worker's own thread, served to one page
+ * over its port (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices). The messages read in
+ * `../vessel-protocol.ts`; every key, store and ceremony stays on this thread, and the page receives public readings,
+ * frames and port traffic alone.
+ *
+ * The islands (daemon, wiki) spawn nested from this worker. The shared holder (`?holder`) runs in a SharedWorker, which a
+ * dedicated worker cannot construct, so this thread asks the page to build it (`spawn`) and bridges its transferred port;
+ * the page never reads that port.
+ *
+ * Every custody and ward ask rides the ceremony door (`ceremony-door.ts`): the page hears the ask's public words and opens
+ * the ceremony document, and the answer arrives on the ceremony's own brokered port, never on the page's.
+ *
+ * EACH PORT OPENS A SESSION (`@lararium/browser` vessel-sessions.ts). The host stands one house per store: it takes
+ * the store's owner lock (a second worker refuses `store-owned`), opens a session at each port's `hello`, and admits that
+ * session by its own unlock through the ceremony. The face's first admitted session lights the vessel; every request waits
+ * on its own session's admission and answers by name where none stands (`session-unadmitted`) or where the vessel rests at
+ * its floor (`signer-unavailable`). The face's last admitted session closing (`pagehide`, a lost port, the house's liveness
+ * budget) runs the lock and the vessel returns to its floor. Surface traffic (frames, phases, rest, coherence and control
+ * results without a known sender) reaches every admitted session wearing the lit vessel's face over its own port. Control
+ * results with a known sender return to that session alone. Port traffic rides its binding
+ * to its opening session alone; another session's place refuses `binding-not-owned`. Session loss closes only its own bindings.
+ * INBOUND SURFACE ACTS WEAR THE LIT FACE: a control event, a surface switch, a place and a mirror read from a session admitted
+ * for another face refuse `face-not-worn` and reach nothing of the vessel; a control event under an eventId still pending refuses.
+ * Owed: the active surface (`set-surface`) stays vessel-wide, one per vessel, not per session.
+ *
+ * EVERY ASK NAMES ITS FACE: each custody and ward ask carries the face its session wears to the ceremony
+ * (the PersonaGroup; null names this browser itself, the place custody a fresh browser binds at its founding), and the door
+ * refuses an ask that names none.
+ *
+ * EACH SESSION WEARS THE FACE ITS HELLO NAMES: the tab's own selection (a PersonaGroup), or, with none named, the one face the
+ * store names (none on a fresh browser, whose founding session then wears the face it founds). A hint grants nothing: the
+ * session admits by that face's own unlock, and the place opens by its own route when the light needs it. The face's first
+ * admitted session lights its provider through the lit vessel's provider door, and its last drops it. A fleet join acts as the session's own
+ * face alone, or binds a new face's first slot by the session's own route, under the session's fence; its keys drop with the
+ * session, and the landed answer names the face the tab selects next.
+ */
+declare const __LAR_WALK_DOOR__: boolean;
+import {
+  openBrowserVessel, readBrowserCustody, readBrowserSeedWrap,
+  parseAdmitCarriage, toAdmitCarriage, readBrowserCustodyPasskeys, readFaceCustodyPasskeys, browserWardSign,
+  browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
+  standVesselHouse, sessionLifetimeLock, VesselSessionRefused, readBrowserVesselFaces, wardAskWords,
+  type BrowserVesselResult, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost, type WardAskKind,
+} from "@lararium/browser";
+import { didFromVerifyingKey, parseMeshPeer, type MeshPeer } from "@lararium/mesh";
+import type { PageToVessel, SeedRest, VesselBoot, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
+import { CeremonyRefused, standCeremonyDoor } from "./ceremony-door.js";
+
+export interface VesselScope {
+  postMessage(msg: VesselToPage, transfer?: Transferable[]): void;
+}
+
+const errorOf = (err: unknown): VesselError => ({
+  name: err instanceof Error ? err.name : "Error",
+  message: err instanceof Error ? err.message : String(err),
+  ...(err instanceof BrowserFleetJoinRefused || err instanceof CeremonyRefused || err instanceof VesselSessionRefused ? { refusal: err.refusal } : {}),
+});
+
+export interface VesselHostEnv {
+  /** `navigator.locks` by default. */
+  readonly locks?: LockHost | null;
+  /** The house's liveness budget on its own clock; a session silent past it for three sweeps drops. Default 60 s. */
+  readonly livenessBudgetMs?: number;
+  /** The vessel the house lights (`openBrowserVessel` by default; a host witness hands a stand-in). */
+  readonly openVessel?: typeof openBrowserVessel;
+}
+
+const BOOT_READING = { unlock: "opens", "bind-first": "bound", clear: "clear" } as const;
+
+/** Stand the vessel host: one house per store, one session per connected port. */
+export function standVesselHost(env: VesselHostEnv = {}) {
+  type Conn = { readonly post: (msg: VesselToPage, transfer?: Transferable[]) => void; readonly door: ReturnType<typeof standCeremonyDoor>; session: VesselSession | null; pings: number };
+  const conns = new Map<string, Conn>();
+  const spawns = new Map<string, (answer: Extract<PageToVessel, { t: "spawned" }>) => void>();
+  const lifeListeners = new Set<(life: PageLife) => void>();
+  let house: Promise<VesselHouse<BrowserVesselResult>> | null = null;
+  /** The lit vessel, for its provider door. */
+  let litVessel: BrowserVesselResult | null = null;
+  let firstBoot: VesselBoot | null = null;
+  let idbName = "lares:vessel";
+  let lighting: Conn | null = null;
+  /** The session whose admission lit the vessel: it heard every frame live. A later session of the face missed them. */
+  let litBy: string | null = null;
+  const bindings = new Map<string, string>();
+  const controlSenders = new Map<string, Conn>();
+
+  // A session never sees a surface its face does not wear.
+  const wearsLitFace = (conn: Conn): boolean =>
+    litVessel !== null && conn.session?.admission === "admitted" && conn.session.face === litVessel.face;
+  const surfaceFanout = (msg: VesselToPage): void => {
+    if (!litVessel) { lighting?.post(msg); return; }
+    for (const conn of conns.values()) if (wearsLitFace(conn)) conn.post(msg);
+  };
+  const statusTo = (conn: Conn | undefined, s: VesselStatus): void => conn?.post({ t: "status", status: s });
+
+  const wordsOf = (question: CustodyAsk | HouseAsk | { readonly kind: "clear" }): string =>
+    question.kind === "unlock" ? `attempt ${String(question.attempt)} of ${String(question.of)}${question.notes.length ? ` — ${question.notes.join("; ")}` : ""}` : "";
+  /** A custody ask through one session's ceremony door: the ceremony offers a passkey route beside the passphrase wherever a passkey pin stands. */
+  const askCustodyOf = (conn: Conn, act: string) => async (question: HouseAsk | CustodyAsk | { readonly kind: "clear" }): Promise<CustodyAnswer> => {
+    // A house ask names its face; the vessel's own custody asks (its boot, the fleet join) speak for the session's face.
+    const face = "face" in question ? question.face : conn.session?.face ?? null;
+    const passkeys = question.kind === "bind-first" ? [] : face === null ? await readBrowserCustodyPasskeys(idbName) : await readFaceCustodyPasskeys(idbName, face);
+    return conn.door.ask({ kind: question.kind, act, words: wordsOf(question), face, passkeys });
+  };
+  /** A ward ask: a passphrase alone, for one act, its words named by the ask's kind (`open`, `bind`, `retype`). A declined ask
+   *  answers empty, and the ward then refuses `ward-needs-fresh-unlock`. */
+  const askWardOf = (conn: Conn) => async (act: string, wardKind: WardAskKind = "open"): Promise<string> => {
+    const route = await conn.door.ask({ kind: "ward", act, words: wardAskWords(act, wardKind), face: conn.session?.face ?? null });
+    return route?.kind === "passphrase" ? route.passphrase : "";
+  };
+
+  /** A SharedWorker the page builds for this thread: the port it transfers back bridges to the one the holder door reads. */
+  const standHolderSpawn = (post: (msg: VesselToPage) => void): void => {
+    if (typeof (globalThis as { SharedWorker?: unknown }).SharedWorker === "function") return;
+    class PageBuiltSharedWorker {
+      readonly port: MessagePort;
+      readonly #errors = new Set<(e: unknown) => void>();
+      constructor(url: string | URL, opts?: { name?: string }) {
+        const channel = new MessageChannel();
+        this.port = channel.port1;
+        const spawnId = crypto.randomUUID();
+        spawns.set(spawnId, (answer) => {
+          if (!answer.port) { for (const listener of this.#errors) listener(new Error(answer.refused ?? "spawn-refused")); return; }
+          const near = channel.port2, far = answer.port;
+          near.onmessage = (e) => far.postMessage(e.data, [...e.ports]);
+          far.onmessage = (e) => near.postMessage(e.data, [...e.ports]);
+        });
+        post({ t: "spawn", spawnId, role: "holder", url: String(url), name: opts?.name ?? "" });
+      }
+      addEventListener(type: string, listener: (e: unknown) => void): void { if (type === "error") this.#errors.add(listener); }
+    }
+    (globalThis as { SharedWorker?: unknown }).SharedWorker = PageBuiltSharedWorker;
+  };
+
+  const seedRestOf = async (idbName: string, face: string | null): Promise<{ seedRest: SeedRest; seedWrapClass?: string }> => {
+    const custody = await readBrowserCustody(idbName);
+    if (custody.reading === "sealed") return { seedRest: "wrapped-passphrase" };
+    const wrap = face === null ? undefined : await readBrowserSeedWrap(idbName, face);
+    return wrap ? { seedRest: "wrapped-prf", seedWrapClass: wrap.keyClass } : { seedRest: "open" };
+  };
+
+  const vesselStatus = (result: BrowserVesselResult): VesselStatus => ({
+    vessel: { verifyingKey: result.identity.verifyingKey, did: didFromVerifyingKey(result.identity.verifyingKey), activeWikiId: result.activeWikiId, wikiDocUrl: result.wikiDocUrl, oracleDocUrl: result.oracleDocUrl },
+    connection: result.connectionState.getSnapshot(),
+  });
+
+  /** Light the vessel for the face's first admitted session, on the first hello's public inputs. */
+  const light = async (first: VesselSession): Promise<BrowserVesselResult> => {
+    const conn = conns.get(first.sessionId);
+    const b = firstBoot;
+    if (!conn || !b) throw new VesselSessionRefused("unknown-session");
+    lighting = conn;
+    litBy = first.sessionId;
+    if (b.sharedHolderUrl) standHolderSpawn((msg) => conn.post(msg));
+    const admit = b.admitCarriage ? parseAdmitCarriage(b.admitCarriage) : null;
+    if (admit) console.log("[vessel] ADMIT taken from the fleet-join landing — this vessel JOINS an existing PersonaGroup.");
+    let result: BrowserVesselResult;
+    try { result = await (env.openVessel ?? openBrowserVessel)({
+      face: first.face,
+      askCustody: askCustodyOf(conn, "vessel"),
+      askWardRoute: askWardOf(conn),
+      hostId: b.hostId,
+      wikiId: b.wikiId,
+      idbName: b.idbName,
+      genesisSeed: b.genesisSeed,
+      genesisCasBaseUrl: b.genesisCasBaseUrl,
+      daemonWorkerUrl: new URL(b.daemonWorkerUrl),
+      workerScriptUrl: new URL(b.workerScriptUrl),
+      ...(b.sharedHolderUrl ? { sharedHolderUrl: new URL(b.sharedHolderUrl) } : {}),
+      pageLife: (listener) => { lifeListeners.add(listener); return () => { lifeListeners.delete(listener); }; },
+      onRest: (rest) => surfaceFanout({ t: "status", status: { rest } }),
+      onPhase: (phase) => surfaceFanout({ t: "phase", phase }),
+      onFrame: (frame) => surfaceFanout({ t: "frame", frame }),
+      onControlResult: (surfaceId, result) => {
+        const sender = controlSenders.get(result.eventId);
+        controlSenders.delete(result.eventId);
+        const msg = { t: "control-result", surface: surfaceId, result } as const;
+        if (sender) sender.post(msg);
+        else surfaceFanout(msg);
+      },
+      onCoherence: (frame) => surfaceFanout({ t: "coherence", frame }),
+      onPortMessage: (binding, islandKey, msg) => {
+        const owner = bindings.get(binding);
+        const target = owner ? conns.get(owner) : undefined;
+        if (target && wearsLitFace(target)) target.post({ t: "port-msg", binding, islandKey, msg });
+      },
+      ...(b.relayUrl ? { relayUrl: b.relayUrl } : {}),
+      ...(b.floorCard ? { floorCard: b.floorCard } : {}),
+      ...(b.floorAnchor ? { floorAnchor: b.floorAnchor } : {}),
+      ...(admit ? { admit } : {}),
+      ...(b.meshLeaf ? { meshLeaf: { coordSeed: b.meshLeaf.coordSeed, peers: b.meshLeaf.peers.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null) } } : {}),
+    });
+    litVessel = result;
+    } finally { lighting = null; }
+    result.connectionState.subscribe((connection) => { for (const c of conns.values()) if (c.session?.admission === "admitted") statusTo(c, { connection }); });
+    // A landed fleet join leaves its pending row once the vessel stands on its admit.
+    if (admit) void browserFleetJoinSettle().catch((err: unknown) => console.warn("[vessel] the landed fleet join did not settle:", err));
+    return result;
+  };
+
+  const houseFor = (b: VesselBoot): Promise<VesselHouse<BrowserVesselResult>> => {
+    if (house) return house;
+    firstBoot = b;
+    idbName = b.idbName;
+    house = standVesselHouse<BrowserVesselResult>({
+      idbName: b.idbName,
+      ...(env.locks !== undefined ? { locks: env.locks } : {}),
+      livenessBudgetMs: env.livenessBudgetMs ?? 60_000,
+      light,
+      // THE PROVIDER DOOR: one Keyhive provider per face, through the lit vessel (K19).
+      providers: {
+        lit: async (face) => { if (!litVessel) throw new VesselSessionRefused("signer-unavailable"); return litVessel.faceProviders.lit(face); },
+        drop: async (face, why) => litVessel?.faceProviders.drop(face, why),
+      },
+      onFloor: (s, floor) => { if (floor === "floor") litVessel = null; statusTo(conns.get(s.sessionId), { floor }); },
+      onDrop: (s, why) => {
+        const conn = conns.get(s.sessionId);
+        if (conn) conn.session = null;
+        for (const [eventId, sender] of controlSenders) if (sender === conn) controlSenders.delete(eventId);
+        for (const [binding, owner] of bindings) {
+          if (owner !== s.sessionId) continue;
+          bindings.delete(binding);
+          try {
+            if (litVessel && !litVessel.ports) console.warn("[vessel] binding close on session loss: vessel has no ports");
+            else litVessel?.ports.close(binding);
+          } catch (err) { console.warn("[vessel] binding close on session loss failed:", err); }
+        }
+        console.log(`[vessel] session ${s.sessionId.slice(0, 8)} closed (${why})`);
+      },
+      ping: (s) => { const c = conns.get(s.sessionId); if (c) c.post({ t: "ping", n: ++c.pings }); },
+    });
+    return house;
+  };
+
+  /** One session's admission: its own unlock through its own ceremony door, then the lit vessel's public readings. */
+  const admitSession = async (conn: Conn, h: VesselHouse<BrowserVesselResult>, session: VesselSession): Promise<BrowserVesselResult> => {
+    let result: BrowserVesselResult;
+    try {
+      result = await h.admit(session.sessionId, { ask: askCustodyOf(conn, "boot") });
+    } catch (err) {
+      const refusal = err instanceof VesselSessionRefused ? err.refusal : null;
+      const reading = refusal === "admission-declined" ? "declined" : refusal === "no-slot-opens" ? "no-slot-opens" : refusal === "custody-unreadable" ? "unreadable" : null;
+      if (reading) {
+        statusTo(conn, { custody: reading });
+        conn.post({ t: "ended", why: `this browser's vessel stays locked (${reading})`, stage: "custody" });
+      } else {
+        conn.post({ t: "ended", why: `boot failed: ${err instanceof Error ? err.message : String(err)}`, stage: "open", ...(refusal ? { refusal } : {}) });
+      }
+      throw err;
+    }
+    statusTo(conn, { custody: session.admittedBy ? BOOT_READING[session.admittedBy] : "held", ...(session.face ? { face: session.face } : {}) });
+    statusTo(conn, vesselStatus(result));
+    // A LATE SESSION MISSED THE FRAMES ALREADY SENT: the vessel repaints the shown surface whole, and the frame reaches it over its own port.
+    if (litVessel && litBy !== session.sessionId && wearsLitFace(conn)) litVessel.resend(litVessel.activeSurface());
+    void seedRestOf(idbName, session.face).then((s) => statusTo(conn, s), () => { /* an unreadable slot reads its own refusal elsewhere */ });
+    return result;
+  };
+
+  /**
+   * THE FLEET JOIN ACTS AS THE SESSION'S OWN FACE, under its fence: the house stands the joinee face (the face the session
+   * wears, or a new one whose first slot binds by this session's own route; any other face refuses `face-not-worn` before an
+   * ask or a write), then every custody act of the join runs as that face under the session's fence, and the keys it seats
+   * drop with the session.
+   */
+  const join = {
+    offer: async (conn: Conn, h: VesselHouse<BrowserVesselResult>, s: VesselSession, text: string, abandonPending: boolean): Promise<unknown> => {
+      const offer = JSON.parse(text) as unknown;
+      const group = (offer as { personaGroup?: unknown } | null)?.personaGroup;
+      if (typeof group !== "string" || group.length === 0) throw new Error("the offer names no face; a fleet join joins one PersonaGroup");
+      await h.joinFace(s.sessionId, group, askCustodyOf(conn, "fleet-join"));
+      const request = await h.faceAct(s.sessionId, group, async () => {
+        if (abandonPending) await browserFleetJoinAbandon(idbName, group);
+        return browserFleetJoinRequest({ offer, idbName, ward: { route: askWardOf(conn) } });
+      });
+      return { kind: "request", text: JSON.stringify(request, null, 2) };
+    },
+    answer: async (h: VesselHouse<BrowserVesselResult>, s: VesselSession, text: string): Promise<unknown> => {
+      const answer = JSON.parse(text) as unknown;
+      const group = (answer as { personaGroup?: unknown } | null)?.personaGroup;
+      if (typeof group !== "string" || group.length === 0) throw new Error("the answer names no face; a fleet join lands one PersonaGroup");
+      const { admit } = await h.faceAct(s.sessionId, group, () => browserFleetJoinLand({ answer, idbName }));
+      return { kind: "landed", carriage: toAdmitCarriage(admit), signerDid: admit.signerDid, face: admit.personaGroupId };
+    },
+  };
+
+  /** Connect one page port: its `hello` opens a session; the caller feeds every page message, in order, to `receive`. */
+  const connect = (scope: VesselScope): { receive(msg: PageToVessel): void; lost(why: string): void } => {
+      const post = (msg: VesselToPage, transfer: Transferable[] = []): void => scope.postMessage(msg, transfer);
+      const conn: Conn = { post, door: standCeremonyDoor(post), session: null, pings: 0 };
+      let admitted: Promise<{ h: VesselHouse<BrowserVesselResult>; s: VesselSession }> | null = null;
+      let helloed = false;
+
+      /** This session's lit vessel, once its own admission stands; refused by name otherwise. */
+      const vessel = async (): Promise<BrowserVesselResult> => {
+        if (!admitted) throw new VesselSessionRefused("session-unadmitted");
+        const { h, s } = await admitted.catch(() => { throw new VesselSessionRefused("session-unadmitted"); });
+        return h.require(s.sessionId);
+      };
+      /** The lit vessel for an act on its surface: a session admitted for another face reaches none of it (`face-not-worn`). */
+      const litFaceVessel = async (): Promise<BrowserVesselResult> => {
+        const v = await vessel();
+        if (!wearsLitFace(conn)) throw new VesselSessionRefused("face-not-worn");
+        return v;
+      };
+      /** This session's house and record, once its own admission stands and its vessel stands lit. */
+      const own = async (): Promise<{ h: VesselHouse<BrowserVesselResult>; s: VesselSession }> => {
+        await vessel();
+        return admitted!.catch(() => { throw new VesselSessionRefused("session-unadmitted"); });
+      };
+      const reply = (callId: string, work: () => Promise<unknown>): void => {
+        void work().then((value) => post({ t: "reply", callId, ok: true, value }), (err: unknown) => post({ t: "reply", callId, ok: false, error: errorOf(err) }));
+      };
+      const refusedQuietly = (what: string) => (err: unknown): void => { console.warn(`[vessel] ${what} refused:`, err instanceof Error ? err.message : err); };
+
+      const hello = async (msg: Extract<PageToVessel, { t: "hello" }>): Promise<void> => {
+        let h: VesselHouse<BrowserVesselResult>;
+        try { h = await houseFor(msg.boot); } catch (err) {
+          const refusal = err instanceof VesselSessionRefused ? err.refusal : undefined;
+          post({ t: "ended", why: `this vessel worker cannot own the store: ${err instanceof Error ? err.message : String(err)}`, stage: "open", ...(refusal ? { refusal } : {}) });
+          return;
+        }
+        let refused: string | undefined;
+        let s: VesselSession;
+        // THE FACE THE TAB SELECTED, or the one face the store names: a hint, which the face's own unlock decides.
+        let face: string | null = typeof msg.face === "string" && msg.face.length > 0 ? msg.face : null;
+        if (face === null) {
+          const faces = await readBrowserVesselFaces(idbName);
+          if (faces.length > 1) { post({ t: "ended", why: "this browser holds several faces; the tab names the one it wears", stage: "open", refusal: "face-not-named" }); return; }
+          face = faces[0] ?? null;
+        }
+        try { s = h.open({ tabId: msg.tabSession, face, ...(msg.resume ? { resume: msg.resume } : {}) }); } catch (err) {
+          if (err instanceof VesselSessionRefused && err.refusal !== "stale-owner-epoch" && err.refusal !== "unknown-session") {
+            post({ t: "ended", why: `this session's face refuses: ${err.message}`, stage: "open", refusal: err.refusal });
+            return;
+          }
+          // NO TAB TRUSTS AN EARLIER GREETING: the stale one refuses by name, and the tab opens afresh and asks again.
+          refused = err instanceof VesselSessionRefused ? err.refusal : String(err);
+          s = h.open({ tabId: msg.tabSession, face });
+        }
+        conn.session = s;
+        conns.set(s.sessionId, conn);
+        post({ t: "greeting", ownerEpoch: s.ownerEpoch, sessionId: s.sessionId, lifetimeLock: sessionLifetimeLock(s.sessionId), ...(refused ? { refused } : {}) });
+        statusTo(conn, { floor: h.floor() });
+        admitted = admitSession(conn, h, s).then(() => ({ h, s }));
+        admitted.catch(() => { /* named to the page already */ });
+      };
+
+      const close = (why: string): void => {
+        const s = conn.session;
+        if (!s) return;
+        void (house ?? Promise.reject(new Error("no house"))).then((h) => h.close(s.sessionId, why)).catch(refusedQuietly("the session's close"));
+      };
+
+      return {
+        lost: close,
+        receive(msg: PageToVessel): void {
+          if (conn.session) void house?.then((h) => { if (conn.session) h.heard(conn.session.sessionId); });
+          switch (msg.t) {
+            case "hello":
+              if (helloed) return;
+              helloed = true;
+              void hello(msg).catch((err: unknown) => post({ t: "ended", why: `boot failed: ${err instanceof Error ? err.message : String(err)}`, stage: "open" }));
+              return;
+            case "session:armed": {
+              const s = conn.session;
+              if (s && s.sessionId === msg.sessionId) void house?.then((h) => h.watch(s.sessionId, sessionLifetimeLock(s.sessionId)));
+              return;
+            }
+            case "pong": return;
+            case "port:want": {
+              if (!conn.session) { post({ t: "port:minted", wantId: msg.wantId, refused: "session-unadmitted" }); return; }
+              const { port1, port2 } = new MessageChannel();
+              const c = connect({ postMessage: (m, t = []) => port1.postMessage(m, t) });
+              port1.onmessage = (e: MessageEvent<PageToVessel>) => c.receive(e.data);
+              // The minted connection hears its tab go by its port close where fired, its page:life pagehide, and its lifetime lock.
+              port1.addEventListener("close", () => c.lost("port-closed"));
+              post({ t: "port:minted", wantId: msg.wantId, port: port2 }, [port2]);
+              return;
+            }
+            case "ceremony:port": conn.door.port(msg.askId, msg.port); return;
+            case "ceremony:refused": conn.door.refused(msg.askId, msg.refusal); return;
+            case "spawned": { const settle = spawns.get(msg.spawnId); spawns.delete(msg.spawnId); settle?.(msg); return; }
+            case "page:life":
+              for (const listener of lifeListeners) listener(msg.life);
+              // A LEAVING PAGE CLOSES ITS SESSION; the face's last one runs the lock. A hidden page keeps its session.
+              if (msg.life === "pagehide") close("pagehide");
+              return;
+            case "control-event": {
+              const sessionId = conn.session?.sessionId;
+              void litFaceVessel().then((v) => {
+                if (!sessionId || conn.session?.sessionId !== sessionId) throw new VesselSessionRefused("session-unadmitted");
+                // AN EVENTID NAMES ONE PENDING ACT: a second event under it would take the first one's result.
+                if (controlSenders.has(msg.ev.eventId)) throw new Error(`control-event-pending: the event ${msg.ev.eventId} already waits on its result`);
+                controlSenders.set(msg.ev.eventId, conn);
+                try { v.sendControlEvent(msg.surface, msg.ev); }
+                catch (err) { if (controlSenders.get(msg.ev.eventId) === conn) controlSenders.delete(msg.ev.eventId); throw err; }
+              }).catch(refusedQuietly("a control event"));
+              return;
+            }
+            case "set-surface": void litFaceVessel().then((v) => v.setActiveSurface(msg.surface)).catch(refusedQuietly("a surface switch")); return;
+            case "port:place": {
+              const sessionId = conn.session?.sessionId;
+              const refuse = (reason: string): void => {
+                const m = msg.msg as { type?: unknown; portId?: unknown } | null;
+                post({ t: "port:refused", binding: msg.binding, reason, opening: m?.type === "port:open",
+                  ...(typeof m?.portId === "string" ? { portId: m.portId } : {}) });
+              };
+              if (bindings.has(msg.binding) && bindings.get(msg.binding) !== sessionId) { refuse("binding-not-owned"); return; }
+              void litFaceVessel().then((v) => {
+                if (!sessionId || conn.session?.sessionId !== sessionId) throw new VesselSessionRefused("session-unadmitted");
+                const owner = bindings.get(msg.binding);
+                if (owner && owner !== sessionId) { refuse("binding-not-owned"); return; }
+                const recorded = !owner;
+                if (recorded) bindings.set(msg.binding, sessionId);
+                try {
+                  const placed = v.ports.place(msg.surface, msg.binding, msg.msg);
+                  if (!placed.ok) { if (recorded) bindings.delete(msg.binding); refuse(placed.reason); }
+                } catch (err) { if (recorded) bindings.delete(msg.binding); throw err; }
+              }).catch((err: unknown) => refuse(err instanceof VesselSessionRefused ? err.refusal : String(err)));
+              return;
+            }
+            case "port:close": {
+              const sessionId = conn.session?.sessionId;
+              if (!sessionId || bindings.get(msg.binding) !== sessionId) return;
+              void vessel().then((v) => {
+                if (bindings.get(msg.binding) !== sessionId) return;
+                v.ports.close(msg.binding);
+                bindings.delete(msg.binding);
+              }).catch(refusedQuietly("a port close"));
+              return;
+            }
+            case "read:mirror-inputs": reply(msg.callId, async () => (await litFaceVessel()).mirrorInputs(msg.surface)); return;
+            case "read:floor": reply(msg.callId, async () => (await vessel()).readFloor(msg.baseUrl)); return;
+            case "join:offer": reply(msg.callId, async () => { const { h, s } = await own(); return join.offer(conn, h, s, msg.text, msg.abandonPending); }); return;
+            case "join:answer": reply(msg.callId, async () => { const { h, s } = await own(); return join.answer(h, s, msg.text); }); return;
+            case "walk:restart":
+              // A harness-only door, compiled out of every default build.
+              if (!(typeof __LAR_WALK_DOOR__ !== "undefined" && __LAR_WALK_DOOR__)) { post({ t: "reply", callId: msg.callId, ok: false, error: { name: "Error", message: "walk-door-absent" } }); return; }
+              reply(msg.callId, async () => { const v = await vessel(); return { ...(await v.restartDaemonIsland(msg.reason)), leg: await v.daemon.syncLegReady() }; });
+              return;
+            case "walk:ward":
+              // A harness-only door, compiled out of every default build: one ward act over the founding face's root, its
+              // passphrase asked through the ceremony exactly as the promote board's acts ask it.
+              if (!(typeof __LAR_WALK_DOOR__ !== "undefined" && __LAR_WALK_DOOR__)) { post({ t: "reply", callId: msg.callId, ok: false, error: { name: "Error", message: "walk-door-absent" } }); return; }
+              reply(msg.callId, async () => {
+                await vessel();
+                // A ward act signs as the face this session wears by its own unlock, never the vessel's by inheritance.
+                const face = conn.session?.face ?? null;
+                if (face === null) throw new VesselSessionRefused("session-faceless");
+                // The face's root rests under its ward at the founding handle (h0), the one face a founding wears.
+                return browserWardSign(idbName, 0, await askWardOf(conn)("a walk ward act"), msg.bytes);
+              });
+              return;
+          }
+        },
+      };
+  };
+  return { connect };
+}
+
+/** Serve one page: the caller feeds every page message, in order, to the returned `receive`. */
+export function serveVessel(scope: VesselScope, env: VesselHostEnv = {}): { receive(msg: PageToVessel): void } {
+  return standVesselHost(env).connect(scope);
+}

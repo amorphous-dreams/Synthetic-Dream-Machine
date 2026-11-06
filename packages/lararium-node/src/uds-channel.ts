@@ -7,8 +7,9 @@
  * invocation and await the receipt. This Unix-domain socket carries one-shot maintenance
  * frames and bound session frames. The daemon writes an invocation into its warm
  * daemon working doc (the SAME tiddler the worker reacts to from a WS peer), awaits the
- * durable bags/daemon/outcomes/<id> outcome, and returns it over the socket. Receipt facts land
- * in the daemon wiki's working document.
+ * durable bags/daemon/outcomes/<id> outcome, and returns it over the socket. The outcome and the
+ * receipt facts both land in the daemon wiki's working document, which seals under the lit face
+ * (sealed-store#/owed, U1's D half); the clear daemon document rests neither.
  *
  *   transport  = this socket (kernel-local, authority-agnostic)
  *   authority  = the session's verified face and worker-held profile on a bound socket;
@@ -18,9 +19,9 @@
  * Content routing (the co-located bypass): the CLI and the daemon worker share ONE
  * process, so the carriers (tiddler/meme/blob CONTENT in `args`) ride the DIRECT
  * worker channel (`placeVerb` → postMessage → the worker's volatile invocation),
- * NEVER the daemon Automerge doc. The daemon's own doc carries only the VERB-record's
+ * NEVER the daemon Automerge doc. The daemon wiki's working slot carries only the VERB-record's
  * durable OUTCOME/receipt (`bags/daemon/outcomes/<id>`, written by the dispatcher) — the
- * command's result, never its content. A remote peer that lacks the shared process
+ * command's result, never its carriers. A remote peer that lacks the shared process
  * still writes a summons over WS sync (that path keeps content in the CRDT by
  * necessity — no channel bypasses the network); the co-located path skips it.
  *
@@ -89,8 +90,8 @@ export interface UdsChannelOptions {
   readonly handOnlyCodes?: ReadonlyMap<string, string>;
   /**
    * Verbs whose answer on a session rides its socket alone (`session:act`): the face rows and the realm verbs that name a
-   * face's key at a realm's Nexus (`REALM_KEY_VERBS`). A `session:call`, whose outcome body rests in the daemon document
-   * beside the session's face, refuses one `answers-on-the-socket`, as it refuses every `sessionVerbs` row.
+   * face's key at a realm's Nexus (`REALM_KEY_VERBS`). A `session:call`, whose outcome body rests in the daemon wiki's
+   * working slot beside the session's face, refuses one `answers-on-the-socket`, as it refuses every `sessionVerbs` row.
    */
   readonly socketVerbs?: ReadonlySet<string>;
   /**
@@ -99,6 +100,9 @@ export interface UdsChannelOptions {
    * Absent → no call books, and every sealed act the island answers refuses `signer-unavailable`.
    */
   readonly signers?: SessionSignBook;
+  /** The lock ritual's first move, before a session's signer drops (sealed-store#/owed, R2): the vessel flushes its Repo
+   *  and its sealed rest, so every save the session booked lands sealed under it. Absent → the signer drops at once. */
+  readonly beforeSignerDrops?: (signer: UdsSessionSigner) => Promise<void>;
   /** The daemon's warm daemon doc handle (result.daemon.daemonHandle). */
   readonly daemonHandle: DocHandle<LarDoc>;
   /** The daemon composite with its attached working layer established as default writable. */
@@ -107,8 +111,8 @@ export interface UdsChannelOptions {
    * The DIRECT worker channel (result.daemon.placeVerb) — posts the invocation
    * (verb + `args` CONTENT) straight to the daemon worker over the MessageChannel,
    * so the carriers reach the dispatcher WITHOUT riding the daemon Automerge doc.
-   * The worker still writes the durable outcome to `bags/daemon/outcomes/<id>`, which
-   * this channel awaits via `daemonHandle`. For a session call, the seat supplies
+   * The worker still writes the durable outcome to `bags/daemon/outcomes/<id>` in the daemon
+   * wiki's working slot, which this channel awaits through `composite`. For a session call, the seat supplies
    * `requestedBy` from the verified presenter and `face` from the verified proof subject.
    */
   readonly placeVerb: (o: { origin: "channel"; verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; ordinal?: number; effectKey?: string }) => void;
@@ -658,8 +662,9 @@ export interface UdsFront {
    * frame already handed to it has answered, so nothing of the retiring composition still serves a caller.
    */
   readonly detach: () => Promise<void>;
-  /** Refuse every caller and stop serving. */
-  readonly close: () => void;
+  /** Refuse every caller and stop serving. Resolves once the seat's own `close` settles (T3): each standing session's
+   *  flush landed before its signer dropped, so a stand-down awaits it before it goes on. */
+  readonly close: () => Promise<void>;
 }
 
 export function serveUdsFront(a: {
@@ -734,16 +739,17 @@ export function serveUdsFront(a: {
       seat = null;
       await old?.close();
     },
-    close: () => {
+    close: async () => {
       if (stopped) return;
       stopped = true;
-      void seat?.close();
+      const closing = seat?.close();
       seat = null;
       for (const entry of held.splice(0)) {
         entry.sock.off("close", entry.onClose);
         refusal(entry.sock);
       }
       a.claim.refuse(`the vessel (pid ${process.pid}) on this store stops — run again once it has gone`);
+      await closing;
     },
   };
 }
@@ -813,6 +819,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       // Only a COMPLETION teaches the servo (a timeout/hang never records → can't drag the EWMA to CEIL).
       const check = () => { void readOutcomeFor(requestId).then((r) => { if (r) settle(() => { recordMineDuration(verb, performance.now() - t0); resolve(r); }); }); };
       const onChange = () => check();
+      // THE LEDGER RESTS IN THE DAEMON WIKI'S WORKING SLOT (sealed-store#/owed, U1's D half): the wait hears every layer
+      // of the composite, the working slot the island writes the outcome into among them, and the daemon document.
+      const unsubscribe = composite.subscribe((change) => { if (change.title === `${OUTCOME_URI_PREFIX}${requestId}`) check(); });
       daemonHandle.on("change", onChange);
       // Fail on a GRADIENT: the wait grows with this verb's learned durations (EWMA·K, clamped
       // FLOOR..CEIL) — headroom for an honest long verb, while a real hang still dies within CEIL.
@@ -831,16 +840,16 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         floor: timeoutMs,
       });
       const timer = setTimeout(() => settle(() => reject(new VesselWaitExpired(verb, requestId, budget))), budget);
-      const cleanup = () => { daemonHandle.off("change", onChange); clearTimeout(timer); };
+      const cleanup = () => { daemonHandle.off("change", onChange); unsubscribe(); clearTimeout(timer); };
       check(); // the outcome may already exist (idempotent re-submission)
     });
   };
 
   // Hand the invocation (verb + args CONTENT) to the daemon worker over the DIRECT
   // MessageChannel (placeVerb → the worker's volatile invocation), then await the
-  // durable outcome via the daemon doc's own change event. The carriers NEVER enter
-  // The daemon's Automerge doc — only the worker-written outcome (bags/daemon/outcomes/<id>)
-  // lands there. A co-located CLI shares the worker's process, so the CRDT summons
+  // durable outcome via the composite's change events. The carriers NEVER enter
+  // the daemon's documents — only the worker-written outcome (bags/daemon/outcomes/<id>)
+  // lands, in the daemon wiki's working slot. A co-located CLI shares the worker's process, so the CRDT summons
   // (the remote-peer transport) would be a pointless content-bloating round-trip.
   const runVerb = async (inv: Invocation, requestId: string): Promise<Record<string, unknown>> => {
     opts.placeVerb({
@@ -954,6 +963,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const inFlight = new Set<Socket>();
   const table = new SessionTable(ownerEpoch);
   let closing = false;
+  /** Flush, then drop: a session's signer leaves only after every save it booked rested sealed. */
+  const flushThenDrop = async (signer: UdsSessionSigner | undefined): Promise<void> => {
+    if (!signer) return;
+    try { await opts.beforeSignerDrops?.(signer); } catch { /* a refused flush keeps its changes in memory; the drop still lands */ }
+    opts.signers?.unseat(signer);
+    signer.drop();
+  };
   const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; hand?: Hand; anchor?: SessionAnchor; supply?: UdsSessionSupply; signer?: UdsSessionSigner }>();
   const sessionTurns = new Map<Socket, Promise<void>>();
   const sessionReply = (sock: Socket, answer: Record<string, unknown>): void => {
@@ -968,7 +984,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       sessionSockets.set(sock, state);
       sock.once("close", () => {
         if (state?.sessionId) table.close(state.sessionId);
-        state?.signer?.drop();
+        void flushThenDrop(state?.signer);
         sessionSockets.delete(sock);
         sessionTurns.delete(sock);
       });
@@ -1038,6 +1054,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       state.anchor = supplied.supply.anchor;
       state.supply = supplied.supply;
       state.signer = minted.signer;
+      // P2-4: the session stands seated while its signer stands, so a change written with no call in flight books it.
+      opts.signers?.seat({ signer: minted.signer, anchor: supplied.supply.anchor, subject: opened.session.face.proofSubject });
       sessionReply(sock, { kind: "session:opened", requestId, ownerEpoch: opened.session.ownerEpoch,
         sessionId: opened.session.sessionId, generation: opened.session.generation,
         faceRef: opened.session.face.proofSubject, caps: opened.session.caps });
@@ -1054,9 +1072,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (frame["op"] !== "session:close" && await anchorLeft(sock, state, requestId)) return;
     if (frame["op"] === "session:close") {
       table.close(checked.session.sessionId);
-      state.signer?.drop();
+      const leaving = state.signer;
       delete state.signer;
       delete state.sessionId;
+      await flushThenDrop(leaving);
       sessionReply(sock, { kind: "session:closed" });
       sock.end();
       return;
@@ -1075,7 +1094,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       return sessionRefuse(sock, "malformed-message", requestId);
     }
     // A FACE ROW'S ANSWER RIDES THE SOCKET ALONE (`session:act`), as does a realm verb's that names a face's key: a call's
-    // outcome body rests in the daemon document beside the session's face, so neither rides one.
+    // outcome body rests in the daemon wiki's working slot beside the session's face, so neither rides one.
     if (opts.sessionVerbs?.has(frame["verb"]) || opts.socketVerbs?.has(frame["verb"])) return sessionRefuse(sock, "answers-on-the-socket", requestId);
     const args = frame["args"] as Record<string, unknown>;
     const face = checked.session.face.proofSubject;
@@ -1210,7 +1229,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         return { ok: true, target: { face: supplied.supply.face, profile: supplied.supply.profile, supply: supplied.supply } };
       },
       writeIntent: writeSwitchAct,
-      fence: async () => { state.signer?.drop(); delete state.signer; delete state.supply; },
+      fence: async () => { const leaving = state.signer; delete state.signer; delete state.supply; await flushThenDrop(leaving); },
       commit: async (session, target) => {
         if (gone()) return { ok: false, refusal: "session-closed" };
         const minted = await target.supply.mint({ table, binding: state.binding, session });
@@ -1219,6 +1238,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         state.signer = minted.signer;
         state.supply = target.supply;
         if (gone()) { minted.signer.drop(); return { ok: false, refusal: "session-closed" }; }
+        opts.signers?.seat({ signer: minted.signer, anchor: target.supply.anchor, subject: session.face.proofSubject });
         return { ok: true };
       },
       writeOutcome: writeSwitchAct,
@@ -1424,7 +1444,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       closing = true;
       for (const [sock, state] of sessionSockets) {
         if (state.sessionId) table.close(state.sessionId);
-        state.signer?.drop();
+        await flushThenDrop(state.signer);
         sock.end();
       }
       if (!idle()) await new Promise<void>((resolve) => { drained = resolve; });

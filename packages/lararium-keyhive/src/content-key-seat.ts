@@ -29,7 +29,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store · lar:///ha.ka.ba/lares/api/pono/kapae#/keys
  */
 import {
-  ContentKeyHolder, SealedStore, contentKeyRollSink, verifiedSeatRoll,
+  ContentKeyHolder, SealedStore, contentKeyRollSink, readsAsFreshBase, verifiedSeatRoll,
   type ContentKeyHolderPorts, type EdgeStanding, type RecordSigner, type RollOutcome, type SealedStoreRest,
   type SeatRoll, type SeatRollSink, type WriterStanding,
 } from "@lararium/mesh";
@@ -79,6 +79,9 @@ export interface ContentKeySeatInput {
   readonly unansweredRaises?: () => readonly string[] | Promise<readonly string[]>;
   /** Admission acts this vessel verified. */
   readonly verifiedAdmissions?: () => ReadonlySet<string> | Promise<ReadonlySet<string>>;
+  /** The document store's cut of a from-now admission's fresh base (`@lararium/mesh` `freshBasePort`). Absent: no hand
+   *  here cuts one, and every from-now admission refuses `fresh-base-unavailable`. */
+  readonly freshBase?: ContentKeyHolderPorts["freshBase"];
   readonly session?: SessionProof;
   /** What each founding of each bag did with a roll: for a door, a log line or a vector. It names no key. */
   readonly report?: (outcome: RollOutcome) => void;
@@ -102,6 +105,8 @@ export interface ContentKeySeat {
    * then seal under a head that follows every raise still owed in the bag's scope, or refuse `roll-owed`.
    */
   seal(args: Omit<Parameters<ContentKeyHolder["sealBlob"]>[0], "owedActs">): ReturnType<ContentKeyHolder["sealBlob"]>;
+  /** Seal one write batch of document values as a session's act, under the same settle and owed-roll law as `seal`. */
+  sealValues(args: Omit<Parameters<ContentKeyHolder["sealValues"]>[0], "owedActs">): ReturnType<ContentKeyHolder["sealValues"]>;
   /** Settle the rolls still owed with `signer`, the signer of the session whose act runs now. */
   settle(signer: RecordSigner | null): Promise<void>;
   /** The raises still owed in one bag's scope, as last read (a vector reads it). */
@@ -165,6 +170,7 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
       return null;
     },
     values: input.values,
+    ...(input.freshBase ? { freshBase: input.freshBase, readsAsFreshBase } : {}),
     ...(session.apart ? { apart: session.apart } : {}),
   });
 
@@ -223,6 +229,11 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
       await settle(args.signer);
       // The holder reads the owed raises inside its own turn, so a roll that arrives after the settle still binds it.
       return holder.sealBlob({ ...args, owedActs: () => owedActs(args.bagId) });
+    },
+    async sealValues(args) {
+      await refreshOwed();
+      await settle(args.signer);
+      return holder.sealValues({ ...args, owedActs: () => owedActs(args.bagId) });
     },
     settle,
     owedFor: (bagId) => owedActs(bagId),

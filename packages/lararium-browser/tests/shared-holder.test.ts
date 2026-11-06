@@ -363,3 +363,38 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     expect(measured).not.toBeNull();
   });
 });
+
+describe("the page's life feed closes a tab's session", () => {
+  test("a fed pagehide posts the session's close and unsubscribes; a hidden page posts nothing", async () => {
+    const hello = { kind: "holder:hello", islandBoots: 0, tabs: 1, lockClientId: "holder-x", ownerEpoch: "epoch-x", sessionId: "session-life", generation: 0, nonce: "00" };
+    let holderSide!: MessagePort;
+    class GreetingSharedWorker {
+      readonly port: MessagePort;
+      constructor() {
+        const { port1, port2 } = new MessageChannel();
+        this.port = port1; holderSide = port2;
+        port2.postMessage(hello);
+      }
+    }
+    let feed: ((life: "hidden" | "pagehide") => void) | null = null;
+    let stops = 0;
+    const attached = await attachSharedHolder({
+      houseName: "lares:house:test", holderUrl: new URL("https://vessel.test/shared-holder.worker.js"),
+      host: { SharedWorker: GreetingSharedWorker as unknown as SharedWorkerHost["SharedWorker"] },
+      pageLife: (listener) => { feed = listener; return () => { stops++; feed = null; }; },
+    });
+    expect(attached.kind).toBe("attached");
+    expect(feed, "the attach subscribed to the page's life").not.toBeNull();
+    const heard: unknown[] = [];
+    holderSide.onmessage = (event) => heard.push(event.data);
+
+    feed!("hidden");
+    feed!("pagehide");
+    // barrier: the pagehide's close rides the same port after anything the hidden signal posted, so its arrival bars both.
+    await expect.poll(() => heard.length).toBeGreaterThan(0);
+    expect(heard).toHaveLength(1);
+    expect(heard[0]).toMatchObject({ type: "session:close", ownerEpoch: "epoch-x", sessionId: "session-life", generation: 0 });
+    expect(stops, "the close unsubscribes from the feed").toBe(1);
+    if (attached.kind === "attached") attached.port.close();
+  });
+});

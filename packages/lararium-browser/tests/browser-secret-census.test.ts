@@ -19,6 +19,7 @@ import { generateOrLoadBrowserPersonaRoot, generateOrLoadBrowserVesselIdentity, 
 import { browserFleetJoinLand, browserFleetJoinRequest } from "../src/browser-fleet-join.js";
 import { browserWalkLeaf, browserWalkStore } from "../src/browser-walk.js";
 import { lockBrowserCustody, readBrowserCustody, readKeystoreRow, unlockBrowserCustody } from "../src/browser-custody.js";
+import { bindFirstFaceSlot, lockFaceCustody, unlockFaceCustody } from "../src/browser-face-custody.js";
 import {
   admitCarriageCommit, custodyRootDoor, deriveGateBundle, encodeInvite, faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer,
   sealAddressSecret, sovereignGateRoot, sovereignRoute, type FleetJoinRequest, type VesselFaceKey,
@@ -91,11 +92,11 @@ describe("browser secret census", () => {
   test("RED: once a slot binds, a face's secrets rest as plaintext in no store — unlocked, locked, and after the connection reopens", async () => {
     const idbName = name();
     await generateOrLoadBrowserVesselIdentity(idbName);
-    await bindSyntheticBrowserCustodySlot(idbName);
+    const own = await bindSyntheticBrowserCustodySlot(idbName);
     await generateOrLoadBrowserPersonaRoot(idbName, 0, FIXTURE_WARD);
 
     // The per-Nexus key: the walk leaf returns its seed.
-    const leaf = await browserWalkLeaf(idbName, NEXUS, 0);
+    const leaf = await browserWalkLeaf(idbName, NEXUS, own);
     // A walk record carrying a bearer invite.
     const gateKey = "ab".repeat(32);
     const inviteText = encodeInvite({ nexusAid: NEXUS, gatePubKey: gateKey, token: { purpose: "host-invite", n: "12".repeat(32), y: "34".repeat(64) } });
@@ -104,8 +105,10 @@ describe("browser secret census", () => {
     const root = await pair("census fleet root");
     const face = await chain("census fleet face", NEXUS);
     const offer = fleetJoinOffer({ personaGroup: GROUP, rootKey: root.key, nonce: "c3".repeat(32), scopes: [face.scope] });
+    // The joinee face's own tree binds before the join's first secret.
+    await bindFirstFaceSlot(idbName, GROUP, PASS);
     const request = await browserFleetJoinRequest({ offer, idbName, ward: { route: async () => FIXTURE_WARD } });
-    const faceKey = await secretAt(idbName, ["vessel-face-keys", `${face.scope.nexus}|${face.scope.faceKey.toLowerCase()}`], `vessel-face-key/${face.scope.nexus}|${face.scope.faceKey.toLowerCase()}`) as Uint8Array;
+    const faceKey = await secretAt(idbName, ["vessel-face-keys", `${face.scope.nexus}|${face.scope.faceKey.toLowerCase()}`], `vessel-face-key/${GROUP}|${face.scope.nexus}|${face.scope.faceKey.toLowerCase()}`) as Uint8Array;
     const pending = await secretAt(idbName, ["fleet-join", "pending"], `fleet-join-pending/${GROUP}`) as { sealSecret: string };
     const sealSecret = fromHex(pending.sealSecret);
     await browserFleetJoinLand({ answer: await answerTo(root, face, request), idbName });
@@ -118,9 +121,11 @@ describe("browser secret census", () => {
     const none = Object.fromEntries(Object.keys(needles).map((k) => [k, []]));
     expect(await readAll(), "unlocked").toEqual(none);
     lockBrowserCustody(idbName);
+    lockFaceCustody(idbName, GROUP);
     expect((await readBrowserCustody(idbName)).reading).toBe("sealed");
     expect(await readAll(), "locked, the connection reopened by each census").toEqual(none);
     expect((await unlockBrowserCustody(idbName, [PASS])).reading).toBe("opens");
+    expect((await unlockFaceCustody(idbName, GROUP, [PASS])).reading).toBe("opens");
     expect(await readAll(), "unlocked again").toEqual(none);
   });
 });

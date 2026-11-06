@@ -3,7 +3,7 @@
  *
  * Every island keeps its own render-id space, so the same id can stand in the daemon's frame and in a wiki's.
  * The page paints one surface at a time and a switch flips the active pointer at once, while the pane keeps
- * the old surface's frame until the new surface's first frame lands. An event routed by the active pointer in
+ * the outgoing surface's frame until the new surface's first frame lands. An event routed by the active pointer in
  * that window reaches the wrong island and can fire a node its person never saw. So each `lar:control-event`
  * carries the surface whose frame painted its target, and the leg routes on that alone:
  *

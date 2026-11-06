@@ -48,7 +48,9 @@ vi.mock("../src/face-anchor-store.js", () => ({
   loadFaceAnchorOfGroup: async (group: string) => ({ personaGroup: group, personaKelPrefix: group === "group-two" ? "kel-two" : seam.anchorPrefix, frontier: { leaseEpoch: seam.anchorLease, actSeq: seam.anchorSeq, actCid: seam.anchorCid } }),
 }));
 vi.mock("../src/face-atom-store.js", () => ({ loadFaceAtomOfGroup: async () => new Uint8Array(32).fill(9) }));
-vi.mock("@lararium/tw5", async (real) => ({ ...(await real<Record<string, unknown>>()), makeCatalogAccessor: () => ({ storeOf: async () => ({}) }) }));
+// The face's plane row rests sealed in its own catalog (sealed-store#/owed, U1), which a door with no vessel standing never
+// opens: the catalog answers no row, and the admit reads the plane the bootstrap names.
+vi.mock("@lararium/tw5", async (real) => ({ ...(await real<Record<string, unknown>>()), makeCatalogAccessor: () => ({ urlOf: async () => null }) }));
 vi.mock("../src/edge-board.js", () => ({ readVesselEdgeBoard: async () => ({ readings: new Map() }) }));
 vi.mock("../src/nexus-standing.js", () => ({
   nodeNexusIsland: () => "island", nodeNexusIslandsBelow: () => [], nodeNexusStanding: () => ({ kind: "own", scope: "island" }),
@@ -77,6 +79,8 @@ vi.mock("@lararium/mesh", async (real) => {
     ...mesh,
     DAEMON_BAG_ID: T.daemon, PERSONA_GROUP_ID_TIDDLER: T.group, MESH_CABAL_DOC_ID_TIDDLER: T.cabal, PERSONA_KEL_PREFIX_TIDDLER: T.kel,
     personaBagIdFor: (group: string) => `plane:${group}`,
+    // The admit's act store opens over the plane the bootstrap names; this suite reads which root signs, never the store's writes.
+    AutomergeDocStore: class { constructor(_handle: unknown, readonly bagId: string) {} },
     // Counts every root signature over a joinee's edge: a refusal must reach none.
     buildDeviceDelegationRootHalf: async (...args: unknown[]) => { seam.rootHalves++; return (mesh["buildDeviceDelegationRootHalf"] as (...a: unknown[]) => unknown)(...args); },
     materializeSharedLarDoc: async () => ({ doc: () => ({}) }),

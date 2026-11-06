@@ -18,17 +18,21 @@ import { bindSlot, decodeSlotTree, encodeSlotTree, nobleKdf, verifyEd25519, type
 import {
   lockBrowserCustody, readKeystoreRow, sealBrowserKeystore, unlockBrowserCustody, withCustodyRows, writeKeystoreRow,
 } from "../src/browser-custody.js";
-import { generateOrLoadBrowserPersonaRoot, idbGet, idbPut, listBrowserPersonaRoots, openVesselIdb } from "../src/browser-vessel-identity.js";
+import { generateOrLoadBrowserPersonaRoot, idbGet, idbPut, listBrowserPersonaRoots, openVesselIdb, wearFaceOfVessel } from "../src/browser-vessel-identity.js";
+import { bindFirstFaceSlot } from "../src/browser-face-custody.js";
+import { standFounderFace } from "../src/browser-boot-custody.js";
 import { runWardAct } from "../src/ward-core.js";
 import { browserWardSign, browserWardSigner, type WardWorkerSpawn } from "../src/browser-ward.js";
 import { browserWalkLeaf } from "../src/browser-walk.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { BootHalted } from "./wire-vessel-rig.js";
+import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 
 const CUSTODY = { kind: "passphrase", passphrase: "this browser's custody" } as const;
 const WARD: Credential = { kind: "passphrase", passphrase: "this face's ward route" };
 const PASSKEY = { kind: "passkey", credentialId: new Uint8Array([1, 2, 3]), prfOutput: new Uint8Array(32).fill(7) } as unknown as Credential;
 const WARD_MAGIC = new TextEncoder().encode("lares-ward-seal");
+const FACE = "g-ward-root";
 const fresh = (tag: string) => `lares:ward-root-${tag}-${globalThis.crypto.randomUUID()}`;
 const SLOW = 120_000;
 
@@ -64,6 +68,7 @@ function spawnCore(watched: Uint8Array[]): WardWorkerSpawn {
 async function wardedVessel(tag: string) {
   const idbName = fresh(tag);
   await sealBrowserKeystore(idbName, CUSTODY);
+  await bindSyntheticBrowserCustodySlot(idbName);   // the founder face, worn, its tree standing (the ward mint's face gate)
   const root = await generateOrLoadBrowserPersonaRoot(idbName, 0, WARD);
   return { idbName, rootKey: root.verifyingKey };
 }
@@ -79,10 +84,11 @@ describe("r1 · unlocked custody never reaches the face root", () => {
     expect(await keystoreKeys(idbName)).toEqual(before);
     // CONTROL: the rows that are not the root write, open and leave under the same unlock.
     const nexusKey = globalThis.crypto.getRandomValues(new Uint8Array(32));
-    await writeKeystoreRow(idbName, "nexus-key/h0/nexus-a", nexusKey);
-    expect(await readKeystoreRow(idbName, "nexus-key/h0/nexus-a")).toEqual(nexusKey);
-    await withCustodyRows(idbName, (rows) => rows.delete("nexus-key/h0/nexus-a"));
-    expect(await readKeystoreRow(idbName, "nexus-key/h0/nexus-a")).toBeUndefined();
+    await bindFirstFaceSlot(idbName, FACE, CUSTODY);
+    await writeKeystoreRow(idbName, `nexus-key/${FACE}/nexus-a`, nexusKey);
+    expect(await readKeystoreRow(idbName, `nexus-key/${FACE}/nexus-a`)).toEqual(nexusKey);
+    await withCustodyRows(idbName, (rows) => rows.delete(`nexus-key/${FACE}/nexus-a`));
+    expect(await readKeystoreRow(idbName, `nexus-key/${FACE}/nexus-a`)).toBeUndefined();
     expect(await listBrowserPersonaRoots(idbName)).toEqual([0]);
   }, SLOW);
 });
@@ -92,6 +98,7 @@ describe("r2 · one fresh route, one ward act", () => {
     // The page's dialog hands the route as the typed string; here custody and ward share one passphrase, the founding's own.
     const idbName = fresh("r2"), SAME = "one passphrase for custody and ward";
     await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: SAME });
+    await bindSyntheticBrowserCustodySlot(idbName);
     const rootKey = (await generateOrLoadBrowserPersonaRoot(idbName, 0, { kind: "passphrase", passphrase: SAME })).verifyingKey;
     lockBrowserCustody(idbName);
     expect((await unlockBrowserCustody(idbName, [{ kind: "passphrase", passphrase: SAME }])).reading).toBe("opens");
@@ -113,9 +120,13 @@ describe("r3 · a passkey never opens or binds the ward", () => {
     const { idbName, rootKey } = await wardedVessel("r3");
     const watched: Uint8Array[] = [];
     expect(readingOf(await settle(browserWardSign(idbName, 0, PASSKEY, new Uint8Array([1]), spawnCore(watched))))).toBe("ward-passkey-refused");
-    const before = await keystoreKeys(idbName);
-    expect(readingOf(await settle(generateOrLoadBrowserPersonaRoot(idbName, 1, PASSKEY)))).toBe("ward-passkey-refused");
-    expect(await keystoreKeys(idbName)).toEqual(before);
+    // A browser founds one face (h0); a passkey mint there refuses and writes nothing.
+    const bare = fresh("r3-bare");
+    await sealBrowserKeystore(bare, CUSTODY);
+    await bindSyntheticBrowserCustodySlot(bare);
+    const before = await keystoreKeys(bare);
+    expect(readingOf(await settle(generateOrLoadBrowserPersonaRoot(bare, 0, PASSKEY)))).toBe("ward-passkey-refused");
+    expect(await keystoreKeys(bare)).toEqual(before);
     expect(await listBrowserPersonaRoots(idbName)).toEqual([0]);
     // A hand-edited ward tree that carries a passkey pin refuses before any derivation.
     const tree = await rowOf(idbName, "ward/h0/slots");
@@ -145,7 +156,8 @@ describe("r4 · the root rests under the ward from its first write", () => {
 
   test("RED: the browser's own founding lands its root under the ward, bound over the route the founding asked for twice alike; CONTROL: the founding edge names that warded root", async () => {
     const idbName = fresh("r4-found");
-    await sealBrowserKeystore(idbName, CUSTODY);
+    // The founder face stands first on this thread, so the founding asks no first bind and binds the ward over its own route.
+    await standFounderFace({ idbName, ask: async () => CUSTODY });
     const asked: unknown[] = [];
     await expect(openBrowserVessel({ idbName, askWardRoute: async (_act: string, kind?: unknown) => { asked.push(kind); return (WARD as { passphrase: string }).passphrase; },
       onPhase: (phase: string) => { if (phase === "bootstrap-kept") throw new BootHalted(); } } as BrowserVesselOptions)).rejects.toBeInstanceOf(BootHalted);
@@ -163,7 +175,7 @@ describe("r4 · the root rests under the ward from its first write", () => {
 describe("r4b · a founding's ward binds only over a route retyped alike", () => {
   test("RED: a founding whose retype differs binds no ward and lands no root (`ward-route-mismatch`); CONTROL: the keystore stands as it stood", async () => {
     const idbName = fresh("r4b-typo");
-    await sealBrowserKeystore(idbName, CUSTODY);
+    await standFounderFace({ idbName, ask: async () => CUSTODY });
     const asked: unknown[] = [];
     const typed = (WARD as { passphrase: string }).passphrase;
     const reading = await openBrowserVessel({ idbName, askWardRoute: async (_act: string, kind?: unknown) => { asked.push(kind); return asked.length === 1 ? typed : `${typed}!`; },
@@ -177,11 +189,16 @@ describe("r4b · a founding's ward binds only over a route retyped alike", () =>
 
 describe("r5 · the walk's possession check reads no seed", () => {
   test("RED: with the root warded, the walk presents the face with no route and no prompt, and the root never leaves the ward; CONTROL: a face held nowhere presents nowhere", async () => {
-    const { idbName } = await wardedVessel("r5");
+    // The face the walk presents owns the ward: its tree stands and it is worn when the root mints (the ward answers one face).
+    const idbName = fresh("r5");
+    await sealBrowserKeystore(idbName, CUSTODY);
+    await bindFirstFaceSlot(idbName, FACE, CUSTODY);
+    wearFaceOfVessel(idbName, FACE);
+    await generateOrLoadBrowserPersonaRoot(idbName, 0, WARD);
     const AID = "nexus-" + "a".repeat(64);
-    const leaf = await browserWalkLeaf(idbName, AID, 0);
+    const leaf = await browserWalkLeaf(idbName, AID, FACE);
     expect(leaf.seed).toHaveLength(32);
     expect((await keystoreKeys(idbName)).filter((k) => /persona-root(?!-roster)/.test(k))).toEqual(["ward/h0/persona-root"]);
-    await expect(browserWalkLeaf(idbName, AID, 1)).rejects.toThrow();
+    await expect(browserWalkLeaf(idbName, AID, "g-held-nowhere")).rejects.toThrow();
   }, SLOW);
 });

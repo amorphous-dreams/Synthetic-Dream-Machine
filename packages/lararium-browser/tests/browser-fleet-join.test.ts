@@ -13,6 +13,7 @@
  *   B6  a second face's root landing under a group this browser joined refuses `record-other`, and writes nothing
  *   B7  two requests at once keep one pending join: the other answers it, or refuses `join-pending`
  */
+import { bindFirstFaceSlot } from "../src/browser-face-custody.js";
 import { describe, expect, test } from "vitest";
 import { seatWardWorkerSpawn } from "../src/testing.js";
 import {
@@ -58,7 +59,8 @@ let seq = 0;
 async function stage(): Promise<{ idbName: string; offer: FleetJoinOffer; root: Awaited<ReturnType<typeof pair>>; face: Awaited<ReturnType<typeof chain>> }> {
   const idbName = `lares:fleet-join-${Date.now()}-${seq++}`;
   await generateOrLoadBrowserVesselIdentity(idbName);
-  await bindSyntheticBrowserCustodySlot(idbName);
+  // Each joinee face's own tree binds before the join's first secret.
+  await bindSyntheticBrowserCustodySlot(idbName, GROUP, "0xb7f1c2a9d4e60382");
   const root = await pair("browser fleet root");
   const face = await chain("browser fleet face", HEARTH_NEXUS);
   const nonce = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
@@ -119,11 +121,12 @@ describe("the browser's fleet join", () => {
     expect(readFleetJoinRequest(JSON.parse(JSON.stringify(request)), s.offer, [s.offer.rootKey])).toEqual(request);
     const door = browserVesselFaceTagDoor(s.idbName, FIXTURE_WARD);
     expect((await door(GROUP, request.atomKey)).vesselTag).toBe(request.vesselTag);
+    await bindFirstFaceSlot(s.idbName, "0xc3c3c3c3c3c3c3c3", { kind: "passphrase", passphrase: "another face's route" });
     expect((await door("0xc3c3c3c3c3c3c3c3", request.atomKey)).vesselTag).not.toBe(request.vesselTag);
     const other = await stage();
     expect((await browserVesselFaceTagDoor(other.idbName, FIXTURE_WARD)(GROUP, request.atomKey)).vesselTag).not.toBe(request.vesselTag);
     expect(await browserFleetJoinAbandon(s.idbName)).toBe(true);
-  });
+  }, 90_000);   // two browsers, three face trees and two ward-key mints: five scrypt binds, slow under a full run's load
 
   test("RED: the browser's tag secret rests random in its face's own row, so a thief holding the place seed computes no face's tag", async () => {
     const s = await stage();
@@ -144,6 +147,7 @@ describe("the browser's fleet join", () => {
     expect(again.vesselTag).toBe(request.vesselTag);
     // CONTROL: another face's row stands apart and tags apart.
     const otherGroup = "0xb7f1c2a9d4e60383";
+    await bindFirstFaceSlot(s.idbName, otherGroup, { kind: "passphrase", passphrase: "another face's route" });
     const otherFace = await browserFleetJoinRequest({ offer: fleetJoinOffer({ ...s.offer, personaGroup: otherGroup, nonce: "9b".repeat(32) }), idbName: s.idbName, ward: FIXTURE_WARD });
     expect(otherFace.vesselTag).not.toBe(request.vesselTag);
     expect(await readKeystoreRow(s.idbName, `vessel-face-tag/${otherGroup}`)).not.toEqual(row);
@@ -213,7 +217,7 @@ describe("the browser's fleet join", () => {
   test("B4 — the custody door signs only under the key its row holds", async () => {
     const s = await stage();
     const request = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName, ward: FIXTURE_WARD });
-    const custody = browserVesselFaceKeyCustody(s.idbName);
+    const custody = browserVesselFaceKeyCustody(s.idbName, GROUP);
     const image = new TextEncoder().encode("synthetic image");
     expect(await custody.signAsVesselFace(s.face.scope, request.requests[0]!.vesselFaceKey, image)).toHaveLength(64);
     await expect(custody.signAsVesselFace(s.face.scope, request.atomKey, image)).rejects.toThrow(/face-key-other/);

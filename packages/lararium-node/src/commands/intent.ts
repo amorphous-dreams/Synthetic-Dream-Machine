@@ -12,7 +12,10 @@ import {
   personaBagIdFor, personaSiblingBagIds, readIntentPlane, intentPlaneCosignPort, faceRosterForIntents, type WardCosignPort, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
   WardRefused, askShown, answerRefusal, buildWardedAnswer, type AskShown, type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
 } from "@lararium/mesh";
-import { makeCatalogAccessor } from "@lararium/tw5";
+import { findOrThrow, makeCatalogAccessor } from "@lararium/tw5";
+import { existsSync, readFileSync } from "node:fs";
+import { larBootstrapPath } from "../vessel-paths.js";
+import { bootFacePlanes } from "../boot-face-planes.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "../identity-anchors.js";
 import { KeyhiveProvider, InMemoryEventStore, faceJoinNonce, ownSummonsOf, witnessed, watchHandles, type AuthorityAcquisition } from "@lararium/keyhive";
 import { loadVeilArchive } from "../identity-anchors.js";
@@ -110,6 +113,18 @@ export interface IntentCommandOptions {
   readonly until?: string;
 }
 
+/** The face's persona plane as the founding's bootstrap names it, or null. Cleartext, so it proves nothing alone: the
+ *  caller projects its records against the face's KEL lineage. */
+function bootstrapPersonaUrlOf(group: string): string | null {
+  try {
+    const path = larBootstrapPath();
+    if (!existsSync(path)) return null;
+    const plugin = JSON.parse(readFileSync(path, "utf8")) as { text?: string };
+    const tiddlers = (JSON.parse(plugin.text ?? "{}") as { tiddlers?: Record<string, { text?: string }> }).tiddlers ?? {};
+    return bootFacePlanes(tiddlers, group).personaUrl;
+  } catch { return null; }
+}
+
 /**
  * The face's signed admission fold and its live readers, without its intents plane: the anchors, the KEL-backed lineage, the persona
  * plane's projection, this vessel's face atom and the fleet's standing and frontier. A co-sign gate reads its device count here, so a
@@ -140,7 +155,12 @@ export async function loadFaceFold(repo: Repo, catalogUrl: string | undefined, s
   // reads, so a door deciding later reads a rotation, a raise or a frontier merged after this load.
   const { face, board: kelBoard, prefix: kelPrefix } = faceSource;
   const kelChain = (): readonly PersonaKelEvent[] | null => personaKelChainForPrefix(kelBoard.doc(), kelPrefix);
-  const persona = await catalog.find(personaBagIdFor(group));
+  // THE FACE'S PROOF ANSWERS WHAT THE PLANE ROW ANSWERED (sealed-store#/owed, U1): a face's plane rows rest in its own
+  // catalog, sealed, which a door with no vessel standing never opens. The persona plane reads off the lit catalog's row
+  // where one stands, else off the bootstrap the founding wrote; either way its records verify against the face's KEL
+  // lineage, so a url that holds no signed log projects nothing. The intents plane reads off the face's signed plane act.
+  const personaUrl = (await catalog.urlOf(personaBagIdFor(group)).catch(() => null)) ?? bootstrapPersonaUrlOf(group);
+  const persona = personaUrl ? await findOrThrow(repo, personaUrl, "the face's persona plane").catch(() => null) : null;
   const projection = face.project(faceRecordsOf([persona?.doc()], group), group);
   if (!projection.founded || projection.fork) throw new IntentRefused("face-log-unreadable");
   const atomSeed = await loadFaceAtomOfGroup(group);
@@ -183,7 +203,7 @@ export async function loadFaceFold(repo: Repo, catalogUrl: string | undefined, s
   const stoodAt = (key: string, at: string): boolean => fleet?.now()?.stoodAt(key, at) ?? false;
   const acquisition = fleet?.acquisition;
   if ("group" in selector && group !== selector.group) throw new IntentRefused("face-not-held");
-  return { group, index, anchors, anchor, face, kelChain, projection, catalog, personaPlane: persona, standing, heldFrontiers, frontier, stoodAt, acquisition, verbs, atom, atomSeed, signer };
+  return { repo, group, index, anchors, anchor, face, kelChain, projection, catalog, personaPlane: persona, standing, heldFrontiers, frontier, stoodAt, acquisition, verbs, atom, atomSeed, signer };
 }
 export type FaceFold = Awaited<ReturnType<typeof loadFaceFold>>;
 
@@ -191,10 +211,14 @@ export type FaceFold = Awaited<ReturnType<typeof loadFaceFold>>;
 export async function loadFacePlane(fold: FaceFold) {
   const bag = personaSiblingBagIds(personaBagIdFor(fold.group))?.intents;
   if (!bag) throw new IntentRefused("intent-plane-name-absent");
-  const plane = await fold.catalog.find(bag);
+  // THE FACE'S PROOF ANSWERS WHAT THE PLANE ROW ANSWERED (sealed-store#/owed, U1): the intents plane reads off the face's signed plane
+  // act, and a catalog row, where the lit catalog holds one, must agree with it.
+  const rowUrl = await fold.catalog.urlOf(bag).catch(() => null);
+  const planeUrl = fold.projection.planes["intents"] ?? null;
+  if (!planeUrl) throw new IntentRefused("intent-plane-unregistered");
+  if (rowUrl !== null && rowUrl !== planeUrl) throw new IntentRefused("intent-plane-unproved: the catalog entry lacks the face's signed plane act");
+  const plane = await findOrThrow(fold.repo, planeUrl, "the face's intents plane").catch(() => null);
   if (!plane) throw new IntentRefused("intent-plane-unregistered");
-  const planeUrl = await fold.catalog.urlOf(bag);
-  if (!planeUrl || fold.projection.planes["intents"] !== planeUrl) throw new IntentRefused("intent-plane-unproved: the catalog entry lacks the face's signed plane act");
   return plane;
 }
 

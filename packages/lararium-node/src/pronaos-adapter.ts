@@ -45,6 +45,9 @@ export interface PronaosPreparedProjection {
   readonly assets: ReadonlyMap<string, PronaosFile>;
   /** Optional exact PWA install projection; absent means the route remains unowned. */
   readonly manifest?: PronaosFile;
+  /** The unlock ceremony's document and its port broker (a service worker); absent, each route stays unowned. */
+  readonly ceremony?: PronaosFile;
+  readonly ceremonyBroker?: PronaosFile;
   readonly genesisSeed: PronaosFile;
   /** Exact seed-named public CAS members, keyed by their 64-hex CID. */
   readonly cas: ReadonlyMap<string, PronaosFile>;
@@ -62,6 +65,14 @@ export interface PronaosMount {
 const INDEX_ROUTE = "/";
 const ASSET_ROUTE = /^\/assets\/([A-Za-z0-9._-]+)$/;
 const MANIFEST_ROUTE = "/manifest.webmanifest";
+const CEREMONY_ROUTE = "/ceremony.html";
+const CEREMONY_BROKER_ROUTE = "/ceremony-broker.js";
+/**
+ * The ceremony document's policy as a response header: the same strict policy its meta carries, and `frame-ancestors`, which
+ * a meta policy cannot carry. The ceremony takes the secret, so nothing frames it and no inline script runs in it
+ * (`tools/ceremony-entry-witness.mjs` welds this string to the document's meta).
+ */
+export const CEREMONY_POLICY = "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'";
 const SEED_ROUTE = "/genesis/seed.json";
 const CAS_ROUTE = /^\/genesis\/cas\/([0-9a-f]{64})$/;
 // The finite Pronaos projection owns its whole public projection surface.
@@ -306,6 +317,8 @@ export function pronaosRouteInventoryForProjection(
     },
   ];
   if (projection.manifest) routes.splice(1, 0, routeForProjection(MANIFEST_ROUTE, projection.manifest, "no-store"));
+  if (projection.ceremony) routes.push(routeForProjection(CEREMONY_ROUTE, projection.ceremony, "no-store"));
+  if (projection.ceremonyBroker) routes.push(routeForProjection(CEREMONY_BROKER_ROUTE, projection.ceremonyBroker, "no-store"));
   for (const [path, file] of [...projection.assets.entries()].sort(([a], [b]) => a.localeCompare(b))) {
     if (!ASSET_ROUTE.test(path)) throw new Error(`[pronaos] noncanonical asset route: ${path}`);
     routes.push(routeForProjection(path, file, "immutable"));
@@ -337,6 +350,7 @@ function validateProjection(projection: PronaosProjection): void {
 /** The exact paths this face claims: the receipt's own routes and the one well-known name. */
 function ownsPath(pathname: string): boolean {
   return pathname === INDEX_ROUTE || pathname === MANIFEST_ROUTE || pathname === SEED_ROUTE ||
+    pathname === CEREMONY_ROUTE || pathname === CEREMONY_BROKER_ROUTE ||
     pathname === ARRIVAL_WELL_KNOWN_ROUTE || pathname.startsWith("/assets/") || pathname.startsWith("/genesis/cas/");
 }
 
@@ -373,6 +387,11 @@ export function pronaosRequestHandler(
       return true;
     }
     if (pathname === MANIFEST_ROUTE && projection.manifest) { serve(res, projection.manifest, req.method, "no-store"); return true; }
+    if (pathname === CEREMONY_ROUTE && projection.ceremony) {
+      serve(res, projection.ceremony, req.method, "no-store", { "content-security-policy": CEREMONY_POLICY, "x-frame-options": "DENY", "referrer-policy": "no-referrer" });
+      return true;
+    }
+    if (pathname === CEREMONY_BROKER_ROUTE && projection.ceremonyBroker) { serve(res, projection.ceremonyBroker, req.method, "no-store"); return true; }
     if (pathname === SEED_ROUTE) { serve(res, projection.genesisSeed, req.method, "no-store"); return true; }
     const asset = pathname.match(ASSET_ROUTE);
     if (asset) {

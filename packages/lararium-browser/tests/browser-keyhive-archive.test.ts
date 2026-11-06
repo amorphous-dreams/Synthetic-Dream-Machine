@@ -1,7 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { KeyhiveProvider, InMemoryEventStore, ArchiveIdentityMismatch } from "@lararium/keyhive";
 import { BootHalted } from "./wire-vessel-rig.js";
-import { bindSyntheticBrowserCustodySlot, fixtureWardDialog } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, fixtureWardDialog, foundedGroupOf } from "./browser-custody-fixture.js";
+import { refuseSharedTreeFaceRows } from "../src/browser-custody.js";
 import { placeSeed } from "./browser-place-seed.fixture.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { openVesselIdb, idbGet, idbKeys, idbPut } from "../src/browser-vessel-identity.js";
@@ -13,12 +14,7 @@ async function foundHalted(): Promise<{ idbName: string; group: string }> {
   await bindSyntheticBrowserCustodySlot(idbName);
   await expect(openBrowserVessel({ idbName, askWardRoute: fixtureWardDialog, onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); } } as BrowserVesselOptions))
     .rejects.toBeInstanceOf(BootHalted);
-  const db = await openVesselIdb(idbName);
-  try {
-    const atomRow = (await idbKeys(db, "keystore")).find((row) => /^(?:sealed\/)?face-atom\//.test(row));
-    if (!atomRow) throw new Error("founding left no face atom");
-    return { idbName, group: atomRow.replace(/^(?:sealed\/)?face-atom\//, "") };
-  } finally { db.close(); }
+  return { idbName, group: await foundedGroupOf(idbName) };
 }
 
 describe("the browser keeps only a face Archive", () => {
@@ -29,7 +25,7 @@ describe("the browser keeps only a face Archive", () => {
       const rows = await idbKeys(db, "keystore");
       expect(rows).not.toContain("keyhive-archive");
       expect(rows).not.toContain("sealed/keyhive-archive");
-      expect(rows).toContain(`sealed/face-atom/${group}`);
+      expect(rows.some((k) => /^face-sealed\/[0-9a-f]+\/face-atom$/.test(k)), "the atom rests under the face's own tree").toBe(true);
     } finally { db.close(); }
     const archive = await loadBrowserVeilArchive(idbName, group);
     expect(archive?.byteLength).toBeGreaterThan(0);
@@ -42,6 +38,8 @@ describe("the browser keeps only a face Archive", () => {
     const thief = new KeyhiveProvider();
     await expect(thief.init({ seed: await placeSeed(idbName), eventStore: new InMemoryEventStore(), archiveBytes: archive }))
       .rejects.toBeInstanceOf(ArchiveIdentityMismatch);
+    await bindSyntheticFace(idbName, "other-face");
+    await bindSyntheticFace(idbName, "no-face");
     await browserFaceAtom(idbName, "other-face");
     const other = new KeyhiveProvider();
     await expect(other.init({ seed: await requireBrowserFaceAtomSeed(idbName, "other-face"), eventStore: new InMemoryEventStore(), archiveBytes: archive }))
@@ -60,6 +58,8 @@ describe("the browser keeps only a face Archive", () => {
     const bare = `browser-archive-torn-${crypto.randomUUID()}`;
     const another = await openVesselIdb(bare);
     try { await idbPut(another, "keystore", `veil-archive-g${group}`, { torn: true }); } finally { another.close(); }
-    await expect(loadBrowserVeilArchive(bare, group)).rejects.toBeInstanceOf(BrowserArchiveRowUnreadable);
+    // A face's row beside the place tree names the shared tree's earlier shape: it refuses by name and reads nowhere.
+    await expect(refuseSharedTreeFaceRows(bare)).rejects.toMatchObject({ reading: "face-row-shared" });
+    await expect(loadBrowserVeilArchive(bare, group)).rejects.toMatchObject({ reading: "no-custody-slot" });
   });
 });

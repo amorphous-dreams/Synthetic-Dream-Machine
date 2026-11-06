@@ -6,7 +6,8 @@
 import { describe, expect, test } from "vitest";
 import { verifyEd25519 } from "@lararium/mesh";
 import { lockBrowserCustody, readBrowserCustody, sealBrowserKeystore } from "../src/browser-custody.js";
-import { generateOrLoadBrowserPersonaRoot } from "../src/browser-vessel-identity.js";
+import { bindFirstFaceSlot, faceCustodyHeld, lockFaceCustody } from "../src/browser-face-custody.js";
+import { generateOrLoadBrowserPersonaRoot, wearFaceOfVessel } from "../src/browser-vessel-identity.js";
 import { runWardAct } from "../src/ward-core.js";
 import { browserWardSign, BrowserWardRefused, type WardWorkerSpawn } from "../src/browser-ward.js";
 import entrySource from "../src/ward.worker.ts?raw";
@@ -14,13 +15,14 @@ import entrySource from "../src/ward.worker.ts?raw";
 const PASS = "the browser face's route";
 const fresh = () => `lares:ward-${globalThis.crypto.randomUUID()}`;
 
-/** A worker double: the pure core behind a MessagePort, observing what crosses the port and whether the page's unlock moved. */
+const faces = new Map<string, string>();
+/** A worker double: the pure core behind a MessagePort, observing what crosses the port and whether the vessel's or the face's unlock moved. */
 function spawnCore(idbName: string, seen: { answers: unknown[]; unlockedDuring: boolean[] }): WardWorkerSpawn {
   return () => ({
     postMessage(_msg, transfer) {
       const port = transfer[0] as MessagePort;
       port.onmessage = async (m) => {
-        seen.unlockedDuring.push((await readBrowserCustody(idbName)).reading === "sealed" && (await readBrowserCustody(idbName) as { unlocked: boolean }).unlocked);
+        seen.unlockedDuring.push(((await readBrowserCustody(idbName)).reading === "sealed" && (await readBrowserCustody(idbName) as { unlocked: boolean }).unlocked) || faceCustodyHeld(idbName, faces.get(idbName)!));
         const answer = await runWardAct(m.data);
         seen.answers.push(answer);
         port.postMessage(answer);
@@ -30,23 +32,30 @@ function spawnCore(idbName: string, seen: { answers: unknown[]; unlockedDuring: 
   });
 }
 
+/** A browser whose face root rests under its ward; the place tree and the face both stand locked. */
 async function wardedBrowser() {
   const idbName = fresh();
+  const face = `pg-ward-${globalThis.crypto.randomUUID()}`;
+  faces.set(idbName, face);
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
+  await bindFirstFaceSlot(idbName, face, { kind: "passphrase", passphrase: PASS });
+  wearFaceOfVessel(idbName, face);
   const root = await generateOrLoadBrowserPersonaRoot(idbName, 0, PASS);
   lockBrowserCustody(idbName);
-  return { idbName, rootKey: root.verifyingKey };
+  lockFaceCustody(idbName, face);
+  return { idbName, face, rootKey: root.verifyingKey };
 }
 
 describe("a browser ward act", () => {
   test("RED: with the page locked, the ward signs from the typed passphrase alone, the page stays locked before, during and after, and only the key and the signature cross the port; CONTROL: the signature verifies under the root", async () => {
-    const { idbName, rootKey } = await wardedBrowser();
+    const { idbName, face, rootKey } = await wardedBrowser();
     const seen = { answers: [] as unknown[], unlockedDuring: [] as boolean[] };
     expect((await readBrowserCustody(idbName) as { unlocked: boolean }).unlocked).toBe(false);
     const bytes = new TextEncoder().encode("a kapae-lower over (daemon, digest)");
     const signed = await browserWardSign(idbName, 0, PASS, bytes, spawnCore(idbName, seen));
     expect(seen.unlockedDuring).toEqual([false]);
     expect((await readBrowserCustody(idbName) as { unlocked: boolean }).unlocked).toBe(false);
+    expect(faceCustodyHeld(idbName, face), "the face stays locked after the act").toBe(false);
     expect(seen.answers).toHaveLength(1);
     expect(Object.keys(seen.answers[0] as object).sort()).toEqual(["key", "signature"]);
     expect(signed.key).toBe(rootKey);
@@ -54,7 +63,7 @@ describe("a browser ward act", () => {
   });
 
   test("RED: a wrong passphrase or none refuses by name and crosses no key; CONTROL: the right one signs", async () => {
-    const { idbName } = await wardedBrowser();
+    const { idbName, face } = await wardedBrowser();
     const seen = { answers: [] as unknown[], unlockedDuring: [] as boolean[] };
     await expect(browserWardSign(idbName, 0, "not the route", new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toThrow(BrowserWardRefused);
     expect(seen.answers).toEqual([{ refused: "ward-no-slot-opens" }]);
@@ -65,7 +74,7 @@ describe("a browser ward act", () => {
 
 describe("the browser ward spends attempts (S2 cold read, P3)", () => {
   test("RED: three wrong passphrases spend the page's ward attempts, and the right one then refuses `ward-attempts-spent`; CONTROL: a fresh keystore's right passphrase signs", async () => {
-    const { idbName } = await wardedBrowser();
+    const { idbName, face } = await wardedBrowser();
     const seen = { answers: [] as unknown[], unlockedDuring: [] as boolean[] };
     for (let i = 0; i < 3; i++) await expect(browserWardSign(idbName, 0, `wrong ${i}`, new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toMatchObject({ reading: "ward-no-slot-opens" });
     await expect(browserWardSign(idbName, 0, PASS, new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toMatchObject({ reading: "ward-attempts-spent" });

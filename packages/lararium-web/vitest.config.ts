@@ -1,6 +1,7 @@
 import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
 import { webkit } from "playwright";
+import wasm from "vite-plugin-wasm";
 import { refusalIsHostDependency } from "./engine-refusal.js";
 
 // Web-surface tests run in real Chromium, Firefox and WebKit because this shore owns the DOM adapter and the engines
@@ -40,16 +41,27 @@ export default defineConfig(async () => ({
         test: {
           name: "web-browser",
           include: ["tests/**/*.test.ts"],
-          exclude: ["tests/e2e/**"],
+          exclude: ["tests/e2e/**", "tests/vessel-host-*.test.ts"],
           // Three engines beside the node e2e project starve its 20 s page waits; the engines take their files one at a time.
           fileParallelism: false,
-          browser: { enabled: true, provider: playwright(), instances: await engines() },
+          browser: { enabled: true, headless: true, provider: playwright(), instances: await engines() },
+        },
+      },
+      {
+        // The vessel worker's host over the real `@lararium/browser` (its Keyhive and Automerge WASM ride the wasm plugin): a
+        // scratch store per case, the vessel it lights standing in, the host's own wiring read.
+        plugins: [wasm()],
+        test: {
+          name: "vessel-host",
+          include: ["tests/vessel-host-*.test.ts"],
+          fileParallelism: false,
+          browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: "chromium" as const }, { browser: "firefox" as const }] },
         },
       },
       {
         test: {
           name: "shore-writes-e2e",
-          include: ["tests/e2e/shore-writes.e2e.test.ts", "tests/e2e/second-boot.e2e.test.ts"],
+          include: ["tests/e2e/shore-writes.e2e.test.ts", "tests/e2e/second-boot.e2e.test.ts", "tests/e2e/vessel-worker.e2e.test.ts"],
           environment: "node",
           browser: { enabled: false },
           testTimeout: 90_000,
@@ -63,6 +75,19 @@ export default defineConfig(async () => ({
         test: {
           name: "daemon-island-reopen-e2e",
           include: ["tests/e2e/daemon-island-reopen.e2e.test.ts"],
+          fileParallelism: false,
+          environment: "node",
+          browser: { enabled: false },
+          testTimeout: 300_000,
+          hookTimeout: 600_000,
+        },
+      },
+      {
+        // The unlock ceremony (slice 1b): a WALK BUILD of the Pronaos (the walk's ward act rides only that build) served on the
+        // loopback, a real Chromium founding, unlocking and signing one ward act through the ceremony document.
+        test: {
+          name: "ceremony-e2e",
+          include: ["tests/e2e/ceremony.e2e.test.ts"],
           fileParallelism: false,
           environment: "node",
           browser: { enabled: false },

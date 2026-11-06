@@ -32,6 +32,14 @@
       "import": "./dist/carrier-type.js",
       "types": "./dist/carrier-type.d.ts"
     },
+    "./cas": {
+      "import": "./dist/cas.js",
+      "types": "./dist/cas.d.ts"
+    },
+    "./cas-transit": {
+      "import": "./dist/cas-transit.js",
+      "types": "./dist/cas-transit.d.ts"
+    },
     "./content-handle": {
       "import": "./dist/content-handle.js",
       "types": "./dist/content-handle.d.ts"
@@ -59,6 +67,10 @@
     "./lar-uris": {
       "import": "./dist/lar-uris.js",
       "types": "./dist/lar-uris.d.ts"
+    },
+    "./hearth-floor-pins": {
+      "import": "./dist/hearth-floor-pins.js",
+      "types": "./dist/hearth-floor-pins.d.ts"
     },
     "./linearity-gate": {
       "import": "./dist/linearity-gate.js",

@@ -16,6 +16,14 @@
  * record names: it delivers nothing. A sealed value reaches rest before the manifest that names it, and the
  * manifest before its index rows.
  *
+ * ONE MANIFEST FOR EACH WRITE BATCH. A seal of a blob, or of a batch of document values (`sealValues`: changes and
+ * checkpoints, each under its own logical reference with its own parent addresses), signs one manifest, and that
+ * manifest cites every manifest this vessel verified under the same key version.
+ *
+ * A FROM-NOW ADMISSION OPENS ON A FRESH CHECKPOINT. The document store cuts the base (present values alone) under
+ * the drawn version before any lockbox wraps; once the version's record rests the base seals there as a `fresh`
+ * checkpoint, and no change seals under a span an admission opened until that checkpoint stands.
+ *
  * A SESSION SIGNS, OR NOTHING MINTS. A founding, a roll, a join, a manifest and a hand-over each take the
  * signer of the session that acts. A caller that hands none meets `signer-unavailable`.
  *
@@ -59,17 +67,17 @@ import {
   KeyLineage, LINEAGE_REFUSALS, factOfPlan, planAdmissionFromNow, planFounding, planJoin, planRemovalRolls, sameFact, versionsToHandOver, writeHead,
   type HistoryDeclaration, type KeyRollPlan, type KeyVersionFact, type RollerPorts, type RollOutcome,
 } from "./content-key-lineage.js";
-import type { KeysHeldApart } from "./face-proof-subjects.js";
+import { faceProofSubjectRef, type KeysHeldApart } from "./face-proof-subjects.js";
 import { openMemorySection, sealMemorySection, type MemoryEntry } from "./memory-section.js";
 import { wrapLockbox, openLockbox, type KeyParcel, type LockboxWrapShore, type ReaderId } from "./lockbox-wrap.js";
 import {
-  isWellFormedText, keyVersionIdOf, mintContentKey, readContentKey, readKeyVersionId,
+  isWellFormedText, keyVersionIdOf, mintContentKey, openChunk, readContentKey, readKeyVersionId, readSealedAddress, sealChunk,
   type ContentKey, type KeyVersionId, type SealContext, type SealedAddress,
 } from "./sealed-chunk.js";
 import {
   authorizeFromManifest, bagLocatorOf, entryLocatorOf, factOfRecord, indexRowsOf, joinProofOf, joinProven, readBagLocator, readRecord,
   recordIdOf, signRecord,
-  type BagLocator, type HandOverBody, type KeyVersionBody, type KeyVersionPrivate, type LockboxRecord, type ManifestBody,
+  type BagLocator, type CheckpointBody, type HandOverBody, type KeyVersionBody, type KeyVersionPrivate, type LockboxRecord, type ManifestBody, type ManifestEntry,
   type RecordBodies, type RecordId, type RecordKind, type RecordPrivates, type RecordSigner, type SealedRecord, type VerifiedRecord,
   type WriterStanding,
 } from "./sealed-records.js";
@@ -105,6 +113,7 @@ export const HOLDER_REFUSALS = [
   "memory-malformed",         // a memory section does not open, or opens to no whole entries
   "roll-owed",                // a counted raise still owes this bag its removal roll: nothing seals under a head that precedes it
   "chain-absent",             // no chain stands (no session asked, no dial composed): the holder reads no record
+  "values-malformed",         // a write batch names no value, or a value reads as no change or checkpoint
 ] as const;
 export type HolderRefusalName = (typeof HOLDER_REFUSALS)[number];
 /** A refusal names what stopped the act. `cause` carries another module's own refusal name, never a key. */
@@ -141,10 +150,15 @@ export interface ContentKeyHolderPorts {
   };
   /**
    * Cut the fresh base a new span opens on, under the version just drawn, BEFORE any lockbox for that version
-   * wraps: the document store answers it. True: the base stands. Absent, or false: no span opens, and a
-   * from-now admission refuses `fresh-base-unavailable`.
+   * wraps: the document store answers it with a document of present values alone. Once the version's record
+   * rests, the base seals under it as a `fresh` checkpoint. Absent, or null: no span opens, and a from-now
+   * admission refuses `fresh-base-unavailable`.
    */
-  readonly freshBase?: (args: { readonly bagId: string; readonly founding: BagLocator; readonly keyVersion: KeyVersionId }) => Promise<boolean>;
+  readonly freshBase?: (args: { readonly bagId: string; readonly founding: BagLocator; readonly keyVersion: KeyVersionId }) => Promise<FreshBase | null>;
+  /** V7: does a cut base read as a fresh base (one founding change, no earlier operation: `readsAsFreshBase`)? A span
+   *  opens on a cut that reads fresh alone, so a closed history never carries an earlier change across. Absent: the
+   *  holder reads the cut's shape alone. */
+  readonly readsAsFreshBase?: (plaintext: Uint8Array) => boolean;
   readonly apart?: KeysHeldApart;
   readonly random?: Pick<RandomProvider, "getRandomValues">;
 }
@@ -191,6 +205,73 @@ export interface MemoryImportResult {
   /** Another module's own refusal name, never a key: what stopped a record or a transition. */
   readonly cause?:     string;
 }
+/** The fresh base a new span opens on: a document of present values alone, as the document store cut it. */
+export interface FreshBase {
+  readonly plaintext: Uint8Array;
+  /** The checkpoint's logical reference inside the bag: 64 lower-case hex. */
+  readonly ref:       string;
+  /** The base's causal frontier, in the document engine's own ids. */
+  readonly frontier:  readonly string[];
+}
+/** One value a write batch seals into a bag's document store. */
+export interface DocumentValue {
+  readonly role:      "change" | "checkpoint";
+  /** The value's logical reference inside the bag: a change's id, a checkpoint's id, as 64 lower-case hex. */
+  readonly ref:       string;
+  /** A change: the addresses of the values that hold its causal parents. A checkpoint: the addresses it covers. */
+  readonly parents:   readonly SealedAddress[];
+  readonly plaintext: Uint8Array;
+  /** A checkpoint: its causal frontier, in the document engine's own ids. */
+  readonly frontier?: readonly string[];
+}
+export interface SealedValues {
+  readonly keyVersion:  KeyVersionId;
+  readonly founding:    BagLocator;
+  /** The one manifest this batch signed. */
+  readonly manifest:    RecordId;
+  readonly values:      readonly { readonly role: DocumentValue["role"]; readonly ref: string; readonly address: SealedAddress }[];
+  /** The checkpoint record each checkpoint of the batch signed. */
+  readonly checkpoints: readonly RecordId[];
+  readonly founded?:    MintOutcome;
+  readonly joined?:     MintOutcome;
+}
+/** One opened document value, with the face whose session signed the manifest that authorized it. */
+export interface OpenedValue {
+  readonly plaintext:  Uint8Array;
+  readonly keyVersion: KeyVersionId;
+  readonly address:    SealedAddress;
+  /** The face proof's subject reference of the manifest's writer (`faceProofSubjectRef`). */
+  readonly writer:     string;
+  /** The change's own writer, as the manifest names it under its signature: `session:<session key>` or `peer:<actor>`. */
+  readonly changeWriter: string;
+}
+/** The writer a manifest names where the signing session made the change itself. */
+const sessionWriter = (signer: RecordSigner): string => `session:${signer.certificate.sessionKey}`;
+const HEX64 = /^[0-9a-f]{64}$/;
+const sortedText = (values: readonly string[]): string[] => [...new Set(values)].sort(ascending);
+/** A batch reads whole, or names nothing: every value a change or a checkpoint, its reference hex, its parents addresses. */
+function readDocumentValues(values: unknown): DocumentValue[] | null {
+  if (!Array.isArray(values) || values.length === 0) return null;
+  const out: DocumentValue[] = [];
+  for (const value of values as DocumentValue[]) {
+    if (typeof value !== "object" || value === null || (value.role !== "change" && value.role !== "checkpoint")) return null;
+    if (typeof value.ref !== "string" || !HEX64.test(value.ref) || !(value.plaintext instanceof Uint8Array) || !Array.isArray(value.parents)) return null;
+    const parents = value.parents.map(readSealedAddress);
+    if (parents.some((one) => one === null)) return null;
+    const frontier = value.frontier ?? [];
+    if (!Array.isArray(frontier) || frontier.some((id) => typeof id !== "string" || id.length === 0)) return null;
+    out.push({ role: value.role, ref: value.ref, parents: sortedText(parents as SealedAddress[]) as SealedAddress[], plaintext: value.plaintext, frontier: sortedText(frontier) });
+  }
+  return out;
+}
+function readFreshBase(value: unknown): FreshBase | null {
+  if (typeof value !== "object" || value === null) return null;
+  const { plaintext, ref, frontier } = value as FreshBase;
+  if (!(plaintext instanceof Uint8Array) || typeof ref !== "string" || !HEX64.test(ref) || !Array.isArray(frontier)) return null;
+  if (frontier.some((id) => typeof id !== "string" || id.length === 0)) return null;
+  return { plaintext, ref, frontier: sortedText(frontier) };
+}
+
 export interface SealedBlob extends MintlessSeal { readonly founded?: MintOutcome; readonly joined?: MintOutcome }
 interface MintlessSeal { readonly body: SealedPrivateBody; readonly manifest: RecordId; readonly founding: BagLocator }
 
@@ -429,8 +510,10 @@ export class ContentKeyHolder {
       const fact = factOfPlan(plan, keyVersion);
       // A version that opens a span on a from-now admission takes a fresh base first: the admitting vessel
       // answers for that base before any lockbox for the version wraps.
-      if (plan.cause.kind === "admission" && (this.#ports.freshBase === undefined || (await this.#ports.freshBase({ bagId: bag.bagId, founding: line.locator, keyVersion })) !== true)) {
-        return refuse("fresh-base-unavailable");
+      let base: FreshBase | null = null;
+      if (plan.cause.kind === "admission") {
+        base = this.#ports.freshBase === undefined ? null : this.#freshOrNull(readFreshBase(await this.#ports.freshBase({ bagId: bag.bagId, founding: line.locator, keyVersion })));
+        if (base === null) return refuse("fresh-base-unavailable");
       }
       const out = new Set(leaveOut.map(bare));
       const readers = (await this.#ports.readersOf(bag.bagId)).filter((reader) => !out.has(bare(reader)));
@@ -456,6 +539,11 @@ export class ContentKeyHolder {
       line.keys.set(keyVersion, key); kept = true;
       if (plan.cause.kind === "removal") line.rolled = true;
       line.records.set(keyVersion, signed.verified); line.carried.set(keyVersion, signed.carried);
+      // THE SPAN OPENS ON ITS BASE: the key rests, so the base seals under it before any change can.
+      if (base !== null) {
+        const cut = await this.#restFreshBase(bag, line, keyVersion, key, fact.span, base, signer);
+        if (cut !== true) return cut;
+      }
       return { keyVersion, founding: line.locator, unserved: secret.unserved };
     } finally {
       if (!kept) key.fill(0);
@@ -470,6 +558,58 @@ export class ContentKeyHolder {
     const read = readRecord(kind, signed.record, { bagId, locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
     if (!("record" in read)) return refuse("record-refused", read.cause ? `${read.refusal}:${read.cause}` : read.refusal);
     return { carried: signed.record, verified: read.record };
+  }
+
+  /** Seal a from-now admission's fresh base under the version just counted: the value, its `fresh` checkpoint record
+   *  and the manifest that names it, each at rest before the version serves any change. */
+  async #restFreshBase(bag: Bag, line: Line, keyVersion: KeyVersionId, key: ContentKey, span: KeyVersionId, base: FreshBase, signer: RecordSigner): Promise<true | HolderRefusal> {
+    const { store, random } = this.#ports;
+    const context: SealContext = { bagId: bag.bagId, keyVersion, role: "checkpoint", logicalRef: hexToBytes(base.ref) };
+    const sealed = sealChunk({ key, context, plaintext: base.plaintext, ...(random ? { random } : {}) });
+    if (!("chunk" in sealed)) return refuse("seal-refused", sealed.refusal);
+    const checkpoint: CheckpointBody = { bag: line.locator, keyVersion, span, base: "fresh", address: sealed.chunk.address, covers: [] };
+    const record = await this.#sign("checkpoint", checkpoint, { frontier: [...base.frontier] }, bag.bagId, line.locator, key, signer);
+    if (isRefusal(record)) return record;
+    const manifest: ManifestBody = { bag: line.locator, keyVersion, parents: [], entries: [{ role: "checkpoint", address: sealed.chunk.address, locator: entryLocatorOf(key, context), parents: [] }] };
+    const named = await this.#sign("manifest", manifest, { writer: sessionWriter(signer) }, bag.bagId, line.locator, key, signer);
+    if (isRefusal(named)) return named;
+    // THE CHECKPOINT RECORD RESTS LAST (P2-6): the base's standing reads that record, so it stands only once its value,
+    // its manifest and their index rows rest; a stop before it leaves the base unstood, and the repair cuts it afresh.
+    await this.#rest(() => this.#ports.values.write(sealed.chunk.address, sealed.chunk.sealed));
+    const id = await this.#rest(() => store.putRecord(named.carried));
+    await this.#rest(() => store.putIndexRows(indexRowsOf(named.verified)));
+    line.manifests.set(id, named.verified);
+    await this.#rest(() => store.putRecord(record.carried));
+    return true;
+  }
+
+  /** Does the span `head` sits in stand on its fresh base, where an admission opened it? A span its founding, a
+   *  removal or a join of one span opened needs none. The base stands where a `fresh` checkpoint record of the span's
+   *  opener verifies under the opener's key and its value rests. */
+  async #freshBaseStands(bag: Bag, line: Line, head: KeyVersionId): Promise<boolean> {
+    const span = line.lineage.fact(head)?.span;
+    const opener = span === undefined ? null : line.lineage.fact(span);
+    if (span === undefined || opener === null || opener.cause.kind !== "admission") return true;
+    const key = line.keys.get(span);
+    if (key === undefined) return false;
+    for (const carried of await this.#ports.store.records("checkpoint")) {
+      const { body } = carried;
+      if (body.bag !== line.locator || body.keyVersion !== span || body.span !== span || body.base !== "fresh") continue;
+      const read = readRecord("checkpoint", carried, { bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+      if ("record" in read && (await this.#ports.values.read(body.address)) !== null) return true;
+    }
+    return false;
+  }
+
+  /** Every manifest this vessel verified under one version of one founding: the parents a new manifest cites. */
+  async #cited(bag: Bag, line: Line, key: ContentKey, keyVersion: KeyVersionId): Promise<RecordId[]> {
+    const ids = new Set<RecordId>();
+    for (const carried of await this.#ports.store.records("manifest")) {
+      if (carried.body.bag !== line.locator || carried.body.keyVersion !== keyVersion) continue;
+      const id = recordIdOf("manifest", carried.body);
+      if ((await this.#manifest(bag, line, key, id)) !== null) ids.add(id);
+    }
+    return [...ids].sort(ascending);
   }
 
   /** Found a bag: its first version, under a locator its own key derives. */
@@ -526,33 +666,19 @@ export class ContentKeyHolder {
       if (!isWellFormedText(args.bagId)) return refuse("bag-malformed");
       if (args.signer === null) return refuse("signer-unavailable");
       const { store, random } = this.#ports;
-      const bags = await this.#loaded();
-      let founded: MintOutcome | undefined;
-      let line = await this.#writeLine(bags.get(args.bagId));
-      if (isRefusal(line)) {
-        if (line.refusal !== "bag-unfounded") return line;
-        // A founding follows no removal: while a raise in the bag's scope stays owed, no first version mints.
-        if ((args.owedActs?.() ?? []).length > 0) return refuse("roll-owed");
-        const made = await this.#found(bags, args.bagId, args.founding?.history ?? "closed", args.signer);
-        if (isRefusal(made)) return made;
-        line = made.line; founded = made.minted;
-      }
-      const bag = bags.get(args.bagId)!;
-      const at = await this.#head(bag, line, args.signer);
-      if (isRefusal(at)) return at;
-      const owesRoll = (): boolean => (args.owedActs?.() ?? []).some((act) => !line.lineage.followsRemoval(at.head, act));
-      if (owesRoll()) return refuse("roll-owed");
+      const placed = await this.#place(args.bagId, args.signer, args.founding, args.owedActs);
+      if (isRefusal(placed)) return placed;
+      const { bag, line, at, founded, owesRoll } = placed;
       const key = line.keys.get(at.head)!;
       const sealed = sealPrivateBody(args.plaintext, { bagId: args.bagId, key }, random);
       if (!("body" in sealed)) return refuse("seal-refused", sealed.refusal);
       const { body } = sealed;
       const context: SealContext = { bagId: args.bagId, keyVersion: at.head, role: "blob", logicalRef: hexToBytes(body.ref) };
-      const earlier = await store.own(`manifest-head.${line.locator}.${at.head}`);
       const manifest: ManifestBody = {
-        bag: line.locator, keyVersion: at.head, parents: earlier === null ? [] : [hex(earlier) as RecordId],
+        bag: line.locator, keyVersion: at.head, parents: await this.#cited(bag, line, key, at.head),
         entries: [{ role: "blob", address: body.cid, locator: entryLocatorOf(key, context), parents: [] }],
       };
-      const signed = await this.#sign("manifest", manifest, {}, args.bagId, line.locator, key, args.signer);
+      const signed = await this.#sign("manifest", manifest, { writer: sessionWriter(args.signer) }, args.bagId, line.locator, key, args.signer);
       if (isRefusal(signed)) return signed;
       // THE COMMIT POINT. Every signature this seal waited on has landed; nothing of the value rests yet. A raise the
       // vessel counted meanwhile binds it here: the head must still follow every owed raise, or nothing rests.
@@ -561,10 +687,126 @@ export class ContentKeyHolder {
       await this.#rest(() => this.#ports.values.write(body.cid, body.ciphertext));
       const id = await this.#rest(() => store.putRecord(signed.carried));
       await this.#rest(() => store.putIndexRows(indexRowsOf(signed.verified)));
-      await this.#rest(() => store.noteOwn(`manifest-head.${line.locator}.${at.head}`, hexToBytes(id)));
       await this.#rest(() => this.#noteHead(line, at.head));
       line.manifests.set(id, signed.verified);
       return { body, manifest: id, founding: line.locator, ...(founded ? { founded } : {}), ...(at.joined ? { joined: at.joined } : {}) };
+    });
+  }
+
+  /** Where a seal writes: the founding (founding the bag first where none stands), the head, and the owed-roll check
+   *  the seal reads again at its commit point. */
+  async #place(bagId: string, signer: RecordSigner, founding: { readonly history: HistoryDeclaration } | undefined, owedActs: (() => readonly string[]) | undefined):
+    Promise<{ bag: Bag; line: Line; at: { head: KeyVersionId; joined?: MintOutcome }; founded?: MintOutcome; owesRoll: () => boolean } | HolderRefusal> {
+    const bags = await this.#loaded();
+    let founded: MintOutcome | undefined;
+    let line = await this.#writeLine(bags.get(bagId));
+    if (isRefusal(line)) {
+      if (line.refusal !== "bag-unfounded") return line;
+      // A founding follows no removal: while a raise in the bag's scope stays owed, no first version mints.
+      if ((owedActs?.() ?? []).length > 0) return refuse("roll-owed");
+      const made = await this.#found(bags, bagId, founding?.history ?? "closed", signer);
+      if (isRefusal(made)) return made;
+      line = made.line; founded = made.minted;
+    }
+    const bag = bags.get(bagId)!;
+    const at = await this.#head(bag, line, signer);
+    if (isRefusal(at)) return at;
+    const written = line;
+    const owesRoll = (): boolean => (owedActs?.() ?? []).some((act) => !written.lineage.followsRemoval(at.head, act));
+    if (owesRoll()) return refuse("roll-owed");
+    return { bag, line, at, owesRoll, ...(founded ? { founded } : {}) };
+  }
+
+  /**
+   * Seal one write batch of document values (changes and checkpoints) into its bag, under ONE manifest that cites
+   * every manifest this vessel verified under the same version. Each checkpoint also signs a `continuation`
+   * checkpoint record naming what it covers. A span an admission opened takes no change until its fresh checkpoint
+   * stands (`fresh-base-unavailable`). The values rest, then each checkpoint record, the manifest and its index rows.
+   */
+  sealValues(args: { readonly bagId: string; readonly values: readonly DocumentValue[]; readonly signer: RecordSigner | null;
+    /** The actor of a peer's change the batch rests as received; absent: the signing session wrote it. */
+    readonly peer?: string;
+    readonly founding?: { readonly history: HistoryDeclaration }; readonly owedActs?: () => readonly string[] }): Promise<SealedValues | HolderRefusal> {
+    return this.#inTurn<SealedValues>(async () => {
+      if (!isWellFormedText(args.bagId)) return refuse("bag-malformed");
+      const values = readDocumentValues(args.values);
+      if (values === null) return refuse("values-malformed");
+      if (args.peer !== undefined && !(isWellFormedText(args.peer) && args.peer.length > 0 && args.peer.length <= 500)) return refuse("values-malformed");
+      if (args.signer === null) return refuse("signer-unavailable");
+      const signer = args.signer;
+      const { store, random } = this.#ports;
+      const placed = await this.#place(args.bagId, signer, args.founding, args.owedActs);
+      if (isRefusal(placed)) return placed;
+      const { bag, line, at, founded, owesRoll } = placed;
+      if (!(await this.#freshBaseStands(bag, line, at.head))) return refuse("fresh-base-unavailable");
+      const key = line.keys.get(at.head)!;
+      const span = line.lineage.fact(at.head)!.span;
+      const sealed: { value: DocumentValue; address: SealedAddress; bytes: Uint8Array }[] = [];
+      const entries: ManifestEntry[] = [];
+      for (const value of values) {
+        const context: SealContext = { bagId: args.bagId, keyVersion: at.head, role: value.role, logicalRef: hexToBytes(value.ref) };
+        const out = sealChunk({ key, context, plaintext: value.plaintext, ...(random ? { random } : {}) });
+        if (!("chunk" in out)) return refuse("seal-refused", out.refusal);
+        sealed.push({ value, address: out.chunk.address, bytes: out.chunk.sealed });
+        entries.push({ role: value.role, address: out.chunk.address, locator: entryLocatorOf(key, context), parents: value.parents });
+      }
+      const checkpoints: SealedRecord<"checkpoint">[] = [];
+      for (const { value, address } of sealed) {
+        if (value.role !== "checkpoint") continue;
+        const body: CheckpointBody = { bag: line.locator, keyVersion: at.head, span, base: "continuation", address, covers: value.parents };
+        const signed = await this.#sign("checkpoint", body, { frontier: [...(value.frontier ?? [])] }, args.bagId, line.locator, key, signer);
+        if (isRefusal(signed)) return signed;
+        checkpoints.push(signed.carried);
+      }
+      const manifest: ManifestBody = { bag: line.locator, keyVersion: at.head, parents: await this.#cited(bag, line, key, at.head), entries };
+      const signed = await this.#sign("manifest", manifest, { writer: args.peer !== undefined ? `peer:${args.peer}` : sessionWriter(signer) }, args.bagId, line.locator, key, signer);
+      if (isRefusal(signed)) return signed;
+      // THE COMMIT POINT, as a blob's seal reads it: a raise counted while the batch signed binds it here.
+      if (owesRoll()) return refuse("roll-owed");
+      for (const { address, bytes } of sealed) await this.#rest(() => this.#ports.values.write(address, bytes));
+      const checkpointIds: RecordId[] = [];
+      for (const record of checkpoints) checkpointIds.push(await this.#rest(() => store.putRecord(record)));
+      const id = await this.#rest(() => store.putRecord(signed.carried));
+      await this.#rest(() => store.putIndexRows(indexRowsOf(signed.verified)));
+      await this.#rest(() => this.#noteHead(line, at.head));
+      line.manifests.set(id, signed.verified);
+      return {
+        keyVersion: at.head, founding: line.locator, manifest: id, checkpoints: checkpointIds,
+        values: sealed.map(({ value, address }) => ({ role: value.role, ref: value.ref, address })),
+        ...(founded ? { founded } : {}), ...(at.joined ? { joined: at.joined } : {}),
+      };
+    });
+  }
+
+  /**
+   * Open one document value by its role and logical reference, as `openBlob` opens a blob: the entry locator under
+   * each version this vessel may open, the row, the verified manifest, the address it authorizes. The answer names
+   * the face whose session signed that manifest, so the document store judges it against the session's face.
+   */
+  openValue(args: { readonly bagId: string; readonly role: DocumentValue["role"]; readonly ref: string }): Promise<OpenedValue | HolderRefusal> {
+    return this.#inTurn<OpenedValue>(async () => {
+      if (!isWellFormedText(args.bagId)) return refuse("bag-malformed");
+      if ((args.role !== "change" && args.role !== "checkpoint") || typeof args.ref !== "string" || !HEX64.test(args.ref)) return refuse("open-refused", "reference-malformed");
+      const bag = (await this.#loaded()).get(args.bagId);
+      if (!bag || ![...bag.lines.values()].some((line) => this.#usable(line).size > 0)) return refuse("bag-unfounded");
+      let met: HolderRefusal = refuse("reference-unknown");
+      for (const line of bag.lines.values()) for (const keyVersion of this.#usable(line)) {
+        const key = line.keys.get(keyVersion)!;
+        const context: SealContext = { bagId: args.bagId, keyVersion, role: args.role, logicalRef: hexToBytes(args.ref) };
+        for (const row of await this.#ports.store.rowsAt(line.locator, keyVersion, entryLocatorOf(key, context))) {
+          const manifest = await this.#manifest(bag, line, key, row.manifest);
+          const authorized = manifest === null ? null : authorizeFromManifest(manifest, key, context);
+          if (manifest === null || authorized === null) continue;
+          const sealed = await this.#ports.values.read(authorized.address);
+          if (sealed === null) { met = refuse("value-absent"); continue; }
+          const opened = openChunk({ key, context, sealed, authorized });
+          if ("plaintext" in opened) {
+            return { plaintext: opened.plaintext, keyVersion, address: authorized.address, writer: faceProofSubjectRef(manifest.certificate.scope), changeWriter: manifest.private.writer };
+          }
+          met = refuse("open-refused", opened.refusal);
+        }
+      }
+      return met;
     });
   }
 
@@ -672,7 +914,8 @@ export class ContentKeyHolder {
    * Mint the version a from-now admission owes: a successor that opens a new span, wrapped for the readers the
    * key group holds now, the newcomer among them. `act` names the admission act this vessel verified; `history`
    * declares the new span. The newcomer receives this version alone. The span's fresh base belongs to the
-   * document store, which cuts it before a document change seals under the new version.
+   * document store, which cuts it before a document change seals under the new version. The same act entered again
+   * mints nothing: it answers the version that act opened, and cuts that span's fresh base where a stop left none.
    */
   admitFromNow(args: { readonly bagId: string; readonly act: string; readonly history: HistoryDeclaration; readonly signer: RecordSigner | null }): Promise<readonly MintOutcome[] | HolderRefusal> {
     return this.#inTurn<readonly MintOutcome[]>(async () => {
@@ -685,6 +928,15 @@ export class ContentKeyHolder {
       const minted: MintOutcome[] = [];
       let met: HolderRefusal = refuse("no-head-held");
       for (const line of lines) {
+        // THE SAME ACT ENTERED AGAIN (its causal id, never a clock): the version it opened stands, so no second one
+        // mints. Where a stop left that span without its fresh base, the base cuts now, once, and the span opens.
+        const entered = this.#openedBy(line, args.act);
+        if (entered !== null) {
+          const out = await this.#reopen(bag, line, entered, args.signer);
+          if (isRefusal(out)) return out;
+          minted.push(out);
+          continue;
+        }
         const planned = planAdmissionFromNow(line.lineage, { act: args.act, held: this.#usable(line), history: args.history, ownEdgeShadowed: false });
         if (!("plan" in planned)) { met = refuse(planned.refusal === "no-head-held" ? "no-head-held" : "count-refused", planned.refusal); continue; }
         const out = await this.#mint(bag, line, planned.plan, args.signer, []);
@@ -693,6 +945,35 @@ export class ContentKeyHolder {
       }
       return minted.length > 0 ? minted : met;
     });
+  }
+
+  /** The counted version one admission act opened its span with, in one founding; null where that act opened none. */
+  #openedBy(line: Line, act: string): KeyVersionId | null {
+    for (const id of line.records.keys()) {
+      const fact = line.lineage.fact(id);
+      if (fact !== null && fact.span === id && fact.cause.kind === "admission" && fact.cause.act === act) return id;
+    }
+    return null;
+  }
+
+  /** A cut base the holder's own reading names no fresh base reads as no base at all. */
+  #freshOrNull(base: FreshBase | null): FreshBase | null {
+    if (base === null || this.#ports.readsAsFreshBase === undefined) return base;
+    try { return this.#ports.readsAsFreshBase(base.plaintext) ? base : null; } catch { return null; }
+  }
+
+  /** Open the span an admission's version opened: cut its fresh base where none stands, under that version's own key. */
+  async #reopen(bag: Bag, line: Line, version: KeyVersionId, signer: RecordSigner): Promise<MintOutcome | HolderRefusal> {
+    const key = line.keys.get(version);
+    const record = line.records.get(version);
+    if (key === undefined || record === undefined) return refuse("no-head-held");
+    const outcome: MintOutcome = { keyVersion: version, founding: line.locator, unserved: [...record.private.unserved] };
+    if (await this.#freshBaseStands(bag, line, version)) return outcome;
+    const base = this.#ports.freshBase === undefined ? null : this.#freshOrNull(readFreshBase(await this.#ports.freshBase({ bagId: bag.bagId, founding: line.locator, keyVersion: version })));
+    if (base === null) return refuse("fresh-base-unavailable");
+    if (this.#locked) return refuse("holder-locked");
+    const cut = await this.#restFreshBase(bag, line, version, key, version, base, signer);
+    return cut === true ? outcome : cut;
   }
 
   // ── The hand-over ─────────────────────────────────────────────────────────────────────────────

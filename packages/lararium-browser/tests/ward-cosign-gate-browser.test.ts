@@ -4,6 +4,7 @@
  * ward worker under the passphrase typed for it. The browser holds the kāpae lower alone of the three co-signed acts.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-swarm-slices
  */
+import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { deviceEdgeId, FLEET_HAND } from "@lararium/mesh";
 import { browserWardCosignPort } from "../src/browser-ward-cosign.js";
 import { sealBrowserKeystore, lockBrowserCustody } from "../src/browser-custody.js";
@@ -38,6 +39,7 @@ wardCosignTable({
   root: async () => {
     const idbName = `lares:cosign-${globalThis.crypto.randomUUID()}`, PASS = "the route typed for this act";
     await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
+    await bindSyntheticBrowserCustodySlot(idbName);   // the founder face worn, its tree standing (the ward mint's face gate)
     const root = await generateOrLoadBrowserPersonaRoot(idbName, 0, PASS);
     lockBrowserCustody(idbName);
     return { key: root.verifyingKey, signer: () => browserWardSigner(idbName, 0, PASS, spawn) };
