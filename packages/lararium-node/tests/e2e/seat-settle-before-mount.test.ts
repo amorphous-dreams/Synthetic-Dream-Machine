@@ -7,10 +7,11 @@
  * outcome into that working document, which the daemon composite does not yet read. The ask checked once, found
  * nothing, and waits on the composite's change events with no timer.
  *
- *   S1  the outcome stands in the vessel's Repo (the island's working document) while the composite reads none of
- *       it; the mount then lands, and the settle reports by name (`[edge-seats] settled on a fold …` or `… stay
- *       owed: the key shore did not run (<reason>)`), never hangs. The composite carries this: a layer that
- *       arrives hands every title it already holds to the composite's subscribers (`CompositeStore.addLayer`).
+ *   S1  THE WINDOW CLOSED (slice 5b, red 3: `composer-mounts-working-first.test.ts`): the composer now mounts the layer
+ *       before the settle asks and before `openNodeVessel` returns, so the outcome reads through the composite as it
+ *       lands, and the settle reports by name (`[edge-seats] settled on a fold …` or `… stay owed: the key shore did
+ *       not run (<reason>)`), never hangs; a caller's later mount stands idempotent. The composite still hands every
+ *       title a late layer holds to its subscribers (`CompositeStore.addLayer`), the cure this file first pinned.
  *   S2  CONTROL: a vessel whose board owes no raise places no `seat-duties` before the mount; the same instrument
  *       that reads S1's one outcome reads none here.
  */
@@ -96,13 +97,10 @@ function edgeSeatsLines(): { lines: string[]; first: Promise<string> } {
 }
 
 describe("the boot's own seat-duties ask, placed before the host working layer mounts", () => {
-  test("S1 — the outcome lands before the mount, and the settle reports by name once the layer mounts", async () => {
+  test("S1 — the outcome reads through the composite, and the settle reports by name; a caller's mount stands idempotent", async () => {
     const report = edgeSeatsLines();
     const { root, vessel } = await stand(true);
     const title = await seatDutiesOutcomeLands(vessel.repo);
-    // THE WINDOW STANDS: the island answered into a document the daemon composite does not read yet, and no settle has reported.
-    expect(await vessel.daemon.composite.get(title)).toBeNull();
-    expect(report.lines).toEqual([]);
     expect(seatDutiesOutcomes(vessel.repo)).toEqual([title]);
     await withLarRoot(root, () => vessel.daemon.mountHostWorkingLayer());
     expect(await report.first).toMatch(/^\[edge-seats\] (settled on a fold: 1 raise\(s\) owed|1 raise\(s\) stay owed: the key shore did not run \(.+\))/);

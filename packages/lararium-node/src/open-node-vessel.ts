@@ -750,6 +750,8 @@ interface NodeBootPrep {
   lightFace: (ordinal: number) => Promise<void>;
   dropFace: (ordinal: number) => Promise<void>;
   daemonVm:         () => DaemonVmCore;
+  /** The host working layer's mount (slice 5b, red 3): the composition awaits it before it returns, so no caller mounts. */
+  hostWorkingMounted: () => Promise<void>;
   restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
   daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
   eventBus:         () => LarEventBusImpl;
@@ -1637,7 +1639,7 @@ async function prepareNodeBootOn(
     onRefold:        () => {
       reverdict();
       void gateSweepOwner.refold().catch((err: unknown) => console.warn(`[lar-gate] the gate sweep did not run: ${err instanceof Error ? err.message : String(err)}`));
-      seatSettler?.onFold();
+      if (seatSettler) void (hostWorkingMounted ?? Promise.reject(new Error("no daemon island stands yet"))).then(() => seatSettler.onFold(), () => undefined);
     },
   });
   // THE SETTLE ON EVERY FOLD (kapae#/keys). A counted raise owes one key roll, and the fold itself sets the answer
@@ -2039,6 +2041,12 @@ async function prepareNodeBootOn(
   let daemonVm!:   DaemonVmCore;           // set in openDaemon
   let standDaemonVm: () => void = () => {};
   const daemonVmStood = new Promise<void>((resolve) => { standDaemonVm = resolve; });   // the receipt capability waits on the island's leg through it
+  // THE COMPOSER MOUNTS THE HOST WORKING LAYER ITSELF (slice 5b, red 3): once the daemon island answers verbs, the composition
+  // mounts the daemon working layer as the composite's default writable, and the vessel's own asks (the seat settle) wait on
+  // that mount, so no ask answers into a document the composite does not read yet. The composition returns only once it
+  // stands; a boot caller mounts nothing. A restart's mount replays through the holder before its facade turns ready.
+  let hostWorkingMounted: Promise<void> | null = null;
+  const mountHostWorking = (): Promise<void> => (hostWorkingMounted ??= daemonVm.workerEa.then(() => daemonVm.mountHostWorkingLayer()));
   let eventBus!:  LarEventBusImpl;         // set in makePool
   // R3 — the Crossroads board this vessel materializes ONCE (openDaemon), read by every later
   // per-island plugin-offering resolution (makePool's pool, and the daemon VM's own recipe).
@@ -3843,7 +3851,8 @@ async function prepareNodeBootOn(
 
     // A raise this vessel counted before it last stopped still owes its roll: once the island answers verbs, the
     // settler reads the fold that landed at boot.
-    if (seatSettler) void daemonVm.workerEa.then(() => seatSettler.onFold(), () => undefined);
+    const mounted = mountHostWorking();
+    if (seatSettler) void mounted.then(() => seatSettler.onFold(), () => undefined);
   };
 
   const subscribeWorkerEventsToDaemon = (): void => {
@@ -4113,6 +4122,7 @@ async function prepareNodeBootOn(
     realmStanding:    async () => (realmPlane ? await realmPlane.standing() : new Map()),
     lightFace: (ordinal) => lightFace(ordinal), dropFace,
     daemonVm:         () => daemonVm,
+    hostWorkingMounted: () => mountHostWorking(),
     restartDaemonIsland: (reason) => daemonHolder.restart(reason),
     daemonIslandState: async () => ({ restarts: daemonHolder.restarts, leg: await daemonVm.syncLegReady() }),
     eventBus:         () => eventBus,
@@ -4214,6 +4224,8 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     roleCaps.push(() => porch.dispose());
   }
 
+  // NO EARLY READY: the composition returns standing on its working layer (red 3).
+  await p.hostWorkingMounted();
   return {
     islandCaps: p.islandCaps,
     activeWikiId: p.slotActiveWikiId(),
@@ -4292,7 +4304,15 @@ async function composeNodeHermOn(
   // BANS (the antigen ring rides its carriage), so reading the WHO plane completes the pair: it recognises
   // the presenters those bans name. The cap cannot betray the asymmetry, because it holds no card to publish.
   const hermCrossroads = await materializeSharedLarDoc(p.repo, crossroadsDocUrl(p.nexusPubkey), "board:crossroads");
-  const herm = await composeHerm({
+  // A SOVEREIGN HERM CARRIES ITS FACE'S CUSTODY AND SIGNS NOTHING: on a sovereign composition its lift seats `custodyWrite`
+  // alone (the island's veil export seals through it), never a session sign; at the floor no lift stands. It composes before the
+  // island boots (the island reads the record at ask time); its dispose IS the lock, run first in the herm's own dispose.
+  const hermLift = p.liftFace !== null && p.liftCustodyWrite
+    ? await composeVessel(islandLiftStack(p.islandVessel, { face: p.liftFace, custodyWrite: p.liftCustodyWrite, drop: () => {} }))
+    : null;
+  let herm: Awaited<ReturnType<typeof composeHerm>>;
+  try {
+  herm = await composeHerm({
     extraCaps: [whoFaceCap({
       repo: p.repo, crossroadsHandle: hermCrossroads, nexusPubkey: p.nexusPubkey, residency: p.residency,
     })],
@@ -4341,6 +4361,7 @@ async function composeNodeHermOn(
     }),
     onLog:       (line) => console.log(`[herm] ${line}`),
   });
+  } catch (e) { await hermLift?.dispose(); throw e; }
   // A HERM CARRIES THE ANSWER AND SIGNS NOTHING: the same `/floor/<AID>` the hearth answers, from the board it replicates; its bulb
   // face already carries `/cas`, and the released-floor lane above lends it the head's blobs.
   const porch = mountFloorPorch({
@@ -4348,10 +4369,13 @@ async function composeNodeHermOn(
     nexusPubkey: p.nexusPubkey, casDir: p.cidDir, serveCas: false,
     onLog: (line) => console.log(`[herm] ${line}`),
   });
+  // NO EARLY READY: the herm reports live only once its working layer stands (red 3); the porch stands down if it refuses.
+  try { await p.hostWorkingMounted(); } catch (e) { await hermLift?.dispose(); porch.dispose(); await herm.vessel.dispose(); throw e; }
   p.emit("vessel-ready");
   p.emit("live");
 
   const dispose = async (): Promise<void> => {
+    await hermLift?.dispose();
     porch.dispose();
     await p.disposeIslandFloor();    // the island's floor closes with the vessel — a late worker ask reads a miss
     await p.carriageRelay?.close();  // tear the crossroads down first (a no-op when none stood) — no WS server leak

@@ -653,8 +653,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   // The socket is the vessel's own claim on its store, bound before its Repo opened; the channel serves it.
   // THE DISPATCHER STANDS BEFORE THE CHANNEL SERVES. The herm branch mounts no wiki, so nothing else
   // awaits the daemon island's `ea`; a verb placed ahead of it commits and no dispatcher runs it.
-  await herm.daemon.workerEa;
-  await herm.daemon.mountHostWorkingLayer();
+  // The composition returned standing on its working layer (open-node-vessel's composer mounts it, slice 5b).
   publishStanding(storageDir, standing, faceLit);
   front.attach(makeUdsSeat({
     daemonHandle: herm.daemon.daemonHandle,
@@ -780,9 +779,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // Same rendezvous law as the herm branch above: derived from the resolved substrate dir, sited where a
   // logout cannot reach it (operator ruling — a lararium serves as civic infrastructure).
   // The socket is the vessel's own claim on its store (`claimStore`), bound before its Repo opened; the channel serves it.
-  // The daemon island's working layer stands before the channel serves: receipts land in it.
-  await result.daemon.workerEa;
-  await result.daemon.mountHostWorkingLayer();
+  // The daemon island's working layer stands before the channel serves: receipts land in it. The composer mounted it before
+  // `openNodeVessel` returned (slice 5b), so the channel serves on it.
   // WHAT THIS VESSEL STANDS AS, published beside the socket that serves it. A standing is decided at
   // boot from the face found then, so a caller holding a face lit AFTERWARD has no way to see the
   // mismatch — and `stand` attaches to a floor and a hearth alike. Written here, once the channel

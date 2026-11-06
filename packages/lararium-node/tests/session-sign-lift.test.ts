@@ -118,7 +118,10 @@ describe("session signing seats on the lift, per record", () => {
     const again = lift("again", "req-2");
     await composeVessel(islandLiftStack(larFloor, { face: "lar", sessionSign: again.door, drop: () => {} }));
     await lifted.dispose();
-    expect(larFloor.record.sessionSign).toBe(again.door);
+    // The lift seats its own fenced door (row B8), so the newer lift reads by what it answers, never by identity.
+    expect(larFloor.record.sessionSign).toBeDefined();
+    await lar.ask(signAsk("l3", "req-2"));
+    expect(answers(lar.said).at(-1)).toEqual(["l3", "sig-again"]);
   });
 });
 

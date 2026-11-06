@@ -9,7 +9,9 @@
  *   and no `sessionSign`, so an island's `session:sign` ask answers `signer-unavailable` by name, as a herm's does.
  *   THE LIFT (`islandLiftStack`): one face's `custodyWrite` and `sessionSign`, composed as a nested stack over the floor's
  *   record (the nesting `composeVerbPlane` already rides). Its `dispose` IS the lock: both lift members leave the record
- *   (each only while it still names the lift's own), the face's drop runs once, and the floor stands on as it stood.
+ *   (each only while it still names the lift's own), the face's drop runs once, and the floor stands on as it stood. Each
+ *   member the lift seats carries its fence: once the lift locks, a call an island held across a face switch refuses
+ *   `lift-locked` and never reaches the next face's custody or signer (row B8).
  *   One lift stands per record at a time: a second lift while one stands refuses `lift-stands`.
  *
  * `larVesselOf` reads a composed floor as ONE `LarVessel`: the record its islands read, and roles as predicates over it
@@ -34,7 +36,8 @@ export interface IslandLift {
   /** The face this lift stands for: the record answers it from `liftedFace()` while the lift stands. */
   readonly face: string;
   readonly custodyWrite?: CustodyWriter | undefined;
-  readonly sessionSign: SessionSignDoor;
+  /** Absent on a lift that signs nothing (a sovereign herm carries its face's custody and signs no session). */
+  readonly sessionSign?: SessionSignDoor | undefined;
   readonly drop: () => void;
 }
 
@@ -95,13 +98,30 @@ export function larVesselOf(composed: ComposedVessel): LarVessel {
 
 /**
  * Compose one face's lift over a floor's record. The build seats `custodyWrite` (where the lift carries one) and
- * `sessionSign`, refusing `lift-stands` while another lift stands on the record; the dispose (the lock) takes back only
+ * `sessionSign` (each where the lift carries one), refusing `lift-stands` while another lift stands on the record; the dispose (the lock) takes back only
  * what this lift seated and runs its drop once.
  */
 export function islandLiftStack(vessel: LarVessel, lift: IslandLift): CapModule[] {
   const held = seats.get(vessel);
   let seated = false;
   let locked = false;
+  // THE FENCE (row B8): an island's ask reads its member off the record at ask time and may hold it across an await, and a
+  // face switch locks this lift and composes the next face's over the same record. So each member this lift seats refuses
+  // `lift-locked` once the lift locks: a held call never enters the host (whose writer may resolve the worn face at call
+  // time), and a sign that settles after the lock hands back no signature of a session the lock ended.
+  const custodyWrite: CustodyWriter | undefined = lift.custodyWrite
+    ? async (carrier, bytes) => {
+      if (locked) throw new Error(`lift-locked: face ${lift.face}'s lift locked; its custody write lands nowhere`);
+      await lift.custodyWrite!(carrier, bytes);
+    }
+    : undefined;
+  const sessionSign: SessionSignDoor | undefined = lift.sessionSign
+    ? async (ask) => {
+      if (locked) return { refusal: "lift-locked" };
+      const answer = await lift.sessionSign!(ask);
+      return locked ? { refusal: "lift-locked" } : answer;
+    }
+    : undefined;
   const module: CapModule<IslandLift> = {
     id: ISLAND_LIFT_CAP,
     build: () => {
@@ -109,16 +129,16 @@ export function islandLiftStack(vessel: LarVessel, lift: IslandLift): CapModule[
       const standing = held.seat.lift;
       if (standing !== null) throw new Error(`lift-stands: face ${standing.face} stands lifted on this record; lock it before ${lift.face} lifts`);
       held.seat.lift = lift;
-      if (lift.custodyWrite) held.record.custodyWrite = lift.custodyWrite;
-      held.record.sessionSign = lift.sessionSign;
+      if (custodyWrite) held.record.custodyWrite = custodyWrite;
+      if (sessionSign) held.record.sessionSign = sessionSign;
       seated = true;
       return lift;
     },
     dispose: () => {
       if (!held || !seated || locked) return;
       locked = true;
-      if (lift.custodyWrite && held.record.custodyWrite === lift.custodyWrite) delete held.record.custodyWrite;
-      if (held.record.sessionSign === lift.sessionSign) delete held.record.sessionSign;
+      if (custodyWrite && held.record.custodyWrite === custodyWrite) delete held.record.custodyWrite;
+      if (sessionSign && held.record.sessionSign === sessionSign) delete held.record.sessionSign;
       if (held.seat.lift === lift) held.seat.lift = null;
       lift.drop();
     },
