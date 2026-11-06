@@ -346,10 +346,19 @@ export function parseMeshScale(s: string | null | undefined): MeshScale | undefi
  *  SOVEREIGN-per-vessel: this vessel's own control-plane, never shared across vessels. */
 export const DAEMON_BAG_ID    = bagUri("daemon");
 
-/** A title the daemon's control plane owns (`bags/daemon/**`: verb outcomes, effects, flows, cap events). It lands in the
+/** A title the daemon's control plane owns (`bags/daemon/**`: verb outcomes, effects, flows, cap events; and the swarm's `$:/lares/swarm/**` controls). It lands in the
  *  daemon doc alone and never projects: the daemon stays CRDT only (operator, 2026-11-01). */
 export function isControlPlaneUri(title: string): boolean {
-  return resolvedTitlePath(title).startsWith(`${DAEMON_BAG_ID}/`);
+  return resolvedTitlePath(title).startsWith(`${DAEMON_BAG_ID}/`) || isSwarmUri(title);
+}
+
+/** The swarm's live controls (house cap, lane shares, go, lane state, roster, receipts) rest in the daemon wiki under this prefix. */
+export const SWARM_URI_PREFIX = "$:/lares/swarm/";
+
+/** True for a title that starts with `SWARM_URI_PREFIX` as spelled, or resolves under it the way `isControlPlaneUri` reads a path: a dot
+ *  segment that folds the title out of the prefix still reads as the swarm's, so no spelling of either side slips past the law. */
+export function isSwarmUri(title: string): boolean {
+  return title.startsWith(SWARM_URI_PREFIX) || resolvedTitlePath(title).startsWith(SWARM_URI_PREFIX);
 }
 
 /**

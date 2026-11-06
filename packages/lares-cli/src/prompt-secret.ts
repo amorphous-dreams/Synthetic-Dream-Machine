@@ -83,6 +83,38 @@ function readTty(label: string, echo: boolean, stdin: TtyStream): Promise<string
   });
 }
 
+// ── the ward door ─────────────────────────────────────────────────────────────────────────────────────────────────
+
+/** A ward act's route came from somewhere a script reaches: an environment variable or a piped stdin. Nothing was read. */
+export class WardNeedsTty extends Error {
+  override readonly name = "WardNeedsTty";
+  readonly reading = "ward-needs-tty";
+  constructor(verb: string, why: string) {
+    super(`ward-needs-tty: ${verb} is a ward act; its route comes from a person at a terminal, typed for this act alone, and ${why}. Run it in an interactive terminal.`);
+  }
+}
+
+/**
+ * An environment name that reads as a ward route's carrier: a house name (`LAR_`, `LARES_`) naming a pass or a ward, or any
+ * `PASSPHRASE`. The ward refuses to run while one stands, so nobody mistakes it for a route. A tool's own helper variables
+ * (`GIT_ASKPASS`, `SSH_ASKPASS`) name a program, not a route, and stay out.
+ */
+const ROUTE_IN_ENV = /^LAR(?:ES)?_\w*(?:PASS|WARD)|PASSPHRASE/i;
+
+/**
+ * THE WARD DOOR (seat-harness#/the-ward): read one ward act's passphrase from a TTY, never echoed. It refuses `ward-needs-tty` while a
+ * passphrase-shaped environment variable stands (it reads none) and when stdin is not a TTY (a pipe, a file, a script). The route
+ * lives for the act that asked and nothing keeps it.
+ */
+export function readWardPassphrase(verb: string, opts: { readonly stream?: TtyStream; readonly env?: NodeJS.ProcessEnv } = {}): Promise<string> {
+  const env = opts.env ?? process.env;
+  const carrier = Object.keys(env).find((k) => ROUTE_IN_ENV.test(k) && typeof env[k] === "string" && env[k]!.length > 0);
+  if (carrier !== undefined) return Promise.reject(new WardNeedsTty(verb, `the environment carries \`${carrier}\`, which this door never reads`));
+  const stream = opts.stream ?? stdin;
+  if (!stream.isTTY) return Promise.reject(new WardNeedsTty(verb, "stdin is not a terminal (a pipe or a file carries nothing a ward reads)"));
+  return promptSecret(`${verb}: the face's passphrase for this one act: `, stream);
+}
+
 /**
  * Read a NEW passphrase twice and confirm the two match — the anti-lockout guard. Re-prompts on a
  * mismatch (up to `tries`), then rejects. Empty is refused (the core would refuse anyway; catch it here

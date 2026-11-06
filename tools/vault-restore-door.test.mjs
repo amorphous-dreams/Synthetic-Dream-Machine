@@ -11,6 +11,7 @@
 //   R4  `--memory` on a production vessel refuses `signer-unavailable`: no session signer stands yet, so a
 //       production import stands SPECIFIED.   `--memory` with another face's bundle refuses `another-face`.
 //   R5  the harness door refuses an unmarked root (rc 2) before any socket opens.
+import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";

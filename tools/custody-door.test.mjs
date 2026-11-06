@@ -13,6 +13,7 @@
 //                                                            control: the same answer with `held: true` lands
 //   K5  the harness door refuses an unmarked root (rc 2) before any socket opens.
 //                                                            control: a marked root with no daemon reads rc 3
+import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";

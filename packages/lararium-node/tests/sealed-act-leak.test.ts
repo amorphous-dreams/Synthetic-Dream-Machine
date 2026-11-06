@@ -33,6 +33,9 @@
  *       own write refuses too, the plane's document holds neither name, and the sealed rows keep both.
  *       CONTROL: a clear still runs there, and removes a name an older vessel of the face left on the plane.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

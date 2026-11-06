@@ -22,6 +22,9 @@
  *        sealed by persona zero's per-Nexus key, each naming a live document of its own; run again it registers nothing
  *        new, and the catalog carries no pointer row for either bag (W26 slice 3).
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

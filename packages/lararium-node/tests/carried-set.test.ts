@@ -12,6 +12,9 @@
  *   · a re-import that forks or rewinds the held lineage refuses and leaves the held bytes standing,
  *   · the primary's own charter, or a torn one, refuses to land as a carried charter.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { describe, expect } from "vitest";
 import { createHash, createPrivateKey, createPublicKey } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";

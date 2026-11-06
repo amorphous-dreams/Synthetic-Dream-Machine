@@ -29,7 +29,7 @@ import { strangerFace, type CrossingFace } from "../../probes/crossing-synthetic
 import { heldCharter } from "../../../lararium-mesh/tests/charter-fixture.js";
 import {
   runInit, runFoundTheFace, foundSeedCharter, openNodeVessel, larSealHome, writeNexusDoc,
-  carriedCharterHome, seatFaceRoute, storeSeatKey, loadIdentityAnchors,
+  carriedCharterHome, seatWardGatherer, seatFaceRoute, storeSeatKey, loadIdentityAnchors,
 } from "../../dist/src/index.js";
 import { mountHttpFaceDispatcher } from "../../dist/src/http-face-dispatcher.js";
 import { answerDyad } from "../../dist/src/worker-handle.js";
@@ -39,6 +39,8 @@ import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { TEST_CUSTODY, TEST_SLOT } from "../found-route.js";
 seatFaceRoute(async () => [TEST_SLOT]);
+// A root act this suite drives with no ward route asks its "person", who answers the same test route (seat-harness#/the-ward).
+seatWardGatherer(async () => TEST_SLOT.pins.flatMap((pin) => (pin.kind === "passphrase" ? [{ kind: "passphrase" as const, passphrase: pin.passphrase }] : [])));
 
 const ROOT = join(tmpdir(), `lar-carried-posture-e2e-${Date.now()}`);
 const STORAGE = join(ROOT, "data", "lares", "vessel");

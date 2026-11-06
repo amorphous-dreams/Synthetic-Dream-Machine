@@ -21,6 +21,7 @@
  * The set takes exactly three recovery contacts at a threshold of two, and never the face's own self-recovery key.
  * How an offer reaches the face, the veto and succession stay open (kahu#/seed-and-nexus).
  */
+import type { WardCredential } from "./ward-credential.js";
 import { randomBytes } from "node:crypto";
 import type { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
@@ -140,6 +141,8 @@ export async function runRecoveryContactEnrolment(input: {
   readonly handleIndex: number;
   readonly offers:      readonly string[];
   readonly threshold:   number;
+  /** The face's ward route: an enrolment moves the face's recovery authority, a ward act (seat-harness#/the-ward). */
+  readonly ward?:       WardCredential;
 }): Promise<RecoveryContactEnrolled> {
   const { repo, handleIndex, threshold } = input;
   const line = (await listPersonaRosterLines()).find((l) => l.handleIndex === handleIndex);
@@ -153,7 +156,7 @@ export async function runRecoveryContactEnrolment(input: {
   const head: PersonaKelEvent | undefined = fold.kel[fold.kel.length - 1];
   if (!head || fold.fork) return refuse("kel-unread", `the key history this vessel reads for h${handleIndex} ${fold.fork ? `forks at sequence ${fold.fork.seq}` : "holds no inception"}; nothing moved`);
 
-  const seed = await loadPersonaGroupRootSeed(handleIndex);
+  const seed = await loadPersonaGroupRootSeed(handleIndex, input.ward);
   try {
     const result = await enrolRecoveryContacts({
       head, recoveryContacts: offers, threshold,

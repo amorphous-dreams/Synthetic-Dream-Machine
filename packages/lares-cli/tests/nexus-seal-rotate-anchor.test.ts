@@ -19,6 +19,9 @@
  * `runNexusRollAnchor` it wraps — is where `nexus-seal.ts` now reaches it (the store's one door,
  * `store-door-verbs.ts`), so the fault rides the same seam the rotate itself calls through.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import { mkdtempSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";

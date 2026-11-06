@@ -90,9 +90,10 @@ describe("the kāpae over (wiki, digest)", () => {
     expect(read([raise, lower]).shadowed(W1).has(D)).toBe(false);
   });
 
-  test("RED: a raise by a device atom refuses `grant`, a prepare by the root refuses `device`, an outsider refuses both; CONTROL: each rightful hand reads", async () => {
+  test("RED: a lower by a device atom refuses `grant` (a raise by one reads: it only adds a brake), a prepare by the root refuses `device`, an outsider refuses both; CONTROL: each rightful hand reads", async () => {
     const { kapae, prepare, atom, root, outsider, face } = await fixture();
-    expect(readPromoteAct(await kapae(W1, D, true, [], atom), face)).toEqual({ ok: false, refusal: "grant" });
+    expect(readPromoteAct(await kapae(W1, D, false, [], atom), face)).toEqual({ ok: false, refusal: "grant" });
+    expect(readPromoteAct(await kapae(W1, D, true, [], atom), face).ok).toBe(true);
     expect(readPromoteAct(await kapae(W1, D, true, [], outsider), face)).toEqual({ ok: false, refusal: "grant" });
     expect(readPromoteAct(await prepare(W1, D, "why", root), face)).toEqual({ ok: false, refusal: "device" });
     expect(readPromoteAct(await prepare(W1, D, "why", outsider), face)).toEqual({ ok: false, refusal: "device" });

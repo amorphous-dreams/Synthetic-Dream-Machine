@@ -520,6 +520,13 @@ export function admitTakeSyncUrlWarning(bundleText: string): string | null {
   return "this bundle names no sync url, so this vessel cannot dial the hearth's gate from it — ask the founding kahu to re-issue it with `lares nexus contract <leaf> --sync-url <ws-url>`, then admit-take the new bundle";
 }
 
+/** The take's presentation line: re-presented, refused by the ward's own name (the bundle still kept), or no vessel answered. */
+export function admitTakePresentLine(represented: boolean, reason?: string): string {
+  if (represented) return "  the running vessel re-folded and re-presents its dial";
+  if (reason) return `  the bundle stays kept; the running vessel refused the route by name: ${reason}`;
+  return "  no running vessel answered — the next boot's dial presents it";
+}
+
 async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
   const file = args.positional[1];
   if (!file) { console.error("usage: lares nexus admit-take <bundle-file>"); return 2; }
@@ -537,10 +544,12 @@ async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
     } catch { /* the take names the parse failure */ }
     const { output: r } = await storeVerb("nexus-admit-take", { raw: text }, AdmitBundleError);
     const represented = r["represented"] === true;
+    // A route the ward refused rides back by name (`ward-dial-in-flight`): the bundle stays kept, and the take says why it did not present.
+    const reason = typeof r["reason"] === "string" ? r["reason"] : undefined;
     const noUrl = admitTakeSyncUrlWarning(text);
     emit(args, {
       ok: true,
-      data: { aid: r["aid"], nym: r["nym"], admitCid: r["admitCid"], gatePubKey: r["gatePubKey"], lineage: r["lineage"], path: r["path"], represented, ...(noUrl ? { warning: noUrl } : {}) },
+      data: { aid: r["aid"], nym: r["nym"], admitCid: r["admitCid"], gatePubKey: r["gatePubKey"], lineage: r["lineage"], path: r["path"], represented, ...(reason ? { reason } : {}), ...(noUrl ? { warning: noUrl } : {}) },
       human: () => {
         console.log("nexus admit-take — the admit verified against the charter held for its Nexus, and kept:");
         console.log(`  nexus:   ${String(r["aid"])}`);
@@ -548,9 +557,7 @@ async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
         console.log(`  admit:   ${String(r["admitCid"])} (lineage ${String(r["lineage"])})`);
         console.log(`  hearth:  ${String(r["gatePubKey"])}  (the dial to this gate presents it)`);
         console.log(`  kept at: ${String(r["path"])}`);
-        console.log(represented
-          ? "  the running vessel re-folded and re-presents its dial"
-          : "  no running vessel answered — the next boot's dial presents it");
+        console.log(admitTakePresentLine(represented, reason));
         if (noUrl) console.error(`  warning: ${noUrl}`);
       },
     });

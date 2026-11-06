@@ -24,6 +24,7 @@
 //   T6  a composition hands its islands its OWN capability record and its teardown clears the record's `cas`; a
 //       composition that refuses leaves no capability in module state, so no later island reads it (T27,
 //       test-recut-road).                                              control: a standing composition's `cas` stands
+import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs, { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from "node:fs";

@@ -10,6 +10,8 @@
  * nothing here echoes one. It drops the instant the act returns.
  */
 
+import { gatherWardRoute } from "../ward-door.js";
+import { sealedAct } from "../sealed-act-door.js";
 import {
   FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus, bindFaceSlot, unbindFaceSlot, openFaceTree, readFaceIndexSync,
   type CustodyHomes, type CustodyStatus, type CustodyStatusRow,
@@ -63,6 +65,7 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
       case "unbind":     return await vaultUnbind(args);
       case "backup":     return await vaultBackup(args, daemonUp);
       case "restore":    return await vaultRestore(args, daemonUp);
+      case "rewrap":     return await vaultRewrap(args);
       default:
         console.error(`lares vault: unknown sub-verb "${sub}"`);
         return usage(args, sub);
@@ -135,7 +138,7 @@ function printCustody(c: CustodyStatus): void {
   }
   // A face's rows fold into ONE line per face: its handle index, its custody id, the count of rows that rest under its key and
   // the two digests the floor index names for it. A face row never prints by name here; only a fault does.
-  const faceRows = c.rows.filter((r) => r.custody === "face-hot" || r.custody === "face-cold");
+  const faceRows = c.rows.filter((r) => r.custody === "face-hot" || r.custody === "face-cold" || r.custody === "ward-cold");
   const floorIndex = readFaceIndexSync(larIdentityDir()).faces;
   floorIndex.forEach((f, ordinal) => {
     if (!("fcid" in f)) return;
@@ -153,7 +156,7 @@ function printCustody(c: CustodyStatus): void {
     : `  carriers       ${c.rows.length} standing: ${sealed} sealed under the vessel key, ${byLaw} outside it by law, ${faults.length} at fault`);
   // A row that names many files (a spend per burn, a rest file per record) folds into one counted line per reading.
   const groups = new Map<string, CustodyStatusRow[]>();
-  for (const r of c.rows.filter((x) => !(x.custody === "face-hot" || x.custody === "face-cold") || x.fault)) {
+  for (const r of c.rows.filter((x) => !(x.custody === "face-hot" || x.custody === "face-cold" || x.custody === "ward-cold") || x.fault)) {
     const key = `${r.row}\u0000${r.reading}`;
     groups.set(key, [...(groups.get(key) ?? []), r]);
   }
@@ -255,6 +258,21 @@ async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
 }
 
 /** `--face N` as a handle index, or undefined when the flag stands absent. */
+/**
+ * `vault rewrap --face N` (seat-harness#/the-ward): a face founded before the ward holds its root under its face key and no ward
+ * tree, so every root act refuses `ward-absent`. The rewrap binds the face's ward over the route typed here (a passphrase that
+ * opens the face's own tree), then moves each root row under the ward. The tree lands first, so a rewrap that stopped resumes.
+ */
+async function vaultRewrap(args: ParsedArgs): Promise<number> {
+  const face = faceOption(args) ?? 0;
+  const ward = await gatherWardRoute(`lares vault rewrap --face ${face}`);
+  const done = await sealedAct<{ rewrapped: number }>("ward.rewrap", { handleIndex: face, ward });
+  emit(args, { ok: true, data: done, human: () => console.log(done.rewrapped === 0
+    ? `face h${face} stands warded: no root row needed moving.`
+    : `face h${face}: ${done.rewrapped} root row(s) moved under the ward; each root act now opens the ward fresh from this route.`) });
+  return 0;
+}
+
 function faceOption(args: ParsedArgs): number | undefined {
   const raw = args.options["face"];
   if (typeof raw !== "string") return undefined;

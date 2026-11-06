@@ -25,6 +25,9 @@
  *   W8  RED: A LOCK UNDER A LIVE WALK. The key locks, then a grant arrives on the riding walk: the store refuses
  *       `CustodyLocked`, the walk tells its fault port, and nothing floats.   control: unlocked, the grant keeps
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";

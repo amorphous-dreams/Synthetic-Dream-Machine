@@ -4,6 +4,7 @@
  * board. A suite whose subject raises, folds or widens on a fleet board calls this after its custody, root and atom
  * stand; a fleet without it reads `unknown` by law.
  */
+import { fixtureWard } from "./custody-seat-fixture.js";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   buildDeviceDelegation, recoveryContactRegistrationCard, landFleetGenesis, fleetEdgeBoardDocUrl, materializeSharedLarDoc,
@@ -19,7 +20,7 @@ import { restingRepo } from "./resting-repo.js";
 import { atomSeedOf } from "./atom-fixture.js";
 
 export async function seedFleet(handleIndex = 0, opts: { genesis?: boolean; repo?: Repo } = {}): Promise<{ root: string; lineage: HandLineage; prefix: string }> {
-  const rootSeed = await loadPersonaGroupRootSeed(handleIndex);
+  const rootSeed = await loadPersonaGroupRootSeed(handleIndex, fixtureWard());
   const root = await ed25519VerifyingKeyFromSeed(rootSeed);
   const recoveryContactKeys = await Promise.all([1, 2, 3].map((n) => ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n))));
   const prov = provisionThresholdRecoveryAtFounding({

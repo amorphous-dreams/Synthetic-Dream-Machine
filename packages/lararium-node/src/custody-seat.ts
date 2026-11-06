@@ -37,7 +37,8 @@
  * Node-main only: a worker never imports this module.
  */
 import { GATE_FLOOR_BUNDLE_INFO, custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable, FaceLocked, type CustodyHolder, type FaceRef, type RowUpdate } from "./custody-holder.js";
+import { CustodyLocked, CustodyRowUnavailable, FaceLocked, type CustodyHolder, type FaceRef, type RowUpdate, type WardSeat } from "./custody-holder.js";
+import { wardCredentialsOf, wardOrGather, type WardCredential } from "./ward-credential.js";
 import { CustodyRootRefused } from "./custody-root.js";
 import type { CustodyHome } from "./vault-carriers.js";
 import { larIdentityDir } from "./vessel-paths.js";
@@ -264,4 +265,23 @@ export async function unlockedFaceOrdinals(): Promise<number[]> {
   const out: number[] = [];
   index.faces.forEach((f, ordinal) => { if ("fcid" in f && open.has(f.fcid)) out.push(ordinal); });
   return out;
+}
+
+
+// ── the ward: one fresh unlock of a face's ward key per act (seat-harness#/the-ward) ─────────────────────────────────
+
+/**
+ * Run ONE WARD ACT on this home's seated holder: the face's ward key opens fresh from `ward`'s route, `act` runs over that face's
+ * warded rows, and the key zeroes. A missing token refuses `ward-needs-fresh-unlock` before the holder is asked anything.
+ */
+export async function withWardKeyCustody<T>(face: FaceRef, ward: WardCredential | undefined, act: (seat: WardSeat) => Promise<T>, what?: string): Promise<T> {
+  // No token rode the act: the process's seated gatherer (a person at this terminal) asks for this act, or the act refuses.
+  const credentials = wardCredentialsOf(await wardOrGather(ward, what ?? "a ward act"), what);
+  return (await openedCustody()).withWardKey(face, credentials, act);
+}
+
+/** Move a pre-ward face's root under a ward (`lares ward rewrap`): the ward tree first, then each root row. */
+export async function rewrapWardCustody(face: FaceRef, ward: WardCredential | undefined): Promise<{ readonly rewrapped: number }> {
+  const credentials = wardCredentialsOf(ward, "the rewrap");
+  return (await openedCustody()).rewrapWard(face, credentials);
 }

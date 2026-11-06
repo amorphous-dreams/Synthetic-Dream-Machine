@@ -16,6 +16,17 @@
  * The node vessel holds no semantic privilege. It carries roads, docks, and sync; live VM state lives
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
+import { takeWardTicket, type WardCredential } from "./ward-credential.js";
+import { WardRefused } from "@lararium/mesh";
+
+/** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
+function takeSummonedWard(raw: unknown): WardCredential | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const w = raw as { ref?: unknown; verb?: unknown; args?: unknown };
+  if (typeof w.verb !== "string" || !w.args || typeof w.args !== "object") return undefined;
+  return takeWardTicket(w.ref, { verb: w.verb, args: w.args as Record<string, unknown> });
+}
+import { wardRootSigner } from "./ward-signer.js";
 import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-registration.js";
 import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 
@@ -54,7 +65,7 @@ import {
   faceAtomKeyFromSeed, type FaceAtomKey,
   carriageFloorDutyOf, type PlaceSigner,
   genesisCasCidsFromOracle, provenVesselKeyOf,
-  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed, type GateSweepSeat,
+  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, type GateSweepSeat,
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { registerStoreDoorReactors } from "./store-door-registry.js";
@@ -139,7 +150,7 @@ import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-store.js";
 import { raiseAnchorFromSlots } from "./lease-observation.js";
 import { readFacePersonaRecords } from "./persona-act-store.js";
-import { CustodyLocked } from "./custody-holder.js";
+import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { standingCustody } from "./custody-seat.js";
 import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
@@ -199,7 +210,7 @@ import {
   makeVesselResidency, type VesselResidency,
   replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
-import { loadPersonaGroupRootSeed, loadVesselIdentity, vesselPlaceSignerDoor, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
+import { loadVesselIdentity, vesselPlaceSignerDoor, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
 import { socketsNoLongerHeld, ownPlacePosture, sameOperatorStands, seatedDeviceKey, type PlaceClass, type SeatedPresenter } from "./socket-sorter.js";
 import { faceGateServer, gateSessionRegistry, timerGateDeadlines } from "./face-gate-server.js";
 import { gateSyncServer, type GateSyncSocket }    from "./gate-sync-server.js";
@@ -228,6 +239,7 @@ import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { landEveryHostingAct }                    from "./commands/host.js";
 import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
+import { daemonSwarmWiki }                        from "./swarm-wiki.js";
 import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 import { PLANE_LABELS } from "@lararium/mesh";
@@ -339,6 +351,11 @@ export type NodeOpenPhase = LarOpenPhase;
 export type AskedStanding = "lararium" | "herm";
 
 export interface NodeVesselOptions extends LarariumVesselOptions {
+  /**
+   * The route of the unlock act that stands this composition (seat-harness#/the-ward), handed in as an argument: the composition's
+   * boot dial alone may issue the founder's certificate at a new scope under it, and drops it once that dial settles.
+   */
+  readonly bootWard?: WardCredential;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   storageDir: string;
@@ -451,15 +468,20 @@ export function lateDialOnce(deps: {
   /** The vessel stood its dial down: nothing stands after it. */
   readonly tornDown: () => boolean;
   /** Stand the dial; `live` answers false once a dial stood or the vessel stood down, and the stand then stands nothing. */
-  readonly stand:    (live: () => boolean) => Promise<void>;
-}): () => Promise<void> {
+  readonly stand:    (live: () => boolean, ward?: WardCredential) => Promise<void>;
+}): (ward?: WardCredential) => Promise<void> {
   let flight: Promise<void> | null = null;
+  let flightWard = false;
   const live = (): boolean => !deps.standing() && !deps.tornDown();
-  return () => {
+  return (ward) => {
     if (!live()) return Promise.resolve();
+    // A TAKE'S ROUTE IS NEVER DROPPED SILENTLY: a take that joins a dial already in flight with no route of its own refuses by
+    // name, since that dial cannot issue the founder's certificate the take's route would (seat-harness#/the-ward).
+    if (flight !== null && ward !== undefined && !flightWard) return Promise.reject(new WardRefused("ward-dial-in-flight", "a dial with no ward route stands in flight; take again once it settles"));
     if (flight !== null) return flight;
-    const mine: Promise<void> = Promise.resolve().then(() => deps.stand(live)).finally(() => { if (flight === mine) flight = null; });
+    const mine: Promise<void> = Promise.resolve().then(() => deps.stand(live, ward)).finally(() => { if (flight === mine) { flight = null; flightWard = false; } });
     flight = mine;
+    flightWard = ward !== undefined;
     return mine;
   };
 }
@@ -751,6 +773,10 @@ async function prepareNodeBootOn(
   // Each member stands below as its transport stands (`receipt`, `cas`, `dyad`, `custodyWrite`) and its teardown entry
   // clears that member: an island reads the member off this record at ask time, and no other vessel ever sees it.
   const islandCaps: CapabilityRecord = {};
+  // THE UNLOCK ACT'S ROUTE, held for THIS composition's boot dial alone: a founder's first presentation at a scope issues its
+  // certificate, a ward act, under the route the person typed for the unlock that stands this composition. It drops once that
+  // dial settles; a later dial (a take's) carries its own act's route (seat-harness#/the-ward).
+  let bootWard = opts.bootWard;
   // THE GATE: sovereign only when the node key stands held AND the mounted face stands unlocked; otherwise the floor composes.
   const sovereignOpen = sovereignStands();
   await sweepUnderTheGate(sovereignOpen, sweepFoundingSeeds);
@@ -959,7 +985,7 @@ async function prepareNodeBootOn(
   // Forward-declared: the holder stands once the vessel's island is known, below, and replays `peerBindings`.
   let nexusMembershipHolder: NexusMembershipHolder | null = null;
   // The dial's re-presentation check — set once the dial stands (below); a board change or a refresh calls it.
-  let representIfMoved: (() => Promise<void>) | null = null;
+  let representIfMoved: ((ward?: WardCredential) => Promise<void>) | null = null;
   // THE CHARTER'S HEARTH, at the other end of a socket THIS vessel dialed. The realm's return lane reads it:
   // the operator pinned that gate key out of band and imported that hearth's charter, so the realm's own
   // registered books federate back toward it. Filled by the dial below; empty on a vessel that dials nobody.
@@ -1429,12 +1455,12 @@ async function prepareNodeBootOn(
     },
     refoldEdgeShadows: async () => { await edgeShadows?.refold(); },
     reverdict: () => reverdict(),
-    representIfMoved: async () => { await representIfMoved?.(); },
+    representIfMoved: async (ward) => { await representIfMoved?.(ward); },
     log: (line) => console.log(`[nexus] ${line}`),
   });
-  const afterRoll = (nexusAid?: string): Promise<boolean> => {
+  const afterRoll = (nexusAid?: string, ward?: WardCredential): Promise<boolean> => {
     if (nexusAid) ownHostingDocs.add(interpretAsDocumentId(hostingDocUrl(nexusAid, vesselIdentity.verifyingKey)) as DocumentId);
-    return afterRollQueue(nexusAid);
+    return afterRollQueue(nexusAid, ward);
   };
 
   // Replay every socket that presented before the holder stood.
@@ -2366,13 +2392,13 @@ async function prepareNodeBootOn(
           const boardFace = { group: personaGroupId, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
           const boardDoor = promoteBoardDoor({ group: personaGroupId, face: boardFace, atom,
             epoch: () => readFace(personaKelChain ?? [], faceAnchor)?.lineage.at(-1)?.epoch ?? 0,
-            rootSigner: async () => {
-              const seed = await loadPersonaGroupRootSeed(wornMount?.handleIndex ?? 0);
-              try { return { key: await ed25519VerifyingKeyFromSeed(seed), sign: async (bytes: Uint8Array) => {
-                const fresh = await loadPersonaGroupRootSeed(wornMount?.handleIndex ?? 0);
-                try { return await ed25519SignerFromSeed(fresh)(bytes); } finally { fresh.fill(0); }
-              } }; }
-              finally { seed.fill(0); }
+            // THE PANEL CARRIES NO WARD ROUTE. Its verbs ride the daemon document (a synced record), and a passphrase never rests
+            // there; so the panel's root acts (a daemon or kahua commit, a kāpae-lower) refuse by name and point at the terminal.
+            // A summoned lower carries the CLI's one-use ward ticket; a panel click carries none and refuses by name toward the terminal.
+            rootSigner: async (ward?: unknown) => {
+              const held = takeSummonedWard(ward);
+              if (!held) throw new WardNeedsFreshUnlock("the panel's kāpae-lower (the panel carries no ward route: run `lares kapae lower <digest>` at a terminal)");
+              return wardRootSigner(wornMount?.handleIndex ?? 0, held, "a kāpae-lower");
             },
             board: { records: async () => promoteActRecords(handle.doc(), personaGroupId), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
             projection: () => proof.projection,
@@ -2380,8 +2406,15 @@ async function prepareNodeBootOn(
           const who = { kind: "hand" as const, id: atom.key };
           const core = promotePanelApi({ who,
             wikis: async () => ["daemon", ...vmManager.inspect().filter(slot => slot.temperature === "wela" && slot.wikiId !== "daemon").map(slot => slot.wikiId)],
-            promotionsFor: wiki => promotions({ wiki, ...nodePromoteStores(personaGroupId), who,
-              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(cidDir, atom.key) }), boardDoor,
+            promotionsFor: (wiki, ward) => promotions({ wiki, ...nodePromoteStores(personaGroupId), who,
+              items: () => wiring.itemsOf(wiki), board: wiring.board, cas: nodePromoteCas(cidDir, atom.key),
+              // The panel carries no ward route (its verbs ride the daemon document), so a bound commit refuses by name, toward the terminal.
+              wardSigner: async () => {
+                const held = takeSummonedWard(ward);
+                if (!held) throw new WardNeedsFreshUnlock(`the panel's commit in ${wiki} (the panel carries no ward route: run \`lares promote commit <digest> --wiki ${wiki}\` at a terminal)`);
+                return wardRootSigner(wornMount?.handleIndex ?? 0, held, `a commit in ${wiki}`);
+              },
+              face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false } }), boardDoor,
           });
           const push = async (data: string) => { daemonVm.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
           // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.
@@ -2512,7 +2545,8 @@ async function prepareNodeBootOn(
     // one re-dials through the adapter's own close-and-reconnect path.
     // THE DIAL STANDS FROM A CHOICE of url and pin (`chooseHearthDial`): at composition from what the bootstrap and the kept
     // bundles name, and LATER, when a bundle is taken into a RUNNING vessel (`afterRoll`, below), from what it names then.
-    const standFaceDial = async (hd: HearthDialChoice, live: () => boolean = () => !dialStoodDown): Promise<void> => {
+    const standFaceDial = async (hd: HearthDialChoice, live: () => boolean = () => !dialStoodDown, ward?: WardCredential): Promise<void> => {
+      const dialWard = ward ?? bootWard;
       try {
         // THE FACE DIAL. The dial presents the face's chain through `dialFaceGate` at the pin the pair index holds for the
         // hearth and Nexus it stands at; the pins and the presentation are composed just below, and the dial stands idle,
@@ -2531,7 +2565,7 @@ async function prepareNodeBootOn(
         // of the proof, the dial stands idle and the log names the piece.
         const dialSessions = opts.dialSessions ?? { table: new SessionTable(`dial-${globalThis.crypto.randomUUID()}`), binding: sessionBinding("socket"), profile: "face" };
         const composed = dialPin !== null
-          ? await composeDialPresentation({ sealHome, pin: dialPin, personaGroup: personaGroupId, ...dialSessions })
+          ? await composeDialPresentation({ sealHome, pin: dialPin, personaGroup: personaGroupId, ...dialSessions, ...(dialWard ? { doors: { founder: { ward: dialWard } } } : {}) })
           : null;
         // THE WALKER ROUTE SHIPS SHUT BY NAME (the routes ruling, stable-founding-road: "Walker arms ... ship SHUT by name"; a closed
         // route grants no silent authority): a vessel that walks at a hearth with no admit-carried pin presents no walk at the sealed gate.
@@ -2592,7 +2626,7 @@ async function prepareNodeBootOn(
       }
     };
     if (joinSyncUrl) {
-      await standFaceDial(hearthDial);
+      try { await standFaceDial(hearthDial); } finally { bootWard = undefined; }
     }
     else if (placeClass === "herm") {
       // A herm dials no hearth. Its standing at a Nexus is the counted `carry` that travels by hand
@@ -2602,12 +2636,14 @@ async function prepareNodeBootOn(
     } else if (readKeptAdmitBundles(sealHome).length > 0) {
       console.log("[nexus-join] dial-idle: sync-url-absent — a kept admit bundle names no address the hearth listens at (re-take a bundle issued with --sync-url)");
     }
+    // No boot dial stood, or it settled: the unlock act's route leaves this composition either way.
+    bootWard = undefined;
     // THE LATE DIAL. `admit-take` on a RUNNING vessel keeps a bundle that names a hearth, its sync url and the sovereign pin to dial,
     // and fires `afterRoll`, and the take stands that dial: the choice is made again over the bundles kept at that moment, and a dial
     // that already stands keeps what it presents (a moved board re-dials through the adapter). A herm dials no hearth, and a floor
     // composition holds no key to present with, so its attempt names `CustodyLocked` and stands nothing.
     if (placeClass !== "herm") {
-      representIfMoved = lateDialOnce({ standing: () => nexusDial !== null, tornDown: () => dialStoodDown, stand: async (live) => {
+      representIfMoved = lateDialOnce({ standing: () => nexusDial !== null, tornDown: () => dialStoodDown, stand: async (live, ward) => {
         const late = chooseHearthDial({
           explicitUrl: opts.joinSyncUrl ?? null,
           hearthPin:   hearthPin ? { syncUrl: hearthPin.syncUrl, ...(hearthPin.gatePin ? { gatePin: hearthPin.gatePin } : {}) } : null,
@@ -2617,7 +2653,7 @@ async function prepareNodeBootOn(
         });
         if (late.syncUrl === null || !live()) return;
         for (const note of late.notes) console.log(`[nexus-join] ${note}`);
-        await standFaceDial(late, live);
+        await standFaceDial(late, live, ward);
       } });
     }
     // ── THE BOOTSTRAP SEEDS; THE CATALOG PLANE REGISTERS ────────────────────────────────────────
@@ -3327,6 +3363,8 @@ async function prepareNodeBootOn(
       storageDir, sealHome, repo, catalogUrl: assembly.catalogHandle.url,
       casDir: cidDir, restartWiki: reloadWikiAfterVerb,
       onRolled: afterRoll,
+      // The swarm's controls rest in the daemon wiki, device-local by the daemon document's anchor.
+      swarmWiki: daemonSwarmWiki(readDaemonDoc),
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
       ...(sovereign ? { seatDuties: (facts) => askSeatDutiesAsVessel(facts).answer } : {}),

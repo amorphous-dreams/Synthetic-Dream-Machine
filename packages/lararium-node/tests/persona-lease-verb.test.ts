@@ -4,6 +4,9 @@
  * verb reads effective 0 and the sealed anchor's frontier stays; the verb's own advance raises both. Controls: a second
  * advance climbs by one, and a face with no lineage refuses by name.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, describe, expect } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";

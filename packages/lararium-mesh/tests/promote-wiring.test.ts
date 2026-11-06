@@ -7,7 +7,7 @@
  */
 import { describe, expect, test } from "vitest";
 import {
-  EMPTY_KAPAE_LOCAL, EMPTY_LEDGER, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kahuaStageDocUrl, ledgerCommit, makeIslandRepo,
+  EMPTY_KAPAE_LOCAL, EMPTY_LEDGER, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kahuaStageDocUrl, ledgerCommit, signPromotionWard, makeIslandRepo,
   materializeSharedLarDoc, promoteBoardDocUrl, promoteDigest, signKahuaLift, signPromoteKapae, writeKahuaAct, writePromoteAct,
   type KapaeLocal, type LarDoc, type PromotionLedger,
 } from "../src/index.js";
@@ -26,7 +26,12 @@ async function world(opts: { boardPinned?: boolean } = {}) {
   const lift = await signKahuaLift({ group: GROUP, epoch: 0, title: RITE.title, text: RITE.text, fields: { ...RITE.fields }, parent: null, origin: { seat: root.key, device: root.key, session: "s" }, taint: [], sources: [{ title: "d", revision: "r" }] }, root);
   stage.change((d: LarDoc) => writeKahuaAct(d, lift));
   const st = {
-    ledger: [["daemon", RITE], [GARDEN, RITE]].reduce((l, [wiki, item]) => ledgerCommit(l as PromotionLedger, { wiki: wiki as string, digest: promoteDigest(item as typeof RITE), item: item as typeof RITE, revision: "r1" }, HAND), EMPTY_LEDGER) as PromotionLedger,
+    // The daemon row carries the face root's ward signature (seat-harness#/the-ward): a bound row without one voids at boot.
+    ledger: await [["daemon", RITE], [GARDEN, RITE]].reduce(async (prior, [wiki, item]) => {
+      const l = await prior as PromotionLedger, digest = promoteDigest(item as typeof RITE);
+      const wardSig = wiki === "daemon" ? await signPromotionWard({ wiki: wiki as string, digest, seq: l.seq + 1 }, root) : undefined;
+      return ledgerCommit(l, { wiki: wiki as string, digest, item: item as typeof RITE, revision: "r1", ...(wardSig ? { wardSig } : {}) }, HAND);
+    }, Promise.resolve(EMPTY_LEDGER as PromotionLedger)) as PromotionLedger,
     local: EMPTY_KAPAE_LOCAL as KapaeLocal, cas: new Map<string, Uint8Array>(), restarts: [] as string[],
   };
   const wiring = promoteWiring({

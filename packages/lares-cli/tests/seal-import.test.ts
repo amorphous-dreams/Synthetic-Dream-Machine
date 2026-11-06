@@ -17,6 +17,9 @@
  * is not a destruction and passes — an operator who runs a step twice should not be punished for it.
  * A partner's charter takes `--carry` and lands BESIDE the primary, under its own Nexus AID.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { describe, it, expect, afterAll, afterEach, beforeAll, beforeEach, vi } from "vitest";
 import { cpSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";

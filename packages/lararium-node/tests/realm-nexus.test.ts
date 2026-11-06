@@ -26,6 +26,9 @@
  *     signs nothing / under the primary it signs.
  * N11 an act refused before its write pins nothing / the act that lands pins its Nexus.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect } from "vitest";
 import { join } from "node:path";
 import {

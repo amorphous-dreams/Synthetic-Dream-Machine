@@ -24,6 +24,7 @@
  * Node-main only: a worker never imports this module.
  * Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-cut
  */
+import type { WardCredential } from "./ward-credential.js";
 import {
   bundleMemoryKeypair, faceBundleBodyBytes, sealFaceBundleBody, verifyPersonaKelFull,
   type FaceBundleBody, type FaceBundleRecoveryContactSet, type FaceBundleHolding, type PersonaKelEvent,
@@ -83,15 +84,16 @@ type Parts = Partial<Mutable<Omit<FaceBundleBody, "names" | "recoveryContactSet"
   /** The face's recovery-contact-set record as this vessel holds it, with the prefix it names; the key history decides whether it rides. */
   recoveryContactRecord?: FaceBundleRecoveryContactSet & { readonly prefix: string };
 };
-type Extractor = (line: PersonaRosterLine, parts: Parts) => Promise<void>;
+type Extractor = (line: PersonaRosterLine, parts: Parts, ward: WardCredential | undefined) => Promise<void>;
 
 const hexOf = (bytes: Uint8Array): string => Buffer.from(bytes).toString("hex");
 
 /** One extractor per row the table's `bundle` column names: what of that row one face's bundle carries. */
 const EXTRACTORS: Readonly<Record<string, Extractor>> = {
   // whole: the face's root, the seed its lineage signs with.
-  "persona-root": async (line, parts) => {
-    const seed = await loadPersonaGroupRootSeed(line.handleIndex);
+  // A cut hands the root off the vessel, so it opens under the face's ward alone (seat-harness#/the-ward).
+  "persona-root": async (line, parts, ward) => {
+    const seed = await loadPersonaGroupRootSeed(line.handleIndex, ward);
     try { parts.root = { signingKey: hexOf(seed), verifyingKey: line.verifyingKey }; } finally { seed.fill(0); }
   },
   // whole: each proof key this vessel holds for the face, under its scope's own name.
@@ -160,7 +162,7 @@ export interface FaceBundleCut {
  * Cut face `face`'s bundle body and seal it under `bundleKey`. The caller owns the key and zero-fills it.
  * Refuses `BackupRefused` by name; a custody refusal (`CustodyLocked`, `CustodyRowUnavailable`) passes through.
  */
-export async function cutFaceBundle(args: { readonly face: number; readonly bundleKey: Uint8Array; readonly door: BackupDoor | null }): Promise<FaceBundleCut> {
+export async function cutFaceBundle(args: { readonly face: number; readonly bundleKey: Uint8Array; readonly door: BackupDoor | null; readonly ward?: WardCredential }): Promise<FaceBundleCut> {
   const { face, door } = args;
   // THE SHADOW, READ ONCE, AT THE ENTRY, and judged before any row opens: a vessel under its own shadow performs
   // no key act, whatever face the cut names. A raise this vessel counts while the cut runs binds its next act.
@@ -181,7 +183,7 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
   for (const { row } of bundleRows()) {
     const extract = EXTRACTORS[row];
     if (!extract) throw new Error(`face-bundle-cut: the carrier table's bundle column names "${row}" and no extractor reads it; nothing was cut`);
-    await extract(line, parts);
+    await extract(line, parts, args.ward);
   }
 
   // THE KEY HISTORY rides as this vessel's board holds it, and only where it verifies whole from its inception.

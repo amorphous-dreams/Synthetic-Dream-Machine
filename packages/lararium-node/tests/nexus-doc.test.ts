@@ -11,6 +11,9 @@
  *   · the seat gesture (the roster FORMS from what declared + stood → seated keys → genesis epoch) raises a
  *     live roster, and the chair names come from the operator's declarations rather than from this build.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync, existsSync, readFileSync } from "node:fs";

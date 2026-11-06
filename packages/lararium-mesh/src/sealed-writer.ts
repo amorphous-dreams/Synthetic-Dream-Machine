@@ -45,6 +45,7 @@ import { readSCarrier, type SCarrierReading } from "./s-envelope.js";
 import { isRelationClass, type KeyClass } from "./key-class.js";
 import { openUnderFck, sealUnderFck, type FaceCarrier, type FaceCustodyKey, type FckOpening } from "./fck.js";
 import { readFckCarrier } from "./fck-envelope.js";
+import { openUnderWard, readWardCarrier, sealUnderWard, type WardKey, type WardOpening } from "./ward-slots.js";
 
 /** The store the writer works through. Every path names one file. */
 export interface CustodyIo {
@@ -83,6 +84,8 @@ const S_SEAL: CarrierSeal<SealedCarrier> = {
   read: readSCarrier,
 };
 const FACE_SEAL: CarrierSeal<FaceCarrier> = { open: openUnderFck, seal: sealUnderFck, read: readFckCarrier };
+/** A warded row: the face root seed under the face's ward key, in the ward's own frame (`ward-slots`). Its tree is the ward tree. */
+const WARD_SEAL: CarrierSeal<FaceCarrier> = { open: openUnderWard as CarrierSeal<FaceCarrier>["open"], seal: sealUnderWard, read: readWardCarrier as CarrierSeal<FaceCarrier>["read"] };
 
 /** The sidecar of a single write. A stray one never committed; settling removes it. */
 export const SEALING_SUFFIX = ".s-sealing";
@@ -243,6 +246,31 @@ export async function writeFaceCarrier(args: WriteFaceCarrierArgs): Promise<void
 /** Read a D row with the expected context supplied by the caller. */
 export async function openFaceCarrier(args: { readonly io: CustodyIo; readonly key: FaceCustodyKey; readonly carrier: FaceCarrier }): Promise<FckOpening> {
   return openUnderFck(args.key, args.carrier, await args.io.read(args.carrier.path));
+}
+
+// ── warded rows: the same writer, under the ward key, proved against the face's WARD tree ────────────────────────
+export interface WriteWardCarrierArgs {
+  readonly io: CustodyIo; readonly key: WardKey; readonly treePath: string;
+  readonly carrier: FaceCarrier; readonly plaintext: Uint8Array; readonly rng?: RandomProvider;
+}
+/** Seal a warded row only after the ward tree proves the ward key and the row's standing bytes open under it. */
+export async function writeWardCarrier(args: WriteWardCarrierArgs): Promise<void> {
+  return args.io.exclusive(() => writeHeld({ ...args, treeKey: args.key }, WARD_SEAL, facePathScope(args.treePath)));
+}
+/** Read a warded row under the ward key, with the expected context the caller supplies. */
+export async function openWardCarrier(args: { readonly io: CustodyIo; readonly key: WardKey; readonly carrier: FaceCarrier }): Promise<WardOpening> {
+  return openUnderWard(args.key, args.carrier, await args.io.read(args.carrier.path));
+}
+/** Commit a face's WARD tree: as `commitFaceTree`, with the occupancy census read under the ward's own frame, so a face's
+ *  FCK-sealed rows beside it never refuse the ward's founding while a warded row standing with no tree does. */
+export async function commitWardTree(args: { readonly io: CustodyIo; readonly path: string; readonly expected: Uint8Array | null; readonly key: WardKey; readonly tree: SlotTree; readonly carriers: readonly FaceCarrier[] }): Promise<void> {
+  return args.io.exclusive(() => commitHeld({ ...args, treeKey: args.key }, WARD_SEAL, facePathScope(args.path)));
+}
+/** Read a warded row, decide, and write it, as ONE custody holder, proved against the ward tree. */
+export async function updateWardCarrier<T>(args: Omit<WriteWardCarrierArgs, "plaintext"> & {
+  readonly decide: (standing: WardOpening) => SealedCarrierUpdate<T> | Promise<SealedCarrierUpdate<T>>;
+}): Promise<T> {
+  return updateCarrierHeld(args.io, args.key, args.treePath, args.carrier, args.decide as (standing: FckOpening) => SealedCarrierUpdate<T> | Promise<SealedCarrierUpdate<T>>, WARD_SEAL, args.rng, facePathScope(args.treePath));
 }
 
 /** What an update decides: the carrier's next plaintext, or `null` to leave it as it stands; and the caller's answer. */

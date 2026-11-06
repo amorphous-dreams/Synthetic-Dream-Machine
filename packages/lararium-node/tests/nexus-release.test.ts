@@ -7,6 +7,9 @@
  * CONTROLS: an approval over other bytes, an approval of another surface, a vessel that holds no seat, a manifest
  * already at the head and a chain left `unsettled` each refuse BEFORE a row lands.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

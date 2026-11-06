@@ -11,10 +11,11 @@ export const PROMOTE_PANEL_HAND_CODES: Readonly<Record<typeof PROMOTE_PANEL_VERB
 /** The island admits the gesture; these handlers act and return a fresh view. */
 export function promoteMainVerbs({ api, push }: { api: PromotePanelApi; push: (data: string) => Promise<void> }): Record<string, (args: Record<string, unknown>) => Promise<Record<string, unknown>>> {
   const refresh = async () => { await push(JSON.stringify(await api.snapshot())); };
-  const acts: Record<typeof PROMOTE_PANEL_VERBS[number], (wiki: string, digest: string) => Promise<unknown>> = {
-    "promote-commit": (w, d) => api.commit(w, d), "promote-drop": (w, d) => api.drop(w, d),
+  // A ward act's summoned verb names the host's one-use route ref (`wardRef`); the mesh hands it on and never reads it.
+  const acts: Record<typeof PROMOTE_PANEL_VERBS[number], (wiki: string, digest: string, ward?: unknown) => Promise<unknown>> = {
+    "promote-commit": (w, d, ward) => api.commit(w, d, ward), "promote-drop": (w, d) => api.drop(w, d),
     "promote-keep": (w, d) => api.orphan(w, d, "keep"), "promote-orphan-drop": (w, d) => api.orphan(w, d, "drop"),
-    "kapae-raise": (w, d) => api.raise(w, d), "kapae-lower": (w, d) => api.lower(w, d),
+    "kapae-raise": (w, d) => api.raise(w, d), "kapae-lower": (w, d, ward) => api.lower(w, d, ward),
   };
   const handlers: Record<string, (args: Record<string, unknown>) => Promise<Record<string, unknown>>> = {};
   for (const verb of PROMOTE_PANEL_VERBS) handlers[verb] = async (args) => {
@@ -22,7 +23,8 @@ export function promoteMainVerbs({ api, push }: { api: PromotePanelApi; push: (d
     // The store door's CLI row names no wiki unless `--wiki` does: absent means the daemon wiki, as `promoteCommand` reads it.
     const wiki = typeof args["wiki"] === "string" && args["wiki"].trim() ? args["wiki"] : "daemon";
     if (typeof digest !== "string" || !/^[0-9a-f]{64}$/i.test(digest)) throw new PromoteRefused("promote-digest-malformed", "a hex digest must be named");
-    await acts[verb](wiki, digest);
+    // The act's ward is named by a ref bound to this very verb and these arguments; the host resolves it, the mesh never reads it.
+    await acts[verb](wiki, digest, args["wardRef"] === undefined ? undefined : { ref: args["wardRef"], verb, args });
     await refresh();
     return { done: verb };
   };

@@ -1,7 +1,7 @@
 import {
   PromoteRefused, promoteClass, promoteDigest, promoteEdgeKey, promotePreloadBytes,
-  ledgerCommit, ledgerUnpromote, ledgerDecideOrphan, reconcilePromotions, verifyPromotionRows,
-  type PromoteWho, type PromotionLedger,
+  ledgerCommit, ledgerUnpromote, ledgerDecideOrphan, reconcilePromotions, verifyPromotionRows, isWardBoundWiki, signPromotionWard,
+  type PromoteWho, type PromotionLedger, type PromotionWardFace,
 } from "./promote.js";
 import { kapaeNoteArrival, kapaeBootSet, kapaeStanding, type KapaeLocal } from "./promote-kapae.js";
 import type { PromoteBoardReading } from "./promote-board.js";
@@ -25,6 +25,13 @@ export type PromotionPorts = {
   items(): Promise<readonly PromoteItem[]>; board(): Promise<PromoteBoardReading>;
   cas: { put(digest: string, bytes: Uint8Array): void | Promise<void>; pin(digest: string): void | Promise<void> };
   who: PromoteWho;
+  /**
+   * THE WARD (seat-harness#/the-ward). A commit in a ward-bound wiki (the daemon wiki, the kahua stage) signs its row as the face
+   * root through `wardSigner`, which opens the root under a fresh ward unlock for this act; absent, such a commit refuses
+   * `ward-needs-fresh-unlock`. Boot reads each bound row's signature against `face`'s grant; absent, every bound row voids.
+   */
+  wardSigner?: () => Promise<{ readonly key: string; sign(bytes: Uint8Array): Promise<string> }>;
+  face?: PromotionWardFace;
 };
 
 export function promotions(ports: PromotionPorts) {
@@ -59,9 +66,23 @@ export function promotions(ports: PromotionPorts) {
       const item = (await ports.items()).find(i => promoteDigest(i) === digest);
       if (!item) throw new PromoteRefused("promote-unknown", "no item carries the digest");
       // Refuse before any CAS byte lands; the bytes ride under their digest, so a repeat costs nothing; the ledger takes the row atomically.
-      ledgerCommit(await ports.ledger.read(), { wiki, digest, item, revision: item.revision }, ports.who);
+      const standing = await ports.ledger.read();
+      ledgerCommit(standing, { wiki, digest, item, revision: item.revision }, ports.who);
+      // A BOUND COMMIT SIGNS ITS OWN ROW: the face root, opened under the ward for this act, over (wiki, digest, the seq it lands at).
+      let wardSig: Awaited<ReturnType<typeof signPromotionWard>> | undefined;
+      if (isWardBoundWiki(wiki)) {
+        if (!ports.wardSigner) throw new PromoteRefused("ward-needs-fresh-unlock", `a commit in ${wiki} is a ward act: it signs under a fresh unlock of the face's ward, and none rides this act`);
+        let signer: Awaited<ReturnType<NonNullable<PromotionPorts["wardSigner"]>>>;
+        try { signer = await ports.wardSigner(); }
+        catch (e) { const m = e instanceof Error ? e.message : String(e); throw new PromoteRefused(/^ward-[a-z-]+/.exec(m)?.[0] ?? "ward-needs-fresh-unlock", m); }
+        wardSig = await signPromotionWard({ wiki, digest, seq: standing.seq + 1 }, signer);
+      }
       await ports.cas.put(digest, promotePreloadBytes(item)); await ports.cas.pin(digest);
-      const ledger = await mutate(ports.ledger, (standing) => ledgerCommit(standing, { wiki, digest, item, revision: item.revision }, ports.who));
+      const ledger = await mutate(ports.ledger, (now) => {
+        // The signature names the seq it was made for: a ledger that moved meanwhile refuses, and the hand commits again.
+        if (wardSig && now.seq !== standing.seq) throw new PromoteRefused("promote-ledger-moved", "the ledger moved while the ward signed; commit again");
+        return ledgerCommit(now, { wiki, digest, item, revision: item.revision, ...(wardSig ? { wardSig } : {}) }, ports.who);
+      });
       return ledger.rows[ledger.rows.length - 1]!;
     },
     async unpromote({ digest }: { digest: string }) { await mutate(ports.ledger, (standing) => ledgerUnpromote(standing, { wiki, digest }, ports.who)); },
@@ -80,7 +101,7 @@ export function promotions(ports: PromotionPorts) {
         // and the brake decide those), and rides out by name for the caller to report.
         try { readings = states(own(ledger), await ports.items()); } catch (error) { itemsError = error; }
       } else { edges = kapaeBootSet(local, null); }
-      const { verified, voided } = verifyPromotionRows(own(ledger));
+      const { verified, voided } = verifyPromotionRows(own(ledger), ports.face, ledger);
       const runnable = verified.filter(row => !edges.has(promoteEdgeKey(wiki, row.digest)));
       for (const row of runnable) { await ports.cas.put(row.digest, new TextEncoder().encode(row.bytes)); await ports.cas.pin(row.digest); }
       return { itemsError, pluginCids: runnable.map(row => row.digest), voided, orphans: readings.filter(r => r.state === "orphaned").map(r => r.row.digest), updateWaits: readings.filter(r => r.state === "update-waits").map(r => r.row.digest), shadowed: shadows(edges) };
