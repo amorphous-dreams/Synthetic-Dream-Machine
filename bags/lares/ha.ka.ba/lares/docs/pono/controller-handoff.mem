@@ -80,6 +80,7 @@ A session reads this carrier and the roadmap alone; no note outside the reposito
 * No foreground `sleep`, alone or chained. A long run goes in the foreground with a long timeout, or in the background with its completion notice.
 
 !!! The battery
+* A lane runs `node tools/pre-push-gate.mjs` before every lane push, as its own step and never a git hook: the fast witnesses (`witness-all.sh --fast`) and the census and naming-law suites of `lararium-mesh`, about three minutes; it runs every step and refuses by name (`PRE-PUSH GATE REFUSES: <step>`, exit 1), and a lane cures the named step before it pushes.
 * One battery per batch, run through the battery lock as `mixed-model-swarm#/the-battery` orders it; one e2e file runs locally and the whole sets ride the lane branch's CI. A red CI run gets bisected (`node tools/burst-bisect.mjs <lane> <good> <bad>` or `node tools/e2e-shards.mjs push <lane>`), never guessed. A live commit says so in its message and ends a batch only where later work builds on its bytes.
 * Suites run from source under a scratch `HOME` and a scratch `LAR_ROOT`, with `LAR_BAGS` unset. Never `pnpm install` in the main tree. Before landing a test file, the charter and gate-dial funnels and the unbuilt-laws witness run.
 * No standing test code produces load; a race gets pinned by a handshake between the parties.
@@ -162,6 +163,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QdbOlVUJ8BC1n2ZX-C9wRV8rQMf1iVIbvMseClFkI-g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4VeuxFlC7uk2C5vSBgNI95FfDjlIY3qcU7lsUu9lB18`>>
 
 <<^ code=`&#x0004;` to=`?`>>
