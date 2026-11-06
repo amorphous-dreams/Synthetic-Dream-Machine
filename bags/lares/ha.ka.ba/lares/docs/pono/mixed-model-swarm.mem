@@ -31,7 +31,7 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 |! Seat |! Lineage |! Holds |! Never |
 | ''Operator'' | the human | rulings, credentials, the operator-only configs (`~/.codex/config.toml`, `~/.claude/settings.json`, `~/.copilot/*`, gh auth), WSL size, every founding and custody act on a TTY, the `--force` on a lane worktree that refuses a plain remove | answers a question canon, a measure or the stories settle |
 | ''Controller'' | Claude Opus | the session's seat: lane briefs, slot fill, the one watcher per seat, a read of every chunk's diff before it lands, the batch land, the road commit behind it, canon | solos a lane; lands a chunk it has not read |
-| ''Lane lead'' (Episkopos, a Wright) | Claude, named per lane (#/the-tiers), or Codex `gpt-6.1-terra` in the `lead` mode, run fresh per step (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>> #/the-lead) | the lane's briefs, the authoring of every red and every judgment slice, every commit in its own worktree on its lane branch, the build before each seat, the batch battery, one push per feature, the short hand-back | pushes the span or `main`; arms a watcher; launches a seat on a stale dist |
+| ''Lane lead'' (Episkopos, a Wright) | Claude, named per lane (#/the-tiers), or Codex `gpt-6.1-terra` in the `lead` mode, run fresh per step (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>> #/the-lead) | the lane's briefs, the specification of every red and the authoring of every judgment slice, every commit in its own worktree on its lane branch, the build before each seat, the batch battery, one push per feature, the short hand-back | pushes the span or `main`; arms a watcher; launches a seat on a stale dist |
 | ''Terra'' (builder) | Codex `gpt-6.1-terra`, medium effort | a mechanical edit over an exact file list and an exact change; typecheck; single-file unit runs that open no socket | commits, builds, opens a socket, writes outside its seat directory and the worktree |
 | ''Luna'' (reader, sweeper) | Codex `gpt-6-luna`, high effort, read-only | the cold read of each batch before its push, the aftermath sweep | builds, commits, reads a diff it wrote |
 | ''Sol'' (deep reader) | Codex `gpt-6.1-sol`, high effort, read-only | the read of every batch head, every caps, custody, crypto, gate or Keyhive slice, a named deep question | builds by default, commits, launches as `gpt-6-sol` |
@@ -49,7 +49,7 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 * ''A short lineage keeps its seat.'' When the operator names a lineage short, its seats pass to another lineage's models of the same capability, and the lens law still sorts who reads whom. Where Codex stands absent, a lane runs an Opus lead who authors the code, with a Sonnet helper taking listed edits and a Sonnet or Opus spirit reading and sweeping.
 * ''Crew law.'' Every lane keeps these:
 ** A controller ruling on behavior carries a measure (a grep, one test it ran) or arrives marked LEAN; the lane verifies before building and pushes back with evidence.
-** The lead authors every red and every judgment slice; Terra receives an exact file list and an exact change. After one thin pass on judgment work, the lead weighs a Sol seat before a second Terra brief.
+** For every non-custody lane the lead writes each red as an exact prose spec naming seam, inputs, expected refusal and control; Terra writes the test, and the lead reads it and proves it fails on its parent before any green. Claude authors custody and ward reds; Opus holds the blind custody read. For big merges Terra maps hunks, a `gpt-6.1-sol` build seat resolves them, and Claude reads where custody moves. The lead authors every judgment slice; Terra receives an exact file list and an exact change. After one thin pass on judgment work, the lead weighs a Sol seat before a second Terra brief.
 ** The red lands as its own commit before its fix, so a reader sees the red's sha fail on its parent; the commit message quotes the failure, and a control ships beside it. A red written after its fix names that and carries a proof run against the parent. Phase seats wrap this order: reds seat, the lead commits and proves the red, fix seat, the lead commits.
 ** A seat whose run fails, gets cancelled or misses its red lands nothing; the lead discards its partial diff by name.
 ** After a reader's findings the builder revises ONCE; a second round of the same findings goes to the lead, then the controller.
@@ -239,6 +239,8 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 <<~ ahu slot=`#/rulings`>>
 !! Rulings ~ the operator's words the body rests on
 
+# 2026-11-06, crew bend (operator: //"Approve, OODA-HA."//): non-custody reds follow the lead's exact prose spec into Terra's hands; custody and ward reds stay Claude-authored, with blind Opus custody read. Big merges take Terra's hunk map, a Sol build seat and a Claude read where custody moves (#/the-shapes).
+
 # 2026-10-16, 2026-10-19: Terra, Luna, Sol and `gpt-5.3-codex` share one lineage and count once; the lead reads every build as the second lineage.
 # 2026-10-20: the battery runs once at the wave's end and CI carries the rest; 2026-10-24: the whole e2e sets run on cloud shards only.
 # 2026-10-28: seven refinements bind every lane (measure or LEAN, red before fix, one e2e file locally, findings straight to the builder's lead, one writer per worktree, deterministic spend); `gpt-6-sol` never launches; Luna reads at high; no Opus builder by default; the Codex pool keeps a 20% weekly floor; "Shift the default Codex crew to Episkopos + Terra + Luna."
@@ -295,6 +297,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gVgDfat6dmdM0HWEC4iMTGdJs_vrnQNqp3ysraj0SlA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1k6A9mhSuHsXQs2EYy0-rHP-CsUnXWnt9rev7gxzACs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
