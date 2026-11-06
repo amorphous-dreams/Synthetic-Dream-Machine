@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { KeyhiveProvider, InMemoryEventStore, ArchiveIdentityMismatch } from "@lararium/keyhive";
 import { BootHalted } from "./wire-vessel-rig.js";
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, fixtureWardDialog } from "./browser-custody-fixture.js";
 import { placeSeed } from "./browser-place-seed.fixture.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { openVesselIdb, idbGet, idbKeys, idbPut } from "../src/browser-vessel-identity.js";
@@ -11,7 +11,7 @@ import { BrowserArchiveRowUnreadable, loadBrowserVeilArchive, saveBrowserVeilArc
 async function foundHalted(): Promise<{ idbName: string; group: string }> {
   const idbName = `browser-archive-${crypto.randomUUID()}`;
   await bindSyntheticBrowserCustodySlot(idbName);
-  await expect(openBrowserVessel({ idbName, onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); } } as BrowserVesselOptions))
+  await expect(openBrowserVessel({ idbName, askWardRoute: fixtureWardDialog, onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); } } as BrowserVesselOptions))
     .rejects.toBeInstanceOf(BootHalted);
   const db = await openVesselIdb(idbName);
   try {

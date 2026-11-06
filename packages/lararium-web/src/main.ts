@@ -148,6 +148,31 @@ function askCustody(question: CustodyAsk | { readonly kind: "clear" }): Promise<
 
 
 /**
+ * THIS TAB'S WARD DIALOG (seat-harness#/the-ward): one small form asks the person for the face's passphrase for ONE ward act (a
+ * founding or mint, a daemon or kahua commit, a kāpae-lower, a handle publish, burn or attest). The passphrase goes to that act
+ * alone and never enters a tiddler, a verb's arguments, a URL or storage. "Not now" refuses the act by name.
+ */
+function askWardRoute(act: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const form = document.createElement("form");
+    form.className = "custody-ask";
+    form.dataset["ask"] = "ward";
+    const say = document.createElement("div");
+    say.textContent = `Type this face's passphrase for one act: ${act}. It opens the face's root for this act alone.`;
+    const pass = document.createElement("input");
+    pass.type = "password"; pass.autocomplete = "current-password"; pass.required = true;
+    const go = document.createElement("button"); go.type = "submit"; go.textContent = "sign";
+    const not = document.createElement("button"); not.type = "button"; not.textContent = "not now";
+    const done = (): void => { form.remove(); };
+    form.addEventListener("submit", (e) => { e.preventDefault(); const typed = pass.value; pass.value = ""; done(); resolve(typed); });
+    not.addEventListener("click", () => { pass.value = ""; done(); reject(new Error(`ward-needs-fresh-unlock: the person declined the ward route for ${act}`)); });
+    form.append(say, pass, go, not);
+    document.body.prepend(form);
+    pass.focus();
+  });
+}
+
+/**
  * The flow read-face this page reads from, when no `?flow=` names one.
  *
  * The page is served BY the vessel it reads, so the host that delivered it is the host that answers — a
@@ -501,6 +526,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
     let mirrorShownSync: (() => void) | null = null;
     const result = await openBrowserVessel({
       askCustody,
+      askWardRoute,
       hostId: "elyncia-browser",
       wikiId: "lares",
       genesisSeed,

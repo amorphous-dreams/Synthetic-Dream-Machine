@@ -20,7 +20,7 @@ import {
   type LarDoc,
 } from "@lararium/mesh";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, fixtureWardDialog } from "./browser-custody-fixture.js";
 import { BootHalted } from "./wire-vessel-rig.js";
 import { soloCosign } from "../../lararium-mesh/tests/ward-cosign-table.js";
 
@@ -42,7 +42,7 @@ describe("a browser founding ends with the promote board's plane act", () => {
     const idbName = `browser-promote-found-${crypto.randomUUID()}`;
     await bindSyntheticBrowserCustodySlot(idbName);
     let read: { pin: string | null; pins: number; founded: boolean; fork: unknown; first: string | null; group: string } | null = null;
-    await expect(openBrowserVessel({ idbName, onPhase: (phase: string) => {
+    await expect(openBrowserVessel({ idbName, askWardRoute: fixtureWardDialog, onPhase: (phase: string) => {
       if (phase !== "bootstrap-kept") return;
       const founding = seen.foundings[0];
       if (!founding) throw new Error("the browser boot ran no founding");
@@ -79,7 +79,7 @@ describe("a one-device browser fleet lowers a kāpae under the fresh unlock alon
     const { promoteBoardDoor, readPromoteBoard, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } = await import("@lararium/mesh");
     const idbName = `lares:lower-${globalThis.crypto.randomUUID()}`, PASS = "one device's route", GROUP = "one-device-face", D = "d".repeat(64);
     await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
-    const root = await generateOrLoadBrowserPersonaRoot(idbName, 0);
+    const root = await generateOrLoadBrowserPersonaRoot(idbName, 0, PASS);
     lockBrowserCustody(idbName);
     const atom = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(4)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(4)) };
     // A face of one device: a lower reads on its own (the co-sign witness answers yes, as `wardActWitness` does for one device).

@@ -34,11 +34,11 @@ wardCosignTable({
           ...[...unknown].map((k) => [deviceEdgeId(ROOT, k), { stands: false, raiseCids: ["owed-a-roll"] } as never] as const)]) };
     },
   }),
-  // The face root as the browser opens it: sealed under the keystore, signing in the per-act ward worker from the typed passphrase.
+  // The face root as the browser opens it: born under its own ward, signing in the per-act ward worker from the typed passphrase.
   root: async () => {
     const idbName = `lares:cosign-${globalThis.crypto.randomUUID()}`, PASS = "the route typed for this act";
     await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
-    const root = await generateOrLoadBrowserPersonaRoot(idbName, 0);
+    const root = await generateOrLoadBrowserPersonaRoot(idbName, 0, PASS);
     lockBrowserCustody(idbName);
     return { key: root.verifyingKey, signer: () => browserWardSigner(idbName, 0, PASS, spawn) };
   },

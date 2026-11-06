@@ -14,7 +14,7 @@
  *            connection reopens.
  */
 import { describe, expect, test } from "vitest";
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import { generateOrLoadBrowserPersonaRoot, generateOrLoadBrowserVesselIdentity, openVesselIdb, idbGet } from "../src/browser-vessel-identity.js";
 import { browserFleetJoinLand, browserFleetJoinRequest } from "../src/browser-fleet-join.js";
 import { browserWalkLeaf, browserWalkStore } from "../src/browser-walk.js";
@@ -92,7 +92,7 @@ describe("browser secret census", () => {
     const idbName = name();
     await generateOrLoadBrowserVesselIdentity(idbName);
     await bindSyntheticBrowserCustodySlot(idbName);
-    await generateOrLoadBrowserPersonaRoot(idbName, 0);
+    await generateOrLoadBrowserPersonaRoot(idbName, 0, FIXTURE_WARD);
 
     // The per-Nexus key: the walk leaf returns its seed.
     const leaf = await browserWalkLeaf(idbName, NEXUS, 0);

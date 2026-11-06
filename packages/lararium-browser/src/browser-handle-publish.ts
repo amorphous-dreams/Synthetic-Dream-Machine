@@ -15,6 +15,7 @@ import {
 } from "@lararium/mesh";
 import { makeBrowserIdbPersonaVault, makeBrowserPublicHandleStore } from "./browser-vessel-identity.js";
 import { loadBrowserFaceAnchor } from "./browser-face-anchor.js";
+import type { WardRoute } from "./ward-core.js";
 
 /**
  * The owner of the face the verb selects: the sealed anchor of persona `handleIndex` (its PersonaGroup names the anchor row),
@@ -43,12 +44,17 @@ export async function publishHandleBrowser(opts: {
   handleIndex: number;
   glamour:     string;
   idbName?:    string;
+  /** The face's ward route for this act: a publish reads the root, so it rides the ward. */
+  ward?:       WardRoute;
 }): Promise<HandleCard> {
   const idbName = opts.idbName ?? "lares:vessel";
   const owner = await readHandleOwnerBrowser({ handleIndex: opts.handleIndex, kelBoard: opts.kelBoard, idbName, verb: "publish" });
-  const seed  = await loadPersonaRootSeed(await makeBrowserIdbPersonaVault(idbName), opts.handleIndex);
-  const store = await makeBrowserPublicHandleStore(idbName);
-  return publishHandleForFace({
-    owner, board: opts.board, seed, handleIndex: opts.handleIndex, glamour: opts.glamour, store,
-  });
+  const seed  = await loadPersonaRootSeed(await makeBrowserIdbPersonaVault(idbName, opts.ward), opts.handleIndex);
+  // THE ROOT SEED LEAVES THE ACT ZEROED, whether the publish lands or refuses.
+  try {
+    const store = await makeBrowserPublicHandleStore(idbName);
+    return await publishHandleForFace({
+      owner, board: opts.board, seed, handleIndex: opts.handleIndex, glamour: opts.glamour, store,
+    });
+  } finally { seed.fill(0); }
 }

@@ -16,6 +16,7 @@ import {
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
 import { makeBrowserIdbPersonaVault, makeBrowserPublicHandleStore } from "./browser-vessel-identity.js";
+import type { WardRoute } from "./ward-core.js";
 import { readHandleOwnerBrowser } from "./browser-handle-publish.js";
 
 interface OwnFaceBrowserContext {
@@ -36,23 +37,27 @@ interface OwnFaceBrowserContext {
  * own act over this context. The mirror of node's `openOwnFace`.
  */
 async function openOwnFaceBrowser(
-  verb: string, board: DocHandle<LarDoc>, handleIndex: number, idbName: string,
+  verb: string, board: DocHandle<LarDoc>, handleIndex: number, idbName: string, ward: WardRoute | undefined,
 ): Promise<OwnFaceBrowserContext> {
-  const seed  = await loadPersonaRootSeed(await makeBrowserIdbPersonaVault(idbName), handleIndex);
-  const store = await makeBrowserPublicHandleStore(idbName);
-  const record = await store.load(handleIndex);
-  if (!record) {
-    throw new Error(`[browser handle ${verb}] no published face at persona h${handleIndex} — publish one first.`);
-  }
-  const chain = await resolveOwnHandleChain(board.doc() as LarDoc, record.nym);
-  if (!chain || chain.length === 0) {
-    throw new Error(`[browser handle ${verb}] no chain on the WHO board for ${record.nym.slice(0, 16)}… — the face was never announced here.`);
-  }
-  const headCid = await boardHeadCid(board.doc() as LarDoc, record.nym);
-  if (!headCid) throw new Error(`[browser handle ${verb}] the WHO board has no settled publication head for ${record.nym.slice(0, 16)}… — fail closed.`);
-  const veiled  = await deriveVeiledUserKey(seed, handleIndex, PERSONA_GLAMOUR_CONTEXT);
-  const veiledSigner = ed25519SignerFromSeed(hexToBytes(veiled.signingKey));
-  return { board, handleIndex, seed, record, chain, headCid, veiledSigner };
+  // THE ROOT OPENS UNDER THE WARD for this one act, fresh from the route the person typed for it (seat-harness#/the-ward).
+  const seed  = await loadPersonaRootSeed(await makeBrowserIdbPersonaVault(idbName, ward), handleIndex);
+  // The seed rides the context to the act that needs it; the caller zeroes it in a finally, and a failed open zeroes it here.
+  try {
+    const store = await makeBrowserPublicHandleStore(idbName);
+    const record = await store.load(handleIndex);
+    if (!record) {
+      throw new Error(`[browser handle ${verb}] no published face at persona h${handleIndex} — publish one first.`);
+    }
+    const chain = await resolveOwnHandleChain(board.doc() as LarDoc, record.nym);
+    if (!chain || chain.length === 0) {
+      throw new Error(`[browser handle ${verb}] no chain on the WHO board for ${record.nym.slice(0, 16)}… — the face was never announced here.`);
+    }
+    const headCid = await boardHeadCid(board.doc() as LarDoc, record.nym);
+    if (!headCid) throw new Error(`[browser handle ${verb}] the WHO board has no settled publication head for ${record.nym.slice(0, 16)}… — fail closed.`);
+    const veiled  = await deriveVeiledUserKey(seed, handleIndex, PERSONA_GLAMOUR_CONTEXT);
+    const veiledSigner = ed25519SignerFromSeed(hexToBytes(veiled.signingKey));
+    return { board, handleIndex, seed, record, chain, headCid, veiledSigner };
+  } catch (e) { seed.fill(0); throw e; }
 }
 
 /**
@@ -105,46 +110,50 @@ export async function burnFaceBrowser(opts: {
   /** OWNER-burn only: the per-Nexus persona-KEL board twin, off which the owner head op-key resolves. The owner prefix rides
    *  the selected face's sealed anchor (`readFaceOwner`), never a daemon document. */
   kelBoard?:    DocHandle<LarDoc>;
+  /** The face's ward route for this act: a burn reads the root, so it rides the ward. */
+  ward?:        WardRoute;
 }): Promise<HandleCard> {
   const idbName = opts.idbName ?? "lares:vessel";
-  const face    = await openOwnFaceBrowser("burn", opts.board, opts.handleIndex, idbName);
+  const face    = await openOwnFaceBrowser("burn", opts.board, opts.handleIndex, idbName, opts.ward);
+  try {
 
-  // The card re-signs with the seated handle key regardless of hand — a reader refuses a burned chain BEFORE
-  // checking the sig, so even an owner-burn of a lost key lands; a well-formed card just keeps the lineage clean.
-  const buildCard = (_event: HandleKelEvent, newChain: HandleKelEvent[]): Promise<HandleCard> => signHandleCard(
-    {
-      nym: face.record.nym, chain: newChain, glamour: face.record.glamour,
-      parents: face.record.heads, standing: null, fleetProof: null,
-    },
-    face.veiledSigner,
-  );
+    // The card re-signs with the seated handle key regardless of hand — a reader refuses a burned chain BEFORE
+    // checking the sig, so even an owner-burn of a lost key lands; a well-formed card just keeps the lineage clean.
+    const buildCard = (_event: HandleKelEvent, newChain: HandleKelEvent[]): Promise<HandleCard> => signHandleCard(
+      {
+        nym: face.record.nym, chain: newChain, glamour: face.record.glamour,
+        parents: face.record.heads, standing: null, fleetProof: null,
+      },
+      face.veiledSigner,
+    );
 
-  let hand: Parameters<typeof burnOwnHandle>[0];
-  if (opts.fromPersona) {
-    // OWNER-burn: the owning persona buries the face from above. Resolve its verified head op-key off the
-    // per-Nexus persona-KEL board, then the pure hand-resolver decides whether the root seed may sign.
-    if (!opts.kelBoard) {
-      throw new Error("[browser handle burn --from-persona] the persona-KEL board is required to resolve the owner head; use a self-burn.");
+    let hand: Parameters<typeof burnOwnHandle>[0];
+    if (opts.fromPersona) {
+      // OWNER-burn: the owning persona buries the face from above. Resolve its verified head op-key off the
+      // per-Nexus persona-KEL board, then the pure hand-resolver decides whether the root seed may sign.
+      if (!opts.kelBoard) {
+        throw new Error("[browser handle burn --from-persona] the persona-KEL board is required to resolve the owner head; use a self-burn.");
+      }
+      const owner = await readHandleOwnerBrowser({ handleIndex: opts.handleIndex, kelBoard: opts.kelBoard, idbName, verb: "burn --from-persona" });
+      const personaKelPrefix = owner.personaKelPrefix;
+      const headOpKeyDid     = owner.headOpKeyDid;
+      const resolved     = await resolveOwnerBurnHandBrowser({ personaKelPrefix, headOpKeyDid, rootSeed: face.seed });
+      if (!resolved.ok) throw new Error(`[browser handle burn --from-persona] ${resolved.reason}`);
+      hand = { board: face.board, nym: face.record.nym, expectedHeadCid: face.headCid, ownerBurn: resolved.ownerBurn, buildCard };
+    } else {
+      // SELF-burn: the seated handle key closes its own name.
+      hand = { board: face.board, nym: face.record.nym, expectedHeadCid: face.headCid, sign: face.veiledSigner, buildCard };
     }
-    const owner = await readHandleOwnerBrowser({ handleIndex: opts.handleIndex, kelBoard: opts.kelBoard, idbName, verb: "burn --from-persona" });
-    const personaKelPrefix = owner.personaKelPrefix;
-    const headOpKeyDid     = owner.headOpKeyDid;
-    const resolved     = await resolveOwnerBurnHandBrowser({ personaKelPrefix, headOpKeyDid, rootSeed: face.seed });
-    if (!resolved.ok) throw new Error(`[browser handle burn --from-persona] ${resolved.reason}`);
-    hand = { board: face.board, nym: face.record.nym, expectedHeadCid: face.headCid, ownerBurn: resolved.ownerBurn, buildCard };
-  } else {
-    // SELF-burn: the seated handle key closes its own name.
-    hand = { board: face.board, nym: face.record.nym, expectedHeadCid: face.headCid, sign: face.veiledSigner, buildCard };
-  }
 
-  const result = await burnOwnHandle(hand);
-  if (!result.ok) throw new Error(`[browser handle burn] ${result.reason}`);
-  const store = await makeBrowserPublicHandleStore(idbName);
-  await store.save({
-    handleIndex: face.handleIndex, contextIndex: face.record.contextIndex, nym: face.record.nym,
-    glamour: face.record.glamour, heads: [result.card.actCid],
-  });
-  return result.card;
+    const result = await burnOwnHandle(hand);
+    if (!result.ok) throw new Error(`[browser handle burn] ${result.reason}`);
+    const store = await makeBrowserPublicHandleStore(idbName);
+    await store.save({
+      handleIndex: face.handleIndex, contextIndex: face.record.contextIndex, nym: face.record.nym,
+      glamour: face.record.glamour, heads: [result.card.actCid],
+    });
+    return result.card;
+  } finally { face.seed.fill(0); }
 }
 
 /**
@@ -158,10 +167,12 @@ export async function attestFaceBrowser(opts: {
   /** The STRUCTURED edge — a named surface + the foreign subject it names. Prose reaches no adapter. */
   claim:       HandleClaim;
   idbName?:    string;
+  /** The face's ward route for this act: an attest reads the root, so it rides the ward. */
+  ward?:       WardRoute;
 }): Promise<HandleAttestation> {
   if (!normalizeHandleClaim(opts.claim)) {
     throw new Error("[browser handle attest] the claim does not read as a structured edge — name a known surface and its subject.");
   }
-  const face = await openOwnFaceBrowser("attest", opts.board, opts.handleIndex, opts.idbName ?? "lares:vessel");
-  return attestUnderHead(face.chain, opts.claim, face.veiledSigner);
+  const face = await openOwnFaceBrowser("attest", opts.board, opts.handleIndex, opts.idbName ?? "lares:vessel", opts.ward);
+  try { return await attestUnderHead(face.chain, opts.claim, face.veiledSigner); } finally { face.seed.fill(0); }
 }
