@@ -33,6 +33,7 @@ export const heavy = [
   // real face gates + FLOW-map read-faces on four listeners: the gate-native herm relay
   "tests/herm-carriage-relay.test.ts",
   "tests/nexus-client-dial.test.ts",
+  "tests/nexus-client-dial-listener-order.test.ts",
   "tests/live-wire-node-crossing.test.ts",
   "tests/crossing-matrix.test.ts",
   "tests/sibling-channel-stand.test.ts",

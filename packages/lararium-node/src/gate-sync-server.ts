@@ -53,6 +53,8 @@ export interface GateSyncServer {
 }
 
 export interface GateSyncServerOptions {
+  /** Hold opened channels until the Repo's server adapter has installed its connection listener. */
+  readonly adapterConnected?: Promise<void>;
   /** A lar:session message a session sent, parsed. A body that reads as no JSON goes nowhere. */
   readonly onSession?: (socket: GateSyncSocket, body: unknown) => void;
   /** The floor pins this hearth stands at `nexus` (the AID text), sent to each sovereign session at open. */
@@ -69,6 +71,8 @@ export function gateSyncServer(opts: GateSyncServerOptions = {}): GateSyncServer
   const clients = new Set<GateSyncSocket>();
   const sessions = new WeakMap<object, GateSession>();
   const wss = Object.assign(new EventEmitter(), { clients }) as GateSyncWss;
+  const pending = new Set<GateSessionChannel>();
+  let closed = false;
 
   const socketOver = (channel: GateSessionChannel): GateSyncSocket => {
     let closed = false;
@@ -126,14 +130,25 @@ export function gateSyncServer(opts: GateSyncServerOptions = {}): GateSyncServer
   return {
     wss,
     onOpen(channel, session) {
-      const socket = socketOver(channel);
-      sessions.set(socket, session);
-      clients.add(socket);
-      wss.emit("connection", socket);
-      void sendFloorPins(channel, session);
+      const handOff = (): void => {
+        pending.delete(channel);
+        if (closed || channel.state !== "open") return;
+        const socket = socketOver(channel);
+        sessions.set(socket, session);
+        clients.add(socket);
+        wss.emit("connection", socket);
+        void sendFloorPins(channel, session);
+      };
+      if (opts.adapterConnected) {
+        pending.add(channel);
+        void opts.adapterConnected.then(handOff, () => { pending.delete(channel); channel.close(); });
+      } else handOff();
     },
     sessionOf: (socket) => (socket !== null && typeof socket === "object" ? sessions.get(socket) ?? null : null),
     close() {
+      closed = true;
+      for (const channel of pending) channel.close();
+      pending.clear();
       for (const socket of [...clients]) socket.close();
       wss.emit("close");
     },
