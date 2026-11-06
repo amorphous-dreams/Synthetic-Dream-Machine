@@ -170,10 +170,10 @@ export async function assertDyadBinds(repo: Repo, joineeVerifyingKey: string, fa
   if (dyad?.stands === true) throw new DeviceSetAside(dyad.verdict);
 }
 
-/** The hearth refused a join's vessel tag by name: `vessel-tag-absent`, `vessel-tag-invalid`, `vessel-already-admitted`. */
+/** The hearth refused a join's vessel tag by name: `vessel-tag-absent`, `ward-key-absent`, `vessel-tag-invalid`, `vessel-already-admitted`. */
 export class DeviceAdmitTagRefused extends Error {
   override readonly name = "DeviceAdmitTagRefused";
-  constructor(readonly refusal: "vessel-tag-absent" | "vessel-tag-invalid" | "vessel-already-admitted" | "replay-edge-lapsed", detail: string) {
+  constructor(readonly refusal: "vessel-tag-absent" | "ward-key-absent" | "vessel-tag-invalid" | "vessel-already-admitted" | "replay-edge-lapsed", detail: string) {
     super(`[lares fleet join answer] ${refusal}: ${detail}`);
   }
 }
@@ -189,9 +189,10 @@ export interface DeviceAdmitOptions {
   readonly syncUrl?:       string;
   /** The joining vessel's PUBLIC Ed25519 verifying-key hex — the delegate the founder's root signs. */
   readonly joineeVerifyingKey: string;
-  /** The joining vessel's blinded tag for this face and its signature over (group, joinee atom), as its request carried
-   *  them: the admission act carries both, and the hearth refuses a tag that does not hold or already stands seated. */
-  readonly vesselTag:      { readonly vesselTag?: unknown; readonly vesselSig?: unknown };
+  /** The joining vessel's blinded tag for this face, the joinee device's per-face ward key, and the tag's signature over (group,
+   *  joinee atom, ward key), as its request carried them: the admission act carries all three, and the hearth refuses a tag that does
+   *  not hold or already stands seated. */
+  readonly vesselTag:      { readonly vesselTag?: unknown; readonly vesselSig?: unknown; readonly wardKey?: unknown };
   /** Automerge URL of this vessel's genesis island — included in payload for peer-sync delivery. */
   readonly islandDocUrl?:  string | null;
   /** This hearth's own daemon doc — the door the joinee knocks on for its seat. */
@@ -399,9 +400,10 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // THE TAG LAW, before the root signs: the joining vessel's tag holds for this face and atom, and no admission of this face
   // already seats it, so one vessel never takes two seats here.
   const deviceKey = opts.joineeVerifyingKey.toLowerCase();
-  const { vesselTag, vesselSig } = opts.vesselTag;
+  const { vesselTag, vesselSig, wardKey } = opts.vesselTag;
   if (vesselTag === undefined || vesselSig === undefined) throw new DeviceAdmitTagRefused("vessel-tag-absent", "the join carries no blinded vessel tag for this face");
-  if (!vesselFaceTagHolds(personaGroupId, deviceKey, { vesselTag, vesselSig })) throw new DeviceAdmitTagRefused("vessel-tag-invalid", "the vessel tag's signature covers another face or atom");
+  if (wardKey === undefined) throw new DeviceAdmitTagRefused("ward-key-absent", "the join names no per-face ward key for its device");
+  if (!vesselFaceTagHolds(personaGroupId, deviceKey, { vesselTag, vesselSig, wardKey })) throw new DeviceAdmitTagRefused("vessel-tag-invalid", "the vessel tag's signature covers another face, atom or ward key");
   // A retried answer for the atom that already holds this tag is a replay, not a second seat: the same vessel under another atom refuses.
   const bodyOf = (r: unknown): Record<string, unknown> | undefined => (r as { body?: Record<string, unknown> } | null)?.body;
   const seatedAdmission = records.find((r) => {
@@ -429,7 +431,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   let appended: Awaited<ReturnType<typeof signPersonaAct>>[] = [];
   if (!seatedAdmission) {
     const admission = await signPersonaAct(projection.head, { group: personaGroupId, act: "admission", epoch,
-      fields: { deviceKey, vesselTag, vesselSig } }, signer);
+      fields: { deviceKey, vesselTag, vesselSig, wardKey } }, signer);
     const edgeAct = await signPersonaAct({ seq: admission.body.seq, cid: actCid(admission.body) },
       { group: personaGroupId, act: "device-edge", epoch,
         fields: { deviceKey, edgeDigest: servedDigest } }, signer);

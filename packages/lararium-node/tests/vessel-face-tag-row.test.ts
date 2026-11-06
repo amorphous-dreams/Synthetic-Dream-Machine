@@ -35,6 +35,8 @@ import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // The founding's root acts ask the suite's "person", who answers the routes its faces stood under (seat-harness#/the-ward).
 seatSuiteWard();
 
+/** The tag reads apart from the ward key it signs beside, so a tag comparison names any well-formed one. */
+const ANY_WARD_KEY = "ab".repeat(32);
 const GROUP_A = "0x" + "a1".repeat(16);
 const GROUP_B = "0x" + "b2".repeat(16);
 /** The name the tag secret once derived under; the floor door must answer no child for it. */
@@ -56,7 +58,7 @@ async function tagFromPlaceSeed(group: string, deviceKey: string): Promise<strin
   const raw = JSON.parse(readFileSync(join(larIdentityDir(), ".vessel-key.json"), "utf8")) as { signingKey: string };
   const seed = Buffer.from(raw.signingKey, "hex");
   const child = new Uint8Array(hkdfSync("sha256", seed, new Uint8Array(0), OLD_TAG_SECRET_NAME, 32));
-  try { return (await vesselFaceTagFields(child, group, deviceKey)).vesselTag; } finally { child.fill(0); seed.fill(0); }
+  try { return (await vesselFaceTagFields(child, group, deviceKey, ANY_WARD_KEY)).vesselTag; } finally { child.fill(0); seed.fill(0); }
 }
 
 async function lockAndUnseat(): Promise<void> {
@@ -99,7 +101,7 @@ describe("the vessel tag secret rests per face", () => {
       const row = await readCustodyRow("identity", tagRowOf(GROUP_A));
       expect(row?.length).toBe(32);
       expect(existsSync(groupRowPath(GROUP_A, tagRowOf(GROUP_A)))).toBe(true);
-      expect((await vesselFaceTagFields(row!, GROUP_A, first.atomKey)).vesselTag).toBe(first.vesselTag);
+      expect((await vesselFaceTagFields(row!, GROUP_A, first.atomKey, first.wardKey)).vesselTag).toBe(first.vesselTag);
       row!.fill(0);
       expect(await runFleetJoinAbandon()).toBe(true);
 
@@ -132,7 +134,7 @@ describe("the vessel tag secret rests per face", () => {
       const secret = await readCustodyRow("identity", tagRowOf(group));
       expect(secret?.length).toBe(32);
       const atomKey = "00".repeat(32);
-      expect((await vesselFaceTagFields(secret!, group, atomKey)).vesselTag).not.toBe(await tagFromPlaceSeed(group, atomKey));
+      expect((await vesselFaceTagFields(secret!, group, atomKey, ANY_WARD_KEY)).vesselTag).not.toBe(await tagFromPlaceSeed(group, atomKey));
       secret!.fill(0);
     });
   }, 180_000);

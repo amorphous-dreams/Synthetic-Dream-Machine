@@ -8,9 +8,11 @@
  *   - `none` (the face's signed admission fold holds zero or one device): the act proceeds on its fresh unlock alone, whether or not
  *     the intents plane loaded;
  *   - a face of two devices whose intents plane did not load refuses `ward-cosign-intents-unread`;
- *   - `cosign`, approved by a second standing device: the act runs, then the gate signs the outcome that spends the intent, citing
- *     the answer it spent and the frontier head it read (so the readers judge the spend as it stood, `wardActWitness`); a head under
- *     which the vessel cannot read the co-signer or itself standing refuses `ward-cosign-frontier-unknown`;
+ *   - `cosign`, approved by a second standing device under its ward signature: the act runs, then the gate signs the outcome that
+ *     spends the intent, citing the answer it spent and the frontier that answer names (the co-signer signed it, so the readers judge
+ *     the spend as it stood, `wardActWitness`); a frontier at which the vessel cannot read the co-signer or itself standing refuses
+ *     `ward-cosign-frontier-unknown`;
+ *   - an approve with no ward signature under the answerer's admitted ward key refuses `ward-answer-unwarded`;
  *   - `cosign` with no ask yet: the gate issues the act's intent (audience `asks`) and the issuer-signed ask whose detail
  *     carries the act's digest, and refuses `ward-awaiting-cosign: <ask cid>`;
  *   - `cosign` with the ask unanswered: it refuses `ward-awaiting-cosign: <ask cid>` again, writing nothing;
@@ -52,6 +54,8 @@ export interface WardCosignPort {
   standing(atom: string): Standing;
   /** Whether a device stood at one link of the fleet's signed frontier chain this vessel holds (`fleetStoodAt`). */
   stoodAt(atom: string, frontier: string): boolean;
+  /** The per-face ward key a device's signed admission into the face carries, read now; null where none does. */
+  wardKey(atom: string): string | null;
   /** Land one signed entry on the plane. */
   write(entry: SignedIntentEntry): Promise<void>;
 }
@@ -70,11 +74,14 @@ export function intentPlaneCosignPort(input: {
   readonly standing: (atom: string) => Standing;
   readonly frontier: () => string | null;
   readonly stoodAt: (atom: string, frontier: string) => boolean;
+  /** The per-face ward key a device's signed admission carries (`PersonaProjection.wardKeys`). */
+  readonly wardKey: (atom: string) => string | null;
   readonly heldFrontiers?: () => ReadonlySet<string>;
 }): WardCosignPort {
   const plane = input.plane;
   return {
     group: input.group, requester: input.requester, verbs: input.verbs, standing: input.standing, frontier: input.frontier, stoodAt: input.stoodAt,
+    wardKey: (atom) => input.wardKey(atom.toLowerCase()),
     devices: () => input.face().devices,
     view: () => {
       if (!plane) return null;
@@ -104,7 +111,8 @@ export const WARD_WITNESS_CLOSED: WardActWitness = { accepts: () => false };
 
 /** The readers' witness over the gate's own port: the same plane, roster and standing the gate reads, fresh at each call. */
 export function cosignPortWitness(port: WardCosignPort): WardActWitness {
-  return wardActWitness({ group: port.group, devices: () => port.devices(), view: () => port.view(), stoodAt: (atom, frontier) => port.stoodAt(atom, frontier) });
+  return wardActWitness({ group: port.group, devices: () => port.devices(), view: () => port.view(), stoodAt: (atom, frontier) => port.stoodAt(atom, frontier),
+    wardKey: (atom) => port.wardKey(atom) });
 }
 
 /** The intent one act at one head names: the issuer, the verb, the act's own words, and the digest as its nonce. */
@@ -129,13 +137,16 @@ export async function wardCosignGate<T>(port: WardCosignPort, act: WardCosignAct
   const devices = port.devices(), view = port.view();
   if (view === null && devices.length >= 2) return refuse("intents-unread");
   const viewNow = (): IntentView => port.view() ?? EMPTY_VIEW;
-  const verdict = judgeCosign({ view: view ?? EMPTY_VIEW, intentId: id, requester, projection: { devices }, standing: port.standing, digest });
+  const verdict = judgeCosign({ view: view ?? EMPTY_VIEW, group: port.group, intentId: id, requester, projection: { devices }, standing: port.standing, digest,
+    wardKey: (atom) => port.wardKey(atom) });
   if (verdict.need === "none") return effect();
   if (verdict.approved) {
-    // The readers judge the spend at the frontier the outcome cites: one under which this vessel reads either side not standing lands nothing.
-    if (!port.stoodAt(verdict.cosigner, frontier) || !port.stoodAt(requester, frontier)) return refuse("frontier-unknown");
+    // The readers judge the spend at the frontier the answer names and the outcome cites: one at which this vessel reads either side
+    // not standing lands nothing.
+    const cited = verdict.frontier;
+    if (!port.stoodAt(verdict.cosigner, cited) || !port.stoodAt(requester, cited)) return refuse("frontier-unknown");
     const outcome = async () => port.write(await buildOutcome({ group: port.group, signer: port.requester, cause: id,
-      result: { status: "done", act: act.verb, digest, cosigner: verdict.cosigner, answer: verdict.answer, frontier } }));
+      result: { status: "done", act: act.verb, digest, cosigner: verdict.cosigner, answer: verdict.answer, frontier: cited } }));
     let done: T;
     // The effect lands first and its outcome after it: every reader reads the act only beside that outcome, so a crash between the
     // two leaves the act unread, and the replay finds it standing (`WardActAlreadyRun`), lands the outcome it owed, and runs nothing.
@@ -166,6 +177,7 @@ export async function wardCosignGate<T>(port: WardCosignPort, act: WardCosignAct
       .filter((q) => q.entry.signer === requester && q.entry.body["detail"] === digest).map((q) => q.cid).sort()[0];
     if (own) return awaiting(own);
   }
+  if (verdict.reason === "answer-unwarded") throw new WardRefused("ward-answer-unwarded", `the approve of ${act.verb} carries no ward signature under the answerer's admitted ward key`);
   return refuse(verdict.reason);
 }
 

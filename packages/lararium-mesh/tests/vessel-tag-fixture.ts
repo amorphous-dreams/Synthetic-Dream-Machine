@@ -7,14 +7,19 @@
  */
 import { sha256 } from "@noble/hashes/sha2.js";
 import { utf8Bytes } from "../src/crypto.js";
+import { ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { vesselFaceTagFields, type VesselFaceTagDoor, type VesselFaceTagFields } from "../src/vessel-face-tag.js";
 
 /** Test vessel `n`'s 32-byte secret. */
 export const testVesselSecret = (n: number): Uint8Array => sha256(utf8Bytes(`lararium test vessel secret ${n}`));
 
-/** Test vessel `n`'s tag door: the shape a vessel's own door answers, over the numbered secret. */
+/** Test vessel `n`'s per-face ward key: a numbered label per face hashed to a seed, so two faces of one test vessel hold two keys. */
+export const testVesselWardSeed = (n: number, group: string): Uint8Array => sha256(utf8Bytes(`lararium test vessel ward ${n} ${group}`));
+export const testVesselWardKey = (n: number, group: string): Promise<string> => ed25519VerifyingKeyFromSeed(testVesselWardSeed(n, group));
+
+/** Test vessel `n`'s tag door: the shape a vessel's own door answers, over the numbered secret and the vessel's ward key for the face. */
 export const testVesselTagDoor = (n: number): VesselFaceTagDoor =>
-  (group, deviceKey) => vesselFaceTagFields(testVesselSecret(n), group, deviceKey);
+  async (group, deviceKey) => vesselFaceTagFields(testVesselSecret(n), group, deviceKey, await testVesselWardKey(n, group));
 
 /** Test vessel `n`'s tag fields for one atom in one face. */
 export const testVesselTag = (n: number, group: string, deviceKey: string): Promise<VesselFaceTagFields> =>

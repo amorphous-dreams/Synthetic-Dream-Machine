@@ -56,7 +56,8 @@ function validBody(b: Record<string, unknown>): boolean {
     case "delegate-revoke": return validDelegationRevokeBody(b);
     case "outcome": return string(b.cause) && json(b.result) && (b.slot === undefined || string(b.slot));
     case "asks": return string(b.intent) && ["approval", "executor", "capability"].includes(String(b.needs)) && (b.detail === undefined || json(b.detail));
-    case "answer": return string(b.ask) && (b.executor === undefined || atom(b.executor)) && (b.verdict === "approve" || b.verdict === "deny");
+    case "answer": return string(b.ask) && (b.executor === undefined || atom(b.executor)) && (b.verdict === "approve" || b.verdict === "deny")
+      && (b.frontier === undefined || string(b.frontier)) && (b.wardSig === undefined || string(b.wardSig));
     case "claim": case "cancel": return string(b.intent);
     case "takeover": return string(b.claim);
     case "release": return string(b.intent) && (b.claim === undefined || string(b.claim));

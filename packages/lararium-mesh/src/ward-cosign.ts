@@ -11,6 +11,11 @@
  * face stay the admission's to refuse (a blinded per-face vessel tag); the judge never sees a vessel key, which
  * would link a person's faces to each other.
  *
+ * The co-signer's fresh unlock stands on the wire: an approve counts only beside the answerer's ward signature over (the answer, the
+ * ask's digest, the fleet frontier it read), verified under the per-face ward key its signed admission carries (`wardAnswerHolds`).
+ * An approve its atom alone signed, or one whose ward signature verifies under no key its own admission carries, refuses
+ * `answer-unwarded`. The frontier that answer names is the frontier the issuer's outcome cites.
+ *
  * Class-blind: it reads devices and reach, never a vessel class.
  */
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
@@ -18,6 +23,7 @@ import { WARD_COSIGN_DIGEST_DOMAIN } from "./domains.js";
 import { intentId } from "./intent-entry.js";
 import { mayAct, type IntentState, type IntentView } from "./intent-read.js";
 import { WARD_COSIGN_VERBS } from "./intent-verbs.js";
+import { wardAnswerHolds } from "./ward-answer.js";
 import type { PersonaProjection } from "./persona-act.js";
 
 type Standing = "stands" | "aside" | "unknown";
@@ -37,15 +43,17 @@ export function cosignDigest(parts: { readonly act: string; readonly face: strin
 export type CosignRefusal =
   | "not-a-ward-intent" | "wrong-requester" | "void" | "spent" | "awaiting-ask" | "ask-signer" | "digest-mismatch"
   | "awaiting-answer" | "contested" | "denied" | "self-answer" | "signer-not-in-face" | "answerer-aside" | "answerer-not-standing"
-  | "executor-mismatch" | "requester-unknown" | "requester-aside" | "requester-not-in-face" | "frontier-unknown" | "requester-may-not-act";
+  | "executor-mismatch" | "answer-unwarded" | "requester-unknown" | "requester-aside" | "requester-not-in-face" | "frontier-unknown" | "requester-may-not-act";
 export type CosignVerdict =
   | { readonly need: "none" }
-  | { readonly need: "cosign"; readonly approved: true; readonly cosigner: string; readonly answer: string }
+  | { readonly need: "cosign"; readonly approved: true; readonly cosigner: string; readonly answer: string; readonly frontier: string }
   | { readonly need: "cosign"; readonly approved: false; readonly reason: CosignRefusal };
 
 export function judgeCosign(input: {
-  readonly view: IntentView; readonly intentId: string; readonly requester: string;
+  readonly view: IntentView; readonly group: string; readonly intentId: string; readonly requester: string;
   readonly projection: Pick<PersonaProjection, "devices">; readonly standing: (atom: string) => Standing; readonly digest: string;
+  /** The per-face ward key a device's signed admission carries; null where none does. */
+  readonly wardKey: (atom: string) => string | null;
 }): CosignVerdict {
   // Aside devices count toward the total: a free raise never drops the co-sign.
   if (input.projection.devices.length < 2) return { need: "none" };
@@ -87,6 +95,9 @@ export function judgeCosign(input: {
   if (standing === "aside") return refuse("answerer-aside");
   if (standing !== "stands") return refuse("answerer-not-standing");
   if (String(answer.entry.body["executor"] ?? "").toLowerCase() !== requester) return refuse("executor-mismatch");
+  // THE CO-SIGNER'S WARD: the approve counts only beside its ward signature under the key the answerer's own admission carries.
+  if (!wardAnswerHolds(input.group, answer.entry.body, input.digest, input.wardKey(signer))) return refuse("answer-unwarded");
+  const frontier = answer.entry.body["frontier"] as string;
   // The answer counts: whatever the effect door still refuses names the requester's own side, never a wait.
   const may = mayAct(input.view, input.intentId, requester);
   if (!may.act) {
@@ -96,7 +107,7 @@ export function judgeCosign(input: {
     if (may.reason === "spent" || may.reason === "void") return refuse(may.reason);
     return refuse("requester-may-not-act");
   }
-  return { need: "cosign", approved: true, cosigner: signer, answer: answer.cid };
+  return { need: "cosign", approved: true, cosigner: signer, answer: answer.cid, frontier };
 }
 
 /**
@@ -111,14 +122,17 @@ export interface WardActWitness { readonly accepts: (act: WardCosignAct) => bool
  * The witness over a face's intent plane, read fresh at each call. A face whose signed admission fold holds zero or one device
  * (set-aside ones counted, as the judge counts them) accepts the act on its own. A face of two or more accepts it only beside a
  * SPENT co-sign, FROZEN at its outcome: the intent the act's digest names as its nonce (the act's own verb and words), and the
- * issuer's outcome in it, which cites the answer it spent and the fleet frontier the gate read. That cited answer approves this
- * act (an answer to the issuer's own ask naming the digest, the issuer as executor) from another device of the face, and both
- * that device and the issuer stood at the cited frontier (no raise the frontier counts sets either aside). What lands after the
+ * issuer's outcome in it, which cites the answer it spent and the fleet frontier that answer names. That cited answer approves this
+ * act (an answer to the issuer's own ask naming the digest, the issuer as executor) from another device of the face, under that
+ * device's ward signature over (the answer, the digest, the frontier) by the ward key its admission carries; the outcome cites the
+ * very frontier the answer names, and both that device and the issuer stood there (no raise the frontier counts sets either aside). What lands after the
  * outcome (a second approve, a deny, a raise the next frontier counts) never changes what stands; an approved intent with no
  * outcome stands nothing. A plane that did not load, or a fold that throws, accepts nothing on two devices.
  */
 export function wardActWitness(input: {
   readonly group: string; readonly devices: () => readonly string[]; readonly view: () => IntentView | null;
+  /** The per-face ward key a device's signed admission carries; null where none does. */
+  readonly wardKey: (atom: string) => string | null;
   /** Whether a device stood at one link of the fleet's signed frontier chain (`fleetStoodAt`); a link this reader lacks reads false. */
   readonly stoodAt: (atom: string, frontier: string) => boolean;
 }): WardActWitness {
@@ -131,14 +145,16 @@ export function wardActWitness(input: {
       if (!view) return false;
       const digest = cosignDigest({ act: act.verb, face: input.group, wiki: act.wiki, head: act.head });
       const args = { wiki: act.wiki, head: act.head }, enrolled = new Set(devices.map((d) => d.toLowerCase()));
-      return view.intents.some((s) => s.verb === act.verb && s.id === intentId({ issuer: s.issuer, verb: s.verb, args, nonce: digest }) && spentCosign(s, digest, enrolled, input.stoodAt));
+      const ward = { group: input.group, key: input.wardKey };
+      return view.intents.some((s) => s.verb === act.verb && s.id === intentId({ issuer: s.issuer, verb: s.verb, args, nonce: digest }) && spentCosign(s, digest, enrolled, input.stoodAt, ward));
     },
   };
 }
 
 const record = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
 
-function spentCosign(s: IntentState, digest: string, devices: ReadonlySet<string>, stoodAt: (atom: string, frontier: string) => boolean): boolean {
+function spentCosign(s: IntentState, digest: string, devices: ReadonlySet<string>, stoodAt: (atom: string, frontier: string) => boolean,
+  ward: { readonly group: string; readonly key: (atom: string) => string | null }): boolean {
   if (s.audience.mode !== "asks") return false;
   return s.outcomes.some((o) => {
     const result = o.entry.body["result"];
@@ -151,6 +167,8 @@ function spentCosign(s: IntentState, digest: string, devices: ReadonlySet<string
     if (signer === s.issuer || !devices.has(signer)) return false;
     if (String(answer.entry.body["executor"] ?? "").toLowerCase() !== s.issuer) return false;
     if (!s.asks.some((q) => q.cid === answer.entry.body["ask"] && q.entry.signer === s.issuer && q.entry.body["detail"] === digest)) return false;
+    // The frontier the outcome cites is the one the co-signer signed in its answer, under the ward key its admission carries.
+    if (answer.entry.body["frontier"] !== frontier || !wardAnswerHolds(ward.group, answer.entry.body, digest, ward.key(signer))) return false;
     return stoodAt(signer, frontier) && stoodAt(s.issuer, frontier);
   });
 }

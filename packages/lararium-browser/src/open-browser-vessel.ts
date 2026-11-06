@@ -94,7 +94,7 @@ import { workingFloorAnchorOf, vesselDyads, verifiedFleetOfGroup, type LarDid } 
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase, PlaceFoundingCard } from "@lararium/mesh";
 import { readWornPersonaMount }              from "@lararium/mesh";
-import { browserFaceFold, browserWardCosignPort } from "./browser-ward-cosign.js";
+import { browserFaceFold, browserWardAnswer, browserWardCosignPort } from "./browser-ward-cosign.js";
 import {
   generateOrLoadBrowserVesselIdentity,
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
@@ -968,6 +968,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let vmManager!: BrowserVesselIslandPool;   // set in makePool
   let portFaceId: string | null = null;
   let promoteHandlers: ReturnType<typeof promoteMainVerbs> | null = null;
+  /** The worn face's answer door (`ward-answer`): this browser answers a ward ask through its own ward (seat-harness#/the-swarm-slices). */
+  let wardAnswerHandler: ((args: Record<string, unknown>) => Promise<Record<string, unknown>>) | null = null;
   let pushPromoteSnapshot: (() => Promise<void>) | null = null;
   let promoteWiringRef: ReturnType<typeof promoteWiring> | null = null;
   const restartWikiIsland = async (wiki: string) => {
@@ -1386,7 +1388,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           repo, group: wornGroup, boardUrl: provenPromoteUrl, stageUrl: provenKahuaUrl,
           foldFace: () => { const f = promoteFace.read(); return { group: wornGroup, grant: f ? f.grant : () => false }; },
           // THE BOARD READS UNDER THE CO-SIGN WITNESS: on a face of two devices, a lower stands only beside its spent co-sign; a fold
-          // that no longer proves stands no lower, so the brake holds (seat-harness#/the-swarm-slices).
+          // that does not prove stands no lower, so the brake holds (seat-harness#/the-swarm-slices).
           boardFace: async () => {
             const f = promoteFace.read();
             let ward = WARD_WITNESS_CLOSED;
@@ -1408,6 +1410,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const wardRootSignerOf = async (act: string) => {
             if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock");
             return browserWardSigner(idbName, FOUNDING_PERSONA_INDEX, await opts.askWardRoute(act));
+          };
+          // THE ANSWER DOOR: an approve of a ward ask signs inside a fresh ward act of this face, from the route the dialog asks for it.
+          wardAnswerHandler = async (args) => {
+            if (typeof args["ask"] !== "string" || typeof args["executor"] !== "string") throw new BrowserWardRefused("ward-answer-malformed");
+            const entry = await browserWardAnswer({ idbName, group: wornGroup, atom: wornAtom, port: await browserCosignPortOf(), ask: args["ask"], executor: args["executor"],
+              deny: args["deny"] === true, route: async (act) => { if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock"); return opts.askWardRoute(act); } });
+            return { verdict: entry.body["verdict"], signer: entry.signer };
           };
           const boardDoor = promoteBoardDoor({ group: wornGroup, face: boardFace, atom: wornAtom,
             epoch: () => readFace(personaKelChain)?.lineage.at(-1)?.epoch ?? 0,
@@ -1650,6 +1659,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     wireVerbs: (registry, _assembly) => {
       seedVesselDefaults(registry);
       if (promoteHandlers) for (const [name, handler] of Object.entries(promoteHandlers)) registry.register(name, args => handler(args), { summary: name, surfaces: [] });
+      if (wardAnswerHandler) { const answer = wardAnswerHandler; registry.register("ward-answer", args => answer(args as Record<string, unknown>), { summary: "ward-answer", surfaces: [] }); }
       // Thin main verb plane (node parity). Every catalog/recipe/residency-mutating
       // daemon verb lives in the worker now (wireWorkerVerbs) — access≠load, write-then-sync.
       // Main keeps only sync-wiki (commands the pool's active wiki) + residency stats (a read).

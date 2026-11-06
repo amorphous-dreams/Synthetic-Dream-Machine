@@ -63,3 +63,11 @@ test("WITNESS: each reader of a ward act's effect asks the co-sign witness: the 
   expect(go).toMatch(/resting\.filter\(\(g\) => ward\.accepts\(\{ verb: "ward-push-go"/);
   expect(swarm).not.toMatch(/act === "share" && !face\.ward/);
 });
+
+test("WITNESS: the browser vessel registers its answer door (`ward-answer`) over `browserWardAnswer` and the gate's own port; CONTROL: the node's answer door signs through `buildWardedAnswer` inside its ward", () => {
+  const vessel = code(src("../../lararium-browser/src/open-browser-vessel.ts"));
+  expect(vessel).toMatch(/registry\.register\("ward-answer"/);
+  expect(vessel).toMatch(/browserWardAnswer\(\{ idbName, group: wornGroup, atom: wornAtom, port: await browserCosignPortOf\(\)/);
+  const node = code(src("../../lararium-node/src/commands/intent.ts"));
+  expect(node).toMatch(/withWardKeyCustody\(\{ ordinal: input\.face \}, input\.ward, \(seat\) => buildWardedAnswer\(/);
+});

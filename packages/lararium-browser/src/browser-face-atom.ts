@@ -20,6 +20,7 @@ import {
   type FaceAtomKey,
   type FaceAtomRows,
   vesselFaceTagFields,
+  wardPublicKeyOf,
   type VesselFaceTagDoor,
 } from "@lararium/mesh";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
@@ -108,10 +109,41 @@ export const vesselFaceTagRow = (personaGroup: string): string => {
 };
 
 /**
+ * The keystore row that keeps one face's WARD KEY on this browser: a signing seed minted at random per face (`{ signingKey: hex }`,
+ * the shape the per-act ward worker opens), derived from no seed and no vessel-wide key, so two faces present ward keys no reader
+ * links. The ward worker opens it fresh from the passphrase typed for one act (`browserWardSignRow`).
+ */
+export const wardSignRow = (personaGroup: string): string => {
+  if (personaGroup.length === 0) throw new Error("[browser-face-atom] a ward key names its PersonaGroup");
+  return `ward-sign/${personaGroup}`;
+};
+
+/** The face's ward key's public half, minting the row where none stands. The seed zeroes before the door answers. */
+async function standWardKey(idbName: string, group: string): Promise<string> {
+  const row = wardSignRow(group);
+  const seed = await withCustodyRows(idbName, async (rows) => {
+    const held = await rows.read(row);
+    if (held instanceof Uint8Array) {
+      try {
+        const record = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(held)) as { signingKey?: unknown };
+        if (typeof record.signingKey !== "string" || !/^[0-9a-f]{64}$/.test(record.signingKey)) throw new Error("malformed");
+        return Uint8Array.from(record.signingKey.match(/../g)!.map((h) => parseInt(h, 16)));
+      } catch { throw new Error("[browser-face-atom] the face's ward key row reads malformed"); }
+    }
+    if (held !== undefined) throw new Error("[browser-face-atom] the face's ward key row reads malformed");
+    const fresh = crypto.getRandomValues(new Uint8Array(32));
+    await rows.write(row, new TextEncoder().encode(JSON.stringify({ signingKey: [...fresh].map((b) => b.toString(16).padStart(2, "0")).join("") })));
+    return fresh;
+  });
+  try { return await wardPublicKeyOf(seed); } finally { seed.fill(0); }
+}
+
+/**
  * THE BROWSER VESSEL'S TAG DOOR: the blinded per-face tag one admission of this browser carries (`vessel-face-tag`).
  * The face's tag secret rests in its own row beside its atom, 32 random bytes minted at the face's founding or first
  * join request and derived from no seed, so the place seed computes no face's tag. A re-join on the face reads the
- * row and presents the same tag. The door answers only the tag and its signature, and zeroes the copy it read.
+ * row and presents the same tag. The door answers the tag, the face's ward key (`wardSignRow`, minted beside it at the first ask)
+ * and the tag's signature, and zeroes the copies it read.
  */
 export function browserVesselFaceTagDoor(idbName = "lares:vessel"): VesselFaceTagDoor {
   return async (group, deviceKey) => {
@@ -124,6 +156,6 @@ export function browserVesselFaceTagDoor(idbName = "lares:vessel"): VesselFaceTa
       await rows.write(row, Uint8Array.from(fresh));
       return fresh;
     });
-    try { return await vesselFaceTagFields(secret, group, deviceKey); } finally { secret.fill(0); }
+    try { return await vesselFaceTagFields(secret, group, deviceKey, await standWardKey(idbName, group)); } finally { secret.fill(0); }
   };
 }

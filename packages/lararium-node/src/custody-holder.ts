@@ -43,7 +43,7 @@ import {
   openSealedCarrier, writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, CustodyRefusal, treeKeyEquals,
   openFaceCarrier, writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, commitFaceTree, bindSlot, mintFck,
   bindWardSlot, commitWardTree, confirmHeldPaper, decodeSlotTree, mintWardKey, openWardCarrier, openWardKey, readFckCarrier, readWardCarrier,
-  updateWardCarrier, openUnderWard, sealUnderWard, SEALING_SUFFIX, WardRefused,
+  updateWardCarrier, openUnderWard, sealUnderWard, SEALING_SUFFIX, WardRefused, wardSigningSeed, wardPublicKeyOf, isWardKey, ed25519SignerFromSeed,
   type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type PinSpec, type ServingKey, type SlotSpec, type SlotTree, type TreeKey, type WardKey,
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
@@ -131,6 +131,9 @@ export interface WardSeat {
   update<T>(file: string, decide: (plaintext: Uint8Array | null) => RowUpdate<T>): Promise<T>;
   /** Whether a warded row stands at `file` (it opens nothing). */
   stands(file: string): Promise<boolean>;
+  /** Sign `bytes` with this face's ward key on this device (`wardSigningSeed` over the ward key opened for this act), zeroing the
+   *  seed after: the key whose public half this device's admission into the face carries (`wardKey`). */
+  wardSign(bytes: Uint8Array): Promise<string>;
 }
 
 /** Which face a call means: its local ordinal in the floor index, its group's digest, or its custody id. */
@@ -255,6 +258,12 @@ export interface CustodyHolder {
    */
   withWardKey<T>(face: FaceRef, credentials: readonly Credential[], act: (seat: WardSeat) => Promise<T>): Promise<T>;
   /**
+   * The public half of the face's ward signing key on this device (the `wardKey` its admission into the face carries), read from the
+   * face's own D row (`face-ward-key`) that the ward's founding wrote beside its tree. The face must stand unlocked; it opens no ward.
+   * Null where the face's ward stands with no key row.
+   */
+  wardPublicKey(face: FaceRef): Promise<string | null>;
+  /**
    * Move a pre-ward face's root under a ward: prove `credentials` open the face's own tree, bind the ward tree over them (or open
    * the one a torn rewrap left), then re-seal each FCK-framed root row under the ward key. Answers how many rows moved.
    */
@@ -374,6 +383,16 @@ export function makeCustodyHolder(a: {
     const row = carrierTable().find((r) => r.row === "face-owner")!;
     return faceCarrierFor(a.homes, fcid, "face-owner.bin", row);
   };
+  /** The face's ward signing key's public half, a D row beside the ward tree: no secret, sealed under the FCK like the owner row. */
+  const wardKeyCarrier = (fcid: string): FaceCarrier => {
+    const row = carrierTable().find((r) => r.row === "face-ward-key")!;
+    return faceCarrierFor(a.homes, fcid, "face-ward-key.bin", row);
+  };
+  /** The public half the ward key signs under: derived from the ward key, never from a seed, so it answers to this face alone. */
+  const wardKeyBytes = async (ward: WardKey): Promise<Uint8Array> => {
+    const seed = wardSigningSeed(ward);
+    try { return new TextEncoder().encode(await wardPublicKeyOf(seed)); } finally { seed.fill(0); }
+  };
   const encodeOwner = (owner: FaceOwnerRow): Uint8Array => new TextEncoder().encode(JSON.stringify({ fcid: owner.fcid, group: owner.group }));
   const decodeOwner = (bytes: Uint8Array): FaceOwnerRow | null => {
     try {
@@ -409,6 +428,8 @@ export function makeCustodyHolder(a: {
         await commitFaceTree({ io: held, path: faceTreePath(a.homes.identity, fcid), expected: null, key: fck, tree: tree!, carriers: [] });
         await commitWardTree({ io: held, path: wardTreePath(a.homes.identity, fcid), expected: null, key: ward, tree: wardTree, carriers: [] });
         await writeFaceCarrier({ io: held, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: ownerCarrier(fcid), plaintext: encodeOwner({ fcid, group: args.group ?? null }) });
+        // THE WARD KEY'S PUBLIC HALF lands with the ward: the face's admission carries it, and the ward key itself zeroes below.
+        await writeFaceCarrier({ io: held, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: wardKeyCarrier(fcid), plaintext: await wardKeyBytes(ward) });
         faces.set(fcid, { fck, slot: null, ordinal });
         return { ordinal, fcid };
       });
@@ -479,6 +500,10 @@ export function makeCustodyHolder(a: {
         } });
       },
       async stands(file) { return (await a.io.read(wardCarrierOf(fcid, file).path)) !== null; },
+      async wardSign(bytes) {
+        const seed = wardSigningSeed(live());
+        try { return await ed25519SignerFromSeed(seed)(bytes); } finally { seed.fill(0); }
+      },
     };
   };
   /** Resolve a face that must stand unlocked here for a ward act. */
@@ -542,9 +567,13 @@ export function makeCustodyHolder(a: {
         const tree = await bindWardSlot(null, ward, { t: Math.min(Math.max(threshold, 1), pins.length), pins }, nativeKdf);
         // THE TREE LANDS FIRST, so a rewrap torn after it resumes by opening the ward it left.
         await commitWardTree({ io: a.io, path: wardTreePath(a.homes.identity, fcid), expected: null, key: ward, tree, carriers: [] });
+
       } catch (err) { dropWard(ward); throw err; }
     }
     try {
+      // The ward key's public half stands beside the tree, the one the ward signs under (a torn rewrap writes it again, the same bytes).
+      const keyBytes = await wardKeyBytes(ward);
+      await updateFaceCarrier({ io: a.io, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: wardKeyCarrier(fcid), decide: () => ({ plaintext: keyBytes, value: undefined }) });
       let moved = 0;
       for (const file of await wardFilesOf(fcid)) {
         const carrier = wardCarrierOf(fcid, file);
@@ -958,6 +987,20 @@ export function makeCustodyHolder(a: {
       const run = unlockChain.then(() => doRewrapWard(face, credentials), () => doRewrapWard(face, credentials));
       unlockChain = run.catch(() => undefined);
       return run;
+    },
+    async wardPublicKey(face) {
+      const found = await resolveFace(face);
+      if (!found) throw new FaceCustodyAbsent(`face ${JSON.stringify(face)}`);
+      const seat = faces.get(found.fcid);
+      if (!seat) throw new FaceLocked(found.fcid);
+      const opened = await openFaceCarrier({ io: a.io, key: seat.fck, carrier: wardKeyCarrier(found.fcid) });
+      if (opened.reading === "absent") return null;
+      if (opened.reading !== "opens") throw new CustodyRowUnavailable("identity", "face-ward-key.bin", opened.reading);
+      try {
+        const key = new TextDecoder().decode(opened.plaintext);
+        if (!isWardKey(key)) throw new CustodyRowUnavailable("identity", "face-ward-key.bin", "malformed");
+        return key;
+      } finally { opened.plaintext.fill(0); }
     },
     watchWardKeys(watch) { wardWatch = watch; },
     async isFaceUnlocked(face) {

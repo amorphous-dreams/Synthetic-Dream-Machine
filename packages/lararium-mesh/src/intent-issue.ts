@@ -48,8 +48,10 @@ export async function buildAgentIntent(input: Base & { readonly delegation: stri
 }
 export const buildAsks = (input: Base & { readonly intent: string; readonly needs: "approval" | "executor" | "capability"; readonly detail?: unknown }) =>
   sign(input, "asks", { intent: input.intent, needs: input.needs, ...(input.detail === undefined ? {} : { detail: input.detail }) });
-export const buildAnswer = (input: Base & { readonly ask: string; readonly verdict: "approve" | "deny"; readonly executor?: string }) =>
-  sign(input, "answer", { ask: input.ask, verdict: input.verdict, ...(input.executor ? { executor: input.executor } : {}) });
+/** An answer to an ask. A co-signer's approve of a ward act names the fleet frontier it read and its ward signature over both (`buildWardedAnswer`). */
+export const buildAnswer = (input: Base & { readonly ask: string; readonly verdict: "approve" | "deny"; readonly executor?: string; readonly frontier?: string; readonly wardSig?: string }) =>
+  sign(input, "answer", { ask: input.ask, verdict: input.verdict, ...(input.executor ? { executor: input.executor } : {}),
+    ...(input.frontier !== undefined ? { frontier: input.frontier } : {}), ...(input.wardSig !== undefined ? { wardSig: input.wardSig } : {}) });
 export const buildOutcome = (input: Base & { readonly cause: string; readonly result: unknown; readonly slot?: string }) =>
   sign(input, "outcome", { cause: input.cause, result: input.result, ...(input.slot ? { slot: input.slot } : {}) });
 export const buildClaim = (input: Base & { readonly intent: string }) => sign(input, "claim", { intent: input.intent });

@@ -121,11 +121,11 @@ describe("the browser's fleet join", () => {
     const child = new Uint8Array(await crypto.subtle.deriveBits(
       { name: "HKDF", hash: "SHA-256", salt: new Uint8Array(0), info: new TextEncoder().encode(`${DOMAIN_ROOT}/vessel-face-tag-secret`) }, ikm, 256));
     seed.fill(0);
-    expect((await vesselFaceTagFields(child, GROUP, request.atomKey)).vesselTag).not.toBe(request.vesselTag);
+    expect((await vesselFaceTagFields(child, GROUP, request.atomKey, request.wardKey)).vesselTag).not.toBe(request.vesselTag);
     // The face's own row holds the 32 random bytes the tag stands on; a re-join on the face presents them again.
     const row = await readKeystoreRow(s.idbName, `vessel-face-tag/${GROUP}`);
     expect(row instanceof Uint8Array && row.length === 32).toBe(true);
-    expect((await vesselFaceTagFields(row as Uint8Array, GROUP, request.atomKey)).vesselTag).toBe(request.vesselTag);
+    expect((await vesselFaceTagFields(row as Uint8Array, GROUP, request.atomKey, request.wardKey)).vesselTag).toBe(request.vesselTag);
     expect(await browserFleetJoinAbandon(s.idbName)).toBe(true);
     const again = await browserFleetJoinRequest({ offer: fleetJoinOffer({ ...s.offer, nonce: "9a".repeat(32) }), idbName: s.idbName });
     expect(again.vesselTag).toBe(request.vesselTag);

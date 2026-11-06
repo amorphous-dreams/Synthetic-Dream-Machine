@@ -9,8 +9,8 @@ import {
   faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, intentAdmissionRecordsOfGroup, intentId, intentPaneModel,
   readIntentEntry,
   deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetFrontierLinks, fleetRaiseCids, fleetStoodAt, readFleetFrontier, readFrontierPins, FLEET_HAND,
-  personaBagIdFor, personaSiblingBagIds, readIntentPlane, WARD_COSIGN_VERBS, intentPlaneCosignPort, faceRosterForIntents, type WardCosignPort, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
-  WardRefused, type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
+  personaBagIdFor, personaSiblingBagIds, readIntentPlane, intentPlaneCosignPort, faceRosterForIntents, type WardCosignPort, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
+  WardRefused, askShown, answerRefusal, buildWardedAnswer, type AskShown, type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { listAnchoredPersonas, loadIdentityAnchors } from "../identity-anchors.js";
@@ -48,30 +48,8 @@ export function intentDelegationCite(raw: string): DelegationCite {
   return { [match[1]!]: match[2]! } as DelegationCite;
 }
 
-/** What an answerer reads before signing, the way the edge co-sign door reads a partial: the act an ask names, taken from the
- *  fold's own verified bytes. Null where no ask under that cid stands. */
-export function askShown(view: ReturnType<typeof readIntentPlane>, askCid: string): { readonly intent: string; readonly verb: string; readonly issuer: string; readonly askedBy: string; readonly detail: unknown; readonly cosign: boolean; readonly spent: boolean } | null {
-  for (const state of view.intents) {
-    const ask = state.asks.find((q) => q.cid === askCid);
-    if (ask) return { intent: state.id, verb: state.verb, issuer: state.issuer, askedBy: ask.entry.signer, detail: ask.entry.body["detail"] ?? null, cosign: WARD_COSIGN_VERBS.includes(state.verb),
-      spent: state.outcomes.some((o) => o.entry.signer === state.issuer) };
-  }
-  return null;
-}
-
-/** The answer door's refusal, or null where it may sign. An ask this vessel cannot see (it has not synced here) takes no answer,
- *  since nothing tells the door whether it names a ward act. For a ward verb it signs only what the plane counts: an answer to an ask
- *  the issuer signed, from a device other than the issuer, an approve naming the issuer as executor, and never one to an act whose
- *  outcome already spent it (the spend stands frozen at that outcome). */
-export function answerRefusal(asked: ReturnType<typeof askShown>, signer: string, executor: string, deny: boolean): string | null {
-  if (!asked) return "ward-ask-unseen: the ask has not reached this vessel; answer once it syncs";
-  if (!asked.cosign) return null;
-  if (asked.spent) return "ward-ask-spent: the ward act's outcome already spent its co-sign";
-  if (asked.issuer === signer) return "self-answer: a ward act takes another device of the face";
-  if (asked.askedBy !== asked.issuer) return "ask-signer: a ward act counts an answer only to its issuer's own ask";
-  if (!deny && executor.toLowerCase() !== asked.issuer) return "executor-mismatch: a ward act's approve names its issuer as executor";
-  return null;
-}
+/** The answer door's reading and refusal, shared with the browser's answer door (`ward-answer.ts`). */
+export { askShown, answerRefusal };
 
 /**
  * Sign one answer to an ask. The door signs no ward answer the plane would count as nothing: it refuses before it signs.
@@ -80,10 +58,16 @@ export function answerRefusal(asked: ReturnType<typeof askShown>, signer: string
  * device's OWN ward for the face, opened from its own human route for this one act and zeroed when the act settles; a passkey never
  * opens it. A joinee holds no face root, yet its ward stands: the join request founds the face's custody, and that founding binds
  * the ward beside it. A deny releases nothing and an answer to any other ask is no ward act, so neither asks a route.
+ *
+ * THE WARD ON THE WIRE: inside that unlock, this device's per-face ward key (`WardSeat.wardSign`, the key whose public half its
+ * admission into the face carries) signs (the answer, the ask's digest, the fleet frontier this vessel read), and the answer carries
+ * that frontier and that signature. An approve with no frontier read refuses `ward-cosign-frontier-unknown` before the ward opens.
  */
 export async function signIntentAnswer(input: {
   readonly group: string; readonly signer: IntentSigner; readonly ask: string; readonly executor: string; readonly deny: boolean;
-  readonly asked: ReturnType<typeof askShown>;
+  readonly asked: AskShown | null;
+  /** The cid of the fleet's signed frontier head as this vessel reads it now; null where it does not read known. */
+  readonly frontier: string | null;
   /** The face's handle index on this vessel, and the act's ward route. */
   readonly face: number; readonly ward?: WardCredential;
 }): Promise<SignedIntentEntry> {
@@ -92,7 +76,10 @@ export async function signIntentAnswer(input: {
   const asked = input.asked;
   const sign = () => buildAnswer({ group: input.group, signer: input.signer, ask: input.ask, executor: input.executor, verdict: input.deny ? "deny" : "approve", refs: [input.ask] });
   if (!asked.cosign || input.deny) return sign();
-  return withWardKeyCustody({ ordinal: input.face }, input.ward, () => sign(), `the co-sign approve of ${asked.verb}`);
+  const frontier = input.frontier;
+  if (frontier === null) throw new IntentRefused("ward-cosign-frontier-unknown: this vessel reads no known fleet frontier, so its approve names none");
+  return withWardKeyCustody({ ordinal: input.face }, input.ward, (seat) => buildWardedAnswer({ group: input.group, signer: input.signer, ask: input.ask,
+    detail: String(asked.detail ?? ""), executor: input.executor, frontier, wardSign: (bytes) => seat.wardSign(bytes) }), `the co-sign approve of ${asked.verb}`);
 }
 
 export interface IntentCommandOptions {
@@ -223,7 +210,7 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
 export function nodeWardCosignPort(repo: Repo, loaded: Pick<FaceFold, "group" | "projection" | "face" | "standing" | "heldFrontiers" | "frontier" | "stoodAt" | "verbs" | "signer"> & { readonly plane: Awaited<ReturnType<typeof loadFacePlane>> | null }): WardCosignPort {
   const { group, plane, projection, face, standing, heldFrontiers, frontier, stoodAt, verbs, signer } = loaded;
   return intentPlaneCosignPort({ group, requester: signer, verbs, plane, flush: () => repo.flush(),
-    face: () => faceRosterForIntents(projection, face.lineage), standing, heldFrontiers, frontier, stoodAt });
+    face: () => faceRosterForIntents(projection, face.lineage), standing, heldFrontiers, frontier, stoodAt, wardKey: (atom) => projection.wardKeys[atom] ?? null });
 }
 
 /** The gate's port over a loaded fold: the intents plane loads at the act, and a plane that cannot load leaves the port planeless. */
@@ -243,7 +230,7 @@ export async function loadNodeWardCosignPort(repo: Repo, catalogUrl: string | un
 }
 
 export async function runIntentCommand(opts: IntentCommandOptions): Promise<Record<string, unknown>> {
-  const { group, index, anchors, face, projection, plane, standing, heldFrontiers, verbs, atom, atomSeed, signer } = await loadIntentFace(opts.repo, opts.catalogUrl, { index: opts.face });
+  const { group, index, anchors, face, projection, plane, standing, heldFrontiers, frontier, verbs, atom, atomSeed, signer } = await loadIntentFace(opts.repo, opts.catalogUrl, { index: opts.face });
   const records = intentEntryRecordsOfGroup(plane.doc(), group);
   const view = () => readIntentPlane({
     group, records, verbs, heldFrontiers: heldFrontiers(), admissions: intentAdmissionRecordsOfGroup(plane.doc(), group),
@@ -275,7 +262,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
     return name;
   };
   let entry: SignedIntentEntry;
-  let shown: ReturnType<typeof askShown> = null;
+  let shown: AskShown | null = null;
   try {
     switch (opts.action) {
       case "issue": {
@@ -314,7 +301,8 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
         if (!target || !opts.executor) throw new IntentRefused("ask-or-executor-absent");
         const asked = askShown(view(), target);
         shown = asked;
-        entry = await signIntentAnswer({ group, signer, ask: target, executor: opts.executor, deny: !!opts.deny, asked, face: index, ...(opts.ward ? { ward: opts.ward } : {}) }); break;
+        entry = await signIntentAnswer({ group, signer, ask: target, executor: opts.executor, deny: !!opts.deny, asked, face: index, frontier: frontier(),
+          ...(opts.ward ? { ward: opts.ward } : {}) }); break;
       }
       case "claim":
         if (!target) throw new IntentRefused("intent-id-absent");

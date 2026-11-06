@@ -390,6 +390,9 @@ function buildTable(): readonly CarrierRow[] {
     // The face's own custody label: its fcid and the digest of its PersonaGroup. The holder reads it to check the floor index it unlocked by.
     faceRowOf({ row: "face-owner", target: tgt(["D"]), inner: /face-owner\.bin/, select: () => null, custody: "face-hot", keyClass: null,
          writer: "custody-holder", name: () => "face-owner" }),
+    // The face's ward signing key's public half on this device: the `wardKey` its admission into the face carries. No secret; it lands with the ward.
+    faceRowOf({ row: "face-ward-key", target: tgt(["D"]), inner: /face-ward-key\.bin/, select: () => null, custody: "face-hot", keyClass: null,
+         writer: "custody-holder", name: () => "face-ward-key" }),
     // A session switch's acts name two faces together, so they rest on this vessel alone and never in a document.
     id({ row: "switch-acts", target: tgt(["D"]), match: file(SWITCH_ACTS_FILE), custody: "hot", keyClass: null,
          writer: "switch-act-log (the session socket's switch acts)" }),

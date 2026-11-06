@@ -222,7 +222,7 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
   // THE DEVICE EDGE (`runDeviceAdmit`): the root signs the joinee's vessel key into this hearth's fleet, its admission under
   // the joining vessel's blinded tag the request carries.
   const { payload, hearth } = await (async () => {
-    try { return await runDeviceAdmit({ repo: opts.repo, catalogUrl: opts.catalogUrl, face, joineeVerifyingKey: request.atomKey, vesselTag: { vesselTag: request.vesselTag, vesselSig: request.vesselSig }, signedRequest: new TextEncoder().encode(JSON.stringify(request)), ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}), ...(opts.docUrl ? { islandDocUrl: opts.docUrl } : {}), ...(opts.ward ? { ward: opts.ward } : {}) }); }
+    try { return await runDeviceAdmit({ repo: opts.repo, catalogUrl: opts.catalogUrl, face, joineeVerifyingKey: request.atomKey, vesselTag: { vesselTag: request.vesselTag, vesselSig: request.vesselSig, wardKey: request.wardKey }, signedRequest: new TextEncoder().encode(JSON.stringify(request)), ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}), ...(opts.docUrl ? { islandDocUrl: opts.docUrl } : {}), ...(opts.ward ? { ward: opts.ward } : {}) }); }
     catch (error) { if (error instanceof DeviceAdmitTagRefused) throw new FleetJoinRefused(error.refusal, error.message); throw error; }
   })();
 
