@@ -7,6 +7,9 @@
  * device key (two capabilities in the #has-stack, never numbered planes). The seed surfaces
  * founder-only and throws when absent.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, readdirSync, rmSync, existsSync } from "node:fs";

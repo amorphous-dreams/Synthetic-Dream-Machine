@@ -57,7 +57,8 @@ export const EXCEPTIONS = [
   { rule: "clock", file: "tools/browser-weld/c4-served-anchor-control.mjs", match: "Date.now() < until", reason: "The control bounds only its own wait for browser source records." },
   { rule: "clock", file: "tools/browser-weld/leaf-continuity.mjs", match: "Date.now() < until", reason: "The browser probe bounds only its own wait for a predicate." },
   { rule: "clock", file: "tools/browser-weld/weld.mjs", match: "Date.now() > stop", reason: "The browser probe bounds only its own polling interval." },
-  { rule: "clock", file: "tools/e2e-shards.mjs", match: "Date.now() < deadline", reason: "The CI reader bounds only its own search for the run triggered by its push." },
+  { rule: "clock", file: "tools/e2e-shards.mjs", match: "now = Date.now", reason: "Own liveness: the find budget gives up on the tool's own push." },
+  { rule: "clock", file: "tools/burst-bisect.mjs", match: "now = Date.now", reason: "Own liveness: the find budget gives up on the tool's own lane push." },
   { rule: "clock", file: "tools/held-out-steps.mjs", match: "const left = deadline - Date.now()", reason: "The runner computes only its own child process timeout." },
   { rule: "clock", file: "tools/held-out-steps.test.mjs", match: "Date.now() - started <", count: 2, reason: "The two timeout tests each measure only their own completion time." },
   { rule: "retired-test", file: "packages/lararium-memetic-frame/tests/verdict.test.ts", match: "const retired: Record<string, string> = {", reason: "The frame verdict suite feeds malformed heads that a reader meets as foreign bytes; the record names input bytes." },
@@ -86,6 +87,7 @@ const OLD_SHAPE_COMMENT = /retired (?:spelling|shape|layout|name)|falls? back to
 // `statement` has its string literals blanked, so a clock named inside a string reads nothing; `keyed` keeps them,
 // so a quoted record key (`"requested-at":`) still names its field.
 function clockSink(statement, keyed = statement) {
+  if (/\b(?:now|clock)\s*=\s*Date\.now\b(?!\s*\()/.test(statement)) return true; // a Date.now default parameter hands the clock to a decision
   if (!CLOCK.test(statement)) return false;
   if (FIELD.test(keyed) || /\bDate\.now\s*\(\s*\)\s*\.toString\s*\(\s*\d+\s*\)/.test(statement)) return true;
   if (/\bnew\s+Date\s*\(\s*\)\s*\.toISOString\s*\(/.test(statement)) return true;

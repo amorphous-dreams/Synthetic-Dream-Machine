@@ -1,3 +1,4 @@
+import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
 /**
  * The herm-mesh witnesses' readers, held to a KNOWN POSITIVE. The partition witness once read a pointer field
  * that no pointer carries, so every read fell to one default and "advanced" could never hold: a witness that

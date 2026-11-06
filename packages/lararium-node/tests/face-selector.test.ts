@@ -3,6 +3,9 @@
  * face the composition mounts. Reds: two faces open and none named refuse by name and list them, the mounted face with them;
  * two faces open with one anchored refuse alike; no face refuses. Controls: a named face wins, one face open resolves it, a vessel's one face resolves even when it is not h0.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";

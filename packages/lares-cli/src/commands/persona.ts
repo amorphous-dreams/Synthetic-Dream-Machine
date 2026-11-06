@@ -25,6 +25,7 @@
  * operator-root this vessel holds — a joining vessel takes its face by `lares fleet join`, never mints a root here.
  */
 
+import { gatherWard, gatherWardRoute } from "../ward-door.js";
 import { faceOption } from "../face-option.js";
 import {
   faceStands, armRecoveryAtFounding, recoveryContactOffer, listFaceOrdinals, CustodyLocked, type FoundFaceResult,
@@ -307,7 +308,7 @@ async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
     if (!Number.isFinite(threshold)) throw new UsageError("`persona recovery-contact enrol` reads --threshold as a number; the rule is two");
     const offers = args.positional.slice(3);
     if (offers.length === 0) throw new UsageError("`persona recovery-contact enrol` takes the three recovery contacts' offer lines");
-    const r = await sealedAct("persona.recovery-contact.enrol", { handleIndex: index, offers: offers.join(" "), threshold });
+    const r = await sealedAct("persona.recovery-contact.enrol", { handleIndex: index, offers: offers.join(" "), threshold, ward: await gatherWardRoute(`lares persona recovery-contact enrol ${index}`) });
     emit(args, {
       ok: true,
       data: r,
@@ -414,7 +415,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
     console.log("  Keep both carriers yourself, apart from this device and apart from each other. Handing one to another person makes that person plus this device able to rebuild the root.");
     console.log(`  recorded-code   ${recordedCode}`);
     console.log(`  escrow-carrier  ${escrowCarrier}`);
-  }) : null;
+  }, await gatherWard(`lares persona new ${index} (the recovery split reads the face root)`)) : null;
 
   // The founding act above is the ONE door that mints a persona root; this reads the root it stood (or the one
   // already standing), never mints one. Then set the PRIVATE pet-name; renameOwnPersona keeps its own guard.

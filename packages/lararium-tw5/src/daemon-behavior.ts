@@ -19,6 +19,7 @@
 import { makeDelegationBook } from "./delegation-book.js";
 import {
   PROMOTE_PANEL_HAND_CODES,
+  SWARM_VERB_HAND_CODES,
   mkDaemonResolveBindingResult,
   mkDaemonGateVerbResult,
   mkDaemonWorldlineCompareResult,
@@ -177,9 +178,9 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
       // preserving old behavior for non-operator callers). Idempotent (each seed setTiddler-overwrites).
       if (opts.runnableHulls) seedDaemonProtocol(tw5, opts.runnableHulls, opts.faceIntents === true);
       const registry = new VerbTable();
-      // The panel's six verbs and the store door's `promote-orphan` row answer an ask that arrived on the surface path alone; every other
+      // The panel's six verbs, the store door's `promote-orphan` row and the swarm's hand-only rows answer an ask that arrived on the surface path alone; every other
       // origin (a session call, a meme put, a synced verb tiddler) refuses by the verb's own code before anything routes to main.
-      registry.handOnly({ ...PROMOTE_PANEL_HAND_CODES, "promote-orphan": "promote-needs-hand" });
+      registry.handOnly(DAEMON_HAND_ONLY_CODES);
       // Sovereign-worker: the data-plane reactors register HERE, in-worker, over the
       // IslandContext (ctx.composite/ctx.repo) — so they ride the dispatcher's
       // verify-then-delegate gate FOR FREE (a gate a main-thread jobRegistry
@@ -380,6 +381,13 @@ export interface LocalAsk { readonly requestId: string; readonly action: string;
  * its verb tiddler leaves the VM, so a summons reusing or overwriting an id reads as the synced claim it is. Kept to a
  * bound; an evicted id reads non-local, which refuses rather than lends.
  */
+/**
+ * The verbs the daemon island answers to a hand's surface gesture alone, each with the code it refuses under elsewhere: the promote panel's
+ * six, the store door's `promote-orphan`, and the swarm's three that set or issue (`swarm-show` stays open). A session-cleared face row
+ * passes (the socket already refused a seat); a channel ask, a meme put and a synced verb tiddler refuse by code.
+ */
+export const DAEMON_HAND_ONLY_CODES: Readonly<Record<string, string>> = { ...PROMOTE_PANEL_HAND_CODES, "promote-orphan": "promote-needs-hand", ...SWARM_VERB_HAND_CODES };
+
 export function makeLocalAskBook(bound = 4096): {
   add(ask: LocalAsk): void;
   has(ask: LocalAsk): boolean;

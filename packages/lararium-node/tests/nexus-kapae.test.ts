@@ -13,6 +13,9 @@
  * The signing is the a-multitude-of-one: one operator holds all three faces' seat keys and signs the
  * quorum with two of their OWN held seats; seats that rest in two vaults cross as a partial (nexus-kapae-two-vault).
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 
 import { afterEach, beforeEach, describe, expect } from "vitest";
 import { join } from "node:path";

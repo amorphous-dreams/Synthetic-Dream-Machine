@@ -13,6 +13,9 @@
  * state home — no founding, no daemon, no ceremony repo. The browser twin lives at
  * browser/tests/browser-persona-vault.test.ts; this closes the node side.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";

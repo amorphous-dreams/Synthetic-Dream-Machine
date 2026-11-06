@@ -11,6 +11,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/node/persona-lease
  */
+import type { WardCredential } from "../ward-credential.js";
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, raiseFaceFrontier, type LarDoc, ownEntry } from "@lararium/mesh";
 import { DAEMON_BAG_ID } from "@lararium/mesh";
@@ -29,6 +30,8 @@ export interface PersonaLeaseOptions {
   readonly repo: Repo;
   /** The face whose root signs; default the founding face. */
   readonly handleIndex?: number;
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
 }
 
 export interface PersonaLeaseResult {
@@ -57,7 +60,9 @@ export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<Person
   if (!anchors) throw new PersonaLeaseError(`this vessel holds no face at index ${handleIndex}`);
   const anchor = await loadFaceAnchorOfGroup(anchors.personaGroupId);
   if (!anchor) throw new PersonaLeaseError("this face holds no sealed anchor; re-found it");
-  const seed = await loadPersonaGroupRootSeed(handleIndex);
+  const seed = await loadPersonaGroupRootSeed(handleIndex, opts.ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
   const key = await ed25519VerifyingKeyFromSeed(seed);
   const face = await fleetFaceForVessel(opts.repo, key, anchor);
   if (!face) throw new PersonaLeaseError("this vessel reads no verified persona-KEL lineage for that root, so no advance can verify");
@@ -69,4 +74,5 @@ export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<Person
   if (raised !== anchor) await keepFaceAnchorOfGroup(raised);
   await opts.repo.flush();
   return { handleIndex, personaGroupId: anchors.personaGroupId, effective: r.effective, rolled: r.rolled, slot: r.slot, frontier: raised.frontier.leaseEpoch };
+  } finally { seed.fill(0); }
 }

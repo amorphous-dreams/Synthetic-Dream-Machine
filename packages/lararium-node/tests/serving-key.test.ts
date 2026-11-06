@@ -54,7 +54,7 @@ describe("the serving key at the founding", () => {
     await session.foundCustody({ io, homes, slots: [slotOf(PW)] });
     expect(existsSync(join(homes.identity, "s-slots.bin"))).toBe(true);           // CONTROL
     expect(existsSync(skTree(homes))).toBe(true);
-    expect([...carriers.CUSTODY_CLASSES]).toEqual(["floor", "floor-plain", "serving", "hot", "cold", "outbox", "face-hot", "face-cold"]);
+    expect([...carriers.CUSTODY_CLASSES]).toEqual(["floor", "floor-plain", "serving", "hot", "cold", "outbox", "face-hot", "face-cold", "ward-cold"]);
     const census = carriers.carrierCensus(homes);
     expect(census.find((e) => e.row === "s-slots")?.custody).toBe("floor");        // CONTROL
     const row = census.find((e) => e.row === "sk-slots");

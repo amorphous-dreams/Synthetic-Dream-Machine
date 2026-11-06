@@ -112,3 +112,68 @@ describe("promptSecret keeps the rest of a pasted chunk", () => {
     await expect(promptSecret("a: ", tty as never)).rejects.toThrow(/not a TTY/);
   });
 });
+
+describe("the ward door reads a hand's route from a terminal alone (row 7, S2)", () => {
+  test("RED: a passphrase in the environment refuses `ward-needs-tty`, and so does a piped stdin; CONTROL: a TTY stream answers", async () => {
+    quiet();
+    const { readWardPassphrase } = await import("../src/prompt-secret.js");
+    const tty = new FakeTty();
+    await expect(readWardPassphrase("lares promote commit", { stream: tty as never, env: { LARES_WARD_PASSPHRASE: "typed-by-a-script" } })).rejects.toThrow(/ward-needs-tty/);
+    await expect(readWardPassphrase("lares promote commit", { stream: tty as never, env: { LARES_PASSPHRASE: "typed-by-a-script" } })).rejects.toThrow(/ward-needs-tty/);
+    const piped = Object.assign(new FakeTty(), { isTTY: false });
+    await expect(readWardPassphrase("lares promote commit", { stream: piped as never, env: {} })).rejects.toThrow(/ward-needs-tty/);
+    const answered = readWardPassphrase("lares promote commit", { stream: tty as never, env: {} });
+    tty.feed("the hand's route\r");
+    expect(await answered).toBe("the hand's route");
+  });
+});
+
+describe("the product ward door answers from no file (S2 cold read, P3)", () => {
+  test("RED: under a root that carries the harness's marker, the terminal reader refuses `ward-needs-tty` and never answers the test route; CONTROL: a gatherer the test seats explicitly answers", async () => {
+    const { mkdtempSync, writeFileSync, rmSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const { ttyWardRoute, gatherWardRoute } = await import("../src/ward-door.js");
+    const { seatWardGatherer } = await import("@lararium/node");
+    const root = mkdtempSync(join(tmpdir(), "ward-door-marker-"));
+    writeFileSync(join(root, ".lar-test-scratch"), "");
+    const prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
+    try {
+      await expect(ttyWardRoute("lares promote commit")).rejects.toThrow(/ward-needs-tty/);
+      seatWardGatherer(async () => [{ kind: "passphrase", passphrase: "an explicit test route" }]);
+      expect(await gatherWardRoute("lares promote commit")).toEqual([{ kind: "passphrase", passphrase: "an explicit test route" }]);
+    } finally {
+      if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("the product founds no face from a marker (S2 re-read, P2)", () => {
+  test("RED: under a root carrying the harness's marker, the product's face-route prompt refuses with no terminal and never answers the published test route; CONTROL: the harness import seats the test route explicitly", async () => {
+    const { mkdtempSync, writeFileSync, rmSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join, resolve } = await import("node:path");
+    const { pathToFileURL } = await import("node:url");
+    const { gatherNewFaceRoute } = await import("../src/face-route-prompt.js");
+    const root = mkdtempSync(join(tmpdir(), "face-route-marker-"));
+    writeFileSync(join(root, ".lar-test-scratch"), "");
+    const prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
+    try {
+      const answer = await gatherNewFaceRoute({ label: "h0" }).then((slots) => JSON.stringify(slots), (e: Error) => e.name);
+      expect(answer, "the product never binds a face to the published test route").not.toContain("test-founding-passphrase");
+      expect(answer).toBe("CredentialTtyRefusal");
+      const node = await import("@lararium/node");
+      node.seatFaceRoute(null);
+      const harness = await import(pathToFileURL(resolve(import.meta.dirname, "../../../tools/test-ward-route.mjs")).href) as { seatHarnessRoutes: (n: unknown) => void };
+      expect(node.faceRouteSeated(), "importing the harness module into a process that is no CLI seats nothing").toBe(false);
+      harness.seatHarnessRoutes(node);
+      expect(await node.gatherFaceRoute("h0")).toEqual([{ t: 1, pins: [{ kind: "passphrase", passphrase: "test-founding-passphrase" }] }]);
+    } finally {
+      if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});

@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "vitest";
@@ -31,7 +31,11 @@ function deriveEntries(): string[] {
         const targets = /new\s+(?:SharedWorker|Worker)\s*\(\s*(?:new\s+URL\s*\(\s*)?["']([^"']+)["']|["']([^"']+)\?(?:sharedworker|worker)(?:&[^"']*)?["']/g;
         for (const match of source.matchAll(targets)) {
           const target = match[1] ?? match[2];
-          if (target.startsWith(".")) entries.add(resolve(dirname(file), target));
+          // A TypeScript source names its sibling by the emitted `.js` (the ESM convention the built package resolves); the entry is the `.ts` beside it.
+          if (target.startsWith(".")) {
+            const at = resolve(dirname(file), target);
+            entries.add(/\.js$/.test(at) && !existsSync(at) && existsSync(at.replace(/\.js$/, ".ts")) ? at.replace(/\.js$/, ".ts") : at);
+          }
         }
       }
     }

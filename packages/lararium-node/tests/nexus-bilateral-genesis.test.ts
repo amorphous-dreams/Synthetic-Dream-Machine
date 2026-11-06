@@ -30,6 +30,9 @@
  * running peer reads the new member at BOUNDED STALENESS, never instantly. This headless proof folds each
  * hearth's board directly off its own store, so it proves the CONTRACT, not the wire's refold latency.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";

@@ -3,7 +3,7 @@
 // test pushes anything real and none reads GitHub.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -1089,4 +1089,67 @@ test("RED: a queued entry refused for its SHIP at chain time drops by name and t
 test("RED: the table classes every tsconfig (`pnpm -r typecheck` reads them)", () => {
   const table = JSON.parse(readFileSync(new URL("./security-class-paths.json", import.meta.url), "utf8"));
   for (const p of ["tsconfig.json", "tsconfig.base.json", "packages/lararium-mesh/tsconfig.json", "packages/lararium-tw5/tsconfig.build.json"]) assert.deepEqual(LT.securityHits(table, [p]), [p], p);
+});
+
+// ── the house poll floor (operator law 2026-11-05, after the GitHub API limit ran out): poll CI no closer than 3 minutes ──
+/** Every wait a land makes, recorded: a dark road read and the lane-run cancel (--local), then the held-out wait, a dark
+ *  train-run read and a NO RUN YET round (QUEUE). `opts` carries the land's own options (`poll`). */
+async function recordedWaits(opts = {}) {
+  const slept = [], sleep = async (ms) => { slept.push(ms); };
+  const w = world(["a"]);
+  w.commit(w.work, "road.txt", "r\n", "a road commit"); sh(w.work, "push", "-q", "origin", SPAN);
+  let n = 0, c = 0;
+  const local = await run(w, { sleep, verdict: async () => (++n === 1 ? { ci: "unreadable", heldOut: "unreadable" } : { ci: "green", heldOut: "green" }), cancelRuns: async () => (++c === 1 ? [] : [1]) }, opts, ["a"]);
+  assert.equal(local.code, 0, local.out);
+  const localWaits = slept.length;
+  const w2 = world(["a"]);
+  spanAhead(w2);
+  const { ops } = opsQ(w2); const base = ops.ciRuns, baseHeld = ops.heldOut; const lines = []; ops.log = (l) => lines.push(l);
+  let held = 0; const asked = new Map();
+  Object.assign(ops, {
+    sleep,
+    heldOut: async (span) => (++held === 1 ? { covered: null, state: null, inFlight: 1 } : baseHeld(span)),
+    ciRuns: async (sha) => {
+      const k = (asked.get(sha) ?? 0) + 1; asked.set(sha, k);
+      if (sha !== originRef(w2, SPAN) && k === 1) throw Object.assign(new Error("Command failed: gh run list"), { stderr: "HTTP 502: Bad Gateway" });
+      if (sha !== originRef(w2, SPAN) && k === 2) return [];
+      return base(sha);
+    },
+  });
+  const q = await LT.landTrain({ specs: specsOf(w2), span: SPAN, cwd: w2.work, shipDir: join(w2.dir, "ship"), queueDir: join(w2.dir, "q"), ...opts }, ops);
+  assert.equal(q.code, 0, lines.join("\n"));
+  assert.match(lines.join("\n"), /NO RUN YET/);
+  return { slept, localWaits, queueWaits: slept.length - localWaits };
+}
+
+test("RED: every land wait reads the house poll floor: the UNREADABLE retry, the lane-run cancel, the held-out wait, the train run's dark read and NO RUN YET each sleep at least 180000 ms", async () => {
+  const r = await recordedWaits();
+  assert.ok(r.localWaits >= 2 && r.queueWaits >= 3, `every wait kind slept (${r.localWaits} local, ${r.queueWaits} queue)`);
+  for (const ms of r.slept) assert.ok(ms >= 180000, `a wait of ${ms} ms polls closer than the floor (${r.slept.join(" ")})`);
+  assert.equal(LT.POLL_FLOOR_S, 180, "one named floor, three minutes");
+});
+
+test("CONTROL: poll 300 paces each land wait at 300000 ms, and --plan prints the poll", async () => {
+  const r = await recordedWaits({ poll: 300 });
+  assert.ok(r.slept.length >= 5);
+  assert.deepEqual([...new Set(r.slept)], [300000], r.slept.join(" "));
+  const w = world();
+  const p = await run(w, {}, { plan: true, poll: 300 });
+  assert.equal(p.code, 0, p.out);
+  assert.match(p.out, /^PLAN poll CI every 300 s \(the house floor 180 s\)$/m);
+});
+
+test("RED: a poll under the floor refuses by name (2): the library door, and the CLI in every mode before it reads anything", async () => {
+  const w = world(["a"]);
+  const r = await run(w, {}, { poll: 30 }, ["a"]);
+  assert.equal(r.code, 2, r.out);
+  assert.match(r.out, /poll-under-floor: 30 < 180/);
+  assert.equal(originRef(w, SPAN), w.base, "nothing landed");
+  const cli = new URL("./land-train.mjs", import.meta.url).pathname;
+  const lane = `a:1:${"a".repeat(40)}:/nonexistent/msg`;
+  for (const argv of [["--poll", "30", lane], ["--plan", "--poll", "30", lane], ["--poll", "30", "run"], ["--poll", "abc", "run"]]) {
+    const c = spawnSync(process.execPath, [cli, ...argv], { cwd: w.dir, encoding: "utf8" });
+    assert.equal(c.status, 2, `${argv.join(" ")}: ${c.stdout}${c.stderr}`);
+    assert.match(c.stderr, argv[1] === "abc" || argv[2] === "abc" ? /poll-under-floor: abc < 180|--poll wants seconds/ : /poll-under-floor: 30 < 180/, argv.join(" "));
+  }
 });

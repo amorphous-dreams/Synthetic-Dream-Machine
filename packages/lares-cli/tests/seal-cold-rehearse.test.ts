@@ -17,6 +17,9 @@
  *       typing refuses.
  *   An unarmed head refuses `rotation-unarmed`: `seal-rotate-refusal-codes.test.ts`, which builds that head.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { faceDir, listFaceFiles, readFaceIndexSync } from "@lararium/node";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";

@@ -6,8 +6,8 @@ export type PromotePanelApi = ReturnType<typeof promotePanelApi>;
 
 /** Adapt the promotion doors to a wiki-indexed panel. */
 export function promotePanelApi(deps: PromoteCommandDeps & { wikis: () => Promise<readonly string[]> }) {
-  const act = (action: "commit" | "drop" | "orphan" | "raise" | "lower", wiki: string, digest: string, decision?: "keep" | "drop") =>
-    promoteCommand({ action, wiki, digest, ...(decision ? { decision } : {}) }, deps);
+  const act = (action: "commit" | "drop" | "orphan" | "raise" | "lower", wiki: string, digest: string, decision?: "keep" | "drop", ward?: unknown) =>
+    promoteCommand({ action, wiki, digest, ...(decision ? { decision } : {}), ...(ward !== undefined ? { ward } : {}) }, deps);
   return {
     async snapshot(): Promise<PromotePanelSnapshot> {
       const wikis = await deps.wikis();
@@ -16,11 +16,11 @@ export function promotePanelApi(deps: PromoteCommandDeps & { wikis: () => Promis
         catch (error) { return { wiki, error: error instanceof Error ? error.message : String(error) }; }
       })) };
     },
-    commit: (wiki: string, digest: string) => act("commit", wiki, digest),
+    commit: (wiki: string, digest: string, ward?: unknown) => act("commit", wiki, digest, undefined, ward),
     drop: (wiki: string, digest: string) => act("drop", wiki, digest),
     orphan: (wiki: string, digest: string, decision: "keep" | "drop") => act("orphan", wiki, digest, decision),
     raise: (wiki: string, digest: string) => act("raise", wiki, digest),
-    lower: (wiki: string, digest: string) => act("lower", wiki, digest),
+    lower: (wiki: string, digest: string, ward?: unknown) => act("lower", wiki, digest, undefined, ward),
   };
 }
 

@@ -44,7 +44,7 @@
  */
 
 import {
-  DAEMON_BAG_ID, VOLATILE_VM_PREFIX,
+  DAEMON_BAG_ID, VOLATILE_VM_PREFIX, isSwarmUri,
   LARES_VERB_EVENT_TAG, LARES_VERB_TAG,
 } from "./lar-uris.js";
 import { sha256Hex, canonicalJsonBytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
@@ -121,14 +121,15 @@ export const RECEIPT_FACT_URI_PREFIX = `${DAEMON_BAG_ID}/receipts/`;
 export const WARD_AUDIT_URI_PREFIX = `${DAEMON_BAG_ID}/ledger/ward/`;
 
 /**
- * True for a title whose record never projects to disk: a receipt fact, a verb summons, a ward audit.
+ * True for a title whose record never projects to disk: a receipt fact, a verb summons, a ward audit, a swarm control.
  * The makers stamp such a record `disk-projection: "no"`; no file for it ever comes from the projector,
  * so a file standing at its address counts as foreign.
  */
 export function neverProjects(title: string): boolean {
   return title.startsWith(RECEIPT_FACT_URI_PREFIX)
     || title.startsWith(SUMMONS_URI_PREFIX)
-    || title.startsWith(WARD_AUDIT_URI_PREFIX);
+    || title.startsWith(WARD_AUDIT_URI_PREFIX)
+    || isSwarmUri(title);
 }
 
 /** A file whose ingest would write a record that never projects to disk. */

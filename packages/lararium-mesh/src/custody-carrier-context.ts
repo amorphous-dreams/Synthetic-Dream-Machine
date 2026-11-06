@@ -7,15 +7,15 @@
  * context from the authenticated row selector on open; a ciphertext never names its own face.
  *
  * Each field rides as a 4-byte big-endian length and then its UTF-8 bytes, in one fixed order, so no
- * boundary shifts between fields can spell the same bytes. The three class domains differ by name alone.
+ * boundary shifts between fields can spell the same bytes. The class domains differ by name alone.
  *
  * The encoder seals nothing. `writeSealedCarrier` takes its bytes in a later step.
  */
 
-import { CUSTODY_D_DOMAIN, CUSTODY_F_DOMAIN, CUSTODY_S_DOMAIN } from "./domains.js";
+import { CUSTODY_D_DOMAIN, CUSTODY_F_DOMAIN, CUSTODY_S_DOMAIN, CUSTODY_WARD_DOMAIN } from "./domains.js";
 
-/** The custody class a context belongs to. */
-export type CustodyContextClass = "D" | "F" | "S";
+/** The custody class a context belongs to. `W` names a warded D row: the face's root seed, under its ward key (`ward-slots`). */
+export type CustodyContextClass = "D" | "F" | "S" | "W";
 
 /** What a custody seal binds. */
 export interface CarrierContextFields {
@@ -34,12 +34,12 @@ export interface CarrierContextFields {
 }
 
 const CLASS_OF_DOMAIN: ReadonlyMap<string, CustodyContextClass> = new Map([
-  [CUSTODY_D_DOMAIN, "D"], [CUSTODY_F_DOMAIN, "F"], [CUSTODY_S_DOMAIN, "S"],
+  [CUSTODY_D_DOMAIN, "D"], [CUSTODY_F_DOMAIN, "F"], [CUSTODY_S_DOMAIN, "S"], [CUSTODY_WARD_DOMAIN, "W"],
 ]);
 
 const encoder = new TextEncoder();
 
-/** The class a domain names, or null for a domain outside the three. */
+/** The class a domain names, or null for a domain outside the class domains. */
 export function custodyClassOfDomain(domain: string): CustodyContextClass | null {
   return CLASS_OF_DOMAIN.get(domain) ?? null;
 }

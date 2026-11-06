@@ -72,7 +72,7 @@ import { makeCatalogAccessor } from "@lararium/tw5";
 // `CustodyLocked`.
 import {
   runInit, runFoundTheFace, foundSeedCharter, loadIdentityAnchors, openNodeVessel,
-  larSealHome, readNexusDoc, writeNexusDoc, seatFaceRoute,
+  larSealHome, readNexusDoc, writeNexusDoc, seatWardGatherer, seatFaceRoute,
 } from "../../dist/src/index.js";
 import { mountHttpFaceDispatcher } from "../../dist/src/http-face-dispatcher.js";
 import { hearthSovereignPin } from "../../dist/src/hearth-sovereign-pin.js";
@@ -86,6 +86,8 @@ import { direct } from "../direct-store.js";
 import { TEST_CUSTODY, TEST_SLOT, openTestCustody } from "../found-route.js";
 // The founding runs from dist/, so the face route seats on dist/'s copy of the seam.
 seatFaceRoute(async () => [TEST_SLOT]);
+// A root act this suite drives with no ward route asks its "person", who answers the same test route (seat-harness#/the-ward).
+seatWardGatherer(async () => TEST_SLOT.pins.flatMap((pin) => (pin.kind === "passphrase" ? [{ kind: "passphrase" as const, passphrase: pin.passphrase }] : [])));
 import { loadFaceAtomOfGroup } from "../../src/face-atom-store.js";
 
 // ---------------------------------------------------------------------------

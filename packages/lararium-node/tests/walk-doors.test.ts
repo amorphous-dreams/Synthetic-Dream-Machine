@@ -12,6 +12,9 @@
  *   · `walk invite` hands out the newest token with the hearth's relay; an empty wallet refuses;
  *   · RED: the walk and hosting directories stand owner-only (0700), and an existing wider one is re-moded.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { describe, expect } from "vitest";
 import { seatedCustody } from "../src/custody-seat.js";
 import { holdSealsUntilBothArrive } from "./custody-seat-fixture.js";

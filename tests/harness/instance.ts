@@ -18,6 +18,7 @@
  * exercise the live model, not fixtures).
  */
 
+import { pathToFileURL } from "node:url";
 import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
@@ -52,6 +53,7 @@ import { tmpdir } from "node:os";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
+const TEST_WARD_ROUTE = pathToFileURL(join(REPO_ROOT, "tools/test-ward-route.mjs")).href;
 const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
 const NODE_CWD  = join(REPO_ROOT, "packages/lararium-node");
 
@@ -147,7 +149,8 @@ function seedCustodyFor(env: Record<string, string>, args: readonly string[]): v
 function runCli(env: Record<string, string>, args: readonly string[]): Promise<CliResult> {
   seedCustodyFor(env, args);
   return new Promise((resolve) => {
-    const child = spawn(process.execPath, [CLI_BIN, ...args], {
+    // The harness hands its staged CLI the test ward route explicitly (the product binary never answers one from a file).
+    const child = spawn(process.execPath, ["--import", TEST_WARD_ROUTE, CLI_BIN, ...args], {
       env: { ...process.env, ...env },
       cwd: REPO_ROOT,
     });

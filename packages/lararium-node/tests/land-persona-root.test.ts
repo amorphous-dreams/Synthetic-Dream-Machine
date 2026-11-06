@@ -9,6 +9,9 @@
  *
  * Scratch custody, synthetic keys. Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import * as ed from "@noble/ed25519";

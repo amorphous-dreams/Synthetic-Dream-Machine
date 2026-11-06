@@ -8,6 +8,9 @@
  *       another place's claim and a seal the claim's head does not seat each refuse and the board keeps its count (CONTROL: the honest
  *       partial still lands afterwards).
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 /** A handshake inside every seat signature: a vector may run one step before the next signature completes. */

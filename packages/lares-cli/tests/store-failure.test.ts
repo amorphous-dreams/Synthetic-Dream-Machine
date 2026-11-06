@@ -5,6 +5,9 @@
  * faults (another holder, a door that never answered, a wait that ended) each read under their own code. No store
  * refusal reaches a script as a bare `refused` or `error`.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its ward acts ask the suite's person (seat-harness#/the-ward).
+seatSuiteWard();
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../src/local-connector.js", async (importOriginal) => {
@@ -15,6 +18,11 @@ vi.mock("../src/local-connector.js", async (importOriginal) => {
 vi.mock("../src/sealed-act-door.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/sealed-act-door.js")>();
   return { ...actual, sealedAct: vi.fn(async () => ({ face: 0 })) };
+});
+// `handle rotate` is a ward act: the standing vessel parks the typed route over one custody frame and answers a ticket.
+vi.mock("../src/custody-door.js", async (importOriginal) => {
+  const real = await importOriginal<typeof import("../src/custody-door.js")>();
+  return { ...real, sendCustodyFrame: vi.fn(async (frame: { op: string }) => (frame.op === "ward" ? { op: "ward", ref: "ward-ticket-1" } : null)) };
 });
 vi.mock("../src/session-connector.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/session-connector.js")>();

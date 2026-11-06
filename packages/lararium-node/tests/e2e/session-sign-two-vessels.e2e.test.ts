@@ -56,12 +56,14 @@ vi.mock("../../dist/src/vessel-island-pool.js", async (importOriginal) => {
   return { ...actual, VesselIslandPool: CapturingPool };
 });
 
-const { runInit, runFoundTheFace, foundSeedCharter, openNodeVessel, openNodeHerm, seatFaceRoute } = await import("../../dist/src/index.js");
+const { runInit, runFoundTheFace, foundSeedCharter, openNodeVessel, openNodeHerm, seatFaceRoute, seatWardGatherer } = await import("../../dist/src/index.js");
 const { mountHttpFaceDispatcher } = await import("../../dist/src/http-face-dispatcher.js");
 const { withLarRoot } = await import("../../../../tests/harness/with-lar-root.js");
 const { direct } = await import("../direct-store.js");
 const { TEST_CUSTODY, TEST_SLOT } = await import("../found-route.js");
 seatFaceRoute(async () => [TEST_SLOT]);
+// A root act this suite drives with no ward route asks its "person", who answers the same test route (seat-harness#/the-ward).
+seatWardGatherer(async () => TEST_SLOT.pins.flatMap((pin) => (pin.kind === "passphrase" ? [{ kind: "passphrase" as const, passphrase: pin.passphrase }] : [])));
 
 const BASE = join(tmpdir(), `lar-session-sign-two-${Date.now()}`);
 const LIFT = { root: join(BASE, "lift") };
@@ -113,7 +115,7 @@ describe("the herm floor and the lifted vessel in one process", () => {
   }, 240_000);
 
   afterAll(async () => {
-    await Promise.all([wssLift, wssHerm].map((w) => new Promise<void>((res) => w?.close(() => res()))));
+    await Promise.all([wssLift, wssHerm].map((w) => new Promise<void>((res) => (w ? w.close(() => res()) : res()))));
     await Promise.all([httpLift, httpHerm].map((h) => new Promise<void>((res) => (h ? h.close(() => res()) : res()))));
     try { rmSync(BASE, { recursive: true, force: true }); } catch { /* best-effort */ }
   }, 60_000);

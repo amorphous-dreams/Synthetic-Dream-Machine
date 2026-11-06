@@ -13,7 +13,7 @@ import {
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 import { carrierTable, type CarrierRow, type CustodyHomes } from "./vault-carriers.js";
-import { FACE_TREE_FILE, FACES_DIR, faceDir, faceTreePath } from "./face-index.js";
+import { FACE_TREE_FILE, FACES_DIR, WARD_TREE_FILE, faceDir, faceTreePath } from "./face-index.js";
 
 /** The store namespace every node D context binds: one vessel store. */
 export const FACE_STORE = "lares-vessel";
@@ -36,12 +36,13 @@ export function faceCarrierFor(homes: CustodyHomes, fcid: string, file: string, 
 /** Every carrier standing in one face's directory that a face row names, as the sealed writer's census wants them. */
 export async function faceCarriersOf(io: Pick<CustodyIo, "list">, homes: CustodyHomes, fcid: string): Promise<FaceCarrier[]> {
   const dir = faceDir(homes.identity, fcid);
-  const rows = carrierTable().filter((r) => r.faceRow !== undefined);
+  // A warded row rests under the face's WARD key, never its FCK: an FCK rotation re-seals none of them, and the ward tree stays as it stands.
+  const rows = carrierTable().filter((r) => r.faceRow !== undefined && r.custody !== "ward-cold");
   const out: FaceCarrier[] = [];
   for (const path of await io.list()) {
     if (!path.startsWith(`${dir}/`)) continue;
     const file = path.slice(dir.length + 1);
-    if (file === FACE_TREE_FILE || file.includes("/")) continue;
+    if (file === FACE_TREE_FILE || file === WARD_TREE_FILE || file.includes("/")) continue;
     const row = rows.find((r) => r.faceRow!.inner.test(file));
     if (row) out.push(faceCarrierFor(homes, fcid, file, row));
   }

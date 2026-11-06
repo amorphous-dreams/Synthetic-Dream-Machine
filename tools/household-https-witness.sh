@@ -255,7 +255,9 @@ docker run --rm --name "$PROJECT-seed" --user "$LARES_UID:$LARES_GID" \
   -v "$LARES_STATE:/state" -v "$TOOLS:/app/tools:ro" --tmpfs /tmp:mode=1777 \
   --entrypoint sh "$IMAGE" -ec \
   'node tools/test-scratch-marker.mjs /state && node tools/seed-test-custody.mjs /state' >/dev/null
-compose --profile offline run --rm -T offline vessel found --hearth --name household-witness --skip-build --root /state --genesis /app/genesis >/dev/null
+# The founding's face route comes from the harness explicitly (the product founds no face from a marker): the test tools mount and
+# the import ride this one run alone (seat-harness#/the-ward).
+compose --profile offline run --rm -T -v "$TOOLS:/app/tools:ro" -e NODE_OPTIONS=--import=file:///app/tools/test-ward-route.mjs offline vessel found --hearth --name household-witness --skip-build --root /state --genesis /app/genesis >/dev/null
 export LARES_TLS_CERT="$CERT" LARES_TLS_KEY="$KEY"
 compose --profile https up -d lares terminator >/dev/null 2>&1
 tries=0

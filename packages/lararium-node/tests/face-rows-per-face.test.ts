@@ -2,6 +2,9 @@
  * K15 Wave D, slice 2: the roster family and the recognition book rest one row per face. A locked face lists by its public
  * index alone; a command names the face it acts as and no choice rests on disk; each face's handle-book sits in its own row.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
