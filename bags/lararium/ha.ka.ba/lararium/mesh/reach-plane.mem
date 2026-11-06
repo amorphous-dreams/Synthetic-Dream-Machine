@@ -186,7 +186,7 @@ Operator (2026-11-06): "That key-slot starts at contract from day one. I need pe
 | Discord | unspecified | PERSONAGROUP | placeholder |
 | Porkbun DNS | house DNS | VEIL | placeholder; node vessel alone, never syncs |
 
-A placeholder names a tier-declared credential row with health `absent`; it carries no secret bytes and crosses nothing until the operator pastes an attenuated token on a node TTY. Only the node's certificate act reads the Porkbun credential. Tests use synthetic tokens alone.
+A placeholder names a tier-declared credential row with health `absent`; it carries no secret bytes and crosses nothing until the operator pastes an attenuated token on a node TTY. The Porkbun slot holds the registrar's API key pair, never a certificate: the certificate stands as the issuer's OUTPUT, and the API keys stand as its input (operator, 2026-11-06: //"My ruling was for porkbun API keys, not certs."//). Before the vault stands, the pair rests as the two operator-owned files the one-shot DNS-01 issuer reads (stable-founding-road, the DNS credential); once the vault stands after the hearth, the pair moves into this VEIL slot, the files retire, and the issuer reads the pair through the node's narrow certificate act alone. Certificates and their private keys never enter the vault. Tests use synthetic tokens alone.
 
 !!! Recipient lifecycle
 
@@ -317,6 +317,6 @@ A chainless face establishes `no store` through that door: no path can stand one
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9Dex2kNTf75cPrR3YLvcpLj5pE3QANaMDRrJChfOmQM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Zs-cVexj5X6Dy73bLexg14XGF9tRCDYKmxVqlTfZ214`>>
 
 <<^ code=`&#x0004;` to=`?`>>
