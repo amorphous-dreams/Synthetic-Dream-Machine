@@ -85,7 +85,7 @@ import {
   type WideningRead,
 } from "@lararium/mesh";
 import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
-import { keepBrowserFaceAtomSeed, mintBrowserFaceAddressSecret, readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
+import { browserVesselFaceTagDoor, keepBrowserFaceAtomSeed, mintBrowserFaceAddressSecret, readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import {
   loadBrowserVeilArchive, saveBrowserVeilArchive,
 } from "./browser-keyhive-archive.js";
@@ -98,7 +98,7 @@ import {
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
   listBrowserPersonaRoots, loadBrowserActivePersona,
   makeBrowserIdbPersonaVault, makeBrowserPersonaPetnameStore,
-  openVesselIdb, idbGet, idbPut, loadBrowserPlaceKel, browserVesselFaceTagDoor,
+  openVesselIdb, idbGet, idbPut, loadBrowserPlaceKel,
 }                                            from "./browser-vessel-identity.js";
 import type { BrowserVesselIdentity }        from "./browser-vessel-identity.js";
 import { personaPanelStateArgs }             from "./persona-panel-state.js";

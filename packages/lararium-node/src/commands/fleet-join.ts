@@ -50,7 +50,8 @@ import { FaceHouseholdAdmitRefused, ensureFaceHouseholdAdmit, ensureFaceHousehol
 import { keepHearthFloorPins } from "../hearth-floor-pin-store.js";
 import { stoodFloorPins } from "../hearth-sovereign-pin.js";
 import { nexusCharterDocPath, parseNexusDoc } from "../nexus-doc.js";
-import { vesselFaceTagDoor, vesselFloorKeyDoor } from "../node-vessel-identity.js";
+import { vesselFloorKeyDoor } from "../node-vessel-identity.js";
+import { vesselFaceTagDoor } from "../vessel-face-tag-store.js";
 import type { NexusLeaf } from "../nexus-leaf.js";
 import { carriedAdmitOfFleetJoin } from "@lararium/keyhive";
 import { standingFaceScopes } from "../face-root-holdings.js";
@@ -306,7 +307,7 @@ export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Pr
         return minted.publicKey;
       },
       sign: (image) => signHex(image, seed),
-      vesselTag: await vesselFaceTagDoor(),
+      vesselTag: vesselFaceTagDoor(),
     });
     if (isRefusal(request)) throw new FleetJoinRefused(request.refusal, "the request this vessel composed does not read back.");
     await keepPendingFleetJoin(offer.personaGroup, { request, offer, sealSecret: hex(seal.secret) });

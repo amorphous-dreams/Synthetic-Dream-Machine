@@ -286,7 +286,8 @@ export {
 } from "./cas-wire.js";
 export type { CasWireServerDeps, CasWireFetch } from "./cas-wire.js";
 
-export { loadVesselVerifyingKey, vesselPlaceSignerDoor, vesselFloorKeyDoor, vesselFaceTagDoor, FloorKeyDoorRefused, loadPlaceKelChain, loadPlaceAid } from "./node-vessel-identity.js";
+export { loadVesselVerifyingKey, vesselPlaceSignerDoor, vesselFloorKeyDoor, FloorKeyDoorRefused, loadPlaceKelChain, loadPlaceAid } from "./node-vessel-identity.js";
+export { vesselFaceTagDoor } from "./vessel-face-tag-store.js";
 export { rotateRelayGateSeed, openRelayGateSeed, RelayGateSeedRefused } from "./relay-gate-seed.js";
 export { rotatePlace, reconcilePlaceRotation } from "./place-rotation.js";
 export { faceSigningSeat, FaceSigningRefused } from "./face-signing-seat.js";

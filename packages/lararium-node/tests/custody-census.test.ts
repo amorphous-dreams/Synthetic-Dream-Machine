@@ -16,6 +16,7 @@ const SPEC: ReadonlyArray<readonly [row: string, classes: readonly CustodyPart[]
   ["anchors", ["D"], false], ["persona-roster", ["D"], false],
   ["persona-petnames", ["D"], false], ["persona-declarations", ["D"], false],
   ["public-handles", ["D"], false], ["vessel-face-key", ["D"], false], ["face-address-secret", ["D"], false],
+  ["vessel-face-tag", ["D"], false], ["vessel-face-tag-ask", ["D"], false],
   ["fleet-join-pending", ["D"], false], ["face-join-record", ["D"], false], ["handle-book", ["D"], false],
   ["recovery-contact-set", ["D"], false], ["face-provisional", ["D"], false], ["hosting-state", ["D"], false],
   ["hosting-spent", ["D"], false], ["hosting-carry", ["D"], false], ["walk", ["D"], false],

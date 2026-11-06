@@ -19,14 +19,14 @@ import {
   DOMAIN_ROOT, readFleetJoinRequest, vesselFaceTagFields, vesselFaceTagHolds, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKey,
 } from "@lararium/mesh";
 import { certificateImage } from "../../lararium-mesh/src/face-proof-subjects.js";
-import { browserVesselFaceTagDoor, generateOrLoadBrowserVesselIdentity, openVesselIdb, idbGet, FLEET_JOIN_STORE } from "../src/browser-vessel-identity.js";
+import { generateOrLoadBrowserVesselIdentity, openVesselIdb, idbGet, FLEET_JOIN_STORE } from "../src/browser-vessel-identity.js";
 import { readKeystoreRow, withCustodyRows } from "../src/browser-custody.js";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import {
   browserFleetJoinAbandon, browserFleetJoinLand, browserFleetJoinRequest, browserFleetJoinSettle, browserVesselFaceKeyCustody,
 } from "../src/browser-fleet-join.js";
 import { chain, pair, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
-import { readBrowserFaceAtom } from "../src/browser-face-atom.js";
+import { browserVesselFaceTagDoor, readBrowserFaceAtom } from "../src/browser-face-atom.js";
 import { placeSeed } from "./browser-place-seed.fixture.js";
 import { placeSignerFromSeed } from "@lararium/mesh";
 

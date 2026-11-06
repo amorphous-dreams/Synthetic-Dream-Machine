@@ -40,7 +40,7 @@ describe("a fleet request keeps each face's atom", () => {
   test("an own-group offer carries A's key; a B offer carries a distinct key and leaves A's row", async () => {
     await withLarRoot(root, async () => {
       await sealTestCustody();
-      // A join's tag derives from the vessel's own key: the joining vessel stands founded.
+      // The joining vessel stands founded; each join's tag rests in its own face's row.
       await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
       const atomA = await seedFaceAtom(0, GROUP_A);
       const seedA = await atomSeedOf(0);

@@ -19,6 +19,8 @@ import {
   standFaceAtomSeed,
   type FaceAtomKey,
   type FaceAtomRows,
+  vesselFaceTagFields,
+  type VesselFaceTagDoor,
 } from "@lararium/mesh";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
 
@@ -97,4 +99,31 @@ export async function mintBrowserFaceAddressSecret(idbName: string, personaGroup
 export async function readBrowserFaceAddressSecret(idbName: string, personaGroup: string): Promise<Uint8Array | null> {
   const held = await readKeystoreRow(idbName, faceAddressSecretRow(personaGroup));
   return held instanceof Uint8Array && held.length === 32 ? Uint8Array.from(held) : null;
+}
+
+/** The custody row that keeps one face's tag secret: the blinded vessel tag each admission into the face carries stands on it. */
+export const vesselFaceTagRow = (personaGroup: string): string => {
+  if (personaGroup.length === 0) throw new Error("[browser-face-atom] a tag secret names its PersonaGroup");
+  return `vessel-face-tag/${personaGroup}`;
+};
+
+/**
+ * THE BROWSER VESSEL'S TAG DOOR: the blinded per-face tag one admission of this browser carries (`vessel-face-tag`).
+ * The face's tag secret rests in its own row beside its atom, 32 random bytes minted at the face's founding or first
+ * join request and derived from no seed, so the place seed computes no face's tag. A re-join on the face reads the
+ * row and presents the same tag. The door answers only the tag and its signature, and zeroes the copy it read.
+ */
+export function browserVesselFaceTagDoor(idbName = "lares:vessel"): VesselFaceTagDoor {
+  return async (group, deviceKey) => {
+    const row = vesselFaceTagRow(group);
+    const secret = await withCustodyRows(idbName, async (rows) => {
+      const held = await rows.read(row);
+      if (held instanceof Uint8Array && held.length === 32) return Uint8Array.from(held);
+      if (held !== undefined) throw new Error("[browser-face-atom] the face's tag secret row reads malformed");
+      const fresh = crypto.getRandomValues(new Uint8Array(32));
+      await rows.write(row, Uint8Array.from(fresh));
+      return fresh;
+    });
+    try { return await vesselFaceTagFields(secret, group, deviceKey); } finally { secret.fill(0); }
+  };
 }

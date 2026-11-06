@@ -78,7 +78,6 @@ import {
   floorKeyDoor,
   type FloorKeyDoor,
   placeSignerFromSeed, type PlaceSigner,
-  VESSEL_FACE_TAG_SECRET_DOMAIN, vesselFaceTagFields, type VesselFaceTagDoor,
 } from "@lararium/mesh";
 import { readBackStandsIn } from "./seal-ceremony.js";
 import { nodeAnchorStore } from "./identity-anchors.js";
@@ -564,20 +563,6 @@ export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
       finally { seed.fill(0); }
     },
   });
-}
-
-/**
- * THE VESSEL'S TAG DOOR: the blinded per-face tag one admission of this vessel carries (`vessel-face-tag`). Each call
- * derives the vessel secret through the floor key's door (`VESSEL_FACE_TAG_SECRET_DOMAIN`), answers only the tag and
- * its signature over (group, device atom), and overwrites the secret; the secret never leaves this module.
- */
-export async function vesselFaceTagDoor(): Promise<VesselFaceTagDoor> {
-  const floor = await vesselFloorKeyDoor();
-  return async (group, deviceKey) => {
-    const secret = floor.derive(VESSEL_FACE_TAG_SECRET_DOMAIN);
-    try { return await vesselFaceTagFields(secret, group, deviceKey); }
-    finally { secret.fill(0); }
-  };
 }
 
 // ── PersonaGroup root key custody — the sealed PersonaVault (over @lararium/mesh) ─────────────────
