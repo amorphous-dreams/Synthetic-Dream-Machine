@@ -378,12 +378,15 @@ export function readFleetJoinRequest(value: unknown, offer: FleetJoinOffer, apar
       read.push(reading.read);
     }
     if (apart.includes(atomKey)) return refuse("request-key-reused");
+    // THE SIGNATURE READS FIRST: the atom's signature judges the bytes as they arrive (an absent tag field drops out of the
+    // image, as it does from the signer's), so bytes no vessel signed refuse request-unsigned before any tag or ward key
+    // reads against this face, and a forger learns nothing of the face's checks.
+    const body = { nonce, atomKey, sealKey, vesselTag: vesselTag as string, vesselSig: vesselSig as string, wardKey: wardKey as string, wardPop: wardPop as string, requests: read };
+    if (!readEd25519(signature, fleetJoinRequestImage(body), atomKey).ok) return refuse("request-unsigned");
     if (!tagged) return refuse("request-vessel-tag-absent");
     if (wardKey === undefined) return refuse("request-ward-key-absent");
     if (!vesselFaceTagHolds(offer.personaGroup, atomKey, { vesselTag, vesselSig, wardKey })) return refuse("request-vessel-tag-invalid");
     if (!wardKeyPopHolds(offer.personaGroup, atomKey, { wardKey, wardPop })) return refuse("request-ward-key-unproven");
-    const body = { nonce, atomKey, sealKey, vesselTag: vesselTag as string, vesselSig: vesselSig as string, wardKey: wardKey as string, wardPop: wardPop as string, requests: read };
-    if (!readEd25519(signature, fleetJoinRequestImage(body), atomKey).ok) return refuse("request-unsigned");
     return Object.freeze({ kind, ...body, requests: Object.freeze(read), signature });
   });
 }

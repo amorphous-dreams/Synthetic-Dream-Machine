@@ -18,7 +18,10 @@
  * its floor (`signer-unavailable`). The face's last admitted session closing (`pagehide`, a lost port, the house's liveness
  * budget) runs the lock and the vessel returns to its floor. Surface traffic (frames, phases, rest, coherence and control
  * results without a known sender) reaches every admitted session wearing the lit vessel's face over its own port. Control
- * results with a known sender return to that session alone. Port traffic rides its binding
+ * results with a known sender return to that session alone. A session admitted after the light hears the shown surface
+ * whole from the frames already sent, folded (`foldLarFrame`), over its own port alone: one tab's arrival moves no epoch,
+ * so no other tab's act answers stale-target. The fold ends with the lit vessel: the lock and each new light
+ * retire both. Port traffic rides its binding
  * to its opening session alone; another session's place refuses `binding-not-owned`. Session loss closes only its own bindings.
  * INBOUND SURFACE ACTS WEAR THE LIT FACE: a control event, a surface switch, a place and a mirror read from a session admitted
  * for another face refuse `face-not-worn` and reach nothing of the vessel; a control event under an eventId still pending refuses.
@@ -41,9 +44,9 @@ import {
   parseAdmitCarriage, toAdmitCarriage, readBrowserCustodyPasskeys, readFaceCustodyPasskeys, browserWardSign,
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
   standVesselHouse, sessionLifetimeLock, VesselSessionRefused, readBrowserVesselFaces, wardAskWords,
-  type BrowserVesselResult, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost, type WardAskKind,
+  type BrowserVesselResult, type ProjectionSurfaceFrame, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost, type WardAskKind,
 } from "@lararium/browser";
-import { didFromVerifyingKey, parseMeshPeer, type MeshPeer } from "@lararium/mesh";
+import { didFromVerifyingKey, foldLarFrame, parseMeshPeer, readLarFrame, type MeshPeer } from "@lararium/mesh";
 import type { PageToVessel, SeedRest, VesselBoot, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
 import { CeremonyRefused, standCeremonyDoor } from "./ceremony-door.js";
 
@@ -64,6 +67,8 @@ export interface VesselHostEnv {
   readonly livenessBudgetMs?: number;
   /** The vessel the house lights (`openBrowserVessel` by default; a host witness hands a stand-in). */
   readonly openVessel?: typeof openBrowserVessel;
+  /** Hear a session's admission begin its wait on the house's lock in flight (the house's own event). */
+  readonly onAdmissionWaits?: (session: VesselSession) => void;
 }
 
 const BOOT_READING = { unlock: "opens", "bind-first": "bound", clear: "clear" } as const;
@@ -83,7 +88,30 @@ export function standVesselHost(env: VesselHostEnv = {}) {
   /** The session whose admission lit the vessel: it heard every frame live. A later session of the face missed them. */
   let litBy: string | null = null;
   const bindings = new Map<string, string>();
+  /** Per surface and camera, the frames already sent folded to one (`foldLarFrame`): a late session's catch-up. */
+  const shownFrames = new Map<string, ProjectionSurfaceFrame>();
+  const holdFrame = (frame: ProjectionSurfaceFrame): void => {
+    if (readLarFrame(frame) === null || typeof frame.surface !== "string") return;
+    const at = `${frame.surface}\u0000${frame.cameraId}`;
+    shownFrames.set(at, foldLarFrame(shownFrames.get(at), frame));
+  };
   const controlSenders = new Map<string, Conn>();
+  /** The light the vessel's surface callbacks belong to: a vessel the lock closed calls back under none, so it reaches no
+   *  session and no fold. */
+  let lightNow: object | null = null;
+  /** The lighting tab a holder spawn asks: each light names its own, and retire names none. */
+  let holderPost: ((msg: VesselToPage) => void) | null = null;
+  /** The lit vessel's connection listener: it ends with its light. */
+  let endConnection: (() => void) | null = null;
+  /** THE FOLD ENDS WITH THE LIT VESSEL: the lock and every new light retire the lit vessel, its lighter, its connection
+   *  listener and its fold together, so a relight (another face on the same surface slug) hands no late session what the last
+   *  vessel showed. */
+  const retire = (): void => {
+    lightNow = null; litVessel = null; litBy = null; holderPost = null; shownFrames.clear();
+    const end = endConnection;
+    endConnection = null;
+    end?.();
+  };
 
   // A session never sees a surface its face does not wear.
   const wearsLitFace = (conn: Conn): boolean =>
@@ -110,8 +138,10 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     return route?.kind === "passphrase" ? route.passphrase : "";
   };
 
-  /** A SharedWorker the page builds for this thread: the port it transfers back bridges to the one the holder door reads. */
+  /** A SharedWorker the page builds for this thread: the port it transfers back bridges to the one the holder door reads. The
+   *  class stands once; each spawn asks the tab of the light that stands at its construction. */
   const standHolderSpawn = (post: (msg: VesselToPage) => void): void => {
+    holderPost = post;
     if (typeof (globalThis as { SharedWorker?: unknown }).SharedWorker === "function") return;
     class PageBuiltSharedWorker {
       readonly port: MessagePort;
@@ -119,6 +149,11 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       constructor(url: string | URL, opts?: { name?: string }) {
         const channel = new MessageChannel();
         this.port = channel.port1;
+        const ask = holderPost;
+        if (!ask) {
+          queueMicrotask(() => { for (const listener of this.#errors) listener(new Error("spawn-refused: no light stands")); });
+          return;
+        }
         const spawnId = crypto.randomUUID();
         spawns.set(spawnId, (answer) => {
           if (!answer.port) { for (const listener of this.#errors) listener(new Error(answer.refused ?? "spawn-refused")); return; }
@@ -126,7 +161,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
           near.onmessage = (e) => far.postMessage(e.data, [...e.ports]);
           far.onmessage = (e) => near.postMessage(e.data, [...e.ports]);
         });
-        post({ t: "spawn", spawnId, role: "holder", url: String(url), name: opts?.name ?? "" });
+        ask({ t: "spawn", spawnId, role: "holder", url: String(url), name: opts?.name ?? "" });
       }
       addEventListener(type: string, listener: (e: unknown) => void): void { if (type === "error") this.#errors.add(listener); }
     }
@@ -150,6 +185,10 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     const conn = conns.get(first.sessionId);
     const b = firstBoot;
     if (!conn || !b) throw new VesselSessionRefused("unknown-session");
+    retire();
+    const mine = {};
+    lightNow = mine;
+    const ofThisLight = <A extends unknown[]>(f: (...args: A) => void) => (...args: A): void => { if (lightNow === mine) f(...args); };
     lighting = conn;
     litBy = first.sessionId;
     if (b.sharedHolderUrl) standHolderSpawn((msg) => conn.post(msg));
@@ -169,22 +208,22 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       workerScriptUrl: new URL(b.workerScriptUrl),
       ...(b.sharedHolderUrl ? { sharedHolderUrl: new URL(b.sharedHolderUrl) } : {}),
       pageLife: (listener) => { lifeListeners.add(listener); return () => { lifeListeners.delete(listener); }; },
-      onRest: (rest) => surfaceFanout({ t: "status", status: { rest } }),
-      onPhase: (phase) => surfaceFanout({ t: "phase", phase }),
-      onFrame: (frame) => surfaceFanout({ t: "frame", frame }),
-      onControlResult: (surfaceId, result) => {
+      onRest: ofThisLight((rest) => surfaceFanout({ t: "status", status: { rest } })),
+      onPhase: ofThisLight((phase) => surfaceFanout({ t: "phase", phase })),
+      onFrame: ofThisLight((frame) => { holdFrame(frame); surfaceFanout({ t: "frame", frame }); }),
+      onControlResult: ofThisLight((surfaceId, result) => {
         const sender = controlSenders.get(result.eventId);
         controlSenders.delete(result.eventId);
         const msg = { t: "control-result", surface: surfaceId, result } as const;
         if (sender) sender.post(msg);
         else surfaceFanout(msg);
-      },
-      onCoherence: (frame) => surfaceFanout({ t: "coherence", frame }),
-      onPortMessage: (binding, islandKey, msg) => {
+      }),
+      onCoherence: ofThisLight((frame) => surfaceFanout({ t: "coherence", frame })),
+      onPortMessage: ofThisLight((binding, islandKey, msg) => {
         const owner = bindings.get(binding);
         const target = owner ? conns.get(owner) : undefined;
         if (target && wearsLitFace(target)) target.post({ t: "port-msg", binding, islandKey, msg });
-      },
+      }),
       ...(b.relayUrl ? { relayUrl: b.relayUrl } : {}),
       ...(b.floorCard ? { floorCard: b.floorCard } : {}),
       ...(b.floorAnchor ? { floorAnchor: b.floorAnchor } : {}),
@@ -192,8 +231,14 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       ...(b.meshLeaf ? { meshLeaf: { coordSeed: b.meshLeaf.coordSeed, peers: b.meshLeaf.peers.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null) } } : {}),
     });
     litVessel = result;
+    } catch (err) {
+      if (lightNow === mine) retire();
+      throw err;
     } finally { lighting = null; }
-    result.connectionState.subscribe((connection) => { for (const c of conns.values()) if (c.session?.admission === "admitted") statusTo(c, { connection }); });
+    // The connection reads as surface traffic: the sessions wearing this light's face hear it, while this light stands.
+    const end = result.connectionState.subscribe(ofThisLight((connection) => { for (const c of conns.values()) if (wearsLitFace(c)) statusTo(c, { connection }); }));
+    if (lightNow === mine) endConnection = end;
+    else end();
     // A landed fleet join leaves its pending row once the vessel stands on its admit.
     if (admit) void browserFleetJoinSettle().catch((err: unknown) => console.warn("[vessel] the landed fleet join did not settle:", err));
     return result;
@@ -213,7 +258,10 @@ export function standVesselHost(env: VesselHostEnv = {}) {
         lit: async (face) => { if (!litVessel) throw new VesselSessionRefused("signer-unavailable"); return litVessel.faceProviders.lit(face); },
         drop: async (face, why) => litVessel?.faceProviders.drop(face, why),
       },
-      onFloor: (s, floor) => { if (floor === "floor") litVessel = null; statusTo(conns.get(s.sessionId), { floor }); },
+      // The lock retires the lit vessel and its fold itself: its last session's close leaves no session to hear the floor.
+      onLocked: () => retire(),
+      onFloor: (s, floor) => statusTo(conns.get(s.sessionId), { floor }),
+      ...(env.onAdmissionWaits ? { onAdmissionWaits: env.onAdmissionWaits } : {}),
       onDrop: (s, why) => {
         const conn = conns.get(s.sessionId);
         if (conn) conn.session = null;
@@ -251,8 +299,12 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     }
     statusTo(conn, { custody: session.admittedBy ? BOOT_READING[session.admittedBy] : "held", ...(session.face ? { face: session.face } : {}) });
     statusTo(conn, vesselStatus(result));
-    // A LATE SESSION MISSED THE FRAMES ALREADY SENT: the vessel repaints the shown surface whole, and the frame reaches it over its own port.
-    if (litVessel && litBy !== session.sessionId && wearsLitFace(conn)) litVessel.resend(litVessel.activeSurface());
+    // A LATE SESSION MISSED THE FRAMES ALREADY SENT: the shown surface's folded frame reaches it over its own port alone,
+    // under the epoch the other sessions act under. The vessel repaints nothing, so no other session's act goes stale.
+    if (litVessel && litBy !== session.sessionId && wearsLitFace(conn)) {
+      const shown = litVessel.activeSurface();
+      for (const frame of shownFrames.values()) if (frame.surface === shown) conn.post({ t: "frame", frame });
+    }
     void seedRestOf(idbName, session.face).then((s) => statusTo(conn, s), () => { /* an unreadable slot reads its own refusal elsewhere */ });
     return result;
   };

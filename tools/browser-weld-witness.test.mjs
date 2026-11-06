@@ -10,6 +10,7 @@ import { access, chmod, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
+import { runInNewContext } from "node:vm";
 
 const REPO = resolve(new URL(".", import.meta.url).pathname, "..");
 const RUNNER = join(REPO, "tools/browser-weld-witness.sh");
@@ -21,7 +22,9 @@ const DAEMON_WORKER = join(REPO, "packages/lararium-web/src/workers/daemon.worke
 const WEB_MAIN = join(REPO, "packages/lararium-web/src/main.ts");
 
 process.env.LEAF_BOOT_TRACE = "1";
-const { instrumentBootSource, observeKelRead } = await import("./browser-weld/leaf-continuity.mjs");
+const { emptyBootChainRead, instrumentBootSource, observeKelRead, readKelObservation } = await import("./browser-weld/leaf-continuity.mjs");
+const { summarizeWireMessage, workerTraceInitScript } = await import("./browser-weld/worker-trace.mjs");
+const VESSEL_PROTOCOL = join(REPO, "packages/lararium-web/src/vessel-protocol.ts");
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -422,7 +425,97 @@ async function testObservationRouteSurvivesADisposedResponse() {
   assert.equal(fulfilled.length, 1, "a live response is fulfilled");
 }
 
+/**
+ * RED (held-out run 42244363320): the C4 fault route emptied every `personaKelChainForPrefix(kelBoard.doc(),
+ * personaKelPrefix)` it met, and the co-sign port's per-act `liveKelChain` closure (616e7053a) now stands beside
+ * the Binding Gate's boot read in the same module, so the route counted two and threw. The fault empties the
+ * Binding Gate's one boot read alone, the anchor the observation route already reads; the live closure stays.
+ */
+async function testC4FaultEmptiesTheBootReadAlone() {
+  const source = await readFile(OPEN_VESSEL, "utf8");
+  const { count, body } = emptyBootChainRead(source);
+  assert.equal(count, 1, "the real vessel module holds exactly one Binding Gate boot read");
+  assert.match(body, /const personaKelChain = null;/, "the boot read empties");
+  assert.match(body, /const liveKelChain = \(\) => personaKelChainForPrefix\(kelBoard\.doc\(\), personaKelPrefix\);/,
+    "the co-sign port's per-act read stands untouched");
+  // CONTROL: a module with no boot read passes unchanged; one with two counts two, so the route still refuses it.
+  assert.deepEqual(emptyBootChainRead("export {};"), { count: 0, body: "export {};" });
+  const boot = "const personaKelChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);";
+  assert.equal(emptyBootChainRead(`${boot}\n${boot}`).count, 2);
+}
+
+/**
+ * RED (held-out run 42283933052, W3/W4): since the browser vessel lift the page's one Worker stands the vessel, and
+ * every act crosses it wrapped (`{ t: "control-event", surface, ev }`), every frame back as `{ t: "frame", frame }`
+ * (vessel-protocol.ts). The trace read only a bare `type` at the top, so no control event, no sense and no frame
+ * ever showed, and the drop control never dropped. The trace reads the vessel's envelope and names its surface.
+ */
+/**
+ * RED (held-out run 42295872052, C4.1): since b1-lift the Binding Gate's boot read runs in the vessel Worker
+ * (open-browser-vessel.ts, served by lararium-web/src/workers/vessel-host.ts), so the observation the route writes beside
+ * it lands on the worker's globalThis, and the driver read the page's alone ("offline founding did not expose a non-empty
+ * KEL chain at the Binding Gate"). The reading looks in the page's realm and then each worker the page runs.
+ * CONTROL: an observation in the page's own realm still reads; with none anywhere the reading stays empty. The fault
+ * route (C4.3) empties that same read in that same worker, so it routes on the context as the observation route does.
+ */
+async function testC4KelObservationReadsTheVesselWorker() {
+  const kel = { prefix: "E-prefix", eventCids: ["bafy-one"] };
+  const realm = (value) => ({ evaluate: async (fn) => { const globalThis = { __laresC4PersonaKel: value }; return new Function("globalThis", `return (${fn.toString()})();`)(globalThis); } });
+  const inWorker = { evaluate: realm(undefined).evaluate, workers: () => [realm(undefined), realm(kel)] };
+  assert.equal(typeof readKelObservation, "function", "the driver reads the observation through one reading");
+  assert.deepEqual(await readKelObservation(inWorker), kel, "the vessel worker's observation reads");
+  const inPage = { evaluate: realm(kel).evaluate, workers: () => [] };
+  assert.deepEqual(await readKelObservation(inPage), kel, "CONTROL: the page's own observation reads");
+  const none = { evaluate: realm(undefined).evaluate, workers: () => [realm(undefined)] };
+  assert.equal(await readKelObservation(none), undefined, "CONTROL: no observation anywhere reads empty");
+  // The fault route empties the same read in the same worker: it routes on the context, which reaches worker modules.
+  const source = await readFile(LEAF, "utf8");
+  const fault = source.slice(source.indexOf("async function faultWalk"));
+  assert.match(fault, /await context\.route\(/, "the fault route reaches the vessel worker's modules");
+  assert.doesNotMatch(fault, /await page\.route\(/, "the fault route never rides the page's document graph alone");
+}
+
+async function testWorkerTraceReadsTheVesselEnvelope() {
+  const protocol = await readFile(VESSEL_PROTOCOL, "utf8");
+  assert.match(protocol, /\{ readonly t: "control-event"; readonly surface: string; readonly ev: LarMsg_ControlEvent \}/,
+    "the page sends each act wrapped with its surface");
+  assert.match(protocol, /\{ readonly t: "frame"; readonly frame: ProjectionSurfaceFrame \}/, "the vessel sends each frame wrapped");
+
+  const ev = { type: "lar:control-event", eventId: "e1", cameraId: "story", mountEpoch: 3, kind: "lar:sense", renderId: "r7", action: "lar:sense", wholeValue: "secret" };
+  const up = summarizeWireMessage({ t: "control-event", surface: "lar:///s/lares", ev });
+  assert.equal(up.type, "lar:control-event");
+  assert.equal(up.renderId, "r7");
+  assert.equal(up.action, "lar:sense");
+  assert.equal(up.surface, "lar:///s/lares");
+  assert.equal(up.mountEpoch, 3);
+  assert.ok(!Object.values(up).includes("secret"), "the trace never carries an input value");
+  const down = summarizeWireMessage({ t: "frame", frame: { type: "lar:frame", wikiUri: "lar:///w/lares", surface: "lar:///s/lares", mountEpoch: 3, keys: [] } });
+  assert.equal(down.type, "lar:frame");
+  assert.equal(down.wikiUri, "lar:///w/lares");
+  assert.equal(down.surface, "lar:///s/lares");
+  // CONTROL: a vessel envelope that carries no wire message reads by its envelope name alone.
+  const phase = summarizeWireMessage({ t: "phase", phase: "live" });
+  assert.equal(phase.type, "");
+  assert.equal(phase.envelope, "phase");
+
+  // The init script, run against a stand-in Worker: the drop control drops exactly the named act's envelope.
+  const sent = [];
+  class FakeWorker { constructor(url) { this.url = url; } addEventListener() {} postMessage(data) { sent.push(data); } }
+  const window = { Worker: FakeWorker };
+  runInNewContext(workerTraceInitScript(), { window });
+  const worker = new window.Worker("vessel.worker.js");
+  window.__weldWorkerTrace.dropDomEventRenderId = "r7";
+  worker.postMessage({ t: "control-event", surface: "lar:///s/lares", ev });
+  worker.postMessage({ t: "control-event", surface: "lar:///s/lares", ev: { ...ev, renderId: "r8" } });
+  worker.postMessage({ t: "set-surface", surface: "lar:///s/lares" });
+  assert.deepEqual(sent.map((m) => m.ev?.renderId ?? m.t), ["r8", "set-surface"], "only the named act drops");
+  assert.ok(window.__weldWorkerTrace.events.some((e) => e.direction === "dropped-to-worker" && e.renderId === "r7"));
+}
+
+await testWorkerTraceReadsTheVesselEnvelope();
+await testC4KelObservationReadsTheVesselWorker();
 await testObservationRouteSurvivesADisposedResponse();
+await testC4FaultEmptiesTheBootReadAlone();
 await testC4TraceHookIsOptIn();
 await testC4TraceAnchorsStillStand();
 await testC4TraceMarksRealManifestPost();

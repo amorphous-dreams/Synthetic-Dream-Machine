@@ -23,6 +23,7 @@
 import { chromium } from "playwright";
 // The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
 import { armTestCustody } from "../../packages/lararium-node/dist/probes/browser-test-custody.js";
+import { workerTraceInitScript } from "./worker-trace.mjs";
 
 const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
 const SETTLE_MS = Number(process.env.WELD_SETTLE_MS ?? 15_000);
@@ -48,67 +49,10 @@ const paneHtml = (page) => page.evaluate(() =>
 
 /**
  * Install before navigation: workers are the actual browser→island boundary, not an inference from
- * changed HTML. The trace records only protocol identifiers (never projection bodies or input values).
- * `dropDomEventRenderId` is an intentionally narrow test control: it drops one known click at that
- * boundary so W3 can prove its positive result depends on the return leg.
+ * changed HTML. The trace and its one drop control live in worker-trace.mjs.
  */
 async function installWorkerTrace(page) {
-  await page.addInitScript(() => {
-    const trace = {
-      events: [],
-      dropDomEventRenderId: null,
-    };
-    window.__weldWorkerTrace = trace;
-
-    const summarize = (data) => {
-      if (!data || typeof data !== "object") return { type: typeof data };
-      const msg = data;
-      const payload = msg.payload && typeof msg.payload === "object" ? msg.payload : null;
-      return {
-        type: typeof msg.type === "string" ? msg.type : "",
-        renderId: typeof msg.renderId === "string" ? msg.renderId : "",
-        action: typeof msg.action === "string" ? msg.action : "",
-        listenable: typeof msg.listenable === "string" ? msg.listenable : "",
-        wikiUri: typeof msg.wikiUri === "string" ? msg.wikiUri : "",
-        mountEpoch: typeof msg.mountEpoch === "number" ? msg.mountEpoch : null,
-        rev: typeof payload?.rev === "number" ? payload.rev : null,
-      };
-    };
-    const NativeWorker = window.Worker;
-    let nextWorkerId = 0;
-    function TracedWorker(...args) {
-      const worker = new NativeWorker(...args);
-      const url = String(args[0]);
-      const workerId = `worker-${++nextWorkerId}`;
-      let workerWikiUri = "";
-      const note = (direction, data) => {
-        const summary = summarize(data);
-        if (summary.wikiUri) workerWikiUri = summary.wikiUri;
-        trace.events.push({ direction, worker: url, workerId, ...summary, wikiUri: summary.wikiUri || workerWikiUri });
-      };
-      worker.addEventListener("message", (event) => {
-        note("from-worker", event.data);
-      });
-      worker.addEventListener("error", (event) => {
-        trace.events.push({ direction: "worker-error", worker: url, workerId, wikiUri: workerWikiUri, message: event.message || "" });
-      });
-      const post = worker.postMessage.bind(worker);
-      worker.postMessage = (data, transfer) => {
-        const before = trace.events.length;
-        note("to-worker", data);
-        const entry = trace.events[before];
-        if (entry.type === "lar:control-event" && entry.renderId === trace.dropDomEventRenderId) {
-          trace.events.push({ ...entry, direction: "dropped-to-worker" });
-          return;
-        }
-        return transfer === undefined ? post(data) : post(data, transfer);
-      };
-      return worker;
-    }
-    TracedWorker.prototype = NativeWorker.prototype;
-    Object.setPrototypeOf(TracedWorker, NativeWorker);
-    window.Worker = TracedWorker;
-  });
+  await page.addInitScript({ content: workerTraceInitScript() });
 }
 
 const traceMark = (page) => page.evaluate(() => window.__weldWorkerTrace?.events.length ?? 0);
@@ -116,7 +60,7 @@ const traceSince = (page, mark) => page.evaluate((from) => window.__weldWorkerTr
 const traceHas = (events, wanted) => events.some((event) =>
   Object.entries(wanted).every(([key, value]) => event[key] === value));
 const traceTail = (events) => events.slice(-4).map((event) =>
-  [event.direction, event.workerId, event.wikiUri, event.type, event.renderId, event.listenable]
+  [event.direction, event.workerId, event.envelope, event.surface || event.wikiUri, event.type, event.renderId, event.listenable]
     .filter(Boolean).join(":"),
 ).join(" | ");
 
@@ -168,13 +112,38 @@ const main = async () => {
 
   // ── W1 · the vessel boots to a live sovereign island ──────────────────────────────────────────
   // The web surface writes its own verdict into #status / #vessel. Reading ITS words rather than inferring
-  // from the DOM keeps this vector honest about what the web surface itself claims.
-  const status = await until(async () => {
-    const t = await page.evaluate(() => document.getElementById("vessel")?.textContent ?? "");
-    return t.includes("live") ? t : null;
+  // from the DOM keeps this vector honest about what the web surface itself claims. The wait ends on the
+  // page's own events, never on elapsed time: #vessel reports "live" (arrival), or the page paints a terminal
+  // signal (a refusing or faulting phase, an err or warn status, a ceremony refusal, a refused mirror stand)
+  // or raises a page error.
+  let pageError = null, onPageError;
+  const pageErrorSeen = new Promise((resolve) => {
+    onPageError = (error) => { pageError = `pageerror: ${error.message}`; resolve(pageError); };
+    page.on("pageerror", onPageError);
   });
-  if (status) ok("W1 vessel-boots", "the island reports live");
-  else bad("W1 vessel-boots", `no "live" in #vessel within ${SETTLE_MS}ms — the browser vessel never stood`);
+  let w1;
+  try {
+    w1 = await Promise.race([
+      pageErrorSeen,
+      page.waitForFunction(() => {
+        const phase = [...document.querySelectorAll("#phases .phase")].find((p) => /refus|fault/i.test(p.textContent ?? ""));
+        if (phase) return `phase: ${phase.textContent}`;
+        const st = document.querySelector("#status");
+        if (st?.classList.contains("err") || st?.classList.contains("warn")) return `status: ${st.textContent}`;
+        const refusal = document.querySelector(".ceremony-ask[data-refusal]");
+        if (refusal) return `ceremony refusal: ${refusal.getAttribute("data-refusal")}`;
+        const mirror = document.querySelector("#mirror")?.getAttribute("data-lar-mirror");
+        if (mirror?.startsWith("none:") && mirror !== "none:mirror-inputs-absent") return `mirror: ${mirror}`;
+        return (document.getElementById("vessel")?.textContent ?? "").includes("live") ? "arrived" : false;
+      }, undefined, { timeout: 0 }).then((h) => h.jsonValue()),
+    ]);
+  } catch (e) {
+    w1 = `page closed: ${String(e).slice(0, 90)}`;
+  } finally {
+    page.off("pageerror", onPageError);
+  }
+  if (w1 === "arrived") ok("W1 vessel-boots", "the island reports live");
+  else bad("W1 vessel-boots", `${w1} — the browser vessel never stood`);
 
   // ── W2 · the projection RENDERS, and carries render ids ───────────────────────────────────────
   // Two facts, one seam: the frame arrived AND it is addressable. A pane with html but no
@@ -267,7 +236,7 @@ const main = async () => {
         event.direction === "to-worker" && event.type === "lar:control-event" && event.renderId === recentId);
       const sentRecent = !!recentDispatch;
       const projectedRecent = !!recentDispatch && traceHas(restoredTrace, {
-        direction: "from-worker", workerId: recentDispatch.workerId, wikiUri: recentDispatch.wikiUri,
+        direction: "from-worker", workerId: recentDispatch.workerId, surface: recentDispatch.surface,
         type: "lar:frame",
       });
       if (restored && restoredClick && sentRecent && projectedRecent) {
@@ -313,7 +282,7 @@ const main = async () => {
       event.direction === "to-worker" && event.type === "lar:control-event" && event.renderId === sidebarBefore.renderId);
     const hideSent = !!sidebarDispatch;
     const sidebarProjection = !!sidebarDispatch && traceHas(sidebarTrace, {
-      direction: "from-worker", workerId: sidebarDispatch.workerId, wikiUri: sidebarDispatch.wikiUri,
+      direction: "from-worker", workerId: sidebarDispatch.workerId, surface: sidebarDispatch.surface,
       type: "lar:frame",
     });
     if (hideClicked && hideSent && sidebarProjection && hidden) {
@@ -364,7 +333,7 @@ const main = async () => {
     const inputDispatch = inputTrace.find((event) =>
       event.direction === "to-worker" && event.type === "lar:control-event" && event.action === "lar:sense");
     const inputProjection = !!inputDispatch && traceHas(inputTrace, {
-      direction: "from-worker", workerId: inputDispatch.workerId, wikiUri: inputDispatch.wikiUri,
+      direction: "from-worker", workerId: inputDispatch.workerId, surface: inputDispatch.surface,
       type: "lar:frame",
     });
     if (seen && inputDispatch && inputProjection) {

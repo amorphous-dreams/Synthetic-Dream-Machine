@@ -37,8 +37,9 @@ export interface AfterRollStages {
   refreshRealmPlane?: () => Promise<void>;
   refoldEdgeShadows?: () => Promise<void>;
   reverdict: () => void;
-  /** Re-present the dial. `ward` is the route of the act that asked for this pass (a take's), for a founder's first presentation at a new scope. */
-  representIfMoved?: (ward?: WardCredential) => Promise<void>;
+  /** Re-present the dial. `ward` is the route of the act that asked for this pass (a take's), for a founder's first presentation at a new scope;
+   *  `nexusAid` names the Nexus the pass rolls for (its holder), the one scope that route answers for. */
+  representIfMoved?: (ward?: WardCredential, nexusAid?: string) => Promise<void>;
   log: (line: string) => void;
   /** Fires as a pass starts, naming the holder whose queued pass this is. A vector reads the order off it. */
   onPass?: (holder: string | undefined) => void;
@@ -55,7 +56,7 @@ const says = (e: unknown): string => (e instanceof Error ? e.message : String(e)
 interface PassAnswer { readonly represented: boolean; readonly wardRefusal?: WardRefused }
 
 /** One full pass, the house order. `represented` reads `true` iff `representIfMoved` ran without throwing. */
-async function runPass(stages: AfterRollStages, ward?: WardCredential): Promise<PassAnswer> {
+async function runPass(stages: AfterRollStages, ward?: WardCredential, holder?: string): Promise<PassAnswer> {
   await stages.landOwedHostingActs?.();
   try {
     await stages.refoldAntigen();
@@ -75,7 +76,7 @@ async function runPass(stages: AfterRollStages, ward?: WardCredential): Promise<
   }
   stages.reverdict();
   try {
-    await stages.representIfMoved?.(ward);
+    await stages.representIfMoved?.(ward, holder);
     return { represented: true };
   } catch (e) {
     stages.log(`after-roll refold failed (re-present): ${says(e)}`);
@@ -101,7 +102,7 @@ export function createAfterRoll(stages: AfterRollStages): AfterRoll {
         try {
           stages.onPass?.(holder);
           // The pass carries the route of the act that queued it, if one did; it re-presents once, for every waiter.
-          const answer = await runPass(stages, waiters.find((w) => w.ward !== undefined)?.ward);
+          const answer = await runPass(stages, waiters.find((w) => w.ward !== undefined)?.ward, holder);
           // A route the ward refused reaches each roll that carried one, by name; the rest read the plain answer.
           for (const w of waiters) {
             if (answer.wardRefusal && w.ward !== undefined) w.reject(answer.wardRefusal);

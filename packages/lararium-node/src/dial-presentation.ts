@@ -27,7 +27,8 @@ import {
 import { readKeptAdmitBundle } from "./admit-bundle.js";
 import { charterHomeFor, readKeyLine } from "./carried-set.js";
 import { readFaceJoinRecord } from "./fleet-join-custody.js";
-import type { FounderCertificateDoors } from "./founder-self-certificate.js";
+import { ensureFounderCertificate, FounderCertificateRefused, type FounderCertificateDoors } from "./founder-self-certificate.js";
+import type { WardCredential } from "./ward-credential.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { nodeFacePresentation, nodeFaceTarget, type NodeFacePresentation, type NodeFacePresentationRefusal } from "./node-face-presentation.js";
 import { heldNexusLeaves, type NexusLeaf } from "./nexus-leaf.js";
@@ -83,6 +84,26 @@ export async function composeFaceTarget(args: DialFaceArgs): Promise<{ readonly 
   return dialFaceAt(args, (scope, _founder, admit) => nodeFaceTarget({ personaGroup: args.personaGroup!, scope, admit }));
 }
 
+/**
+ * THE TAKE CERTIFIES THE FOUNDER WHERE NO DIAL CARRIES IT. The founder's certificate at a new scope reads the root, a ward act
+ * (seat-harness#/the-ward), so it issues only inside an act that carries a route: the boot dial, or a take's re-present. A
+ * lararium that takes its own admit at its own Nexus dials no hearth there, so the take's route issues the certificate here,
+ * through the same reading the dial makes (the kept admit, the charter's held root, the worn face's own leaf); the carriage
+ * pull's presentation at that Nexus then reads it standing with no route. A joinee holds no root and certifies nothing
+ * (`founder-absent`); a certificate already standing writes nothing; a founder refusal comes back by name.
+ */
+export async function certifyFounderAt(args: Omit<DialFaceArgs, "pin"> & { readonly nexus: string; readonly ward: WardCredential }): Promise<{ readonly state: "issued" | "standing" } | NodeFacePresentationRefusal> {
+  return faceAtNexus(args.nexus, args, async (scope, founder) => {
+    if (founder === null) return { refusal: "founder-absent", detail: "this vessel holds no root for the worn face: its root holder certifies it" };
+    try {
+      return await ensureFounderCertificate({ face: founder.face, personaGroup: args.personaGroup!, scope }, { ...(args.doors?.founder ?? {}), ward: args.ward });
+    } catch (error) {
+      if (error instanceof FounderCertificateRefused) return { refusal: error.refusal, detail: error.message };
+      throw error;
+    }
+  });
+}
+
 interface DialFaceArgs {
   readonly sealHome:     string;
   readonly pin:          GateBundlePin;
@@ -93,9 +114,15 @@ interface DialFaceArgs {
 async function dialFaceAt<R>(args: DialFaceArgs,
   presentAt: (scope: FaceScope, founder: { readonly face: number } | null, admit: unknown, arm: PresentationArm) => Promise<R | NodeFacePresentationRefusal>,
 ): Promise<R | NodeFacePresentationRefusal> {
-  const doors = args.doors ?? {};
   const aid = nexusAidOfPin(args.pin);
   if (aid === null) return { refusal: "pin-nexus-unreadable" };
+  return faceAtNexus(aid, args, presentAt);
+}
+
+async function faceAtNexus<R>(aid: string, args: Omit<DialFaceArgs, "pin">,
+  presentAt: (scope: FaceScope, founder: { readonly face: number } | null, admit: unknown, arm: PresentationArm) => Promise<R | NodeFacePresentationRefusal>,
+): Promise<R | NodeFacePresentationRefusal> {
+  const doors = args.doors ?? {};
   if (!args.personaGroup) return { refusal: "face-group-absent" };
   const personaGroup = args.personaGroup;
   const kept = readKeptAdmitBundle(args.sealHome, aid);

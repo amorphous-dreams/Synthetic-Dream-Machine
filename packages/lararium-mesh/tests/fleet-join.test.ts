@@ -138,6 +138,20 @@ describe("the fleet-join door's files", () => {
     expect(vesselFaceTagHolds(GROUP, w.joinee.key, readFleetJoinRequest(w.request, w.offer) as FleetJoinRequest)).toBe(true);
   });
 
+  test("RED: bytes no vessel signed refuse at the signature, before any tag or ward key reads against the face", async () => {
+    const w = await world();
+    const unsigned = { signature: "00".repeat(64) };
+    const { vesselTag: _t, vesselSig: _s, wardKey: _w, wardPop: _p, kind: _k, signature: _g, ...bare } = w.request;
+    // A tagless request, a tag over another atom, and a ward key without its tag: none signed, each refuses request-unsigned.
+    expect(readFleetJoinRequest({ kind: "fleet-join-request", ...bare, ...unsigned }, w.offer)).toEqual({ refusal: "request-unsigned" });
+    const other = await pair("a forger's atom");
+    expect(readFleetJoinRequest({ kind: "fleet-join-request", ...bare, ...(await testVesselTag(5, GROUP, other.key)), ...unsigned }, w.offer)).toEqual({ refusal: "request-unsigned" });
+    expect(readFleetJoinRequest({ kind: "fleet-join-request", ...bare, wardKey: w.request.wardKey, ...unsigned }, w.offer)).toEqual({ refusal: "request-unsigned" });
+    // CONTROL: the same tagless bytes, signed by their atom, still refuse by the tag they lack.
+    const signedBare = { kind: "fleet-join-request", ...bare, signature: await signHex(fleetJoinRequestImage(bare as never), w.joinee) };
+    expect(readFleetJoinRequest(signedBare, w.offer)).toEqual({ refusal: "request-vessel-tag-absent" });
+  });
+
   test("THE PIN AND THE CANON RIDE SIGNED: moving either, or the edge, refuses the answer", async () => {
     const w = await world();
     // A moved pin no longer answers the face admit's commitment; moved with an admit committed to it, the root never signed it.

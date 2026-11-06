@@ -7,7 +7,7 @@ import {
   LAR_WHOLE_VALUE_MAX_CHARS, boundedWholeValue, isReliableKind, mkLarControlEvent, mkLarFrame,
   readLarControlEvent, readLarControlResult, readLarFrame, readLarResend, readLarService, mkLarResend, mkLarService,
   larKeyChordName, readLarCancel, readLarStampTokens,
-  readLarSurfaceManifest, LAR_SURFACE_DEFAULT_SERVICES,
+  readLarSurfaceManifest, LAR_SURFACE_DEFAULT_SERVICES, foldLarFrame,
 } from "../src/lar-camera.js";
 
 const act = () => mkLarControlEvent({ eventId: "e1", cameraId: "lar:story", mountEpoch: 1, kind: "lar:act", renderId: "7", action: "lar:click", seenFrameRev: 3 });
@@ -182,5 +182,27 @@ describe("files, drops, order, keys and navigate (S6)", () => {
   test("the document leg names itself as a control", () => {
     const key = mkLarControlEvent({ eventId: "k1", cameraId: "lar:story", mountEpoch: 1, kind: "lar:act", controlId: LAR_CONTROL_DOCUMENT, action: "lar:key", seenFrameRev: 1, key: { key: "G", code: "KeyG", keyCode: 71, repeat: false } });
     expect(readLarControlEvent(key)).toMatchObject({ controlId: "lar:document" });
+  });
+});
+
+describe("foldLarFrame — the newest whole of every key, under one epoch", () => {
+  const frame = (mountEpoch: number, keys: Array<{ key: string; rev: number; html?: string; css?: string; tombstone?: true }>, sensedRevision: Record<string, number> = {}) =>
+    mkLarFrame({ wikiUri: "lar:///w", cameraId: "lar:story", mountEpoch, keys, sensedRevision });
+
+  test("RED a key the next frame omits stays at its newest; a later revision replaces it; the newest sensed map stands", () => {
+    let held = foldLarFrame(undefined, frame(1, [{ key: "lar:surface", rev: 1, html: "a" }, { key: "lar:style", rev: 2, css: "s" }]));
+    held = foldLarFrame(held, frame(1, [{ key: "lar:surface", rev: 3, html: "b" }], { body: 4 }));
+    held = foldLarFrame(held, frame(1, [{ key: "lar:surface", rev: 2, html: "old" }]));
+    expect(readLarFrame(held)).not.toBeNull();
+    expect(held.mountEpoch).toBe(1);
+    expect(held.keys.map((k) => [k.key, k.rev, k.html ?? k.css])).toEqual([["lar:surface", 3, "b"], ["lar:style", 2, "s"]]);
+    expect(held.sensedRevision).toEqual({ body: 4 });
+  });
+
+  test("CONTROL a new epoch paints from nothing: the held keys of the old epoch leave", () => {
+    const old = foldLarFrame(undefined, frame(1, [{ key: "lar:surface", rev: 1, html: "a" }, { key: "lar:style", rev: 2, css: "s" }]));
+    const held = foldLarFrame(old, frame(2, [{ key: "lar:surface", rev: 3, html: "c" }]));
+    expect(held.mountEpoch).toBe(2);
+    expect(held.keys.map((k) => k.key)).toEqual(["lar:surface"]);
   });
 });

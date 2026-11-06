@@ -18,6 +18,10 @@
  *   VF7 RED the face switch's fence (row `B8`): the switch freezes the session's calls, admits the target face by the
  *       session's OWN unlock, fences the old generation (its bookings retire, its acts end), advances the generation and
  *       moves the face; a refused preflight leaves the old face and generation live.
+ *   VF8 RED an admission a lock overtakes while it asks refuses `lock-ended` by name: the lock overwrote what it would seat.
+ *       CONTROL: the same face's admission after the lock settles admits and lights anew.
+ *   VF9 RED an admission begun while a lock brings the vessel down waits that lock out (`onAdmissionWaits` names the wait)
+ *       and lights only once the lock ends, so the lock's end retires nothing of its light. CONTROL: it then admits.
  *
  * Faces and secrets stay synthetic, over scratch stores. Each face's tree derives with scrypt, so the cases run slow.
  *
@@ -207,5 +211,66 @@ describe("the face switch (row B8)", () => {
     expect(faceCustodyHeld(idbName, a)).toBe(false);
     expect(text(await house.body(s.sessionId, "ledger/1"))).toBe("B's ledger");
     await expect(house.body(s.sessionId, "recipe/1"), "the session reads as B alone now").rejects.toMatchObject({ refusal: "body-absent" });
+  }, SLOW);
+});
+
+describe("an admission and the lock in flight", () => {
+  test("VF8 RED an admission the lock overtakes while it asks refuses `lock-ended` — CONTROL: one after the lock settles admits", async () => {
+    const { idbName, a, b } = await twoFaces("overtaken");
+    const { v, light } = fakeVessel();
+    const house = await stand(idbName, { light });
+    const a1 = house.open({ tabId: "a1", face: a }), b1 = house.open({ tabId: "b1", face: b });
+    await house.admit(a1.sessionId, { ask: tab(PASS_A).ask });
+    // B's ceremony holds its answer until the case lets it go; the house hears B ask first.
+    let asked = (): void => undefined;
+    const askHeard = new Promise<void>((r) => { asked = r; });
+    let answer = (_: typeof PASS_B): void => undefined;
+    const admitting = house.admit(b1.sessionId, { ask: () => { asked(); return new Promise((r) => { answer = r; }); } });
+    const refused = admitting.then(() => null, (e: unknown) => e);
+    await askHeard;
+    await house.close(a1.sessionId, "pagehide");
+    expect(house.floor(), "A's last close ran the lock").toBe("floor");
+    answer(PASS_B);
+    expect(await refused, "the lock overtook B's admission").toMatchObject({ refusal: "lock-ended" });
+    expect(faceCustodyHeld(idbName, b), "the overtaken admission holds no key").toBe(false);
+
+    const b2 = house.open({ tabId: "b2", face: b });
+    await house.admit(b2.sessionId, { ask: tab(PASS_B).ask });
+    expect(house.floor(), "CONTROL: an admission after the lock settles lights anew").toBe("lit");
+    expect(v.lit).toBe(2);
+    expect(faceCustodyHeld(idbName, b)).toBe(true);
+  }, SLOW);
+
+  test("VF9 RED an admission begun during a lock waits it out and lights after it — CONTROL: it then admits", async () => {
+    const { idbName, a, b } = await twoFaces("waits");
+    let lit = 0;
+    let letGo = (): void => undefined;
+    let closing = (): void => undefined;
+    const closeHeard = new Promise<void>((r) => { closing = r; });
+    let lightHeard = (): void => undefined;
+    const secondLight = new Promise<"lit">((r) => { lightHeard = () => r("lit"); });
+    const light = (): Promise<LitVessel> => {
+      if (++lit === 2) lightHeard();
+      // The first vessel's close stands open until the case lets it go; a later vessel closes at once.
+      const first = lit === 1;
+      return Promise.resolve({ close: () => { if (!first) return Promise.resolve(); closing(); return new Promise<void>((r) => { letGo = r; }); } });
+    };
+    let waitHeard = (): void => undefined;
+    const waits = new Promise<"waits">((r) => { waitHeard = () => r("waits"); });
+    const house = await stand(idbName, { light, onAdmissionWaits: () => waitHeard() });
+    const a1 = house.open({ tabId: "a1", face: a }), b1 = house.open({ tabId: "b1", face: b });
+    await house.admit(a1.sessionId, { ask: tab(PASS_A).ask });
+    const closed = house.close(a1.sessionId, "pagehide");
+    await closeHeard;
+    const admitting = house.admit(b1.sessionId, { ask: tab(PASS_B).ask });
+    // The order rides the house's own events: B's wait on the lock, or (the old race) B's light while the lock still stands.
+    expect(await Promise.race([waits, secondLight]), "B's admission waits on the lock in flight, lighting nothing under it").toBe("waits");
+    expect(lit).toBe(1);
+    letGo();
+    await closed;
+    await admitting;
+    expect(lit, "CONTROL: B lights once the lock ends").toBe(2);
+    expect(house.floor()).toBe("lit");
+    expect(faceCustodyHeld(idbName, b)).toBe(true);
   }, SLOW);
 });
