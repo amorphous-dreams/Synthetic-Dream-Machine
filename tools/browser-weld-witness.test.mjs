@@ -10,6 +10,7 @@ import { access, chmod, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
+import { runInNewContext } from "node:vm";
 
 const REPO = resolve(new URL(".", import.meta.url).pathname, "..");
 const RUNNER = join(REPO, "tools/browser-weld-witness.sh");
@@ -22,6 +23,8 @@ const WEB_MAIN = join(REPO, "packages/lararium-web/src/main.ts");
 
 process.env.LEAF_BOOT_TRACE = "1";
 const { emptyBootChainRead, instrumentBootSource, observeKelRead } = await import("./browser-weld/leaf-continuity.mjs");
+const { summarizeWireMessage, workerTraceInitScript } = await import("./browser-weld/worker-trace.mjs");
+const VESSEL_PROTOCOL = join(REPO, "packages/lararium-web/src/vessel-protocol.ts");
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -441,6 +444,50 @@ async function testC4FaultEmptiesTheBootReadAlone() {
   assert.equal(emptyBootChainRead(`${boot}\n${boot}`).count, 2);
 }
 
+/**
+ * RED (held-out run 42283933052, W3/W4): since the browser vessel lift the page's one Worker stands the vessel, and
+ * every act crosses it wrapped (`{ t: "control-event", surface, ev }`), every frame back as `{ t: "frame", frame }`
+ * (vessel-protocol.ts). The trace read only a bare `type` at the top, so no control event, no sense and no frame
+ * ever showed, and the drop control never dropped. The trace reads the vessel's envelope and names its surface.
+ */
+async function testWorkerTraceReadsTheVesselEnvelope() {
+  const protocol = await readFile(VESSEL_PROTOCOL, "utf8");
+  assert.match(protocol, /\{ readonly t: "control-event"; readonly surface: string; readonly ev: LarMsg_ControlEvent \}/,
+    "the page sends each act wrapped with its surface");
+  assert.match(protocol, /\{ readonly t: "frame"; readonly frame: ProjectionSurfaceFrame \}/, "the vessel sends each frame wrapped");
+
+  const ev = { type: "lar:control-event", eventId: "e1", cameraId: "story", mountEpoch: 3, kind: "lar:sense", renderId: "r7", action: "lar:sense", wholeValue: "secret" };
+  const up = summarizeWireMessage({ t: "control-event", surface: "lar:///s/lares", ev });
+  assert.equal(up.type, "lar:control-event");
+  assert.equal(up.renderId, "r7");
+  assert.equal(up.action, "lar:sense");
+  assert.equal(up.surface, "lar:///s/lares");
+  assert.equal(up.mountEpoch, 3);
+  assert.ok(!Object.values(up).includes("secret"), "the trace never carries an input value");
+  const down = summarizeWireMessage({ t: "frame", frame: { type: "lar:frame", wikiUri: "lar:///w/lares", surface: "lar:///s/lares", mountEpoch: 3, keys: [] } });
+  assert.equal(down.type, "lar:frame");
+  assert.equal(down.wikiUri, "lar:///w/lares");
+  assert.equal(down.surface, "lar:///s/lares");
+  // CONTROL: a vessel envelope that carries no wire message reads by its envelope name alone.
+  const phase = summarizeWireMessage({ t: "phase", phase: "live" });
+  assert.equal(phase.type, "");
+  assert.equal(phase.envelope, "phase");
+
+  // The init script, run against a stand-in Worker: the drop control drops exactly the named act's envelope.
+  const sent = [];
+  class FakeWorker { constructor(url) { this.url = url; } addEventListener() {} postMessage(data) { sent.push(data); } }
+  const window = { Worker: FakeWorker };
+  runInNewContext(workerTraceInitScript(), { window });
+  const worker = new window.Worker("vessel.worker.js");
+  window.__weldWorkerTrace.dropDomEventRenderId = "r7";
+  worker.postMessage({ t: "control-event", surface: "lar:///s/lares", ev });
+  worker.postMessage({ t: "control-event", surface: "lar:///s/lares", ev: { ...ev, renderId: "r8" } });
+  worker.postMessage({ t: "set-surface", surface: "lar:///s/lares" });
+  assert.deepEqual(sent.map((m) => m.ev?.renderId ?? m.t), ["r8", "set-surface"], "only the named act drops");
+  assert.ok(window.__weldWorkerTrace.events.some((e) => e.direction === "dropped-to-worker" && e.renderId === "r7"));
+}
+
+await testWorkerTraceReadsTheVesselEnvelope();
 await testObservationRouteSurvivesADisposedResponse();
 await testC4FaultEmptiesTheBootReadAlone();
 await testC4TraceHookIsOptIn();

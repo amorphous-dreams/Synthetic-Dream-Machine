@@ -23,6 +23,7 @@
 import { chromium } from "playwright";
 // The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
 import { armTestCustody } from "../../packages/lararium-node/dist/probes/browser-test-custody.js";
+import { workerTraceInitScript } from "./worker-trace.mjs";
 
 const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
 const SETTLE_MS = Number(process.env.WELD_SETTLE_MS ?? 15_000);
@@ -48,67 +49,10 @@ const paneHtml = (page) => page.evaluate(() =>
 
 /**
  * Install before navigation: workers are the actual browser→island boundary, not an inference from
- * changed HTML. The trace records only protocol identifiers (never projection bodies or input values).
- * `dropDomEventRenderId` is an intentionally narrow test control: it drops one known click at that
- * boundary so W3 can prove its positive result depends on the return leg.
+ * changed HTML. The trace and its one drop control live in worker-trace.mjs.
  */
 async function installWorkerTrace(page) {
-  await page.addInitScript(() => {
-    const trace = {
-      events: [],
-      dropDomEventRenderId: null,
-    };
-    window.__weldWorkerTrace = trace;
-
-    const summarize = (data) => {
-      if (!data || typeof data !== "object") return { type: typeof data };
-      const msg = data;
-      const payload = msg.payload && typeof msg.payload === "object" ? msg.payload : null;
-      return {
-        type: typeof msg.type === "string" ? msg.type : "",
-        renderId: typeof msg.renderId === "string" ? msg.renderId : "",
-        action: typeof msg.action === "string" ? msg.action : "",
-        listenable: typeof msg.listenable === "string" ? msg.listenable : "",
-        wikiUri: typeof msg.wikiUri === "string" ? msg.wikiUri : "",
-        mountEpoch: typeof msg.mountEpoch === "number" ? msg.mountEpoch : null,
-        rev: typeof payload?.rev === "number" ? payload.rev : null,
-      };
-    };
-    const NativeWorker = window.Worker;
-    let nextWorkerId = 0;
-    function TracedWorker(...args) {
-      const worker = new NativeWorker(...args);
-      const url = String(args[0]);
-      const workerId = `worker-${++nextWorkerId}`;
-      let workerWikiUri = "";
-      const note = (direction, data) => {
-        const summary = summarize(data);
-        if (summary.wikiUri) workerWikiUri = summary.wikiUri;
-        trace.events.push({ direction, worker: url, workerId, ...summary, wikiUri: summary.wikiUri || workerWikiUri });
-      };
-      worker.addEventListener("message", (event) => {
-        note("from-worker", event.data);
-      });
-      worker.addEventListener("error", (event) => {
-        trace.events.push({ direction: "worker-error", worker: url, workerId, wikiUri: workerWikiUri, message: event.message || "" });
-      });
-      const post = worker.postMessage.bind(worker);
-      worker.postMessage = (data, transfer) => {
-        const before = trace.events.length;
-        note("to-worker", data);
-        const entry = trace.events[before];
-        if (entry.type === "lar:control-event" && entry.renderId === trace.dropDomEventRenderId) {
-          trace.events.push({ ...entry, direction: "dropped-to-worker" });
-          return;
-        }
-        return transfer === undefined ? post(data) : post(data, transfer);
-      };
-      return worker;
-    }
-    TracedWorker.prototype = NativeWorker.prototype;
-    Object.setPrototypeOf(TracedWorker, NativeWorker);
-    window.Worker = TracedWorker;
-  });
+  await page.addInitScript({ content: workerTraceInitScript() });
 }
 
 const traceMark = (page) => page.evaluate(() => window.__weldWorkerTrace?.events.length ?? 0);
