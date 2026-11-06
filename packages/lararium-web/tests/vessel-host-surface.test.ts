@@ -59,6 +59,7 @@ const boot = (idbName: string): VesselBoot => ({ idbName, hostId: "h", wikiId: "
 
 type SurfaceHooks = {
   onFrame?: (frame: unknown) => void;
+  onControlResult?: (surface: string, result: Extract<VesselToPage, { t: "control-result" }>["result"]) => void;
   onPortMessage?: (binding: string, islandKey: string, msg: unknown) => void;
 };
 
@@ -67,8 +68,10 @@ function fakeVessel() {
   const hooks: SurfaceHooks = {};
   const placed: Array<{ surface: string; binding: string }> = [];
   const closed: string[] = [];
+  const controlEvents: string[] = [];
   const open = async (o: { idbName: string; face?: string | null } & SurfaceHooks) => {
     hooks.onFrame = o.onFrame;
+    hooks.onControlResult = o.onControlResult;
     hooks.onPortMessage = o.onPortMessage;
     return {
       face: o.face ?? null,
@@ -81,9 +84,10 @@ function fakeVessel() {
         close: (binding: string) => { closed.push(binding); },
       },
       flush: async () => undefined, close: async () => undefined,
+      sendControlEvent: (_surface: string, ev: { eventId: string }) => { controlEvents.push(ev.eventId); },
     };
   };
-  return { open, hooks, placed, closed };
+  return { open, hooks, placed, closed, controlEvents };
 }
 
 const until = async (what: string, ok: () => boolean): Promise<void> => {
@@ -111,6 +115,33 @@ const enter = (host: ReturnType<typeof standVesselHost>, t: ReturnType<typeof ta
 const openOn = (binding: string): PageToVessel => ({ t: "port:place", surface: "lares", binding, msg: { type: "port:open", portId: binding } });
 
 describe("surface traffic reaches each session over its own port", () => {
+  test("SV3 — a control result answers its sender alone", async () => {
+    const idbName = `host-surface-control-${crypto.randomUUID()}`;
+    const face = await standFace(idbName, ROUTE);
+    const v = fakeVessel();
+    const host = standVesselHost({ locks: navigator.locks, openVessel: v.open } as never);
+    const a = tab(ROUTE), b = tab(ROUTE);
+    const ca = enter(host, a, "tab-a", idbName, face);
+    await until("A admitted", a.admitted);
+    enter(host, b, "tab-b", idbName, face);
+    await until("B admitted", b.admitted);
+
+    ca.receive({ t: "control-event", surface: "lares", ev: { eventId: "evA" } } as PageToVessel);
+    await until("A's control event reaches the vessel", () => v.controlEvents.includes("evA"));
+    const result = (eventId: string) => ({ eventId } as Extract<VesselToPage, { t: "control-result" }>["result"]);
+    const results = (t: ReturnType<typeof tab>) => t.heard.filter((m): m is Extract<VesselToPage, { t: "control-result" }> => m.t === "control-result");
+    v.hooks.onControlResult!("lares", result("evA"));
+    expect(results(a).map((m) => m.result.eventId)).toEqual(["evA"]);
+    expect(results(b)).toEqual([]);
+
+    v.hooks.onFrame!({ n: 1 });
+    expect(a.frames()).toHaveLength(1);
+    expect(b.frames()).toHaveLength(1);
+    v.hooks.onControlResult!("lares", result("unknown"));
+    expect(results(a).map((m) => m.result.eventId)).toEqual(["evA", "unknown"]);
+    expect(results(b).map((m) => m.result.eventId)).toEqual(["unknown"]);
+  }, SLOW);
+
   test("SV1 RED both sessions of the lit face hear the frame; each hears its own binding alone — CONTROL: another face hears nothing", async () => {
     const idbName = `host-surface-${crypto.randomUUID()}`;
     const face = await standFace(idbName, ROUTE);
