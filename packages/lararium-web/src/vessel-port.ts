@@ -86,6 +86,7 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
   const calls = new Map<string, { resolve(v: unknown): void; reject(e: unknown): void }>();
   let connection: BrowserConnectionSnapshot | null = null;
   let greeting: VesselGreeting | null = null;
+  const wantsAwaitingGreeting: Array<() => void> = [];
   let endLife: (() => void) | null = null;
   const locks = opts.locks === undefined ? ambientPageLocks() : opts.locks;
   const connectionListeners = new Set<BrowserConnectionListener>();
@@ -108,6 +109,7 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
       case "greeting": {
         greeting = { ownerEpoch: msg.ownerEpoch, sessionId: msg.sessionId, lifetimeLock: msg.lifetimeLock, ...(msg.refused ? { refused: msg.refused } : {}) };
         handlers.onGreeting?.(greeting);
+        for (const want of wantsAwaitingGreeting.splice(0)) want();
         // THE TAB HOLDS ITS SESSION'S LIFETIME LOCK FOR ITS LIFE: once held, the vessel queues on it, and the platform hands it
         // over when this page's context goes, with or without a close.
         const sessionId = msg.sessionId;
@@ -153,7 +155,12 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
 
   return {
     mintPort(wantId: string, tabSession: string): Promise<MessagePort | null> {
-      return new Promise((resolve) => { mints.set(wantId, resolve); post({ t: "port:want", wantId, tabSession }); });
+      // A want that reaches a vessel not yet greeting this page would meet no session: it waits for the greeting, then crosses.
+      return new Promise((resolve) => {
+        mints.set(wantId, resolve);
+        const want = (): void => post({ t: "port:want", wantId, tabSession });
+        if (greeting) want(); else wantsAwaitingGreeting.push(want);
+      });
     },
     /** Open this tab's session; `resume` names an earlier greeting, which a respawned vessel refuses by name. */
     hello(boot: VesselBoot, resume?: { readonly ownerEpoch: string; readonly sessionId: string }): void {
