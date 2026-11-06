@@ -94,7 +94,7 @@ import { workingFloorAnchorOf, vesselDyads, verifiedFleetOfGroup, type LarDid } 
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase, PlaceFoundingCard } from "@lararium/mesh";
 import { readWornPersonaMount }              from "@lararium/mesh";
-import { browserWardCosignPort }             from "./browser-ward-cosign.js";
+import { browserFaceFold, browserWardCosignPort } from "./browser-ward-cosign.js";
 import {
   generateOrLoadBrowserVesselIdentity,
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
@@ -1385,11 +1385,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const wiring = promoteWiringRef;
           const handle = await repo.find<LarDoc>(provenPromoteUrl as AutomergeUrl);
           const boardFace = { group: wornGroup, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
+          // THE PORT FOLDS THE WORN FACE AT EACH ACT (node parity: the node loads its face per act): the persona plane and the admit
+          // bundle as they stand now, under the KEL as it stands now, so a second device admitted since boot holds the lower.
+          const liveKelChain = () => personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
           const browserCosignPortOf = async () => {
             const intents = await repo.find<LarDoc>(wornIntentsUrl as AutomergeUrl);
             return browserWardCosignPort({ group: wornGroup, atom: wornAtom, plane: intents, flush: () => repo.flush(),
-              projection: () => proof.projection,
-              lineage: () => { const lineage = readFace(personaKelChain)?.lineage; if (!lineage) throw new Error("[lararium-browser] the worn face's KEL folds no lineage"); return lineage; },
+              fold: browserFaceFold({ records: () => faceRecordsOf([heldDocOf(repo, wornPlaneUrl), heldDocOf(repo, social.daemonUrl)], wornGroup),
+                chain: liveKelChain, group: wornGroup, anchor: pinned, deviceKey: wornAtom.key, ...(wornEdge ? { edge: wornEdge } : {}),
+                planes: { persona: wornPlaneUrl, intents: wornIntentsUrl } }),
+              lineage: () => { const lineage = readFace(liveKelChain())?.lineage; if (!lineage) throw new Error("[lararium-browser] the worn face's KEL folds no lineage"); return lineage; },
               fleet: () => fleetShadows });
           };
           /** One ward act's signer: the page's dialog asks the passphrase for this act, and the ward worker signs under it. */
