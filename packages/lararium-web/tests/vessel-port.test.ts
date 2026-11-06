@@ -33,14 +33,22 @@ test("a vessel placement refusal reads as the binding's own refusal, and a refus
   expect(got).toEqual([["b1", { type: "transport:refused", reason: "port-unleased", binding: "b1" }]]);
 });
 
-test("an ask crosses to the page's form and its answer returns under the same askId", async () => {
+test("RED: an ask crosses as public words and the page posts no answer; the ceremony's port crosses transferred, and a refusal crosses by name", async () => {
   const { worker, sent, say } = fakeWorker();
   const asked: unknown[] = [];
-  standVesselPort(worker, { onAsk: async (question) => { asked.push(question); return { kind: "passphrase", passphrase: "x" }; } });
-  say({ t: "ask", askId: "a1", kind: "unlock", act: "boot", question: { kind: "unlock", attempt: 1, of: 3, notes: [] } });
+  const settled: string[] = [];
+  const port = standVesselPort(worker, { onAsk: (ask) => { asked.push(ask); }, onAskSettled: (id) => { settled.push(id); } });
+  say({ t: "ask", askId: "a1", kind: "unlock", act: "boot", words: "attempt 1 of 3" });
   await tick();
-  expect(asked).toEqual([{ kind: "unlock", attempt: 1, of: 3, notes: [] }]);
-  expect(sent.map((s) => s.msg)).toEqual([{ t: "answer", askId: "a1", answer: { kind: "passphrase", passphrase: "x" } }]);
+  expect(asked).toEqual([{ askId: "a1", kind: "unlock", act: "boot", words: "attempt 1 of 3" }]);
+  expect(sent, "the page answers nothing on the vessel's port").toEqual([]);
+  const channel = new MessageChannel();
+  port.ceremonyPort("a1", channel.port1);
+  expect(sent).toEqual([{ msg: { t: "ceremony:port", askId: "a1", port: channel.port1 }, transfer: [channel.port1] }]);
+  port.ceremonyRefused("a2", "ceremony-broker-absent");
+  expect(sent.at(-1)?.msg).toEqual({ t: "ceremony:refused", askId: "a2", refusal: "ceremony-broker-absent" });
+  say({ t: "ask:settled", askId: "a1" });
+  expect(settled).toEqual(["a1"]);
 });
 
 test("a read resolves on its own reply, a refusal rejects with the vessel's named refusal, and a reply for no call goes nowhere", async () => {

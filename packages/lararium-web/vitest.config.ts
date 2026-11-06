@@ -71,6 +71,19 @@ export default defineConfig(async () => ({
         },
       },
       {
+        // The unlock ceremony (slice 1b): a WALK BUILD of the Pronaos (the walk's ward act rides only that build) served on the
+        // loopback, a real Chromium founding, unlocking and signing one ward act through the ceremony document.
+        test: {
+          name: "ceremony-e2e",
+          include: ["tests/e2e/ceremony.e2e.test.ts"],
+          fileParallelism: false,
+          environment: "node",
+          browser: { enabled: false },
+          testTimeout: 300_000,
+          hookTimeout: 600_000,
+        },
+      },
+      {
         // Golden 01 on the whole road: a staged hearth (a scratch LAR_ROOT of its own) serves the page and a real
         // Chromium acts on it. It stands a daemon, so its waits are long and it owns the process for its run.
         test: {
