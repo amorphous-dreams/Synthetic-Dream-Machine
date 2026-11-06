@@ -8,6 +8,10 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./page": {
+      "import": "./dist/page.js",
+      "types": "./dist/page.d.ts"
+    },
     "./browser-wiki-worker": {
       "import": "./dist/browser-wiki-worker.js"
     },

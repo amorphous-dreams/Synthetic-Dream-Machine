@@ -1,4 +1,4 @@
-import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser";
+import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser/page";
 import type { FloorAnchor, HearthFloorCard } from "@lararium/mesh";
 
 export interface ServedLocation {
@@ -154,7 +154,7 @@ function setOrRemove(element: HTMLElement, name: string, value: string | null): 
 }
 
 /** Paint the vessel's replica of its current relay state; this reports the adapter's causal edges. */
-export function mountLiveStatus(parent: HTMLElement, state: BrowserConnectionState): () => void {
+export function mountLiveStatus(parent: HTMLElement, state: Pick<BrowserConnectionState, "getSnapshot" | "subscribe">): () => void {
   const connectionRow = makeRow(parent, "crossing", "connection");
   const modeRow = makeRow(parent, "mode", "mode");
   let authenticatedBefore = false;

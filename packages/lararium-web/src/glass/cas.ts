@@ -1,4 +1,4 @@
-import { readCasBlobFromOpfs } from "@lararium/browser";
+import { readCasBlobFromOpfs } from "@lararium/browser/page";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { named } from "./cid.js";
 import { preloadsFromCasBlob } from "@lararium/tw5/glass";

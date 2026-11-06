@@ -18,6 +18,7 @@ import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHo
  */
 
 import { pagePortGrant } from "./page-port-grant.js";
+import { DAEMON_SURFACE_ID } from "./daemon-surface.js";
 import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
@@ -344,11 +345,7 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   };
 }
 
-/** The surface id the daemon owns in the uniform pin-selector — distinct from any pool wiki slug. Pass it to
- *  `setActiveSurface` to summon the daemon; pass a wiki slug to surface that wiki. It's all the same VM. */
-// THE SENTINEL IS THE SLUG — one string, no decoding at any boundary, so no call site can decode it
-// wrongly. A sentinel that differs from the slug buys a translation everywhere the two must meet.
-export const DAEMON_SURFACE_ID = "daemon";
+export { DAEMON_SURFACE_ID } from "./daemon-surface.js";
 
 /** A keyed `lar:frame` plus the SURFACE (transport id) whose island emitted it. */
 export type ProjectionSurfaceFrame = LarMsg_Frame & { readonly surface: string };

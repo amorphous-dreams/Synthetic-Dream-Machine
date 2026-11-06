@@ -2,7 +2,7 @@
  * The page's life signals, fed to the vessel. The page alone reads its `document` and its own `pagehide`; the vessel reads
  * only what this feed hands it (the lift's `page:life`), so its modules run on any thread.
  */
-import type { PageLife, PageLifeFeed } from "@lararium/browser";
+import type { PageLife, PageLifeFeed } from "@lararium/browser/page";
 
 /** Subscribe a vessel listener to a page's hide and leave: a hidden page answers `hidden`, a leaving one `pagehide`. */
 export function pageLifeOf(page: EventTarget, doc: EventTarget & { readonly visibilityState: string }): PageLifeFeed {

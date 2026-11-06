@@ -6,11 +6,12 @@
  * route), the vessel's frames cross to the page, the projection paints, and the mirror stands on the first frame that names
  * the surface.
  *
- *   V1 — the page's workers include the vessel worker (`vessel.worker`), the vessel founds through it (the did row names a
- *        `did:`), the phases reach `live`, the page's first paint reads, and the mirror shows: the far-side barrier for
+ *   V1 — the page's workers include the vessel worker (`vessel.worker`), the vessel founds through it (the did row names
+ *        the vessel's key the worker reported), the phases reach `live`, the page's first paint reads, and the mirror shows: the far-side barrier for
  *        every claim is the page's own reading of what the worker sent (a phase, a frame, a status).
- *   V2 — the page's own thread loads no vessel module: every script the page's main frame requested reads clear of the
- *        vessel chunks the build names (`automerge-repo`'s Repo and the keyhive glue load only as worker requests).
+ *   V2 — the page's own thread loads no vessel module: the window's own resource timeline (a worker's fetches land in that
+ *        worker's timeline, never the window's) names the page's entry chunk and none of the vessel's chunks: the vessel
+ *        host, Keyhive's slim glue and its WASM base64.
  */
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
@@ -47,15 +48,7 @@ test("V1/V2 — the page builds the vessel worker, the vessel founds through it,
   await armTestCustody(context, "vessel-worker");
   const page = await context.newPage();
   const faults: string[] = [];
-  const pageScripts: string[] = [];
   page.on("pageerror", (e) => faults.push(`[page] ${e.message}`));
-  // A request the page's main frame makes for a script: the page's own thread loads it. A worker's requests carry no frame.
-  page.on("request", (request) => {
-    if (request.resourceType() !== "script") return;
-    let frame: unknown = null;
-    try { frame = request.frame(); } catch { frame = null; }
-    if (frame === page.mainFrame()) pageScripts.push(request.url());
-  });
   try {
     await page.goto(baseUrl);
     await page.waitForFunction(() => [...document.querySelectorAll("#phases .phase")].some((p) => p.textContent === "live"), undefined, { timeout: WAIT });
@@ -63,13 +56,17 @@ test("V1/V2 — the page builds the vessel worker, the vessel founds through it,
     const workers = page.workers().map((w) => w.url());
     assert.ok(workers.some((url) => /\/assets\/vessel\.worker-[\w-]+\.js/.test(url)), `the page builds the vessel worker (workers: ${workers.join(", ") || "none"})`);
 
-    await page.waitForFunction(() => [...document.querySelectorAll("#vessel .row")].some((r) => r.querySelector(".k")?.textContent === "did" && (r.querySelector(".v")?.textContent ?? "").startsWith("did:")), undefined, { timeout: WAIT });
+    await page.waitForFunction(() => [...document.querySelectorAll("#vessel .row")].some((r) => r.querySelector(".k")?.textContent === "did" && /^0x[0-9a-f]{64}$/.test(r.querySelector(".v")?.textContent ?? "")), undefined, { timeout: WAIT });
     await page.waitForFunction(() => (window as Window & { __larVesselMetrics?: unknown }).__larVesselMetrics !== undefined, undefined, { timeout: WAIT });
     await page.waitForFunction(() => document.querySelector("#mirror")?.getAttribute("data-lar-shown") === "mirror", undefined, { timeout: WAIT });
 
+    // The window's own timeline: what the page's main thread fetched. A worker's module loads land in its own timeline.
+    const pageScripts = await page.evaluate(() => performance.getEntriesByType("resource").map((e) => e.name).filter((name) => name.endsWith(".js")));
     // CONTROL for V2: the page's own thread did load scripts (the entry chunk), so an empty list reads as a blind instrument.
     assert.ok(pageScripts.some((url) => /\/assets\/index-[\w-]+\.js/.test(url)), `the instrument reads the page's own entry chunk (scripts: ${pageScripts.join(", ")})`);
-    const vesselChunks = pageScripts.filter((url) => /\/assets\/(?:open-browser-vessel|browser-custody|browser-vessel-identity|seed-wrap-prf|ward-core|slim|wasm-base64)[-.]/.test(url));
+    // and a module the page's thread imports later (the mirror's glass chunk, a dynamic import), so a late load reads too.
+    assert.ok(pageScripts.some((url) => /\/assets\/glass-[\w-]+\.js/.test(url)), `the instrument reads the page's own dynamic import (scripts: ${pageScripts.join(", ")})`);
+    const vesselChunks = pageScripts.filter((url) => /\/assets\/(?:vessel-host|slim|wasm-base64)-[\w-]+\.js/.test(url));
     assert.deepEqual(vesselChunks, [], "the page's own thread requests no vessel chunk");
     assert.deepEqual(faults, [], "no page error while the vessel founds and the mirror paints");
   } finally { await context.close(); }
