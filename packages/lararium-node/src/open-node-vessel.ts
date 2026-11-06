@@ -161,7 +161,7 @@ import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHear
 import { composeDialPresentation } from "./dial-presentation.js";
 import { dialAnchorCell, nodeSessionDoor } from "./uds-session-door.js";
 import { SessionSignBook } from "./session-sign-door.js";
-import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
+import { faceProofSubjectRef, placeProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import type { UdsSessionDoor } from "./uds-channel.js";
 import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type FlowPullResult } from "@lararium/mesh";
 import { gateReadingsFor, layStatementOn, flowFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
@@ -1968,7 +1968,11 @@ async function prepareNodeBootOn(
   // took yet, so the holder counts removal versions and owed rolls across a restart.
   // A vessel that wears a face folds that face's fleet off its device edge's root and its own atom; a piece still unread
   // refuses the fold by name (road `T35`). Only a faceless vessel reads unread.
-  sealedCells.face = () => { const c = dialAnchor.chain(); return c ? faceProofSubjectRef(c.scope as never) : null; };
+  // THE FACE CELL READS THE FACE THIS VESSEL PROVED, at the anchor its sessions meet it (`uds-session-door`): the dial's
+  // chain names the Nexus subject while a dial stands composed; with none, the worn face proved and lit stands at the
+  // vessel's own place, under its atom's place subject. A floor, a locked face or a face whose proof refused lights none.
+  let placeFace: string | null = null;
+  sealedCells.face = () => { const c = dialAnchor.chain(); return c ? faceProofSubjectRef(c.scope as never) : placeFace; };
   const liftSessionSign = (): SessionSignLift => {
     // A call of a session books here, and the sealed rest seals every save that waited for one under it (R2); the
     // document store's own seal books here too, and books nothing further.
@@ -3015,6 +3019,8 @@ async function prepareNodeBootOn(
     // R1: the bags the sealed rest seals, the worn face's own wiki bags and the daemon wiki's slots (U1's D half), only
     // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`).
     const faceWikiBags = wornFaceWikiBags({ slot, lit: faceLit && !!personaGroupId && wornFaceProved });
+    placeFace = faceLit && !!personaGroupId && wornFaceProved && activeAtom !== null && placeAid !== null
+      ? placeProofSubjectRef({ atomKey: activeAtom.key, place: placeAid } as never) : null;
     sealedCells.bags = () => faceWikiBags.sealed;
     sealedRest.store.mapMoved();
     const workingFloorAnchor = workingFloorAnchorOf({ place: placeAid });
