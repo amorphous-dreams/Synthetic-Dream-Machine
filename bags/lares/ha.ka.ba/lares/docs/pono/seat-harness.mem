@@ -127,7 +127,7 @@ An Opus co-sign reader read LAND-AFTER-CURES and found the pinned-audience hole;
 * ''C4.'' A replay appends nothing.
 * ''R1.'' A replay serves the seated edge only when its digest matches; otherwise it refuses `replay-edge-lapsed`.
 * ''R2.'' A stale table fails closed, by ward verb name.
-* ''Owed residues'' rest as road rows in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/stride-0-hearth`>> (`L23` to `L26`).
+* ''Owed residues'' rest as road rows in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/stride-0-hearth`>> (`L24` to `L27`).
 
 !!! Live holes the scouts found
 
@@ -175,6 +175,6 @@ This carrier gains its standing sections and rewrites the broker bullets and the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ACqf52DYwYx0uxLAVspxr7eRxHoe63UmPkjFs4KUyjI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rZpw8LtkCsGvS7nlxWK3XxmLm0IssstIMWOeo3m4w-Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>
