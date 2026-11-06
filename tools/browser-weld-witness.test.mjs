@@ -21,7 +21,7 @@ const DAEMON_WORKER = join(REPO, "packages/lararium-web/src/workers/daemon.worke
 const WEB_MAIN = join(REPO, "packages/lararium-web/src/main.ts");
 
 process.env.LEAF_BOOT_TRACE = "1";
-const { instrumentBootSource, observeKelRead } = await import("./browser-weld/leaf-continuity.mjs");
+const { emptyBootChainRead, instrumentBootSource, observeKelRead } = await import("./browser-weld/leaf-continuity.mjs");
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -422,7 +422,27 @@ async function testObservationRouteSurvivesADisposedResponse() {
   assert.equal(fulfilled.length, 1, "a live response is fulfilled");
 }
 
+/**
+ * RED (held-out run 42244363320): the C4 fault route emptied every `personaKelChainForPrefix(kelBoard.doc(),
+ * personaKelPrefix)` it met, and the co-sign port's per-act `liveKelChain` closure (616e7053a) now stands beside
+ * the Binding Gate's boot read in the same module, so the route counted two and threw. The fault empties the
+ * Binding Gate's one boot read alone, the anchor the observation route already reads; the live closure stays.
+ */
+async function testC4FaultEmptiesTheBootReadAlone() {
+  const source = await readFile(OPEN_VESSEL, "utf8");
+  const { count, body } = emptyBootChainRead(source);
+  assert.equal(count, 1, "the real vessel module holds exactly one Binding Gate boot read");
+  assert.match(body, /const personaKelChain = null;/, "the boot read empties");
+  assert.match(body, /const liveKelChain = \(\) => personaKelChainForPrefix\(kelBoard\.doc\(\), personaKelPrefix\);/,
+    "the co-sign port's per-act read stands untouched");
+  // CONTROL: a module with no boot read passes unchanged; one with two counts two, so the route still refuses it.
+  assert.deepEqual(emptyBootChainRead("export {};"), { count: 0, body: "export {};" });
+  const boot = "const personaKelChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);";
+  assert.equal(emptyBootChainRead(`${boot}\n${boot}`).count, 2);
+}
+
 await testObservationRouteSurvivesADisposedResponse();
+await testC4FaultEmptiesTheBootReadAlone();
 await testC4TraceHookIsOptIn();
 await testC4TraceAnchorsStillStand();
 await testC4TraceMarksRealManifestPost();
