@@ -56,6 +56,10 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 <<~ ahu slot=`#/the-lead`>>
 !! The lead ~ fresh per step, never one long session
 
+''The measured controller recipe'' (2026-11-06: G54 #177 and slot-wake #178 both landed). Provision with `node tools/provision-worktree.mjs <lane-root>/wt`, switch at its base with `git switch -c <branch>`, and run `pnpm build`. Write `<lane-root>/state.json` with `head`, `owed`, `seats`, `worktrees`, `next` and `step`; validate with `tools/lane-state.mjs` `readState`. Write a `--checks` JSON with a structural no-conflict-markers check, then start `node tools/commit-relay.mjs --lane-root … --worktree … --branch … --launcher <main-tree/tools/launch-codex.mjs> --checks … --remote-url …` in the harness's background mode.
+
+Launch each step with `node tools/launch-codex.mjs --lead-step --lane-root … --model gpt-6.1-terra --effort medium --worktree …`. Between steps the controller reads `relay/res-NNN.json`, trues `head`, and writes `next` with the session's two attribution trailers and the house subject `lar:///ha.ka.ba/<pkg>/<area>/<w1.w2.w3> — summary`. The lead has no git or network: the controller runs `node tools/pre-push-gate.mjs` and the lane's tests outside the wall (empty stderr inside the wall came from that wall), then `node tools/push-go.mjs --lane-root … --branch … --head … --remote-url …`; the next lead step requests the push through the broker. The controller opens the PR, writes the land message before the wait, reads CI, writes a SHIP for a security-class lane, lands, stops the broker and removes the worktree.
+
 * `tools/lane-state.mjs` holds the shape and `node tools/launch-codex.mjs --lead-step --lane-root <dir> --model <m> --effort <e> --worktree <wt>` launches the step: it reads `<lane-root>/state.json`, writes `<lane-root>/steps/step-NNN/brief.md` from the state, and launches a lead there with the lane root added so the lead can rewrite the state. The step counter spends only when the preflight passes, a missing or misshapen state refuses by name, and the lead ceiling bounds the step.
 * A lead runs ONE step per launch: it reads its lane's state file (head, owed rows, live seats, worktree map), does that step, writes the state file and its hand-back, and stops. The next step launches a fresh lead over the new state.
 * A step stays short: about 10 to 15 minutes or 40 tool calls. An agentic session re-sends its whole transcript on every call, so one long session grows its draw roughly with the square of its length.
@@ -66,6 +70,8 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 
 <<~ ahu slot=`#/the-broker`>>
 !! The broker ~ the hands outside a walled lead
+
+* ''Checks at the wall'' (measured 2026-11-06, G54): the broker refuses every commit without `--checks` ("no checks configured for the check seat"). The check seat's bwrap wall binds `/usr` alone, while Node lives under `~/.nvm`, so no house Node gate runs inside it. Until the owed toolchain binding lands, the controller runs the gate outside the wall in the lane worktree and the broker checks structurally for conflict markers. The controller writes the session's two attribution trailers into state `next`.
 
 * ''The swap'': `tools/seat-broker.mjs` holds the plumbing doors, `tools/seat-walls.mjs` the check and install seats, `tools/tree-export.mjs` the filter-free tree export. ''Requests'' arrive as `req-<id>.json` files in `<lane-root>/relay/`, zero-padded and in order, one at a time; each answer lands as `res-<id>.json` before the next request runs. Unknown kinds and unknown fields refuse by name.
 * ''Doors'': `commit` (named relative paths read race-proof from the worktree, the message as inline text (size-capped; the broker opens no lead-controlled file for it), an expected old head, a verified check receipt; no hook, no filter); `push` (only when the go file names the branch AND the head; never `-u`, never force; the go spends on the attempt); `worktree` (a new path under the lane root, a branch carrying the lane prefix, a filter-free export of the base tree, submodule paths left empty); `install` (the install seat over a worktree in the lane root); `worktree-remove` (a registered, clean tree, never the broker's own, never `--force`); `launch` (`build`, `read` or `research` alone, never `lead`; allowlisted models; a seat directory inside the lane root with its brief).
@@ -216,6 +222,6 @@ This carrier gains its standing sections and rewrites the broker bullets and the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;83ijMIHi0i00700rLVE5EwYqsLtaOzCiPt9MKNRkZoA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BhiMSRJ5phzzZ0x24YeHCtjPinx9fq9iSVzfoqk8TDM`>>
 
 <<^ code=`&#x0004;` to=`?`>>
