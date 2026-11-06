@@ -112,13 +112,38 @@ const main = async () => {
 
   // ── W1 · the vessel boots to a live sovereign island ──────────────────────────────────────────
   // The web surface writes its own verdict into #status / #vessel. Reading ITS words rather than inferring
-  // from the DOM keeps this vector honest about what the web surface itself claims.
-  const status = await until(async () => {
-    const t = await page.evaluate(() => document.getElementById("vessel")?.textContent ?? "");
-    return t.includes("live") ? t : null;
+  // from the DOM keeps this vector honest about what the web surface itself claims. The wait ends on the
+  // page's own events, never on elapsed time: #vessel reports "live" (arrival), or the page paints a terminal
+  // signal (a refusing or faulting phase, an err or warn status, a ceremony refusal, a refused mirror stand)
+  // or raises a page error.
+  let pageError = null, onPageError;
+  const pageErrorSeen = new Promise((resolve) => {
+    onPageError = (error) => { pageError = `pageerror: ${error.message}`; resolve(pageError); };
+    page.on("pageerror", onPageError);
   });
-  if (status) ok("W1 vessel-boots", "the island reports live");
-  else bad("W1 vessel-boots", `no "live" in #vessel within ${SETTLE_MS}ms — the browser vessel never stood`);
+  let w1;
+  try {
+    w1 = await Promise.race([
+      pageErrorSeen,
+      page.waitForFunction(() => {
+        const phase = [...document.querySelectorAll("#phases .phase")].find((p) => /refus|fault/i.test(p.textContent ?? ""));
+        if (phase) return `phase: ${phase.textContent}`;
+        const st = document.querySelector("#status");
+        if (st?.classList.contains("err") || st?.classList.contains("warn")) return `status: ${st.textContent}`;
+        const refusal = document.querySelector(".ceremony-ask[data-refusal]");
+        if (refusal) return `ceremony refusal: ${refusal.getAttribute("data-refusal")}`;
+        const mirror = document.querySelector("#mirror")?.getAttribute("data-lar-mirror");
+        if (mirror?.startsWith("none:") && mirror !== "none:mirror-inputs-absent") return `mirror: ${mirror}`;
+        return (document.getElementById("vessel")?.textContent ?? "").includes("live") ? "arrived" : false;
+      }, undefined, { timeout: 0 }).then((h) => h.jsonValue()),
+    ]);
+  } catch (e) {
+    w1 = `page closed: ${String(e).slice(0, 90)}`;
+  } finally {
+    page.off("pageerror", onPageError);
+  }
+  if (w1 === "arrived") ok("W1 vessel-boots", "the island reports live");
+  else bad("W1 vessel-boots", `${w1} — the browser vessel never stood`);
 
   // ── W2 · the projection RENDERS, and carries render ids ───────────────────────────────────────
   // Two facts, one seam: the frame arrived AND it is addressable. A pane with html but no
