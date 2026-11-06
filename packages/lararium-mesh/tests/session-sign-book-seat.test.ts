@@ -5,7 +5,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed
  */
 import { describe, expect, it } from "vitest";
-import { SessionSignBook, type BookedSession } from "../src/session-sign-book.js";
+import { SessionSignBook, standingSessionSeat, type BookedSession } from "../src/session-sign-book.js";
 
 const sessionOf = (subject: string): BookedSession => ({
   signer: { dropped: false, certificate: {}, sign: async () => ({ refusal: "not-in-this-vector" }) },
@@ -30,5 +30,26 @@ describe("the book seats a session while its signer stands", () => {
     const release = book.hold("req-1", "docstore-seal", sessionOf("face-b"));
     expect(book.seated()).toEqual([]);
     release();
+  });
+});
+
+describe("V6: the vessel's own standing session seats in each book a lift stands", () => {
+  it("the dial's session seats in the book standing now and in one a later lift stands, a new dial's session replaces it, and a dial that clears unseats it; a book stood with no session standing seats none (control)", () => {
+    const seat = standingSessionSeat();
+    const first = new SessionSignBook();
+    seat.book(first);
+    expect(first.seated()).toEqual([]);            // CONTROL: no session stands yet
+    const dial = sessionOf("face-a");
+    seat.stand(dial);
+    expect(first.seated()).toEqual([dial]);
+    const relift = new SessionSignBook();
+    seat.book(relift);
+    expect(relift.seated()).toEqual([dial]);
+    expect(first.seated()).toEqual([]);            // the book the lift left seats nothing more
+    const redial = sessionOf("face-a");
+    seat.stand(redial);
+    expect(relift.seated()).toEqual([redial]);
+    seat.stand(null);
+    expect(relift.seated()).toEqual([]);
   });
 });

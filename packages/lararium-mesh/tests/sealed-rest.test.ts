@@ -15,7 +15,7 @@ import { utf8Bytes } from "../src/crypto.js";
 import { faceProofSubjectRef, sessionSignatureImage } from "../src/face-proof-subjects.js";
 import type { RecordSigner } from "../src/sealed-records.js";
 import { SEALED_DOCUMENT_REFUSALS, SealedDocumentStore } from "../src/sealed-doc-store.js";
-import { answerDocStoreAsks, composeSealedRest, vesselDocStoreDoor, type SealedRest } from "../src/sealed-rest.js";
+import { announceSlotDoc, answerDocStoreAsks, composeSealedRest, docStorePortCell, islandRestGuard, sealedBagMap, vesselDocStoreDoor, type SealedRest } from "../src/sealed-rest.js";
 import { vessel, world, type Vessel } from "./content-key-fixture.js";
 import { chain, signHex } from "./face-proof-fixture.js";
 
@@ -62,7 +62,7 @@ async function signerOf(name: string): Promise<RecordSigner> {
 }
 
 /** One vessel's sealed rest over a MessageChannel door: the vessel's book of asks, and the island's holder behind it. */
-function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (documentId: string) => boolean } = {}) {
+function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (documentId: string) => boolean; hydrationPatienceMs?: number } = {}) {
   const own = faceProofSubjectRef(a.chain.scope);
   const channel = new MessageChannel();
   const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
@@ -88,6 +88,7 @@ function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (
       patienceMs: 5_000, idPrefix: "test",
     }),
     flushRepo: async () => { await repo?.flush(); },
+    ...(over.hydrationPatienceMs !== undefined ? { hydrationPatienceMs: over.hydrationPatienceMs } : {}),
   });
   return { rest, own, sealedUnder, asks, seat: (r: Repo) => { repo = r; } };
 }
@@ -577,5 +578,161 @@ describe("T2: a holder that stands no session never writes clear over a sealed r
     // CONTROL: a document that rests no sealed value writes as the engine hands it.
     await direct.save(["an-unsealed-document", "incremental", "c0ffee"], Uint8Array.from([...MAGIC, 1, 2, 3]));
     expect(inner.bytes.has(["an-unsealed-document", "incremental", "c0ffee"].join("\u0000"))).toBe(true);
+  });
+});
+
+describe("V3: the bag map names a slot document the catalog names no row for", () => {
+  it("a working layer's document the mount resolved (the face's derived address) maps sealed, as the catalog's row for the wiki bag does; a bag the map leaves out and a faceless map name none (controls)", () => {
+    let face: string | null = "face:one";
+    const WIKI = "lar:///ha.ka.ba/bags/@lares", WORKING = "lar:///ha.ka.ba/wikis/@lares/working", OTHER = "lar:///ha.ka.ba/bags/@else";
+    const mounted: Record<string, string> = { [WORKING]: "doc-working" };
+    const catalog: Record<string, string> = { [WIKI]: "doc-wiki", [OTHER]: "doc-else" };
+    const map = sealedBagMap({
+      face: () => face,
+      bags: () => [WIKI, WORKING],
+      docsOf: (bagId) => [mounted[bagId], catalog[bagId]],
+    });
+    expect(map.bagOf("doc-working")).toEqual({ bagId: WORKING, face: "face:one" });
+    expect(map.bagOf("doc-wiki")).toEqual({ bagId: WIKI, face: "face:one" });
+    expect(map.docOf(WORKING)).toBe("doc-working");
+    expect(map.bagOf("doc-else")).toBeNull();
+    face = null;
+    expect(map.bagOf("doc-working")).toBeNull();
+  });
+});
+
+describe("V2: an island's own store rests no document the vessel's rest seals", () => {
+  it("an island's change reaches the vessel by sync and rests there sealed; the island's store holds no byte of it, a restart's island finds it by sync, and an unsealed document still rests in the island (control)", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const islandInner = memoryAdapter();
+    let control = "";
+    const r = standRest(a, inner, { sealed: (id) => id !== control });
+    const session: Session = { id: "s-a", subject: r.own, signer: a.signer };
+    const asked: string[] = [];
+    const guardOf = () => islandRestGuard(islandInner, async (documentId) => { asked.push(documentId); return r.rest.restsSealed(documentId); });
+    const island = new Repo({ storage: guardOf(), network: [], peerId: "island-one" as PeerId });
+    const repo = linked(r.rest, island, "vessel-one");
+    r.seat(repo);
+    r.rest.watch(repo, () => session);
+    const doc = island.create<{ note?: string }>();
+    const clear = island.create<{ note?: string }>();
+    control = clear.documentId;
+    doc.change((d) => { d.note = SECRET; });
+    clear.change((d) => { d.note = `${SECRET}-clear`; });
+    const mine = await repo.find<{ note?: string }>(doc.url);
+    await repo.find<{ note?: string }>(clear.url);
+    await settle();
+    expect(mine.doc().note).toBe(SECRET);
+    await island.flush();
+    await repo.flush();
+    await r.rest.store.flush();
+    // THE SETUP TOOK: the island asked, and the vessel's rest holds the document sealed.
+    expect(asked).toContain(doc.documentId);
+    expect(restsAny(inner, doc.documentId)).toBe(true);
+    expect(restsClear(inner, doc.documentId, SECRET)).toBe(false);
+    // THE ISLAND'S OWN STORE HOLDS NO BYTE OF IT, and still rests the unsealed document (control).
+    expect(restsAny(islandInner, doc.documentId)).toBe(false);
+    expect(restsClear(islandInner, clear.documentId, `${SECRET}-clear`)).toBe(true);
+    await island.shutdown();
+    // A RESTARTED ISLAND finds the sealed document by sync from the vessel.
+    const channel = new MessageChannel();
+    ports.push(channel.port1, channel.port2);
+    repo.networkSubsystem.addNetworkAdapter(new MessageChannelNetworkAdapter(channel.port2));
+    const island2 = new Repo({ storage: guardOf(), network: [new MessageChannelNetworkAdapter(channel.port1)], peerId: "island-two" as PeerId });
+    const back = await island2.find<{ note?: string }>(doc.url);
+    expect(back.doc().note).toBe(SECRET);
+    await island2.flush();
+    expect(restsAny(islandInner, doc.documentId)).toBe(false);
+    await island2.shutdown();
+    await repo.shutdown();
+  });
+
+  it("a clear copy an island store holds from before its document mapped sealed leaves the island's rest at its first ask", async () => {
+    const islandInner = memoryAdapter();
+    const before = new Repo({ storage: islandInner, network: [] });
+    const doc = before.create<{ note?: string }>();
+    doc.change((d) => { d.note = SECRET; });
+    await before.flush();
+    await before.shutdown();
+    expect(restsClear(islandInner, doc.documentId, SECRET)).toBe(true);   // the setup took
+    const guard = islandRestGuard(islandInner, async () => true);
+    expect(await guard.loadRange([doc.documentId])).toEqual([]);
+    expect(restsAny(islandInner, doc.documentId)).toBe(false);
+  });
+});
+
+describe("V3: the slot resolver names each slot document it answers, and the map seals one that already rested clear", () => {
+  it("a slot notice from the island reaches the vessel's cell; a document that rested clear before its bag mapped seals at once under the standing session, and its clear chunks leave rest", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    let mapped = false;
+    const r = standRest(a, inner, { sealed: () => mapped });
+    const session: Session = { id: "s-a", subject: r.own, signer: a.signer };
+    // THE NOTICE: the island's resolver names a slot document, and the vessel's cell hears it.
+    const heard: string[] = [];
+    const channel = new MessageChannel();
+    const cell = docStorePortCell(async () => null, { onSlot: (bagId, documentId) => heard.push(`${bagId}=${documentId}`) });
+    cell.attach(portOf(channel.port1));
+    announceSlotDoc(portOf(channel.port2), "lar:///ha.ka.ba/wikis/@lares/working", "doc-working");
+    await settle(50);
+    expect(heard).toEqual(["lar:///ha.ka.ba/wikis/@lares/working=doc-working"]);
+    // A document that rested clear before its bag mapped (the notice arrived late).
+    const repo = new Repo({ storage: r.rest.store, network: [] });
+    r.seat(repo);
+    const doc = repo.create<{ note?: string }>();
+    doc.change((d) => { d.note = SECRET; });
+    await repo.flush();
+    expect(restsClear(inner, doc.documentId, SECRET)).toBe(true);   // the setup took
+    mapped = true;
+    expect(await r.rest.sealMapped(doc.documentId, session)).toBe(true);
+    expect(restsAny(inner, doc.documentId)).toBe(true);
+    expect(restsClear(inner, doc.documentId, SECRET)).toBe(false);
+    // CONTROL: a document whose rest holds no clear chunk seals nothing more.
+    expect(await r.rest.sealMapped(doc.documentId, session)).toBe(false);
+    await repo.shutdown();
+    a.restart();
+    const again = standRest(a, inner);
+    const repo2 = new Repo({ storage: again.rest.store, network: [] });
+    expect((await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl)).doc().note).toBe(SECRET);
+    await repo2.shutdown();
+  });
+});
+
+describe("a restart's hydration: a sealed document's load waits for its map, never strands", () => {
+  it("a load before the bag maps waits and hydrates once the map moves; a load with no move inside its patience refuses by name (control)", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const r = standRest(a, inner);
+    const session: Session = { id: "s-a", subject: r.own, signer: a.signer };
+    const repo = new Repo({ storage: r.rest.store, network: [] });
+    r.seat(repo);
+    const doc = repo.create<{ note?: string }>();
+    r.rest.wrote(doc.documentId, session);
+    doc.change((d) => { d.note = SECRET; });
+    await repo.flush();
+    await repo.shutdown();
+    a.restart();
+    // THE RESTART: the map stands only after the load began (the dial composes, the slot resolver names the document).
+    let mapped = false;
+    const again = standRest(a, inner, { sealed: () => mapped, hydrationPatienceMs: 5_000 });
+    let loaded = false;
+    const loading = again.rest.store.loadRange([doc.documentId]).then((chunks) => { loaded = true; return chunks; });
+    await settle(100);
+    // barrier: the load stands pending, waiting on the map (it neither refused nor read).
+    expect(loaded).toBe(false);
+    mapped = true;
+    again.rest.store.mapMoved();
+    const chunks = await loading;
+    expect(chunks.length).toBeGreaterThan(0);
+    const repo2 = new Repo({ storage: again.rest.store, network: [] });
+    expect((await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl)).doc().note).toBe(SECRET);
+    await repo2.shutdown();
+    // CONTROL: no map ever stands inside the patience: the load refuses `bag-unmapped`, by name.
+    const third = standRest(a, inner, { sealed: () => false, hydrationPatienceMs: 200 });
+    await expect(third.rest.store.loadRange([doc.documentId])).rejects.toMatchObject({ refusal: "bag-unmapped" });
   });
 });
