@@ -29,6 +29,8 @@ written    = "2026-08-08"
 
 A human writes in their wiki and wants the words to land on Bluesky, on Kowloon, on whatever surface their people already stand in. ''The vessel carries the credential so the human never has to.'' That reads as the force-multiplier: one place to write, many places to reach.
 
+Operator clarification (2026-11-06): "This 'Secret store' isn't an unlock or base key, it's 'the user's facebook, discord, bluesky and other integration keys for things across the causal island shore that still sit in web2.5's tech'." The store holds reach credentials alone: the web2 bridge's keyring behind the causal-island boundary, never custody, unlock, vessel or persona keys. Founding, unlock, join and first boot never stand or read it. Its one door carries the node-vessel onboarding verb on an unlocked, chained face; the browser never holds a credential.
+
 The whole design turns on ''one split, held absolutely'': a foreign credential buys ''REACH'', never ''IDENTITY''. Holding one therefore never touches the sovereign plane, and the non-custodial-by-type law survives intact — the same medicine the attestation plane takes at the naming layer (`attestation-plane.mem`), applied one layer inward.
 
 <<~/ahu>>
@@ -117,9 +119,11 @@ A reach credential rides the ''same'' chain a bag rides (`cap-tier.mem`) and the
 
 ''THE TYPE REFUSES PUBLIC.'' A world-readable credential loses the confidentiality that makes it a reach credential. The reach plane therefore carries a ''ceiling at CONTRACT'' where the content chain carries none — the one place the two planes' orders differ, and the difference comes from a definition, not a policy.
 
-''A reach credential NEVER federates.'' It fleet-syncs (your phone must have the means to post) and it delivers to a contracted set when the account genuinely has shared holders, and it crosses no Nexus boundary in either case — the same law the sovereign follow-graph already holds (`personaGroup fleet-sync, never federate`).
+''A reach credential NEVER federates.'' It syncs only to eligible node vessels and delivers to a contracted set when the account genuinely has shared holders, and it crosses no Nexus boundary in either case — the same law the sovereign follow-graph already holds (`personaGroup fleet-sync, never federate`).
 
 ''The tier SETS the blast radius.'' Declaring a credential CONTRACT enlarges the honeypot to the whole cabal, so the tighten-only ratchet (#cap-tier keystone) reads as a security control here rather than a hygiene one — and declassifying a credential upward wants the same operator-root robust-declassification act, never a content-derived one.
+
+Operator (2026-11-06): "All POEE hands sit inside my Nexus, because there are no other nexuses yet, pono." The CONTRACT holder set stays inside that Nexus. A second Nexus standing with a hand inside it reopens the question; the house lean sends a keyholder's bridge-warden to post for that hand, while the token never crosses.
 
 <<~/ahu>>
 
@@ -170,6 +174,27 @@ Read as a ''cap-tiered bag'' instead and almost nothing new gets built: sealing-
 ''Registration alone would not have held.'' Absent the ordered reading, the truncation would rest on nobody having registered a credential bag as a public plane — protection by omission, which reads identically to no protection at all. Mutation-verified: move the reading below `isPublicPlane` and two tests fall, the collided-plane case among them.
 
 ''CONTRACT rather than PERSONAGROUP, deliberately'' — a credential a cabal legitimately shares needs the cabal inside the read-cap set; a personal secret then DECLARES tighter, the direction a declaration may always move.
+
+!!! First slots
+
+Operator (2026-11-06): "That key-slot starts at contract from day one. I need personaGroup bound Facebook and Discord placeholders. Oh yes, and our DNS provider, porkbun." Operator (2026-11-06): "VEIL for Porkbun, pono."
+
+| Service | Account | Declared tier | State |
+|---|---|---|---|
+| Bluesky | POEE home `principiadiscordia.bsky.social` | CONTRACT | first resident; floor and declaration start at CONTRACT |
+| Facebook | unspecified | PERSONAGROUP | placeholder |
+| Discord | unspecified | PERSONAGROUP | placeholder |
+| Porkbun DNS | house DNS | VEIL | placeholder; node vessel alone, never syncs |
+
+A placeholder names a tier-declared credential row with health `absent`; it carries no secret bytes and crosses nothing until the operator pastes an attenuated token on a node TTY. Only the node's certificate act reads the Porkbun credential. Tests use synthetic tokens alone.
+
+!!! Recipient lifecycle
+
+PERSONAGROUP for a reach credential names the face's node vessels alone. One `rotate` act drops a leaving device or hand from future recipient sets at each reader's frontier, rekeys the bag for the remaining recipients, and marks the far-side token EXPOSED in status until the operator confirms revocation and pastes its replacement. The act never claims to recall plaintext already opened.
+
+Widening a tier or adding a recipient rides the ward and operator-root declassification. Narrowing, removal and `rotate` remain custody acts that no second device blocks; removal wins at every reader. Pasting into an existing slot rides the unlocked custody door.
+
+Vault rows ride the face's sealed catalog and per-face backup bundle. A recovered face regains surviving rows; otherwise each slot reads LOST and asks for a re-paste after far-side re-issue. K18 contacts never hold a credential. VEIL rows ride only the node's own backup.
 
 !!! The secrets registry rests in the face's own catalog, sealed
 
@@ -237,7 +262,9 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 !! Credential onboarding ~ named, unbuilt
 
-''RULED: onboarding runs in the NODE VESSEL context'' (operator, 2026-08-08) — the same place that holds the //use these reach-creds// capability (#/compose-and-request). A credential therefore never transits the browser at all, which closes the enrollment gap the compose-and-request split would otherwise leave open. Where a browser leg proves unavoidable (an OAuth redirect must land somewhere), it rides the most security-pono integration available and hands off rather than holding.
+''RULED: onboarding runs in the NODE VESSEL context'' (operator, 2026-08-08) — the same place that holds the //use these reach-creds// capability (#/compose-and-request). A credential therefore never transits the browser at all, which closes the enrollment gap the compose-and-request split would otherwise leave open. The browser exports and routes no onboarding or vault-stand verb. The first path accepts a pasted attenuated token through the unlocked, chained node door.
+
+A chainless face establishes `no store` through that door: no path can stand one. Four reds must prove the premise: (1) no browser module exports or routes an onboarding or vault-stand verb; (2) node onboarding refuses `secrets-store-needs-chain` on a chainless face and `vault-locked` at a locked floor; (3) a known registered store on a chained face whose registry reads locked or unreadable refuses every crossing of that face's docs; (4) the registry gates only its own face's docs, while public shelf and genesis docs cross at a locked floor.
 
 ''The ROUTE still wants design work.'' Three ways in, with genuinely different properties:
 
@@ -261,6 +288,9 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 !! What stays open
 
+* ''BEFORE FIRST USE'' — a contracted recipient relation names its parties and ending, with rotation on end; steward succession at civic tiers names the authority that changes stewards. No operator's node hosts another person's credential without a custody contract (libation pool), and no herm or lamplighter holds a vault read-cap. Porkbun renewal at a locked node waits for operator unlock; status warns ahead of expiry, and API access scopes to the challenge domain where Porkbun allows.
+* ''LATER, REACH PROJECTION'' — receipts precede the first emission; Kairos refresh, leak handling and cross-face reuse without an index remain owed.
+* ''SEQUENCE'' — P27's floor, registry and share tightening land before the rite. Store standing, onboarding, key delivery and lifecycle land just after the hearth stands, as the first lane the memory stage tracks. Operator (2026-11-06): "I don't want to expand scope, tho the secret store reads as very pono to get right."
 * ''OAUTH REFRESH MAKES THE VAULT NON-PASSIVE — research and testing owed.'' A sealed store opens when asked; an expiring credential must ''reach out'' to renew itself, so the vault acquires a clock and an outbound network leg, and the refresh token itself rotates. Open beneath it: who performs the refresh (a daemon waking to refresh holds decrypted credentials in a window the archive design works hard to narrow), under which key, and whether a refresh may run with no operator present. ''One consequence already reads clearly:'' prefer surfaces offering non-expiring attenuated credentials, which turns the honeypot section's preference into something closer to a rule — and measuring which surfaces offer them may shrink the whole apparatus to nothing, so the first act reads as a ''survey'' rather than a design.
 
   ''KAIROS NAMES THE ENTITY THAT WOULD DO IT'' (operator pet-name, 2026-08-08). The refresh does NOT want a timer daemon — it wants an ''entity holding a narrow autonomous capability'', acting at the opportune moment rather than on a clock. Kairos against chronos: the right time, never the next tick. That framing lands the design where the ontology already stands — a nameless entity with a `#has` stack, holding exactly the caps its one act needs and nothing beside them — instead of widening a daemon that already holds too much. ''What Kairos may hold, and what its capability must leave unreachable, reads as the design.''
@@ -287,6 +317,6 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kOfN7U63DZqMK85LoLWZ0Xu8KRAZwB3_JCoVK3g7IRg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9Dex2kNTf75cPrR3YLvcpLj5pE3QANaMDRrJChfOmQM`>>
 
 <<^ code=`&#x0004;` to=`?`>>
