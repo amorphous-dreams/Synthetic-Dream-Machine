@@ -226,13 +226,13 @@ Promote enacts the face intent-plane law a second time (<<~ loulou uri=`lar:///h
 
 !! The hearth lane ~ L4f, L17, L19, L21 and the act ward
 
-The lane runs after the founding, since `L4p` needs a stood hearth (road rows `L4f`, `L17`, `L19` and `L21` in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/stride-0-hearth`>>). Its slices land in this order, each red-first with its control, every red shown failing on the old code first.
+The lane runs after the founding, since `L4p` needs a stood hearth (road rows `L4f`, `L17`, `L19` and `L21` in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/stride-0-hearth`>>). Its slices, numbered as stage slices so they never collide with row 7's `S1` to `S6`, land in this order, each red-first with its control, every red shown failing on the old code first.
 
-# ''S1, `L4f`: the page gate and the mount.'' When the page's face proof carries `ownHearth`, the gate admits the hearth daemon document through the face-proven path, and the page's daemon island takes `hearthDaemonUrl` as its working top. Its own `social.daemonUrl` stays the control plane. Every other crossing stays as it stands. Then the `L4p` walk.
-# ''S2: one code classifier.'' `codeClassOf(fields, title)` lands once in `@lararium/mesh` and names the module type, the executable types, `StartupAction*`, RawMarkup and the module-gate fields. The lift, `meme_act` and promote all read it; the slice moves no behaviour.
-# ''S3, `L17`: the anchor verbs.'' `meme-filter`, `meme-render` and `meme-act` on `recipe:"default"`, as MCP tools and as `lares meme filter|render|act`, with the field forms on put and get. A paged answer bounds itself to `AUDIT_ARRAY_CAP` and carries a `next` cursor.
-# ''S4: named-wiki routing.'' A filter, render or act aimed at a named wiki routes through the `wiki-act` envelope, mounting the wiki or refusing (`W27`), and reuses `mountAimedWiki`.
-# ''S5, `L21`: the batch lift.'' `door.liftBatch` and the hand row `kahua-lift-batch`, with `--filter --from-wiki`. All items preflight before any lands, then one flush follows; the epoch pins once per batch; each item still signs its own lift act; a drifted digest refuses by name. One fresh ward unlock covers the batch (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>, 2026-11-05).
+# ''Stage slice 1, `L4f`: the page gate and the mount.'' When the page's face proof carries `ownHearth`, the gate admits the hearth daemon document through the face-proven path, and the page's daemon island takes `hearthDaemonUrl` as its working top. Its own `social.daemonUrl` stays the control plane. Every other crossing stays as it stands. Then the `L4p` walk.
+# ''Stage slice 2: one code classifier.'' `codeClassOf(fields, title)` lands once in `@lararium/mesh` and names the module type, the executable types, `StartupAction*`, RawMarkup and the module-gate fields. The lift, `meme_act` and promote all read it; the slice moves no behaviour.
+# ''Stage slice 3, `L17`: the anchor verbs.'' `meme-filter`, `meme-render` and `meme-act` on `recipe:"default"`, as MCP tools and as `lares meme filter|render|act`, with the field forms on put and get. A paged answer bounds itself to `AUDIT_ARRAY_CAP` and carries a `next` cursor.
+# ''Stage slice 4: named-wiki routing.'' A filter, render or act aimed at a named wiki routes through the `wiki-act` envelope, mounting the wiki or refusing (`W27`), and reuses `mountAimedWiki`.
+# ''Stage slice 5, `L21`: the batch lift.'' `door.liftBatch` and the hand row `kahua-lift-batch`, with `--filter --from-wiki`. All items preflight before any lands, then one flush follows; the epoch pins once per batch; each item still signs its own lift act; a drifted digest refuses by name. One fresh ward unlock covers the batch (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>, 2026-11-05).
 
 ''House decisions'' (talked out):
 * The face proof's SIGNED projection names `hearthDaemonUrl`, so the gate never opens an unproven URL.
@@ -337,6 +337,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vMyy_nYFuVguXgwjZEXTG2PQnuCeVdmUR6gxW_nnzjY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AWx46cPgxXHCdwWtZknf2qKGc6TMDMBOaUzfjcHX67Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>
