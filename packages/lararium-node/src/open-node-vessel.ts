@@ -498,7 +498,7 @@ export function lateDialOnce(deps: {
 /**
  * One late stand of a take's re-present. With a hearth to dial, the dial carries the take's route (the founder's certificate at
  * that Nexus issues inside it). With none, the route is never dropped silently: it certifies the founder at the kept Nexuses no
- * dial carries (seat-harness#/the-ward). With no route and no hearth it does nothing, and a stand no longer live does nothing.
+ * dial carries (seat-harness#/the-ward). With no route and no hearth it does nothing, and a closed stand does nothing.
  */
 export async function standLateTake<C extends { readonly syncUrl: string | null }>(deps: {
   readonly choose:  () => C;
