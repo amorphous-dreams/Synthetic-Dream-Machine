@@ -443,9 +443,9 @@ exit 0
   return counter;
 }
 
-// The find loop reads at the house pace: no sleep under POLL_FLOOR_S, at most three reads when the
+// The find loop spaces its rounds at the house pace: no sleep under POLL_FLOOR_S, at most three rounds when the
 // run never shows; a run found on the first read sleeps zero times.
-test("the pushLaneAndWatch find loop sleeps at the house pace and reads at most three times", async () => {
+test("the pushLaneAndWatch find loop sleeps at the house pace and runs at most three rounds", async () => {
   const bin = mkdtempSync(join(tmpdir(), "e2e-shards-find-"));
   const counter = fakeFindBin(bin, { found: false });
   const prevPath = process.env.PATH;

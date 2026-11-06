@@ -472,3 +472,11 @@ test("RED: --wait never ends in success over a held-out reading it could not rea
   const hard = { ...GREEN_TABLE(), heldRuns: () => Object.assign(new Error("x"), { stderr: "HTTP 404: Not Found" }) };
   assert.equal((await door(hard, ["--wait"])).code, 3);
 });
+
+test("RED: a poll whose milliseconds pass the timer limit refuses by name; a lawful poll stands", async () => {
+  const { pollRefusal } = await import("./ci-verdict.mjs");
+  assert.match(pollRefusal("2147484"), /^poll-over-timer-limit: 2147484/);
+  assert.match(pollRefusal(2147484), /poll-over-timer-limit/);
+  assert.equal(pollRefusal("2147483"), null);
+  assert.equal(pollRefusal("300"), null, "control: a lawful poll still works");
+});

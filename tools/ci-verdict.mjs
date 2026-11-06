@@ -34,7 +34,7 @@
  *   --wait      read again every --interval seconds until neither the CI reading nor the held-out reading
  *               reads `unread`; the exit code is the CI reading's, unchanged. A run cancelled clean, a run still
  *               running and a held-out run that does not name the head yet are all `unread`, so the wait goes on.
- *   --interval  seconds between reads, for the --wait rounds and the UNREADABLE retries alike. It defaults to the house
+ *   --interval  seconds between rounds of reads (a round issues several gh calls back to back), for the --wait rounds and the UNREADABLE retries alike. It defaults to the house
  *               poll floor, POLL_FLOOR_S (180: the operator's law of 2026-11-05, after the GitHub API limit ran out,
  *               polls CI no closer than three minutes), and a value under the floor refuses by name
  *               (`poll-under-floor: 30 < 180`, exit 3) before any read. No env var moves it. tools/land-train.mjs reads
@@ -61,13 +61,16 @@ import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { DRIVERS } from "./held-out-cells.mjs";
 
-/** The house poll floor in seconds: CI polls no closer than three minutes (operator law, 2026-11-05). Every wait in
+/** The house poll floor in seconds: CI poll rounds stand at least three minutes apart (operator law, 2026-11-05); the calls within one round run back to back. Every wait in
  *  this reader and in tools/land-train.mjs reads it; a poll under it refuses by name. */
 export const POLL_FLOOR_S = 180;
+/** The longest delay a Node timer holds, in milliseconds; above it the timer fires at once and slips under the pace. */
+const TIMER_LIMIT_MS = 2147483647;
 /** The refusal for a poll interval in seconds, or null where it stands at or over the floor. */
 export function pollRefusal(seconds) {
   const n = Number(seconds);
   if (seconds === undefined || seconds === null || String(seconds).trim() === "" || !Number.isFinite(n)) return `poll-under-floor: ${seconds} < ${POLL_FLOOR_S} (the poll wants seconds)`;
+  if (n * 1000 > TIMER_LIMIT_MS) return `poll-over-timer-limit: ${seconds} s > ${Math.floor(TIMER_LIMIT_MS / 1000)} s (a timer above 2147483647 ms fires at once)`;
   return n < POLL_FLOOR_S ? `poll-under-floor: ${seconds} < ${POLL_FLOOR_S}` : null;
 }
 

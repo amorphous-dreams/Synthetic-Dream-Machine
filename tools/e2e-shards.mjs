@@ -381,7 +381,7 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 2 * POLL
   // Watches to completion; a red run makes `gh run watch --exit-status` itself exit non-zero, so
   // the watch result alone already answers "red or not" — this helper still reads the log line
   // below for the shard counts and totals the report asks for.
-  // ONE LOOK PER POLL FLOOR (180 s, the house pace). `gh run watch` polls every three seconds by default, and each poll spends
+  // ONE ROUND OF READS PER POLL FLOOR (180 s, the house pace; a round may issue several gh calls back to back). `gh run watch` polls every three seconds by default, and each poll spends
   // several calls of the 5000 an hour every lane, lead and tool on this account shares: a few lanes watching
   // at once spend the hour's whole budget, and then every `gh` read refuses, this one included.
   const watch = spawnSync("gh", ["run", "watch", String(runId), "--exit-status", "--interval", WATCH_INTERVAL_S], { cwd: repoRoot, encoding: "utf8" });

@@ -114,9 +114,9 @@ test('every gh run watch rides the house poll floor, never a literal under it', 
   }
 });
 
-// The find loop reads at the house pace: no sleep under POLL_FLOOR_S, and a run that never shows
-// costs at most three reads. A run found on the first read sleeps zero times.
-test('the find loop sleeps at the house pace and reads at most three times when the run never shows', async () => {
+// The find loop spaces its rounds at the house pace: no sleep under POLL_FLOOR_S, and a run that never shows
+// costs at most three rounds. A run found on the first read sleeps zero times.
+test('the find loop sleeps at the house pace and runs at most three rounds when the run never shows', async () => {
   const f = fake({ count: 1, stale: true });
   let t = 0; const sleeps = [];
   const { findBudgetMs: _b, ...rest } = opts(f);
