@@ -19,7 +19,7 @@ const BROWSER_SRC = join(import.meta.dirname, "..", "..", "lararium-browser", "s
 const DOORS: Readonly<Record<string, number>> = {
   loadPersonaGroupRootSeed: 2, generateOrLoadPersonaGroupRoot: 2, landPersonaRoot: 3, orphanPersonaRootKey: 2,
   wardRootSigner: 2, wardRootSession: 2, withWardKeyCustody: 2, makeNodeFsPersonaVault: 1,
-  browserWardSign: 4, browserWardSigner: 3,
+  browserWardSign: 3, browserWardSigner: 3,
 };
 /** The files that DEFINE a door (their own inner calls thread the ward they were handed). */
 const DEFINERS = new Set(["node-vessel-identity.ts", "ward-signer.ts", "custody-seat.ts", "browser-ward.ts"]);
@@ -69,6 +69,10 @@ describe("every root opener names its ward", () => {
     expect(wardlessCalls("const v = await makeNodeFsPersonaVault();", "recovery-keel.ts")).toEqual(["recovery-keel.ts: makeNodeFsPersonaVault()"]);
     expect(wardlessCalls("await loadPersonaGroupRootSeed(0, undefined);", "planted.ts")).toEqual(["planted.ts: loadPersonaGroupRootSeed(0, undefined)"]);
     expect(wardlessCalls("await browserWardSigner(idb, 0);", "planted.ts")).toEqual(["planted.ts: browserWardSigner(idb, 0)"]);
+    // The browser's sign door takes its passphrase THIRD (`browserWardSign(idb, handleIndex, passphrase, bytes)`): an undefined there
+    // hands on no route, while the bytes after it read as if one stood.
+    expect(wardlessCalls("await browserWardSign(idb, 0, undefined, bytes);", "planted.ts")).toEqual(["planted.ts: browserWardSign(idb, 0, undefined, bytes)"]);
+    expect(wardlessCalls("await browserWardSign(idb, 0, passphrase, bytes);", "planted.ts")).toEqual([]);
   });
 
   test("every call in src names its ward, and the witness read the callers it must", () => {
