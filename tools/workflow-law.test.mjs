@@ -220,68 +220,64 @@ test("WL5 RED: pw-container.sh refuses every image but the capability probe's pi
   }
 });
 
-// G55: The same pure boundary witness must inspect the live checkout and an overlay of it.
-// Overlay keys name root-relative files; null removes a file. No overlaid module may execute.
-// Product floors use package.json engines.node, including the synthetic packages below.
+// G55: package-closure witness. Overlay entries replace root-relative file contents; null removes one.
+// The witness lives separately so this test file can land first.
 const boundaryRoot = join(import.meta.dirname, "..");
-const boundaryEntry = "packages/lararium-web/tests/g55-boundary.test.ts";
-const productDir = "packages/g55-synthetic-product";
-const productName = "@g55/synthetic-product";
-const boundaryOverlay = (minimum, entry) => ({
-  [`${productDir}/package.json`]: JSON.stringify({ name: productName, private: true, type: "module", engines: { node: `>=${minimum}` } }),
-  [`${productDir}/index.mjs`]: 'throw new Error("G55 product must never execute");\n',
-  [boundaryEntry]: entry,
+const webManifest = "packages/lararium-web/package.json";
+const fixtureDir = "packages/g55-fixture";
+const fixtureName = "@g55/closure-fixture";
+const originalWeb = JSON.parse(readFileSync(join(boundaryRoot, webManifest), "utf8"));
+const lock = readFileSync(join(boundaryRoot, "pnpm-lock.yaml"), "utf8");
+const withFixture = (range, dependency) => ({
+  [webManifest]: JSON.stringify({ ...originalWeb, devDependencies: { ...originalWeb.devDependencies, [fixtureName]: "workspace:*" } }),
+  [`${fixtureDir}/package.json`]: JSON.stringify({ name: fixtureName, version: "1.0.0", engines: { node: range }, dependencies: dependency ?? {} }),
 });
-const direct = 'import "../../g55-synthetic-product/index.mjs";\n';
-const bridge = 'import "./g55-bridge.mjs";\n';
-const bridgePath = "packages/lararium-web/tests/g55-bridge.mjs";
-const throughBridge = 'export * from "../../g55-synthetic-product/index.mjs";\n';
-
 async function boundaryWitness(overlay = {}) {
-  const law = await import(import.meta.url);
-  assert.equal(typeof law.browserNodeBoundary, "function", "G55: image law must export browserNodeBoundary({ root, overlay }) and inspect browser-cell imports without executing them");
-  // Return [] for a clean boundary, otherwise diagnostic strings that name the cell and edge.
+  const law = await import("./browser-node-boundary.mjs");
   return law.browserNodeBoundary({ root: boundaryRoot, overlay });
 }
+const refuses = (diagnostics, cell, name) => assert.ok(
+  diagnostics.some((d) => d.includes(cell) && d.includes(name)),
+  `expected refusal naming ${cell} and ${name}: ${JSON.stringify(diagnostics)}`,
+);
 
-test("G55 boundary CONTROL: live inputs and a Node 24 product stay clean", async () => {
-  assert.deepEqual(await boundaryWitness(), [], "live browser-cell inputs must pass the dependency boundary");
-  assert.deepEqual(await boundaryWitness(boundaryOverlay(24, direct)), [], "a browser-cell import of a Node 24 product must pass");
+test("G55 closure CONTROL: real closures and a Node 24 workspace dependency pass", async () => {
+  assert.deepEqual(await boundaryWitness(), []);
+  assert.deepEqual(await boundaryWitness(withFixture(">=24")), []);
 });
 
-test("G55 boundary RED: direct and transitive Node 26 product imports refuse, removal restores control", async () => {
-  for (const overlay of [boundaryOverlay(26, direct), { ...boundaryOverlay(26, bridge), [bridgePath]: throughBridge }]) {
-    const diagnostics = await boundaryWitness(overlay);
-    assert.ok(diagnostics.some((d) => /web-tw5/.test(d) && /@g55\/synthetic-product/.test(d)), `expected refusal naming web-tw5 and ${productName}: ${JSON.stringify(diagnostics)}`);
-    assert.deepEqual(await boundaryWitness({ ...overlay, [boundaryEntry]: null, [bridgePath]: null }), [], "removing the planted import restores the clean boundary");
-  }
+test("G55 closure RED: a transitive workspace floor refuses by cell and package; removal restores control", async () => {
+  const planted = withFixture(">=24", { "@g55/leaf": "workspace:*" });
+  planted["packages/g55-leaf/package.json"] = JSON.stringify({ name: "@g55/leaf", version: "1.0.0", engines: { node: ">=26" } });
+  const diagnostics = await boundaryWitness(planted);
+  refuses(diagnostics, "web-tw5", "@g55/leaf");
+  refuses(diagnostics, "quick", "@g55/leaf");
+  assert.deepEqual(await boundaryWitness(), []);
 });
 
-test("G55 boundary RED: unresolved and nonliteral import edges refuse by cell", async () => {
-  for (const source of ['import "./g55-missing.mjs";\n', 'const part = "g55"; import(`./${part}.mjs`);\n']) {
-    const diagnostics = await boundaryWitness(boundaryOverlay(24, source));
-    assert.ok(diagnostics.some((d) => /web-tw5/.test(d) && /unresolved|unsupported/i.test(d)), `expected a named unresolved or unsupported edge: ${JSON.stringify(diagnostics)}`);
-  }
+test("G55 closure RED: third-party transitive floors refuse and Node 24 restores control", async () => {
+  // Insert a package and a snapshot edge into an existing direct dependency's resolved snapshot.
+  const manifest = JSON.parse(readFileSync(join(boundaryRoot, webManifest), "utf8"));
+  const dep = Object.keys(manifest.devDependencies).find((name) => name === "vite");
+  assert.ok(dep, "fixture needs a real direct third-party edge");
+  const add = (minimum) => lock.replace("\npackages:\n", `\npackages:\n\n  g55-fixture@1.0.0:\n    resolution: {integrity: sha512-fixture}\n    engines: {node: '>=${minimum}'}\n`)
+    .replace("\nsnapshots:\n", "\nsnapshots:\n\n  g55-fixture@1.0.0: {}\n")
+    .replace(/(\n  vite@[^\n]+:\n    dependencies:\n)/, "$1      g55-fixture: 1.0.0\n");
+  assert.notEqual(add(26), lock);
+  refuses(await boundaryWitness({ "pnpm-lock.yaml": add(26) }), "web-tw5", "g55-fixture");
+  assert.deepEqual(await boundaryWitness({ "pnpm-lock.yaml": add(24) }), []);
+  assert.deepEqual(await boundaryWitness(), []);
 });
 
-test("G55 exception table: stale entries and targets outside the checkout refuse by name", async () => {
-  const law = await import(import.meta.url);
-  assert.ok(Array.isArray(law.BROWSER_IMPORT_EXCEPTIONS), "the witness exports its typed exception table");
-  const entry = law.BROWSER_IMPORT_EXCEPTIONS.find((row) => row.file.endsWith("gated-peer.test.ts") && row.line === 9);
-  assert.ok(entry && entry.reason && entry.targets?.length, "gated-peer names its reason and exact targets");
-  const original = readFileSync(join(boundaryRoot, entry.file), "utf8");
-  const stale = original.replace("import(modulePath)", 'import("../src/gated-peer.js")');
-  assert.notEqual(stale, original);
-  const staleDiagnostics = await law.browserNodeBoundary({ root: boundaryRoot, overlay: { [entry.file]: stale } });
-  assert.ok(staleDiagnostics.some((d) => d.includes(entry.file) && /9/.test(d) && /stale|non.literal/i.test(d)), JSON.stringify(staleDiagnostics));
-  const exceptions = law.BROWSER_IMPORT_EXCEPTIONS.map((row) => row === entry ? { ...row, targets: ["../../outside.mjs"] } : row);
-  const escaped = await law.browserNodeBoundary({ root: boundaryRoot, exceptions });
-  assert.ok(escaped.some((d) => d.includes(entry.file) && /outside/i.test(d)), JSON.stringify(escaped));
+test("G55 closure RED: unresolvable transitive dependency names its cell and member", async () => {
+  const planted = withFixture(">=24", { "@g55/missing": "workspace:*" });
+  refuses(await boundaryWitness(planted), "web-tw5", "@g55/missing");
+  assert.deepEqual(await boundaryWitness(), []);
 });
 
 test("G55 policy RED: workflow header and image law declare the Node exception", () => {
   const workflow = readFileSync(join(boundaryRoot, ".github/workflows/ci.yml"), "utf8").split(/^on:\s*$/m)[0];
-  const law = readFileSync(join(boundaryRoot, "tools/workflow-law.test.mjs"), "utf8").split("// G55: The same pure boundary witness")[0];
+  const law = readFileSync(join(boundaryRoot, "tools/workflow-law.test.mjs"), "utf8").split("// G55: package-closure witness.")[0];
   for (const [where, text] of [["workflow header", workflow], ["image law", law]]) {
     assert.match(text, /Node\s*26[\s\S]{0,180}(?:pinned|Playwright)[\s\S]{0,180}Node\s*24|(?:pinned|Playwright)[\s\S]{0,180}Node\s*26[\s\S]{0,180}Node\s*24/i, `${where} must declare Node 26 in the pinned Playwright image and Node 24 for the other jobs`);
     assert.match(text, /(?:other|remaining|non.browser)[\s\S]{0,80}(?:jobs|cells)|(?:jobs|cells)[\s\S]{0,80}(?:other|remaining|non.browser)/i, `${where} must identify the other jobs`);
