@@ -16,8 +16,11 @@
  * session by its own unlock through the ceremony. The face's first admitted session lights the vessel; every request waits
  * on its own session's admission and answers by name where none stands (`session-unadmitted`) or where the vessel rests at
  * its floor (`signer-unavailable`). The face's last admitted session closing (`pagehide`, a lost port, the house's liveness
- * budget) runs the lock and the vessel returns to its floor. Surface traffic (frames, phases, port messages) reaches the
- * surface session alone: the session that lit the vessel, then the oldest admitted session after it.
+ * budget) runs the lock and the vessel returns to its floor. Surface traffic (frames, phases, rest, coherence and control
+ * results without a known sender) reaches every admitted session wearing the lit vessel's face over its own port. Control
+ * results with a known sender return to that session alone. Port traffic rides its binding
+ * to its opening session alone; another session's place refuses `binding-not-owned`. Session loss closes only its own bindings.
+ * Owed: the active surface (`set-surface`) stays vessel-wide, one per vessel, not per session.
  *
  * EVERY ASK NAMES ITS FACE: each custody and ward ask carries the face its session wears to the ceremony
  * (the PersonaGroup; null names this browser itself, the place custody a fresh browser binds at its founding), and the door
@@ -74,18 +77,18 @@ export function standVesselHost(env: VesselHostEnv = {}) {
   let litVessel: BrowserVesselResult | null = null;
   let firstBoot: VesselBoot | null = null;
   let idbName = "lares:vessel";
-  /** The session whose page shows the vessel's surface. */
-  let surface: string | null = null;
+  let lighting: Conn | null = null;
+  const bindings = new Map<string, string>();
+  const controlSenders = new Map<string, Conn>();
 
-  const surfacePost = (msg: VesselToPage, transfer: Transferable[] = []): void => {
-    const conn = surface ? conns.get(surface) : undefined;
-    conn?.post(msg, transfer);
+  // A session never sees a surface its face does not wear.
+  const wearsLitFace = (conn: Conn): boolean =>
+    litVessel !== null && conn.session?.admission === "admitted" && conn.session.face === litVessel.face;
+  const surfaceFanout = (msg: VesselToPage): void => {
+    if (!litVessel) { lighting?.post(msg); return; }
+    for (const conn of conns.values()) if (wearsLitFace(conn)) conn.post(msg);
   };
   const statusTo = (conn: Conn | undefined, s: VesselStatus): void => conn?.post({ t: "status", status: s });
-  const moveSurface = (): void => {
-    if (surface && conns.get(surface)?.session?.admission === "admitted") return;
-    surface = [...conns.entries()].find(([, c]) => c.session?.admission === "admitted")?.[0] ?? null;
-  };
 
   const wordsOf = (question: CustodyAsk | HouseAsk | { readonly kind: "clear" }): string =>
     question.kind === "unlock" ? `attempt ${String(question.attempt)} of ${String(question.of)}${question.notes.length ? ` — ${question.notes.join("; ")}` : ""}` : "";
@@ -143,11 +146,12 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     const conn = conns.get(first.sessionId);
     const b = firstBoot;
     if (!conn || !b) throw new VesselSessionRefused("unknown-session");
-    surface = first.sessionId;
-    if (b.sharedHolderUrl) standHolderSpawn((msg) => surfacePost(msg));
+    lighting = conn;
+    if (b.sharedHolderUrl) standHolderSpawn((msg) => conn.post(msg));
     const admit = b.admitCarriage ? parseAdmitCarriage(b.admitCarriage) : null;
     if (admit) console.log("[vessel] ADMIT taken from the fleet-join landing — this vessel JOINS an existing PersonaGroup.");
-    const result = await (env.openVessel ?? openBrowserVessel)({
+    let result: BrowserVesselResult;
+    try { result = await (env.openVessel ?? openBrowserVessel)({
       face: first.face,
       askCustody: askCustodyOf(conn, "vessel"),
       askWardRoute: askWardOf(conn),
@@ -160,12 +164,22 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       workerScriptUrl: new URL(b.workerScriptUrl),
       ...(b.sharedHolderUrl ? { sharedHolderUrl: new URL(b.sharedHolderUrl) } : {}),
       pageLife: (listener) => { lifeListeners.add(listener); return () => { lifeListeners.delete(listener); }; },
-      onRest: (rest) => surfacePost({ t: "status", status: { rest } }),
-      onPhase: (phase) => surfacePost({ t: "phase", phase }),
-      onFrame: (frame) => surfacePost({ t: "frame", frame }),
-      onControlResult: (surfaceId, result) => surfacePost({ t: "control-result", surface: surfaceId, result }),
-      onCoherence: (frame) => surfacePost({ t: "coherence", frame }),
-      onPortMessage: (binding, islandKey, msg) => surfacePost({ t: "port-msg", binding, islandKey, msg }),
+      onRest: (rest) => surfaceFanout({ t: "status", status: { rest } }),
+      onPhase: (phase) => surfaceFanout({ t: "phase", phase }),
+      onFrame: (frame) => surfaceFanout({ t: "frame", frame }),
+      onControlResult: (surfaceId, result) => {
+        const sender = controlSenders.get(result.eventId);
+        controlSenders.delete(result.eventId);
+        const msg = { t: "control-result", surface: surfaceId, result } as const;
+        if (sender) sender.post(msg);
+        else surfaceFanout(msg);
+      },
+      onCoherence: (frame) => surfaceFanout({ t: "coherence", frame }),
+      onPortMessage: (binding, islandKey, msg) => {
+        const owner = bindings.get(binding);
+        const target = owner ? conns.get(owner) : undefined;
+        if (target && wearsLitFace(target)) target.post({ t: "port-msg", binding, islandKey, msg });
+      },
       ...(b.relayUrl ? { relayUrl: b.relayUrl } : {}),
       ...(b.floorCard ? { floorCard: b.floorCard } : {}),
       ...(b.floorAnchor ? { floorAnchor: b.floorAnchor } : {}),
@@ -173,6 +187,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       ...(b.meshLeaf ? { meshLeaf: { coordSeed: b.meshLeaf.coordSeed, peers: b.meshLeaf.peers.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null) } } : {}),
     });
     litVessel = result;
+    } finally { lighting = null; }
     result.connectionState.subscribe((connection) => { for (const c of conns.values()) if (c.session?.admission === "admitted") statusTo(c, { connection }); });
     // A landed fleet join leaves its pending row once the vessel stands on its admit.
     if (admit) void browserFleetJoinSettle().catch((err: unknown) => console.warn("[vessel] the landed fleet join did not settle:", err));
@@ -197,7 +212,15 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       onDrop: (s, why) => {
         const conn = conns.get(s.sessionId);
         if (conn) conn.session = null;
-        if (surface === s.sessionId) { surface = null; moveSurface(); }
+        for (const [eventId, sender] of controlSenders) if (sender === conn) controlSenders.delete(eventId);
+        for (const [binding, owner] of bindings) {
+          if (owner !== s.sessionId) continue;
+          bindings.delete(binding);
+          try {
+            if (litVessel && !litVessel.ports) console.warn("[vessel] binding close on session loss: vessel has no ports");
+            else litVessel?.ports.close(binding);
+          } catch (err) { console.warn("[vessel] binding close on session loss failed:", err); }
+        }
         console.log(`[vessel] session ${s.sessionId.slice(0, 8)} closed (${why})`);
       },
       ping: (s) => { const c = conns.get(s.sessionId); if (c) c.post({ t: "ping", n: ++c.pings }); },
@@ -222,7 +245,6 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       throw err;
     }
     statusTo(conn, { custody: session.admittedBy ? BOOT_READING[session.admittedBy] : "held", ...(session.face ? { face: session.face } : {}) });
-    moveSurface();
     statusTo(conn, vesselStatus(result));
     void seedRestOf(idbName, session.face).then((s) => statusTo(conn, s), () => { /* an unreadable slot reads its own refusal elsewhere */ });
     return result;
@@ -351,17 +373,48 @@ export function standVesselHost(env: VesselHostEnv = {}) {
               // A LEAVING PAGE CLOSES ITS SESSION; the face's last one runs the lock. A hidden page keeps its session.
               if (msg.life === "pagehide") close("pagehide");
               return;
-            case "control-event": void vessel().then((v) => v.sendControlEvent(msg.surface, msg.ev)).catch(refusedQuietly("a control event")); return;
-            case "set-surface": void vessel().then((v) => v.setActiveSurface(msg.surface)).catch(refusedQuietly("a surface switch")); return;
-            case "port:place":
-              void vessel().then((v) => v.ports.place(msg.surface, msg.binding, msg.msg), (err: unknown) => ({ ok: false as const, reason: err instanceof VesselSessionRefused ? err.refusal : String(err) })).then((placed) => {
-                if (placed.ok) return;
-                const m = msg.msg as { type?: unknown; portId?: unknown } | null;
-                post({ t: "port:refused", binding: msg.binding, reason: placed.reason, opening: m?.type === "port:open",
-                  ...(typeof m?.portId === "string" ? { portId: m.portId } : {}) });
-              });
+            case "control-event": {
+              const sessionId = conn.session?.sessionId;
+              void vessel().then((v) => {
+                if (!sessionId || conn.session?.sessionId !== sessionId) throw new VesselSessionRefused("session-unadmitted");
+                controlSenders.set(msg.ev.eventId, conn);
+                try { v.sendControlEvent(msg.surface, msg.ev); }
+                catch (err) { if (controlSenders.get(msg.ev.eventId) === conn) controlSenders.delete(msg.ev.eventId); throw err; }
+              }).catch(refusedQuietly("a control event"));
               return;
-            case "port:close": void vessel().then((v) => v.ports.close(msg.binding)).catch(refusedQuietly("a port close")); return;
+            }
+            case "set-surface": void vessel().then((v) => v.setActiveSurface(msg.surface)).catch(refusedQuietly("a surface switch")); return;
+            case "port:place": {
+              const sessionId = conn.session?.sessionId;
+              const refuse = (reason: string): void => {
+                const m = msg.msg as { type?: unknown; portId?: unknown } | null;
+                post({ t: "port:refused", binding: msg.binding, reason, opening: m?.type === "port:open",
+                  ...(typeof m?.portId === "string" ? { portId: m.portId } : {}) });
+              };
+              if (bindings.has(msg.binding) && bindings.get(msg.binding) !== sessionId) { refuse("binding-not-owned"); return; }
+              void vessel().then((v) => {
+                if (!sessionId || conn.session?.sessionId !== sessionId) throw new VesselSessionRefused("session-unadmitted");
+                const owner = bindings.get(msg.binding);
+                if (owner && owner !== sessionId) { refuse("binding-not-owned"); return; }
+                const recorded = !owner;
+                if (recorded) bindings.set(msg.binding, sessionId);
+                try {
+                  const placed = v.ports.place(msg.surface, msg.binding, msg.msg);
+                  if (!placed.ok) { if (recorded) bindings.delete(msg.binding); refuse(placed.reason); }
+                } catch (err) { if (recorded) bindings.delete(msg.binding); throw err; }
+              }).catch((err: unknown) => refuse(err instanceof VesselSessionRefused ? err.refusal : String(err)));
+              return;
+            }
+            case "port:close": {
+              const sessionId = conn.session?.sessionId;
+              if (!sessionId || bindings.get(msg.binding) !== sessionId) return;
+              void vessel().then((v) => {
+                if (bindings.get(msg.binding) !== sessionId) return;
+                v.ports.close(msg.binding);
+                bindings.delete(msg.binding);
+              }).catch(refusedQuietly("a port close"));
+              return;
+            }
             case "read:mirror-inputs": reply(msg.callId, async () => (await vessel()).mirrorInputs(msg.surface)); return;
             case "read:floor": reply(msg.callId, async () => (await vessel()).readFloor(msg.baseUrl)); return;
             case "join:offer": reply(msg.callId, async () => { const { h, s } = await own(); return join.offer(conn, h, s, msg.text, msg.abandonPending); }); return;
