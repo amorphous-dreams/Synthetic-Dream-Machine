@@ -1,8 +1,8 @@
 /**
  * ward.worker — THE PER-ACT WORKER ONE BROWSER WARD ACT RUNS IN (seat-harness#/the-ward).
  *
- * The page spawns one for one act, hands it a MessagePort, posts the act's request (the keystore tree and the root's sealed row as
- * raw bytes, the typed passphrase, the bytes to sign), reads one answer and terminates it. The tree key and the seed live only in
+ * The page spawns one for one act, hands it a MessagePort, posts the act's request (the face's ward tree and its warded root row as
+ * raw bytes, the typed route, the bytes to sign), reads one answer and terminates it. The ward key and the seed live only in
  * this worker's memory for the act, and the answer carries the root's public key and the signature alone (`ward-core`).
  *
  * Residual, named: the page passes the typed passphrase over the MessagePort, so a script running in the page when the person

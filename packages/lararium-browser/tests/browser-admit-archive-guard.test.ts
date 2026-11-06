@@ -11,7 +11,7 @@ import { describe, expect, test, vi } from "vitest";
 import { faceAtomKeyFromSeed } from "@lararium/mesh";
 import { archiveIsOf, KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
 import { BootHalted, admitNaming } from "./wire-vessel-rig.js";
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, fixtureWardDialog } from "./browser-custody-fixture.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { openVesselIdb, idbKeys } from "../src/browser-vessel-identity.js";
 import { readBrowserFaceAtom } from "../src/browser-face-atom.js";
@@ -40,7 +40,7 @@ async function foundedGroup(idbName: string): Promise<string> {
 }
 
 const halted = (extra: Partial<BrowserVesselOptions>): BrowserVesselOptions =>
-  ({ onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); }, ...extra }) as BrowserVesselOptions;
+  ({ askWardRoute: fixtureWardDialog, onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); }, ...extra }) as BrowserVesselOptions;
 
 async function archiveOf(seed: Uint8Array): Promise<Uint8Array> {
   const p = new KeyhiveProvider();

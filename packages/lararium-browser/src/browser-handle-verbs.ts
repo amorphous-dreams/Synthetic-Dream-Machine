@@ -16,6 +16,7 @@ import {
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
 import { makeBrowserIdbPersonaVault, makeBrowserPublicHandleStore } from "./browser-vessel-identity.js";
+import type { WardRoute } from "./ward-core.js";
 import { readHandleOwnerBrowser } from "./browser-handle-publish.js";
 
 interface OwnFaceBrowserContext {
@@ -36,9 +37,10 @@ interface OwnFaceBrowserContext {
  * own act over this context. The mirror of node's `openOwnFace`.
  */
 async function openOwnFaceBrowser(
-  verb: string, board: DocHandle<LarDoc>, handleIndex: number, idbName: string,
+  verb: string, board: DocHandle<LarDoc>, handleIndex: number, idbName: string, ward: WardRoute | undefined,
 ): Promise<OwnFaceBrowserContext> {
-  const seed  = await loadPersonaRootSeed(await makeBrowserIdbPersonaVault(idbName), handleIndex);
+  // THE ROOT OPENS UNDER THE WARD for this one act, fresh from the route the person typed for it (seat-harness#/the-ward).
+  const seed  = await loadPersonaRootSeed(await makeBrowserIdbPersonaVault(idbName, ward), handleIndex);
   const store = await makeBrowserPublicHandleStore(idbName);
   const record = await store.load(handleIndex);
   if (!record) {
@@ -105,9 +107,11 @@ export async function burnFaceBrowser(opts: {
   /** OWNER-burn only: the per-Nexus persona-KEL board twin, off which the owner head op-key resolves. The owner prefix rides
    *  the selected face's sealed anchor (`readFaceOwner`), never a daemon document. */
   kelBoard?:    DocHandle<LarDoc>;
+  /** The face's ward route for this act: a burn reads the root, so it rides the ward. */
+  ward?:        WardRoute;
 }): Promise<HandleCard> {
   const idbName = opts.idbName ?? "lares:vessel";
-  const face    = await openOwnFaceBrowser("burn", opts.board, opts.handleIndex, idbName);
+  const face    = await openOwnFaceBrowser("burn", opts.board, opts.handleIndex, idbName, opts.ward);
 
   // The card re-signs with the seated handle key regardless of hand — a reader refuses a burned chain BEFORE
   // checking the sig, so even an owner-burn of a lost key lands; a well-formed card just keeps the lineage clean.
@@ -158,10 +162,12 @@ export async function attestFaceBrowser(opts: {
   /** The STRUCTURED edge — a named surface + the foreign subject it names. Prose reaches no adapter. */
   claim:       HandleClaim;
   idbName?:    string;
+  /** The face's ward route for this act: an attest reads the root, so it rides the ward. */
+  ward?:       WardRoute;
 }): Promise<HandleAttestation> {
   if (!normalizeHandleClaim(opts.claim)) {
     throw new Error("[browser handle attest] the claim does not read as a structured edge — name a known surface and its subject.");
   }
-  const face = await openOwnFaceBrowser("attest", opts.board, opts.handleIndex, opts.idbName ?? "lares:vessel");
+  const face = await openOwnFaceBrowser("attest", opts.board, opts.handleIndex, opts.idbName ?? "lares:vessel", opts.ward);
   return attestUnderHead(face.chain, opts.claim, face.veiledSigner);
 }
