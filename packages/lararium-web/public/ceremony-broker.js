@@ -8,6 +8,8 @@
 // It imports nothing and handles no fetch: it carries no content key and serves no bytes.
 const CEREMONY_PATH = "/ceremony.html";
 const held = new Map();
+const vesselClaims = new Map();
+let nextVesselClaim = 0;
 
 const pathOf = (client) => { try { const url = new URL(client.url); return url.origin === self.location.origin ? url.pathname : null; } catch { return null; } };
 
@@ -16,6 +18,36 @@ self.addEventListener("activate", (event) => { event.waitUntil(self.clients.clai
 self.addEventListener("message", (event) => {
   const msg = event.data;
   const source = event.source;
+  if (msg && source && msg.t === "vessel:claim" && typeof msg.tabSession === "string") {
+    const from = pathOf(source);
+    if (from === CEREMONY_PATH) { source.postMessage({ t: "vessel:absent", tabSession: msg.tabSession }); return; }
+    if (from === null || typeof source.id !== "string") return;
+    const claimId = String(++nextVesselClaim);
+    let release = () => {};
+    const kept = new Promise((resolve) => { release = resolve; });
+    vesselClaims.set(claimId, { clientId: source.id, tabSession: msg.tabSession, release });
+    event.waitUntil(Promise.all([kept, self.clients.matchAll({ type: "window" }).then((clients) => {
+      for (const client of clients) {
+        const path = pathOf(client);
+        if (client.id !== source.id && path !== null && path !== CEREMONY_PATH) {
+          client.postMessage({ t: "vessel:want", claimId, tabSession: msg.tabSession });
+        }
+      }
+    })]));
+    return;
+  }
+  if (msg && source && msg.t === "vessel:offer" && typeof msg.claimId === "string") {
+    const from = pathOf(source);
+    if (from === CEREMONY_PATH) { source.postMessage({ t: "vessel:absent", claimId: msg.claimId }); return; }
+    const port = event.ports[0];
+    const claim = vesselClaims.get(msg.claimId);
+    if (from === null || !port || !claim) return;
+    vesselClaims.delete(msg.claimId);
+    event.waitUntil(self.clients.get(claim.clientId).then((client) => {
+      if (client) client.postMessage({ t: "vessel:port", tabSession: claim.tabSession }, [port]);
+    }).finally(claim.release));
+    return;
+  }
   if (!msg || typeof msg.askId !== "string" || !source) return;
   const from = pathOf(source);
   if (msg.t === "ceremony:offer") {
