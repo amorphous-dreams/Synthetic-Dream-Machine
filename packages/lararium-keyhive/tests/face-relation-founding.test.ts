@@ -17,6 +17,7 @@ import {
 } from "@lararium/mesh";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const key = (seed: Uint8Array) => groupSecretOpenerFromSeed(seed).deviceKey;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -27,6 +28,7 @@ async function founded(n: number, relation?: string) {
   const vesselSeed = new Uint8Array(32).fill(80 + n), signerSeed = new Uint8Array(32).fill(90 + n), atomSeed = new Uint8Array(32).fill(100 + n);
   const place = await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" });
   const input = {
+    vesselTag: testVesselTagDoor(1),
     repo, daemonHandle: place.daemonHandle, placeVerifyingKey: key(vesselSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood" as const, signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(vesselSeed), atomSeed,
     ...(relation ? { faceRelation: relation } : {}),
@@ -73,7 +75,7 @@ async function admitWith(extra: (head: { seq: number; cid: string }, group: stri
   const founderSeed = new Uint8Array(32).fill(61), signerSeed = new Uint8Array(32).fill(62);
   const atomSeed = new Uint8Array(32).fill(63), joineeAtom = new Uint8Array(32).fill(64);
   const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" });
-  const face = await foundTheFace({
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo, daemonHandle: founder.daemonHandle, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(founderSeed), atomSeed,
   });

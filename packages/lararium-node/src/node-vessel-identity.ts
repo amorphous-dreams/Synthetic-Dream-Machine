@@ -536,9 +536,12 @@ export class FloorKeyDoorRefused extends Error {
  * rests in no closure between two calls.
  *
  * It derives no child the sealed custody root owns: the sovereign gate bundle's name refuses here, so a floor
- * key never stands in for the custody root. The custody seat's own door refuses the floor bundle's name the
+ * key never stands in for the custody root. Every `vessel-face-tag*` name refuses too: a child under one would read as
+ * one secret across every face this vessel wears, which links its admissions. The custody seat's own door refuses the floor bundle's name the
  * same way (`custodyGateDoor`), and the two doors carry two types no composer can swap.
  */
+const VESSEL_FACE_TAG_NAME = /\/vessel-face-tag[^/]*$/;
+
 export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
   await reconcilePlaceRotation();
   const keyFile = join(identityDir(), KEY_FILE);
@@ -550,6 +553,9 @@ export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
       }
       if (domain === GATE_BUNDLE_INFO) {
         throw new FloorKeyDoorRefused("refused the sovereign gate bundle's name: that child derives from the sealed custody root alone");
+      }
+      if (VESSEL_FACE_TAG_NAME.test(domain)) {
+        throw new FloorKeyDoorRefused("refused the vessel face tag's name: a face's tag key derives from that face's own random secret, never from a vessel-wide key");
       }
       if (!existsSync(keyFile)) {
         throw new FloorKeyDoorRefused(`no vessel key stands at ${keyFile}: found the vessel with \`lares vessel found\``);

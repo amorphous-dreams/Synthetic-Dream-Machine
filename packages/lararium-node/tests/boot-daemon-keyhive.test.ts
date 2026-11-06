@@ -29,6 +29,7 @@ import {
 import {
   KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, FacelessKeyhiveRefused, runFoundingCeremony,
   type BootDaemonKeyhiveInput } from "@lararium/keyhive";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const SEED = new Uint8Array(32).fill(7);
 const ATOM_SEED = new Uint8Array(32).fill(8);
@@ -53,7 +54,7 @@ beforeAll(async () => {
   await probe.dispose();
 
   // Found a real operator into the in-memory repo (host pre-spawn step).
-  const cer = await runFoundingCeremony({ repo, atomSeed: ATOM_SEED,
+  const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo, atomSeed: ATOM_SEED,
     placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "Test Operator",
     binding: { mode: "self-stood", signerSeed: SEED },          // self-signed (signerDid == deviceDid) for the test founder

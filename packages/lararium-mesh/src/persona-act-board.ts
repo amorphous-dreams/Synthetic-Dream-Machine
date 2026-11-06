@@ -19,6 +19,7 @@ import { foldPersonaContests, type PersonaKelEvent } from "./persona-kel.js";
 import { actCid, signAct, type SignedAct } from "./signed-act.js";
 import { storedLarRecord } from "./stored-record.js";
 import type { PersonaActBody, PersonaActKind } from "./persona-act.js";
+import type { VesselFaceTagFields } from "./vessel-face-tag.js";
 
 export const PERSONA_ACT_ENTRY_PREFIX = "lar:///ha.ka.ba/dreamnet/persona-act/" as const;
 
@@ -77,10 +78,11 @@ export function signPersonaAct(
   } as PersonaActBody, signer);
 }
 
-/** A face's genesis log, signed by its root: the founding, one `plane` act per plane, the founder device's admission and its edge. */
+/** A face's genesis log, signed by its root: the founding, one `plane` act per plane, the founder device's admission under
+ *  its vessel's blinded tag (`vesselTag`, the founder vessel's door's answer for this group and device), and its edge. */
 export async function signFoundingLog(parts: {
   group: string; personaKelPrefix: string; rootCommitment: string; epoch: number;
-  planes: Readonly<Record<string, string>>; deviceKey: string; edgeDigest: string;
+  planes: Readonly<Record<string, string>>; deviceKey: string; edgeDigest: string; vesselTag: VesselFaceTagFields;
 }, signer: Signer): Promise<SignedAct<PersonaActBody>[]> {
   const out: SignedAct<PersonaActBody>[] = [];
   let head: { seq: number; cid: string } | null = null;
@@ -91,7 +93,7 @@ export async function signFoundingLog(parts: {
   };
   await next("founding", { personaKelPrefix: parts.personaKelPrefix, rootCommitment: parts.rootCommitment });
   for (const name of Object.keys(parts.planes).sort()) await next("plane", { plane: name, url: parts.planes[name] });
-  await next("admission", { deviceKey: parts.deviceKey });
+  await next("admission", { deviceKey: parts.deviceKey, vesselTag: parts.vesselTag.vesselTag, vesselSig: parts.vesselTag.vesselSig });
   await next("device-edge", { deviceKey: parts.deviceKey, edgeDigest: parts.edgeDigest });
   return out;
 }

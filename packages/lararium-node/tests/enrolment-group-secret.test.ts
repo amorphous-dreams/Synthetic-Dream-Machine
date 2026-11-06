@@ -18,6 +18,7 @@ import {
 } from "@lararium/mesh";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const JOINEE_SEED  = new Uint8Array(32).fill(11);
 const JOINEE_PLACE_SEED = new Uint8Array(32).fill(12);
@@ -32,7 +33,7 @@ async function restedSeal(repo: Repo, daemonUrl: string, group: string): Promise
 async function founded() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({ repo, atomSeed: new Uint8Array(32).fill(8), placeVerifyingKey: verifyingKey, vesselDisplayName: "founder",
+  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo, atomSeed: new Uint8Array(32).fill(8), placeVerifyingKey: verifyingKey, vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
   });
   const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(verifyingKey), "board:persona-kel");

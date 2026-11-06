@@ -7,6 +7,7 @@ import {
   writePersonaKelEvent, personaKelChainForPrefix, proveFaceFromLog,
 } from "@lararium/mesh";
 import { appendPersonaActs, readFacePersonaRecords } from "../src/persona-act-store.js";
+import { taggedAdmission, testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const group = "ab".repeat(16);
 const seed = new Uint8Array(32).fill(11);
@@ -25,7 +26,7 @@ async function fixture() {
   const chain = personaKelChainForPrefix(board, inception.prefix)!;
   const planes = { persona: handle.url as string, identities: "automerge:i", circles: "automerge:c", sessions: "automerge:s", intents: "automerge:t" };
   const log = await signFoundingLog({ group, personaKelPrefix: inception.prefix,
-    rootCommitment: faceRootCommitment(did), epoch: 0, planes, deviceKey: rootKey, edgeDigest: "edge" }, signer);
+    rootCommitment: faceRootCommitment(did), epoch: 0, planes, deviceKey: rootKey, edgeDigest: "edge", vesselTag: await testVesselTag(1, group, rootKey) }, signer);
   const anchor = mintFaceAnchor({ personaGroup: group, personaKelPrefix: inception.prefix,
     personaRootDid: did, edge: {}, leaseEpoch: 0 });
   appendPersonaActs(handle, log);
@@ -47,7 +48,7 @@ describe("node face act boot carriage", () => {
     const f = await fixture();
     const foreign = await signFoundingLog({ group: "other", personaKelPrefix: f.log[0]!.body["personaKelPrefix"] as string,
       rootCommitment: f.log[0]!.body["rootCommitment"] as string, epoch: 0, planes: f.planes,
-      deviceKey: f.rootKey, edgeDigest: "edge" }, f.signer);
+      deviceKey: f.rootKey, edgeDigest: "edge", vesselTag: await testVesselTag(1, "other", f.rootKey) }, f.signer);
     expect((await f.proof(f.rootKey, f.planes, foreign)).ok).toBe(false);
     await f.repo.shutdown();
   });
@@ -56,7 +57,7 @@ describe("node face act boot carriage", () => {
     const head = f.log[f.log.length - 1]!;
     const joiner = "cd".repeat(32);
     const admission = await signPersonaAct({ seq: head.body.seq, cid: actCid(head.body) },
-      { group, act: "admission", epoch: 0, fields: { deviceKey: joiner } }, f.signer);
+      { group, act: "admission", epoch: 0, fields: { ...(await taggedAdmission(10, group, joiner)) } }, f.signer);
     const bundle = [...await f.records(), admission];
     expect((await f.proof(joiner, f.planes, bundle)).ok).toBe(true);
     expect(await f.proof(joiner)).toEqual({ ok: false, refusal: { why: "device-unseated" } });

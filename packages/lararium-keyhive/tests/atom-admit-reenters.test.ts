@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { makeIslandRepo, groupSecretOpenerFromSeed, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, vesselDyads, seedDaemonDoc, verifyDeviceDelegation, type DeviceDelegationTiddler } from "@lararium/mesh";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { foundThePlace, foundTheFace, runDeviceAdmitEdge, runApplyAdmitPayload } from "../src/index.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const rootSeed = new Uint8Array(32).fill(52);
 const vesselSeed = new Uint8Array(32).fill(53);
@@ -15,7 +16,7 @@ describe("atom admit re-entry", () => {
   it("the joinee completes the root half and re-entry lands one atom seat", async () => {
     const founderRepo = repo();
     const place = await foundThePlace({ repo: founderRepo, vesselSeed, hearthTrueName: "hearth" });
-    const face = await foundTheFace({ repo: founderRepo, daemonHandle: place.daemonHandle, vesselSeed,
+    const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo: founderRepo, daemonHandle: place.daemonHandle, vesselSeed,
       placeVerifyingKey: key(vesselSeed), vesselDisplayName: "founder", binding: { mode: "self-stood", signerSeed: rootSeed },
       hearthTrueName: "hearth", nexusPubkey: key(vesselSeed), atomSeed });
     const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(vesselSeed)), "board:persona-kel");

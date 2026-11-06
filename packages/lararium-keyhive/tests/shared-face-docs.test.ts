@@ -13,6 +13,7 @@ import {
 } from "@lararium/mesh";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const key = (seed: Uint8Array) => groupSecretOpenerFromSeed(seed).deviceKey;
 const repo = () => makeIslandRepo({ syncPort: new MessageChannel().port1 });
@@ -22,7 +23,7 @@ async function founderAndJoinee() {
   const founderSeed = new Uint8Array(32).fill(81), signerSeed = new Uint8Array(32).fill(82);
   const atomSeed = new Uint8Array(32).fill(83), joineeAtom = new Uint8Array(32).fill(84);
   const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" });
-  const face = await foundTheFace({
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo, daemonHandle: founder.daemonHandle, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(founderSeed), atomSeed,
   });
