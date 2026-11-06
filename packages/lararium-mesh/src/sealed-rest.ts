@@ -99,6 +99,8 @@ export interface DocStoreMsg_Seal {
   /** The ask the vessel booked for this seal in its session sign book, under `verb`. */
   readonly ask: string; readonly verb: typeof DOCSTORE_SEAL_VERB;
   readonly bagId: string; readonly values: readonly DocumentValue[];
+  /** The actor of a peer's change the batch rests as received (U3); absent: the booked session wrote it. */
+  readonly peer?: string;
 }
 export interface DocStoreMsg_Sealed {
   readonly type: "docstore:sealed"; readonly requestId: string;
@@ -110,7 +112,7 @@ export interface DocStoreMsg_Open {
 }
 export interface DocStoreMsg_Opened {
   readonly type: "docstore:opened"; readonly requestId: string;
-  readonly plaintext?: Uint8Array; readonly keyVersion?: string; readonly address?: string; readonly writer?: string;
+  readonly plaintext?: Uint8Array; readonly keyVersion?: string; readonly address?: string; readonly writer?: string; readonly changeWriter?: string;
   readonly refusal?: string; readonly cause?: string;
 }
 export interface DocStoreMsg_Live { readonly type: "docstore:live"; readonly requestId: string; readonly bagId: string }
@@ -166,12 +168,12 @@ export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | nul
   };
   let asks = 0;
   return {
-    async seal({ bagId, values, session }): Promise<SealedValueAddresses | HolderRefusal> {
+    async seal({ bagId, values, session, peer }): Promise<SealedValueAddresses | HolderRefusal> {
       if (!ready()) return { refusal: "signer-unavailable", cause: "no daemon island answers the document store's door" } as HolderRefusal;
       const ask = `${opts.idPrefix}-ask-${++asks}`;
       const release = opts.book(ask, DOCSTORE_SEAL_VERB, session as S);
       try {
-        const answer = await seal!({ type: "docstore:seal", ask, verb: DOCSTORE_SEAL_VERB, bagId, values });
+        const answer = await seal!({ type: "docstore:seal", ask, verb: DOCSTORE_SEAL_VERB, bagId, values, ...(peer !== undefined ? { peer } : {}) });
         if (answer === null) return { refusal: "signer-unavailable", cause: "the daemon island did not answer the seal" } as HolderRefusal;
         if (typeof answer.refusal === "string") return { refusal: answer.refusal, ...(answer.cause ? { cause: answer.cause } : {}) } as HolderRefusal;
         const sealed = (answer.values ?? []).map((v) => ({ role: v.role, ref: v.ref, address: readSealedAddress(v.address) }));
@@ -185,17 +187,17 @@ export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | nul
       if (answer === null) return { refusal: "holder-locked", cause: "the daemon island did not answer the open" } as HolderRefusal;
       if (typeof answer.refusal === "string") return { refusal: answer.refusal, ...(answer.cause ? { cause: answer.cause } : {}) } as HolderRefusal;
       const address = readSealedAddress(answer.address);
-      if (!(answer.plaintext instanceof Uint8Array) || address === null || typeof answer.writer !== "string" || typeof answer.keyVersion !== "string") {
+      if (!(answer.plaintext instanceof Uint8Array) || address === null || typeof answer.writer !== "string" || typeof answer.changeWriter !== "string" || typeof answer.keyVersion !== "string") {
         return { refusal: "open-refused", cause: "the island answered no body" } as HolderRefusal;
       }
-      return { plaintext: answer.plaintext, address, writer: answer.writer, keyVersion: answer.keyVersion as OpenedValue["keyVersion"] };
+      return { plaintext: answer.plaintext, address, writer: answer.writer, changeWriter: answer.changeWriter, keyVersion: answer.keyVersion as OpenedValue["keyVersion"] };
     },
   };
 }
 
 /** The island's side of the door: the holder's seal (signed through the booked ask) and open. Returns the unsubscribe. */
 export function answerDocStoreAsks(port: Port, holder: {
-  seal(args: { readonly bagId: string; readonly values: readonly DocumentValue[]; readonly ask: { readonly requestId: string; readonly verb: string } }): Promise<SealedValueAddresses | HolderRefusal>;
+  seal(args: { readonly bagId: string; readonly values: readonly DocumentValue[]; readonly ask: { readonly requestId: string; readonly verb: string }; readonly peer?: string }): Promise<SealedValueAddresses | HolderRefusal>;
   open(args: { readonly bagId: string; readonly role: DocumentValue["role"]; readonly ref: string }): Promise<OpenedValue | HolderRefusal>;
 }): () => void {
   const reply = (msg: unknown): void => { try { port.post(msg); } catch { /* the vessel went away */ } };
@@ -205,12 +207,13 @@ export function answerDocStoreAsks(port: Port, holder: {
     return { refusal: name, ...(typeof r?.message === "string" ? { cause: r.message } : {}) };
   };
   return port.listen((raw) => {
-    const m = raw as { type?: unknown; requestId?: unknown; bagId?: unknown; ask?: unknown; verb?: unknown; values?: unknown; role?: unknown; ref?: unknown } | null;
+    const m = raw as { type?: unknown; requestId?: unknown; bagId?: unknown; ask?: unknown; verb?: unknown; values?: unknown; role?: unknown; ref?: unknown; peer?: unknown } | null;
     if (!m || typeof m.requestId !== "string" || typeof m.bagId !== "string") return;
     const requestId = m.requestId;
     if (m.type === "docstore:seal") {
       if (typeof m.ask !== "string" || m.verb !== DOCSTORE_SEAL_VERB || !Array.isArray(m.values)) { reply({ type: "docstore:sealed", requestId, refusal: "values-malformed" }); return; }
-      void holder.seal({ bagId: m.bagId, values: m.values as DocumentValue[], ask: { requestId: m.ask, verb: DOCSTORE_SEAL_VERB } }).then(
+      if (m.peer !== undefined && typeof m.peer !== "string") { reply({ type: "docstore:sealed", requestId, refusal: "values-malformed" }); return; }
+      void holder.seal({ bagId: m.bagId, values: m.values as DocumentValue[], ask: { requestId: m.ask, verb: DOCSTORE_SEAL_VERB }, ...(typeof m.peer === "string" ? { peer: m.peer } : {}) }).then(
         (out) => reply("refusal" in out ? { type: "docstore:sealed", requestId, refusal: out.refusal, ...(out.cause ? { cause: out.cause } : {}) }
           : { type: "docstore:sealed", requestId, values: out.values.map((v) => ({ role: v.role, ref: v.ref, address: v.address })) } satisfies DocStoreMsg_Sealed),
         (e) => reply({ type: "docstore:sealed", requestId, ...refusal(e) }));
@@ -219,7 +222,7 @@ export function answerDocStoreAsks(port: Port, holder: {
     if (m.type === "docstore:open") {
       void holder.open({ bagId: m.bagId, role: m.role as DocumentValue["role"], ref: typeof m.ref === "string" ? m.ref : "" }).then(
         (out) => reply("refusal" in out ? { type: "docstore:opened", requestId, refusal: out.refusal, ...(out.cause ? { cause: out.cause } : {}) }
-          : { type: "docstore:opened", requestId, plaintext: out.plaintext, keyVersion: out.keyVersion, address: out.address, writer: out.writer } satisfies DocStoreMsg_Opened),
+          : { type: "docstore:opened", requestId, plaintext: out.plaintext, keyVersion: out.keyVersion, address: out.address, writer: out.writer, changeWriter: out.changeWriter } satisfies DocStoreMsg_Opened),
         (e) => reply({ type: "docstore:opened", requestId, ...refusal(e) }));
     }
   });
@@ -322,6 +325,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
   const store = new SealedDocumentStore({
     inner: input.inner, bagOf: input.bagOf, sessionFace: input.sessionFace,
     sessionOf,
+    writerOf: (documentId) => book.writerOf(documentId),
     seal: input.door.seal, open: input.door.open,
     ...(input.onHeld ? { onHeld: input.onHeld } : {}),
   });

@@ -78,7 +78,10 @@ export interface SealedDocumentPorts {
    *  (the change's writer, T4); null: no session booked it, and its save waits. */
   sessionOf(documentId: string, data?: Uint8Array): SaveSession | null;
   /** The holder's seal of one write batch, signed under the session that booked it. */
-  seal(args: { readonly bagId: string; readonly values: readonly DocumentValue[]; readonly session: SaveSession }): Promise<SealedValueAddresses | HolderRefusal>;
+  seal(args: { readonly bagId: string; readonly values: readonly DocumentValue[]; readonly session: SaveSession; readonly peer?: string }): Promise<SealedValueAddresses | HolderRefusal>;
+  /** The change's own writer as booked (`session:<id>` or `peer:<actor>`), so a peer's change seals naming its actor in
+   *  the manifest (U3); absent or null: the signing session wrote it. */
+  writerOf?(documentId: string): string | null;
   /** A holder that stands no session and no bag map (the node's direct holder, T2): a document the map names no bag
    *  for, whose rest already holds a sealed value, refuses a clear save by name (`bag-unmapped`), so no clear byte
    *  ever lands beside a sealed one. Read once per document. */
@@ -238,7 +241,9 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     const held = this.#heldOf(key[0]!);
     const parents = [...new Set(held.values())].sort();
     const value: DocumentValue = { role, ref: logicalRefOf(key), parents, plaintext: data, ...(role === "checkpoint" ? { frontier: frontierOf(data) } : {}) };
-    const sealed = await this.#ports.seal({ bagId: bag.bagId, values: [value], session });
+    const writer = this.#ports.writerOf?.(key[0]!) ?? null;
+    const peer = writer !== null && writer.startsWith("peer:") ? writer.slice("peer:".length) : undefined;
+    const sealed = await this.#ports.seal({ bagId: bag.bagId, values: [value], session, ...(peer !== undefined ? { peer } : {}) });
     if ("refusal" in sealed) throw new SealedDocumentRefusal(sealed.refusal, sealed.cause);
     const address = sealed.values[0]!.address;
     await this.#ports.inner.save(key, utf8Bytes(POINTER + address));

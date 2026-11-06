@@ -310,7 +310,7 @@ describe("T4: a change books its own writer", () => {
 });
 
 describe("U3: the manifest carries the change's writer, signed with it", () => {
-  it("after a restart drops the book, each sealed value names its writer off its own manifest: the peer's change `peer:<actor>`, the local change the signing session", async () => {
+  it("each sealed value names its writer off its own manifest, never off the book: the peer's change `peer:<actor>`, the local change the signing session, and a restart that drops the book reads the same", async () => {
     const w = world();
     const a = await vessel(w, "a");
     const inner = memoryAdapter();
@@ -320,6 +320,18 @@ describe("U3: the manifest carries the change's writer, signed with it", () => {
     const repo = linked(r.rest, peer, "vessel");
     r.seat(repo);
     r.rest.watch(repo, () => session);
+    const { logicalRefOf } = await import("../src/sealed-doc-store.js");
+    const writersAtRest = async (documentId: string): Promise<string[]> => {
+      const keys = [...inner.bytes.keys()].filter((k) => k.startsWith(documentId)).map((k) => k.split("\u0000"));
+      expect(keys.length).toBeGreaterThan(0);
+      const writers = new Set<string>();
+      for (const key of keys) {
+        const opened = await a.holder.openValue({ bagId: BAG, role: key[1] === "snapshot" ? "checkpoint" : "change", ref: logicalRefOf(key) });
+        expect("plaintext" in opened, JSON.stringify(opened)).toBe(true);
+        if ("plaintext" in opened) writers.add(opened.changeWriter);
+      }
+      return [...writers].sort();
+    };
     const theirs = peer.create<{ note?: string; ours?: string }>();
     theirs.change((d) => { d.note = SECRET; });
     const peerActor = A.getActorId(theirs.doc() as A.Doc<unknown>);
@@ -327,23 +339,23 @@ describe("U3: the manifest carries the change's writer, signed with it", () => {
     await settle();
     await repo.flush();
     await r.rest.store.flush();
+    // The peer's change rests as received under the local session, and its manifest names the peer, never that session.
+    expect(await writersAtRest(mine.documentId)).toEqual([`peer:${peerActor}`]);
     mine.change((d) => { d.ours = "a local word"; });
     await repo.flush();
     await r.rest.store.flush();
     await repo.shutdown();
     await peer.shutdown();
-    // THE BOOK GOES: a restart holds no booking, so whatever names a writer now reads it off the sealed record.
+    // THE BOOK GOES: a restart holds no booking, so the writer reads off the sealed record alone.
     a.restart();
-    const { logicalRefOf } = await import("../src/sealed-doc-store.js");
-    const keys = [...inner.bytes.keys()].filter((k) => k.startsWith(mine.documentId)).map((k) => k.split("\u0000"));
-    expect(keys.length).toBeGreaterThan(1);
-    const writers = new Set<string>();
-    for (const key of keys) {
-      const opened = await a.holder.openValue({ bagId: BAG, role: key[1] === "snapshot" ? "checkpoint" : "change", ref: logicalRefOf(key) });
-      expect("plaintext" in opened, JSON.stringify(opened)).toBe(true);
-      if ("plaintext" in opened) writers.add(opened.changeWriter);
-    }
-    expect([...writers].sort()).toEqual([`peer:${peerActor}`, `session:${a.signer.certificate.sessionKey}`].sort());
+    expect(await writersAtRest(mine.documentId)).toContain(`session:${a.signer.certificate.sessionKey}`);
+  });
+
+  it("CONTROL: a seal naming an empty peer refuses `values-malformed`, and a manifest's sealed part with no writer reads malformed", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const refused = await a.holder.sealValues({ bagId: BAG, values: [{ role: "change", ref: "cd".repeat(32), parents: [], plaintext: utf8Bytes("x") }], signer: a.signer, peer: "" });
+    expect("refusal" in refused && refused.refusal).toBe("values-malformed");
   });
 });
 

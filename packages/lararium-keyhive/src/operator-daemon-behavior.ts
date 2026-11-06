@@ -966,10 +966,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // answers ride the port alone and carry addresses and bodies, never a key; no outcome rests in the daemon wiki.
       stopDocStoreDoor?.();
       stopDocStoreDoor = docStoreDoor ? answerDocStoreAsks(docStoreDoor, {
-        seal: async ({ bagId, values, ask }) => {
+        seal: async ({ bagId, values, ask, peer }) => {
           if (!contentKeys) return { refusal: "sealed-store-unavailable" } as never;
           const signer = await sessionOf(ask.verb, { invocation: { requestId: ask.requestId }, local: true });
-          return contentKeys.sealValues({ bagId, values, signer });
+          return contentKeys.sealValues({ bagId, values, signer, ...(peer !== undefined ? { peer } : {}) });
         },
         open: async (args) => (contentKeys ? contentKeys.holder.openValue(args) : { refusal: "holder-locked" } as never),
       }) : null;

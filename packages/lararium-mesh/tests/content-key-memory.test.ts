@@ -109,7 +109,7 @@ describe("REACH APART FROM AUTHORSHIP: what a bundle's keys open, and what they 
     const context: SealContext = { bagId: BAG, keyVersion: V, role: "blob", logicalRef: hexToBytes(forged.body.ref) };
     const manifest: ManifestBody = { bag: before.founding, keyVersion: V, parents: [], entries: [{ role: "blob", address: forged.body.cid, locator: entryLocatorOf(key, context), parents: [] }] };
     const plant = async (signer: RecordSigner): Promise<void> => {
-      const signed = await signRecord({ kind: "manifest", body: manifest, private: {}, bagId: BAG, key, signer });
+      const signed = await signRecord({ kind: "manifest", body: manifest, private: { writer: `session:${signer.certificate.sessionKey}` }, bagId: BAG, key, signer });
       if (!("record" in signed)) throw new Error(`setup: the manifest did not sign (${signed.refusal})`);
       fresh.values.set(forged.body.cid, forged.body.ciphertext);
       await fresh.store.putRecord(signed.record);

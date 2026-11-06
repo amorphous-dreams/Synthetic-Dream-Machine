@@ -238,7 +238,11 @@ export interface OpenedValue {
   readonly address:    SealedAddress;
   /** The face proof's subject reference of the manifest's writer (`faceProofSubjectRef`). */
   readonly writer:     string;
+  /** The change's own writer, as the manifest names it under its signature: `session:<session key>` or `peer:<actor>`. */
+  readonly changeWriter: string;
 }
+/** The writer a manifest names where the signing session made the change itself. */
+const sessionWriter = (signer: RecordSigner): string => `session:${signer.certificate.sessionKey}`;
 const HEX64 = /^[0-9a-f]{64}$/;
 const sortedText = (values: readonly string[]): string[] => [...new Set(values)].sort(ascending);
 /** A batch reads whole, or names nothing: every value a change or a checkpoint, its reference hex, its parents addresses. */
@@ -563,7 +567,7 @@ export class ContentKeyHolder {
     const record = await this.#sign("checkpoint", checkpoint, { frontier: [...base.frontier] }, bag.bagId, line.locator, key, signer);
     if (isRefusal(record)) return record;
     const manifest: ManifestBody = { bag: line.locator, keyVersion, parents: [], entries: [{ role: "checkpoint", address: sealed.chunk.address, locator: entryLocatorOf(key, context), parents: [] }] };
-    const named = await this.#sign("manifest", manifest, {}, bag.bagId, line.locator, key, signer);
+    const named = await this.#sign("manifest", manifest, { writer: sessionWriter(signer) }, bag.bagId, line.locator, key, signer);
     if (isRefusal(named)) return named;
     await this.#rest(() => this.#ports.values.write(sealed.chunk.address, sealed.chunk.sealed));
     await this.#rest(() => store.putRecord(record.carried));
@@ -668,7 +672,7 @@ export class ContentKeyHolder {
         bag: line.locator, keyVersion: at.head, parents: await this.#cited(bag, line, key, at.head),
         entries: [{ role: "blob", address: body.cid, locator: entryLocatorOf(key, context), parents: [] }],
       };
-      const signed = await this.#sign("manifest", manifest, {}, args.bagId, line.locator, key, args.signer);
+      const signed = await this.#sign("manifest", manifest, { writer: sessionWriter(args.signer) }, args.bagId, line.locator, key, args.signer);
       if (isRefusal(signed)) return signed;
       // THE COMMIT POINT. Every signature this seal waited on has landed; nothing of the value rests yet. A raise the
       // vessel counted meanwhile binds it here: the head must still follow every owed raise, or nothing rests.
@@ -714,11 +718,14 @@ export class ContentKeyHolder {
    * stands (`fresh-base-unavailable`). The values rest, then each checkpoint record, the manifest and its index rows.
    */
   sealValues(args: { readonly bagId: string; readonly values: readonly DocumentValue[]; readonly signer: RecordSigner | null;
+    /** The actor of a peer's change the batch rests as received; absent: the signing session wrote it. */
+    readonly peer?: string;
     readonly founding?: { readonly history: HistoryDeclaration }; readonly owedActs?: () => readonly string[] }): Promise<SealedValues | HolderRefusal> {
     return this.#inTurn<SealedValues>(async () => {
       if (!isWellFormedText(args.bagId)) return refuse("bag-malformed");
       const values = readDocumentValues(args.values);
       if (values === null) return refuse("values-malformed");
+      if (args.peer !== undefined && !(isWellFormedText(args.peer) && args.peer.length > 0 && args.peer.length <= 500)) return refuse("values-malformed");
       if (args.signer === null) return refuse("signer-unavailable");
       const signer = args.signer;
       const { store, random } = this.#ports;
@@ -746,7 +753,7 @@ export class ContentKeyHolder {
         checkpoints.push(signed.carried);
       }
       const manifest: ManifestBody = { bag: line.locator, keyVersion: at.head, parents: await this.#cited(bag, line, key, at.head), entries };
-      const signed = await this.#sign("manifest", manifest, {}, args.bagId, line.locator, key, signer);
+      const signed = await this.#sign("manifest", manifest, { writer: args.peer !== undefined ? `peer:${args.peer}` : sessionWriter(signer) }, args.bagId, line.locator, key, signer);
       if (isRefusal(signed)) return signed;
       // THE COMMIT POINT, as a blob's seal reads it: a raise counted while the batch signed binds it here.
       if (owesRoll()) return refuse("roll-owed");
@@ -787,7 +794,9 @@ export class ContentKeyHolder {
           const sealed = await this.#ports.values.read(authorized.address);
           if (sealed === null) { met = refuse("value-absent"); continue; }
           const opened = openChunk({ key, context, sealed, authorized });
-          if ("plaintext" in opened) return { plaintext: opened.plaintext, keyVersion, address: authorized.address, writer: faceProofSubjectRef(manifest.certificate.scope) };
+          if ("plaintext" in opened) {
+            return { plaintext: opened.plaintext, keyVersion, address: authorized.address, writer: faceProofSubjectRef(manifest.certificate.scope), changeWriter: manifest.private.writer };
+          }
           met = refuse("open-refused", opened.refusal);
         }
       }
