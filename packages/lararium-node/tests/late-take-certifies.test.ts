@@ -15,6 +15,9 @@
  *     does neither.
  *   · RED (one ward answer, one act): the route certifies the TAKEN Nexus alone: a take at X beside a second own no-url
  *     bundle Y certifies X and never Y; a take naming no Nexus certifies nothing. CONTROL: X certifies.
+ *   · RED: a take whose kept bundle names a hearth the late choice does not dial (or a Nexus no kept bundle names) refuses
+ *     `ward-route-unspent` by name, so the take reads `represented` false with that reason, never a silent success.
+ *     CONTROL: the taken no-url Nexus beside it certifies; a teardown before the match refuses nothing.
  *   · RED: a teardown between the choice and the certificate stops the stand (`live` reads again before the await).
  *   · RED: the take's Nexus threads from the after-roll pass (its holder) through `lateDialOnce` into the stand.
  */
@@ -82,13 +85,31 @@ describe("one ward answer, one act: the route certifies the taken Nexus alone", 
     expect(r.certified).toEqual([[X, ward]]);
   });
 
-  test("RED: a route naming no Nexus certifies nothing; a Nexus no kept no-url bundle names certifies nothing", async () => {
+  test("RED: a route naming no Nexus certifies nothing", async () => {
     const none = rig(null, { kept: [{ aid: X }, { aid: Y }] });
     await none.stand(route());
     expect(none.certified).toEqual([]);
-    const elsewhere = rig(null, { kept: [{ aid: Y, syncUrl: "ws://hearth.synthetic:8080" }] });
-    await elsewhere.stand(route(), Y);
-    expect(elsewhere.certified).toEqual([]);
+  });
+
+  test("RED: a take whose bundle names a hearth the choice does not dial refuses `ward-route-unspent`, certifying and dialing nothing — CONTROL: the taken no-url Nexus certifies", async () => {
+    const undialed = rig(null, { kept: [{ aid: Y, syncUrl: "ws://hearth.synthetic:8080" }] });
+    await expect(undialed.stand(route(), Y)).rejects.toMatchObject({ name: "WardRefused", reading: "ward-route-unspent" });
+    expect(undialed.certified).toEqual([]);
+    expect(undialed.dials).toEqual([]);
+    const unkept = rig(null, { kept: [{ aid: X }] });
+    await expect(unkept.stand(route(), Y), "a take naming a Nexus no kept bundle names refuses too").rejects.toMatchObject({ reading: "ward-route-unspent" });
+    expect(unkept.certified).toEqual([]);
+    const own = rig(null, { kept: [{ aid: X }, { aid: Y, syncUrl: "ws://hearth.synthetic:8080" }] });
+    const ward = route();
+    await own.stand(ward, X);
+    expect(own.certified, "CONTROL").toEqual([[X, ward]]);
+  });
+
+  test("CONTROL: a teardown before the match stands nothing and refuses nothing", async () => {
+    let reads = 0;
+    const r = rig(null, { live: () => ++reads === 1, kept: [{ aid: Y, syncUrl: "ws://hearth.synthetic:8080" }] });
+    await r.stand(route(), Y);
+    expect(r.certified).toEqual([]);
   });
 
   test("RED: a teardown between the choice and the certificate stops the stand", async () => {
