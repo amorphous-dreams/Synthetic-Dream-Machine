@@ -15,6 +15,12 @@
  *   SV2 RED  a session that closes (pagehide) hears no frame after its close, and its bindings close at the vessel; its loss
  *            frees nothing of the other's: the survivor still hears frames and its own binding's traffic, and its binding
  *            stays open at the vessel. CONTROL: before the close both sessions hear the frame.
+ *   SV6 RED  a session admitted for ANOTHER face acts on nothing of the lit face: its control event, its surface switch, its
+ *            place and its mirror read never reach the vessel, and the place and the read refuse `face-not-worn` by name.
+ *            CONTROL: the same four acts from the lit face's session reach the vessel.
+ *   SV7 RED  a control event naming an eventId another session's event still holds pending refuses and never reaches the
+ *            vessel; the pending result returns to its own sender alone. CONTROL: the second session's own eventId reaches
+ *            the vessel and its result returns to it.
  *   SV4 RED  a session admitted AFTER the vessel lit missed every frame already sent (its mirror never stands: glass-tabs
  *            e2e, the second tab): its admission asks the vessel to repaint the shown surface whole (`resend`), once, so
  *            the frame reaches it over its own port. The first session (it lit the vessel) asks nothing. CONTROL: a late
@@ -74,6 +80,8 @@ function fakeVessel() {
   const closed: string[] = [];
   const controlEvents: string[] = [];
   const resent: string[] = [];
+  const surfaces: string[] = [];
+  const mirrorReads: string[] = [];
   let shown = "w";
   const open = async (o: { idbName: string; face?: string | null } & SurfaceHooks) => {
     hooks.onFrame = o.onFrame;
@@ -93,9 +101,11 @@ function fakeVessel() {
       sendControlEvent: (_surface: string, ev: { eventId: string }) => { controlEvents.push(ev.eventId); },
       resend: (surface: string) => { resent.push(surface); return { ok: true as const }; },
       activeSurface: () => shown,
+      setActiveSurface: (surface: string) => { surfaces.push(surface); shown = surface; },
+      mirrorInputs: (surface: string) => { mirrorReads.push(surface); return {}; },
     };
   };
-  return { open, hooks, placed, closed, controlEvents, resent, show: (s: string) => { shown = s; } };
+  return { open, hooks, placed, closed, controlEvents, resent, surfaces, mirrorReads, show: (s: string) => { shown = s; } };
 }
 
 const until = async (what: string, ok: () => boolean): Promise<void> => {
@@ -274,5 +284,72 @@ describe("surface traffic reaches each session over its own port", () => {
     expect(v.resent, "the repaint names the surface that shows, so no other tab flips").toEqual(["daemon"]);
     v.hooks.onFrame!({ n: 1 });
     await until("CONTROL: the joining tab paints the shown surface over its own port", () => b.frames().length > 0);
+  }, SLOW);
+
+  test("SV6 RED a session of another face acts on nothing of the lit face — CONTROL: the lit face's session acts", async () => {
+    const idbName = `host-surface-gate-${crypto.randomUUID()}`;
+    const face = await standFace(idbName, ROUTE);
+    const other = await standFace(idbName, OTHER_ROUTE);
+    const v = fakeVessel();
+    const host = standVesselHost({ locks: navigator.locks, openVessel: v.open } as never);
+    const a = tab(ROUTE), g = tab(OTHER_ROUTE);
+    const ca = enter(host, a, "tab-a", idbName, face);
+    await until("A admitted", a.admitted);
+    const cg = enter(host, g, "tab-g", idbName, other);
+    await until("G admitted (its own face, its own unlock)", g.admitted);
+    const replyOf = (t: ReturnType<typeof tab>, callId: string) => t.heard.find((m) => m.t === "reply" && m.callId === callId);
+    const refusalOf = (t: ReturnType<typeof tab>, binding: string) => t.heard.find((m) => m.t === "port:refused" && m.binding === binding);
+
+    cg.receive({ t: "control-event", surface: "lares", ev: { eventId: "evG" } } as PageToVessel);
+    cg.receive({ t: "set-surface", surface: "g-surface" } as PageToVessel);
+    cg.receive(openOn("bind-g"));
+    cg.receive({ t: "read:mirror-inputs", callId: "read-g", surface: "g-read" } as PageToVessel);
+    await until("G's place answers", () => refusalOf(g, "bind-g") !== undefined || v.placed.some((p) => p.binding === "bind-g"));
+    await until("G's mirror read answers", () => replyOf(g, "read-g") !== undefined);
+
+    // CONTROL, and the barrier: the lit face's own four acts, sent after G's, reach the vessel.
+    ca.receive({ t: "control-event", surface: "lares", ev: { eventId: "evA" } } as PageToVessel);
+    ca.receive({ t: "set-surface", surface: "a-surface" } as PageToVessel);
+    ca.receive(openOn("bind-a"));
+    ca.receive({ t: "read:mirror-inputs", callId: "read-a", surface: "a-read" } as PageToVessel);
+    await until("CONTROL: A's control event reaches the vessel", () => v.controlEvents.includes("evA"));
+    await until("CONTROL: A's surface switch reaches the vessel", () => v.surfaces.includes("a-surface"));
+    await until("CONTROL: A's place reaches the vessel", () => v.placed.some((p) => p.binding === "bind-a"));
+    await until("CONTROL: A's mirror read answers", () => replyOf(a, "read-a") !== undefined);
+    expect(replyOf(a, "read-a"), "CONTROL: A's read answers ok").toMatchObject({ ok: true });
+    await settle();
+
+    expect(v.controlEvents, "G's control event never reaches the lit face's vessel").toEqual(["evA"]);
+    expect(v.surfaces, "G's surface switch never moves the lit face's surface").toEqual(["a-surface"]);
+    expect(v.placed.map((p) => p.binding), "G's place never reaches a vessel port").toEqual(["bind-a"]);
+    expect(v.mirrorReads, "G reads no mirror input of the lit face").toEqual(["a-read"]);
+    expect(refusalOf(g, "bind-g"), "G's place refuses by name").toMatchObject({ reason: "face-not-worn" });
+    expect(replyOf(g, "read-g"), "G's mirror read refuses by name").toMatchObject({ ok: false, error: { refusal: "face-not-worn" } });
+  }, SLOW);
+
+  test("SV7 RED a control event naming another session's pending eventId refuses — CONTROL: its own eventId acts", async () => {
+    const idbName = `host-surface-pending-${crypto.randomUUID()}`;
+    const face = await standFace(idbName, ROUTE);
+    const v = fakeVessel();
+    const host = standVesselHost({ locks: navigator.locks, openVessel: v.open } as never);
+    const a = tab(ROUTE), b = tab(ROUTE);
+    const ca = enter(host, a, "tab-a", idbName, face);
+    await until("A admitted", a.admitted);
+    const cb = enter(host, b, "tab-b", idbName, face);
+    await until("B admitted", b.admitted);
+    const results = (t: ReturnType<typeof tab>) => t.heard.filter((m): m is Extract<VesselToPage, { t: "control-result" }> => m.t === "control-result").map((m) => m.result.eventId);
+    const result = (eventId: string) => ({ eventId } as Extract<VesselToPage, { t: "control-result" }>["result"]);
+
+    ca.receive({ t: "control-event", surface: "lares", ev: { eventId: "evX" } } as PageToVessel);
+    await until("A's event reaches the vessel", () => v.controlEvents.includes("evX"));
+    cb.receive({ t: "control-event", surface: "lares", ev: { eventId: "evX" } } as PageToVessel);
+    cb.receive({ t: "control-event", surface: "lares", ev: { eventId: "evB" } } as PageToVessel);
+    await until("CONTROL: B's own event reaches the vessel", () => v.controlEvents.includes("evB"));
+    expect(v.controlEvents, "B's event under A's pending eventId never reaches the vessel").toEqual(["evX", "evB"]);
+
+    v.hooks.onControlResult!("lares", result("evX"));
+    v.hooks.onControlResult!("lares", result("evB"));
+    expect(results(a), "A's pending result returns to A").toEqual(["evX"]);
+    expect(results(b), "CONTROL: B hears its own result alone").toEqual(["evB"]);
   }, SLOW);
 });

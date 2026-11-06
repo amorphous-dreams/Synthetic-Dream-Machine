@@ -36,7 +36,12 @@ import { placeSeed } from "./browser-place-seed.fixture.js";
  *   BC12 THE REOPEN: a founded vessel locks, its boot refuses `sealed-locked` before the catalog with the
  *        keystore untouched; unlocked, the founded face's rows read and the same boot reaches the catalog
  *        with no clear place row returned and no face row under the place tree (a founding halted before its bootstrap
- *        runs again over a fresh founder face).
+ *        runs again over a fresh founder face). The halted face stands named in the index, so its ward at h0 has a LIVE owner:
+ *        the rerun refuses `ward-owned-by-another-face` and the ward, its owner row and its roster line stand untouched (the
+ *        control for BC12b; canon X0b owes the resume of the halted face).
+ *   BC12b A FOUNDING TORN BEFORE ITS CEREMONY NAMED THE FACE, read after a reload, leaves a ward whose owner tree stands in no
+ *        index and no seat: the next founding sweeps it with its roster line and founds over ONE ward at h0, owned by the new
+ *        founder's tree, with no row naming the torn tree. Control: BC12 (a live owner's ward survives the founding).
  *   BC13 THE SETTLE ARMS: a clear row beside the tree EQUAL to its sealed value settles on the next unlock and leaves;
  *        a DIFFERENT one stays unsettled with its why, and both rows stand byte-identical. Control: before the
  *        unlock, the reader names the planted row unsettled.
@@ -77,6 +82,7 @@ import {
 } from "@lararium/mesh";
 import { BootHalted } from "./wire-vessel-rig.js";
 import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, foundedGroupOf } from "./browser-custody-fixture.js";
+import { browserWardOwnerOf } from "../src/browser-ward-tree.js";
 import { FaceCustodyRefused, lockFaceCustody, unlockFaceCustody } from "../src/browser-face-custody.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import {
@@ -141,6 +147,14 @@ async function census(idbName: string): Promise<Record<string, string>> {
 }
 
 /** What a promise settles to: its refusal, or null when it resolved. */
+/** Every ward row and its bytes, for a before/after read. */
+async function wardCensus(idbName: string): Promise<Record<string, string>> {
+  const io = browserKeystoreCustodyIo(idbName);
+  const out: Record<string, string> = {};
+  for (const r of (await io.list()).filter((p) => p.startsWith("ward/")).sort()) out[r] = hex((await io.read(r)) ?? new Uint8Array());
+  return out;
+}
+
 const settleOf = (p: Promise<unknown>): Promise<unknown> => p.then(() => null, (e: unknown) => e);
 
 async function expectRefused(p: Promise<unknown>, reading: BrowserCustodyRefusalReading, row?: string): Promise<void> {
@@ -631,6 +645,11 @@ describe("browser custody seals the place tree's device seed and walk records", 
 
     // The same boot, unlocked, opens its bytes; a founding that halted before its bootstrap, run again over a FRESH founder face,
     // meets the halted face's ward at h0 and refuses `ward-owned-by-another-face` by name: a second face never inherits a root.
+    // CONTROL for BC12b: the halted face stands named in the index (a live owner), so the founding's sweep leaves its ward whole.
+    const haltedOwner = await browserWardOwnerOf(idbName, 0);
+    expect(haltedOwner, "the halted founding's ward names its face's tree").not.toBeNull();
+    const haltedWard = await wardCensus(idbName);
+    const haltedRoster = await listBrowserPersonaRoots(idbName);
     await pageLetsGo(idbName);
     await bindSyntheticBrowserCustodySlot(idbName);
     const phases: string[] = [];
@@ -638,8 +657,42 @@ describe("browser custody seals the place tree's device seed and walk records", 
       idbName, askWardRoute: fixtureWardDialog, onPhase: (p: string) => { phases.push(p); if (p === "catalog-ready") throw new BootHalted(); },
     } as BrowserVesselOptions));
     expect((reboot as { reading?: unknown } | null)?.reading, String(reboot)).toBe("ward-owned-by-another-face");
+    expect(await wardCensus(idbName), "CONTROL: a ward whose owner stands live survives the founding's sweep").toEqual(haltedWard);
+    expect(await browserWardOwnerOf(idbName, 0)).toBe(haltedOwner);
+    expect(await listBrowserPersonaRoots(idbName), "CONTROL: its roster line stands").toEqual(haltedRoster);
     expect(startsWithMagic(await rowOf(idbName, "sealed/vessel-key")), "sealed/vessel-key").toBe(true);
     expect(hex(await placeSeed(idbName)), "the same identity stood").toBe(hex(seed));
+  }, SLOW);
+
+  test("BC12b RED a founding torn before its ceremony named the face re-founds after a reload over one ward and no orphan row", async () => {
+    const idbName = `custody-torn-${crypto.randomUUID()}`;
+    await generateOrLoadBrowserVesselIdentity(idbName);
+    // THE TORN FOUNDING: the founder face stood unnamed and its root minted under its ward; the ceremony never named the face.
+    const torn = await bindSyntheticBrowserCustodySlot(idbName);
+    await generateOrLoadBrowserPersonaRoot(idbName, 0, FIXTURE_WARD, torn);
+    const tornTree = await browserWardOwnerOf(idbName, 0);
+    expect(tornTree, "the torn ward names the unnamed founder's tree").not.toBeNull();
+    expect(await listBrowserPersonaRoots(idbName), "the torn mint left its roster line").toHaveLength(1);
+    // THE RELOAD: this thread's seat of the unnamed face and the place unlock leave with the page; no index names the tree.
+    lockFaceCustody(idbName, torn);
+    lockBrowserCustody(idbName);
+    await unlockBrowserCustody(idbName, [FIXTURE_PASS]);
+    await pageLetsGo(idbName);
+    await bindSyntheticBrowserCustodySlot(idbName);
+    const reboot = await settleOf(openBrowserVessel({
+      idbName, askWardRoute: fixtureWardDialog, onPhase: (p: string) => { if (p === "catalog-ready") throw new BootHalted(); },
+    } as BrowserVesselOptions));
+    expect(reboot, String(reboot)).toBeInstanceOf(BootHalted);
+    const owner = await browserWardOwnerOf(idbName, 0);
+    expect(owner, "the founding owns ward/h0").not.toBeNull();
+    expect(owner, "a fresh founder's tree owns it, never the torn one").not.toBe(tornTree);
+    const owners = Object.keys(await wardCensus(idbName)).filter((r) => /^ward\/h\d+\/face-tree$/.test(r));
+    expect(owners, "one ward stands").toEqual(["ward/h0/face-tree"]);
+    expect(await listBrowserPersonaRoots(idbName), "one roster line stands").toHaveLength(1);
+    const io = browserKeystoreCustodyIo(idbName);
+    for (const r of Object.keys(await wardCensus(idbName))) {
+      if (r.endsWith("/face-tree")) expect(new TextDecoder().decode((await io.read(r)) ?? new Uint8Array()), r).not.toBe(tornTree);
+    }
   }, SLOW);
 
   test("BC13 the settle arms: an equal clear row settles on unlock; a different one stays unsettled, both rows intact", async () => {

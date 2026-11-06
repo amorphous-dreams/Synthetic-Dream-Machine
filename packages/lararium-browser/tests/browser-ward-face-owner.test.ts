@@ -8,6 +8,8 @@
  *             nothing, and no ward act signs while it stands worn. CONTROL: the owning face, worn again, signs.
  *   WO2 RED   a face clear removes its root: ward/h0's rows, its owner row, its roster line and ward/sign/<G>/* go with the face's
  *             tree; nothing signs at h0 after, and a fresh founding mints a fresh root. CONTROL: before the clear the face signs.
+ *   WO4 RED   a face clear torn partway through its ward rows leaves the owner row (`ward/h0/face-tree`) standing, so the clear
+ *             run again finds the rest and removes every row. CONTROL: the tear landed (a ward row went before it).
  *   WO3 RED   no face-key root door survives: `mintFaceRoot`/`readFaceRoot`/`faceWardRows` leave the module, and a face row
  *             named `persona-root` refuses `row-name-refused`. CONTROL: an ordinary face row writes.
  *
@@ -97,5 +99,30 @@ describe("the ward at h0 belongs to one face", () => {
     await bindSyntheticBrowserCustodySlot(idbName, "group-rows");
     expect(readingOf(await settle(writeFaceRow(idbName, "group-rows", "persona-root", new Uint8Array([1]))))).toBe("row-name-refused");
     expect(await settle(writeFaceRow(idbName, "group-rows", "atom", new Uint8Array([1]))), "CONTROL").toBeNull();
+  }, SLOW);
+
+  test("WO4 RED a clear torn partway through its ward rows leaves the owner row, and the rerun clears the rest — CONTROL: the tear landed", async () => {
+    const { idbName } = await foundedFace("wo4", "group-torn-clear");
+    const before = (await wardRows(idbName)).filter((r) => r.startsWith("ward/h0/"));
+    expect(before, "the founded ward stands whole").toContain("ward/h0/face-tree");
+    // THE TEAR: the keystore takes one ward/h0 delete, then the second fails, as a page that dies mid-clear leaves it.
+    const proto = IDBObjectStore.prototype;
+    const honest = proto.delete;
+    let wardDeletes = 0;
+    proto.delete = function (this: IDBObjectStore, key: IDBValidKey | IDBKeyRange) {
+      if (typeof key === "string" && key.startsWith("ward/h0/") && ++wardDeletes === 2) throw new Error("torn clear");
+      return honest.call(this, key);
+    };
+    let torn: unknown;
+    try { torn = await settle(clearFaceCustody(idbName, "group-torn-clear", [FIXTURE_ROUTE], (q) => q === CLEAR_FACE_QUESTION)); }
+    finally { proto.delete = honest; }
+    expect(String(torn), "the clear tore").toContain("torn clear");
+    const left = (await wardRows(idbName)).filter((r) => r.startsWith("ward/h0/"));
+    expect(left.length, "CONTROL: the tear landed after one ward row went").toBe(before.length - 1);
+    expect(left, "the owner row goes last, so a torn clear leaves it standing").toContain("ward/h0/face-tree");
+    const again = await clearFaceCustody(idbName, "group-torn-clear", [FIXTURE_ROUTE], (q) => q === CLEAR_FACE_QUESTION);
+    expect(again.reading).toBe("cleared");
+    expect((await wardRows(idbName)).filter((r) => r.startsWith("ward/h0/")), "the rerun finds and removes every row").toEqual([]);
+    expect(await listBrowserPersonaRoots(idbName)).toEqual([]);
   }, SLOW);
 });
