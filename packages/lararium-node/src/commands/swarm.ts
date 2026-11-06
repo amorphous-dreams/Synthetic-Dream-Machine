@@ -13,7 +13,7 @@ import {
   SwarmRefused, faceRecordsOf, promotePlaneUrl, swarmBoardRecords, swarmCommand, writeSwarmBoardAct,
   type LarDoc, type SwarmRequest, type SwarmSignerPort, type SwarmWikiPort,
 } from "@lararium/mesh";
-import { loadIntentFace, IntentRefused } from "./intent.js";
+import { loadIntentFace, nodeWardCosignPort, IntentRefused } from "./intent.js";
 
 export async function runSwarmVerb(opts: {
   repo: Repo; catalogUrl?: string; face?: number; action: SwarmRequest["action"];
@@ -53,5 +53,7 @@ export async function runSwarmVerb(opts: {
     // A local process names its own hand; the session gate refuses declared seat hands before custody reads. That `who` is
     // advisory for `show` alone: every signing row now signs under the ward, which no unlocked custody opens.
     who: { kind: "hand", id: signer.key },
+    // THE CO-SIGN GATE: the house cap and a go wait on a second device of the face where it holds two (seat-harness#/the-swarm-slices).
+    cosign: () => nodeWardCosignPort(opts.repo, loaded),
   });
 }

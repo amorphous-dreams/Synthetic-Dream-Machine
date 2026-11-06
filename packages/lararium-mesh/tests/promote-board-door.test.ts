@@ -7,6 +7,7 @@
 import { describe, expect, test } from "vitest";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, promoteBoardDocUrl, readPromoteBoard, PROMOTE_PLANE, type PromoteWho } from "../src/index.js";
 import { promoteBoardDoor } from "../src/promote-board-door.js";
+import { soloCosign } from "./ward-cosign-table.js";
 
 const GROUP = "face-group", W1 = "lar:///ha.ka.ba/wikis/field-notes", W2 = "lar:///ha.ka.ba/wikis/garden", D = "d".repeat(64);
 const HAND: PromoteWho = { kind: "hand", id: "hand-1" }, SEAT: PromoteWho = { kind: "seat", id: "seat-1" };
@@ -21,6 +22,7 @@ async function door(opts: { grantHeld?: boolean; pinned?: boolean } = {}) {
     rootSigner: async () => { if (opts.grantHeld === false) throw new Error("no root in custody"); return root; },
     board: { records: async () => acts, land: async (a) => { acts.push(a); } },
     projection: () => ({ planes: opts.pinned === false ? {} : { [PROMOTE_PLANE]: promoteBoardDocUrl(GROUP) } }),
+    cosign: () => soloCosign(GROUP, atom),
   });
   return { d, acts, read: () => readPromoteBoard(acts, face) };
 }

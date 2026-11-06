@@ -22,6 +22,7 @@ import {
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { BootHalted } from "./wire-vessel-rig.js";
+import { soloCosign } from "../../lararium-mesh/tests/ward-cosign-table.js";
 
 const seen = vi.hoisted(() => ({ foundings: [] as Array<{ repo: unknown; result: Record<string, unknown> }> }));
 vi.mock("@lararium/keyhive", async (importOriginal) => {
@@ -92,6 +93,7 @@ describe("a one-device browser fleet lowers a kāpae under the fresh unlock alon
       rootSigner: async () => { if (!askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock"); return browserWardSigner(idbName, 0, await askWardRoute(), spawn); },
       board: { records: async () => acts, land: async (a) => { acts.push(a); } },
       projection: () => ({ planes: {} }),
+      cosign: () => soloCosign(GROUP, atom),
     });
     const hand = { kind: "hand" as const, id: atom.key };
     await doorWith().kapae({ action: "raise", wiki: "daemon", digest: D, who: hand });

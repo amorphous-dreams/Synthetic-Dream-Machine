@@ -94,6 +94,7 @@ import { workingFloorAnchorOf, vesselDyads, verifiedFleetOfGroup, type LarDid } 
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase, PlaceFoundingCard } from "@lararium/mesh";
 import { readWornPersonaMount }              from "@lararium/mesh";
+import { browserWardCosignPort }             from "./browser-ward-cosign.js";
 import {
   generateOrLoadBrowserVesselIdentity,
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
@@ -1384,6 +1385,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const wiring = promoteWiringRef;
           const handle = await repo.find<LarDoc>(provenPromoteUrl as AutomergeUrl);
           const boardFace = { group: wornGroup, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
+          const browserCosignPortOf = async () => {
+            const intents = await repo.find<LarDoc>(wornIntentsUrl as AutomergeUrl);
+            return browserWardCosignPort({ group: wornGroup, atom: wornAtom, plane: intents, flush: () => repo.flush(),
+              projection: () => proof.projection,
+              lineage: () => { const lineage = readFace(personaKelChain)?.lineage; if (!lineage) throw new Error("[lararium-browser] the worn face's KEL folds no lineage"); return lineage; },
+              fleet: () => fleetShadows });
+          };
           /** One ward act's signer: the page's dialog asks the passphrase for this act, and the ward worker signs under it. */
           const wardRootSignerOf = async (act: string) => {
             if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock");
@@ -1395,6 +1403,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             rootSigner: () => wardRootSignerOf("a kāpae-lower"),
             board: { records: async () => promoteActRecords(handle.doc(), wornGroup), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
             projection: () => proof.projection,
+            // THE CO-SIGN GATE: where the face holds two devices, a lower waits on a second one's answer (seat-harness#/the-swarm-slices).
+            cosign: browserCosignPortOf,
           });
           // A local process can name its own hand; this device's click carries the operator's gesture.
           const who = { kind: "hand" as const, id: wornAtom.key };

@@ -9,7 +9,7 @@ import {
   faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, intentAdmissionRecordsOfGroup, intentId, intentPaneModel,
   readIntentEntry,
   deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetRaiseCids, readFleetFrontier, readFrontierPins, FLEET_HAND,
-  personaBagIdFor, personaSiblingBagIds, readIntentPlane, WARD_COSIGN_VERBS, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
+  personaBagIdFor, personaSiblingBagIds, readIntentPlane, WARD_COSIGN_VERBS, intentPlaneCosignPort, faceRosterForIntents, type WardCosignPort, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
   type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
@@ -162,6 +162,16 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
   const acquisition = fleet?.acquisition;
   if ("group" in selector && group !== selector.group) throw new IntentRefused("face-not-held");
   return { group, index, anchors, anchor, face, kelChain, projection, plane, personaPlane: persona, standing, heldFrontiers, acquisition, verbs, atom, atomSeed, signer };
+}
+
+/**
+ * The face's intent plane as a ward act's co-sign gate reads it (seat-harness#/the-swarm-slices): the loaded face's own plane,
+ * roster and fleet standing, read fresh at each call, and its atom as the act's issuer.
+ */
+export function nodeWardCosignPort(repo: Repo, loaded: Awaited<ReturnType<typeof loadIntentFace>>): WardCosignPort {
+  const { group, plane, projection, face, standing, heldFrontiers, verbs, signer } = loaded;
+  return intentPlaneCosignPort({ group, requester: signer, verbs, plane, flush: () => repo.flush(),
+    face: () => faceRosterForIntents(projection, face.lineage), standing, heldFrontiers });
 }
 
 export async function runIntentCommand(opts: IntentCommandOptions): Promise<Record<string, unknown>> {

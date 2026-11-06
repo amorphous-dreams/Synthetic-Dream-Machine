@@ -12,6 +12,7 @@ import { SWARM_VERB_HAND_CODES, swarmCommand, type SwarmDoorDeps } from "../src/
 import { signSwarmCap, swarmBoardActCid, swarmBoardRecords, writeSwarmBoardAct, type SignedSwarmBoardAct } from "../src/swarm-board.js";
 import { swarmGoTitle, readGo, type SwarmWikiPort } from "../src/swarm-tiddlers.js";
 import { storedLarRecord } from "../src/stored-record.js";
+import { soloCosign } from "./ward-cosign-table.js";
 
 const GROUP = "face-group", HEAD = "a".repeat(40);
 const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -24,7 +25,7 @@ async function stand(over: Partial<SwarmDoorDeps> = {}) {
   const deps: SwarmDoorDeps = {
     group: GROUP, face: { group: GROUP, grant: (k) => k === root.key }, signer: root, trust, epoch: () => 0, wiki,
     board: { records: async () => swarmBoardRecords(doc, GROUP), land: async (act) => { writeSwarmBoardAct(doc, act); } },
-    who: { kind: "hand", id: root.key }, ...over,
+    who: { kind: "hand", id: root.key }, cosign: () => soloCosign(GROUP, root), ...over,
   };
   return { deps, doc, rows, wiki, trust, root, outsider };
 }

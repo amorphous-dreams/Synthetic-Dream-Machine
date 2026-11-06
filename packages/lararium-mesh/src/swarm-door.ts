@@ -13,6 +13,9 @@ import {
   SwarmRefused, putSwarmAct, readGo, signSwarmAct, swarmCapRefusal, swarmGoTitle, swarmShareRefusal, swarmShareTitle,
   type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "./swarm-tiddlers.js";
+import { wardCosignGate, type WardCosignAct, type WardCosignPort } from "./ward-cosign-gate.js";
+import { WardRefused } from "./ward-slots.js";
+import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 
 /** The verbs only a hand runs, by the code each refuses under. `swarm-show` stays open to a seat. */
 export const SWARM_VERB_HAND_CODES: Readonly<Record<string, string>> = {
@@ -36,7 +39,16 @@ export interface SwarmDoorDeps {
   /** The daemon wiki, where one stands; absent before the wiki stands. */
   readonly wiki?: SwarmWikiPort;
   readonly who: { readonly kind: "hand" | "seat"; readonly id: string };
+  /** The face's intent plane, where the house cap's and a go's co-sign ride (seat-harness#/the-swarm-slices). */
+  readonly cosign: () => WardCosignPort | Promise<WardCosignPort>;
 }
+
+/** Run a co-signed swarm act through the gate, its refusals named as the swarm's own. */
+async function gated<T>(deps: SwarmDoorDeps, act: WardCosignAct, effect: () => Promise<T>): Promise<T> {
+  try { return await wardCosignGate(await deps.cosign(), act, effect); }
+  catch (e) { if (e instanceof WardRefused) throw new SwarmRefused(e.reading, e.message.slice(e.reading.length + 2)); throw e; }
+}
+const headOf = (value: unknown): string => sha256HexBytesSync(canonicalJsonBytes(value));
 
 const nonce = (): string => Array.from(globalThis.crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
 
@@ -60,9 +72,12 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
   if (!deps.face.grant(deps.signer.key.toLowerCase())) throw new SwarmRefused("swarm-signer-not-grant", "the signer holds no grant of this face");
   if (req.action === "go-issue") {
     if (typeof req.branch !== "string" || req.branch.length === 0 || typeof req.head !== "string" || req.head.length === 0) throw new SwarmRefused("swarm-go-malformed", "a go names a branch and a head");
-    const act = await signSwarmAct({ act: "go", group: deps.group, branch: req.branch, head: req.head, nonce: nonce() }, deps.signer);
-    await putSwarmAct(wiki, swarmGoTitle(req.branch), act);
-    return { branch: req.branch, head: req.head };
+    const branch = req.branch, head = req.head;
+    return gated(deps, { verb: "ward-push-go", wiki: "daemon", head: headOf({ branch, head }) }, async () => {
+      const act = await signSwarmAct({ act: "go", group: deps.group, branch, head, nonce: nonce() }, deps.signer);
+      await putSwarmAct(wiki, swarmGoTitle(branch), act);
+      return { branch, head };
+    });
   }
   const r = await reading();
   /** The parents a write cites: the line's heads where it folds; on an unavailable line, a hand's supersede alone, citing its dangling heads. */
@@ -78,9 +93,13 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
     const refusal = swarmCapRefusal(req.value, r.raw);
     if (refusal) throw new SwarmRefused(refusal, `the cap ${String(req.value)} cannot stand against the shares the board holds`);
     const line = parentsOf("cap", r.unavailable.cap, r.capHeads(), r.capDangling(), req.supersede);
-    const act = await signSwarmCap({ group: deps.group, epoch: deps.epoch(), value: req.value as number, ...line }, deps.signer);
-    await deps.board.land(act);
-    return { cap: req.value, cid: swarmBoardActCid(act) };
+    const value = req.value as number;
+    // The co-sign names the value and the line it extends: a line that moved after the answer asks again.
+    return gated(deps, { verb: "ward-house-cap", wiki: "daemon", head: headOf({ value, parents: [...line.parents].sort(), supersede: line.supersede === true }) }, async () => {
+      const act = await signSwarmCap({ group: deps.group, epoch: deps.epoch(), value, ...line }, deps.signer);
+      await deps.board.land(act);
+      return { cap: value, cid: swarmBoardActCid(act) };
+    });
   }
   swarmShareTitle(req.lane);   // a lane rides one title segment, so it refuses where a title would
   const refusal = swarmShareRefusal(r.cap, r.raw, req.lane, req.value);

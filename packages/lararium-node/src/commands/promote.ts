@@ -7,7 +7,7 @@ import {
   promoteActRecords, promoteBoardDoor, promoteCommand, promotePlaneUrl, promotions, promoteWikiItems,
   readKahuaStage, readPromoteBoard, writePromoteAct, PromoteRefused, type LarDoc, type PromoteCommandRequest,
 } from "@lararium/mesh";
-import { loadIntentFace, IntentRefused } from "./intent.js";
+import { loadIntentFace, nodeWardCosignPort, IntentRefused } from "./intent.js";
 import { nodePromoteCas, nodePromoteStores } from "../promoted-store.js";
 
 export async function runPromoteVerb(opts: {
@@ -34,7 +34,7 @@ export async function runPromoteVerb(opts: {
   } };
   const boardDoor = promoteBoardDoor({ group, face: boardFace, atom: signer, epoch: () => face.lineage[face.lineage.length - 1]!.epoch,
     rootSigner: () => wardRootSigner(index, opts.ward, "a kāpae-lower"),
-    board, projection: () => projection });
+    board, projection: () => projection, cosign: () => nodeWardCosignPort(opts.repo, loaded) });
   // A local process names its own hand; the session gate refuses declared seat hands before custody reads.
   const who = { kind: "hand" as const, id: signer.key };
   const promotionsFor = (wiki: string) => promotions({ wiki, ...nodePromoteStores(group), who,
