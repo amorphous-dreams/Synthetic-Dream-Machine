@@ -29,7 +29,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store · lar:///ha.ka.ba/lares/api/pono/kapae#/keys
  */
 import {
-  ContentKeyHolder, SealedStore, contentKeyRollSink, verifiedSeatRoll,
+  ContentKeyHolder, SealedStore, contentKeyRollSink, readsAsFreshBase, verifiedSeatRoll,
   type ContentKeyHolderPorts, type EdgeStanding, type RecordSigner, type RollOutcome, type SealedStoreRest,
   type SeatRoll, type SeatRollSink, type WriterStanding,
 } from "@lararium/mesh";
@@ -170,7 +170,7 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
       return null;
     },
     values: input.values,
-    ...(input.freshBase ? { freshBase: input.freshBase } : {}),
+    ...(input.freshBase ? { freshBase: input.freshBase, readsAsFreshBase } : {}),
     ...(session.apart ? { apart: session.apart } : {}),
   });
 

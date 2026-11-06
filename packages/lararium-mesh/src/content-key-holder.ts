@@ -155,6 +155,10 @@ export interface ContentKeyHolderPorts {
    * admission refuses `fresh-base-unavailable`.
    */
   readonly freshBase?: (args: { readonly bagId: string; readonly founding: BagLocator; readonly keyVersion: KeyVersionId }) => Promise<FreshBase | null>;
+  /** V7: does a cut base read as a fresh base (one founding change, no earlier operation: `readsAsFreshBase`)? A span
+   *  opens on a cut that reads fresh alone, so a closed history never carries an earlier change across. Absent: the
+   *  holder reads the cut's shape alone. */
+  readonly readsAsFreshBase?: (plaintext: Uint8Array) => boolean;
   readonly apart?: KeysHeldApart;
   readonly random?: Pick<RandomProvider, "getRandomValues">;
 }
@@ -508,7 +512,7 @@ export class ContentKeyHolder {
       // answers for that base before any lockbox for the version wraps.
       let base: FreshBase | null = null;
       if (plan.cause.kind === "admission") {
-        base = this.#ports.freshBase === undefined ? null : readFreshBase(await this.#ports.freshBase({ bagId: bag.bagId, founding: line.locator, keyVersion }));
+        base = this.#ports.freshBase === undefined ? null : this.#freshOrNull(readFreshBase(await this.#ports.freshBase({ bagId: bag.bagId, founding: line.locator, keyVersion })));
         if (base === null) return refuse("fresh-base-unavailable");
       }
       const out = new Set(leaveOut.map(bare));
@@ -952,6 +956,12 @@ export class ContentKeyHolder {
     return null;
   }
 
+  /** A cut base the holder's own reading names no fresh base reads as no base at all. */
+  #freshOrNull(base: FreshBase | null): FreshBase | null {
+    if (base === null || this.#ports.readsAsFreshBase === undefined) return base;
+    try { return this.#ports.readsAsFreshBase(base.plaintext) ? base : null; } catch { return null; }
+  }
+
   /** Open the span an admission's version opened: cut its fresh base where none stands, under that version's own key. */
   async #reopen(bag: Bag, line: Line, version: KeyVersionId, signer: RecordSigner): Promise<MintOutcome | HolderRefusal> {
     const key = line.keys.get(version);
@@ -959,7 +969,7 @@ export class ContentKeyHolder {
     if (key === undefined || record === undefined) return refuse("no-head-held");
     const outcome: MintOutcome = { keyVersion: version, founding: line.locator, unserved: [...record.private.unserved] };
     if (await this.#freshBaseStands(bag, line, version)) return outcome;
-    const base = this.#ports.freshBase === undefined ? null : readFreshBase(await this.#ports.freshBase({ bagId: bag.bagId, founding: line.locator, keyVersion: version }));
+    const base = this.#ports.freshBase === undefined ? null : this.#freshOrNull(readFreshBase(await this.#ports.freshBase({ bagId: bag.bagId, founding: line.locator, keyVersion: version })));
     if (base === null) return refuse("fresh-base-unavailable");
     if (this.#locked) return refuse("holder-locked");
     const cut = await this.#restFreshBase(bag, line, version, key, version, base, signer);
