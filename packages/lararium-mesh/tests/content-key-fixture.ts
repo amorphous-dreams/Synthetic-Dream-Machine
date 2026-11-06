@@ -72,6 +72,8 @@ export interface Vessel {
   seated: boolean;
   /** Does this vessel's document store cut a fresh base? True: it cuts one. False: it refuses. Null: none stands. */
   cutsBase: boolean | null;
+  /** V7: the holder's own reading of a cut base (`readsAsFreshBase`); absent, the holder reads none. */
+  basesFresh?: (plaintext: Uint8Array) => boolean;
   /** The document store's own cut, where a vector hands one: it answers the fresh base itself. */
   cutBase: ((args: { readonly bagId: string; readonly keyVersion: string }) => unknown) | null;
   /** The versions a fresh base got cut under, in order, each with how many lockboxes rested at that moment. */
@@ -129,6 +131,7 @@ export async function vessel(w: World, name: string, over: { standing?: WriterSt
     evidenceOf,
     ownEdgeShadowed: async () => v.shadowed,
     ownSeat: async () => (v.seated ? id : null),
+    ...(v.basesFresh ? { readsAsFreshBase: v.basesFresh } : {}),
     ...(v.cutsBase === null ? {} : { freshBase: async ({ bagId, keyVersion }: { bagId: string; keyVersion: string }) => {
       v.bases.push({ keyVersion, lockboxes: [...rest.values.keys()].filter((k) => k.startsWith("lockbox/")).length });
       if (v.cutsBase !== true) return null;

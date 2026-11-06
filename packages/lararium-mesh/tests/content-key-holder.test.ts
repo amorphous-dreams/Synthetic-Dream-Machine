@@ -710,6 +710,20 @@ describe("a reader counts what it can check: the base rule", () => {
     expect(a!.bases.length).toBe(cuts);
   });
 
+  it("V7: A FRESH BASE READS FRESH OR NO SPAN OPENS ON IT: a cut that carries history refuses the admission by name and rests nothing; a cut that reads fresh mints (control)", async () => {
+    const { w, v: [a] } = await fleet("a");
+    await seal(a!, "before");
+    verifies(w, a!, "admit-1", "admit-2");
+    const lockboxes = () => [...a!.rest.values.keys()].filter((k) => k.startsWith("lockbox/")).length;
+    const before = lockboxes();
+    a!.basesFresh = () => false; a!.restart();
+    expect(said(await a!.holder.admitFromNow({ bagId: BAG, act: "admit-1", history: "closed", signer: a!.signer }))).toBe("fresh-base-unavailable");
+    expect(lockboxes()).toBe(before);
+    a!.basesFresh = () => true; a!.restart();
+    const admitted = await a!.holder.admitFromNow({ bagId: BAG, act: "admit-2", history: "closed", signer: a!.signer });
+    expect("refusal" in admitted ? said(admitted) : "minted").toBe("minted");
+  });
+
   it("A BASE LASTS ONLY WHILE ITS PARENT STAYS UNHELD: once the parent's key arrives the reader counts afresh, and the version stands only where that parent counts", async () => {
     const w = world();
     const f = await vessel(w, "f"), a = await vessel(w, "a");
