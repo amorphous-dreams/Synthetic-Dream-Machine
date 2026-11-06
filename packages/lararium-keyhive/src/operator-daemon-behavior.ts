@@ -344,7 +344,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // A system canon bag's live document, named by the Kahu realm's bag row in this vessel's catalog. Naming it asks
   // nothing (a copy OUT of canon reads it); every write clears the Kahu predicate before access resolves.
   const realmCanonUrlOf = (ctx: IslandContext) => async (bagUri: string): Promise<string | null> =>
-    ctx.catalogUrl ? realmStandingDocUrl((await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).handle()).doc(), bagUri) : null;
+    ctx.catalogUrl ? realmStandingDocUrl((await makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl).handle()).doc(), bagUri) : null;
 
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
   // through it (the island's slot grants, the host mount by proxy, wiki init, prune-stale,
@@ -389,7 +389,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       repo: askReceipt ? restingMinter(ctx.repo, (ids) => askReceipt(ids,
         gateCleared ? undefined : gateClear, islandHeadsOf(ctx.repo, ids))) : ctx.repo,
       daemonStore: ctx.composite, ...(kh ? { keyhive: kh } : {}),
-      catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null,
+      catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null,
       vesselDid: () => didFromVerifyingKey(mintedByHex),
       mintedByHex: () => mintedByHex,
       floorMinter: () => ({ mintedByHex: daemonAuth.placeVerifyingKey, vesselDid: didFromVerifyingKey(daemonAuth.placeVerifyingKey) }),
@@ -547,7 +547,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (daemonAuth.personaGroupId) {
           try {
             if (!ctx.catalogUrl) throw new Error("catalog unavailable");
-            const store = await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(daemonAuth.personaGroupId));
+            const store = await makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl).storeOf(personaBagIdFor(daemonAuth.personaGroupId));
             if (!store) throw new Error("face plane absent");
             await store.listVisible();
             faceLedger = planeBagDocLedger(store);
@@ -595,7 +595,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // (access≠load) — the daemon queries all bags, mounts none. resolve stays
       // cascade-scoped.
       registry.register("where",      makeWhereReactor(ctx.composite, {
-        repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl,
+        repo: ctx.repo, catalogUrl: ctx.catalogUrl, faceCatalogUrl: ctx.faceCatalogUrl ?? null, oracleUrl: ctx.oracleUrl,
         slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
         systemCanonUrl: realmCanonUrlOf(ctx),
       }));
@@ -636,7 +636,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         registerActionReactors(registry, {
           composite: ctx.composite,
           reach: {
-            repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl,
+            repo: ctx.repo, catalogUrl: ctx.catalogUrl, faceCatalogUrl: ctx.faceCatalogUrl ?? null, oracleUrl: ctx.oracleUrl,
             slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
             systemCanonUrl: realmCanonUrlOf(ctx),
           },
@@ -705,7 +705,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (ctx.oracleUrl) {
         // The registry a FACE's planes answer to — the persona, circles, identities, sessions and intents planes all share one
         // tag and one home. Built once so the two verb families below cannot drift onto different planes.
-        const facePlane = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
+        const facePlane = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null;
         // THE FOLLOW GRAPH BELONGS TO THE FACE THAT IS WORN, AND A FACE'S PLANES ARE USER BAGS.
         //
         // `circles-<tag>` names this PersonaGroup's own circles, derived off the same tag as its persona
@@ -846,7 +846,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               throw new Error("[daemon] face-join: no summons in args — carry {contactCard, deviceEdge}.");
             }
             const operationStore = ctx.catalogUrl
-              ? await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(faceGroup()))
+              ? await makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl).storeOf(personaBagIdFor(faceGroup()))
               : null;
             if (!operationStore) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
             // A HEARTH NEVER SEATS ITSELF.
@@ -1187,7 +1187,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // vesselDid mints through `didFromVerifyingKey` wherever a draft key derives, so those keys never drift —
       // the PLACE is what asks, never the persona root.
       if (ctx.catalogUrl) {
-        const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl);
+        const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl);
         // The oracle accessor supplies default system recipes; the catalog supplies their document pointers.
         const sysPlane = ctx.oracleUrl ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl) : undefined;
         // A system wiki's LIVE canon doc rests in the Kahu realm: named only to a hand the cabal's predicate admits.
@@ -1329,7 +1329,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const group = daemonAuth.personaGroupId;
         const edge = daemonAuth.deviceEdge;
         const veil = kh;
-        const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl);
+        const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl);
         faceSeat = makeFaceSeat({
           group, leasePrefix: leaseEpochPrefix(group), selfVerifyingKey: edge.deviceVerifyingKey, personaRootDid: edge.personaRootDid,
           personaKel: daemonAuth.personaKel,

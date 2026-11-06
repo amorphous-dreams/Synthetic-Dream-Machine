@@ -31,7 +31,7 @@ import {
   type LarDoc,
   type LarTiddlerRecord,
   type LarTiddlerStore, ownEntry} from "@lararium/mesh";
-import { isSystemCanonBag, plainRecordOrNull, realmStandingDocUrl } from "@lararium/mesh";
+import { isSystemCanonBag, litFaceCatalogOf, makeCatalogView, plainRecordOrNull, realmStandingDocUrl } from "@lararium/mesh";
 
 export interface CatalogAccessor {
   /** The `catalog` registry doc itself, resolved + cached. */
@@ -64,17 +64,37 @@ export interface CatalogAccessor {
 // refusal (mesh's `findOrThrow`, the one bounded resolve) — never a forever-pending whenReady.
 export { findOrThrow };
 
-export function makeCatalogAccessor(repo: Repo, catalogUrl: string): CatalogAccessor {
+export function makeCatalogAccessor(repo: Repo, catalogUrl: string, faceCatalogUrl?: string | null): CatalogAccessor {
   let _catalog: Promise<DocHandle<LarDoc>> | null = null;
+  let _face: string | null = null;
   const handle = (): Promise<DocHandle<LarDoc>> => {
-    if (!_catalog) {
-      _catalog = findOrThrow(repo, catalogUrl, "catalog registry");
+    // THE SPLIT CATALOG (sealed-store#/owed, U1): a lit face's own rows rest in its catalog, laid over the floor's; the
+    // view routes each write by its row's class. Unnamed, the face this process stands lit over the floor answers
+    // (`litFaceCatalogOf`); with none, the floor answers alone.
+    const face = faceCatalogUrl === undefined ? litFaceCatalogOf(catalogUrl) : faceCatalogUrl;
+    if (!_catalog || _face !== face) {
+      _face = face;
+      const floor = findOrThrow(repo, catalogUrl, "catalog registry");
+      const opened: Promise<DocHandle<LarDoc>> = face
+        ? Promise.all([floor, findOrThrow(repo, face, "the face's catalog")]).then(([f, d]) => makeCatalogView(f, d))
+        : floor;
+      _catalog = opened;
       // A failed resolve must not poison the cache — the next call retries.
-      _catalog.catch(() => { _catalog = null; });
+      opened.catch(() => { if (_catalog === opened) _catalog = null; });
     }
     return _catalog;
   };
+  return accessorOver(handle, catalogUrl, repo);
+}
 
+/** An accessor over a catalog handle this holder already stands (the vessel's own view), so its reads and writes route
+ *  through the same split as every other reader of that handle. */
+export function makeCatalogAccessorOver(repo: Repo, catalog: DocHandle<LarDoc>): CatalogAccessor {
+  const ready = Promise.resolve(catalog);
+  return accessorOver(() => ready, catalog.url, repo);
+}
+
+function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: string, repo: Repo): CatalogAccessor {
   const urlOf = async (bagUri: string): Promise<string | null> => {
     if (bagUri === CATALOG_DOC_URI) return catalogUrl;
     const cat = await handle();

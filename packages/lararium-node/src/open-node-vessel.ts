@@ -59,7 +59,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -93,7 +93,7 @@ import {
   composeVerbPlane,
   mempalaceProviderCap, formPalaceProviderCap, daemonVerbProviderCap, telemetryProviderCap,
   recallVerbCap, telemetryVerbCap, captureVerbCap, worldlineVerbCap,
-  makeCatalogAccessor, liveKahuaFace, KAPAE_EMERGENCY_REASON, PROMOTE_RESTART_REASON,
+  makeCatalogAccessorOver, liveKahuaFace, KAPAE_EMERGENCY_REASON, PROMOTE_RESTART_REASON,
 } from "@lararium/tw5";
 import type {
   VesselWikiSlot, DaemonVmCore, DaemonVmHolder, VesselDaemonVm, VesselOrchestration,
@@ -1334,9 +1334,13 @@ async function prepareNodeBootOn(
     return h;
   };
   vesselPrivate.add(resolvedCatalogUrl);     // the catalog classes by its pointer before its document resolves
-  const catalogHandle: DocHandle<LarDoc> = resolvedCatalogUrl
+  const catalogFloor: DocHandle<LarDoc> = resolvedCatalogUrl
     ? await resolveBootDoc<LarDoc>(repo, resolvedCatalogUrl as AutomergeUrl, { tideline: "hearth-private", label: PLANE_LABELS.catalog })
     : await blankCatalog();  // first boot (no url yet): legitimate founder-mint, not a ghost fallback
+  // THE SPLIT CATALOG (sealed-store#/owed, U1): the floor's document names public rows; a lit face's own catalog lays its
+  // rows over it once the face proves (`standFaceCatalog`, below). Every reader of this handle reads the view, and each
+  // write lands on the half its row class names. The `catalog-url` file names the floor alone.
+  const catalogHandle: DocHandle<LarDoc> = makeCatalogView(catalogFloor);
   if (resolvedCatalogUrl && resolvedCatalogUrl !== catalogUrl) {
     try { mkdirSync(storageDir, { recursive: true }); writeFileSync(catalogUrlFile, catalogHandle.url, "utf8"); } catch { /* quota */ }
   }
@@ -2406,6 +2410,25 @@ async function prepareNodeBootOn(
     const addressSecretBytes = atomSeed && personaGroupId ? await readFaceAddressSecret(personaGroupId) : null;
     const faceAddressSecret = addressSecretBytes ? Buffer.from(addressSecretBytes).toString("hex") : null;
     addressSecretBytes?.fill(0);
+    // THE FACE'S OWN CATALOG (sealed-store#/owed, U1): the address the face's secret derives, sealed under the face with the
+    // daemon wiki's slots (`wornFaceWikiBags`), and laid over the floor's catalog. The map names it sealed BEFORE any row
+    // lands in it; the floor's face rows (an anon floor's bags and wikis, a plane registered before the seat) then move
+    // into it, and the floor keeps its public rows alone. A herm and a locked floor stand none.
+    const standFaceCatalog = async (secretHex: string): Promise<void> => {
+      const view = catalogViewOf(assembly.catalogHandle);
+      if (!view || view.faceHandle()) return;
+      const secret = Buffer.from(secretHex, "hex");
+      // The face's catalog rests as the floor's did, clear (T2's seal of it stays owed): a sealed rest hydrates only once the
+      // daemon island's holder stands, and the boot reads the face's bag names for the island's register set before that.
+      let face: DocHandle<LarDoc>;
+      try { face = await openFaceCatalog(repo, faceCatalogDocUrl(secret), secret); } finally { secret.fill(0); }
+      vesselPrivate.add(face.url);
+      view.bindFace(face);
+      const moved = liftFaceCatalogRows(view.floorHandle, face);
+      if (moved.length) console.log(`[catalog] ${moved.length} face row(s) left the floor for the face's own catalog`);
+      const unstand = standLitFaceCatalog(assembly.catalogHandle.url, face.url);
+      stood.push({ what: "the face's catalog", down: () => { unstand(); view.bindFace(null); } });
+    };
     const placeAid = await loadPlaceAid().catch(() => null);
     if (activeAtom && deviceEdge && activeAtom.key !== deviceEdge.deviceVerifyingKey) throw new Error("this face's atom differs from its device edge");
     // THE EDGE LEDGER STAYS ON THIS DEVICE (road `T33`): its roll marks, frontier pins and `seen` rows answer for this
@@ -2817,6 +2840,9 @@ async function prepareNodeBootOn(
     //
     // Idempotent by construction: it writes the url the seed already names, so a plane registered on an
     // earlier boot is re-written identically and a plane the operator lit an hour ago registers now.
+    // THE FACE'S OWN CATALOG stands once the face proves and its boot dial stood (a restart's sealed catalog hydrates under
+    // the dial's chain), ahead of every row this boot registers and every reader of a face row (sealed-store#/owed, U1).
+    if (wornFaceProved && faceAddressSecret) await standFaceCatalog(faceAddressSecret);
     const registerInCatalog = (bagId: string, url: string | null | undefined): void => {
       if (!url || tiddlerText(ownEntry(assembly.catalogHandle.doc()?.tiddlers, bagId)) === url) return;
       assembly.catalogHandle.change((doc) => {
@@ -3031,6 +3057,8 @@ async function prepareNodeBootOn(
           // ACCESS grant, not a LOAD slot — the catalog registry is absent from expandRecipe,
           // so the kernel never layers it; the worker reaches it via the accessor.
           catalogUrl: catalogHandle.url,
+          // The lit face's own catalog, laid over the floor's (U1); none at the floor.
+          ...(faceCatalogUrlOf(catalogHandle) ? { faceCatalogUrl: faceCatalogUrlOf(catalogHandle)! } : {}),
           // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
           ...(wornKahua ? { kahuaUrl: wornKahua.url } : {}),
         },
@@ -3061,7 +3089,7 @@ async function prepareNodeBootOn(
     // the grant path reads only what this vessel's inbound gate proved.
     if (personaGroupId && deviceEdge?.personaRootDid && personaKelPrefix && personaKelChain) {
       const ring = await assemblePersonaGroupRing({
-        catalog: makeCatalogAccessor(repo, catalogHandle.url),
+        catalog: makeCatalogAccessorOver(repo, catalogHandle),
         personaGroupId,
         personaRootDid: deviceEdge.personaRootDid,
         personaKel: { prefix: personaKelPrefix, chain: personaKelChain },

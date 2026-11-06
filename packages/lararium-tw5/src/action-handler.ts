@@ -218,6 +218,9 @@ export interface ActionHandlerOptions {
    */
   readonly reach?: {
     repo: Repo; catalogUrl: string | null; oracleUrl: string | null;
+    /** The lit face's own catalog, laid over `catalogUrl` (sealed-store#/owed, U1); a register act lands its row on the
+     *  half its class names. Absent: the floor alone. */
+    faceCatalogUrl?: string | null;
     /** A registered wiki's INSTANCE slot doc (draft · working · personal) by THE ONE slot-doc
      *  resolver — the door a promotion MOVE out of `wikis/<slug>/working` rides. Absent = the
      *  registry planes alone. */
@@ -289,7 +292,7 @@ function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
     const reach = opts.reach;
     const planes = ([["catalog", reach.catalogUrl], ["oracle", reach.oracleUrl]] as const)
       .filter((p): p is readonly ["catalog" | "oracle", string] => !!p[1])
-      .map(([name, u]) => ({ name, accessor: makeCatalogAccessor(reach.repo, u) }));
+      .map(([name, u]) => ({ name, accessor: makeCatalogAccessor(reach.repo, u, name === "catalog" ? reach.faceCatalogUrl : null) }));
     const cache = new Map<string, LarTiddlerStore | null>();
     // A plane that throws (a document that never arrived, or one reported unavailable) keeps its reason
     // beside the bag, so a refusal names it instead of reading as an unregistered bag.
@@ -715,7 +718,9 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
   // The title law, ahead of any mint: a bag's address stands as a registry title, and a refusal after the
   // mint would leave a fresh document and its cap behind a row that never lands.
   assertStorableTitle(action.bag);
-  const registry = makeCatalogAccessor(reach.repo, registryUrl);
+  // THE ROW LANDS ON ITS HALF: the catalog's view routes a user bag's row into the lit face's catalog (D), and the
+  // oracle plane stands whole (sealed-store#/owed, U1).
+  const registry = makeCatalogAccessor(reach.repo, registryUrl, action.plane === "oracle" ? null : reach.faceCatalogUrl);
   // Already-stood check FIRST — a registered bag whose own doc carries no
   // retirement answers success with its existing doc, never a double-mint and
   // never a second `creation` record. A RETIRED doc falls through to the mint

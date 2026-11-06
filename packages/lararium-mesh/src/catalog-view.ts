@@ -1,0 +1,252 @@
+/**
+ * catalog-view — the catalog split by face (sealed-store#/owed, U1).
+ *
+ * No vessel-wide content key mints, so no document that names several faces' rows seals under one key. The catalog
+ * dissolves in two: a FLOOR catalog (F) naming public, signed infrastructure alone, readable at the floor and by a herm,
+ * and a per-face catalog (D) naming that face's own rows, at an address the face's secret derives, sealed under that
+ * face's content key (that seal stays owed: it rests clear today, as the one catalog did). A herm wears no face, so it reads F alone; a lit face reads F with its own D laid over it.
+ *
+ * THE VIEW stands where the one catalog handle stood and keeps its shape, so a consumer that reads `doc()` or writes
+ * through `change()` keeps its logic: reads merge the face's rows over the floor's, and each write lands on the half
+ * its row class names (`catalogRowHalf`). One change over a canon row and a wiki row lands each on its own half. With no
+ * face lit (the anon floor, a herm) every row rests on the floor, and the lift (`liftFaceCatalogRows`) carries the face
+ * rows a floor wrote into the face's catalog once that face stands, leaving the floor its public rows alone.
+ *
+ * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed
+ */
+import { hmac } from "@noble/hashes/hmac.js";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { stringifyAutomergeUrl, type AutomergeUrl, type BinaryDocumentId, type DocHandle, type Repo } from "@automerge/automerge-repo";
+import type { LarDoc } from "./base-doc.js";
+import { utf8Bytes } from "./crypto.js";
+import { FACE_CATALOG_ADDRESS_DOMAIN } from "./domains.js";
+import { materializeSharedLarDoc } from "./deterministic-doc.js";
+import { CATALOG_CORPUS_PREFIX, CATALOG_DOC_URI, CROSSROADS_DOC_URI, DAEMON_BAG_ID, LARARIUM_DOC_URI, LARES_DOC_URI, ORACLE_DOC_URI, bagUri, recipeUri, wikiUri } from "./lar-uris.js";
+import { storedRecord } from "./stored-record.js";
+import { ownEntry, plainRecordOrNull } from "./stored-value.js";
+
+/** The half of the split catalog a row rests on: `floor` (F, public) or `face` (D, the lit face's own). */
+export type CatalogHalf = "floor" | "face";
+
+/** The bag the face's catalog document answers to; its seal under the lit face stays owed (sealed-store#/owed, T2). */
+export const FACE_CATALOG_BAG_ID = `${CATALOG_DOC_URI}/face`;
+
+const REALM_ROOT = bagUri("realm");
+const FLOOR_ROWS: ReadonlySet<string> = new Set([
+  CATALOG_DOC_URI, ORACLE_DOC_URI, CROSSROADS_DOC_URI, DAEMON_BAG_ID, LARES_DOC_URI, LARARIUM_DOC_URI, REALM_ROOT,
+  // The daemon wiki's recipe and canon bag stand on the floor with the daemon document (U1): its slots are D.
+  recipeUri("catalog", "daemon"),
+]);
+const WIKIS_ROOT = `${wikiUri("")}`;
+
+/**
+ * Which half a catalog row rests on. F names public, signed infrastructure: the registry's own pointers (catalog,
+ * oracle, crossroads), the joined corpora, the live system canon, the realm plane's pointers and standing, the daemon
+ * wiki's floor half, and the floor's own vessel-only slot documents (a draft floor, a working floor), which the anon
+ * lift reads and burns. Every other row (a user bag, a wiki and its recipe, a face plane, the kahua stage, a slot
+ * binding, a title nothing classes) rests on the face: a row that names no class never lands on the floor.
+ */
+export function catalogRowHalf(title: string): CatalogHalf {
+  if (FLOOR_ROWS.has(title)) return "floor";
+  if (title.startsWith(CATALOG_CORPUS_PREFIX) || title.startsWith(`${REALM_ROOT}/`)) return "floor";
+  if (title.startsWith(WIKIS_ROOT) && (/\/working-floor\/[^/]+\/[^/]+$/.test(title) || /\/drafts\/[^/]+$/.test(title))) return "floor";
+  return "face";
+}
+
+export type FaceCatalogRefusalReason = "secret-malformed" | "face-catalog-foreign";
+
+/** A face catalog that the presented face's secret does not name. */
+export class FaceCatalogRefusal extends Error {
+  override readonly name = "FaceCatalogRefusal";
+  constructor(readonly reason: FaceCatalogRefusalReason, detail: string) { super(`face catalog: ${reason}: ${detail}`); }
+}
+
+/** The face's catalog document: an address its secret alone derives, so no vessel without that secret finds or mints it. */
+export function faceCatalogDocUrl(secret: Uint8Array): AutomergeUrl {
+  if (!(secret instanceof Uint8Array) || secret.length !== 32) throw new FaceCatalogRefusal("secret-malformed", "a face's address secret carries 32 bytes");
+  const binId = hmac(sha256, secret, utf8Bytes(FACE_CATALOG_ADDRESS_DOMAIN)).slice(0, 16) as BinaryDocumentId;
+  return stringifyAutomergeUrl({ documentId: binId });
+}
+
+/**
+ * Open a face's catalog under that face's secret: the document its secret derives, found or materialized as the pinned
+ * blank genesis. A url the secret does not derive (another face's catalog) refuses `face-catalog-foreign` and opens
+ * nothing.
+ */
+export async function openFaceCatalog(repo: Repo, url: string, secret: Uint8Array): Promise<DocHandle<LarDoc>> {
+  const own = faceCatalogDocUrl(secret);
+  if (url !== own) throw new FaceCatalogRefusal("face-catalog-foreign", `${url.slice(0, 22)}… stands under another face's secret`);
+  return materializeSharedLarDoc(repo, own, "board:face-catalog");
+}
+
+/** The parts of a catalog view, past its handle shape. */
+export interface CatalogViewParts {
+  readonly floorHandle: DocHandle<LarDoc>;
+  /** The lit face's catalog, or null at the floor. */
+  faceHandle(): DocHandle<LarDoc> | null;
+  /** Lay a lit face's catalog over the floor (null: the floor alone). The view's listeners follow. */
+  bindFace(face: DocHandle<LarDoc> | null): void;
+}
+
+export type CatalogView = DocHandle<LarDoc> & CatalogViewParts;
+
+const VIEW = Symbol.for("lararium.catalog-view");
+
+/** The view parts behind a handle, or null when it reads one document alone. */
+export function catalogViewOf(handle: DocHandle<LarDoc> | null | undefined): CatalogViewParts | null {
+  return handle ? ((handle as unknown as Record<symbol, CatalogViewParts | undefined>)[VIEW] ?? null) : null;
+}
+
+/** The lit face's catalog url behind a handle, or null (a floor view, a plain handle). */
+export function faceCatalogUrlOf(handle: DocHandle<LarDoc> | null | undefined): string | null {
+  return catalogViewOf(handle)?.faceHandle()?.url ?? null;
+}
+
+/**
+ * THE LIT FACE THIS PROCESS STANDS, by its floor catalog's url. A composition that lights a face names its catalog
+ * here, and every accessor this process opens over that floor (a standing CLI door, a verb plane) reads the face's rows
+ * over it; a process that names none (the direct store door with no vessel standing, a herm, a locked floor) reads the
+ * floor's public rows alone. An island stands its own process and reads the grant it was handed, never this.
+ */
+const litFaceCatalogs = new Map<string, string>();
+
+/** Name the lit face's catalog over `floorUrl` for this process. Returns the unnaming, which a teardown runs. */
+export function standLitFaceCatalog(floorUrl: string, faceUrl: string): () => void {
+  litFaceCatalogs.set(floorUrl, faceUrl);
+  return () => { if (litFaceCatalogs.get(floorUrl) === faceUrl) litFaceCatalogs.delete(floorUrl); };
+}
+
+/** The lit face's catalog this process stands over `floorUrl`, or null. */
+export function litFaceCatalogOf(floorUrl: string): string | null {
+  return litFaceCatalogs.get(floorUrl) ?? null;
+}
+
+type ChangeListener = (payload: unknown) => void;
+
+/**
+ * The catalog as one handle over its two halves. It answers as the floor's handle (its `url`, `documentId`, readiness),
+ * reads the face's rows over the floor's, and routes each write by its row's class. A view with no face reads and writes
+ * the floor alone.
+ */
+export function makeCatalogView(floor: DocHandle<LarDoc>, face: DocHandle<LarDoc> | null = null): CatalogView {
+  let faceHandle = face;
+  const listeners = new Set<ChangeListener>();
+  const relay = (payload: unknown): void => {
+    const p = (payload ?? {}) as Record<string, unknown>;
+    for (const l of [...listeners]) l({ ...p, handle: view, doc: merged() });
+  };
+  let merge: { floor: unknown; face: unknown; out: LarDoc | undefined } | null = null;
+  const merged = (): LarDoc | undefined => {
+    const fd = floor.doc();
+    const dd = faceHandle?.doc();
+    if (!dd) return fd;
+    if (merge && merge.floor === fd && merge.face === dd) return merge.out;
+    const out = { ...(fd ?? {}), tiddlers: { ...(fd?.tiddlers ?? {}), ...dd.tiddlers } } as LarDoc;
+    merge = { floor: fd, face: dd, out };
+    return out;
+  };
+  const change = (fn: (doc: LarDoc) => void, opts?: unknown): void => {
+    const into = faceHandle;
+    if (!into) { floor.change(fn, opts as never); return; }
+    floor.change((fd) => { into.change((dd) => { fn(routedDraft(fd, dd)); }); }, opts as never);
+  };
+  const parts: CatalogViewParts = {
+    floorHandle: floor,
+    faceHandle: () => faceHandle,
+    bindFace: (next) => {
+      if (next === faceHandle) return;
+      if (faceHandle && listeners.size) faceHandle.off("change", relay as never);
+      faceHandle = next;
+      merge = null;
+      if (faceHandle && listeners.size) faceHandle.on("change", relay as never);
+    },
+  };
+  const on = (event: string, listener: ChangeListener): unknown => {
+    if (event !== "change") return floor.on(event as never, listener as never);
+    if (listeners.size === 0) { floor.on("change", relay as never); faceHandle?.on("change", relay as never); }
+    listeners.add(listener);
+    return view;
+  };
+  const off = (event: string, listener: ChangeListener): unknown => {
+    if (event !== "change") return floor.off(event as never, listener as never);
+    listeners.delete(listener);
+    if (listeners.size === 0) { floor.off("change", relay as never); faceHandle?.off("change", relay as never); }
+    return view;
+  };
+  const once = (event: string, listener: ChangeListener): unknown => {
+    if (event !== "change") return floor.once(event as never, listener as never);
+    const one = (p: unknown): void => { off("change", one); listener(p); };
+    return on("change", one);
+  };
+  const own: Record<PropertyKey, unknown> = { doc: merged, change, on, off, once, addListener: on, removeListener: off, [VIEW]: parts, ...parts };
+  const view = new Proxy(floor, {
+    get(target, prop) {
+      if (Object.hasOwn(own, prop)) return own[prop];
+      const value = Reflect.get(target, prop, target) as unknown;
+      return typeof value === "function" ? (value as (...a: unknown[]) => unknown).bind(target) : value;
+    },
+  }) as unknown as CatalogView;
+  return view;
+}
+
+/**
+ * A draft over both halves inside one change: reads see the face's row over the floor's, a row written lands on the
+ * half its class names (and leaves the other), a row deleted leaves both. Every other field of the document reads and
+ * writes the floor's.
+ */
+function routedDraft(fd: LarDoc, dd: LarDoc): LarDoc {
+  const halfOf = (title: string): LarDoc => (catalogRowHalf(title) === "face" ? dd : fd);
+  const read = (title: string): unknown => ownEntry(dd.tiddlers, title) ?? ownEntry(fd.tiddlers, title);
+  const tiddlers = new Proxy({} as Record<string, unknown>, {
+    get: (_t, prop) => (typeof prop === "string" ? read(prop) : undefined),
+    set: (_t, prop, value) => {
+      if (typeof prop !== "string") return false;
+      const into = halfOf(prop);
+      const other = into === dd ? fd : dd;
+      (into.tiddlers as Record<string, unknown>)[prop] = value;
+      if (Object.hasOwn(other.tiddlers, prop)) delete (other.tiddlers as Record<string, unknown>)[prop];
+      return true;
+    },
+    deleteProperty: (_t, prop) => {
+      if (typeof prop !== "string") return true;
+      if (Object.hasOwn(fd.tiddlers, prop)) delete (fd.tiddlers as Record<string, unknown>)[prop];
+      if (Object.hasOwn(dd.tiddlers, prop)) delete (dd.tiddlers as Record<string, unknown>)[prop];
+      return true;
+    },
+    has: (_t, prop) => typeof prop === "string" && (Object.hasOwn(dd.tiddlers, prop) || Object.hasOwn(fd.tiddlers, prop)),
+    ownKeys: () => [...new Set([...Object.keys(fd.tiddlers), ...Object.keys(dd.tiddlers)])],
+    getOwnPropertyDescriptor: (_t, prop) => {
+      if (typeof prop !== "string") return undefined;
+      const value = read(prop);
+      return value === undefined ? undefined : { value, writable: true, enumerable: true, configurable: true };
+    },
+  });
+  return new Proxy(fd, {
+    get: (target, prop) => (prop === "tiddlers" ? tiddlers : Reflect.get(target, prop)),
+  });
+}
+
+/**
+ * THE LIFT: every face row a floor wrote before the face stood (the anon floor's bags and wikis, a plane registered
+ * before the seat) moves into the face's catalog and leaves the floor, so the floor names public rows alone. A row the
+ * face already holds keeps the face's value. Idempotent: a second run moves nothing. Returns the titles moved.
+ */
+export function liftFaceCatalogRows(floor: DocHandle<LarDoc>, face: DocHandle<LarDoc>): string[] {
+  const titles = Object.keys(floor.doc()?.tiddlers ?? {}).filter((title) => catalogRowHalf(title) === "face");
+  if (titles.length === 0) return [];
+  const carried: string[] = [];
+  face.change((dd) => {
+    const fd = floor.doc();
+    for (const title of titles) {
+      if (Object.hasOwn(dd.tiddlers, title)) continue;
+      const row = ownEntry(fd?.tiddlers, title);
+      if (row === undefined) continue;
+      const plain = plainRecordOrNull(row as never);
+      if (plain === null) continue;
+      (dd.tiddlers as Record<string, unknown>)[title] = storedRecord(plain);
+      carried.push(title);
+    }
+  });
+  floor.change((fd) => { for (const title of titles) delete (fd.tiddlers as Record<string, unknown>)[title]; });
+  return titles;
+}

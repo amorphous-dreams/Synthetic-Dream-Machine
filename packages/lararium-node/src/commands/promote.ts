@@ -8,6 +8,7 @@ import {
   readKahuaStage, readPromoteBoard, writePromoteAct, PromoteRefused, type LarDoc, type PromoteCommandRequest,
 } from "@lararium/mesh";
 import { loadIntentFace, IntentRefused } from "./intent.js";
+import { makeCatalogAccessor } from "@lararium/tw5";
 import { nodePromoteCas, nodePromoteStores } from "../promoted-store.js";
 
 export async function runPromoteVerb(opts: {
@@ -26,7 +27,7 @@ export async function runPromoteVerb(opts: {
   const url = promotePlaneUrl(projection, group);
   if (!url) throw new PromoteRefused("promote-unpinned", "the face pins no promotion board");
   const handle = await opts.repo.find<LarDoc>(url as never);
-  const catalog = await opts.repo.find<LarDoc>(opts.catalogUrl as never);
+  const catalog = await makeCatalogAccessor(opts.repo, opts.catalogUrl!).handle();
   const boardFace = { group, grant: (key: string) => face.currentSigner(key), device: (key: string) => projection.devices.includes(key) };
   const foldFace = { group, grant: (key: string) => face.currentSigner(key), signedAt: (epoch: number, key: string) => face.signsAt(epoch, key) };
   const board = { records: async () => promoteActRecords(handle.doc(), group), land: async (act: Parameters<typeof writePromoteAct>[1]) => {

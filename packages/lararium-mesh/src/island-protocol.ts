@@ -157,6 +157,9 @@ export interface IslandGrants {
   islandUrl:    string;
   /** catalog registry ACCESS (never layered; access≠load). Absent/null = no watch. */
   catalogUrl?:  string | null;
+  /** The lit face's own catalog (sealed-store#/owed, U1), laid over the floor's: absent at the floor and on a herm, so
+   *  the island reads the floor's public rows alone. */
+  faceCatalogUrl?: string | null;
   /** The island's OWN bag (<wikiSlug>; daemon under the one-recipe model). */
   wikiUrl?:     string | null;
   /** Keyhive-bound sovereign slots (daemon resolveBinding grants). */
