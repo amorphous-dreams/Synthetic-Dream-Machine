@@ -225,14 +225,21 @@ interface SiblingSlot {
 }
 
 /** What the adapter reads a leaf off a KEL: its device key and signer, every enrolment it holds under that KEL, and
- *  the lease epoch it holds. The adapter stands it under the enrolment the KEL's head op-key sealed. */
+ *  the reader of the lease epoch it holds. The adapter stands it under the enrolment the KEL's head op-key sealed. */
 export interface SiblingLeaf {
   readonly deviceKey: string;
   readonly sign: (bytes: Uint8Array) => Promise<string> | string;
   readonly kel: readonly PersonaKelEvent[];
   readonly standing: LeafStanding;
-  readonly expectedEpoch?: number;
+  /** THE LEASE READER, consulted at every licensing act (a relicense, each proof), never once at compose: a roll that
+   *  lands after the leaf stood refuses an edge bound below it at the next act. A null reading licenses no edge. Absent:
+   *  the leaf holds no lease, and an edge's signature and pin decide alone. */
+  readonly expectedEpoch?: () => number | null;
 }
+
+/** A null lease reading at a licensing act: every bound epoch reads below it, so no edge licenses against a reading
+ *  nobody made. */
+const LEASE_UNREAD_EPOCH = Number.POSITIVE_INFINITY;
 
 /** A leaf's pinned herms' successor drops, as the adapter reaches them. */
 export interface SiblingKelDrops {
@@ -499,8 +506,11 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
     const self: LeafPeerSelf = {
       deviceKey: leaf.deviceKey.toLowerCase(), sign: leaf.sign, edge: under.edge, kel,
       secret: { opKeyDid: under.opKeyDid, secret: under.secret },
-      ...(leaf.expectedEpoch !== undefined ? { expectedEpoch: leaf.expectedEpoch } : {}),
     };
+    // The proof reads the lease AT THE ACT: a getter over the leaf's reader, so a roll between two relicenses reaches the
+    // next proof (never a spread, which would read it once here).
+    const lease = leaf.expectedEpoch;
+    if (lease !== undefined) Object.defineProperty(self, "expectedEpoch", { enumerable: true, get: () => lease() ?? LEASE_UNREAD_EPOCH });
     this.#self = self;
     this.#revoked = false;
     if (this.#selfCause !== "fork") this.#selfCause = null;
@@ -898,6 +908,25 @@ function chainKey(kel: readonly PersonaKelEvent[]): string {
 }
 
 /**
+ * THE LEAF THE ONE COMPOSITION READS at every licensing act: this device's key and signer, its standing under the KEL
+ * handed, and the lease READER (never a number captured at compose), so a roll that lands after the channel stood
+ * reaches the next relicense and the next proof alike.
+ */
+export function siblingLeafOf(opts: {
+  readonly deviceKey: string;
+  readonly sign: (bytes: Uint8Array) => Promise<string> | string;
+  readonly enrolment: PersonaGroupEnrolment;
+  readonly open: GroupSecretOpener;
+  readonly expectedEpoch: () => number | null;
+}): (kel: readonly PersonaKelEvent[]) => Promise<SiblingLeaf> {
+  const deviceKey = opts.deviceKey.toLowerCase();
+  return async (kel) => ({
+    deviceKey, sign: opts.sign, kel, expectedEpoch: opts.expectedEpoch,
+    standing: await leafStandingUnder({ kel, deviceKey, enrolment: opts.enrolment, open: opts.open }),
+  });
+}
+
+/**
  * STAND THE SIBLING CHANNEL on a vessel — the ONE composition both vessel shores call (isomorphism by
  * composition: only the seed custody differs, and it rides in as `sign` and `open`).
  *
@@ -933,10 +962,11 @@ export async function standSiblingChannel(opts: {
   readonly enrolment: PersonaGroupEnrolment;
   /** Opens a secret sealed to this device — its own seed's custody, carried as a function. */
   readonly open: GroupSecretOpener;
-  /** The lease epoch this vessel holds for the PersonaGroup; a sibling's edge bound below it reads as lapsed. Null where
-   *  the face reading names no epoch: the channel then refuses `lease-unread`, so no edge licenses against a reading
-   *  nobody made (an epoch of 0 would read every lapsed edge current). */
-  readonly expectedEpoch: number | null;
+  /** THE LEASE READER: the epoch this vessel's face reading holds for the PersonaGroup, read at every licensing act; a
+   *  sibling's edge bound below it reads as lapsed. Null where the face reading names no epoch: at compose the channel
+   *  then refuses `lease-unread`, and at a later act no edge licenses against a reading nobody made (an epoch of 0 would
+   *  read every lapsed edge current). */
+  readonly expectedEpoch: () => number | null;
   /** How long a drop request waits on one herm before the leaf reads it as unanswered. */
   readonly dropDeadlineMs?: number;
   /** Delay before re-dialing a dropped herm. Paces a socket; decides nothing. */
@@ -963,18 +993,14 @@ export async function standSiblingChannel(opts: {
     refusal = `a pinned herm address reads no gate key, so the channel pins nothing it can dial: ${(err as Error).message}`;
   }
   // A face reading that names no lease epoch licenses no edge: the channel refuses by name before any pin reads.
-  if (opts.expectedEpoch === null) {
+  if (opts.expectedEpoch() === null) {
     refusal = `${SIBLING_LEASE_UNREAD}${refusal === undefined ? "" : `; ${refusal}`}`;
   }
   // The route is shut: the adapter dials nothing, and says why on every dial and in `status()`.
   refusal = `${SIBLING_ROUTE_SHUT}${refusal === undefined ? "" : ` (${refusal})`}`;
-  const expectedEpoch = opts.expectedEpoch;
   const adapter = new SiblingNetworkAdapter({
     kel: eventsNow(),
-    leaf: async (kel) => ({
-      deviceKey, sign: opts.sign, kel, ...(expectedEpoch !== null ? { expectedEpoch } : {}),
-      standing: await leafStandingUnder({ kel, deviceKey, enrolment: opts.enrolment, open: opts.open }),
-    }),
+    leaf: siblingLeafOf({ deviceKey, sign: opts.sign, enrolment: opts.enrolment, open: opts.open, expectedEpoch: opts.expectedEpoch }),
     transports: refusal === undefined ? opts.herms.map((address) => () => dialSiblingHerm({ address, deviceKey, sign: opts.sign })) : [],
     ...(refusal === undefined
       ? { drops: siblingKelDropsOf(drops, (events) => { board.change((draft) => { for (const e of events) writePersonaKelEvent(draft, e); }); }) }

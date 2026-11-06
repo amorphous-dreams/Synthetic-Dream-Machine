@@ -51,8 +51,7 @@ async function stand(expectedEpoch: number | null, refusals: SiblingRefusal[]) {
     deviceKey: key, sign: ed25519SignerFromSeed(seed(56)),
     enrolment: await enrolDevice({ opSeed: seed(52), prefix: inception.prefix, deviceVerifyingKey: key, hearthTrueName: "", boundEpoch: 1 }),
     open: groupSecretOpenerFromSeed(seed(56)),
-    // The widened reading: today's type names a number alone, so the null rides through a cast until the cure widens it.
-    expectedEpoch: expectedEpoch as number,
+    expectedEpoch: () => expectedEpoch,
     onRefusal: (r) => refusals.push(r),
   });
   await adapter.whenReady();

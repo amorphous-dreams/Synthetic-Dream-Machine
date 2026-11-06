@@ -1018,8 +1018,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // Every vessel class inherits this read verbatim; the pattern integrity is the ONE door.
   // The daemon doc AS THIS BOOT READS IT, kept for the sibling channel's enrolment seal and lease epoch below.
   let bootDaemonDoc: LarDoc | undefined;
+  // The live daemon doc, for the sibling channel's lease reader (read at every licensing act, never once at boot).
+  let daemonDocHandle: DocHandle<LarDoc> | undefined;
   try {
     const dhandle = await repo.find<LarDoc>(social.daemonUrl as never);
+    daemonDocHandle = dhandle;
     bootDaemonDoc = dhandle.doc();
     const dyads = vesselDyads(dhandle.doc());
     if (social.deviceEdge && dyads.length === 0) {
@@ -1842,14 +1845,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!seal) {
           console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
         } else {
+          // THE LEASE READER: the face reading over the live daemon doc's lease slots, read at every licensing act, so a
+          // roll that lands after the channel stood refuses an edge bound below it at the next act.
           const leasePrefix = leaseEpochPrefix(group);
-          const leaseSlots = Object.entries(bootDaemonDoc?.tiddlers ?? {})
+          const leaseSlotsNow = (): Array<string | null> => Object.entries((daemonDocHandle?.doc() ?? bootDaemonDoc)?.tiddlers ?? {})
             .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
           siblings = await standSiblingChannel({
             repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
             deviceKey: wornAtom.key, sign: wornAtom.sign,
             enrolment: { edge: siblingEdge, seal }, open: wornAtom.opener,
-            expectedEpoch: readFace(daemonAuth.personaKel.chain, faceAnchor)?.leaseEpoch(group, leaseSlots) ?? null,
+            expectedEpoch: () => readFace(daemonAuth.personaKel.chain, faceAnchor)?.leaseEpoch(group, leaseSlotsNow()) ?? null,
             onRefusal: (r) => console.warn(`[sibling] ${siblingRefusalLine(r)}`),
           });
         }

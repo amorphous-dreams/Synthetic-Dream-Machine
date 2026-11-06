@@ -3218,11 +3218,12 @@ async function prepareNodeBootOn(
       if (!seal) {
         console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
       } else {
-        const leaseSlots: Array<string | null> = [];
+        // THE LEASE READER: the face reading over the live daemon doc's lease slots, read at every licensing act, so a
+        // roll that lands after the channel stood refuses an edge bound below it at the next act.
+        const leaseHandle = await readDaemonDoc();
         const leasePrefix = leaseEpochPrefix(personaGroupId);
-        for (const [title, rec] of Object.entries(daemonDoc?.tiddlers ?? {})) {
-          if (title.startsWith(leasePrefix)) leaseSlots.push(tiddlerText(rec));
-        }
+        const leaseSlotsNow = (): Array<string | null> => Object.entries(leaseHandle.doc()?.tiddlers ?? {})
+          .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
         siblings = await standSiblingChannel({
           repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
           deviceKey: activeAtom?.key ?? "", sign: (image) => {
@@ -3230,7 +3231,7 @@ async function prepareNodeBootOn(
             return activeAtom.sign(image);
           },
           enrolment: { edge: deviceEdge, seal }, open: activeAtom.opener,
-          expectedEpoch: readFace(personaKelChain ?? [], standingAnchor)?.leaseEpoch(personaGroupId, leaseSlots) ?? null,
+          expectedEpoch: () => readFace(personaKelChain ?? [], standingAnchor)?.leaseEpoch(personaGroupId, leaseSlotsNow()) ?? null,
           onRefusal: (r) => console.warn(`[sibling] ${siblingRefusalLine(r)}`),
         });
       }

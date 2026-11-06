@@ -93,7 +93,7 @@ export async function leafOf(
 ): Promise<SiblingLeaf> {
   const deviceKey = await pubOf(device);
   const standing = await leafStandingUnder({ kel, deviceKey, enrolment, open: groupSecretOpenerFromSeed(device) });
-  return { deviceKey, sign: signerOf(device), kel, standing, ...(expectedEpoch !== undefined ? { expectedEpoch } : {}) };
+  return { deviceKey, sign: signerOf(device), kel, standing, ...(expectedEpoch !== undefined ? { expectedEpoch: () => expectedEpoch } : {}) };
 }
 
 /** A leaf as it proves under a KEL: the edge and secret its head op-key sealed to it. Throws for a leaf the head
@@ -229,7 +229,7 @@ export function standLeaf(
     ...(opts.retryInterval !== undefined ? { retryInterval: opts.retryInterval } : {}),
     kel: self.kel,
     leaf: opts.leaf ?? (async (kel) => {
-      const leaf = await leafOf(device, enrolment, kel, self.expectedEpoch);
+      const leaf = { ...(await leafOf(device, enrolment, kel)), ...(self.expectedEpoch !== undefined ? { expectedEpoch: self.expectedEpoch } : {}) };
       return opts.presents ? { ...leaf, standing: { held: leaf.standing.held.map((h) => ({ ...h, edge: opts.presents! })) } } : leaf;
     }),
     ...(drops ? { drops } : {}),
