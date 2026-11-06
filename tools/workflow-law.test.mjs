@@ -269,6 +269,26 @@ test("G55 closure RED: third-party transitive floors refuse and Node 24 restores
   assert.deepEqual(await boundaryWitness(), []);
 });
 
+test("G55 closure RED: a package held only through a peer edge refuses by cell and package", async () => {
+  const peerFixture = (range) => {
+    const o = withFixture(">=24");
+    o[`${fixtureDir}/package.json`] = JSON.stringify({ name: fixtureName, version: "1.0.0", engines: { node: ">=24" }, peerDependencies: { "@g55/peer": "workspace:*" } });
+    o["packages/g55-peer/package.json"] = JSON.stringify({ name: "@g55/peer", version: "1.0.0", engines: { node: range } });
+    return o;
+  };
+  refuses(await boundaryWitness(peerFixture(">=26")), "web-tw5", "@g55/peer");
+  refuses(await boundaryWitness(peerFixture(">=26")), "quick", "@g55/peer");
+  assert.deepEqual(await boundaryWitness(peerFixture(">=24")), []);
+  // the lockfile walk: a snapshot's peerDependencies edge joins the closure
+  const peerLock = (minimum) => lock.replace("\npackages:\n", `\npackages:\n\n  g55-peer@1.0.0:\n    resolution: {integrity: sha512-fixture}\n    engines: {node: '>=${minimum}'}\n`)
+    .replace("\nsnapshots:\n", "\nsnapshots:\n\n  g55-peer@1.0.0: {}\n")
+    .replace(/(\n  vite@[^\n]+:\n)(    dependencies:\n)/, "$1    peerDependencies:\n      g55-peer: 1.0.0\n$2");
+  assert.notEqual(peerLock(26), lock);
+  refuses(await boundaryWitness({ "pnpm-lock.yaml": peerLock(26) }), "web-tw5", "g55-peer");
+  assert.deepEqual(await boundaryWitness({ "pnpm-lock.yaml": peerLock(24) }), []);
+  assert.deepEqual(await boundaryWitness(), []);
+});
+
 test("G55 closure RED: unresolvable transitive dependency names its cell and member", async () => {
   const planted = withFixture(">=24", { "@g55/missing": "workspace:*" });
   refuses(await boundaryWitness(planted), "web-tw5", "@g55/missing");

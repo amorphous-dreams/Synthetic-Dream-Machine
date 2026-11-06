@@ -98,7 +98,7 @@ export function readLock(text) {
       else if (indent === 6 && DEP_FIELDS.includes(field)) { dep = unquote(body.replace(/:$/, "")); out.importers.get(key).set(dep, null); } else if (indent === 8 && body.startsWith("version:")) out.importers.get(key).set(dep, unquote(body.slice(8).trim()));
     } else if (section === "snapshots") {
       if (indent === 4) field = body.replace(/:.*/, "");
-      else if (indent === 6 && (field === "dependencies" || field === "optionalDependencies")) {
+      else if (indent === 6 && (field === "dependencies" || field === "optionalDependencies" || field === "peerDependencies")) {
         const m = /^(\S+?):\s+(.*)$/.exec(body);
         if (m) out.edges.get(key).set(unquote(m[1]), unquote(m[2].trim()));
       }
@@ -201,11 +201,13 @@ function walkCell({ cell, dirs }, members, lock, diagnostics) {
     if (item.workspace) {
       const { dir, manifest } = members.get(item.workspace);
       judge(manifest.engines?.node, item.workspace, cell, diagnostics);
-      for (const field of DEP_FIELDS) {
+      for (const field of [...DEP_FIELDS, "peerDependencies"]) {
         for (const [dep, spec] of Object.entries(manifest[field] ?? {})) {
           if (members.has(dep)) { visit({ workspace: dep }); continue; }
           if (String(spec).startsWith("workspace:")) { diagnostics.push(`cell ${cell}: ${dep} (from ${item.workspace}) resolves to no workspace member`); continue; }
           const version = lock.importers.get(dir)?.get(dep);
+          // a peer the importer never resolves rides the consumer's own edge, which the walk reaches from there
+          if (!version && field === "peerDependencies") continue;
           if (!version) { diagnostics.push(`cell ${cell}: ${dep} (from ${item.workspace}) has no importer entry in pnpm-lock.yaml`); continue; }
           visit({ key: version.startsWith("npm:") ? version.slice(4) : `${dep}@${version}`, name: dep, from: item.workspace });
         }
