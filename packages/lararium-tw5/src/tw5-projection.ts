@@ -111,6 +111,8 @@ interface CameraScope {
   liveIds: Set<string>;
   /** Declared control ids (`data-control-id`) the last frame painted, by render id. */
   controlIds: Map<string, string>;
+  /** The tiddler each control id named in the last frame. */
+  controlTiddlers: Map<string, string | undefined>;
   mountEpoch: number;
   /** Per control id, the newest page revision the island took in. */
   readonly sensed: Map<string, number>;
@@ -489,10 +491,17 @@ function scopeFor(ev: LarMsg_ControlEvent): CameraScope | undefined {
 /** The live node an act names, or undefined: a render id the camera bound, the last frame painted, and the tree still holds. */
 function resolveTarget(ev: LarMsg_ControlEvent, scope: CameraScope): RidNode | undefined {
   const renderId = ev.renderId ?? (ev.controlId !== undefined ? scope.controlIds.get(ev.controlId) : undefined);
-  if (renderId === undefined) return undefined;
-  const el = ridMap.get(renderId);
-  if (!el || eventScopes.get(renderId) !== scope || !scope.liveIds.has(renderId) || !standsAttached(el, scope.roots)) return undefined;
-  return el;
+  const el = renderId === undefined ? undefined : ridMap.get(renderId);
+  if (el && eventScopes.get(renderId!) === scope && scope.liveIds.has(renderId!) && standsAttached(el, scope.roots)) return el;
+  const control = ev.controlId;
+  if (control === undefined || !scope.controlTiddlers.has(control)) return undefined;
+  let found: RidNode | undefined;
+  const walk = (node: RidNode): void => {
+    if (node.attributes?.["data-control-id"] === control) found = node;
+    for (const child of node.children ?? []) walk(child);
+  };
+  for (const root of scope.roots) walk(root);
+  return found && found.attributes["data-tiddler"] === scope.controlTiddlers.get(control) ? found : undefined;
 }
 
 /** The event TW5's handler reads: the target, the modifiers and the key chord as of the act, and a view that refuses. */
@@ -638,9 +647,9 @@ function dispatchLarControlEventInner(ev: LarMsg_ControlEvent): LarMsg_ControlRe
   }
 
   if (ev.kind === "lar:write") return answer("refused", "binding-unavailable");
-  const offered = dispatchOffer(ev, scope, answer);   // S6: files, drops, order, keys and navigate
-  if (offered !== undefined) return offered;
   const el = resolveTarget(ev, scope);
+  const offered = dispatchOffer(ev, scope, answer, el);   // S6: files, drops, order, keys and navigate
+  if (offered !== undefined) return offered;
   if (!el) return stale();
   activeEventScope = scope;
   const key = ev.controlId ?? ev.renderId!;
@@ -926,7 +935,7 @@ export function mountProjection(ctx: IslandContext): () => void {
   let whole = true;
   const scope: CameraScope = {
     wiki: tw.wiki, wikiUri: ctx.wikiUri, cameraId: LAR_CAMERA_STORY, popupRoot, roots: [storyContainer, layerContainer, popupRoot],
-    renderIds: new Set(), liveIds: new Set(), controlIds: new Map(),
+    renderIds: new Set(), liveIds: new Set(), controlIds: new Map(), controlTiddlers: new Map(),
     mountEpoch: mintEpoch(), sensed: new Map(), answers: new Map(), services: new Set(LAR_SURFACE_DEFAULT_SERVICES),
     ...(ctx.receipt ? { receipt: ctx.receipt } : {}),
     post: (msg) => postLar(ctx, msg),
@@ -1006,11 +1015,15 @@ export function mountProjection(ctx: IslandContext): () => void {
       const html = tw5ElementToHtml(storyContainer) + (layer === "" ? "" : `<div class="lar-root-layer">${layer}</div>`);
       scope.liveIds = new Set();
       scope.controlIds = new Map();
+      scope.controlTiddlers = new Map();
       for (const [tag] of html.matchAll(/<[a-zA-Z][^>]*\bdata-lar-rid="[^"]+"[^>]*>/g)) {
         const rid = /\bdata-lar-rid="([^"]+)"/.exec(tag)![1]!;
         scope.liveIds.add(rid);
         const control = /\bdata-control-id="([^"]+)"/.exec(tag)?.[1];
-        if (control !== undefined) scope.controlIds.set(control, rid);
+        if (control !== undefined) {
+          scope.controlIds.set(control, rid);
+          scope.controlTiddlers.set(control, ridMap.get(rid)?.attributes["data-tiddler"]);
+        }
       }
       // A node the frame no longer paints never receives an event again: the page relays by the ids the
       // frame carries, and a detached node answers `stale-target` whatever it holds. Its map entries leave
@@ -1235,7 +1248,7 @@ function chordDeclared(tw: Record<string, any>, stamp: string, event: Record<str
  * The S6 crossings, ahead of the target resolution `dispatchLarControlEvent` makes: an answer for an act this
  * section owns, or undefined to let the event take its ordinary road.
  */
-function dispatchOffer(ev: LarMsg_ControlEvent, scope: CameraScope, answer: (status: LarResultStatus, reason?: LarRefusal) => LarMsg_ControlResult): LarMsg_ControlResult | undefined {
+function dispatchOffer(ev: LarMsg_ControlEvent, scope: CameraScope, answer: (status: LarResultStatus, reason?: LarRefusal) => LarMsg_ControlResult, el: RidNode | undefined): LarMsg_ControlResult | undefined {
   const state = offerStates.get(scope);
   if (!state || ev.kind !== "lar:act") return undefined;
   const { tw } = state;
@@ -1290,7 +1303,6 @@ function dispatchOffer(ev: LarMsg_ControlEvent, scope: CameraScope, answer: (sta
     return answer("applied");
   }
 
-  const el = resolveTarget(ev, scope);
   if (!el) return undefined;
   const type = ev.action === "lar:event" ? ev.eventType : DOM_TYPE[ev.action] ?? (/^lar:(pointer|mouse|touch|wheel|scroll)/.test(ev.action) ? ev.action.slice(4) : undefined);
   if (ev.action === "lar:event" && !type) return answer("refused", "unsupported-control");
