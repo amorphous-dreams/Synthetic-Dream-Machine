@@ -14,7 +14,8 @@
  *   · CONTROL: an ask with no route and no hearth certifies nothing and dials nothing; a stand that reads `live` false
  *     does neither.
  *   · RED (one ward answer, one act): the route certifies the TAKEN Nexus alone: a take at X beside a second own no-url
- *     bundle Y certifies X and never Y; a take naming no Nexus certifies nothing. CONTROL: X certifies.
+ *     bundle Y certifies X and never Y; a route naming no Nexus certifies nothing and refuses `ward-route-unspent` by name.
+ *     CONTROL: X certifies; no route and no Nexus refuses nothing.
  *   · RED: a take whose kept bundle names a hearth the late choice does not dial (or a Nexus no kept bundle names) refuses
  *     `ward-route-unspent` by name, so the take reads `represented` false with that reason, never a silent success.
  *     CONTROL: the taken no-url Nexus beside it certifies; a teardown before the match refuses nothing.
@@ -85,10 +86,14 @@ describe("one ward answer, one act: the route certifies the taken Nexus alone", 
     expect(r.certified).toEqual([[X, ward]]);
   });
 
-  test("RED: a route naming no Nexus certifies nothing", async () => {
+  test("RED: a route naming no Nexus certifies nothing and refuses `ward-route-unspent` by name — CONTROL: no route and no Nexus stands nothing and refuses nothing", async () => {
     const none = rig(null, { kept: [{ aid: X }, { aid: Y }] });
-    await none.stand(route());
+    await expect(none.stand(route()), "a route the stand cannot spend reads its reason").rejects.toMatchObject({ name: "WardRefused", reading: "ward-route-unspent" });
     expect(none.certified).toEqual([]);
+    expect(none.dials).toEqual([]);
+    const bare = rig(null, { kept: [{ aid: X }] });
+    await expect(bare.stand()).resolves.toBeUndefined();
+    expect(bare.certified, "CONTROL").toEqual([]);
   });
 
   test("RED: a take whose bundle names a hearth the choice does not dial refuses `ward-route-unspent`, certifying and dialing nothing — CONTROL: the taken no-url Nexus certifies", async () => {
