@@ -276,7 +276,9 @@ test("the shard lane names a run whose verdict it could not read, and the comman
   const src = readFileSync(join(HERE, "e2e-shards.mjs"), "utf8");
   const watch = src.slice(src.indexOf("const watch = spawnSync("), src.indexOf("function deleteBranch("));
   const { WATCH_INTERVAL_S } = await import("./e2e-shards.mjs");
-  assert.ok(Number(WATCH_INTERVAL_S) >= 30, "a watch that looks more often than every half minute spends the shared API budget");
+  const { POLL_FLOOR_S } = await import("./ci-verdict.mjs");
+  assert.ok(Number(WATCH_INTERVAL_S) >= POLL_FLOOR_S, "a watch that looks more often than the house poll floor spends the shared API budget");
+  assert.equal(WATCH_INTERVAL_S, String(POLL_FLOOR_S), "the watch interval reads the floor, never a literal of its own");
   assert.match(watch, /"run", "watch", String\(runId\), "--exit-status", "--interval", WATCH_INTERVAL_S\]/);
   assert.match(watch, /catch \(err\) \{[\s\S]*throw new Error\(`\$\{unreadVerdict\(runId\)\}/, "a failed read of the run stopped naming the run as unread");
 });

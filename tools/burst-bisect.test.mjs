@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { burstBisect, parseArgs } from './burst-bisect.mjs';
+import { POLL_FLOOR_S } from './ci-verdict.mjs';
 
 const S = n => n.toString(16).padStart(40, '0');
 function fake({ count = 3, reds = [], unknown = [], failPush = null, failWatch = [], failDelete = false, stale = false } = {}) {
@@ -100,4 +101,15 @@ test('discovery and deletion match shard helper policy', async () => {
   assert.ok(result.verdicts.every(v => v.status === 'green'));
   assert.equal(f.events.filter(s => s.startsWith('delete:')).length, 3);
   assert.ok(f.calls.filter(c => c[0] === 'gh' && c[1] === 'run' && c[2] === 'list').every(c => c[c.indexOf('--limit') + 1] === '10'));
+});
+
+test('every gh run watch rides the house poll floor, never a literal under it', async () => {
+  const f = fake({ count: 2 });
+  await burstBisect(opts(f));
+  const watches = f.calls.filter(c => c[0] === 'gh' && c[1] === 'run' && c[2] === 'watch');
+  assert.equal(watches.length, 2, 'CONTROL: the fake saw both watches');
+  for (const w of watches) {
+    assert.equal(w[w.indexOf('--interval') + 1], String(POLL_FLOOR_S), 'the watch interval reads POLL_FLOOR_S');
+    assert.ok(Number(w[w.indexOf('--interval') + 1]) >= POLL_FLOOR_S);
+  }
 });

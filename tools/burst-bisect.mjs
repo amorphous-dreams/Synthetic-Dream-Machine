@@ -4,6 +4,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { POLL_FLOOR_S } from './ci-verdict.mjs';
 
 export const USAGE = 'usage: burst-bisect.mjs <lane> <good-sha> <bad-sha> [--max <n>] [--all]';
 const exec = promisify(execFile);
@@ -96,7 +97,7 @@ export async function burstBisect({ repoRoot = resolve('.'), lane, good, bad, ma
         } while (true);
         if (!found) throw new Error('run not found by head SHA');
         let watched = true;
-        try { await call('gh', ['run', 'watch', String(found.databaseId), '--exit-status', '--interval', '30']); }
+        try { await call('gh', ['run', 'watch', String(found.databaseId), '--exit-status', '--interval', String(POLL_FLOOR_S)]); }
         catch { watched = false; } // A failed watch can mean a red run or an unread run; only a successful watch proves green.
         const view = JSON.parse(await call('gh', ['run', 'view', String(found.databaseId), '--json', 'databaseId,status,conclusion,url']));
         const body = await call('gh', ['run', 'view', String(found.databaseId), '--log']);
