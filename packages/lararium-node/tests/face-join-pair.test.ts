@@ -14,6 +14,7 @@ import { describe, test, expect } from "vitest";
 import { KeyhiveProvider, runFaceJoin, type FaceJoinContext } from "@lararium/keyhive";
 import { buildDeviceDelegation } from "@lararium/mesh";
 import { tiddlerText } from "@lararium/mesh";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const noopStore = { put: async () => {}, list: async () => [] };
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
@@ -266,7 +267,7 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
     const founderSeed = new Uint8Array(32).fill(81), signerSeed = new Uint8Array(32).fill(82);
     const atomSeed = new Uint8Array(32).fill(83), joineeAtom = new Uint8Array(32).fill(72);
     const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: HEARTH });
-    const face = await foundTheFace({
+    const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
       repo: founderRepo, daemonHandle: founder.daemonHandle, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
       binding: { mode: "self-stood", signerSeed }, hearthTrueName: HEARTH, nexusPubkey: key(founderSeed), atomSeed,
     });

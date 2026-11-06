@@ -60,7 +60,7 @@ export const SEALED_ROW_PREFIX = "sealed/";
 export const KEYSTORE_CARRIER_PREFIX = "browser-keystore/";
 
 const DEVICE_SEED_ROW = "vessel-key";
-const CUSTODY_ROW = /^(?:vessel-key|veil-archive-g.+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|face-atom\/.+|face-anchor\/.+|face-address-secret\/.+|promoted\/.+|kapae\/.+|fleet-join-pending\/.+|walk\/.+)$/;
+const CUSTODY_ROW = /^(?:vessel-key|veil-archive-g.+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|face-atom\/.+|face-anchor\/.+|face-address-secret\/.+|vessel-face-tag\/.+|promoted\/.+|kapae\/.+|fleet-join-pending\/.+|walk\/.+)$/;
 
 /** Is `row` one the slot tree wraps: the device seed, an Archive, or one of a face's secret rows. */
 export function isCustodyRow(row: string): boolean { return CUSTODY_ROW.test(row); }
@@ -367,7 +367,7 @@ const personaRosterCodec: RowCodec = {
 const codecOf = (row: string): RowCodec =>
   row === DEVICE_SEED_ROW ? deviceSeedCodec
     : row === "persona-root-roster" ? personaRosterCodec
-    : row.startsWith("nexus-key/") || row.startsWith("vessel-face-key/") || row.startsWith("face-atom/") ? key32Codec
+    : row.startsWith("nexus-key/") || row.startsWith("vessel-face-key/") || row.startsWith("face-atom/") || row.startsWith("vessel-face-tag/") ? key32Codec
     : row.startsWith("face-anchor/") ? archiveCodec
     : row.startsWith("fleet-join-pending/") ? pendingCodec
     : row.startsWith("walk/") ? walkCodec : archiveCodec;

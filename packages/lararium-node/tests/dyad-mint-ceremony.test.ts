@@ -21,6 +21,7 @@ import {
 import type { LarDoc } from "@lararium/mesh";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
@@ -32,7 +33,7 @@ const JOINEE_ATOM = new Uint8Array(32).fill(12);
 async function found(hearthTrueName: string = HEARTH_AID) {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({ repo,
+  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo,
     vesselSeed:         FOUNDER_SEED,
     placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "The Strandbeest Shrine",

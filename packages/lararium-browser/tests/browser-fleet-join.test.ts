@@ -16,7 +16,7 @@
 import { describe, expect, test } from "vitest";
 import {
   admitCarriageCommit, custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin, faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer, sealAddressSecret,
-  readFleetJoinRequest, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKey,
+  DOMAIN_ROOT, readFleetJoinRequest, vesselFaceTagFields, vesselFaceTagHolds, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKey,
 } from "@lararium/mesh";
 import { certificateImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { generateOrLoadBrowserVesselIdentity, openVesselIdb, idbGet, FLEET_JOIN_STORE } from "../src/browser-vessel-identity.js";
@@ -26,7 +26,7 @@ import {
   browserFleetJoinAbandon, browserFleetJoinLand, browserFleetJoinRequest, browserFleetJoinSettle, browserVesselFaceKeyCustody,
 } from "../src/browser-fleet-join.js";
 import { chain, pair, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
-import { readBrowserFaceAtom } from "../src/browser-face-atom.js";
+import { browserVesselFaceTagDoor, readBrowserFaceAtom } from "../src/browser-face-atom.js";
 import { placeSeed } from "./browser-place-seed.fixture.js";
 import { placeSignerFromSeed } from "@lararium/mesh";
 
@@ -97,6 +97,43 @@ describe("the browser's fleet join", () => {
     await expect(browserFleetJoinRequest({ offer: other, idbName: s.idbName })).rejects.toThrow(/join-pending/);
     expect(await browserFleetJoinAbandon(s.idbName)).toBe(true);
     expect(await browserFleetJoinAbandon(s.idbName)).toBe(false);
+  });
+
+  test("RED: the browser's request carries its own vessel's tag for this face, read through the shared reader; another face and another browser vessel tag apart", async () => {
+    const s = await stage();
+    const request = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName });
+    expect(vesselFaceTagHolds(GROUP, request.atomKey, request)).toBe(true);
+    expect(readFleetJoinRequest(JSON.parse(JSON.stringify(request)), s.offer, [s.offer.rootKey])).toEqual(request);
+    const door = browserVesselFaceTagDoor(s.idbName);
+    expect((await door(GROUP, request.atomKey)).vesselTag).toBe(request.vesselTag);
+    expect((await door("0xc3c3c3c3c3c3c3c3", request.atomKey)).vesselTag).not.toBe(request.vesselTag);
+    const other = await stage();
+    expect((await browserVesselFaceTagDoor(other.idbName)(GROUP, request.atomKey)).vesselTag).not.toBe(request.vesselTag);
+    expect(await browserFleetJoinAbandon(s.idbName)).toBe(true);
+  });
+
+  test("RED: the browser's tag secret rests random in its face's own row, so a thief holding the place seed computes no face's tag", async () => {
+    const s = await stage();
+    const request = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName });
+    // The place seed's HKDF child under the tag secret's old name: what a stolen keystore row would compute.
+    const seed = await placeSeed(s.idbName);
+    const ikm = await crypto.subtle.importKey("raw", seed, "HKDF", false, ["deriveBits"]);
+    const child = new Uint8Array(await crypto.subtle.deriveBits(
+      { name: "HKDF", hash: "SHA-256", salt: new Uint8Array(0), info: new TextEncoder().encode(`${DOMAIN_ROOT}/vessel-face-tag-secret`) }, ikm, 256));
+    seed.fill(0);
+    expect((await vesselFaceTagFields(child, GROUP, request.atomKey)).vesselTag).not.toBe(request.vesselTag);
+    // The face's own row holds the 32 random bytes the tag stands on; a re-join on the face presents them again.
+    const row = await readKeystoreRow(s.idbName, `vessel-face-tag/${GROUP}`);
+    expect(row instanceof Uint8Array && row.length === 32).toBe(true);
+    expect((await vesselFaceTagFields(row as Uint8Array, GROUP, request.atomKey)).vesselTag).toBe(request.vesselTag);
+    expect(await browserFleetJoinAbandon(s.idbName)).toBe(true);
+    const again = await browserFleetJoinRequest({ offer: fleetJoinOffer({ ...s.offer, nonce: "9a".repeat(32) }), idbName: s.idbName });
+    expect(again.vesselTag).toBe(request.vesselTag);
+    // CONTROL: another face's row stands apart and tags apart.
+    const otherGroup = "0xb7f1c2a9d4e60383";
+    const otherFace = await browserFleetJoinRequest({ offer: fleetJoinOffer({ ...s.offer, personaGroup: otherGroup, nonce: "9b".repeat(32) }), idbName: s.idbName });
+    expect(otherFace.vesselTag).not.toBe(request.vesselTag);
+    expect(await readKeystoreRow(s.idbName, `vessel-face-tag/${otherGroup}`)).not.toEqual(row);
   });
 
   test("the selected face atom signs its fleet request; the place key and another face fail the request reader", async () => {

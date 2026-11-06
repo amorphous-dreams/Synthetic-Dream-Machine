@@ -9,7 +9,7 @@ import {
   faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, intentAdmissionRecordsOfGroup, intentId, intentPaneModel,
   readIntentEntry,
   deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetRaiseCids, readFleetFrontier, readFrontierPins, FLEET_HAND,
-  personaBagIdFor, personaSiblingBagIds, readIntentPlane, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
+  personaBagIdFor, personaSiblingBagIds, readIntentPlane, WARD_COSIGN_VERBS, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
   type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
@@ -48,6 +48,26 @@ export function intentDelegationCite(raw: string): DelegationCite {
   return { [match[1]!]: match[2]! } as DelegationCite;
 }
 
+/** What an answerer reads before signing, the way the edge co-sign door reads a partial: the act an ask names, taken from the
+ *  fold's own verified bytes. Null where no ask under that cid stands. */
+export function askShown(view: ReturnType<typeof readIntentPlane>, askCid: string): { readonly intent: string; readonly verb: string; readonly issuer: string; readonly askedBy: string; readonly detail: unknown; readonly cosign: boolean } | null {
+  for (const state of view.intents) {
+    const ask = state.asks.find((q) => q.cid === askCid);
+    if (ask) return { intent: state.id, verb: state.verb, issuer: state.issuer, askedBy: ask.entry.signer, detail: ask.entry.body["detail"] ?? null, cosign: WARD_COSIGN_VERBS.includes(state.verb) };
+  }
+  return null;
+}
+
+/** The answer door's refusal, or null where it may sign: for a ward verb it signs only what the plane counts, an answer to an ask
+ *  the issuer signed, from a device other than the issuer, an approve naming the issuer as executor. */
+export function answerRefusal(asked: ReturnType<typeof askShown>, signer: string, executor: string, deny: boolean): string | null {
+  if (!asked?.cosign) return null;
+  if (asked.issuer === signer) return "self-answer: a ward act takes another device of the face";
+  if (asked.askedBy !== asked.issuer) return "ask-signer: a ward act counts an answer only to its issuer's own ask";
+  if (!deny && executor.toLowerCase() !== asked.issuer) return "executor-mismatch: a ward act's approve names its issuer as executor";
+  return null;
+}
+
 export interface IntentCommandOptions {
   /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
   readonly ward?: WardCredential;
@@ -66,6 +86,8 @@ export interface IntentCommandOptions {
   readonly voidAt?: string;
   readonly through?: string;
   readonly executor?: string;
+  /** `ask`: the digest of the act a co-sign ask names (act, face, wiki, head). */
+  readonly detail?: string;
   readonly deny?: boolean;
   readonly agent?: string;
   readonly prefix?: string;
@@ -175,6 +197,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
     return name;
   };
   let entry: SignedIntentEntry;
+  let shown: ReturnType<typeof askShown> = null;
   try {
     switch (opts.action) {
       case "issue": {
@@ -208,10 +231,16 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
       }
       case "ask":
         if (!target) throw new IntentRefused("intent-id-absent");
-        entry = await buildAsks({ group, signer, intent: intentNamedBy(target), needs: "approval" }); break;
-      case "answer":
+        entry = await buildAsks({ group, signer, intent: intentNamedBy(target), needs: "approval", ...(opts.detail !== undefined ? { detail: opts.detail } : {}) }); break;
+      case "answer": {
         if (!target || !opts.executor) throw new IntentRefused("ask-or-executor-absent");
+        const asked = askShown(view(), target);
+        shown = asked;
+        // The door signs no ward answer the plane would count as nothing: it refuses before it signs.
+        const refusal = answerRefusal(asked, atom.key, opts.executor, !!opts.deny);
+        if (refusal) throw new IntentRefused(refusal);
         entry = await buildAnswer({ group, signer, ask: target, executor: opts.executor, verdict: opts.deny ? "deny" : "approve", refs: [target] }); break;
+      }
       case "claim":
         if (!target) throw new IntentRefused("intent-id-absent");
         entry = await buildClaim({ group, signer, intent: intentNamedBy(target) }); break;
@@ -264,7 +293,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
   }
   plane.change((draft) => writeIntentEntry(draft, entry));
   await opts.repo.flush();
-  return { cid: intentEntryCid(entry), ...(opts.action === "issue" ? { id: intentId(entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string }) } : {}) };
+  return { cid: intentEntryCid(entry), ...(opts.action === "answer" && shown ? { shown } : {}), ...(opts.action === "issue" ? { id: intentId(entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string }) } : {}) };
 }
 
 function groupRoot(anchors: { readonly deviceEdge?: { readonly personaRootDid: string } | null }): string {

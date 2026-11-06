@@ -29,6 +29,7 @@ import {
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "@lararium/keyhive";
 import { buildIslandRecipe, kahuaShadowOf, librarySlotUrl, type TW5Engine } from "@lararium/tw5";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "../../lararium-keyhive/tests/admit-acts.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const key = (seed: Uint8Array) => groupSecretOpenerFromSeed(seed).deviceKey;
 const newRepo = () => makeIslandRepo({ syncPort: new MessageChannel().port1 });
@@ -49,7 +50,7 @@ async function joinedPage(opts: { readonly pin: boolean; readonly catalogRow?: (
   const founderSeed = new Uint8Array(32).fill(71), signerSeed = new Uint8Array(32).fill(72);
   const atomSeed = new Uint8Array(32).fill(73), joineeAtom = new Uint8Array(32).fill(74);
   const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" });
-  const face = await foundTheFace({
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo, daemonHandle: founder.daemonHandle, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(founderSeed), atomSeed,
   });

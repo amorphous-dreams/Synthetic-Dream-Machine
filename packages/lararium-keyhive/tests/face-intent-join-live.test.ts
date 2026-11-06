@@ -11,6 +11,7 @@ import {
 } from "@lararium/mesh";
 import { InMemoryEventStore, KeyhiveProvider, runFaceJoinOperation, type FaceJoinContext } from "../src/index.js";
 import { makeFaceIntentDoor, requestFaceJoin } from "../src/face-intent-door.js";
+import { taggedAdmission } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const ROOT = seedOf(200);
@@ -38,7 +39,7 @@ describe("a face-join request rides the intents plane to the pinned hearth", () 
     const inception = mintPersonaInception(`0x${root.key}`, "recovery");
     const log = [] as Awaited<ReturnType<typeof signPersonaAct>>[];
     for (const [act, fields] of [["founding", { personaKelPrefix: inception.prefix, rootCommitment: "root" }],
-      ["admission", { deviceKey: h1.key }], ["admission", { deviceKey: h2.key }], ["admission", { deviceKey: j.key }]] as const) {
+      ["admission", { ...(await taggedAdmission(10, group.groupId, h1.key)) }], ["admission", { ...(await taggedAdmission(11, group.groupId, h2.key)) }], ["admission", { ...(await taggedAdmission(12, group.groupId, j.key)) }]] as const) {
       const head = log.at(-1);
       log.push(await signPersonaAct(head ? { seq: head.body.seq, cid: actCid(head.body) } : null, { group: group.groupId, act, epoch: 0, fields }, root));
     }

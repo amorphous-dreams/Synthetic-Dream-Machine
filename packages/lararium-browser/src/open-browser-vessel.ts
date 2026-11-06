@@ -87,7 +87,7 @@ import {
   type WideningRead,
 } from "@lararium/mesh";
 import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
-import { keepBrowserFaceAtomSeed, mintBrowserFaceAddressSecret, readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
+import { browserVesselFaceTagDoor, keepBrowserFaceAtomSeed, mintBrowserFaceAddressSecret, readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import {
   loadBrowserVeilArchive, saveBrowserVeilArchive,
 } from "./browser-keyhive-archive.js";
@@ -803,6 +803,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // The island this leaf stands in keys the KEL board. A FOUNDING leaf dials no anchor, so this resolves to
         // its own key — a private nexus of one, the same value by a different derivation.
         nexusPubkey,
+        vesselTag: browserVesselFaceTagDoor(idbName),
       });
     } finally { signerSeed.fill(0); }
     // THE FACE'S ATOM RESTS BEFORE ITS BOOTSTRAP: the founding minted a random seed, and the face's own custody row keeps it.

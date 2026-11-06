@@ -81,6 +81,10 @@ describe("④ promotion into canon", () => {
     expect(Object.keys(mesh)).toContain("sessionFormTitlesArrivedIn");
   });
 
+  test.skip("A LEASE ROLL LEAVES EVERY SEATED DEVICE ABLE TO BOOT — DEFERRED (road L24): `lares persona lease` rolls the face's lease, and every seated device's edge (the rolling vessel's own among them) binds the epoch below, so each one's next boot halts `stale` at the Binding Gate. The join answer renews a seated edge on a retry (`device-admit.ts`), which serves a joinee that never landed. A booted device needs more than a renewed `device-edge` act: the root half must reach it, it countersigns with its atom, and its sealed anchor's edge pin moves, while the anchor takes that pin today from founding, admission and recovery alone. Wakes on the operator's ruling over who may move a sealed anchor's edge pin at a roll", () => {
+    expect(Object.keys(mesh)).toContain("seatedEdgeRenewalsAtRoll");
+  });
+
   test.skip("A PROMOTION EMITS A PROPOSAL AND A RECEIPT — DEFERRED: tiddler-store states 'canon promotion is disabled until a Keyhive-backed proposal/receipt graph exists'. The cap gate PERMITS the act (every verb demands admin on the destination bag) and nothing RECORDS it, so a promotion into canon leaves no artifact a later reader can audit or revoke against. Keyhive alpha.8 supplies the delegation surface this was waiting on", () => {
     expect(Object.keys(mesh)).toContain("promotionReceipt");
   });

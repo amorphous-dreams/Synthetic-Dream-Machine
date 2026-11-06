@@ -4,13 +4,14 @@ import { Repo } from "@automerge/automerge-repo";
 import { foundThePlace, foundTheFace } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import { faceAtomKeyFromSeed, hex, mintFaceAtomSeed } from "@lararium/mesh";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const SEED = new Uint8Array(32).fill(9);
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 
 async function lightAFace(repo: Repo, verifyingKey: string, atomSeed: Uint8Array) {
   const place = await foundThePlace({ repo, vesselSeed: SEED, hearthTrueName: "" });
-  const face = await foundTheFace({ repo, daemonHandle: place.daemonHandle,
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle,
     atomSeed, placeVerifyingKey: verifyingKey, vesselDisplayName: "Repave Shrine",
     binding: { mode: "self-stood", signerSeed: SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
   });

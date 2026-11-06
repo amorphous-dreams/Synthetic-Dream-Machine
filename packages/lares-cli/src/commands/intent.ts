@@ -43,6 +43,7 @@ export async function cmdIntent(args: ParsedArgs): Promise<number> {
       ...(args.options["nonce"] !== undefined ? { nonce: args.options["nonce"] } : {}),
       ...(args.options["through"] !== undefined ? { through: args.options["through"] } : {}),
       ...(args.options["executor"] !== undefined ? { executor: args.options["executor"] } : {}),
+      ...(args.options["detail"] !== undefined ? { detail: args.options["detail"] } : {}),
       ...(args.options["void-at"] !== undefined ? { voidAt: args.options["void-at"] } : {}),
       ...(args.flags["every"] === true ? { every: true } : {}),
       ...(args.flags["deny"] === true ? { deny: true } : {}),
@@ -57,7 +58,12 @@ export async function cmdIntent(args: ParsedArgs): Promise<number> {
         console.log(`standing=${output["standing"]} stray-answers=${JSON.stringify(output["strayAnswers"])} refused=${JSON.stringify(output["refused"])}`);
         for (const grant of output["delegations"] as Array<Record<string, unknown>> ?? []) console.log(`delegation ${grant["cid"]} ${grant["status"]} agent=${grant["agent"]} prefix=${grant["prefix"]}`);
       }
-    } else console.log(String(output["id"] ?? output["cid"]));
+    } else {
+      // An answer shows the act it approves, from the fold's own bytes: the verb, who asked, and the digest the ask names.
+      const shown = act === "answer" ? output["shown"] as Record<string, unknown> | undefined : undefined;
+      if (shown) console.log(`act ${shown["verb"]} asked-by=${shown["askedBy"]} intent=${shown["intent"]} detail=${shown["detail"] ?? "none"}`);
+      console.log(String(output["id"] ?? output["cid"]));
+    }
     return 0;
   } catch (err) {
     if (err instanceof StoreDoorRefusal || err instanceof Error) { console.error(`[lares intent] refused: ${err.message}`); return 1; }

@@ -28,6 +28,7 @@ import {
 import * as ed25519 from "@noble/ed25519";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 const seed  = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const FOUNDER_SEED = seed(60);
@@ -68,7 +69,7 @@ describe("two vessels bind under one Handle", () => {
   test("the joinee joins the founder's PersonaGroup and reads its shared content — real ceremony + boot", async () => {
     const founderRepo = new Repo({ sharePolicy: async () => true });
     const founderKey = await pubOf(FOUNDER_SEED);
-    const cer = await runFoundingCeremony({ repo: founderRepo, atomSeed: seed(61), placeVerifyingKey: founderKey,
+    const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo: founderRepo, atomSeed: seed(61), placeVerifyingKey: founderKey,
       vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: founderKey,
     });
     const pg = { groupId: cer.personaGroupId };

@@ -16,7 +16,7 @@
  * reads through the one reader (`carriedAdmitOfFleetJoin`), so a browser and a node spell one join alike. This
  * browser receives no root bytes.
  *
- * WHAT RESTS WHERE: face keys, the pending join and address secret rest under the slot tree in `keystore`;
+ * WHAT RESTS WHERE: face keys, the face's tag secret, the pending join and address secret rest under the slot tree in `keystore`;
  * signed public records and dials rest in the fleet-join store.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
@@ -32,7 +32,7 @@ import {
   FLEET_JOIN_STORE, idbGet, idbKeys, openVesselIdb,
 } from "./browser-vessel-identity.js";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
-import { browserFaceAtom, faceAddressSecretRow } from "./browser-face-atom.js";
+import { browserFaceAtom, browserVesselFaceTagDoor, faceAddressSecretRow } from "./browser-face-atom.js";
 
 /** A fleet join this browser refused, by name: a mesh reader's refusal, or this door's own. */
 export class BrowserFleetJoinRefused extends Error {
@@ -147,6 +147,7 @@ export async function browserFleetJoinRequest(opts: { readonly offer: unknown; r
         } finally { fresh.fill(0); held?.fill(0); }
       },
       sign: (image) => atom.sign(image),
+      vesselTag: browserVesselFaceTagDoor(idbName),
     });
     if (isRefusal(request)) throw new BrowserFleetJoinRefused(request.refusal, "the request this browser composed does not read back.");
     const kept: PendingJoin = { offer, request, sealSecret: hex(seal.secret) };

@@ -42,6 +42,7 @@ export {
   openVesselIdb, idbGet, idbPut, idbDelete, idbKeys,
   readBrowserSeedWrap, writeBrowserSeedWrap, loadBrowserActivePersona, SEED_WRAP_STORE,
 } from "./browser-vessel-identity.js";
+export { browserVesselFaceTagDoor } from "./browser-face-atom.js";
 // BROWSER CUSTODY: a passphrase or paper slot wraps the keystore's device seed and Keyhive Archives; the
 // clear-password act asks through the confirm door.
 export {
