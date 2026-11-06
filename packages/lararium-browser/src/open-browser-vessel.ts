@@ -23,7 +23,7 @@ import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage, composeSealedRest, docStorePortCell, vesselDocStoreDoor, type SealedBag } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, vesselDocStoreDoor, type SealedBag } from "@lararium/mesh";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
@@ -591,20 +591,33 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // tab's own session record waits on the lift's third slice), a save no session booked waits `save-unbooked` in memory
   // until the next lift books it, and the lock flushes the Repo and the rest before the lift drops its signer.
   type BrowserSaveSession = { readonly id: string; readonly subject: string };
-  const sealedCells: { face: () => string | null; bags: () => readonly string[]; catalog: () => LarDoc | undefined; session: BrowserSaveSession | null; hold: ((ask: string, verb: string) => () => void) | null } = {
-    face: () => null, bags: () => [], catalog: () => undefined, session: null, hold: null,
+  const sealedCells: { face: () => string | null; bags: () => readonly string[]; catalog: () => LarDoc | undefined; mounted: (bagId: string) => string | null; session: BrowserSaveSession | null; hold: ((ask: string, verb: string) => () => void) | null } = {
+    face: () => null, bags: () => [], catalog: () => undefined, mounted: () => null, session: null, hold: null,
   };
-  const sealedBagOf = (documentId: string): SealedBag | null => {
-    const face = sealedCells.face();
-    if (face === null) return null;
-    const catalog = sealedCells.catalog();
-    for (const bagId of sealedCells.bags()) if (tiddlerText(ownEntry(catalog?.tiddlers, bagId)) === `automerge:${documentId}`) return { bagId, face };
-    return null;
-  };
+  // V3: a bag's document by every name it carries: the layer the mount resolved (a working slot's derived address, a
+  // draft binding), then the catalog's row.
+  // Each slot document the daemon island's resolver named, by bag (`announceSlotDoc`).
+  const slotDocsNamed = new Map<string, Set<string>>();
+  const sealedMap = sealedBagMap({
+    face: () => sealedCells.face(),
+    bags: () => sealedCells.bags(),
+    docsOf: (bagId) => [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
+  });
+  const sealedBagOf = (documentId: string): SealedBag | null => sealedMap.bagOf(documentId);
   const docStorePort = docStorePortCell(async (bagId) => {
-    const url = tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId));
-    const handle = url && url.startsWith("automerge:") ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[url.slice("automerge:".length)] : undefined;
+    const documentId = sealedMap.docOf(bagId);
+    const handle = documentId ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId] : undefined;
     return handle?.isReady() ? A.save(handle.doc() as A.Doc<unknown>) : null;
+  }, {
+    onSlot: (bagId, documentId) => {
+      const named = slotDocsNamed.get(bagId) ?? new Set<string>();
+      if (named.has(documentId)) return;
+      named.add(documentId);
+      slotDocsNamed.set(bagId, named);
+      sealedRest.store.mapMoved();
+      const session = sealedCells.session;
+      if (session !== null) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
+    },
   });
   const docStoreDoor = vesselDocStoreDoor<BrowserSaveSession>(() => docStorePort.port(), {
     book: (ask, verb) => sealedCells.hold?.(ask, verb) ?? (() => {}),
@@ -617,6 +630,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     door: docStoreDoor,
     flushRepo: async () => { await repo.flush(); },
     onHeld: ({ refusal, documentId }) => console.log(`[sealed-rest] ${refusal}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
+    // A restart's hydration: a sealed document the engine asks for ahead of the lift waits for its map, never strands.
+    hydrationPatienceMs: 120_000,
   });
   const repo = new Repo({
     storage: sealedRest.store,
@@ -1562,6 +1577,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // The lift's lock-and-flush, once a lift stands: the stand-down runs it again ahead of the daemon worker (P2-3).
       let flushLift: (() => Promise<void>) | null = null;
       islandCaps.docStore = (port) => docStorePort.attach(port);
+      // V2: the daemon island's own store rests no document this rest seals (`islandRestGuard`).
+      islandCaps.restsSealed = (documentId) => sealedRest.restsSealed(documentId);
       if (facePresentation !== null) {
         const certificate = facePresentation.certificate;
         const lift = liftBrowserIslandCaps(islandCaps, {
@@ -1575,8 +1592,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         sealedCells.face = () => face;
         sealedCells.bags = () => [slot.wikiBagId, slot.workingBagId, slot.draftBagId];
         sealedCells.catalog = () => catalogHandle.doc() as LarDoc | undefined;
+        sealedCells.mounted = (bagId) => mountedDocumentId(assembly.composite.storeForBag(bagId));
         sealedCells.hold = (ask, verb) => lift.hold(ask, verb);
         sealedCells.session = session;
+        sealedRest.store.mapMoved();
+        for (const named of slotDocsNamed.values()) for (const documentId of named) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
         void sealedRest.rebook(session).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory: ${e instanceof Error ? e.message : String(e)}`));
         // THE LOCK FLUSHES FIRST: every pending save lands sealed under the lift's session, then the lift drops its signer.
         // THE LOCK UNMAPS (P2-2): once the flush lands, the face and its bags leave the map, so a later save waits in memory

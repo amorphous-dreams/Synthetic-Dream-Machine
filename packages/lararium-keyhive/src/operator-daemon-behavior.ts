@@ -146,7 +146,7 @@ import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isSystemCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
-import { readFace, answerDocStoreAsks } from "@lararium/mesh";
+import { readFace, answerDocStoreAsks, announceSlotDoc, documentIdOfUrl, type WikiSlotKind } from "@lararium/mesh";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
@@ -359,9 +359,33 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   let intentVerifier: CapabilityVerifier | null = null;
   let registerIntentView: (() => void) | null = null;
   let heedIntentDoor: (() => void) | null = null;
+  // V3: every slot document the resolver answers reaches the vessel's bag map before any write lands in it
+  // (`announceSlotDoc`): the face's derived working address and a draft binding stand under no catalog row.
+  const announced = (slug: string, kind: WikiSlotKind, url: string | null | undefined): void => {
+    const documentId = documentIdOfUrl(url);
+    if (docStoreDoor && documentId) announceSlotDoc(docStoreDoor, wikiSlotUri(slug, kind), documentId);
+  };
+  const announcing = (resolver: SlotDocResolver): SlotDocResolver => ({
+    ...resolver,
+    bindings: async (fingerprint, recipeTrace, slug) => {
+      const out = await resolver.bindings(fingerprint, recipeTrace, slug);
+      announced(slug, "working", out.workingUrl); announced(slug, "draft", out.draftUrl); announced(slug, "personal", out.personalUrl);
+      return out;
+    },
+    slotDoc: async (slug, kind, opts) => {
+      const out = await resolver.slotDoc(slug, kind, opts);
+      announced(slug, kind, out?.url);
+      return out;
+    },
+    draft: async (slug) => {
+      const out = await resolver.draft(slug);
+      announced(slug, "draft", out.url);
+      return out;
+    },
+  });
   const slotDocsOf = (ctx: IslandContext): SlotDocResolver => {
     if (slotDocs) return slotDocs;
-    slotDocs = makeSlotDocResolver({
+    slotDocs = announcing(makeSlotDocResolver({
       repo: askReceipt ? restingMinter(ctx.repo, (ids) => askReceipt(ids,
         gateCleared ? undefined : gateClear, islandHeadsOf(ctx.repo, ids))) : ctx.repo,
       daemonStore: ctx.composite, ...(kh ? { keyhive: kh } : {}),
@@ -391,8 +415,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         ctx.handles.set(bag, handle);
         store.emitInitialReplay();
         store.markSyncComplete();
+        announced(slug, "working", (into as { url?: string }).url);
       },
-    });
+    }));
     return slotDocs;
   };
 

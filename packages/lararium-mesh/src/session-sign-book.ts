@@ -113,3 +113,24 @@ export class SessionSignBook {
     };
   }
 }
+
+/**
+ * THE VESSEL'S OWN STANDING SESSION, seated in whichever book its lift stands (sealed-store#/owed, V6). A node vessel's
+ * dial opens a session of its worn face at the Nexus it dials, as a browser's lift opens its own; while that session
+ * stands, a change written with no call in flight books it, so `save-unbooked` waits only where no face stands unlocked.
+ * `stand` seats the session (null: the dial cleared), replacing the one before; `book` moves the seat to the book a lift
+ * stood (null: the lift left).
+ */
+export function standingSessionSeat(): { book(book: SessionSignBook | null): void; stand(session: BookedSession | null): void } {
+  let book: SessionSignBook | null = null;
+  let session: BookedSession | null = null;
+  let unseat: (() => void) | null = null;
+  const reseat = (): void => {
+    unseat?.();
+    unseat = book !== null && session !== null ? book.seat(session) : null;
+  };
+  return {
+    book(next) { book = next; reseat(); },
+    stand(next) { session = next; reseat(); },
+  };
+}

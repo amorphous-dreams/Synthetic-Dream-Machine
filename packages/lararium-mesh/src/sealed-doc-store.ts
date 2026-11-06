@@ -96,7 +96,14 @@ export interface SealedDocumentPorts {
   readonly waitOverSealed?: boolean;
   /** The holder's open of one value by its role and logical reference. */
   open(args: { readonly bagId: string; readonly role: DocumentValue["role"]; readonly ref: string }): Promise<OpenedValue | HolderRefusal>;
+  /** A RESTART'S HYDRATION (a vessel's store): a load of a sealed document that refuses only because its map, its
+   *  session or its holder has not stood yet waits, up to this long, for the next `mapMoved` and reads again, so a
+   *  document the engine asks for ahead of its dial never strands unavailable. Absent or 0: it refuses at once. */
+  readonly hydrationPatienceMs?: number;
 }
+
+/** The refusals a hydrating load waits out: each names a piece that stands later in a vessel's boot. */
+const HYDRATION_WAITS: ReadonlySet<string> = new Set(["bag-unmapped", "session-absent", "chain-absent", "holder-locked", "sealed-store-unavailable", "signer-unavailable", "door-unanswered"]);
 
 const ROLES: Readonly<Record<string, DocumentValue["role"]>> = { incremental: "change", snapshot: "checkpoint" };
 const POINTER = "lares-sealed-value:";
@@ -144,6 +151,36 @@ export class SealedDocumentStore implements StorageAdapterInterface {
 
   constructor(ports: SealedDocumentPorts) { this.#ports = ports; }
 
+  /** The next move of the map (`mapMoved`): a hydrating load waits on it. */
+  #moved = SealedDocumentStore.#nextMove();
+  static #nextMove(): { readonly promise: Promise<void>; readonly resolve: () => void } {
+    let resolve!: () => void;
+    const promise = new Promise<void>((done) => { resolve = done; });
+    return { promise, resolve };
+  }
+
+  /** The bag map, the session or the holder moved (a dial composed, a slot named, a lift stood): every load waiting to
+   *  hydrate reads again. */
+  mapMoved(): void { const moved = this.#moved; this.#moved = SealedDocumentStore.#nextMove(); moved.resolve(); }
+
+  async #hydrating<T>(read: () => Promise<T>): Promise<T> {
+    const patience = this.#ports.hydrationPatienceMs ?? 0;
+    const deadline = performance.now() + patience;
+    for (;;) {
+      const moved = this.#moved.promise;
+      try { return await read(); }
+      catch (error) {
+        if (!(error instanceof SealedDocumentRefusal) || !HYDRATION_WAITS.has(error.refusal)) throw error;
+        const left = deadline - performance.now();
+        if (left <= 0) throw error;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const outcome = await Promise.race([moved.then(() => "moved" as const), new Promise<"spent">((done) => { timer = setTimeout(() => done("spent"), left); })]);
+        clearTimeout(timer);
+        if (outcome === "spent") throw error;
+      }
+    }
+  }
+
   #inTurn<T>(act: () => Promise<T>): Promise<T> {
     const run = this.#tail.then(act, act);
     this.#tail = run.then(() => undefined, () => undefined);
@@ -156,6 +193,29 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   /** How many saves wait unbooked, for one document or for all. */
   waiting(documentId?: string): number {
     return documentId === undefined ? this.#waiting.size : [...this.#waiting.values()].filter((w) => w.key[0] === documentId).length;
+  }
+
+  /** V2: does this store hold `documentId`'s rest as a sealed rest: its bag maps now, it mapped sealed this process, or
+   *  its rest holds a sealed value? An island's own store rests no byte of such a document (`islandRestGuard`). */
+  async holdsSealed(documentId: string): Promise<boolean> {
+    if (this.#ports.bagOf(documentId) !== null || this.#classedSealed.has(documentId)) return true;
+    if (this.#ports.waitOverSealed !== true && this.#ports.refuseClearOverSealed !== true) return false;
+    return this.#restsSealed(documentId);
+  }
+
+  /** V3: seal the clear chunks a mapped document's rest still holds (it rested before its bag mapped), under the session
+   *  that books it now; they leave rest. Answers whether any sealed. */
+  async sealClearRest(documentId: string): Promise<boolean> {
+    const bag = this.#ports.bagOf(documentId);
+    if (bag === null || isPublic(bag)) return false;
+    const clear = (await this.#ports.inner.loadRange([documentId])).filter((c): c is Chunk & { data: Uint8Array } => ROLES[c.key[1] ?? ""] !== undefined && c.data !== undefined && readsClear(c.data));
+    if (clear.length === 0) return false;
+    const session = this.#ports.sessionOf(documentId);
+    if (session === null || session.subject !== bag.face) return false;
+    this.#classedSealed.add(documentId);
+    this.#swept.delete(documentId);
+    await this.#inTurn(() => this.#sweep(bag, documentId, clear[0]!.data, session));
+    return true;
   }
 
   /** The documents with a save waiting unbooked. */
@@ -273,7 +333,9 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     held.set(nameOf(key), address);
   }
 
-  async load(key: StorageKey): Promise<Uint8Array | undefined> {
+  load(key: StorageKey): Promise<Uint8Array | undefined> { return this.#hydrating(() => this.#load(key)); }
+
+  async #load(key: StorageKey): Promise<Uint8Array | undefined> {
     const bag = this.#bagOf(key);
     if (bag === null) return this.#unmapped(await this.#ports.inner.load(key));
     if (isPublic(bag)) return this.#openPublic(bag, key, await this.#ports.inner.load(key));
@@ -336,7 +398,9 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     return opened.plaintext;
   }
 
-  async loadRange(prefix: StorageKey): Promise<Chunk[]> {
+  loadRange(prefix: StorageKey): Promise<Chunk[]> { return this.#hydrating(() => this.#loadRange(prefix)); }
+
+  async #loadRange(prefix: StorageKey): Promise<Chunk[]> {
     const whole = this.#bagOf(prefix);
     const face = whole === null || isPublic(whole) ? null : this.#face(whole);
     const out: Chunk[] = [];

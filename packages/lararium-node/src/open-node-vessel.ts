@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, composeSealedRest, docStorePortCell, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, type SealedBag, type BookedSession } from "@lararium/mesh";
+import { WardRefused, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, type SealedBag, type BookedSession } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -172,6 +172,9 @@ import { runFlow } from "./flow-run.js";
 /** Node advertises a few rotatable wiki pins BESIDES the daemon bag (resource-rich vessel).
  *  The user's ONE-plus rotatable pin(s) ride this budget; the surface enforces it. */
 const NODE_WIKI_PIN_BUDGET = 3;
+/** How long a sealed document's load waits for its map at a restart (the dial composes, the slot resolver names it). */
+const SEALED_HYDRATION_PATIENCE_MS = 120_000;
+
 import { larSealHome, larStructurePalaceDir, larFormPalaceDir, memorySensoriumDir, meshSensoriumDir, larContentDir, sensoriumDir }  from "./vessel-paths.js";
 import { makeFormPalace, type FormPalace, makeStructurePalace, type StructurePalace }  from "./sensorium.js";
 import { readCoupling } from "./sensorium-coupling.js";
@@ -850,20 +853,50 @@ async function prepareNodeBootOn(
   // signs under the session that booked it, a save no session booked waits `save-unbooked` in memory until the next
   // session's call books it, and a session's signer drops only after the Repo and the rest flush (`beforeSignerDrops`).
   type NodeSaveSession = BookedSession & { readonly id: string };
-  const sealedCells: { face: () => string | null; bags: () => readonly string[]; catalog: () => LarDoc | undefined; book: SessionSignBook | null } = {
-    face: () => null, bags: () => [], catalog: () => undefined, book: null,
+  const sealedCells: { face: () => string | null; bags: () => readonly string[]; catalog: () => LarDoc | undefined; mounted: (bagId: string) => string | null; book: SessionSignBook | null } = {
+    face: () => null, bags: () => [], catalog: () => undefined, mounted: () => null, book: null,
   };
+  // V3: each slot document the daemon island's resolver named, by bag (`announceSlotDoc`). A slot's document moves when
+  // the seat lands (the floor's document gives way to the face's derived one), and each it ever named stays mapped.
+  const slotDocsNamed = new Map<string, Set<string>>();
+  // V3: a bag's document by every name it carries: the layer the mount resolved (a working slot's derived address, a
+  // draft binding: no catalog row names either), then the catalog's row.
+  const sealedMap = sealedBagMap({
+    face: () => sealedCells.face(),
+    bags: () => sealedCells.bags(),
+    docsOf: (bagId) => [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
+  });
+  // The session that stands for the worn face now: a call's, else a seated one (the dial's own, V6).
+  const standingSaveSession = (): NodeSaveSession | null => {
+    const face = sealedCells.face();
+    const standing = sealedCells.book?.standing()[0] ?? sealedCells.book?.seated().find((s) => s.subject === face);
+    return standing ? saveSessionOf(standing) : null;
+  };
+  // A document the map names sealed only now may hold clear chunks from before: they seal under the standing session.
+  const sealNowMapped = (documentId: string): void => {
+    const session = standingSaveSession();
+    if (session === null || sealedBagOf(documentId) === null) return;
+    void sealedRest.sealMapped(documentId, session).then((sealed) => {
+      if (sealed) console.log(`[sealed-rest] ${documentId.slice(0, 8)}… mapped sealed after it rested clear: its clear chunks sealed and left rest`);
+    }, (e: unknown) => console.log(`[sealed-rest] ${documentId.slice(0, 8)}… keeps its clear chunks until its next booked save: ${e instanceof Error ? e.message : String(e)}`));
+  };
+  const onSlotNamed = (bagId: string, documentId: string): void => {
+    const named = slotDocsNamed.get(bagId) ?? new Set<string>();
+    if (named.has(documentId)) return;
+    named.add(documentId);
+    slotDocsNamed.set(bagId, named);
+    sealedRest.store.mapMoved();
+    sealNowMapped(documentId);
+  };
+  // The map as it reads now, named in the log each time it moves: the face, and each sealed bag's document.
+  let sealedMapNamed = "";
   const sealedBagOf = (documentId: string): SealedBag | null => {
     const face = sealedCells.face();
-    if (face === null) return null;
-    const catalog = sealedCells.catalog();
-    for (const bagId of sealedCells.bags()) if (tiddlerText(ownEntry(catalog?.tiddlers, bagId)) === `automerge:${documentId}`) return { bagId, face };
-    return null;
+    const named = face === null ? "none" : `${face.slice(0, 16)}… ${sealedCells.bags().map((b) => `${b}=${sealedMap.docOf(b)?.slice(0, 8) ?? "?"}`).join(" ")}`;
+    if (named !== sealedMapNamed) { sealedMapNamed = named; console.log(`[sealed-rest] the map names: ${named}`); }
+    return sealedMap.bagOf(documentId);
   };
-  const sealedDocOf = (bagId: string): string | null => {
-    const url = tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId));
-    return url && url.startsWith("automerge:") ? url.slice("automerge:".length) : null;
-  };
+  const sealedDocOf = (bagId: string): string | null => sealedMap.docOf(bagId);
   const sessionIds = new WeakMap<object, NodeSaveSession>();
   let sessionSeq = 0;
   const saveSessionOf = (session: BookedSession): NodeSaveSession => {
@@ -875,8 +908,10 @@ async function prepareNodeBootOn(
     const documentId = sealedDocOf(bagId);
     const handle = documentId ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId] : undefined;
     return handle?.isReady() ? A.save(handle.doc() as A.Doc<unknown>) : null;
-  });
+  }, { onSlot: onSlotNamed });
   islandCaps.docStore = (port) => docStorePort.attach(port);
+  // V2: each island's own store rests no document this rest seals (`islandRestGuard`).
+  islandCaps.restsSealed = (documentId) => sealedRest.restsSealed(documentId);
   const sealedRest = composeSealedRest<NodeSaveSession>({
     inner: new DurableNodeFSStorageAdapter(storageDir),
     bagOf: sealedBagOf,
@@ -887,6 +922,8 @@ async function prepareNodeBootOn(
     }),
     flushRepo: async () => { await repo.flush(); },
     onHeld: ({ refusal, documentId }) => console.log(`[sealed-rest] ${refusal}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
+    // A restart's hydration: a sealed document the engine asks for ahead of the dial waits for its map, never strands.
+    hydrationPatienceMs: SEALED_HYDRATION_PATIENCE_MS,
   });
   // THE FLOOR PIN SET (house ruling "The admit's gate pin": a floor route's full pin travels through an authenticated
   // relation): each sovereign session hears, at open, the floor pins this
@@ -1259,11 +1296,7 @@ async function prepareNodeBootOn(
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer
   // and rests as received under that session.
   // P2-4: with no call in flight, a change books a session of the worn face that stands seated (open, its signer standing).
-  sealedRest.watch(repo, () => {
-    const face = sealedCells.face();
-    const standing = sealedCells.book?.standing()[0] ?? sealedCells.book?.seated().find((s) => s.subject === face);
-    return standing ? saveSessionOf(standing) : null;
-  });
+  sealedRest.watch(repo, standingSaveSession);
   emit("repo-open");
 
   // ── 2. Catalog — local-first rendezvous anchor (catalog-url file) ───────────
@@ -1889,6 +1922,16 @@ async function prepareNodeBootOn(
   let nexusDial: NexusClientDial | null = null;
   /** The pin the face dial stands at, once its own presentation composed there; none means the place anchor. */
   const dialAnchor = dialAnchorCell();
+  // V6: THE VESSEL'S OWN SESSION. The dial's presentation opens a session of the worn face at the Nexus it dials; while it
+  // stands, it sits seated in the lift's book, so a change written with no CLI call in flight books it and seals, and a
+  // save waits `save-unbooked` only where no face stands unlocked. A dial that clears unseats it.
+  const dialSeat = standingSessionSeat();
+  const standDialSession = (presentation: unknown): void => {
+    const signer = (presentation as { signer?: BookedSession["signer"] } | null | undefined)?.signer;
+    const chain = dialAnchor.chain();
+    dialSeat.stand(signer && chain ? { signer, anchor: { kind: "nexus" }, subject: faceProofSubjectRef(chain.scope as never) } : null);
+    sealedRest.store.mapMoved();
+  };
   // THE SESSION SIGN DOOR (sealed-store#/the-store): the daemon island holds no session key. A session call books its
   // signer in a book, and the island's ask signs through it, under the vessel's own chain at the pin its dial composed at.
   // The door rides the LIFT: prep builds only the factory and stands no door, so a herm floor's record carries none.
@@ -1902,9 +1945,13 @@ async function prepareNodeBootOn(
     // document store's own seal books here too, and books nothing further.
     const book = new SessionSignBook({ onHold: (session, verb) => {
       if (verb === DOCSTORE_SEAL_VERB) return;
+      sealedRest.store.mapMoved();
       void sealedRest.rebook(saveSessionOf(session)).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory: ${e instanceof Error ? e.message : String(e)}`));
+      for (const named of slotDocsNamed.values()) for (const documentId of named) sealNowMapped(documentId);
     } });
     sealedCells.book = book;
+    dialSeat.book(book);
+    sealedRest.store.mapMoved();
     return {
       book,
       door: book.door(() => dialAnchor.chain(), async () => fleetRaisesOf({
@@ -2086,7 +2133,7 @@ async function prepareNodeBootOn(
   stood.push({ what: "the client dial",       down: async () => {
     dialStoodDown = true; nexusDial?.stop();
     try { await repo.flush(); await sealedRest.store.flush(); } catch { /* a save that refused keeps its change in memory */ }
-    dialAnchor.clear();
+    dialAnchor.clear(); dialSeat.stand(null);
   } });
   stood.push({ what: "the residency sweeper", down: () => { residency.stopSweeper(); } });
   stood.push({ what: "the event bus",         down: () => { (eventBus as LarEventBusImpl | undefined)?.stop(); } });
@@ -2300,6 +2347,8 @@ async function prepareNodeBootOn(
   const openDaemon = async ({ assembly, slot }: { assembly: VesselCoreAssembly; slot?: VesselWikiSlot }): Promise<VesselDaemonVm> => {
     // R1: the worn face's wiki bags rest sealed, each document by the catalog's name for it.
     sealedCells.catalog = () => assembly.catalogHandle.doc() as LarDoc | undefined;
+    sealedCells.mounted = (bagId) => mountedDocumentId(assembly.composite.storeForBag(bagId));
+    sealedRest.store.mapMoved();
     catalogForViews = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     const daemonDoc = (await readDaemonDoc()).doc();
     // At the FLOOR no key is held, custody refuses `CustodyLocked`, and the vessel boots faceless (no pin rests in the clear).
@@ -2666,6 +2715,7 @@ async function prepareNodeBootOn(
         // this pin only once the vessel's own face composed there; a refusal leaves no pin, and the vessel's sessions
         // anchor at its own place.
         dialAnchor.composed(dialPin, dialPresentationNow);
+        standDialSession(dialPresentationNow);
         // THE DIAL'S RELATION, read off this vessel's own records alone (road `P26`; controller fork ruling (b)): the pin's
         // source and the act that wrote it. A pin `fleet join land` wrote for the worn face seats a face view of that face; a
         // kept admit bundle's pin seats the contracted class and its standing; any other pin seats nothing beyond the shelf.
@@ -2709,7 +2759,7 @@ async function prepareNodeBootOn(
         representIfMoved = () => Promise.resolve();
       } catch (e) {
         // A re-dial that failed keeps no pin from before it: the vessel stands at its place anchor.
-        dialAnchor.clear();
+        dialAnchor.clear(); dialSeat.stand(null);
         console.log(`[nexus-join] dial-out skipped: ${e instanceof Error ? e.message : String(e)}`);
       }
     };
@@ -2858,6 +2908,7 @@ async function prepareNodeBootOn(
     const faceLit = activeAtom !== null && atomSeed !== null;
     // R1: the bags the sealed rest seals, the worn face's own wiki bags, only while that face stands lit and proved.
     sealedCells.bags = () => (faceLit && personaGroupId && wornFaceProved && slot ? [slot.wikiBagId, slot.workingBagId, slot.draftBagId] : []);
+    sealedRest.store.mapMoved();
     const workingFloorAnchor = workingFloorAnchorOf({ place: placeAid });
     // A sibling's planes need their own face proof before registration; joinedFaceAuth hands each sibling the vessel ground alone.
     const siblingKel = sovereign ? makePersonaKelRingHolder({ repo, nexusPubkey }) : null;

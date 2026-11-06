@@ -4,7 +4,7 @@
  */
 
 import { Worker, MessageChannel } from "worker_threads";
-import { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, type VesselWorkerHandle, type CapabilityRecord, type CustodyWriteCarrier, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_ReceiptRequest, type IslandMsg_ReceiptIssued, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten, type IslandMsg_SessionSign, type IslandMsg_SessionSigned } from "@lararium/mesh";
+import { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, type IslandMsg_RestAsk, type VesselWorkerHandle, type CapabilityRecord, type CustodyWriteCarrier, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_ReceiptRequest, type IslandMsg_ReceiptIssued, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten, type IslandMsg_SessionSign, type IslandMsg_SessionSigned } from "@lararium/mesh";
 
 // The answers stand once on the mesh floor (`capability-record.ts`), so the node and the browser answer one ask alike.
 export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign };
@@ -143,6 +143,18 @@ function attachRefusals(w: Worker, caps: CapabilityRecord): void {
   });
 }
 
+// THE REST ASK, vessel side (sealed-store#/owed, V2): every island with a store of its own (the daemon island's owned
+// store, a wiki island's) asks before it rests a byte of a document, and the vessel answers from its Repo's sealed rest.
+function attachRestAsk(w: Worker, caps: CapabilityRecord): void {
+  w.on("message", (raw: unknown) => {
+    const m = raw as Partial<IslandMsg_RestAsk> | null;
+    if (!m || m.type !== "rest:ask" || typeof m.requestId !== "string") return;
+    void answerRestAsk(caps, m as Partial<IslandMsg_RestAsk> & { requestId: string }).then((reply) => {
+      try { w.postMessage(reply); } catch { /* the worker went away — nothing to answer */ }
+    });
+  });
+}
+
 /**
  * Wrap a worker as a handle, binding the capability record its vessel handed it and attaching the answers its class
  * owns ({@link IslandClass}). No record handed reads as an empty one: every ask answers absent.
@@ -156,9 +168,11 @@ export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass
     attachCustodyWrite(w, caps);
     attachSessionSignDoor(w, caps);
     attachDocStore(w, caps);
+    attachRestAsk(w, caps);
   } else if (opts.island === "wiki") {
     attachCas(w, caps);
     attachRefusals(w, caps);
+    attachRestAsk(w, caps);
   }
   const post = w.postMessage.bind(w) as (msg: unknown, transfer?: unknown[]) => void;
   return {

@@ -66,7 +66,7 @@ import type { WorkingFloorAnchor } from "./wiki-recipe.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
 import type { SparseFormVector } from "./worldline-trajectory.js";
-import type { DocStoreMsg_Live, DocStoreMsg_Opened, DocStoreMsg_Sealed } from "./sealed-rest.js";
+import type { DocStoreMsg_Live, DocStoreMsg_Opened, DocStoreMsg_Sealed, DocStoreMsg_Slot } from "./sealed-rest.js";
 import {
   LAR_CONTROL_EVENT, LAR_CONTROL_RESULT, LAR_FRAME, LAR_RESEND, LAR_SERVICE,
   readLarControlEvent, readLarControlResult, readLarFrame, readLarResend, readLarService,
@@ -731,6 +731,7 @@ export type VesselToIslandMsg =
   | IslandMsg_CasBlock
   | IslandMsg_DyadRead
   | IslandMsg_ReceiptIssued
+  | IslandMsg_RestAnswer
   | IslandMsg_CustodyWritten
   | IslandMsg_SessionSigned
   | IslandMsg_ViewCatalogResult
@@ -893,6 +894,24 @@ export interface IslandMsg_ReceiptRequest {
   heads?: Record<string, string[]>;
 }
 
+/**
+ * Island → vessel: THE REST ASK (sealed-store#/owed, V2). Before an island's own store rests a byte of a document it asks
+ * whether the vessel's rest holds that document sealed; a sealed one rests in the island's memory alone and reaches rest
+ * by sync, sealed in the vessel's store (`islandRestGuard`).
+ */
+export interface IslandMsg_RestAsk {
+  type: "rest:ask";
+  requestId: string;
+  documentId: string;
+}
+
+/** Vessel → island: the rest answer: the vessel's rest holds the document sealed (`sealed`), or not. */
+export interface IslandMsg_RestAnswer {
+  type: "rest:answer";
+  requestId: string;
+  sealed: boolean;
+}
+
 /** Vessel → island: the receipt — every named document rests in the vessel's store (`issued`), or `why` it does not. */
 export interface IslandMsg_ReceiptIssued {
   type: "receipt:issued";
@@ -1046,6 +1065,7 @@ export type IslandToVesselMsg =
   | IslandMsg_CasWant
   | IslandMsg_DyadAsk
   | IslandMsg_ReceiptRequest
+  | IslandMsg_RestAsk
   | IslandMsg_CustodyWrite
   | IslandMsg_SessionSign
   | IslandMsg_ViewCatalog
@@ -1056,7 +1076,8 @@ export type IslandToVesselMsg =
   // The document store's door (sealed-rest): the island's answers to a seal and an open, and its ask for a live document.
   | DocStoreMsg_Sealed
   | DocStoreMsg_Opened
-  | DocStoreMsg_Live;
+  | DocStoreMsg_Live
+  | DocStoreMsg_Slot;
 
 // ── Type guards ────────────────────────────────────────────────────────────
 
@@ -1075,7 +1096,7 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], "wiki:request-drain" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
@@ -1091,7 +1112,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
   if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }

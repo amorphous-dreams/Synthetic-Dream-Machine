@@ -22,7 +22,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed
  */
 import * as A from "@automerge/automerge";
-import type { Repo, StorageAdapterInterface } from "@automerge/automerge-repo";
+import type { Chunk, Repo, StorageAdapterInterface } from "@automerge/automerge-repo";
 import type { DocumentValue, HolderRefusal, OpenedValue } from "./content-key-holder.js";
 import { readSealedAddress } from "./sealed-chunk.js";
 import { SealedDocumentStore, type SaveSession, type SealedValueAddresses } from "./sealed-doc-store.js";
@@ -260,7 +260,10 @@ export function answerLiveDocAsks(port: Port, liveOf: (bagId: string) => Promise
  * it spawns (the latest stands; an island that goes leaves none), and the door reads the port at ask time. The vessel
  * answers the island's `docstore:live` over the same port.
  */
-export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array | null>): {
+export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array | null>, opts: {
+  /** V3: the island's slot resolver named `documentId` as `bagId`'s document (`announceSlotDoc`). */
+  readonly onSlot?: (bagId: string, documentId: string) => void;
+} = {}): {
   readonly port: () => Port | null;
   readonly attach: (port: Port) => () => void;
 } {
@@ -270,9 +273,32 @@ export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array |
     attach(port) {
       current = port;
       const stop = answerLiveDocAsks(port, liveOf);
-      return () => { stop(); if (current === port) current = null; };
+      const stopSlots = opts.onSlot ? answerSlotNotices(port, opts.onSlot) : () => {};
+      return () => { stop(); stopSlots(); if (current === port) current = null; };
     },
   };
+}
+
+/** Island → vessel (V3): the slot resolver named `documentId` as the document of the wiki slot `bagId`. */
+export interface DocStoreMsg_Slot { readonly type: "docstore:slot"; readonly bagId: string; readonly documentId: string }
+
+/**
+ * THE SLOT RESOLVER NAMES EACH DOCUMENT IT ANSWERS (V3). A wiki's working and draft documents resolve in the daemon
+ * island (the face's derived address, a binding record), and the seat that lands moves a slot to a new document; no
+ * catalog row names either. So the island tells the vessel each slot document it answers, before any write into it, and
+ * the vessel's bag map names it sealed with its bag.
+ */
+export function announceSlotDoc(port: Pick<Port, "post">, bagId: string, documentId: string): void {
+  try { port.post({ type: "docstore:slot", bagId, documentId } satisfies DocStoreMsg_Slot); } catch { /* the vessel went away */ }
+}
+
+/** The vessel hears each slot notice. Returns the unsubscribe. */
+export function answerSlotNotices(port: Port, onSlot: (bagId: string, documentId: string) => void): () => void {
+  return port.listen((raw) => {
+    const m = raw as Partial<DocStoreMsg_Slot> | null;
+    if (!m || m.type !== "docstore:slot" || typeof m.bagId !== "string" || typeof m.documentId !== "string") return;
+    try { onSlot(m.bagId, m.documentId); } catch { /* a listener's fault never reaches the island */ }
+  });
 }
 
 // ── The composer ──────────────────────────────────────────────────────────────────────────────────
@@ -298,6 +324,12 @@ export interface SealedRest<S extends SaveSession = SaveSession> {
    *  the Repo and the store flush while the island still answers, and the bookings drop. Answers how many saves still
    *  wait unbooked: those rest nowhere new, and their changes come back by sync from the replica that holds them. */
   standDown(standing: readonly S[]): Promise<number>;
+  /** V2: does this rest hold `documentId` sealed (mapped now, mapped this process, or a sealed value at rest)? An island
+   *  asks before its own store rests a byte of it (`islandRestGuard`). */
+  restsSealed(documentId: string): Promise<boolean>;
+  /** V3: a document's bag mapped sealed after its rest took clear chunks (a slot the map learned late): book it under
+   *  `session` and seal those chunks now, so they leave rest. Answers whether any clear chunk sealed. */
+  sealMapped(documentId: string, session: S): Promise<boolean>;
 }
 
 /**
@@ -312,6 +344,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly door: Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> & { lock?(): void };
   readonly flushRepo: () => Promise<void>;
   readonly onHeld?: (held: { readonly refusal: "save-unbooked" | "save-unmapped" | "save-unsealed"; readonly documentId: string }) => void;
+  /** A restart's hydration: how long a sealed document's load waits for its map (`SealedDocumentStore.mapMoved`). */
+  readonly hydrationPatienceMs?: number;
 }): SealedRest<S> {
   const book = new SaveBook<S>();
   let watched: { readonly standing: () => S | null; readonly actorOf: (documentId: string) => string | null } | null = null;
@@ -337,6 +371,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     waitOverSealed: true,
     seal: input.door.seal, open: input.door.open,
     ...(input.onHeld ? { onHeld: input.onHeld } : {}),
+    ...(input.hydrationPatienceMs !== undefined ? { hydrationPatienceMs: input.hydrationPatienceMs } : {}),
   });
   return {
     store, book,
@@ -377,5 +412,109 @@ export function composeSealedRest<S extends SaveSession>(input: {
       book.drop();
       return store.waiting();
     },
+    restsSealed: (documentId) => store.holdsSealed(documentId),
+    async sealMapped(documentId, session) {
+      const bag = input.bagOf(documentId);
+      if (bag === null || bag.face !== session.subject) return false;
+      if (book.of(documentId) === null) book.seal(documentId, session);
+      return store.sealClearRest(documentId);
+    },
   };
+}
+
+// ── The bag map (V3) ──────────────────────────────────────────────────────────────────────────────
+/**
+ * THE MAP OF A VESSEL'S SEALED BAGS, read off every name a bag's document carries. A wiki's canon bag stands as a catalog
+ * row, but its working and draft slots resolve through the slot-doc resolver (the face's derived address, a binding
+ * record) and no catalog row names them: the map reads the document each bag's mounted layer holds first, then the
+ * catalog's row. `docsOf` answers a bag's candidate document ids in that order; an absent one reads null.
+ */
+export function sealedBagMap(input: {
+  readonly face: () => string | null;
+  readonly bags: () => readonly string[];
+  readonly docsOf: (bagId: string) => readonly (string | null | undefined)[];
+}): { bagOf(documentId: string): SealedBag | null; docOf(bagId: string): string | null } {
+  const ids = (bagId: string): string[] => input.docsOf(bagId).filter((id): id is string => typeof id === "string" && id.length > 0);
+  return {
+    bagOf(documentId) {
+      const face = input.face();
+      if (face === null) return null;
+      for (const bagId of input.bags()) if (ids(bagId).includes(documentId)) return { bagId, face };
+      return null;
+    },
+    docOf: (bagId) => ids(bagId)[0] ?? null,
+  };
+}
+
+/** The document a mounted layer's store stands on (an `AutomergeDocStore`), or null for a store that names none. */
+export function mountedDocumentId(store: unknown): string | null {
+  const id = (store as { documentId?: unknown } | null | undefined)?.documentId;
+  return typeof id === "string" && id.length > 0 ? id : null;
+}
+
+/** A catalog row's document id (`automerge:<id>`), or null. */
+export function documentIdOfUrl(url: string | null | undefined): string | null {
+  return typeof url === "string" && url.startsWith("automerge:") ? url.slice("automerge:".length) : null;
+}
+
+// ── An island's own rest (V2) ─────────────────────────────────────────────────────────────────────
+/**
+ * AN ISLAND'S OWN STORE RESTS NO DOCUMENT THE VESSEL'S REST SEALS. The vessel's Repo holds one sealed rest per document,
+ * under the session that booked each change; an island Repo (the wiki island, the daemon island's owned store) syncs with
+ * it. So an island asks the vessel before it rests a byte of a document, and a document the vessel holds sealed rests in
+ * the island's memory alone: its change reaches the vessel by sync and seals there, and a restarted island finds it by
+ * sync. The first answer that names a document sealed sweeps every clear chunk the island's store held of it (a copy
+ * written before the document mapped sealed). A sealed answer holds for the island's life; an ask the vessel cannot
+ * answer reads unsealed, as a vessel that names no sealed bag does.
+ */
+export function islandRestGuard(inner: StorageAdapterInterface, restsAtVessel: (documentId: string) => Promise<boolean>): StorageAdapterInterface {
+  const sealed = new Set<string>();
+  const sweeps = new Map<string, Promise<void>>();
+  const isSealed = async (documentId: unknown): Promise<boolean> => {
+    if (typeof documentId !== "string" || documentId.length === 0) return false;
+    if (!sealed.has(documentId)) {
+      let answer = false;
+      try { answer = await restsAtVessel(documentId); } catch { answer = false; }
+      if (!answer) return false;
+      sealed.add(documentId);
+    }
+    let sweep = sweeps.get(documentId);
+    if (sweep === undefined) { sweep = Promise.resolve(inner.removeRange([documentId])); sweeps.set(documentId, sweep); }
+    await sweep;
+    return true;
+  };
+  return {
+    async load(key) { return (await isSealed(key[0])) ? undefined : inner.load(key); },
+    async save(key, data) { if (!(await isSealed(key[0]))) await inner.save(key, data); },
+    async remove(key) { if (!(await isSealed(key[0]))) await inner.remove(key); },
+    async loadRange(prefix): Promise<Chunk[]> {
+      if (prefix.length >= 1) return (await isSealed(prefix[0])) ? [] : inner.loadRange(prefix);
+      const out: Chunk[] = [];
+      for (const chunk of await inner.loadRange(prefix)) if (!(await isSealed(chunk.key[0]))) out.push(chunk);
+      return out;
+    },
+    async removeRange(prefix) { await inner.removeRange(prefix); },
+  };
+}
+
+/** The island's side of the rest ask: post `rest:ask` over the island's port to its vessel and read `rest:answer` on the
+ *  same request id. Silence past `patienceMs` reads unsealed, as a vessel that names no sealed bag does. */
+export function vesselRestAsker(port: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void }, opts: { readonly patienceMs: number; readonly idPrefix: string }): (documentId: string) => Promise<boolean> {
+  const pending = new Map<string, (sealed: boolean) => void>();
+  port.listen((raw) => {
+    const m = raw as { type?: unknown; requestId?: unknown; sealed?: unknown } | null;
+    if (!m || m.type !== "rest:answer" || typeof m.requestId !== "string") return;
+    const settle = pending.get(m.requestId);
+    if (!settle) return;
+    pending.delete(m.requestId);
+    settle(m.sealed === true);
+  });
+  let seq = 0;
+  return (documentId) => new Promise<boolean>((resolve) => {
+    const requestId = `${opts.idPrefix}-rest-${++seq}`;
+    const timer = setTimeout(() => { pending.delete(requestId); resolve(false); }, opts.patienceMs);
+    (timer as { unref?: () => void }).unref?.();
+    pending.set(requestId, (sealed) => { clearTimeout(timer); resolve(sealed); });
+    try { port.post({ type: "rest:ask", requestId, documentId }); } catch { pending.delete(requestId); clearTimeout(timer); resolve(false); }
+  });
 }

@@ -39,6 +39,8 @@ export const HOLDER_ROUTES = {
   "cas:want": "owner",
   "dyad:ask": "owner",
   "receipt:request": "owner",
+  // V2: an island's rest ask reaches the vessel whose sealed rest answers it.
+  "rest:ask": "owner",
   "custody:write": "owner",
   // The record asks reach the owner, the vessel that holds the island's capability record (`browser-island-caps.ts`),
   // which answers each through the member of its name; a session sign answers there or refuses `signer-unavailable`.
@@ -50,4 +52,5 @@ export const HOLDER_ROUTES = {
   "docstore:sealed": "owner",
   "docstore:opened": "owner",
   "docstore:live": "owner",
+  "docstore:slot": "owner",
 } as const satisfies Record<IslandToVesselMsg["type"], HolderRoute>;

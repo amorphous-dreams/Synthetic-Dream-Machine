@@ -33,7 +33,7 @@ describe("each vessel's Repo stands on the sealed rest", () => {
     const browser = stripped(["lararium-browser", "src", "open-browser-vessel.ts"]);
     expect(count(browser, /composeSealedRest(<[^>]*>)?\(/)).toBe(1);
     expect(browser).toMatch(/new Repo\(\{\s*storage:\s*sealedRest\.store,/);
-    expect(browser).toMatch(/await sealedRest\.lock\(\)[\s\S]{0,80}lift\.drop\(\)/);
+    expect(browser).toMatch(/await sealedRest\.lock\(\)[\s\S]{0,300}lift\.drop\(\)/);
   });
 
   it("each daemon island answers the document store's door beside its holder", () => {

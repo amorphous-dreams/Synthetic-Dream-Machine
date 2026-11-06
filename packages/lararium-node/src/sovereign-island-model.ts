@@ -29,7 +29,7 @@ import {
   type IslandHostShore,
 } from "@lararium/tw5";
 import {
-  makeCidResolver, type StorageAdapterInterface,
+  makeCidResolver, islandRestGuard, vesselRestAsker, type StorageAdapterInterface,
   type IslandMsg_Manifest,
   type IslandStorageConfig,
   type IslandToVesselMsg,
@@ -204,11 +204,16 @@ export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(
   });
 }
 
-function _buildStorage(cfg: IslandStorageConfig | undefined): StorageAdapterInterface | undefined {
+/** An island's own store, behind the rest guard (sealed-store#/owed, V2): a document the vessel's rest seals rests in
+ *  the island's memory alone and reaches rest by sync, sealed in the vessel's store. */
+function _buildStorage(cfg: IslandStorageConfig | undefined, restsAtVessel: (documentId: string) => Promise<boolean>): StorageAdapterInterface | undefined {
   if (!cfg || cfg.type === "memory") return undefined;
-  if (cfg.type === "nodefs") return new DurableNodeFSStorageAdapter(cfg.dir);
+  if (cfg.type === "nodefs") return islandRestGuard(new DurableNodeFSStorageAdapter(cfg.dir), restsAtVessel);
   return undefined;
 }
+
+/** The vessel answers a rest ask from its own Repo's rest; silence this long reads unsealed. */
+const REST_ASK_PATIENCE_MS = 30_000;
 
 // ── runSovereignWorker — node host shore over the shared kernel ──────────────
 
@@ -235,12 +240,17 @@ export function runSovereignWorker(
   const corpusCasDir: string | null = handed.corpusCasDir ?? null;
   if (handed.cidDir) casDir = handed.cidDir;
 
+  const restsAtVessel = vesselRestAsker({
+    post: (msg) => port.postMessage(msg),
+    listen: (cb) => { port.on("message", cb); return () => { port.off("message", cb); }; },
+  }, { patienceMs: REST_ASK_PATIENCE_MS, idPrefix: `island-${process.pid}-${Math.random().toString(36).slice(2, 8)}` });
+
   const host: IslandHostShore = {
     post:    (msg: IslandToVesselMsg) => port.postMessage(msg),
     listen:  (onMessage) => port.on("message", onMessage),
     storage: (msg) => {
       if (msg.storage?.type === "nodefs" && !handed.cidDir) casDir = casDirFromIslandStorageDir(msg.storage.dir);
-      return _buildStorage(msg.storage);
+      return _buildStorage(msg.storage, restsAtVessel);
     },
     // Resolve by content-address — the vessel's cas capability (basket-one #/the-fetch-door), composed here as
     // `makeCidResolver(localRead, portTransit, cacheWriteThrough)` (@lararium/mesh):

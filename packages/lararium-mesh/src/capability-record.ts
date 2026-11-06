@@ -23,7 +23,7 @@
 import type { EdgeStanding } from "./edge-kapae.js";
 import type {
   CustodyWriteCarrier, IslandMsg_CasBlock, IslandMsg_CustodyWrite, IslandMsg_CustodyWritten, IslandMsg_DyadAsk, IslandMsg_DyadRead,
-  IslandMsg_ReceiptIssued, IslandMsg_ReceiptRequest, IslandMsg_SessionSign, IslandMsg_SessionSigned, SessionOwnChain,
+  IslandMsg_ReceiptIssued, IslandMsg_ReceiptRequest, IslandMsg_RestAnswer, IslandMsg_RestAsk, IslandMsg_SessionSign, IslandMsg_SessionSigned, SessionOwnChain,
 } from "./island-protocol.js";
 
 /** The vessel's answer to an island's receipt ask — resolves once every named document rests in the vessel's store. */
@@ -51,6 +51,9 @@ export interface CapabilityRecord {
    *  vessel's Repo seals and opens through the holder there, and the island asks the vessel for a bag's live document.
    *  The answer is the detach. Absent → the vessel's sealed rest reaches no island. */
   docStore?: ((port: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void }) => () => void) | undefined;
+  /** V2: does the vessel's rest hold a document sealed? An island asks before its own store rests a byte of it
+   *  (`islandRestGuard`, `sealed-rest.ts`). Absent → every document reads unsealed. */
+  restsSealed?: ((documentId: string) => Promise<boolean>) | undefined;
 }
 
 // ── THE ANSWERS, vessel side ────────────────────────────────────────────────────────────────────────
@@ -104,6 +107,14 @@ export async function answerSessionSign(caps: CapabilityRecord, ask: Partial<Isl
   } catch { return { ...base, refusal: ask.op === "sign" ? "signer-refused" : "signer-unavailable" }; }
 }
 
+/** Answer one `rest:ask`: no `restsSealed` standing, a malformed ask or a fault each read unsealed. */
+export async function answerRestAsk(caps: CapabilityRecord, ask: Partial<IslandMsg_RestAsk> & { requestId: string }): Promise<IslandMsg_RestAnswer> {
+  const base = { type: "rest:answer" as const, requestId: ask.requestId };
+  const restsSealed = caps.restsSealed;
+  if (!restsSealed || typeof ask.documentId !== "string") return { ...base, sealed: false };
+  try { return { ...base, sealed: (await restsSealed(ask.documentId)) === true }; } catch { return { ...base, sealed: false }; }
+}
+
 /** The island-to-vessel kinds the record answers, each by the member of its own name. */
 export const RECORD_ASKS = ["cas:want", "receipt:request", "dyad:ask", "custody:write", "session:sign"] as const;
 
@@ -143,6 +154,9 @@ export function answerIslandAsks(port: { post(msg: unknown): void; listen(cb: (m
         return;
       case "session:sign":
         void answerSessionSign(caps, m as Partial<IslandMsg_SessionSign> & { requestId: string }).then(reply);
+        return;
+      case "rest:ask":
+        void answerRestAsk(caps, m as Partial<IslandMsg_RestAsk> & { requestId: string }).then(reply);
         return;
       default:
         return;
