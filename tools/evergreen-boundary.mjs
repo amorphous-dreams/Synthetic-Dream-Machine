@@ -57,7 +57,6 @@ export const EXCEPTIONS = [
   { rule: "clock", file: "tools/browser-weld/c4-served-anchor-control.mjs", match: "Date.now() < until", reason: "The control bounds only its own wait for browser source records." },
   { rule: "clock", file: "tools/browser-weld/leaf-continuity.mjs", match: "Date.now() < until", reason: "The browser probe bounds only its own wait for a predicate." },
   { rule: "clock", file: "tools/browser-weld/weld.mjs", match: "Date.now() > stop", reason: "The browser probe bounds only its own polling interval." },
-  { rule: "clock", file: "tools/e2e-shards.mjs", match: "Date.now() < deadline", reason: "The CI reader bounds only its own search for the run triggered by its push." },
   { rule: "clock", file: "tools/held-out-steps.mjs", match: "const left = deadline - Date.now()", reason: "The runner computes only its own child process timeout." },
   { rule: "clock", file: "tools/held-out-steps.test.mjs", match: "Date.now() - started <", count: 2, reason: "The two timeout tests each measure only their own completion time." },
   { rule: "retired-test", file: "packages/lararium-memetic-frame/tests/verdict.test.ts", match: "const retired: Record<string, string> = {", reason: "The frame verdict suite feeds malformed heads that a reader meets as foreign bytes; the record names input bytes." },
