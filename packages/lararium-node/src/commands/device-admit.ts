@@ -352,7 +352,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // THE LEASE READ — off the SAME daemon doc already open above, the same fold `gateFaceJoin` runs
   // (leaseEpochPrefix → per-writer slot values → signedLeaseEpoch = max). The minted edge binds to
   // THIS PersonaGroup's current epoch, so a device admitted here reads fresh at the door until a later
-  // roll leases it stale (re-admits via face-join regrant, never a silent renewal).
+  // roll leases it stale; its next answer renews the seated edge at the epoch then current (the renewal below).
   const leasePrefix = leaseEpochPrefix(personaGroupId);
   const leaseSlotValues: string[] = [];
   for (const [title, entry] of Object.entries(tiddlerMap)) {
@@ -405,33 +405,33 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
       && projection.admissions.some((a) => a.cid === actCid(b as never));
   });
   if (projection.vesselTags.includes(vesselTag as string) && !seatedAdmission) throw new DeviceAdmitTagRefused("vessel-already-admitted", "this vessel already holds a seat in this face");
-  // The replay returns the seat as it stands: the admission and the edge linked to it, and appends nothing, so a lease roll
-  // between the answer and its retry never replaces the edge a joinee holding the first answer boots against.
-  const seatedCid = seatedAdmission ? actCid(bodyOf(seatedAdmission) as never) : null;
-  const seatedEdge = seatedCid === null ? undefined : records.find((r) => {
-    const b = bodyOf(r);
-    return b?.["act"] === "device-edge" && b["deviceKey"] === deviceKey && b["prior"] === seatedCid;
-  });
+  // A retried answer for a seated atom and tag serves the seat as it stands. The edge the log seats for it reads off the
+  // fold (`projection.edges`, the latest verified device-edge act for that device), never off the act linked first.
+  const seatedDigest = seatedAdmission ? projection.edges[deviceKey] : undefined;
   // THE ROOT SIGNS ONLY PAST THE TAG LAW: every refusal above reaches no signature over the joinee's edge.
   const signedEdge = await buildDeviceDelegationRootHalf({ personaRootSeed: signerSeed,
     deviceVerifyingKey: deviceKey, hearthTrueName, boundEpoch });
-  // THE REPLAY HANDS OUT THE SEATED EDGE OR NOTHING: the edge mints deterministically from root, device, hearth and epoch, so
-  // it rebuilds the logged edge exactly while none of them moved. A lease roll (or a root or hearth move) since the seat leaves
-  // the logged edge one the joinee's boot halts on as stale, and a fresh mint one its boot refuses as `edge`: the door names it.
-  const seatedDigest = seatedEdge ? bodyOf(seatedEdge)?.["edgeDigest"] : undefined;
+  // The edge mints deterministically from root, device, hearth and epoch, so it rebuilds the seated edge exactly while none
+  // of them moved, and the replay appends nothing. Where the seated edge binds an epoch the lease rolled past (or a root or
+  // hearth the face moved off), THE RENEWAL: the root appends one `device-edge` act for the seated admission at the current
+  // epoch, and the answer serves that edge. It never appends a second admission and never moves the tag; a device the fleet
+  // set aside refused above (`assertDyadBinds`), and an atom the fold seats no admission for never reaches this branch.
+  const servedDigest = edgeBodyDigest(signedEdge);
   const replayLapsed = (): DeviceAdmitTagRefused => new DeviceAdmitTagRefused("replay-edge-lapsed",
-    `the edge this vessel's seat logs binds an epoch, root or hearth this face has moved past (now epoch ${boundEpoch}); re-admit the device through the face's regrant or recovery rite`);
-  if (seatedEdge && seatedDigest !== edgeBodyDigest(signedEdge)) throw replayLapsed();
+    `this request's answer carries an edge the face's log does not seat (now epoch ${boundEpoch}); retry the join with a fresh request`);
+  const signer = { key: signerKey, sign: ed25519SignerFromSeed(signerSeed) };
+  const epoch = personaKelChain[personaKelChain.length - 1]!.seq;
   let appended: Awaited<ReturnType<typeof signPersonaAct>>[] = [];
-  if (!seatedEdge) {
-    const signer = { key: signerKey, sign: ed25519SignerFromSeed(signerSeed) };
-    const epoch = personaKelChain[personaKelChain.length - 1]!.seq;
+  if (!seatedAdmission) {
     const admission = await signPersonaAct(projection.head, { group: personaGroupId, act: "admission", epoch,
       fields: { deviceKey, vesselTag, vesselSig } }, signer);
     const edgeAct = await signPersonaAct({ seq: admission.body.seq, cid: actCid(admission.body) },
       { group: personaGroupId, act: "device-edge", epoch,
-        fields: { deviceKey, edgeDigest: edgeBodyDigest(signedEdge) } }, signer);
+        fields: { deviceKey, edgeDigest: servedDigest } }, signer);
     appended = [admission, edgeAct];
+  } else if (seatedDigest !== servedDigest) {
+    appended = [await signPersonaAct(projection.head, { group: personaGroupId, act: "device-edge", epoch,
+      fields: { deviceKey, edgeDigest: servedDigest } }, signer)];
   }
   const personaActs = [...records, ...appended];
   const operation = { store: operationStore, atomSeed,
@@ -458,8 +458,9 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     hearthDaemonUrl: opts.hearthDaemonUrl ?? daemonUrl,
     personaUrl,
   });
-  // The operation cache never decides a replay: whatever it returned, the answer carries the logged edge or refuses.
-  if (seatedEdge && edgeBodyDigest(payload.deviceEdge) !== seatedDigest) throw replayLapsed();
+  // WHAT THE ANSWER SERVES EQUALS WHAT THE LOG HOLDS: the operation cache never decides a replay. A request whose cached
+  // answer carries an edge the log no longer seats refuses by name, before any act lands.
+  if (seatedAdmission && edgeBodyDigest(payload.deviceEdge) !== servedDigest) throw replayLapsed();
   if (appended.length) appendPersonaActs(personaHandle, appended);
 
   // THE PIN NAMES THE DIAL (hearth-dial-pin.ts): the hearth's full sovereign sync pin at the Nexus its own sync gate

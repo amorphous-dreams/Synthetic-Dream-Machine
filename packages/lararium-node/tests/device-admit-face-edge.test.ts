@@ -89,7 +89,10 @@ vi.mock("@lararium/mesh", async (real) => {
       leaseEpoch: () => Math.max(seam.observed, anchor?.frontier.leaseEpoch ?? 0),
       project: () => {
         seam.projectedWith = { acceptedThrough: anchor?.frontier.actSeq };
-        return { founded: true, fork: null, head: { seq: 3, cid: "head" }, cids: seam.cids, vesselTags: seam.vesselTags, admissions: seam.admissions };
+        // The fold's edges: the latest device-edge act per device among the carried records, as `projectPersonaLog` reads them.
+        const edges = Object.fromEntries((seam.records as { body?: Record<string, unknown> }[]).map((r) => r.body)
+          .filter((b) => b?.["act"] === "device-edge").map((b) => [b!["deviceKey"], b!["edgeDigest"]]));
+        return { founded: true, fork: null, head: { seq: 3, cid: "head" }, cids: seam.cids, vesselTags: seam.vesselTags, admissions: seam.admissions, edges };
       },
     }),
   };

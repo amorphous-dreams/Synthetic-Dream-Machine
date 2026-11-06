@@ -1,7 +1,7 @@
 /**
  * A replayed fleet-join answer, driven through the REAL payload producer (`runDeviceAdmitEdge`, its operation cache and
  * `enrolDevice`): the edge a replay hands the joinee is the edge the `@persona` log seats, byte for byte by digest, or a
- * refusal by name when the face has moved past it. A fresh signed request (new nonce, same atom and tag) misses the
+ * renewal the log takes before the answer serves it when the lease rolled past it. A fresh signed request (new nonce, same atom and tag) misses the
  * operation cache, so nothing but the door itself keeps a re-minted edge from reaching the joinee.
  */
 import { afterAll, beforeEach, describe, expect, test, vi } from "vitest";
@@ -79,7 +79,10 @@ vi.mock("@lararium/mesh", async (real) => {
       leaseEpoch: () => Math.max(seam.observed, anchor?.frontier.leaseEpoch ?? 0),
       project: () => {
         seam.projectedWith = { acceptedThrough: anchor?.frontier.actSeq };
-        return { founded: true, fork: null, head: { seq: 3, cid: "head" }, cids: seam.cids, vesselTags: seam.vesselTags, admissions: seam.admissions };
+        // The fold's edges: the latest device-edge act per device among the carried records, as `projectPersonaLog` reads them.
+        const edges = Object.fromEntries((seam.records as { body?: Record<string, unknown> }[]).map((r) => r.body)
+          .filter((b) => b?.["act"] === "device-edge").map((b) => [b!["deviceKey"], b!["edgeDigest"]]));
+        return { founded: true, fork: null, head: { seq: 3, cid: "head" }, cids: seam.cids, vesselTags: seam.vesselTags, admissions: seam.admissions, edges };
       },
     }),
   };
@@ -140,13 +143,17 @@ describe("a replayed answer carries the seated edge, never a re-minted one", () 
     expect(edgeBodyDigest(replay.deviceEdge)).toBe(loggedDigest(acts));
   });
 
-  test("RED: a lease roll between the answer and a retry under a fresh signed request never hands the joinee an edge the log does not seat; the door refuses replay-edge-lapsed", async () => {
+  test("a lease roll between the answer and a retry under a fresh signed request renews the seated edge: one device-edge act at the current epoch, served as logged; the original request's cached answer refuses replay-edge-lapsed", async () => {
     await seatFirst();
     seam.observed = 4;   // the lease rolls; the retry carries a new nonce, so the operation cache misses
-    const outcome = await answer("nonce-2").then((p) => ({ digest: edgeBodyDigest(p.deviceEdge) }), (e: unknown) => e);
-    expect(outcome, "the replay's edge digest must equal the logged edge's, or the door refuses by name").toMatchObject({ refusal: "replay-edge-lapsed" });
-    expect(seam.appended, "a refused replay appends nothing").toEqual([]);
-    // A retry of the ORIGINAL request after the roll (an operation-cache hit) refuses the same way: the cache never decides.
+    const renewed = await answer("nonce-2");
+    const acts = seam.appended as Act[];
+    expect(acts.map((a) => a.body["act"]), "the renewal appends one edge and no admission").toEqual(["device-edge"]);
+    expect(renewed.deviceEdge.boundEpoch).toBe("4");
+    expect(edgeBodyDigest(renewed.deviceEdge), "the answer serves the edge the log now seats").toBe(loggedDigest(acts));
+    // A retry of the ORIGINAL request after the roll (an operation-cache hit) carries the lapsed edge: the cache never decides.
+    seam.appended = [];
     await expect(answer("nonce-1")).rejects.toMatchObject({ refusal: "replay-edge-lapsed" });
+    expect(seam.appended, "a refused replay appends nothing").toEqual([]);
   });
 });
