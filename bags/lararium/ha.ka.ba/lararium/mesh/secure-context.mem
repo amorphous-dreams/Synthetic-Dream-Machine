@@ -120,7 +120,7 @@ Read from caps rather than from tiers, the landlord and bootstrap worries dissol
 
 !! What a key format buys, MEASURED ~ non-portability, never non-compromise
 
-Before a slot binds, a browser vessel's keystore holds its place seed (and its veil Archives) clear, the seed as hex, so a same-origin read yields raw key material. A bound custody slot seals that seed with every other custody row; the web boot asks the tab's person for the unlock before the vessel opens, and the opened tree key rests in page memory: the exposure the page-never-a-vessel ruling moves into the vessel's own worker (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings). The obvious cure — mint the key `extractable: false` and keep only a handle — WORKS, and buys less than its name suggests. Measurement, not reading, grounds both halves (Playwright Chromium 151 + Firefox 153, 2026-08-09).
+Before a slot binds, a browser vessel's keystore holds its place seed (and its veil Archives) clear, the seed as hex, so a same-origin read yields raw key material. A bound custody slot seals that seed with every other custody row; the web boot asks the tab's person for the unlock before the vessel opens, and the opened tree key rests in the vessel worker's memory, never the page's (slice 3 of <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift`>> holds that invariant) (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings). The obvious cure — mint the key `extractable: false` and keep only a handle — WORKS, and buys less than its name suggests. Measurement, not reading, grounds both halves (Playwright Chromium 151 + Firefox 153, 2026-08-09).
 
 ''IT WORKS.'' An Ed25519 key generated non-extractable structured-clones into IndexedDB, survives a full browser restart, signs afterward, and refuses every export. Ed25519 reached WebCrypto across the field in 2024–25 (Firefox 129, Safari 17, Chrome 137). ''One gap:'' Safari can MAKE an X25519 key and cannot PERSIST one as a CryptoKey — Ed25519 persists there, X25519 does not.
 
@@ -194,7 +194,7 @@ A minted key rests in browser storage, and browsers reclaim it. ''WebKit clears 
 !!! What the code holds, and what it owes
 
 * Browser persona roots rest SEALED in the slot tree once a slot binds (`packages/lararium-browser/src/browser-custody.ts`); only the place seed and veil Archives may stand clear before a slot.
-* The opened tree key rests in page memory, keyed by vessel. The page-never-a-vessel ruling (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings) moves it into the browser vessel's own worker: OWED.
+* The opened tree key rests in the browser vessel's own worker, keyed by face, and never enters page memory (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings); slice 3 of <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift`>> discharges it.
 * The browser's PRF wrap (`packages/lararium-browser/src/seed-wrap-prf.ts`) wraps a persona-root seed, never the device signer, and stands outside the slot tree.
 * The mesh slot tree (`packages/lararium-mesh/src/keyslot.ts`) builds `passphrase` and `paper` pins alone and refuses any other kind; a passkey slot stands unbuilt.
 * Walk carriage (`packages/lararium-mesh/src/walk-carry.ts`) keeps its receipt and read cap ON the walker's device, and the hearth may reclaim the bytes. It serves as no backup until a locator and a retention promise survive a wipe.
@@ -294,6 +294,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fNvAyZbxlzOIDM10Hl-_qs-DDpNI4mdo1Me2OrFyG7s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tDCNinrdLmFTks3Sghe2l7CFdvgANskmJafl40K8qp0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

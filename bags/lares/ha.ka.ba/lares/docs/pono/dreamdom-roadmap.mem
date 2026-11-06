@@ -43,7 +43,7 @@ written           = "2026-10-16"
 | the return leg | the patched fake `addEventListener` stamps `data-lar-rid`; the page relays click (always cancelled), a sliver of keydown, `input` and `change` as a whole value, composition guards; no event id | one third of TW5's interactions work, one third paint but act wrongly, one third have no road |
 | the camera | `mountCamera(engine, {rootTiddler, document, container})` takes `window.document` or a fake document | the camera as root plus sink already stands as code |
 | the confirm road | `$:/temp/confirm/*`, `tm-confirm`, `$dialog`; wired and tested; a fork-only `startup/confirm.js` | one parked question, one answer, one re-dispatch, across the superset |
-| authority | the wiki island's capability check answers `worker-trust`; a second tab refuses without `?holder` and then shares one fake DOM | the actor's manifest and gate stay owed |
+| authority | the wiki island's capability check answers `worker-trust`; each tab holds its own session of the one vessel worker (row `B1`, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift`>>), and the surface shares no fake DOM | the actor's manifest and gate stay owed |
 | the daemon surface | `tm-verse-event` → `placeVerb`; summoned by Ctrl+Shift+D or ☰ | the daemon actor, always awake |
 | the filter and render ask | none on the live island; the one such surface stands orphaned | the port's `ask` kinds, owed |
 
@@ -243,6 +243,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Zr2UK4SnvyZZeM0vc5CtJqDQP5NzmgQxjx_flPt3ce0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9DwNupBlp9ixzvYsdAq_6Gtpm_ok4gIgqwRncn-dk2I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

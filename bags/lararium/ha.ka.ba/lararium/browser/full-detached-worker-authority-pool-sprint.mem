@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprin
 Chosen architecture: ''full detached worker-authority pool''.
 
 The browser vessel is a true local-first vessel.
-island runtime realms hold authority.
+island runtime threads hold authority.
 The host frame holds surfaces.
 IndexedDB and sync belong to the vessel layer.
 TW5 plugin content stays inside the wiki island.
@@ -95,6 +95,8 @@ If any check fails, treat it as architectural signal, not a cue to patch around 
 # How much render preparation can the island authority complete before frame attach?
 # Which minimal projection data should cross the worker boundary?
 # Which TW5 refresh/action hooks still require a DOM-bound root?
+
+Row `B1` answers the singleton question: the page holds no vessel module, the vessel worker holds the authority with a session per tab, and the house plus the floor carry it (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift`>>). No HTTP or RPC coordinator surface stands, and no browser singleton authority roots in ambient page boot.
 # Should the first alpha use dedicated workers only, with Sharedisland deferred?
 # Should admin wiki and hot wiki share one pool with capability flags, or two pools with shared law?
 
@@ -118,6 +120,6 @@ Do not guess. Measure and document.
 * Monaco worker integration: https://github.com/microsoft/monaco-editor/blob/main/docs/integrate-esm.md
 * VS Code Webview API: https://code.visualstudio.com/api/extension-guides/webview
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UlYFwfbjYVI4Iv6V3rzxGBjEA-Ew-CS5C3Y3gzPFatU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xco1Dwsc2VUjyNlls0d9sbbWd18d_XyXwz2pYpVLvnw`>>
 
 <<^ code=`&#x0004;` to=`?`>>
