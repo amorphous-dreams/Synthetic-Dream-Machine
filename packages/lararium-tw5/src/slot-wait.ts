@@ -39,6 +39,8 @@ export interface SlotWaitDeps<H> {
   readonly sleep:     (ms: number) => Promise<void>;
   /** One turn of the event loop, so queued port messages land before a fault fires. */
   readonly defer:     () => Promise<void>;
+  /** Subscribe to inbound sync and peer arrivals; returns the listener cleanup. */
+  readonly onWake?:   (wake: () => void) => () => void;
   readonly budgets:   SlotWaitBudgets;
 }
 
@@ -55,16 +57,18 @@ export async function waitForSlotDocument<H>(deps: SlotWaitDeps<H>): Promise<Slo
   // undefined = an ask stands unanswered · "verdict" = a connected peer answered without it · "no-peer" = the Repo
   // settled with no peer connected, which carries no word about the document.
   let settled: { handle: H } | { refused: string } | "verdict" | "no-peer" | undefined;
+  let signal = (): void => {};
   const ask = (): void => {
     settled = undefined;
     // A peer gave the verdict only when one stood connected BEFORE the ask and still stands at the rejection: a
     // peer that joins after the Repo already settled never saw this ask.
     const peerAtAsk = deps.peerCount() > 0;
     void deps.find().then(
-      (handle) => { settled = { handle }; },
+      (handle) => { settled = { handle }; signal(); },
       (rejection) => {
-        if (!deps.absence(rejection)) { settled = { refused: rejection instanceof Error ? rejection.message : String(rejection) }; return; }
+        if (!deps.absence(rejection)) { settled = { refused: rejection instanceof Error ? rejection.message : String(rejection) }; signal(); return; }
         settled = peerAtAsk && deps.peerCount() > 0 ? "verdict" : "no-peer";
+        signal();
       },
     );
   };
@@ -78,9 +82,40 @@ export async function waitForSlotDocument<H>(deps: SlotWaitDeps<H>): Promise<Slo
     if (settled === "verdict") return final ? { outcome: "verdict" } : null;
     return "refused" in settled ? { outcome: "refused", why: settled.refused } : { outcome: "ready", handle: settled.handle };
   };
+  if (deps.onWake) {
+    let changed = false;
+    let resolveSignal: (() => void) | undefined;
+    const wake = (): void => { changed = true; resolveSignal?.(); };
+    signal = wake;
+    let sourceChanged = false;
+    const unsubscribe = deps.onWake(() => { sourceChanged = true; wake(); });
+    // Keep one outstanding deadline per budget interval even when many sync events arrive.
+    let deadline: Promise<void> | undefined;
+    try {
+      ask();
+      for (;;) {
+        const early = done(false);
+        if (early) return early;
+        if (sourceChanged && (settled === "no-peer" || settled === "verdict")) {
+          sourceChanged = false;
+          ask();
+        }
+        if (!within()) {
+          await deps.defer();
+          const late = done(!within());
+          if (late) return late;
+          if (!within()) return { outcome: "never-arrived", silentMs: Math.round(silence()), elapsedMs: Math.round(deps.now() - started) };
+        }
+        if (changed) { changed = false; continue; }
+        deadline ??= deps.sleep(Math.max(0, Math.min(budgets.silenceMs - silence(), budgets.hardCapMs - (deps.now() - started)))).then(() => { deadline = undefined; });
+        await Promise.race([deadline, new Promise<void>((resolve) => { resolveSignal = resolve; })]);
+        resolveSignal = undefined;
+      }
+    } finally { unsubscribe(); signal = () => {}; }
+  }
   ask();
   for (;;) {
-    await deps.sleep(budgets.pollMs);
+    await Promise.race([deps.sleep(budgets.pollMs), new Promise<void>((resolve) => { signal = resolve; })]);
     const early = done(false);
     if (early) return early;
     if (within()) {
