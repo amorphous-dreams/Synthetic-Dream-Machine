@@ -195,6 +195,8 @@ export interface VesselHouseOptions<V extends LitVessel> {
   readonly onFloor?: (session: VesselSession, floor: VesselFloorState) => void;
   /** Hear the lock land, once per lock, whether or not any session stands to hear its floor: the vessel stands down. */
   readonly onLocked?: (report: VesselLockReport) => void;
+  /** Hear an admission begin its wait on the lock in flight; it goes on once that lock ends. */
+  readonly onAdmissionWaits?: (session: VesselSession) => void;
   /** Hear each session drop, with why. */
   readonly onDrop?: (session: VesselSession, why: string) => void;
   /** Ping a session at each sweep; any message it sends back counts as heard. */
@@ -487,6 +489,7 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
       if (s.admission === "admitted") return light(s);
       // AN ADMISSION BEGINS PAST THE LOCK IN FLIGHT: that lock overwrites every key and retires its host's light at its end,
       // so a key seated or a light lit before it ends would go down with the vessel it closes.
+      if (locking) opts.onAdmissionWaits?.(s);
       while (locking) await locking.catch(() => undefined);
       if (!sessions.has(sessionId)) throw new VesselSessionRefused("lock-ended", "the session closed while a lock ran");
       const era = locksBegun;
