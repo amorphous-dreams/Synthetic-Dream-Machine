@@ -795,7 +795,7 @@ Remaining behavior, proof, interface and later-plane work after the second-seat 
 * `B4` QR pairing: the camera road stands unwired, and no decoder dependency or production decode stands. B.
 * `B5` The leaf continuity walk (`tools/browser-weld/leaf-continuity.mjs`) drives an offline founding, reload, and Binding Gate fault that must refuse; the admit and join path still lacks a real-browser proof. B.
 * `B6` Rung 4: a two-hearth browser walk. X.
-* `B7` A session changes face (one face per session; operator, 2026-11-05: //"Multiple tabs will carry live sessions, and later can 'change face'"//). `B1` shapes the session record for it: the face rides as a field of the session, never of the port. B.
+* `B8` A session changes face (one face per session; operator, 2026-11-05: //"Multiple tabs will carry live sessions, and later can 'change face'"//). `B1` shapes the session record for it: the face rides as a field of the session, never of the port. B.
 * `X0b` The idempotent-by-intent pass, after the founding bake, paralleling the isomorphic-by-intent law (operator, 2026-10-19): a replay, a reboot and a retry land nothing new. Every row names itself by its content or its causal id, never a clock or a counter; every write reads first-writer-wins or merges by its CRDT; every boot reads as a function of its stores; and every multi-step act either completes or re-enters to the same end. Its instrument: N boots, each Archive replayed twice, each verb retried, and the second pass of each adds no head and no row. Each finding before the bake cures as its own bug; its instrument runs once before the bake as a census beside `G37`, so a finding that renames a persisted row lands inside the bake, and this pass sweeps what remains. A single operator's re-found reads as its instance at the scale of identity (#/rulings, 2026-10-31), and the memory stage's content-keyed rows as its instance at the scale of the stage (`L9`). X.
 * `X1` The automated two-container witness, with no volume in common. X.
 * `X2` The ceremony as a walk, in the runbook (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>). X.
@@ -1231,6 +1231,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gI-oeaT0YfFqEzLDvCGHv10_oFFMCy6YiIzEbMtdjEg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fESFFUs3Jeu1MAS7pzEeuVYOHvetGTF4YY4ubbzXIb8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -62,7 +62,7 @@ The vessel worker stands as a SharedWorker house where the engine offers one and
 
 ''The passphrase path.'' The page's form turns the passphrase into bytes, sends them on a one-shot port to the vessel worker (or to the ward act worker for a ward act), and keeps nothing. The named residual: the input element's string lingers on the page's heap until garbage collection.
 
-''The session record.'' Each tab's port carries one session; the session record holds its face as a field of the session, never of the port, so a session that changes face later (row `B7`) moves one field and keeps its port.
+''The session record.'' Each tab's port carries one session; the session record holds its face as a field of the session, never of the port, so a session that changes face later (row `B8`) moves one field and keeps its port.
 
 <<~/ahu>>
 
@@ -72,16 +72,17 @@ The vessel worker stands as a SharedWorker house where the engine offers one and
 Each slice lands red-first with its control. The sizes read as house estimates (S, M, L).
 
 # ''Slice 0, the red witnesses (S).'' The page-entry witness walks `main.ts`'s import graph (static and dynamic imports, workspace names to their `src` entries, `?worker&url` spawns and type-only imports not reached) and refuses any reach into `@automerge/automerge-repo`, `@lararium/keyhive`, `browser-custody`, `browser-vessel-identity`, `ward-core` or `seed-wrap-prf`. Red: it fails on the span as it stands, so the register `packages/lararium-mesh/tests/unbuilt-laws.test.ts` declares it as THE PAGE REACHES NO VESSEL MODULE until slice 2 makes it hold.
-# ''Slice 1, the substrate seams (S to M).'' The `localStorage` identity continuity (`browser-vessel-identity.ts`) moves into an IndexedDB row; `confirm()` in `browser-custody.ts` gives way to the existing `ConfirmDoor` parameter; the `document` visibility and `pagehide` reads (`browser-vessel-island-pool.ts`) and `dataset.larRest` become `page:life` and `status` messages. Red: the vessel modules boot under a worker-global shim (no `window`, no `document`, no `localStorage`); today the boot fails at continuity.
+# ''Slice 1, the substrate seams (S to M), built.'' The identity continuity rests in an IndexedDB row of its own database (`lares:continuity`, keyed by the keystore's name), apart from every keystore, so a deleted keystore still refuses a blank re-found (`continuity-lost`); the `localStorage` marker burns. `clearBrowserCustody` already asks through its `ConfirmDoor` parameter and reaches no page `confirm()`. The page feeds its hide and leave through `BrowserVesselOptions.pageLife` (the `page:life` message to come), which drives the wiki drains and the shared holder's session close, and takes the rest reading through `onRest` (a `status` field to come); the page's own `page-life.ts` subscribes the window and the document and paints `data-lar-rest`. Red (`vessel-worker-seams.test.ts`): the vessel's module graph loads on a dedicated worker's thread with no `window`, `document`, `localStorage` or `sessionStorage` and a `location` stripped to its `href`, and the identity founds, reloads the same key and refuses a lost keystore; a census over the package's source finds no page-global reach. It failed at continuity (`localStorage is not defined`). The named residual: a clear of every IndexedDB database on the origin takes the continuity row with the keystore.
 # ''Slice 2, the move (L).'' A dedicated `vessel.worker.ts` runs `openBrowserVessel` unchanged; the `BrowserVesselOptions` callbacks map one to one onto port messages; `main.ts` talks to a `vesselPort`; the islands spawn nested from the dedicated worker. Red: slice 0's witness holds, and a real-browser e2e boots, founds and paints the mirror.
 # ''Slice 3, custody in the vessel (M).'' Each port carries a session its tab admits by its own route; the face's last session closing drops the key; sealing runs on the vessel worker's thread. Red: of two tabs, B without an unlock reads no sealed row; after every tab closes, no tree key stands; reopening asks again.
 # ''Slice 4, the SharedWorker house and the floor's port broker (M to L).'' The SharedWorker hosts slice 2's body, the dedicated worker serves as the floor, and `?holder` goes. On the floor, a follower tab reaches the leader's dedicated vessel worker through a `MessagePort` brokered for it, by the service worker or by the vessel worker minting a per-tab port; the broker hands the port over and never carries its traffic, so the follower's form sends its bytes straight down its own port. Red: a second tab on an engine with no SharedWorker admits its own session by its own unlock, and no page's heap ever holds the other tab's bytes.
 # ''Slice 5a, the capability record (S, rides slice 3).'' The browser answers island asks through a `CapabilityRecord`: receipt, cas and dyad at construction, `custodyWrite` lifted on unlock. Red: a browser herm refuses `session:sign` with `signer-unavailable`, as `composeHerm` does.
 # ''Slice 5b, one composer (L).'' One `composeVessel(substrate, floor, lifts)` serves the node and the browser; roles read as predicates over the record; one `LarVessel` type stands for both. Red: the browser and the node compose through the same function and answer the same capability probes alike.
 # ''Slice 6, idempotence (M).'' A reload mid-ask; a retried ask (`askId` as the digest of act, session and nonce, never a counter); a crashed vessel worker (respawn, re-ask, same heads); a founding killed between `keepBrowserFaceAtomSeed` and the bootstrap write. Red: each lands once and reaches the same heads.
+# ''Slice 7, the vessel reads its own durability (M; a house decision the operator may overrule).'' The vessel reads `persisted()` and the engine's storage class and shows the durability on the page through `status`; a founding or a join on storage that may get erased names that plainly before it binds (for one: //"this browser may forget this device after 7 days unless you add it to your Home Screen"//); the page forwards the `persist()` request, since only the page offers it. A vessel whose keystore vanished boots as a new vessel by name (a fresh per-face tag, a fresh join), never as a crash. Red: a stubbed storage class, not persisted and erasable, shows the warning, and a wiped keystore boots as a new vessel by name.
 # ''The X0b sweep over the browser vessel (M).'' A replay, a reboot and a retry land nothing new: every row names itself by its content or its causal id, and a re-run founding reaches the same end rather than minting a fresh atom and group that orphans the earlier rows. Red: a founding run twice from the same floor leaves one atom, one group and no orphan row.
 
-The order follows the dependencies: 0, 1, 2, 3 with 5a, 4, 5b, 6, then the X0b sweep, and the rite follows the last.
+The order follows the dependencies: 0, 1, 2, 3 with 5a, 4, 5b, 6, 7, then the X0b sweep, and the rite follows the last.
 
 <<~/ahu>>
 
@@ -118,7 +119,7 @@ The order follows the dependencies: 0, 1, 2, 3 with 5a, 4, 5b, 6, then the X0b s
 
 ''Risks.''
 * Android Chrome's SharedWorker stands unmeasured, so the floor (the dedicated worker with its port broker) carries the rite wherever the house cannot stand.
-* A SharedWorker spawns no nested worker, which explains why the holder runs its islands on its own thread.
+* Chromium's SharedWorker constructs no nested Worker (Firefox's does), so no design rests on SharedWorker nesting; the holder runs its islands on its own thread for that reason.
 * Keyhive's WASM initializes on the vessel worker's thread (`worker-boot.ts`).
 * Vite's `?worker&url` resolves differently for nested spawns.
 * People's plugins in the full mirror share the page's main thread with the form, so the full-mirror gate (sealed-store steps 2 and 3) stays.
@@ -128,7 +129,11 @@ The order follows the dependencies: 0, 1, 2, 3 with 5a, 4, 5b, 6, then the X0b s
 
 ''The kept laws, every slice.'' No key on a surface; each tab's own unlock; the last tab returns the browser to its floor; one owner per store (a Web Lock); one Keyhive identity per PersonaGroup; refusals by name; red-first.
 
-''Engine facts to probe before slice 2.'' SharedWorker nesting; Android Chrome's SharedWorker; a WebSocket from a dedicated worker; a service worker transferring a `MessagePort` to a client (slice 4's broker).
+''Engine facts, measured'' (headless Chromium 1248 and Firefox 1555, the probe at `~/.lares-scratch/b1-lift/probe/`). A dedicated worker nests module workers that open IndexedDB. A WebSocket runs in dedicated and shared workers. A service worker brokers a `MessagePort` from tab A's dedicated worker to tab B; a `BroadcastChannel` carries no port (`DataCloneError`). A transferred `ArrayBuffer` detaches in the sender. Web Locks work in workers and block across tabs. WASM instantiates in a worker. `navigator.storage.persist()` stands on the page alone, while workers read `persisted()` and `estimate()`, so the page forwards the persist request.
+
+''Engine facts, sourced'' (MDN browser-compat-data). Chrome Android ships SharedWorker only from 148, so a phone below it takes the service-worker broker. Safari ships SharedWorker from 16 and nested workers partly from 16.4, never inside a SharedWorker (webkit.org/b/265263; Chromium crbug 40695450). Web Locks arrive in Safari 15.4 and Chrome Android 69. Safari's tracking prevention deletes script-writable storage, IndexedDB included, after 7 days of Safari use without an interaction with the site, Home Screen web apps excepted (webkit.org/tracking-prevention), and Safari grants `persist()` by heuristic (webkit.org/blog/14403); slice 7 answers both.
+
+''Engine facts, unmeasured and named.'' iOS terminating a service worker mid-handoff (the broker's handoff stays retryable and never assumes a live service worker); a port transferred through `client.postMessage` on iOS; iOS suspending a background tab's workers; WASM memory caps in iOS workers. A real-device probe on an iPhone and on an Android phone closes these before the rite.
 
 <<~/ahu>>
 
@@ -136,7 +141,7 @@ The order follows the dependencies: 0, 1, 2, 3 with 5a, 4, 5b, 6, then the X0b s
 !! House readings ~ four decisions the operator may overrule
 
 # ''The ceremony boundary.'' The path from the page's form to the worker holds as the interim ceremony boundary for the rite; the ceremony's final shape stays research (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>).
-# ''Every tab carries its own live session'' (operator, 2026-11-05: //"Multiple tabs will carry live sessions, and later can 'change face' (ONE FACE per session later on the roadmap)."//). Each tab's session wears one face and stands admitted by its own unlock. On the floor, a follower tab reaches the leader's dedicated vessel worker through a port brokered for it; the broker hands over the port and never carries its traffic, so no page relays any passphrase. A session changing face rides row `B7`.
+# ''Every tab carries its own live session'' (operator, 2026-11-05: //"Multiple tabs will carry live sessions, and later can 'change face' (ONE FACE per session later on the roadmap)."//). Each tab's session wears one face and stands admitted by its own unlock. On the floor, a follower tab reaches the leader's dedicated vessel worker through a port brokered for it; the broker hands over the port and never carries its traffic, so no page relays any passphrase. A session changing face rides row `B8`.
 # ''One vessel worker per house.'' The page learns the house only as an opaque digest.
 # ''The seal (the operator's default, pending).'' The ruling "the asker seals" (2026-10-19) rewords to "the asker's session seals, on the vessel worker's thread, while that face's session stands unlocked"; the `seal-awaits-session` wait stays.
 
@@ -151,6 +156,6 @@ The order follows the dependencies: 0, 1, 2, 3 with 5a, 4, 5b, 6, then the X0b s
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;89hDgY7QG2ICK1ecOMvmIi5yLvI5UYJGtnq5wj4kFfU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3708zyXf85nE0W26HZRzJMnYigTrTMOsvbnW6vn-tHA`>>
 
 <<^ code=`&#x0004;` to=`?`>>
