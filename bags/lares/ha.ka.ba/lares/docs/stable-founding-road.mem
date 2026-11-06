@@ -63,6 +63,25 @@ The strides 1 to 3 and after-the-seat read measured against the same sources: `K
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/milestones`>>
+
+!! Milestones ~ the landmarks the road walks toward (operator, 2026-11-06)
+
+The operator set these landmarks in a coffee talk (2026-11-06: //"M6 before the rite; write them into the road, M5 pulls hardest right now."//). Each milestone names the state that stands when its rows land; the rows themselves keep their strides and #/the-order's ranks.
+
+|! Milestone |! What stands when it lands |! Rows it gathers |
+| `M0` Fires out | the span's held-out reads green and trains flow again | lane `held-out`: the leaf join's signature order, the C4 weld anchor, the late take's certificate, the weld's control legs; the standing load-reds |
+| `M1` Parallel again | a Codex lane runs end to end without the controller's hands at the wall | `G59` (canon heads ride their green ancestor), the broker's test door, a DIRECT land that reads the span's held-out, the hook and test clocks retired, the launcher ladder's `P1-3` |
+| `M2` One vessel | node, browser and herm compose through one function and answer the same probes; every vessel fix lifts to `@lararium/mesh` or mirrors across the vessel types | 5b, `P27` wiring at four crossings, slices 6 and 7, `X0b`, `K22`, `K23`, `L28` |
+| `M6` Clockless and versionless | no clock decides a lifetime or a wait, and no version literal stands; the face lease retires to anchor-pinned lineage and remove-wins standing | the timeout sweep, the version burn (the domain registry first), the lease end state; `M6` lands BEFORE the rite (operator, 2026-11-06), as law the rite inherits |
+| `M3` The household walks | the joined gate holds, and a real phone joins over household HTTPS with its durability named before it binds | the joined gate, the phone walk, the pre-rite |
+| `M4` The hearth stands | the operator's founding rite, by hand on a TTY | #/fresh-start, the rite |
+| `M5` The house remembers | page, CLI and MCP read and write one daemon wiki, and the house's memory and talk-story move off disk into it; it pulls hardest (operator, 2026-11-06) and leads the road past the rite | `L4p` with `L4f`, `L17`, `L8` to `L13`, `L19`, `L21` |
+| `M7` The Handle survives | recovery contacts rotate the root under the same prefix and nothing reconstructs a root | the K18 rotation door, the root cards' retirement, the recovery verb |
+| `M8` Two hearths | a second operator's Lararium meets this one as an equal peer, the first crossroads | `X0`, `X1` to `X5`, TWO HEARTHS |
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/cold-start`>>
 
 !! Cold start ~ what a cold session reads, runs and obeys
@@ -318,6 +337,15 @@ The operator approved the house's defaults (operator, 2026-11-06: //"Approve you
 * ''The vessel reads its own durability'' (operator, 2026-11-06, approving the house's defaults). The vessel reads its own storage durability (`persisted()`, the storage class) and names erasable storage before a founding or a join binds; a wiped keystore boots as a new vessel, by name. Safari's seven-day rule rides as a measured platform condition, dated and sourced, never as an evergreen constant, and a granted persistence request guarantees nothing beyond what the platform reports. Carrier: `pono/browser-vessel-lift`, slice 7, carried by the b1 lanes' carriers at their land.
 * ''One route for place and face'' (operator, 2026-11-06, approving the house's defaults). At the browser founding one typed route binds both the place tree and the founder face's tree; the two trees stay independently keyed and wrapped (one human prompt, two keys), and the node asks for each tree each time. Carrier: `pono/browser-vessel-lift` and custody, carried by the b1 lanes' carriers at their land.
 * ''The unwired code takes a zero-trust review first'' (operator, 2026-11-06: //"The unwired code should get zero trust critical reviews before wiring (might be legit old design, might be pono but last steps unfinished design)."//). Code that production never calls (the unwired-code scout at `ffe05bc79`) earns no wiring by its presence: a zero-trust critical review decides retire, wire or reshape, then the work. Its rows land before the rite: `L28`, `K22`, `K23` and `P27`.
+
+!!! Operator rulings, 2026-11-06 (late, Lares-Awakens's seat)
+* ''No clock decides a wait'' (operator, 2026-11-06: //"No timeout, 'No global now'"// and //"Approve your lean, event-only first"//). Every wait ends on the product's own events; a liveness window bounds silence only where the page offers no terminal signal. Test and hook budgets count as clocks too, and a sweep retires them (`M6`).
+* ''Versions fall under no global now'' (operator, 2026-11-06: //"'No global now' applies to 'version numbers' (old web2.5 concept we discard) too."//). A version literal stands as debt to burn, never a pattern to copy; the evergreen witness counts the debt and the burn starts at the domain registry (`M6`).
+* ''Free-form roots read pono'' (operator, 2026-11-06: //"free-form roots read pono, the prior sessions just fell into a basin with ha.ka.ba as a stable root."//). A commit subject's `lar:` URI takes any three-term root; `ha.ka.ba` stays the stable API root, never a requirement.
+* ''Every vessel fix checks for a lift'' (operator, 2026-11-06: //"any 'vessel' codefixes should be checked for idempotent-by-intent lifts to /mesh or to mirror behaviour between all vessel types."//). A fix that touches a vessel composer, host or gate server answers, in its commit, whether the cure belongs in `@lararium/mesh` as one relation or mirrors across node, browser and herm.
+* ''The broker's test door'' (operator, 2026-11-06: //"Approve, build the test door on tools-ground"//). A walled lead asks the broker to run named test files outside the wall (a PID namespace, scratch homes, loopback alone, the Node toolchain read-only, the tallies handed back); the docker socket stays the controller's alone (`M1`).
+* ''The root cards retire'' (operator, 2026-11-06: //"I lean retire, but this needs a confimation of most pono action. Luna researcher w/ internet caps please."//; the Luna research confirmed RETIRE). `--split-root` and `vault restore --cards` retire; the Handle returns through recovery contacts or the self-recovery seed, memory through bundles (`M7`).
+* ''The face lease's end state'' (operator, 2026-11-06: //"Build the end state. What's the end state here?"//; the Terra research named it). The face delegation lease retires to anchor-pinned persona lineage and remove-wins standing at every authority reader; the roll guard stands until a census proves every reader enforces set-aside (`M6`).
 
 !!! House rulings under the operator's delegation ~ the questions the operator delegated, each with what flips it
 The operator delegated these to the house: each stands as a house ruling the operator may overturn, its law lives in the carrier it names, and its build rides the stride rows #/the-loops indexes.
@@ -980,6 +1008,13 @@ Finished rows rest here in one line each, naming what landed them, until the ope
 * `ci-container` The browser cells in the pinned Playwright image (tag and digest; no CI job installs a browser at run time; the container cells run as the workspace owner's uid; the image law WL3 to WL5; `W3` raises the island barrier before its click): landed, PR #164, ≈270k tokens. Its owed tails stand as the live rows `G55` and `B7`.
 * `canon-rulings` The night's rulings, ashes and state: landed canon only, PR #172, `ac66dfd58`.
 * `canon-spend` The swarm's spend balance leans Codex 70 : Claude 30: landed canon only, PR #173, `8e8078378`.
+* `canon-true` The road's ashes, `G56`, the night's rulings and `P27`'s state; the spend balance raised to 80 : 20: landed canon only, PR #174, `b8c325a19`.
+* `tools-ci` The pre-push gate before every push, canon-only lanes landing DIRECT, `ci-verdict --wait` ending at the CI verdict: landed, PR #175, `b55de2826`.
+* `B7` A click that races a repaint re-resolves its target once by its stable control id: landed, PR #176, `70ac7a79a`.
+* `G54` `ci-verdict` paces each read by the remaining GitHub quota, never under the 180 s floor; the first lane a Codex lead ran end to end: landed, PR #177, `ed193feee`.
+* `slot-wake` Slot resolution wakes on its own document and peer events: landed, PR #178, `31180ff9d`.
+* `canon-pass` The night's owed rows, the Codex lead recipe and the handoff state for the seat's pass: landed canon only, PR #179, `7c7279cd8`.
+* `b1-lift` The browser vessel's custody per face under its own ward, the sealed store beneath it (`b1-seal` merged by hunk), every tab its own session through the floor's port broker, the shore-writes live wait ending on the page's own events: landed, PR #180, `b81ba9b37`.
 
 <<~/ahu>>
 
@@ -1276,6 +1311,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;scpd7dOK_ft26qYAqiF0AVKo5t_ZZepfqAZbpUzIAnw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7ZKVuhFtrTN1c4Ht1_uBvfBEH0rRdsAyaKCzexb43Gg`>>
 
 <<^ code=`&#x0004;` to=`?`>>
