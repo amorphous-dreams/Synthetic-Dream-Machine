@@ -8,3 +8,8 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 node tools/evergreen-boundary.mjs
+rc=$?
+if [ "$rc" -ne 0 ]; then
+  echo 'pono: state what stands without narration, history or a version literal, or lower the ceiling when a burn shrinks the count'
+fi
+exit "$rc"
