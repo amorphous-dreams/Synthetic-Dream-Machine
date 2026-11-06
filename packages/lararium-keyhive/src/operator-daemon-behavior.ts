@@ -156,6 +156,8 @@ import { proposeDraftsToKahua, pageTitleList } from "./kahua-page-propose.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat } from "./content-key-seat.js";
 import { ownChainStanding, type IslandSessionProof } from "./island-session-proof.js";
+// The island side of the session sign door, for an island entry that composes this behaviour.
+export { islandSessionDoor } from "./island-session-proof.js";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import type { RecordSigner, SessionOwnChain } from "@lararium/mesh";
 import { SealedStore, readKeyParcel, readOutboxKey, readCarriedRecord, encodeKeyParcel, readKeyVersionId, utf8Bytes, type ContentKeyHolderPorts, type KeyParcel, type SealedRecord, type SealedStoreRest } from "@lararium/mesh";

@@ -57,6 +57,7 @@ import {
 import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCard, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "./browser-gate-pins.js";
 import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
 import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
+import { composeBrowserIslandCaps, liftBrowserIslandCaps } from "./browser-island-caps.js";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, provenCrossingPlanes, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
 import { readLarControlResult, readLarFrame, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, ownEntry } from "@lararium/mesh";
@@ -1513,7 +1514,23 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         await fleetRead;
       }
       let replayManifest: (() => { msg: IslandMsg_Manifest; transfer: MessagePort[] }) | null = null;
+      // THE CAPABILITY RECORD this vessel hands its daemon island (slice 5a), composed as the node composes its own:
+      // receipt and cas at construction (the island reads its own fleet board, so no dyad member stands), and the
+      // LIFT on unlock. The lift seats `custodyWrite` and `sessionSign` while this vessel's custody stands open and a
+      // joined face's Nexus session stands; the lock takes both back and drops the session's signer. A vessel at its
+      // floor carries neither, and its island's `session:sign` answers `signer-unavailable` by name.
+      const islandCaps = composeBrowserIslandCaps({ repo, cas: readCasBlobFromOpfs });
+      if (facePresentation !== null) {
+        const certificate = facePresentation.certificate;
+        const lift = liftBrowserIslandCaps(islandCaps, {
+          session: { signer: facePresentation.signer, chain: { scope: certificate.scope, vesselFaceKey: certificate.vesselFaceKey } },
+          custodyWrite: (_carrier, bytes) => saveBrowserVeilArchive(idbName, wornGroup, bytes),
+        });
+        held.stood.push({ what: "the island's lift", down: () => lift.drop() });
+        held.stood.push({ what: "the lift's lock", down: onBrowserCustodyLock(idbName, () => lift.drop()) });
+      }
       const openOnce = (pluginCids: readonly string[]) => openBrowserDaemonVm({
+        caps: islandCaps,
         repo, daemonUrl: social.daemonUrl, coreHash: assembly.coreHash, ownedDocument: true,
         // The persona plane rides only when a face stands. A browser vessel normally holds one — it IS
         // a person's face — so absence here names an unfinished founding rather than a crossroads, and

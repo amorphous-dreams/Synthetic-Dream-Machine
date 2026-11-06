@@ -43,14 +43,11 @@ import {
   type CustodyWriteCarrier,
   type IslandMsg_CustodyWrite,
   type IslandMsg_CustodyWritten,
-  type IslandMsg_SessionSign,
-  type IslandMsg_SessionSigned,
   type CasTransitTransport,
   verifyCidBytes,
 } from "@lararium/mesh";
 import type { IslandBehavior } from "@lararium/tw5";
-import type { IslandSessionProof, SessionReading } from "@lararium/keyhive";
-import type { Signature } from "@lararium/mesh/face-proof-subjects";
+import { islandSessionDoor, type IslandSessionProof } from "@lararium/keyhive";
 import { casDirFromIslandStorageDir, readCasBlobFromFs, type IslandCasData } from "./node-cas.js";
 
 /** A worker's ask waits this long for the vessel's cas capability before it reads as a miss (PENDING, never a fault). */
@@ -127,55 +124,7 @@ export function vesselDyadAsker(
  * as a refusal by name, never as a signer: the island holds no key to fall back on.
  */
 export function vesselSessionDoor(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }, patienceMs: number = VESSEL_ASK_PATIENCE_MS): IslandSessionProof {
-  const pending = new Map<string, (answer: IslandMsg_SessionSigned | null) => void>();
-  port.on("message", (raw: unknown) => {
-    const m = raw as Partial<IslandMsg_SessionSigned> | null;
-    if (!m || m.type !== "session:signed" || typeof m.requestId !== "string") return;
-    const settle = pending.get(m.requestId);
-    if (!settle) return;
-    pending.delete(m.requestId);
-    settle(m as IslandMsg_SessionSigned);
-  });
-  let seq = 0;
-  const askVessel = (op: "read" | "sign" | "own", ask: { requestId: string; verb: string }, payload?: Uint8Array): Promise<IslandMsg_SessionSigned | null> => new Promise((resolve) => {
-    const requestId = `session-sign-${process.pid}-${++seq}`;
-    const timer = setTimeout(() => { pending.delete(requestId); resolve(null); }, patienceMs);
-    timer.unref?.();
-    pending.set(requestId, (answer) => { clearTimeout(timer); resolve(answer); });
-    const msg: IslandMsg_SessionSign = { type: "session:sign", requestId, op, ask: ask.requestId, verb: ask.verb, ...(payload ? { payload } : {}) };
-    try { port.postMessage(msg); } catch { pending.delete(requestId); clearTimeout(timer); resolve(null); }
-  });
-  const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((c): c is string => typeof c === "string") : []);
-  return {
-    async own() {
-      const read = await askVessel("own", { requestId: "", verb: "" });
-      if (read === null || !("own" in read)) return { refusal: read !== null && "refusal" in read ? read.refusal : "chain-absent" };
-      return { chain: read.chain, foldRead: read.foldRead === true, counted: strings(read.counted), unanswered: strings(read.unanswered) };
-    },
-    async signer(ask): Promise<SessionReading> {
-      if (ask === null) return { refusal: "signer-unavailable" };
-      const read = await askVessel("read", ask);
-      if (read === null) return { refusal: "signer-unavailable" };
-      if ("refusal" in read) return { refusal: read.refusal };
-      if (!("certificate" in read)) return { refusal: "signer-unavailable" };
-      const certificate = read.certificate as never;
-      return {
-        subject: read.subject, chain: read.chain, foldRead: read.foldRead === true,
-        counted: Array.isArray(read.counted) ? read.counted.filter((c): c is string => typeof c === "string") : [],
-        unanswered: Array.isArray(read.unanswered) ? read.unanswered.filter((c): c is string => typeof c === "string") : [],
-        signer: {
-          certificate,
-          async sign(purpose, payload) {
-            if (purpose !== "act") return { refusal: "signer-refused" };
-            const signed = await askVessel("sign", ask, payload);
-            if (signed === null) return { refusal: "signer-refused" };
-            if ("signature" in signed) return { signature: signed.signature as Signature };
-            return { refusal: "refusal" in signed ? signed.refusal : "signer-refused" };
-          },
-        },
-      };
-    },
-  };
+  return islandSessionDoor({ post: (msg) => port.postMessage(msg), listen: (cb) => { port.on("message", cb); } }, { patienceMs, idPrefix: `session-sign-${process.pid}` });
 }
 
 /**

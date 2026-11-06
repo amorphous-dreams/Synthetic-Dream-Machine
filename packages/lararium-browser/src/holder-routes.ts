@@ -40,8 +40,8 @@ export const HOLDER_ROUTES = {
   "dyad:ask": "owner",
   "receipt:request": "owner",
   "custody:write": "owner",
-  // The session sign door (sealed-store#/the-store): the browser island composes no session proof until U4 moves the
-  // daemon kernel into the holder (road F6, slice four), so no browser island asks one; the route stays total.
+  // The record asks reach the owner, the vessel that holds the island's capability record (`browser-island-caps.ts`),
+  // which answers each through the member of its name; a session sign answers there or refuses `signer-unavailable`.
   "session:sign": "owner",
   "view:catalog": "owner",
   "view:content": "owner",

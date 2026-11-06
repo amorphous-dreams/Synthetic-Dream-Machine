@@ -21,7 +21,10 @@
  * Canon: lar:///ha.ka.ba/lares/docs/pono/test-recut-road
  */
 import type { EdgeStanding } from "./edge-kapae.js";
-import type { CustodyWriteCarrier, IslandMsg_SessionSign, SessionOwnChain } from "./island-protocol.js";
+import type {
+  CustodyWriteCarrier, IslandMsg_CasBlock, IslandMsg_CustodyWrite, IslandMsg_CustodyWritten, IslandMsg_DyadAsk, IslandMsg_DyadRead,
+  IslandMsg_ReceiptIssued, IslandMsg_ReceiptRequest, IslandMsg_SessionSign, IslandMsg_SessionSigned, SessionOwnChain,
+} from "./island-protocol.js";
 
 /** The vessel's answer to an island's receipt ask — resolves once every named document rests in the vessel's store. */
 export type ReceiptIssuer = (documentIds: readonly string[], heads?: Readonly<Record<string, readonly string[]>>) => Promise<void>;
@@ -44,4 +47,100 @@ export interface CapabilityRecord {
   dyad?: DyadReader | undefined;
   custodyWrite?: CustodyWriter | undefined;
   sessionSign?: SessionSignDoor | undefined;
+}
+
+// ── THE ANSWERS, vessel side ────────────────────────────────────────────────────────────────────────
+// Each answer reads the member it needs FROM THE RECORD at ask time, so a vessel may stand a member after the spawn and
+// drop it at a lock or a teardown. An absent member refuses by name; a fault reads as the same refusal, never a fault
+// the island must survive. Both vessels answer through these (the node over a `worker_threads` port, the browser over
+// a Web Worker), so one island ask draws one answer whatever thread hosts the vessel.
+
+/** Answer one `receipt:request`: a record with no `receipt` standing answers `issued: false`, naming the absence. */
+export async function answerReceipt(caps: CapabilityRecord, ask: Pick<IslandMsg_ReceiptRequest, "requestId" | "documentIds" | "heads">): Promise<IslandMsg_ReceiptIssued> {
+  const base = { type: "receipt:issued" as const, requestId: ask.requestId };
+  const receipt = caps.receipt;
+  if (!receipt) return { ...base, issued: false, why: "ReceiptCapabilityUnavailable: no receipt capability stands on this vessel" };
+  try { await receipt(ask.documentIds, ask.heads); return { ...base, issued: true, proof: { documentIds: [...ask.documentIds] } }; }
+  catch (e) { return { ...base, issued: false, why: e instanceof Error ? e.message : String(e) }; }
+}
+
+/** Answer one dyad ask, failing closed (`aside`) on a missing capability, a fault or a malformed reading. */
+export async function answerDyad(caps: CapabilityRecord, ask: Pick<IslandMsg_DyadAsk, "requestId" | "fleetRoot" | "deviceKey">): Promise<IslandMsg_DyadRead> {
+  const base = { type: "dyad:read" as const, requestId: ask.requestId };
+  if (typeof ask.fleetRoot !== "string" || typeof ask.deviceKey !== "string") return { ...base, standing: "aside" };
+  const dyad = caps.dyad;
+  if (!dyad) return { ...base, standing: "aside" };
+  try {
+    const standing = await dyad(ask.fleetRoot, ask.deviceKey);
+    return { ...base, standing: standing === "clear" || standing === "aside" || standing === "owing" || standing === "returned" || standing === "unknown" ? standing : "aside" };
+  } catch { return { ...base, standing: "aside" }; }
+}
+
+/** Answer one `custody:write`: the island holds bytes and never the vessel key, and the vessel's thread seals them. */
+export async function answerCustodyWrite(caps: CapabilityRecord, ask: Pick<IslandMsg_CustodyWrite, "requestId" | "carrier" | "bytes">): Promise<IslandMsg_CustodyWritten> {
+  const base = { type: "custody:written" as const, requestId: ask.requestId };
+  if (ask.carrier !== "veil" || !(ask.bytes instanceof Uint8Array)) return { ...base, written: false, why: "bad custody write ask" };
+  const custodyWrite = caps.custodyWrite;
+  if (!custodyWrite) return { ...base, written: false, why: "no custodyWrite capability stands on this vessel" };
+  try { await custodyWrite(ask.carrier, ask.bytes); return { ...base, written: true }; }
+  catch (e) { return { ...base, written: false, why: e instanceof Error ? e.message : String(e) }; }
+}
+
+/** Answer one `session:sign` through the record's `sessionSign`; no door, a malformed ask or a fault each refuse by name.
+ *  A record composed at the floor carries no door, so its ask answers `signer-unavailable`. */
+export async function answerSessionSign(caps: CapabilityRecord, ask: Partial<IslandMsg_SessionSign> & { requestId: string }): Promise<IslandMsg_SessionSigned> {
+  const base = { type: "session:signed" as const, requestId: ask.requestId };
+  if ((ask.op !== "read" && ask.op !== "sign" && ask.op !== "own") || typeof ask.ask !== "string" || typeof ask.verb !== "string" ||
+      (ask.op === "sign" && !(ask.payload instanceof Uint8Array))) return { ...base, refusal: "signer-unavailable" };
+  const door = caps.sessionSign;
+  if (!door) return { ...base, refusal: "signer-unavailable" };
+  try {
+    const answer = await door({ op: ask.op, ask: ask.ask, verb: ask.verb, ...(ask.payload ? { payload: ask.payload } : {}) });
+    return { ...base, ...answer } as IslandMsg_SessionSigned;
+  } catch { return { ...base, refusal: ask.op === "sign" ? "signer-refused" : "signer-unavailable" }; }
+}
+
+/** The island-to-vessel kinds the record answers, each by the member of its own name. */
+export const RECORD_ASKS = ["cas:want", "receipt:request", "dyad:ask", "custody:write", "session:sign"] as const;
+
+/**
+ * Answer a DAEMON island's asks through its record, over any port: `cas:want`, `receipt:request`, `dyad:ask`,
+ * `custody:write` and `session:sign`. Returns the unsubscribe. The node answers over its `worker_threads` channel by
+ * kind (`worker-handle.ts`); a browser vessel worker answers its daemon island here.
+ */
+export function answerIslandAsks(port: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void }, caps: CapabilityRecord): () => void {
+  const reply = (msg: unknown): void => { try { port.post(msg); } catch { /* the island went away: nothing to answer */ } };
+  return port.listen((raw) => {
+    const m = raw as { type?: unknown; requestId?: unknown; [k: string]: unknown } | null;
+    if (!m || typeof m.requestId !== "string") return;
+    const requestId = m.requestId;
+    switch (m.type) {
+      case "cas:want": {
+        if (typeof m["cid"] !== "string") return;
+        const cas = caps.cas;
+        const answer = (bytes: Uint8Array | null): void => reply({ type: "cas:block", requestId, bytes } satisfies IslandMsg_CasBlock);
+        if (!cas) { answer(null); return; }
+        cas(m["cid"]).then(answer, () => answer(null));
+        return;
+      }
+      case "receipt:request": {
+        const ids = m["documentIds"];
+        if (!Array.isArray(ids) || !ids.every((id) => typeof id === "string")) return;
+        const heads = m["heads"];
+        void answerReceipt(caps, { requestId, documentIds: ids, ...(heads && typeof heads === "object" ? { heads: heads as Record<string, string[]> } : {}) }).then(reply);
+        return;
+      }
+      case "dyad:ask":
+        void answerDyad(caps, { requestId, fleetRoot: m["fleetRoot"] as string, deviceKey: m["deviceKey"] as string }).then(reply);
+        return;
+      case "custody:write":
+        void answerCustodyWrite(caps, { requestId, carrier: m["carrier"] as CustodyWriteCarrier, bytes: m["bytes"] as Uint8Array }).then(reply);
+        return;
+      case "session:sign":
+        void answerSessionSign(caps, m as Partial<IslandMsg_SessionSign> & { requestId: string }).then(reply);
+        return;
+      default:
+        return;
+    }
+  });
 }

@@ -4,7 +4,10 @@
  */
 
 import { Worker, MessageChannel } from "worker_threads";
-import { type VesselWorkerHandle, type CapabilityRecord, type CustodyWriteCarrier, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_ReceiptRequest, type IslandMsg_ReceiptIssued, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten, type IslandMsg_SessionSign, type IslandMsg_SessionSigned } from "@lararium/mesh";
+import { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, type VesselWorkerHandle, type CapabilityRecord, type CustodyWriteCarrier, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_ReceiptRequest, type IslandMsg_ReceiptIssued, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten, type IslandMsg_SessionSign, type IslandMsg_SessionSigned } from "@lararium/mesh";
+
+// The answers stand once on the mesh floor (`capability-record.ts`), so the node and the browser answer one ask alike.
+export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign };
 
 // THE CAPABILITY RECORD, vessel side (`CapabilityRecord`, mesh). The vessel hands each island ONE record at its spawn;
 // every answer below reads the member it needs FROM THAT RECORD at ask time, so a vessel may stand a member after the
@@ -27,19 +30,6 @@ function attachCas(w: Worker, caps: CapabilityRecord): void {
   });
 }
 
-/**
- * Answer one `receipt:request` through the receipt capability the record carries now. Exported so a test asks it
- * without a worker. A record with no `receipt` standing answers `issued: false`, naming the absent capability: a
- * pointer never lands on an unacknowledged save.
- */
-export async function answerReceipt(caps: CapabilityRecord, ask: Pick<IslandMsg_ReceiptRequest, "requestId" | "documentIds" | "heads">): Promise<IslandMsg_ReceiptIssued> {
-  const base = { type: "receipt:issued" as const, requestId: ask.requestId };
-  const receipt = caps.receipt;
-  if (!receipt) return { ...base, issued: false, why: "ReceiptCapabilityUnavailable: no receipt capability stands on this vessel" };
-  try { await receipt(ask.documentIds, ask.heads); return { ...base, issued: true, proof: { documentIds: [...ask.documentIds] } }; }
-  catch (e) { return { ...base, issued: false, why: e instanceof Error ? e.message : String(e) }; }
-}
-
 function attachReceipt(w: Worker, caps: CapabilityRecord): void {
   w.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_ReceiptRequest> | null;
@@ -51,18 +41,6 @@ function attachReceipt(w: Worker, caps: CapabilityRecord): void {
   });
 }
 
-/** Answer one dyad ask through the record's `dyad`, failing closed (`aside`) on a missing capability, a fault or a malformed reading. */
-export async function answerDyad(caps: CapabilityRecord, ask: Pick<IslandMsg_DyadAsk, "requestId" | "fleetRoot" | "deviceKey">): Promise<IslandMsg_DyadRead> {
-  const base = { type: "dyad:read" as const, requestId: ask.requestId };
-  if (typeof ask.fleetRoot !== "string" || typeof ask.deviceKey !== "string") return { ...base, standing: "aside" };
-  const dyad = caps.dyad;
-  if (!dyad) return { ...base, standing: "aside" };
-  try {
-    const standing = await dyad(ask.fleetRoot, ask.deviceKey);
-    return { ...base, standing: standing === "clear" || standing === "aside" || standing === "owing" || standing === "returned" || standing === "unknown" ? standing : "aside" };
-  } catch { return { ...base, standing: "aside" }; }
-}
-
 function attachDyad(w: Worker, caps: CapabilityRecord): void {
   w.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_DyadAsk> | null;
@@ -71,21 +49,6 @@ function attachDyad(w: Worker, caps: CapabilityRecord): void {
       try { w.postMessage(reply); } catch { /* the worker went away — nothing to answer */ }
     });
   });
-}
-
-/**
- * Answer one `custody:write` ask through the record's `custodyWrite`. The daemon island holds bytes but never the
- * vessel key; the main thread seals them. The DAEMON island's channel alone carries the ask (`IslandClass`).
- */
-export async function answerCustodyWrite(caps: CapabilityRecord, ask: Pick<IslandMsg_CustodyWrite, "requestId" | "carrier" | "bytes">): Promise<IslandMsg_CustodyWritten> {
-  const base = { type: "custody:written" as const, requestId: ask.requestId };
-  if (ask.carrier !== "veil" || !(ask.bytes instanceof Uint8Array)) {
-    return { ...base, written: false, why: "bad custody write ask" };
-  }
-  const custodyWrite = caps.custodyWrite;
-  if (!custodyWrite) return { ...base, written: false, why: "no custodyWrite capability stands on this vessel" };
-  try { await custodyWrite(ask.carrier, ask.bytes); return { ...base, written: true }; }
-  catch (e) { return { ...base, written: false, why: e instanceof Error ? e.message : String(e) }; }
 }
 
 function attachCustodyWrite(w: Worker, caps: CapabilityRecord): void {
@@ -101,19 +64,6 @@ function attachCustodyWrite(w: Worker, caps: CapabilityRecord): void {
 // THE SESSION SIGN DOOR, vessel side (`session-sign-door.ts`). The daemon island names the invocation a session placed;
 // the vessel's book answers from that session's signer, which signs here, behind its owner's table. The DAEMON island's
 // channel alone carries the ask: a wiki island's refuses by name.
-/** Answer one `session:sign` ask through the record's `sessionSign`; no door, a malformed ask or a fault each refuse by name. */
-export async function answerSessionSign(caps: CapabilityRecord, ask: Partial<IslandMsg_SessionSign> & { requestId: string }): Promise<IslandMsg_SessionSigned> {
-  const base = { type: "session:signed" as const, requestId: ask.requestId };
-  if ((ask.op !== "read" && ask.op !== "sign" && ask.op !== "own") || typeof ask.ask !== "string" || typeof ask.verb !== "string" ||
-      (ask.op === "sign" && !(ask.payload instanceof Uint8Array))) return { ...base, refusal: "signer-unavailable" };
-  const door = caps.sessionSign;
-  if (!door) return { ...base, refusal: "signer-unavailable" };
-  try {
-    const answer = await door({ op: ask.op, ask: ask.ask, verb: ask.verb, ...(ask.payload ? { payload: ask.payload } : {}) });
-    return { ...base, ...answer } as IslandMsg_SessionSigned;
-  } catch { return { ...base, refusal: ask.op === "sign" ? "signer-refused" : "signer-unavailable" }; }
-}
-
 function attachSessionSignDoor(w: Worker, caps: CapabilityRecord): void {
   const logged = { once: false };
   w.on("message", (raw: unknown) => {

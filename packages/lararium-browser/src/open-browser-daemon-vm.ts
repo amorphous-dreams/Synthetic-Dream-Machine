@@ -24,6 +24,8 @@ import {
   type IslandMsg_Manifest,
   type IslandGrants,
   type VesselWorkerHandle,
+  type CapabilityRecord,
+  answerIslandAsks,
 } from "@lararium/mesh";
 import {
   openDaemonVmCore,
@@ -62,6 +64,9 @@ export interface BrowserDaemonVmOptions {
    *  shared holder's port wrapped as the handle (shared-holder.ts): the island stands once per house and
    *  this tab attaches to it; no worker spawns here. */
   spawnWorker?:     (url: URL) => VesselWorkerHandle;
+  /** THE CAPABILITY RECORD this vessel hands its daemon island (`browser-island-caps.ts`): the vessel worker answers the
+   *  island's `cas:want`, `receipt:request`, `dyad:ask`, `custody:write` and `session:sign` through it, read at ask time. */
+  caps:             CapabilityRecord;
   /** The holder path installs this factory for a replacement manifest after a late floor swap. */
   onManifestReplay?: (rePost: () => { msg: IslandMsg_Manifest; transfer: MessagePort[]; afterPost?: () => void }) => void;
 }
@@ -87,7 +92,7 @@ export interface BrowserVerbPlacementRequest {
 export async function openBrowserDaemonVm(
   opts: BrowserDaemonVmOptions,
 ): Promise<DaemonVmCore> {
-  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, recipe, grants, daemonAuth, ownedDocument = false, workerScriptUrl, spawnWorker, onManifestReplay } = opts;
+  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, recipe, grants, daemonAuth, ownedDocument = false, workerScriptUrl, spawnWorker, onManifestReplay, caps } = opts;
 
   // ── Daemon doc handle (browser strategy: find-or-create) ────────────────────
   const daemonHandle = await (async () => {
@@ -110,7 +115,12 @@ export async function openBrowserDaemonVm(
   const host: DaemonVmHost = {
     newSyncChannel: browserNewSyncChannel,
     ...(ownedDocument ? { newOwnedSyncChannel: browserNewSyncChannel } : {}),
-    spawnWorker:    spawnWorker ?? browserSpawnWorker,
+    // Each island this VM spawns asks through the record, and its answers leave with the worker.
+    spawnWorker:    (url) => {
+      const handle = (spawnWorker ?? browserSpawnWorker)(url);
+      const stop = answerIslandAsks(handle, caps);
+      return { ...handle, terminate: () => { stop(); handle.terminate(); } };
+    },
     awaitReady:     true,
     ...(onManifestReplay ? { onManifestReplay } : {}),
   };

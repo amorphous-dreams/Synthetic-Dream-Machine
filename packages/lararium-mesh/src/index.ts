@@ -290,6 +290,8 @@ export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, 
 export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
 export { answerReceiptWithHeads, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";
 export type { CapabilityRecord, ReceiptIssuer, CasFetcher, DyadReader, CustodyWriter, SessionSignDoor } from "./capability-record.js";
+export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerIslandAsks, RECORD_ASKS } from "./capability-record.js";
+export { SessionSignBook, type BookedSession, type BookedSessionSigner } from "./session-sign-book.js";
 export { GatedSyncLeg, oneWayDocumentsGate, carriesPrototypeKeyReason } from "./gated-sync-leg.js";
 export { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey, docPrototypeKeyFault, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
 export type { SyncLegGate, LegRefusal } from "./gated-sync-leg.js";
