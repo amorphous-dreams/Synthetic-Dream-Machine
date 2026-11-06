@@ -1,6 +1,7 @@
 /**
  * The 2026-11-06 ruling gives every tab a live session. A lock chooses one owner per store; a follower opens its own session
- * over a brokered port. The broker hands ports and carries no vessel traffic.
+ * over a brokered port. The broker hands ports and carries no vessel traffic. When the owner's tab goes, a surviving tab takes
+ * the lock and stands as owner.
  */
 import type { PageLifeFeed } from "@lararium/browser/page";
 import type { BrokerToPage, PageToBroker } from "./ceremony-protocol.js";
@@ -34,11 +35,20 @@ export function standFloorTab(env: FloorTabEnv) {
   env.pageLife((life) => {
     if (life === "pagehide" && role === "claiming") env.broker.post({ t: "vessel:withdraw", tabSession: env.tabSession });
   });
-  void env.locks.request(env.lockName, { ifAvailable: true }, async (lock) => {
-    if (!lock) { role = "claiming"; env.broker.post({ t: "vessel:claim", tabSession: env.tabSession }); return; }
+  /** The lock grants: this tab owns the store and holds it for the page's life. A claim still pending withdraws first. */
+  const own = async (): Promise<void> => {
+    if (role === "claiming") env.broker.post({ t: "vessel:withdraw", tabSession: env.tabSession });
     role = "owner";
     door = env.lead();
     await new Promise<void>(() => {});
+  };
+  // FLOOR-TAB SUCCESSION: a tab that finds the lock held claims, then queues behind the owner; when the owner's tab goes, its
+  // lock releases and the survivor stands as owner (its own vessel worker, its own unlock). One owner per store, always.
+  void env.locks.request(env.lockName, { ifAvailable: true }, async (lock) => {
+    if (lock) return own();
+    role = "claiming";
+    env.broker.post({ t: "vessel:claim", tabSession: env.tabSession });
+    void env.locks.request(env.lockName, own);
   });
   return { role: () => role };
 }

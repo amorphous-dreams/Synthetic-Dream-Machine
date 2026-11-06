@@ -13,6 +13,9 @@
  *             CONTROL: a refused mint offers nothing; a claiming tab mints nothing for another's want.
  *   FT4 RED   a claiming tab's pagehide withdraws its claim (`vessel:withdraw{tabSession}`), so the broker's wait ends on an event.
  *             CONTROL: the owner's pagehide withdraws nothing.
+ *   FT5 RED   FLOOR-TAB SUCCESSION: when the owner's tab goes (its lock releases), a follower stands as owner: it leads once, its
+ *             new vessel mints for the next want. A claiming tab the lock reaches first withdraws its claim and leads.
+ *             CONTROL: while the owner's lock stands held, no follower leads.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
@@ -122,4 +125,39 @@ test("FT4 RED a claiming tab's pagehide withdraws its claim — CONTROL: the own
   expect(claimer.posted.at(-1)?.msg, "the claim's wait ends on the claimant's own word").toEqual({ t: "vessel:withdraw", tabSession: "tab-b" });
   owner.life.say("pagehide");
   expect(owner.posted.filter((p) => p.msg.t === "vessel:withdraw"), "CONTROL: an owner holds no claim to withdraw").toEqual([]);
+});
+
+test("FT5 RED the survivor stands as owner when the owner's tab goes — CONTROL: while the owner's lock stands, no follower leads", async () => {
+  const lockName = `floor-tab:${crypto.randomUUID()}`;
+  const release = await heldElsewhere(lockName);
+  const minted = new MessageChannel();
+  const follower = tabOf(lockName, "tab-b", async (w) => (w === "c9" ? minted.port2 : null));
+  await settle(() => follower.posted.length > 0);
+  follower.hand({ t: "vessel:port", tabSession: "tab-b" }, [new MessageChannel().port1]);
+  const claimer = tabOf(lockName, "tab-c");
+  await settle(() => claimer.posted.length > 0);
+  await new Promise((r) => setTimeout(r, 50));
+  expect(follower.leads, "CONTROL: a held owner lock leads no follower").toEqual([]);
+  expect(follower.tab.role()).toBe("follower");
+  release();
+  await settle(() => follower.leads.length > 0);
+  expect(follower.leads, "the follower stands as owner once the owner's tab goes").toHaveLength(1);
+  expect(follower.tab.role()).toBe("owner");
+  follower.hand({ t: "vessel:want", claimId: "c9", tabSession: "tab-c" });
+  await settle(() => follower.posted.some((p) => p.msg.t === "vessel:offer"));
+  expect(follower.posted.find((p) => p.msg.t === "vessel:offer")?.ports, "the new owner's vessel mints for the next want").toEqual([minted.port2]);
+  expect(claimer.leads, "one owner per store: the claimer waits behind the new owner").toEqual([]);
+});
+
+test("FT5b RED a claiming tab the released lock reaches first withdraws its claim and leads", async () => {
+  const lockName = `floor-tab:${crypto.randomUUID()}`;
+  const release = await heldElsewhere(lockName);
+  const claimer = tabOf(lockName, "tab-c");
+  await settle(() => claimer.posted.length > 0);
+  release();
+  await settle(() => claimer.leads.length > 0);
+  expect(claimer.tab.role()).toBe("owner");
+  expect(claimer.posted.map((p) => p.msg)).toEqual([{ t: "vessel:claim", tabSession: "tab-c" }, { t: "vessel:withdraw", tabSession: "tab-c" }]);
+  claimer.hand({ t: "vessel:port", tabSession: "tab-c" }, [new MessageChannel().port1]);
+  expect(claimer.follows, "an owner follows no late port").toEqual([]);
 });
