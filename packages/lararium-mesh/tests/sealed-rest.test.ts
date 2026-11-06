@@ -359,6 +359,64 @@ describe("U3: the manifest carries the change's writer, signed with it", () => {
   });
 });
 
+describe("P1: a bag map that drops (a dial drop, the floor) never writes clear over a sealed rest", () => {
+  it("after the map drops, a change and a compaction leave no clear byte and every sealed pointer at rest; the save waits `save-unmapped` and seals once the map stands again", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    let mapped = true;
+    const r = standRest(a, inner, { sealed: () => mapped });
+    const session: Session = { id: "s-a", subject: r.own, signer: a.signer };
+    const repo = new Repo({ storage: r.rest.store, network: [] });
+    r.seat(repo);
+    const doc = repo.create<{ note?: string; more?: string }>();
+    r.rest.wrote(doc.documentId, session);
+    doc.change((d) => { d.note = SECRET; });
+    await repo.flush();
+    await r.rest.store.flush();
+    const pointers = [...inner.bytes.keys()].filter((k) => k.startsWith(doc.documentId));
+    expect(pointers.length).toBeGreaterThan(0);   // the setup took: the document rests sealed
+    expect(restsClear(inner, doc.documentId, SECRET)).toBe(false);
+    // THE MAP DROPS (the dial's chain cleared): the next change saves, and the engine compacts: a snapshot, then the
+    // removal of every earlier chunk key.
+    mapped = false;
+    doc.change((d) => { d.more = `${SECRET}-after-the-drop`; });
+    await repo.flush();
+    const snapshot = A.save(doc.doc() as A.Doc<unknown>);
+    await r.rest.store.save([doc.documentId, "snapshot", "after-the-drop"], snapshot);
+    for (const key of pointers) await r.rest.store.remove(key.split("\u0000"));
+    expect(restsClear(inner, doc.documentId, SECRET)).toBe(false);
+    expect(restsClear(inner, doc.documentId, `${SECRET}-after-the-drop`)).toBe(false);
+    for (const key of pointers) expect(inner.bytes.has(key), key).toBe(true);
+    expect(r.rest.store.waiting(doc.documentId)).toBeGreaterThan(0);
+    // THE MAP STANDS AGAIN: the waiting saves seal, and only then do the removals the compaction asked land.
+    mapped = true;
+    r.rest.book.book(doc.documentId, session);
+    await r.rest.store.reseal();
+    expect(r.rest.store.waiting(doc.documentId)).toBe(0);
+    expect(restsClear(inner, doc.documentId, `${SECRET}-after-the-drop`)).toBe(false);
+    await repo.shutdown();
+    a.restart();
+    const again = standRest(a, inner);
+    const repo2 = new Repo({ storage: again.rest.store, network: [] });
+    expect((await repo2.find<{ note?: string; more?: string }>(doc.documentId as unknown as AutomergeUrl)).doc()).toMatchObject({ note: SECRET, more: `${SECRET}-after-the-drop` });
+    await repo2.shutdown();
+  });
+
+  it("CONTROL: a document that never rested sealed still writes clear while unmapped", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const r = standRest(a, inner, { sealed: () => false });
+    const repo = new Repo({ storage: r.rest.store, network: [] });
+    const doc = repo.create<{ note?: string }>();
+    doc.change((d) => { d.note = SECRET; });
+    await repo.flush();
+    expect(restsClear(inner, doc.documentId, SECRET)).toBe(true);
+    await repo.shutdown();
+  });
+});
+
 describe("T3: a save waiting at the stand-down is never lost", () => {
   it("a booked change written just before the stand-down seals under its session before any booking drops, and a restart reads it", async () => {
     const w = world();
