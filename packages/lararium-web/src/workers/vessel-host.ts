@@ -250,7 +250,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     statusTo(conn, { custody: session.admittedBy ? BOOT_READING[session.admittedBy] : "held", ...(session.face ? { face: session.face } : {}) });
     statusTo(conn, vesselStatus(result));
     // A LATE SESSION MISSED THE FRAMES ALREADY SENT: the vessel repaints the shown surface whole, and the frame reaches it over its own port.
-    if (litVessel && litBy !== session.sessionId && wearsLitFace(conn)) litVessel.resend(litVessel.activeWikiId);
+    if (litVessel && litBy !== session.sessionId && wearsLitFace(conn)) litVessel.resend(litVessel.activeSurface());
     void seedRestOf(idbName, session.face).then((s) => statusTo(conn, s), () => { /* an unreadable slot reads its own refusal elsewhere */ });
     return result;
   };

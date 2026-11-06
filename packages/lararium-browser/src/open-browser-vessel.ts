@@ -429,6 +429,8 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[] } | null>;
   /** Ask a surface's island to paint whole under a fresh mount epoch (`lar:resend`). */
   resend: (surface: string) => ReturnLegVerdict;
+  /** The surface id the projection gate shows now: the daemon's, or a wiki's slug. */
+  activeSurface: () => string;
   /** The uniform pin-selector: flip which VM owns the singleton #projection sink. DAEMON_SURFACE_ID summons the
    *  daemon; a wiki slug surfaces that wiki. LIVE (synchronous gate flip); the durable bags/daemon/active-wiki
    *  marker persists fire-and-forget, consulted only at next cold boot ("live process state is the boundary"). */
@@ -2272,6 +2274,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     },
     mirrorInputs: (surface) => surface === DAEMON_SURFACE_ID || !vmManager.has(surface) ? Promise.resolve(null) : vmManager.mountInputsOf(surface),
     resend: (surface: string) => returnLeg.resend(surface),
+    activeSurface: () => activeSurfaceId,
     // The uniform pin-selector: flip the live gate synchronously (mount-then-flip — daemon + the pinned wiki
     // are already mounted), then persist the choice fire-and-forget to bags/daemon/active-wiki (read only at next
     // cold boot). No reboot — an active-surface change is a projection-gate flip, not a manifest rebuild.
