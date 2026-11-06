@@ -59,7 +59,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, refuseFacelessUserWiki, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -756,7 +756,9 @@ interface NodeBootPrep {
   daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
   eventBus:         () => LarEventBusImpl;
   slotActiveWikiId: () => string;
-  activeWikiSource: () => "boot-arg" | "daemon-marker";
+  activeWikiSource: () => "boot-arg" | "daemon-marker" | "floor";
+  /** The wiki this composition stands in for on its floor wiki, waiting on a face; null where none waits. */
+  wikiAwaitsFace:   () => FloorWikiRefusal | null;
   /** Stand down everything the prep and its closures stood, then the Repo; releases a floor the prep stood itself. */
   teardown: () => Promise<void>;
 }
@@ -2138,7 +2140,8 @@ async function prepareNodeBootOn(
   let bootstrap!: VesselBootstrap;         // captured in loadGenesis
   let personaSelves: PersonaSelvesPlane | null = null;   // the carried faces' planes, built at the first ask
   let slotActiveWikiId = "";               // captured in wikiSlot
-  let activeWikiSource: "boot-arg" | "daemon-marker" = "boot-arg";
+  let activeWikiSource: "boot-arg" | "daemon-marker" | "floor" = "boot-arg";
+  let wikiAwaitsFace: FloorWikiRefusal | null = null;   // captured in wikiSlot
   // The recall FORM leg holder — opened ONCE, lazily, shared by BOTH the dual recall fuse and the
   // worldline form pre-fetch (makeFormPalace ref-counts per canonical dir → one reference, never a
   // second process). Owned by the form provider impl below; closed implicitly at process exit / idle-reap.
@@ -2474,18 +2477,21 @@ async function prepareNodeBootOn(
   // Active-wiki slot — slug from the daemon-doc marker (post-genesis).
   const wikiSlot = async (assembly: VesselCoreAssembly): Promise<VesselWikiSlot> => {
     const sel = selectActiveWikiSlug(wikiId, ownEntry((await readDaemonDoc()).doc()?.tiddlers, ACTIVE_WIKI_URI) ?? null);
-    activeWikiSource = sel.source;
-    slotActiveWikiId = sel.slug;
-    // The draft DOC is no facet of the slug — the daemon's slot-doc resolver names it at mount.
-    const facets = recipeHostFacets(slugFromUri(sel.slug));
     // A COMPOSITION THAT WEARS NO FACE BOOTS NO USER WIKI (the sealing scope): before a face lights (a floor, or a place
     // that founded none), a wiki whose canon bag rests on a face's half reads sealed to a face no session wears, so its
-    // documents neither load nor rest. It refuses by name here, before any island mounts it, rather than letting the
-    // island's mount silence decide.
-    refuseFacelessUserWiki({ wikiId: sel.slug, source: sel.source, wikiBagId: facets.wikiBagId, faceWorn: custodyGroup !== null,
-      catalog: (assembly.catalogHandle.doc() as LarDoc | undefined)?.tiddlers });
+    // documents neither load nor rest. The floor STANDS all the same (every boot rests at the floor; its unlock door must
+    // answer): it refuses THAT wiki by name, before any island mounts it, stands on its floor wiki, and names the one
+    // that waits; the unlock's composition mounts it.
+    wikiAwaitsFace = facelessWikiWaits({ wikiId: sel.slug, source: sel.source, wikiBagId: recipeHostFacets(slugFromUri(sel.slug)).wikiBagId,
+      faceWorn: custodyGroup !== null, catalog: (assembly.catalogHandle.doc() as LarDoc | undefined)?.tiddlers });
+    if (wikiAwaitsFace) console.log(`[lararium] ${wikiAwaitsFace.message}`);
+    const slug = wikiAwaitsFace ? FLOOR_WIKI : sel.slug;
+    activeWikiSource = wikiAwaitsFace ? "floor" : sel.source;
+    slotActiveWikiId = slug;
+    // The draft DOC is no facet of the slug — the daemon's slot-doc resolver names it at mount.
+    const facets = recipeHostFacets(slugFromUri(slug));
     return {
-      activeWikiId: sel.slug,
+      activeWikiId: slug,
       wikiSlug:     facets.wikiSlug,
       wikiKey:      facets.wikiKey,
       wikiBagId:    facets.wikiBagId,
@@ -4222,6 +4228,7 @@ async function prepareNodeBootOn(
     eventBus:         () => eventBus,
     slotActiveWikiId: () => slotActiveWikiId,
     activeWikiSource: () => activeWikiSource,
+    wikiAwaitsFace:   () => wikiAwaitsFace,
     teardown,
   };
 }
@@ -4327,6 +4334,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     islandCaps: p.islandCaps,
     activeWikiId: p.slotActiveWikiId(),
     activeWikiSource: p.activeWikiSource(),
+    wikiAwaitsFace: p.wikiAwaitsFace(),
     pool: result.pool, repo: p.repo,
     ports: {
       place: (surface, binding, msg) => surface === "daemon" || !result.pool.has(surface)

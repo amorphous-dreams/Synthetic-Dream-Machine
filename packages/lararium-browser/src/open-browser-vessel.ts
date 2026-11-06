@@ -24,7 +24,7 @@ import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, refuseFacelessUserWiki, sealedBagMap, vesselDocStoreDoor, type SealedBag } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, type SealedBag } from "@lararium/mesh";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
@@ -1140,6 +1140,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let bootedAtomKey: string | null = null;
   let wikiSense!:  WikiSenseSupervisor;   // set in wireVerbs (post-daemon)
   let slotActiveWikiId = "";
+  let wikiAwaitsFace: FloorWikiRefusal | null = null;   // captured in wikiSlot
   // R4 — the Crossroads board this vessel materializes ONCE, read by every later per-island
   // plugin-offering resolution (the daemon VM's own recipe, and the pool's resolver). Mirrors
   // node's `crossroadsOfferingsHandle`.
@@ -1340,14 +1341,17 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
 
     wikiSlot: (assembly: VesselCoreAssembly): VesselWikiSlot => {
       const sel = selectActiveWikiSlug(wikiId, undefined);
-      slotActiveWikiId = sel.slug;
-      activeSurfaceId  = sel.slug;   // the pinned wiki owns #projection at boot; summon flips it live
-      const facets = recipeHostFacets(slugFromUri(sel.slug));
-      // A page that wears no face boots no user wiki: it refuses by name before the wiki mounts (the sealing scope).
-      refuseFacelessUserWiki({ wikiId: sel.slug, source: sel.source, wikiBagId: facets.wikiBagId, faceWorn: facePresentation !== null,
-        catalog: (assembly.catalogHandle.doc() as LarDoc | undefined)?.tiddlers });
+      // A page that wears no face boots no user wiki (the sealing scope), and its floor stands all the same: it refuses THAT
+      // wiki by name before the wiki mounts, stands on its floor wiki, and names the one that waits on the page's status.
+      wikiAwaitsFace = facelessWikiWaits({ wikiId: sel.slug, source: sel.source, wikiBagId: recipeHostFacets(slugFromUri(sel.slug)).wikiBagId,
+        faceWorn: facePresentation !== null, catalog: (assembly.catalogHandle.doc() as LarDoc | undefined)?.tiddlers });
+      if (wikiAwaitsFace) console.log(`[vessel] ${wikiAwaitsFace.message}`);
+      const slug = wikiAwaitsFace ? FLOOR_WIKI : sel.slug;
+      slotActiveWikiId = slug;
+      activeSurfaceId  = slug;   // the pinned wiki owns #projection at boot; summon flips it live
+      const facets = recipeHostFacets(slugFromUri(slug));
       return {
-        activeWikiId: sel.slug, wikiSlug: facets.wikiSlug,
+        activeWikiId: slug, wikiSlug: facets.wikiSlug,
         wikiKey: facets.wikiKey, wikiBagId: facets.wikiBagId,
         draftBagId: facets.draftBagId, workingBagId: facets.workingBagId,
       };
@@ -2270,7 +2274,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     store: result.assembly.composite,
     daemon,
     activeWikiId:     slotActiveWikiId,
-    activeWikiSource: "boot-arg",
+    activeWikiSource: wikiAwaitsFace ? "floor" : "boot-arg",
+    wikiAwaitsFace,
     wikiDocUrl:       result.wikiHandle.url,
     catalogHandleUrl: catalogHandle.url,
     daemonDocUrl:     social.daemonUrl,

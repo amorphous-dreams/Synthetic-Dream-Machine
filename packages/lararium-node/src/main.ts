@@ -469,6 +469,7 @@ async function main(): Promise<void> {
     // board's key history (custody#/the-cut).
     backup: (face, bundleKey, ward) => cutFaceBundle({ face, bundleKey, door: composition?.backup ?? null, ward }),
     standing: () => composition?.standing ?? "recomposing",
+    wikiAwaits: () => composition?.wikiAwaits ?? null,
     onLog: (line) => console.log(`[custody] ${line}`),
   });
 
@@ -541,6 +542,8 @@ interface StandingComposition {
   readonly hosting?: SealedActContext["hosting"];
   /** What this composition lends a backup bundle's cut. */
   readonly backup?: BackupDoor;
+  /** The wiki this composition stands in for on its floor wiki, waiting on a face (its `wiki-awaits-face` line); absent or null where none waits. */
+  readonly wikiAwaits?: string | null;
 }
 
 /** The floor every vessel stands on: the daemon immune core and a served FLOW-map, no wiki, no pool. */
@@ -976,6 +979,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     walk: result.walkDial,
     hosting: result.hostingDoor,
     backup: result.backupDoor,
+    wikiAwaits: result.wikiAwaitsFace?.message ?? null,
   };
 }
 

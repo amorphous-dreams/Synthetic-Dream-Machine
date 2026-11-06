@@ -141,7 +141,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
   };
 
   const vesselStatus = (result: BrowserVesselResult): VesselStatus => ({
-    vessel: { verifyingKey: result.identity.verifyingKey, did: didFromVerifyingKey(result.identity.verifyingKey), activeWikiId: result.activeWikiId, wikiDocUrl: result.wikiDocUrl, oracleDocUrl: result.oracleDocUrl },
+    vessel: { verifyingKey: result.identity.verifyingKey, did: didFromVerifyingKey(result.identity.verifyingKey), activeWikiId: result.activeWikiId, ...(result.wikiAwaitsFace ? { wikiAwaits: result.wikiAwaitsFace.message } : {}), wikiDocUrl: result.wikiDocUrl, oracleDocUrl: result.oracleDocUrl },
     connection: result.connectionState.getSnapshot(),
   });
 

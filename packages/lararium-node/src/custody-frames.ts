@@ -76,7 +76,7 @@ export type CustodyAnswer =
   /** The node key opened and a face did not (`face-refused`), or the vessel holds several faces and none was named (`face-not-named`): nothing stays open. */
   | { readonly op: "unlock"; readonly reading: "face-refused" | "face-not-named"; readonly standing: string; readonly face?: number; readonly faceReading?: string; readonly faces?: readonly unknown[] }
   | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked"; readonly face?: number } & Partial<CustodyStanding>)
-  | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
+  | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly wikiAwaits: string | null; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
   | { readonly op: "face-route"; readonly parked: true }
   | { readonly op: "ward"; readonly ref: string }
@@ -91,6 +91,8 @@ export interface CustodyFrameDeps {
   readonly dropFace?: (ordinal: number) => Promise<void>;
   /** What stands now. */
   readonly standing: () => string;
+  /** The wiki the standing composition holds waiting on a face (its `wiki-awaits-face` line), or null. */
+  readonly wikiAwaits?: () => string | null;
   /** Whether this vessel's root carries the harness's scratch marker. */
   readonly testScratch: boolean;
   readonly onLog: (line: string) => void;
@@ -435,7 +437,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       // recomposes hears `composing: true` instead of waiting behind the recomposition.
       answer(sock, {
         op: "custody", unlocked: holder.isUnlocked(), slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(), facesOpen: holder.unlockedFaces().length,
-        standing: deps.standing(), testScratch: deps.testScratch, composing: composingDepth > 0,
+        standing: deps.standing(), wikiAwaits: deps.wikiAwaits?.() ?? null, testScratch: deps.testScratch, composing: composingDepth > 0,
       });
       return true;
     }

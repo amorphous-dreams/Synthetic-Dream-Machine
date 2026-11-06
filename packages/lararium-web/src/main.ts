@@ -585,6 +585,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   row(vesselEl, "relay", relayUrl ?? `not pinned · ${sameOriginRelayUrl(location)}`);
   mountLiveStatus(vesselEl, vessel.connectionState);
   row(vesselEl, "wiki", result.activeWikiId);
+  if (result.wikiAwaits) row(vesselEl, "wiki awaits", result.wikiAwaits, "warn");
   row(vesselEl, "wiki doc", result.wikiDocUrl);
   row(vesselEl, "oracle doc", result.oracleDocUrl ?? "(local genesis)");
   showPageInstruments();
