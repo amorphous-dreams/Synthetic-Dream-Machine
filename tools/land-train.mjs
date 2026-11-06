@@ -166,7 +166,7 @@ const touchesMemOnly = (git, c) => onlyMemPaths(git(["diff-tree", "-z", "--no-co
 /** The lane carry reads CI at each ancestor on every branch, and crosses only .mem commits. */
 async function laneGreenAncestor(ops, git, branch, span, c) {
   if (!touchesMemOnly(git, c)) return null;
-  for (const a of git(["rev-list", "--first-parent", `${c}^`]).split("\n").filter(Boolean)) {
+  for (const a of git(["rev-list", "--first-parent", "-n", "50", `${c}^`]).split("\n").filter(Boolean)) {
     let state;
     if (ops.ciRuns) {
       try { state = readRunAt(await ops.ciRuns(a), a).state; } catch { return null; }
