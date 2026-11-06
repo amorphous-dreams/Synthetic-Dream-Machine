@@ -112,6 +112,10 @@ const EXCLUDED_BY_DESIGN: Record<string, string> = {
     "excluded from `main`, absent from `heavy` — full `openNodeVessel` boots: the composer mounts the host working layer itself " +
     "before any internal ask, the boot's settle reports by name with no caller mount, and no boot caller mounts it. Runs in CI's " +
     "`node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
+  "tests/e2e/face-cell-lights-proved.test.ts":
+    "excluded from `main`, absent from `heavy` — full `openNodeVessel` boots with no dial: a founded sovereign node lights its " +
+    "face cell at its own place, a floor node lights none. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, " +
+    "`tests/e2e/**/*.test.ts`).",
 };
 
 describe("the serial heavy roster detects its own staleness", () => {
