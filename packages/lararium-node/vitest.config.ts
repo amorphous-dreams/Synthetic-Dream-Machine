@@ -111,6 +111,10 @@ export const heavy = [
   "tests/node-dial-socket.test.ts",
   // The herm's relay port on a real HTTP listener: persona-KEL drops over HTTP, silence for every upgrade.
   "tests/herm-relay-port.test.ts",
+  // Full `openNodeVessel` boots (nested daemon and wiki islands) with no dial: a founded sovereign node lights its face cell,
+  // a floor node lights none. In a parallel batch its teardown ran past the 10 s afterEach hook (a hook clock M6 owes), so
+  // it runs here, one live vessel at a time.
+  "tests/face-cell-lights-proved.test.ts",
 ];
 
 /**

@@ -21,12 +21,12 @@ import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { faceAtomPublicKey, placeProofSubjectRef } from "@lararium/mesh";
-import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
-import { direct } from "../direct-store.js";
-import { TEST_CUSTODY, TEST_SLOT } from "../found-route.js";
-import { runInit, runFoundTheFace, foundSeedCharter, openNodeVessel, loadIdentityAnchors, loadPlaceAid, seatFaceRoute, seatWardGatherer } from "../../dist/src/index.js";
-import { loadFaceAtomOfGroup } from "../../dist/src/face-atom-store.js";
-import type { NodeVesselResult } from "../../dist/src/open-node-vessel.js";
+import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
+import { direct } from "./direct-store.js";
+import { TEST_CUSTODY, TEST_SLOT } from "./found-route.js";
+import { runInit, runFoundTheFace, foundSeedCharter, openNodeVessel, loadIdentityAnchors, loadPlaceAid, seatFaceRoute, seatWardGatherer } from "../dist/src/index.js";
+import { loadFaceAtomOfGroup } from "../dist/src/face-atom-store.js";
+import type { NodeVesselResult } from "../dist/src/open-node-vessel.js";
 
 seatFaceRoute(async () => [TEST_SLOT]);
 seatWardGatherer(async () => TEST_SLOT.pins.flatMap((pin) => (pin.kind === "passphrase" ? [{ kind: "passphrase" as const, passphrase: pin.passphrase }] : [])));
@@ -52,7 +52,7 @@ async function compose(founded: boolean, wikiId: string): Promise<{ root: string
   const root = mkdtempSync(join(tmpdir(), "face-cell-proved-"));
   const genesisDir = join(root, "genesis");
   const storageDir = join(root, "data", "lares", "vessel");
-  cpSync(join(import.meta.dirname, "..", "..", "..", "..", "genesis"), genesisDir, { recursive: true });
+  cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), genesisDir, { recursive: true });
   let vessel: NodeVesselResult | null = null;
   leaving.push(async () => { if (vessel) await withLarRoot(root, () => vessel!.teardown()); rmSync(root, { recursive: true, force: true }); });
   await withLarRoot(root, () => direct(runInit)({ storageDir, genesisDir, custody: TEST_CUSTODY, placeFoundingCard: { readBack: async () => {} } }));

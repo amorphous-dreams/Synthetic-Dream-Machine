@@ -14,7 +14,7 @@
  *   R6b CONTROL: a public floor bag's document loads clear at the floor.
  *   R6c CONTROL: once its face lights and the map moves, the same document opens for that face.
  *   R6d RED (static): both vessel shores hand their bag map the catalog they read. The wiring stands on the face cell
- *        reading the proved face (`@lararium/node` tests/e2e/face-cell-lights-proved): a faced vessel with no dial lights
+ *        reading the proved face (`@lararium/node` tests/face-cell-lights-proved): a faced vessel with no dial lights
  *        its face at its own place, so its own wiki's rows map under that face, never `face: null`.
  *
  * No patience is granted and no clock waits: every load answers at once, by bytes or by a refusal's name.
