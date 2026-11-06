@@ -23,9 +23,9 @@ import type { LarDoc } from "./base-doc.js";
 import { utf8Bytes } from "./crypto.js";
 import { FACE_CATALOG_ADDRESS_DOMAIN } from "./domains.js";
 import { materializeSharedLarDoc } from "./deterministic-doc.js";
-import { CATALOG_CORPUS_PREFIX, CATALOG_DOC_URI, CROSSROADS_DOC_URI, DAEMON_BAG_ID, LARARIUM_DOC_URI, LARES_DOC_URI, ORACLE_DOC_URI, bagUri, recipeUri, wikiUri } from "./lar-uris.js";
+import { CATALOG_CORPUS_PREFIX, CATALOG_DOC_URI, CROSSROADS_DOC_URI, DAEMON_BAG_ID, LARARIUM_DOC_URI, LARES_DOC_URI, ORACLE_DOC_URI, bagUri, isBagId, recipeUri, wikiUri } from "./lar-uris.js";
 import { storedRecord } from "./stored-record.js";
-import { ownEntry, plainRecordOrNull, type StoredLarRecord } from "./stored-value.js";
+import { ownEntry, plainField, plainRecordOrNull, type StoredLarRecord } from "./stored-value.js";
 
 /** The half of the split catalog a row rests on: `floor` (F, public) or `face` (D, the lit face's own). */
 export type CatalogHalf = "floor" | "face";
@@ -41,14 +41,28 @@ const FLOOR_ROWS: ReadonlySet<string> = new Set([
 ]);
 const WIKIS_ROOT = `${wikiUri("")}`;
 
+/** The field a bag's catalog row carries its declared read tier in (the declaring act stamps it). */
+export const CATALOG_ROW_TIER_FIELD = "cap-tier";
+
+/**
+ * A PUBLIC book's row: a bag id whose row carries the exact tier `public`. Any other value, a missing field or a title
+ * that names no bag fails toward the face, never toward F.
+ */
+export function isPublicBagRow(title: string, row: StoredLarRecord | null | undefined): boolean {
+  return isBagId(title) && !!row && plainField(row, CATALOG_ROW_TIER_FIELD) === "public";
+}
+
 /**
  * Which half a catalog row rests on. F names public, signed infrastructure: the registry's own pointers (catalog,
  * oracle, crossroads), the joined corpora, the live system canon, the realm plane's pointers and standing, the daemon
  * wiki's floor half, and the floor's own vessel-only slot documents (a draft floor, a working floor), which the anon
  * lift reads and burns. Every other row (a user bag, a wiki and its recipe, a face plane, the kahua stage, a slot
- * binding, a title nothing classes) rests on the face: a row that names no class never lands on the floor.
+ * binding, a title nothing classes) rests on the face: a row that names no class never lands on the floor. A bag row that
+ * carries `cap-tier = public` (the row `bag declare --tier public` stamps) names a public book and rests on F too; given
+ * no row, the title alone decides.
  */
-export function catalogRowHalf(title: string): CatalogHalf {
+export function catalogRowHalf(title: string, row?: StoredLarRecord | null): CatalogHalf {
+  if (row !== undefined && row !== null && isPublicBagRow(title, row)) return "floor";
   if (FLOOR_ROWS.has(title)) return "floor";
   if (title.startsWith(CATALOG_CORPUS_PREFIX) || title.startsWith(`${REALM_ROOT}/`)) return "floor";
   if (title.startsWith(WIKIS_ROOT) && (/\/working-floor\/[^/]+\/[^/]+$/.test(title) || /\/drafts\/[^/]+$/.test(title))) return "floor";
@@ -233,13 +247,13 @@ export function makeCatalogView(floor: DocHandle<LarDoc>, face: DocHandle<LarDoc
  * writes the floor's.
  */
 function routedDraft(fd: LarDoc, dd: LarDoc, onFace?: () => void): LarDoc {
-  const halfOf = (title: string): LarDoc => (catalogRowHalf(title) === "face" ? dd : fd);
+  const halfOf = (title: string, row?: StoredLarRecord): LarDoc => (catalogRowHalf(title, row) === "face" ? dd : fd);
   const read = (title: string): unknown => ownEntry(dd.tiddlers, title) ?? ownEntry(fd.tiddlers, title);
   const tiddlers = new Proxy({} as Record<string, unknown>, {
     get: (_t, prop) => (typeof prop === "string" ? read(prop) : undefined),
     set: (_t, prop, value) => {
       if (typeof prop !== "string") return false;
-      const into = halfOf(prop);
+      const into = halfOf(prop, value as StoredLarRecord);
       const other = into === dd ? fd : dd;
       if (into === dd) onFace?.();
       into.tiddlers[prop] = storedRecord(value as StoredLarRecord);
@@ -271,7 +285,7 @@ function routedDraft(fd: LarDoc, dd: LarDoc, onFace?: () => void): LarDoc {
  * face already holds keeps the face's value. Idempotent: a second run moves nothing. Returns the titles moved.
  */
 export function liftFaceCatalogRows(floor: DocHandle<LarDoc>, face: DocHandle<LarDoc>): string[] {
-  const titles = Object.keys(floor.doc()?.tiddlers ?? {}).filter((title) => catalogRowHalf(title) === "face");
+  const titles = Object.keys(floor.doc()?.tiddlers ?? {}).filter((title) => catalogRowHalf(title, ownEntry(floor.doc()?.tiddlers, title) as StoredLarRecord) === "face");
   if (titles.length === 0) return [];
   const carried: string[] = [];
   face.change((dd) => {

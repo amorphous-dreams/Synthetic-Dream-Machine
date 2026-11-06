@@ -81,7 +81,8 @@ import type { MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { answerReceiptWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest, ownEntry } from "@lararium/mesh";
+import { answerReceiptWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD } from "@lararium/mesh";
+import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import type { CapabilityRecord } from "@lararium/mesh";
 import {
@@ -2877,11 +2878,17 @@ async function prepareNodeBootOn(
     const wornView = catalogViewOf(assembly.catalogHandle);
     const faceViews = faceViewBook(wornView?.floorHandle ?? assembly.catalogHandle, personaGroupId && wornFaceProved ? { group: personaGroupId, view: assembly.catalogHandle } : null);
     catalogForViews = () => faceViews.everyRow();
+    const bagTierOfRow = makeBagTierReader();
     const registerInCatalogOf = (group: string | null | undefined) => (bagId: string, url: string | null | undefined): void => {
       const into = group ? faceViews.viewOf(group) : assembly.catalogHandle;
-      if (!url || tiddlerText(ownEntry(into.doc()?.tiddlers, bagId)) === url) return;
+      if (!url) return;
+      // THE DECLARED TIER RIDES THE ROW: a bag whose own declaration reads `public` stamps `cap-tier = public`, which routes
+      // its row onto the floor catalog (a public book a herm lists); any other tier stamps nothing and the row stays the face's.
+      const tier = bagTierOfRow(bagId) === "public" ? "public" : null;
+      const standing = ownEntry(into.doc()?.tiddlers, bagId);
+      if (tiddlerText(standing) === url && (plainField(standing, CATALOG_ROW_TIER_FIELD) ?? null) === tier) return;
       into.change((doc) => {
-        doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "vessel-boot");
+        doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle", ...(tier ? { [CATALOG_ROW_TIER_FIELD]: tier } : {}) }, "vessel-boot");
       });
     };
     const registerInCatalog = registerInCatalogOf(personaGroupId);
