@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { resolveIntentFaceIndex, intentAudience } from "../src/commands/intent.js";
+import { resolveIntentFaceIndex, intentAudience, askShown, answerRefusal } from "../src/commands/intent.js";
 import {
-  buildAnswer, buildAsks, buildCancel, buildIntent, buildOutcome, ed25519SignerFromSeed,
+  buildAnswer, buildAsks, buildCancel, buildIntent, buildOutcome, cosignDigest, faceIntentVerbs, ed25519SignerFromSeed,
   ed25519VerifyingKeyFromSeed, fixtureIntentVerbs, intentEntryCid, intentId, intentPaneModel,
   makeHandLineage, readIntentPlane, type SignedIntentEntry,
 } from "@lararium/mesh";
@@ -76,5 +76,45 @@ describe("intent command guards", () => {
     expect(known.rows[0]!.duplicates).toHaveLength(1);
     expect(known.rows[0]!.outcomeCount).toBe(1);
     expect(intentPaneModel(f.fold([issued, first], () => "unknown")).rows[0]!.outcomeCount).toBe("unknown");
+  });
+
+  test("RED: an ask carries no detail on the old door; CONTROL: --detail round trips from ask to the answerer's reading, and a plain verb shows no cosign", async () => {
+    const f = await fixture(), other = await who(4);
+    const lineage = makeHandLineage([{ epoch: 0, signers: [f.root.key], threshold: 1 }])!;
+    const verbs = faceIntentVerbs();
+    const fold = (records: SignedIntentEntry[]) => readIntentPlane({ group: "scratch-face", records, verbs, standing: () => "stands",
+      face: { devices: [f.atom.key, other.key], rosterCids: ["r"], admittedAt: new Map([[f.atom.key, "r"], [other.key, "r"]]), lineage } });
+    const call = await buildIntent({ group: "scratch-face", signer: f.atom, verb: "ward-push-go", args: { head: "h1" }, nonce: "n", audience: { mode: "asks" }, verbs });
+    const id = intentId(call.body as never), detail = cosignDigest({ act: "ward-push-go", face: "scratch-face", wiki: "daemon", head: "h1" });
+    const bare = await buildAsks({ group: "scratch-face", signer: f.atom, intent: id, needs: "approval" });
+    expect(askShown(fold([call, bare]), intentEntryCid(bare))?.detail).toBeNull();
+    const ask = await buildAsks({ group: "scratch-face", signer: f.atom, intent: id, needs: "approval", detail });
+    expect(askShown(fold([call, ask]), intentEntryCid(ask))).toEqual({ intent: id, verb: "ward-push-go", issuer: f.atom.key, askedBy: f.atom.key, detail, cosign: true });
+    expect(askShown(fold([call, ask]), "missing")).toBeNull();
+    const plain = await buildIntent({ group: "scratch-face", signer: f.atom, verb: "face-join", args: {}, nonce: "p", audience: { mode: "asks" }, verbs });
+    const plainAsk = await buildAsks({ group: "scratch-face", signer: f.atom, intent: intentId(plain.body as never), needs: "approval", detail: "x" });
+    expect(askShown(fold([plain, plainAsk]), intentEntryCid(plainAsk))?.cosign).toBe(false);
+  });
+
+  test("RED: the answer door signs an answer the plane never counts for a ward verb (another device's ask, an executor other than the issuer); CONTROL: the issuer's ask and its executor pass, and a plain verb takes any ask", async () => {
+    const f = await fixture(), other = await who(4);
+    const lineage = makeHandLineage([{ epoch: 0, signers: [f.root.key], threshold: 1 }])!;
+    const verbs = faceIntentVerbs();
+    const fold = (records: SignedIntentEntry[]) => readIntentPlane({ group: "scratch-face", records, verbs, standing: () => "stands",
+      face: { devices: [f.atom.key, other.key], rosterCids: ["r"], admittedAt: new Map([[f.atom.key, "r"], [other.key, "r"]]), lineage } });
+    const call = await buildIntent({ group: "scratch-face", signer: f.atom, verb: "ward-push-go", args: { head: "h1" }, nonce: "n", audience: { mode: "asks" }, verbs });
+    const id = intentId(call.body as never);
+    const own = await buildAsks({ group: "scratch-face", signer: f.atom, intent: id, needs: "approval", detail: "d" });
+    const foreign = await buildAsks({ group: "scratch-face", signer: other, intent: id, needs: "approval", detail: "d" });
+    const view = fold([call, own, foreign]);
+    const shown = (ask: SignedIntentEntry) => askShown(view, intentEntryCid(ask));
+    expect(answerRefusal(shown(foreign), other.key, f.atom.key, false)).toMatch(/^ask-signer/);
+    expect(answerRefusal(shown(own), other.key, other.key, false)).toMatch(/^executor-mismatch/);
+    expect(answerRefusal(shown(own), f.atom.key, f.atom.key, false)).toMatch(/^self-answer/);
+    expect(answerRefusal(shown(own), other.key, f.atom.key, false)).toBeNull();
+    expect(answerRefusal(shown(own), other.key, other.key, true)).toBeNull();
+    const plain = await buildIntent({ group: "scratch-face", signer: f.atom, verb: "face-join", args: {}, nonce: "p", audience: { mode: "asks" }, verbs });
+    const plainAsk = await buildAsks({ group: "scratch-face", signer: other, intent: intentId(plain.body as never), needs: "approval" });
+    expect(answerRefusal(askShown(fold([plain, plainAsk]), intentEntryCid(plainAsk)), other.key, other.key, false)).toBeNull();
   });
 });

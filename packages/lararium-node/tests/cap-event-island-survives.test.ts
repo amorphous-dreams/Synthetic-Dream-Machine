@@ -17,6 +17,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { foundThePlace, foundTheFace, replayCapEvents } from "@lararium/keyhive";
 import { DAEMON_BAG_ID, hex } from "@lararium/mesh";
 import * as ed from "@noble/ed25519";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const SEED = new Uint8Array(32).fill(9);
 
@@ -24,7 +25,7 @@ async function foundedFace() {
   const repo = new Repo({ sharePolicy: async () => true });
   const treeKey = hex(await ed.getPublicKeyAsync(SEED));
   const place = await foundThePlace({ repo, vesselSeed: SEED, hearthTrueName: "" });
-  const face = await foundTheFace({ repo, daemonHandle: place.daemonHandle, vesselSeed: SEED, placeVerifyingKey: treeKey,
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, vesselSeed: SEED, placeVerifyingKey: treeKey,
     vesselDisplayName: "Island Witness",
     binding: { mode: "self-stood", signerSeed: new Uint8Array(32).fill(1) },
     hearthTrueName: "", nexusPubkey: treeKey,

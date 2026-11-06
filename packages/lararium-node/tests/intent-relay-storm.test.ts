@@ -20,6 +20,7 @@ import { INTENT_RELAY_FACES_FILE } from '../src/intent-relay-ring.js';
 import { Repo } from '@automerge/automerge-repo';
 import { afterEach, expect, test, vi } from 'vitest';
 import { actCid, buildAgentIntent, buildDelegation, buildDelegationRevoke, deriveSelfRecoveryKey, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, fixtureIntentVerbs, intentEntryCid, intentEntryRecordsOfGroup, mayAct, mintPersonaInception, sealKeySetHash, signPersonaAct, writeIntentEntry, type LarDoc } from '@lararium/mesh';
+import { taggedAdmission } from '../../lararium-mesh/tests/vessel-tag-fixture.js';
 import { intentAdmissionCid, intentAdmissionRecordsOfGroup, signIntentAdmission, writeIntentAdmission } from '../../lararium-mesh/src/intent-admission.js';
 import { admitAgentEntry, makeFaceIntentDoor, makeFaceIntentReader } from '../../lararium-keyhive/src/face-intent-door.js';
 import { intentRelayKeyOrMint, signAsIntentRelay } from '../src/intent-relay-key-store.js';
@@ -33,7 +34,7 @@ async function fixture() {
   const recovery = await deriveSelfRecoveryKey(new Uint8Array(32).fill(9));
   const inception = mintPersonaInception(`0x${root.key}`, sealKeySetHash([recovery.verifyingKey], 1));
   const log = [] as Awaited<ReturnType<typeof signPersonaAct>>[];
-  for (const [act, fields] of [['founding', { personaKelPrefix: inception.prefix, rootCommitment: 'root' }], ['admission', { deviceKey: device.key }]] as const) {
+  for (const [act, fields] of [['founding', { personaKelPrefix: inception.prefix, rootCommitment: 'root' }], ['admission', await taggedAdmission(1, group, device.key)]] as const) {
     const head = log.at(-1);
     log.push(await signPersonaAct(head ? { seq: head.body.seq, cid: actCid(head.body) } : null, { group, act, epoch: 0, fields }, root));
   }
@@ -222,7 +223,7 @@ test('RED: unknown roster frontier waits; CONTROL: its arriving roster act permi
   clockless();
   try {
     const head = f.log.at(-1)!;
-    const next = await signPersonaAct({ seq: head.body.seq, cid: actCid(head.body) }, { group: f.group, act: 'admission', epoch: 0, fields: { deviceKey: (await who(2)).key } }, f.root);
+    const next = await signPersonaAct({ seq: head.body.seq, cid: actCid(head.body) }, { group: f.group, act: 'admission', epoch: 0, fields: await taggedAdmission(2, f.group, (await who(2)).key) }, f.root);
     const grant = await buildDelegation({ group: f.group, signer: f.root, epoch: 0, agent: f.agent.key, prefix: 'MOVE', policy: { kind: 'closed-args', args: { x: { type: 'integer' } } }, bound: { asOf: { roster: actCid(next.body) } }, nonce: 'future' });
     const entry = await buildAgentIntent({ group: f.group, signer: f.agent, delegation: intentEntryCid(grant), verb: 'MOVE', args: { x: 1 }, nonce: '', audience: { mode: 'every' }, verbs: f.verbs });
     f.plane.change(d => { writeIntentEntry(d, grant); writeIntentEntry(d, entry); });

@@ -7,6 +7,7 @@ import {
   signFoundingLog, signPersonaAct, projectPersonaLog, personaLineageFromKel, actCid, edgeBodyDigest, faceRootCommitment,
   faceAtomKeyFromSeed, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, landFleetGenesis, makeHandLineage, edgeFrontierRecords, frontierSnapshots, FLEET_HAND, type PersonaKelEvent,
 } from "@lararium/mesh";
+import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 export async function founderAndJoineeActs(input: {
   face: { personaGroupId: string; personaKelPrefix: string; personaUrl: string; identitiesUrl: string; circlesUrl: string; sessionsUrl: string; intentsUrl: string; founderEdge: { personaRootDid: string; hearthTrueName: string } };
@@ -14,23 +15,28 @@ export async function founderAndJoineeActs(input: {
   founderAtomSeed: Uint8Array;
   joineeKey: string;
   chain: readonly PersonaKelEvent[];
+  /** The numbered test vessels behind the founder's and the joinee's admissions (`vessel-tag-fixture`): 1 and 2 unless named. */
+  founderVessel?: number;
+  joineeVessel?: number;
   /** planes the founding pins beside the five (kahua, promote): a pin made after the founding span pins nothing. */
   extraPlanes?: Readonly<Record<string, string>>;
 }): Promise<unknown[]> {
   const { face } = input;
   const key = await ed25519VerifyingKeyFromSeed(input.signerSeed);
   const signer = { key, sign: ed25519SignerFromSeed(input.signerSeed) };
+  const founderAtom = faceAtomKeyFromSeed(input.founderAtomSeed, face.personaGroupId).key;
   const founding = await signFoundingLog({
     group: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
     rootCommitment: faceRootCommitment(face.founderEdge.personaRootDid), epoch: 0,
     planes: { persona: face.personaUrl, identities: face.identitiesUrl, circles: face.circlesUrl, sessions: face.sessionsUrl, intents: face.intentsUrl, ...(input.extraPlanes ?? {}) },
-    deviceKey: faceAtomKeyFromSeed(input.founderAtomSeed, face.personaGroupId).key,
+    deviceKey: founderAtom,
     edgeDigest: edgeBodyDigest({ ...face.founderEdge, deviceVerifyingKey: "founder", boundEpoch: 0 }),
+    vesselTag: await testVesselTag(input.founderVessel ?? 1, face.personaGroupId, founderAtom),
   }, signer);
   const lineage = personaLineageFromKel(input.chain)!;
   const head = projectPersonaLog(founding, { group: face.personaGroupId, lineage, authorize: () => true }).head!;
   const epoch = input.chain[input.chain.length - 1]!.seq;
-  const admission = await signPersonaAct(head, { group: face.personaGroupId, act: "admission", epoch, fields: { deviceKey: input.joineeKey } }, signer);
+  const admission = await signPersonaAct(head, { group: face.personaGroupId, act: "admission", epoch, fields: { deviceKey: input.joineeKey, ...(await testVesselTag(input.joineeVessel ?? 2, face.personaGroupId, input.joineeKey)) } }, signer);
   const edge = await signPersonaAct({ seq: admission.body.seq, cid: actCid(admission.body) },
     { group: face.personaGroupId, act: "device-edge", epoch,
       fields: { deviceKey: input.joineeKey, edgeDigest: edgeBodyDigest({ personaRootDid: face.founderEdge.personaRootDid, deviceVerifyingKey: input.joineeKey, hearthTrueName: face.founderEdge.hearthTrueName, boundEpoch: 0 }) } }, signer);

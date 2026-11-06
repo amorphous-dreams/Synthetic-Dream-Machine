@@ -8,6 +8,7 @@ import {
 } from "@lararium/mesh";
 import { KeyhiveProvider, runFoundingCeremony } from "../src/index.js";
 import { operatorDaemonOptions } from "../src/operator-daemon-behavior.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const seed = new Uint8Array(32).fill(37);
 const digestOf = (edge: Record<string, unknown>) => deviceEdgeDigest(edge as unknown as DeviceDelegationTiddler);
@@ -26,7 +27,7 @@ beforeAll(async () => {
   await probe.init({ seed, eventStore: { put: async () => {}, list: async () => [] } });
   verifyingKey = (await probe.whoami()).replace(/^0x/, "");
   await probe.dispose();
-  ceremony = await runFoundingCeremony({
+  ceremony = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1),
     repo, vesselSeed: seed, placeVerifyingKey: verifyingKey, vesselDisplayName: "Gate witness",
     binding: { mode: "self-stood", signerSeed: seed }, hearthTrueName: "", nexusPubkey: verifyingKey,
   });

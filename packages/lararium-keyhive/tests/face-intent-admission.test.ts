@@ -2,6 +2,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { signIntentEntry, actCid, buildAgentIntent, buildDelegation, buildDelegationRevoke, deriveSelfRecoveryKey, sealKeySetHash, hexToBytes, mintPersonaRotation, personaRotationSigningBytes, buildIntent, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, fixtureIntentVerbs, intentEntryCid, intentEntryRecordsOfGroup, intentId, mayAct, readFace, mintPersonaInception, signPersonaAct, writeIntentEntry, type DocHandle, type LarDoc } from "@lararium/mesh";
 import { intentAdmissionCid, intentAdmissionRecordsOfGroup, writeIntentAdmission } from "../../lararium-mesh/src/intent-admission.js";
 import { admitAgentEntry, makeFaceIntentDoor, makeFaceIntentReader, witnessedStandings } from "../src/face-intent-door.js";
+import { taggedAdmission } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const who = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
 const plane = () => {
@@ -13,7 +14,7 @@ const fixture = async () => {
   const root = await who(9), d1 = await who(1), d2 = await who(2), agent = await who(3), relay = await who(4), relay2 = await who(5), group = "face-a";
   const recovery = await deriveSelfRecoveryKey(new Uint8Array(32).fill(9));
   const inception = mintPersonaInception(`0x${root.key}`, sealKeySetHash([recovery.verifyingKey], 1)), log = [] as Awaited<ReturnType<typeof signPersonaAct>>[];
-  for (const [act, fields] of [["founding", { personaKelPrefix: inception.prefix, rootCommitment: "root" }], ["admission", { deviceKey: d1.key }], ["admission", { deviceKey: d2.key }]] as const) {
+  for (const [act, fields] of [["founding", { personaKelPrefix: inception.prefix, rootCommitment: "root" }], ["admission", { ...(await taggedAdmission(10, group, d1.key)) }], ["admission", { ...(await taggedAdmission(11, group, d2.key)) }]] as const) {
     const head = log.at(-1);
     log.push(await signPersonaAct(head ? { seq: head.body.seq, cid: actCid(head.body) } : null, { group, act, epoch: 0, fields }, root));
   }
@@ -95,7 +96,7 @@ test("RED: foreign verifiedFace cannot override the supplied chain; CONTROL: the
   const foreignReading = readFace([foreign]);
   if (!foreignReading) throw Error("foreign face");
   const log = [] as Awaited<ReturnType<typeof signPersonaAct>>[];
-  for (const [act, fields] of [["founding", { personaKelPrefix: foreign.prefix, rootCommitment: "root" }], ["admission", { deviceKey: f.d1.key }]] as const) {
+  for (const [act, fields] of [["founding", { personaKelPrefix: foreign.prefix, rootCommitment: "root" }], ["admission", { ...(await taggedAdmission(10, f.group, f.d1.key)) }]] as const) {
     const head = log.at(-1);
     log.push(await signPersonaAct(head ? { seq: head.body.seq, cid: actCid(head.body) } : null, { group: f.group, act, epoch: 0, fields }, foreignRoot));
   }
@@ -155,7 +156,7 @@ test.each([false, true])("RED: signing-gap merge rechecks entry and own receipt 
 test.each(["roster", "rotation"] as const)("RED: signing gap refreshes %s authority; CONTROL: unchanged authority admits", async kind => {
   const f = await fixture();
   const head = f.log.at(-1)!;
-  const closing = await signPersonaAct({ seq: head.body.seq, cid: actCid(head.body) }, { group: f.group, act: "admission", epoch: 0, fields: { deviceKey: (await who(8)).key } }, f.root);
+  const closing = await signPersonaAct({ seq: head.body.seq, cid: actCid(head.body) }, { group: f.group, act: "admission", epoch: 0, fields: await taggedAdmission(18, f.group, (await who(8)).key) }, f.root);
   const grant = kind === "roster" ? await buildDelegation({ group: f.group, signer: f.root, epoch: 0, agent: f.agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1] } } }, bound: { until: { roster: actCid(closing.body) } }, nonce: "closing" }) : f.grant;
   const entry = await buildAgentIntent({ group: f.group, signer: f.agent, delegation: intentEntryCid(grant), verb: "MOVE", args: { x: 1 }, nonce: "", audience: { mode: "every" }, verbs: f.verbs });
   const freshKey = `0x${(await who(10)).key}`;
@@ -200,7 +201,7 @@ test.each([true, false])("RED: merged own receipt rechecks revocation (revoke=%s
 test("RED: a roster act learned while the final read awaits standing still refuses; CONTROL: the same bytes admit when no act arrives", async () => {
   const f = await fixture();
   const head = f.log.at(-1)!;
-  const closing = await signPersonaAct({ seq: head.body.seq, cid: actCid(head.body) }, { group: f.group, act: "admission", epoch: 0, fields: { deviceKey: (await who(8)).key } }, f.root);
+  const closing = await signPersonaAct({ seq: head.body.seq, cid: actCid(head.body) }, { group: f.group, act: "admission", epoch: 0, fields: await taggedAdmission(18, f.group, (await who(8)).key) }, f.root);
   const grant = await buildDelegation({ group: f.group, signer: f.root, epoch: 0, agent: f.agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1] } } }, bound: { until: { roster: actCid(closing.body) } }, nonce: "closing-late" });
   const entry = await buildAgentIntent({ group: f.group, signer: f.agent, delegation: intentEntryCid(grant), verb: "MOVE", args: { x: 1 }, nonce: "", audience: { mode: "every" }, verbs: f.verbs });
   const run = async (arrives: boolean) => {
@@ -287,7 +288,7 @@ test("RED: a second body under an admitted intent id refuses id-collision and ap
 test("RED: a roster act appended while the ring answers still refuses the closed delegation; CONTROL: no act admits", async () => {
   const f = await fixture();
   const head = f.log.at(-1)!;
-  const closing = await signPersonaAct({ seq: head.body.seq, cid: actCid(head.body) }, { group: f.group, act: "admission", epoch: 0, fields: { deviceKey: (await who(8)).key } }, f.root);
+  const closing = await signPersonaAct({ seq: head.body.seq, cid: actCid(head.body) }, { group: f.group, act: "admission", epoch: 0, fields: await taggedAdmission(18, f.group, (await who(8)).key) }, f.root);
   const grant = await buildDelegation({ group: f.group, signer: f.root, epoch: 0, agent: f.agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1] } } }, bound: { until: { roster: actCid(closing.body) } }, nonce: "ring-gap" });
   const entry = await buildAgentIntent({ group: f.group, signer: f.agent, delegation: intentEntryCid(grant), verb: "MOVE", args: { x: 1 }, nonce: "", audience: { mode: "every" }, verbs: f.verbs });
   const run = async (arrives: boolean) => {

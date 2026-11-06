@@ -44,6 +44,7 @@ import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, pers
 import { faceStandingCustody, openedCustody, seatCustody } from "../custody-seat.js";
 import { personaGroupDigest } from "../persona-group-file.js";
 import { ensureFaceCustodyOfAsk, settleFaceCustody } from "../face-route.js";
+import { foundingVesselFaceTagDoor, settleFoundingVesselFaceTag } from "../vessel-face-tag-store.js";
 import { landFaceAddressSecret, mintFaceAddressSecret } from "../fleet-join-custody.js";
 import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
 import { keepFaceAnchorOfGroup, loadFaceAnchorOfGroup } from "../face-anchor-store.js";
@@ -646,6 +647,8 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     vesselDisplayName:  vesselIdentity.displayName ?? "operator",
     binding: { mode: "self-stood", signerSeed },
     hearthTrueName,
+    // The face's tag secret mints at random in its own row under the ask, and the settle below moves it onto the group's.
+    vesselTag: foundingVesselFaceTagDoor(askDigest),
     // THE ISLAND, resolved by the SAME mesh ruling the boot composes — the charter this vessel holds, then
     // the hearth it dials, then its own key as a private nexus of one. A face seated on one board while the
     // boot walks another cannot reach a head, and the Binding Gate HALTS.
@@ -668,7 +671,10 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     // The founding face MOUNTS; an added compartment does not. Omit for h0 so its path is byte-unchanged.
     ...(mounts ? {} : { mount: false }),
   });
-  await settleFaceCustody(askDigest, face.personaGroupId, () => keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed));
+  await settleFaceCustody(askDigest, face.personaGroupId, async () => {
+    await keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed);
+    await settleFoundingVesselFaceTag(askDigest, face.personaGroupId);
+  });
   // THE FACE'S ADDRESS SECRET MINTS AT ITS FOUNDING, beside its atom and behind its custody: its working documents derive
   // their addresses from it from the first boot, and no later read mints one. A founding that runs again finds it standing.
   // A restore lands the secret its bundle carried in place of the mint.
