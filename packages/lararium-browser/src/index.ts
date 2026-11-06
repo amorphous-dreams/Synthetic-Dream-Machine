@@ -10,7 +10,7 @@
  */
 
 export { BrowserVesselIslandPool } from "./browser-vessel-island-pool.js";
-export type { BrowserVesselIslandPoolOptions } from "./browser-vessel-island-pool.js";
+export type { BrowserVesselIslandPoolOptions, PageLife, PageLifeFeed } from "./browser-vessel-island-pool.js";
 
 export { openBrowserVessel, DAEMON_SURFACE_ID } from "./open-browser-vessel.js";
 export { readHearthFloor, floorNexusOf, porchOriginOf, type HearthFloorRead } from "./browser-floor-read.js";
@@ -91,4 +91,5 @@ export {
 } from "./secure-context-gate.js";
 export { SharedHolderRefusal } from "./shared-holder.js";
 export type { HolderRefused } from "./shared-holder-core.js";
-export { browserIdentityContinuityKey } from "./browser-vessel-identity.js";
+export { BROWSER_IDENTITY_CONTINUITY_DB, readBrowserIdentityContinuity } from "./browser-vessel-identity.js";
+export type { BrowserIdentityContinuity } from "./browser-vessel-identity.js";

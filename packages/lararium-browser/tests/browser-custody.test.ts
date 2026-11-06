@@ -39,7 +39,7 @@ import { placeSeed } from "./browser-place-seed.fixture.js";
  *        a DIFFERENT one stays unsettled with its why, and both rows stand byte-identical. Control: before the
  *        unlock, the reader names the planted row unsettled.
  *   BC14 a locked keystore sealed EMPTY refuses the seed read and the mint `sealed-locked`; the census and the
- *        continuity marker stand. Control: unlocked, the same mint lands.
+ *        continuity row stand. Control: unlocked, the same mint lands.
  *   BC15 THE REFUSAL READINGS: a sealed row with no tree reads `torn-without-tree` (status `unreadable`); a garbage
  *        tree reads `tree-unreadable`; another vessel's frame in a sealed row reads `row-unopened`. Each writes
  *        nothing. Controls: each keystore read clear or opened before its fault was planted.
@@ -70,7 +70,7 @@ import {
 import { BootHalted } from "./wire-vessel-rig.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import {
-  browserIdentityContinuityKey, generateOrLoadBrowserVesselIdentity, generateOrLoadBrowserPersonaRoot,
+  readBrowserIdentityContinuity, generateOrLoadBrowserVesselIdentity, generateOrLoadBrowserPersonaRoot,
   loadBrowserPersonaRootSeed, listBrowserPersonaRoots, openVesselIdb, idbGet, idbPut, idbKeys, makeBrowserIdbPersonaVault, forgetWornFaceOfTab,
 } from "../src/browser-vessel-identity.js";
 import {
@@ -633,23 +633,21 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
 
   test("BC14 a locked, empty-sealed keystore refuses the seed read and the mint; nothing moves", async () => {
     const idbName = `custody-empty-locked-${crypto.randomUUID()}`;
-    const marker = browserIdentityContinuityKey(idbName);
-    expect(marker).toBe(`lares:vessel:continuity:${idbName}`);
     await sealBrowserKeystore(idbName, PASS);
     lockBrowserCustody(idbName);
     const before = await census(idbName);
-    const markerBefore = localStorage.getItem(marker);
+    const markerBefore = await readBrowserIdentityContinuity(idbName);
 
     await expectRefused(placeSeed(idbName), "sealed-locked");
     await expectRefused(generateOrLoadBrowserVesselIdentity(idbName), "sealed-locked");
     expect(await census(idbName), "no mint landed").toEqual(before);
-    expect(localStorage.getItem(marker), "the continuity marker stands").toBe(markerBefore);
+    expect(await readBrowserIdentityContinuity(idbName), "the continuity row stands").toBe(markerBefore);
 
     // CONTROL: unlocked, the same mint lands, sealed.
     await unlockBrowserCustody(idbName, [PASS]);
     await generateOrLoadBrowserVesselIdentity(idbName);
     expect(startsWithMagic(await rowOf(idbName, "sealed/vessel-key"))).toBe(true);
-    expect(localStorage.getItem(marker)).toBe("founded");
+    expect(await readBrowserIdentityContinuity(idbName)).toBe("founded");
   }, SLOW);
 
   test("BC15 the refusal readings: torn-without-tree, tree-unreadable, row-unopened, each writing nothing", async () => {

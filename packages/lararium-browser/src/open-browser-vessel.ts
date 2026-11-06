@@ -18,7 +18,7 @@ import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHo
  */
 
 import { pagePortGrant } from "./page-port-grant.js";
-import type { PortIslandToVesselMsg } from "@lararium/mesh";
+import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
@@ -103,7 +103,7 @@ import {
 }                                            from "./browser-vessel-identity.js";
 import type { BrowserVesselIdentity }        from "./browser-vessel-identity.js";
 import { personaPanelStateArgs }             from "./persona-panel-state.js";
-import { BrowserVesselIslandPool, listenForPageDrains } from "./browser-vessel-island-pool.js";
+import { BrowserVesselIslandPool, type PageLifeFeed } from "./browser-vessel-island-pool.js";
 import { publishHandleBrowser }              from "./browser-handle-publish.js";
 import { burnFaceBrowser, attestFaceBrowser } from "./browser-handle-verbs.js";
 
@@ -306,6 +306,14 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   askCustody?: (question: CustodyAsk | { readonly kind: "clear" }) => Promise<CustodyAnswer>;
   /** URL of the compiled browser wiki Worker script. */
   workerScriptUrl?: URL;
+  /**
+   * The page's life signals (the lift's `page:life`): the page subscribes to its own `visibilitychange` and `pagehide` and
+   * feeds each one here. A hidden page or a leaving one asks the wiki islands to drain, and a leaving page closes its shared
+   * holder session. Absent, no drain rides a page signal.
+   */
+  pageLife?: PageLifeFeed;
+  /** The vessel's rest reading (the lift's `status`): what it read of its receipt requests, each time it moves. */
+  onRest?: (state: VesselRestState) => void;
   /** Camera sink: a keyed `lar:frame` from the gated surface, named by its transport id. */
   onFrame?:         (frame: ProjectionSurfaceFrame) => void;
   /** Answer rail: a `lar:control-result`; the page correlates it by event id. */
@@ -529,7 +537,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // several faces held) takes the dedicated-worker floor, and the house stands from the next boot.
   const house = (sharedHolderUrl && daemonWorkerUrl) ? await houseOfBoot(idbName, admit !== undefined) : null;
   const holder = (sharedHolderUrl && daemonWorkerUrl && house)
-    ? await attachSharedHolder({ holderUrl: sharedHolderUrl, houseName: house })
+    ? await attachSharedHolder({ holderUrl: sharedHolderUrl, houseName: house, ...(opts.pageLife ? { pageLife: opts.pageLife } : {}) })
     : null;
   if (holder?.kind === "floor") console.log(`[vessel] shared holder floor: ${holder.why}`);
   const lockHold = await holdVesselLock(idbName, opts.locks === undefined ? ambientLocks() : opts.locks, { attachToHolder: holder?.kind === "attached" ? holder.hello.lockClientId : null, ...(holder?.kind === "attached" && house ? { houseName: house } : {}) });
@@ -1872,6 +1880,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // D4 lends the actor grant; this vessel opens a read-only port until then.
         portPolicy: opts.portPolicy ?? ((binding, islandKey) => pagePortGrant({ binding, islandKey, faceId: portFaceId, daemonKey: DAEMON_SURFACE_ID })),
         ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
+        ...(opts.onRest ? { onRest: opts.onRest } : {}),
         resolvePluginCids: async (recipe) => {
           crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
           return resolveBrowserIslandPluginCids({
@@ -1972,8 +1981,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       }
       const stopPromoteWatch = promoteWiringRef?.watch();
       if (stopPromoteWatch) held.stood.push({ what: "the promote watcher", down: stopPromoteWatch });
-      if (typeof window !== "undefined" && typeof document !== "undefined") {
-        const stopPageDrains = listenForPageDrains(window, document, () => vmManager.requestWikiDrains());
+      if (opts.pageLife) {
+        const stopPageDrains = opts.pageLife(() => vmManager.requestWikiDrains());
         held.stood.push({ what: "page drain signals", down: stopPageDrains });
       }
       return vmManager;

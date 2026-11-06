@@ -43,11 +43,36 @@ import type { SeedWrapRecord } from "./seed-wrap-prf.js";
 import { assertCanMint } from "./secure-context-gate.js";
 import { readBrowserCustody, readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
 const KEY_RECORD = "vessel-key";
-const IDENTITY_CONTINUITY_PREFIX = "lares:vessel:continuity:";
 
-/** Origin-local companion marker: it survives an IndexedDB-only clear and lets the next open refuse a re-found key. */
-export function browserIdentityContinuityKey(idbName: string): string {
-  return `${IDENTITY_CONTINUITY_PREFIX}${idbName}`;
+/**
+ * The identity continuity rows rest in an IndexedDB database of their own, apart from every keystore: a keystore
+ * database deleted or lost while this one stands lets the next open refuse a re-found key. Each row reads `founding`
+ * from the first mint's start and `founded` once the key stands, keyed by the keystore's database name. IndexedDB
+ * stands on every thread a vessel runs on, a dedicated worker's included.
+ */
+export const BROWSER_IDENTITY_CONTINUITY_DB = "lares:continuity";
+const CONTINUITY_STORE = "identity";
+
+export type BrowserIdentityContinuity = "founding" | "founded";
+
+function openContinuityIdb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(BROWSER_IDENTITY_CONTINUITY_DB, 1);
+    req.onupgradeneeded = () => { if (!req.result.objectStoreNames.contains(CONTINUITY_STORE)) req.result.createObjectStore(CONTINUITY_STORE); };
+    req.onsuccess = () => { req.result.onversionchange = () => req.result.close(); resolve(req.result); };
+    req.onerror   = () => reject(req.error);
+  });
+}
+
+/** The continuity row for the keystore `idbName`: what it holds, or null where no mint ever started there. */
+export async function readBrowserIdentityContinuity(idbName: string): Promise<unknown> {
+  const db = await openContinuityIdb();
+  try { return (await idbGet<unknown>(db, CONTINUITY_STORE, idbName)) ?? null; } finally { db.close(); }
+}
+
+async function writeBrowserIdentityContinuity(idbName: string, value: BrowserIdentityContinuity): Promise<void> {
+  const db = await openContinuityIdb();
+  try { await idbPut(db, CONTINUITY_STORE, idbName, value); } finally { db.close(); }
 }
 
 // The keystore holds device and persona secrets; bootstrap holds the founding floor. The worn face is session state of one tab
@@ -242,38 +267,38 @@ export async function generateOrLoadBrowserVesselIdentity(
   displayName?: string,
   opts: { readonly placeFoundingCard?: PlaceFoundingCard; readonly entropy?: RandomProvider } = {},
 ): Promise<BrowserVesselIdentity> {
-  let continuity: string | null;
+  let continuity: unknown;
   try {
-    continuity = localStorage.getItem(browserIdentityContinuityKey(idbName));
+    continuity = await readBrowserIdentityContinuity(idbName);
   } catch (error) {
-    throw new Error(`[browser-vessel-identity] local-storage-unavailable — refusing to mint before continuity can be recorded: ${String(error)}`);
+    throw new Error(`[browser-vessel-identity] continuity-unavailable — refusing to mint before continuity can be recorded: ${String(error)}`);
+  }
+  if (continuity !== null && continuity !== "founded" && continuity !== "founding") {
+    throw new Error(`[browser-vessel-identity] continuity-state-invalid — the continuity row for "${idbName}" holds an unknown value.`);
   }
 
   const keyStore = idbKeypairStore(idbName);
   const existing = await keyStore.load();
   if (continuity === "founded" && !existing) {
     throw new Error(
-      `[browser-vessel-identity] local-storage-lost — origin marker for "${idbName}" remains, but its IndexedDB identity is absent; ` +
-      `refusing to found a blank vessel under the old name. Restore the origin data or recover the vessel before opening it.`,
+      `[browser-vessel-identity] continuity-lost — the continuity row for "${idbName}" reads founded, but its IndexedDB identity is absent; ` +
+      `refusing to found a blank vessel under the same name. Restore the origin data or recover the vessel before opening it.`,
     );
-  }
-  if (continuity !== null && continuity !== "founded" && continuity !== "founding") {
-    throw new Error(`[browser-vessel-identity] local-storage-state-invalid — continuity marker for "${idbName}" has an unknown value.`);
   }
 
   if (!existing) {
     try {
-      localStorage.setItem(browserIdentityContinuityKey(idbName), "founding");
+      await writeBrowserIdentityContinuity(idbName, "founding");
     } catch (error) {
-      throw new Error(`[browser-vessel-identity] local-storage-unavailable — refusing to mint before continuity can be recorded: ${String(error)}`);
+      throw new Error(`[browser-vessel-identity] continuity-unavailable — refusing to mint before continuity can be recorded: ${String(error)}`);
     }
   }
 
   const { verifyingKey } = await generateOrLoadKeypair(keyStore, browserKeypairCrypto);
   try {
-    localStorage.setItem(browserIdentityContinuityKey(idbName), "founded");
+    await writeBrowserIdentityContinuity(idbName, "founded");
   } catch (error) {
-    throw new Error(`[browser-vessel-identity] local-storage-unavailable — identity exists but its continuity marker could not be sealed: ${String(error)}`);
+    throw new Error(`[browser-vessel-identity] continuity-unavailable — the identity stands but its continuity row could not be written: ${String(error)}`);
   }
   // A seated founding card arms the place KEL in the same act; with none seated the leaf founds no KEL, and the explicit door
   // below refuses by name until a ceremony seats one.

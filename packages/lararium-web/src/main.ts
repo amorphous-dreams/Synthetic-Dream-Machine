@@ -30,6 +30,7 @@ import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./ph
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, readHearthFloorCard, type GenesisSeed, type MeshPeer } from "@lararium/mesh";
 import { createProjectionSink } from "./projection-sink.js";
+import { pageLifeOf, paintRest } from "./page-life.js";
 import { pagePortDelivery, standPagePort } from "./page-port.js";
 import { standPageMirror } from "./page-mirror.js";
 import { standTabTopology } from "./glass/topology.js";
@@ -508,6 +509,8 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
       daemonWorkerUrl,
       ...(sharedHolderUrl ? { sharedHolderUrl } : {}),
       workerScriptUrl,
+      pageLife: pageLifeOf(window, document),
+      onRest: (state) => paintRest(document, state),
       onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
       onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) { reportFirstPaint(); mirrorTrigger?.(); } mirrorShownSync?.(); },
       onControlResult: (_surface, result) => { projectionSink.applyResult(result); },

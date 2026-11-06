@@ -66,7 +66,7 @@ describe("the vessel graph on a worker's thread", () => {
 // The census over the package's source: no module the vessel worker would load names a page global. Comments strip first, so a
 // docblock that names `document` to explain a seam reads as no reach.
 const SOURCES = import.meta.glob<string>("../src/*.ts", { query: "?raw", import: "default", eager: true });
-const PAGE_REACH = /\b(?:window|document|localStorage|sessionStorage)\s*[.[(]|\btypeof\s+(?:window|document|localStorage|sessionStorage)\b|["'](?:pagehide|visibilitychange)["']|\b(?:alert|prompt)\(/;
+const PAGE_REACH = /\b(?:window|document|localStorage|sessionStorage)\s*[.[(]|\btypeof\s+(?:window|document|localStorage|sessionStorage)\b|addEventListener\??\.?\(\s*["'](?:pagehide|visibilitychange)["']|\b(?:alert|prompt)\(/;
 const stripComments = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`\\])\/\/.*$/gm, "$1");
 
 describe("the page-global census", () => {
@@ -77,6 +77,9 @@ describe("the page-global census", () => {
     expect(stripComments(SOURCES["../src/open-browser-vessel.ts"]!).length).toBeGreaterThan(10_000);
     expect(PAGE_REACH.test(stripComments("const a = 1; // document.title\nconst b = localStorage.getItem('x');"))).toBe(true);
     expect(PAGE_REACH.test(stripComments("/* document.body */ const a = 1; // window.x"))).toBe(false);
+    // A page-event subscription bites on any target; the signal's name riding as a value (`page:life`) bites nothing.
+    expect(PAGE_REACH.test('globalThis.addEventListener?.("pagehide", close, { once: true });')).toBe(true);
+    expect(PAGE_REACH.test('if (life !== "pagehide") return;')).toBe(false);
 
     const reaches = files.flatMap((file) => stripComments(SOURCES[file]!).split("\n")
       .map((line, i) => ({ file: file.replace("../src/", ""), line: i + 1, text: line.trim() }))

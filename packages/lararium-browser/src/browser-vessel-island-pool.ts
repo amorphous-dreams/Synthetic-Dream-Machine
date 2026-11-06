@@ -22,20 +22,21 @@ import {
   type LarIslandToVesselMsg,
   type WikiRecipe,
   type PortIslandToVesselMsg,
+  type VesselRestState,
 } from "@lararium/mesh";
 import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
 import { refuseBrowserDyadAsks } from "./browser-dyad-refusal.js";
 import { readCasBlobFromOpfs } from "./browser-genesis.js";
 
-/** Page departure only asks the workers to drain; the browser may suspend them at any point. */
-export function listenForPageDrains(page: EventTarget, document: EventTarget & { readonly visibilityState: string }, request: () => void): () => void {
-  const onVisibility = () => { if (document.visibilityState === "hidden") request(); };
-  const onHide = () => request();
-  document.addEventListener("visibilitychange", onVisibility);
-  page.addEventListener("pagehide", onHide);
-  return () => { document.removeEventListener("visibilitychange", onVisibility); page.removeEventListener("pagehide", onHide); };
-}
+/** A page life signal the page feeds the vessel: the page went hidden, or the page is leaving. */
+export type PageLife = "hidden" | "pagehide";
+
+/**
+ * The page's life signals as the vessel reads them: the page subscribes the listener to its own events and returns the
+ * unsubscribe. A vessel thread reads no page object; the page feeds each signal, and slice 2 carries it as `page:life`.
+ */
+export type PageLifeFeed = (listener: (life: PageLife) => void) => () => void;
 
 export interface BrowserVesselIslandPoolOptions {
   /**
@@ -49,6 +50,8 @@ export interface BrowserVesselIslandPoolOptions {
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   onPortDrop?: (islandKey: string, type: string, reason: "no-port-lease") => void;
+  /** What the vessel read of its receipt requests, each time it moves; the page shows it, so a person's tooling waits on the vessel's own word. */
+  onRest?: (state: VesselRestState) => void;
   /** Called when an island outside any session emits a verse-event reaction or one of the camera's kinds
    *  (`lar:frame`, `lar:control-result`, `lar:service`); a session island's traffic reaches its own surface door instead. */
   onWorkerEvent?: (id: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void;
@@ -96,8 +99,7 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
       ...(opts.portPolicy ? { portPolicy: opts.portPolicy } : {}),
       ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
       ...(opts.onPortDrop ? { onPortDrop: opts.onPortDrop } : {}),
-      // The page shows what the vessel read of its receipt requests, so a person's tooling waits on the vessel's own word.
-      onRest: (state) => { if (typeof document !== "undefined") document.documentElement.dataset["larRest"] = `${state.asked}/${state.rested}/${state.stalled}`; },
+      ...(opts.onRest ? { onRest: opts.onRest } : {}),
     });
   }
 }
