@@ -6,6 +6,11 @@
  *       admits nothing. CONTROL: a hello that names no face over a browser with no face asks nothing of any face.
  *   HF2 RED the host wires the vessel's provider door: the face's first admitted session lights its provider, and its last
  *       session's close drops it, per face.
+ *   HF3 RED a fleet join acts only as the session's own face: an offer naming a face another session holds unlocked on this
+ *       thread refuses `face-not-worn` before any ask or write. CONTROL: an offer naming a new face asks its first bind,
+ *       naming that face.
+ *   HF4 RED the keys a join seats belong to its session: the new face's key the join bound drops when that session closes,
+ *       while a sibling session of the session's own face keeps the vessel up. CONTROL: the sibling's own face stays held.
  *
  * The vessel the host lights stands in for the real one (`VesselHostEnv.openVessel`), so the cases read the host's wiring
  * alone; faces and secrets stay synthetic, over scratch stores.
@@ -13,7 +18,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
 import { describe, expect, test } from "vitest";
-import { bindFirstFaceSlot, lockFaceCustody } from "@lararium/browser";
+import { bindFirstFaceSlot, faceCustodyHeld, lockFaceCustody } from "@lararium/browser";
 import { standVesselHost, type VesselScope } from "../src/workers/vessel-host.js";
 import type { PageToVessel, VesselBoot, VesselToPage } from "../src/vessel-protocol.js";
 
@@ -124,5 +129,61 @@ describe("the host reads each session's face from its hello", () => {
     cb.receive({ t: "page:life", life: "pagehide" });
     await until("the face dropped", () => log.some((l) => l.startsWith(`drop ${face}`)));
     expect(log.indexOf(`drop ${face} pagehide`), "the face's last session drops its provider").toBeGreaterThan(log.indexOf(`lit ${face}`));
+  }, SLOW);
+});
+
+describe("a fleet join acts as the session's own face", () => {
+  const offerNaming = (group: string): string => JSON.stringify({ personaGroup: group, not: "a whole offer" });
+  const replyOf = (t: ReturnType<typeof tab>, callId: string) => t.heard.find((m): m is Extract<VesselToPage, { t: "reply" }> => m.t === "reply" && m.callId === callId);
+
+  test("HF3 RED an offer naming another session's face refuses face-not-worn — CONTROL: a new face asks its first bind", async () => {
+    const idbName = `host-join-${crypto.randomUUID()}`;
+    const a = `pg-host-a-${crypto.randomUUID()}`, b = `pg-host-b-${crypto.randomUUID()}`;
+    await bindFirstFaceSlot(idbName, a, { kind: "passphrase", passphrase: ROUTE });
+    lockFaceCustody(idbName, a);
+    // B stands bound and unlocked on this thread, as another session of B would hold it.
+    await bindFirstFaceSlot(idbName, b, { kind: "passphrase", passphrase: "B's own fire" });
+    const host = standVesselHost({ locks: navigator.locks, openVessel: fakeVessel([]) } as never);
+    const t = tab(ROUTE);
+    const c = host.connect(t.scope);
+    t.bind(c.receive);
+    c.receive({ t: "hello", tabSession: "tab-a", boot: boot(idbName), face: a } as PageToVessel);
+    await until("A admitted", () => t.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
+    const asksBefore = t.asks().length;
+    c.receive({ t: "join:offer", callId: "join-b", text: offerNaming(b), abandonPending: true });
+    // barrier: the host's reply to the join
+    await until("the join's reply", () => replyOf(t, "join-b") !== undefined);
+    expect(replyOf(t, "join-b"), "A's session joins no face it does not wear").toMatchObject({ ok: false, error: { refusal: "face-not-worn" } });
+    expect(t.asks().length, "and asks nothing for it").toBe(asksBefore);
+
+    const n = `pg-host-new-${crypto.randomUUID()}`;
+    c.receive({ t: "join:offer", callId: "join-n", text: offerNaming(n), abandonPending: false });
+    await until("the new face's reply", () => replyOf(t, "join-n") !== undefined);
+    expect(t.asks().slice(asksBefore), "CONTROL: a new face asks its first bind, naming that face").toMatchObject([{ kind: "bind-first", face: n }]);
+  }, SLOW);
+
+  test("HF4 RED the new face's key a join bound drops with its session — CONTROL: the sibling's own face stays held", async () => {
+    const idbName = `host-join-keys-${crypto.randomUUID()}`;
+    const a = `pg-host-a-${crypto.randomUUID()}`;
+    await bindFirstFaceSlot(idbName, a, { kind: "passphrase", passphrase: ROUTE });
+    lockFaceCustody(idbName, a);
+    const host = standVesselHost({ locks: navigator.locks, openVessel: fakeVessel([]) } as never);
+    const t1 = tab(ROUTE), t2 = tab(ROUTE);
+    const c1 = host.connect(t1.scope), c2 = host.connect(t2.scope);
+    t1.bind(c1.receive); t2.bind(c2.receive);
+    c1.receive({ t: "hello", tabSession: "tab-1", boot: boot(idbName), face: a } as PageToVessel);
+    await until("1 admitted", () => t1.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
+    c2.receive({ t: "hello", tabSession: "tab-2", boot: boot(idbName), face: a } as PageToVessel);
+    await until("2 admitted", () => t2.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
+    const n = `pg-host-new-${crypto.randomUUID()}`;
+    c1.receive({ t: "join:offer", callId: "join-n", text: offerNaming(n), abandonPending: false });
+    await until("the join's reply", () => replyOf(t1, "join-n") !== undefined);
+    expect(faceCustodyHeld(idbName, n), "the join bound the new face's tree in this session").toBe(true);
+    c1.receive({ t: "page:life", life: "pagehide" });
+    // barrier: the new face's key reads dropped, the far side of the session's close
+    let dropped = true;
+    try { await until("the join's key dropped", () => !faceCustodyHeld(idbName, n)); } catch { dropped = false; }
+    expect(dropped, "the key a join seated drops with its session").toBe(true);
+    expect(faceCustodyHeld(idbName, a), "CONTROL: the sibling's own face stays held").toBe(true);
   }, SLOW);
 });
