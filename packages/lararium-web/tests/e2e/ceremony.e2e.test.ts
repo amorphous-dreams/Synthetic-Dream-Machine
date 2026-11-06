@@ -141,11 +141,22 @@ test("K2 RED — the page's thread holds no route byte while a vessel founds, un
   type Spy = { count: number; hits: string[]; kinds: Record<string, number>; passwordFields: number; notices: number };
   const readSpy = () => page.evaluate(() => (window as unknown as { __larSpy: Spy }).__larSpy);
   const reads: Spy[] = [];
+  /** The spy's verdict on one load, read as the load lands. */
+  const judge = (i: number, spy: Spy): void => {
+    // CONTROL: a live instrument — the spy read the vessel's asks and the page's own hand of each ceremony's port.
+    assert.ok(spy.count > 0 && (spy.kinds["worker-in:ask"] ?? 0) >= 1, `load ${i}: the spy read the vessel's ask (${JSON.stringify(spy.kinds)})`);
+    assert.deepEqual(spy.hits, [], `load ${i}: no route byte crossed the page's thread`);
+    assert.equal(spy.passwordFields, 0, `load ${i}: the page stood no password field`);
+    assert.equal(spy.kinds["worker-out:answer"], undefined, `load ${i}: the page posted no answer to the vessel`);
+    assert.ok((spy.kinds["worker-out:ceremony:port"] ?? 0) >= 1 && (spy.kinds["broker-out:ceremony:offer"] ?? 0) >= 1, `load ${i}: the spy read the page's port hand-offs (${JSON.stringify(spy.kinds)})`);
+    assert.ok(spy.notices >= 1, `load ${i}: the spy saw the ask's notice`);
+  };
   try {
     // FOUND: a fresh vessel asks bind-first; the ceremony takes the first passphrase.
     await page.goto(baseUrl);
     await live(page);
     reads.push(await readSpy());
+    judge(0, reads[0]!);
     // UNLOCK: a reload stands a sealed vessel at its floor, and it asks its unlock through the ceremony.
     await page.reload();
     await live(page);
@@ -157,20 +168,12 @@ test("K2 RED — the page's thread holds no route byte while a vessel founds, un
       new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`the ward act answered nothing within 90 s; the last logs:\n${logs.slice(-40).join("\n")}`)), WAIT)),
     ]);
     reads.push(await readSpy());
+    judge(1, reads[1]!);
 
     const key = signed.key.replace(/^0x/, "");
     const publicKey = createPublicKey({ key: { kty: "OKP", crv: "Ed25519", x: Buffer.from(key, "hex").toString("base64url") }, format: "jwk" });
     assert.ok(verify(null, Buffer.from(bytes), publicKey, Buffer.from(signed.signature.replace(/^0x/, ""), "hex")), "the ward act's signature verifies under the key it names");
 
-    for (const [i, spy] of reads.entries()) {
-      // CONTROL: a live instrument — the spy read the vessel's asks and the page's own hand of each ceremony's port.
-      assert.ok(spy.count > 0 && (spy.kinds["worker-in:ask"] ?? 0) >= 1, `load ${i}: the spy read the vessel's ask (${JSON.stringify(spy.kinds)})`);
-      assert.ok((spy.kinds["worker-out:ceremony:port"] ?? 0) >= 1 && (spy.kinds["broker-out:ceremony:offer"] ?? 0) >= 1, `load ${i}: the spy read the page's port hand-offs (${JSON.stringify(spy.kinds)})`);
-      assert.ok(spy.notices >= 1, `load ${i}: the spy saw the ask's notice`);
-      assert.deepEqual(spy.hits, [], `load ${i}: no route byte crossed the page's thread`);
-      assert.equal(spy.passwordFields, 0, `load ${i}: the page stood no password field`);
-      assert.equal(spy.kinds["worker-out:answer"], undefined, `load ${i}: the page posted no answer to the vessel`);
-    }
     assert.ok((reads[1]!.kinds["worker-in:ask"] ?? 0) >= 2, "the second load asked twice (the unlock, the ward act)");
     assert.deepEqual(faults, [], "no page error through the founding, the unlock and the ward act");
   } finally { await context.close(); }
