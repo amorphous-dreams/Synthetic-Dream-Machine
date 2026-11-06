@@ -87,6 +87,34 @@ test('counts stale, comments stay silent, and an empty source corpus fails', () 
   assert.equal(scanText('packages/demo/src/a.ts', '// loadVesselSigningSeed();\n/* vesselSeed */\nconst a = 1;').length, 0);
 });
 
+test('a browser reach of the place seed beyond its receipted KEL consumer reads red at its line', () => {
+  const file = 'packages/lararium-browser/src/browser-vessel-identity.ts';
+  const body = [
+    'async function loadBrowserSigningSeed(idbName) { return seedOf(idbName); }',
+    'export async function foundKel(idbName) { const seed = await loadBrowserSigningSeed(idbName); return arm(seed); }',
+    'export function tagDoor(idbName) { return async () => { const seed = await loadBrowserSigningSeed(idbName); return derive(seed); }; }',
+    '',
+  ].join('\n');
+  const receipt = { rule: 'allowed', file, match: 'loadBrowserSigningSeed', count: 2, reason: 'The fixture keystore reader and its KEL consumer.' };
+  const red = fixture({ [file]: body }, [receipt]);
+  assert.deepEqual(red.open.map(f => `${f.file}:${f.line}:${f.kind}`), [`${file}:3:seed`]);
+  // CONTROL: the same door with only its KEL consumer reads green under the same receipt.
+  const green = fixture({ [file]: body.split('\n').filter((_, i) => i !== 2).join('\n') }, [receipt]);
+  assert.deepEqual(green.open, []);
+  assert.deepEqual(green.stale, []);
+});
+
+test('a reach named vesselFaceTagSecret reads open in any file, and no receipt allows it', () => {
+  const body = 'const secret = vesselFaceTagSecret(seed);\n';
+  const receipt = { rule: 'allowed', file: 'packages/demo/src/tag.ts', match: 'vesselFaceTagSecret', count: 1, reason: 'A receipt that must not take.' };
+  for (const file of ['packages/demo/src/tag.ts', 'packages/lararium-browser/src/browser-vessel-identity.ts']) {
+    const red = fixture({ [file]: body }, [{ ...receipt, file }]);
+    assert.ok(red.open.some(f => f.file === file && f.line === 1 && f.kind === 'tag-secret'), file);
+  }
+  // CONTROL: a per-face tag door spelled without the name reads no finding.
+  assert.deepEqual(fixture({ 'packages/demo/src/tag.ts': 'const secret = await standVesselFaceTagSecret(group);\n' }).open, []);
+});
+
 test('the real tree has no K15 exception, renamed secret handoff, or unclassified public place use', () => {
   const result = census(REPO);
   assert.ok(result.files > 0);

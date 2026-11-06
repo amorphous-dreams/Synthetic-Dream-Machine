@@ -5,10 +5,15 @@ import { fileURLToPath } from 'node:url';
 
 const REPO = fileURLToPath(new URL('../', import.meta.url));
 const SOURCE = /\.(?:ts|mts|cts|js|mjs|cjs)$/;
-const TOKEN = /\b(?:loadVesselSigningSeed|placeSignerFromSeed|vesselSeed|vesselFloorKeyDoor|floorKeyDoor)\b|signingSeedFromHex\(raw\.signingKey\)/;
-// Only the place key-file door decodes a place seed. PersonaVault decodes a distinct
+// Every load of a place seed reads as a consumer line: the node key file's reader, the browser keystore's reader, and the
+// scoped doors over them. A key door skips the alias pass below, so its own loads must each name a receipt here.
+const TOKEN = /\b(?:loadVesselSigningSeed|loadBrowserSigningSeed|placeSignerFromSeed|vesselSeed|vesselFloorKeyDoor|floorKeyDoor)\b|signingSeedFromHex\(raw\.signingKey\)/;
+// Only the place key-file doors decode a place seed. PersonaVault decodes a distinct
 // persona-root row through the same generic helper.
-const SEED_ORIGIN = /\b(?:loadVesselSigningSeed|vesselSeed)\b|signingSeedFromHex\(raw\.signingKey\)/;
+const SEED_ORIGIN = /\b(?:loadVesselSigningSeed|loadBrowserSigningSeed|vesselSeed)\b|signingSeedFromHex\(raw\.signingKey\)/;
+// A vessel-wide tag secret over a place seed links a person's faces (stable-founding-road#/rulings): any reach by this
+// name reads open, and no receipt allows it. A face's tag secret rests per face, random, in that face's own row.
+const TAG_SECRET = /\bvesselFaceTagSecret\b/;
 const PUBLIC_SPELLING = /\bvesselIdentity\.verifyingKey\b|\bvesselGateKey\b|\bloadVesselVerifyingKey\s*\(\s*\)|\bdaemonAuth\.placeVerifyingKey\b/;
 const FACE_FALLBACK = /activeAtom\?\.key\s*\?\?\s*(?:vesselIdentity\.verifyingKey|vesselGateKey|loadVesselVerifyingKey\s*\(\s*\)|daemonAuth\.placeVerifyingKey)/;
 const KEY_DOORS = new Set(['packages/lararium-node/src/node-vessel-identity.ts', 'packages/lararium-browser/src/browser-vessel-identity.ts']);
@@ -16,6 +21,7 @@ const KEY_DOORS = new Set(['packages/lararium-node/src/node-vessel-identity.ts',
 // Exact source-line receipts. The K15 rule grants no exception.
 export const ENTRIES = [
   { rule: 'allowed', file: 'packages/lararium-browser/src/browser-vessel-identity.ts', match: 'signingSeedFromHex(existing.signingKey)', count: 1, reason: 'Browser place KEL key-file door.' },
+  { rule: 'allowed', file: 'packages/lararium-browser/src/browser-vessel-identity.ts', match: 'loadBrowserSigningSeed', count: 2, reason: 'The browser keystore reader and its one consumer, the place KEL inception; no face reach loads the place seed.' },
   { rule: 'allowed', file: 'packages/lararium-mesh/src/gate-bundle.ts', match: 'floorKeyDoor', count: 1, reason: 'The mesh floor derivation adapter.' },
   { rule: 'allowed', file: 'packages/lararium-mesh/src/index.ts', match: 'floorKeyDoor', count: 1, reason: 'The mesh barrel exposes the floor adapter.' },
   { rule: 'allowed', file: 'packages/lararium-mesh/src/place-signer.ts', match: 'placeSignerFromSeed', count: 1, reason: 'The scoped five-duty place signer.' },
@@ -23,7 +29,7 @@ export const ENTRIES = [
   { rule: 'allowed', file: 'packages/lararium-node/src/main.ts', match: 'vesselFloorKeyDoor', count: 2, reason: 'The main floor pin uses the scoped floor door.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/commands/fleet-join.ts', match: 'vesselFloorKeyDoor', count: 2, reason: 'Fleet join carries the place floor pin.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/commands/nexus-contract.ts', match: 'vesselFloorKeyDoor', count: 2, reason: 'Nexus carriage names the floor pin door.' },
-  { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'vesselFloorKeyDoor', count: 2, reason: 'The key-file module defines the scoped floor door and derives the vessel face-tag secret through it.' },
+  { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'vesselFloorKeyDoor', count: 1, reason: 'The key-file module defines the scoped floor door.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'floorKeyDoor', count: 2, reason: 'The key-file module imports and calls the floor adapter.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'loadVesselSigningSeed', count: 2, reason: 'The private key-file reader feeds the place signer.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'placeSignerFromSeed', count: 2, reason: 'The key-file door constructs the scoped signer.' },
@@ -93,6 +99,7 @@ export function scanText(file, source, { aliases = true } = {}) {
     if (TOKEN.test(code) || (file.endsWith('/browser-vessel-identity.ts') && /signingSeedFromHex\(existing\.signingKey\)/.test(code))) add(i + 1, 'seed');
     if (PUBLIC_SPELLING.test(code)) add(i + 1, 'PUBLIC_PLACE_KEY');
     if (FACE_FALLBACK.test(code)) add(i + 1, 'face');
+    if (TAG_SECRET.test(code)) add(i + 1, 'tag-secret');
     const alias = code.match(/\b(?:const|let)\s+(vesselVerifyingKey)\s*=\s*(?:await\s+)?(?:vesselIdentity\.verifyingKey|vesselGateKey|loadVesselVerifyingKey\s*\(\s*\)|daemonAuth\.placeVerifyingKey)/);
     if (alias) publicAliases.add(alias[1]);
     if (publicAliases.size && !PUBLIC_SPELLING.test(code) && [...publicAliases].some(name => new RegExp(`\\b${name}\\b`).test(code))) add(i + 1, 'PUBLIC_PLACE_KEY');
@@ -160,7 +167,7 @@ export function census(root, entries = ENTRIES, { aliases = true, handoffs = HAN
   const used = { seed: entries.map(() => 0), handoff: handoffs.map(() => 0), PUBLIC_PLACE_KEY: publicKeys.map(() => 0) };
   const open = [];
   for (const finding of findings) {
-    if (finding.kind === 'face') { open.push(finding); continue; }
+    if (finding.kind === 'face' || finding.kind === 'tag-secret') { open.push(finding); continue; }
     const rows = lists[finding.kind];
     const count = used[finding.kind];
     const index = rows.findIndex((row, i) => row.file === finding.file && finding.text.includes(row.match ?? row.name)
