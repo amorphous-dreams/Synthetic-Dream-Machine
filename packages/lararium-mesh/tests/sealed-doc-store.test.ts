@@ -216,6 +216,47 @@ describe("step three: a from-now admission opens on a fresh checkpoint", () => {
     c.restart();
     expect(said(await c.holder.sealValues({ bagId: BAG, values: [{ role: "change", ref: logicalRefOf(["doc", "incremental", "c1"]), parents: [], plaintext: utf8Bytes("late") }], signer: c.signer }))).toBe("fresh-base-unavailable");
   });
+
+  it("the same admission re-entered after a stop between its version and its fresh base cuts the base once, and the span opens", async () => {
+    const w = world();
+    const c = await vessel(w, "c");
+    const first = await c.holder.sealValues({ bagId: BAG, values: [{ role: "change", ref: logicalRefOf(["doc", "incremental", "c0"]), parents: [], plaintext: live() }], signer: c.signer });
+    if ("refusal" in first) throw new Error(said(first));
+    c.cutBase = () => cutFreshBase(live());
+    verifies(w, c, "admit-2");
+    // THE STOP: the version's record rests, and the fresh checkpoint's record does not (a fixture seam, never product code).
+    c.rest.failOn = (kind) => kind === "checkpoint";
+    expect(said(await c.holder.admitFromNow({ bagId: BAG, act: "admit-2", history: "closed", signer: c.signer }))).toMatch(/^store-failed/);
+    c.rest.failOn = null;
+    c.restart();
+    const versionsBefore = (await c.store.records("key-version")).length;
+    // Setup took: the version rests, its fresh base does not, and the span takes no change.
+    expect((await c.store.records("checkpoint")).length).toBe(0);
+    expect(said(await c.holder.sealValues({ bagId: BAG, values: [{ role: "change", ref: logicalRefOf(["doc", "incremental", "c1"]), parents: [], plaintext: utf8Bytes("late") }], signer: c.signer }))).toBe("fresh-base-unavailable");
+
+    // THE REPAIR: the same admission, by its causal id, re-entered.
+    const again = await c.holder.admitFromNow({ bagId: BAG, act: "admit-2", history: "closed", signer: c.signer });
+    if ("refusal" in again) throw new Error(said(again));
+    const version = again[0]!.keyVersion;
+    // No second version mints for one act: the version the stop left stands, and its base cut once.
+    expect((await c.store.records("key-version")).length).toBe(versionsBefore);
+    expect((await c.store.records("checkpoint")).map((r) => [r.body.keyVersion, r.body.span, r.body.base])).toEqual([[version, version, "fresh"]]);
+    const after = await c.holder.sealValues({ bagId: BAG, values: [{ role: "change", ref: logicalRefOf(["doc", "incremental", "c1"]), parents: [], plaintext: utf8Bytes("late") }], signer: c.signer });
+    if ("refusal" in after) throw new Error(said(after));
+    expect(after.keyVersion).toBe(version);
+    // A third entry of the same act lands nothing new.
+    const third = await c.holder.admitFromNow({ bagId: BAG, act: "admit-2", history: "closed", signer: c.signer });
+    if ("refusal" in third) throw new Error(said(third));
+    expect(third.map((m) => m.keyVersion)).toEqual([version]);
+    expect((await c.store.records("key-version")).length).toBe(versionsBefore);
+    expect((await c.store.records("checkpoint")).length).toBe(1);
+    // CONTROL: another act still opens its own span.
+    verifies(w, c, "admit-3");
+    const other = await c.holder.admitFromNow({ bagId: BAG, act: "admit-3", history: "closed", signer: c.signer });
+    if ("refusal" in other) throw new Error(said(other));
+    expect(other[0]!.keyVersion).not.toBe(version);
+    expect((await c.store.records("key-version")).length).toBe(versionsBefore + 1);
+  });
 });
 
 /** A session signer for a chain the vector names. */
