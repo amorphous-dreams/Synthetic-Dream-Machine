@@ -387,9 +387,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       announced(slug, "working", out.workingUrl); announced(slug, "draft", out.draftUrl); announced(slug, "personal", out.personalUrl);
       return out;
     },
-    slotDoc: async (slug, kind, opts) => {
-      const out = await resolver.slotDoc(slug, kind, opts);
-      announced(slug, kind, out?.url);
+    // The call forwards as made: an absent option stays absent, never an explicit undefined.
+    slotDoc: async (...call) => {
+      const out = await resolver.slotDoc(...call);
+      announced(call[0], call[1], out?.url);
       return out;
     },
     draft: async (slug) => {

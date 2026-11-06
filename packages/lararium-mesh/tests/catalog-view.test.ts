@@ -144,7 +144,7 @@ describe("the catalog splits by face (U1)", () => {
     view.expectFace();
     view.change((doc) => {
       doc.tiddlers[privateBag] = row(privateBag, "automerge:ledgerExpected");
-      doc.tiddlers[ORACLE_DOC_URI] = row(ORACLE_DOC_URI, "automerge:oracleExpected");
+      doc.tiddlers[ORACLE_DOC_URI] = row(ORACLE_DOC_URI, "automerge:publicRowExpected");
     });
     // The view reads both; the floor holds the public row alone, and no byte of its history names the face row.
     expect(tiddlerText(ownEntry(view.doc()?.tiddlers, privateBag))).toBe("automerge:ledgerExpected");

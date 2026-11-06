@@ -85,7 +85,7 @@ function bootstrapPersonaUrlOf(group: string): string | null {
     if (!existsSync(path)) return null;
     const plugin = JSON.parse(readFileSync(path, "utf8")) as { text?: string };
     const tiddlers = (JSON.parse(plugin.text ?? "{}") as { tiddlers?: Record<string, { text?: string }> }).tiddlers ?? {};
-    return bootFacePlanes(tiddlers, group).personaPlanes.find((p) => p.personaGroupId === group)?.url ?? null;
+    return bootFacePlanes(tiddlers, group).personaUrl;
   } catch { return null; }
 }
 

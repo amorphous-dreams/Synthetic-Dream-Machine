@@ -25,7 +25,7 @@ import { FACE_CATALOG_ADDRESS_DOMAIN } from "./domains.js";
 import { materializeSharedLarDoc } from "./deterministic-doc.js";
 import { CATALOG_CORPUS_PREFIX, CATALOG_DOC_URI, CROSSROADS_DOC_URI, DAEMON_BAG_ID, LARARIUM_DOC_URI, LARES_DOC_URI, ORACLE_DOC_URI, bagUri, recipeUri, wikiUri } from "./lar-uris.js";
 import { storedRecord } from "./stored-record.js";
-import { ownEntry, plainRecordOrNull } from "./stored-value.js";
+import { ownEntry, plainRecordOrNull, type StoredLarRecord } from "./stored-value.js";
 
 /** The half of the split catalog a row rests on: `floor` (F, public) or `face` (D, the lit face's own). */
 export type CatalogHalf = "floor" | "face";
@@ -186,8 +186,8 @@ export function makeCatalogView(floor: DocHandle<LarDoc>, face: DocHandle<LarDoc
         if (titles.length) {
           faceHandle.change((dd) => {
             for (const title of titles) {
-              const plain = plainRecordOrNull(parked.tiddlers[title] as never);
-              if (plain !== null) (dd.tiddlers as Record<string, unknown>)[title] = storedRecord(plain);
+              const plain = plainRecordOrNull(ownEntry(parked.tiddlers, title));
+              if (plain !== null) dd.tiddlers[title] = storedRecord(plain);
             }
           });
         }
@@ -242,14 +242,14 @@ function routedDraft(fd: LarDoc, dd: LarDoc, onFace?: () => void): LarDoc {
       const into = halfOf(prop);
       const other = into === dd ? fd : dd;
       if (into === dd) onFace?.();
-      (into.tiddlers as Record<string, unknown>)[prop] = value;
-      if (Object.hasOwn(other.tiddlers, prop)) delete (other.tiddlers as Record<string, unknown>)[prop];
+      into.tiddlers[prop] = storedRecord(value as StoredLarRecord);
+      if (Object.hasOwn(other.tiddlers, prop)) delete other.tiddlers[prop];
       return true;
     },
     deleteProperty: (_t, prop) => {
       if (typeof prop !== "string") return true;
-      if (Object.hasOwn(fd.tiddlers, prop)) delete (fd.tiddlers as Record<string, unknown>)[prop];
-      if (Object.hasOwn(dd.tiddlers, prop)) { delete (dd.tiddlers as Record<string, unknown>)[prop]; onFace?.(); }
+      if (Object.hasOwn(fd.tiddlers, prop)) delete fd.tiddlers[prop];
+      if (Object.hasOwn(dd.tiddlers, prop)) { delete dd.tiddlers[prop]; onFace?.(); }
       return true;
     },
     has: (_t, prop) => typeof prop === "string" && (Object.hasOwn(dd.tiddlers, prop) || Object.hasOwn(fd.tiddlers, prop)),
@@ -282,11 +282,11 @@ export function liftFaceCatalogRows(floor: DocHandle<LarDoc>, face: DocHandle<La
       if (row === undefined) continue;
       const plain = plainRecordOrNull(row as never);
       if (plain === null) continue;
-      (dd.tiddlers as Record<string, unknown>)[title] = storedRecord(plain);
+      dd.tiddlers[title] = storedRecord(plain);
       carried.push(title);
     }
   });
-  floor.change((fd) => { for (const title of titles) delete (fd.tiddlers as Record<string, unknown>)[title]; });
+  floor.change((fd) => { for (const title of titles) delete fd.tiddlers[title]; });
   return titles;
 }
 
