@@ -569,11 +569,13 @@ export class ContentKeyHolder {
     const manifest: ManifestBody = { bag: line.locator, keyVersion, parents: [], entries: [{ role: "checkpoint", address: sealed.chunk.address, locator: entryLocatorOf(key, context), parents: [] }] };
     const named = await this.#sign("manifest", manifest, { writer: sessionWriter(signer) }, bag.bagId, line.locator, key, signer);
     if (isRefusal(named)) return named;
+    // THE CHECKPOINT RECORD RESTS LAST (P2-6): the base's standing reads that record, so it stands only once its value,
+    // its manifest and their index rows rest; a stop before it leaves the base unstood, and the repair cuts it afresh.
     await this.#rest(() => this.#ports.values.write(sealed.chunk.address, sealed.chunk.sealed));
-    await this.#rest(() => store.putRecord(record.carried));
     const id = await this.#rest(() => store.putRecord(named.carried));
     await this.#rest(() => store.putIndexRows(indexRowsOf(named.verified)));
     line.manifests.set(id, named.verified);
+    await this.#rest(() => store.putRecord(record.carried));
     return true;
   }
 

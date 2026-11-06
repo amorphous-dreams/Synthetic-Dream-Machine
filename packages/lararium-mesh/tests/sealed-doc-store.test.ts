@@ -271,7 +271,7 @@ function signerOf(c: Awaited<ReturnType<typeof chain>>): RecordSigner {
 
 describe("P2-6: a stop inside the fresh base's rest never strands the base", () => {
   const live = (): Uint8Array => A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = "present words"; }));
-  it("a stop after the base's checkpoint record and before its manifest: the same admission entered again cuts the base afresh, and it opens", async () => {
+  it("a stop between the base's two records: the same admission entered again cuts the base afresh where it does not stand, and it opens", async () => {
     const w = world();
     const a = await vessel(w, "a");
     const before = await a.holder.sealValues({ bagId: BAG, values: [{ role: "change", ref: logicalRefOf(["doc", "incremental", "c0"]), parents: [], plaintext: live() }], signer: a.signer });
@@ -279,12 +279,10 @@ describe("P2-6: a stop inside the fresh base's rest never strands the base", () 
     const base = cutFreshBase(live())!;
     a.cutBase = () => base;
     verifies(w, a, "admit-1");
-    // THE KILL SEAM: the rest refuses the first manifest write after a fresh checkpoint record rested.
-    let checkpointRested = false;
-    a.rest.failOn = (kind) => {
-      if (kind === "checkpoint") checkpointRested = true;
-      return kind === "manifest" && checkpointRested;
-    };
+    // THE KILL SEAM, in whatever order the holder writes: the rest takes the base's first record (its checkpoint or its
+    // manifest) and refuses the second, a stop between the two.
+    let records = 0;
+    a.rest.failOn = (kind) => (kind === "checkpoint" || kind === "manifest") && ++records === 2;
     const stopped = await a.holder.admitFromNow({ bagId: BAG, act: "admit-1", history: "closed", signer: a.signer });
     expect("refusal" in stopped).toBe(true);   // the setup took: the admission stopped inside the base's rest
     a.rest.failOn = null;
