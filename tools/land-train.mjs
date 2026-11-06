@@ -24,7 +24,8 @@
  *           own gets one (`gh workflow run CI`) before any lane takes blame; a red span pauses the queue and drops nothing.
  *           While train N verifies, train N+1 chains on N's head and pushes (`--depth`, default 2); a red N re-chains it.
  *           A conflict drops its lane, and every later lane carrying that lane's commits. A lane whose diff changes
- *           ignored paths alone refuses the queue (no run would come): it lands DIRECT, canon goes direct.
+ *           ignored paths alone refuses the queue (no run would come): it lands DIRECT, canon goes direct. A lane whose whole diff is
+ *           `.mem` carriers lands DIRECT over a moved span at once (merge-tree over the span head), riding its green ancestor.
  *   DIRECT  one lane whose head already holds the span head lands with no train: the land commit takes the lane head's tree,
  *           which the lane's own CI already read.
  *   --local today's battery verifies the train in a provisioned worktree instead of the cloud, and keeps the road walk: the
@@ -158,6 +159,8 @@ const paced = (ops, poll) => ({ ...ops, poll: Number(poll), wait: () => ops.slee
 const short = (sha) => String(sha).slice(0, 9);
 const isAncestor = (git, a, b) => { try { git(["merge-base", "--is-ancestor", a, b]); return true; } catch { return false; } };
 
+/** True when the change names at least one path and every path is a `.mem` carrier under bags/ (canon alone: no code, tool, workflow, genesis, plugin or generated file). */
+const onlyMemPaths = (paths) => paths.length > 0 && paths.every((p) => /^bags\/.*\.mem$/.test(p));
 const touchesIgnoredOnly = (git, c) => onlyIgnoredPaths(git(["diff-tree", "-z", "--no-commit-id", "--name-only", "-r", "-m", "--first-parent", c]).split("\0").filter(Boolean));
 /** The nearest first-parent ancestor of `c` reading GREEN at its sha, or null where a commit between holds a run that is not green or touches code. */
 async function greenAncestor(ops, git, branch, c, { lane = false } = {}) {
@@ -394,13 +397,16 @@ export async function landTrain({ name = "train", specs = [], plan = false, loca
       : rejected.length ? stop(11, `QUEUE-LANDED-SOME: landed ${landed}; dropped ${rejected.map((l) => l.suffix).join(" ")}`) : null);
 
     const direct = lanes.length === 1 && isAncestor(git, d.SP, lanes[0].head);
-    if (direct || local) {
-      const r = await landLocal({ name, lanes, plan, span, direct, d, table: v.table, shipDir }, ops);
+    // CANON LANDS DIRECT: a lane whose whole diff is `.mem` carriers rides its green ancestor (validate read it GREEN, own or carried),
+    // so no train run would measure it; its land is the lane merged over the span head, the SHIP law reading what lands.
+    const memDirect = !direct && lanes.length === 1 && onlyMemPaths(lanes[0].paths);
+    if (direct || memDirect || local) {
+      const r = await landLocal({ name, lanes, plan, span, direct, memDirect, d, table: v.table, shipDir }, ops);
       if (r.code !== 0 || plan) return r;
       for (const l of lanes) settleEntry(queueDir, l, "done");
       return tally(lanes.map((l) => l.suffix).join(" ")) ?? r;
     }
-    for (const l of lanes) if (onlyIgnoredPaths(l.paths)) return stop(2, `MEME-ONLY LANE: ${l.suffix} changes ignored paths alone, so no train run would come; merge the span into it and it lands DIRECT`);
+    for (const l of lanes) if (onlyIgnoredPaths(l.paths) && !memDirect) return stop(2, `MEME-ONLY LANE: ${l.suffix} changes ignored paths alone, so no train run would come; merge the span into it and it lands DIRECT`);
     { const l = locked(); if (l) { lock = null; return l; } }
     const q = await landQueue({ lanes, plan, span, k, depth, m, queueDir, shipDir, table: v.table, preDropped: rejected, d }, ops);
     // Skipped entries stay queued: a queue that landed every other lane says so with its own code.
@@ -449,13 +455,13 @@ function trainRefs(git, span) {
 }
 
 /** DIRECT and --local: the land written before the push, from the lane tree or the local battery's merge trees. */
-async function landLocal({ name, lanes, plan, span, direct, d, table, shipDir }, ops) {
+async function landLocal({ name, lanes, plan, span, direct, memDirect = false, d, table, shipDir }, ops) {
   const { say, git, stop, env, SP } = d;
   // --local keeps the road walk from the lanes' common base: the battery reads only shared packages, so every road commit
   // between that base and the span head must read GREEN on its own (a land carries its train's verdict).
   const baseSha = lanes.length === 1 ? lanes[0].base : git(["merge-base", "--octopus", ...lanes.map((l) => l.base)]);
   let spanCarried = false;
-  if (!direct) {
+  if (!direct && !memDirect) {
     let carrier = null;
     for (const c of git(["rev-list", "--first-parent", `${baseSha}..${SP}`]).split("\n").filter(Boolean)) {
       if (git(["log", "-1", "--format=%s", c]).includes(LAND_SUBJECT)) continue;
@@ -478,7 +484,7 @@ async function landLocal({ name, lanes, plan, span, direct, d, table, shipDir },
   }
 
   if (plan) {
-    say(`PLAN ${direct ? "DIRECT land (no train)" : `local TRAIN ${name}`} over span ${short(SP)}, base ${short(baseSha)}; nothing pushed, nothing built`);
+    say(`PLAN ${direct || memDirect ? "DIRECT land (no train)" : `local TRAIN ${name}`} over span ${short(SP)}, base ${short(baseSha)}; nothing pushed, nothing built`);
     say(`PLAN poll CI every ${ops.poll} s (the house floor ${POLL_FLOOR_S} s)`);
     let prev = short(SP);
     for (const l of lanes) {
@@ -493,7 +499,17 @@ async function landLocal({ name, lanes, plan, span, direct, d, table, shipDir },
 
   const at = checkoutAt(git, SP); if (at) return stop(2, at);
   let worktree = null, lands = [];
-  if (direct) {
+  if (memDirect) {
+    const l = lanes[0];
+    let tree;
+    try { tree = git(["merge-tree", "--write-tree", "--no-messages", SP, l.head]).split("\n")[0]; }
+    catch { return stop(4, `CONFLICT: MEM-ONLY LANE ${l.suffix} does not merge over the span head ${short(SP)}; merge the span into it`); }
+    const noShip = landShipRefusal(table, shipDir, l, rawPaths(git(["diff", "--no-renames", "--raw", "-z", SP, tree])), ops);
+    if (noShip) return stop(12, noShip);
+    const land = git(["commit-tree", tree, "-p", SP, "-p", l.head, "-F", l.msg], { env });
+    lands = [{ lane: l, land }];
+    say(`MEM-ONLY LANE ${l.suffix} changes .mem carriers alone: DIRECT land over ${short(SP)}, riding its green ancestor, no train`);
+  } else if (direct) {
     const l = lanes[0];
     const tree = git(["rev-parse", `${l.head}^{tree}`]);
     const land = git(["commit-tree", tree, "-p", SP, "-p", l.head, "-F", l.msg], { env });
@@ -534,8 +550,8 @@ async function landLocal({ name, lanes, plan, span, direct, d, table, shipDir },
   const moved = moveLaneBranches(git, say, span, lands);
   if (worktree) ops.removeWorktree(worktree);
   // A DIRECT land's lane push changes no file (the land tree IS the lane tree), so paths-ignore raises no run to cancel.
-  if (!direct) await cancelLaneRuns(ops, say, span, moved);
-  return stop(0, direct ? "DIRECT-LANDED" : "BATCH-LANDED");
+  if (!direct && !memDirect) await cancelLaneRuns(ops, say, span, moved);
+  return stop(0, direct || memDirect ? "DIRECT-LANDED" : "BATCH-LANDED");
 }
 
 /** The checkout must hold the span head exactly, so a span push's fast-forward stays one and strands no local commit. */

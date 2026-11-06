@@ -747,17 +747,22 @@ test("RED: QUEUE: a conflict at chain build drops that lane by name, and every l
   assert.equal(sh(w.work, "rev-parse", `${final}^2`), w.heads.a);
 });
 
-test("RED: QUEUE: a lane whose diff changes ignored paths alone refuses the queue (no run would come); CONTROL: it lands DIRECT once it holds the span head", async () => {
+test("RED: QUEUE: a lane whose diff changes .mem carriers alone lands DIRECT over a moved span, riding the green ancestor; CONTROL: a lane changing another ignored path (.md) alone still refuses", async () => {
   const w = world(["a"], { touch: () => "bags/x/note.mem" });
   spanAhead(w);
   const r = await runQ(w);
-  assert.equal(r.code, 2, r.out);
-  assert.match(r.out, /MEME-ONLY LANE: a/);
-  sh(w.work, "checkout", "-q", `${SPAN}--a`); sh(w.work, "merge", "-q", "--no-edit", SPAN);
-  w.heads.a = sh(w.work, "rev-parse", "HEAD"); sh(w.work, "push", "-q", "origin", `${SPAN}--a`); sh(w.work, "checkout", "-q", SPAN);
-  const d = await runQ(w);
-  assert.equal(d.code, 0, d.out);
-  assert.match(d.out, /DIRECT-LANDED/);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /DIRECT-LANDED/);
+  assert.match(r.out, /MEM-ONLY LANE a/);
+  const landed = originRef(w, SPAN);
+  assert.equal(sh(w.work, "rev-parse", `${landed}^2`), w.heads.a);
+  assert.equal(sh(w.work, "show", `${landed}:bags/x/note.mem`), "a");
+  // CONTROL: a .md-only lane (ignored, yet no .mem) refuses by name.
+  const w2 = world(["a"], { touch: () => "docs/x.md" });
+  spanAhead(w2);
+  const r2 = await runQ(w2);
+  assert.equal(r2.code, 2, r2.out);
+  assert.match(r2.out, /MEME-ONLY LANE: a/);
 });
 
 test("RED: QUEUE: enqueue validates and writes one entry per lane; run drains the queue; status exits 1 while a train ref stands unlanded and 0 when none does", async () => {
@@ -795,7 +800,7 @@ test("RED: QUEUE: a run that finds the lock of a dead process takes it over and 
   assert.equal(pushedTrains(r.out).length, 0, "no new train pushed");
 });
 
-test("RED: a non-ASCII path still reads its class: git's C-quoting never hides a security path (12) nor a meme-only lane (2)", async () => {
+test("RED: a non-ASCII path still reads its class: git's C-quoting never hides a security path (12) nor a mem-only lane (it lands direct)", async () => {
   const w = world(["a"], { touch: () => ".github/workflows/é.yml" });
   const r = await runQ(w);
   assert.equal(r.code, 12, r.out);
@@ -803,8 +808,8 @@ test("RED: a non-ASCII path still reads its class: git's C-quoting never hides a
   const w2 = world(["b"], { touch: () => "bags/é/note.mem" });
   spanAhead(w2);
   const r2 = await runQ(w2);
-  assert.equal(r2.code, 2, r2.out);
-  assert.match(r2.out, /MEME-ONLY LANE: b/);
+  assert.equal(r2.code, 0, r2.out);
+  assert.match(r2.out, /DIRECT-LANDED/);
 });
 
 test("RED: a queued lane that lands DIRECT settles its entry, so the next run never re-reads a landed head", async () => {

@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DRIVERS } from "./held-out-cells.mjs";
-import { MERGE_JOB, classifyFailure, driverOf, exitOf, failing, heldOutDrivers, heldOutUnreadable, jobMinutes, main, readHeldOut, readVerdict, render, renderHeldOut, renderJobMinutes } from "./ci-verdict.mjs";
+import { MERGE_JOB, classifyFailure, driverOf, exitOf, failing, heldOutBranchPatterns, heldOutDrivers, heldOutMeasures, heldOutUnreadable, jobMinutes, main, readHeldOut, readVerdict, render, renderHeldOut, renderJobMinutes } from "./ci-verdict.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const { runs, views, heldOutRuns, heldOutViews } = JSON.parse(readFileSync(join(HERE, "ci-verdict.fixture.json"), "utf8"));
@@ -312,10 +312,10 @@ function fake(table) {
   };
   return { sh, calls, n };
 }
-const door = async (table, extra = []) => {
+const door = async (table, extra = [], opts = {}) => {
   const f = fake({ rev: SHA, ...table });
   const out = [], err = [], slept = [];
-  const code = await main(["--branch", "topic", "--head", SHA, ...extra], { sh: f.sh, sleep: async (ms) => { slept.push(ms); }, log: (l) => out.push(l), err: (l) => err.push(l) });
+  const code = await main([...extra, "--branch", "topic", "--head", SHA], { sh: f.sh, sleep: async (ms) => { slept.push(ms); }, log: (l) => out.push(l), err: (l) => err.push(l), heldOutPatterns: ["**"], ...opts });
   return { code, out: out.join("\n"), err: err.join("\n"), slept, ...f };
 };
 const GREEN_TABLE = () => ({ runs: [mkRun()], "view:11": { jobs: [mkJob("Test", T0, T1)] }, heldRuns: [mkHeld()], "view:22": heldGreenView() });
@@ -479,4 +479,28 @@ test("RED: a poll whose milliseconds pass the timer limit refuses by name; a law
   assert.match(pollRefusal(2147484), /poll-over-timer-limit/);
   assert.equal(pollRefusal("2147483"), null);
   assert.equal(pollRefusal("300"), null, "control: a lawful poll still works");
+});
+
+test("RED: --wait on a branch no held-out driver measures ends at its CI verdict and says so, held-out UNREAD never green; CONTROL: a branch the workflow measures keeps waiting", async () => {
+  const lane = ["feature/**", "!feature/green-jello-dinosaur-5--**", "main"];
+  const T = { ...GREEN_TABLE(), heldRuns: [], heldRunsAtSha: [] };
+  const r = await door(T, ["--wait", "--branch", "feature/green-jello-dinosaur-5--x"], { heldOutPatterns: lane });
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.match(r.out, /held-out: UNREAD/);
+  assert.match(r.out, /raises no run on this branch/);
+  assert.ok(!/held-out: GREEN/.test(r.out));
+  assert.deepEqual(r.slept, []);
+  // CONTROL: a branch the push patterns include still waits for the held-out run.
+  const c = await door({ ...T, heldRuns: (n) => (n < 3 ? [] : [mkHeld()]), heldRunsAtSha: [], "view:22": heldGreenView() }, ["--wait", "--branch", "feature/other"], { heldOutPatterns: lane });
+  assert.equal(c.code, 0, c.out + c.err);
+  assert.ok(c.slept.length >= 2);
+  assert.match(c.out, /held-out: GREEN/);
+  assert.deepEqual([heldOutMeasures("main", lane), heldOutMeasures("feature/green-jello-dinosaur-5", lane), heldOutMeasures("feature/green-jello-dinosaur-5--tools-ci", lane)], [true, true, false]);
+});
+
+test("heldOutBranchPatterns reads the real held-out.yml: lane branches excluded, the span and feature branches included", () => {
+  const p = heldOutBranchPatterns();
+  assert.ok(Array.isArray(p) && p.length >= 2, String(p));
+  assert.equal(heldOutMeasures("feature/green-jello-dinosaur-5--a", p), false);
+  assert.equal(heldOutMeasures("feature/green-jello-dinosaur-5", p), true);
 });
