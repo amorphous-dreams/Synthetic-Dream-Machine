@@ -72,6 +72,8 @@ export interface Vessel {
   seated: boolean;
   /** Does this vessel's document store cut a fresh base? True: it cuts one. False: it refuses. Null: none stands. */
   cutsBase: boolean | null;
+  /** The document store's own cut, where a vector hands one: it answers the fresh base itself. */
+  cutBase: ((args: { readonly bagId: string; readonly keyVersion: string }) => unknown) | null;
   /** The versions a fresh base got cut under, in order, each with how many lockboxes rested at that moment. */
   readonly bases: { keyVersion: string; lockboxes: number }[];
   holder: ContentKeyHolder;
@@ -112,7 +114,7 @@ export async function vessel(w: World, name: string, over: { standing?: WriterSt
     async self() { return [id]; },
   };
   const v: Vessel = {
-    id, chain: c, signer, rest, store, values, cards, ingested, shore, shadowed: false, seated: true, cutsBase: true, bases: [],
+    id, chain: c, signer, rest, store, values, cards, ingested, shore, shadowed: false, seated: true, cutsBase: true, cutBase: null, bases: [],
     holder: undefined as unknown as ContentKeyHolder,
     restart() { v.holder = stand(); return v.holder; },
   };
@@ -127,8 +129,9 @@ export async function vessel(w: World, name: string, over: { standing?: WriterSt
     evidenceOf,
     ownEdgeShadowed: async () => v.shadowed,
     ownSeat: async () => (v.seated ? id : null),
-    ...(v.cutsBase === null ? {} : { freshBase: async ({ keyVersion }: { keyVersion: string }) => {
+    ...(v.cutsBase === null ? {} : { freshBase: async ({ bagId, keyVersion }: { bagId: string; keyVersion: string }) => {
       v.bases.push({ keyVersion, lockboxes: [...rest.values.keys()].filter((k) => k.startsWith("lockbox/")).length });
+      if (v.cutsBase === true && v.cutBase !== null) return v.cutBase({ bagId, keyVersion }) as never;
       return v.cutsBase === true;
     } }),
     values: {
