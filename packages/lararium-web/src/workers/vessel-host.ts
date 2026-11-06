@@ -97,9 +97,17 @@ export function standVesselHost(env: VesselHostEnv = {}) {
   /** The light the vessel's surface callbacks belong to: a vessel the lock closed calls back under none, so it reaches no
    *  session and no fold. */
   let lightNow: object | null = null;
-  /** THE FOLD ENDS WITH THE LIT VESSEL: the lock and every new light retire the lit vessel, its lighter and its
-   *  fold together, so a relight (another face on the same surface slug) hands no late session what the last vessel showed. */
-  const retire = (): void => { lightNow = null; litVessel = null; litBy = null; shownFrames.clear(); };
+  /** The lit vessel's connection listener: it ends with its light. */
+  let endConnection: (() => void) | null = null;
+  /** THE FOLD ENDS WITH THE LIT VESSEL: the lock and every new light retire the lit vessel, its lighter, its connection
+   *  listener and its fold together, so a relight (another face on the same surface slug) hands no late session what the last
+   *  vessel showed. */
+  const retire = (): void => {
+    lightNow = null; litVessel = null; litBy = null; shownFrames.clear();
+    const end = endConnection;
+    endConnection = null;
+    end?.();
+  };
 
   // A session never sees a surface its face does not wear.
   const wearsLitFace = (conn: Conn): boolean =>
@@ -216,7 +224,10 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       if (lightNow === mine) retire();
       throw err;
     } finally { lighting = null; }
-    result.connectionState.subscribe((connection) => { for (const c of conns.values()) if (c.session?.admission === "admitted") statusTo(c, { connection }); });
+    // The connection reads as surface traffic: the sessions wearing this light's face hear it, while this light stands.
+    const end = result.connectionState.subscribe(ofThisLight((connection) => { for (const c of conns.values()) if (wearsLitFace(c)) statusTo(c, { connection }); }));
+    if (lightNow === mine) endConnection = end;
+    else end();
     // A landed fleet join leaves its pending row once the vessel stands on its admit.
     if (admit) void browserFleetJoinSettle().catch((err: unknown) => console.warn("[vessel] the landed fleet join did not settle:", err));
     return result;
