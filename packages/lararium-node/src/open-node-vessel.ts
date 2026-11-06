@@ -157,7 +157,7 @@ import { standingCustody } from "./custody-seat.js";
 import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
-import { composeDialPresentation } from "./dial-presentation.js";
+import { certifyFounderAt, composeDialPresentation } from "./dial-presentation.js";
 import { dialAnchorCell, nodeSessionDoor } from "./uds-session-door.js";
 import { SessionSignBook } from "./session-sign-door.js";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
@@ -493,6 +493,23 @@ export function lateDialOnce(deps: {
     flightWard = ward !== undefined;
     return mine;
   };
+}
+
+/**
+ * One late stand of a take's re-present. With a hearth to dial, the dial carries the take's route (the founder's certificate at
+ * that Nexus issues inside it). With none, the route is never dropped silently: it certifies the founder at the kept Nexuses no
+ * dial carries (seat-harness#/the-ward). With no route and no hearth it does nothing, and a stand no longer live does nothing.
+ */
+export async function standLateTake<C extends { readonly syncUrl: string | null }>(deps: {
+  readonly choose:  () => C;
+  readonly live:    () => boolean;
+  readonly dial:    (choice: C, ward?: WardCredential) => Promise<void>;
+  readonly certify: (ward: WardCredential) => Promise<void>;
+}, ward?: WardCredential): Promise<void> {
+  const late = deps.choose();
+  if (!deps.live()) return;
+  if (late.syncUrl !== null) return deps.dial(late, ward);
+  if (ward !== undefined) await deps.certify(ward);
 }
 
 /**
@@ -2845,18 +2862,29 @@ async function prepareNodeBootOn(
     // that already stands keeps what it presents (a moved board re-dials through the adapter). A herm dials no hearth, and a floor
     // composition holds no key to present with, so its attempt names `CustodyLocked` and stands nothing.
     if (placeClass !== "herm") {
-      representIfMoved = lateDialOnce({ standing: () => nexusDial !== null, tornDown: () => dialStoodDown, stand: async (live, ward) => {
-        const late = chooseHearthDial({
+      representIfMoved = lateDialOnce({ standing: () => nexusDial !== null, tornDown: () => dialStoodDown, stand: (live, ward) => standLateTake({
+        choose: () => chooseHearthDial({
           explicitUrl: opts.joinSyncUrl ?? null,
           hearthPin:   hearthPin ? { syncUrl: hearthPin.syncUrl, ...(hearthPin.gatePin ? { gatePin: hearthPin.gatePin } : {}) } : null,
           kept:        readKeptAdmitBundles(sealHome),
           walkRelay:   walkingAt?.record.relay ?? null,
           keptFloor:   (nexusHex) => readKeptHearthFloorPins(sealHome, Buffer.from(nexusHex, "hex").toString("utf8")),
-        });
-        if (late.syncUrl === null || !live()) return;
-        for (const note of late.notes) console.log(`[nexus-join] ${note}`);
-        await standFaceDial(late, live, ward);
-      } });
+        }),
+        live,
+        dial: async (late, w) => {
+          for (const note of late.notes) console.log(`[nexus-join] ${note}`);
+          await standFaceDial(late, live, w);
+        },
+        // THE KEPT NEXUSES NO DIAL CARRIES (a bundle naming no sync url: this vessel's own Nexus) take the founder's certificate
+        // under the take's route, so the carriage pull's presentation there reads it standing with no route of its own.
+        certify: async (w) => {
+          for (const kept of readKeptAdmitBundles(sealHome)) {
+            if (kept.syncUrl) continue;
+            const out = await certifyFounderAt({ sealHome, nexus: kept.aid, personaGroup: personaGroupId, ward: w });
+            console.log(`[nexus-join] founder certificate at ${kept.aid.slice(0, 18)}…: ${"state" in out ? out.state : `${out.refusal}${out.detail ? ` (${out.detail})` : ""}`}`);
+          }
+        },
+      }, ward) });
     }
     // ── THE BOOTSTRAP SEEDS; THE CATALOG PLANE REGISTERS ────────────────────────────────────────
     // A face is lit by `lares persona new 0` — a CLI act, on a vessel that is not running — so the plane it
