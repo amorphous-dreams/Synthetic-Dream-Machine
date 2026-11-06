@@ -2911,7 +2911,9 @@ async function prepareNodeBootOn(
       }
     }
     for (const plane of bootstrap.personaPlanes) {
-      if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalogOf(plane.personaGroupId)(personaBagIdFor(plane.personaGroupId), plane.url);
+      // Each proven face's plane row lands in that face's own catalog, never the worn face's.
+      const registerInCatalog = registerInCatalogOf(plane.personaGroupId);
+      if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url);
     }
     // The mounted face's siblings ride the bootstrap under their own derived names; register them beside a PROVEN mounted face.
     const wornFace = wornFaceProved && bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null;

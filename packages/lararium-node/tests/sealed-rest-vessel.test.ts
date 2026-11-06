@@ -109,7 +109,10 @@ describe("the sealed rest under a vessel's Repo, across the door to a real found
     const doc = repo.create<{ note?: string }>();
     rest.wrote(doc.documentId, session);
     doc.change((d) => { d.note = SECRET; });
+    // A Repo flush can return while a debounced save's seal still crosses the door; the census reads after the store's own
+    // flush, which settles every save in turn (the lock's own order: flushRepo, then store.flush).
     await repo.flush();
+    await rest.store.flush();
     // THE SETUP TOOK: values reached rest for the document, and no booking outlived its seal.
     expect([...inner.bytes.keys()].some((k) => k.startsWith(doc.documentId))).toBe(true);
     expect(book.size).toBe(0);
