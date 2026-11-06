@@ -202,12 +202,18 @@ export {
   RENEW_ELAPSED, WARN_ELAPSED, URGENT_ELAPSED,
 } from "./cert-expiry-gauge.js";
 // The bag's sharing-posture as SELF-DESCRIBING DATA — the 4-tier total order + the tighten-only keystone.
-export type { CapTier, TierFloorSource, DeclaredTierSource, CapTierRing } from "./cap-tier.js";
+export type { CapTier, TierFloorSource, TierFloorReading, TierFloorReadings, DeclaredTierSource, CapTierRing } from "./cap-tier.js";
 export {
   CAP_TIER_ORDER, DEFAULT_CAP_TIER, capTierRank, parseCapTier, meetCapTier, resolveTier,
   refineBagTierWithTiddlers, mayDeclareTier, mayDeclassify, structuralFloorFor, resolveTierForDoc,
-  tierPermitsRelayPeer, makeTierFloorSource,
+  tierPermitsRelayPeer, makeTierFloorSource, FloorReadingAbsent, SECRETS_READING_REQUIRED,
 } from "./cap-tier.js";
+// The secrets registry: the face's secrets planes, read off its sealed catalog, refusing by name until it reads.
+export type { ContractSecretsPlane, FaceSecretsCatalog, SecretsRegistry, SecretsRegistryReading, SecretsRegistryReason } from "./secrets-registry.js";
+export {
+  NO_CONTRACT_SECRETS_PLANE, SECRETS_REGISTRY_ROW, SECRETS_REGISTRY_KIND, SECRETS_PLANE_KIND, SECRETS_REGISTRY_VERSION,
+  SecretsRegistryRefusal, secretsPlaneRow, makeFaceSecretsRegistry,
+} from "./secrets-registry.js";
 // The cad ENCRYPT-ON-CAS primitive — cid = BLAKE3(ciphertext), verify-cap ⊥ read-cap.
 export {
   ciphertextCid, verifyCiphertextCid, sealPrivateBody, openPrivateBody,

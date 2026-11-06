@@ -79,6 +79,8 @@ Three consequences fall out of the one meet:
 
 The keystone reads back through the code: revert the meet to take the more-OPEN and nine tests fall, the gate withdrawal among them.
 
+''Every floor answers all three readings, by name.'' `makeTierFloorSource` takes `federatable`, `sealed` and `secrets` as REQUIRED readings: a site that omits one fails to compile, and an untyped caller that omits one refuses at once (`floor-reading-absent`), since an absent secrets reading would floor a federatable secrets plane PUBLIC and read exactly like a plane that holds none. `NO_CONTRACT_SECRETS_PLANE` stands only where absence stands established. A reading that cannot answer throws rather than answering false, and `structuralFloorFor` passes the throw on, the secrets reading first (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane#/the-vault-reads-as-a-bag`>>).
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/declassification`>>
@@ -154,6 +156,6 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Cw9wrUmvZJ2YBuy9hwurmBa7WTDBQDPnjKFpehA43a4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DGO6urm5MakfAfC9CU36vdWwgGpAPax3sKehMCFG67Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -171,6 +171,16 @@ Read as a ''cap-tiered bag'' instead and almost nothing new gets built: sealing-
 
 ''CONTRACT rather than PERSONAGROUP, deliberately'' — a credential a cabal legitimately shares needs the cabal inside the read-cap set; a personal secret then DECLARES tighter, the direction a declaration may always move.
 
+!!! The secrets registry rests in the face's own catalog, sealed
+
+The secrets reading takes its answer off a durable record, never off a memory-only set (lane `secrets-store`, house reading under the road's `P27`, 2026-11-06; the zero-trust reviews of the unwired code, Terra at `ffe05bc79`, items 3 and 4).
+
+* ''Where it rests.'' One init row (`<face catalog>/secrets`, `kind: secrets-registry`, `version: 1`) and one row per secrets plane (`<face catalog>/secrets/<documentId>`, `kind: secrets-plane`) stand in the face's own catalog, the per-face catalog D the sealed store splits from the floor (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed`>>). D rests sealed under the face's content key and hydrates only through the holder, so no carrier and no other face reads which documents the face counts secret. The act that stands a secrets store writes its row; the store itself never does (`packages/lararium-mesh/src/secrets-registry.ts`).
+* ''A row lands only sealed, and answers only at rest.'' The register act refuses `secrets-registry-unsealed` unless D maps sealed now: only a Nexus-anchored session signs a sealed record, so a face with no chain maps nothing sealed. It refuses `secrets-registry-unread` while the face stands expected, since an expected face holds its rows in memory alone. It answers only once the Repo flushed D to rest, and the store stands and serves a byte only after that answer.
+* ''Initialized-empty reads as an act of its own.'' A D that holds neither the init row nor any plane row takes the init row once, by the same sealed and flushed write, when the composition binds it (`initialize`). From then on an empty registry reads empty. A D holding plane rows and no init row, an init row of another version or kind, or a plane row whose title and field disagree refuses `secrets-registry-malformed`; it never reads as an empty set.
+* ''Until the registry reads, every reading refuses by name.'' The secrets reading throws `SecretsRegistryRefusal`: `secrets-registry-unread` before D binds (the restart window included), `secrets-registry-unreadable` once D's open failed, `secrets-registry-uninitialized` before the init row lands, `secrets-registry-malformed` as above. The floor runs that reading first, so the throw leaves the fold before any public reading answers: an unread registry never floors a document PUBLIC. The share composer reads the throw as a refusal of every crossing the floor gates (the road's `P27`, its live half).
+* ''Measured edges.'' A sibling face's catalog rests nowhere (`faceViewBook`), so a secrets store stands under the worn face alone. A fresh device whose D has not yet synced initializes empty and reads none of its siblings' rows; the vault's own bytes ride CONTRACT and reach that device only by the face's own sync, which carries D beside them. Whether that ordering holds at every crossing stays owed a measure at the live composer.
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/the-service-manifest`>>
@@ -254,7 +264,7 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 * ''OAUTH REFRESH MAKES THE VAULT NON-PASSIVE — research and testing owed.'' A sealed store opens when asked; an expiring credential must ''reach out'' to renew itself, so the vault acquires a clock and an outbound network leg, and the refresh token itself rotates. Open beneath it: who performs the refresh (a daemon waking to refresh holds decrypted credentials in a window the archive design works hard to narrow), under which key, and whether a refresh may run with no operator present. ''One consequence already reads clearly:'' prefer surfaces offering non-expiring attenuated credentials, which turns the honeypot section's preference into something closer to a rule — and measuring which surfaces offer them may shrink the whole apparatus to nothing, so the first act reads as a ''survey'' rather than a design.
 
   ''KAIROS NAMES THE ENTITY THAT WOULD DO IT'' (operator pet-name, 2026-08-08). The refresh does NOT want a timer daemon — it wants an ''entity holding a narrow autonomous capability'', acting at the opportune moment rather than on a clock. Kairos against chronos: the right time, never the next tick. That framing lands the design where the ontology already stands — a nameless entity with a `#has` stack, holding exactly the caps its one act needs and nothing beside them — instead of widening a daemon that already holds too much. ''What Kairos may hold, and what its capability must leave unreachable, reads as the design.''
-* ''The CONTRACT floor oracle'' — ''BUILT'' as `isContractSecretsPlane`, checked ahead of the public reading (#/the-vault-reads-as-a-bag).
+* ''The CONTRACT floor oracle'' — ''BUILT'' as `isContractSecretsPlane`, checked ahead of the public reading, over a registry that rests sealed in the face's catalog and refuses by name until it reads (#/the-vault-reads-as-a-bag). Its seat on the live share path of both vessels stays owed (the road's `P27`).
 * ''Kowloon actor-key custody'' — their schema mints a user's keypair server-side, which does not compose as written with the downstream law (#/downstream-law). Two ways through: patch the server to accept an externally-held actor key, or accept the server-held key as a reach instrument and name the custody out loud. ''Deferred until a Kowloon server actually stands.''
 
 <<~/ahu>>
@@ -277,6 +287,6 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;n0w-FgobBRFkoVcCuesZ_gmAcpIdZhVJExfTEtoCVVY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kOfN7U63DZqMK85LoLWZ0Xu8KRAZwB3_JCoVK3g7IRg`>>
 
 <<^ code=`&#x0004;` to=`?`>>
