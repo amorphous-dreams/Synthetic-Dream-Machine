@@ -236,6 +236,30 @@ describe("the ward holds the face root apart from unlocked custody", () => {
   });
 });
 
+describe("the rewrap keeps the face's ward signing key (row 7, S3b)", () => {
+  const PASS = "ward-route";
+  const IMAGE = new TextEncoder().encode("an approve's ward image");
+  test("RED: a rewrap from an absent ward over a face whose ward key its admission already names mints a fresh key, so that key's approvals stop verifying; it refuses `ward-key-would-rotate` and the key stands; CONTROL: a rewrap over the standing ward keeps the key, and the ward still signs under it", async () => {
+    const { rmSync } = await import("node:fs");
+    const { wardTreePath } = await import("../src/face-index.js");
+    const { verifyEd25519 } = await import("@lararium/mesh");
+    seat = await seatScratchCustody("ward-rewrap-keeps-key");
+    const { holder } = seat;
+    const face = await holder.foundFace({ ordinal: 0, slots: [slot(PASS)] });
+    const admitted = await holder.wardPublicKey({ ordinal: 0 });
+    expect(admitted).toMatch(/^[0-9a-f]{64}$/);
+    // CONTROL: the standing ward rewraps over its own key; the key the admission carries still verifies the ward's signature.
+    await holder.rewrapWard({ ordinal: 0 }, cred(PASS));
+    expect(await holder.wardPublicKey({ ordinal: 0 })).toBe(admitted);
+    expect(verifyEd25519(await holder.withWardKey({ ordinal: 0 }, cred(PASS), (w) => w.wardSign(IMAGE)), IMAGE, admitted!)).toBe(true);
+    // The ward tree goes missing while the key row stands: a fresh ward would sign under a key no admission names.
+    rmSync(wardTreePath(seat.homes.identity, face.fcid));
+    const reading = await holder.rewrapWard({ ordinal: 0 }, cred(PASS)).then(() => "rewrapped", (e: Error) => /ward-[a-z-]+/.exec(e.message)?.[0] ?? e.message);
+    expect(reading).toBe("ward-key-would-rotate");
+    expect(await holder.wardPublicKey({ ordinal: 0 })).toBe(admitted);
+  });
+});
+
 describe("the rewrap never weakens a ward, and its proof is charged (S2 cold read, P3)", () => {
   test("RED: a face behind a 2-of-2 route rewraps to a ward that one passphrase alone does not open; a wrong route's proof spends the face's attempts; CONTROL: both passphrases open the rewrapped ward", async () => {
     const { rmSync } = await import("node:fs");
