@@ -20,6 +20,8 @@
  * results without a known sender) reaches every admitted session wearing the lit vessel's face over its own port. Control
  * results with a known sender return to that session alone. Port traffic rides its binding
  * to its opening session alone; another session's place refuses `binding-not-owned`. Session loss closes only its own bindings.
+ * INBOUND SURFACE ACTS WEAR THE LIT FACE: a control event, a surface switch, a place and a mirror read from a session admitted
+ * for another face refuse `face-not-worn` and reach nothing of the vessel; a control event under an eventId still pending refuses.
  * Owed: the active surface (`set-surface`) stays vessel-wide, one per vessel, not per session.
  *
  * EVERY ASK NAMES ITS FACE: each custody and ward ask carries the face its session wears to the ceremony
@@ -295,6 +297,12 @@ export function standVesselHost(env: VesselHostEnv = {}) {
         const { h, s } = await admitted.catch(() => { throw new VesselSessionRefused("session-unadmitted"); });
         return h.require(s.sessionId);
       };
+      /** The lit vessel for an act on its surface: a session admitted for another face reaches none of it (`face-not-worn`). */
+      const litFaceVessel = async (): Promise<BrowserVesselResult> => {
+        const v = await vessel();
+        if (!wearsLitFace(conn)) throw new VesselSessionRefused("face-not-worn");
+        return v;
+      };
       /** This session's house and record, once its own admission stands and its vessel stands lit. */
       const own = async (): Promise<{ h: VesselHouse<BrowserVesselResult>; s: VesselSession }> => {
         await vessel();
@@ -380,15 +388,17 @@ export function standVesselHost(env: VesselHostEnv = {}) {
               return;
             case "control-event": {
               const sessionId = conn.session?.sessionId;
-              void vessel().then((v) => {
+              void litFaceVessel().then((v) => {
                 if (!sessionId || conn.session?.sessionId !== sessionId) throw new VesselSessionRefused("session-unadmitted");
+                // AN EVENTID NAMES ONE PENDING ACT: a second event under it would take the first one's result.
+                if (controlSenders.has(msg.ev.eventId)) throw new Error(`control-event-pending: the event ${msg.ev.eventId} already waits on its result`);
                 controlSenders.set(msg.ev.eventId, conn);
                 try { v.sendControlEvent(msg.surface, msg.ev); }
                 catch (err) { if (controlSenders.get(msg.ev.eventId) === conn) controlSenders.delete(msg.ev.eventId); throw err; }
               }).catch(refusedQuietly("a control event"));
               return;
             }
-            case "set-surface": void vessel().then((v) => v.setActiveSurface(msg.surface)).catch(refusedQuietly("a surface switch")); return;
+            case "set-surface": void litFaceVessel().then((v) => v.setActiveSurface(msg.surface)).catch(refusedQuietly("a surface switch")); return;
             case "port:place": {
               const sessionId = conn.session?.sessionId;
               const refuse = (reason: string): void => {
@@ -397,7 +407,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
                   ...(typeof m?.portId === "string" ? { portId: m.portId } : {}) });
               };
               if (bindings.has(msg.binding) && bindings.get(msg.binding) !== sessionId) { refuse("binding-not-owned"); return; }
-              void vessel().then((v) => {
+              void litFaceVessel().then((v) => {
                 if (!sessionId || conn.session?.sessionId !== sessionId) throw new VesselSessionRefused("session-unadmitted");
                 const owner = bindings.get(msg.binding);
                 if (owner && owner !== sessionId) { refuse("binding-not-owned"); return; }
@@ -420,7 +430,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
               }).catch(refusedQuietly("a port close"));
               return;
             }
-            case "read:mirror-inputs": reply(msg.callId, async () => (await vessel()).mirrorInputs(msg.surface)); return;
+            case "read:mirror-inputs": reply(msg.callId, async () => (await litFaceVessel()).mirrorInputs(msg.surface)); return;
             case "read:floor": reply(msg.callId, async () => (await vessel()).readFloor(msg.baseUrl)); return;
             case "join:offer": reply(msg.callId, async () => { const { h, s } = await own(); return join.offer(conn, h, s, msg.text, msg.abandonPending); }); return;
             case "join:answer": reply(msg.callId, async () => { const { h, s } = await own(); return join.answer(h, s, msg.text); }); return;

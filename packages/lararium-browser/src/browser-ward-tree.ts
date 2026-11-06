@@ -29,7 +29,7 @@ import {
 import { browserKeystoreCustodyIo, BrowserCustodyRefused, readBrowserCustody, withCustodyRows } from "./browser-custody.js";
 import { openWardedRoot, wardCredentialOf, wardKeyRowOf, wardOwnerRowOf, wardPinOf, wardRootCarrier, wardRootRowOf, wardTreeRowOf, type WardRoute } from "./ward-core.js";
 import { faceOfVessel, openVesselIdb } from "./browser-vessel-identity.js";
-import { faceTreeIdOf } from "./browser-face-custody.js";
+import { faceTreeIdLive, faceTreeIdOf } from "./browser-face-custody.js";
 import { BrowserWardRefused } from "./browser-custody.js";
 
 /** The opaque id of the face tree the ward at `handleIndex` belongs to, or null where no owner row stands. */
@@ -54,6 +54,33 @@ export async function refuseWardOfAnotherFace(idbName: string, handleIndex: numb
 }
 
 export const PERSONA_ROSTER_ROW = "persona-root-roster";
+
+/**
+ * THE FOUNDING SWEEPS A WARD NO FACE CAN EVER ANSWER: a ward whose owner row names a face tree that stands in no index entry and
+ * no seat on this thread (a founding torn before its ceremony named the face, read after a reload; a clear torn before its owner
+ * row went) leaves with its roster line, its owner row last, so a torn sweep resumes. A ward whose owner stands live never
+ * sweeps: its rows may carry signed history, and its face resumes it or the founding refuses `ward-owned-by-another-face`.
+ * The place tree must stand unlocked (the roster rests under it). Answers the handles swept.
+ */
+export async function sweepOrphanBrowserWards(idbName: string): Promise<number[]> {
+  const io = browserKeystoreCustodyIo(idbName);
+  const orphaned: number[] = [];
+  for (const r of await io.list()) {
+    const m = /^ward\/h(\d+)\/face-tree$/.exec(r);
+    if (!m) continue;
+    const owner = new TextDecoder().decode((await io.read(r)) ?? new Uint8Array());
+    if (!(await faceTreeIdLive(idbName, owner))) orphaned.push(Number(m[1]));
+  }
+  if (orphaned.length === 0) return [];
+  await withCustodyRows(idbName, async (rows) => {
+    const roster = await readBrowserPersonaRoster(rows.read);
+    if (roster.some((l) => orphaned.includes(l.handleIndex))) await rows.write(PERSONA_ROSTER_ROW, { roots: roster.filter((l) => !orphaned.includes(l.handleIndex)) });
+    const wardRows = (await io.list()).filter((r) => orphaned.some((h) => r.startsWith(`ward/h${h}/`)));
+    for (const r of wardRows) if (!r.endsWith("/face-tree")) await io.remove(r);
+    for (const r of wardRows) if (r.endsWith("/face-tree")) await io.remove(r);
+  });
+  return orphaned;
+}
 
 /** One roster line: a held root's index and its public key. */
 export interface PersonaRosterLine { readonly handleIndex: number; readonly verifyingKey: string }

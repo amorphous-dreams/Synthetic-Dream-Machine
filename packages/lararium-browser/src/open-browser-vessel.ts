@@ -137,6 +137,7 @@ import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
 import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody, refuseSharedTreeFaceRows } from "./browser-custody.js";
 import { nameFace } from "./browser-face-custody.js";
 import { clearCustodyVerb, standFounderFace, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
+import { sweepOrphanBrowserWards } from "./browser-ward-tree.js";
 import { guardedBoot, takeDownBoot, BootTeardownRefusal, type BootHold } from "./guarded-boot.js";
 import { attachSharedHolder, holderWorkerHandle, houseName } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
@@ -899,6 +900,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     const ask = opts.askCustody;
     const founder = await standFounderFace({ idbName, ...(ask ? { ask: async (q: CustodyAsk) => { const answer = await ask(q); if (answer) bornUnder = answer; return answer; } } : {}) });
     wearFaceOfVessel(idbName, founder);
+    // A FOUNDING TORN BEFORE ITS CEREMONY NAMED ITS FACE left a ward no face answers again: it sweeps before the root mints.
+    await sweepOrphanBrowserWards(idbName);
     const founding = "found this browser's first face";
     const wardRoute: WardRoute = bornUnder ?? (await browserPersonaRootHeld(idbName, FOUNDING_PERSONA_INDEX) ? await wardRouteFor(founding) : await wardBindRouteFor(founding));
     await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX, wardRoute, founder);

@@ -238,6 +238,15 @@ export async function faceTreeIdOf(idbName: string, face: string): Promise<strin
 }
 
 /**
+ * Whether the face tree `fcid` stands LIVE: a seat on this thread holds it (a founding's unnamed face included), or an index
+ * entry not removed routes to it. A tree neither holds answers no face again. Routing only; nothing opens.
+ */
+export async function faceTreeIdLive(idbName: string, fcid: string): Promise<boolean> {
+  for (const held of seated.get(idbName)?.values() ?? []) if (held.fcid === fcid) return true;
+  return (await readIndex(idbName)).some((e) => e.fcid === fcid && !e.removed);
+}
+
+/**
  * Whether `face`'s own slot tree stands readable in this store: a PersonaGroup through the index, or a founding's `unnamed:` key
  * seated on this thread. Routing and decoding only; nothing opens.
  */
@@ -504,7 +513,10 @@ export async function clearFaceCustody(idbName: string, face: string | null, cre
     await withCustodyRows(idbName, async (act) => {
       const raw = await act.read(PERSONA_ROSTER_ROW) as { roots?: readonly { readonly handleIndex: number }[] } | undefined;
       if (raw?.roots) await act.write(PERSONA_ROSTER_ROW, { roots: raw.roots.filter((l) => !owned.includes(l.handleIndex)) });
-      for (const r of await io.list()) if (owned.some((h) => r.startsWith(`${WARD_ROW_PREFIX}h${h}/`))) await io.remove(r);
+      // THE OWNER ROW GOES LAST: a clear torn partway leaves it, so the clear run again finds the rows still standing.
+      const wardRows = (await io.list()).filter((r) => owned.some((h) => r.startsWith(`${WARD_ROW_PREFIX}h${h}/`)));
+      for (const r of wardRows) if (!r.endsWith("/face-tree")) await io.remove(r);
+      for (const r of wardRows) if (r.endsWith("/face-tree")) await io.remove(r);
     });
   }
   for (const r of await io.list()) if (r.startsWith(`${WARD_ROW_PREFIX}sign/${named}/`)) await io.remove(r);
