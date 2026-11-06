@@ -1,5 +1,5 @@
-// page-entry-witness — the page reaches no vessel module (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices,
-// slice 0). The page holds the DOM, the projection sink, the mirror, the ask forms and Worker construction alone; the
+// page-entry-witness — the page reaches no vessel module (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices).
+// The page holds the DOM, the projection sink, the mirror, the ask forms and Worker construction alone; the
 // vessel (the Repo, custody, identity, the ward's rows, the seed wrap) runs on the vessel worker's own thread. This instrument walks
 // the page entry's import graph and names every vessel module the page's main thread still loads.
 //
