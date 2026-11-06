@@ -101,7 +101,7 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 <<~ ahu slot=`#/the-tiers`>>
 !! The tiers ~ each seat draws the tier that serves it
 
-''The spend balance'' (operator, 2026-11-06, #/rulings): the swarm's draw leans Codex about 70 to Claude 30. Codex carries the lane steps (the lead in the `lead` mode, Terra building, Luna and Sol reading, Terra scouting); Claude carries the controller seat, the second lineage's read where Codex built (the blind Opus read of a custody step), and the few lanes a brief names for a Claude lead. The controller reads the balance per batch from what each tool writes (#/the-shapes) and steers the next launches toward it; the measure that compares a Claude transcript with a Codex rollout against their two pools rests owed to the spend scout's report.
+''The spend balance'' (operator, 2026-11-06, #/rulings): the tasked spirits' draw leans Codex about 80 to Claude 20 (the operator raised it from 70 : 30 the same night); the controller seat reads outside that ratio and keeps its own spend low by fresh sessions. Codex carries the lane steps (the lead in the `lead` mode, Terra building, Luna and Sol reading, Terra scouting); Claude carries the controller seat, the second lineage's read where Codex built (the blind Opus read of a custody step), and the few lanes a brief names for a Claude lead. The controller reads the balance per batch from what each tool writes (#/the-shapes) and steers the next launches toward it; the measure that compares a Claude transcript with a Codex rollout against their two pools rests owed to the spend scout's report.
 
 * ''Controller'': Opus 5.5, high effort, refreshing its context at each batch boundary. Fable takes a named ruling Opus at max visibly missed.
 * ''Lane lead'': Codex `gpt-6.1-terra` in the `lead` mode by default, fresh per step, while the Codex pool stands over its lead floor; a Claude lead (Sonnet 5.5 by default, Opus 5.5 for a seam, custody or security lane) only where the brief names why. Under the floor the lead passes to Claude and the balance bends for the window. A lead retires at its PR's land and a fresh seat resumes from a cold brief.
@@ -261,6 +261,7 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 # 2026-11-04, the wrap-up: one Terra builder and one Luna reader at a time; under the Codex build floor, a Copilot builder with Luna and Sol readers.
 # 2026-11-04, spend: a lead runs fresh per step, and spend reads true usage from the rollouts (#/the-shapes).
 # 2026-11-06, spend balance (operator's words, the Codex pool reset in full that night): "Update the mixed-model-swarm working contract to reduce Claude spends and go with balanced Claude:Codex Spends (leaning on Codex say 70/30). Re-launch a Terra scout to finish that research." (#/the-tiers)
+# 2026-11-06, the spend balance raised (operator's words): "Let's go 80/20 Codex/Claude spends on tasked spirits, please." (#/the-tiers)
 <<~/ahu>>
 
 <<~ ahu slot=`#/owed`>>
@@ -294,6 +295,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;s-opvQeqjt0cyDGUpH2eFj9nH-UUR1SRMLA7vPxRwNI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gVgDfat6dmdM0HWEC4iMTGdJs_vrnQNqp3ysraj0SlA`>>
 
 <<^ code=`&#x0004;` to=`?`>>
