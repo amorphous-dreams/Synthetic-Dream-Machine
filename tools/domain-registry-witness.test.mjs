@@ -14,7 +14,7 @@ test('ignores source-shaped directories in ignored output while detecting real s
     const run = () => spawnSync('bash', ['tools/domain-registry-witness.sh'], { cwd: root, encoding: 'utf8' });
     const clean = run();
     assert.equal(clean.status, 0, clean.stdout + clean.stderr);
-    writeFileSync(resolve(fixture, 'stray.ts'), 'const tag = "lar-unregistered/v1";\n');
+    writeFileSync(resolve(fixture, 'stray.ts'), 'const tag = "lar/unregistered";\n');
     const stray = run();
     assert.equal(stray.status, 1, stray.stdout + stray.stderr);
     assert.match(stray.stdout, /domain literal\(s\) written OUTSIDE the registry/);
