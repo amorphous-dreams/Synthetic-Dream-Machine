@@ -24,6 +24,18 @@ export interface VesselWorkerLike {
   terminate(): void;
 }
 
+/** A follower tab's road to the owner's vessel worker over the port the broker handed it. */
+export function vesselWorkerOfPort(port: MessagePort): VesselWorkerLike {
+  return {
+    postMessage: (msg, transfer = []) => port.postMessage(msg, transfer),
+    addEventListener: ((type: "message" | "error", listener: EventListener) => {
+      if (type === "message") { port.addEventListener("message", listener); port.start(); }
+      else port.addEventListener("messageerror", listener);
+    }) as VesselWorkerLike["addEventListener"],
+    terminate: () => port.close(),
+  };
+}
+
 /** A refusal the vessel named, carried back across the port. */
 export class VesselRefused extends Error {
   readonly refusal: string | undefined;
@@ -70,6 +82,7 @@ const ambientPageLocks = (): PageLocks | null => {
 };
 
 export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHandlers, opts: { readonly locks?: PageLocks | null } = {}) {
+  const mints = new Map<string, (port: MessagePort | null) => void>();
   const calls = new Map<string, { resolve(v: unknown): void; reject(e: unknown): void }>();
   let connection: BrowserConnectionSnapshot | null = null;
   let greeting: VesselGreeting | null = null;
@@ -86,6 +99,12 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
   worker.addEventListener("message", (e: MessageEvent) => {
     const msg = e.data as VesselToPage;
     switch (msg.t) {
+      case "port:minted": {
+        const resolve = mints.get(msg.wantId);
+        mints.delete(msg.wantId);
+        resolve?.(msg.port ?? null);
+        return;
+      }
       case "greeting": {
         greeting = { ownerEpoch: msg.ownerEpoch, sessionId: msg.sessionId, lifetimeLock: msg.lifetimeLock, ...(msg.refused ? { refused: msg.refused } : {}) };
         handlers.onGreeting?.(greeting);
@@ -133,6 +152,9 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
   worker.addEventListener("error", (e: Event) => handlers.onEnded?.(`the vessel worker failed: ${(e as ErrorEvent).message ?? "error"}`, "open"));
 
   return {
+    mintPort(wantId: string, tabSession: string): Promise<MessagePort | null> {
+      return new Promise((resolve) => { mints.set(wantId, resolve); post({ t: "port:want", wantId, tabSession }); });
+    },
     /** Open this tab's session; `resume` names an earlier greeting, which a respawned vessel refuses by name. */
     hello(boot: VesselBoot, resume?: { readonly ownerEpoch: string; readonly sessionId: string }): void {
       const face = tabFace();

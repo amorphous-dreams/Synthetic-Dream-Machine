@@ -337,6 +337,8 @@ export function standVesselHost(env: VesselHostEnv = {}) {
               const { port1, port2 } = new MessageChannel();
               const c = connect({ postMessage: (m, t = []) => port1.postMessage(m, t) });
               port1.onmessage = (e: MessageEvent<PageToVessel>) => c.receive(e.data);
+              // The minted connection hears its tab go by its port close where fired, its page:life pagehide, and its lifetime lock.
+              port1.addEventListener("close", () => c.lost("port-closed"));
               post({ t: "port:minted", wantId: msg.wantId, port: port2 }, [port2]);
               return;
             }

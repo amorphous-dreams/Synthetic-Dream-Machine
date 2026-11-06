@@ -23,7 +23,7 @@ import {
   DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, vesselLockName, type HearthFloorRead,
 } from "@lararium/browser/page";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
-import { standVesselPort, VesselRefused, type VesselAsk, type VesselPort } from "./vessel-port.js";
+import { standVesselPort, vesselWorkerOfPort, VesselRefused, type VesselAsk, type VesselPort } from "./vessel-port.js";
 import type { VesselStatus } from "./vessel-protocol.js";
 import { openCeremony, standCeremonyBroker } from "./ceremony-page.js";
 import type { GenesisSeed } from "@lararium/mesh";
@@ -33,9 +33,7 @@ import { createProjectionSink } from "./projection-sink.js";
 import { pageLifeOf, paintRest } from "./page-life.js";
 import { pagePortDelivery, standPagePort } from "./page-port.js";
 import { standPageMirror } from "./page-mirror.js";
-import { standTabTopology } from "./glass/topology.js";
-import type { Lend } from "./glass/tab-bus.js";
-import { makePortTransport } from "./port-transport.js";
+import { standFloorTab } from "./floor-tab.js";
 import { defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl, arrivalRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json), read off the genesis base the page's URL names
 // (the hearth's Pronaos serves its own). The page carries no seed of its own, and checks the one it reads against the hearth's
@@ -47,7 +45,6 @@ import { arrivalSeedAnchor, genesisCrossingVerdict, genesisSeedBase, readServedS
 // (keyhive-WASM-first, then the chain) cannot resolve — the daemon/wiki boot's silent death.
 import daemonWorkerUrlStr from "./workers/daemon.worker.ts?worker&url";
 import wikiWorkerUrlStr  from "./workers/wiki.worker.ts?worker&url";
-import sharedHolderUrlStr from "./workers/shared-holder.worker.ts?sharedworker&url";
 // The vessel worker: the browser vessel's own thread. The page builds it and talks to it over its port alone.
 import vesselWorkerUrlStr from "./workers/vessel.worker.ts?worker&url";
 
@@ -59,17 +56,6 @@ const vesselWorkerUrl = new URL(vesselWorkerUrlStr, import.meta.url);
 if (new URL(location.href).searchParams.get("c4trace") === "1") {
   daemonWorkerUrl.searchParams.set("c4trace", "1");
 }
-// THE SHARED HOLDER, OPT-IN BY URL (`?holder`): one daemon island per house inside a SharedWorker, a port per
-// tab. The holder uses the daemon start module and the store's lock name. Absent the flag the vessel
-// boots its dedicated worker exactly as before — the holder's lifetime past the last tab stays measured, not
-// assumed, before it becomes the default.
-const sharedHolderUrl = (() => {
-  if (!new URL(location.href).searchParams.has("holder")) return undefined;
-  const u = new URL(sharedHolderUrlStr, import.meta.url);
-  u.searchParams.set("lock", vesselLockName("lares:vessel"));
-  return u;
-})();
-
 const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
 
 const VESSEL_IDB = "lares:vessel";
@@ -350,7 +336,7 @@ function mountAdmitSurface(verifyingKeyHex: string, vessel: VesselPort): void {
 
 let pendingAdmit: string | null = null;
 /** This tab's place among the origin's tabs: stood once per page, before the first lead or follow. */
-let topology: ReturnType<typeof standTabTopology> | null = null;
+let floorTab: ReturnType<typeof standFloorTab> | null = null;
 function offerBootRetry(): void {
   if (document.getElementById("retry-unlock")) return;
   const button = document.createElement("button");
@@ -438,61 +424,36 @@ async function bootVessel(): Promise<void> {
   const meshParam = new URLSearchParams(location.search).get("mesh");
   const meshLeaf = meshParam !== null ? { coordSeed: location.origin, peers: meshParam } : undefined;
   const boot = { paint, relayUrl, floor, floorAnchor, admit, genesisCasBaseUrl, genesisSeed: served.seed as GenesisSeed, meshLeaf };
-  // THE TAB TOPOLOGY (G4): one tab per origin holds the vessel (the store lock proves one holder); another tab on the same origin
-  // FOLLOWS it over the bus and stands its own mirror from the leader's lend, instead of refusing the vessel by name. The leader
-  // lock queues succession: when the leader's page goes, the next request grants and that tab opens the vessel itself. The shared
-  // holder (`?holder`) is its own topology, every tab a port onto one holder, and takes no election.
-  if (!sharedHolderUrl && typeof BroadcastChannel !== "undefined" && navigator.locks) {
-    if (topology === null) {
-      topology = standTabTopology({ locks: navigator.locks, lockName: `${vesselLockName(VESSEL_IDB)}:leader`,
-        channel: () => new BroadcastChannel(`lararium-mirror:${location.origin}`), tabId: crypto.randomUUID() });
-      // Nothing closes at pagehide: the platform releases the leader lock and the store lock together when the page goes, so a
-      // successor never finds the store still held, and a page the cache keeps stays in its place among the tabs.
-      topology.follower.onParked(() => { if (topology?.role === "follower" && followerMirror === null) set("status", "following the vessel tab on this origin; it has not shown its surface yet"); });
-      topology.follower.onLend((lend) => { if (topology?.role !== "follower" || followerMirror !== null) return; followerMirror = standFollowerMirror(lend); });
-      topology.onLead(() => { void lead(boot); });
-      return;
-    }
-    if (topology.role === "follower") return;   // a retry while following: the lead comes with the lock
-  }
-  await lead(boot);
-}
-
-/** The mirror this tab stood as a follower, if it stood one; a tab that leads after following keeps it. */
-let followerMirror: Promise<void> | null = null;
-/**
- * A follower's mirror: the same door as the leader's, over this tab's follower doors instead of the vessel's own. The leader's
- * lend names the surface, the actor and the engine inputs; every reply reaches this one binding alone. When a new leader
- * answers the doors' hello, the mirror sends its unanswered writes again under their own txIds.
- */
-async function standFollowerMirror(lend: Lend): Promise<void> {
-  const doors = topology!.follower;
-  const host = $("mirror");
-  host.setAttribute("data-lar-tab", "follower");
-  set("status", "following the vessel tab on this origin");
-  const port = makePortTransport({ doors, surface: () => lend.surface });
-  doors.onPortMessage((binding, msg) => { if (binding === port.binding) port.deliver(msg); });
-  const stood = await standPageMirror({ port, host, actor: lend.actor, surface: () => lend.surface, mirrorInputs: () => Promise.resolve(lend.inputs),
-    onState: (state) => console.warn(`[mirror] ${state.kind}`, state) })
-    .catch((err: unknown) => { console.warn("[mirror] the follower's stand refused:", err); return null; });
-  if (stood === null || stood.kind === "floor") {
-    // A follower with no mirror has no surface at all (no vessel, no floor projection): it says so, and the next lend (a successor's) tries again.
-    const why = stood?.why ?? "refused";
-    console.warn(`[mirror] the follower stands no mirror: ${why}`);
-    set("status", `following the vessel tab on this origin; this tab's mirror stands none (${why})`, "warn");
-    followerMirror = null;
+  const broker = await ceremonyBroker;
+  if ("refusal" in broker || !navigator.locks) { await lead(boot); return; }
+  if (floorTab) {
+    if (floorTab.role() === "owner") await lead(boot);
+    else if (floorTab.role() === "follower") location.reload();
     return;
   }
-  doors.onReady(() => stood.resendPending());
+  floorTab = standFloorTab({
+    locks: navigator.locks, lockName: `${vesselLockName(VESSEL_IDB)}:leader`, tabSession: crypto.randomUUID(),
+    broker: {
+      post: (m, t) => broker.worker.postMessage(m, t ?? []),
+      listen: (listener) => {
+        const receive = (e: MessageEvent): void => listener(e.data, e.ports);
+        navigator.serviceWorker.addEventListener("message", receive);
+        return () => navigator.serviceWorker.removeEventListener("message", receive);
+      },
+    },
+    pageLife: pageLifeOf(window, document),
+    lead: () => { void lead(boot); return { mintPort: (w, s) => leading ? leading.vessel.mintPort(w, s) : Promise.resolve(null) }; },
+    follow: (port) => { void lead(boot, port); },
+  });
 }
 
 /** The vessel this tab leads: its worker and the port the page talks to it through. A retry builds a fresh one. */
 let leading: { readonly vessel: VesselPort; readonly stopLife: () => void } | null = null;
 
 /** The vessel worker the page builds: the vessel's whole boot runs on that worker's own thread. */
-function standVessel(handlers: Parameters<typeof standVesselPort>[1]): VesselPort {
+function standVessel(handlers: Parameters<typeof standVesselPort>[1], port?: MessagePort): VesselPort {
   if (leading) { leading.stopLife(); leading.vessel.terminate(); leading = null; }
-  const vessel = standVesselPort(new Worker(vesselWorkerUrl, { type: "module", name: "lares-vessel" }), handlers);
+  const vessel = standVesselPort(port ? vesselWorkerOfPort(port) : new Worker(vesselWorkerUrl, { type: "module", name: "lares-vessel" }), handlers);
   // The page's life signals cross to the vessel (`page:life`): a hidden page asks the wiki islands to drain, a leaving one closes its holder session.
   const stopLife = pageLifeOf(window, document)((life) => vessel.pageLife(life));
   leading = { vessel, stopLife };
@@ -508,9 +469,9 @@ function seedRestLine(status: VesselStatus): { readonly text: string; readonly o
 }
 
 async function lead(boot: { paint: (p: string) => void; relayUrl: string | undefined; floor: ReturnType<typeof floorCardOf>; floorAnchor: ReturnType<typeof floorAnchorOf>;
-  admit: string | null; genesisCasBaseUrl: string; genesisSeed: GenesisSeed; meshLeaf: { coordSeed: string; peers: string } | undefined }): Promise<void> {
+  admit: string | null; genesisCasBaseUrl: string; genesisSeed: GenesisSeed; meshLeaf: { coordSeed: string; peers: string } | undefined }, port?: MessagePort): Promise<void> {
   const { paint, relayUrl, floor, floorAnchor, admit, genesisCasBaseUrl, genesisSeed, meshLeaf } = boot;
-  $("mirror").setAttribute("data-lar-tab", "leader");
+  $("mirror").setAttribute("data-lar-tab", port ? "follower" : "owner");
   // The mirror stands once the first frame names the surface the page shows; the vessel's word that it stands comes after its open returns.
   let mirrorTrigger: (() => void) | null = null;
   let mirrorShownSync: (() => void) | null = null;
@@ -525,7 +486,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
     onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
     onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) { reportFirstPaint(); mirrorTrigger?.(); } mirrorShownSync?.(); },
     onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
-    onPortMessage: (binding, islandKey, msg) => { if (binding.startsWith("tab:")) topology?.onPortMessage(binding, islandKey, msg); else pagePortDelivery.onPortMessage(binding, islandKey, msg); },
+    onPortMessage: (binding, islandKey, msg) => pagePortDelivery.onPortMessage(binding, islandKey, msg),
     onStatus: (status) => {
       if (status.rest) paintRest(document, status.rest);
       if (status.vessel) opened(status.vessel);
@@ -542,16 +503,10 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
       // A vessel that stood and then ended says so; the retry builds a fresh worker.
       if (openedYet) { set("status", why, "err"); offerBootRetry(); }
     },
-    spawnHolder: (url, name) => {
-      if (typeof SharedWorker !== "function") return null;
-      const holder = new SharedWorker(url, { type: "module", name });
-      return { port: holder.port, onError: (listener) => holder.addEventListener("error", listener) };
-    },
-  });
+  }, port);
   vessel.hello({
     idbName: VESSEL_IDB, hostId: "elyncia-browser", wikiId: "lares", genesisSeed, genesisCasBaseUrl,
     daemonWorkerUrl: daemonWorkerUrl.href, workerScriptUrl: workerScriptUrl.href,
-    ...(sharedHolderUrl ? { sharedHolderUrl: sharedHolderUrl.href } : {}),
     ...(relayUrl ? { relayUrl } : {}),
     ...(floor ? { floorCard: floor.text } : {}),
     ...(floorAnchor ? { floorAnchor } : {}),
@@ -602,9 +557,6 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
     if (mirrorStanding || shown === null) return;
     mirrorStanding = true;
     mirrorSurface = shown;
-    topology?.lend();   // the surface stands: the tabs whose hello parked get their ready
-    // A tab that leads after following keeps the mirror it stood as a follower: its doors re-open through this tab's own serve.
-    if (followerMirror !== null) return;
     void standPageMirror({ port: pageBinding, host: $("mirror"), actor: did, surface: () => mirrorSurface,
       mirrorInputs: vessel.mirrorInputs, onState: (state) => console.warn(`[mirror] ${state.kind}`, state) })
       .then((stood) => {
@@ -615,14 +567,6 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
       })
       .catch((err: unknown) => console.warn("[mirror] stand refused:", err));
   };
-  // THE TOPOLOGY'S LEADER HALF: the tab that holds the vessel serves the other tabs of this origin over the bus. It lends the
-  // surface its mirror stands on, the actor it writes as and the engine inputs the vessel names for that surface; a follower
-  // frame's own surface value is ignored. A hello that arrives before the surface stands parks until `lend()`.
-  topology?.serve(vessel.ports, async () => {
-    if (mirrorSurface === null) return null;
-    const inputs = await vessel.mirrorInputs(mirrorSurface);
-    return inputs === null ? null : { surface: mirrorSurface, actor: did, inputs };
-  });
   mirrorTrigger();
   // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
   // wiki, so this button + chord flips the projection gate to the daemon from any

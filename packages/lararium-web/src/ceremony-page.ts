@@ -21,14 +21,25 @@ export function pageCeremonyRefusal(env: PageCeremonyEnv): string | null {
 /** The broker as it stands: its active worker, or the refusal that keeps it down. */
 export type CeremonyBroker = { readonly worker: ServiceWorker } | { readonly refusal: string };
 
-/** Register the broker at the floor. A registration that fails reads `ceremony-broker-absent`. */
-export async function standCeremonyBroker(): Promise<CeremonyBroker> {
-  const refusal = pageCeremonyRefusal({ isSecureContext: window.isSecureContext, hasServiceWorker: "serviceWorker" in navigator });
-  if (refusal) return { refusal };
+/** Register the broker and wait for control: on first load it can activate before claiming the page, while matchAll reads controlled windows alone. */
+export async function standCeremonyBroker(env: { readonly isSecureContext: boolean; readonly container: ServiceWorkerContainer | null } = {
+  isSecureContext: window.isSecureContext, container: "serviceWorker" in navigator ? navigator.serviceWorker : null,
+}): Promise<CeremonyBroker> {
+  const { container } = env;
+  const refusal = pageCeremonyRefusal({ isSecureContext: env.isSecureContext, hasServiceWorker: container !== null });
+  if (refusal || !container) return { refusal: refusal ?? "ceremony-broker-absent" };
   try {
-    const registration = await navigator.serviceWorker.register(CEREMONY_BROKER_PATH, { scope: "/", type: "classic" });
-    const worker = registration.active ?? (await navigator.serviceWorker.ready).active;
-    return worker ? { worker } : { refusal: "ceremony-broker-absent" };
+    await container.register(CEREMONY_BROKER_PATH, { scope: "/", type: "classic" });
+    if (container.controller) return { worker: container.controller };
+    return await new Promise<CeremonyBroker>((resolve) => {
+      const changed = (): void => {
+        if (!container.controller) return;
+        container.removeEventListener("controllerchange", changed);
+        resolve({ worker: container.controller });
+      };
+      container.addEventListener("controllerchange", changed);
+      changed();
+    });
   } catch {
     return { refusal: "ceremony-broker-absent" };
   }
