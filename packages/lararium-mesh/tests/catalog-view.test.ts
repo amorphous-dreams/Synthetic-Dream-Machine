@@ -29,7 +29,7 @@ import { personaScopedBagIds } from "../src/persona-scope.js";
 import { wikiSlotUri, wikiWorkingFloorKey } from "../src/wiki-recipe.js";
 import { catalogNamedBags } from "../src/register-bags.js";
 import {
-  catalogRowHalf, faceCatalogDocUrl, openFaceCatalog, FaceCatalogRefusal, makeCatalogView, liftFaceCatalogRows, faceViewBook,
+  catalogRowHalf, faceCatalogDocUrl, openFaceCatalog, FaceCatalogRefusal, FloorWikiRefusal, refuseFacelessUserWiki, makeCatalogView, liftFaceCatalogRows, faceViewBook,
 } from "../src/catalog-view.js";
 
 const secretA = new Uint8Array(32).fill(0xa1);
@@ -243,5 +243,23 @@ describe("the floor catalog names public books alone (U1, public-only F)", () =>
     });
     expect(catalogNamedBags(view.doc()).sort()).toEqual([a, b, pub].sort());
     expect(catalogNamedBags((await faceA).doc()).sort()).toEqual([a, b].sort());
+  });
+});
+
+describe("a vessel that wears no face boots no user wiki", () => {
+  const user = bagUri("floor-user");
+  const pub = bagUri("shelf");
+  const catalog = { [pub]: storedLarRecord(pub, { text: "automerge:x", kind: "oracle", "cap-tier": "public" }, "test") };
+  test("a user wiki refuses `wiki-awaits-face` by name while no face is worn", () => {
+    let refused: unknown = null;
+    try { refuseFacelessUserWiki({ wikiId: "floor-user", source: "boot-arg", wikiBagId: user, faceWorn: false, catalog }); } catch (e) { refused = e; }
+    expect(refused).toBeInstanceOf(FloorWikiRefusal);
+    expect({ reason: (refused as FloorWikiRefusal).reason, wikiId: (refused as FloorWikiRefusal).wikiId, source: (refused as FloorWikiRefusal).source })
+      .toEqual({ reason: "wiki-awaits-face", wikiId: "floor-user", source: "boot-arg" });
+  });
+  test("controls: a worn face, a floor row's wiki and a public bag's wiki boot", () => {
+    expect(() => refuseFacelessUserWiki({ wikiId: "floor-user", source: "boot-arg", wikiBagId: user, faceWorn: true, catalog })).not.toThrow();
+    expect(() => refuseFacelessUserWiki({ wikiId: "lares", source: "boot-arg", wikiBagId: bagUri("lares"), faceWorn: false, catalog })).not.toThrow();
+    expect(() => refuseFacelessUserWiki({ wikiId: "shelf", source: "boot-arg", wikiBagId: pub, faceWorn: false, catalog })).not.toThrow();
   });
 });

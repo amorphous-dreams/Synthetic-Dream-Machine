@@ -59,7 +59,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, refuseFacelessUserWiki, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -2472,12 +2472,18 @@ async function prepareNodeBootOn(
   };
 
   // Active-wiki slot — slug from the daemon-doc marker (post-genesis).
-  const wikiSlot = async (_assembly: VesselCoreAssembly): Promise<VesselWikiSlot> => {
+  const wikiSlot = async (assembly: VesselCoreAssembly): Promise<VesselWikiSlot> => {
     const sel = selectActiveWikiSlug(wikiId, ownEntry((await readDaemonDoc()).doc()?.tiddlers, ACTIVE_WIKI_URI) ?? null);
     activeWikiSource = sel.source;
     slotActiveWikiId = sel.slug;
     // The draft DOC is no facet of the slug — the daemon's slot-doc resolver names it at mount.
     const facets = recipeHostFacets(slugFromUri(sel.slug));
+    // A COMPOSITION THAT WEARS NO FACE BOOTS NO USER WIKI (the sealing scope): before a face lights (a floor, or a place
+    // that founded none), a wiki whose canon bag rests on a face's half reads sealed to a face no session wears, so its
+    // documents neither load nor rest. It refuses by name here, before any island mounts it, rather than letting the
+    // island's mount silence decide.
+    refuseFacelessUserWiki({ wikiId: sel.slug, source: sel.source, wikiBagId: facets.wikiBagId, faceWorn: custodyGroup !== null,
+      catalog: (assembly.catalogHandle.doc() as LarDoc | undefined)?.tiddlers });
     return {
       activeWikiId: sel.slug,
       wikiSlug:     facets.wikiSlug,

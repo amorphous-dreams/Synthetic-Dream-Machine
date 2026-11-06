@@ -3,11 +3,11 @@
  *
  * Before a face lights, every wiki content store rests sealed and the floor catalog names public bags alone (the sealing
  * scope, stable-founding-road#/rulings, 2026-11-06): a user wiki's bag rests on a face's half, so a floor composition can
- * neither load nor rest its documents. Booting one at the floor must refuse by name before the composition stands any
- * island: waiting out the island's mount silence lets a budget decide what a reading already names.
+ * neither load nor rest its documents. Booting one at the floor refuses by name before the wiki mounts: waiting out the
+ * island's mount silence would let a budget decide what a reading already names.
  *
  *   W1  RED: a floor node (no face founded) asked for a user wiki (`--wiki floor-user`, no floor row) refuses
- *       `wiki-awaits-face`, naming the wiki, before any island mounts it.
+ *       `wiki-awaits-face`, naming the wiki, before the wiki mounts.
  *   W0  CONTROL: a floor node asked for a floor row's wiki (`lares`) boots at the floor.
  *
  * Canon: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices (slice 5b)
@@ -44,13 +44,13 @@ async function floorBoot(wikiId: string): Promise<{ phases: NodeOpenPhase[]; ves
 }
 
 describe("a floor node asked for a user wiki refuses by name", () => {
-  test("W1 RED: a user wiki at the floor refuses `wiki-awaits-face` before any island mounts it", async () => {
+  test("W1 RED: a user wiki at the floor refuses `wiki-awaits-face` before the wiki mounts", async () => {
     const { phases, vessel } = await floorBoot("floor-user");
     const refused = await vessel.then(() => null, (e: unknown) => e as { name?: string; reason?: string; wikiId?: string; message?: string });
     expect(refused, "the floor composition refuses").not.toBeNull();
     expect({ name: refused?.name, reason: refused?.reason, wikiId: refused?.wikiId }).toEqual({ name: "FloorWikiRefusal", reason: "wiki-awaits-face", wikiId: "floor-user" });
     expect(refused?.message ?? "", "the refusal names itself and the wiki").toMatch(/wiki-awaits-face.*floor-user/);
-    expect(phases, "no island stood for it").not.toContain("island-ready");
+    expect(phases, "the wiki never mounted").not.toContain("wiki-ready");
   }, 300_000);
 
   test("W0 CONTROL: a floor row's wiki boots at the floor", async () => {

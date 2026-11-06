@@ -24,7 +24,7 @@ import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, vesselDocStoreDoor, type SealedBag } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, refuseFacelessUserWiki, sealedBagMap, vesselDocStoreDoor, type SealedBag } from "@lararium/mesh";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
@@ -1338,11 +1338,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       ...(onPhase ? { onPhase } : {}),
     },
 
-    wikiSlot: (_assembly: VesselCoreAssembly): VesselWikiSlot => {
+    wikiSlot: (assembly: VesselCoreAssembly): VesselWikiSlot => {
       const sel = selectActiveWikiSlug(wikiId, undefined);
       slotActiveWikiId = sel.slug;
       activeSurfaceId  = sel.slug;   // the pinned wiki owns #projection at boot; summon flips it live
       const facets = recipeHostFacets(slugFromUri(sel.slug));
+      // A page that wears no face boots no user wiki: it refuses by name before the wiki mounts (the sealing scope).
+      refuseFacelessUserWiki({ wikiId: sel.slug, source: sel.source, wikiBagId: facets.wikiBagId, faceWorn: facePresentation !== null,
+        catalog: (assembly.catalogHandle.doc() as LarDoc | undefined)?.tiddlers });
       return {
         activeWikiId: sel.slug, wikiSlug: facets.wikiSlug,
         wikiKey: facets.wikiKey, wikiBagId: facets.wikiBagId,

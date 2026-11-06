@@ -69,6 +69,32 @@ export function catalogRowHalf(title: string, row?: StoredLarRecord | null): Cat
   return "face";
 }
 
+/**
+ * A VESSEL THAT WEARS NO FACE BOOTS NO USER WIKI (the sealing scope): before a face lights, a wiki whose canon bag rests on
+ * a face's half (`catalogRowHalf`) reads sealed to a face no session wears, so its documents neither load nor rest. Either
+ * shore refuses it by name before the wiki mounts, never on the island's mount silence. `source` names who chose the
+ * wiki: the boot's own ask (`boot-arg`) or the daemon's active-wiki marker.
+ */
+export class FloorWikiRefusal extends Error {
+  override readonly name = "FloorWikiRefusal";
+  readonly reason = "wiki-awaits-face";
+  constructor(readonly wikiId: string, readonly source: string) {
+    super(`wiki-awaits-face: a vessel that wears no face boots no user wiki — ${wikiId} (named by ${source}) rests on a face's half; unlock its face, or boot a floor wiki`);
+  }
+}
+
+/** Refuse `wikiId` by name (`FloorWikiRefusal`) when no face is worn and its canon bag's catalog row rests on a face's half. */
+export function refuseFacelessUserWiki(input: {
+  readonly wikiId: string;
+  readonly source: string;
+  readonly wikiBagId: string;
+  readonly faceWorn: boolean;
+  readonly catalog: Readonly<Record<string, StoredLarRecord>> | undefined;
+}): void {
+  if (input.faceWorn) return;
+  if (catalogRowHalf(input.wikiBagId, input.catalog?.[input.wikiBagId] ?? null) === "face") throw new FloorWikiRefusal(input.wikiId, input.source);
+}
+
 export type FaceCatalogRefusalReason = "secret-malformed" | "face-catalog-foreign";
 
 /** A face catalog that the presented face's secret does not name. */
