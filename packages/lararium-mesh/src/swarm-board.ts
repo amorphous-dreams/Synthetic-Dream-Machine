@@ -20,7 +20,7 @@ import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { SWARM_ACT_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { storedLarRecord } from "./stored-record.js";
-import type { WardActWitness } from "./ward-cosign.js";
+import { wardActRefusal, type WardActRefusal, type WardActWitness } from "./ward-cosign.js";
 
 export const SWARM_BOARD_PREFIX = "lar:///ha.ka.ba/dreamnet/swarm-act/";
 interface Base { readonly kind: typeof SWARM_ACT_DOMAIN; readonly group: string; readonly epoch: number; readonly value: number; readonly parents: readonly string[]; readonly supersede?: true }
@@ -35,7 +35,7 @@ type Signer = { readonly key: string; readonly sign: (bytes: Uint8Array) => Prom
  * refuses `ward-act-uncosigned`. A lane share rides the fresh unlock alone.
  */
 export interface SwarmBoardFace { readonly group: string; readonly grant: (key: string) => boolean; readonly ward: WardActWitness }
-export type SwarmBoardRefusal = "torn" | "shape" | "domain" | "group" | "signature" | "grant" | "ward-act-uncosigned";
+export type SwarmBoardRefusal = "torn" | "shape" | "domain" | "group" | "signature" | "grant" | WardActRefusal;
 /** Why a line folds to nothing. */
 export type SwarmLineUnavailable = "parent-missing" | "no-head";
 /** The entry a torn board record rides as, so the reader names it among the refused. */
@@ -73,7 +73,10 @@ export function readSwarmBoardAct(raw: unknown, face: SwarmBoardFace): { ok: tru
   try { if (!verifyEd25519(raw["sig"], canonicalJsonBytes(raw["body"]), raw["signer"])) return { ok: false, refusal: "signature" }; } catch { return { ok: false, refusal: "signature" }; }
   if (!face.grant(raw["signer"])) return { ok: false, refusal: "grant" };
   const act = raw as unknown as SignedSwarmBoardAct;
-  if (act.body.act === "cap" && !face.ward.accepts({ verb: "ward-house-cap", wiki: "daemon", head: swarmCapHead(act.body) })) return { ok: false, refusal: "ward-act-uncosigned" };
+  if (act.body.act === "cap") {
+    const ward = wardActRefusal(face.ward, { verb: "ward-house-cap", wiki: "daemon", head: swarmCapHead(act.body) });
+    if (ward) return { ok: false, refusal: ward };
+  }
   return { ok: true, act, cid: swarmBoardActCid(act) };
 }
 

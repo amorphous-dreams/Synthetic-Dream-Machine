@@ -23,7 +23,7 @@ import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { SWARM_ACT_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { SWARM_URI_PREFIX } from "./lar-uris.js";
-import type { WardActWitness } from "./ward-cosign.js";
+import { wardActRefusal, type WardActRefusal, type WardActWitness } from "./ward-cosign.js";
 
 export { SWARM_URI_PREFIX } from "./lar-uris.js";
 
@@ -191,7 +191,7 @@ type GoRow = { readonly act: SignedSwarmAct; readonly cid: string; readonly body
  * written again changes nothing, since the chain it ends stays shorter. `refusal`: the first refusal a row read, where no go rests.
  */
 export async function readGoChain(wiki: SwarmWikiPort, branch: string, trust: SwarmTrust, group: string, ward: WardActWitness): Promise<{
-  readonly resting: readonly GoRow[]; readonly cosigned: readonly GoRow[]; readonly tips: readonly GoRow[]; readonly refusal: SwarmReadRefusal | "ward-act-uncosigned" | null;
+  readonly resting: readonly GoRow[]; readonly cosigned: readonly GoRow[]; readonly tips: readonly GoRow[]; readonly refusal: SwarmReadRefusal | WardActRefusal | null;
 }> {
   const resting: GoRow[] = [], refusals: SwarmReadRefusal[] = [];
   for (const title of [...await wiki.list(`${swarmGoTitle(branch)}/`)].sort()) {
@@ -200,7 +200,8 @@ export async function readGoChain(wiki: SwarmWikiPort, branch: string, trust: Sw
     const body = read.act.body;
     if (body.act === "go" && body.branch === branch) resting.push({ act: read.act, cid: read.cid, body });
   }
-  const cosigned = resting.filter((g) => ward.accepts({ verb: "ward-push-go", wiki: "daemon", head: swarmGoHead(g.body) }));
+  const wardReads = resting.map((g) => wardActRefusal(ward, { verb: "ward-push-go", wiki: "daemon", head: swarmGoHead(g.body) }));
+  const cosigned = resting.filter((_, i) => wardReads[i] === null);
   const children = new Map<string | null, GoRow[]>();
   for (const g of cosigned) children.set(g.body.after, [...(children.get(g.body.after) ?? []), g]);
   // Walk the chain level by level from the branch's first go: the deepest level holds the tips.
@@ -211,7 +212,7 @@ export async function readGoChain(wiki: SwarmWikiPort, branch: string, trust: Sw
     for (const g of level) seen.add(g.cid);
     level = level.flatMap((g) => children.get(g.cid) ?? []).filter((g) => !seen.has(g.cid));
   }
-  const refusal = resting.length > cosigned.length && cosigned.length === 0 ? "ward-act-uncosigned" : resting.length === 0 ? refusals[0] ?? null : null;
+  const refusal = resting.length > cosigned.length && cosigned.length === 0 ? wardReads.find((r) => r !== null) ?? "ward-act-uncosigned" : resting.length === 0 ? refusals[0] ?? null : null;
   return { resting, cosigned, tips: [...tips].sort((a, b) => a.cid.localeCompare(b.cid)), refusal };
 }
 
@@ -221,7 +222,7 @@ export async function readGoChain(wiki: SwarmWikiPort, branch: string, trust: Sw
  * On a face of two devices a go the root signed outside the door stands on no chain (`ward-act-uncosigned` where nothing else rests).
  */
 export async function readGo(wiki: SwarmWikiPort, at: { readonly branch: string; readonly head: string }, trust: SwarmTrust, group: string, ward: WardActWitness):
-  Promise<{ ok: true; act: SignedSwarmAct; cid: string } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | "ward-act-uncosigned" | "spent" | "forked" }> {
+  Promise<{ ok: true; act: SignedSwarmAct; cid: string } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | WardActRefusal | "spent" | "forked" }> {
   const chain = await readGoChain(wiki, at.branch, trust, group, ward);
   if (chain.tips.length > 1) return { ok: false, refusal: "forked" };
   const tip = chain.tips[0];

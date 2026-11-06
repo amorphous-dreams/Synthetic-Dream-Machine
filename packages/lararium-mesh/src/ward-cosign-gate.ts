@@ -107,12 +107,12 @@ export class WardActAlreadyRun extends WardRefused {
 }
 
 /** A witness over a plane that cannot be read: no ward act stands. */
-export const WARD_WITNESS_CLOSED: WardActWitness = { accepts: () => false };
+export const WARD_WITNESS_CLOSED: WardActWitness = { accepts: () => false, refusal: () => "ward-act-uncosigned" };
 
 /** The readers' witness over the gate's own port: the same plane, roster and standing the gate reads, fresh at each call. */
 export function cosignPortWitness(port: WardCosignPort): WardActWitness {
   return wardActWitness({ group: port.group, devices: () => port.devices(), view: () => port.view(), stoodAt: (atom, frontier) => port.stoodAt(atom, frontier),
-    wardKey: (atom) => port.wardKey(atom) });
+    wardKey: (atom) => port.wardKey(atom), standing: (atom) => port.standing(atom) });
 }
 
 /** The intent one act at one head names: the issuer, the verb, the act's own words, and the digest as its nonce. */

@@ -11,13 +11,12 @@
  *
  * THE ANSWER DOOR (`browserWardAnswer`): this browser answers a ward ask through its own ward. An approve signs only inside a fresh
  * ward act of this face on this browser (the per-act ward worker, opened from the passphrase typed for that one act, zeroed after),
- * and carries the ward signature of the face's ward key (`ward-sign/<group>`, whose public half this browser's admission carries)
- * over (the answer, the ask's digest, the fleet frontier this leaf read). A passkey route refuses `ward-passkey-refused`; a deny and
- * an answer to any other ask open no ward. The ward act rides the keystore's own tree today (the browser root's move under a ward key
- * of its own stays `S2b`); it rides that ward's ceremony once it stands.
+ * and carries the ward signature of the face's ward key (resting under a ward of its own, `ward/sign/<group>/…`, whose public half
+ * this browser's admission carries) over (the answer, the ask's digest, the fleet frontier this leaf read). A passkey route refuses
+ * `ward-passkey-refused`; a deny and an answer to any other ask open no ward.
  */
-import { browserWardSignRow, type WardWorkerSpawn } from "./browser-ward.js";
-import { wardSignRow } from "./browser-face-atom.js";
+import { browserWardKeySign, type WardWorkerSpawn } from "./browser-ward.js";
+import type { WardRoute } from "./ward-core.js";
 import {
   answerRefusal, askShown, buildAnswer, buildWardedAnswer, type SignedIntentEntry,
   deviceEdgeId, faceIntentVerbs, faceRosterForIntents, fleetStoodAt, intentPlaneCosignPort, proveFaceFromLog, WardRefused, FLEET_HAND,
@@ -107,10 +106,9 @@ export async function browserWardAnswer(input: {
     const frontier = input.port.frontier();
     if (frontier === null) throw new WardRefused("ward-cosign-frontier-unknown", "this leaf reads no known fleet frontier, so its approve names none");
     const route = await input.route(`the co-sign approve of ${asked.verb}`);
-    const passphrase = typeof route === "string" ? route : route.kind === "passphrase" ? route.passphrase : null;
-    if (passphrase === null) throw new WardRefused("ward-passkey-refused", "the ward opens to human routes alone (a passphrase); a passkey rides an authenticator vendor's registry");
+    if (typeof route !== "string" && route.kind === "passkey") throw new WardRefused("ward-passkey-refused", "the ward opens to human routes alone (a passphrase, a paper sheet); a passkey rides an authenticator vendor's registry");
     entry = await buildWardedAnswer({ group: input.group, signer: input.atom, ask: input.ask, detail: String(asked.detail ?? ""), executor: input.executor, frontier,
-      wardSign: async (bytes) => (await browserWardSignRow(input.idbName, wardSignRow(input.group), passphrase, bytes, input.spawn)).signature });
+      wardSign: async (bytes) => (await browserWardKeySign(input.idbName, input.group, route as WardRoute, bytes, input.spawn)).signature });
   }
   await input.port.write(entry);
   return entry;

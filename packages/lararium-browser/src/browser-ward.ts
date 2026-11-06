@@ -7,15 +7,18 @@
  * and one signature. `readBrowserCustody(...).unlocked` reads the same before, during and after: the act never touches the page's
  * held key, and the keystore's tree key opens no part of the root.
  *
- * A face's WARD KEY (`ward-sign/<group>`, the co-sign signer) signs through the same worker by a row act (`browserWardSignRow`): its
- * row rests under the keystore's tree key, and the act opens that tree fresh from the passphrase typed for it.
+ * A face's WARD KEY (the co-sign signer; logical name `ward-sign/<group>`, which every custody door refuses by name) rests under a
+ * ward of its own (`ward/sign/<group>/…`, `ward-core`), which no slot of the keystore's tree wraps: it mints inside one worker act
+ * (`browserWardKeyMint`: the ward binds over the route typed for it, the seed seals under it, the pop signs, and the page lands
+ * bytes it cannot open) and signs inside one (`browserWardKeySign`). Its public half reads off plain bytes (`browserWardKeyOf`).
  *
- * Residuals, named: the page passes the typed passphrase over the port (a page script reads what the page's dialog collects); and
- * the ward key row rests under the keystore's tree key, so a page that holds the keystore unlocked reads it by the custody doors.
+ * Residual, named: the page passes the typed route over the port (a page script reads what the page's dialog collects).
  */
-import { browserKeystoreCustodyIo, BrowserWardRefused, CUSTODY_TREE_ROW, sealedCarrierOf } from "./browser-custody.js";
-import { chargeWardAttempt, readBrowserWardKey, readBrowserWardRows } from "./browser-ward-tree.js";
-import { wardCredentialOf, type WardActAnswer, type WardActRequest, type WardRoute, type WardRowActRequest } from "./ward-core.js";
+import { browserKeystoreCustodyIo, BrowserWardRefused } from "./browser-custody.js";
+import { chargeWardAttempt, landBrowserWardRows, readBrowserWardKey, readBrowserWardRows } from "./browser-ward-tree.js";
+import {
+  wardCredentialOf, wardSignRowsOf, type WardActAnswer, type WardActRequest, type WardKeyActRequest, type WardKeyMintAnswer, type WardKeyMintRequest, type WardRoute,
+} from "./ward-core.js";
 import { WardRefused } from "@lararium/mesh";
 
 export { BrowserWardRefused } from "./browser-custody.js";
@@ -39,32 +42,59 @@ export async function browserWardSign(idbName: string, handleIndex: number, rout
   return chargeWardAttempt(idbName, () => browserWardSignOnce({ ...rows, handleIndex, route, bytes }, spawn)).catch(refusedBy);
 }
 
+/** The PUBLIC half of face `group`'s ward key on this browser, off plain bytes beside its ward (no seed opens), or null where none stands. */
+export async function browserWardKeyOf(idbName: string, group: string): Promise<string | null> {
+  const bytes = await browserKeystoreCustodyIo(idbName).read(wardSignRowsOf(group).key);
+  if (bytes === null) return null;
+  const key = new TextDecoder().decode(bytes);
+  if (!/^[0-9a-f]{64}$/.test(key)) throw new BrowserWardRefused("ward-key-unreadable", "the face's ward key row reads malformed");
+  return key;
+}
+
 /**
- * Sign `bytes` with the signing key one sealed CUSTODY row holds (`{ signingKey }`: a face's ward key `ward-sign/<group>`, which
- * rests under the keystore's tree key beside the face's other secret rows), in one ward act fresh from the passphrase typed for
- * it. The page's held unlock never takes part. A miss spends one of the page's attempts for this keystore.
+ * Sign `bytes` with face `group`'s ward key in one ward act, fresh from the route typed for it: the page hands the worker the ward's
+ * tree and the sealed seed as raw bytes and reads back the key and one signature. A miss spends one of the page's attempts.
  */
-export async function browserWardSignRow(idbName: string, row: string, passphrase: string, bytes: Uint8Array, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly signature: string }> {
-  if (typeof passphrase !== "string" || passphrase.length === 0) throw new BrowserWardRefused("ward-needs-fresh-unlock");
-  const io = browserKeystoreCustodyIo(idbName);
-  const carrier = sealedCarrierOf(row);
-  const [tree, sealedRow] = await Promise.all([io.read(CUSTODY_TREE_ROW), io.read(carrier.path)]);
-  if (tree === null || sealedRow === null) throw new BrowserWardRefused("ward-absent", `${row} stands in no sealed keystore row in this browser`);
-  const request: WardRowActRequest = { tree, sealedRow, carrier: carrier.name, passphrase, bytes };
+export async function browserWardKeySign(idbName: string, group: string, route: WardRoute, bytes: Uint8Array, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly signature: string }> {
+  try { wardCredentialOf(route); } catch (e) { refusedBy(e); }
+  const rows = wardSignRowsOf(group), io = browserKeystoreCustodyIo(idbName);
+  const [tree, sealedSeed] = await Promise.all([io.read(rows.tree), io.read(rows.seed)]);
+  if (tree === null || sealedSeed === null) throw new BrowserWardRefused("ward-absent", `face ${group} holds no ward key in this browser`);
+  const request: WardKeyActRequest = { act: "ward-key-sign", group, tree, sealedSeed, route, bytes };
   return chargeWardAttempt(idbName, () => browserWardSignOnce(request, spawn)).catch(refusedBy);
 }
 
-async function browserWardSignOnce(request: WardActRequest | WardRowActRequest, spawn: WardWorkerSpawn): Promise<{ readonly key: string; readonly signature: string }> {
+/**
+ * MINT face `group`'s ward key in one ward act and sign its pop for `deviceKey`: the worker binds a fresh ward over `route`, seals a
+ * fresh seed under it and signs once; the page lands the tree, the seed and the public key in ONE transaction, only where none of the
+ * three stands. Answers null where a ward key already stood (another tab minted first): the caller signs under that one instead.
+ */
+export async function browserWardKeyMint(idbName: string, group: string, deviceKey: string, route: WardRoute, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly pop: string } | null> {
+  try { wardCredentialOf(route); } catch (e) { refusedBy(e); }
+  const rows = wardSignRowsOf(group);
+  const request: WardKeyMintRequest = { act: "ward-key-mint", group, deviceKey, route };
+  const minted = await chargeWardAttempt(idbName, () => browserWardActOnce<WardKeyMintAnswer>(request, spawn)).catch(refusedBy);
+  if ("refused" in minted) throw new BrowserWardRefused(minted.refused);
+  const landed = await landBrowserWardRows(idbName, [[rows.tree, minted.tree], [rows.seed, minted.sealedSeed], [rows.key, new TextEncoder().encode(minted.key)]]);
+  return landed ? { key: minted.key, pop: minted.signature } : null;
+}
+
+async function browserWardSignOnce(request: WardActRequest | WardKeyActRequest, spawn: WardWorkerSpawn): Promise<{ readonly key: string; readonly signature: string }> {
+  const answer = await browserWardActOnce<WardActAnswer>(request, spawn);
+  if ("refused" in answer) throw new BrowserWardRefused(answer.refused);
+  return { key: answer.key, signature: answer.signature };
+}
+
+/** One worker, one request, one answer; the worker terminates either way. */
+async function browserWardActOnce<A>(request: WardActRequest | WardKeyActRequest | WardKeyMintRequest, spawn: WardWorkerSpawn): Promise<A> {
   const worker = spawn();
   const channel = new MessageChannel();
   try {
-    const answer = await new Promise<WardActAnswer>((resolve) => {
-      channel.port1.onmessage = (m: MessageEvent) => resolve(m.data as WardActAnswer);
+    return await new Promise<A>((resolve) => {
+      channel.port1.onmessage = (m: MessageEvent) => resolve(m.data as A);
       worker.postMessage(null, [channel.port2]);
       channel.port1.postMessage(request);
     });
-    if ("refused" in answer) throw new BrowserWardRefused(answer.refused);
-    return { key: answer.key, signature: answer.signature };
   } finally { channel.port1.close(); worker.terminate(); }
 }
 

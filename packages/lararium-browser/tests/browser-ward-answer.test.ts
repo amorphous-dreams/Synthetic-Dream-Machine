@@ -32,7 +32,7 @@ async function stand() {
   const idbName = `lares:answer-${globalThis.crypto.randomUUID()}`;
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
   const issuer = await keyed(71), me = await keyed(72), root = await keyed(73);
-  const wardKey = (await browserVesselFaceTagDoor(idbName)(G, me.key)).wardKey;
+  const wardKey = (await browserVesselFaceTagDoor(idbName, { route: async () => PASS, spawn })(G, me.key)).wardKey;
   const doc = { tiddlers: {} } as LarDoc;
   const plane = { doc: () => doc, change: (fn: (d: LarDoc) => void) => fn(doc) };
   const lineage = makeHandLineage([{ epoch: 0, signers: [root.key], threshold: 1 }])!;
@@ -90,13 +90,13 @@ test("RED: two faces of one browser present one ward key; CONTROL: a re-read of 
   expect((await door(G, s.me.key)).wardKey).toBe(s.wardKey);
 });
 
-test("RED: the browser's tag door names a ward key it proves nothing of, and a re-read answers with no fresh unlock; CONTROL: the minting read's pop holds, a re-read under the typed passphrase signs inside the ward worker and holds, and a passkey refuses `ward-passkey-refused`", async () => {
+test("RED: the browser's tag door names a ward key it proves nothing of, and a re-read answers with no fresh unlock; CONTROL: the minting read's pop holds (signed inside its ward act), a re-read under the typed passphrase signs inside the ward worker and holds, and a passkey refuses `ward-passkey-refused`", async () => {
   const { wardKeyPopHolds } = await import("@lararium/mesh") as unknown as { wardKeyPopHolds?: (g: string, a: string, f: unknown) => boolean };
   const idbName = `lares:pop-${globalThis.crypto.randomUUID()}`;
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
   const me = await keyed(74);
   const door = browserVesselFaceTagDoor as unknown as (idb: string, o?: unknown) => (g: string, a: string) => Promise<{ wardKey: string; wardPop?: string }>;
-  const minted = await door(idbName)(G, me.key);
+  const minted = await door(idbName, { route: async () => PASS, spawn })(G, me.key);
   expect(wardKeyPopHolds?.(G, me.key, minted)).toBe(true);
   expect(await codeOf(door(idbName)(G, me.key))).toBe("ward-needs-fresh-unlock");
   expect(await codeOf(door(idbName, { route: async () => ({ kind: "passkey", credentialId: "c" }), spawn })(G, me.key))).toBe("ward-passkey-refused");

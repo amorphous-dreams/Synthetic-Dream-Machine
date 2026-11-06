@@ -124,7 +124,7 @@ async function pendingGroups(idbName: string): Promise<string[]> {
  */
 export async function browserFleetJoinRequest(opts: {
   readonly offer: unknown; readonly idbName?: string;
-  /** The route the tag door asks for the ward key's pop where this face's ward key already stood here (`BrowserTagDoorWard`). */
+  /** The route the tag door asks for the face's ward key: its mint, or its pop where it already stood here (`BrowserTagDoorWard`). */
   readonly ward?: BrowserTagDoorWard;
 }): Promise<FleetJoinRequest> {
   const idbName = opts.idbName ?? "lares:vessel";

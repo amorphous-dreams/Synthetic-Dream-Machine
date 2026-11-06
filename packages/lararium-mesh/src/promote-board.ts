@@ -13,7 +13,7 @@ import { storedLarRecord } from "./stored-record.js";
 import { foldCausalHeads, type EdgeKapaeVerdict } from "./edge-kapae.js";
 import { promoteEdgeKey } from "./promote.js";
 import { KapaeRefused } from "./promote-kapae.js";
-import type { WardActWitness } from "./ward-cosign.js";
+import { wardActRefusal, type WardActRefusal, type WardActWitness } from "./ward-cosign.js";
 export { promoteEdgeKey } from "./promote.js";
 export const PROMOTE_ACT_PREFIX = "lar:///ha.ka.ba/dreamnet/promote-act/";
 const PROMOTE_BOARD_URI = "lar:///ha.ka.ba/bags/promote-board";
@@ -30,7 +30,7 @@ type Signer = { readonly key: string; readonly sign: (bytes: Uint8Array) => Prom
  * `ward-act-uncosigned`.
  */
 export interface PromoteFace { readonly group: string; readonly grant: (key: string) => boolean; readonly device: (key: string) => boolean; readonly ward: WardActWitness }
-export type PromoteActRefusal = "shape" | "domain" | "group" | "signature" | "grant" | "device" | "ward-act-uncosigned";
+export type PromoteActRefusal = "shape" | "domain" | "group" | "signature" | "grant" | "device" | WardActRefusal;
 const object = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
 const str = (x: unknown): x is string => typeof x === "string";
 const hex = (x: unknown): x is string => str(x) && /^[0-9a-f]{64}$/.test(x);
@@ -52,7 +52,10 @@ export function readPromoteAct(raw: unknown, face: PromoteFace): { ok: true; act
  // A RAISE ONLY ADDS A BRAKE, so an enrolled device's atom may sign one (it fails safe); a LOWER releases one, and only the grant signs it.
  if (raw.body.act === "kapae" && !(face.grant(raw.signer) || (raw.body.raised && face.device(raw.signer)))) return { ok: false, refusal: "grant" };
  if (raw.body.act === "prepare" && !face.device(raw.signer)) return { ok: false, refusal: "device" };
- if (raw.body.act === "kapae" && !raw.body.raised && !face.ward.accepts({ verb: "ward-kapae-lower", wiki: raw.body.wiki as string, head: kapaeLowerHead(raw.body.digest as string, raw.body.parents as string[]) })) return { ok: false, refusal: "ward-act-uncosigned" };
+ if (raw.body.act === "kapae" && !raw.body.raised) {
+  const ward = wardActRefusal(face.ward, { verb: "ward-kapae-lower", wiki: raw.body.wiki as string, head: kapaeLowerHead(raw.body.digest as string, raw.body.parents as string[]) });
+  if (ward) return { ok: false, refusal: ward };
+ }
  const act = raw as unknown as SignedPromoteAct; return { ok: true, act, cid: promoteActCid(act) };
 }
 /** The head a lower's co-sign names: the shadowed digest and the edge heads it releases. */

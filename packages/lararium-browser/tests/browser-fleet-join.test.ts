@@ -119,7 +119,7 @@ describe("the browser's fleet join", () => {
     expect((await door(GROUP, request.atomKey)).vesselTag).toBe(request.vesselTag);
     expect((await door("0xc3c3c3c3c3c3c3c3", request.atomKey)).vesselTag).not.toBe(request.vesselTag);
     const other = await stage();
-    expect((await browserVesselFaceTagDoor(other.idbName)(GROUP, request.atomKey)).vesselTag).not.toBe(request.vesselTag);
+    expect((await browserVesselFaceTagDoor(other.idbName, FIXTURE_WARD)(GROUP, request.atomKey)).vesselTag).not.toBe(request.vesselTag);
     expect(await browserFleetJoinAbandon(s.idbName)).toBe(true);
   });
 
@@ -229,7 +229,7 @@ describe("the browser's fleet join", () => {
 
   test("B6 — another root's landing under a group this browser joined refuses record-other and writes nothing", async () => {
     const s = await stage();
-    await browserFleetJoinLand({ answer: await answerTo(s, await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName })), idbName: s.idbName, ward: FIXTURE_WARD });
+    await browserFleetJoinLand({ answer: await answerTo(s, await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName, ward: FIXTURE_WARD })), idbName: s.idbName, ward: FIXTURE_WARD });
     expect(await browserFleetJoinSettle(s.idbName)).toBe(true);
     // A second root claims the same group; its offer reaches this same browser.
     const other = { ...s, root: await pair("browser fleet other root") };

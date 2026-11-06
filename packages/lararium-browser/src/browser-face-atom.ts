@@ -19,13 +19,14 @@ import {
   standFaceAtomSeed,
   type FaceAtomKey,
   type FaceAtomRows,
-  ed25519SignerFromSeed,
+  constantTimeBytesEqual,
   vesselFaceTagFields,
-  wardPublicKeyOf,
+  wardKeyPopImage,
   type VesselFaceTagDoor,
 } from "@lararium/mesh";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
-import { browserWardSignRow, BrowserWardRefused, type WardWorkerSpawn } from "./browser-ward.js";
+import { browserWardKeyMint, browserWardKeyOf, browserWardKeySign, BrowserWardRefused, type WardWorkerSpawn } from "./browser-ward.js";
+import type { WardRoute } from "./ward-core.js";
 import type { BrowserWardRoute } from "./browser-ward-cosign.js";
 
 /** The custody row that keeps one face's atom seed. */
@@ -112,40 +113,19 @@ export const vesselFaceTagRow = (personaGroup: string): string => {
 };
 
 /**
- * The keystore row that keeps one face's WARD KEY on this browser: a signing seed minted at random per face (`{ signingKey: hex }`,
- * the shape the per-act ward worker opens), derived from no seed and no vessel-wide key, so two faces present ward keys no reader
- * links. The ward worker opens it fresh from the passphrase typed for one act (`browserWardSignRow`).
+ * The LOGICAL name of one face's WARD KEY on this browser: every custody door refuses it by name (`ward-needs-fresh-unlock`). The key
+ * rests under a ward of its own (`ward/sign/<group>/…`, `ward-core`): a signing seed minted at random per face inside one ward act,
+ * derived from no seed and no vessel-wide key, so two faces present ward keys no reader links.
  */
 export const wardSignRow = (personaGroup: string): string => {
   if (personaGroup.length === 0) throw new Error("[browser-face-atom] a ward key names its PersonaGroup");
   return `ward-sign/${personaGroup}`;
 };
 
-/** The face's ward key's public half, minting the row where none stands. A mint answers the seed it minted too (the caller signs the
- *  pop with it and zeroes it); a row that stood answers its key alone, and its seed opens only inside the ward worker. */
-async function standWardKey(idbName: string, group: string): Promise<{ readonly key: string; readonly minted: Uint8Array | null }> {
-  const row = wardSignRow(group);
-  const stood = await withCustodyRows(idbName, async (rows) => {
-    const held = await rows.read(row);
-    if (held instanceof Uint8Array) {
-      try {
-        const record = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(held)) as { signingKey?: unknown };
-        if (typeof record.signingKey !== "string" || !/^[0-9a-f]{64}$/.test(record.signingKey)) throw new Error("malformed");
-        return { seed: Uint8Array.from(record.signingKey.match(/../g)!.map((h) => parseInt(h, 16))), minted: false };
-      } catch { throw new Error("[browser-face-atom] the face's ward key row reads malformed"); }
-    }
-    if (held !== undefined) throw new Error("[browser-face-atom] the face's ward key row reads malformed");
-    const fresh = crypto.getRandomValues(new Uint8Array(32));
-    await rows.write(row, new TextEncoder().encode(JSON.stringify({ signingKey: [...fresh].map((b) => b.toString(16).padStart(2, "0")).join("") })));
-    return { seed: fresh, minted: true };
-  });
-  try { return { key: await wardPublicKeyOf(stood.seed), minted: stood.minted ? Uint8Array.from(stood.seed) : null }; } finally { stood.seed.fill(0); }
-}
-
-/** The route a tag door asks for the ward key's pop where the key already stood: the passphrase typed for that one act. */
+/** The route a tag door asks for the face's ward key: the one the person types for this act. Its mint and every pop ride it. */
 export interface BrowserTagDoorWard {
   /** The page's dialog: the route the person types for this one act. A passkey opens no ward (`ward-passkey-refused`). */
-  readonly route?: (act: string) => Promise<BrowserWardRoute>;
+  readonly route?: (act: string) => Promise<BrowserWardRoute | WardRoute>;
   readonly spawn?: WardWorkerSpawn;
 }
 
@@ -153,11 +133,12 @@ export interface BrowserTagDoorWard {
  * THE BROWSER VESSEL'S TAG DOOR: the blinded per-face tag one admission of this browser carries (`vessel-face-tag`).
  * The face's tag secret rests in its own row beside its atom, 32 random bytes minted at the face's founding or first
  * join request and derived from no seed, so the place seed computes no face's tag. A re-join on the face reads the
- * row and presents the same tag. The door answers the tag, the face's ward key (`wardSignRow`, minted beside it at the first ask),
- * the tag's signature and the ward key's POP (its own signature over (group, atom, ward key)), and zeroes the copies it read. The
- * pop signs with the seed the mint holds where this ask mints the key; where the key already stood it signs inside a fresh ward act
- * of this face (the per-act ward worker, opened from the passphrase typed for it, zeroed after), so a re-read with no route refuses
- * `ward-needs-fresh-unlock` and a passkey `ward-passkey-refused`.
+ * row and presents the same tag. The door answers the tag, the face's ward key (`wardSignRow`, minted under a ward of its own at the
+ * first ask), the tag's signature and the ward key's POP (its own signature over (group, atom, ward key)), and zeroes the copies it
+ * read. The key's public half reads off the plain row beside its ward, so naming the key opens no seed; the pop signs only inside a
+ * ward act of this face (the per-act ward worker, opened from the route typed for it, zeroed after): the mint's own act where this ask
+ * mints the key, a fresh one where the key stood. An ask with no route refuses `ward-needs-fresh-unlock`, a passkey
+ * `ward-passkey-refused`.
  */
 export function browserVesselFaceTagDoor(idbName = "lares:vessel", ward: BrowserTagDoorWard = {}): VesselFaceTagDoor {
   return async (group, deviceKey) => {
@@ -170,21 +151,22 @@ export function browserVesselFaceTagDoor(idbName = "lares:vessel", ward: Browser
       await rows.write(row, Uint8Array.from(fresh));
       return fresh;
     });
-    let minted: Uint8Array | null = null;
     try {
-      const stood = await standWardKey(idbName, group);
-      minted = stood.minted;
-      const seed = minted;
-      const sign = seed ? ed25519SignerFromSeed(seed) : async (bytes: Uint8Array): Promise<string> => {
-        if (!ward.route) throw new BrowserWardRefused("ward-needs-fresh-unlock");
-        const route = await ward.route("the admission's ward key proof");
-        const passphrase = typeof route === "string" ? route : route.kind === "passphrase" ? route.passphrase : null;
-        if (passphrase === null) throw new BrowserWardRefused("ward-passkey-refused");
-        const signed = await browserWardSignRow(idbName, wardSignRow(group), passphrase, bytes, ward.spawn);
-        if (signed.key !== stood.key) throw new BrowserWardRefused("ward-key-mismatch");
+      if (!ward.route) throw new BrowserWardRefused("ward-needs-fresh-unlock", "the face's ward key opens only inside a ward act, and this door offers no route");
+      const stood = await browserWardKeyOf(idbName, group);
+      const route = await ward.route(stood ? "the admission's ward key proof" : "the face's ward key");
+      const typed = route as WardRoute;
+      // THE KEY HALF READS OFF PLAIN BYTES; the pop signs inside the ward act (the mint's own, or one fresh for this proof).
+      const minted = stood ? null : await browserWardKeyMint(idbName, group, deviceKey, typed, ward.spawn);
+      const key = minted?.key ?? stood ?? await browserWardKeyOf(idbName, group);
+      if (!key) throw new BrowserWardRefused("ward-absent", "the face's ward key landed nowhere");
+      const sign = async (bytes: Uint8Array): Promise<string> => {
+        if (minted && constantTimeBytesEqual(bytes, wardKeyPopImage(group, deviceKey, key))) return minted.pop;
+        const signed = await browserWardKeySign(idbName, group, typed, bytes, ward.spawn);
+        if (signed.key !== key) throw new BrowserWardRefused("ward-key-mismatch");
         return signed.signature;
       };
-      return await vesselFaceTagFields(secret, group, deviceKey, stood.key, sign);
-    } finally { secret.fill(0); minted?.fill(0); }
+      return await vesselFaceTagFields(secret, group, deviceKey, key, sign);
+    } finally { secret.fill(0); }
   };
 }

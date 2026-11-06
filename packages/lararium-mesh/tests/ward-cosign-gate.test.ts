@@ -57,10 +57,11 @@ test("WITNESS: the browser's co-sign port folds the worn face's persona plane at
 
 test("WITNESS: each reader of a ward act's effect asks the co-sign witness: the board's lower, the house cap, the go; CONTROL: a raise and a share read without it", () => {
   const board = code(src("../src/promote-board.ts")), swarm = code(src("../src/swarm-board.ts")), go = code(src("../src/swarm-tiddlers.ts"));
-  expect(board).toMatch(/!raw\.body\.raised && !face\.ward\.accepts\(\{ verb: "ward-kapae-lower"/);
-  expect(swarm).toMatch(/act\.body\.act === "cap" && !face\.ward\.accepts\(\{ verb: "ward-house-cap"/);
+  expect(board).toMatch(/!raw\.body\.raised\) \{\s*const ward = wardActRefusal\(face\.ward, \{ verb: "ward-kapae-lower"/);
+  expect(swarm).toMatch(/act\.body\.act === "cap"\) \{\s*const ward = wardActRefusal\(face\.ward, \{ verb: "ward-house-cap"/);
   // the go's reader walks only the gos that stand beside their co-sign
-  expect(go).toMatch(/resting\.filter\(\(g\) => ward\.accepts\(\{ verb: "ward-push-go"/);
+  expect(go).toMatch(/resting\.map\(\(g\) => wardActRefusal\(ward, \{ verb: "ward-push-go"/);
+  expect(go).toMatch(/resting\.filter\(\(_, i\) => wardReads\[i\] === null\)/);
   expect(swarm).not.toMatch(/act === "share" && !face\.ward/);
 });
 

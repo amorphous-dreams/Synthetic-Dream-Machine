@@ -334,11 +334,11 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
             if (custody.reading !== "bound" && custody.reading !== "opens" && custody.reading !== "held") {
               throw new Error(`this browser's custody reads ${custody.reading}; a fleet join mints a face's secrets only over a slot`);
             }
-            const request = await browserFleetJoinRequest({ offer: file.value }).catch(async (err: unknown) => {
+            const request = await browserFleetJoinRequest({ offer: file.value, ward: { route: askWardRoute } }).catch(async (err: unknown) => {
               if (!(err instanceof BrowserFleetJoinRefused && err.refusal === "join-pending")) throw err;
               if (!confirm("Another fleet join stands pending in this browser. Abandon it, and request against this offer instead?")) throw err;
               await browserFleetJoinAbandon();
-              return browserFleetJoinRequest({ offer: file.value });
+              return browserFleetJoinRequest({ offer: file.value, ward: { route: askWardRoute } });
             });
             paste.value = JSON.stringify(request, null, 2);
             paste.select();

@@ -113,10 +113,21 @@ export function judgeCosign(input: {
 /**
  * What a READER of a ward act's effect asks (a board's kāpae lower, the house cap, a go): does this act stand beside its co-sign?
  * The gate holds the door; the witness holds every reader, so an act signed outside the door (the root opened through the ward
- * route, never through the gate) reads as nothing on a face of two devices. `accepts` answers false where the act refuses
- * (`ward-act-uncosigned`).
+ * route, never through the gate) reads as nothing on a face of two devices. `accepts` answers false where the act refuses;
+ * `refusal` names why (`ward-act-uncosigned`, or `ward-issuer-aside` / `ward-issuer-unknown` where the act's co-sign stands
+ * spent and its issuer reads aside or unknown to this reader now), and a witness with no `refusal` names `ward-act-uncosigned`.
  */
-export interface WardActWitness { readonly accepts: (act: WardCosignAct) => boolean }
+export type WardActRefusal = "ward-act-uncosigned" | "ward-issuer-aside" | "ward-issuer-unknown";
+export interface WardActWitness {
+  readonly accepts: (act: WardCosignAct) => boolean;
+  readonly refusal?: (act: WardCosignAct) => WardActRefusal | null;
+}
+
+/** Why `witness` refuses `act`, or null where it stands. */
+export function wardActRefusal(witness: WardActWitness, act: WardCosignAct): WardActRefusal | null {
+  if (witness.refusal) return witness.refusal(act);
+  return witness.accepts(act) ? null : "ward-act-uncosigned";
+}
 
 /**
  * The witness over a face's intent plane, read fresh at each call. A face whose signed admission fold holds zero or one device
@@ -126,8 +137,11 @@ export interface WardActWitness { readonly accepts: (act: WardCosignAct) => bool
  * act (an answer to the issuer's own ask naming the digest, the issuer as executor) from another device of the face, under that
  * device's ward signature over (the answer, the digest, the frontier) by the ward key its admission carries; the outcome cites the
  * very frontier the answer names, and both that device and the issuer stood there (no raise the frontier counts sets either aside). What lands after the
- * outcome (a second approve, a deny, a raise the next frontier counts) never changes what stands; an approved intent with no
- * outcome stands nothing. A plane that did not load, or a fold that throws, accepts nothing on two devices.
+ * outcome (a second approve, a deny, a raise the next frontier counts against the co-signer) never changes what stands; an approved
+ * intent with no outcome stands nothing. THE ISSUER READS NOW: a raise shadows its target at once for every reader that sees it, so
+ * an outcome whose issuer this reader reads aside (`ward-issuer-aside`) or unknown (`ward-issuer-unknown`) stands nothing, door-made
+ * or signed outside the gate citing an approve from before its set-aside (it fails toward the brake). A plane that did not load, or
+ * a fold that throws, accepts nothing on two devices.
  */
 export function wardActWitness(input: {
   readonly group: string; readonly devices: () => readonly string[]; readonly view: () => IntentView | null;
@@ -135,20 +149,25 @@ export function wardActWitness(input: {
   readonly wardKey: (atom: string) => string | null;
   /** Whether a device stood at one link of the fleet's signed frontier chain (`fleetStoodAt`); a link this reader lacks reads false. */
   readonly stoodAt: (atom: string, frontier: string) => boolean;
+  /** A device's standing as this reader reads it now: an issuer read `aside` or `unknown` stands no outcome. */
+  readonly standing: (atom: string) => "stands" | "aside" | "unknown";
 }): WardActWitness {
-  return {
-    accepts: (act) => {
-      let devices: readonly string[], view: IntentView | null;
-      try { devices = input.devices(); } catch { return false; }
-      if (devices.length < 2) return true;
-      try { view = input.view(); } catch { return false; }
-      if (!view) return false;
-      const digest = cosignDigest({ act: act.verb, face: input.group, wiki: act.wiki, head: act.head });
-      const args = { wiki: act.wiki, head: act.head }, enrolled = new Set(devices.map((d) => d.toLowerCase()));
-      const ward = { group: input.group, key: input.wardKey };
-      return view.intents.some((s) => s.verb === act.verb && s.id === intentId({ issuer: s.issuer, verb: s.verb, args, nonce: digest }) && spentCosign(s, digest, enrolled, input.stoodAt, ward));
-    },
+  const refusal = (act: WardCosignAct): WardActRefusal | null => {
+    let devices: readonly string[], view: IntentView | null;
+    try { devices = input.devices(); } catch { return "ward-act-uncosigned"; }
+    if (devices.length < 2) return null;
+    try { view = input.view(); } catch { return "ward-act-uncosigned"; }
+    if (!view) return "ward-act-uncosigned";
+    const digest = cosignDigest({ act: act.verb, face: input.group, wiki: act.wiki, head: act.head });
+    const args = { wiki: act.wiki, head: act.head }, enrolled = new Set(devices.map((d) => d.toLowerCase()));
+    const ward = { group: input.group, key: input.wardKey };
+    const spent = view.intents.filter((s) => s.verb === act.verb && s.id === intentId({ issuer: s.issuer, verb: s.verb, args, nonce: digest }) && spentCosign(s, digest, enrolled, input.stoodAt, ward));
+    if (spent.length === 0) return "ward-act-uncosigned";
+    const read = spent.map((s) => { try { return input.standing(s.issuer); } catch { return "unknown" as const; } });
+    if (read.includes("stands")) return null;
+    return read.includes("aside") ? "ward-issuer-aside" : "ward-issuer-unknown";
   };
+  return { accepts: (act) => refusal(act) === null, refusal };
 }
 
 const record = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
