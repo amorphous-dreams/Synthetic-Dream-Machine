@@ -96,4 +96,11 @@ describe("the caller that seats the browser island's holder", () => {
     expect(src.length, "the strip leaves the module standing").toBeGreaterThan(200);
     expect(src).toMatch(/makeOperatorDaemonBehavior\(manifest,\s*\{[\s\S]*\bsealedStore\s*:\s*idbSealedStoreShore\(/);
   });
+
+  test("T6: the daemon island hands its seat the fresh base's cut, over the bag's live document it asks of the vessel worker", () => {
+    const src = strip(START["../src/daemon-island-start.ts"] ?? "");
+    expect(src.length, "the strip leaves the module standing").toBeGreaterThan(200);
+    expect(src).toMatch(/islandLiveDocDoor\(/);
+    expect(src).toMatch(/makeOperatorDaemonBehavior\(manifest,\s*\{[\s\S]*\bfreshBase\s*:\s*freshBasePort\(\s*liveOnVessel\s*\)/);
+  });
 });

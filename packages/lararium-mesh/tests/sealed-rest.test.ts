@@ -8,11 +8,13 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed
  */
 import { afterEach, describe, expect, it } from "vitest";
-import { Repo, type AutomergeUrl, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
+import { Repo, type AutomergeUrl, type Chunk, type PeerId, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
+import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
+import * as A from "@automerge/automerge";
 import { utf8Bytes } from "../src/crypto.js";
 import { faceProofSubjectRef, sessionSignatureImage } from "../src/face-proof-subjects.js";
 import type { RecordSigner } from "../src/sealed-records.js";
-import { SEALED_DOCUMENT_REFUSALS } from "../src/sealed-doc-store.js";
+import { SEALED_DOCUMENT_REFUSALS, SealedDocumentStore } from "../src/sealed-doc-store.js";
 import { answerDocStoreAsks, composeSealedRest, vesselDocStoreDoor, type SealedRest } from "../src/sealed-rest.js";
 import { vessel, world, type Vessel } from "./content-key-fixture.js";
 import { chain, signHex } from "./face-proof-fixture.js";
@@ -261,5 +263,144 @@ describe("R2: a save the Repo makes on its own timer signs under the session tha
     const back = await repo2.find<{ note?: string; more?: string }>(doc.documentId as unknown as AutomergeUrl);
     expect(back.doc()).toMatchObject({ note: SECRET, more: "a second word" });
     await repo2.shutdown();
+  });
+});
+
+/** A peer replica and a vessel's Repo over the sealed rest, joined by a MessageChannel. */
+function linked(rest: SealedRest<Session>, peer: Repo, name: string) {
+  const channel = new MessageChannel();
+  ports.push(channel.port1, channel.port2);
+  peer.networkSubsystem.addNetworkAdapter(new MessageChannelNetworkAdapter(channel.port1));
+  return new Repo({ storage: rest.store, network: [new MessageChannelNetworkAdapter(channel.port2)], peerId: name as PeerId });
+}
+const settle = (ms = 300) => new Promise((done) => setTimeout(done, ms));
+
+describe("T4: a change books its own writer", () => {
+  it("a peer's change that syncs in while a local session stands carries the peer's writer; a local change books the session (control)", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const r = standRest(a, inner);
+    const session: Session = { id: "s-a", subject: r.own, signer: a.signer };
+    const peer = new Repo({ network: [], peerId: "peer-replica" as PeerId });
+    const repo = linked(r.rest, peer, "vessel");
+    r.seat(repo);
+    r.rest.watch(repo, () => session);
+    const theirs = peer.create<{ note?: string; ours?: string }>();
+    theirs.change((d) => { d.note = SECRET; });
+    const peerActor = A.getActorId(theirs.doc() as A.Doc<unknown>);
+    const mine = await repo.find<{ note?: string; ours?: string }>(theirs.url);
+    await settle();
+    expect(mine.doc().note).toBe(SECRET);
+    await repo.flush();
+    await r.rest.store.flush();
+    // The setup took: the peer's change reached this replica, and its writer reads as the peer's, never the session's.
+    expect(r.rest.book.writerOf(mine.documentId)).toBe(`peer:${peerActor}`);
+    // It rests as received: sealed under the session that holds the rest, never clear.
+    expect(restsAny(inner, mine.documentId)).toBe(true);
+    expect(restsClear(inner, mine.documentId, SECRET)).toBe(false);
+    // CONTROL: a change this replica makes books the local session.
+    mine.change((d) => { d.ours = "a local word"; });
+    await repo.flush();
+    await r.rest.store.flush();
+    expect(r.rest.book.writerOf(mine.documentId)).toBe("session:s-a");
+    await repo.shutdown();
+    await peer.shutdown();
+  });
+});
+
+describe("T3: a save waiting at the stand-down is never lost", () => {
+  it("a booked change written just before the stand-down seals under its session before any booking drops, and a restart reads it", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const r = standRest(a, inner);
+    const session: Session = { id: "s-a", subject: r.own, signer: a.signer };
+    const repo = new Repo({ storage: r.rest.store, network: [], saveDebounceRate: 60_000 });
+    r.seat(repo);
+    r.rest.watch(repo, () => session);
+    const doc = repo.create<{ note?: string }>();
+    doc.change((d) => { d.note = SECRET; });
+    expect(restsAny(inner, doc.documentId)).toBe(false);
+    // Stand down at once: the flush lands sealed under the booked session while the island still answers.
+    expect(await r.rest.standDown([session])).toBe(0);
+    expect(r.sealedUnder.map((s) => s.session)).toContain("s-a");
+    expect(r.rest.book.size).toBe(0);
+    await repo.shutdown();
+    a.restart();
+    const again = standRest(a, inner);
+    const repo2 = new Repo({ storage: again.rest.store, network: [] });
+    expect((await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl)).doc().note).toBe(SECRET);
+    await repo2.shutdown();
+  });
+
+  it("a peer's change no session could seal rests nowhere new at the stand-down, comes back by sync after the restart, and seals then", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const r = standRest(a, inner);
+    const peer = new Repo({ network: [], peerId: "peer-replica" as PeerId });
+    const repo = linked(r.rest, peer, "vessel-one");
+    r.seat(repo);
+    r.rest.watch(repo, () => null);   // the vessel stands locked: no session to seal anything
+    const theirs = peer.create<{ note?: string }>();
+    theirs.change((d) => { d.note = SECRET; });
+    const mine = await repo.find<{ note?: string }>(theirs.url);
+    await settle();
+    expect(mine.doc().note).toBe(SECRET);
+    await repo.flush();
+    // The setup took: the save waits unbooked; the stand-down rests nothing new and names what still waits.
+    expect(await r.rest.standDown([])).toBeGreaterThan(0);
+    expect(restsAny(inner, mine.documentId)).toBe(false);
+    await repo.shutdown();
+    // Restart and unlock: the session stands, the peer re-delivers what this replica lacks, and it seals.
+    a.restart();
+    const again = standRest(a, inner);
+    const session: Session = { id: "s-next", subject: again.own, signer: a.signer };
+    const repo2 = linked(again.rest, peer, "vessel-two");
+    again.seat(repo2);
+    again.rest.watch(repo2, () => session);
+    const back = await repo2.find<{ note?: string }>(theirs.url);
+    await settle();
+    expect(back.doc().note).toBe(SECRET);
+    await repo2.flush();
+    await again.rest.store.flush();
+    expect(restsAny(inner, back.documentId)).toBe(true);
+    expect(restsClear(inner, back.documentId, SECRET)).toBe(false);
+    await repo2.shutdown();
+    await peer.shutdown();
+    // A third boot with no peer at all reads it off the sealed rest.
+    a.restart();
+    const third = standRest(a, inner);
+    const repo3 = new Repo({ storage: third.rest.store, network: [] });
+    expect((await repo3.find<{ note?: string }>(theirs.url)).doc().note).toBe(SECRET);
+    await repo3.shutdown();
+  });
+});
+
+describe("T2: a holder that stands no session never writes clear over a sealed rest", () => {
+  it("the direct holder's store refuses a clear save onto a document that rests sealed, and still writes an unsealed one (control)", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const r = standRest(a, inner);
+    const repo = new Repo({ storage: r.rest.store, network: [] });
+    r.seat(repo);
+    const doc = repo.create<{ note?: string }>();
+    r.rest.wrote(doc.documentId, { id: "s-a", subject: r.own, signer: a.signer });
+    doc.change((d) => { d.note = SECRET; });
+    await repo.flush();
+    await repo.shutdown();
+    expect(restsAny(inner, doc.documentId)).toBe(true);
+    // The direct holder: no bag map, no session, no island. It stands over the same rest.
+    const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
+    const direct = new SealedDocumentStore({ inner, bagOf: () => null, sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse, refuseClearOverSealed: true });
+    const before = new Map(inner.bytes);
+    await expect(direct.save([doc.documentId, "incremental", "c0ffee"], Uint8Array.from([...MAGIC, 1, 2, 3]))).rejects.toMatchObject({ refusal: "bag-unmapped" });
+    expect(new Map(inner.bytes)).toEqual(before);
+    await expect(direct.load([doc.documentId, "snapshot", [...inner.bytes.keys()].find((k) => k.startsWith(doc.documentId))!.split("\u0000")[2]!])).rejects.toMatchObject({ refusal: "bag-unmapped" });
+    // CONTROL: a document that rests no sealed value writes as the engine hands it.
+    await direct.save(["an-unsealed-document", "incremental", "c0ffee"], Uint8Array.from([...MAGIC, 1, 2, 3]));
+    expect(inner.bytes.has(["an-unsealed-document", "incremental", "c0ffee"].join("\u0000"))).toBe(true);
   });
 });

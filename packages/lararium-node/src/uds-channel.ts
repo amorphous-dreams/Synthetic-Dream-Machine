@@ -661,8 +661,9 @@ export interface UdsFront {
    * frame already handed to it has answered, so nothing of the retiring composition still serves a caller.
    */
   readonly detach: () => Promise<void>;
-  /** Refuse every caller and stop serving. */
-  readonly close: () => void;
+  /** Refuse every caller and stop serving. Resolves once the seat's own `close` settles (T3): each standing session's
+   *  flush landed before its signer dropped, so a stand-down awaits it before it goes on. */
+  readonly close: () => Promise<void>;
 }
 
 export function serveUdsFront(a: {
@@ -737,16 +738,17 @@ export function serveUdsFront(a: {
       seat = null;
       await old?.close();
     },
-    close: () => {
+    close: async () => {
       if (stopped) return;
       stopped = true;
-      void seat?.close();
+      const closing = seat?.close();
       seat = null;
       for (const entry of held.splice(0)) {
         entry.sock.off("close", entry.onClose);
         refusal(entry.sock);
       }
       a.claim.refuse(`the vessel (pid ${process.pid}) on this store stops — run again once it has gone`);
+      await closing;
     },
   };
 }

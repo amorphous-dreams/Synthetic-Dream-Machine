@@ -630,10 +630,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     }),
   });
   held.stood.push({ what: "repo", down: () => repo.shutdown() });
-  // R2's booking: a change to a sealed bag's document books the vessel's unlocked session while it stands.
-  repo.on("document", ({ handle }) => {
-    handle.on("change", () => { if (sealedCells.session) sealedRest.wrote(handle.documentId, sealedCells.session); });
-  });
+  // R2's booking, by the change's own writer (T4): a change this replica made books the vessel's unlocked session while
+  // it stands, and a peer's change books its peer writer and rests as received under that session.
+  sealedRest.watch(repo, () => sealedCells.session);
   emit("repo-open");
 
   // ── Keypair (WebCrypto substrate) + founding (the personaGroup capability) ───

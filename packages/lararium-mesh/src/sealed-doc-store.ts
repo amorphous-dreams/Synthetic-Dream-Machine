@@ -33,7 +33,8 @@ import type { Chunk, StorageAdapterInterface, StorageKey } from "@automerge/auto
 import { sha256 } from "@noble/hashes/sha2.js";
 import { hex, utf8Bytes } from "./crypto.js";
 import type { BagLocator } from "./sealed-records.js";
-import { readSealedAddress, type KeyVersionId, type SealedAddress } from "./sealed-chunk.js";
+import { readSealedAddress, SEALED_CHUNK_MARK, type KeyVersionId, type SealedAddress } from "./sealed-chunk.js";
+import { openPublished, sealPublished, type PublishedLookup } from "./published-bag-key.js";
 import type { DocumentValue, FreshBase, HolderRefusal, OpenedValue, SealedValues } from "./content-key-holder.js";
 
 export const SEALED_DOCUMENT_REFUSALS = [
@@ -67,14 +68,21 @@ export type SealedValueAddresses = Pick<SealedValues, "values">;
 export interface SealedDocumentPorts {
   /** The engine-facing rest this store wraps: an unsealed bag's values pass straight to it. */
   readonly inner: StorageAdapterInterface;
-  /** The bag a document belongs to and that bag's face (`faceProofSubjectRef`); null: the bag rests unsealed. */
-  bagOf(documentId: string): { readonly bagId: string; readonly face: string } | null;
+  /** The bag a document belongs to and that bag's face (`faceProofSubjectRef`); null: the bag rests unsealed. A public
+   *  or crossroads bag names its published lookup (`published`): it rests sealed under the key that lookup derives, and
+   *  opens for whoever holds it, with no session, no face and no holder (`published-bag-key`). */
+  bagOf(documentId: string): { readonly bagId: string; readonly face: string; readonly published?: PublishedLookup } | null;
   /** The face the session wears (`faceProofSubjectRef`); null where no session stands. */
   sessionFace(): string | null;
-  /** The session that booked the latest change of a document (R2); null: no session booked it, and its save waits. */
-  sessionOf(documentId: string): SaveSession | null;
+  /** The session that booked the latest change of a document (R2), reading the save's own bytes where it hands them
+   *  (the change's writer, T4); null: no session booked it, and its save waits. */
+  sessionOf(documentId: string, data?: Uint8Array): SaveSession | null;
   /** The holder's seal of one write batch, signed under the session that booked it. */
   seal(args: { readonly bagId: string; readonly values: readonly DocumentValue[]; readonly session: SaveSession }): Promise<SealedValueAddresses | HolderRefusal>;
+  /** A holder that stands no session and no bag map (the node's direct holder, T2): a document the map names no bag
+   *  for, whose rest already holds a sealed value, refuses a clear save by name (`bag-unmapped`), so no clear byte
+   *  ever lands beside a sealed one. Read once per document. */
+  readonly refuseClearOverSealed?: boolean;
   /** Told once per save the store holds back unsealed (`save-unbooked`), naming its document alone. */
   onHeld?(held: { readonly refusal: "save-unbooked"; readonly documentId: string }): void;
   /** The holder's open of one value by its role and logical reference. */
@@ -86,6 +94,9 @@ const POINTER = "lares-sealed-value:";
 /** The Automerge chunk magic: a value the engine itself wrote, clear, before its bag mapped sealed. */
 const AUTOMERGE_MAGIC = [0x85, 0x6f, 0x4a, 0x83] as const;
 const readsClear = (bytes: Uint8Array): boolean => AUTOMERGE_MAGIC.every((b, i) => bytes[i] === b);
+const readsSealed = (bytes: Uint8Array): boolean => SEALED_CHUNK_MARK.every((b, i) => bytes[i] === b);
+type PublicBag = { readonly bagId: string; readonly published: PublishedLookup };
+const isPublic = (bag: { readonly published?: PublishedLookup } | null): bag is PublicBag & { readonly face: string } => bag?.published !== undefined;
 const nameOf = (key: StorageKey): string => key.join("\u0000");
 
 /** The logical reference a storage key names inside its bag. */
@@ -99,6 +110,8 @@ function readPointer(bytes: Uint8Array): SealedAddress | null {
   try { text = new TextDecoder("utf-8", { fatal: true }).decode(bytes); } catch { return null; }
   return text.startsWith(POINTER) ? readSealedAddress(text.slice(POINTER.length)) : null;
 }
+/** Does a byte run open as this store's pointer, well-formed or not? */
+const namesPointer = (bytes: Uint8Array): boolean => bytes.length >= POINTER_BYTES.length && POINTER_BYTES.every((b, i) => bytes[i] === b);
 function frontierOf(saved: Uint8Array): string[] {
   try { return [...A.getHeads(A.load(saved))].sort(); } catch { return []; }
 }
@@ -113,6 +126,8 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   readonly #deferred = new Map<string, StorageKey[]>();
   /** The documents whose rest this store already read for clear chunks, this process. */
   readonly #swept = new Set<string>();
+  /** The documents whose rest holds a sealed value, read once each (`refuseClearOverSealed`). */
+  readonly #sealedAtRest = new Map<string, Promise<boolean>>();
   /** Seals run one at a time, in arrival order, so a change's parents name what rested before it. */
   #tail: Promise<unknown> = Promise.resolve();
 
@@ -140,7 +155,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     let sealed = 0;
     for (const [name, { key, data }] of [...this.#waiting]) {
       const bag = this.#bagOf(key);
-      const session = this.#ports.sessionOf(key[0]!);
+      const session = this.#ports.sessionOf(key[0]!, data);
       if (bag === null || session === null || session.subject !== bag.face) continue;
       await this.#inTurn(() => this.#seal(bag, key, data, session));
       this.#waiting.delete(name);
@@ -154,7 +169,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     return sealed;
   }
 
-  #bagOf(key: StorageKey): { readonly bagId: string; readonly face: string } | null {
+  #bagOf(key: StorageKey): { readonly bagId: string; readonly face: string; readonly published?: PublishedLookup } | null {
     return key.length >= 1 && typeof key[0] === "string" ? this.#ports.bagOf(key[0]) : null;
   }
   #heldOf(documentId: string): Map<string, SealedAddress> {
@@ -172,11 +187,22 @@ export class SealedDocumentStore implements StorageAdapterInterface {
 
   async save(key: StorageKey, data: Uint8Array): Promise<void> {
     const bag = this.#bagOf(key);
-    if (bag === null) return this.#ports.inner.save(key, data);
+    if (bag === null) {
+      if (this.#ports.refuseClearOverSealed && typeof key[0] === "string" && key.length >= 2 && await this.#restsSealed(key[0])) {
+        throw new SealedDocumentRefusal("bag-unmapped", "this document rests sealed, and no clear byte lands beside it");
+      }
+      return this.#ports.inner.save(key, data);
+    }
     const role = ROLES[key[1] ?? ""];
     if (role === undefined) return;
+    // A PUBLIC BAG RESTS SEALED UNDER ITS PUBLISHED KEY: the sealed value itself rests, and no session signs it.
+    if (isPublic(bag)) {
+      const out = sealPublished({ bagId: bag.bagId, lookup: bag.published, role, ref: logicalRefOf(key), plaintext: data });
+      if (!("chunk" in out)) throw new SealedDocumentRefusal(out.refusal);
+      return this.#ports.inner.save(key, out.chunk.sealed);
+    }
     // R2: the save signs under the session that booked the change, never under whichever session stands now.
-    const session = this.#ports.sessionOf(key[0]!);
+    const session = this.#ports.sessionOf(key[0]!, data);
     if (session === null) {
       this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data) });
       this.#ports.onHeld?.({ refusal: "save-unbooked", documentId: key[0]! });
@@ -222,9 +248,31 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   async load(key: StorageKey): Promise<Uint8Array | undefined> {
     const bag = this.#bagOf(key);
     if (bag === null) return this.#unmapped(await this.#ports.inner.load(key));
+    if (isPublic(bag)) return this.#openPublic(bag, key, await this.#ports.inner.load(key));
     const face = this.#face(bag);
     const waiting = this.#waiting.get(nameOf(key));
     return waiting ? Uint8Array.from(waiting.data) : this.#open(bag, key, face);
+  }
+
+  #restsSealed(documentId: string): Promise<boolean> {
+    let read = this.#sealedAtRest.get(documentId);
+    if (read === undefined) {
+      read = this.#ports.inner.loadRange([documentId]).then((chunks) => chunks.some((c) => c.data !== undefined && (namesPointer(c.data) || readsSealed(c.data))));
+      this.#sealedAtRest.set(documentId, read);
+    }
+    return read;
+  }
+
+  /** A public bag's value opens with its published lookup alone; a clear chunk the engine wrote before it published
+   *  reads as written. Any other byte run refuses by name. */
+  #openPublic(bag: PublicBag, key: StorageKey, rested: Uint8Array | undefined): Uint8Array | undefined {
+    const role = ROLES[key[1] ?? ""];
+    if (role === undefined || rested === undefined) return undefined;
+    if (readsClear(rested)) return rested;
+    if (!readsSealed(rested)) throw new SealedDocumentRefusal("pointer-malformed");
+    const opened = openPublished({ bagId: bag.bagId, lookup: bag.published, role, ref: logicalRefOf(key), sealed: rested });
+    if (!("plaintext" in opened)) throw new SealedDocumentRefusal(opened.refusal);
+    return opened.plaintext;
   }
 
   /** A document the map names no bag for reads its inner rest as the engine wrote it; a sealed value there never
@@ -254,11 +302,12 @@ export class SealedDocumentStore implements StorageAdapterInterface {
 
   async loadRange(prefix: StorageKey): Promise<Chunk[]> {
     const whole = this.#bagOf(prefix);
-    const face = whole === null ? null : this.#face(whole);
+    const face = whole === null || isPublic(whole) ? null : this.#face(whole);
     const out: Chunk[] = [];
     for (const chunk of await this.#ports.inner.loadRange(prefix)) {
       const bag = this.#bagOf(chunk.key);
       if (bag === null) { if (chunk.data !== undefined) this.#unmapped(chunk.data); out.push(chunk); continue; }
+      if (isPublic(bag)) { const data = this.#openPublic(bag, chunk.key, chunk.data); if (data !== undefined) out.push({ key: chunk.key, data }); continue; }
       if (this.#waiting.has(nameOf(chunk.key))) continue;
       const data = await this.#open(bag, chunk.key, face ?? this.#face(bag), chunk.data);
       if (data !== undefined) out.push({ key: chunk.key, data });

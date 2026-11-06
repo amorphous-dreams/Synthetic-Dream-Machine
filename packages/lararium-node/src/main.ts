@@ -923,9 +923,13 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       readinessFace.dispose();
       pronaos?.dispose();
       dispatcher.dispose();
-      front.close();
+      // T3: the verb socket's seat closes first, and each standing session's flush lands sealed under it before its
+      // signer drops, while the daemon island still answers the seal; then the sealed rest names what still waits.
+      const sessionsClosed = front.close();
       lanSocket()?.close();
       httpServer.close();
+      await step("sessions-flush", () => sessionsClosed);
+      await step("sealed-rest", () => result.sealedRestStandDown());
       // M17: print the INSTANT this step resolves, never waiting for the final line below. The
       // final "shutdown complete" line only prints once islands AND daemon have also acked (or
       // been named cut), which the harness's own SIGKILL grace can outrun on a busy island — a

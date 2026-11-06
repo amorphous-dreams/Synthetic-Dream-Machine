@@ -604,6 +604,9 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   /** The lock ritual's first move for one session (sealed-store#/owed, R2): flush the Repo and the sealed rest, so every
    *  save that session booked lands sealed, then drop its bookings. The UDS seat awaits it before the signer drops. */
   sealedRestLock: (signer: object) => Promise<void>;
+  /** The stand-down's last flush of the sealed rest (T3), after every session closed and before the daemon island goes:
+   *  answers how many saves still wait unbooked (each rests nowhere new; its change returns by sync). */
+  sealedRestStandDown: () => Promise<number>;
 }
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
@@ -685,6 +688,8 @@ interface NodeBootPrep {
   sessionDoor:     UdsSessionDoor;
   /** The sealed rest's lock for one session's signer: the Repo and the rest flush, then its bookings drop. */
   sealedRestLock:  (signer: object) => Promise<void>;
+  /** The stand-down's last flush of the sealed rest (T3), after every session closed: answers how many saves still wait. */
+  sealedRestStandDown: () => Promise<number>;
   /** THE SESSION SIGN LIFT, built and seated by the lift alone: each call stands a fresh book and its door over this
    *  prep's chain and fleet fold, and stands nothing itself. The Lararium lift seats `door` on `islandCaps.sessionSign`
    *  and owns `down`; a herm never calls it, so a herm's record signs nothing (`session-sign-door.ts`). */
@@ -859,12 +864,12 @@ async function prepareNodeBootOn(
     const url = tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId));
     return url && url.startsWith("automerge:") ? url.slice("automerge:".length) : null;
   };
-  const sessionIds = new WeakMap<object, string>();
+  const sessionIds = new WeakMap<object, NodeSaveSession>();
   let sessionSeq = 0;
   const saveSessionOf = (session: BookedSession): NodeSaveSession => {
-    let id = sessionIds.get(session.signer);
-    if (id === undefined) { id = `node-session-${++sessionSeq}`; sessionIds.set(session.signer, id); }
-    return { ...session, id };
+    let booked = sessionIds.get(session.signer);
+    if (booked === undefined) { booked = { ...session, id: `node-session-${++sessionSeq}` }; sessionIds.set(session.signer, booked); }
+    return booked;
   };
   const docStorePort = docStorePortCell(async (bagId) => {
     const documentId = sealedDocOf(bagId);
@@ -1244,19 +1249,16 @@ async function prepareNodeBootOn(
   stood.push({ what: "the Repo", down: async () => {
     await repo.flush();
     await sealedRest.store.flush();
-    // A save no session booked never rests clear: one still waiting at the stand-down leaves with the process, by name.
+    // A save no session booked never rests clear: one still waiting rests nowhere new, and its change returns by sync.
     const waiting = sealedRest.store.waiting();
-    if (waiting > 0) console.log(`[sealed-rest] save-unbooked: ${waiting} save(s) no session booked leave with this process, never written clear`);
+    if (waiting > 0) console.log(`[sealed-rest] save-unbooked: ${waiting} save(s) no session could seal rest nowhere new; the replica that holds each change hands it back by sync after the next unlock`);
     await repo.shutdown();
   } });
   houseIslands = islandPeersOf(repo);
-  // R2's booking: a change to a sealed bag's document books the session whose call stands as it lands.
-  repo.on("document", ({ handle }) => {
-    handle.on("change", () => {
-      const standing = sealedCells.book?.standing()[0];
-      if (standing) sealedRest.wrote(handle.documentId, saveSessionOf(standing));
-    });
-  });
+  // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
+  // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer
+  // and rests as received under that session.
+  sealedRest.watch(repo, () => { const standing = sealedCells.book?.standing()[0]; return standing ? saveSessionOf(standing) : null; });
   emit("repo-open");
 
   // ── 2. Catalog — local-first rendezvous anchor (catalog-url file) ───────────
@@ -3846,7 +3848,18 @@ async function prepareNodeBootOn(
     // island's memory section under the vessel's own signed ask, and the face's key history off the local board.
     sessionDoor: nodeSessionDoor({ pin: dialAnchor.pin, sealHome, onLog: (line) => console.log(`[session] ${line}`) }),
     liftSessionSign,
-    sealedRestLock: async (signer) => { await sealedRest.lock(sessionIds.get(signer) ?? "no-session-booked-here"); },
+    // T3: the lock seals, under the leaving session, every waiting save of its face before the flush, so a stand-down
+    // (each session's close) and a lock land the same way.
+    sealedRestLock: async (signer) => {
+      const session = sessionIds.get(signer);
+      if (session) { try { await sealedRest.rebook(session); } catch { /* it keeps waiting */ } }
+      await sealedRest.lock(session?.id ?? "no-session-booked-here");
+    },
+    sealedRestStandDown: async () => {
+      const waiting = await sealedRest.standDown([]);
+      if (waiting > 0) console.log(`[sealed-rest] save-unbooked: ${waiting} save(s) no session could seal rest nowhere new; the replica that holds each change hands it back by sync after the next unlock`);
+      return waiting;
+    },
     backupDoor: {
       wornFace: () => litFace,
       ownEdgeShadowed: async () => {
@@ -4039,6 +4052,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     sessionDoor:     p.sessionDoor,
     sessionSigns:    sessionSign.book,
     sealedRestLock:  p.sealedRestLock,
+    sealedRestStandDown: p.sealedRestStandDown,
     backupDoor:      p.backupDoor,
     oracleDocUrl:     result.assembly.islandHandle.url,
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,

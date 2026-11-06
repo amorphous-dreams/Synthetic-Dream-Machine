@@ -21,24 +21,77 @@
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed
  */
-import type { StorageAdapterInterface } from "@automerge/automerge-repo";
+import * as A from "@automerge/automerge";
+import type { Repo, StorageAdapterInterface } from "@automerge/automerge-repo";
 import type { DocumentValue, HolderRefusal, OpenedValue } from "./content-key-holder.js";
 import { readSealedAddress } from "./sealed-chunk.js";
 import { SealedDocumentStore, type SaveSession, type SealedValueAddresses } from "./sealed-doc-store.js";
 
 // ── The book ────────────────────────────────────────────────────────────────────────────────────
-/** Which session wrote each document's latest change. A booking lasts until its session drops. */
+/** What a booking reads: the session whose seal a document's next save signs under, and who wrote its latest change. */
+export interface BookedSave<S extends SaveSession = SaveSession> {
+  /** The session the next save signs under; null: none stands to seal it, and the save waits `save-unbooked`. */
+  readonly session: S | null;
+  /** The change's own writer: `session:<id>` for a change this vessel's session made, `peer:<actor>` for one that synced
+   *  in from a peer's replica (the actor its own change carries). A peer's change never books to the local session. */
+  readonly writer: string;
+}
+
+/** Which session wrote each document's latest change, and who wrote it. A booking lasts until its session drops. */
 export class SaveBook<S extends SaveSession = SaveSession> {
-  readonly #by = new Map<string, S>();
-  /** A session wrote a change to `documentId`: its next save signs under that session. */
-  book(documentId: string, session: S): void { this.#by.set(documentId, session); }
-  of(documentId: string): S | null { return this.#by.get(documentId) ?? null; }
+  readonly #by = new Map<string, BookedSave<S>>();
+  /** A session of this vessel wrote a change to `documentId`: its next save signs under that session. */
+  book(documentId: string, session: S): void { this.#by.set(documentId, { session, writer: `session:${session.id}` }); }
+  /** A peer's change synced in: it carries its writer, and its save rests as received under the session that holds the
+   *  rest (`custodian`), never booked as that session's own change. */
+  receive(documentId: string, actor: string, custodian: S | null): void {
+    this.#by.set(documentId, { session: custodian, writer: `peer:${actor}` });
+  }
+  /** A waiting save's document takes `session` as the one that seals it; its writer stays as booked. */
+  seal(documentId: string, session: S): void {
+    const was = this.#by.get(documentId);
+    this.#by.set(documentId, { session, writer: was?.writer ?? `session:${session.id}` });
+  }
+  of(documentId: string): S | null { return this.#by.get(documentId)?.session ?? null; }
+  /** Who wrote a document's latest change, as booked; null: no booking stands. */
+  writerOf(documentId: string): string | null { return this.#by.get(documentId)?.writer ?? null; }
   /** Drop every booking of one session (by id), or of every session. */
   drop(sessionId?: string): void {
-    for (const [doc, s] of [...this.#by]) if (sessionId === undefined || s.id === sessionId) this.#by.delete(doc);
+    for (const [doc, b] of [...this.#by]) if (sessionId === undefined || b.session?.id === sessionId) this.#by.delete(doc);
   }
   get size(): number { return this.#by.size; }
 }
+
+/**
+ * THE CHANGE'S OWN WRITER (sealed-store#/owed, T4). Every change the engine hands to storage carries the actor of the
+ * replica that made it, inside its own bytes. An incremental save holds whole change chunks, and a snapshot one
+ * document chunk over its whole history: this reads the actor of every change either holds.
+ */
+export function chunkActors(data: Uint8Array): readonly string[] | null {
+  const actors = new Set<string>();
+  let at = 0;
+  while (at < data.length) {
+    if (!MAGIC.every((b, i) => data[at + i] === b) || at + 9 >= data.length) return null;
+    const type = data[at + 8]!;
+    let len = 0, shift = 0, p = at + 9;
+    for (;;) {
+      if (p >= data.length || shift > 28) return null;
+      const byte = data[p++]!;
+      len |= (byte & 0x7f) << shift;
+      if ((byte & 0x80) === 0) break;
+      shift += 7;
+    }
+    const end = p + len;
+    if (end > data.length) return null;
+    try {
+      if (type === 0) for (const meta of A.getChangesMetaSince(A.load(data.subarray(at, end)), [])) actors.add(meta.actor);
+      else actors.add(A.decodeChange(data.subarray(at, end) as A.Change).actor);
+    } catch { return null; }
+    at = end;
+  }
+  return actors.size > 0 ? [...actors].sort() : null;
+}
+const MAGIC = [0x85, 0x6f, 0x4a, 0x83] as const;
 
 // ── The door's messages ───────────────────────────────────────────────────────────────────────────
 export interface DocStoreMsg_Seal {
@@ -222,11 +275,19 @@ export interface SealedRest<S extends SaveSession = SaveSession> {
   readonly book: SaveBook<S>;
   /** A session wrote a change to `documentId`: book it. */
   wrote(documentId: string, session: S): void;
+  /** Book every save of a sealed bag's document in `repo` by its change's own writer (T4), read off the save's bytes: a
+   *  change this replica made books the session standing (`standing`); a peer's change books its peer writer, its save
+   *  resting under the standing session as the rest's custodian. Returns the unsubscribe. */
+  watch(repo: Repo, standing: () => S | null): () => void;
   /** A session stands (an unlock, a session's open): book every waiting save of its face and seal them. */
   rebook(session: S): Promise<number>;
   /** The lock ritual's first move: flush the Repo and the store, so every pending save lands sealed, then drop the
    *  bookings of one session (or all). The caller drops signers and overwrites keys only after this resolves. */
   lock(sessionId?: string): Promise<void>;
+  /** The stand-down's flush (T3), exactly as the lock's: every waiting save whose face `standing` still wears books it,
+   *  the Repo and the store flush while the island still answers, and the bookings drop. Answers how many saves still
+   *  wait unbooked: those rest nowhere new, and their changes come back by sync from the replica that holds them. */
+  standDown(standing: readonly S[]): Promise<number>;
 }
 
 /**
@@ -243,19 +304,46 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly onHeld?: (held: { readonly refusal: "save-unbooked"; readonly documentId: string }) => void;
 }): SealedRest<S> {
   const book = new SaveBook<S>();
+  let watched: { readonly standing: () => S | null; readonly actorOf: (documentId: string) => string | null } | null = null;
+  // T4: the save reads its change's own writer off its bytes. A change this replica made books the session standing; a
+  // peer's change books its peer writer, and its save rests as received under the session that holds the rest.
+  const sessionOf = (documentId: string, data?: Uint8Array): S | null => {
+    if (watched !== null && data !== undefined) {
+      const actors = chunkActors(data);
+      const own = watched.actorOf(documentId);
+      const session = watched.standing();
+      // A handle not ready yet holds no change of this replica's own: what it saves arrived from a peer.
+      if (actors !== null && (own === null || !actors.includes(own))) book.receive(documentId, actors.join(","), session ?? book.of(documentId));
+      else if (actors !== null && session !== null) book.book(documentId, session);
+      else if (session !== null && book.of(documentId) === null) book.seal(documentId, session);
+    }
+    return book.of(documentId);
+  };
   const store = new SealedDocumentStore({
     inner: input.inner, bagOf: input.bagOf, sessionFace: input.sessionFace,
-    sessionOf: (documentId) => book.of(documentId),
+    sessionOf,
     seal: input.door.seal, open: input.door.open,
     ...(input.onHeld ? { onHeld: input.onHeld } : {}),
   });
   return {
     store, book,
     wrote(documentId, session) { if (input.bagOf(documentId) !== null) book.book(documentId, session); },
+    watch(repo, standing) {
+      // The Repo's handle table reads fresh at each ask: the getter answers a new record each time.
+      const handleOf = (documentId: string) => (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId];
+      watched = {
+        standing,
+        actorOf: (documentId) => {
+          const handle = handleOf(documentId);
+          try { return handle?.isReady() ? A.getActorId(handle.doc() as A.Doc<unknown>) : null; } catch { return null; }
+        },
+      };
+      return () => { watched = null; };
+    },
     async rebook(session) {
       for (const id of store.waitingDocuments()) {
         const bag = input.bagOf(id);
-        if (bag !== null && bag.face === session.subject) book.book(id, session);
+        if (bag !== null && bag.face === session.subject) book.seal(id, session);
       }
       return store.reseal();
     },
@@ -263,6 +351,18 @@ export function composeSealedRest<S extends SaveSession>(input: {
       try { await input.flushRepo(); } catch { /* a save that refused keeps its change in the store's memory */ }
       await store.flush();
       book.drop(sessionId);
+    },
+    async standDown(standing) {
+      for (const id of store.waitingDocuments()) {
+        const face = input.bagOf(id)?.face;
+        const session = standing.find((s) => s.subject === face);
+        if (session) book.seal(id, session);
+      }
+      try { await input.flushRepo(); } catch { /* a save that refused keeps its change in the store's memory */ }
+      await store.flush();
+      try { await store.reseal(); } catch { /* it keeps waiting */ }
+      book.drop();
+      return store.waiting();
     },
   };
 }
