@@ -116,6 +116,10 @@ const EXCLUDED_BY_DESIGN: Record<string, string> = {
     "excluded from `main`, absent from `heavy` — full `openNodeVessel` boots with no dial: a founded sovereign node lights its " +
     "face cell at its own place, a floor node lights none. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, " +
     "`tests/e2e/**/*.test.ts`).",
+  "tests/e2e/place-session-seals.test.ts":
+    "excluded from `main`, absent from `heavy` — two full `openNodeVessel` boots over one founded root with no dial: the face's save " +
+    "seals under its place session, reaches rest, and the restart reads it back. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, " +
+    "`tests/e2e/**/*.test.ts`).",
 };
 
 describe("the serial heavy roster detects its own staleness", () => {
