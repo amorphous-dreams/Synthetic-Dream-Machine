@@ -215,6 +215,8 @@ export type {
   WikiHandlerOptions, WikiMintHandlerOptions, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,
 } from "./wiki-handler-options.js";
 export { makeCompactBagReactor, makeRotateRecipeReactor } from "./compaction-handlers.js";
+export { makeRestampBagTierReactor } from "./bag-tier-restamp.js";
+export type { RestampBagTierOptions } from "./bag-tier-restamp.js";
 export type { EpochHandlerOptions, RotateRecipeOptions } from "./compaction-handlers.js";
 export { makeResidencyStatsReactor } from "./residency-handlers.js";
 export type { ResidencyHandlerOptions } from "./residency-handlers.js";

@@ -35,10 +35,11 @@ import {
   readRepoRegistry, registerRepo, unregisterRepo, repoRegistryPath,
 } from "@lararium/node";
 import {
-  parseCapTier, isBagHome, placeBag, BAG_HOMES, bagHomeTravelsWithAClone,
+  parseCapTier, isBagHome, bagUri, placeBag, BAG_HOMES, bagHomeTravelsWithAClone,
   type BagHome, type BagManifest,
 } from "@lararium/mesh";
-import { larBagsDir } from "../env.js";
+import { larBagsDir, vesselDid } from "../env.js";
+import { runVerb, verbFailure } from "../verb-call.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -151,12 +152,20 @@ export async function cmdBagDeclare(args: ParsedArgs): Promise<number> {
   // DECLARING NEVER MOVES BYTES. A declaration that relocated a bag as a side effect would make a
   // documentation edit into a filesystem act, and the two want different consent.
   const path  = writeBagManifest(found.dir, next);
+  // A STANDING DAEMON RE-STAMPS THE ROW AT ONCE. The declaration lands on disk alone; the catalog row a vessel registered
+  // keeps the `cap-tier` stamp it carried, so a public -> private declare would leave the bag on the floor catalog until the
+  // next registration. No daemon standing leaves nothing to re-stamp (the next boot stamps from this declaration).
+  let restamp: string = "no-daemon";
+  try {
+    const r = await runVerb("restamp-bag-tier", { bagUrl: bagUri(bag) }, await vesselDid(), { timeoutMs: 15_000 });
+    restamp = r.status === "error" ? `refused: ${r.errorMessage ?? "unknown"}` : "sent";
+  } catch (err) { restamp = verbFailure(err).code; }
   const place = placeBag(next, roots);
   const adrift = place.resolution.ok && `${place.resolution.dir}/${bag}` !== found.dir;
 
   emit(args, {
     ok: true,
-    data: { bag, path, manifest: next, adrift },
+    data: { bag, path, manifest: next, adrift, restamp },
     human: () => {
       console.log(`${bag} declares: cap-tier ${next.tier} · home ${next.home}${next.repository ? ` → "${next.repository}"` : ""}`);
       console.log(`  written: ${path}`);
