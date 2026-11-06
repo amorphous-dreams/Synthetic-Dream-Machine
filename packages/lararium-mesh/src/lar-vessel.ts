@@ -113,6 +113,8 @@ export function islandLiftStack(vessel: LarVessel, lift: IslandLift): CapModule[
     ? async (carrier, bytes) => {
       if (locked) throw new Error(`lift-locked: face ${lift.face}'s lift locked; its custody write lands nowhere`);
       await lift.custodyWrite!(carrier, bytes);
+      // A write the lock overtook in flight answers as the lock, never as landed: the caller reads no write of an ended face.
+      if (locked) throw new Error(`lift-locked: face ${lift.face}'s lift locked while its custody write stood in flight`);
     }
     : undefined;
   const sessionSign: SessionSignDoor | undefined = lift.sessionSign
