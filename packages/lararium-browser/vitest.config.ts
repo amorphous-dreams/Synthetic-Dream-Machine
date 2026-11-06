@@ -54,7 +54,7 @@ export default defineConfig({
         test: {
           name: "chromium",
           include: ["tests/**/*.test.ts"],
-          browser: { enabled: true, provider: playwright(), instances: [{ browser: "chromium" }] },
+          browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: "chromium" }] },
         },
       },
       {
@@ -62,7 +62,7 @@ export default defineConfig({
         test: {
           name: "firefox",
           include: ["tests/shared-holder-production.test.ts"],
-          browser: { enabled: true, provider: playwright(), instances: [{ browser: "firefox" }] },
+          browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: "firefox" }] },
         },
       },
     ],
