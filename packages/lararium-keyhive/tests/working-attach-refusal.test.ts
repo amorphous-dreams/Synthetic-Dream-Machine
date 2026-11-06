@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const harness = vi.hoisted(() => ({
+  resolverArgs: undefined as undefined | { rebindWorking?: (slug: string, oldUrl: string, newUrl: string, into: unknown) => void },
   bindings: vi.fn(),
   slotDoc: vi.fn(),
   boot: vi.fn(),
@@ -8,7 +9,7 @@ const harness = vi.hoisted(() => ({
 
 vi.mock("../src/boot-daemon-keyhive.js", () => ({ bootDaemonKeyhive: harness.boot }));
 vi.mock("../src/slot-doc-resolver.js", () => ({
-  makeSlotDocResolver: () => ({ bindings: (...args: unknown[]) => harness.bindings(...args), slotDoc: (...args: unknown[]) => harness.slotDoc(...args) }),
+  makeSlotDocResolver: (args: never) => (harness.resolverArgs = args, { bindings: (...args: unknown[]) => harness.bindings(...args), slotDoc: (...args: unknown[]) => harness.slotDoc(...args) }),
 }));
 
 import { AutomergeDocStore, CompositeStore, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
@@ -137,6 +138,26 @@ describe("daemon working-layer attachment is a boot condition", () => {
     await ctx.composite.put({ tiddler: { title: "lar:///ha.ka.ba/working-attach-save", text: "landed" } }, { kind: "test" });
     expect(workingDoc.tiddlers["lar:///ha.ka.ba/working-attach-save"]).toBeDefined();
     await expect((ctx.composite.storeForBag(daemonBag) as unknown as { get: (title: string) => Promise<unknown> }).get("lar:///ha.ka.ba/working-attach-save")).resolves.toBeNull();
+    log.mockRestore();
+  });
+
+  // sealed-store#/U1: "the lift burns it" — a floor attachment answers no write once the seat lifts the working slot onto the face.
+  test("U1 — after the lift rebinds the working slot, the lit face's document serves writes and the floor's attachment answers none", async () => {
+    const floorAuth = { daemonAuth: { placeVerifyingKey: "a".repeat(64), registerBags: [], workingFloorAnchor: { kind: "place", aid: "E".repeat(44) } } } as never;
+    harness.slotDoc.mockResolvedValue({ url: "automerge:daemon-working-floor", reach: "vessel-only" });
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const ctx = context({ daemonHandle: true }) as unknown as ReturnType<typeof context>;
+    const mk = (url: string) => { const doc = { tiddlers: {} as Record<string, unknown> }; return { url, doc: () => doc, heads: () => [], on: () => () => {}, change: (fn: (d: typeof doc) => void) => fn(doc), state: doc }; };
+    const floorHandle = mk("automerge:daemon-working-floor"), faceHandle = mk("automerge:daemon-working-face");
+    (ctx.repo as unknown as { find: () => Promise<typeof floorHandle> }).find = async () => floorHandle;
+    await makeOperatorDaemonBehavior(floorAuth).onWritable!(ctx as never);
+    await ctx.composite.put({ tiddler: { title: "lar:///ha.ka.ba/before-lift", text: "floor" } }, { kind: "test" });
+    expect(floorHandle.state.tiddlers["lar:///ha.ka.ba/before-lift"]).toBeDefined();
+    harness.resolverArgs!.rebindWorking!("daemon", "automerge:daemon-working-floor", "automerge:daemon-working-face", faceHandle);
+    expect(ctx.composite.defaultWritableBagId()).toBe(working);
+    await ctx.composite.put({ tiddler: { title: "lar:///ha.ka.ba/after-lift", text: "face" } }, { kind: "test" });
+    expect(faceHandle.state.tiddlers["lar:///ha.ka.ba/after-lift"]).toBeDefined();
+    expect(floorHandle.state.tiddlers["lar:///ha.ka.ba/after-lift"], "the floor's attachment answers no write after the lift").toBeUndefined();
     log.mockRestore();
   });
 });
