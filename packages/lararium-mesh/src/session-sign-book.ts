@@ -47,6 +47,22 @@ export class SessionSignBook {
    *  writes and seals the saves that waited for one (sealed-store#/owed, R2). */
   constructor(opts: { readonly onHold?: (session: BookedSession, verb: string) => void } = {}) { this.#onHold = opts.onHold; }
 
+  readonly #seated = new Map<object, BookedSession>();
+
+  /** Seat a session for its signer's life (P2-4): a change written while it stands open books it, with no call in flight.
+   *  It hears as a hold (`session:seat`), so the saves that waited for a session seal now. Returns the unseat. */
+  seat(session: BookedSession): () => void {
+    if (!this.#seated.has(session.signer)) {
+      this.#seated.set(session.signer, session);
+      try { this.#onHold?.(session, "session:seat"); } catch { /* a listener's fault never unseats the session */ }
+    }
+    return () => this.unseat(session.signer);
+  }
+  /** The session holding `signer` leaves the seat (its signer drops). */
+  unseat(signer: object): void { this.#seated.delete(signer); }
+  /** The sessions seated now: open, their signers standing. */
+  seated(): BookedSession[] { return [...this.#seated.values()].filter((s) => !s.signer.dropped); }
+
   /** The sessions whose calls stand booked now, each once. */
   standing(): BookedSession[] { return [...new Set([...this.#held.values()].map((b) => b.session))]; }
 

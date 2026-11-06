@@ -963,6 +963,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const flushThenDrop = async (signer: UdsSessionSigner | undefined): Promise<void> => {
     if (!signer) return;
     try { await opts.beforeSignerDrops?.(signer); } catch { /* a refused flush keeps its changes in memory; the drop still lands */ }
+    opts.signers?.unseat(signer);
     signer.drop();
   };
   const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; hand?: Hand; anchor?: SessionAnchor; supply?: UdsSessionSupply; signer?: UdsSessionSigner }>();
@@ -1049,6 +1050,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       state.anchor = supplied.supply.anchor;
       state.supply = supplied.supply;
       state.signer = minted.signer;
+      // P2-4: the session stands seated while its signer stands, so a change written with no call in flight books it.
+      opts.signers?.seat({ signer: minted.signer, anchor: supplied.supply.anchor, subject: opened.session.face.proofSubject });
       sessionReply(sock, { kind: "session:opened", requestId, ownerEpoch: opened.session.ownerEpoch,
         sessionId: opened.session.sessionId, generation: opened.session.generation,
         faceRef: opened.session.face.proofSubject, caps: opened.session.caps });
@@ -1231,6 +1234,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         state.signer = minted.signer;
         state.supply = target.supply;
         if (gone()) { minted.signer.drop(); return { ok: false, refusal: "session-closed" }; }
+        opts.signers?.seat({ signer: minted.signer, anchor: target.supply.anchor, subject: session.face.proofSubject });
         return { ok: true };
       },
       writeOutcome: writeSwitchAct,

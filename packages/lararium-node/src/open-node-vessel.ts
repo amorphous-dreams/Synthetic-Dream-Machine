@@ -1258,7 +1258,12 @@ async function prepareNodeBootOn(
   // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer
   // and rests as received under that session.
-  sealedRest.watch(repo, () => { const standing = sealedCells.book?.standing()[0]; return standing ? saveSessionOf(standing) : null; });
+  // P2-4: with no call in flight, a change books a session of the worn face that stands seated (open, its signer standing).
+  sealedRest.watch(repo, () => {
+    const face = sealedCells.face();
+    const standing = sealedCells.book?.standing()[0] ?? sealedCells.book?.seated().find((s) => s.subject === face);
+    return standing ? saveSessionOf(standing) : null;
+  });
   emit("repo-open");
 
   // ── 2. Catalog — local-first rendezvous anchor (catalog-url file) ───────────
@@ -3862,7 +3867,7 @@ async function prepareNodeBootOn(
       await sealedRest.lock(session?.id ?? "no-session-booked-here");
     },
     sealedRestStandDown: async () => {
-      const waiting = await sealedRest.standDown([]);
+      const waiting = await sealedRest.standDown((sealedCells.book?.seated() ?? []).map(saveSessionOf));
       if (waiting > 0) console.log(`[sealed-rest] save-unbooked: ${waiting} save(s) no session could seal rest nowhere new; the replica that holds each change hands it back by sync after the next unlock`);
       return waiting;
     },
