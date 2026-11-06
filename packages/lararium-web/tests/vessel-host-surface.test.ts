@@ -30,6 +30,10 @@
  *   SV8 RED  a session admitted while another session's act waits leaves that act answered `applied`, never
  *            `stale-target` (the golden road's W4: a second tab's arrival once re-minted the epoch under the first tab's
  *            close). CONTROL: the late session paints the current surface.
+ *   SV9 RED  the fold lives no longer than the lit vessel: the face's LAST session closes (the house locks with no session
+ *            left to hear a floor), the worker relights for ANOTHER face on the same surface slug, and that face's late
+ *            session hears nothing of the first face's frames, nor any frame the closed vessel sends after its close.
+ *            CONTROL: within the second face's own lighting a late session still catches up on its frames.
  *
  * The vessel the host lights stands in (as in vessel-host-faces), with its surface callbacks held so a case can fire them.
  *
@@ -87,6 +91,7 @@ function fakeVessel() {
   const resent: string[] = [];
   const surfaces: string[] = [];
   const mirrorReads: string[] = [];
+  let closes = 0;
   let shown = "w";
   /** The camera's mount epoch, as the island's camera keeps it: a resend re-mints it, and an act under another answers stale-target. */
   let epoch = 1;
@@ -106,7 +111,7 @@ function fakeVessel() {
         place: (surface: string, binding: string) => { placed.push({ surface, binding }); return { ok: true as const }; },
         close: (binding: string) => { closed.push(binding); },
       },
-      flush: async () => undefined, close: async () => undefined,
+      flush: async () => undefined, close: async () => { closes++; },
       sendControlEvent: (surface: string, ev: { eventId: string; mountEpoch?: number }) => {
         controlEvents.push(ev.eventId);
         acts.set(ev.eventId, { surface, mountEpoch: ev.mountEpoch ?? epoch });
@@ -127,7 +132,7 @@ function fakeVessel() {
     const act = acts.get(eventId)!;
     hooks.onControlResult!(act.surface, { type: "lar:control-result", eventId, cameraId: "lar:story", mountEpoch: epoch, status: act.mountEpoch === epoch ? "applied" : "stale-target" } as never);
   };
-  return { open, hooks, placed, closed, controlEvents, resent, surfaces, mirrorReads, show: (s: string) => { shown = s; }, paint, answer, epoch: () => epoch };
+  return { open, hooks, placed, closed, controlEvents, resent, surfaces, mirrorReads, show: (s: string) => { shown = s; }, paint, answer, epoch: () => epoch, closes: () => closes };
 }
 
 const until = async (what: string, ok: () => boolean): Promise<void> => {
@@ -334,6 +339,46 @@ describe("surface traffic reaches each session over its own port", () => {
     const results = a.heard.filter((m): m is Extract<VesselToPage, { t: "control-result" }> => m.t === "control-result");
     expect(results.map((m) => [m.result.eventId, m.result.status]), "A's act answers under the epoch it was made in").toEqual([["evClose", "applied"]]);
     await until("CONTROL: B paints the current surface", () => b.frames().length > 0);
+  }, SLOW);
+
+  test("SV9 RED the last close takes the fold with the vessel; a relit face hears nothing of the old — CONTROL: its own late session catches up", async () => {
+    const idbName = `host-surface-relight-${crypto.randomUUID()}`;
+    const faceA = await standFace(idbName, ROUTE);
+    const faceB = await standFace(idbName, OTHER_ROUTE);
+    const v = fakeVessel();
+    const host = standVesselHost({ locks: navigator.locks, openVessel: v.open } as never);
+    const a = tab(ROUTE);
+    const ca = enter(host, a, "tab-a", idbName, faceA);
+    await until("A admitted", a.admitted);
+    v.paint({ "lar:surface": "<p>face A's own words</p>" });
+    expect(a.frames(), "A hears its frame live").toHaveLength(1);
+    const closedVesselFrame = v.hooks.onFrame!;
+
+    ca.receive({ t: "page:life", life: "pagehide" });
+    await until("A's last close brings the vessel down", () => v.closes() === 1);
+    await settle();
+
+    const b1 = tab(OTHER_ROUTE), b2 = tab(OTHER_ROUTE), b3 = tab(OTHER_ROUTE);
+    enter(host, b1, "tab-b1", idbName, faceB);
+    await until("B1 admitted (face B lights the vessel anew)", b1.admitted);
+    closedVesselFrame({
+      type: "lar:frame", surface: "w", wikiUri: "lar:///w", cameraId: "lar:aside", mountEpoch: 1, sensedRevision: {},
+      keys: [{ key: "lar:surface", rev: 99, html: "<p>face A's late words</p>" }],
+    });
+    enter(host, b2, "tab-b2", idbName, faceB);
+    await until("B2 admitted", b2.admitted);
+    await settle();
+    const said = (t: ReturnType<typeof tab>) => JSON.stringify(t.frames());
+    expect(said(b2), "a late session of face B hears nothing of face A's frames").not.toContain("face A");
+    expect(said(b1), "the closed vessel's late frame reaches no session of the relit vessel").not.toContain("face A");
+    expect(b2.frames()).toEqual([]);
+
+    v.paint({ "lar:surface": "<p>face B's own words</p>" });
+    enter(host, b3, "tab-b3", idbName, faceB);
+    await until("B3 admitted", b3.admitted);
+    await until("CONTROL: a late session within face B's lighting catches up", () => b3.frames().length > 0);
+    expect(said(b3)).toContain("face B's own words");
+    expect(said(b3)).not.toContain("face A");
   }, SLOW);
 
   test("SV6 RED a session of another face acts on nothing of the lit face — CONTROL: the lit face's session acts", async () => {
