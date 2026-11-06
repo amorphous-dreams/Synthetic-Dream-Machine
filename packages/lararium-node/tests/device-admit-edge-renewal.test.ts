@@ -45,7 +45,8 @@ vi.mock("../src/node-vessel-identity.js", async () => {
 });
 vi.mock("../src/face-anchor-store.js", () => ({ loadFaceAnchorOfGroup: async () => seam.anchor }));
 vi.mock("../src/face-atom-store.js", () => ({ loadFaceAtomOfGroup: async () => seam.issuerAtom }));
-vi.mock("@lararium/tw5", async (real) => ({ ...(await real<Record<string, unknown>>()), makeCatalogAccessor: () => ({ storeOf: async () => seam.store }) }));
+// The face's sealed catalog has no row here, so the admit reads the plane the bootstrap names.
+vi.mock("@lararium/tw5", async (real) => ({ ...(await real<Record<string, unknown>>()), makeCatalogAccessor: () => ({ urlOf: async () => null }) }));
 // The fleet board's fold has its reds in kapae and fleet-frontier suites; here it answers the dyad r2 names, set aside.
 vi.mock("../src/edge-board.js", () => ({
   readVesselEdgeBoard: async () => ({
@@ -67,6 +68,12 @@ vi.mock("@lararium/mesh", async (real) => {
     ...mesh,
     DAEMON_BAG_ID: T.daemon, PERSONA_GROUP_ID_TIDDLER: T.group, MESH_CABAL_DOC_ID_TIDDLER: T.cabal, PERSONA_KEL_PREFIX_TIDDLER: T.kel,
     personaBagIdFor: (group: string) => `plane:${group}`,
+    // Keep the operation cache on the same memory store across opens and retries.
+    AutomergeDocStore: class {
+      constructor(_handle: unknown, readonly bagId: string) {}
+      get(...args: Parameters<MemoryTiddlerStore["get"]>) { return (seam.store as MemoryTiddlerStore).get(...args); }
+      put(...args: Parameters<MemoryTiddlerStore["put"]>) { return (seam.store as MemoryTiddlerStore).put(...args); }
+    },
     // The KEL board this replica holds: the real inception, read by the real `personaKelChainForPrefix`.
     materializeSharedLarDoc: async () => ({ doc: () => seam.kelBoard }),
     personaKelBoardDocUrl: () => "board",
