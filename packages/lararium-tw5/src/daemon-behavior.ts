@@ -28,6 +28,7 @@ import {
   type DaemonMsg_VerbResult,
   type DaemonMsg_FaceLit,
   type DaemonMsg_FaceDrop,
+  type DaemonMsg_FaceBags,
   type DaemonMsg_ResolveBindingRequest,
   type DaemonMsg_GateVerbRequest,
   type DaemonMsg_WorldlineCompareRequest,
@@ -82,7 +83,7 @@ export interface DaemonBehaviorOptions {
   verifier?: CapabilityVerifier;
   /** Stand the daemon working route during the writable startup marker. */
   onWritable?: (ctx: IslandContext) => Promise<WritableOutcome>;
-  onHostMessage?: (msg: DaemonMsg_FaceLit | DaemonMsg_FaceDrop, ctx: IslandContext) => Promise<void>;
+  onHostMessage?: (msg: DaemonMsg_FaceLit | DaemonMsg_FaceDrop | DaemonMsg_FaceBags, ctx: IslandContext) => Promise<void>;
   /**
    * Projection mount shore — the daemon INHERITS the wiki's render cap (hasProjection). When the worker
    * entry supplies onBoot (mountProjection), the daemon becomes a surfaceable wiki like any other: the user
@@ -212,10 +213,10 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
 
     onSignal(type: string, raw: unknown, ctx: IslandContext): boolean {
       const { tw5, post } = ctx;
-      if (type === "daemon:face-lit" || type === "daemon:face-drop") {
-        const msg = raw as DaemonMsg_FaceLit | DaemonMsg_FaceDrop;
+      if (type === "daemon:face-lit" || type === "daemon:face-drop" || type === "daemon:face-bags") {
+        const msg = raw as DaemonMsg_FaceLit | DaemonMsg_FaceDrop | DaemonMsg_FaceBags;
         const atomKey = msg.type === "daemon:face-lit" ? msg.entry.atom.key : msg.atomKey;
-        const op = msg.type === "daemon:face-lit" ? "lit" : "dropped";
+        const op = msg.type === "daemon:face-lit" ? "lit" : msg.type === "daemon:face-bags" ? "bags" : "dropped";
         void Promise.resolve().then(() => {
           if (!opts.onHostMessage) throw new Error("face handler unavailable");
           return opts.onHostMessage(msg, ctx);

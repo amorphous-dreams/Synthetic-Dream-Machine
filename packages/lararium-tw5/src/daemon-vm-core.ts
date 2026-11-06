@@ -39,6 +39,7 @@ import {
   mkManifest,
   mkDaemonPlaceVerb,
   mkDaemonFaceLit,
+  mkDaemonFaceBags,
   mkDaemonFaceDrop,
   type JoinedFaceAuth,
   mkTelemetryPlaceVerb,
@@ -245,6 +246,10 @@ export interface DaemonVmCore {
   runAsFace:      (o: { readonly verb: string; readonly args: Record<string, unknown>; readonly worn: SessionWorn }) => Promise<Record<string, unknown>>;
   lightFace:      (entry: JoinedFaceAuth) => Promise<void>;
   dropFace:       (atomKey: string) => Promise<void>;
+  /** THE LIFT'S RE-REGISTRATION (sealed-store#/owed, U1 · T2): register `bags` (the face's own catalog names them, and it
+   *  opens only once this island's holder stands) on the mounted face's hive. A re-opened island reads them off its
+   *  manifest, so nothing replays. */
+  registerFaceBags: (atomKey: string, bags: readonly string[]) => Promise<void>;
   /** FEED one captured turn to the daemon's telemetry capture cap (the nalu). Fire-and-forget.
    *  `frontier` (optional) carries the turn-DAG fork-frontier so a same-session fork derives a
    *  distinct handle; absent on a non-forked turn. */
@@ -450,7 +455,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   const facePending = new Map<string, Array<{ resolve: () => void; reject: (error: Error) => void }>>();
   const faceKey = (atomKey: string, op: string) => `${atomKey.toLowerCase().replace(/^0x/, "")}:${op}`;
   let faceAsksEnded: string | null = null;
-  function askFace(atomKey: string, op: "lit" | "dropped", msg: unknown): Promise<void> {
+  function askFace(atomKey: string, op: "lit" | "dropped" | "bags", msg: unknown): Promise<void> {
     return new Promise((resolve, reject) => {
       if (faceAsksEnded !== null) { reject(new Error(faceAsksEnded)); return; }
       const key = faceKey(atomKey, op);
@@ -780,6 +785,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       askIsland("binding", (requestId) => mkDaemonResolveBindingRequest({ requestId, fingerprint, recipeTrace, wikiSlug })),
     lightFace: (entry) => askFace(entry.atom.key, "lit", mkDaemonFaceLit(entry)),
     dropFace: (atomKey) => askFace(atomKey, "dropped", mkDaemonFaceDrop(atomKey)),
+    registerFaceBags: (atomKey, bags) => askFace(atomKey, "bags", mkDaemonFaceBags(atomKey, bags)),
     retireAsk: (requestId: string) => { sessionAsks.delete(requestId); },
     runAsFace: async ({ verb, args, worn }) => {
       const registry = _registry;

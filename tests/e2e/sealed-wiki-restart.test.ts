@@ -19,11 +19,17 @@
  *        the read's answer to the CLI rests in the daemon wiki's working slot, which seals under the lit face (U1's D
  *        half), and the daemon document rests no outcome body. The ledger's titles (`bags/daemon/outcomes/<id>`) name
  *        tiddlers that never project (`disk-projection: no`), so every byte of them rests in a store, never in `bags/`
+ *   R6 — the face's own catalog (U1's D half of the catalog) rests sealed: it opened only after the daemon island's
+ *        holder stood, and the restart read the marker back through it (R4). POSITIVE FIRST: the floor's catalog, which
+ *        rests clear, holds its rows' titles in its document's rest, so the scan reads a catalog's rest; then no file of
+ *        the face catalog's document holds a clear row title, while its document rests there
  *
  * The suite runs only in a STAGED target: it founds two vessels and never touches a live hearth.
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
+import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { bootDocUrl, openStaged, openStagedJoinee, vesselStorageDir, type LarInstance, type StagedJoinee } from "../harness/instance.js";
@@ -65,6 +71,27 @@ function filesHolding(dir: string, needle: string): string[] {
   };
   walk(dir);
   return out;
+}
+/**
+ * The rows one document's rest decodes to, read by a fresh Repo over a copy of that document's shard alone (id[:2] /
+ * id[2:]): a clear rest loads its tiddlers; a sealed rest decodes to none (its chunks open under no key here). Null when
+ * the store holds no shard for it.
+ */
+async function rowsAtRest(store: string, url: string): Promise<number | null> {
+  const id = url.replace(/^automerge:/, "");
+  const shard = join(store, id.slice(0, 2), id.slice(2));
+  if (!statSync(shard, { throwIfNoEntry: false })?.isDirectory()) return null;
+  const copy = mkdtempSync(join(tmpdir(), "rest-read-"));
+  cpSync(shard, join(copy, id.slice(0, 2), id.slice(2)), { recursive: true });
+  const repo = new Repo({ storage: new NodeFSStorageAdapter(copy), network: [] });
+  try {
+    const handle = await Promise.race([
+      repo.find<{ tiddlers?: Record<string, unknown> }>(url as AutomergeUrl),
+      new Promise<null>((r) => setTimeout(() => r(null), 15_000)),
+    ]);
+    return handle ? Object.keys(handle.doc()?.tiddlers ?? {}).length : 0;
+  } catch { return 0; }
+  finally { await repo.shutdown().catch(() => undefined); }
 }
 /** The operator's own cleartext: the bare disk projection under the root's `bags/` and `wikis/` (R1's carve-out). */
 const projected = (rel: string): boolean => rel.startsWith("bags/") || rel.startsWith("wikis/");
@@ -120,4 +147,18 @@ describe.runIf(staged)("a sealed wiki write survives a stand-down at once and a 
     // barrier: the stand-down's own exit (stopDaemonOnly resolves once the daemon process left).
     expect(restingClear(pair!.rootB)).toEqual([]);
   }, 120_000);
+
+  test("R6 — the face's own catalog rests sealed: the floor's catalog decodes to its rows at rest (positive), the face's decodes to none", async () => {
+    const store = vesselStorageDir(B2!);
+    const floorUrl = bootDocUrl(B2!, "catalog");
+    const faceUrl = /\[catalog\] the face's own catalog stands: (automerge:[A-Za-z0-9]+)/.exec(B2!.bootLog())?.[1] ?? null;
+    expect(floorUrl, "the boot names its floor catalog").not.toBeNull();
+    expect(faceUrl, B2!.bootLog().slice(-3000)).not.toBeNull();
+    // POSITIVE FIRST: a catalog that rests clear decodes to its rows off its rest alone.
+    expect(await rowsAtRest(store, floorUrl!), `the floor catalog's rest at ${floorUrl}`).toBeGreaterThan(0);
+    // barrier: the face's catalog rests at its own shard (a scan of nothing proves nothing).
+    const faceRows = await rowsAtRest(store, faceUrl!);
+    expect(faceRows, `the face catalog's rest at ${faceUrl}`).not.toBeNull();
+    expect(faceRows, "the face catalog decodes to no clear row at rest").toBe(0);
+  }, 60_000);
 });

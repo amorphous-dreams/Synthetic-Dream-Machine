@@ -31,11 +31,13 @@ import {
   type LarDoc,
   type LarTiddlerRecord,
   type LarTiddlerStore, ownEntry} from "@lararium/mesh";
-import { isSystemCanonBag, litFaceCatalogOf, makeCatalogView, plainRecordOrNull, realmStandingDocUrl } from "@lararium/mesh";
+import { catalogRowHalf, isSystemCanonBag, litFaceCatalogOf, makeCatalogView, plainRecordOrNull, realmStandingDocUrl } from "@lararium/mesh";
 
 export interface CatalogAccessor {
-  /** The `catalog` registry doc itself, resolved + cached. */
+  /** The `catalog` registry doc itself, resolved + cached (the floor with the face's rows laid over it, U1). */
   handle(): Promise<DocHandle<LarDoc>>;
+  /** The floor's catalog alone: its public rows, readable before the face's sealed catalog opens. */
+  floor?(): Promise<DocHandle<LarDoc>>;
   /** The AutomergeUrl a registry entry points at, or null if unregistered. */
   urlOf(bagUri: string): Promise<string | null>;
   /** The full registry RECORD at a title (e.g. a user wiki recipe), or null.
@@ -66,7 +68,18 @@ export { findOrThrow };
 
 export function makeCatalogAccessor(repo: Repo, catalogUrl: string, faceCatalogUrl?: string | null): CatalogAccessor {
   let _catalog: Promise<DocHandle<LarDoc>> | null = null;
+  let _floor: Promise<DocHandle<LarDoc>> | null = null;
   let _face: string | null = null;
+  // The floor alone, cached apart: a floor row never waits on the face's catalog, which rests sealed and hydrates only
+  // once the island's holder stands (sealed-store#/owed, T2).
+  const floorHandle = (): Promise<DocHandle<LarDoc>> => {
+    if (!_floor) {
+      const opened = findOrThrow(repo, catalogUrl, "catalog registry");
+      _floor = opened;
+      opened.catch(() => { if (_floor === opened) _floor = null; });
+    }
+    return _floor;
+  };
   const handle = (): Promise<DocHandle<LarDoc>> => {
     // THE SPLIT CATALOG (sealed-store#/owed, U1): a lit face's own rows rest in its catalog, laid over the floor's; the
     // view routes each write by its row's class. Unnamed, the face this process stands lit over the floor answers
@@ -74,17 +87,16 @@ export function makeCatalogAccessor(repo: Repo, catalogUrl: string, faceCatalogU
     const face = faceCatalogUrl === undefined ? litFaceCatalogOf(catalogUrl) : faceCatalogUrl;
     if (!_catalog || _face !== face) {
       _face = face;
-      const floor = findOrThrow(repo, catalogUrl, "catalog registry");
       const opened: Promise<DocHandle<LarDoc>> = face
-        ? Promise.all([floor, findOrThrow(repo, face, "the face's catalog")]).then(([f, d]) => makeCatalogView(f, d))
-        : floor;
+        ? Promise.all([floorHandle(), findOrThrow(repo, face, "the face's catalog")]).then(([f, d]) => makeCatalogView(f, d))
+        : floorHandle();
       _catalog = opened;
       // A failed resolve must not poison the cache — the next call retries.
       opened.catch(() => { if (_catalog === opened) _catalog = null; });
     }
     return _catalog;
   };
-  return accessorOver(handle, catalogUrl, repo);
+  return accessorOver(handle, catalogUrl, repo, floorHandle);
 }
 
 /** An accessor over a catalog handle this holder already stands (the vessel's own view), so its reads and writes route
@@ -94,15 +106,17 @@ export function makeCatalogAccessorOver(repo: Repo, catalog: DocHandle<LarDoc>):
   return accessorOver(() => ready, catalog.url, repo);
 }
 
-function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: string, repo: Repo): CatalogAccessor {
+function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: string, repo: Repo, floorHandle?: () => Promise<DocHandle<LarDoc>>): CatalogAccessor {
+  // A row its class rests on the floor reads the floor alone (`catalogRowHalf`).
+  const halfFor = (title: string): Promise<DocHandle<LarDoc>> => (floorHandle && catalogRowHalf(title) === "floor" ? floorHandle() : handle());
   const urlOf = async (bagUri: string): Promise<string | null> => {
     if (bagUri === CATALOG_DOC_URI) return catalogUrl;
-    const cat = await handle();
+    const cat = await halfFor(bagUri);
     return tiddlerText(ownEntry(cat.doc()?.tiddlers, bagUri)) ?? null;
   };
 
   const recordOf = async (title: string): Promise<LarTiddlerRecord | null> => {
-    const cat = await handle();
+    const cat = await halfFor(title);
     return plainRecordOrNull(ownEntry(cat.doc()?.tiddlers, title));
   };
 
@@ -118,7 +132,7 @@ function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: stri
     return h ? new AutomergeDocStore(h, bagUri) : null;
   };
 
-  return { handle, urlOf, recordOf, find, storeOf };
+  return { handle, floor: floorHandle ?? handle, urlOf, recordOf, find, storeOf };
 }
 
 /**
@@ -129,5 +143,5 @@ function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: stri
 export async function libraryDocUrl(catalog: CatalogAccessor, bagUri: string): Promise<string | null> {
   const row = await catalog.urlOf(bagUri);
   if (row !== null || !isSystemCanonBag(bagUri)) return row;
-  return realmStandingDocUrl((await catalog.handle()).doc(), bagUri);
+  return realmStandingDocUrl((await (catalog.floor ?? catalog.handle)()).doc(), bagUri);
 }

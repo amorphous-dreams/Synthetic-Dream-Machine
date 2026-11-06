@@ -4,7 +4,9 @@
  * No vessel-wide content key mints, so no document that names several faces' rows seals under one key. The catalog
  * dissolves in two: a FLOOR catalog (F) naming public, signed infrastructure alone, readable at the floor and by a herm,
  * and a per-face catalog (D) naming that face's own rows, at an address the face's secret derives, sealed under that
- * face's content key (that seal stays owed: it rests clear today, as the one catalog did). A herm wears no face, so it reads F alone; a lit face reads F with its own D laid over it.
+ * face's content key (`FACE_CATALOG_BAG_ID`, sealed beside the daemon wiki's slots). A herm wears no face, so it reads F
+ * alone; a lit face reads F with its own D laid over it. The sealed D hydrates only through the daemon island's holder,
+ * so a boot EXPECTS the face (`expectFace`: its rows wait in memory) until that holder stands, then binds it.
  *
  * THE VIEW stands where the one catalog handle stood and keeps its shape, so a consumer that reads `doc()` or writes
  * through `change()` keeps its logic: reads merge the face's rows over the floor's, and each write lands on the half
@@ -28,8 +30,8 @@ import { ownEntry, plainRecordOrNull } from "./stored-value.js";
 /** The half of the split catalog a row rests on: `floor` (F, public) or `face` (D, the lit face's own). */
 export type CatalogHalf = "floor" | "face";
 
-/** The bag the face's catalog document answers to; its seal under the lit face stays owed (sealed-store#/owed, T2). */
-export const FACE_CATALOG_BAG_ID = `${CATALOG_DOC_URI}/face`;
+/** The bag the face's catalog document answers to, sealed under the lit face (sealed-store#/owed, T2). */
+export { FACE_CATALOG_BAG_ID } from "./register-bags.js";
 
 const REALM_ROOT = bagUri("realm");
 const FLOOR_ROWS: ReadonlySet<string> = new Set([
@@ -84,8 +86,16 @@ export interface CatalogViewParts {
   readonly floorHandle: DocHandle<LarDoc>;
   /** The lit face's catalog, or null at the floor. */
   faceHandle(): DocHandle<LarDoc> | null;
-  /** Lay a lit face's catalog over the floor (null: the floor alone). The view's listeners follow. */
+  /** Lay a lit face's catalog over the floor (null: the floor alone). The view's listeners follow. A face row the view
+   *  held while it expected the face lands in that catalog first. */
   bindFace(face: DocHandle<LarDoc> | null): void;
+  /**
+   * THE FACE EXPECTED: a lit face proved, its sealed catalog not yet open (it hydrates only once the daemon island's
+   * holder stands). From here until `bindFace`, a face row a write names rests in this view's memory alone, never in the
+   * floor's document nor its history; reads see it, and the bind carries it into the face's catalog. No clock ends the
+   * span: a stop before the bind drops the held rows, and the next boot writes them again.
+   */
+  expectFace(): void;
 }
 
 export type CatalogView = DocHandle<LarDoc> & CatalogViewParts;
@@ -130,23 +140,34 @@ type ChangeListener = (payload: unknown) => void;
  */
 export function makeCatalogView(floor: DocHandle<LarDoc>, face: DocHandle<LarDoc> | null = null): CatalogView {
   let faceHandle = face;
+  // The face rows held while the face stands expected and unbound (`expectFace`): memory alone.
+  let held: LarDoc | null = null;
+  let heldSeq = 0;
   const listeners = new Set<ChangeListener>();
   const relay = (payload: unknown): void => {
     const p = (payload ?? {}) as Record<string, unknown>;
     for (const l of [...listeners]) l({ ...p, handle: view, doc: merged() });
   };
-  let merge: { floor: unknown; face: unknown; out: LarDoc | undefined } | null = null;
+  let merge: { floor: unknown; face: unknown; held: number; out: LarDoc | undefined } | null = null;
   const merged = (): LarDoc | undefined => {
     const fd = floor.doc();
-    const dd = faceHandle?.doc();
+    const dd = faceHandle?.doc() ?? (held && Object.keys(held.tiddlers).length ? held : undefined);
     if (!dd) return fd;
-    if (merge && merge.floor === fd && merge.face === dd) return merge.out;
+    if (merge && merge.floor === fd && merge.face === dd && merge.held === heldSeq) return merge.out;
     const out = { ...(fd ?? {}), tiddlers: { ...(fd?.tiddlers ?? {}), ...dd.tiddlers } } as LarDoc;
-    merge = { floor: fd, face: dd, out };
+    merge = { floor: fd, face: dd, held: heldSeq, out };
     return out;
   };
   const change = (fn: (doc: LarDoc) => void, opts?: unknown): void => {
     const into = faceHandle;
+    if (!into && held) {
+      const parked = held;
+      const before = JSON.stringify(Object.keys(parked.tiddlers));
+      let touched = false;
+      floor.change((fd) => { fn(routedDraft(fd, parked, () => { touched = true; })); }, opts as never);
+      if (touched || JSON.stringify(Object.keys(parked.tiddlers)) !== before) { heldSeq++; relay({}); }
+      return;
+    }
     if (!into) { floor.change(fn, opts as never); return; }
     floor.change((fd) => { into.change((dd) => { fn(routedDraft(fd, dd)); }); }, opts as never);
   };
@@ -158,7 +179,24 @@ export function makeCatalogView(floor: DocHandle<LarDoc>, face: DocHandle<LarDoc
       if (faceHandle && listeners.size) faceHandle.off("change", relay as never);
       faceHandle = next;
       merge = null;
+      if (faceHandle && held) {
+        const parked = held;
+        held = null;
+        const titles = Object.keys(parked.tiddlers);
+        if (titles.length) {
+          faceHandle.change((dd) => {
+            for (const title of titles) {
+              const plain = plainRecordOrNull(parked.tiddlers[title] as never);
+              if (plain !== null) (dd.tiddlers as Record<string, unknown>)[title] = storedRecord(plain);
+            }
+          });
+        }
+      }
       if (faceHandle && listeners.size) faceHandle.on("change", relay as never);
+    },
+    expectFace: () => {
+      if (faceHandle || held) return;
+      held = { tiddlers: {} } as unknown as LarDoc;
     },
   };
   const on = (event: string, listener: ChangeListener): unknown => {
@@ -194,7 +232,7 @@ export function makeCatalogView(floor: DocHandle<LarDoc>, face: DocHandle<LarDoc
  * half its class names (and leaves the other), a row deleted leaves both. Every other field of the document reads and
  * writes the floor's.
  */
-function routedDraft(fd: LarDoc, dd: LarDoc): LarDoc {
+function routedDraft(fd: LarDoc, dd: LarDoc, onFace?: () => void): LarDoc {
   const halfOf = (title: string): LarDoc => (catalogRowHalf(title) === "face" ? dd : fd);
   const read = (title: string): unknown => ownEntry(dd.tiddlers, title) ?? ownEntry(fd.tiddlers, title);
   const tiddlers = new Proxy({} as Record<string, unknown>, {
@@ -203,6 +241,7 @@ function routedDraft(fd: LarDoc, dd: LarDoc): LarDoc {
       if (typeof prop !== "string") return false;
       const into = halfOf(prop);
       const other = into === dd ? fd : dd;
+      if (into === dd) onFace?.();
       (into.tiddlers as Record<string, unknown>)[prop] = value;
       if (Object.hasOwn(other.tiddlers, prop)) delete (other.tiddlers as Record<string, unknown>)[prop];
       return true;
@@ -210,7 +249,7 @@ function routedDraft(fd: LarDoc, dd: LarDoc): LarDoc {
     deleteProperty: (_t, prop) => {
       if (typeof prop !== "string") return true;
       if (Object.hasOwn(fd.tiddlers, prop)) delete (fd.tiddlers as Record<string, unknown>)[prop];
-      if (Object.hasOwn(dd.tiddlers, prop)) delete (dd.tiddlers as Record<string, unknown>)[prop];
+      if (Object.hasOwn(dd.tiddlers, prop)) { delete (dd.tiddlers as Record<string, unknown>)[prop]; onFace?.(); }
       return true;
     },
     has: (_t, prop) => typeof prop === "string" && (Object.hasOwn(dd.tiddlers, prop) || Object.hasOwn(fd.tiddlers, prop)),

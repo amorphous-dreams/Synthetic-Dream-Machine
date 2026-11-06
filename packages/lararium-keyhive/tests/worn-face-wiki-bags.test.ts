@@ -12,9 +12,11 @@
  *   W3 — CONTROL, the user wiki's slots: registered and sealed as before, at the floor and lit alike
  *   W4 — CONTROL, the floor: a vessel no lit face stands in seals nothing and registers no daemon slot
  *   W5 — NONSENSE: a bag the face never registers reads not capable, and a foreign chain reads not capable
+ *   W6 — the face's own catalog (U1's D half of the catalog) seals and registers under the lit face, so the boot's island
+ *        holds its key before the lift opens it; the floor seals and registers none
  */
 import { describe, expect, test } from "vitest";
-import { deriveRegisterBags, wikiSlotUri, wornFaceWikiBags } from "@lararium/mesh";
+import { FACE_CATALOG_BAG_ID, deriveRegisterBags, wikiSlotUri, wornFaceWikiBags } from "@lararium/mesh";
 import { ownChainStanding } from "../src/index.js";
 
 const USER_SLOT = { wikiBagId: "wikis/lares", workingBagId: wikiSlotUri("lares", "working"), draftBagId: wikiSlotUri("lares", "draft") };
@@ -44,7 +46,7 @@ describe("the worn face's wiki bags", () => {
     expect(floor.sealed).toEqual([]);
     for (const bag of DAEMON_SLOTS) expect(floor.registered).not.toContain(bag);
     expect(wornFaceWikiBags({ lit: false })).toEqual({ registered: [], sealed: [] });
-    expect(wornFaceWikiBags({ lit: true }).sealed).toEqual(DAEMON_SLOTS);
+    expect(wornFaceWikiBags({ lit: true }).sealed).toEqual(expect.arrayContaining(DAEMON_SLOTS));
   });
 
   test("W5 — NONSENSE: an unregistered bag and a foreign chain each read not capable", () => {
@@ -53,5 +55,16 @@ describe("the worn face's wiki bags", () => {
     expect(standing.holdsWrite({ certificate: certificate as never, bagId: wikiSlotUri("nowhere", "working") })).toBe(false);
     const foreign = ownChainStanding(() => ({ ...chain, vesselFaceKey: "99".repeat(32) }) as never, () => registered);
     expect(foreign.holdsWrite({ certificate: certificate as never, bagId: DAEMON_SLOTS[0]! })).toBe(false);
+  });
+
+  test("W6 — the face's own catalog seals and registers under the lit face alone, and its writer reads capable", () => {
+    const lit = wornFaceWikiBags({ slot: USER_SLOT, lit: true });
+    expect(lit.sealed).toContain(FACE_CATALOG_BAG_ID);
+    expect(lit.registered).toContain(FACE_CATALOG_BAG_ID);
+    const registered = deriveRegisterBags({ fleets: [{ personaGroupId: GROUP }], wikiBags: lit.registered });
+    expect(ownChainStanding(() => chain as never, () => registered).holdsWrite({ certificate: certificate as never, bagId: FACE_CATALOG_BAG_ID })).toBe(true);
+    const floor = wornFaceWikiBags({ slot: USER_SLOT, lit: false });
+    expect(floor.sealed).not.toContain(FACE_CATALOG_BAG_ID);
+    expect(floor.registered).not.toContain(FACE_CATALOG_BAG_ID);
   });
 });

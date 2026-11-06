@@ -59,7 +59,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, FACE_CATALOG_BAG_ID, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -861,12 +861,17 @@ async function prepareNodeBootOn(
   // V3: each slot document the daemon island's resolver named, by bag (`announceSlotDoc`). A slot's document moves when
   // the seat lands (the floor's document gives way to the face's derived one), and each it ever named stays mapped.
   const slotDocsNamed = new Map<string, Set<string>>();
+  // T2: the face's own catalog, by the document its secret derives, named sealed from the moment the face proves and
+  // before the document opens (`expectFaceCatalog`); null at the floor and on a herm.
+  let faceCatalogDocId: string | null = null;
   // V3: a bag's document by every name it carries: the layer the mount resolved (a working slot's derived address, a
   // draft binding: no catalog row names either), then the catalog's row.
   const sealedMap = sealedBagMap({
     face: () => sealedCells.face(),
     bags: () => sealedCells.bags(),
-    docsOf: (bagId) => [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
+    docsOf: (bagId) => bagId === FACE_CATALOG_BAG_ID
+      ? [faceCatalogDocId]
+      : [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
   // The session that stands for the worn face now: a call's, else a seated one (the dial's own, V6).
   const standingSaveSession = (): NodeSaveSession | null => {
@@ -2410,24 +2415,36 @@ async function prepareNodeBootOn(
     const addressSecretBytes = atomSeed && personaGroupId ? await readFaceAddressSecret(personaGroupId) : null;
     const faceAddressSecret = addressSecretBytes ? Buffer.from(addressSecretBytes).toString("hex") : null;
     addressSecretBytes?.fill(0);
-    // THE FACE'S OWN CATALOG (sealed-store#/owed, U1): the address the face's secret derives, sealed under the face with the
-    // daemon wiki's slots (`wornFaceWikiBags`), and laid over the floor's catalog. The map names it sealed BEFORE any row
-    // lands in it; the floor's face rows (an anon floor's bags and wikis, a plane registered before the seat) then move
-    // into it, and the floor keeps its public rows alone. A herm and a locked floor stand none.
-    const standFaceCatalog = async (secretHex: string): Promise<void> => {
+    // THE FACE'S OWN CATALOG (sealed-store#/owed, U1 · T2): the address the face's secret derives, sealed under the face
+    // with the daemon wiki's slots (`wornFaceWikiBags` names `FACE_CATALOG_BAG_ID`), laid over the floor's catalog. It
+    // rests sealed, so it hydrates only through the daemon island's holder: the boot reads the floor alone, EXPECTS the
+    // face once it proves (the map names the document sealed, and every face row this boot writes waits in the view's
+    // memory, never on the floor), stands the island and its holder, then opens the face's catalog, binds it (the held
+    // rows land in it), lifts the floor's face rows into it and re-asks the island's registration with the bags it names.
+    // A herm and a locked floor stand none.
+    let faceCatalogExpected: string | null = null;
+    const expectFaceCatalog = (secretHex: string): void => {
       const view = catalogViewOf(assembly.catalogHandle);
       if (!view || view.faceHandle()) return;
       const secret = Buffer.from(secretHex, "hex");
-      // The face's catalog rests as the floor's did, clear (T2's seal of it stays owed): a sealed rest hydrates only once the
-      // daemon island's holder stands, and the boot reads the face's bag names for the island's register set before that.
+      try { faceCatalogExpected = faceCatalogDocUrl(secret); } finally { secret.fill(0); }
+      faceCatalogDocId = documentIdOfUrl(faceCatalogExpected);
+      vesselPrivate.add(faceCatalogExpected);
+      sealedRest.store.mapMoved();
+      view.expectFace();
+    };
+    const standFaceCatalog = async (secretHex: string): Promise<void> => {
+      const view = catalogViewOf(assembly.catalogHandle);
+      if (!view || view.faceHandle() || !faceCatalogExpected) return;
+      const secret = Buffer.from(secretHex, "hex");
       let face: DocHandle<LarDoc>;
-      try { face = await openFaceCatalog(repo, faceCatalogDocUrl(secret), secret); } finally { secret.fill(0); }
-      vesselPrivate.add(face.url);
+      try { face = await openFaceCatalog(repo, faceCatalogExpected, secret); } finally { secret.fill(0); }
       view.bindFace(face);
       const moved = liftFaceCatalogRows(view.floorHandle, face);
       if (moved.length) console.log(`[catalog] ${moved.length} face row(s) left the floor for the face's own catalog`);
       const unstand = standLitFaceCatalog(assembly.catalogHandle.url, face.url);
       stood.push({ what: "the face's catalog", down: () => { unstand(); view.bindFace(null); } });
+      console.log(`[catalog] the face's own catalog stands: ${face.url}`);
     };
     const placeAid = await loadPlaceAid().catch(() => null);
     if (activeAtom && deviceEdge && activeAtom.key !== deviceEdge.deviceVerifyingKey) throw new Error("this face's atom differs from its device edge");
@@ -2840,9 +2857,9 @@ async function prepareNodeBootOn(
     //
     // Idempotent by construction: it writes the url the seed already names, so a plane registered on an
     // earlier boot is re-written identically and a plane the operator lit an hour ago registers now.
-    // THE FACE'S OWN CATALOG stands once the face proves and its boot dial stood (a restart's sealed catalog hydrates under
-    // the dial's chain), ahead of every row this boot registers and every reader of a face row (sealed-store#/owed, U1).
-    if (wornFaceProved && faceAddressSecret) await standFaceCatalog(faceAddressSecret);
+    // THE FACE'S OWN CATALOG stands EXPECTED once the face proves and its boot dial stood: every face row this boot
+    // registers waits in the view's memory until the island's holder stands and the sealed catalog opens (below).
+    if (wornFaceProved && faceAddressSecret) expectFaceCatalog(faceAddressSecret);
     const registerInCatalog = (bagId: string, url: string | null | undefined): void => {
       if (!url || tiddlerText(ownEntry(assembly.catalogHandle.doc()?.tiddlers, bagId)) === url) return;
       assembly.catalogHandle.change((doc) => {
@@ -2979,6 +2996,8 @@ async function prepareNodeBootOn(
       }
       await intentRelay?.refresh();
     };
+    // The register set the island's last open carried: the lift re-asks only the bags beyond it.
+    let sentRegisterBags: readonly string[] = [];
     const daemonAuthNow = (joinedFaces: readonly JoinedFaceAuth[]) => ({
       ...(joinedFaces.length ? { joinedFaces } : {}),
       placeVerifyingKey: vesselIdentity.verifyingKey,
@@ -2997,7 +3016,7 @@ async function prepareNodeBootOn(
       // Derived, never enumerated — one derivation both vessels share, so the node and the browser
       // cannot drift apart on which bags a cap check can resolve. A wiki slot's bags ride only when a
       // wiki stands in the stack; a Herm carries none, blind by structure rather than by a flag.
-      registerBags: deriveRegisterBags({
+      registerBags: sentRegisterBags = deriveRegisterBags({
         // The mounted face registers its own planes on its own hive, and no hive registers a face it does not
         // wear: another compartment's planes register when it is worn, under its own atom.
         // The catalog names every face's plane documents; `deriveRegisterBags` leaves every face-scoped bag but the worn group's own four
@@ -3058,7 +3077,7 @@ async function prepareNodeBootOn(
           // so the kernel never layers it; the worker reaches it via the accessor.
           catalogUrl: catalogHandle.url,
           // The lit face's own catalog, laid over the floor's (U1); none at the floor.
-          ...(faceCatalogUrlOf(catalogHandle) ? { faceCatalogUrl: faceCatalogUrlOf(catalogHandle)! } : {}),
+          ...((faceCatalogUrlOf(catalogHandle) ?? faceCatalogExpected) ? { faceCatalogUrl: (faceCatalogUrlOf(catalogHandle) ?? faceCatalogExpected)! } : {}),
           // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
           ...(wornKahua ? { kahuaUrl: wornKahua.url } : {}),
         },
@@ -3074,6 +3093,23 @@ async function prepareNodeBootOn(
     daemonVm = daemonHolder.vm;
     daemonHolder.onRestarted(() => { if (seatSettler) void daemonVm.workerEa.then(() => seatSettler.onFold(), () => undefined); });
     standDaemonVm();
+    // THE FACE'S CATALOG OPENS AFTER ITS HOLDER STANDS (T2): the island stood with its holder, so the sealed catalog
+    // hydrates; the island then registers every bag it names beyond the set its open carried (the face's user bags, a
+    // wiki's rows), since nothing at the floor read them.
+    if (faceCatalogExpected && faceAddressSecret && activeAtom) {
+      await standFaceCatalog(faceAddressSecret);
+      const sent = new Set(sentRegisterBags);
+      const late = deriveRegisterBags({
+        fleets: personaGroupId && wornFaceProved ? [{ personaGroupId, catalogNamed: catalogNamedBags(assembly.catalogHandle.doc()) }] : [],
+        wikiBags: faceWikiBags.registered,
+        ...(kahuCanon.lares || kahuCanon.lararium ? { systemCanon: true } : {}),
+      }).filter((bag) => !sent.has(bag));
+      if (late.length) {
+        await daemonVm.registerFaceBags(activeAtom.key, late);
+        sentRegisterBags = [...sentRegisterBags, ...late];
+        console.log(`[catalog] the island registered ${late.length} bag(s) the face's own catalog names`);
+      }
+    }
     // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────
     // A cross-operator peer holding a VERIFIED face-join grant on THIS face's plane reaches the face's own
     // planes — and nothing else. The ring WIDENS the self-slot fed gate by that ONE path (`compose` ORs it

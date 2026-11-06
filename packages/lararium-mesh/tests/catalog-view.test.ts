@@ -9,11 +9,15 @@
  *        its own half, and the view reads both back merged
  *   V4 — the lift: the rows a floor wrote before the face stood move into the face's catalog and leave the floor, which
  *        then names public rows alone; the lift runs twice with one effect
+ *   V5 — the face expected (a lit face proved, its sealed catalog not yet open, since the island's holder stands later):
+ *        a face row written in that span rests in memory alone, never in the floor's document nor its history; the view
+ *        reads it, and binding the face carries it into the face's catalog; a floor row still lands on the floor
  *   CONTROL — a view with no face lit (the anon floor, a herm) reads and writes the floor as it always did
  *   NONSENSE — every face row class routes D: an address nothing classes F never lands on the floor once a face stands
  */
 import { describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
+import * as A from "@automerge/automerge";
 import { emptyLarDoc, tiddlerText, type LarDoc } from "../src/base-doc.js";
 import { storedLarRecord } from "../src/stored-record.js";
 import { ownEntry } from "../src/stored-value.js";
@@ -128,5 +132,26 @@ describe("the catalog splits by face (U1)", () => {
     for (const t of [bagUri("anything"), bagUri("kahua"), recipeUri("catalog", "notes"), wikiSlotUri("daemon", "working"), "lar:///nowhere/at/all", ""]) {
       expect([t, catalogRowHalf(t)]).toEqual([t, "face"]);
     }
+  });
+
+  test("V5 — the face expected: a face row waits in memory, never in the floor's document or history, and binds into the face's catalog", async () => {
+    const { floor, faceA } = stand();
+    const view = makeCatalogView(floor);
+    const privateBag = bagUri("ledger-expected");
+    view.expectFace();
+    view.change((doc) => {
+      doc.tiddlers[privateBag] = row(privateBag, "automerge:ledgerExpected");
+      doc.tiddlers[ORACLE_DOC_URI] = row(ORACLE_DOC_URI, "automerge:oracleExpected");
+    });
+    // The view reads both; the floor holds the public row alone, and no byte of its history names the face row.
+    expect(tiddlerText(ownEntry(view.doc()?.tiddlers, privateBag))).toBe("automerge:ledgerExpected");
+    expect(titlesOf(floor.doc())).toContain(ORACLE_DOC_URI);
+    expect(titlesOf(floor.doc())).not.toContain(privateBag);
+    expect(Buffer.from(A.save(floor.doc()!)).includes(Buffer.from("ledger-expected"))).toBe(false);
+    const face = await faceA;
+    view.bindFace(face);
+    expect(tiddlerText(ownEntry(face.doc()?.tiddlers, privateBag))).toBe("automerge:ledgerExpected");
+    expect(tiddlerText(ownEntry(view.doc()?.tiddlers, privateBag))).toBe("automerge:ledgerExpected");
+    expect(titlesOf(floor.doc())).not.toContain(privateBag);
   });
 });

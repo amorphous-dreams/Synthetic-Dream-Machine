@@ -302,6 +302,21 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       throw error;
     }
   };
+  // THE LIFT'S RE-REGISTRATION (sealed-store#/owed, U1 · T2): the face's own catalog opens only after this island's
+  // holder stands, so the bags it names reach the register set late. Each registers on the mounted face's hive, durably
+  // through the face plane's ledger as the boot's own did, and joins the set the content-key seat and the chain standing
+  // read. Only the mounted face's own atom asks; a bag the set holds already registers once.
+  const registerLateFaceBags = async (atomKey: string, bags: readonly string[], ctx: IslandContext): Promise<void> => {
+    if (!daemonAuth?.atom || bareKey(atomKey) !== bareKey(daemonAuth.atom.key)) throw new Error(`face-bags-foreign: face ${bareKey(atomKey).slice(0, 12)}… stands not mounted here`);
+    const { keyhive } = await standWorking(ctx);
+    const known = new Set(daemonAuth.registerBags);
+    const fresh = [...new Set(bags)].filter((bag) => typeof bag === "string" && bag.length > 0 && !known.has(bag));
+    if (fresh.length === 0) return;
+    const faceBags = fresh.filter((bag) => !isVesselGround(bag));
+    if (faceLedger) await registerBagsDurably({ provider: keyhive, bags: faceBags, ledger: faceLedger });
+    else for (const bag of faceBags) await keyhive.registerBag(bag);
+    (daemonAuth as { registerBags: readonly string[] }).registerBags = [...daemonAuth.registerBags, ...fresh];
+  };
   // THE FACELESS FLOOR'S VERIFIER. No Keyhive stands, so no capability delegates to anybody: the place acts on its own
   // ground. A verb the vessel's own presence channel took (`channel: "local"`) clears on a bag this vessel registered at the
   // floor; every other ask, a peer's or one that names a face's bag, answers the waking-floor refusal.
@@ -344,7 +359,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // A system canon bag's live document, named by the Kahu realm's bag row in this vessel's catalog. Naming it asks
   // nothing (a copy OUT of canon reads it); every write clears the Kahu predicate before access resolves.
   const realmCanonUrlOf = (ctx: IslandContext) => async (bagUri: string): Promise<string | null> =>
-    ctx.catalogUrl ? realmStandingDocUrl((await makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl).handle()).doc(), bagUri) : null;
+    ctx.catalogUrl ? realmStandingDocUrl((await makeCatalogAccessor(ctx.repo, ctx.catalogUrl, null).handle()).doc(), bagUri) : null;
 
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
   // through it (the island's slot grants, the host mount by proxy, wiki init, prune-stale,
@@ -546,8 +561,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         faceLedger = null;
         if (daemonAuth.personaGroupId) {
           try {
-            if (!ctx.catalogUrl) throw new Error("catalog unavailable");
-            const store = await makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl).storeOf(personaBagIdFor(daemonAuth.personaGroupId));
+            // The face's plane as this island mounts it, else the catalog's row for it. The row rests in the face's own
+            // catalog, sealed, which opens only once this island's holder stands below (sealed-store#/owed, T2), so the
+            // mounted layer answers first and the boot never waits on its own holder.
+            const planeBag = personaBagIdFor(daemonAuth.personaGroupId);
+            const mounted = ctx.composite.hasBag(planeBag) ? ctx.composite.storeForBag(planeBag) : null;
+            if (!mounted && !ctx.catalogUrl) throw new Error("catalog unavailable");
+            const store = mounted ?? await makeCatalogAccessor(ctx.repo, ctx.catalogUrl!, ctx.faceCatalogUrl).storeOf(planeBag);
             if (!store) throw new Error("face plane absent");
             await store.listVisible();
             faceLedger = planeBagDocLedger(store);
@@ -1257,6 +1277,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (msg.type === "daemon:face-lit") {
           try { await lightJoinedFace(msg.entry, ctx); }
           catch (error) { throw new Error(`face ${msg.entry.atom.key} refused: ${String(error)}`); }
+        } else if (msg.type === "daemon:face-bags") {
+          await registerLateFaceBags(msg.atomKey, msg.bags, ctx);
         } else {
           const key = bareKey(msg.atomKey);
           if (daemonAuth.atom && key === bareKey(daemonAuth.atom.key)) throw new Error(`mounted face ${key} cannot be dropped`);

@@ -536,8 +536,8 @@ export interface DaemonMsg_VerbResult {
 }
 
 
-export interface DaemonMsg_FaceSettled { type: "daemon:face-settled"; atomKey: string; op: "lit" | "dropped"; ok: boolean; reason?: string; }
-export const mkDaemonFaceSettled = (atomKey: string, op: "lit" | "dropped", ok: boolean, reason?: string): DaemonMsg_FaceSettled => ({ type: "daemon:face-settled", atomKey, op, ok, ...(reason === undefined ? {} : { reason }) });
+export interface DaemonMsg_FaceSettled { type: "daemon:face-settled"; atomKey: string; op: "lit" | "dropped" | "bags"; ok: boolean; reason?: string; }
+export const mkDaemonFaceSettled = (atomKey: string, op: "lit" | "dropped" | "bags", ok: boolean, reason?: string): DaemonMsg_FaceSettled => ({ type: "daemon:face-settled", atomKey, op, ok, ...(reason === undefined ? {} : { reason }) });
 export const isDaemonFaceSettled = (v: IslandToVesselMsg): v is DaemonMsg_FaceSettled => v.type === "daemon:face-settled";
 
 export interface DaemonMsg_FaceLit { type: "daemon:face-lit"; entry: JoinedFaceAuth; }
@@ -546,6 +546,15 @@ export const mkDaemonFaceLit = (entry: JoinedFaceAuth): DaemonMsg_FaceLit => ({ 
 export const mkDaemonFaceDrop = (atomKey: string): DaemonMsg_FaceDrop => ({ type: "daemon:face-drop", atomKey });
 export const isDaemonFaceLit = (v: VesselToIslandMsg): v is DaemonMsg_FaceLit => v.type === "daemon:face-lit";
 export const isDaemonFaceDrop = (v: VesselToIslandMsg): v is DaemonMsg_FaceDrop => v.type === "daemon:face-drop";
+/**
+ * THE LIFT'S RE-REGISTRATION (sealed-store#/owed, U1 · T2): the face's own catalog opens only once the daemon island's
+ * holder stands, so the bags it names reach the island's register set after the island booted. The island registers each
+ * on the mounted face's hive (durably, as the boot's own) and answers `daemon:face-settled` with op `bags` under the
+ * mounted atom's key. A bag already registered registers once.
+ */
+export interface DaemonMsg_FaceBags { type: "daemon:face-bags"; atomKey: string; bags: readonly string[]; }
+export const mkDaemonFaceBags = (atomKey: string, bags: readonly string[]): DaemonMsg_FaceBags => ({ type: "daemon:face-bags", atomKey, bags: [...bags] });
+export const isDaemonFaceBags = (v: VesselToIslandMsg): v is DaemonMsg_FaceBags => v.type === "daemon:face-bags";
 
 /**
  * PeerClass — the class a gate's sorter answers for an admitted socket, before its verdict; the node
@@ -722,6 +731,7 @@ export type VesselToIslandMsg =
   | DaemonMsg_VerbResult
   | DaemonMsg_FaceLit
   | DaemonMsg_FaceDrop
+  | DaemonMsg_FaceBags
   | DaemonMsg_ResolveBindingRequest
   | DaemonMsg_GateVerbRequest
   | DaemonMsg_EvictResult
@@ -1099,7 +1109,7 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:face-bags", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], "wiki:request-drain" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
