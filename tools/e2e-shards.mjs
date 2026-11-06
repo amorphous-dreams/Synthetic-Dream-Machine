@@ -33,6 +33,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { POLL_FLOOR_S } from "./ci-verdict.mjs";
 
 // ── the merge gate's pure law ───────────────────────────────────────────────────────────────────
 
@@ -347,7 +348,7 @@ function assertNotBare(repoRoot) {
  * `{ ok, shardCounts, totalTests, run }`. Always deletes the branch, even on a red run — a proof
  * branch left standing after a red read is exactly the kind of debris this tool must not leave.
  */
-export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000, pollMs = 3000 }) {
+export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 2 * POLL_FLOOR_S * 1000, pollMs = POLL_FLOOR_S * 1000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)), now = Date.now }) {
   assertNotBare(repoRoot);
   const branch = `ci/${lane}`;
   const headSha = run("git", ["-C", repoRoot, "rev-parse", "HEAD"], { stdio: ["ignore", "pipe", "pipe"] }).trim();
@@ -355,8 +356,8 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   run("git", ["-C", repoRoot, "push", "origin", `HEAD:refs/heads/${branch}`], { stdio: ["ignore", "pipe", "pipe"] });
 
   let runId;
-  const deadline = Date.now() + findBudgetMs;
-  while (Date.now() < deadline) {
+  const deadline = now() + findBudgetMs;
+  while (now() < deadline) {
     // NEVER `--workflow e2e-shards.yml` here: GitHub's API only resolves a workflow BY FILENAME
     // once that file exists on the repo's default branch, and this tool exists to prove
     // a workflow file that lives only on a throwaway `ci/<lane>` branch. `--branch` + `--event
@@ -370,7 +371,7 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
     const runs = JSON.parse(listed);
     const match = runs.find((r) => r.headSha === headSha);
     if (match) { runId = match.databaseId; break; }
-    await new Promise((r) => setTimeout(r, pollMs));
+    await sleep(pollMs);
   }
   if (!runId) {
     deleteBranch(repoRoot, branch);
@@ -380,7 +381,7 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   // Watches to completion; a red run makes `gh run watch --exit-status` itself exit non-zero, so
   // the watch result alone already answers "red or not" — this helper still reads the log line
   // below for the shard counts and totals the report asks for.
-  // ONE LOOK EVERY HALF MINUTE. `gh run watch` polls every three seconds by default, and each poll spends
+  // ONE ROUND OF READS PER POLL FLOOR (180 s, the house pace; a round may issue several gh calls back to back). `gh run watch` polls every three seconds by default, and each poll spends
   // several calls of the 5000 an hour every lane, lead and tool on this account shares: a few lanes watching
   // at once spend the hour's whole budget, and then every `gh` read refuses, this one included.
   const watch = spawnSync("gh", ["run", "watch", String(runId), "--exit-status", "--interval", WATCH_INTERVAL_S], { cwd: repoRoot, encoding: "utf8" });
@@ -414,7 +415,7 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
 }
 
 /** Seconds between the watch's looks at a run. */
-export const WATCH_INTERVAL_S = "30";
+export const WATCH_INTERVAL_S = String(POLL_FLOOR_S);
 
 /** What `push` says when it pushed a run and could not read its verdict: neither green nor red. */
 export const unreadVerdict = (runId) =>
