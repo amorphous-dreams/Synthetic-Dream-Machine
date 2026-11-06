@@ -122,7 +122,7 @@ The operator ruled it (2026-11-04): users keep full caps over their own wikis, w
 * ''The bound acts.'' Every act that reads the root: a daemon or kahua `promote-commit` (its ledger row carries `wardSig` over (wiki, digest, seq), and boot voids a bound row without one, however the row reached the ledger), `kapae-lower`, the swarm's house cap, lane shares and push go, and every act that changes who belongs to the face or what it trusts: admit, fleet-join, recovery contacts, the handles, nexus publish, the lease, the intent root, a holder's edge kāpae, the seal witness, backup and restore, the founder's certificate at a new scope. `kapae-raise` only adds a brake, so it fails safe and signs as the device's own atom.
 * ''A face founded before the ward'' refuses `ward-absent` until `lares vault rewrap --face N` binds its ward and moves its root under it (the tree first, so a torn rewrap resumes).
 
-Residuals, named: the ward is only as strong as the passphrase, offline; the browser root still rests under the keystore's tree key (only its bound acts sign through the ward worker), and its page hands the typed passphrase to the worker; the founder certificate at a new scope issues inside the face-unlock act, under the route the person just typed; the kahua lift, withdraw and carry sign with the root and so ride the ward, though the ruling names every lift free (freeing them needs a device-atom lift in the kahua reader, the operator's call); a racer that reads a ward ref off the daemon document can spend it only on the identical act the operator asked for (binding it to the socket waits on S4's channel); a dropped bound promotion leaves a tombstone in the same device-local ledger row the face's custody writes, so ANY plaintext edit by a writer holding unlocked custody can strip that tombstone and replay the dropped row, not only a whole-row rollback; the cure (a floor that writer cannot forge: a board-anchored drop shadow, or a ward-signed ledger head) stands owed after standing as the road's `L23`, and lands with no re-genesis since the ledger is device-local; the co-sign of a second device (S3) is not yet here.
+Residuals, named: the ward is only as strong as the passphrase, offline; the browser root still rests under the keystore's tree key (only its bound acts sign through the ward worker), and its page hands the typed passphrase to the worker; the founder certificate at a new scope issues inside the face-unlock act, under the route the person just typed; the kahua lift, withdraw and carry sign with the root and so ride the ward, though the ruling names every lift free (freeing them needs a device-atom lift in the kahua reader, the operator's call); a racer that reads a ward ref off the daemon document can spend it only on the identical act the operator asked for (binding it to the socket waits on S4's channel); a dropped bound promotion leaves a tombstone in the same device-local ledger row the face's custody writes, so ANY plaintext edit by a writer holding unlocked custody can strip that tombstone and replay the dropped row, not only a whole-row rollback; the cure (a floor that writer cannot forge: a board-anchored drop shadow, or a ward-signed ledger head) stands owed before the rite as the road's `L23`, and lands with no re-genesis since the ledger is device-local; the co-sign of a second device (S3) is not yet here.
 
 <<~/ahu>>
 
@@ -139,15 +139,26 @@ Residuals, named: the ward is only as strong as the passphrase, offline; the bro
 The wiki-daemon key cap stands in six slices, each red-first with its control. The operator ruled it at standing (2026-11-04) and ruled the ward's reach (2026-11-04 and 2026-11-05; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). The founding waits on `S1` to `S3`, `S2b`, `S3-pre-b` and `S3b`; `S4` to `S6` follow the standing.
 
 |! Slice |! Holds |! State, 2026-11-05 |
-| `S1` | the swarm tiddler model and the hand-only verbs | built; rides the `S2` lane |
-| `S2` | the ward: a `ward-slots.bin` tree under each face, a fresh unlock per act, passkey refused | built with its cold-read cures and the marker cure (the product founds no face from a marker file); on its lane, CI green at its earlier head |
-| `S2b` | the browser root under the ward | owed before the rite |
-| `S3a` | the co-sign judge, the self-answer cure, `ask --detail`, the blinded per-face vessel tag over a random per-face tag secret (a D row, vessel-local, derived from no seed) | built on its own lane |
-| `S3-pre-b` | the founding and join wiring of the vessel tag, default `required`: the founding mints the founder face's tag secret under its ask and its settle moves it onto the group's row; the join request mints the joinee face's | building on the `S3a` lane; founding-critical |
-| `S3b` | the gate hook that calls the judge | owed before the rite, after `S2` |
+| `S1` | the swarm tiddler model and the hand-only verbs | landed with `S2` (PR #167, `a9f461bf4`) |
+| `S2` | the ward: a `ward-slots.bin` tree under each face, a fresh unlock per act, passkey refused | landed (PR #167, `a9f461bf4`): the marker cure, the ward-dial-in-flight refusal by name, the witness slot audit |
+| `S2b` | the browser root under the ward | built on lane `row7-s2b` (cures in CI); lands before the rite |
+| `S3a` | the co-sign judge, the self-answer cure, `ask --detail`, the blinded per-face vessel tag over a random per-face tag secret (a D row, vessel-local, derived from no seed) | landed (PR #168, `f2b786887`) |
+| `S3-pre-b` | the founding and join wiring of the vessel tag, default `required`: the founding mints the founder face's tag secret under its ask and its settle moves it onto the group's row; the join request mints the joinee face's | landed (PR #168, `f2b786887`); founding-critical |
+| `S3b` | the gate hook: each ward act calls `judgeCosign`, never `mayAct` | built on lane `row7-s3b` (the readers enforce the co-sign next); lands before the rite |
 | `S4` | the capability channel and the AF_UNIX probe | designed below |
 | `S5` | vessel-signed roster and receipt, the broker swap | designed below |
 | `S6` | canon | designed below |
+
+!!! The S3 cures the reads found
+
+An Opus co-sign reader read LAND-AFTER-CURES and found the pinned-audience hole; Terra read HOLD, its ranks rolled into C2 to C4 and the owed residues; a Terra re-read of the cures read LAND-AFTER-CURES and found R1 and R2.
+* ''C1.'' The co-sign verbs need audience `asks`.
+* ''C2.'' The plane counts only an ask its issuer signed, answered by a distinct standing device.
+* ''C3.'' The root signs only after the tag checks pass.
+* ''C4.'' A replay appends nothing.
+* ''R1.'' A replay serves the seated edge only when its digest matches; otherwise it refuses `replay-edge-lapsed`.
+* ''R2.'' A stale table fails closed, by ward verb name.
+* ''Owed residues'' rest as road rows in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/stride-0-hearth`>> (`L24` to `L27`).
 
 !!! Live holes the scouts found
 
@@ -199,6 +210,6 @@ This carrier gains its standing sections and rewrites the broker bullets and the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XDfRF4EC8oY587hwkTSpIuCj1WmoZ9eoy4NrC_25zF4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gF4pG_3wUXjSKNgPw8TR1fWXZxA2dgYR65YWGLU3ycA`>>
 
 <<^ code=`&#x0004;` to=`?`>>
