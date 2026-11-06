@@ -12,6 +12,9 @@
  *   V5 — the face expected (a lit face proved, its sealed catalog not yet open, since the island's holder stands later):
  *        a face row written in that span rests in memory alone, never in the floor's document nor its history; the view
  *        reads it, and binding the face carries it into the face's catalog; a floor row still lands on the floor
+ *   V6 — two lit faces, the worn one and a sibling lit beside it: each reads through its OWN view (F with its own D), so a
+ *        row registered under one never reads under the other, the worn face's catalog holds none of the sibling's rows
+ *        and the floor holds neither's; the book's union names both, for the vessel's own bridge reading
  *   CONTROL — a view with no face lit (the anon floor, a herm) reads and writes the floor as it always did
  *   NONSENSE — every face row class routes D: an address nothing classes F never lands on the floor once a face stands
  */
@@ -26,7 +29,7 @@ import { personaScopedBagIds } from "../src/persona-scope.js";
 import { wikiSlotUri, wikiWorkingFloorKey } from "../src/wiki-recipe.js";
 import { catalogNamedBags } from "../src/register-bags.js";
 import {
-  catalogRowHalf, faceCatalogDocUrl, openFaceCatalog, FaceCatalogRefusal, makeCatalogView, liftFaceCatalogRows,
+  catalogRowHalf, faceCatalogDocUrl, openFaceCatalog, FaceCatalogRefusal, makeCatalogView, liftFaceCatalogRows, faceViewBook,
 } from "../src/catalog-view.js";
 
 const secretA = new Uint8Array(32).fill(0xa1);
@@ -153,5 +156,23 @@ describe("the catalog splits by face (U1)", () => {
     expect(tiddlerText(ownEntry(face.doc()?.tiddlers, privateBag))).toBe("automerge:ledgerExpected");
     expect(tiddlerText(ownEntry(view.doc()?.tiddlers, privateBag))).toBe("automerge:ledgerExpected");
     expect(titlesOf(floor.doc())).not.toContain(privateBag);
+  });
+
+  test("V6 — two lit faces each read through their own view: neither reads the other's rows, the worn catalog and the floor hold none of the sibling's", async () => {
+    const { floor, faceA } = stand();
+    const worn = makeCatalogView(floor, await faceA);
+    const book = faceViewBook(floor, { group: "group-a", view: worn });
+    const rowA = bagUri("plane-of-a"), rowB = bagUri("plane-of-b");
+    book.viewOf("group-a").change((doc) => { doc.tiddlers[rowA] = row(rowA, "automerge:planeA"); });
+    book.viewOf("group-b").change((doc) => { doc.tiddlers[rowB] = row(rowB, "automerge:planeB"); });
+    expect(book.viewOf("group-a"), "the worn face reads through the worn view").toBe(worn);
+    expect(titlesOf(book.viewOf("group-a").doc())).toContain(rowA);
+    expect(titlesOf(book.viewOf("group-a").doc())).not.toContain(rowB);
+    expect(titlesOf(book.viewOf("group-b").doc())).toContain(rowB);
+    expect(titlesOf(book.viewOf("group-b").doc())).not.toContain(rowA);
+    expect(titlesOf((await faceA).doc())).not.toContain(rowB);
+    expect(titlesOf(floor.doc())).not.toContain(rowA);
+    expect(titlesOf(floor.doc())).not.toContain(rowB);
+    expect(titlesOf(book.everyRow())).toEqual(expect.arrayContaining([rowA, rowB]));
   });
 });

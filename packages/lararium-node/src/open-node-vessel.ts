@@ -59,7 +59,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, FACE_CATALOG_BAG_ID, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -2860,12 +2860,19 @@ async function prepareNodeBootOn(
     // THE FACE'S OWN CATALOG stands EXPECTED once the face proves and its boot dial stood: every face row this boot
     // registers waits in the view's memory until the island's holder stands and the sealed catalog opens (below).
     if (wornFaceProved && faceAddressSecret) expectFaceCatalog(faceAddressSecret);
-    const registerInCatalog = (bagId: string, url: string | null | undefined): void => {
-      if (!url || tiddlerText(ownEntry(assembly.catalogHandle.doc()?.tiddlers, bagId)) === url) return;
-      assembly.catalogHandle.change((doc) => {
+    // EACH FACE REGISTERS THROUGH ITS OWN VIEW (sealed-store#/owed, U1): the worn face through the vessel's catalog view;
+    // a face lit beside it (a relay face, `lightFace`) through its own F with its own D, never the worn face's.
+    const wornView = catalogViewOf(assembly.catalogHandle);
+    const faceViews = faceViewBook(wornView?.floorHandle ?? assembly.catalogHandle, personaGroupId && wornFaceProved ? { group: personaGroupId, view: assembly.catalogHandle } : null);
+    catalogForViews = () => faceViews.everyRow();
+    const registerInCatalogOf = (group: string | null | undefined) => (bagId: string, url: string | null | undefined): void => {
+      const into = group ? faceViews.viewOf(group) : assembly.catalogHandle;
+      if (!url || tiddlerText(ownEntry(into.doc()?.tiddlers, bagId)) === url) return;
+      into.change((doc) => {
         doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "vessel-boot");
       });
     };
+    const registerInCatalog = registerInCatalogOf(personaGroupId);
     // EVERY PLANE FAMILY REGISTERS THROUGH A FACE PROOF: a face this boot does not wear registers its persona plane only where its
     // own sealed anchor, the verified KEL and its signed log vouch for that url (`proveFaceFromLog`, no device seat to prove);
     // a bootstrap entry no proof backs registers nothing.
@@ -2892,7 +2899,7 @@ async function prepareNodeBootOn(
       for (const plane of bootstrap.personaPlanes) {
         if (plane.personaGroupId === personaGroupId) continue;
         try {
-          await registerFacePlanesForRelay({ group: plane.personaGroupId, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: () => proveOtherFace(plane), register: registerInCatalog });
+          await registerFacePlanesForRelay({ group: plane.personaGroupId, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: () => proveOtherFace(plane), register: registerInCatalogOf(plane.personaGroupId) });
         } catch (error) { console.warn(`[lar-gate] relay planes for ${plane.personaGroupId} did not register: ${error instanceof Error ? error.message : String(error)}`); }
       }
     };
@@ -2900,11 +2907,11 @@ async function prepareNodeBootOn(
       if (plane.personaGroupId === personaGroupId) continue;
       if (await proveOtherFace(plane)) {
         provenPlanes.set(plane.personaGroupId, plane.url);
-        await registerFacePlanesForRelay({ group: plane.personaGroupId, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: proveRelayFace, register: registerInCatalog });
+        await registerFacePlanesForRelay({ group: plane.personaGroupId, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: proveRelayFace, register: registerInCatalogOf(plane.personaGroupId) });
       }
     }
     for (const plane of bootstrap.personaPlanes) {
-      if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url);
+      if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalogOf(plane.personaGroupId)(personaBagIdFor(plane.personaGroupId), plane.url);
     }
     // The mounted face's siblings ride the bootstrap under their own derived names; register them beside a PROVEN mounted face.
     const wornFace = wornFaceProved && bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null;
@@ -2992,7 +2999,7 @@ async function prepareNodeBootOn(
         classDeviceLedgers(vesselPrivate, [entry.atom.key]);   // classed before the island opens it
         await daemonVm.lightFace(entry);
         const group = (await loadIdentityAnchors(ordinal))?.personaGroupId;
-        if (group) await registerFacePlanesForRelay({ group, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: proveRelayFace, register: registerInCatalog });
+        if (group) await registerFacePlanesForRelay({ group, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: proveRelayFace, register: registerInCatalogOf(group) });
       }
       await intentRelay?.refresh();
     };

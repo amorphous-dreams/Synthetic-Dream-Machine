@@ -289,3 +289,35 @@ export function liftFaceCatalogRows(floor: DocHandle<LarDoc>, face: DocHandle<La
   floor.change((fd) => { for (const title of titles) delete (fd.tiddlers as Record<string, unknown>)[title]; });
   return titles;
 }
+
+/** Every lit face's own view over one floor, by PersonaGroup (`faceViewBook`). */
+export interface FaceViewBook {
+  /** The view a face reads and registers through: the worn face's own, else a sibling's F with its own D. */
+  viewOf(group: string): DocHandle<LarDoc>;
+  /** Every row any face's view reads, merged (the vessel's own bridge reading, never a face's). */
+  everyRow(): LarDoc | undefined;
+}
+
+/**
+ * THE SIBLING FACES' OWN VIEWS (sealed-store#/owed, U1): a face lit beside the worn one (`lightFace`) reads and registers
+ * through its OWN view, the floor with its own D, never the worn face's. A sibling's D holds its rows in the view's memory
+ * (`expectFace`): its seal under the sibling's own chain stays owed, so it rests nowhere, and its rows re-derive from the
+ * sibling's proof at each lighting. With no worn face, every group reads a sibling view.
+ */
+export function faceViewBook(floor: DocHandle<LarDoc>, worn: { readonly group: string; readonly view: DocHandle<LarDoc> } | null): FaceViewBook {
+  const siblings = new Map<string, CatalogView>();
+  const viewOf = (group: string): DocHandle<LarDoc> => {
+    if (worn && group === worn.group) return worn.view;
+    let view = siblings.get(group);
+    if (!view) { view = makeCatalogView(floor); view.expectFace(); siblings.set(group, view); }
+    return view;
+  };
+  return {
+    viewOf,
+    everyRow: () => {
+      const docs = [worn?.view.doc() ?? floor.doc(), ...[...siblings.values()].map((v) => v.doc())].filter((d): d is LarDoc => d !== undefined);
+      if (docs.length <= 1) return docs[0];
+      return { ...docs[0]!, tiddlers: Object.assign({}, ...docs.map((d) => d.tiddlers)) } as LarDoc;
+    },
+  };
+}
