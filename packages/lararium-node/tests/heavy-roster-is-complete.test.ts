@@ -114,11 +114,14 @@ const EXCLUDED_BY_DESIGN: Record<string, string> = {
     "`node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
   "tests/e2e/place-session-seals.test.ts":
     "excluded from `main`, absent from `heavy` — two full `openNodeVessel` boots over one founded root with no dial: the face's save " +
-    "seals under its place session, reaches rest, and the restart reads it back. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, " +
+    "seals under its place session, reaches rest, and the restart reads it back; a third boot locks and its place signer drops. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, " +
     "`tests/e2e/**/*.test.ts`).",
   "tests/e2e/floor-user-wiki-refuses.test.ts":
     "excluded from `main`, absent from `heavy` — full `openNodeVessel` boots at the floor: a user wiki waits by name while the floor " +
     "stands on its floor wiki, and mounts after the unlock; a floor row's wiki boots. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
+  "tests/e2e/session-sign-reach.test.ts":
+    "excluded from `main`, absent from `heavy` — three full `openNodeVessel` boots (two at the floor, one sovereign): the floor's record " +
+    "carries no session sign door and answers `signer-unavailable`; the sovereign one signs. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
 };
 
 describe("the serial heavy roster detects its own staleness", () => {
