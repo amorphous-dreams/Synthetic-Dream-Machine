@@ -500,8 +500,8 @@ export function lateDialOnce(deps: {
  * One late stand of a take's re-present. With a hearth to dial, the dial carries the take's route (the founder's certificate at
  * that Nexus issues inside it). With none, the route is never dropped silently: it certifies the founder at the TAKEN Nexus,
  * where a kept bundle there names no sync url (seat-harness#/the-ward). One ward answer, one act: no other kept Nexus takes a
- * certificate under it, and a route naming no Nexus certifies nothing. A route naming a Nexus that neither the dial nor a
- * no-url bundle answers for refuses `ward-route-unspent`. With no route and no hearth it does nothing, and a
+ * certificate under it. A route naming no Nexus, or a Nexus that neither the dial nor a no-url bundle answers for, certifies
+ * nothing and refuses `ward-route-unspent`. With no route and no hearth it does nothing, and a
  * closed stand does nothing; `live` reads again before the certificate's await.
  */
 export async function standLateTake<C extends { readonly syncUrl: string | null }>(deps: {
@@ -515,7 +515,8 @@ export async function standLateTake<C extends { readonly syncUrl: string | null 
   const late = deps.choose();
   if (!deps.live()) return;
   if (late.syncUrl !== null) return deps.dial(late, ward);
-  if (ward === undefined || nexusAid === undefined) return;
+  if (ward === undefined) return;
+  if (nexusAid === undefined) throw new WardRefused("ward-route-unspent", "the take's route names no Nexus to certify at, and the late choice dials no hearth");
   const taken = deps.kept().find((k) => !k.syncUrl && k.aid.toLowerCase() === nexusAid.toLowerCase());
   if (!deps.live()) return;
   // THE ROUTE NEVER GOES UNSPENT IN SILENCE: a taken bundle that names a hearth the choice does not dial, or a Nexus no kept
