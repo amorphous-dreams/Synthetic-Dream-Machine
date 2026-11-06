@@ -8,6 +8,7 @@
  * (`tools/page-entry-witness.mjs` walks it from `lararium-web`'s `main.ts`).
  */
 export { DAEMON_SURFACE_ID } from "./daemon-surface.js";
+export { wardAskWords, type WardAskKind } from "./ward-ask-words.js";
 export { vesselLockName } from "./vessel-lock.js";
 export { requestDurableStorage, storageFloorReport } from "./secure-context-gate.js";
 export type { StoragePersistence, StorageReading } from "./secure-context-gate.js";

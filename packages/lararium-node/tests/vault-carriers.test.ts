@@ -84,6 +84,7 @@ const SOWN: Record<string, string> = {
   [`identity/faces/${FCID}/promoted-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/kapae-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/face-owner.bin`]: "x",
+  [`identity/faces/${FCID}/face-ward-key.bin`]: "x",
   [`identity/faces/${FCID}/fk-slots.bin`]: "tree",
   [`identity/faces/${FCID}/ward-slots.bin`]: "ward tree",
   "identity/face-index.json":                    "{}",
@@ -97,6 +98,8 @@ const SOWN: Record<string, string> = {
   [`identity/faces/${FCID}/face-address-secret-g${"5e".repeat(32)}.bin`]: "x",
   [`identity/faces/${FCID}/fleet-join-pending-g${"6e".repeat(32)}.json`]: "{}",
   [`identity/faces/${FCID}/face-join-record-g${"6f".repeat(32)}.json`]: "{}",
+  [`identity/faces/${FCID}/vessel-face-tag-g${"7a".repeat(32)}.bin`]: "x",
+  [`identity/faces/${FCID}/vessel-face-tag-ask-${"7b".repeat(32)}.bin`]: "x",
   "identity/switch-acts.json":                 "[]",
   "identity/.persona-enroll-pending.json":      "{}",
   "identity/.persona-grant-pending.json":       "{}",
@@ -138,7 +141,7 @@ const RULED: Record<string, CustodyClass> = {
   "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-chunk": "floor-plain",
   // The outbox's parcels rest under the outbox key, which its face key seals in a face-hot row.
   "sealed-outbox": "outbox", "outbox-key": "face-hot",
-  "gate-root": "hot", "veil-archive": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "promoted": "face-hot", "kapae-local": "face-hot", "face-owner": "face-hot",
+  "gate-root": "hot", "veil-archive": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "promoted": "face-hot", "kapae-local": "face-hot", "face-owner": "face-hot", "face-ward-key": "face-hot",
   "fk-slots": "floor", "face-index": "floor-plain",
   // A session switch's acts name two faces together, so they rest sealed on this vessel and in no document.
   "switch-acts": "hot", "enroll-pending": "hot", "grant-pending": "hot", "recovery-contact-set": "face-hot", "admissions": "hot", "anchors": "face-hot",
@@ -152,6 +155,8 @@ const RULED: Record<string, CustodyClass> = {
   "vessel-face-key": "face-hot", "face-proof-key": "face-cold", "face-provisional": "face-hot",
   // The fleet-join door's three rows: a face's address secret, a join half done, and the joined face's record.
   "face-address-secret": "face-hot", "fleet-join-pending": "face-hot", "face-join-record": "face-hot",
+  // A face's random tag secret, under its group and while its founding's ask names it.
+  "vessel-face-tag": "face-hot", "vessel-face-tag-ask": "face-hot",
   // A seat's own key: it opens for one signature (kahu#/seed-and-nexus).
   "seat-key": "face-cold",
   // A hearth's own cadence key and its next key: they open for one act (kahu#/contract, engine cadence ruling).

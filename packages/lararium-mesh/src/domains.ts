@@ -573,6 +573,18 @@ export const FACE_LEAF_BOND_DOMAIN = mint("face-leaf-bond");
 /** A face's ask to feed one realm as its leaf, signed by its atom over the one request it rides: a bond proves a past
  *  signing, and this proves the present hand, so no bond replays as a feed (`face-leaf-bond`). */
 export const REALM_FEED_ASK_DOMAIN = mint("realm-feed-ask");
+/** The digest a ward co-sign ask names its act by: (act, face, wiki, head cid). Its own name, so no other digest reads as one. */
+export const WARD_COSIGN_DIGEST_DOMAIN = mint("ward-cosign-digest");
+/** What a co-signer's per-face ward key signs in its answer to a ward ask: (the answer, the ask's digest, the fleet frontier it read). */
+export const WARD_ANSWER_DOMAIN = mint("ward-answer");
+/** The per-face ward signing seed a node derives from that face's own ward key: its public half rides the device's admission. */
+export const WARD_SIGN_SEED_DOMAIN = mint("ward-sign-seed");
+/** What a device's per-face ward key signs to prove its admission names a key that device holds: (group, device atom, ward key). */
+export const WARD_KEY_POP_DOMAIN = mint("ward-key-pop");
+/** The per-face key a vessel derives from that face's random tag secret and its group id: its public half is the blinded vessel tag an admission carries. */
+export const VESSEL_FACE_TAG_SEED_DOMAIN = mint("vessel-face-tag-seed");
+/** What the per-face tag key signs: the admission it rides (group and device atom), so a tag never vouches for another admission or face. */
+export const VESSEL_FACE_TAG_PROOF_DOMAIN = mint("vessel-face-tag-proof");
 
 /**
  * Every domain this house mints, in declaration order. DERIVED: each `mint` and `frozen` call above lands

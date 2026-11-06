@@ -3,6 +3,7 @@
  * owner from (K15-H). `sealOwnerFace` mints a real inception under the persona root at `handleIndex`, keeps the face-anchor row
  * under a PersonaGroup the identity anchors name, and returns the per-Nexus KEL board the chain rides on.
  */
+import { FIXTURE_WARD } from "./browser-custody-fixture.js";
 import * as ed25519 from "@noble/ed25519";
 import {
   mintPersonaInception, mintFaceAnchor, writePersonaKelEvent, type LarDoc, type PersonaKelEvent,
@@ -29,8 +30,8 @@ export interface SealedOwnerFace {
 export async function sealOwnerFace(
   idbName: string, handleIndex: number, kelBoard: { doc(): LarDoc } = stableBoard(),
 ): Promise<SealedOwnerFace> {
-  await generateOrLoadBrowserPersonaRoot(idbName, handleIndex);
-  const did = "0x" + hexOf(await ed25519.getPublicKeyAsync(await loadBrowserPersonaRootSeed(idbName, handleIndex)));
+  await generateOrLoadBrowserPersonaRoot(idbName, handleIndex, FIXTURE_WARD);
+  const did = "0x" + hexOf(await ed25519.getPublicKeyAsync(await loadBrowserPersonaRootSeed(idbName, handleIndex, FIXTURE_WARD)));
   const inception = mintPersonaInception(did, "recovery-" + handleIndex.toString(16).padStart(2, "0").repeat(30));
   const group = `group-h${handleIndex}`;
   const vault = await makeBrowserIdbPersonaVault(idbName);

@@ -36,7 +36,7 @@
  *
  * Node-main only: a worker never imports this module.
  */
-import { GATE_FLOOR_BUNDLE_INFO, custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh";
+import { GATE_FLOOR_BUNDLE_INFO, WardRefused, custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable, FaceLocked, type CustodyHolder, type FaceRef, type RowUpdate, type WardSeat } from "./custody-holder.js";
 import { wardCredentialsOf, wardOrGather, type WardCredential } from "./ward-credential.js";
 import { CustodyRootRefused } from "./custody-root.js";
@@ -278,6 +278,16 @@ export async function withWardKeyCustody<T>(face: FaceRef, ward: WardCredential 
   // No token rode the act: the process's seated gatherer (a person at this terminal) asks for this act, or the act refuses.
   const credentials = wardCredentialsOf(await wardOrGather(ward, what ?? "a ward act"), what);
   return (await openedCustody()).withWardKey(face, credentials, act);
+}
+
+/**
+ * The face's ward key on this device, its public half (the `wardKey` an admission into the face carries): the face stands unlocked
+ * and no ward opens. A face whose ward holds no key row refuses `ward-key-absent` by name.
+ */
+export async function faceWardKeyCustody(face: FaceRef): Promise<string> {
+  const key = await (await openedCustody()).wardPublicKey(face);
+  if (key === null) throw new WardRefused("ward-key-absent", "this face's ward holds no key row; run ward rewrap (`lares vault rewrap --face <N>`)");
+  return key;
 }
 
 /** Move a pre-ward face's root under a ward (`lares ward rewrap`): the ward tree first, then each root row. */

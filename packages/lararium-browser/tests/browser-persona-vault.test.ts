@@ -14,7 +14,7 @@
  *     binding feeds the worker;
  *   · a joinee (no root) reads its persona through the anchor, never a root it lacks.
  */
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { runFoundingCeremony } from "@lararium/keyhive";
@@ -28,6 +28,7 @@ import {
 } from "../src/browser-vessel-identity.js";
 import type { IdentityAnchors, DeviceDelegationTiddler, LarDid } from "@lararium/mesh";
 import { readWornPersonaMount } from "@lararium/mesh";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 let created = 0;
 const freshIdb = (): string => `lares:test-persona:${Date.now()}:${created++}`;
@@ -50,9 +51,9 @@ describe("the browser persona multitude over IndexedDB", () => {
   test("founds a multitude — two DISTINCT roots persist + roster, ascending", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
-    const h0 = await generateOrLoadBrowserPersonaRoot(name, 0);
+    const h0 = await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
     await bindSyntheticBrowserCustodySlot(name);
-    const h1 = await generateOrLoadBrowserPersonaRoot(name, 1);
+    const h1 = await generateOrLoadBrowserPersonaRoot(name, 1, FIXTURE_WARD);
     expect(h0.created).toBe(true);
     expect(h1.created).toBe(true);
     // DISTINCT: each root is the vessel's OWN sovereign secret (crypto.generate), never a copied key.
@@ -66,9 +67,9 @@ describe("the browser persona multitude over IndexedDB", () => {
   test("generate-or-load is idempotent per index — a re-mint LOADS, never a fresh key", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
-    const first  = await generateOrLoadBrowserPersonaRoot(name, 0);
+    const first  = await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
     await bindSyntheticBrowserCustodySlot(name);
-    const second = await generateOrLoadBrowserPersonaRoot(name, 0);
+    const second = await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
     expect(first.created).toBe(true);
     expect(second.created).toBe(false);
     expect(second.verifyingKey).toBe(first.verifyingKey);
@@ -78,9 +79,9 @@ describe("the browser persona multitude over IndexedDB", () => {
   test("wears the second — the selector moves, the root never does", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
     await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 1);
+    await generateOrLoadBrowserPersonaRoot(name, 1, FIXTURE_WARD);
     expect(await loadBrowserActivePersona(name)).toBeUndefined();   // no inference from an empty selector
     await wearBrowserPersona(name, 1);
     expect(await loadBrowserActivePersona(name)).toBe(1);
@@ -93,7 +94,7 @@ describe("the browser persona multitude over IndexedDB", () => {
   test("custody-by-type — wearing a persona whose root this vessel does NOT hold REFUSES", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
     await expect(wearBrowserPersona(name, 5)).rejects.toThrow(/cannot wear persona h5|no persona-root/);
     expect(await loadBrowserActivePersona(name)).toBe(0);   // the refusal moved nothing: the one root held is still the face worn
   });
@@ -101,11 +102,11 @@ describe("the browser persona multitude over IndexedDB", () => {
   test("the seed loads only where a root is HELD; an unheld index throws", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 0);
-    const seed = await loadBrowserPersonaRootSeed(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
+    const seed = await loadBrowserPersonaRootSeed(name, 0, FIXTURE_WARD);
     expect(seed).toBeInstanceOf(Uint8Array);
     expect(seed.length).toBe(32);
-    await expect(loadBrowserPersonaRootSeed(name, 9)).rejects.toThrow(/no persona-root/);
+    await expect(loadBrowserPersonaRootSeed(name, 9, FIXTURE_WARD)).rejects.toThrow(/no persona-root/);
   });
 });
 
@@ -121,11 +122,11 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
     // persona-root signs the edge; the vessel wears the founded root.
     const device = await generateOrLoadBrowserVesselIdentity(name, "Test Operator");
     await bindSyntheticBrowserCustodySlot(name);
-    const root = await generateOrLoadBrowserPersonaRoot(name, 0);
-    const signerSeed = await loadBrowserPersonaRootSeed(name, 0);
+    const root = await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
+    const signerSeed = await loadBrowserPersonaRootSeed(name, 0, FIXTURE_WARD);
     await wearBrowserPersona(name, 0);
 
-    const f = await runFoundingCeremony({
+    const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1),
       repo,
       placeVerifyingKey: device.verifyingKey,
       vesselDisplayName: "Test Operator",
@@ -154,10 +155,10 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
 
     const device = await generateOrLoadBrowserVesselIdentity(name, "Op");
     await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 0);
-    const signer0 = await loadBrowserPersonaRootSeed(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
+    const signer0 = await loadBrowserPersonaRootSeed(name, 0, FIXTURE_WARD);
     await wearBrowserPersona(name, 0);
-    await runFoundingCeremony({
+    await runFoundingCeremony({ vesselTag: testVesselTagDoor(1),
       repo, placeVerifyingKey: device.verifyingKey,
       vesselDisplayName: "Op", binding: { mode: "self-stood", signerSeed: signer0 }, hearthTrueName: "", nexusPubkey: device.verifyingKey,
     });
@@ -165,7 +166,7 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
     // The multitude grows: mint h1 and WEAR it. The worker-reach selector (browserJoineePersonaIndex)
     // now names h1 — the worn root the daemonAuth binding threads.
     await bindSyntheticBrowserCustodySlot(name);
-    const h1 = await generateOrLoadBrowserPersonaRoot(name, 1);
+    const h1 = await generateOrLoadBrowserPersonaRoot(name, 1, FIXTURE_WARD);
     expect(h1.created).toBe(true);
     await wearBrowserPersona(name, 1);
     expect(await browserJoineePersonaIndex(name)).toBe(1);
@@ -238,9 +239,9 @@ describe("the worn mount over the browser IDB vault", () => {
   test("★ a worn NON-founding persona resolves ITS OWN mount material from its anchors ★", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
     await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 1);
+    await generateOrLoadBrowserPersonaRoot(name, 1, FIXTURE_WARD);
     const vault = await makeBrowserIdbPersonaVault(name);
     vault.anchors.save(1, anchorsFor(1, true));
     await wearBrowserPersona(name, 1);
@@ -256,9 +257,9 @@ describe("the worn mount over the browser IDB vault", () => {
   test("CONTROL — the FOUNDING face resolves NO switch, and a half-anchor never re-pins", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
     await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 1);
+    await generateOrLoadBrowserPersonaRoot(name, 1, FIXTURE_WARD);
     const vault = await makeBrowserIdbPersonaVault(name);
 
     vault.anchors.save(0, anchorsFor(0, true));

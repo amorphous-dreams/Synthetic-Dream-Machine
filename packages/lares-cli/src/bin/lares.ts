@@ -189,7 +189,7 @@ export function projectCommands(surface: string, executableOnly = false): readon
 }
 
 export const COMMANDS: readonly Command[] = [
-  { name: "intent", summary: "Issue and read a face's signed intents; every invocation names --face N when several faces stand.", handler: cmdIntent, accepts: ["face", "to", "prefer", "class", "every", "args", "nonce", "void-at", "through", "executor", "deny", "agent", "prefix", "policy", "as-of", "until"], signs: true },
+  { name: "intent", summary: "Issue and read a face's signed intents; every invocation names --face N when several faces stand.", handler: cmdIntent, accepts: ["face", "to", "prefer", "class", "every", "args", "nonce", "void-at", "through", "executor", "detail", "deny", "agent", "prefix", "policy", "as-of", "until"], signs: true },
   { name: "promote", summary: "Manage a wiki’s promotions.", handler: cmdPromote, accepts: ["face", "wiki", "why", "keep", "drop"], signs: true },
   { name: "kapae", summary: "Manage a wiki’s promotion brake.", handler: cmdKapae, accepts: ["face", "wiki", "why", "keep", "drop"], signs: true },
   { name: "kahua", summary: "One face's kahua stage: `mint` its pin, `propose` (any seat), `lift`, `withdraw` and `carry` (the operator's hand: the lōkahi cap and the grant out of sealed custody; a carry stands earlier items again after a root rotation), `list` and `get` its verified items; answers print as JSON.", handler: cmdKahua, accepts: ["face", "text", "taint", "sources", "parent", "proposal", "proposals", "fields", "history", "all"], signs: true },

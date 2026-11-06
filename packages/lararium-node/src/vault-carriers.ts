@@ -390,6 +390,9 @@ function buildTable(): readonly CarrierRow[] {
     // The face's own custody label: its fcid and the digest of its PersonaGroup. The holder reads it to check the floor index it unlocked by.
     faceRowOf({ row: "face-owner", target: tgt(["D"]), inner: /face-owner\.bin/, select: () => null, custody: "face-hot", keyClass: null,
          writer: "custody-holder", name: () => "face-owner" }),
+    // The face's ward signing key's public half on this device: the `wardKey` its admission into the face carries. No secret; it lands with the ward.
+    faceRowOf({ row: "face-ward-key", target: tgt(["D"]), inner: /face-ward-key\.bin/, select: () => null, custody: "face-hot", keyClass: null,
+         writer: "custody-holder", name: () => "face-ward-key" }),
     // A session switch's acts name two faces together, so they rest on this vessel alone and never in a document.
     id({ row: "switch-acts", target: tgt(["D"]), match: file(SWITCH_ACTS_FILE), custody: "hot", keyClass: null,
          writer: "switch-act-log (the session socket's switch acts)" }),
@@ -421,6 +424,14 @@ function buildTable(): readonly CarrierRow[] {
     // a paper restore carries none, through the fromPaper door.
     faceRowOf({ row: "face-address-secret", target: tgt(["D"]), inner: /^face-address-secret-g([0-9a-f]{64})\.bin$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
          writer: "fleet-join-custody", name: (m) => `face-address-secret-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "whole" }),
+    // One face's tag secret (`vessel-face-tag-store`): 32 random bytes minted on this vessel at the face's founding or its
+    // first join request, under no seed. A re-join on the face presents the tag it stands behind. It stays on this vessel:
+    // a bundle restored onto another device never wears this one's tag.
+    faceRowOf({ row: "vessel-face-tag", target: tgt(["D"]), inner: /^vessel-face-tag-g([0-9a-f]{64})\.bin$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+         writer: "vessel-face-tag-store", name: (m) => `vessel-face-tag-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
+    // A founding face's tag secret while its ask names the face; the founding's settle moves it onto the group's row.
+    faceRowOf({ row: "vessel-face-tag-ask", target: tgt(["D"]), inner: /^vessel-face-tag-ask-([0-9a-f]{64})\.bin$/, select: (m) => ({ ask: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+         writer: "vessel-face-tag-store", name: (m) => `vessel-face-tag-ask-${m[1]}`, bundle: "stays" }),
     // A joining vessel's half-done fleet join (`fleet-join-custody`): its request and the X25519 secret its
     // answer seals to. The landing removes it.
     faceRowOf({ row: "fleet-join-pending", target: tgt(["D"]), inner: /^fleet-join-pending-g([0-9a-f]{64})\.json$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",

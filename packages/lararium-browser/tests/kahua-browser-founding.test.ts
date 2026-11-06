@@ -20,7 +20,7 @@ import {
   type LarDoc,
 } from "@lararium/mesh";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, fixtureWardDialog } from "./browser-custody-fixture.js";
 import { BootHalted } from "./wire-vessel-rig.js";
 
 const seen = vi.hoisted(() => ({ foundings: [] as Array<{ repo: unknown; result: Record<string, unknown> }> }));
@@ -41,7 +41,7 @@ describe("a browser founding ends with the kahua stage's plane act", () => {
     const idbName = `browser-kahua-found-${crypto.randomUUID()}`;
     await bindSyntheticBrowserCustodySlot(idbName);
     let read: { pin: string | null; pins: number; founded: boolean; fork: unknown; first: string | null; group: string } | null = null;
-    await expect(openBrowserVessel({ idbName, onPhase: (phase: string) => {
+    await expect(openBrowserVessel({ idbName, askWardRoute: fixtureWardDialog, onPhase: (phase: string) => {
       if (phase !== "bootstrap-kept") return;
       const founding = seen.foundings[0];
       if (!founding) throw new Error("the browser boot ran no founding");

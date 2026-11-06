@@ -97,7 +97,7 @@ export function serveVessel(scope: VesselScope): { receive(msg: PageToVessel): v
     try {
       result = await openBrowserVessel({
         askCustody: askCustody("vessel"),
-        ...(b.wardAsk ? { askWardRoute: async (act: string) => String((await ask(act, { kind: "ward", act })) ?? "") } : {}),
+        ...(b.wardAsk ? { askWardRoute: async (act: string, wardKind) => String((await ask(act, { kind: "ward", act, wardKind })) ?? "") } : {}),
         hostId: b.hostId,
         wikiId: b.wikiId,
         idbName: b.idbName,
@@ -142,7 +142,7 @@ export function serveVessel(scope: VesselScope): { receive(msg: PageToVessel): v
         throw new Error(`this browser's custody reads ${custody.reading}; a fleet join mints a face's secrets only over a slot`);
       }
       if (abandonPending) await browserFleetJoinAbandon();
-      const request = await browserFleetJoinRequest({ offer: JSON.parse(text) as unknown });
+      const request = await browserFleetJoinRequest({ offer: JSON.parse(text) as unknown, ward: { route: async (act, wardKind) => String((await ask(act, { kind: "ward", act, wardKind })) ?? "") } });
       return { kind: "request", text: JSON.stringify(request, null, 2) };
     },
     answer: async (text: string): Promise<unknown> => {

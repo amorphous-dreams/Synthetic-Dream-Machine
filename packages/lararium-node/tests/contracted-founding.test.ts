@@ -19,6 +19,7 @@ import {
   ed25519SignerFromSeed, type PersonaKelEvent, type LarDoc,
 } from "@lararium/mesh";
 import { runFoundingCeremony } from "@lararium/keyhive";
+import { testVesselTag, testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const OPERATOR_SEED = new Uint8Array(32).fill(11);   // the CONTRACTING operator's persona root
 const HERM_SEED     = new Uint8Array(32).fill(22);   // the face atom the operator delegates to
@@ -50,7 +51,7 @@ async function bundleFor(deviceVerifyingKey: string, hearthTrueName = HEARTH) {
 
 async function found(binding: Parameters<typeof runFoundingCeremony>[0]["binding"], _atomKey: string, repo = new Repo({ sharePolicy: async () => true })) {
   const placeKey = await pubOf(PLACE_SEED);
-  return runFoundingCeremony({ repo,
+  return runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo,
     vesselSeed: PLACE_SEED,
     placeVerifyingKey: placeKey,
     vesselDisplayName: "herm",
@@ -161,7 +162,7 @@ describe("a contracted founding carries its binding instead of signing it", () =
     const operatorKey = f.founderEdge.personaRootDid.replace(/^0x/, "");
     const log = await signFoundingLog({
       group: f.personaGroupId, personaKelPrefix: f.personaKelPrefix, rootCommitment: faceRootCommitment(f.founderEdge.personaRootDid), epoch: 0,
-      planes: { persona: f.personaUrl, intents: f.intentsUrl }, deviceKey, edgeDigest: edgeBodyDigest(f.founderEdge),
+      planes: { persona: f.personaUrl, intents: f.intentsUrl }, deviceKey, edgeDigest: edgeBodyDigest(f.founderEdge), vesselTag: await testVesselTag(1, f.personaGroupId, deviceKey),
     }, { key: operatorKey, sign: ed25519SignerFromSeed(OPERATOR_SEED) });
     plane.change((d) => { for (const a of log) writePersonaAct(d, a); });
     expect(proof(personaActRecordsOfGroup(plane.doc(), f.personaGroupId)).ok).toBe(true);

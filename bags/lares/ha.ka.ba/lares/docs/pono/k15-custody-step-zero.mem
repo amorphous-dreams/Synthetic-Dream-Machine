@@ -76,6 +76,8 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `public-handles` `node-vessel-identity.ts` | face-hot | ''D:'' the owner mapping of a face's own published record in its own row (`.persona-public-handles-h<N>.json`); public handle bytes ride their own signed record. |
 | `vessel-face-key` `face-key-custody.ts` | face-hot | ''D:'' the private face-scoped vessel key rests in the local face whose proof key the scope names, `faces/<fcid>/vessel-face-key-h<N>-<scope digest>.bin`; the founding or join that minted it binds it, and a reader finds it by the scope digest across the face directories (names alone) before that face's key opens it. It stays local, outside a face bundle. |
 | `face-address-secret` `fleet-join-custody.ts` | face-hot | ''D:'' the face's fleet address secret rests in that face, `face-address-secret-g<sha256 of its PersonaGroup>.bin`; the name's digest is the group digest the floor index holds. Local unless a defined face recovery route includes it. |
+| `vessel-face-tag` `vessel-face-tag-store.ts` | face-hot | ''D:'' the face's tag secret, 32 random bytes this vessel mints at the face's founding or its first join request, `vessel-face-tag-g<group digest>.bin` in that face; no seed derives it, so no place seed or floor key computes any face's blinded tag. A re-join on the face presents the same tag. It stays on its vessel (`bundle: stays`). |
+| `vessel-face-tag-ask` `vessel-face-tag-store.ts` | face-hot | ''D:'' the same secret while a founding's ask names the face, `vessel-face-tag-ask-<ask digest>.bin`; the founding's settle moves it onto the group's row. It stays on its vessel. |
 | `fleet-join-pending` `fleet-join-custody.ts` | face-hot | ''D:'' one pending join per target face, `fleet-join-pending-g<group digest>.json` in that face (its X25519 secret and request); the joiner founds the face's custody at its request, so a pending join with no face refuses by name. |
 | `face-join-record` `fleet-join-custody.ts` | face-hot | ''D:'' the joined face's private record and grants, `face-join-record-g<group digest>.json` in that face. |
 | `handle-book` `node-circle-store.ts` | face-hot | ''D:'' each face keeps its own recognition book in its own row (`.handle-book-h<N>.json`): the nyms it recognised and the private labels it keeps for them. A recognition reads and writes the book of the face the command acts as (`--face N`, else the one face standing open); a face whose root this vessel does not hold recognises nobody, and a flat `.handle-book.json` reads as an earlier shape (refused by name, with the fresh-start runbook). `bundle: whole` carries the face's book. |
@@ -120,6 +122,7 @@ The exact `CUSTODY_ROW` alternatives are at `packages/lararium-browser/src/brows
 | `nexus-key/h<N>/*` | ''D:'' that face's private per-Nexus keys; public verification line F if separately represented. |
 | `vessel-face-key/*|*` | ''D:'' the face named by authenticated relation, never inferred from delimiter text alone; add owner lookup/binding. |
 | `face-address-secret/*` | ''D:'' that face's address secret, the one its working documents' addresses derive from; it rides the face's bundle and a fleet join's answer, and lands under the face's own row; add authenticated owner mapping. |
+| `vessel-face-tag/<PersonaGroup>` | ''D:'' that face's random tag secret, minted at the face's founding or first join request and derived from no seed; it rests under the browser's one custody seal beside the pending join until K15 gives each face its own FCK. |
 | `fleet-join-pending` `fleet-join-custody.ts` | face-hot | ''D:'' one pending join per target face, `fleet-join-pending-g<group digest>.json` in that face (its X25519 secret and request); the joiner founds the face's custody at its request, so a pending join with no face refuses by name. |
 | `walk/*` | ''D/F split, LEAD:'' private face receipt/relationship D; proved blind ciphertext carriage F. |
 
@@ -275,6 +278,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hczZcoBbDDMMnWt7PfFt60TujmEIambWofh_35vcWl4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QYSb5sWmZTO4a-qKwO5jCLJv7GlBL9ubF2kt_xog4uc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

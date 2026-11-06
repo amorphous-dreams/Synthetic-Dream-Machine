@@ -11,7 +11,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed255
 import { PROMOTE_ACT_DOMAIN, SWARM_ACT_DOMAIN } from "../src/domains.js";
 import { canonicalJsonBytes } from "../src/crypto.js";
 import {
-  SwarmRefused, putSwarmAct, readGo, readSwarmRecord, signSwarmAct, spendGo, swarmCapRefusal, swarmGoSpentTitle, swarmGoTitle, swarmHouseCapTitle,
+  SwarmRefused, putSwarmAct, readGo, readSwarmRecord, signSwarmAct, spendGo, swarmActCid, swarmCapRefusal, swarmGoRowTitle, swarmGoSpentTitle, swarmGoTitle, swarmHouseCapTitle,
   swarmLaneStateTitle, swarmReceiptTitle, swarmRecordFields, swarmRosterTitle, swarmShareRefusal, swarmShareTitle, SWARM_URI_PREFIX,
   type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
@@ -21,13 +21,17 @@ const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new
 
 function wikiPort(): SwarmWikiPort & { rows: Map<string, string> } {
   const rows = new Map<string, string>();
-  return { rows, read: async (t) => rows.get(t) ?? null, write: async (t, text) => { rows.set(t, text); }, writeNew: async (t, text) => { if (rows.has(t)) return false; rows.set(t, text); return true; } };
+  return { rows, read: async (t) => rows.get(t) ?? null, write: async (t, text) => { rows.set(t, text); }, writeNew: async (t, text) => { if (rows.has(t)) return false; rows.set(t, text); return true; },
+    list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
 }
+
+/** A face of one device: a go reads on its own (the co-sign witness answers yes, as `wardActWitness` does for one device). */
+const ONE_DEVICE = { accepts: () => true };
 
 async function fixture() {
   const hand = await keyed(1), vessel = await keyed(2), lead = await keyed(3), outsider = await keyed(4);
   const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: (seat: string, lane: string, k: string) => seat === "lead-a" && lane === "lane-a" && k === lead.key };
-  const goBody = (over: Record<string, unknown> = {}) => ({ group: GROUP, branch: "feature/x", head: HEAD, nonce: "1".repeat(32), ...over });
+  const goBody = (over: Record<string, unknown> = {}) => ({ group: GROUP, branch: "feature/x", head: HEAD, after: null, ...over });
   return { hand, vessel, lead, outsider, trust, wiki: wikiPort(), goBody };
 }
 
@@ -74,7 +78,7 @@ describe("verify-on-read fails closed", () => {
     const roster = await signSwarmAct({ act: "roster", group: GROUP, seat: "seat-1", model: "gpt-5.3-codex", mode: "build", reading: 10, ceiling: 100, outcome: "running" }, f.vessel);
     const receipt = await signSwarmAct({ act: "receipt", group: GROUP, tree: TREE, checks: ["typecheck"], verdict: "pass", definitions: "d".repeat(64) }, f.vessel);
     const state = await signSwarmAct({ act: "lane-state", group: GROUP, lane: "lane-a", seat: "lead-a", state: { phase: "build" } }, f.lead);
-    for (const [title, act] of [[swarmGoTitle("feature/x"), go], [swarmRosterTitle("seat-1"), roster], [swarmReceiptTitle(TREE), receipt], [swarmLaneStateTitle("lane-a"), state]] as const) {
+    for (const [title, act] of [[swarmGoRowTitle("feature/x", swarmActCid(go)), go], [swarmRosterTitle("seat-1"), roster], [swarmReceiptTitle(TREE), receipt], [swarmLaneStateTitle("lane-a"), state]] as const) {
       await putSwarmAct(f.wiki, title, act);
       expect(await readSwarmRecord(f.wiki, title, f.trust, GROUP), title).toMatchObject({ ok: true });
     }
@@ -83,9 +87,10 @@ describe("verify-on-read fails closed", () => {
   test("RED: a roster the measured lead signed, a go the vessel signed, a lane state under another seat's name and a record from an outsider each read as refused `role`; CONTROL: the right signer reads", async () => {
     const f = await fixture();
     const roster = { act: "roster", group: GROUP, seat: "lead-a", model: "m", mode: "build", reading: 1, ceiling: 2, outcome: "running" } as const;
+    const vesselGo = await signSwarmAct({ act: "go", ...f.goBody() }, f.vessel);
     const cases = [
       [swarmRosterTitle("lead-a"), await signSwarmAct(roster, f.lead)],
-      [swarmGoTitle("feature/x"), await signSwarmAct({ act: "go", ...f.goBody() }, f.vessel)],
+      [swarmGoRowTitle("feature/x", swarmActCid(vesselGo)), vesselGo],
       [swarmLaneStateTitle("lane-b"), await signSwarmAct({ act: "lane-state", group: GROUP, lane: "lane-b", seat: "lead-b", state: {} }, f.lead)],
       [swarmReceiptTitle(TREE), await signSwarmAct({ act: "receipt", group: GROUP, tree: TREE, checks: [], verdict: "pass", definitions: "d".repeat(64) }, f.outsider)],
     ] as const;
@@ -96,8 +101,8 @@ describe("verify-on-read fails closed", () => {
 
   test("RED: a tampered body, a torn text, an absent title, another face's record and a record at another act's title each refuse by name; CONTROL: the untouched record reads", async () => {
     const f = await fixture();
-    const title = swarmGoTitle("feature/x");
     const good = await signSwarmAct({ act: "go", ...f.goBody() }, f.hand);
+    const title = swarmGoRowTitle("feature/x", swarmActCid(good));
     await putSwarmAct(f.wiki, title, good);
     expect(await readSwarmRecord(f.wiki, title, f.trust, GROUP)).toMatchObject({ ok: true });
     f.wiki.rows.set(title, JSON.stringify({ ...good, body: { ...good.body, head: "c".repeat(40) } }));
@@ -107,8 +112,11 @@ describe("verify-on-read fails closed", () => {
     expect(await readSwarmRecord(f.wiki, swarmGoTitle("absent"), f.trust, GROUP)).toEqual({ ok: false, refusal: "absent" });
     await putSwarmAct(f.wiki, title, good);
     expect(await readSwarmRecord(f.wiki, title, f.trust, "other-group")).toEqual({ ok: false, refusal: "group" });
-    f.wiki.rows.set(swarmGoTitle("other"), JSON.stringify(good));
-    expect(await readSwarmRecord(f.wiki, swarmGoTitle("other"), f.trust, GROUP)).toEqual({ ok: false, refusal: "title" });
+    f.wiki.rows.set(swarmGoRowTitle("other", swarmActCid(good)), JSON.stringify(good));
+    expect(await readSwarmRecord(f.wiki, swarmGoRowTitle("other", swarmActCid(good)), f.trust, GROUP)).toEqual({ ok: false, refusal: "title" });
+    // a go at its branch's family title, never its own row, reads as misplaced
+    f.wiki.rows.set(swarmGoTitle("feature/x"), JSON.stringify(good));
+    expect(await readSwarmRecord(f.wiki, swarmGoTitle("feature/x"), f.trust, GROUP)).toEqual({ ok: false, refusal: "title" });
     const foreign = { ...good, body: { ...good.body, kind: PROMOTE_ACT_DOMAIN } };
     f.wiki.rows.set(title, JSON.stringify(foreign));
     expect(await readSwarmRecord(f.wiki, title, f.trust, GROUP)).toEqual({ ok: false, refusal: "domain" });
@@ -124,41 +132,46 @@ describe("verify-on-read fails closed", () => {
 });
 
 describe("a go binds branch and head and is spent once", () => {
-  const issue = async (f: Awaited<ReturnType<typeof fixture>>, over: Record<string, unknown> = {}) => putSwarmAct(f.wiki, swarmGoTitle("feature/x"), await signSwarmAct({ act: "go", ...f.goBody(over) }, f.hand));
+  /** A hand-signed go at its own row under the branch; hands back its cid. */
+  const issue = async (f: Awaited<ReturnType<typeof fixture>>, over: Record<string, unknown> = {}, signer = f.hand): Promise<string> => {
+    const go = await signSwarmAct({ act: "go", ...f.goBody(over) }, signer);
+    await putSwarmAct(f.wiki, swarmGoRowTitle("feature/x", swarmActCid(go)), go);
+    return swarmActCid(go);
+  };
 
   test("RED: a go reads for its branch and head only; CONTROL: the named head reads", async () => {
     const f = await fixture();
     await issue(f);
-    expect(await readGo(f.wiki, { branch: "feature/x", head: "c".repeat(40) }, f.trust, GROUP)).toEqual({ ok: false, refusal: "head-mismatch" });
-    expect(await readGo(f.wiki, { branch: "feature/y", head: HEAD }, f.trust, GROUP)).toEqual({ ok: false, refusal: "absent" });
-    expect(await readGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP)).toMatchObject({ ok: true });
+    expect(await readGo(f.wiki, { branch: "feature/x", head: "c".repeat(40) }, f.trust, GROUP, ONE_DEVICE)).toEqual({ ok: false, refusal: "head-mismatch" });
+    expect(await readGo(f.wiki, { branch: "feature/y", head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toEqual({ ok: false, refusal: "absent" });
+    expect(await readGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toMatchObject({ ok: true });
   });
 
   test("RED: the second spend of one go refuses `swarm-go-spent`, and the spent go no longer reads; CONTROL: the first spend lands a vessel-signed record", async () => {
     const f = await fixture();
     await issue(f);
-    const spent = await spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.vessel);
+    const spent = await spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.vessel, ONE_DEVICE);
     expect(await readSwarmRecord(f.wiki, swarmGoSpentTitle(spent.go), f.trust, GROUP)).toMatchObject({ ok: true });
-    await expect(spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "swarm-go-spent" });
-    expect(await readGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP)).toEqual({ ok: false, refusal: "spent" });
+    await expect(spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-go-spent" });
+    expect(await readGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toEqual({ ok: false, refusal: "spent" });
   });
 
-  test("RED: two spends racing past the read land exactly one; CONTROL: a freshly issued go (a new nonce) spends again", async () => {
+  test("RED: two spends racing past the read land exactly one; CONTROL: a freshly issued go (one that follows another) spends again", async () => {
     const f = await fixture();
-    await issue(f);
-    const results = await Promise.allSettled([1, 2, 3].map(() => spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.vessel)));
+    const first = await issue(f);
+    const results = await Promise.allSettled([1, 2, 3].map(() => spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.vessel, ONE_DEVICE)));
     expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
-    await issue(f, { nonce: "2".repeat(32) });
-    await expect(spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.vessel)).resolves.toMatchObject({ go: expect.any(String) });
+    await issue(f, { after: first });
+    await expect(spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.vessel, ONE_DEVICE)).resolves.toMatchObject({ go: expect.any(String) });
   });
 
   test("RED: a spend refuses an unsigned, mis-signed or absent go and the spender must be the vessel; CONTROL: the failed spends wrote nothing", async () => {
     const f = await fixture();
-    await expect(spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "swarm-go-absent" });
-    await putSwarmAct(f.wiki, swarmGoTitle("feature/x"), await signSwarmAct({ act: "go", ...f.goBody() }, f.outsider));
-    await expect(spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "swarm-go-role" });
+    await expect(spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-go-absent" });
+    await issue(f, {}, f.outsider);
+    await expect(spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-go-role" });
     await issue(f);
-    await expect(spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.outsider)).rejects.toMatchObject({ code: "swarm-spend-role" });
+    await expect(spendGo(f.wiki, { branch: "feature/x", head: HEAD }, f.trust, GROUP, f.outsider, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-spend-role" });
     expect([...f.wiki.rows.keys()].filter((k) => k.includes("go-spent"))).toEqual([]);
   });
 });

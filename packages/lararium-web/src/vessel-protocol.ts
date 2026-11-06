@@ -30,7 +30,7 @@
  */
 import type {
   BootCustodyVerdict, BrowserConnectionSnapshot, CoherenceFrameWithRev, CustodyAnswer, CustodyAsk, HearthFloorRead, PageLife,
-  ProjectionSurfaceFrame,
+  ProjectionSurfaceFrame, WardAskKind,
 } from "@lararium/browser/page";
 import type { FloorAnchor, GenesisSeed, LarMsg_ControlEvent, LarMsg_ControlResult, VesselRestState } from "@lararium/mesh";
 
@@ -58,7 +58,7 @@ export interface VesselBoot {
 }
 
 /** The question a custody ask carries: public words alone (an attempt count, a note), never a route or a key. */
-export type VesselAskQuestion = CustodyAsk | { readonly kind: "clear" } | { readonly kind: "ward"; readonly act: string };
+export type VesselAskQuestion = CustodyAsk | { readonly kind: "clear" } | { readonly kind: "ward"; readonly act: string; readonly wardKind: WardAskKind };
 
 /** The seed's resting state, named and never its bytes. */
 export type SeedRest = "absent" | "wrapped-prf" | "wrapped-passphrase" | "open";

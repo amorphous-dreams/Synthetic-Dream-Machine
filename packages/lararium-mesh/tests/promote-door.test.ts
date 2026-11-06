@@ -27,7 +27,8 @@ const itemOf = (i: typeof RITE, revision = "r1"): PromoteItem => ({ ...i, revisi
 async function world() {
   const root = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(1)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(1)) };
   const atom = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(2)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(2)) };
-  const face = { group: GROUP, grant: (k: string) => k === root.key, device: (k: string) => k === atom.key };
+  // A face of one device: a lower reads on its own (the co-sign witness answers yes, as `wardActWitness` does for one device).
+  const face = { group: GROUP, grant: (k: string) => k === root.key, device: (k: string) => k === atom.key, ward: { accepts: () => true } };
   const state = {
     ledger: EMPTY_LEDGER as PromotionLedger, local: EMPTY_KAPAE_LOCAL as KapaeLocal, items: new Map<string, PromoteItem[]>(), acts: [] as unknown[],
     cas: new Map<string, Uint8Array>(), pinned: new Set<string>(), loaded: new Set<string>(), restarts: 0, failRestart: false, boardReadable: true,

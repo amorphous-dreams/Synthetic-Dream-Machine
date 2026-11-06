@@ -10,7 +10,7 @@
  *   · the walker's leaf derives from its own persona root, per Nexus — one root, a different leaf in each Nexus;
  *   · RED: the retired newcomer-side burn store is gone from a fresh vessel; the walk store stands in its place.
  */
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
 import {
   encodeInvite, takeInvite, walkArm, popInvite,
@@ -36,7 +36,7 @@ describe("the browser walk", () => {
   test("the invite is kept before any dial; the token presents until the invite settles, then the grant", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
     const store = browserWalkStore(name);
     const carried = encodeInvite({ nexusAid: AID, gatePubKey: GATE, token: TOKEN });
     const taken = await takeInvite(store, carried);
@@ -92,7 +92,7 @@ describe("the browser walk", () => {
   test("one persona root, a different leaf in each Nexus", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
     const a = await browserWalkLeaf(name, AID, 0);
     const b = await browserWalkLeaf(name, "nexus-" + "b".repeat(64), 0);
     expect(a.verifyingKey).toMatch(/^[0-9a-f]{64}$/);
@@ -103,7 +103,7 @@ describe("the browser walk", () => {
   test("RED: a face's key at a Nexus rests as the 32 bytes it signs with, in its own store, and a face this vessel holds no root for presents nowhere", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
     const a = await browserWalkLeaf(name, AID, 0);
     const kept = await readKeystoreRow(name, `nexus-key/h0/${AID}`);
     expect(kept).toEqual(a.seed);

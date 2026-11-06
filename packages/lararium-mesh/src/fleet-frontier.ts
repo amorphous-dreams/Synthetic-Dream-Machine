@@ -4,7 +4,8 @@
  * Fleet wrappers seat the root alone, while realm wrappers seat a charter quorum.
  */
 import type { LarDoc } from "./base-doc.js";
-import type { EdgeKapae } from "./edge-kapae.js";
+import { deviceEdgeId } from "./dyad.js";
+import type { EdgeKapae, EdgeReading } from "./edge-kapae.js";
 import { foldHandFrontiers, frontierSnapshotCid, readWideningFrontier, signGenesisFrontier, signNextFrontier, type EdgeFrontier, type HandReading, type WideningRead } from "./edge-frontier.js";
 import { edgeFrontierRecords, frontierSnapshots, writeEdgeFrontier, writeFrontierSnapshot } from "./edge-frontier-board.js";
 import { currentRoster, type HandLineage } from "./hand-lineage.js";
@@ -109,4 +110,33 @@ export function landFleetFrontier(draft: LarDoc, registered: RegisteredFrontier)
 
 export function fleetFrontierCarriage(board: LarDoc | undefined | null, fleetRoot: string) {
   return handFrontierCarriage(board, bare(fleetRoot), FLEET_HAND);
+}
+
+/**
+ * Each link of the fleet's verified frontier chain this reader holds, by its cid: the raises that link counts. A forked chain holds
+ * none, and the chain ends at the first link whose snapshot the reader lacks. Unlike the widening read it asks no head to stand at
+ * the current epoch, so a ward act's frozen spend reads at the link its outcome cites however far the chain has moved since.
+ */
+export function fleetFrontierLinks(input: { readonly fleetRoot: string; readonly board: LarDoc | undefined | null; readonly lineage: HandLineage }): ReadonlyMap<string, readonly string[]> {
+  const boardId = bare(input.fleetRoot), out = new Map<string, readonly string[]>();
+  const fold = foldHandFrontiers(boardId, { hand: FLEET_HAND, lineage: input.lineage }, edgeFrontierRecords(input.board, boardId, FLEET_HAND));
+  if (fold.fork) return out;
+  const snapshots = frontierSnapshots(input.board);
+  for (const link of fold.chain) {
+    const counted = snapshots.get(link.act.body.snapshot);
+    if (!counted || frontierSnapshotCid(counted) !== link.act.body.snapshot) break;
+    out.set(link.cid, counted);
+  }
+  return out;
+}
+
+/** Whether a device stood at one link of the fleet's frontier chain: the reader holds that link, and no raise it counts names the device's edge. */
+export function fleetStoodAt(input: {
+  readonly links: ReadonlyMap<string, readonly string[]>; readonly readings: ReadonlyMap<string, Pick<EdgeReading, "raiseCids">>;
+  readonly fleetRoot: string; readonly atom: string; readonly frontier: string;
+}): boolean {
+  const counted = input.links.get(input.frontier);
+  if (!counted) return false;
+  const raises = input.readings.get(deviceEdgeId(input.fleetRoot, input.atom))?.raiseCids ?? [];
+  return !raises.some((cid) => counted.includes(cid));
 }

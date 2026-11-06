@@ -20,7 +20,7 @@ declare const __LAR_WALK_DOOR__: boolean;
  */
 import { createLoafBuffer } from "./loaf-buffer.js";
 import {
-  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, vesselLockName, type CustodyAnswer, type HearthFloorRead,
+  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, vesselLockName, wardAskWords, type CustodyAnswer, type HearthFloorRead,
 } from "@lararium/browser/page";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import { standVesselPort, VesselRefused, type VesselPort } from "./vessel-port.js";
@@ -130,13 +130,13 @@ function askCustody(question: VesselAskQuestion): Promise<CustodyAnswer> {
     say.textContent =
       question.kind === "unlock" ? `Unlock this browser's vessel (attempt ${String(question.attempt)} of ${String(question.of)})${question.notes.length ? ` — ${question.notes.join("; ")}` : ""}`
         : question.kind === "bind-first" ? "Bind a passphrase to this browser before it holds a face's secrets. Keep it: nothing here recovers it."
-          : question.kind === "ward" ? `Enter this face's passphrase for one ward act (${question.act}).`
+          : question.kind === "ward" ? wardAskWords(question.act, question.wardKind)
             : "Enter this browser's passphrase to clear it. Its secrets will then rest in the clear in this browser's storage.";
     const pass = document.createElement("input");
-    pass.type = "password"; pass.autocomplete = question.kind === "bind-first" ? "new-password" : "current-password"; pass.required = true;
+    pass.type = "password"; pass.autocomplete = question.kind === "bind-first" || (question.kind === "ward" && question.wardKind !== "open") ? "new-password" : "current-password"; pass.required = true;
     const again = question.kind === "bind-first" ? document.createElement("input") : null;
     if (again) { again.type = "password"; again.autocomplete = "new-password"; again.required = true; again.placeholder = "again"; }
-    const go = document.createElement("button"); go.type = "submit"; go.textContent = question.kind === "clear" ? "clear" : question.kind === "bind-first" ? "bind" : "unlock";
+    const go = document.createElement("button"); go.type = "submit"; go.textContent = question.kind === "clear" ? "clear" : question.kind === "bind-first" || (question.kind === "ward" && question.wardKind === "bind") ? "bind" : question.kind === "ward" ? (question.wardKind === "retype" ? "confirm" : "sign") : "unlock";
     const not = document.createElement("button"); not.type = "button"; not.textContent = "not now";
     const done = (answer: CustodyAnswer): void => { pass.value = ""; if (again) again.value = ""; form.remove(); resolve(answer); };
     form.addEventListener("submit", (e) => {
@@ -537,7 +537,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
     },
   });
   vessel.hello({
-    idbName: VESSEL_IDB, hostId: "elyncia-browser", wikiId: "lares", genesisSeed, genesisCasBaseUrl,
+    idbName: VESSEL_IDB, hostId: "elyncia-browser", wikiId: "lares", genesisSeed, genesisCasBaseUrl, wardAsk: true,
     daemonWorkerUrl: daemonWorkerUrl.href, workerScriptUrl: workerScriptUrl.href,
     ...(sharedHolderUrl ? { sharedHolderUrl: sharedHolderUrl.href } : {}),
     ...(relayUrl ? { relayUrl } : {}),

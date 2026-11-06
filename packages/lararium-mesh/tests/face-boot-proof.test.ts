@@ -15,6 +15,7 @@ import { writePersonaKelEvent, personaKelChainForPrefix } from "../src/persona-k
 import { provisionThresholdRecoveryAtFounding } from "../src/recovery-keel-core.js";
 import { recoveryContactRegistrationCard } from "../src/recovery-registration.js";
 import { actCid, signAct } from "../src/signed-act.js";
+import { taggedAdmission, testVesselTag } from "./vessel-tag-fixture.js";
 
 const G = "g-mine";
 const pub = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
@@ -35,7 +36,7 @@ async function founded(prefixOverride?: string) {
   const planes = { persona: "automerge:p", identities: "automerge:i", circles: "automerge:c", sessions: "automerge:s", intents: "automerge:t" };
   const log = await signFoundingLog({
     group: G, personaKelPrefix: prefixOverride ?? prov.inception.prefix, rootCommitment: faceRootCommitment(didFromVerifyingKey(rootKey)),
-    epoch: 0, planes, deviceKey: "dev1", edgeDigest: edgeBodyDigest(edge),
+    epoch: 0, planes, deviceKey: "dev1", edgeDigest: edgeBodyDigest(edge), vesselTag: await testVesselTag(1, G, "dev1"),
   }, root);
   const anchor = mintFaceAnchor({ personaGroup: G, personaKelPrefix: prov.inception.prefix, personaRootDid: didFromVerifyingKey(rootKey), edge, leaseEpoch: 0 });
   return { chain, root, log, planes, anchor, edge };
@@ -84,8 +85,8 @@ describe("face-boot-proof", () => {
       .toEqual({ ok: false, refusal: { why: "prefix" } });
     const f = await founded();
     const head = { seq: f.log[f.log.length - 1]!.body.seq, cid: actCid(f.log[f.log.length - 1]!.body) };
-    const x = await signPersonaAct(head, { group: G, act: "admission", epoch: 0, fields: { deviceKey: "devA" } }, f.root);
-    const y = await signPersonaAct(head, { group: G, act: "admission", epoch: 0, fields: { deviceKey: "devB" } }, f.root);
+    const x = await signPersonaAct(head, { group: G, act: "admission", epoch: 0, fields: { ...(await taggedAdmission(10, G, "devA")) } }, f.root);
+    const y = await signPersonaAct(head, { group: G, act: "admission", epoch: 0, fields: { ...(await taggedAdmission(11, G, "devB")) } }, f.root);
     const r = proveFaceFromLog({ records: docRecords([...f.log, x, y]), chain: f.chain, group: G, anchor: f.anchor, deviceKey: "dev1", planes: f.planes });
     expect(r).toEqual({ ok: false, refusal: { why: "fork", seq: head.seq + 1 } });
   });
@@ -95,12 +96,12 @@ describe("face-boot-proof", () => {
   test("RED: a bundle's act and a later replica's act at one sequence refuse as a fork; CONTROL: a replica that extends the bundle proves", async () => {
     const f = await founded();
     const head = { seq: f.log[f.log.length - 1]!.body.seq, cid: actCid(f.log[f.log.length - 1]!.body) };
-    const inBundle = await signPersonaAct(head, { group: G, act: "admission", epoch: 0, fields: { deviceKey: "devBundle" } }, f.root);
-    const inReplica = await signPersonaAct(head, { group: G, act: "admission", epoch: 0, fields: { deviceKey: "devReplica" } }, f.root);
+    const inBundle = await signPersonaAct(head, { group: G, act: "admission", epoch: 0, fields: { ...(await taggedAdmission(12, G, "devBundle")) } }, f.root);
+    const inReplica = await signPersonaAct(head, { group: G, act: "admission", epoch: 0, fields: { ...(await taggedAdmission(13, G, "devReplica")) } }, f.root);
     const bundle = [...f.log, inBundle], replica = [...f.log, inReplica];
     const proof = (records: unknown[]) => proveFaceFromLog({ records, chain: f.chain, group: G, anchor: f.anchor, deviceKey: "dev1", edge: f.edge, planes: f.planes });
     expect(proof(docRecords([...bundle, ...replica]))).toEqual({ ok: false, refusal: { why: "fork", seq: head.seq + 1 } });
-    const extension = await signPersonaAct({ seq: inBundle.body.seq, cid: actCid(inBundle.body) }, { group: G, act: "admission", epoch: 0, fields: { deviceKey: "devLater" } }, f.root);
+    const extension = await signPersonaAct({ seq: inBundle.body.seq, cid: actCid(inBundle.body) }, { group: G, act: "admission", epoch: 0, fields: { ...(await taggedAdmission(14, G, "devLater")) } }, f.root);
     expect(proof(docRecords([...bundle, extension])).ok).toBe(true);
   });
 

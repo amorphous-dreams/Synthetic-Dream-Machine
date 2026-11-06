@@ -22,6 +22,7 @@ import {
 } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import { hex } from "@lararium/mesh";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const FOUNDER_SEED = new Uint8Array(32).fill(0x37);
 const DEVICE_SEED  = new Uint8Array(32).fill(0x38);
@@ -33,7 +34,7 @@ const b64 = (s: string) => new Uint8Array(Buffer.from(s, "base64"));
 async function foundAndSeat() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = hex(await ed25519.getPublicKeyAsync(FOUNDER_SEED));
-  const f = await runFoundingCeremony({
+  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1),
     repo, vesselSeed: FOUNDER_SEED, placeVerifyingKey: verifyingKey, vesselDisplayName: "The Roll Test Hearth",
     binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
   });

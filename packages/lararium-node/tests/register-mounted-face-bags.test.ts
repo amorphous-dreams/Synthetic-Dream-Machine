@@ -20,6 +20,7 @@ import { openNodeVessel } from "../src/open-node-vessel.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 const capture = vi.hoisted(() => ({
   registerBags: [] as string[][],
 }));
@@ -72,7 +73,7 @@ async function founderForSecondFace() {
   const founderKey = faceAtomKeyFromSeed(vesselSeed, "founder-vessel").key;
   const hearthTrueName = "hearth-for-second-face";
   const place = await foundThePlace({ repo: founderRepo, vesselSeed, hearthTrueName });
-  const face = await foundTheFace({
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo,
     daemonHandle: place.daemonHandle,
     placeVerifyingKey: founderKey,

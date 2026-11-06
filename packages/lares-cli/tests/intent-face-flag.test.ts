@@ -45,6 +45,22 @@ describe("intent CLI face", () => {
   });
 });
 
+describe("intent CLI co-sign detail", () => {
+  beforeEach(() => { seam.calls = []; seam.output = { id: "intent-1", rows: [] }; vi.spyOn(console, "error").mockImplementation(() => {}); });
+  test("RED: ask without --detail carries none; CONTROL: --detail reaches the ask row, and answer prints the act it approves", async () => {
+    const lines: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((line: unknown) => { lines.push(String(line)); });
+    expect(await run("ask", "intent-1", "--face", "0")).toBe(0);
+    expect(seam.calls[0]![1]).not.toHaveProperty("detail");
+    const digest = "d".repeat(64);
+    expect(await run("ask", "intent-1", "--face", "0", "--detail", digest)).toBe(0);
+    expect(seam.calls[1]).toEqual(["intent-ask", expect.objectContaining({ target: "intent-1", detail: digest })]);
+    seam.output = { cid: "answer-1", shown: { verb: "ward-push-go", askedBy: "a".repeat(64), intent: "intent-1", detail: digest } };
+    expect(await run("answer", "ask-1", "--face", "0", "--executor", "b".repeat(64))).toBe(0);
+    expect(lines.join("\n")).toMatch(new RegExp(`act ward-push-go asked-by=a+ intent=intent-1 detail=${digest}\\nanswer-1`));
+  });
+});
+
 describe("intent relay CLI", () => {
   beforeEach(() => { seam.calls = []; seam.output = { enabled: false, path: null, pin: null }; vi.spyOn(console, "log").mockImplementation(() => {}); vi.spyOn(console, "error").mockImplementation(() => {}); });
   test("RED: malformed face refuses before the door; CONTROL: enable, status and rotate select their named rows", async () => {

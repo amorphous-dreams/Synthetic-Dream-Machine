@@ -1,5 +1,6 @@
 import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
-import { BrowserWardRefused, browserWardSigner } from "./browser-ward.js";
+import { browserWardBindRoute, BrowserWardRefused, browserWardSigner, type WardAskKind } from "./browser-ward.js";
+import type { WardRoute } from "./ward-core.js";
 import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHolder } from "@lararium/tw5";
 /**
  * openBrowserVessel — local-first browser vessel factory.
@@ -28,7 +29,7 @@ import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
 import {
-  emptyLarDoc, storedLarRecord,
+  emptyLarDoc, storedLarRecord, cosignPortWitness, WARD_WITNESS_CLOSED,
   CATALOG_DOC_URI, DAEMON_BAG_ID,
   ENGINE_CORE_ID,
   resolveRecipePluginCids, offeringAnnouncesFromDoc, type OfferingLookup,
@@ -86,11 +87,11 @@ import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
   promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
-  readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
+  readFleetFrontier, fleetFrontierLinks, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
   type WideningRead,
 } from "@lararium/mesh";
 import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
-import { keepBrowserFaceAtomSeed, mintBrowserFaceAddressSecret, readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
+import { browserVesselFaceTagDoor, keepBrowserFaceAtomSeed, mintBrowserFaceAddressSecret, readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import {
   loadBrowserVeilArchive, saveBrowserVeilArchive,
 } from "./browser-keyhive-archive.js";
@@ -98,9 +99,10 @@ import { workingFloorAnchorOf, vesselDyads, verifiedFleetOfGroup, type LarDid } 
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase, PlaceFoundingCard } from "@lararium/mesh";
 import { readWornPersonaMount }              from "@lararium/mesh";
+import { browserFaceFold, browserWardAnswer, browserWardCosignPort } from "./browser-ward-cosign.js";
 import {
   generateOrLoadBrowserVesselIdentity,
-  generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
+  browserPersonaRootHeld, generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
   listBrowserPersonaRoots, loadBrowserActivePersona,
   makeBrowserIdbPersonaVault, makeBrowserPersonaPetnameStore,
   openVesselIdb, idbGet, idbPut, loadBrowserPlaceKel,
@@ -212,10 +214,11 @@ async function writeBootKeys(idbName: string, writes: BootKeyWrites): Promise<vo
 export interface BrowserVesselOptions extends LarariumVesselOptions {
   /**
    * THE WARD'S DIALOG (seat-harness#/the-ward): the page asks the person for the face's passphrase for ONE ward act (a daemon or
-   * kahua commit, a kāpae-lower) and answers it; the passphrase goes to a per-act ward worker and nothing keeps it. Absent, every
-   * ward act in this browser refuses `ward-needs-fresh-unlock` by name.
+   * kahua commit, a kāpae-lower, a face's founding or mint, a handle publish, burn or attest) and answers it; the passphrase goes
+   * to that one act and nothing keeps it. Absent, every ward act in this browser refuses `ward-needs-fresh-unlock` by name. The
+   * ask names its kind: `open` reads a standing ward, and a bind asks `bind` then `retype` and binds only where both match.
    */
-  askWardRoute?: (act: string) => Promise<string>;
+  askWardRoute?: (act: string, kind: WardAskKind) => Promise<string>;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   idbName?:        string;
@@ -519,6 +522,17 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     meshLeaf, admit, walkInvite, siblingHerms,
   } = opts;
   const emit = (p: LarOpenPhase) => onPhase?.(p);
+  /** One ward act's route, asked of the page's ward dialog for this act alone; no dialog refuses by name. */
+  const wardRouteFor = async (act: string): Promise<WardRoute> => {
+    if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock", `${act} rides the face's ward, and this page offers no ward dialog`);
+    return opts.askWardRoute(act, "open");
+  };
+  /** The route a fresh ward BINDS over: asked twice alike (`bind`, `retype`), so a typo binds nothing (`ward-route-mismatch`). */
+  const wardBindRouteFor = async (act: string): Promise<WardRoute> => {
+    const ask = opts.askWardRoute;
+    if (!ask) throw new BrowserWardRefused("ward-needs-fresh-unlock", `${act} binds the face's ward, and this page offers no ward dialog`);
+    return browserWardBindRoute(ask, act);
+  };
 
   emit("boot");
 
@@ -571,7 +585,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // socket to stand empty in.
   // The fleet's shadows as this leaf last read them. Null until the first read lands: a sibling then reads as
   // aside (fail closed), and no sibling channel stands that early.
-  let fleetShadows: { readonly root: string; readonly readings: ReadonlyMap<string, EdgeReading>; readonly rolled: ReadonlySet<string>; readonly frontier: WideningRead } | null = null;
+  let fleetShadows: { readonly root: string; readonly readings: ReadonlyMap<string, EdgeReading>; readonly rolled: ReadonlySet<string>; readonly frontier: WideningRead; readonly links: ReadonlyMap<string, readonly string[]> } | null = null;
   let fleetBoardFollowed = false;
   // The leaf's fleet reading guards sibling sync. The daemon island reads its own board for gate asks.
   const bareKey = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
@@ -829,27 +843,40 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // A ROOT MINTS ONLY OVER A SLOT: a keystore with no slot asks this tab's person to bind one first, and a boot
     // with no custody door refuses `no-custody-slot` at the mint, by name (#/rulings: a browser leaf holds a
     // passphrase or paper slot before it holds a persona root).
+    // THE FACE IS BORN UNDER ITS WARD (seat-harness#/the-ward): the route the person typed for this founding's custody binds the
+    // face's ward too; a keystore this tab already holds unlocked asks the ward's dialog once. No route, no root.
+    let bornUnder: CustodyAnswer = null;
     if (opts.askCustody) {
-      const custody = await standBrowserCustody({ idbName, ask: opts.askCustody, secretMintDue: true });
+      const ask = opts.askCustody;
+      const custody = await standBrowserCustody({ idbName, ask: async (q) => { const answer = await ask(q); if (answer) bornUnder = answer; return answer; }, secretMintDue: true });
       if (custody.reading !== "bound" && custody.reading !== "opens" && custody.reading !== "held") {
         throw new BrowserCustodyRefused("no-custody-slot", idbName, `persona-root-h${String(FOUNDING_PERSONA_INDEX)}`, `the founding asked for a first slot and read ${custody.reading}`);
       }
     }
-    await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX);
-    const signerSeed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX);
-    await wearBrowserPersona(idbName, FOUNDING_PERSONA_INDEX);   // the selector points at the founded root
-    const f = await runFoundingCeremony({
-      repo,
-      placeVerifyingKey: vesselIdentity.verifyingKey,
-      vesselDisplayName:  displayName ?? "Browser Operator",
-      // The persona-root SIGNS (signerDid == the root DID, DISTINCT from deviceDid). The self-signed anon
-      // The root signer stays distinct from the place KEL seed.
-      binding: { mode: "self-stood", signerSeed },
-      hearthTrueName: "",          // hearth-agnostic: an anon is not yet bound to a place; it binds on upgrade
-      // The island this leaf stands in keys the KEL board. A FOUNDING leaf dials no anchor, so this resolves to
-      // its own key — a private nexus of one, the same value by a different derivation.
-      nexusPubkey,
-    });
+    const founding = "found this browser's first face";
+    const wardRoute: WardRoute = bornUnder ?? (await browserPersonaRootHeld(idbName, FOUNDING_PERSONA_INDEX) ? await wardRouteFor(founding) : await wardBindRouteFor(founding));
+    await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX, wardRoute);
+    const signerSeed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX, wardRoute);
+    // THE ROOT SEED LEAVES THE ACT ZEROED: the ceremony signs once with it, and the bytes clear in the finally.
+    let f: Awaited<ReturnType<typeof runFoundingCeremony>>;
+    try {
+      await wearBrowserPersona(idbName, FOUNDING_PERSONA_INDEX);   // the selector points at the founded root
+      f = await runFoundingCeremony({
+        repo,
+        placeVerifyingKey: vesselIdentity.verifyingKey,
+        vesselDisplayName:  displayName ?? "Browser Operator",
+        // The persona-root SIGNS (signerDid == the root DID, DISTINCT from deviceDid). The self-signed anon
+        // The root signer stays distinct from the place KEL seed.
+        binding: { mode: "self-stood", signerSeed },
+        hearthTrueName: "",          // hearth-agnostic: an anon is not yet bound to a place; it binds on upgrade
+        // The island this leaf stands in keys the KEL board. A FOUNDING leaf dials no anchor, so this resolves to
+        // its own key — a private nexus of one, the same value by a different derivation.
+        nexusPubkey,
+        // The founding mints the face's ward key under a ward of its own, over the route this founding's root rides, and signs its
+        // pop inside that ward act; a founding that runs again signs the pop inside a fresh ward act under the same route.
+        vesselTag: browserVesselFaceTagDoor(idbName, { route: async () => wardRoute }),
+      });
+    } finally { signerSeed.fill(0); }
     // THE FACE'S ATOM RESTS BEFORE ITS BOOTSTRAP: the founding minted a random seed, and the face's own custody row keeps it.
     try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); } finally { f.atomSeed.fill(0); }
     // THE FACE'S ADDRESS SECRET MINTS BESIDE ITS ATOM, so its working documents derive their addresses from the first boot.
@@ -1026,6 +1053,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let vmManager!: BrowserVesselIslandPool;   // set in makePool
   let portFaceId: string | null = null;
   let promoteHandlers: ReturnType<typeof promoteMainVerbs> | null = null;
+  /** The worn face's answer door (`ward-answer`): this browser answers a ward ask through its own ward (seat-harness#/the-swarm-slices). */
+  let wardAnswerHandler: ((args: Record<string, unknown>) => Promise<Record<string, unknown>>) | null = null;
   let pushPromoteSnapshot: (() => Promise<void>) | null = null;
   let promoteWiringRef: ReturnType<typeof promoteWiring> | null = null;
   const restartWikiIsland = async (wiki: string) => {
@@ -1428,10 +1457,29 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         provenPromoteUrl = await adoptPromoteBoard({ repo, group: wornGroup, projection: proof.projection });
         const promoteFace = liveKahuaFace({ group: wornGroup, prefix: personaKelPrefix, bootChain: personaKelChain, anchor: faceAnchor, board: repo.find(personaKelBoardDocUrl(nexusPubkey)) });
         const devices = new Set(proof.projection.devices);
+        // THE PORT FOLDS THE WORN FACE AT EACH ACT (node parity: the node loads its face per act): the persona plane and the admit
+        // bundle as they stand now, under the KEL as it stands now, so a second device admitted since boot holds the lower.
+        const liveKelChain = () => personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
+        const browserCosignPortOf = async () => {
+          const intents = await repo.find<LarDoc>(wornIntentsUrl as AutomergeUrl);
+          return browserWardCosignPort({ group: wornGroup, atom: wornAtom, plane: intents, flush: () => repo.flush(),
+            fold: browserFaceFold({ records: () => faceRecordsOf([heldDocOf(repo, wornPlaneUrl), heldDocOf(repo, social.daemonUrl)], wornGroup),
+              chain: liveKelChain, group: wornGroup, anchor: pinned, deviceKey: wornAtom.key, ...(wornEdge ? { edge: wornEdge } : {}),
+              planes: { persona: wornPlaneUrl, intents: wornIntentsUrl } }),
+            lineage: () => { const lineage = readFace(liveKelChain())?.lineage; if (!lineage) throw new Error("[lararium-browser] the worn face's KEL folds no lineage"); return lineage; },
+            fleet: () => fleetShadows });
+        };
         promoteWiringRef = provenPromoteUrl ? promoteWiring({
           repo, group: wornGroup, boardUrl: provenPromoteUrl, stageUrl: provenKahuaUrl,
           foldFace: () => { const f = promoteFace.read(); return { group: wornGroup, grant: f ? f.grant : () => false }; },
-          boardFace: () => { const f = promoteFace.read(); return { group: wornGroup, grant: f ? f.grant : () => false, device: (k) => devices.has(k) }; },
+          // THE BOARD READS UNDER THE CO-SIGN WITNESS: on a face of two devices, a lower stands only beside its spent co-sign; a fold
+          // that does not prove stands no lower, so the brake holds (seat-harness#/the-swarm-slices).
+          boardFace: async () => {
+            const f = promoteFace.read();
+            let ward = WARD_WITNESS_CLOSED;
+            try { ward = cosignPortWitness(await browserCosignPortOf()); } catch { /* the brake holds */ }
+            return { group: wornGroup, grant: f ? f.grant : () => false, device: (k) => devices.has(k), ward };
+          },
           stores: browserPromoteStores(idbName, wornGroup), cas: browserPromoteCas(),
           wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
           onArrive: async () => { await pushPromoteSnapshot?.(); },
@@ -1444,9 +1492,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const handle = await repo.find<LarDoc>(provenPromoteUrl as AutomergeUrl);
           const boardFace = { group: wornGroup, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
           /** One ward act's signer: the page's dialog asks the passphrase for this act, and the ward worker signs under it. */
-          const wardRootSignerOf = async (act: string) => {
-            if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock");
-            return browserWardSigner(idbName, FOUNDING_PERSONA_INDEX, await opts.askWardRoute(act));
+          const wardRootSignerOf = async (act: string) => browserWardSigner(idbName, FOUNDING_PERSONA_INDEX, await wardRouteFor(act));
+          // THE ANSWER DOOR: an approve of a ward ask signs inside a fresh ward act of this face, from the route the dialog asks for it.
+          wardAnswerHandler = async (args) => {
+            if (typeof args["ask"] !== "string" || typeof args["executor"] !== "string") throw new BrowserWardRefused("ward-answer-malformed");
+            const entry = await browserWardAnswer({ idbName, group: wornGroup, atom: wornAtom, port: await browserCosignPortOf(), ask: args["ask"], executor: args["executor"],
+              deny: args["deny"] === true, route: async (act) => { if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock"); return opts.askWardRoute(act, "open"); } });
+            return { verdict: entry.body["verdict"], signer: entry.signer };
           };
           const boardDoor = promoteBoardDoor({ group: wornGroup, face: boardFace, atom: wornAtom,
             epoch: () => readFace(personaKelChain)?.lineage.at(-1)?.epoch ?? 0,
@@ -1454,6 +1506,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             rootSigner: () => wardRootSignerOf("a kāpae-lower"),
             board: { records: async () => promoteActRecords(handle.doc(), wornGroup), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
             projection: () => proof.projection,
+            // THE CO-SIGN GATE: where the face holds two devices, a lower waits on a second one's answer (seat-harness#/the-swarm-slices).
+            cosign: browserCosignPortOf,
           });
           // A local process can name its own hand; this device's click carries the operator's gesture.
           const who = { kind: "hand" as const, id: wornAtom.key };
@@ -1562,7 +1616,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             pinned: readFrontierPins(read.ledger.doc(), scope)[FLEET_HAND] ?? null,
           }) : { status: "unknown", missing: [{ hand: FLEET_HAND, why: "no-frontier" }] };
           if (frontier.status === "known") read.ledger.change((draft) => { writeFrontierPin(draft, scope, FLEET_HAND, frontier.asOf[FLEET_HAND]!); });
-          fleetShadows = { root: fleetRootOfFace, readings: read.readings, rolled: raisesSeenThrough(read.ledger.doc(), scope, wornAtom.key), frontier };
+          const links = lineage ? fleetFrontierLinks({ fleetRoot: scope, board: read.handle.doc(), lineage }) : new Map<string, readonly string[]>();
+          fleetShadows = { root: fleetRootOfFace, readings: read.readings, rolled: raisesSeenThrough(read.ledger.doc(), scope, wornAtom.key), frontier, links };
         };
         fleetRead = readFleet();
         await fleetRead;
@@ -1739,6 +1794,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     wireVerbs: (registry, _assembly) => {
       seedVesselDefaults(registry);
       if (promoteHandlers) for (const [name, handler] of Object.entries(promoteHandlers)) registry.register(name, args => handler(args), { summary: name, surfaces: [] });
+      if (wardAnswerHandler) { const answer = wardAnswerHandler; registry.register("ward-answer", args => answer(args as Record<string, unknown>), { summary: "ward-answer", surfaces: [] }); }
       // Thin main verb plane (node parity). Every catalog/recipe/residency-mutating
       // daemon verb lives in the worker now (wireWorkerVerbs) — access≠load, write-then-sync.
       // Main keeps only sync-wiki (commands the pool's active wiki) + residency stats (a read).
@@ -1825,7 +1881,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         }
         const roster = await listBrowserPersonaRoots(idbName);
         const nextIndex = roster.length ? Math.max(...roster) + 1 : 0;
-        const root = await generateOrLoadBrowserPersonaRoot(idbName, nextIndex);
+        // The new face is born under its own ward, bound over the route the person types for this mint.
+        const root = await generateOrLoadBrowserPersonaRoot(idbName, nextIndex, await wardBindRouteFor(`mint face h${String(nextIndex)}`));
         const petnames = await makeBrowserPersonaPetnameStore(idbName);
         await renameOwnPersona(petnames, nextIndex, `persona-h${nextIndex}`);
         void pushPersonaState();
@@ -1885,7 +1942,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!glamour) throw new Error("face-publish: a `glamour` (display name) is required");
         const handleIndex = await resolveFaceIndex(args);
         const board = await resolveWhoBoard("publish");
-        const card = await publishHandleBrowser({ board, kelBoard: await resolveKelBoard(), handleIndex, glamour, idbName });
+        const card = await publishHandleBrowser({ board, kelBoard: await resolveKelBoard(), handleIndex, glamour, idbName, ward: await wardRouteFor(`publish face h${String(handleIndex)}`) });
         return { verb: "face-publish", nym: card.nym, glamour: card.glamour, actCid: card.actCid, parents: card.parents };
       });
 
@@ -1895,7 +1952,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const handleIndex = await resolveFaceIndex(args);
         const board = await resolveWhoBoard("burn");
         const fromPersona = args["from-persona"] === true || args["from-persona"] === "true";
-        const burnOpts: Parameters<typeof burnFaceBrowser>[0] = { board, handleIndex, idbName };
+        const burnOpts: Parameters<typeof burnFaceBrowser>[0] = { board, handleIndex, idbName, ward: await wardRouteFor(`burn face h${String(handleIndex)}`) };
         if (fromPersona) {
           burnOpts.fromPersona = true;
           burnOpts.kelBoard    = await resolveKelBoard();
@@ -1917,7 +1974,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!claim) throw new Error(`[face-attest] no adapter answers that claim — name a surface (${HANDLE_CLAIM_SURFACES.join(" · ")}) and its subject.`);
         const handleIndex = await resolveFaceIndex(args);
         const board = await resolveWhoBoard("attest");
-        const statement = await attestFaceBrowser({ board, handleIndex, claim, idbName });
+        const statement = await attestFaceBrowser({ board, handleIndex, claim, idbName, ward: await wardRouteFor(`attest under face h${String(handleIndex)}`) });
         return { verb: "face-attest", prefix: statement.prefix, headEventCid: statement.headEventCid, claim: statement.claim, sig: statement.sig };
       });
 

@@ -199,7 +199,7 @@ export type { CardRefusal, FaceNamed, PresentedCard } from "./face-card-restore.
 export { makeBagTierReader, bagNameFromBagUrl } from "./vessel-bag-tier.js";
 export type { InitOptions, InitResult, FoundFaceOptions, FoundFaceResult } from "./commands/init.js";
 
-export { runDeviceAdmit } from "./commands/device-admit.js";
+export { runDeviceAdmit, DeviceAdmitTagRefused } from "./commands/device-admit.js";
 export type { DeviceAdmitOptions, DeviceAdmitPayload, DeviceAdmitResult } from "./commands/device-admit.js";
 // THE FLEET-JOIN DOOR: the root holder's offer and answer ride the store door; the joining vessel requests, lands
 // and abandons in its own process, with no vessel standing.
@@ -287,6 +287,7 @@ export {
 export type { CasWireServerDeps, CasWireFetch } from "./cas-wire.js";
 
 export { loadVesselVerifyingKey, vesselPlaceSignerDoor, vesselFloorKeyDoor, FloorKeyDoorRefused, loadPlaceKelChain, loadPlaceAid } from "./node-vessel-identity.js";
+export { vesselFaceTagDoor } from "./vessel-face-tag-store.js";
 export { rotateRelayGateSeed, openRelayGateSeed, RelayGateSeedRefused } from "./relay-gate-seed.js";
 export { rotatePlace, reconcilePlaceRotation } from "./place-rotation.js";
 export { faceSigningSeat, FaceSigningRefused } from "./face-signing-seat.js";
@@ -510,10 +511,9 @@ export type { CustodyOpener } from "./custody-seat.js";
 export { WardNeedsFreshUnlock, WardAbsent } from "./custody-holder.js";
 export type { WardSeat } from "./custody-holder.js";
 export { rewrapWardCustody, withWardKeyCustody } from "./custody-seat.js";
-export { wardCredential, wardCredentialOfRoute, parkWardTicket, wardBindDigest, storeVerbNeedsWard, seatWardGatherer, wardGathererSeated, gatherSeatedWardRoute } from "./ward-credential.js";
+export { wardCredential, wardCredentialOfRoute, parkWardTicket, wardBindDigest, storeVerbNeedsWard, storeVerbGatesFirst, seatWardGatherer, wardGathererSeated, gatherSeatedWardRoute } from "./ward-credential.js";
 export type { WardCredential } from "./ward-credential.js";
 export { wardRootSigner } from "./ward-signer.js";
-export { seatFaceAutoFounder } from "./custody-holder.js";
 export { faceDir, faceFileNames, faceFilePathSync, listFaceFiles, readFaceIndexSync } from "./face-index.js";
 export { bindFaceSlot, unbindFaceSlot, FaceTreeUnreadable } from "./face-slot-ops.js";
 export { openFaceTree } from "./face-custody.js";

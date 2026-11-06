@@ -57,6 +57,8 @@ import {
   type VesselFaceCertificateRequest, type VesselFaceKey,
 } from "./face-proof-subjects.js";
 import { openFromSender, sealToRecipient } from "./sealed-box.js";
+import { vesselFaceTagHolds, type VesselFaceTagDoor } from "./vessel-face-tag.js";
+import { wardKeyPopHolds } from "./ward-answer.js";
 
 // ── Refusals ────────────────────────────────────────────────────────────────────────────────────
 
@@ -68,6 +70,10 @@ export const FLEET_JOIN_REFUSALS = [
   "request-scope-twice",       // two certificate requests name one scope
   "request-key-reused",        // a face-scoped key repeats, or equals the vessel key or an offered face key, or stands held apart
   "request-unsigned",          // the vessel key's signature over the request refuses
+  "request-vessel-tag-absent", // the request carries no blinded vessel tag for this face
+  "request-ward-key-absent", // the request names no per-face ward key for its device
+  "request-ward-key-unproven", // the request's ward key signs no proof over (group, atom, ward key): the device does not hold the key it names
+  "request-vessel-tag-invalid", // the tag's signature covers another face, atom or ward key, or reads malformed
   "certificate-request-refused",
   "answer-malformed",
   "answer-pin-other-nexus",   // the carried pin stands at another Nexus than the island the answer names
@@ -123,6 +129,14 @@ export interface FleetJoinRequest {
   readonly atomKey: string;
   /** A fresh X25519 public key, 64 hex: the answer seals the address secret to it. */
   readonly sealKey:   string;
+  /** The joining vessel's blinded tag for this face, and the tag key's signature over (group, atom, ward key): what the hearth's
+   *  admission act carries, so one vessel never takes two seats in one face. */
+  readonly vesselTag: string;
+  readonly vesselSig: string;
+  /** The joining device's per-face ward key: the key its ward unlock for this face signs a co-sign answer with. */
+  readonly wardKey: string;
+  /** That ward key's own signature over (group, atom, ward key) under `ward-key-pop`: the device holds the key it names. */
+  readonly wardPop: string;
   /** One certificate request per offered scope the joinee takes, each signed by its own face-scoped key. */
   readonly requests:  readonly VesselFaceCertificateRequest[];
   /** The vessel key's signature over `fleetJoinRequestImage`. */
@@ -242,7 +256,7 @@ export function fleetJoinEdgeDigest(edge: unknown): string {
 /** The bytes the joining vessel's own key signs over its request. */
 export function fleetJoinRequestImage(r: Omit<FleetJoinRequest, "kind" | "signature">): Uint8Array {
   return signed(FLEET_JOIN_REQUEST_DOMAIN, {
-    nonce: r.nonce, atomKey: r.atomKey, sealKey: r.sealKey,
+    nonce: r.nonce, atomKey: r.atomKey, sealKey: r.sealKey, vesselTag: r.vesselTag, vesselSig: r.vesselSig, wardKey: r.wardKey, wardPop: r.wardPop,
     requests: r.requests.map((q) => ({ faceKey: q.scope.faceKey, nexus: q.scope.nexus, vesselFaceKey: q.vesselFaceKey, signature: q.signature })),
   });
 }
@@ -335,8 +349,13 @@ export function fleetJoinOffer(args: { personaGroup: string; rootKey: string; no
  */
 export function readFleetJoinRequest(value: unknown, offer: FleetJoinOffer, apart: KeysHeldApart = []): FleetJoinRequest | FleetJoinRefusal {
   return guarded("request-malformed", () => {
-    if (!record(value) || !exactly(value, ["kind", "nonce", "atomKey", "sealKey", "requests", "signature"])) return refuse("request-malformed");
-    const { kind, nonce, atomKey, sealKey, requests, signature } = value;
+    const base = ["kind", "nonce", "atomKey", "sealKey", "requests", "signature"];
+    if (!record(value)) return refuse("request-malformed");
+    // A request standing at its exact shape short of a tag field or its ward key names that field absent; any other shape reads malformed.
+    const keysOf = Object.keys(value), tagFields = ["vesselTag", "vesselSig", "wardKey", "wardPop"];
+    if (!base.every((k) => keysOf.includes(k)) || keysOf.some((k) => !base.includes(k) && !tagFields.includes(k))) return refuse("request-malformed");
+    const tagged = keysOf.includes("vesselTag") && keysOf.includes("vesselSig");
+    const { kind, nonce, atomKey, sealKey, requests, signature, vesselTag, vesselSig, wardKey, wardPop } = value;
     if (kind !== "fleet-join-request" || typeof nonce !== "string" || !HEX64.test(nonce)) return refuse("request-malformed");
     if (!isKey(atomKey) || !isSealKey(sealKey)) return refuse("request-malformed");
     if (!Array.isArray(requests) || requests.length > FLEET_JOIN_SCOPE_BOUND || typeof signature !== "string" || !HEX128.test(signature)) return refuse("request-malformed");
@@ -359,7 +378,11 @@ export function readFleetJoinRequest(value: unknown, offer: FleetJoinOffer, apar
       read.push(reading.read);
     }
     if (apart.includes(atomKey)) return refuse("request-key-reused");
-    const body = { nonce, atomKey, sealKey, requests: read };
+    if (!tagged) return refuse("request-vessel-tag-absent");
+    if (wardKey === undefined) return refuse("request-ward-key-absent");
+    if (!vesselFaceTagHolds(offer.personaGroup, atomKey, { vesselTag, vesselSig, wardKey })) return refuse("request-vessel-tag-invalid");
+    if (!wardKeyPopHolds(offer.personaGroup, atomKey, { wardKey, wardPop })) return refuse("request-ward-key-unproven");
+    const body = { nonce, atomKey, sealKey, vesselTag: vesselTag as string, vesselSig: vesselSig as string, wardKey: wardKey as string, wardPop: wardPop as string, requests: read };
     if (!readEd25519(signature, fleetJoinRequestImage(body), atomKey).ok) return refuse("request-unsigned");
     return Object.freeze({ kind, ...body, requests: Object.freeze(read), signature });
   });
@@ -512,7 +535,8 @@ export function fleetJoinSealPair(): { readonly secret: Uint8Array; readonly key
  * The joining vessel's request over an offer it read, composed over the vessel's own doors.
  *
  * `mintFaceKey` mints one face-scoped key for a scope INTO the vessel's custody and answers its public half;
- * `custody` signs each certificate request under that key; `sign` signs the request's image under the vessel key.
+ * `custody` signs each certificate request under that key; `sign` signs the request's image under the vessel key;
+ * `vesselTag` answers the vessel's blinded tag for this face and atom and the device's per-face ward key, the secrets held behind the door.
  * The request reads back through `readFleetJoinRequest` before it answers, so a door that signed under another
  * key refuses here by name and never leaves the vessel.
  */
@@ -521,6 +545,7 @@ export async function composeFleetJoinRequest(args: {
   mintFaceKey: (scope: FaceScope) => Promise<string>;
   custody: VesselFaceKeyCustody;
   sign: (image: Uint8Array) => Promise<string>;
+  vesselTag: VesselFaceTagDoor;
 }): Promise<FleetJoinRequest | FleetJoinRefusal> {
   const atomKey = args.atomKey.toLowerCase();
   const apart = [atomKey, args.offer.rootKey];
@@ -531,7 +556,8 @@ export async function composeFleetJoinRequest(args: {
     if (!("request" in asked)) return refuse("certificate-request-refused", asked.cause);
     requests.push(asked.request);
   }
-  const body = { nonce: args.offer.nonce, atomKey, sealKey: args.sealKey, requests };
+  const tag = await args.vesselTag(args.offer.personaGroup, atomKey);
+  const body = { nonce: args.offer.nonce, atomKey, sealKey: args.sealKey, vesselTag: tag.vesselTag, vesselSig: tag.vesselSig, wardKey: tag.wardKey, wardPop: tag.wardPop, requests };
   const signature = await args.sign(fleetJoinRequestImage(body));
   return readFleetJoinRequest({ kind: "fleet-join-request", ...body, signature }, args.offer, [args.offer.rootKey]);
 }

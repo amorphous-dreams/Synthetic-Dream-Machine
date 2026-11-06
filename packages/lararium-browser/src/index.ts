@@ -42,6 +42,9 @@ export {
   openVesselIdb, idbGet, idbPut, idbDelete, idbKeys,
   readBrowserSeedWrap, writeBrowserSeedWrap, loadBrowserActivePersona, SEED_WRAP_STORE,
 } from "./browser-vessel-identity.js";
+export { browserVesselFaceTagDoor } from "./browser-face-atom.js";
+// THE WARD DIALOG'S WORDS, by the ask's kind (`open`, `bind`, `retype`): a page names each ward ask truly.
+export { wardAskWords, type WardAskKind } from "./browser-ward.js";
 // BROWSER CUSTODY: a passphrase or paper slot wraps the keystore's device seed and Keyhive Archives; the
 // clear-password act asks through the confirm door.
 export {

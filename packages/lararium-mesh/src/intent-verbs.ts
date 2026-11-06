@@ -1,7 +1,10 @@
 import type { IntentAudience } from "./intent-entry.js";
 
 export type IntentVerbClass = "idempotent" | "per-device" | "single-effect";
-export interface IntentVerbDeclaration { readonly class: IntentVerbClass; readonly fenced?: boolean }
+/** `cosign`: the verb's answer counts only from a device other than the issuer (a ward verb whose effect leaves the device). */
+export interface IntentVerbDeclaration { readonly class: IntentVerbClass; readonly fenced?: boolean; readonly cosign?: boolean }
+/** The ward verbs whose effect leaves the device: a kapae lowered, the house cap, a push go. */
+export const WARD_COSIGN_VERBS: readonly string[] = Object.freeze(["ward-kapae-lower", "ward-house-cap", "ward-push-go"]);
 export interface IntentVerbRegistry {
   declareIntentVerb(verb: string, classification: IntentVerbClass | IntentVerbDeclaration): void;
   classOfVerb(verb: string): IntentVerbDeclaration | null;
@@ -23,6 +26,8 @@ export function faceIntentVerbs(): IntentVerbRegistry {
   // A kahua proposal batch pins the device whose daemon holds the bodies; the door runs no effect for it: the operator's
   // hand answers it with a lift on the stage (`kahua-stage`).
   registry.declareIntentVerb("kahua-lift", "per-device");
+  // A ward act whose effect leaves the device asks a second device of the face: one effect, the answer a distinct device's.
+  for (const verb of WARD_COSIGN_VERBS) registry.declareIntentVerb(verb, { class: "single-effect", cosign: true });
   return registry;
 }
 /** Test fixtures receive their own registry and never change production declarations. */
@@ -31,10 +36,12 @@ export function fixtureIntentVerbs(rows: Readonly<Record<string, IntentVerbClass
   for (const [verb, classification] of Object.entries(rows)) registry.declareIntentVerb(verb, classification);
   return registry;
 }
-export type IssueRefusal = "unclassified-verb" | "single-effect-unpinned";
+export type IssueRefusal = "unclassified-verb" | "single-effect-unpinned" | "cosign-needs-asks";
 export function issueCheck(registry: IntentVerbRegistry, verb: string, audience: IntentAudience): { readonly ok: true; readonly classification: IntentVerbDeclaration } | { readonly ok: false; readonly refusal: IssueRefusal } {
   const classification = registry.classOfVerb(verb);
   if (!classification) return { ok: false, refusal: "unclassified-verb" };
   if (classification.class === "single-effect" && audience.mode !== "pinned" && audience.mode !== "asks") return { ok: false, refusal: "single-effect-unpinned" };
+  // A cosign verb's second device speaks only through an answer, and only the asks audience reads one: a pin skips it.
+  if (classification.cosign && audience.mode !== "asks") return { ok: false, refusal: "cosign-needs-asks" };
   return { ok: true, classification };
 }
