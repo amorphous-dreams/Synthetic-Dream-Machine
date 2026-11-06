@@ -155,7 +155,9 @@ export function wikiCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<T
       const slot     = resolve<VesselWikiSlot>(CORE_CAP.wikislot);
       const daemon   = resolve<VesselDaemonVm>(CORE_CAP.daemon);
       const presetWiki = slot.wikiBagId === LARES_DOC_URI ? assembly.laresHandle ?? undefined : undefined;
+      console.info("[mount] awaiting worker ready");
       await daemon.workerEa;
+      console.info("[mount] worker ready");
       let slotDocs: ReturnType<typeof resolveSlotDocs> | undefined;
       const resolveSlots = (wikiUrl: string) => slotDocs ??= resolveSlotDocs(daemon.resolveBinding, { wikiSlug: slot.wikiSlug, wikiUrl });
       const resolveDraft = async (wikiUrl: string): Promise<string> =>

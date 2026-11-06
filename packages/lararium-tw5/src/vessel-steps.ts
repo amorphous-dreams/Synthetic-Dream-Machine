@@ -209,8 +209,11 @@ export async function mountPrimaryWiki(
   binding: BindingResolver,
   inputs:  PrimaryMountInputs,
 ): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }> {
+  console.info(`[mount] binding ${inputs.activeWikiId}`);
   const { spec, personalUrl, draftUrl, workingUrl } = await buildWikiMountSpec(binding, inputs);
+  console.info(`[mount] binding ready ${inputs.activeWikiId}; awaiting ea`);
   await pool.mountWiki(inputs.activeWikiId, spec, { pinned: true });
+  console.info(`[mount] ea ${inputs.activeWikiId}`);
   return { personalUrl, draftUrl, workingUrl };
 }
 

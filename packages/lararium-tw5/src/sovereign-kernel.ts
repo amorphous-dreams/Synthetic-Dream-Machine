@@ -242,7 +242,8 @@ export function runSovereignKernel(
   const defer = (): Promise<void> =>
     new Promise((res) => (typeof setImmediate === "function" ? setImmediate(res) : setTimeout(res, 0)));
   let _lastSyncHeardAt = mono();
-  const _markSyncHeard = (): void => { _lastSyncHeardAt = mono(); };
+  const _syncWakes = new Set<() => void>();
+  const _markSyncHeard = (): void => { _lastSyncHeardAt = mono(); for (const wake of _syncWakes) wake(); };
 
   async function _resolveSlot(
     repo: Repo,
@@ -264,6 +265,11 @@ export function runSovereignKernel(
       lastHeard: () => _lastSyncHeardAt,
       sleep:     (ms) => new Promise((res) => setTimeout(res, ms)),
       defer,
+      onWake: (wake) => {
+        _syncWakes.add(wake);
+        repo.networkSubsystem.on("peer", wake);
+        return () => { _syncWakes.delete(wake); repo.networkSubsystem.off("peer", wake); };
+      },
       budgets:   { silenceMs: SLOT_SILENCE_TIMEOUT_MS, hardCapMs: SLOT_READY_HARD_CAP_MS, pollMs: SLOT_POLL_MS },
     });
     if (out.outcome === "ready") return out.handle;
@@ -381,6 +387,7 @@ export function runSovereignKernel(
       ready.push({ slot, handle });
       tick();                  // one slot resolved — real progress evidence
     }
+    tick("slot-ready");
 
     // ── Resolve the TW5 engine + plugin tiddlers ──────────────────────────────
     // The CID plane: the kernel, plugin blobs, and every large blob ride the local CAS,
@@ -501,6 +508,7 @@ export function runSovereignKernel(
               _bridgeUnsub = bridgeWikiToAdaptor(tw5, adaptor);
               // Await the shore's seed checkpoint before arming behavior: onEa observes a fully resident seed,
               // landed by the shore's queue in host-task slices.
+              tick("seed-drain");
               await seedDrained(tw5);
 
               // Isomorphic base: the catalog registry's grant rides into ctx (access entry, NOT a
@@ -548,6 +556,7 @@ export function runSovereignKernel(
     tick("behavior");
     await behavior.onEa(_ctx);
 
+    tick("ea");
     handler.sendEa(msg.wikiUri);
   }
 
