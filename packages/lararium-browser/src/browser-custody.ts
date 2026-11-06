@@ -348,7 +348,7 @@ const personaRosterCodec: RowCodec = {
       const { handleIndex, verifyingKey } = (l ?? {}) as { handleIndex?: unknown; verifyingKey?: unknown };
       return Number.isSafeInteger(handleIndex) && (handleIndex as number) >= 0 && typeof verifyingKey === "string" && /^[0-9a-f]{64}$/.test(verifyingKey);
     };
-    // THE OLD ROSTER SHAPE (`{ roots: [0] }`, bare indices) predates the ward: refuse by name with its cure.
+    // A ROSTER OF BARE INDICES (`{ roots: [0] }`) predates the ward: refuse by name with its cure.
     if (Array.isArray(roots) && roots.length > 0 && roots.every((r) => typeof r === "number")) {
       throw new BrowserWardRefused("ward-face-predates", "this face predates the ward; found it again");
     }
