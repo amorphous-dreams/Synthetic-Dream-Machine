@@ -663,6 +663,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const sealedMap = sealedBagMap({
     face: () => sealedCells.face(),
     bags: () => sealedCells.bags(),
+    catalog: () => sealedCells.catalog(),
     docsOf: (bagId) => [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
   const sealedBagOf = (documentId: string): SealedBag | null => sealedMap.bagOf(documentId);

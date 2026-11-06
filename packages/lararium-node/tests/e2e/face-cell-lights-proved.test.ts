@@ -8,7 +8,8 @@
  *
  *   C1  RED: a founded, sovereign node that dials nothing lights its face cell: the bag map names the worn face's place
  *       subject and the face's own wiki bags beneath it.
- *   C0  CONTROL: a floor node (no face founded) lights none: the map names no face.
+ *   C0  CONTROL: a floor node (no face founded) on the default wiki (`lares`, a floor row) lights none: the map names
+ *       no face.
  *
  * The map reads through the vessel's own log line (`[sealed-rest] the map names: …`), each time it moves.
  *
@@ -47,7 +48,7 @@ function mapLines(): string[] {
 }
 
 /** A vessel composed by `openNodeVessel` with no dial: founded with its face, or left at its floor. */
-async function compose(founded: boolean): Promise<{ root: string; vessel: NodeVesselResult }> {
+async function compose(founded: boolean, wikiId: string): Promise<{ root: string; vessel: NodeVesselResult }> {
   const root = mkdtempSync(join(tmpdir(), "face-cell-proved-"));
   const genesisDir = join(root, "genesis");
   const storageDir = join(root, "data", "lares", "vessel");
@@ -59,7 +60,7 @@ async function compose(founded: boolean): Promise<{ root: string; vessel: NodeVe
     await withLarRoot(root, () => foundSeedCharter({ name: "face cell founder", readBack: async () => {} }));
     await withLarRoot(root, () => direct(runFoundTheFace)({ storageDir, genesisDir }));
   }
-  vessel = await withLarRoot(root, () => openNodeVessel({ hostId: "face-cell", wikiId: "face-cell", storageDir, genesisDir, wss: new EventEmitter() as never }));
+  vessel = await withLarRoot(root, () => openNodeVessel({ hostId: "face-cell", wikiId, storageDir, genesisDir, wss: new EventEmitter() as never }));
   await withLarRoot(root, () => vessel!.daemon.workerEa);
   return { root, vessel };
 }
@@ -67,7 +68,7 @@ async function compose(founded: boolean): Promise<{ root: string; vessel: NodeVe
 describe("the node's face cell reads the proved face", () => {
   test("C1 RED: a sovereign node that dials nothing lights its face cell at its own place", async () => {
     const lines = mapLines();
-    const { root } = await compose(true);
+    const { root } = await compose(true, "face-cell");
     const subject = await withLarRoot(root, async () => {
       const group = (await loadIdentityAnchors(0))?.personaGroupId;
       expect(group, "the founded face names its group").toBeTruthy();
@@ -86,7 +87,7 @@ describe("the node's face cell reads the proved face", () => {
 
   test("C0 CONTROL: a floor node lights no face", async () => {
     const lines = mapLines();
-    await compose(false);
+    await compose(false, "lares");
     expect(lines.filter((named) => named !== "none")).toEqual([]);
   }, 180_000);
 });

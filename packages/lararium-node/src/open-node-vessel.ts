@@ -865,10 +865,11 @@ async function prepareNodeBootOn(
   // THE SEALED REST (sealed-store#/owed, R1 · R2): the document store's own rest for a sealed bag, under this Repo. The
   // worn face's wiki bags rest sealed under each bag's content key through the holder in the daemon island (the door
   // carries a body and a sealed value, never a key); cleartext rests only in the disk projection and the live wiki in
-  // memory. A bag maps sealed only while the face's Nexus chain stands, since only a Nexus-anchored session signs a
-  // sealed record. Every change books the session whose call stands as it lands (`SessionSignBook`'s hold), each save
-  // signs under the session that booked it, a save no session booked waits `save-unbooked` in memory until the next
-  // session's call books it, and a session's signer drops only after the Repo and the rest flush (`beforeSignerDrops`).
+  // memory. A bag maps sealed while the worn face stands proved (the face cell, below), and with no face lit every
+  // face-half row of the catalog maps sealed under no face. Only a Nexus-anchored session signs a sealed record, so a
+  // save at the vessel's place waits in memory until one stands. Every change books the session whose call stands as
+  // it lands (`SessionSignBook`'s hold), each save signs under the session that booked it, a save no session booked
+  // waits `save-unbooked` in memory until the next session's call books it, and a session's signer drops only after the Repo and the rest flush (`beforeSignerDrops`).
   type NodeSaveSession = BookedSession & { readonly id: string };
   const sealedCells: { face: () => string | null; bags: () => readonly string[]; catalog: () => LarDoc | undefined; mounted: (bagId: string) => string | null; book: SessionSignBook | null } = {
     face: () => null, bags: () => [], catalog: () => undefined, mounted: () => null, book: null,
@@ -884,6 +885,7 @@ async function prepareNodeBootOn(
   const sealedMap = sealedBagMap({
     face: () => sealedCells.face(),
     bags: () => sealedCells.bags(),
+    catalog: () => sealedCells.catalog(),
     docsOf: (bagId) => bagId === FACE_CATALOG_BAG_ID
       ? [faceCatalogDocId]
       : [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
