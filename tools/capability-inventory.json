@@ -102,8 +102,6 @@
     "packages/lararium-tw5/src/tw5-host-bridge.ts: Worker",
     "packages/lararium-tw5/src/tw5-host-bridge.ts: Worker",
     "packages/lararium-web/src/main.ts: Worker",
-    "packages/lararium-web/src/main.ts: SharedWorker",
-    "packages/lararium-web/src/main.ts: SharedWorker",
     "packages/lararium-web/src/vessel-port.ts: SharedWorker",
     "packages/lararium-web/src/workers/vessel-host.ts: SharedWorker",
     "packages/lararium-web/src/workers/vessel-host.ts: SharedWorker",

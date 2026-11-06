@@ -50,6 +50,7 @@ const settled = (page: Page) => page.waitForFunction(() => {
 }, undefined, { timeout: WAIT }).then((h) => h.jsonValue()).catch(() => "never settled");
 const frames = (page: Page) => page.evaluate(() => document.querySelector("#mirror")?.shadowRoot?.querySelectorAll(".tc-story-river .tc-tiddler-frame").length ?? 0);
 const watch = (page: Page, tag: string) => { page.on("console", (m) => logs.push(`[${tag}] ${m.text()}`)); page.on("pageerror", (e) => logs.push(`[${tag}][pageerror] ${e.message}`)); };
+const navigate = (page: Page) => page.goto(url);
 
 describe("two tabs on one origin", () => {
   test("the second tab opens its own session through the broker with its mirror at full; it stands as owner once the first tab closes, and a third tab follows it", async () => {
@@ -59,11 +60,15 @@ describe("two tabs on one origin", () => {
     const first = await context.newPage();
     watch(first, "first");
     await first.goto(url);
-    expect(await settled(first), logs.slice(-40).join("\n")).toBe("owner/full");
+    const firstMirror = await settled(first);
+    // barrier: settled(first) waits for the first tab's mirror word to reach full or none
+    expect(firstMirror, logs.slice(-40).join("\n")).toBe("owner/full");
     const second = await context.newPage();
     watch(second, "second");
-    await second.goto(url);
-    expect(await settled(second), logs.slice(-40).join("\n")).toBe("follower/full");
+    await navigate(second);
+    const secondMirror = await settled(second);
+    // barrier: settled(second) waits for the second tab's mirror word to reach full or none
+    expect(secondMirror, logs.slice(-40).join("\n")).toBe("follower/full");
     expect(await second.locator("#mirror").isVisible()).toBe(true);
     expect(await frames(second)).toBeGreaterThan(0);
     // The first tab goes: the survivor takes the owner lock, stands its own vessel worker and its own unlock, and its mirror
@@ -71,14 +76,19 @@ describe("two tabs on one origin", () => {
     await first.close();
     const owned = await second.waitForFunction(() => document.querySelector("#mirror")?.getAttribute("data-lar-tab") === "owner", undefined, { timeout: WAIT })
       .then(() => "owner").catch(() => "never owner");
+    // barrier: the survivor's mirror reports the owner role through the page
     expect(owned, logs.slice(-40).join("\n")).toBe("owner");
-    expect(await settled(second), logs.slice(-40).join("\n")).toBe("owner/full");
+    const ownerMirror = await settled(second);
+    // barrier: settled(second) waits for the survivor's mirror word to reach full or none
+    expect(ownerMirror, logs.slice(-40).join("\n")).toBe("owner/full");
     expect(await frames(second)).toBeGreaterThan(0);
     // CONTROL: the new owner serves the vessel: a third tab claims through the broker and follows it.
     const third = await context.newPage();
     watch(third, "third");
-    await third.goto(url);
-    expect(await settled(third), logs.slice(-40).join("\n")).toBe("follower/full");
+    await navigate(third);
+    const thirdMirror = await settled(third);
+    // barrier: settled(third) waits for the third tab's mirror word to reach full or none
+    expect(thirdMirror, logs.slice(-40).join("\n")).toBe("follower/full");
     await context.close();
   });
 });
