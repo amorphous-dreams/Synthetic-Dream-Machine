@@ -2076,7 +2076,13 @@ async function prepareNodeBootOn(
   stood.push({ what: "the realm plane",       down: () => { realmPlane?.dispose(); } });
   stood.push({ what: "the persona-KEL ring",  down: () => { for (const k of kelHolders.splice(0)) k.dispose(); } });
   stood.push({ what: "the sibling channel",   down: () => { siblings?.disconnect(); } });
-  stood.push({ what: "the client dial",       down: () => { dialStoodDown = true; dialAnchor.clear(); nexusDial?.stop(); } });
+  // The chain clears only after the Repo and the sealed rest flush (P1): every save in flight seals while its bag still
+  // maps, and a save after the clear waits in memory (`save-unmapped`), never clear.
+  stood.push({ what: "the client dial",       down: async () => {
+    dialStoodDown = true; nexusDial?.stop();
+    try { await repo.flush(); await sealedRest.store.flush(); } catch { /* a save that refused keeps its change in memory */ }
+    dialAnchor.clear();
+  } });
   stood.push({ what: "the residency sweeper", down: () => { residency.stopSweeper(); } });
   stood.push({ what: "the event bus",         down: () => { (eventBus as LarEventBusImpl | undefined)?.stop(); } });
   // THE ISLAND'S CAPABILITIES drop after the island shuts (T27): the teardown runs backward, so this entry, pushed before

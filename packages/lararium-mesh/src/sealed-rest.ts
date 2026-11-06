@@ -304,7 +304,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly sessionFace: () => string | null;
   readonly door: Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open">;
   readonly flushRepo: () => Promise<void>;
-  readonly onHeld?: (held: { readonly refusal: "save-unbooked"; readonly documentId: string }) => void;
+  readonly onHeld?: (held: { readonly refusal: "save-unbooked" | "save-unmapped"; readonly documentId: string }) => void;
 }): SealedRest<S> {
   const book = new SaveBook<S>();
   let watched: { readonly standing: () => S | null; readonly actorOf: (documentId: string) => string | null } | null = null;
@@ -326,6 +326,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
     inner: input.inner, bagOf: input.bagOf, sessionFace: input.sessionFace,
     sessionOf,
     writerOf: (documentId) => book.writerOf(documentId),
+    // P1: a vessel's rest keeps a document's sealed class across a map that drops; its save waits, never clear.
+    waitOverSealed: true,
     seal: input.door.seal, open: input.door.open,
     ...(input.onHeld ? { onHeld: input.onHeld } : {}),
   });

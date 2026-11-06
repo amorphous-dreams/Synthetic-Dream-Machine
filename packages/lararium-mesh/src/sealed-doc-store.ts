@@ -44,6 +44,7 @@ export const SEALED_DOCUMENT_REFUSALS = [
   "pointer-malformed",       // the inner rest holds no pointer this store wrote
   "bag-unmapped",            // a sealed value rests for a document the bag map names no bag for (yet): no byte moves
   "save-unbooked",           // no session booked the change a save carries: it stays in memory, unsealed and unwritten
+  "save-unmapped",           // the document rests sealed and the map names no bag for it now: the save waits in memory, never clear
 ] as const;
 export type SealedDocumentRefusalName = (typeof SEALED_DOCUMENT_REFUSALS)[number];
 
@@ -87,7 +88,11 @@ export interface SealedDocumentPorts {
    *  ever lands beside a sealed one. Read once per document. */
   readonly refuseClearOverSealed?: boolean;
   /** Told once per save the store holds back unsealed (`save-unbooked`), naming its document alone. */
-  onHeld?(held: { readonly refusal: "save-unbooked"; readonly documentId: string }): void;
+  onHeld?(held: { readonly refusal: "save-unbooked" | "save-unmapped"; readonly documentId: string }): void;
+  /** A vessel's store (P1): a document that rests sealed, or mapped sealed once this process, keeps its rest class
+   *  while the map names no bag for it (a dial that dropped, the floor): its save waits in memory (`save-unmapped`),
+   *  never lands clear, and no removal reaches a sealed pointer, until the map stands again and the save seals. */
+  readonly waitOverSealed?: boolean;
   /** The holder's open of one value by its role and logical reference. */
   open(args: { readonly bagId: string; readonly role: DocumentValue["role"]; readonly ref: string }): Promise<OpenedValue | HolderRefusal>;
 }
@@ -131,6 +136,8 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   readonly #swept = new Set<string>();
   /** The documents whose rest holds a sealed value, read once each (`refuseClearOverSealed`). */
   readonly #sealedAtRest = new Map<string, Promise<boolean>>();
+  /** The documents this store mapped sealed, this process: a map that drops never moves their rest class. */
+  readonly #classedSealed = new Set<string>();
   /** Seals run one at a time, in arrival order, so a change's parents name what rested before it. */
   #tail: Promise<unknown> = Promise.resolve();
 
@@ -165,7 +172,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       sealed++;
     }
     for (const [documentId, keys] of [...this.#deferred]) {
-      if (this.waiting(documentId) > 0) continue;
+      if (this.waiting(documentId) > 0 || this.#ports.bagOf(documentId) === null) continue;
       this.#deferred.delete(documentId);
       for (const key of keys) await this.remove(key);
     }
@@ -191,11 +198,18 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   async save(key: StorageKey, data: Uint8Array): Promise<void> {
     const bag = this.#bagOf(key);
     if (bag === null) {
-      if (this.#ports.refuseClearOverSealed && typeof key[0] === "string" && key.length >= 2 && await this.#restsSealed(key[0])) {
+      if (typeof key[0] === "string" && key.length >= 2 && await this.#keepsSealedClass(key[0])) {
+        if (this.#ports.waitOverSealed) {
+          this.#swept.delete(key[0]);
+          this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data) });
+          this.#ports.onHeld?.({ refusal: "save-unmapped", documentId: key[0] });
+          return;
+        }
         throw new SealedDocumentRefusal("bag-unmapped", "this document rests sealed, and no clear byte lands beside it");
       }
       return this.#ports.inner.save(key, data);
     }
+    if (!isPublic(bag) && typeof key[0] === "string") this.#classedSealed.add(key[0]);
     const role = ROLES[key[1] ?? ""];
     if (role === undefined) return;
     // A PUBLIC BAG RESTS SEALED UNDER ITS PUBLISHED KEY: the sealed value itself rests, and no session signs it.
@@ -257,6 +271,14 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     const face = this.#face(bag);
     const waiting = this.#waiting.get(nameOf(key));
     return waiting ? Uint8Array.from(waiting.data) : this.#open(bag, key, face);
+  }
+
+  /** Does an unmapped document keep its sealed class: it mapped sealed this process, or its rest holds a sealed value
+   *  (read where this store guards the rest: `waitOverSealed`, `refuseClearOverSealed`)? */
+  async #keepsSealedClass(documentId: string): Promise<boolean> {
+    if (this.#classedSealed.has(documentId)) return true;
+    if (!this.#ports.waitOverSealed && !this.#ports.refuseClearOverSealed) return false;
+    return this.#restsSealed(documentId);
   }
 
   #restsSealed(documentId: string): Promise<boolean> {
@@ -330,7 +352,11 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     // A COMPACTION NEVER OUTRUNS ITS SNAPSHOT. The engine removes a document's earlier chunks once its snapshot saved;
     // where that snapshot waits unbooked, the sealed chunks it replaces stay at rest until it seals (`reseal`).
     const documentId = key[0];
-    if (typeof documentId === "string" && this.#bagOf(key) !== null && !this.#waiting.has(nameOf(key)) && this.waiting(documentId) > 0) {
+    // A DROPPED MAP REMOVES NO SEALED POINTER: an unmapped document that keeps its sealed class defers every removal
+    // until the map stands again and its waiting saves seal.
+    const unmappedSealed = typeof documentId === "string" && this.#bagOf(key) === null && this.#ports.waitOverSealed === true && await this.#keepsSealedClass(documentId);
+    if (unmappedSealed && this.#waiting.has(nameOf(key))) { this.#waiting.delete(nameOf(key)); return; }
+    if (typeof documentId === "string" && (unmappedSealed || (this.#bagOf(key) !== null && !this.#waiting.has(nameOf(key)) && this.waiting(documentId) > 0))) {
       const deferred = this.#deferred.get(documentId) ?? [];
       deferred.push([...key]);
       this.#deferred.set(documentId, deferred);
@@ -342,6 +368,13 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   }
 
   async removeRange(prefix: StorageKey): Promise<void> {
+    // A whole document's removal while its map stands dropped would take its sealed rest with it: it waits.
+    if (prefix.length >= 1 && this.#bagOf(prefix) === null && this.#ports.waitOverSealed === true && await this.#keepsSealedClass(prefix[0]!)) {
+      const deferred = this.#deferred.get(prefix[0]!) ?? [];
+      for (const chunk of await this.#ports.inner.loadRange(prefix)) deferred.push([...chunk.key]);
+      this.#deferred.set(prefix[0]!, deferred);
+      return;
+    }
     if (prefix.length >= 1) {
       const held = this.#held.get(prefix[0]!);
       for (const name of [...(held?.keys() ?? [])]) if (name.split("\u0000").slice(0, prefix.length).join("\u0000") === nameOf(prefix)) held!.delete(name);
