@@ -306,9 +306,15 @@ export async function storeVerb(
   const gatesFirst = storeVerbGatesFirst(verb);
   const run = (ward: Record<string, unknown>) => throughStoreDoor({ verb, args: { ...sent, ...ward }, daemonUp, ...(face !== undefined ? { face } : {}),
     direct: () => storeDoorDirect(verb, { ...args, ...ward }, { sealHome: larSealHome() }) });
-  let r = await run(gatesFirst ? {} : await wardTicketFor(verb, sent, daemonUp));
-  if (gatesFirst && typeof r.output["refused"] === "string" && /^ward-needs-fresh-unlock\b/.test(r.output["refused"])) {
-    r = await run(await wardTicketFor(verb, sent, daemonUp));
+  // A gated row names its want of a route either way it refuses: as a row's `refused` answer, or as the routed verb's error (a
+  // panel-owned row, the kāpae lower, answers through the panel's handler, whose refusal rides the session's error).
+  const needsRoute = (text: unknown): boolean => typeof text === "string" && /^ward-needs-fresh-unlock\b/.test(text);
+  let r: Awaited<ReturnType<typeof run>> | null = null;
+  if (!gatesFirst) r = await run(await wardTicketFor(verb, sent, daemonUp));
+  else {
+    try { r = await run({}); }
+    catch (e) { if (!(e instanceof RoutedVerbRefused) || !needsRoute(e.message)) throw e; }
+    if (r === null || needsRoute(r.output["refused"])) r = await run(await wardTicketFor(verb, sent, daemonUp));
   }
   if (typeof r.output["refused"] === "string") {
     const refusal = new Refusal(r.output["refused"]);
