@@ -22,7 +22,7 @@ const DAEMON_WORKER = join(REPO, "packages/lararium-web/src/workers/daemon.worke
 const WEB_MAIN = join(REPO, "packages/lararium-web/src/main.ts");
 
 process.env.LEAF_BOOT_TRACE = "1";
-const { emptyBootChainRead, instrumentBootSource, observeKelRead } = await import("./browser-weld/leaf-continuity.mjs");
+const { emptyBootChainRead, instrumentBootSource, observeKelRead, readKelObservation } = await import("./browser-weld/leaf-continuity.mjs");
 const { summarizeWireMessage, workerTraceInitScript } = await import("./browser-weld/worker-trace.mjs");
 const VESSEL_PROTOCOL = join(REPO, "packages/lararium-web/src/vessel-protocol.ts");
 
@@ -450,6 +450,31 @@ async function testC4FaultEmptiesTheBootReadAlone() {
  * (vessel-protocol.ts). The trace read only a bare `type` at the top, so no control event, no sense and no frame
  * ever showed, and the drop control never dropped. The trace reads the vessel's envelope and names its surface.
  */
+/**
+ * RED (held-out run 42295872052, C4.1): since b1-lift the Binding Gate's boot read runs in the vessel Worker
+ * (open-browser-vessel.ts, served by lararium-web/src/workers/vessel-host.ts), so the observation the route writes beside
+ * it lands on the worker's globalThis, and the driver read the page's alone ("offline founding did not expose a non-empty
+ * KEL chain at the Binding Gate"). The reading looks in the page's realm and then each worker the page runs.
+ * CONTROL: an observation in the page's own realm still reads; with none anywhere the reading stays empty. The fault
+ * route (C4.3) empties that same read in that same worker, so it routes on the context as the observation route does.
+ */
+async function testC4KelObservationReadsTheVesselWorker() {
+  const kel = { prefix: "E-prefix", eventCids: ["bafy-one"] };
+  const realm = (value) => ({ evaluate: async (fn) => { const globalThis = { __laresC4PersonaKel: value }; return new Function("globalThis", `return (${fn.toString()})();`)(globalThis); } });
+  const inWorker = { evaluate: realm(undefined).evaluate, workers: () => [realm(undefined), realm(kel)] };
+  assert.equal(typeof readKelObservation, "function", "the driver reads the observation through one reading");
+  assert.deepEqual(await readKelObservation(inWorker), kel, "the vessel worker's observation reads");
+  const inPage = { evaluate: realm(kel).evaluate, workers: () => [] };
+  assert.deepEqual(await readKelObservation(inPage), kel, "CONTROL: the page's own observation reads");
+  const none = { evaluate: realm(undefined).evaluate, workers: () => [realm(undefined)] };
+  assert.equal(await readKelObservation(none), undefined, "CONTROL: no observation anywhere reads empty");
+  // The fault route empties the same read in the same worker: it routes on the context, which reaches worker modules.
+  const source = await readFile(LEAF, "utf8");
+  const fault = source.slice(source.indexOf("async function faultWalk"));
+  assert.match(fault, /await context\.route\(/, "the fault route reaches the vessel worker's modules");
+  assert.doesNotMatch(fault, /await page\.route\(/, "the fault route never rides the page's document graph alone");
+}
+
 async function testWorkerTraceReadsTheVesselEnvelope() {
   const protocol = await readFile(VESSEL_PROTOCOL, "utf8");
   assert.match(protocol, /\{ readonly t: "control-event"; readonly surface: string; readonly ev: LarMsg_ControlEvent \}/,
@@ -488,6 +513,7 @@ async function testWorkerTraceReadsTheVesselEnvelope() {
 }
 
 await testWorkerTraceReadsTheVesselEnvelope();
+await testC4KelObservationReadsTheVesselWorker();
 await testObservationRouteSurvivesADisposedResponse();
 await testC4FaultEmptiesTheBootReadAlone();
 await testC4TraceHookIsOptIn();
