@@ -972,6 +972,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           return contentKeys.sealValues({ bagId, values, signer, ...(peer !== undefined ? { peer } : {}) });
         },
         open: async (args) => (contentKeys ? contentKeys.holder.openValue(args) : { refusal: "holder-locked" } as never),
+        // THE VESSEL LOCKED (P2-2): the seat overwrites every content key now, not at the identity's dispose, so no seal
+        // and no open answers past the lock.
+        lock: () => { const seat = contentKeys; contentKeys = null; seat?.lock(); },
       }) : null;
       registry.register("sealed-seal", async (args, context) => {
         const seat = holderFor("sealed-seal");

@@ -606,14 +606,15 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     const handle = url && url.startsWith("automerge:") ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[url.slice("automerge:".length)] : undefined;
     return handle?.isReady() ? A.save(handle.doc() as A.Doc<unknown>) : null;
   });
+  const docStoreDoor = vesselDocStoreDoor<BrowserSaveSession>(() => docStorePort.port(), {
+    book: (ask, verb) => sealedCells.hold?.(ask, verb) ?? (() => {}),
+    patienceMs: 30_000, idPrefix: `docstore-${idbName}`,
+  });
   const sealedRest = composeSealedRest<BrowserSaveSession>({
     inner: shoreStorage(new IndexedDBStorageAdapter(`${idbName}:repo`)),
     bagOf: sealedBagOf,
     sessionFace: () => sealedCells.face(),
-    door: vesselDocStoreDoor<BrowserSaveSession>(() => docStorePort.port(), {
-      book: (ask, verb) => sealedCells.hold?.(ask, verb) ?? (() => {}),
-      patienceMs: 30_000, idPrefix: `docstore-${idbName}`,
-    }),
+    door: docStoreDoor,
     flushRepo: async () => { await repo.flush(); },
     onHeld: ({ refusal, documentId }) => console.log(`[sealed-rest] ${refusal}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
   });
@@ -1558,6 +1559,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // joined face's Nexus session stands; the lock takes both back and drops the session's signer. A vessel at its
       // floor carries neither, and its island's `session:sign` answers `signer-unavailable` by name.
       const islandCaps = composeBrowserIslandCaps({ repo, cas: readCasBlobFromOpfs });
+      // The lift's lock-and-flush, once a lift stands: the stand-down runs it again ahead of the daemon worker (P2-3).
+      let flushLift: (() => Promise<void>) | null = null;
       islandCaps.docStore = (port) => docStorePort.attach(port);
       if (facePresentation !== null) {
         const certificate = facePresentation.certificate;
@@ -1576,12 +1579,21 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         sealedCells.session = session;
         void sealedRest.rebook(session).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory: ${e instanceof Error ? e.message : String(e)}`));
         // THE LOCK FLUSHES FIRST: every pending save lands sealed under the lift's session, then the lift drops its signer.
+        // THE LOCK UNMAPS (P2-2): once the flush lands, the face and its bags leave the map, so a later save waits in memory
+        // (`save-unmapped`) and a read refuses; the island's holder overwrites its content keys at once.
+        let locked = false;
         const lockThenDrop = async (): Promise<void> => {
+          if (locked) return;
+          locked = true;
           sealedCells.session = null;
           try { await sealedRest.lock(); } catch { /* a refused flush keeps its changes in memory */ }
+          sealedCells.face = () => null;
+          sealedCells.bags = () => [];
           sealedCells.hold = null;
+          docStoreDoor.lock();
           lift.drop();
         };
+        flushLift = lockThenDrop;
         held.stood.push({ what: "the island's lift", down: lockThenDrop });
         held.stood.push({ what: "the lift's lock", down: onBrowserCustodyLock(idbName, () => { void lockThenDrop(); }) });
       }
@@ -1635,6 +1647,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       failClosed: holder?.kind === "attached" ? (vm) => vm.dispose() : undefined });
       daemon = daemonHolder.vm;
       held.stood.push({ what: "daemon worker", down: () => daemon.dispose() });
+      // THE FLUSH PRECEDES THE ISLAND'S GOING (P2-3): the stand-down runs backward, so this step, pushed after the daemon
+      // worker's, locks and flushes while the island still answers the document store's door.
+      held.stood.push({ what: "the lift's flush", down: async () => { await flushLift?.(); } });
 
       // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ─────────────────
       // The ONE assembly the node vessel composes (`assemblePersonaGroupRing`), over the face this boot

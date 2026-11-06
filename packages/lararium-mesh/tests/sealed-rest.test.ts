@@ -455,6 +455,35 @@ describe("P2-1: a seal the door cannot answer keeps its change", () => {
   });
 });
 
+describe("P2-2: the lock reaches the island's holder at once", () => {
+  it("after the vessel posts its lock across the door, the island's holder holds no content key: an open refuses, and nothing seals", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const own = faceProofSubjectRef(a.chain.scope);
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    let locked = false;
+    answerDocStoreAsks(islandSide, {
+      seal: ({ bagId, values }) => locked ? Promise.resolve({ refusal: "sealed-store-unavailable" } as never) : a.holder.sealValues({ bagId, values, signer: a.signer }),
+      open: (args) => locked ? Promise.resolve({ refusal: "holder-locked" } as never) : a.holder.openValue(args),
+      lock: () => { locked = true; a.holder.lock(); },
+    });
+    const door = vesselDocStoreDoor<Session>(() => vesselSide, { book: () => () => {}, patienceMs: 5_000, idPrefix: "lock-test" });
+    const session: Session = { id: "s-a", subject: own, signer: a.signer };
+    const value = { role: "change" as const, ref: "ef".repeat(32), parents: [], plaintext: utf8Bytes(SECRET) };
+    const sealed = await door.seal({ bagId: BAG, values: [value], session });
+    expect("values" in sealed).toBe(true);   // the setup took
+    expect("plaintext" in (await door.open({ bagId: BAG, role: "change", ref: value.ref }))).toBe(true);
+    door.lock();
+    await settle(50);
+    expect(locked).toBe(true);
+    const after = await door.open({ bagId: BAG, role: "change", ref: value.ref });
+    expect("refusal" in after && after.refusal).toBe("holder-locked");
+    const direct = await a.holder.openValue({ bagId: BAG, role: "change", ref: value.ref });
+    expect("refusal" in direct).toBe(true);
+  });
+});
+
 describe("T3: a save waiting at the stand-down is never lost", () => {
   it("a booked change written just before the stand-down seals under its session before any booking drops, and a restart reads it", async () => {
     const w = world();

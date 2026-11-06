@@ -116,6 +116,8 @@ export interface DocStoreMsg_Opened {
   readonly refusal?: string; readonly cause?: string;
 }
 export interface DocStoreMsg_Live { readonly type: "docstore:live"; readonly requestId: string; readonly bagId: string }
+/** The vessel locked (P2-2): the island's holder overwrites every content key at once, and seals and opens nothing more. */
+export interface DocStoreMsg_Lock { readonly type: "docstore:lock" }
 export interface DocStoreMsg_Lived { readonly type: "docstore:lived"; readonly requestId: string; readonly bytes: Uint8Array | null }
 
 /** The verb a document store's seal books in the session sign book. */
@@ -152,7 +154,7 @@ function asker<A extends { requestId: string }>(port: Port, answerType: string, 
 export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | null, opts: {
   readonly book: (ask: string, verb: string, session: S) => () => void;
   readonly patienceMs: number; readonly idPrefix: string;
-}): Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> {
+}): Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> & { lock(): void } {
   let bound: Port | null = null;
   let seal: ReturnType<typeof asker<DocStoreMsg_Sealed>> | null = null;
   let open: ReturnType<typeof asker<DocStoreMsg_Opened>> | null = null;
@@ -168,6 +170,8 @@ export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | nul
   };
   let asks = 0;
   return {
+    /** Tell the island's holder the vessel locked: it drops every content key it holds, at once. */
+    lock() { try { port()?.post({ type: "docstore:lock" } satisfies DocStoreMsg_Lock); } catch { /* the island went away, and its keys with it */ } },
     async seal({ bagId, values, session, peer }): Promise<SealedValueAddresses | HolderRefusal> {
       if (!ready()) return { refusal: "signer-unavailable", cause: "no daemon island answers the document store's door" } as HolderRefusal;
       const ask = `${opts.idPrefix}-ask-${++asks}`;
@@ -199,6 +203,8 @@ export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | nul
 export function answerDocStoreAsks(port: Port, holder: {
   seal(args: { readonly bagId: string; readonly values: readonly DocumentValue[]; readonly ask: { readonly requestId: string; readonly verb: string }; readonly peer?: string }): Promise<SealedValueAddresses | HolderRefusal>;
   open(args: { readonly bagId: string; readonly role: DocumentValue["role"]; readonly ref: string }): Promise<OpenedValue | HolderRefusal>;
+  /** The vessel locked: overwrite every content key now. */
+  lock?(): void;
 }): () => void {
   const reply = (msg: unknown): void => { try { port.post(msg); } catch { /* the vessel went away */ } };
   const refusal = (e: unknown): { refusal: string; cause?: string } => {
@@ -208,6 +214,7 @@ export function answerDocStoreAsks(port: Port, holder: {
   };
   return port.listen((raw) => {
     const m = raw as { type?: unknown; requestId?: unknown; bagId?: unknown; ask?: unknown; verb?: unknown; values?: unknown; role?: unknown; ref?: unknown; peer?: unknown } | null;
+    if (m?.type === "docstore:lock") { holder.lock?.(); return; }
     if (!m || typeof m.requestId !== "string" || typeof m.bagId !== "string") return;
     const requestId = m.requestId;
     if (m.type === "docstore:seal") {
@@ -302,7 +309,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly inner: StorageAdapterInterface;
   readonly bagOf: (documentId: string) => SealedBag | null;
   readonly sessionFace: () => string | null;
-  readonly door: Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open">;
+  readonly door: Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> & { lock?(): void };
   readonly flushRepo: () => Promise<void>;
   readonly onHeld?: (held: { readonly refusal: "save-unbooked" | "save-unmapped" | "save-unsealed"; readonly documentId: string }) => void;
 }): SealedRest<S> {

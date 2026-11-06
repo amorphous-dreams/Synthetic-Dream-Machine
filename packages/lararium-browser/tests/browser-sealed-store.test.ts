@@ -88,6 +88,7 @@ describe("the browser island's rest for the sealed store", () => {
 // The caller that seats the holder: the browser's daemon island hands its behaviour the IndexedDB shore, so the holder stands
 // beside that island's Keyhive identities (operator-daemon-behavior seats it where a shore names a sealed store).
 const START = import.meta.glob<string>("../src/daemon-island-start.ts", { query: "?raw", import: "default", eager: true });
+const VESSEL = import.meta.glob<string>("../src/open-browser-vessel.ts", { query: "?raw", import: "default", eager: true });
 const strip = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`\\])\/\/.*$/gm, "$1");
 
 describe("the caller that seats the browser island's holder", () => {
@@ -102,5 +103,30 @@ describe("the caller that seats the browser island's holder", () => {
     expect(src.length, "the strip leaves the module standing").toBeGreaterThan(200);
     expect(src).toMatch(/islandLiveDocDoor\(/);
     expect(src).toMatch(/makeOperatorDaemonBehavior\(manifest,\s*\{[\s\S]*\bfreshBase\s*:\s*freshBasePort\(\s*liveOnVessel\s*\)/);
+  });
+});
+
+describe("the browser vessel's lock and stand-down (P2-2, P2-3)", () => {
+  const vessel = (): string => {
+    const src = strip(VESSEL["../src/open-browser-vessel.ts"] ?? "");
+    expect(src.length, "the strip leaves the module standing").toBeGreaterThan(2000);
+    return src;
+  };
+  test("P2-2: the lock unmaps the face and its bags after its flush, and tells the island's holder to drop its keys", () => {
+    const body = /const lockThenDrop = async \(\): Promise<void> => \{([\s\S]*?)\n\s*\};/.exec(vessel())?.[1] ?? "";
+    expect(body.length, "the lock's body reads").toBeGreaterThan(0);
+    const at = (pattern: RegExp): number => { const m = pattern.exec(body); return m ? m.index : -1; };
+    const flush = at(/await sealedRest\.lock\(\)/), face = at(/sealedCells\.face = \(\) => null/), bags = at(/sealedCells\.bags = \(\) => \[\]/), keys = at(/docStoreDoor\.lock\(\)/), drop = at(/lift\.drop\(\)/);
+    for (const i of [flush, face, bags, keys, drop]) expect(i).toBeGreaterThanOrEqual(0);
+    expect(flush).toBeLessThan(face);
+    expect(face).toBeLessThan(drop);
+    expect(keys).toBeLessThan(drop);
+  });
+  test("P2-3: the lift's flush stands down ahead of the daemon worker (pushed after it: the stand-down runs backward)", () => {
+    const src = vessel();
+    const worker = src.indexOf('what: "daemon worker"'), flush = src.indexOf('what: "the lift\'s flush"');
+    expect(worker).toBeGreaterThanOrEqual(0);
+    expect(flush).toBeGreaterThan(worker);
+    expect(src).toMatch(/what: "the lift's flush", down: async \(\) => \{ await flushLift\?\.\(\); \}/);
   });
 });
