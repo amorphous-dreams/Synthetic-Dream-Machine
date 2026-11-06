@@ -15,6 +15,8 @@
  *   FB4b RED  the follower's own unlock decides it: a wrong route ends the follower's session (`ended`, stage custody) while
  *             the owner's session stands. CONTROL: a want on a connection with no hello mints nothing
  *             (`port:minted{refused: "session-unadmitted"}`).
+ *   FB10      THE FENCE THE RETIRED glass-tab-fence CARRIED: a brokered port that speaks before its hello places nothing and reads
+ *             nothing: its read refuses `session-unadmitted`. CONTROL: the owner's admitted session reads.
  *
  * The broker stands as its real served bytes (fixtures/broker-scope.ts); the vessel the host lights stands in, as in
  * vessel-host-faces.
@@ -174,6 +176,35 @@ describe("a follower tab opens its own session over a brokered port", () => {
     const refused = bare.heard.find((m) => (m as { t: string }).t === "port:minted") as unknown as Minted;
     expect(refused, "CONTROL: a want with no admitted session mints nothing").toMatchObject({ wantId: "w1", refused: "session-unadmitted" });
     expect(refused.port).toBeUndefined();
+  }, SLOW);
+});
+
+describe("a brokered port before its hello", () => {
+  test("FB10 a brokered port that speaks before hello refuses `session-unadmitted` — CONTROL: the owner's admitted session reads", async () => {
+    const idbName = `host-fence-${crypto.randomUUID()}`;
+    const face = `pg-fence-${crypto.randomUUID()}`;
+    await bindFirstFaceSlot(idbName, face, { kind: "passphrase", passphrase: ROUTE });
+    lockFaceCustody(idbName, face);
+    const host = standVesselHost({ locks: navigator.locks, openVessel: fakeVessel() } as never);
+    const owner = ownerTab(ROUTE);
+    const oc = host.connect(owner.scope);
+    owner.bind(oc.receive);
+    oc.receive({ t: "hello", tabSession: "tab-owner", boot: boot(idbName), face } as PageToVessel);
+    await until("the owner admitted", () => owner.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
+    oc.receive({ t: "port:want", wantId: "w-fence", tabSession: "tab-fenced" } as unknown as PageToVessel);
+    await until("port:minted", () => owner.heard.some((m) => (m as { t: string }).t === "port:minted"));
+    const port = (owner.heard.find((m) => (m as { t: string }).t === "port:minted") as unknown as Minted).port!;
+    const heard: Array<{ t: string; callId?: string; ok?: boolean; error?: unknown }> = [];
+    port.onmessage = (e: MessageEvent) => { heard.push(e.data); };
+    port.postMessage({ t: "read:mirror-inputs", callId: "c-fenced", surface: "lares" });
+    await until("the fenced reply", () => heard.some((m) => m.t === "reply" && m.callId === "c-fenced"));
+    const reply = heard.find((m) => m.t === "reply" && m.callId === "c-fenced")!;
+    expect(reply.ok, "a port before its hello reads nothing").toBe(false);
+    expect(JSON.stringify(reply.error)).toContain("session-unadmitted");
+    oc.receive({ t: "read:mirror-inputs", callId: "c-owner", surface: "lares" } as unknown as PageToVessel);
+    await until("the owner's reply", () => owner.heard.some((m) => (m as { t: string; callId?: string }).t === "reply" && (m as { callId?: string }).callId === "c-owner"));
+    const ownReply = owner.heard.find((m) => (m as { callId?: string }).callId === "c-owner") as unknown as { error?: unknown };
+    expect(JSON.stringify(ownReply.error ?? null), "CONTROL: the admitted owner is never refused unadmitted").not.toContain("session-unadmitted");
   }, SLOW);
 });
 

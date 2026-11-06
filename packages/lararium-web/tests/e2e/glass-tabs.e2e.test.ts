@@ -1,7 +1,9 @@
 /**
- * e2e/glass-tabs: two tabs on one origin. The first holds the vessel and leads; the second finds the leader lock held and
- * follows it over the bus, standing its own mirror from the leader's lend and promoting to full through the leader's port
- * doors. When the first tab closes, the second leads: it opens the vessel itself and its mirror never tears down.
+ * e2e/glass-tabs: two tabs on one origin, EACH ITS OWN SESSION (the 2026-11-06 ruling: every tab carries a live session). The
+ * first takes the owner lock and stands the vessel worker; the second finds the lock held, claims a port through the service
+ * worker's broker and opens its own session over it, with its own unlock through its own ceremony, and its mirror stands full.
+ * FLOOR-TAB SUCCESSION: when the first tab closes, the survivor takes the lock and stands as owner (its own vessel worker, its
+ * own unlock again). CONTROL: a third tab follows the new owner through the broker.
  */
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -50,28 +52,29 @@ const frames = (page: Page) => page.evaluate(() => document.querySelector("#mirr
 const watch = (page: Page, tag: string) => { page.on("console", (m) => logs.push(`[${tag}] ${m.text()}`)); page.on("pageerror", (e) => logs.push(`[${tag}][pageerror] ${e.message}`)); };
 
 describe("two tabs on one origin", () => {
-  test("the second tab follows the first with its own mirror at full; the follower leads once the first tab closes, and a third tab follows it", async () => {
+  test("the second tab opens its own session through the broker with its mirror at full; it stands as owner once the first tab closes, and a third tab follows it", async () => {
     expect(url, "the hearth printed its URL").toMatch(/^https?:/);
     const context = await browser!.newContext();
     await armTestCustody(context, "glass-tabs-1");
     const first = await context.newPage();
     watch(first, "first");
     await first.goto(url);
-    expect(await settled(first), logs.slice(-40).join("\n")).toBe("leader/full");
+    expect(await settled(first), logs.slice(-40).join("\n")).toBe("owner/full");
     const second = await context.newPage();
     watch(second, "second");
     await second.goto(url);
     expect(await settled(second), logs.slice(-40).join("\n")).toBe("follower/full");
     expect(await second.locator("#mirror").isVisible()).toBe(true);
     expect(await frames(second)).toBeGreaterThan(0);
-    // The first tab goes: the second leads, opens the vessel itself, and its mirror stands on through the hand-off.
+    // The first tab goes: the survivor takes the owner lock, stands its own vessel worker and its own unlock, and its mirror
+    // stands full again over its own session.
     await first.close();
-    const led = await second.waitForFunction(() => document.querySelector("#mirror")?.getAttribute("data-lar-tab") === "leader", undefined, { timeout: WAIT })
-      .then(() => "led").catch(() => "never led");
-    expect(led, logs.slice(-40).join("\n")).toBe("led");
-    expect(await second.evaluate(() => document.querySelector("#mirror")?.getAttribute("data-lar-mirror"))).toBe("full");
+    const owned = await second.waitForFunction(() => document.querySelector("#mirror")?.getAttribute("data-lar-tab") === "owner", undefined, { timeout: WAIT })
+      .then(() => "owner").catch(() => "never owner");
+    expect(owned, logs.slice(-40).join("\n")).toBe("owner");
+    expect(await settled(second), logs.slice(-40).join("\n")).toBe("owner/full");
     expect(await frames(second)).toBeGreaterThan(0);
-    // CONTROL: the new leader serves the vessel: a third tab follows it.
+    // CONTROL: the new owner serves the vessel: a third tab claims through the broker and follows it.
     const third = await context.newPage();
     watch(third, "third");
     await third.goto(url);
