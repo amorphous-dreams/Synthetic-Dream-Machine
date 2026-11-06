@@ -320,8 +320,8 @@ const FIELDS = "databaseId,headSha,status,conclusion,createdAt,url";
 const reasonOf = (e) => String(e?.stderr || e?.message || e).trim().split("\n")[0].slice(0, 200);
 
 /** One whole reading of `head`, every UNREADABLE call read again up to `retries` times. Throws a hard failure as it stands. */
-async function readOnce({ sh, sleep, branch, head, opt }) {
-  const retries = Number(opt.retries), waitMs = Number(opt.interval) * 1000;
+async function readOnce({ sh, sleep, branch, head, opt, waitMs }) {
+  const retries = Number(opt.retries);
   // A call that reads UNREADABLE reads again; the last failure is marked and handed up.
   const settle = async (fn) => {
     for (let i = 0; ; i++) {
@@ -415,14 +415,23 @@ export async function main(argv, { sh = defaultSh, sleep = defaultSleep, log = c
     if (namedBranch === null && branch === "HEAD") throw new Error("detached HEAD: name --branch");
     const head = sh("git", ["rev-parse", arg("head", "HEAD")]);
     for (;;) {
-      r = await readOnce({ sh, sleep, branch, head, opt });
+      // Quota governs only our next read, never the verdict. An unavailable or
+      // malformed quota leaves the configured floor in place.
+      let waitMs = Number(opt.interval) * 1000;
+      try {
+        const core = JSON.parse(sh("gh", ["api", "rate_limit"])).resources.core;
+        if (Number.isFinite(core.limit) && core.limit > 0 && Number.isFinite(core.remaining) && core.remaining >= 0) {
+          waitMs = Math.max(waitMs, Math.min(2147483647, POLL_FLOOR_S * 1000 * core.limit / Math.max(1, core.remaining)));
+        }
+      } catch { /* Quota cannot decide whether CI can be read. */ }
+      r = await readOnce({ sh, sleep, branch, head, opt, waitMs });
       // A branch no held-out driver will ever measure (held-out.yml's push patterns exclude it) ends at its CI verdict: the wait
       // for a third reading that cannot come would never end. The held-out reading stays UNREAD, never green.
       const heldOutNever = !heldOutMeasures(branch, heldOutPatterns);
       if (heldOutNever && r.heldOut.state === "unread") r.heldOut = { ...r.heldOut, why: `${r.heldOut.why}; held-out.yml raises no run on this branch, so no driver will measure it and the wait ends at the CI verdict`, never: true };
       const waiting = r.v.state === "unread" || (r.heldOut.state === "unread" && !r.heldOut.hard && !heldOutNever);
       if (!argv.includes("--wait") || !waiting) break;
-      await sleep(Number(opt.interval) * 1000);
+      await sleep(waitMs);
     }
   } catch (e) {
     err(`ci-verdict: could not read — ${reasonOf(e)}`);
