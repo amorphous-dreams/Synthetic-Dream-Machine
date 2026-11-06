@@ -217,3 +217,56 @@ test("WL5 RED: pw-container.sh refuses every image but the capability probe's pi
     assert.match(r.stderr, /refusing PW_IMAGE/);
   }
 });
+
+// G55: The same pure boundary witness must inspect the live checkout and an overlay of it.
+// Overlay keys name root-relative files; null removes a file. No overlaid module may execute.
+// Product floors use package.json engines.node, including the synthetic packages below.
+const boundaryRoot = join(import.meta.dirname, "..");
+const boundaryEntry = "packages/lararium-web/tests/g55-boundary.test.ts";
+const productDir = "packages/g55-synthetic-product";
+const productName = "@g55/synthetic-product";
+const boundaryOverlay = (minimum, entry) => ({
+  [`${productDir}/package.json`]: JSON.stringify({ name: productName, private: true, type: "module", engines: { node: `>=${minimum}` } }),
+  [`${productDir}/index.mjs`]: 'throw new Error("G55 product must never execute");\n',
+  [boundaryEntry]: entry,
+});
+const direct = 'import "../../g55-synthetic-product/index.mjs";\n';
+const bridge = 'import "./g55-bridge.mjs";\n';
+const bridgePath = "packages/lararium-web/tests/g55-bridge.mjs";
+const throughBridge = 'export * from "../../g55-synthetic-product/index.mjs";\n';
+
+async function boundaryWitness(overlay = {}) {
+  const law = await import(import.meta.url);
+  assert.equal(typeof law.browserNodeBoundary, "function", "G55: image law must export browserNodeBoundary({ root, overlay }) and inspect browser-cell imports without executing them");
+  // Return [] for a clean boundary, otherwise diagnostic strings that name the cell and edge.
+  return law.browserNodeBoundary({ root: boundaryRoot, overlay });
+}
+
+test("G55 boundary CONTROL: live inputs and a Node 24 product stay clean", async () => {
+  assert.deepEqual(await boundaryWitness(), [], "live browser-cell inputs must pass the dependency boundary");
+  assert.deepEqual(await boundaryWitness(boundaryOverlay(24, direct)), [], "a browser-cell import of a Node 24 product must pass");
+});
+
+test("G55 boundary RED: direct and transitive Node 26 product imports refuse, removal restores control", async () => {
+  for (const overlay of [boundaryOverlay(26, direct), { ...boundaryOverlay(26, bridge), [bridgePath]: throughBridge }]) {
+    const diagnostics = await boundaryWitness(overlay);
+    assert.ok(diagnostics.some((d) => /web-tw5/.test(d) && /@g55\/synthetic-product/.test(d)), `expected refusal naming web-tw5 and ${productName}: ${JSON.stringify(diagnostics)}`);
+    assert.deepEqual(await boundaryWitness({ ...overlay, [boundaryEntry]: null, [bridgePath]: null }), [], "removing the planted import restores the clean boundary");
+  }
+});
+
+test("G55 boundary RED: unresolved and nonliteral import edges refuse by cell", async () => {
+  for (const source of ['import "./g55-missing.mjs";\n', 'const part = "g55"; import(`./${part}.mjs`);\n']) {
+    const diagnostics = await boundaryWitness(boundaryOverlay(24, source));
+    assert.ok(diagnostics.some((d) => /web-tw5/.test(d) && /unresolved|unsupported/i.test(d)), `expected a named unresolved or unsupported edge: ${JSON.stringify(diagnostics)}`);
+  }
+});
+
+test("G55 policy RED: workflow header and image law declare the Node exception", () => {
+  const workflow = readFileSync(join(boundaryRoot, ".github/workflows/ci.yml"), "utf8").split(/^on:\s*$/m)[0];
+  const law = readFileSync(join(boundaryRoot, "tools/workflow-law.test.mjs"), "utf8").split("// G55: The same pure boundary witness")[0];
+  for (const [where, text] of [["workflow header", workflow], ["image law", law]]) {
+    assert.match(text, /Node\s*26[\s\S]{0,180}(?:pinned|Playwright)[\s\S]{0,180}Node\s*24|(?:pinned|Playwright)[\s\S]{0,180}Node\s*26[\s\S]{0,180}Node\s*24/i, `${where} must declare Node 26 in the pinned Playwright image and Node 24 for the other jobs`);
+    assert.match(text, /(?:other|remaining|non.browser)[\s\S]{0,80}(?:jobs|cells)|(?:jobs|cells)[\s\S]{0,80}(?:other|remaining|non.browser)/i, `${where} must identify the other jobs`);
+  }
+});
