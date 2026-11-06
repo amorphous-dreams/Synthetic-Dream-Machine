@@ -11,7 +11,7 @@ import { generateAutomergeUrl } from "@automerge/automerge-repo";
 import { LARES_DOC_URI, LARARIUM_DOC_URI, admittedJoineeIsland, crossroadsDocUrl } from "@lararium/mesh";
 import { BootHalted, admitNaming, bootOptions, observed, resetObserved } from "./wire-vessel-rig.js";
 import { openBrowserVessel } from "../src/open-browser-vessel.js";
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, bindSyntheticFace } from "./browser-custody-fixture.js";
 
 vi.mock("@lararium/keyhive", async (orig) => {
   const rig = await import("./wire-vessel-rig.js");
@@ -30,6 +30,7 @@ async function bootCarrying(canon: Record<string, string>): Promise<Record<strin
   resetObserved();
   const options = bootOptions(admitNaming(hearth, canon), null);
   await bindSyntheticBrowserCustodySlot(options.idbName!);
+  await bindSyntheticFace(options.idbName!, options.admit!.personaGroupId);
   await expect(openBrowserVessel(options)).rejects.toBeInstanceOf(BootHalted);
   expect(observed.crossingInputs, "the vessel reached its crossing decision").toHaveLength(1);
   return observed.crossingInputs[0]!;

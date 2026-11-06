@@ -41,7 +41,8 @@ import {
 import type { SeedWrapRecord } from "./seed-wrap-prf.js";
 
 import { assertCanMint } from "./secure-context-gate.js";
-import { readBrowserCustody, readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
+import { BrowserCustodyRefused, readBrowserCustody, readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
+import { FaceCustodyRefused } from "./browser-face-custody.js";
 const KEY_RECORD = "vessel-key";
 
 /**
@@ -219,17 +220,34 @@ const browserKeypairCrypto: KeypairCrypto = {
   },
 };
 
-/** A persona-root slot rides the same custody row door as the device seed. */
+/**
+ * THE FACE THIS VESSEL WEARS, on this thread: the founding handle (`h0`) names it. A persona root rests under its own face's
+ * tree (`face-root/<PersonaGroup>`), never under a handle index, so the vessel's handle resolves through the face it wears:
+ * the bootstrap's PersonaGroup, or the founding's unnamed face before the ceremony names it. Every other handle names no face.
+ */
+const vesselFaces = new Map<string, string>();
+/** Name the face this vessel wears on this thread (the boot's, or the founding's unnamed face until the ceremony names it). */
+export function wearFaceOfVessel(idbName: string, face: string): void { vesselFaces.set(idbName, face); }
+/** The face this vessel wears on this thread, or null before the boot names one. */
+export function faceOfVessel(idbName: string): string | null { return vesselFaces.get(idbName) ?? null; }
+
+function faceOfHandle(idbName: string, handleIndex: number): string {
+  if (handleIndex !== 0) throw new BrowserCustodyRefused("face-names-a-handle", idbName, `h${handleIndex}`, "a root rests only under its own face, and a vessel wears one face per founding");
+  const face = vesselFaces.get(idbName);
+  if (!face) throw new FaceCustodyRefused("face-absent", undefined, "this vessel wears no face yet on this thread");
+  return face;
+}
+
+/** A persona-root slot rides its face's own tree through the row door. */
 function idbPersonaRootSlot(idbName: string, handleIndex: number): KeypairStore {
-  const row = `persona-root-${personaRootKey(handleIndex)}`;
   return {
     async load() {
-      const existing = await readKeystoreRow(idbName, row) as PersistedBrowserKey | undefined;
+      const existing = await readKeystoreRow(idbName, `face-root/${faceOfHandle(idbName, handleIndex)}`) as PersistedBrowserKey | undefined;
       return existing ? { verifyingKey: existing.verifyingKey, signingKey: existing.signingKey } : undefined;
     },
     async save(kp) {
       const record: PersistedBrowserKey = { verifyingKey: kp.verifyingKey, signingKey: kp.signingKey };
-      await writeKeystoreRow(idbName, row, record);
+      await writeKeystoreRow(idbName, `face-root/${faceOfHandle(idbName, handleIndex)}`, record);
     },
   };
 }
@@ -377,29 +395,20 @@ async function loadBrowserSigningSeed(idbName = "lares:vessel"): Promise<Uint8Ar
 // a SET of roots keyed by handle-index, WEARS one at a time, and MAY switch.
 //
 // The isomorphic control flow (generate/load/wear/custody-refuse/roster) lives platform-blind in mesh's
-// persona-vault; THIS adapter supplies the browser shores: per-index custody keypair slots, a JSON active-
-// persona selector, the anchor store, and (SURFACED) a NULL recovery store. The at-rest guard stays HERE
-// (custody-by-type): each root and its roster pass through the keystore's custody row door.
+// persona-vault; THIS adapter supplies the browser shores: the root slot of the face the vessel wears, a JSON
+// active-persona selector, the anchor store, and (SURFACED) a NULL recovery store. The at-rest guard stays HERE
+// (custody-by-type): each root rests under its own face's tree through the keystore's row door.
 //
 // ROOT-ON-FOUNDER: the founding ceremony mints founder-side only; a joinee's vault holds anchors at its
-// admitted index with NO matching root (listRoots()=[]). UNIFORM KEYING — every root spells `h${N}`; the
-// ROSTER is an EXPLICIT written record the slot's save maintains, never an IDB keys()-scan (the browser
-// twin of the node dir-scan ward).
+// admitted index with NO matching root (listRoots()=[]). ONE ROOT PER FACE: the founding handle names the
+// face the vessel wears, and the roster reads that face's root row; no roster row rests anywhere.
 
-/** Read the persona-root roster's explicit record (ascending), or [] when none / a torn one reads back. */
+/** The roots this vessel holds, by handle: `[0]` where the face it wears holds its root, `[]` where it wears none or holds none. */
 async function readPersonaRoster(idbName: string): Promise<number[]> {
-  const raw = await readKeystoreRow(idbName, "persona-root-roster") as { roots?: unknown } | undefined;
-  if (Array.isArray(raw?.roots)) {
-    return [...new Set(raw.roots.filter((n): n is number => Number.isSafeInteger(n) && n >= 0))].sort((a, b) => a - b);
-  }
-  return [];
-}
-
-/** Record a held handle-index into the persona-root roster — the mint's explicit written mark. */
-async function recordPersonaRoot(idbName: string, handleIndex: number): Promise<void> {
-  const roots = new Set(await readPersonaRoster(idbName));
-  roots.add(handleIndex);
-  await writeKeystoreRow(idbName, "persona-root-roster", { roots: [...roots].sort((a, b) => a - b) });
+  const face = vesselFaces.get(idbName);
+  if (!face) return [];
+  try { return (await readKeystoreRow(idbName, `face-root/${face}`)) === undefined ? [] : [0]; }
+  catch (e) { if (e instanceof FaceCustodyRefused && e.reading === "no-custody-slot") return []; throw e; }
 }
 
 /**
@@ -477,13 +486,7 @@ export async function makeBrowserIdbPersonaVault(idbName = "lares:vessel"): Prom
   return {
     rootSlot(handleIndex) {
       const base = idbPersonaRootSlot(idbName, handleIndex);
-      return {
-        load: () => base.load(),
-        async save(keypair) {
-          await base.save(keypair);
-          await recordPersonaRoot(idbName, handleIndex);   // the mint writes the explicit roster mark
-        },
-      };
+      return { load: () => base.load(), save: (keypair) => base.save(keypair) };
     },
     listRoots: () => readPersonaRoster(idbName),
     async hasRoot(handleIndex) { return (await readPersonaRoster(idbName)).includes(handleIndex); },

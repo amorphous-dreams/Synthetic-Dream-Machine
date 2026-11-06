@@ -20,6 +20,7 @@ import {
   sealBrowserKeystore,
   unlockBrowserCustody,
 } from "./browser-custody.js";
+import { heldUnnamedFace, standUnnamedFace } from "./browser-face-custody.js";
 
 /** What this tab's boot asks the person for. `attempt` counts from 1 within one stand. */
 export type CustodyAsk =
@@ -87,6 +88,34 @@ export async function standBrowserCustody(opts: StandBrowserCustodyOptions): Pro
     notes = opened.notes;
   }
   return { reading: "no-slot-opens", attempts, notes };
+}
+
+/**
+ * THE FOUNDER'S TREE BINDS BEFORE ITS FIRST ROW: a founding asks its first bind once, and that one route binds the place tree
+ * where it stands clear (or opens it where this thread holds no key) and stands the founder face's own tree beside it, unnamed
+ * until the ceremony names its PersonaGroup (`browser-face-custody.ts` `standUnnamedFace`). An unnamed founder face this
+ * thread already holds answers without an ask. Answers the unnamed face's key; refuses `no-custody-slot` by name where no door
+ * asks or the person declines.
+ */
+export async function standFounderFace(opts: { readonly idbName: string; readonly ask?: (question: CustodyAsk) => Promise<CustodyAnswer> }): Promise<string> {
+  const held = heldUnnamedFace(opts.idbName);
+  if (held) return held;
+  if (!opts.ask) throw new BrowserCustodyRefused("no-custody-slot", opts.idbName, "face-root", "the founding holds no custody door, so the founder face's tree cannot bind before its root mints");
+  const route = await opts.ask({ kind: "bind-first", why: "face-secret-mint-due" });
+  if (route === null) throw new BrowserCustodyRefused("no-custody-slot", opts.idbName, "face-root", "the person declined the founder face's first bind");
+  if (route.kind === "passkey") throw new Error("keyslot: passkey-alone-refused");
+  const place = await readBrowserCustody(opts.idbName);
+  if (place.reading === "unreadable") throw new BrowserCustodyRefused("tree-unreadable", opts.idbName, undefined, place.why);
+  if (place.reading === "clear") {
+    try { await sealBrowserKeystore(opts.idbName, route); }
+    catch (error) { if (!(error instanceof BrowserCustodyRefused) || error.reading !== "already-sealed") throw error; }
+  }
+  const now = await readBrowserCustody(opts.idbName);
+  if (now.reading === "sealed" && !now.unlocked) {
+    const opened = await unlockBrowserCustody(opts.idbName, [route]);
+    if (opened.reading !== "opens") throw new BrowserCustodyRefused("no-custody-slot", opts.idbName, "face-root", "the founder's route opens no slot of this browser's place tree");
+  }
+  return (await standUnnamedFace(opts.idbName, route)).face;
 }
 
 /** What the clear-password verb answers: the confirm door's question, a declined route, or the clear's own reading. */

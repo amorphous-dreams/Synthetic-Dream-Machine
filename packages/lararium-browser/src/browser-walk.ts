@@ -15,7 +15,6 @@
 import * as ed25519 from "@noble/ed25519";
 import { hex, type WalkLeaf, type WalkRecord, type WalkStore } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
-import { loadBrowserPersonaRootSeed } from "./browser-vessel-identity.js";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
 
 /**
@@ -60,13 +59,13 @@ export function browserWalkStore(idbName: string): WalkStore {
 }
 
 /**
- * The key the face at `handleIndex` presents in Nexus `nexusAid`: the one standing, or 32 bytes minted at random in
- * one custody act where none stands (a walk presents the face there). Throws where this vessel holds no
- * root at that index: a face it does not hold presents nowhere.
+ * The key `face` (its PersonaGroup) presents in Nexus `nexusAid`: the one standing under the face's own tree, or 32 bytes
+ * minted at random in one custody act where none stands (a walk presents the face there). Throws where this vessel holds no
+ * root for that face: a face it does not hold presents nowhere.
  */
-export async function browserWalkLeaf(idbName: string, nexusAid: string, handleIndex: number): Promise<WalkLeaf> {
-  (await loadBrowserPersonaRootSeed(idbName, handleIndex)).fill(0);
-  const row = `nexus-key/h${handleIndex}/${nexusAid.trim().toLowerCase()}`;
+export async function browserWalkLeaf(idbName: string, nexusAid: string, face: string): Promise<WalkLeaf> {
+  if ((await readKeystoreRow(idbName, `face-root/${face}`)) === undefined) throw new Error("browser-walk: this vessel holds no root for that face");
+  const row = `nexus-key/${face}/${nexusAid.trim().toLowerCase()}`;
   const seed = await withCustodyRows(idbName, async (rows) => {
     const standing = await rows.read(row);
     if (standing instanceof Uint8Array && standing.length === 32) return Uint8Array.from(standing);

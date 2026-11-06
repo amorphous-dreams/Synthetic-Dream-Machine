@@ -7,13 +7,14 @@
  * `readBrowserCustody(...).unlocked` reads the same before, during and after: the act never touches the vessel's held key.
  *
  * The passphrase arrives from the unlock ceremony's clean document, down its own brokered port to the vessel worker, which
- * hands it to the act's worker; the surface page never holds it (browser-vessel-lift#/the-ceremony). Residual, named: the
- * browser root still rests under the keystore's tree key, so a vessel that holds the keystore unlocked reads the root by its
- * own doors, and a passkey slot in that tree refuses every ward act `ward-passkey-refused` (the ward opens no tree a passkey
- * widened) until the root moves under a ward key of its own. The ward here binds the daemon realm's bound acts (a daemon or kahua commit, a kāpae-lower), which sign
- * through this door alone; moving the browser root under a ward key of its own stays owed.
+ * hands it to the act's worker; the surface page never holds it (browser-vessel-lift#/the-ceremony). The root rests under its
+ * own face's tree (`face-sealed/<fcid>/persona-root`, browser-face-custody.ts), so the act opens that face's tree fresh and no
+ * other face's. Residual, named: the face's own unlock reads the root by its own doors while the face stands unlocked, and a
+ * passkey slot in the face's tree refuses every ward act `ward-passkey-refused` (the ward opens no tree a passkey widened)
+ * until the root moves under a ward key of its own. The ward here binds the daemon realm's bound acts (a daemon or kahua
+ * commit, a kāpae-lower), which sign through this door alone.
  */
-import { browserKeystoreCustodyIo, CUSTODY_TREE_ROW, sealedCarrierOf } from "./browser-custody.js";
+import { faceWardRows } from "./browser-face-custody.js";
 import type { WardActAnswer, WardActRequest } from "./ward-core.js";
 
 /** One worker for one act. The default spawns `ward.worker.ts`; a witness passes a spawn that runs the pure core in-process. */
@@ -37,24 +38,21 @@ export class BrowserWardRefused extends Error {
 export const WARD_ATTEMPTS_PER_PAGE = 3;
 const spent = new Map<string, number>();
 
-/** Sign `bytes` as face `handleIndex`'s root in one ward act. A miss spends one of the page's attempts for this keystore. */
-export async function browserWardSign(idbName: string, handleIndex: number, passphrase: string, bytes: Uint8Array, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly signature: string }> {
+/** Sign `bytes` as `face`'s root (its PersonaGroup) in one ward act. A miss spends one of the page's attempts for this keystore. */
+export async function browserWardSign(idbName: string, face: string, passphrase: string, bytes: Uint8Array, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly signature: string }> {
   if (typeof passphrase !== "string" || passphrase.length === 0) throw new BrowserWardRefused("ward-needs-fresh-unlock");
   if ((spent.get(idbName) ?? 0) >= WARD_ATTEMPTS_PER_PAGE) throw new BrowserWardRefused("ward-attempts-spent");
   // CHARGE FIRST: the attempt pays before the worker derives, so a throw keeps it; an act that signs earns it back.
   spent.set(idbName, (spent.get(idbName) ?? 0) + 1);
-  const signed = await browserWardSignOnce(idbName, handleIndex, passphrase, bytes, spawn);
+  const signed = await browserWardSignOnce(idbName, face, passphrase, bytes, spawn);
   spent.set(idbName, (spent.get(idbName) ?? 1) - 1);
   return signed;
 }
 
-async function browserWardSignOnce(idbName: string, handleIndex: number, passphrase: string, bytes: Uint8Array, spawn: WardWorkerSpawn): Promise<{ readonly key: string; readonly signature: string }> {
-  const io = browserKeystoreCustodyIo(idbName);
-  const tree = await io.read(CUSTODY_TREE_ROW);
-  const carrier = sealedCarrierOf(`persona-root-h${handleIndex}`);
-  const sealedRoot = await io.read(carrier.path);
-  if (tree === null || sealedRoot === null) throw new BrowserWardRefused("ward-absent");
-  const request: WardActRequest = { tree, sealedRoot, carrier: carrier.name, passphrase, bytes };
+async function browserWardSignOnce(idbName: string, face: string, passphrase: string, bytes: Uint8Array, spawn: WardWorkerSpawn): Promise<{ readonly key: string; readonly signature: string }> {
+  const rows = await faceWardRows(idbName, face).catch(() => null);
+  if (rows === null) throw new BrowserWardRefused("ward-absent");
+  const request: WardActRequest = { tree: rows.tree, sealedRoot: rows.sealedRoot, carrier: rows.carrier, passphrase, bytes };
   const worker = spawn();
   const channel = new MessageChannel();
   try {
@@ -73,8 +71,8 @@ async function browserWardSignOnce(idbName: string, handleIndex: number, passphr
 }
 
 /** The face root as a signer for one ward act: each signature runs its own worker under the passphrase this act carries. */
-export async function browserWardSigner(idbName: string, handleIndex: number, passphrase: string, spawn?: WardWorkerSpawn): Promise<{ readonly key: string; sign(bytes: Uint8Array): Promise<string> }> {
+export async function browserWardSigner(idbName: string, face: string, passphrase: string, spawn?: WardWorkerSpawn): Promise<{ readonly key: string; sign(bytes: Uint8Array): Promise<string> }> {
   // The key comes off one ward act over empty bytes; each later signature opens the ward again.
-  const probe = await browserWardSign(idbName, handleIndex, passphrase, new Uint8Array(0), spawn);
-  return { key: probe.key, sign: async (bytes) => (await browserWardSign(idbName, handleIndex, passphrase, bytes, spawn)).signature };
+  const probe = await browserWardSign(idbName, face, passphrase, new Uint8Array(0), spawn);
+  return { key: probe.key, sign: async (bytes) => (await browserWardSign(idbName, face, passphrase, bytes, spawn)).signature };
 }

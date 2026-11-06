@@ -99,7 +99,7 @@ import {
   generateOrLoadBrowserVesselIdentity,
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
   listBrowserPersonaRoots, loadBrowserActivePersona,
-  makeBrowserIdbPersonaVault, makeBrowserPersonaPetnameStore,
+  makeBrowserIdbPersonaVault, makeBrowserPersonaPetnameStore, wearFaceOfVessel,
   openVesselIdb, idbGet, idbPut, loadBrowserPlaceKel,
 }                                            from "./browser-vessel-identity.js";
 import type { BrowserVesselIdentity }        from "./browser-vessel-identity.js";
@@ -129,8 +129,9 @@ import type { WikiRecipe }                   from "@lararium/mesh";
 
 import { waitHandle } from "@lararium/mesh";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
-import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody } from "./browser-custody.js";
-import { clearCustodyVerb, standBrowserCustody, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
+import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody, refuseSharedTreeFaceRows } from "./browser-custody.js";
+import { nameFace } from "./browser-face-custody.js";
+import { clearCustodyVerb, standFounderFace, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
 import { guardedBoot, takeDownBoot, BootTeardownRefusal, type BootHold } from "./guarded-boot.js";
 import { attachSharedHolder, holderWorkerHandle, houseName } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
@@ -190,6 +191,15 @@ async function readBootKeys(idbName: string): Promise<BootKeyReads> {
 }
 
 interface BootKeyWrites { bootstrap?: BrowserBootstrap; catalogUrl?: string }
+
+/**
+ * The faces (PersonaGroups) this browser's store names, public: the bootstrap's face. A session's hello that names no face
+ * wears the one face named here, and none where none stands (a fresh browser founds). Its own unlock still admits it.
+ */
+export async function readBrowserVesselFaces(idbName: string): Promise<string[]> {
+  const { bootstrap } = await readBootKeys(idbName);
+  return bootstrap?.personaGroupId ? [bootstrap.personaGroupId] : [];
+}
 
 async function writeBootKeys(idbName: string, writes: BootKeyWrites): Promise<void> {
   if (!writes.bootstrap && !writes.catalogUrl) return;
@@ -279,6 +289,11 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    */
   admit?:           CarriedAdmitPayload;
   /**
+   * The face (PersonaGroup) the first session wears, from its hello: the vessel boots that face, and refuses `face-not-worn`
+   * where its bootstrap (or its admit) names another. Absent or null: the vessel boots the face its store names.
+   */
+  face?:            string | null;
+  /**
    * A carried hosting invite (`lar-invite:…`, membership-doctrine #/the-invite) — a bearer token minted by the
    * hearth whose gate key it names, CARRIED and never fetched (paste, QR, URL fragment). It is written to this
    * vessel's own IndexedDB BEFORE any dial and redeemed at that hearth's OWN gate, which burns it; the grant
@@ -354,6 +369,14 @@ export type ProjectionSurfaceFrame = LarMsg_Frame & { readonly surface: string }
 export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPool, DaemonVmCore> {
   /** The public identity receipt composed by this vessel. Private signing material never leaves the vessel. */
   identity: BrowserVesselIdentity;
+  /** The face (PersonaGroup) this vessel boots: the one its founding named, its admit joined, or its store holds. */
+  face: string;
+  /**
+   * The provider door (K19): one Keyhive provider per unlocked face. The face the vessel boots lights in its daemon manifest;
+   * another face lights at its first admitted session (`daemon:face-lit`, its `JoinedFaceAuth` read from its own tree) and
+   * drops at its last (`daemon:face-drop`).
+   */
+  faceProviders: { lit(face: string): Promise<unknown>; drop(face: string, why: string): Promise<unknown> };
   /** Flush the Repo's pending writes to the store. */
   flush: () => Promise<void>;
   /**
@@ -565,6 +588,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // a store whose boot cannot read its own device seed, so the refusal gives the lock back with nothing to take
   // down (each tab unlocks for itself, operator ruling 2026-10-18; `standBrowserCustody` asks before this boot).
   const custodyAtBoot = await readBrowserCustody(idbName);
+  // THE SHARED TREE'S EARLIER SHAPE REFUSES BY NAME: a face's row under the place tree, or a row spelled by handle index. A
+  // face founded in that shape re-founds.
+  await refuseSharedTreeFaceRows(idbName);
   if (custodyAtBoot.reading === "sealed" && !custodyAtBoot.unlocked) throw new BrowserCustodyRefused("sealed-locked", idbName, "vessel-key");
 
   // ── Repo — IndexedDB-backed (substrate) ────────────────────────────────────
@@ -733,6 +759,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // THE JOINEE'S ATOM: the random seed this browser holds for the face it joins (minted here, or the one a fleet-join
     // request already sealed in the face's own row). The edge the root signed delegates to its key, and the atom
     // countersigns its own half; this browser's device seed signs none of it.
+    if (opts.face && opts.face !== admit.personaGroupId) throw new Error(`face-not-worn: the session wears another face than the one this admit joins`);
+    wearFaceOfVessel(idbName, admit.personaGroupId);
     const atomSeed = await standBrowserFaceAtomSeed(idbName, admit.personaGroupId);
     let a: Awaited<ReturnType<typeof runApplyAdmitPayload>>;
     try {
@@ -793,12 +821,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // A ROOT MINTS ONLY OVER A SLOT: a keystore with no slot asks this tab's person to bind one first, and a boot
     // with no custody door refuses `no-custody-slot` at the mint, by name (#/rulings: a browser leaf holds a
     // passphrase or paper slot before it holds a persona root).
-    if (opts.askCustody) {
-      const custody = await standBrowserCustody({ idbName, ask: opts.askCustody, secretMintDue: true });
-      if (custody.reading !== "bound" && custody.reading !== "opens" && custody.reading !== "held") {
-        throw new BrowserCustodyRefused("no-custody-slot", idbName, `persona-root-h${String(FOUNDING_PERSONA_INDEX)}`, `the founding asked for a first slot and read ${custody.reading}`);
-      }
-    }
+    // THE FOUNDER FACE'S TREE BINDS BEFORE ITS FIRST ROW: one first bind stands the place tree and the founder's own tree, unnamed
+    // until the ceremony below names its PersonaGroup; the root seals under it as its first row.
+    const founder = await standFounderFace({ idbName, ...(opts.askCustody ? { ask: opts.askCustody } : {}) });
+    wearFaceOfVessel(idbName, founder);
     await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX);
     const signerSeed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX);
     await wearBrowserPersona(idbName, FOUNDING_PERSONA_INDEX);   // the selector points at the founded root
@@ -814,6 +840,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // its own key — a private nexus of one, the same value by a different derivation.
       nexusPubkey,
     });
+    // THE CEREMONY NAMED THE GROUP: the founder's tree takes its anchor and its index entry, and every later row names the group.
+    await nameFace(idbName, founder, f.personaGroupId);
+    wearFaceOfVessel(idbName, f.personaGroupId);
     // THE FACE'S ATOM RESTS BEFORE ITS BOOTSTRAP: the founding minted a random seed, and the face's own custody row keeps it.
     try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); } finally { f.atomSeed.fill(0); }
     // THE FACE'S ADDRESS SECRET MINTS BESIDE ITS ATOM, so its working documents derive their addresses from the first boot.
@@ -838,6 +867,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     bootKeyWrites.bootstrap = bootstrap;
   }
   const social = bootstrap;   // narrowed (defined past this point)
+  if (opts.face && opts.face !== social.personaGroupId) throw new Error("face-not-worn: the session wears another face than the one this vessel's store names");
+  wearFaceOfVessel(idbName, social.personaGroupId);
   // A pin chooses which gate to knock; the selected face atom's card supplies face peer proof. Name the missing
   // proof here instead of leaving the page pinned while no adapter can stand.
   // THE PINS THE ADMIT CARRIED are filed in the ONE pair index under the hearth's name (the origin of the relay url: the
@@ -1003,6 +1034,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let wikiActivation!: WikiActivationCap;     // set in makePool — activation-on-reference cap (minimal grant)
   let daemonHolder!: DaemonVmHolder;
   let daemon!:     DaemonVmCore;      // set in openDaemon
+  /** The booted face's atom key, public: the provider door drops that face's provider by it. */
+  let bootedAtomKey: string | null = null;
   let wikiSense!:  WikiSenseSupervisor;   // set in wireVerbs (post-daemon)
   let slotActiveWikiId = "";
   // R4 — the Crossroads board this vessel materializes ONCE, read by every later per-island
@@ -1263,6 +1296,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const wornEdge = wornMount?.deviceEdge ?? social.deviceEdge;
       const wornAtomSeed = await requireBrowserFaceAtomSeed(idbName, wornGroup);
       const wornAtom = faceAtomKeyFromSeed(wornAtomSeed, wornGroup);
+      bootedAtomKey = wornAtom.key;
       if (wornEdge && wornAtom.key !== wornEdge.deviceVerifyingKey) {
         wornAtomSeed.fill(0);
         throw new Error("this face's atom differs from its device edge; re-found or re-admit it");
@@ -1410,7 +1444,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           /** One ward act's signer: the ceremony asks the passphrase for this act, and the ward worker signs under it. */
           const wardRootSignerOf = async (act: string) => {
             if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock");
-            return browserWardSigner(idbName, FOUNDING_PERSONA_INDEX, await opts.askWardRoute(act));
+            return browserWardSigner(idbName, wornGroup, await opts.askWardRoute(act));
           };
           const boardDoor = promoteBoardDoor({ group: wornGroup, face: boardFace, atom: wornAtom,
             epoch: () => readFace(personaKelChain)?.lineage.at(-1)?.epoch ?? 0,
@@ -1720,22 +1754,15 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         return { verb: "persona-refresh", roster, ...(active !== undefined ? { active } : {}) };
       });
 
-      // persona-mint — mint a new persona-root at the NEXT index and set its DEFAULT private
+      // persona-mint — mint the root of the face this vessel wears where it holds none, and set its DEFAULT private
       // pet-name (PRIVATE-all — the label never PUBLICLY federates; only a publicly announced Handle
       // binds a persona to a glamour, and that stays a SEPARATE explicit act, never auto-fired here).
-      // The mint names the face for the human, who renames it through the pet-name store's own private
-      // bag: a label typed into a projected field would travel a render surface with no way to tell a fleet
-      // peer from a stranger, and the label is PRIVATE. Next index = max(held) + 1, or 0 when the
-      // vessel holds no root (a joinee founding its first face).
+      // ONE ROOT PER FACE: a root rests under its own face's tree, so a second root names a second face, which founds through
+      // its own founding; a mint over a face that holds its root refuses `root-names-its-face` by name.
       registry.register("persona-mint", async () => {
-        // A FACE SECRET MINTS ONLY OVER A SLOT: the person binds a passphrase or paper slot first, in this tab.
-        if (!opts.askCustody) throw new Error("persona-mint: this page offers no custody door, so no slot can bind before the root mints");
-        const custody = await standBrowserCustody({ idbName, ask: opts.askCustody, secretMintDue: true });
-        if (custody.reading !== "bound" && custody.reading !== "opens" && custody.reading !== "held") {
-          return { verb: "persona-mint", refused: custody.reading };
-        }
         const roster = await listBrowserPersonaRoots(idbName);
-        const nextIndex = roster.length ? Math.max(...roster) + 1 : 0;
+        if (roster.length > 0) return { verb: "persona-mint", refused: "root-names-its-face" };
+        const nextIndex = 0;
         const root = await generateOrLoadBrowserPersonaRoot(idbName, nextIndex);
         const petnames = await makeBrowserPersonaPetnameStore(idbName);
         await renameOwnPersona(petnames, nextIndex, `persona-h${nextIndex}`);
@@ -2028,8 +2055,19 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // served page can report which node wiki it rendered instead of treating a live socket as mount proof.
   connectionState.setWikiDocUrl(result.wikiHandle.url);
 
+  const bootedFace = social.personaGroupId;
   return {
     identity: vesselIdentity,
+    face: bootedFace,
+    faceProviders: {
+      // THE BOOTED FACE lights in its daemon manifest; another face's provider needs that face's signed device edge, which
+      // this browser's store does not hold (one bootstrap names one face), so it refuses by name.
+      lit: async (face: string) => {
+        if (face === bootedFace) return "manifest";
+        throw new Error("face-edge-absent: this browser's store names one face's device edge; another face lights once its own bootstrap rests under its tree");
+      },
+      drop: async (face: string) => { if (face === bootedFace && bootedAtomKey) await daemon.dropFace(bootedAtomKey); },
+    },
     restartDaemonIsland: (reason: string) => daemonHolder.restart(reason),
     pool: result.pool,
     repo,

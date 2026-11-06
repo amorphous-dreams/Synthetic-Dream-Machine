@@ -56,6 +56,14 @@ export interface VesselGreeting { readonly ownerEpoch: string; readonly sessionI
 
 /** The Web Locks the page holds its session's lifetime lock on (`navigator.locks`). */
 export interface PageLocks { request(name: string, callback: () => Promise<unknown>): Promise<unknown> }
+/**
+ * THE TAB'S OWN FACE SELECTION: the PersonaGroup this tab's session wears, kept in the tab's own `sessionStorage`, so a reload
+ * wears it again and another tab selects its own. A public name; the face's own unlock admits the session.
+ */
+const TAB_FACE_KEY = "lares:tab-face";
+const tabFace = (): string | null => { try { return sessionStorage.getItem(TAB_FACE_KEY); } catch { return null; } };
+const selectTabFace = (face: string): void => { try { sessionStorage.setItem(TAB_FACE_KEY, face); } catch { /* a tab that withholds storage names no face, and wears the store's one face */ } };
+
 const ambientPageLocks = (): PageLocks | null => {
   const locks = (globalThis as { navigator?: { locks?: LockManager } }).navigator?.locks;
   return locks ? { request: (name, callback) => locks.request(name, callback) } : null;
@@ -101,6 +109,7 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
       case "ask": handlers.onAsk?.({ askId: msg.askId, kind: msg.kind, act: msg.act, words: msg.words, face: msg.face }); return;
       case "ask:settled": handlers.onAskSettled?.(msg.askId); return;
       case "status":
+        if (msg.status.face) selectTabFace(msg.status.face);
         if (msg.status.connection) { connection = msg.status.connection; for (const l of connectionListeners) l(connection); }
         handlers.onStatus?.(msg.status);
         return;
@@ -126,8 +135,11 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
   return {
     /** Open this tab's session; `resume` names an earlier greeting, which a respawned vessel refuses by name. */
     hello(boot: VesselBoot, resume?: { readonly ownerEpoch: string; readonly sessionId: string }): void {
-      post({ t: "hello", tabSession: crypto.randomUUID(), boot, ...(resume ? { resume } : {}) });
+      const face = tabFace();
+      post({ t: "hello", tabSession: crypto.randomUUID(), boot, ...(face ? { face } : {}), ...(resume ? { resume } : {}) });
     },
+    /** Select the face this tab's next session wears (a landed join's face, before the tab re-enters its boot). */
+    selectFace: (face: string): void => selectTabFace(face),
     /** The session the vessel greeted this tab with, or null before its greeting. */
     greeting: (): VesselGreeting | null => greeting,
     pageLife(life: PageLife): void { post({ t: "page:life", life }); },

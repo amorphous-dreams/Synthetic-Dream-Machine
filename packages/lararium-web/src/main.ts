@@ -334,6 +334,7 @@ function mountAdmitSurface(verifyingKeyHex: string, vessel: VesselPort): void {
           statusEl.textContent = `✓ answer landed — signed by ${landed.signerDid.slice(0, 12)}… · re-entering boot`;
           statusEl.className = "ok";
           paste.value = "";
+          vessel.selectFace(landed.face);
           stashAndReboot(landed.carriage);
         } catch (err) {
           statusEl.textContent = err instanceof VesselRefused && err.refusal !== undefined ? `✗ refused — ${err.message}` : `✗ ${String(err)}`;

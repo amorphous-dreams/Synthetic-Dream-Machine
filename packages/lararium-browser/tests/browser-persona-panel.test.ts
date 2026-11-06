@@ -50,37 +50,32 @@ async function readState(name: string): Promise<{ view: PersonaMultitudeEntry[];
 }
 
 describe("the daemon persona surface — mint → list → wear over IndexedDB", () => {
-  test("mint founds the next index with a default private label; a second mint climbs to h1", async () => {
+  test("mint founds the face's root with a default private label; a second mint names no face and refuses", async () => {
     const name = idb();
     expect(await mintNext(name)).toBe(0);
-    expect(await mintNext(name)).toBe(1);
-    expect(await listBrowserPersonaRoots(name)).toEqual([0, 1]);
+    await expect(mintNext(name), "one root per face").rejects.toMatchObject({ reading: "face-names-a-handle" });
+    expect(await listBrowserPersonaRoots(name)).toEqual([0]);
 
     const { view } = await readState(name);
-    expect(view.map((e) => e.handleIndex)).toEqual([0, 1]);
+    expect(view.map((e) => e.handleIndex)).toEqual([0]);
     // PRIVATE-all: minting set the private label; nothing federated (no public glamour).
-    expect(view.map((e) => e.petname)).toEqual(["persona-h0", "persona-h1"]);
+    expect(view.map((e) => e.petname)).toEqual(["persona-h0"]);
     expect(view.every((e) => e.heldHere && !e.hasPublicHandle && e.glamour === null)).toBe(true);
   });
 
   test("wear moves only the selector; list + panel-state reflect the worn face", async () => {
     const name = idb();
-    await mintNext(name);   // h0
-    await mintNext(name);   // h1
-    expect(await loadBrowserActivePersona(name)).toBeUndefined();   // no inference from an empty selector
-
-    await wearBrowserPersona(name, 1);
+    await mintNext(name);   // h0, the face's one root
+    await wearBrowserPersona(name, 0);
     const { view, active } = await readState(name);
-    expect(active).toBe(1);
-    // The roster is untouched by wearing — both roots still held.
-    expect(view.map((e) => e.handleIndex)).toEqual([0, 1]);
+    expect(active).toBe(0);
+    expect(view.map((e) => e.handleIndex)).toEqual([0]);
 
     const args = personaPanelStateArgs(view, active);
-    expect(args["list"]).toBe("0 1");
-    expect(args["active"]).toBe("1");
-    expect(args["held"]).toBe("0 1");                  // both held → both wearable rows (the WEAR gate)
+    expect(args["list"]).toBe("0");
+    expect(args["active"]).toBe("0");
+    expect(args["held"]).toBe("0");
     expect(args["petname-0"]).toBe("persona-h0");
-    expect(args["petname-1"]).toBe("persona-h1");
   });
 
   test("FAIL CLOSED — wearing a persona whose root this vessel does NOT hold refuses; selector unmoved", async () => {

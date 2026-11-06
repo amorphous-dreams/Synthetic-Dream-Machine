@@ -31,6 +31,8 @@
  * `refused` by name, and the session opens afresh). The page holds `lifetimeLock` for its life and says `session:armed`, so
  * the vessel hears a lost tab when the platform hands it that lock. The vessel pings (`ping`) on its own clock, and the
  * page answers `pong`. The session admits only by its own unlock; `status{floor}` names the vessel's floor state.
+ * The hello names the face the tab selected (`face`, a PersonaGroup); the session wears it and admits by THAT face's own
+ * unlock, and `status{face}` hands the admitted face back for the tab to keep as its selection.
  *
  * THIS PORT CARRIES NO ANSWER BYTES. The answer to a custody or ward ask travels from the ceremony document down its own
  * brokered port (`ceremony-protocol.ts`) straight to this vessel worker; the page mints that port's channel and keeps neither end.
@@ -71,6 +73,8 @@ export type SeedRest = "absent" | "wrapped-prf" | "wrapped-passphrase" | "open";
 /** Public readings alone. */
 export interface VesselStatus {
   readonly custody?: BootCustodyVerdict["reading"];
+  /** The face (PersonaGroup) the session wears once admitted, public: the tab keeps it as its own selection. */
+  readonly face?: string;
   readonly floor?: VesselFloor;
   readonly seedRest?: SeedRest;
   /** The key class of a passkey wrap, where `seedRest` reads `wrapped-prf`. */
@@ -90,10 +94,13 @@ export interface VesselStatus {
 export interface VesselError { readonly name: string; readonly message: string; readonly refusal?: string }
 
 export type JoinOfferReply = { readonly kind: "request"; readonly text: string };
-export type JoinAnswerReply = { readonly kind: "landed"; readonly carriage: string; readonly signerDid: string };
+/** `face` names the PersonaGroup the landed join joins: the tab selects it, so its next hello wears it. */
+export type JoinAnswerReply = { readonly kind: "landed"; readonly carriage: string; readonly signerDid: string; readonly face: string };
 
 export type PageToVessel =
-  | { readonly t: "hello"; readonly tabSession: string; readonly boot: VesselBoot; readonly resume?: { readonly ownerEpoch: string; readonly sessionId: string } }
+  /** `face` names the PersonaGroup the tab selected for this session (absent: the one face the store names, or none). A hint
+   *  grants nothing: that face's own unlock admits the session. */
+  | { readonly t: "hello"; readonly tabSession: string; readonly boot: VesselBoot; readonly face?: string | null; readonly resume?: { readonly ownerEpoch: string; readonly sessionId: string } }
   | { readonly t: "session:armed"; readonly sessionId: string }
   | { readonly t: "pong"; readonly n: number }
   | { readonly t: "ceremony:port"; readonly askId: string; readonly port: MessagePort }

@@ -77,9 +77,14 @@ describe("a one-device browser fleet lowers a kāpae under the fresh unlock alon
     const { browserWardSigner, BrowserWardRefused } = await import("../src/browser-ward.js");
     const { promoteBoardDoor, readPromoteBoard, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } = await import("@lararium/mesh");
     const idbName = `lares:lower-${globalThis.crypto.randomUUID()}`, PASS = "one device's route", GROUP = "one-device-face", D = "d".repeat(64);
+    const { bindFirstFaceSlot, lockFaceCustody } = await import("../src/browser-face-custody.js");
+    const { wearFaceOfVessel } = await import("../src/browser-vessel-identity.js");
     await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
+    await bindFirstFaceSlot(idbName, GROUP, { kind: "passphrase", passphrase: PASS });
+    wearFaceOfVessel(idbName, GROUP);
     const root = await generateOrLoadBrowserPersonaRoot(idbName, 0);
     lockBrowserCustody(idbName);
+    lockFaceCustody(idbName, GROUP);
     const atom = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(4)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(4)) };
     const face = { group: GROUP, grant: (k: string) => k === root.verifyingKey, device: (k: string) => k === atom.key };
     const spawn = () => ({
@@ -89,7 +94,7 @@ describe("a one-device browser fleet lowers a kāpae under the fresh unlock alon
     const acts: unknown[] = [];
     const doorWith = (askWardRoute?: () => Promise<string>) => promoteBoardDoor({
       group: GROUP, face, atom, epoch: () => 0,
-      rootSigner: async () => { if (!askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock"); return browserWardSigner(idbName, 0, await askWardRoute(), spawn); },
+      rootSigner: async () => { if (!askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock"); return browserWardSigner(idbName, GROUP, await askWardRoute(), spawn); },
       board: { records: async () => acts, land: async (a) => { acts.push(a); } },
       projection: () => ({ planes: {} }),
     });

@@ -45,15 +45,12 @@ describe("the browser publish surface — a phone vessel names itself", () => {
     expect(owners.members[0], "the handle key never owns itself").not.toBe(card.chain[0]!.handleKeyDid);
   });
 
-  test("★ RED on the old door: a verb that selects the SECOND persona publishes under the second persona's prefix, never the founding one ★", async () => {
+  test("★ a verb that selects a SECOND handle refuses by name: a root rests only under its own face, never a handle index ★", async () => {
     const name = idb();
     await bindSyntheticBrowserCustodySlot(name);
     const kel = stableBoard();
-    const founding = await sealOwnerFace(name, 0, kel);
-    const second   = await sealOwnerFace(name, 1, kel);
-    expect(second.prefix).not.toBe(founding.prefix);
-    const card = await publishHandleBrowser({ board: makeFakeBoard() as never, kelBoard: kel as never, handleIndex: 1, glamour: "Second", idbName: name });
-    expect(currentOwnerSet(card.chain as HandleKelEvent[])!.members).toEqual([second.prefix]);
+    await sealOwnerFace(name, 0, kel);
+    await expect(sealOwnerFace(name, 1, kel)).rejects.toMatchObject({ reading: "face-names-a-handle" });
   });
 
   test("★ FAIL-CLOSED CONTROLS — no sealed anchor, or no chain on the KEL board, refuses; a browser face never self-owns ★", async () => {
@@ -63,9 +60,11 @@ describe("the browser publish surface — a phone vessel names itself", () => {
     await expect(publishHandleBrowser({
       board: makeFakeBoard() as never, kelBoard: emptyKelBoard() as never, handleIndex: 0, glamour: "Guru-Josh", idbName: name,
     })).rejects.toThrow(/sealed anchor|belongs to its persona/i);
-    const sealed = await sealOwnerFace(name, 1);
+    const other = idb();
+    await bindSyntheticBrowserCustodySlot(other);
+    const sealed = await sealOwnerFace(other, 0);
     await expect(publishHandleBrowser({
-      board: makeFakeBoard() as never, kelBoard: emptyKelBoard() as never, handleIndex: 1, glamour: "Guru-Josh", idbName: name,
+      board: makeFakeBoard() as never, kelBoard: emptyKelBoard() as never, handleIndex: 0, glamour: "Guru-Josh", idbName: other,
     }), `${sealed.prefix.slice(0, 12)}… with no chain on the board`).rejects.toThrow(/absent from the local board|fail-closed/i);
   });
 });

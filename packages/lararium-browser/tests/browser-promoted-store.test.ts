@@ -18,7 +18,7 @@ const ledgerWith = () => ledgerCommit(EMPTY_LEDGER, { wiki: W1, digest: promoteD
 describe("the browser's trust record at rest", () => {
   test("RED: an unwritten group reads the empty ledger and cache; a written one reads back whole under its own sealed row; CONTROL: a second group stays separate", async () => {
     const idbName = `promoted-${crypto.randomUUID()}`;
-    await bindSyntheticBrowserCustodySlot(idbName);
+    await bindSyntheticBrowserCustodySlot(idbName, "group-a", "group-b", "group-naive");
     const a = browserPromoteStores(idbName, "group-a"), b = browserPromoteStores(idbName, "group-b");
     expect(await a.ledger.read()).toEqual(EMPTY_LEDGER);
     expect(await a.local.read()).toEqual(EMPTY_KAPAE_LOCAL);
@@ -35,7 +35,7 @@ describe("the browser's trust record at rest", () => {
 
   test("RED: two commits of different wikis at once through the store's update both land", async () => {
     const idbName = `promoted-concurrent-${crypto.randomUUID()}`;
-    await bindSyntheticBrowserCustodySlot(idbName);
+    await bindSyntheticBrowserCustodySlot(idbName, "group-a", "group-b", "group-naive");
     const stores = browserPromoteStores(idbName, "group-a");
     const W2 = "lar:///ha.ka.ba/wikis/garden";
     const OTHER = { title: "rites/b", text: "exports.startup = function(){}", fields: { "module-type": "startup" } };
@@ -55,7 +55,7 @@ describe("the browser's trust record at rest", () => {
     await expect(stores.ledger.read()).rejects.toThrow();
     await expect(stores.ledger.write(ledgerWith())).rejects.toThrow();
     const slotted = `promoted-slot-${crypto.randomUUID()}`;
-    await bindSyntheticBrowserCustodySlot(slotted);
+    await bindSyntheticBrowserCustodySlot(slotted, "group-a");
     await expect(browserPromoteStores(slotted, "group-a").ledger.read()).resolves.toEqual(EMPTY_LEDGER);
   });
 });

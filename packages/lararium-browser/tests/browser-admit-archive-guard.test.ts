@@ -11,7 +11,7 @@ import { describe, expect, test, vi } from "vitest";
 import { faceAtomKeyFromSeed } from "@lararium/mesh";
 import { archiveIsOf, KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
 import { BootHalted, admitNaming } from "./wire-vessel-rig.js";
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, foundedGroupOf } from "./browser-custody-fixture.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { openVesselIdb, idbKeys } from "../src/browser-vessel-identity.js";
 import { readBrowserFaceAtom } from "../src/browser-face-atom.js";
@@ -29,15 +29,7 @@ vi.mock("@lararium/keyhive", async (orig) => {
   };
 });
 
-async function foundedGroup(idbName: string): Promise<string> {
-  const db = await openVesselIdb(idbName);
-  try { return (await (async () => {
-    const keys = await idbKeys(db, "keystore");
-    const row = keys.find((k) => /^(?:sealed\/)?face-atom\//.test(k));
-    return row!.replace(/^(?:sealed\/)?face-atom\//, "");
-  })()); }
-  finally { db.close(); }
-}
+const foundedGroup = foundedGroupOf;
 
 const halted = (extra: Partial<BrowserVesselOptions>): BrowserVesselOptions =>
   ({ onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); }, ...extra }) as BrowserVesselOptions;
@@ -60,6 +52,7 @@ describe("an admit and the archive row by PersonaGroup", () => {
 
     seen.length = 0;
     const admit = admitNaming("cd".repeat(32), {});
+    await bindSyntheticFace(idbName, admit.personaGroupId);   // the join bound B's own tree before its first row
     await expect(openBrowserVessel(halted({ idbName, admit }))).rejects.toBeInstanceOf(BootHalted);
     expect(seen).toHaveLength(1);
     const b = await readBrowserFaceAtom(idbName, admit.personaGroupId);
@@ -79,6 +72,7 @@ describe("an admit and the archive row by PersonaGroup", () => {
     const idbName = `admit-guard-own-${crypto.randomUUID()}`;
     await bindSyntheticBrowserCustodySlot(idbName);
     const admit = admitNaming("cd".repeat(32), {});
+    await bindSyntheticFace(idbName, admit.personaGroupId);
     seen.length = 0;
     await expect(openBrowserVessel(halted({ idbName, admit }))).rejects.toBeInstanceOf(BootHalted);   // first attempt mints B's atom
     const bSeed = seen[0]!.atomSeed;

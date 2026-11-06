@@ -1,19 +1,29 @@
 /**
- * browser-custody — the browser keystore's slot tree wraps the device seed, Keyhive Archives and persona roots.
+ * browser-custody — the browser keystore's place tree, and the one row door every custody row rides.
  *
  * ── WHAT RESTS WHERE ─────────────────────────────────────────────────────────────────────────────
- * The vessel's IndexedDB `keystore` keeps `vessel-key` (the place KEL seed and its public half),
- * `veil-archive-g<PersonaGroup>` (a face's creator-veil Archive), persona roots, per-Nexus keys,
- * face keys, fleet-join secrets and pending joins, and walk records.
- * The place seed and veil Archives may stand clear before a slot binds; the face's other secret rows require a slot.
- * Once a slot binds, the mesh slot tree rests
- * at `custody-slots` (plain bytes: ids, salts, nonces and wrapped bytes, nothing a route does not open), and each
- * custody row R rests sealed under the vessel key at `sealed/R`, its AEAD binding the carrier name
- * `browser-keystore/R`, so bytes moved from one row to another open nowhere. Every other keystore row
- * (`catalog-url`, public by construction) stays as it stood.
+ * The vessel's IndexedDB `keystore` keeps two kinds of custody row (k15-custody-step-zero#/row-census-browser).
+ * THE PLACE ROWS rest under this browser's own place tree (`custody-slots`), each sealed at `sealed/R` under the place key, its
+ * AEAD binding the carrier name `browser-keystore/R`, so bytes moved from one row to another open nowhere. Two kinds stand
+ * there, sorted by capability (the 2026-10-19 sort):
+ *   `vessel-key`  F: the place KEL seed and its public half. It routes the vessel and signs the place KEL alone, a floor
+ *                 duty of the place signer; it grants no face identity. It may stand clear before the place tree binds.
+ *   `walk/<gate>` the walk a carried invite opens, taken at the boot before any face stands (D/F split, LEAD: the private
+ *                 face receipt in it moves under its face once the split proves; until then it rests with the place).
+ * THE FACE ROWS rest under their own face's tree (`browser-face-custody.ts`, `face-sealed/<fcid>/<row>`), each named by the
+ * face's PersonaGroup and never by a handle index: `face-root/<G>` (the persona root), `veil-archive-g<G>`, `face-atom/<G>`,
+ * `face-anchor/<G>`, `face-address-secret/<G>`, `fleet-join-pending/<G>`, `vessel-face-key/<G>|<nexus>|<faceKey>`,
+ * `nexus-key/<G>/<aid>`, `promoted/<G>` and `kapae/<G>`. A face row never rests under the place tree, and no face's row
+ * rests before its own tree binds (`no-custody-slot`). Every other keystore row (`catalog-url`, public by construction)
+ * stays as it stood.
+ *
+ * ── THE SHARED TREE'S EARLIER SHAPE REFUSES ──────────────────────────────────────────────────────
+ * A face row standing under the place tree (clear or sealed), or a row spelled by handle index (`persona-root-h<N>`, the
+ * roster, `nexus-key/h<N>/…`), names the shape before each face kept its own tree: the boot refuses `face-row-shared` and the
+ * row door `face-names-a-handle`. A face founded in that shape re-founds.
  *
  * ── ONE WRITER ───────────────────────────────────────────────────────────────────────────────────
- * Every sealed byte and the tree itself pass through the mesh's one writer (`sealed-writer.ts`) over an IndexedDB
+ * Every place byte and the tree itself pass through the mesh's one writer (`sealed-writer.ts`) over an IndexedDB
  * `CustodyIo` port (`browserKeystoreCustodyIo`): the tree key in hand proves itself against the standing tree, a write
  * seals to a sidecar, reads it back, opens it, and only then renames over the carrier. A write never replaces a
  * sealed carrier until the new seal reopens. The act lock (`lares:custody-act:<idbName>`) keeps row doors outside a
@@ -24,19 +34,18 @@
  * settle, no cleanup. A mistyped passphrase once destroyed an identity archive; here it reaches no write.
  *
  * ── LOCKED AND UNLOCKED ──────────────────────────────────────────────────────────────────────────
- * An unlock holds the opened tree key in this page's memory alone, keyed by vessel; `lockBrowserCustody` drops it, and a
- * fresh page starts locked. While the keystore stands sealed and locked, every custody reader and writer refuses
+ * An unlock holds the opened place key in this thread's memory alone, keyed by vessel; `lockBrowserCustody` drops it, and a
+ * fresh thread starts locked. While the place tree stands sealed and locked, every place reader and writer refuses
  * `sealed-locked` by name: nothing mints over a sealed seed and nothing writes a clear row beside the tree. A clear
- * custody row standing beside the tree (a fault between steps, or an older page's write) reads `unsettled`: the
- * next unlock moves it under the seal when its sealed carrier stands absent or equal, and never chooses between two
- * different values.
+ * place row standing beside the tree (a fault between steps) reads `unsettled`: the next unlock moves it under the seal
+ * when its sealed carrier stands absent or equal, and never chooses between two different values.
  *
  * ── THE CLEAR-PASSWORD ACT ASKS THROUGH THE CONFIRM DOOR ─────────────────────────────────────────
- * Returning the rows to the clear takes the route AND a person's answer, asked the way the wiki asks
+ * Returning the place rows to the clear takes the route AND a person's answer, asked the way the wiki asks
  * (`$tw.utils.confirm`, `lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-question`): the door answers false on the
  * first ask, the question parks, and the act abandons having written nothing; the person's "yes" re-dispatches the
  * asking message, the act runs from the top, and the door answers true on that pass. No closure resumes and no
- * blocking prompt stands.
+ * blocking prompt stands. A face's own clear names that face (`clearFaceCustody`).
  *
  * ── PIN KINDS ────────────────────────────────────────────────────────────────────────────────────
  * A slot binds the mesh's built kinds: a passphrase, a paper sheet the person holds, or a passkey (a WebAuthn PRF output
@@ -52,6 +61,7 @@ import {
 } from "@lararium/mesh";
 import { openVesselIdb } from "./browser-vessel-identity.js";
 import { clearCustodyQuestion } from "@lararium/mesh/lar-uris";
+import { readFaceRow, removeFaceRow, writeFaceRow } from "./browser-face-custody.js";
 
 const STORE = "keystore";
 export const CUSTODY_TREE_ROW = "custody-slots";
@@ -59,10 +69,39 @@ export const SEALED_ROW_PREFIX = "sealed/";
 export const KEYSTORE_CARRIER_PREFIX = "browser-keystore/";
 
 const DEVICE_SEED_ROW = "vessel-key";
-const CUSTODY_ROW = /^(?:vessel-key|veil-archive-g.+|persona-root-h\d+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|face-atom\/.+|face-anchor\/.+|face-address-secret\/.+|promoted\/.+|kapae\/.+|fleet-join-pending\/.+|walk\/.+)$/;
+const CUSTODY_ROW = /^(?:vessel-key|walk\/.+)$/;
 
-/** Is `row` one the slot tree wraps: the device seed, an Archive, or one of a face's secret rows. */
+/** Is `row` one the place tree wraps: the place seed or a walk. */
 export function isCustodyRow(row: string): boolean { return CUSTODY_ROW.test(row); }
+
+const hexUtf8 = (s: string): string => [...new TextEncoder().encode(s)].map((b) => b.toString(16).padStart(2, "0")).join("");
+
+/** The face-private row spellings: each names its face's PersonaGroup, and rests under that face's tree as the second part. */
+const FACE_ROWS: readonly (readonly [RegExp, (m: RegExpExecArray) => string])[] = [
+  [/^face-root\/(.+)$/, () => "persona-root"],
+  [/^veil-archive-g(.+)$/, () => "veil-archive"],
+  [/^face-atom\/(.+)$/, () => "face-atom"],
+  [/^face-anchor\/(.+)$/, () => "face-anchor"],
+  [/^face-address-secret\/(.+)$/, () => "face-address-secret"],
+  [/^fleet-join-pending\/(.+)$/, () => "fleet-join-pending"],
+  [/^promoted\/(.+)$/, () => "promoted"],
+  [/^kapae\/(.+)$/, () => "kapae"],
+  [/^vessel-face-key\/([^|]+)\|([^|]+)\|([^|]+)$/, (m) => `vessel-face-key/${hexUtf8(m[2]!)}/${m[3]!.toLowerCase()}`],
+  [/^nexus-key\/([^/]+)\/(.+)$/, (m) => `nexus-key/${hexUtf8(m[2]!)}`],
+];
+
+/** A face-private row's face (its PersonaGroup) and the row it rests as under that face's own tree; null for any other row. */
+export function faceRowOf(row: string): { readonly face: string; readonly row: string } | null {
+  if (HANDLE_ROW.test(row)) return null;
+  for (const [form, inner] of FACE_ROWS) {
+    const m = form.exec(row);
+    if (m) return { face: m[1]!, row: inner(m) };
+  }
+  return null;
+}
+
+/** A row the shared tree's earlier shape spelled by handle index, or a vessel Archive: none names a face. */
+const HANDLE_ROW = /^(?:persona-root-h\d+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|keyhive-archive)$/;
 
 /** The sealed carrier a custody row rests in once a slot binds. */
 export function sealedCarrierOf(row: string): SealedCarrier {
@@ -71,7 +110,8 @@ export function sealedCarrierOf(row: string): SealedCarrier {
 }
 
 export type BrowserCustodyRefusalReading =
-  | "sealed-locked" | "no-custody-slot" | "already-sealed" | "not-sealed" | "unsettled" | "tree-unreadable" | "row-unopened" | "torn-without-tree";
+  | "sealed-locked" | "no-custody-slot" | "already-sealed" | "not-sealed" | "unsettled" | "tree-unreadable" | "row-unopened" | "torn-without-tree"
+  | "face-names-a-handle" | "face-row-shared";
 
 const SAYS: Record<BrowserCustodyRefusalReading, string> = {
   "sealed-locked": "the keystore rests sealed and this page holds no unlock; unlock it with its passphrase first",
@@ -82,7 +122,21 @@ const SAYS: Record<BrowserCustodyRefusalReading, string> = {
   "tree-unreadable": "the slot tree does not read, so no route can be judged against it; nothing was written",
   "row-unopened": "the key this page holds does not open the sealed row; nothing was written",
   "torn-without-tree": "a sealed row stands with no slot tree beside it, so no route can open it; nothing was written",
+  "face-names-a-handle": "a face's row names its PersonaGroup, never a local handle index h<N>; this row's shape names no face",
+  "face-row-shared": "a face's row rests under this browser's place tree, the shape before each face kept its own tree; this browser re-founds (its site data cleared) and nothing here reads that row",
 };
+
+/**
+ * Refuse a keystore whose place tree still holds a face's row (clear or sealed), or a row spelled by handle index: the shared
+ * tree's earlier shape. A face founded in it re-founds. Nothing is read or written past the row names.
+ */
+export async function refuseSharedTreeFaceRows(idbName: string): Promise<void> {
+  const shared = (await keystoreKeys(idbName)).filter((k) => {
+    const row = k.startsWith(SEALED_ROW_PREFIX) ? k.slice(SEALED_ROW_PREFIX.length).replace(new RegExp(`(?:${reEscape(SEALING_SUFFIX)}|${reEscape(ROTATING_SUFFIX)})$`), "") : k;
+    return HANDLE_ROW.test(row) || faceRowOf(row) !== null;
+  });
+  if (shared.length > 0) throw new BrowserCustodyRefused("face-row-shared", idbName, shared[0], shared.join(", "));
+}
 
 /** A custody act or row the keystore's standing state refuses. Nothing was written. */
 export class BrowserCustodyRefused extends Error {
@@ -340,24 +394,8 @@ const deviceSeedCodec: RowCodec = {
   },
 };
 
-const personaRosterCodec: RowCodec = {
-  toBytes(value) {
-    const roots = (value as { roots?: unknown } | null)?.roots;
-    if (!Array.isArray(roots) || !roots.every((n) => Number.isSafeInteger(n) && n >= 0)) {
-      throw new Error("[browser-custody] the persona-root roster holds no { roots } record");
-    }
-    return new TextEncoder().encode(JSON.stringify({ roots }));
-  },
-  fromBytes(bytes) {
-    const value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as unknown;
-    this.toBytes(value);
-    return value;
-  },
-};
-
 const codecOf = (row: string): RowCodec =>
-  row === DEVICE_SEED_ROW || /^persona-root-h\d+$/.test(row) ? deviceSeedCodec
-    : row === "persona-root-roster" ? personaRosterCodec
+  row === DEVICE_SEED_ROW || row.startsWith("face-root/") ? deviceSeedCodec
     : row.startsWith("nexus-key/") || row.startsWith("vessel-face-key/") || row.startsWith("face-atom/") ? key32Codec
     : row.startsWith("face-anchor/") ? archiveCodec
     : row.startsWith("fleet-join-pending/") ? pendingCodec
@@ -384,15 +422,35 @@ function treeOrRefuse(idbName: string, held: unknown, row?: string): SlotTree {
  * row never stood. Sealed and locked refuses `sealed-locked`; a clear row beside a tree refuses `unsettled`.
  */
 export async function readKeystoreRow(idbName: string, row: string): Promise<unknown> {
+  const face = faceRowOf(row);
+  if (face) return readFaceDoor(face, row, idbName);
   return withCustodyActLock(idbName, "shared", () => readKeystoreRowHeld(idbName, row));
 }
 
+/** A face row through its own face's tree: `no-custody-slot` before the tree binds, `face-locked` while it stands locked. */
+async function readFaceDoor(face: { readonly face: string; readonly row: string }, row: string, idbName: string): Promise<unknown> {
+  const bytes = await readFaceRow(idbName, face.face, face.row);
+  if (bytes === null) return undefined;
+  try { return codecOf(row).fromBytes(bytes); } finally { bytes.fill(0); }
+}
+
+async function writeFaceDoor(face: { readonly face: string; readonly row: string }, row: string, idbName: string, value: unknown): Promise<void> {
+  const plaintext = codecOf(row).toBytes(value);
+  try { await writeFaceRow(idbName, face.face, face.row, plaintext); } finally { plaintext.fill(0); }
+}
+
+function refuseHandleRow(idbName: string, row: string): void {
+  if (HANDLE_ROW.test(row)) throw new BrowserCustodyRefused("face-names-a-handle", idbName, row);
+}
+
 async function readKeystoreRowHeld(idbName: string, row: string): Promise<unknown> {
+    const face = faceRowOf(row);
+    if (face) return readFaceDoor(face, row, idbName);
+    refuseHandleRow(idbName, row);
     const carrier = sealedCarrierOf(row);
     const st = await rowState(idbName, row);
     if (st.tree === undefined) {
       if (st.sealed !== undefined) throw new BrowserCustodyRefused("torn-without-tree", idbName, row);
-      if (row.startsWith("promoted/") || row.startsWith("kapae/")) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
       return st.clear;
     }
     treeOrRefuse(idbName, st.tree, row);
@@ -412,18 +470,22 @@ async function readKeystoreRowHeld(idbName: string, row: string): Promise<unknow
  * write lands through the mesh writer, so the standing seal stays until the new one reads back and opens.
  */
 export async function writeKeystoreRow(idbName: string, row: string, value: unknown): Promise<void> {
+  const face = faceRowOf(row);
+  if (face) return writeFaceDoor(face, row, idbName, value);
   return withCustodyActLock(idbName, "shared", () => writeKeystoreRowHeld(idbName, row, value));
 }
 
 async function writeKeystoreRowHeld(idbName: string, row: string, value: unknown): Promise<void> {
+    const face = faceRowOf(row);
+    if (face) return writeFaceDoor(face, row, idbName, value);
+    refuseHandleRow(idbName, row);
     const carrier = sealedCarrierOf(row);
     const plaintext = codecOf(row).toBytes(value);
     const st = await rowState(idbName, row);
     if (st.tree === undefined) {
       if (st.sealed !== undefined) throw new BrowserCustodyRefused("torn-without-tree", idbName, row);
-      // House reading under the operator's delegation, 2026-10-18: a face's secret rows take a slot first.
-      // A ruling that permits clear face secrets before a slot flips this gate.
-      if (!/^(?:vessel-key|veil-archive-g.+)$/.test(row)) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
+      // The place seed alone stands clear before the place tree binds (the pre-bind window); a walk takes the slot first.
+      if (row !== DEVICE_SEED_ROW) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
       return putClearWhileNoTree(idbName, row, value);
     }
     treeOrRefuse(idbName, st.tree, row);
@@ -448,6 +510,9 @@ export function withCustodyRows<T>(idbName: string, body: (rows: CustodyRowsAct)
     read: (row) => readKeystoreRowHeld(idbName, row),
     write: (row, value) => writeKeystoreRowHeld(idbName, row, value),
     delete: async (row) => {
+      const face = faceRowOf(row);
+      if (face) { await removeFaceRow(idbName, face.face, face.row); return; }
+      refuseHandleRow(idbName, row);
       const carrier = sealedCarrierOf(row);
       const st = await rowState(idbName, row);
       if (st.tree === undefined) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
@@ -661,12 +726,8 @@ export async function unbindBrowserCustodySlot(idbName: string, slotId: string):
 /** The door the clear-password act asks through: false parks the question, true on the person's confirmed pass. */
 export type ConfirmDoor = (question: string) => boolean;
 
-/**
- * What this browser's clear returns to the clear, as the question names it. Today the act opens and clears the
- * whole slot tree; the per-face split, where a clear names one face and clears that face's rows alone, is K15's
- * (steps 0 to 3).
- */
-export const CLEAR_CUSTODY_CLEARS = "this browser's custody: the device seed, every Keyhive Archive and every persona root";
+/** What this browser's place clear returns to the clear, as the question names it: the place rows alone; a face's rows clear with that face. */
+export const CLEAR_CUSTODY_CLEARS = "this browser's place custody: the device seed and its walk records";
 export const CLEAR_CUSTODY_QUESTION = clearCustodyQuestion(CLEAR_CUSTODY_CLEARS);
 
 export type BrowserCustodyClear =

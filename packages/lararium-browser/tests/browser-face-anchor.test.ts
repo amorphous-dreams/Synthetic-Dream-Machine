@@ -12,7 +12,7 @@ const anchor = mintFaceAnchor({ personaGroup: GROUP_A, personaKelPrefix: "prefix
 describe("browser face anchor custody", () => {
   test("A1 a bound slot keeps and reads one anchor; CONTROL: an absent row reads null", async () => {
     const idbName = `face-anchor-${crypto.randomUUID()}`;
-    await bindSyntheticBrowserCustodySlot(idbName);
+    await bindSyntheticBrowserCustodySlot(idbName, GROUP_A, GROUP_B);
     expect(await loadBrowserFaceAnchor(idbName, GROUP_A)).toBeNull();
     await keepBrowserFaceAnchor(idbName, anchor);
     expect(await loadBrowserFaceAnchor(idbName, GROUP_A)).toEqual(anchor);
@@ -22,13 +22,13 @@ describe("browser face anchor custody", () => {
 
   test("A2 require refuses anchor-missing by group name", async () => {
     const idbName = `face-anchor-missing-${crypto.randomUUID()}`;
-    await bindSyntheticBrowserCustodySlot(idbName);
+    await bindSyntheticBrowserCustodySlot(idbName, GROUP_A, GROUP_B);
     await expect(requireBrowserFaceAnchor(idbName, GROUP_A)).rejects.toThrow(`anchor-missing for ${GROUP_A}`);
   });
 
   test("A3 another group's row never opens as this group's anchor", async () => {
     const idbName = `face-anchor-groups-${crypto.randomUUID()}`;
-    await bindSyntheticBrowserCustodySlot(idbName);
+    await bindSyntheticBrowserCustodySlot(idbName, GROUP_A, GROUP_B);
     await keepBrowserFaceAnchor(idbName, anchor);
     expect(await loadBrowserFaceAnchor(idbName, GROUP_B)).toBeNull();
     await expect(requireBrowserFaceAnchor(idbName, GROUP_B)).rejects.toThrow(`anchor-missing for ${GROUP_B}`);

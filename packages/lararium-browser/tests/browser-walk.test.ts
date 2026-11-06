@@ -35,14 +35,14 @@ const TOKEN: InviteToken = { purpose: "host-invite", n: "12".repeat(32), y: "34"
 describe("the browser walk", () => {
   test("the invite is kept before any dial; the token presents until the invite settles, then the grant", async () => {
     const name = idb();
-    await bindSyntheticBrowserCustodySlot(name);
+    const face = await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0);
     const store = browserWalkStore(name);
     const carried = encodeInvite({ nexusAid: AID, gatePubKey: GATE, token: TOKEN });
     const taken = await takeInvite(store, carried);
     expect(taken?.gatePubKey).toBe(GATE);
     expect((await store.read(GATE))?.invite).toBe(carried);
-    const leaf = await browserWalkLeaf(name, AID, 0);
+    const leaf = await browserWalkLeaf(name, AID, face);
     expect(walkArm((await store.read(GATE))!, leaf)?.kind).toBe("token");
     const grant: HostingGrant = { nexusAid: AID, leaf: leaf.verifyingKey, epoch: "e".repeat(64), lineage: "d".repeat(64), survived: 0, from: "host", tag: "f".repeat(128) };
     await store.update(GATE, () => ({ nexusAid: AID, invite: carried, grant }));
@@ -91,22 +91,22 @@ describe("the browser walk", () => {
 
   test("one persona root, a different leaf in each Nexus", async () => {
     const name = idb();
-    await bindSyntheticBrowserCustodySlot(name);
+    const face = await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0);
-    const a = await browserWalkLeaf(name, AID, 0);
-    const b = await browserWalkLeaf(name, "nexus-" + "b".repeat(64), 0);
+    const a = await browserWalkLeaf(name, AID, face);
+    const b = await browserWalkLeaf(name, "nexus-" + "b".repeat(64), face);
     expect(a.verifyingKey).toMatch(/^[0-9a-f]{64}$/);
     expect(a.verifyingKey).not.toBe(b.verifyingKey);
-    expect((await browserWalkLeaf(name, AID, 0)).verifyingKey).toBe(a.verifyingKey);
+    expect((await browserWalkLeaf(name, AID, face)).verifyingKey).toBe(a.verifyingKey);
   });
 
   test("RED: a face's key at a Nexus rests as the 32 bytes it signs with, in its own store, and a face this vessel holds no root for presents nowhere", async () => {
     const name = idb();
-    await bindSyntheticBrowserCustodySlot(name);
+    const face = await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0);
-    const a = await browserWalkLeaf(name, AID, 0);
-    const kept = await readKeystoreRow(name, `nexus-key/h0/${AID}`);
+    const a = await browserWalkLeaf(name, AID, face);
+    const kept = await readKeystoreRow(name, `nexus-key/${face}/${AID}`);
     expect(kept).toEqual(a.seed);
-    await expect(browserWalkLeaf(name, AID, 1)).rejects.toThrow();
+    await expect(browserWalkLeaf(name, AID, `pg-held-nowhere-${crypto.randomUUID()}`)).rejects.toThrow();
   });
 });

@@ -29,7 +29,8 @@ import {
   sessionBinding, SessionTable,
   type FacePresentation, type FaceScope, type GateBundlePin, type SessionBinding,
 } from "@lararium/mesh";
-import { browserVesselFaceKeyCustody, dialRow, type KeptFleetJoinDial } from "./browser-fleet-join.js";
+import { browserVesselFaceKeyCustody, dialRow, faceKeyRow, type KeptFleetJoinDial } from "./browser-fleet-join.js";
+import { FaceCustodyRefused } from "./browser-face-custody.js";
 import { FLEET_JOIN_STORE, idbGet, openVesselIdb } from "./browser-vessel-identity.js";
 import { BrowserCustodyRefused, readKeystoreRow } from "./browser-custody.js";
 
@@ -99,9 +100,10 @@ export async function composeBrowserFacePresentation(args: {
 
   // THIS BROWSER'S OWN KEY for the scope, named from its custody row and never from the certificate.
   let secret: unknown;
-  try { secret = await readKeystoreRow(args.idbName, `vessel-face-key/${scope.nexus}|${scope.faceKey.toLowerCase()}`); }
+  try { secret = await readKeystoreRow(args.idbName, faceKeyRow(group, scope)); }
   catch (error) {
     if (error instanceof BrowserCustodyRefused && error.reading === "sealed-locked") return { refusal: "custody-locked" };
+    if (error instanceof FaceCustodyRefused && error.reading === "face-locked") return { refusal: "custody-locked" };
     throw error;
   }
   if (!(secret instanceof Uint8Array) || secret.length !== 32) return { refusal: "vessel-face-key-absent" };
@@ -117,7 +119,7 @@ export async function composeBrowserFacePresentation(args: {
     profile: args.profile ?? "face",
     admitted: scope, certificate, memory: fold.memory, vesselFaceKey, admit,
     grant: { personaGroup: grant.personaGroup, faceKey: grant.scope.faceKey, nexus: grant.scope.nexus, revision: faceKeyGrantRevision(grant) },
-    apart: [record.rootKey], custody: browserVesselFaceKeyCustody(args.idbName),
+    apart: [record.rootKey], custody: browserVesselFaceKeyCustody(args.idbName, group),
   });
   if (!("signer" in opened)) return { refusal: opened.refusal };
   const chain = checkVesselChain({ admitted: scope, certificate, memory: fold.memory });

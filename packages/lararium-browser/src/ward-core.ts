@@ -1,22 +1,22 @@
 /**
  * ward-core — THE PURE CORE OF ONE BROWSER WARD ACT (seat-harness#/the-ward), run inside a per-act worker the page terminates.
  *
- * The act receives the keystore's slot tree and the face root's sealed row as raw bytes (no key rides them), the passphrase the
- * person typed for this act, and the bytes to sign. It opens the tree key FRESH from that passphrase through noble's scrypt (the
- * minted KDF port), opens the root row under it, signs once, and zero-fills the tree key, the seed and the passphrase's bytes. The
+ * The act receives the face's own slot tree and its root's sealed row as raw bytes (no key rides them), the context the root
+ * sealed under, the passphrase the person typed for this act, and the bytes to sign. It opens the face's key FRESH from that
+ * passphrase through noble's scrypt (the minted KDF port), opens the root row under it against that context, signs once, and zero-fills the tree key, the seed and the passphrase's bytes. The
  * page's own unlock never takes part: the page's held key is not read, and the page's `unlocked` map never changes. What leaves is
  * the root's public key and the one signature, and nothing else; a refusal leaves by name and carries no byte of a credential.
  *
  * A passkey never opens a ward: a tree that carries a passkey pin refuses `ward-passkey-refused` before any derivation.
  */
-import { decodeSlotTree, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, nobleKdf, openSealedCarrier, openWardKey, signingSeedFromHex, WardRefused, type CustodyIo, type KdfPort } from "@lararium/mesh";
+import { decodeSlotTree, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, nobleKdf, openUnderFck, openWardKey, signingSeedFromHex, WardRefused, type FaceCarrier, type KdfPort } from "@lararium/mesh";
 
 /** What a ward act takes: raw bytes and one typed route, never a key. */
 export interface WardActRequest {
   readonly tree: Uint8Array;
   readonly sealedRoot: Uint8Array;
-  /** The keystore carrier name the root row rests under (`browser-keystore/persona-root-h<N>`), bound by its AEAD. */
-  readonly carrier: string;
+  /** The context the root row sealed under (`face-sealed/<fcid>/persona-root`): store, face custody id, row, kind and reference. */
+  readonly carrier: FaceCarrier;
   readonly passphrase: string;
   readonly bytes: Uint8Array;
 }
@@ -32,9 +32,8 @@ export async function runWardAct(req: WardActRequest, kdf: KdfPort = nobleKdf): 
     if (opened.reading !== "opens") return { refused: "ward-no-slot-opens" };
     let seed: Uint8Array | null = null;
     try {
-      // The row's bytes ride in whole; a read-only port hands them to the one sealed reader, which checks the carrier's AEAD.
-      const io = { read: async () => req.sealedRoot } as unknown as CustodyIo;
-      const reading = await openSealedCarrier({ io, treeKey: opened.treeKey, carrier: { name: req.carrier, path: "ward-act" } });
+      // The row's bytes ride in whole; the face's key opens them against the context the root sealed under, whose AEAD binds it.
+      const reading = openUnderFck(opened.treeKey, req.carrier, req.sealedRoot);
       if (reading.reading !== "opens") return { refused: "ward-root-unopenable" };
       const root = reading.plaintext;
       try {

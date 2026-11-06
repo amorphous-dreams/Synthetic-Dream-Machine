@@ -3,7 +3,7 @@ import { BrowserCustodyRefused, lockBrowserCustody, readBrowserCustody, readKeys
 import { openBrowserVessel } from "../src/open-browser-vessel.js";
 import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
 import { holdVesselLock, type LockHost } from "../src/vessel-lock.js";
-import { clearCustodyVerb, standBrowserCustody } from "../src/browser-boot-custody.js";
+import { clearCustodyVerb, standBrowserCustody, standFounderFace } from "../src/browser-boot-custody.js";
 import { CLEAR_CUSTODY_CLEARS, CLEAR_CUSTODY_QUESTION } from "../src/browser-custody.js";
 
 let serial = 0;
@@ -135,13 +135,28 @@ describe("browser boot custody asks before secret rows rest", () => {
     expect(calls).toBe(0);
   });
 
-  test("RED: a clear keystore binds its first slot before a face secret mints, and the write that refused lands after", async () => {
+  test("RED: a clear keystore binds its first slot before a walk row rests, and the write that refused lands after", async () => {
     const idbName = vessel();
     await generateOrLoadBrowserVesselIdentity(idbName);
-    await expect(writeKeystoreRow(idbName, "persona-root-roster", { roots: [0] })).rejects.toMatchObject({ reading: "no-custody-slot" });
+    const walk = { nexusAid: "nexus-a" };
+    await expect(writeKeystoreRow(idbName, "walk/ab", walk)).rejects.toMatchObject({ reading: "no-custody-slot" });
     const verdict = await standBrowserCustody({ idbName, secretMintDue: true, ask: async () => ({ kind: "passphrase", passphrase: "first route" }) });
     expect(verdict.reading).toBe("bound");
-    await writeKeystoreRow(idbName, "persona-root-roster", { roots: [0] });
-    expect(await readKeystoreRow(idbName, "persona-root-roster")).toEqual({ roots: [0] });
+    await writeKeystoreRow(idbName, "walk/ab", walk);
+    expect(await readKeystoreRow(idbName, "walk/ab")).toEqual(walk);
+  });
+
+  test("RED: the founder face's tree stands before its first row on the first bind's one route; a declined bind or no door refuses no-custody-slot", async () => {
+    const idbName = vessel();
+    await generateOrLoadBrowserVesselIdentity(idbName);
+    await expect(standFounderFace({ idbName })).rejects.toMatchObject({ reading: "no-custody-slot" });
+    await expect(standFounderFace({ idbName, ask: async () => null })).rejects.toMatchObject({ reading: "no-custody-slot" });
+    expect((await readBrowserCustody(idbName)).reading, "a declined bind binds nothing").toBe("clear");
+    const asked: string[] = [];
+    const face = await standFounderFace({ idbName, ask: async (q) => { asked.push(q.kind); return { kind: "passphrase", passphrase: "first route" }; } });
+    expect(asked).toEqual(["bind-first"]);
+    expect(face).toMatch(/^unnamed:[0-9a-f]{32}$/);
+    expect((await readBrowserCustody(idbName)).reading, "the same route bound the place tree").toBe("sealed");
+    expect(await standFounderFace({ idbName, ask: async () => { throw new Error("asked twice"); } }), "the held unnamed face answers without an ask").toBe(face);
   });
 });

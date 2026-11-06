@@ -1,17 +1,17 @@
 import { placeSeed } from "./browser-place-seed.fixture.js";
 /**
- * BROWSER CUSTODY: a passphrase seals the device seed and the Keyhive Archives the keystore keeps, and a mistyped
- * passphrase destroys nothing.
+ * BROWSER CUSTODY: a passphrase seals the place tree's rows (the device seed and the walk records), each face keeps its own
+ * tree, and a mistyped passphrase destroys nothing.
  *
  * Everything runs for real over the page's IndexedDB and WebCrypto; each vector stands on its own disposable store
  * (a fresh random idbName). `foundHalted()` founds a real vessel through `openBrowserVessel` and halts it at the
- * catalog, as the Archive vectors do. A "locked" keystore models a fresh page: `lockBrowserCustody` drops the key
- * from this page's memory. A census reads every keystore row (key -> bytes or JSON) so a refusal can prove it wrote
- * nothing.
+ * catalog; the fixture binds the place tree and stands the founder face. A "locked" keystore models a fresh page:
+ * `lockBrowserCustody` drops the key from this page's memory. A census reads every keystore row (key -> bytes or JSON) so a
+ * refusal can prove it wrote nothing. The place sample rows are `walk/main` and `walk/a`, each holding a walk record.
  *
- *   BC1  THE ROW LAW: `isCustodyRow` names device, Archive, root and roster rows;
- *        `sealedCarrierOf` names the keystore carrier and its `sealed/` path.
- *   BC2  THE SEAL: one slot binds, every custody row moves to `sealed/<row>` under the house magic and its clear row
+ *   BC1  THE ROW LAW: `isCustodyRow` names the device seed and the walk rows; face rows and handle rows answer false;
+ *        `sealedCarrierOf` names the keystore carrier and its `sealed/` path for a place row and throws for any other.
+ *   BC2  THE SEAL: one slot binds, every place row moves to `sealed/<row>` under the house magic and its clear row
  *        leaves; `catalog-url` and every other row stand as they stood; the page stays unlocked. The status reads
  *        clear before (the control), sealed after; a second seal refuses `already-sealed`.
  *   BC3  an EMPTY keystore seals: the slot stands before any mint, and a mint made after it rests sealed.
@@ -23,18 +23,19 @@ import { placeSeed } from "./browser-place-seed.fixture.js";
  *        census stands identical.
  *   BC7  THE CONFIRM DOOR: the first ask parks and the act abandons with nothing written; the confirmed re-run
  *        clears, and every clear row comes back equal. Control: an answer of "no" leaves the keystore sealed.
- *   BC8  WHILE UNLOCKED a save re-seals: the sealed row changes, still opens to the new bytes after a lock and an
+ *   BC8  WHILE UNLOCKED a save re-seals: the sealed row changes, still opens to the new record after a lock and an
  *        unlock, and no clear row appears.
- *   BC9  a clear custody row beside the tree refuses `unsettled` naming the row; nothing is deleted.
+ *   BC9  a clear place row beside the tree refuses `unsettled` naming the row; nothing is deleted.
  *   BC10 SLOTS: a second slot binds while unlocked and either passphrase opens; unbinding the first answers a
  *        rotation offer and its passphrase then opens nothing; the last slot never unbinds; a bind while locked
  *        refuses `sealed-locked`.
  *   BC11 THE SIDECAR LAW through the port: `browserKeystoreCustodyIo` is a mesh `CustodyIo` over the keystore. A
  *        sidecar that does not read back lands nothing (control: the same write through the honest port lands and
  *        opens), and the carrier the mesh writer sealed reads back through the browser reader once unlocked.
- *   BC12 THE REOPEN: a founded vessel seals and locks, its boot refuses `sealed-locked` before the catalog with the
- *        keystore untouched; unlocked, every reader returns the captured bytes and the same boot reaches the catalog
- *        with no clear custody row returned.
+ *   BC12 THE REOPEN: a founded vessel locks, its boot refuses `sealed-locked` before the catalog with the
+ *        keystore untouched; unlocked, the founded face's rows read and the same boot reaches the catalog
+ *        with no clear place row returned and no face row under the place tree (a founding halted before its bootstrap
+ *        runs again over a fresh founder face).
  *   BC13 THE SETTLE ARMS: a clear row beside the tree EQUAL to its sealed value settles on the next unlock and leaves;
  *        a DIFFERENT one stays unsettled with its why, and both rows stand byte-identical. Control: before the
  *        unlock, the reader names the planted row unsettled.
@@ -46,18 +47,22 @@ import { placeSeed } from "./browser-place-seed.fixture.js";
  *   BC16 A PAPER ROUTE: a 2-of-3 paper slot seals; any two sheets open; one sheet, or a passphrase, does not.
  *   BC17 THE DOOR'S LITERAL TRUE: a door answering a truthy non-boolean parks, writing nothing. Control: literal
  *        true clears.
- *   BC18 A NEWER SEAL BETWEEN PARK AND CONFIRM: the confirmed clear re-opens and carries the newer Archive into the
+ *   BC18 A NEWER SEAL BETWEEN PARK AND CONFIRM: the confirmed clear re-opens and carries the newer walk record into the
  *        clear. The newer value lands between passes through the confirm door.
  *   BC19 THE ACT LOCK: a confirmed clear holds row doors through each clear/sealed handoff; a burst of readers
- *        answers the device seed and Archive while the writer pauses before removing the first sealed carrier.
+ *        answers the device seed and walk record while the writer pauses before removing the first sealed carrier.
  *   BC20 THE STANDING CARRIER: a torn replacement sidecar leaves the sealed bytes intact and the old value opens.
  *   BC21 THE FREE QUESTION: the clear asks its confirm door with the act lock free, so a waiting person holds no row door.
- *   BC22 a persona-root mint without a slot refuses and writes no row; the device-key mint remains open.
- *   BC23 a bound slot seals the root and its roster; neither rests in the clear.
- *   BC24 a locked root read refuses before any row read; unlock returns the same seed.
- *   BC25 a confirmed clear returns the root and roster to clear rows and removes their carriers.
+ *   BC22 a persona-root mint needs a worn face whose tree stands bound: with no worn face it refuses `face-absent`, with an
+ *        unbound one `no-custody-slot`, and a handle other than 0 refuses `face-names-a-handle`; no keystore byte changes.
+ *   BC24 a locked face refuses its root `face-locked` before reading; unlock returns the same seed.
  *   BC27 a fresh schema stands the present stores and rests no worn-face pointer.
- *   BC28 the worn face is session state of one tab: it rests in no store, and a reload asks again.
+ *   BC28 the worn face is session state of one tab: it rests in no store; BC28b one held root reads as the face worn.
+ *   BC29 every face-secret family refuses `no-custody-slot` with no face tree, rests under its face's own tree once it
+ *        binds and never under `sealed/`; the `walk` family seals under the place tree and refuses `sealed-locked` locked.
+ *   BC30 one custody act reads, decides and writes two walk rows; a thrown decision leaves its second row unwritten.
+ *   BC31 handle spellings refuse `face-names-a-handle` at the row door; `refuseSharedTreeFaceRows` refuses `face-row-shared`
+ *        on a raw planted `veil-archive-g<G>` row.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-custody
  */
@@ -68,17 +73,17 @@ import {
   nobleKdf,
 } from "@lararium/mesh";
 import { BootHalted } from "./wire-vessel-rig.js";
+import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, foundedGroupOf } from "./browser-custody-fixture.js";
+import { FaceCustodyRefused, lockFaceCustody, unlockFaceCustody } from "../src/browser-face-custody.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import {
   readBrowserIdentityContinuity, generateOrLoadBrowserVesselIdentity, generateOrLoadBrowserPersonaRoot,
   loadBrowserPersonaRootSeed, listBrowserPersonaRoots, openVesselIdb, idbGet, idbPut, idbKeys, makeBrowserIdbPersonaVault, forgetWornFaceOfTab,
+  wearFaceOfVessel,
 } from "../src/browser-vessel-identity.js";
-import {
-  loadBrowserVeilArchive, saveBrowserVeilArchive,
-} from "../src/browser-keyhive-archive.js";
 import { vesselLockName } from "../src/vessel-lock.js";
 import {
-  BrowserCustodyRefused, CLEAR_CUSTODY_QUESTION, CUSTODY_TREE_ROW, SEALED_ROW_PREFIX,
+  BrowserCustodyRefused, CLEAR_CUSTODY_QUESTION, CUSTODY_TREE_ROW, refuseSharedTreeFaceRows, SEALED_ROW_PREFIX,
   bindBrowserCustodySlot, browserKeystoreCustodyIo, clearBrowserCustody, isCustodyRow, lockBrowserCustody,
   readBrowserCustody, readKeystoreRow, sealBrowserKeystore, sealedCarrierOf, unbindBrowserCustodySlot, unlockBrowserCustody,
   withCustodyRows, writeKeystoreRow,
@@ -89,14 +94,17 @@ const STORE = "keystore";
 const MAGIC = new TextEncoder().encode("lares-s-seal");
 const PASS = { kind: "passphrase", passphrase: "the hearth keeps its fire" } as const;
 const WRONG = { kind: "passphrase", passphrase: "wrong" } as const;
-const loadMainArchive = (idbName: string) => loadBrowserVeilArchive(idbName, "group-main");
-const saveMainArchive = (idbName: string, bytes: Uint8Array) => saveBrowserVeilArchive(idbName, "group-main", bytes);
-const requireMainArchive = async (idbName: string) => {
-  const held = await loadMainArchive(idbName);
-  if (!held) throw new Error("main veil Archive absent");
+const FIXTURE_PASS = { kind: "passphrase", passphrase: "browser fixture custody slot" } as const;
+/** A valid walk record: the minimal shape the mesh's `isWalkRecord` holds. */
+const walkRecord = (): { nexusAid: string } => ({ nexusAid: `nexus-${hex(randomBytes(8))}` });
+const loadMainWalk = (idbName: string) => readKeystoreRow(idbName, "walk/main");
+const saveMainWalk = (idbName: string, record: unknown) => writeKeystoreRow(idbName, "walk/main", record);
+const requireMainWalk = async (idbName: string) => {
+  const held = await loadMainWalk(idbName);
+  if (!held) throw new Error("main walk absent");
   return held;
 };
-const CUSTODY_ROWS = ["veil-archive-ggroup-a", "veil-archive-ggroup-main", "vessel-key"] as const;
+const CUSTODY_ROWS = ["vessel-key", "walk/a", "walk/main"] as const;
 const SLOW = 120_000;
 
 interface PersistedKey { readonly verifyingKey: string; readonly signingKey: string }
@@ -139,35 +147,25 @@ async function expectRefused(p: Promise<unknown>, reading: BrowserCustodyRefusal
   if (row !== undefined) expect((e as BrowserCustodyRefused).row, String(e)).toBe(row);
 }
 
-/** A custody-only store: a place key, two face veil rows, and a public catalog row. */
+/** A custody-only store: a place key, two clear walk rows planted before the seal, and a public catalog row. */
 async function plantedVessel(tag: string) {
   const idbName = `custody-${tag}-${crypto.randomUUID()}`;
   await generateOrLoadBrowserVesselIdentity(idbName);
-  const archive = randomBytes(96);
-  const veil = randomBytes(80);
-  await saveMainArchive(idbName, archive);
-  await saveBrowserVeilArchive(idbName, "group-a", veil);
+  const main = walkRecord();
+  const side = walkRecord();
+  await plant(idbName, "walk/main", main);
+  await plant(idbName, "walk/a", side);
   await plant(idbName, "catalog-url", "automerge:planted-catalog");
   const key = (await rowOf(idbName, "vessel-key")) as PersistedKey;
   const seed = await placeSeed(idbName);
-  return { idbName, archive, veil, key, seed };
-}
-
-async function foundedGroup(idbName: string): Promise<string> {
-  const db = await openVesselIdb(idbName);
-  try { return (await (async () => {
-    const keys = await idbKeys(db, "keystore");
-    const row = keys.find((k) => /^(?:sealed\/)?face-atom\//.test(k));
-    return row!.replace(/^(?:sealed\/)?face-atom\//, "");
-  })()); }
-  finally { db.close(); }
+  return { idbName, main, side, key, seed };
 }
 
 /** Bind a founding slot, then found a browser vessel and halt once its catalog stands. */
 async function foundHalted(): Promise<string> {
   const idbName = `custody-found-${crypto.randomUUID()}`;
   await generateOrLoadBrowserVesselIdentity(idbName);
-  await sealBrowserKeystore(idbName, PASS);
+  await bindSyntheticBrowserCustodySlot(idbName);
   const opts = {
     idbName,
     onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); },
@@ -206,74 +204,116 @@ function parkedDoor() {
   return { door, asked, outcomes, answerYes: () => { answer = true; }, answerNo: () => { answer = false; } };
 }
 
-describe("browser custody seals the keystore's device seed and Keyhive Archives", () => {
-  test("BC29 every face-secret family takes a slot, seals and refuses a locked read", async () => {
+describe("browser custody seals the place tree's device seed and walk records", () => {
+  test("BC29 every face-secret family refuses without its face tree, then rests under that tree and never under sealed/", async () => {
     const idbName = `custody-secret-families-${crypto.randomUUID()}`;
     const pending = { offer: { kind: "fleet-join-offer" }, request: { kind: "fleet-join-request" }, sealSecret: "ab".repeat(32) };
-    const values: Array<[string, unknown]> = [
-      ["nexus-key/h0/nexus.synthetic", randomBytes(32)],
-      ["vessel-face-key/nexus.synthetic|" + "ab".repeat(32), randomBytes(32)],
+    const faceRows: Array<[string, unknown]> = [
+      ["nexus-key/group/nexus.synthetic", randomBytes(32)],
+      ["vessel-face-key/group|nexus.synthetic|" + "ab".repeat(32), randomBytes(32)],
       ["face-address-secret/group", randomBytes(32)],
       ["fleet-join-pending/group", pending],
-      ["walk/" + "cd".repeat(32), { nexusAid: "nexus.synthetic" }],
     ];
-    for (const [row, value] of values) {
-      await expectRefused(writeKeystoreRow(idbName, row, value), "no-custody-slot", row);
+    const walk: [string, unknown] = ["walk/" + "cd".repeat(32), { nexusAid: "nexus.synthetic" }];
+    const noSlot = async (row: string, value: unknown) => {
+      const e = await settleOf(writeKeystoreRow(idbName, row, value));
+      expect(e, row).toBeInstanceOf(FaceCustodyRefused);
+      expect((e as FaceCustodyRefused).reading, row).toBe("no-custody-slot");
+    };
+    for (const [row, value] of faceRows) {
+      await noSlot(row, value);
       expect(await rowOf(idbName, row)).toBeUndefined();
     }
+    // The place family refuses by its own name before the place tree binds.
+    await expectRefused(writeKeystoreRow(idbName, walk[0], walk[1]), "no-custody-slot", walk[0]);
+    expect(await rowOf(idbName, walk[0])).toBeUndefined();
     // CONTROL: a device seed row still stands clear before the slot binds.
     const seed = { verifyingKey: "ab".repeat(32), signingKey: "cd".repeat(32) };
     await writeKeystoreRow(idbName, "vessel-key", seed);
     expect(await readKeystoreRow(idbName, "vessel-key")).toEqual(seed);
     await sealBrowserKeystore(idbName, PASS);
-    for (const [row, value] of values) {
+    // The place tree stands; the face rows still refuse until their own tree binds.
+    for (const [row, value] of faceRows) await noSlot(row, value);
+    await bindSyntheticFace(idbName, "group");
+    for (const [row, value] of faceRows) {
       await writeKeystoreRow(idbName, row, value);
       expect(await readKeystoreRow(idbName, row)).toEqual(value);
       expect(await rowOf(idbName, row)).toBeUndefined();
-      expect(startsWithMagic(await rowOf(idbName, `sealed/${row}`))).toBe(true);
+      expect(await rowOf(idbName, `sealed/${row}`), `${row} never rests under the place tree`).toBeUndefined();
     }
+    expect(Object.keys(await census(idbName)).filter((k) => k.startsWith(SEALED_ROW_PREFIX)), "only the seed rests sealed").toEqual(["sealed/vessel-key"]);
+    // The walk family seals under the place tree.
+    await writeKeystoreRow(idbName, walk[0], walk[1]);
+    expect(await readKeystoreRow(idbName, walk[0])).toEqual(walk[1]);
+    expect(await rowOf(idbName, walk[0])).toBeUndefined();
+    expect(startsWithMagic(await rowOf(idbName, `sealed/${walk[0]}`))).toBe(true);
     lockBrowserCustody(idbName);
-    for (const [row] of values) await expectRefused(readKeystoreRow(idbName, row), "sealed-locked", row);
+    await expectRefused(readKeystoreRow(idbName, walk[0]), "sealed-locked", walk[0]);
+    lockFaceCustody(idbName, "group");
+    for (const [row] of faceRows) {
+      const e = await settleOf(readKeystoreRow(idbName, row));
+      expect(e, row).toBeInstanceOf(FaceCustodyRefused);
+      expect((e as FaceCustodyRefused).reading, row).toBe("face-locked");
+    }
     expect((await unlockBrowserCustody(idbName, [PASS])).reading).toBe("opens");
-    for (const [row, value] of values) expect(await readKeystoreRow(idbName, row)).toEqual(value);
+    expect((await unlockFaceCustody(idbName, "group", [FIXTURE_PASS])).reading).toBe("opens");
+    for (const [row, value] of [...faceRows, walk]) expect(await readKeystoreRow(idbName, row)).toEqual(value);
   }, SLOW);
 
   test("BC30 one custody act reads, decides and writes two rows; a thrown decision leaves its second row unwritten", async () => {
     const idbName = `custody-many-rows-${crypto.randomUUID()}`;
     await sealBrowserKeystore(idbName, PASS);
-    const a = "nexus-key/h0/one.synthetic";
-    const b = "nexus-key/h0/two.synthetic";
-    const c = "nexus-key/h0/three.synthetic";
-    const d = "nexus-key/h0/four.synthetic";
-    const first = randomBytes(32);
+    const a = "walk/one";
+    const b = "walk/two";
+    const c = "walk/three";
+    const d = "walk/four";
+    const first = walkRecord();
     await withCustodyRows(idbName, async (rows) => {
       expect(await rows.read(a)).toBeUndefined();
       await rows.write(a, first);
       expect(await rows.read(b)).toBeUndefined();
-      await rows.write(b, randomBytes(32));
+      await rows.write(b, walkRecord());
     });
     expect(await readKeystoreRow(idbName, a)).toEqual(first);
-    expect(await readKeystoreRow(idbName, b)).toBeInstanceOf(Uint8Array);
+    expect(await readKeystoreRow(idbName, b)).toMatchObject({ nexusAid: expect.any(String) });
     // CONTROL: the first write in a body reaches its carrier before a later decision throws.
     await expect(withCustodyRows(idbName, async (rows) => {
-      await rows.write(c, randomBytes(32));
-      if ((await rows.read(c)) instanceof Uint8Array) throw new Error("decision refused");
-      await rows.write(d, randomBytes(32));
+      await rows.write(c, walkRecord());
+      if (await rows.read(c)) throw new Error("decision refused");
+      await rows.write(d, walkRecord());
     })).rejects.toThrow("decision refused");
-    expect(await readKeystoreRow(idbName, c)).toBeInstanceOf(Uint8Array);
+    expect(await readKeystoreRow(idbName, c)).toMatchObject({ nexusAid: expect.any(String) });
     expect(await readKeystoreRow(idbName, d)).toBeUndefined();
   }, SLOW);
 
-  test("BC1 the row law: each custody shape has its sealed carrier", () => {
-    for (const row of ["vessel-key", "veil-archive-ggroup-main", "veil-archive-ggroup-a", "veil-archive-ggroup-b", "persona-root-h0", "persona-root-h12", "persona-root-roster", "face-anchor/group-a"]) {
-      expect(isCustodyRow(row), row).toBe(true);
-    }
-    for (const row of ["catalog-url", "veil-archive-h0", "veil-archive-g", "persona-root-hx", "sealed/vessel-key", "custody-slots", "vessel-key2", ""]) {
-      expect(isCustodyRow(row), row).toBe(false);
-    }
-    expect(sealedCarrierOf("veil-archive-ggroup-main")).toEqual({ name: "browser-keystore/veil-archive-ggroup-main", path: "sealed/veil-archive-ggroup-main" });
+  test("BC1 the row law: the place rows have sealed carriers; face rows and handle rows have none", () => {
+    for (const row of ["vessel-key", "walk/main", "walk/a", "walk/" + "ab".repeat(32)]) expect(isCustodyRow(row), row).toBe(true);
+    for (const row of [
+      "veil-archive-ggroup-main", "face-atom/group", "face-anchor/group", "face-address-secret/group", "fleet-join-pending/group", "promoted/group",
+      "kapae/group", "face-root/group", "vessel-face-key/group|nexus|key", "nexus-key/group/aid",
+      "persona-root-h0", "persona-root-roster", "nexus-key/h0/aid", "vessel-face-key/nexus|key", "keyhive-archive",
+      "catalog-url", "veil-archive-h0", "veil-archive-g", "persona-root-hx", "sealed/vessel-key", "custody-slots", "vessel-key2", "walk/", "walk", "",
+    ]) expect(isCustodyRow(row), row).toBe(false);
+    expect(sealedCarrierOf("walk/main")).toEqual({ name: "browser-keystore/walk/main", path: "sealed/walk/main" });
     expect(sealedCarrierOf("vessel-key").path).toBe(`${SEALED_ROW_PREFIX}vessel-key`);
+    expect(() => sealedCarrierOf("veil-archive-ggroup-main")).toThrow();
+    expect(() => sealedCarrierOf("persona-root-h0")).toThrow();
   });
+
+  test("BC31 handle spellings refuse face-names-a-handle at the row door; a face row standing raw in the shared keystore refuses face-row-shared", async () => {
+    const idbName = `custody-handles-${crypto.randomUUID()}`;
+    await sealBrowserKeystore(idbName, PASS);
+    for (const row of ["persona-root-h0", "persona-root-h3", "persona-root-roster", "nexus-key/h0/aid", "vessel-face-key/nexus|key", "keyhive-archive"]) {
+      await expectRefused(readKeystoreRow(idbName, row), "face-names-a-handle", row);
+      await expectRefused(writeKeystoreRow(idbName, row, randomBytes(32)), "face-names-a-handle", row);
+    }
+    // CONTROL: a clean keystore passes the shared-tree check.
+    await refuseSharedTreeFaceRows(idbName);
+    await plant(idbName, "veil-archive-ggroup-main", randomBytes(16));
+    const before = await census(idbName);
+    await expectRefused(refuseSharedTreeFaceRows(idbName), "face-row-shared", "veil-archive-ggroup-main");
+    expect(await census(idbName), "the refusal wrote nothing").toEqual(before);
+  }, SLOW);
 
   test("BC2 the seal moves every custody row into its sealed carrier and leaves the rest standing", async () => {
     const v = await plantedVessel("seal");
@@ -306,7 +346,7 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     // The page stays unlocked: the readers answer the bytes they held.
     expect(await readBrowserCustody(v.idbName)).toEqual({ reading: "sealed", unlocked: true, slots: [{ id: slot, t: 1, kinds: ["passphrase"] }] });
     expect(hex(await placeSeed(v.idbName))).toBe(hex(v.seed));
-    expect(hex((await loadMainArchive(v.idbName))!)).toBe(hex(v.archive));
+    expect(await loadMainWalk(v.idbName)).toEqual(v.main);
 
     await expectRefused(sealBrowserKeystore(v.idbName, PASS), "already-sealed");
     expect(await census(v.idbName), "a refused second seal writes nothing").toEqual(after);
@@ -339,22 +379,22 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     await sealBrowserKeystore(v.idbName, PASS);
     // CONTROL: unlocked, the same readers read.
     expect(hex(await placeSeed(v.idbName))).toBe(hex(v.seed));
-    expect(hex((await loadBrowserVeilArchive(v.idbName, "group-a"))!)).toBe(hex(v.veil));
+    expect(await readKeystoreRow(v.idbName, "walk/a")).toEqual(v.side);
 
     lockBrowserCustody(v.idbName);
     const before = await census(v.idbName);
     await expectRefused(placeSeed(v.idbName), "sealed-locked");
-    await expectRefused(loadMainArchive(v.idbName), "sealed-locked");
-    await expectRefused(loadBrowserVeilArchive(v.idbName, "group-a"), "sealed-locked");
-    await expectRefused(requireMainArchive(v.idbName), "sealed-locked");
+    await expectRefused(loadMainWalk(v.idbName), "sealed-locked");
+    await expectRefused(readKeystoreRow(v.idbName, "walk/a"), "sealed-locked");
+    await expectRefused(requireMainWalk(v.idbName), "sealed-locked");
     await expectRefused(generateOrLoadBrowserVesselIdentity(v.idbName), "sealed-locked");
     expect(await census(v.idbName), "no reader minted or wrote").toEqual(before);
 
-    await expectRefused(saveMainArchive(v.idbName, randomBytes(32)), "sealed-locked");
-    await expectRefused(saveBrowserVeilArchive(v.idbName, "group-a", randomBytes(32)), "sealed-locked");
+    await expectRefused(saveMainWalk(v.idbName, walkRecord()), "sealed-locked");
+    await expectRefused(writeKeystoreRow(v.idbName, "walk/a", walkRecord()), "sealed-locked");
     const after = await census(v.idbName);
-    expect(after["sealed/veil-archive-ggroup-main"]).toBe(before["sealed/veil-archive-ggroup-main"]);
-    expect(after["sealed/veil-archive-ggroup-a"]).toBe(before["sealed/veil-archive-ggroup-a"]);
+    expect(after["sealed/walk/main"]).toBe(before["sealed/walk/main"]);
+    expect(after["sealed/walk/a"]).toBe(before["sealed/walk/a"]);
     expect(after, "no writer landed a row").toEqual(before);
   });
 
@@ -366,11 +406,11 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
 
     expect(await unlockBrowserCustody(v.idbName, [WRONG])).toMatchObject({ reading: "no-slot-opens" });
     expect(await census(v.idbName), "the wrong passphrase destroyed nothing").toEqual(before);
-    await expectRefused(loadMainArchive(v.idbName), "sealed-locked");
+    await expectRefused(loadMainWalk(v.idbName), "sealed-locked");
 
     // CONTROL: the right passphrase opens the slot the seal bound, so the refusal measured the passphrase.
     expect(await unlockBrowserCustody(v.idbName, [PASS])).toMatchObject({ reading: "opens", slot });
-    expect(hex((await loadMainArchive(v.idbName))!)).toBe(hex(v.archive));
+    expect(await loadMainWalk(v.idbName)).toEqual(v.main);
     expect(hex(await placeSeed(v.idbName))).toBe(hex(v.seed));
     expect(await census(v.idbName)).toEqual(before);
   }, SLOW);
@@ -421,8 +461,8 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     expect(after[CUSTODY_TREE_ROW], "the slot tree left").toBeUndefined();
     expect(Object.keys(after).filter((k) => k.startsWith(SEALED_ROW_PREFIX)), "no sealed row stands").toEqual([]);
     expect(await rowOf(v.idbName, "vessel-key")).toEqual(v.key);
-    expect(hex((await rowOf(v.idbName, "veil-archive-ggroup-main")) as Uint8Array)).toBe(hex(v.archive));
-    expect(hex((await rowOf(v.idbName, "veil-archive-ggroup-a")) as Uint8Array)).toBe(hex(v.veil));
+    expect(await rowOf(v.idbName, "walk/main")).toEqual(v.main);
+    expect(await rowOf(v.idbName, "walk/a")).toEqual(v.side);
     expect(after["catalog-url"]).toBe(sealedCensus["catalog-url"]);
     expect(await readBrowserCustody(v.idbName)).toEqual({ reading: "clear" });
     expect(hex(await placeSeed(v.idbName))).toBe(hex(v.seed));
@@ -431,30 +471,30 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
   test("BC8 while unlocked a save re-seals, opens to the new bytes, and lands no clear row", async () => {
     const v = await plantedVessel("reseal");
     await sealBrowserKeystore(v.idbName, PASS);
-    const standing = (await census(v.idbName))["sealed/veil-archive-ggroup-main"];
-    const next = randomBytes(120);
-    await saveMainArchive(v.idbName, next);
+    const standing = (await census(v.idbName))["sealed/walk/main"];
+    const next = walkRecord();
+    await saveMainWalk(v.idbName, next);
     const after = await census(v.idbName);
-    expect(after["sealed/veil-archive-ggroup-main"], "the sealed row moved").not.toBe(standing);
-    expect(startsWithMagic(await rowOf(v.idbName, "sealed/veil-archive-ggroup-main"))).toBe(true);
-    expect(after["veil-archive-ggroup-main"], "no clear row appeared").toBeUndefined();
-    expect(hex((await loadMainArchive(v.idbName))!)).toBe(hex(next));
+    expect(after["sealed/walk/main"], "the sealed row moved").not.toBe(standing);
+    expect(startsWithMagic(await rowOf(v.idbName, "sealed/walk/main"))).toBe(true);
+    expect(after["walk/main"], "no clear row appeared").toBeUndefined();
+    expect(await loadMainWalk(v.idbName)).toEqual(next);
 
     // The new bytes rest under the key, not in this page's memory: a fresh unlock reads them.
     lockBrowserCustody(v.idbName);
     await unlockBrowserCustody(v.idbName, [PASS]);
-    expect(hex((await loadMainArchive(v.idbName))!)).toBe(hex(next));
+    expect(await loadMainWalk(v.idbName)).toEqual(next);
   }, SLOW);
 
   test("BC9 a clear custody row beside the tree refuses unsettled by name and nothing is deleted", async () => {
     const v = await plantedVessel("unsettled");
     await sealBrowserKeystore(v.idbName, PASS);
     // CONTROL: settled, the reader reads.
-    expect(hex((await loadMainArchive(v.idbName))!)).toBe(hex(v.archive));
+    expect(await loadMainWalk(v.idbName)).toEqual(v.main);
 
-    await plant(v.idbName, "veil-archive-ggroup-main", randomBytes(40));
+    await plant(v.idbName, "walk/main", walkRecord());
     const before = await census(v.idbName);
-    await expectRefused(loadMainArchive(v.idbName), "unsettled", "veil-archive-ggroup-main");
+    await expectRefused(loadMainWalk(v.idbName), "unsettled", "walk/main");
     expect(await census(v.idbName), "nothing was deleted").toEqual(before);
   });
 
@@ -478,7 +518,7 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     expect(await unlockBrowserCustody(v.idbName, [second])).toMatchObject({ reading: "opens", slot: other });
     lockBrowserCustody(v.idbName);
     expect(await unlockBrowserCustody(v.idbName, [PASS])).toMatchObject({ reading: "opens", slot: first });
-    expect(hex((await loadMainArchive(v.idbName))!)).toBe(hex(v.archive));
+    expect(await loadMainWalk(v.idbName)).toEqual(v.main);
 
     const { rotationOffer } = await unbindBrowserCustodySlot(v.idbName, first);
     expect(typeof rotationOffer).toBe("string");
@@ -515,7 +555,7 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     // unreachable from the public surface, and none is needed: the law under test is the port's.
     const treeKey = mintTreeKey();
     const tree = await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "port" }] }, nobleKdf);
-    const carrier = sealedCarrierOf("veil-archive-ggroup-main");
+    const carrier = sealedCarrierOf("walk/main");
     await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, treeKey, tree, carriers: [carrier] });
     expect(await rowOf(idbName, CUSTODY_TREE_ROW)).toBeInstanceOf(Uint8Array);
 
@@ -529,12 +569,13 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
         return io.write(p, torn);
       },
     };
-    const plaintext = randomBytes(64);
+    const record = walkRecord();
+    const plaintext = new TextEncoder().encode(JSON.stringify(record));
     await expect(writeSealedCarrier({ io: flipping, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext }))
       .rejects.toThrow(/did not read back/);
     expect(await io.read(carrier.path), "nothing landed at the carrier").toBeNull();
     expect(await io.read(`${carrier.path}${SEALING_SUFFIX}`), "the torn sidecar left").toBeNull();
-    expect(await rowOf(idbName, "veil-archive-ggroup-main"), "no clear row either").toBeUndefined();
+    expect(await rowOf(idbName, "walk/main"), "no clear row either").toBeUndefined();
 
     // CONTROL: the same write through the honest port lands, at the keystore row the carrier names, and opens.
     await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext });
@@ -544,18 +585,17 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     if (opened.reading === "opens") expect(hex(opened.plaintext)).toBe(hex(plaintext));
 
     // The browser reader opens what the mesh writer sealed, once its passphrase unlocks this page.
-    await expectRefused(loadMainArchive(idbName), "sealed-locked");
+    await expectRefused(loadMainWalk(idbName), "sealed-locked");
     expect(await unlockBrowserCustody(idbName, [{ kind: "passphrase", passphrase: "port" }])).toMatchObject({ reading: "opens" });
-    expect(hex((await loadMainArchive(idbName))!)).toBe(hex(plaintext));
+    expect(await loadMainWalk(idbName)).toEqual(record);
   }, SLOW);
 
   test("BC12 THE REOPEN: a sealed, locked vessel refuses its boot; unlocked, it reads its bytes and boots", async () => {
     const idbName = await foundHalted();
     const seed = await placeSeed(idbName);
-    const group = await foundedGroup(idbName);
-    const archive = (await loadBrowserVeilArchive(idbName, group))!;
-    const veil = archive;
-    expect(veil.byteLength).toBeGreaterThan(0);
+    const group = await foundedGroupOf(idbName);
+    const archive = (await readKeystoreRow(idbName, `veil-archive-g${group}`)) as Uint8Array;
+    expect(archive.byteLength).toBeGreaterThan(0);
 
     const standing = await readBrowserCustody(idbName);
     expect(standing.reading).toBe("sealed");
@@ -573,24 +613,26 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     expect(lockedPhases, "the refusal lands before the catalog").not.toContain("catalog-ready");
     expect(await census(idbName), "the refused boot minted and wrote nothing").toEqual(lockedCensus);
 
-    expect(await unlockBrowserCustody(idbName, [PASS])).toMatchObject({ reading: "opens", slot });
+    expect(await unlockBrowserCustody(idbName, [FIXTURE_PASS])).toMatchObject({ reading: "opens", slot });
     expect(hex(await placeSeed(idbName))).toBe(hex(seed));
-    expect(hex((await loadBrowserVeilArchive(idbName, group))!)).toBe(hex(archive));
-    expect(hex((await loadBrowserVeilArchive(idbName, await foundedGroup(idbName)))!)).toBe(hex(veil));
-    expect(hex((await loadBrowserVeilArchive(idbName, group))!)).toBe(hex(archive));
+    expect(await readKeystoreRow(idbName, `veil-archive-g${group}`)).toEqual(archive);
 
-    // The same boot, unlocked, reaches its catalog again.
+    // The same boot, unlocked, reaches its catalog again; a founding that halted before its bootstrap runs again over a fresh founder face.
     await pageLetsGo(idbName);
+    await bindSyntheticBrowserCustodySlot(idbName);
     const phases: string[] = [];
-    await expect(openBrowserVessel({
+    const reboot = await settleOf(openBrowserVessel({
       idbName, onPhase: (p: string) => { phases.push(p); if (p === "catalog-ready") throw new BootHalted(); },
-    } as BrowserVesselOptions)).rejects.toBeInstanceOf(BootHalted);
+    } as BrowserVesselOptions));
+    expect(reboot, String(reboot)).toBeInstanceOf(BootHalted);
     expect(phases).toContain("catalog-ready");
 
     const after = await census(idbName);
-    expect(Object.keys(after).filter((k) => k === "vessel-key" || k === "veil-archive-ggroup-main" || /^veil-archive-g.+$/.test(k)), "no clear custody row came back").toEqual([]);
-    const founded = await foundedGroup(idbName);
-    for (const row of [`veil-archive-g${founded}`, "vessel-key"]) expect(startsWithMagic(await rowOf(idbName, `sealed/${row}`)), `sealed/${row}`).toBe(true);
+    expect(Object.keys(after).filter((k) => k === "vessel-key" || k === "walk/main" || /^veil-archive-g.+$/.test(k)), "no clear custody row came back").toEqual([]);
+    expect(startsWithMagic(await rowOf(idbName, "sealed/vessel-key")), "sealed/vessel-key").toBe(true);
+    const refounded = await foundedGroupOf(idbName);
+    expect((await readKeystoreRow(idbName, `veil-archive-g${refounded}`)) as Uint8Array).toBeInstanceOf(Uint8Array);
+    expect(await rowOf(idbName, `sealed/veil-archive-g${refounded}`), "the face row rests under its own tree, never under the place tree").toBeUndefined();
     expect(hex(await placeSeed(idbName)), "the same identity stood").toBe(hex(seed));
   }, SLOW);
 
@@ -598,37 +640,37 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     const v = await plantedVessel("settle");
     await sealBrowserKeystore(v.idbName, PASS);
     lockBrowserCustody(v.idbName);
-    const sealedArchive = (await census(v.idbName))["sealed/veil-archive-ggroup-main"];
+    const sealedArchive = (await census(v.idbName))["sealed/walk/main"];
 
     // EQUAL: the clear rows match what the seal holds.
-    await plant(v.idbName, "veil-archive-ggroup-main", new Uint8Array(v.archive));
+    await plant(v.idbName, "walk/main", { ...v.main });
     await plant(v.idbName, "vessel-key", { ...v.key });
-    await expectRefused(loadMainArchive(v.idbName), "unsettled", "veil-archive-ggroup-main");   // CONTROL: the plant is seen
+    await expectRefused(loadMainWalk(v.idbName), "unsettled", "walk/main");   // CONTROL: the plant is seen
     const eq = await unlockBrowserCustody(v.idbName, [PASS]);
     expect(eq.reading).toBe("opens");
     if (eq.reading === "opens") {
-      expect([...eq.settled].sort()).toEqual(["veil-archive-ggroup-main", "vessel-key"]);
+      expect([...eq.settled].sort()).toEqual(["vessel-key", "walk/main"]);
       expect(eq.unsettled).toEqual([]);
     }
-    expect(await rowOf(v.idbName, "veil-archive-ggroup-main"), "the equal clear row left").toBeUndefined();
+    expect(await rowOf(v.idbName, "walk/main"), "the equal clear row left").toBeUndefined();
     expect(await rowOf(v.idbName, "vessel-key"), "the equal device key row left").toBeUndefined();
-    expect((await census(v.idbName))["sealed/veil-archive-ggroup-main"], "the seal it met stays").toBe(sealedArchive);
-    expect(hex((await loadMainArchive(v.idbName))!)).toBe(hex(v.archive));
+    expect((await census(v.idbName))["sealed/walk/main"], "the seal it met stays").toBe(sealedArchive);
+    expect(await loadMainWalk(v.idbName)).toEqual(v.main);
 
     // DIFFERENT: nothing chooses between two values.
     lockBrowserCustody(v.idbName);
-    await plant(v.idbName, "veil-archive-ggroup-main", randomBytes(48));
+    await plant(v.idbName, "walk/main", walkRecord());
     const before = await census(v.idbName);
     const diff = await unlockBrowserCustody(v.idbName, [PASS]);
     expect(diff.reading).toBe("opens");
     if (diff.reading === "opens") {
       expect(diff.settled).toEqual([]);
-      expect(diff.unsettled.map((u) => u.row)).toEqual(["veil-archive-ggroup-main"]);
+      expect(diff.unsettled.map((u) => u.row)).toEqual(["walk/main"]);
       expect(typeof diff.unsettled[0]!.why).toBe("string");
       expect(diff.unsettled[0]!.why.length).toBeGreaterThan(0);
     }
     expect(await census(v.idbName), "both rows stand byte-identical").toEqual(before);
-    await expectRefused(loadMainArchive(v.idbName), "unsettled", "veil-archive-ggroup-main");
+    await expectRefused(loadMainWalk(v.idbName), "unsettled", "walk/main");
   }, SLOW);
 
   test("BC14 a locked, empty-sealed keystore refuses the seed read and the mint; nothing moves", async () => {
@@ -653,17 +695,17 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
   test("BC15 the refusal readings: torn-without-tree, tree-unreadable, row-unopened, each writing nothing", async () => {
     const other = await plantedVessel("other");
     await sealBrowserKeystore(other.idbName, { kind: "passphrase", passphrase: "another vessel" });
-    const foreignFrame = (await rowOf(other.idbName, "sealed/veil-archive-ggroup-main")) as Uint8Array;
+    const foreignFrame = (await rowOf(other.idbName, "sealed/walk/main")) as Uint8Array;
     expect(startsWithMagic(foreignFrame)).toBe(true);
 
     // torn-without-tree: a sealed row and no tree.
     const torn = `custody-torn-${crypto.randomUUID()}`;
-    expect(await loadMainArchive(torn)).toBeUndefined();   // CONTROL: before the plant, it reads absent
+    expect(await loadMainWalk(torn)).toBeUndefined();   // CONTROL: before the plant, it reads absent
     expect(await readBrowserCustody(torn)).toEqual({ reading: "clear" });
-    await plant(torn, "sealed/veil-archive-ggroup-main", new Uint8Array(foreignFrame));
+    await plant(torn, "sealed/walk/main", new Uint8Array(foreignFrame));
     const tornBefore = await census(torn);
-    await expectRefused(loadMainArchive(torn), "torn-without-tree", "veil-archive-ggroup-main");
-    await expectRefused(saveMainArchive(torn, randomBytes(16)), "torn-without-tree", "veil-archive-ggroup-main");
+    await expectRefused(loadMainWalk(torn), "torn-without-tree", "walk/main");
+    await expectRefused(saveMainWalk(torn, walkRecord()), "torn-without-tree", "walk/main");
     expect((await readBrowserCustody(torn)).reading).toBe("unreadable");
     expect(await census(torn)).toEqual(tornBefore);
 
@@ -672,21 +714,21 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     expect(await readBrowserCustody(garbage)).toEqual({ reading: "clear" });   // CONTROL
     await plant(garbage, CUSTODY_TREE_ROW, Uint8Array.of(0xde, 0xad, 0xbe, 0xef));
     const garbageBefore = await census(garbage);
-    await expectRefused(loadMainArchive(garbage), "tree-unreadable");
+    await expectRefused(loadMainWalk(garbage), "tree-unreadable");
     await expectRefused(placeSeed(garbage), "tree-unreadable");
-    await expectRefused(saveMainArchive(garbage, randomBytes(16)), "tree-unreadable");
+    await expectRefused(saveMainWalk(garbage, walkRecord()), "tree-unreadable");
     expect((await readBrowserCustody(garbage)).reading).toBe("unreadable");
     expect(await census(garbage)).toEqual(garbageBefore);
 
     // row-unopened: another vessel's frame in this vessel's sealed row, read while unlocked.
     const v = await plantedVessel("unopened");
     await sealBrowserKeystore(v.idbName, PASS);
-    expect(hex((await loadMainArchive(v.idbName))!)).toBe(hex(v.archive));   // CONTROL: its own frame opens
-    await plant(v.idbName, "sealed/veil-archive-ggroup-main", new Uint8Array(foreignFrame));
+    expect(await loadMainWalk(v.idbName)).toEqual(v.main);   // CONTROL: its own frame opens
+    await plant(v.idbName, "sealed/walk/main", new Uint8Array(foreignFrame));
     const unopenedBefore = await census(v.idbName);
-    await expectRefused(loadMainArchive(v.idbName), "row-unopened", "veil-archive-ggroup-main");
+    await expectRefused(loadMainWalk(v.idbName), "row-unopened", "walk/main");
     expect(await census(v.idbName)).toEqual(unopenedBefore);
-    expect(hex((await loadBrowserVeilArchive(v.idbName, "group-a"))!), "the other rows still open").toBe(hex(v.veil));
+    expect(await readKeystoreRow(v.idbName, "walk/a"), "the other rows still open").toEqual(v.side);
   }, SLOW);
 
   test("BC16 a paper route: two of three sheets open the slot; one sheet or a passphrase does not", async () => {
@@ -706,7 +748,7 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
 
     expect(await unlockBrowserCustody(v.idbName, [{ kind: "paper", sheets: [b, c] }])).toMatchObject({ reading: "opens", slot });
     expect(hex(await placeSeed(v.idbName))).toBe(hex(v.seed));
-    expect(hex((await loadMainArchive(v.idbName))!)).toBe(hex(v.archive));
+    expect(await loadMainWalk(v.idbName)).toEqual(v.main);
   }, SLOW);
 
   test("BC17 the door's literal true: a truthy non-boolean parks and writes nothing", async () => {
@@ -732,16 +774,16 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     const door = parkedDoor();
     expect(await clearBrowserCustody(v.idbName, [PASS], door.door)).toEqual({ reading: "asks", question: CLEAR_CUSTODY_QUESTION });
 
-    // While the question parks, this page re-seals a newer Archive.
-    const newer = randomBytes(72);
-    await saveMainArchive(v.idbName, newer);
-    expect(hex((await loadMainArchive(v.idbName))!)).toBe(hex(newer));
+    // While the question parks, this page re-seals a newer walk record.
+    const newer = walkRecord();
+    await saveMainWalk(v.idbName, newer);
+    expect(await loadMainWalk(v.idbName)).toEqual(newer);
 
     door.answerYes();
     const cleared = await clearBrowserCustody(v.idbName, [PASS], door.door);
     expect(cleared.reading).toBe("cleared");
-    expect(hex((await rowOf(v.idbName, "veil-archive-ggroup-main")) as Uint8Array), "the newer bytes rest in the clear").toBe(hex(newer));
-    expect(hex((await rowOf(v.idbName, "veil-archive-ggroup-a")) as Uint8Array)).toBe(hex(v.veil));
+    expect(await rowOf(v.idbName, "walk/main"), "the newer record rests in the clear").toEqual(newer);
+    expect(await rowOf(v.idbName, "walk/a")).toEqual(v.side);
     expect(await readBrowserCustody(v.idbName)).toEqual({ reading: "clear" });
   }, SLOW);
 
@@ -760,7 +802,7 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     const spy = vi.spyOn(navigator.locks, "request").mockImplementation((async (
       name: string, options: LockOptions, callback: (lock: Lock | null) => unknown,
     ) => {
-      if (!held && name === `lares:custody:${v.idbName}` && await rowOf(v.idbName, "veil-archive-ggroup-main") !== undefined) {
+      if (!held && name === `lares:custody:${v.idbName}` && await rowOf(v.idbName, "walk/main") !== undefined) {
         held = true;
         reached();
         await gate;
@@ -777,7 +819,7 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
       const track = (read: Promise<unknown>) => { read.then(() => { settledEarly++; }, () => { settledEarly++; }); return read; };
       for (let i = 0; i < 25; i++) {
         reads.push(track(readKeystoreRow(v.idbName, "vessel-key")));
-        reads.push(track(readKeystoreRow(v.idbName, "veil-archive-ggroup-main")));
+        reads.push(track(readKeystoreRow(v.idbName, "walk/main")));
         if (i % 5 === 4) await new Promise<void>((resolve) => setTimeout(resolve, 0));
       }
       await new Promise<void>((resolve) => setTimeout(resolve, 50));
@@ -789,7 +831,7 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
       for (let i = 0; i < answers.length; i++) {
         const answer = answers[i]!;
         expect(answer.status, `read ${i} refused during the clear`).toBe("fulfilled");
-        if (answer.status === "fulfilled") expect(answer.value).toEqual(i % 2 === 0 ? v.key : v.archive);
+        if (answer.status === "fulfilled") expect(answer.value).toEqual(i % 2 === 0 ? v.key : v.main);
       }
     } finally {
       release();
@@ -803,10 +845,10 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     const io = browserKeystoreCustodyIo(idbName);
     const treeKey = mintTreeKey();
     const tree = await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "replace" }] }, nobleKdf);
-    const carrier = sealedCarrierOf("veil-archive-ggroup-main");
+    const carrier = sealedCarrierOf("walk/main");
     await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, treeKey, tree, carriers: [carrier] });
-    const a = randomBytes(64);
-    await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext: a });
+    const a = walkRecord();
+    await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext: new TextEncoder().encode(JSON.stringify(a)) });
     const before = (await io.read(carrier.path))!;
 
     const flipping: CustodyIo = {
@@ -819,13 +861,13 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
         return io.write(p, torn);
       },
     };
-    const b = randomBytes(72);
-    await expect(writeSealedCarrier({ io: flipping, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext: b }))
+    const b = walkRecord();
+    await expect(writeSealedCarrier({ io: flipping, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext: new TextEncoder().encode(JSON.stringify(b)) }))
       .rejects.toThrow(/did not read back/);
     expect(hex((await io.read(carrier.path))!), "the standing seal keeps its exact bytes").toBe(hex(before));
     expect(await io.read(`${carrier.path}${SEALING_SUFFIX}`), "the torn sidecar left").toBeNull();
     expect(await unlockBrowserCustody(idbName, [{ kind: "passphrase", passphrase: "replace" }])).toMatchObject({ reading: "opens" });
-    expect(await readKeystoreRow(idbName, "veil-archive-ggroup-main")).toEqual(a);
+    expect(await readKeystoreRow(idbName, "walk/main")).toEqual(a);
   }, SLOW);
 
   test("BC21 the clear asks its question with the act lock free", async () => {
@@ -846,58 +888,42 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     expect(taken).toBe(false);
   }, SLOW);
 
-  test("BC22 a root mint needs a slot and changes no keystore byte", async () => {
+  test("BC22 a root mint needs a worn face with a bound tree and changes no keystore byte", async () => {
     const v = await plantedVessel("root-no-slot");
     // CONTROL: the device key minted before any slot was bound.
     expect(v.key.signingKey).toBeDefined();
     const before = await census(v.idbName);
-    await expectRefused(generateOrLoadBrowserPersonaRoot(v.idbName, 0), "no-custody-slot", "persona-root-h0");
+    const faceAbsent = await settleOf(generateOrLoadBrowserPersonaRoot(v.idbName, 0));
+    expect(faceAbsent).toBeInstanceOf(FaceCustodyRefused);
+    expect((faceAbsent as FaceCustodyRefused).reading).toBe("face-absent");
+    wearFaceOfVessel(v.idbName, "group-x");
+    const noTree = await settleOf(generateOrLoadBrowserPersonaRoot(v.idbName, 0));
+    expect(noTree).toBeInstanceOf(FaceCustodyRefused);
+    expect((noTree as FaceCustodyRefused).reading).toBe("no-custody-slot");
+    await expectRefused(generateOrLoadBrowserPersonaRoot(v.idbName, 1), "face-names-a-handle");
     expect(await census(v.idbName)).toEqual(before);
     expect(await listBrowserPersonaRoots(v.idbName)).toEqual([]);
   }, SLOW);
 
-  test("BC23 a bound slot keeps the root and roster only in sealed carriers", async () => {
-    const v = await plantedVessel("root-sealed");
-    await sealBrowserKeystore(v.idbName, PASS);
-    // CONTROL: an unlocked slot already opens the device seed.
-    expect(await placeSeed(v.idbName)).toEqual(v.seed);
-    expect((await generateOrLoadBrowserPersonaRoot(v.idbName, 0)).created).toBe(true);
-    expect(await listBrowserPersonaRoots(v.idbName)).toEqual([0]);
-    for (const row of ["persona-root-h0", "persona-root-roster"]) {
-      expect(await rowOf(v.idbName, row)).toBeUndefined();
-      expect(startsWithMagic(await rowOf(v.idbName, `sealed/${row}`))).toBe(true);
-    }
-  }, SLOW);
-
-  test("BC24 a locked root refuses before reading and unlock returns its seed", async () => {
-    const v = await plantedVessel("root-locked");
-    await sealBrowserKeystore(v.idbName, PASS);
-    await generateOrLoadBrowserPersonaRoot(v.idbName, 0);
-    const seed = await loadBrowserPersonaRootSeed(v.idbName, 0);
-    // CONTROL: the unlocked root reads the same seed twice.
-    expect(await loadBrowserPersonaRootSeed(v.idbName, 0)).toEqual(seed);
-    lockBrowserCustody(v.idbName);
-    const before = await census(v.idbName);
-    await expectRefused(loadBrowserPersonaRootSeed(v.idbName, 0), "sealed-locked", "persona-root-h0");
-    expect(await census(v.idbName)).toEqual(before);
-    expect((await unlockBrowserCustody(v.idbName, [PASS])).reading).toBe("opens");
-    expect(await loadBrowserPersonaRootSeed(v.idbName, 0)).toEqual(seed);
-  }, SLOW);
-
-  test("BC25 a confirmed clear returns the root and roster to clear rows", async () => {
-    const v = await plantedVessel("root-clear");
-    await sealBrowserKeystore(v.idbName, PASS);
-    await generateOrLoadBrowserPersonaRoot(v.idbName, 0);
-    const seed = await loadBrowserPersonaRootSeed(v.idbName, 0);
-    // CONTROL: before clear both rows stand sealed.
-    expect(startsWithMagic(await rowOf(v.idbName, "sealed/persona-root-h0"))).toBe(true);
-    expect(startsWithMagic(await rowOf(v.idbName, "sealed/persona-root-roster"))).toBe(true);
-    expect((await clearBrowserCustody(v.idbName, [PASS], () => true)).reading).toBe("cleared");
-    expect(await rowOf(v.idbName, "persona-root-h0")).toMatchObject({ signingKey: hex(seed) });
-    expect(await rowOf(v.idbName, "persona-root-roster")).toEqual({ roots: [0] });
-    expect(await rowOf(v.idbName, "sealed/persona-root-h0")).toBeUndefined();
-    expect(await rowOf(v.idbName, "sealed/persona-root-roster")).toBeUndefined();
-    expect(await loadBrowserPersonaRootSeed(v.idbName, 0)).toEqual(seed);
+  test("BC24 a locked face refuses its root before reading and unlock returns its seed", async () => {
+    const idbName = `custody-root-locked-${crypto.randomUUID()}`;
+    const face = "group-root-locked";
+    await bindSyntheticBrowserCustodySlot(idbName, face);
+    wearFaceOfVessel(idbName, face);
+    expect((await generateOrLoadBrowserPersonaRoot(idbName, 0)).created).toBe(true);
+    const seed = await loadBrowserPersonaRootSeed(idbName, 0);
+    // CONTROL: the unlocked root reads the same seed twice, and rests under its face, never the place tree.
+    expect(await loadBrowserPersonaRootSeed(idbName, 0)).toEqual(seed);
+    expect(await listBrowserPersonaRoots(idbName)).toEqual([0]);
+    expect(Object.keys(await census(idbName)).filter((k) => /root/.test(k) && !k.startsWith("face-")), "no root row rests in the shared keystore").toEqual([]);
+    lockFaceCustody(idbName, face);
+    const before = await census(idbName);
+    const locked = await settleOf(loadBrowserPersonaRootSeed(idbName, 0));
+    expect(locked).toBeInstanceOf(FaceCustodyRefused);
+    expect((locked as FaceCustodyRefused).reading).toBe("face-locked");
+    expect(await census(idbName)).toEqual(before);
+    expect((await unlockFaceCustody(idbName, face, [FIXTURE_PASS])).reading).toBe("opens");
+    expect(await loadBrowserPersonaRootSeed(idbName, 0)).toEqual(seed);
   }, SLOW);
 
   test("BC27 a fresh schema stands the present stores and rests no worn-face pointer", async () => {
@@ -909,26 +935,25 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     } finally { db.close(); }
   });
 
-  test("BC28 the worn face is session state of one tab: it rests in no store, and a reload asks again", async () => {
-    const v = await plantedVessel("worn-session");
-    await sealBrowserKeystore(v.idbName, PASS);
-    await generateOrLoadBrowserPersonaRoot(v.idbName, 0);
-    await generateOrLoadBrowserPersonaRoot(v.idbName, 1);
-    const vault = await makeBrowserIdbPersonaVault(v.idbName);
-    expect(await vault.selector.load()).toBeUndefined();                       // two roots held and none chosen: no inference
-    await vault.selector.save(1);
-    expect(await vault.selector.load()).toBe(1);
-    const db = await openVesselIdb(v.idbName);
+  test("BC28 the worn face is session state of one tab: it rests in no store", async () => {
+    const idbName = `custody-worn-session-${crypto.randomUUID()}`;
+    await bindSyntheticBrowserCustodySlot(idbName);
+    await generateOrLoadBrowserPersonaRoot(idbName, 0);
+    const vault = await makeBrowserIdbPersonaVault(idbName);
+    await vault.selector.save(0);
+    expect(await vault.selector.load()).toBe(0);
+    const db = await openVesselIdb(idbName);
     try { expect(db.objectStoreNames.contains("active-persona")).toBe(false); } finally { db.close(); }
-    forgetWornFaceOfTab(v.idbName);                                            // the tab reloads
-    expect(await vault.selector.load()).toBeUndefined();
+    forgetWornFaceOfTab(idbName);                                              // the tab reloads
+    expect(await vault.selector.load(), "one root held is the face worn again").toBe(0);
   }, SLOW);
 
   test("BC28b CONTROL: one root held is the face worn", async () => {
-    const v = await plantedVessel("worn-one-root");
-    await sealBrowserKeystore(v.idbName, PASS);
-    await generateOrLoadBrowserPersonaRoot(v.idbName, 0);
-    expect(await (await makeBrowserIdbPersonaVault(v.idbName)).selector.load()).toBe(0);
+    const idbName = `custody-worn-one-root-${crypto.randomUUID()}`;
+    await bindSyntheticBrowserCustodySlot(idbName);
+    expect(await (await makeBrowserIdbPersonaVault(idbName)).selector.load(), "no root held, none worn").toBeUndefined();
+    await generateOrLoadBrowserPersonaRoot(idbName, 0);
+    expect(await (await makeBrowserIdbPersonaVault(idbName)).selector.load()).toBe(0);
   }, SLOW);
 });
 

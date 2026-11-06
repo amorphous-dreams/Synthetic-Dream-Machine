@@ -12,7 +12,7 @@
 export { BrowserVesselIslandPool } from "./browser-vessel-island-pool.js";
 export type { BrowserVesselIslandPoolOptions, PageLife, PageLifeFeed } from "./browser-vessel-island-pool.js";
 
-export { openBrowserVessel, DAEMON_SURFACE_ID } from "./open-browser-vessel.js";
+export { openBrowserVessel, readBrowserVesselFaces, DAEMON_SURFACE_ID } from "./open-browser-vessel.js";
 export { readHearthFloor, floorNexusOf, porchOriginOf, type HearthFloorRead } from "./browser-floor-read.js";
 export { holdVesselLock, vesselLockName, ambientLocks } from "./vessel-lock.js";
 export type { LockHost, VesselLockHold } from "./vessel-lock.js";
@@ -20,7 +20,7 @@ export { standVesselHouse, sessionLifetimeLock, VesselSessionRefused } from "./v
 export type { VesselHouse, VesselSession, VesselFloorState, VesselLockReport, VesselHouseCensus, LitVessel, SessionKeyHolder, VesselSessionRefusal, HouseAsk, FaceProviderDoor, FaceBooking, FaceSwitchOptions } from "./vessel-sessions.js";
 export {
   FaceCustodyRefused, checkFaceName, readFaceCustody, readFaceCustodyPasskeys, bindFirstFaceSlot, unlockFaceCustody, lockFaceCustody,
-  writeFaceRow, readFaceRow, mintFaceRoot, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld,
+  writeFaceRow, readFaceRow, mintFaceRoot, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, standUnnamedFace, heldUnnamedFace,
 } from "./browser-face-custody.js";
 export type { FaceCustodyStatus, FaceCustodyUnlock, FaceCustodyClear, FaceCustodyRefusalReading } from "./browser-face-custody.js";
 export { mintEmber, answerEmberAsk, emberAskBytes, EmberRefused } from "./browser-ember.js";

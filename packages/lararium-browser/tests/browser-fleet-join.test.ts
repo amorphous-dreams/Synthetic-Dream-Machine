@@ -45,7 +45,8 @@ let seq = 0;
 async function stage(): Promise<{ idbName: string; offer: FleetJoinOffer; root: Awaited<ReturnType<typeof pair>>; face: Awaited<ReturnType<typeof chain>> }> {
   const idbName = `lares:fleet-join-${Date.now()}-${seq++}`;
   await generateOrLoadBrowserVesselIdentity(idbName);
-  await bindSyntheticBrowserCustodySlot(idbName);
+  // Each joinee face's own tree binds before the join's first secret.
+  await bindSyntheticBrowserCustodySlot(idbName, GROUP, "0xb7f1c2a9d4e60382");
   const root = await pair("browser fleet root");
   const face = await chain("browser fleet face", HEARTH_NEXUS);
   const nonce = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
@@ -163,7 +164,7 @@ describe("the browser's fleet join", () => {
   test("B4 — the custody door signs only under the key its row holds", async () => {
     const s = await stage();
     const request = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName });
-    const custody = browserVesselFaceKeyCustody(s.idbName);
+    const custody = browserVesselFaceKeyCustody(s.idbName, GROUP);
     const image = new TextEncoder().encode("synthetic image");
     expect(await custody.signAsVesselFace(s.face.scope, request.requests[0]!.vesselFaceKey, image)).toHaveLength(64);
     await expect(custody.signAsVesselFace(s.face.scope, request.atomKey, image)).rejects.toThrow(/face-key-other/);
