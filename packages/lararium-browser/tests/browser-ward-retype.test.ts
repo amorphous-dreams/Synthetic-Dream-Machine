@@ -59,6 +59,26 @@ test("RED: a mint whose retype differs binds nothing and refuses `ward-route-mis
   expect(kinds).toEqual(["open"]);
 });
 
+test("RED: a face's ward-key mint asks its route twice and a mismatched retype binds none of the three `ward/sign/<group>` rows; CONTROL: a matching retype binds all three, and a retype that mismatches after a bound ward leaves them standing", async () => {
+  const s = await fresh();
+  const me = await keyed(94);
+  const rows = ["slots", "seed", "public-key"];
+  const bound = async () => Promise.all(rows.map(async (row) => (await s.io.read(`ward/sign/${s.G}/${row}`)) !== null));
+  const asked: unknown[] = [];
+  const typo = async (_act: string, kind?: unknown) => { asked.push(kind); return kind === "retype" ? "the route typed fro this act" : PASS; };
+  expect(await codeOf(browserVesselFaceTagDoor(s.idbName, { route: typo, spawn: core("passed") } as never)(s.G, me.key))).toBe("ward-route-mismatch");
+  expect(asked).toEqual(["bind", "retype"]);
+  expect(await bound()).toEqual([false, false, false]);
+  const alike = async () => PASS;
+  await browserVesselFaceTagDoor(s.idbName, { route: alike, spawn: core("passed") } as never)(s.G, me.key);
+  expect(await bound()).toEqual([true, true, true]);
+  // a ward that stands asks once (`open`), so a typo'd retype never reaches it and the rows stay
+  const again: unknown[] = [];
+  await browserVesselFaceTagDoor(s.idbName, { route: async (_a: string, k?: unknown) => { again.push(k); return PASS; }, spawn: core("passed") } as never)(s.G, me.key);
+  expect(again).toEqual(["open"]);
+  expect(await bound()).toEqual([true, true, true]);
+});
+
 test("RED: the ward dialog's words name a bind as a bind; CONTROL: an open names an open, and neither says the other", () => {
   const words = (ward as unknown as { wardAskWords?: (act: string, kind: string) => string }).wardAskWords;
   expect(typeof words, "the browser names each ask's words by its kind").toBe("function");

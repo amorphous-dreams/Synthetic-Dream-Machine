@@ -42,7 +42,7 @@ import { wardAnswerImage } from "../src/ward-answer.js";
 import { kapaeLowerHead, promoteBoardDoor } from "../src/promote-board-door.js";
 import { readPromoteBoard, signPromoteKapae, type SignedPromoteAct } from "../src/promote-board.js";
 import { swarmCommand } from "../src/swarm-door.js";
-import { readSwarmBoard, signSwarmCap, swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
+import { readSwarmBoard, signSwarmCap, swarmBoardActCid, swarmBoardRecords, writeSwarmBoardAct, type SignedSwarmBoardAct } from "../src/swarm-board.js";
 import { putSwarmAct, readGo, signSwarmAct, swarmActCid, swarmGoHead, swarmGoTitle, type SwarmWikiPort } from "../src/swarm-tiddlers.js";
 import { cosignPortWitness, intentPlaneCosignPort, wardCosignGate, wardCosignIntentId, type WardCosignAct, type WardCosignPort } from "../src/ward-cosign-gate.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "../src/crypto.js";
@@ -174,7 +174,7 @@ async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "go", devices
     expect(err?.code).toBe("ward-awaiting-cosign");
     return /ward-awaiting-cosign: ([0-9a-f]{64})/.exec(err!.message)![1]!;
   };
-  return { a, b, c, wa, wb, wc, root, port, entries, write, run, issue, landed, refusal, forge, goCid, act, answer, firstAsk, aside, unknown, frontier, advance, devices, rows, crash, effects };
+  return { swarmDeps, swarmDoc, a, b, c, wa, wb, wc, root, port, entries, write, run, issue, landed, refusal, forge, goCid, act, answer, firstAsk, aside, unknown, frontier, advance, devices, rows, crash, effects };
 }
 
 const codeOf = async (p: Promise<unknown>): Promise<string | undefined> => p.then(() => undefined, (e: { code?: string; reading?: string }) => e.code ?? e.reading ?? String(e));
@@ -392,6 +392,34 @@ export function wardCosignTable(vessel: CosignVessel): void {
           await u.run();
           u.unknown.add(u.b.key);
           expect(await u.landed()).toBe(true);
+        });
+
+        if (kind === "cap") test("RED: a cap line whose tip refuses (its issuer set aside) shows `braked`, a hand's supersede goes through the gate and starts the line again, and a second supersede on the folding line refuses `swarm-supersede-unneeded`; CONTROL: an unbraked line's supersede refuses the same way, and a plain cap-set extends it", async () => {
+          const s = await stand(vessel, kind, 2);
+          const door = async (req: Parameters<typeof swarmCommand>[0]): Promise<Record<string, unknown>> => {
+            const err = await swarmCommand(req, s.swarmDeps).then(() => null, (e: unknown) => e as { code?: string; message: string });
+            if (err === null) throw new Error("the gate landed without a co-sign on two devices");
+            expect(err.code).toBe("ward-awaiting-cosign");
+            await s.answer(s.b, /ward-awaiting-cosign: ([0-9a-f]{64})/.exec(err.message)![1]!);
+            return swarmCommand(req, s.swarmDeps);
+          };
+          const showOf = (): Promise<Record<string, unknown>> => swarmCommand({ action: "show" }, s.swarmDeps);
+          await door({ action: "cap-set", value: 7 });
+          expect(await showOf()).toMatchObject({ cap: 7, ok: true });
+          expect(await showOf()).not.toHaveProperty("braked");
+          // CONTROL: the unbraked line takes no supersede, and a plain set extends it
+          await expect(swarmCommand({ action: "cap-set", value: 6, supersede: true }, s.swarmDeps)).rejects.toMatchObject({ code: "swarm-supersede-unneeded" });
+          // the tip: a tighter cap the reader refuses (outside the gate, never co-signed), citing the stood 7
+          const seven = (swarmBoardRecords(s.swarmDoc, GROUP) as SignedSwarmBoardAct[]).find((r) => r.body.act === "cap")!;
+          writeSwarmBoardAct(s.swarmDoc, await signSwarmCap({ group: GROUP, epoch: 0, value: 3, parents: [swarmBoardActCid(seven)] }, s.root));
+          expect(await showOf()).toMatchObject({ cap: 3, braked: { cap: "refused-tip" } });
+          // the hand's supersede citing the refused tip goes through the gate and starts the line again
+          await door({ action: "cap-set", value: 9, supersede: true });
+          const after = await showOf();
+          expect(after).toMatchObject({ cap: 9, ok: true });
+          expect(after).not.toHaveProperty("braked");
+          // a supersede citing anything but a dangling braked tip refuses by its existing name
+          await expect(swarmCommand({ action: "cap-set", value: 8, supersede: true }, s.swarmDeps)).rejects.toMatchObject({ code: "swarm-supersede-unneeded" });
         });
 
         test("RED: an outcome that cites a frontier counting its own issuer aside never stands (the issuer stands at the cited frontier as the co-signer does); RED: the issuer set aside after a door-made outcome reads aside at once, and the act stands no longer (`ward-issuer-aside`)", async () => {
