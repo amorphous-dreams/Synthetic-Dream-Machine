@@ -5,8 +5,9 @@
  * The vessel's IndexedDB `keystore` keeps `vessel-key` (the place KEL seed and its public half),
  * `veil-archive-g<PersonaGroup>` (a face's creator-veil Archive), the persona-root roster, per-Nexus keys,
  * face keys, fleet-join secrets and pending joins, and walk records.
- * A face's ROOT rests elsewhere: under that face's own ward (`browser-ward-tree.ts`, seat-harness#/the-ward), whose key no
- * slot of this tree wraps. No door here reads, writes, moves or removes it: each refuses `ward-needs-fresh-unlock` by name.
+ * A face's ROOT, and a face's WARD KEY (the co-sign signer), rest elsewhere: each under a ward of its own (`browser-ward-tree.ts`,
+ * `ward-core.ts`, seat-harness#/the-ward), whose key no slot of this tree wraps. No door here reads, writes, moves or removes one:
+ * each refuses `ward-needs-fresh-unlock` by name.
  * The place seed and veil Archives may stand clear before a slot binds; the face's other secret rows require a slot.
  * Once a slot binds, the mesh slot tree rests
  * at `custody-slots` (plain bytes: ids, salts, nonces and wrapped bytes, nothing a route does not open), and each
@@ -65,8 +66,8 @@ const CUSTODY_ROW = /^(?:vessel-key|veil-archive-g.+|persona-root-roster|nexus-k
 /** Is `row` one the slot tree wraps: the device seed, an Archive, or one of a face's secret rows. */
 export function isCustodyRow(row: string): boolean { return CUSTODY_ROW.test(row); }
 
-/** The rows the ward holds: a face root's logical name, its ward tree and its warded row. No custody door reaches one. */
-const WARD_ROW = /^(?:persona-root-h\d+|ward\/.*)$/;
+/** The rows a ward holds: a face root's and a face ward key's logical names, and every ward tree and warded row. No custody door reaches one. */
+const WARD_ROW = /^(?:persona-root-h\d+|ward-sign\/.+|ward\/.*)$/;
 export function isWardRow(row: string): boolean { return WARD_ROW.test(row); }
 
 /** A ward act refused by name: no credential and no byte of the root rides the error. */

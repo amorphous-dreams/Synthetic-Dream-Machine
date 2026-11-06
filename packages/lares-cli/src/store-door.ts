@@ -12,7 +12,7 @@
  */
 
 import { wardTicketFor } from "./ward-door.js";
-import { storeDoorDirect, storeRowFace, StoreHeld, STORE_DOOR_FACE_ROWS, type StoreDoorVerb } from "@lararium/node";
+import { storeDoorDirect, storeRowFace, storeVerbGatesFirst, StoreHeld, STORE_DOOR_FACE_ROWS, type StoreDoorVerb } from "@lararium/node";
 import { openLocalSession, SessionRefused } from "./session-connector.js";
 import { sealedAct } from "./sealed-act-door.js";
 import { vesselStanding, type VesselStanding } from "./custody-door.js";
@@ -300,12 +300,22 @@ export async function storeVerb(
     ? named ?? (await sealedAct<{ face: number }>("face.resolve", {})).face
     : undefined;
   // A WARD ACT names a one-use ref for the route a person typed at this terminal, bound to the act as the row will read it (the
-  // face included); the route itself rides no verb argument.
+  // face included); the route itself rides no verb argument. An act a co-sign gate holds runs first with no route: the route gets
+  // asked only where the row's signer names `ward-needs-fresh-unlock`, and the row runs once more under its ticket.
   const sent = face !== undefined && named === undefined ? { ...args, face } : args;
-  const ward = await wardTicketFor(verb, sent, daemonUp);
-  const rowArgs = { ...sent, ...ward };
-  const r = await throughStoreDoor({ verb, args: rowArgs, daemonUp, ...(face !== undefined ? { face } : {}),
+  const gatesFirst = storeVerbGatesFirst(verb);
+  const run = (ward: Record<string, unknown>) => throughStoreDoor({ verb, args: { ...sent, ...ward }, daemonUp, ...(face !== undefined ? { face } : {}),
     direct: () => storeDoorDirect(verb, { ...args, ...ward }, { sealHome: larSealHome() }) });
+  // A gated row names its want of a route either way it refuses: as a row's `refused` answer, or as the routed verb's error (a
+  // panel-owned row, the kāpae lower, answers through the panel's handler, whose refusal rides the session's error).
+  const needsRoute = (text: unknown): boolean => typeof text === "string" && /^ward-needs-fresh-unlock\b/.test(text);
+  let r: Awaited<ReturnType<typeof run>> | null = null;
+  if (!gatesFirst) r = await run(await wardTicketFor(verb, sent, daemonUp));
+  else {
+    try { r = await run({}); }
+    catch (e) { if (!(e instanceof RoutedVerbRefused) || !needsRoute(e.message)) throw e; }
+    if (r === null || needsRoute(r.output["refused"])) r = await run(await wardTicketFor(verb, sent, daemonUp));
+  }
   if (typeof r.output["refused"] === "string") {
     const refusal = new Refusal(r.output["refused"]);
     if (typeof r.output["refusal"] === "string") REFUSAL_NAMES.set(refusal, r.output["refusal"]);

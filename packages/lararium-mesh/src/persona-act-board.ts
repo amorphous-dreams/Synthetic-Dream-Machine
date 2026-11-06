@@ -79,7 +79,8 @@ export function signPersonaAct(
 }
 
 /** A face's genesis log, signed by its root: the founding, one `plane` act per plane, the founder device's admission under
- *  its vessel's blinded tag (`vesselTag`, the founder vessel's door's answer for this group and device), and its edge. */
+ *  its vessel's blinded tag and the device's per-face ward key (`vesselTag`, the founder vessel's door's answer for this group and
+ *  device), and its edge. */
 export async function signFoundingLog(parts: {
   group: string; personaKelPrefix: string; rootCommitment: string; epoch: number;
   planes: Readonly<Record<string, string>>; deviceKey: string; edgeDigest: string; vesselTag: VesselFaceTagFields;
@@ -93,7 +94,7 @@ export async function signFoundingLog(parts: {
   };
   await next("founding", { personaKelPrefix: parts.personaKelPrefix, rootCommitment: parts.rootCommitment });
   for (const name of Object.keys(parts.planes).sort()) await next("plane", { plane: name, url: parts.planes[name] });
-  await next("admission", { deviceKey: parts.deviceKey, vesselTag: parts.vesselTag.vesselTag, vesselSig: parts.vesselTag.vesselSig });
+  await next("admission", { deviceKey: parts.deviceKey, vesselTag: parts.vesselTag.vesselTag, vesselSig: parts.vesselTag.vesselSig, wardKey: parts.vesselTag.wardKey, wardPop: parts.vesselTag.wardPop });
   await next("device-edge", { deviceKey: parts.deviceKey, edgeDigest: parts.edgeDigest });
   return out;
 }

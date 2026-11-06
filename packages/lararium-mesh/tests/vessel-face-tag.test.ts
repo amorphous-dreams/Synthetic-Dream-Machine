@@ -1,6 +1,8 @@
 /**
  * vessel-face-tag: one vessel never takes two seats in one face, and its tags stay unlinkable across faces.
- * The fold holds the tag law always: an untagged admission seats nothing; controls admit two distinct vessels.
+ * The fold holds the tag law always: an untagged admission seats nothing; controls admit two distinct vessels. Every admission
+ * names its device's per-face ward key under the tag's own signature: one that names none refuses `ward-key-absent`, one whose
+ * ward key the tag never signed refuses `vessel-tag-invalid`, and the projection keeps each seated device's ward key (its pop: `ward-key-pop.test.ts`).
  */
 import { describe, expect, test } from "vitest";
 import { PERSONA_ACT_DOMAIN } from "../src/domains.js";
@@ -11,6 +13,8 @@ import { actCid, signAct } from "../src/signed-act.js";
 import { vesselFaceTagFields, vesselFaceTagHolds } from "../src/vessel-face-tag.js";
 
 const seed = (n: number): Uint8Array => new Uint8Array(32).fill(n);
+/** A device's per-face ward key, as its admission names it, and that key signing its own pop. */
+const WK = await ed25519VerifyingKeyFromSeed(seed(99)), WSIGN = ed25519SignerFromSeed(seed(99));
 const who = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(seed(n)), sign: ed25519SignerFromSeed(seed(n)) });
 const act = (group: string, seq: number, prior: string | null, kind: PersonaActBody["act"], extra: Record<string, unknown> = {}) =>
   ({ kind: PERSONA_ACT_DOMAIN, group, seq, prior, act: kind, epoch: 0, ...extra }) as PersonaActBody;
@@ -31,22 +35,22 @@ describe("vessel face tag", () => {
   test("RED: one vessel admitted twice into one face under two atoms refuses vessel-already-admitted; CONTROL: two distinct vessels both seat", async () => {
     const vessel = seed(7), other = seed(8), atomA = (await who(21)).key, atomB = (await who(22)).key;
     const twice = await face("faceA", [
-      { deviceKey: atomA, ...(await vesselFaceTagFields(vessel, "faceA", atomA)) },
-      { deviceKey: atomB, ...(await vesselFaceTagFields(vessel, "faceA", atomB)) },
+      { deviceKey: atomA, ...(await vesselFaceTagFields(vessel, "faceA", atomA, WK, WSIGN)) },
+      { deviceKey: atomB, ...(await vesselFaceTagFields(vessel, "faceA", atomB, WK, WSIGN)) },
     ]);
     const read = twice.project();
     expect(read.devices).toEqual([atomA]);
     expect(read.admissionRefusals).toEqual([{ refusal: "vessel-already-admitted", cid: actCid(twice.log[2]!.body) }]);
     const distinct = await face("faceA", [
-      { deviceKey: atomA, ...(await vesselFaceTagFields(vessel, "faceA", atomA)) },
-      { deviceKey: atomB, ...(await vesselFaceTagFields(other, "faceA", atomB)) },
+      { deviceKey: atomA, ...(await vesselFaceTagFields(vessel, "faceA", atomA, WK, WSIGN)) },
+      { deviceKey: atomB, ...(await vesselFaceTagFields(other, "faceA", atomB, WK, WSIGN)) },
     ]);
     expect(distinct.project().devices).toEqual([atomA, atomB].sort());
     expect(distinct.project().admissionRefusals).toEqual([]);
   });
 
   test("RED: the same atom re-admitted with its own vessel refuses vessel-already-admitted (an admit replay seats nothing twice)", async () => {
-    const vessel = seed(7), atom = (await who(21)).key, fields = await vesselFaceTagFields(vessel, "faceA", atom);
+    const vessel = seed(7), atom = (await who(21)).key, fields = await vesselFaceTagFields(vessel, "faceA", atom, WK, WSIGN);
     const replay = await face("faceA", [{ deviceKey: atom, ...fields }, { deviceKey: atom, ...fields }]);
     const read = replay.project();
     expect(read.devices).toEqual([atom]);
@@ -61,27 +65,39 @@ describe("vessel face tag", () => {
     expect(bare.project().admissionRefusals).toEqual([
       { refusal: "vessel-tag-absent", cid: actCid(bare.log[1]!.body) }, { refusal: "vessel-tag-absent", cid: actCid(bare.log[2]!.body) },
     ]);
-    const tagged = await face("faceA", [{ deviceKey: atom, ...(await vesselFaceTagFields(seed(7), "faceA", atom)) }]);
+    const tagged = await face("faceA", [{ deviceKey: atom, ...(await vesselFaceTagFields(seed(7), "faceA", atom, WK, WSIGN)) }]);
     expect(tagged.project().devices).toEqual([atom]);
-    expect(tagged.project().vesselTags).toEqual([(await vesselFaceTagFields(seed(7), "faceA", atom)).vesselTag]);
+    expect(tagged.project().vesselTags).toEqual([(await vesselFaceTagFields(seed(7), "faceA", atom, WK, WSIGN)).vesselTag]);
   });
 
   test("RED: a tag that vouches for another atom or another face refuses vessel-tag-invalid", async () => {
     const atom = (await who(21)).key, atomB = (await who(22)).key, vessel = seed(7);
-    const stolen = await face("faceA", [{ deviceKey: atomB, ...(await vesselFaceTagFields(vessel, "faceA", atom)) }]);
+    const stolen = await face("faceA", [{ deviceKey: atomB, ...(await vesselFaceTagFields(vessel, "faceA", atom, WK, WSIGN)) }]);
     expect(stolen.project().admissionRefusals.map((r) => r.refusal)).toEqual(["vessel-tag-invalid"]);
-    const wrongFace = await face("faceA", [{ deviceKey: atom, ...(await vesselFaceTagFields(vessel, "faceB", atom)) }]);
+    const wrongFace = await face("faceA", [{ deviceKey: atom, ...(await vesselFaceTagFields(vessel, "faceB", atom, WK, WSIGN)) }]);
     expect(wrongFace.project().devices).toEqual([]);
     const half = await face("faceA", [{ deviceKey: atom, vesselTag: "00".repeat(32) }]);
     expect(half.project().admissionRefusals.map((r) => r.refusal)).toEqual(["vessel-tag-invalid"]);
   });
 
+  test("RED: an admission naming no ward key refuses ward-key-absent, and one whose ward key its tag never signed refuses vessel-tag-invalid; CONTROL: the signed ward key seats and the projection keeps it", async () => {
+    const atom = (await who(21)).key, fields = await vesselFaceTagFields(seed(7), "faceA", atom, WK, WSIGN);
+    const { wardKey: _w, ...unwarded } = fields;
+    expect((await face("faceA", [{ deviceKey: atom, ...unwarded }])).project().admissionRefusals.map((r) => r.refusal)).toEqual(["ward-key-absent"]);
+    const swapped = await face("faceA", [{ deviceKey: atom, ...fields, wardKey: "cd".repeat(32) }]);
+    expect(swapped.project().admissionRefusals.map((r) => r.refusal)).toEqual(["vessel-tag-invalid"]);
+    expect(swapped.project().devices).toEqual([]);
+    const seated = (await face("faceA", [{ deviceKey: atom, ...fields }])).project();
+    expect(seated.devices).toEqual([atom]);
+    expect(seated.wardKeys).toEqual({ [atom.toLowerCase()]: WK });
+  });
+
   test("UNLINKABLE: one vessel's tags in faces A and B differ, repeat for the same face, and neither equals the vessel's public key", async () => {
     const vessel = seed(7), pub = await ed25519VerifyingKeyFromSeed(vessel), atom = (await who(21)).key;
-    const a = await vesselFaceTagFields(vessel, "faceA", atom), b = await vesselFaceTagFields(vessel, "faceB", atom);
+    const a = await vesselFaceTagFields(vessel, "faceA", atom, WK, WSIGN), b = await vesselFaceTagFields(vessel, "faceB", atom, WK, WSIGN);
     expect(a.vesselTag).not.toBe(b.vesselTag);
     expect([a.vesselTag, b.vesselTag]).not.toContain(pub);
-    expect((await vesselFaceTagFields(vessel, "faceA", atom)).vesselTag).toBe(a.vesselTag);
+    expect((await vesselFaceTagFields(vessel, "faceA", atom, WK, WSIGN)).vesselTag).toBe(a.vesselTag);
     expect(vesselFaceTagHolds("faceA", atom, a)).toBe(true);
     expect(vesselFaceTagHolds("faceB", atom, a)).toBe(false);
     // The B-scoped atom is no device of face A: A's fold seats only A's atoms, so a vessel's B atom never answers A's ask.

@@ -102,7 +102,7 @@ describe("the fleet-join door's files", () => {
 
   test("the atom signs the request; another key cannot speak for it", async () => {
     const w = await world();
-    const body = { nonce: w.request.nonce, atomKey: w.joinee.key, sealKey: w.request.sealKey, vesselTag: w.request.vesselTag, vesselSig: w.request.vesselSig, requests: w.request.requests };
+    const body = { nonce: w.request.nonce, atomKey: w.joinee.key, sealKey: w.request.sealKey, vesselTag: w.request.vesselTag, vesselSig: w.request.vesselSig, wardKey: w.request.wardKey, wardPop: w.request.wardPop, requests: w.request.requests };
     const honest = { kind: "fleet-join-request", ...body, signature: await signHex(fleetJoinRequestImage(body), w.joinee) };
     expect(readFleetJoinRequest(honest, w.offer)).toEqual(honest);
     const forged = { ...honest, signature: await signHex(fleetJoinRequestImage(body), w.root) };
@@ -119,15 +119,19 @@ describe("the fleet-join door's files", () => {
     expect(readFaceKeyGrant(verified.answer.grants[0], w.root.key)?.scope).toEqual(w.a.scope);
   });
 
-  test("RED: a request carries the joining vessel's blinded tag for this face: absent refuses request-vessel-tag-absent, a tag over another atom or face request-vessel-tag-invalid", async () => {
+  test("RED: a request carries the joining vessel's blinded tag for this face and its device's ward key: absent refuses request-vessel-tag-absent or request-ward-key-absent, a tag over another atom, face or ward key request-vessel-tag-invalid", async () => {
     const w = await world();
     const signedBy = async (b: Record<string, unknown>) => ({ kind: "fleet-join-request", ...b, signature: await signHex(fleetJoinRequestImage(b as never), w.joinee) });
-    const { vesselTag: _t, vesselSig: _s, kind: _k, signature: _g, ...bare } = w.request;
+    const { vesselTag: _t, vesselSig: _s, wardKey: _w, kind: _k, signature: _g, ...bare } = w.request;
     expect(readFleetJoinRequest(await signedBy(bare), w.offer)).toEqual({ refusal: "request-vessel-tag-absent" });
     const other = await pair("another atom");
     expect(readFleetJoinRequest(await signedBy({ ...bare, ...(await testVesselTag(5, GROUP, other.key)) }), w.offer)).toEqual({ refusal: "request-vessel-tag-invalid" });
     expect(readFleetJoinRequest(await signedBy({ ...bare, ...(await testVesselTag(5, "0123456789abcdef", w.joinee.key)) }), w.offer)).toEqual({ refusal: "request-vessel-tag-invalid" });
     expect(readFleetJoinRequest(await signedBy({ ...bare, vesselTag: w.request.vesselTag }), w.offer)).toEqual({ refusal: "request-vessel-tag-absent" });
+    // The request names the device's per-face ward key under the tag's signature: none refuses request-ward-key-absent, a swapped one request-vessel-tag-invalid.
+    const { wardKey: _wk, ...unwarded } = await testVesselTag(5, GROUP, w.joinee.key);
+    expect(readFleetJoinRequest(await signedBy({ ...bare, ...unwarded }), w.offer)).toEqual({ refusal: "request-ward-key-absent" });
+    expect(readFleetJoinRequest(await signedBy({ ...bare, ...(await testVesselTag(5, GROUP, w.joinee.key)), wardKey: "cd".repeat(32) }), w.offer)).toEqual({ refusal: "request-vessel-tag-invalid" });
     // The vessel key signs the tag: a tag swapped after signing refuses the request's signature.
     expect(readFleetJoinRequest({ ...w.request, ...(await testVesselTag(6, GROUP, w.joinee.key)) }, w.offer)).toEqual({ refusal: "request-unsigned" });
     // CONTROL: the tagged request reads whole, its tag holding for this face and atom.
@@ -181,7 +185,7 @@ describe("the fleet-join door's files", () => {
     ({ kind: "fleet-join-request", ...body, signature: await signHex(fleetJoinRequestImage(body), by) });
   const asking = async (scope: FaceScope, by: Pair): Promise<VesselFaceCertificateRequest> =>
     ({ scope, vesselFaceKey: by.key as VesselFaceKey, signature: await signHex(certificateRequestImage(scope, by.key as VesselFaceKey), by) });
-  const body = (w: World) => ({ nonce: w.request.nonce, atomKey: w.request.atomKey, sealKey: w.request.sealKey, vesselTag: w.request.vesselTag, vesselSig: w.request.vesselSig, requests: w.request.requests });
+  const body = (w: World) => ({ nonce: w.request.nonce, atomKey: w.request.atomKey, sealKey: w.request.sealKey, vesselTag: w.request.vesselTag, vesselSig: w.request.vesselSig, wardKey: w.request.wardKey, wardPop: w.request.wardPop, requests: w.request.requests });
   /** The answer re-signed by the root after `change`, so only the check under test can refuse it. */
   const resigned = async (w: World, change: Partial<FleetJoinAnswer>, by: Pair = w.root): Promise<FleetJoinAnswer> => {
     const a = { ...w.answer, ...change };

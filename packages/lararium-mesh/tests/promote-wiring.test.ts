@@ -37,7 +37,7 @@ async function world(opts: { boardPinned?: boolean } = {}) {
   const wiring = promoteWiring({
     repo, group: GROUP, boardUrl: opts.boardPinned === false ? null : promoteBoardDocUrl(GROUP), stageUrl: kahuaStageDocUrl(GROUP),
     foldFace: () => ({ group: GROUP, grant: (k: string) => k === root.key }),
-    boardFace: () => ({ group: GROUP, grant: (k: string) => k === root.key, device: () => false }),
+    boardFace: () => ({ group: GROUP, grant: (k: string) => k === root.key, device: () => false, ward: { accepts: () => true } }),
     stores: { ledger: { read: async () => st.ledger, write: async (l) => { st.ledger = l; } }, local: { read: async () => st.local, write: async (l) => { st.local = l; } } },
     cas: { put: (d, b) => { st.cas.set(d, b); }, pin: () => {} },
     wikiItems: async () => [],

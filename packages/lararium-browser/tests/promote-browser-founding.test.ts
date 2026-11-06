@@ -22,6 +22,7 @@ import {
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { bindSyntheticBrowserCustodySlot, fixtureWardDialog } from "./browser-custody-fixture.js";
 import { BootHalted } from "./wire-vessel-rig.js";
+import { soloCosign } from "../../lararium-mesh/tests/ward-cosign-table.js";
 
 const seen = vi.hoisted(() => ({ foundings: [] as Array<{ repo: unknown; result: Record<string, unknown> }> }));
 vi.mock("@lararium/keyhive", async (importOriginal) => {
@@ -81,7 +82,8 @@ describe("a one-device browser fleet lowers a kāpae under the fresh unlock alon
     const root = await generateOrLoadBrowserPersonaRoot(idbName, 0, PASS);
     lockBrowserCustody(idbName);
     const atom = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(4)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(4)) };
-    const face = { group: GROUP, grant: (k: string) => k === root.verifyingKey, device: (k: string) => k === atom.key };
+    // A face of one device: a lower reads on its own (the co-sign witness answers yes, as `wardActWitness` does for one device).
+    const face = { group: GROUP, grant: (k: string) => k === root.verifyingKey, device: (k: string) => k === atom.key, ward: { accepts: () => true } };
     const spawn = () => ({
       postMessage(_m: unknown, transfer: Transferable[]) { const port = transfer[0] as MessagePort; port.onmessage = async (m) => { port.postMessage(await runWardAct(m.data)); }; },
       terminate() {},
@@ -92,6 +94,7 @@ describe("a one-device browser fleet lowers a kāpae under the fresh unlock alon
       rootSigner: async () => { if (!askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock"); return browserWardSigner(idbName, 0, await askWardRoute(), spawn); },
       board: { records: async () => acts, land: async (a) => { acts.push(a); } },
       projection: () => ({ planes: {} }),
+      cosign: () => soloCosign(GROUP, atom),
     });
     const hand = { kind: "hand" as const, id: atom.key };
     await doorWith().kapae({ action: "raise", wiki: "daemon", digest: D, who: hand });

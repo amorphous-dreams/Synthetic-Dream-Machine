@@ -10,7 +10,8 @@ import { edgeStandingAsOf } from "../src/edge-kapae.js";
 import { readFrontierPins, writeFrontierPin } from "../src/edge-frontier-board.js";
 import { raiseFrontierPins } from "../src/edge-frontier.js";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
-import { fleetRaiseCids, landFleetFrontier, landFleetGenesis, nextFleetFrontier, readFleetFrontier } from "../src/fleet-frontier.js";
+import { fleetFrontierLinks, fleetRaiseCids, fleetStoodAt, landFleetFrontier, landFleetGenesis, nextFleetFrontier, readFleetFrontier } from "../src/fleet-frontier.js";
+import { deviceEdgeId } from "../src/dyad.js";
 import { makeHandLineage } from "../src/hand-lineage.js";
 import { actCid } from "../src/signed-act.js";
 
@@ -84,5 +85,22 @@ describe("fleet-frontier", () => {
     Object.assign(board.tiddlers, staged.tiddlers);
     const read = readFleetFrontier({ fleetRoot: ROOT, board, lineage, seenRaises: [], pinned: null });
     expect(read.status, "the real genesis still qualifies; the counterfeit joined nothing").toBe("known");
+  });
+  test("RED: a device stood at a frontier link that counts no raise naming its edge, and not at a later link that counts one, nor at a link the reader lacks; CONTROL: the links read on while the head waits on an uncounted raise", async () => {
+    const { signer, lineage } = await setup();
+    const board = emptyLarDoc(), device = "cd".repeat(32);
+    const genesis = await landFleetGenesis(board, ROOT, lineage, signer);
+    const registered = await nextFleetFrontier({ fleetRoot: ROOT, board, lineage, counted: ["raiseA"], signer });
+    landFleetFrontier(board, registered!);
+    const links = fleetFrontierLinks({ fleetRoot: ROOT, board, lineage });
+    const [f0, f1] = [actCid(genesis.body), actCid(registered!.frontier.body)];
+    expect([...links.keys()]).toEqual([f0, f1]);
+    const readings = new Map([[deviceEdgeId(ROOT, device), { raiseCids: ["raiseA"] }]]);
+    expect(fleetStoodAt({ links, readings, fleetRoot: ROOT, atom: device, frontier: f0 })).toBe(true);
+    expect(fleetStoodAt({ links, readings, fleetRoot: ROOT, atom: device, frontier: f1 })).toBe(false);
+    expect(fleetStoodAt({ links, readings, fleetRoot: ROOT, atom: device, frontier: "9".repeat(64) })).toBe(false);
+    // the head waits on a raise it does not count, and the links still read
+    expect(readFleetFrontier({ fleetRoot: ROOT, board, lineage, seenRaises: ["raiseA", "raiseB"], pinned: null }).status).toBe("unknown");
+    expect(fleetStoodAt({ links: fleetFrontierLinks({ fleetRoot: ROOT, board, lineage }), readings, fleetRoot: ROOT, atom: "ef".repeat(32), frontier: f1 })).toBe(true);
   });
 });

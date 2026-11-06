@@ -143,13 +143,13 @@ describe("r4 · the root rests under the ward from its first write", () => {
     expect((await browserWardSign(idbName, 0, WARD, new Uint8Array([2]), spawnCore([]))).key).toBe(rootKey);
   }, SLOW);
 
-  test("RED: the browser's own founding lands its root under the ward, bound over the route the founding asked for; CONTROL: the founding edge names that warded root", async () => {
+  test("RED: the browser's own founding lands its root under the ward, bound over the route the founding asked for twice alike; CONTROL: the founding edge names that warded root", async () => {
     const idbName = fresh("r4-found");
     await sealBrowserKeystore(idbName, CUSTODY);
-    const asked: string[] = [];
-    await expect(openBrowserVessel({ idbName, askWardRoute: async (act: string) => { asked.push(act); return (WARD as { passphrase: string }).passphrase; },
+    const asked: unknown[] = [];
+    await expect(openBrowserVessel({ idbName, askWardRoute: async (_act: string, kind?: unknown) => { asked.push(kind); return (WARD as { passphrase: string }).passphrase; },
       onPhase: (phase: string) => { if (phase === "bootstrap-kept") throw new BootHalted(); } } as BrowserVesselOptions)).rejects.toBeInstanceOf(BootHalted);
-    expect(asked).toHaveLength(1);
+    expect(asked, "a founding that binds the ward asks the route twice").toEqual(["bind", "retype"]);
     expect(startsWard(await rowOf(idbName, "ward/h0/persona-root"))).toBe(true);
     expect(await rowOf(idbName, "sealed/persona-root-h0")).toBeUndefined();
     const db = await openVesselIdb(idbName);
@@ -157,6 +157,21 @@ describe("r4 · the root rests under the ward from its first write", () => {
     db.close();
     const signed = await browserWardSign(idbName, 0, WARD, new Uint8Array([3]), spawnCore([]));
     expect(social?.deviceEdge.personaRootDid.toLowerCase()).toContain(signed.key.toLowerCase());
+  }, SLOW);
+});
+
+describe("r4b · a founding's ward binds only over a route retyped alike", () => {
+  test("RED: a founding whose retype differs binds no ward and lands no root (`ward-route-mismatch`); CONTROL: the keystore stands as it stood", async () => {
+    const idbName = fresh("r4b-typo");
+    await sealBrowserKeystore(idbName, CUSTODY);
+    const asked: unknown[] = [];
+    const typed = (WARD as { passphrase: string }).passphrase;
+    const reading = await openBrowserVessel({ idbName, askWardRoute: async (_act: string, kind?: unknown) => { asked.push(kind); return asked.length === 1 ? typed : `${typed}!`; },
+      onPhase: (phase: string) => { if (phase === "bootstrap-kept") throw new BootHalted(); } } as BrowserVesselOptions)
+      .then(() => "landed", (e: { reading?: string; message: string }) => e.reading ?? e.message);
+    expect(reading).toBe("ward-route-mismatch");
+    expect(await rowOf(idbName, "ward/h0/persona-root")).toBeUndefined();
+    expect(await rowOf(idbName, "ward/h0/slots")).toBeUndefined();
   }, SLOW);
 });
 

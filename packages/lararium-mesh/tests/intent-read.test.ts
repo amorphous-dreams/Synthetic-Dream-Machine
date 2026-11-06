@@ -6,6 +6,8 @@ import { mayAct, readIntentPlane } from "../src/intent-read.js";
 import { intentPaneModel } from "../src/intent-view.js";
 import { faceIntentVerbs, fixtureIntentVerbs, issueCheck, WARD_COSIGN_VERBS } from "../src/intent-verbs.js";
 import { cosignDigest, judgeCosign } from "../src/ward-cosign.js";
+import { wardAnswerImage } from "../src/ward-answer.js";
+const F = "f".repeat(64);
 
 const who = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
 const entry = (signer: Awaited<ReturnType<typeof who>>, fields: Record<string, unknown>) => signIntentEntry({ group: "face", refs: [], ...fields } as Parameters<typeof signIntentEntry>[0], signer);
@@ -198,11 +200,17 @@ describe("ward co-sign (S3a)", () => {
     const call = await entry(a, { entry: "intent", issuer: a.key, verb: VERB, args: { head: "h1" }, nonce: "n", audience: { mode: "asks" } });
     const id = intentId({ issuer: a.key, verb: VERB, args: { head: "h1" }, nonce: "n" });
     const ask = await entry(a, { entry: "asks", intent: id, needs: "approval", detail: digestOf() });
-    const answerBy = (who_: Awaited<ReturnType<typeof who>>, over: Record<string, unknown> = {}) =>
-      entry(who_, { entry: "answer", ask: intentEntryCid(ask), verdict: "approve", executor: a.key, ...over });
+    // Each device's per-face ward key, as its admission carries it: an approve counts only beside its signature.
+    const wardOf = new Map([[a.key, await who(61)], [b.key, await who(62)], [c.key, await who(63)], [foreign.key, await who(64)]]);
+    const wardKey = (k: string) => wardOf.get(k)?.key ?? null;
+    const wardFields = async (who_: Awaited<ReturnType<typeof who>>, verdict: "approve" | "deny" = "approve", executor = a.key) => ({ frontier: F,
+      wardSig: await wardOf.get(who_.key)!.sign(wardAnswerImage({ group: "face", ask: intentEntryCid(ask), detail: digestOf(), verdict, executor, frontier: F })) });
+    const answerBy = async (who_: Awaited<ReturnType<typeof who>>, over: Record<string, unknown> = {}) =>
+      entry(who_, { entry: "answer", ask: intentEntryCid(ask), verdict: "approve", executor: a.key,
+        ...(await wardFields(who_, (over["verdict"] as "approve" | "deny" | undefined) ?? "approve", (over["executor"] as string | undefined) ?? a.key)), ...over });
     const judge = (view: ReturnType<typeof fold>, devices = [a.key, b.key], standing: (atom: string) => "stands" | "aside" | "unknown" = () => "stands", digest = digestOf()) =>
-      judgeCosign({ view, intentId: id, requester: a.key, projection: { devices }, standing, digest });
-    return { a, b, c, foreign, fold, call, id, ask, answerBy, judge, verbs };
+      judgeCosign({ view, group: "face", intentId: id, requester: a.key, projection: { devices }, standing, digest, wardKey });
+    return { a, b, c, foreign, fold, call, id, ask, answerBy, wardFields, wardKey, judge, verbs };
   };
 
   test("RED: a self-answer approves a ward act on the old plane; CURE: the issuer's own answer counts nothing; CONTROL: a second device approves", async () => {
@@ -231,7 +239,7 @@ describe("ward co-sign (S3a)", () => {
     const ans = await entry(r.b, { entry: "answer", ask: intentEntryCid(bAsk), verdict: "approve", executor: r.a.key });
     expect(r.judge(r.fold([r.call, bAsk, ans]))).toEqual({ need: "cosign", approved: false, reason: "ask-signer" });
     const second = await r.answerBy(r.b), view = r.fold([r.call, r.ask, second]);
-    expect(judgeCosign({ view, intentId: r.id, requester: r.b.key, projection: { devices: [r.a.key, r.b.key] }, standing: () => "stands", digest: digestOf() }))
+    expect(judgeCosign({ view, group: "face", intentId: r.id, requester: r.b.key, projection: { devices: [r.a.key, r.b.key] }, standing: () => "stands", digest: digestOf(), wardKey: r.wardKey }))
       .toEqual({ need: "cosign", approved: false, reason: "wrong-requester" });
   });
 
@@ -247,8 +255,17 @@ describe("ward co-sign (S3a)", () => {
     const r = await rig(), x = await r.answerBy(r.b), y = await r.answerBy(r.c, { verdict: "deny" });
     const view = r.fold([r.call, r.ask, x, y], [r.a.key, r.b.key, r.c.key]);
     expect(r.judge(view, [r.a.key, r.b.key, r.c.key])).toEqual({ need: "cosign", approved: false, reason: "contested" });
-    const repin = await signIntentEntry({ group: "face", entry: "answer", refs: [intentEntryCid(x), intentEntryCid(y)], ask: intentEntryCid(r.ask), verdict: "approve", executor: r.a.key }, r.b);
+    const repin = await signIntentEntry({ group: "face", entry: "answer", refs: [intentEntryCid(x), intentEntryCid(y)], ask: intentEntryCid(r.ask), verdict: "approve", executor: r.a.key, ...(await r.wardFields(r.b)) }, r.b);
     expect(r.judge(r.fold([r.call, r.ask, x, y, repin], [r.a.key, r.b.key, r.c.key]), [r.a.key, r.b.key, r.c.key])).toMatchObject({ approved: true });
+  });
+
+  test("RED: an approve its atom alone signed refuses answer-unwarded, and one warded under another device's key too; CONTROL: the warded approve names the frontier it read", async () => {
+    const r = await rig();
+    const bare = await entry(r.b, { entry: "answer", ask: intentEntryCid(r.ask), verdict: "approve", executor: r.a.key, frontier: F });
+    expect(r.judge(r.fold([r.call, r.ask, bare]))).toEqual({ need: "cosign", approved: false, reason: "answer-unwarded" });
+    const foreignWard = await entry(r.b, { entry: "answer", ask: intentEntryCid(r.ask), verdict: "approve", executor: r.a.key, ...(await r.wardFields(r.a)) });
+    expect(r.judge(r.fold([r.call, r.ask, foreignWard]))).toEqual({ need: "cosign", approved: false, reason: "answer-unwarded" });
+    expect(r.judge(r.fold([r.call, r.ask, await r.answerBy(r.b)]))).toMatchObject({ approved: true, frontier: F });
   });
 
   test("RED: a replay after the outcome refuses spent; CONTROL: before it the co-sign stands", async () => {

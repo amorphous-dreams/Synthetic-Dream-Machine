@@ -232,11 +232,12 @@ import { readKeptHearthFloorPins }               from "./hearth-floor-pin-store.
 import type { FlowGateArgs, FlowReadGate }  from "./flow-read-face.js";
 import {
   deriveGateBundle, sovereignGateRoot, floorGateRoot, sovereignRoute, floorRoute, storedWithdrawals, memoryBackedWithdrawals,
-  SOVEREIGN_SYNC_ROUTE, FLOW_SOCKET_ROUTE,
+  SOVEREIGN_SYNC_ROUTE, FLOW_SOCKET_ROUTE, cosignPortWitness, WARD_WITNESS_CLOSED,
   type GateBundle, type GateSession, type GateSessionTable,
 } from "@lararium/mesh";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { landEveryHostingAct }                    from "./commands/host.js";
+import { loadNodeWardCosignPort }                  from "./commands/intent.js";
 import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
 import { daemonSwarmWiki }                        from "./swarm-wiki.js";
@@ -2371,7 +2372,14 @@ async function prepareNodeBootOn(
           promoteWiringRef = wornPromote ? promoteWiring({
             repo, group: personaGroupId, boardUrl: wornPromote, stageUrl: wornKahua?.url ?? null,
             foldFace: () => { const f = promoteFace.read(); return { group: personaGroupId, grant: f ? f.grant : () => false }; },
-            boardFace: () => { const f = promoteFace.read(); return { group: personaGroupId, grant: f ? f.grant : () => false, device: (k) => devices.has(k) }; },
+            // THE BOARD READS UNDER THE CO-SIGN WITNESS: on a face of two devices, a lower stands only beside its spent co-sign; a fold
+            // that cannot be read stands no lower, so the brake holds (seat-harness#/the-swarm-slices).
+            boardFace: async () => {
+              const f = promoteFace.read();
+              let ward = WARD_WITNESS_CLOSED;
+              try { ward = cosignPortWitness(await loadNodeWardCosignPort(repo, catalogHandle.url, { group: personaGroupId })); } catch { /* the brake holds */ }
+              return { group: personaGroupId, grant: f ? f.grant : () => false, device: (k) => devices.has(k), ward };
+            },
             stores: nodePromoteStores(personaGroupId), cas: nodePromoteCas(cidDir, promoteHolder),
             wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
             onArrive: async () => { await pushPromoteSnapshot?.(); },
@@ -2402,6 +2410,10 @@ async function prepareNodeBootOn(
             },
             board: { records: async () => promoteActRecords(handle.doc(), personaGroupId), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
             projection: () => proof.projection,
+            // THE CO-SIGN GATE: a summoned lower reads the worn face's signed admission fold and its intent plane at the act and, where
+            // the face holds two devices, waits on a second one's answer; a one-device face lowers even where its intents plane cannot
+            // load, and a fold that cannot be read refuses by name (seat-harness#/the-swarm-slices).
+            cosign: () => loadNodeWardCosignPort(repo, catalogHandle.url, { group: personaGroupId }),
           });
           const who = { kind: "hand" as const, id: atom.key };
           const core = promotePanelApi({ who,

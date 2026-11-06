@@ -23,11 +23,12 @@
  * a standing root is adopted. A route that opens nothing, or a passkey, writes nothing.
  */
 import {
-  bindWardSlot, commitWardTree, confirmHeldPaper, decodeSlotTree, encodeSlotTree, mintWardKey, nobleKdf, openWardKey, readWardCarrier,
-  writeWardCarrier, WardRefused, type Credential, type PinSpec, type SlotTree, type WardKey,
+  bindWardSlot, commitWardTree, decodeSlotTree, encodeSlotTree, mintWardKey, nobleKdf, openWardKey, readWardCarrier,
+  writeWardCarrier, WardRefused, type Credential, type SlotTree, type WardKey,
 } from "@lararium/mesh";
 import { browserKeystoreCustodyIo, BrowserCustodyRefused, readBrowserCustody, withCustodyRows } from "./browser-custody.js";
-import { openWardedRoot, wardCredentialOf, wardKeyRowOf, wardRootCarrier, wardRootRowOf, wardTreeRowOf, type WardRoute } from "./ward-core.js";
+import { openWardedRoot, wardCredentialOf, wardKeyRowOf, wardPinOf, wardRootCarrier, wardRootRowOf, wardTreeRowOf, type WardRoute } from "./ward-core.js";
+import { openVesselIdb } from "./browser-vessel-identity.js";
 
 export const PERSONA_ROSTER_ROW = "persona-root-roster";
 
@@ -101,10 +102,27 @@ export async function readBrowserPersonaRoster(read: (row: string) => Promise<un
   return [...(raw?.roots ?? [])].sort((a, b) => a.handleIndex - b.handleIndex);
 }
 
-function pinOf(credential: Credential): PinSpec {
-  if (credential.kind === "passphrase") return { kind: "passphrase", passphrase: credential.passphrase };
-  if (credential.kind === "paper") return { kind: "paper", confirmed: confirmHeldPaper(credential.sheets) };
-  throw new WardRefused("ward-passkey-refused", "the ward binds human routes alone");
+const pinOf = wardPinOf;
+
+/**
+ * Land a ward's rows (raw bytes no page key opens) in ONE keystore transaction under the vessel's writer lock, only where none of them
+ * stands: answers false and writes nothing where any one already holds bytes. A torn land leaves nothing.
+ */
+export async function landBrowserWardRows(idbName: string, rows: readonly (readonly [string, Uint8Array])[]): Promise<boolean> {
+  return browserKeystoreCustodyIo(idbName).exclusive(async () => {
+    const idb = await openVesselIdb(idbName);
+    try {
+      const tx = idb.transaction("keystore", "readwrite", { durability: "strict" });
+      const store = tx.objectStore("keystore");
+      const done = new Promise<void>((resolve, reject) => { tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error); tx.onabort = () => reject(tx.error ?? new Error("aborted")); });
+      done.catch(() => undefined);
+      const held = await Promise.all(rows.map(([path]) => new Promise<unknown>((resolve, reject) => { const r = store.get(path); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error); })));
+      if (held.some((h) => h !== undefined)) { tx.abort(); await done.catch(() => undefined); return false; }
+      for (const [path, bytes] of rows) store.put(new Uint8Array(bytes), path);
+      await done;
+      return true;
+    } finally { idb.close(); }
+  });
 }
 
 /**
