@@ -8,6 +8,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, chmodSync } from "node:f
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
+import { POLL_FLOOR_S } from "./ci-verdict.mjs";
 import { evaluateMergeGate, relativeToE2eDir, readShardReports, pushLaneAndWatch } from "./e2e-shards.mjs";
 
 const TRACKED = ["tests/e2e/alpha.test.ts", "tests/e2e/beta.test.ts"];
@@ -419,6 +420,61 @@ esac
   const { existsSync } = await import("node:fs");
   assert.ok(existsSync(marker), "deleteBranch must run even though the log fetch threw");
   rmSync(bin, { recursive: true, force: true });
+});
+
+function fakeFindBin(dir, { found }) {
+  const counter = join(dir, "reads.count");
+  writeFileSync(join(dir, "git"), `#!/usr/bin/env bash
+case "$*" in
+  *"rev-parse HEAD"*) echo "deadbeefcafef00d" ;;
+  *"config --get core.bare"*) echo false ;;
+esac
+exit 0
+`);
+  writeFileSync(join(dir, "gh"), `#!/usr/bin/env bash
+case "$*" in
+  *"run list --branch"*) echo x >> "${counter}"; echo '${found ? '[{"databaseId":42,"headSha":"deadbeefcafef00d"}]' : "[]"}' ;;
+  *"run view 42 --log"*) echo "MERGE-VERIFY: ok=true" ;;
+esac
+exit 0
+`);
+  chmodSync(join(dir, "git"), 0o755);
+  chmodSync(join(dir, "gh"), 0o755);
+  return counter;
+}
+
+// The find loop spaces its rounds at the house pace: no sleep under POLL_FLOOR_S, at most three rounds when the
+// run never shows; a run found on the first read sleeps zero times.
+test("the pushLaneAndWatch find loop sleeps at the house pace and runs at most three rounds", async () => {
+  const bin = mkdtempSync(join(tmpdir(), "e2e-shards-find-"));
+  const counter = fakeFindBin(bin, { found: false });
+  const prevPath = process.env.PATH;
+  process.env.PATH = `${bin}:${prevPath}`;
+  const sleeps = []; let t = 0;
+  try {
+    await assert.rejects(
+      () => pushLaneAndWatch({ repoRoot: tmpdir(), lane: "find-probe", now: () => t, sleep: async (ms) => { sleeps.push(ms); t += ms; } }),
+      /no e2e-shards.yml run appeared/,
+    );
+  } finally { process.env.PATH = prevPath; }
+  const { readFileSync: rf, existsSync: ex } = await import("node:fs");
+  const reads = ex(counter) ? rf(counter, "utf8").trim().split("\n").length : 0;
+  rmSync(bin, { recursive: true, force: true });
+  assert.ok(sleeps.every((ms) => ms >= POLL_FLOOR_S * 1000), `sleeps ${sleeps}`);
+  assert.ok(reads <= 3, `reads ${reads}`);
+});
+
+test("a run found on the first read sleeps zero times in pushLaneAndWatch", async () => {
+  const bin = mkdtempSync(join(tmpdir(), "e2e-shards-find1-"));
+  fakeFindBin(bin, { found: true });
+  const prevPath = process.env.PATH;
+  process.env.PATH = `${bin}:${prevPath}`;
+  const sleeps = [];
+  try {
+    await pushLaneAndWatch({ repoRoot: tmpdir(), lane: "find-probe", sleep: async (ms) => { sleeps.push(ms); } }).catch(() => {});
+  } finally { process.env.PATH = prevPath; }
+  rmSync(bin, { recursive: true, force: true });
+  assert.equal(sleeps.length, 0);
 });
 
 test("the printed CI hint names the branch full CI runs on, from attached and detached checkouts", () => {
