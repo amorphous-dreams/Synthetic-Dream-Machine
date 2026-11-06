@@ -264,6 +264,21 @@ test("G55 boundary RED: unresolved and nonliteral import edges refuse by cell", 
   }
 });
 
+test("G55 exception table: stale entries and targets outside the checkout refuse by name", async () => {
+  const law = await import(import.meta.url);
+  assert.ok(Array.isArray(law.BROWSER_IMPORT_EXCEPTIONS), "the witness exports its typed exception table");
+  const entry = law.BROWSER_IMPORT_EXCEPTIONS.find((row) => row.file.endsWith("gated-peer.test.ts") && row.line === 9);
+  assert.ok(entry && entry.reason && entry.targets?.length, "gated-peer names its reason and exact targets");
+  const original = readFileSync(join(boundaryRoot, entry.file), "utf8");
+  const stale = original.replace("import(modulePath)", 'import("../src/gated-peer.js")');
+  assert.notEqual(stale, original);
+  const staleDiagnostics = await law.browserNodeBoundary({ root: boundaryRoot, overlay: { [entry.file]: stale } });
+  assert.ok(staleDiagnostics.some((d) => d.includes(entry.file) && /9/.test(d) && /stale|non.literal/i.test(d)), JSON.stringify(staleDiagnostics));
+  const exceptions = law.BROWSER_IMPORT_EXCEPTIONS.map((row) => row === entry ? { ...row, targets: ["../../outside.mjs"] } : row);
+  const escaped = await law.browserNodeBoundary({ root: boundaryRoot, exceptions });
+  assert.ok(escaped.some((d) => d.includes(entry.file) && /outside/i.test(d)), JSON.stringify(escaped));
+});
+
 test("G55 policy RED: workflow header and image law declare the Node exception", () => {
   const workflow = readFileSync(join(boundaryRoot, ".github/workflows/ci.yml"), "utf8").split(/^on:\s*$/m)[0];
   const law = readFileSync(join(boundaryRoot, "tools/workflow-law.test.mjs"), "utf8").split("// G55: The same pure boundary witness")[0];
