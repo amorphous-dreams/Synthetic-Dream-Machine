@@ -77,16 +77,14 @@ The vessel worker stands as a SharedWorker house where the engine offers one and
 <<~/ahu>>
 
 <<~ ahu slot=`#/the-ceremony`>>
-!! The ceremony ~ the operator's default, pending
+!! The ceremony ~ ruled by the operator
 
-The road rules that the browser vessel "takes an unlock ceremony the surface cannot paint, the boundary sitting where the person types the secret (its shape stays research)". The surface page's own form therefore never takes the passphrase. The house proposes, as the operator's DEFAULT PENDING (dreamdom lists the ceremony shape among its open rulings, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>> #/open-rulings), a clean ceremony document:
+The road rules that the browser vessel "takes an unlock ceremony the surface cannot paint, the boundary sitting where the person types the secret (its shape stays research)". The surface page's own form therefore never takes the passphrase. The operator approved the house's default (2026-11-05: //"Approve"//), which closes the ceremony shape that dreamdom lists among its open rulings (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>> #/open-rulings): a clean ceremony document takes the secret.
 
 * a same-origin page that runs no mirror, no plugins and a strict CSP, painting only the ask;
 * it takes the secret and sends its bytes to the vessel worker down a `MessagePort` the service worker brokers (measured working in Chromium and Firefox, the probe at `~/.lares-scratch/b1-lift/probe/`);
 * the surface page never holds the bytes;
 * on a phone the ceremony reads as a navigation there and back.
-
-The ceremony's final shape stays research; an operator ruling replaces this default without moving the slices around it.
 
 <<~/ahu>>
 
@@ -97,8 +95,8 @@ Each slice lands red-first with its control. The sizes read as house estimates (
 
 # ''Slice 0, the red witnesses (S).'' The page-entry witness walks `main.ts`'s import graph (static and dynamic imports, workspace names to their `src` entries, `?worker&url` spawns and type-only imports not reached) and refuses any reach into `@automerge/automerge-repo`, `@lararium/keyhive`, `browser-custody`, `browser-vessel-identity`, `ward-core` or `seed-wrap-prf`. Red: it fails on the span as it stands, so the register `packages/lararium-mesh/tests/unbuilt-laws.test.ts` declares it as THE PAGE REACHES NO VESSEL MODULE until slice 2 makes it hold.
 # ''Slice 1, the substrate seams (S to M), built.'' The identity continuity rests in an IndexedDB row of its own database (`lares:continuity`, keyed by the keystore's name), apart from every keystore, so a deleted keystore still refuses a blank re-found (`continuity-lost`); the `localStorage` marker burns. `clearBrowserCustody` already asks through its `ConfirmDoor` parameter and reaches no page `confirm()`. The page feeds its hide and leave through `BrowserVesselOptions.pageLife` (the `page:life` message to come), which drives the wiki drains and the shared holder's session close, and takes the rest reading through `onRest` (a `status` field to come); the page's own `page-life.ts` subscribes the window and the document and paints `data-lar-rest`. Red (`vessel-worker-seams.test.ts`): the vessel's module graph loads on a dedicated worker's thread with no `window`, `document`, `localStorage` or `sessionStorage` and a `location` stripped to its `href`, and the identity founds, reloads the same key and refuses a lost keystore; a census over the package's source finds no page-global reach. It failed at continuity (`localStorage is not defined`). The named residual: a clear of every IndexedDB database on the origin takes the continuity row with the keystore.
-# ''Slice 1b, the ceremony document (M).'' The clean ceremony document of #/the-ceremony stands, ordered before the rite and before any slice that asks for a secret. Red: the surface page's thread never receives a route byte, and a page-thread spy on the ask path reads nothing.
-# ''Slice 2, the move (L).'' A dedicated `vessel.worker.ts` runs `openBrowserVessel` unchanged; the `BrowserVesselOptions` callbacks map one to one onto port messages; `main.ts` talks to a `vesselPort`; the islands spawn nested from the dedicated worker. Red: slice 0's witness holds, and a real-browser e2e boots, founds and paints the mirror.
+# ''Slice 1b, the ceremony document (M).'' The clean ceremony document of #/the-ceremony stands, ordered before the rite. It lands after slice 2, since the ceremony sends its bytes to the vessel worker that slice 2 stands, and it CLOSES slice 2's interim ask path: the `answer` leaves the page-to-vessel port for the ceremony document's own brokered port, and the surface page's form goes. Red: the surface page's thread never receives a route byte, and a page-thread spy on the ask path reads nothing.
+# ''Slice 2, the move (L), built.'' A dedicated `vessel.worker.ts` (`packages/lararium-web/src/workers/`, a Vite `?worker&url` beside its siblings) initializes Keyhive's WASM and runs `openBrowserVessel` unchanged (`vessel-host.ts`); the `BrowserVesselOptions` callbacks map one to one onto the typed messages of `vessel-protocol.ts`; `main.ts` talks to a `vesselPort` (`vessel-port.ts`) alone, paints frames, feeds the mirror's port road, asks `persist()` (page-only) and feeds its life signals. As built, page to vessel: `hello{tabSession, boot}` (public inputs: URLs, the served seed, the arrival's carriage) · `answer{askId}` · `control-event` · `set-surface` · `port:place` and `port:close` (the mirror's port road, the target's `mirror:port`) · `page:life` · `read:mirror-inputs` · `read:floor` · `join:offer{text}` · `join:answer{text}` · `spawned{port}`; vessel to page: `phase` · `frame` · `control-result` · `coherence` · `port-msg` · `port:refused` (read on the page as the binding's own refusal) · `ask{askId, kind, act, question}` · `status{custody, seedRest, connection, rest, vessel}` · `reply` (the reads and the join answer, the target's `join:request`) · `spawn{role}` · `ended{why}`. The boot's custody step, the fleet join's request, landing and settle, the seed-rest reading and the did run on the vessel worker. The islands spawn nested from the dedicated worker from the URLs the page hands over. `?holder` keeps working until slice 4: a dedicated worker builds no SharedWorker, so the vessel worker asks the page to build it (`spawn{role}`) and bridges its transferred port, which the page never reads. The page loads `@lararium/browser/page` alone. INTERIM, closed by slice 1b: a custody or ward ask's `answer` crosses the page-to-vessel port from the page's own form, as its callbacks carried it; ward asks stay off (absent, a ward act refuses `ward-needs-fresh-unlock` by name), and the fleet join's admit carriage rides the tab's stash and a reload until #/what-dissolves takes it. Red: law ⑬ (THE PAGE REACHES NO VESSEL MODULE, `tools/page-entry-witness.mjs`) failed on five reaches through `@lararium/browser`'s index and holds, with the mesh barrel's `automerge-repo` reach cut on the way; `tests/e2e/vessel-worker.e2e.test.ts` failed on "the page builds the vessel worker" and passes: the built page founds a fresh vessel through the worker, the did row and the first paint read, the mirror shows, and the window's own resource timeline names no vessel chunk.
 # ''Slice 3, custody in the vessel (M).'' Each port carries a session its tab admits by its own route; the face's last session closing drops the key; sealing runs on the vessel worker's thread. Each session admits through its own unlock, sharing none and no key with another tab. The last-tab transition: the face's last session closes, the tree key drops, and the browser stands at its floor. Store ownership: one Web Lock per store, the vessel worker holds it, and a second worker refuses by name (`store-owned`). Reds: of two tabs, B without an unlock reads no sealed row; after every tab closes, no tree key stands and reopening asks again; a second worker opening a held store refuses with `store-owned`.
 # ''Slice 4, the SharedWorker house and the floor's port broker (M to L).'' The SharedWorker hosts slice 2's body, the dedicated worker serves as the floor, and `?holder` goes. On the floor, a follower tab reaches the leader's dedicated vessel worker through a `MessagePort` brokered for it, by the service worker or by the vessel worker minting a per-tab port; the broker hands the port over and never carries its traffic, so the follower's ceremony document sends its bytes straight down its own port. Red: a second tab on an engine with no SharedWorker admits its own session by its own unlock, and no page's heap ever holds the other tab's bytes.
 # ''Slice 5a, the capability record (S, rides slice 3).'' The browser answers island asks through a `CapabilityRecord`: receipt, cas and dyad at construction, `custodyWrite` lifted on unlock. Red: a browser herm refuses `session:sign` with `signer-unavailable`, as `composeHerm` does.
@@ -109,7 +107,7 @@ Each slice lands red-first with its control. The sizes read as house estimates (
 
 ''The pre-rite gate ~ joined founding.'' Slice 5b and the X0b sweep stand inside this gate. Red (e2e): a joined node and browser found end to end: the node founds through `lares vessel found`; the browser founds or joins through the lifted vessel and the ceremony document; both boot and see each other.
 
-The order follows the dependencies: 0, 1, 1b, 2, 3 with 5a, 4, 5b, 6, 7, then the X0b sweep, then the pre-rite gate, and the rite follows the gate.
+The order follows the dependencies: 0, 1, 2, 1b, 3 with 5a, 4, 5b, 6, 7, then the X0b sweep, then the pre-rite gate, and the rite follows the gate.
 
 <<~/ahu>>
 
@@ -165,9 +163,9 @@ The order follows the dependencies: 0, 1, 1b, 2, 3 with 5a, 4, 5b, 6, 7, then th
 <<~/ahu>>
 
 <<~ ahu slot=`#/house-readings`>>
-!! House readings ~ four decisions the operator may overrule
+!! House readings ~ one ruled, three the operator may overrule
 
-# ''The ceremony boundary (the operator's default, pending).'' The clean ceremony document of #/the-ceremony; its final shape stays research (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>).
+# ''The ceremony boundary (ruled by the operator, 2026-11-05: //"Approve"//).'' The clean ceremony document of #/the-ceremony: same origin, no mirror, no plugins, a strict CSP; it takes the secret and sends its bytes down a service-worker-brokered port to the vessel worker, and the surface never holds them.
 # ''Every tab carries its own live session'' (operator, 2026-11-05: //"Multiple tabs will carry live sessions, and later can 'change face' (ONE FACE per session later on the roadmap)."//). Each tab's session wears one face and stands admitted by its own unlock. On the floor, a follower tab reaches the leader's dedicated vessel worker through a port brokered for it; the broker hands over the port and never carries its traffic, so no page relays any passphrase; the answer travels ceremony document to vessel. A session changing face rides row `B8`.
 # ''One vessel worker per house.'' The page learns the house only as an opaque digest.
 # ''The seal (the operator's default, pending).'' The ruling "the asker seals" (2026-10-19) rewords to "the asker's session seals, on the vessel worker's thread, while that face's session stands unlocked"; the `seal-awaits-session` wait stays.
@@ -183,6 +181,6 @@ The order follows the dependencies: 0, 1, 1b, 2, 3 with 5a, 4, 5b, 6, 7, then th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ldz9lxQHIIP8dhK7wSkvZYg5A8CEbBrkmF5uJY95d6g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;t6wUvk-dXyLk4HeQ9MtqbNpOJHm_LBKIxsNOqHzbtrg`>>
 
 <<^ code=`&#x0004;` to=`?`>>
