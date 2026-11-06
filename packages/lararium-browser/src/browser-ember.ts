@@ -1,6 +1,6 @@
 /**
  * browser-ember — the browser leaf's ember row and its caller (lar:///ha.ka.ba/lararium/mesh/ember#/the-pin;
- * lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift, slice 3 part ii).
+ * lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices).
  *
  * One ember secret per (this device, hearth), minted fresh for that hearth apart from every other key, resting as a D row of
  * the face that bound it, under that face's own custody slot (`browser-face-custody.ts`, row `ember/<hearth digest>`). It never
@@ -14,7 +14,7 @@
  * The exchange's group (Tang's blinded exchange) belongs to the ember pin's own build under its registered domain; this module
  * takes it as a port (`EmberExchange`) and keeps the row, its door and its refusals.
  */
-import * as ed25519 from "@noble/ed25519";
+import { verifyEd25519 } from "@lararium/mesh";
 import { FaceCustodyRefused, readFaceCustody, readFaceRow, writeFaceRow } from "./browser-face-custody.js";
 
 /** The ember pin's group: the public point of a secret, and the secret's answer to a blinded point. */
@@ -72,9 +72,8 @@ export async function answerEmberAsk(idbName: string, face: string, ask: EmberAs
   if (value === null) throw new EmberRefused("ember-absent");
   try {
     const secret = value.subarray(0, 32), hearthKey = value.subarray(32, 64);
-    let signed = false;
-    try { signed = await ed25519.verifyAsync(ask.signature, emberAskBytes(ask.hearth, ask.blinded), hearthKey); } catch { signed = false; }
-    if (!signed) throw new EmberRefused("ember-ask-unsigned");
+    // THE HOUSE'S ONE ED25519 DOOR reads the hearth's signature: strict, canonical, and refusing any malformed byte by name.
+    if (!verifyEd25519(ask.signature, emberAskBytes(ask.hearth, ask.blinded), hearthKey)) throw new EmberRefused("ember-ask-unsigned");
     return exchange.answer(secret, ask.blinded);
   } finally { value.fill(0); }
 }

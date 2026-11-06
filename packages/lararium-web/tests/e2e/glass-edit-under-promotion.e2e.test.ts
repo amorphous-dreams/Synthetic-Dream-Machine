@@ -103,7 +103,7 @@ afterAll(async () => {
 });
 
 describe("the mirror's promotion never takes a person's typing", () => {
-  test("P1 — RED: the promotion lands mid-typing in an open editor: the keys stay in the body, the title holds, focus stays", async () => {
+  test("P1 — RED: the promotion lands mid-typing in an open editor: the keys stay in the body, the title keeps what was set, focus stays", async () => {
     expect(url, "the hearth printed its URL").toMatch(/^https?:/);
     const context = await browser!.newContext();
     await armTestCustody(context, "glass-edit-under-promotion-p1");
@@ -114,9 +114,12 @@ describe("the mirror's promotion never takes a person's typing", () => {
     expect(await focusIn(page), "focus sits in the body before the promotion").toBe("body");
     expect(await page.locator("#mirror").getAttribute("data-lar-mirror"), "the editor stands under a skinny mirror").toBe("skinny");
     await promote(page);
+    // barrier: the mirror reads data-lar-mirror="full", the promotion's landing promote() waits for, and two frames paint after it
     expect(await focusIn(page), "the promotion leaves focus in the body").toBe("body");
     // The keys go wherever the page's focus sits, as a person's would.
     await page.keyboard.type(AFTER, { delay: 5 });
+    // barrier: the body editor's value reads every typed key, the page's own answer to the last keystroke
+    await expect.poll(() => bodyEditor(page).inputValue(), { timeout: WAIT }).toBe(BEFORE + AFTER);
     expect(await focusIn(page), "focus stays in the body").toBe("body");
     expect(await wiki(page).locator("input.tc-titlebar").inputValue(), "the title stays as set").toBe(TITLE);
     expect(await bodyEditor(page).inputValue(), "every key sits in the body, in order").toBe(BEFORE + AFTER);

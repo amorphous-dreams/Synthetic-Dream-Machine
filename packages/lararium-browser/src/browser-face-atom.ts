@@ -5,7 +5,7 @@
  * face's atom, a random seed no other seed derives, and the face's group secret seals to it. The seed rests in the
  * face's own custody row, `face-atom/<PersonaGroup>`, under the slot tree beside the face's other secret rows: a
  * face's secret rows take a slot first, so a vessel with no slot mints no atom. A browser that restores onto a
- * fresh origin finds no row and mints a fresh atom; the old one never resurrects.
+ * fresh origin finds no row and mints a fresh atom; the earlier atom never resurrects.
  *
  * The record "this browser holds atom X for group G" rests as that row alone, never on a wire or a board.
  *

@@ -10,7 +10,7 @@
  * offer refuses `ceremony-route-refused`. A page that cannot open the ceremony names its refusal (`ceremony:refused`), and the
  * ask rejects with that name; nothing falls back to a form on the surface page.
  *
- * EVERY ASK NAMES ITS FACE (slice 3 part ii): the PersonaGroup it speaks for, or null for this browser itself (the floor's
+ * EVERY ASK NAMES ITS FACE: the PersonaGroup it speaks for, or null for this browser itself (the floor's
  * place custody). An ask that names none refuses `ask-face-absent`; a clear names one PersonaGroup, so a clear for this browser
  * (null) refuses `clear-face-absent`; a local handle index `h<N>` names no face (`face-names-a-handle`). A refused ask reaches
  * no page.

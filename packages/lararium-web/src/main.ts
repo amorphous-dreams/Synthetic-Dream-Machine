@@ -530,7 +530,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
       if (status.rest) paintRest(document, status.rest);
       if (status.vessel) opened(status.vessel);
       // THE FACE'S LAST SESSION CLOSED (this page left) AND THE VESSEL RESTS AT ITS FLOOR: a page the browser restores from its
-      // back-forward cache holds a session that no longer stands, so it boots afresh and asks for its unlock again.
+      // back-forward cache holds a session that stands closed, so it boots afresh and asks for its unlock again.
       if (status.floor === "floor" && openedYet) window.addEventListener("pageshow", (e) => { if (e.persisted) location.reload(); }, { once: true });
       const line = seedRestLine(status);
       if (line) { seedLine = line; paintSeed?.(); }

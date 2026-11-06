@@ -12,9 +12,9 @@
  *       of the first face's rows. CONTROL: the first face's own unlock reads its atom again.
  *   FR4 RED a face switch (row `B8`) rests its intent and its outcome in the switching session's face-private home: the
  *       target face's own tree holds `face-switch/<sessionId>`, the intent before the fence and the outcome after the advance.
- *   FR3 RED the shared tree's earlier shape refuses by name: a keystore holding a face's row beside the place seed (the
+ *   FR3 RED a face row never rests under the place tree: a keystore holding a face's row beside the place seed (an
  *       `h<N>`-keyed persona root, a clear or sealed face row) refuses the boot `face-row-shared`, and the row door
- *       refuses the `h<N>` spelling `face-names-a-handle`; a face founded before re-founds.
+ *       refuses the `h<N>` spelling `face-names-a-handle`.
  *
  * Faces and secrets stay synthetic, over scratch stores. Each tree derives with scrypt, so the cases run slow.
  *
@@ -97,11 +97,11 @@ describe("a production founding keeps its face's rows under the face's own tree"
   }, SLOW);
 });
 
-describe("the shared tree's earlier shape refuses by name", () => {
+describe("a face row never rests under the place tree", () => {
   test("FR3 RED a face's row beside the place seed refuses the boot face-row-shared; the h<N> spelling refuses at the row door", async () => {
     const idbName = `face-rows-old-${crypto.randomUUID()}`;
     await sealBrowserKeystore(idbName, ROUTE);
-    // The earlier shape: a persona root keyed by its handle index beside the place seed, under the one shared tree.
+    // A persona root keyed by its handle index beside the place seed, under the place tree.
     const db = await openVesselIdb(idbName);
     try { await idbPut(db, "keystore", "sealed/persona-root-h0", new Uint8Array([1, 2, 3])); } finally { db.close(); }
     const refused = await openBrowserVessel({ idbName, askCustody: async () => ROUTE } as unknown as BrowserVesselOptions).catch((e: unknown) => e);

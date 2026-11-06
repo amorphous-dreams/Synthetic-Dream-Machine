@@ -414,7 +414,7 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   /** Read the Nexus's floor off the hearth's porch at `baseUrl` and verify every step here: the genesis epoch re-derives the
    *  Nexus AID, each epoch step verifies, the head release seals as a seat of its epoch under the cabal's approval of the
    *  manifest's exact bytes, and each fetched blob hashes to its CID. It records no acceptance (a face accepts a release by
-   *  a person's own act, W26 slice 5); the running floor stays the genesis floor this vessel booted on. */
+   *  a person's own act, W26, its fifth slice); the running floor stays the genesis floor this vessel booted on. */
   readFloor: (baseUrl: string) => Promise<HearthFloorRead>;
   /** Relay a `lar:control-event` to the surface that PAINTED its target, whatever surface stands active. */
   sendControlEvent: (surface: string, ev: LarMsg_ControlEvent) => ReturnLegVerdict;
@@ -430,7 +430,7 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
 }
 
 /**
- * Load a PREVIOUSLY-FOUNDED catalog doc by its persisted url — and never re-found it SILENTLY. A stored
+ * Load a ALREADY-FOUNDED catalog doc by its persisted url — and never re-found it SILENTLY. A stored
  * catalogUrl means this vessel already founded + persisted a catalog; a find() rejection here means the
  * LOCAL copy is gone (IndexedDB quota eviction under storage pressure, or corruption). Re-founding a
  * BLANK catalog in that case is data-amnesia — every registered wiki/recipe vanishes from local view
@@ -588,8 +588,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // a store whose boot cannot read its own device seed, so the refusal gives the lock back with nothing to take
   // down (each tab unlocks for itself, operator ruling 2026-10-18; `standBrowserCustody` asks before this boot).
   const custodyAtBoot = await readBrowserCustody(idbName);
-  // THE SHARED TREE'S EARLIER SHAPE REFUSES BY NAME: a face's row under the place tree, or a row spelled by handle index. A
-  // face founded in that shape re-founds.
+  // A FACE ROW NEVER RESTS UNDER THE PLACE TREE: a face's row there, or a row spelled by handle index, refuses by name.
   await refuseSharedTreeFaceRows(idbName);
   if (custodyAtBoot.reading === "sealed" && !custodyAtBoot.unlocked) throw new BrowserCustodyRefused("sealed-locked", idbName, "vessel-key");
 
@@ -1003,7 +1002,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   };
   let catalogHandle: DocHandle<LarDoc>;
   if (bootKeys.catalogUrl) {
-    // A catalog was previously founded + persisted — a load failure is DATA-AMNESIA, surfaced LOUD
+    // A catalog stands founded + persisted — a load failure is DATA-AMNESIA, surfaced LOUD
     // (never a silent blank re-founding). See loadFoundedCatalogOrWarn.
     catalogHandle = await loadFoundedCatalogOrWarn<LarDoc>(repo, bootKeys.catalogUrl, blankCatalog);
   } else {
@@ -1939,7 +1938,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           // the gate keys on the transport id (never a payload claim), so a summon that flips activeSurfaceId
           // auto-supersedes the previous surface's frames with no explicit teardown (the wlroots seat / tmux
           // active-pane rhyme: one sink, N emitters, one gate). An answer passes ungated: the page drops one whose
-          // surface or epoch it no longer shows. A host-door ask waits on the root-services slice.
+          // surface or epoch it stops showing. A host-door ask waits on the root-services slice.
           if (msg.type === "lar:frame") {
             if (_id === activeSurfaceId) onFrame?.({ ...msg, surface: _id });
             return;

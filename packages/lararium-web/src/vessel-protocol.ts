@@ -26,7 +26,7 @@
  *   the holder's SharedWorker         vessel → page  `spawn{role}`; page → vessel `spawned{port}` (transferred, never read)
  *   a boot that stops                 vessel → page  `ended{why, refusal?}` (`store-owned`: another worker owns the store)
  *
- * THE SESSION (slice 3, `@lararium/browser` vessel-sessions.ts). The port opens one session at `hello`; the vessel answers
+ * THE SESSION (`@lararium/browser` vessel-sessions.ts). The port opens one session at `hello`; the vessel answers
  * `greeting{ownerEpoch, sessionId, lifetimeLock}` (an earlier greeting the hello names and this vessel did not mint reads
  * `refused` by name, and the session opens afresh). The page holds `lifetimeLock` for its life and says `session:armed`, so
  * the vessel hears a lost tab when the platform hands it that lock. The vessel pings (`ping`) on its own clock, and the
