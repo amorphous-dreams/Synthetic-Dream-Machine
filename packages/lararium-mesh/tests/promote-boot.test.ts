@@ -23,7 +23,8 @@ const itemOf = (i: typeof RITE): PromoteItem => ({ ...i, revision: "r1", origin:
 async function boot(opts: { locked?: boolean; shared?: { local: KapaeLocal }; store?: { read(): Promise<KapaeLocal>; write(l: KapaeLocal): Promise<void> } } = {}) {
   const hooks = { itemsReject: false, tornLocalRead: false, failLocalWrite: false, rotated: false, boardDown: false };
   const root = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(1)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(1)) };
-  const face = { group: GROUP, grant: (k: string) => k === root.key, device: () => false };
+  // A face of one device: a lower reads on its own (the co-sign witness answers yes, as `wardActWitness` does for one device).
+  const face = { group: GROUP, grant: (k: string) => k === root.key, device: () => false, ward: { accepts: () => true } };
   const st = {
     ledger: [W1, W2].reduce((l, wiki) => ledgerCommit(l, { wiki, digest: D, item: RITE, revision: "r1" }, HAND), EMPTY_LEDGER) as PromotionLedger,
     local: EMPTY_KAPAE_LOCAL as KapaeLocal, acts: [] as unknown[], cas: new Map<string, Uint8Array>(), pinned: new Set<string>(),
@@ -149,7 +150,7 @@ describe("a custody read that throws leaves the promoted set empty", () => {
         stores: { ledger: broken === "ledger" ? { read: bad, write: async () => {} } : { read: async () => w.st.ledger, write: async () => {} },
                   local: broken === "local" ? { read: bad, write: async () => {} } : { read: async () => w.st.local, write: async () => {} } },
         cas: { put: (d, bytes) => { w.st.cas.set(d, bytes); }, pin: (d) => { w.st.pinned.add(d); } },
-        board: async () => readPromoteBoard(w.st.acts, { group: GROUP, grant: () => false, device: () => false }),
+        board: async () => readPromoteBoard(w.st.acts, { group: GROUP, grant: () => false, device: () => false, ward: { accepts: () => true } }),
         itemsOf: async (wiki) => w.st.items.get(wiki) ?? [], restart: async () => {}, onFault: (r) => { w.st.faults.push(r); },
       });
       expect(await wired.promotedFor(W1), broken).toEqual([]);

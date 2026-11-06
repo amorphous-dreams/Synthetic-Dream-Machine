@@ -24,7 +24,7 @@
  */
 
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage } from "@lararium/mesh";
+import { islandRestGuard, shoreStorage, vesselRestAsker } from "@lararium/mesh";
 import {
   runSovereignKernel,
   type IslandHostShore,
@@ -36,8 +36,12 @@ import { readCasBlobFromOpfs } from "./browser-genesis.js";
 
 /** Browser storage composition: preserve ordinary wiki durability while the
  * D-VR daemon primary crossing stays ephemeral. */
-export function browserIslandStorage(msg: IslandMsg_Manifest) {
-  if (msg.storage?.type === "idb") return shoreStorage(new IndexedDBStorageAdapter(msg.storage.dbName));
+export function browserIslandStorage(msg: IslandMsg_Manifest, restsAtVessel?: (documentId: string) => Promise<boolean>) {
+  // V2: the daemon island's owned store rests no document the vessel's rest seals (`islandRestGuard`).
+  if (msg.storage?.type === "idb") {
+    const inner = shoreStorage(new IndexedDBStorageAdapter(msg.storage.dbName));
+    return restsAtVessel ? islandRestGuard(inner, restsAtVessel) : inner;
+  }
   if (msg.storage?.type === "memory" || msg.ownedDocument) return undefined;
   return shoreStorage(new IndexedDBStorageAdapter(msg.wikiUri));
 }
@@ -56,10 +60,19 @@ export function runBrowserSovereignWorker(
   scope?: BrowserIslandScope,
   opts?: { caps?: { receipt?: true } },
 ): void {
+  const post = (msg: unknown): void => { if (scope) scope.post(msg as IslandToVesselMsg); else self.postMessage(msg); };
+  const restsAtVessel = vesselRestAsker({
+    post,
+    listen: (cb) => {
+      if (scope) scope.listen(cb);
+      else self.addEventListener("message", (e: MessageEvent) => cb(e.data));
+      return () => {};
+    },
+  }, { patienceMs: 30_000, idPrefix: `island-${Math.random().toString(36).slice(2, 10)}` });
   const host: IslandHostShore = {
-    post:    (msg: IslandToVesselMsg) => scope ? scope.post(msg) : self.postMessage(msg),
+    post:    (msg: IslandToVesselMsg) => post(msg),
     listen:  (onMessage) => scope ? scope.listen(onMessage) : self.addEventListener("message", (e: MessageEvent) => onMessage(e.data)),
-    storage: browserIslandStorage,
+    storage: (msg) => browserIslandStorage(msg, restsAtVessel),
     ready:   () => scope ? scope.ready() : self.postMessage(mkReady()),
     // The breath path: pull engine + plugin bytes by CID from the OPFS CAS the vessel
     // populated on genesis-load — never CRDT-synced over the port.

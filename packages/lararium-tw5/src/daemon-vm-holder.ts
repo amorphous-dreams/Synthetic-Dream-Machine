@@ -58,7 +58,7 @@ export function holdDaemonVm<P = void>(o: {
   let restarting: Promise<{ restarts: number }> | undefined;
   let shutdown: Promise<{ acked: boolean }> | undefined;
   const registrations = new Map<string, (vm: DaemonVmCore) => void | Promise<void>>();
-  const asyncMethods = new Set(["mountHostWorkingLayer", "syncLegReady", "runAsFace", "lightFace", "dropFace", "worldlineCompare", "worldlineTrajectory", "resolveBinding"]);
+  const asyncMethods = new Set(["mountHostWorkingLayer", "syncLegReady", "runAsFace", "lightFace", "dropFace", "registerFaceBags", "worldlineCompare", "worldlineTrajectory", "resolveBinding"]);
   const registrationMethods = new Set(["mountMainVerbs", "onEvictRequest", "onResidencyOp", "onWikiAlert", "onFrame", "onControlResult", "onVerbEvent"]);
 
   // A restart's resolution and its queued follow-up never wait on listeners: the replacement is ready, the follow-up starts, and the listeners are

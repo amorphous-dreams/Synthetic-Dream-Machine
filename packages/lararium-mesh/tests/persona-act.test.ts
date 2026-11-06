@@ -9,6 +9,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed255
 import { makeHandLineage } from "../src/hand-lineage.js";
 import { projectPersonaLog, registerablePlanes, type PersonaActBody } from "../src/persona-act.js";
 import { actCid, signAct } from "../src/signed-act.js";
+import { taggedAdmission } from "./vessel-tag-fixture.js";
 
 const seed = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const who = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(seed(n)), sign: ed25519SignerFromSeed(seed(n)) });
@@ -21,7 +22,7 @@ async function honest() {
   const root = await who(1);
   const f = await signAct(act(0, null, "founding", { personaKelPrefix: "kel1", rootCommitment: "rc" }), root);
   const p = await signAct(act(1, actCid(f.body), "plane", { plane: "persona", url: "automerge:p" }), root);
-  const a = await signAct(act(2, actCid(p.body), "admission", { deviceKey: "dev1" }), root);
+  const a = await signAct(act(2, actCid(p.body), "admission", { ...(await taggedAdmission(10, G, "dev1")) }), root);
   const l = await signAct(act(3, actCid(a.body), "device-edge", { deviceKey: "dev1", edgeDigest: "ed1" }), root);
   return { root, log: [f, p, a, l] };
 }
@@ -31,8 +32,8 @@ describe("persona-act", () => {
     const { root, log } = await honest();
     const first = projectPersonaLog(log, { group: G, lineage: lineageOf([root.key]), authorize: () => true });
     expect(first.admissions).toEqual([{ deviceKey: "dev1", cid: actCid(log[2]!.body) }]);
-    const next = await signAct(act(4, actCid(log[3]!.body), "admission", { deviceKey: "dev2" }), root);
-    const fork = await signAct(act(4, actCid(log[3]!.body), "admission", { deviceKey: "dev3" }), root);
+    const next = await signAct(act(4, actCid(log[3]!.body), "admission", { ...(await taggedAdmission(11, G, "dev2")) }), root);
+    const fork = await signAct(act(4, actCid(log[3]!.body), "admission", { ...(await taggedAdmission(12, G, "dev3")) }), root);
     const accepted = projectPersonaLog([...log, next], { group: G, lineage: lineageOf([root.key]), authorize: () => true });
     expect(accepted.admissions).toEqual([...first.admissions, { deviceKey: "dev2", cid: actCid(next.body) }]);
     expect(projectPersonaLog([...log, next, fork], { group: G, lineage: lineageOf([root.key]), authorize: () => true }).admissions).toEqual(first.admissions);
@@ -65,8 +66,8 @@ describe("persona-act", () => {
 
   test("RED: two signed acts at one sequence surface as a fork, with the log stopped before them", async () => {
     const { root, log } = await honest();
-    const x = await signAct(act(4, actCid(log[3]!.body), "admission", { deviceKey: "devA" }), root);
-    const y = await signAct(act(4, actCid(log[3]!.body), "admission", { deviceKey: "devB" }), root);
+    const x = await signAct(act(4, actCid(log[3]!.body), "admission", { ...(await taggedAdmission(13, G, "devA")) }), root);
+    const y = await signAct(act(4, actCid(log[3]!.body), "admission", { ...(await taggedAdmission(14, G, "devB")) }), root);
     const pr = projectPersonaLog([...log, x, y], { group: G, lineage: lineageOf([root.key]), authorize: () => true });
     expect(pr.fork?.seq).toBe(4);
     expect(pr.devices).toEqual(["dev1"]);
@@ -76,8 +77,8 @@ describe("persona-act", () => {
     const oldRoot = await who(1), newRoot = await who(2);
     const lineage = lineageOf([oldRoot.key], [newRoot.key]);
     const f = await signAct(act(0, null, "founding", { personaKelPrefix: "kel1", rootCommitment: "rc" }), oldRoot);
-    const a = await signAct(act(1, actCid(f.body), "admission", { deviceKey: "dev1" }), oldRoot);
-    const b = await signAct(act(2, actCid(a.body), "admission", { deviceKey: "dev2", epoch: 1 }), newRoot);
+    const a = await signAct(act(1, actCid(f.body), "admission", { ...(await taggedAdmission(10, G, "dev1")) }), oldRoot);
+    const b = await signAct(act(2, actCid(a.body), "admission", { ...(await taggedAdmission(11, G, "dev2")), epoch: 1 }), newRoot);
     const pr = projectPersonaLog([f, a, b], { group: G, lineage, authorize: () => true });
     expect(pr.devices).toEqual(["dev1", "dev2"]);
   });
@@ -86,9 +87,9 @@ describe("persona-act", () => {
     const oldRoot = await who(1), newRoot = await who(2);
     const lineage = lineageOf([oldRoot.key], [newRoot.key]);
     const f = await signAct(act(0, null, "founding", { personaKelPrefix: "kel1", rootCommitment: "rc" }), oldRoot);
-    const wrongEpoch = await signAct(act(1, actCid(f.body), "admission", { deviceKey: "devX", epoch: 1 }), oldRoot);   // old key claims the new epoch
-    const good = await signAct(act(1, actCid(f.body), "admission", { deviceKey: "dev1", epoch: 1 }), newRoot);
-    const retired = await signAct(act(2, actCid(good.body), "admission", { deviceKey: "devY", epoch: 0 }), oldRoot);    // old key after the roll
+    const wrongEpoch = await signAct(act(1, actCid(f.body), "admission", { ...(await taggedAdmission(15, G, "devX")), epoch: 1 }), oldRoot);   // old key claims the new epoch
+    const good = await signAct(act(1, actCid(f.body), "admission", { ...(await taggedAdmission(10, G, "dev1")), epoch: 1 }), newRoot);
+    const retired = await signAct(act(2, actCid(good.body), "admission", { ...(await taggedAdmission(16, G, "devY")), epoch: 0 }), oldRoot);    // old key after the roll
     const pr = projectPersonaLog([f, wrongEpoch, good, retired], { group: G, lineage, authorize: () => true });
     expect(pr.devices).toEqual(["dev1"]);
   });
@@ -97,13 +98,13 @@ describe("persona-act", () => {
     const oldRoot = await who(1), newRoot = await who(2);
     const lineage = lineageOf([oldRoot.key], [newRoot.key]);
     const f = await signAct(act(0, null, "founding", { personaKelPrefix: "kel1", rootCommitment: "rc" }), oldRoot);
-    const a = await signAct(act(1, actCid(f.body), "admission", { deviceKey: "dev1" }), oldRoot);
-    const stale = await signAct(act(2, actCid(a.body), "admission", { deviceKey: "devEvil" }), oldRoot);   // epoch 0, after the roll, before any epoch-1 act
+    const a = await signAct(act(1, actCid(f.body), "admission", { ...(await taggedAdmission(10, G, "dev1")) }), oldRoot);
+    const stale = await signAct(act(2, actCid(a.body), "admission", { ...(await taggedAdmission(17, G, "devEvil")) }), oldRoot);   // epoch 0, after the roll, before any epoch-1 act
     const open = projectPersonaLog([f, a, stale], { group: G, lineage, authorize: () => true });
     expect(open.devices, "with no frontier pinned the reader keeps every epoch's own roster").toEqual(["dev1", "devEvil"]);
     const pinned = projectPersonaLog([f, a, stale], { group: G, lineage, authorize: () => true, acceptedThrough: 1 });
     expect(pinned.devices, "beyond the accepted frontier the rotated-past key adds nothing").toEqual(["dev1"]);
-    const fresh = await signAct(act(2, actCid(a.body), "admission", { deviceKey: "dev2", epoch: 1 }), newRoot);
+    const fresh = await signAct(act(2, actCid(a.body), "admission", { ...(await taggedAdmission(11, G, "dev2")), epoch: 1 }), newRoot);
     expect(projectPersonaLog([f, a, fresh], { group: G, lineage, authorize: () => true, acceptedThrough: 1 }).devices).toEqual(["dev1", "dev2"]);
   });
 });
@@ -116,7 +117,7 @@ describe("a pinned plane takes its first pin only, and only inside the founding 
     const f = await signAct(act(0, null, "founding", { personaKelPrefix: "kel1", rootCommitment: "rc" }), root);
     const p = await signAct(act(1, actCid(f.body), "plane", { plane: "persona", url: "automerge:p" }), root);
     const pin = await signAct(act(2, actCid(p.body), "plane", { plane, url: `automerge:${plane}-first` }), root);
-    const a = await signAct(act(3, actCid(pin.body), "admission", { deviceKey: "dev1" }), root);
+    const a = await signAct(act(3, actCid(pin.body), "admission", { ...(await taggedAdmission(10, G, "dev1")) }), root);
     return { root, log: [f, p, pin, a] };
   }
   test("RED: a later root-signed persona plane act over a pinned plane moves nothing and surfaces by name; CONTROL: the same url repeated is no rewrite", async () => {

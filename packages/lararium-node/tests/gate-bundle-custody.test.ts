@@ -23,7 +23,7 @@ import { mkdtempSync, readdirSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import { GATE_BUNDLE_INFO, GATE_FLOOR_BUNDLE_INFO } from "@lararium/mesh";
+import { ALL_DOMAINS, GATE_BUNDLE_INFO, GATE_FLOOR_BUNDLE_INFO, VESSEL_FACE_TAG_PROOF_DOMAIN, VESSEL_FACE_TAG_SEED_DOMAIN } from "@lararium/mesh";
 import {
   GateBundleRefused, custodyRootDoor, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, sovereignGateRoot, sovereignRoute,
 } from "../../lararium-mesh/src/gate-bundle.js";
@@ -162,6 +162,15 @@ describe("a gate bundle over a staged custody", { timeout: 180_000 }, () => {
     expect(Buffer.from(two).toString("hex")).not.toBe(signer.key);
     expect(() => door.derive("lar:///ha.ka.ba/api/v0.1/pono/no-such-name")).toThrow(FloorKeyDoorRefused);
     expect(() => door.derive(GATE_BUNDLE_INFO)).toThrow(FloorKeyDoorRefused);
+  });
+
+  test("RED: the floor door derives under no vessel-face-tag name, so no later call revives a vessel-wide tag secret; CONTROL: an allowed floor name still derives", async () => {
+    await staged();
+    const door = await vesselFloorKeyDoor();
+    const tagNames = ALL_DOMAINS.filter((d) => /\/vessel-face-tag[^/]*$/.test(d));
+    expect(tagNames, "the registry still declares both tag names").toEqual(expect.arrayContaining([VESSEL_FACE_TAG_SEED_DOMAIN, VESSEL_FACE_TAG_PROOF_DOMAIN]));
+    for (const name of tagNames) expect(() => door.derive(name), name).toThrow(/refused the vessel face tag's name/);
+    expect(door.derive(GATE_FLOOR_BUNDLE_INFO)).toHaveLength(32);
   });
 
   test("RED: two Nexuses under one custody share no key, and two custodies share none", async () => {

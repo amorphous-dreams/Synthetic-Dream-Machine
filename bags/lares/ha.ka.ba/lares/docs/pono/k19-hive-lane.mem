@@ -53,6 +53,7 @@ Every face-acting row rides a session of its face (the hands spine). The daemon 
 * ''A session acts only as the face it wears.'' The UDS session door places each session ask with its face's ordinal; the vessel's main thread books that face (ordinal and verified presenter) by request id as it places the ask, and a delegate back from the island hands the handler that booking (`VerbContext.worn`, its presenter, and local), never the presenter the delegate names. A booking serves one delegate of the act it booked, which alone spends it (since `K20` it lends a session call its presenter and locality alone), and the island's local ids retire once their verb concludes, so no later ask reusing an id borrows the session or the channel. Each store-door face row binds to the face its session wears (since `K20`, main hands it through `runAsFace` on `session:act`): a row that rode no session refuses `face-row-rides-a-session`, a row naming another face (by `face` or `handleIndex`) refuses `face-row-other-face`, and a row naming none acts as the worn face, so no row falls back to the one face open or to face 0. A row that reads a face acts as that face wherever it sat (house ruling): the relay rows `intent-relay-enable`, `-disable` and `-status` joined the face rows; the relay key's rotation stays a place row.
 * ''The browser's house'' (browser-vessel-lift slice 3 part ii): the vessel worker lights one provider per unlocked face at its first admitted session and drops it at its last through a provider door (`FaceProviderDoor`, standing for `daemon:face-lit` and `daemon:face-drop`), with no clock and no recompose, and books each request's face by its id; the door stands unwired at the host until the browser daemon composes a `JoinedFaceAuth` per face.
 * ''The held-out cells'': the realm cell, reproduced locally on the product image, walks "a SECOND face feeds, MANY-FACES" green; realm-crossing, quorum-realm, open and open-relation run on the CI cells.
+* ''Same-face tabs share one provider'' (operator, 2026-11-06, approving the house's defaults). One Keyhive provider per face lights at that face's first unlock; each later tab proves its own unlock; the face's last session closing drains in-flight verification, then drops the provider and its keys. The browser's half rides `pono/browser-vessel-lift`, carried by the b1 lanes' carriers at their land.
 
 <<~/ahu>>
 
@@ -70,6 +71,6 @@ Every face-acting row rides a session of its face (the hands spine). The daemon 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Cn665c-lHP3S42iXZjX1DOy4VaHXJ9NsrCyD2HHYzNM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8O3e_2xT_l1XTRGPVun6hTeOSk__zb4Xi7aL2Iw5hic`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -31,7 +31,7 @@ function paint(ask: CeremonyAsk, port: MessagePort): void {
   $("ceremony-label").textContent =
     ask.kind === "unlock" ? `Unlock this browser's vessel (${ask.act})${ask.words ? ` — ${ask.words}` : ""}`
       : ask.kind === "bind-first" ? "Bind a passphrase to this browser before it holds a face's secrets. Keep it: nothing here recovers it."
-        : ask.kind === "ward" ? `Enter this face's passphrase for one ward act (${ask.act}).`
+        : ask.kind === "ward" ? ask.words || `Enter this face's passphrase for one ward act (${ask.act}).`
           : "Enter this browser's passphrase to clear it. Its secrets will then rest in the clear in this browser's storage.";
   $("ceremony-face").textContent = ask.face ?? "this browser";
   $("ceremony-digest").textContent = ask.digest;

@@ -1,11 +1,11 @@
 /**
- * browser-custody — the browser keystore's place tree, and the one row door every custody row rides.
+ * browser-custody — the browser keystore's place tree, and the one row door every custody row rides; a face root rests under its ward.
  *
  * ── WHAT RESTS WHERE ─────────────────────────────────────────────────────────────────────────────
  * The vessel's IndexedDB `keystore` keeps two kinds of custody row (k15-custody-step-zero#/row-census-browser).
  * THE PLACE ROWS rest under this browser's own place tree (`custody-slots`), each sealed at `sealed/R` under the place key, its
  * AEAD binding the carrier name `browser-keystore/R`, so bytes moved from one row to another open nowhere. Two kinds stand
- * there, sorted by capability (the 2026-10-19 sort):
+ * there, sorted by capability (the 2026-10-19 sort), beside the ward's public roster (below):
  *   `vessel-key`  F: the place KEL seed and its public half. It routes the vessel and signs the place KEL alone, a floor
  *                 duty of the place signer; it grants no face identity. It may stand clear before the place tree binds.
  *   `walk/<gate>` F: the walk a carried invite opens, taken at the boot before any face stands. It holds the invite, the
@@ -13,15 +13,21 @@
  *                 face secret. A carry receipt (a document key the face's carry secret derives) would read D, and the walk
  *                 store refuses one by name (`walk-receipt-unhomed`, `browser-walk.ts`).
  * THE FACE ROWS rest under their own face's tree (`browser-face-custody.ts`, `face-sealed/<fcid>/<row>`), each named by the
- * face's PersonaGroup and never by a handle index: `face-root/<G>` (the persona root), `veil-archive-g<G>`, `face-atom/<G>`,
- * `face-anchor/<G>`, `face-address-secret/<G>`, `fleet-join-pending/<G>`, `vessel-face-key/<G>|<nexus>|<faceKey>`,
+ * face's PersonaGroup and never by a handle index: `veil-archive-g<G>`, `face-atom/<G>`, `face-anchor/<G>`,
+ * `face-address-secret/<G>`, `vessel-face-tag/<G>`, `fleet-join-pending/<G>`, `vessel-face-key/<G>|<nexus>|<faceKey>`,
  * `nexus-key/<G>/<aid>`, `promoted/<G>` and `kapae/<G>`. A face row never rests under the place tree, and no face's row
  * rests before its own tree binds (`no-custody-slot`). Every other keystore row (`catalog-url`, public by construction)
  * stays as it stood.
  *
+ * ── A FACE'S ROOT AND WARD KEY REST UNDER ITS WARD ───────────────────────────────────────────────
+ * A face's ROOT, and a face's WARD KEY (the co-sign signer), rest elsewhere: each under a ward of its own (`browser-ward-tree.ts`,
+ * `ward-core.ts`, seat-harness#/the-ward), whose key no slot of any tree here wraps. No door here reads, writes, moves or removes
+ * one: each refuses `ward-needs-fresh-unlock` by name. The ward's roster (`persona-root-roster`: each held root's index and its
+ * PUBLIC key, no seed) rests sealed under the place tree beside it.
+ *
  * ── A FACE ROW NEVER RESTS UNDER THE PLACE TREE ──────────────────────────────────────────────────
- * A face row standing under the place tree (clear or sealed), or a row spelled by handle index (`persona-root-h<N>`, the
- * roster, `nexus-key/h<N>/…`), names no face: the boot refuses `face-row-shared` and the row door `face-names-a-handle`.
+ * A face row standing under the place tree (clear or sealed), or a custody row spelled by handle index (`persona-root-h<N>`,
+ * `nexus-key/h<N>/…`), names no face: the boot refuses `face-row-shared` and the row door `face-names-a-handle`.
  *
  * ── ONE WRITER ───────────────────────────────────────────────────────────────────────────────────
  * Every place byte and the tree itself pass through the mesh's one writer (`sealed-writer.ts`) over an IndexedDB
@@ -70,20 +76,20 @@ export const SEALED_ROW_PREFIX = "sealed/";
 export const KEYSTORE_CARRIER_PREFIX = "browser-keystore/";
 
 const DEVICE_SEED_ROW = "vessel-key";
-const CUSTODY_ROW = /^(?:vessel-key|walk\/.+)$/;
+const CUSTODY_ROW = /^(?:vessel-key|persona-root-roster|walk\/.+)$/;
 
-/** Is `row` one the place tree wraps: the place seed or a walk. */
+/** Is `row` one the place tree wraps: the place seed, the ward's public roster or a walk. */
 export function isCustodyRow(row: string): boolean { return CUSTODY_ROW.test(row); }
 
 const hexUtf8 = (s: string): string => [...new TextEncoder().encode(s)].map((b) => b.toString(16).padStart(2, "0")).join("");
 
 /** The face-private row spellings: each names its face's PersonaGroup, and rests under that face's tree as the second part. */
 const FACE_ROWS: readonly (readonly [RegExp, (m: RegExpExecArray) => string])[] = [
-  [/^face-root\/(.+)$/, () => "persona-root"],
   [/^veil-archive-g(.+)$/, () => "veil-archive"],
   [/^face-atom\/(.+)$/, () => "face-atom"],
   [/^face-anchor\/(.+)$/, () => "face-anchor"],
   [/^face-address-secret\/(.+)$/, () => "face-address-secret"],
+  [/^vessel-face-tag\/(.+)$/, () => "vessel-face-tag"],
   [/^fleet-join-pending\/(.+)$/, () => "fleet-join-pending"],
   [/^promoted\/(.+)$/, () => "promoted"],
   [/^kapae\/(.+)$/, () => "kapae"],
@@ -101,11 +107,28 @@ export function faceRowOf(row: string): { readonly face: string; readonly row: s
   return null;
 }
 
-/** A row spelled by handle index, or a vessel Archive: none names a face. */
-const HANDLE_ROW = /^(?:persona-root-h\d+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|keyhive-archive)$/;
+/** A custody row spelled by handle index, or a vessel Archive: none names a face. (The ward's roster names roots by index
+ *  under the ward's law, and rests under the place tree; see the header.) */
+const HANDLE_ROW = /^(?:persona-root-h\d+|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|keyhive-archive)$/;
+
+/** The rows a ward holds: a face root's and a face ward key's logical names, and every ward tree and warded row. No custody door reaches one. */
+const WARD_ROW = /^(?:persona-root-h\d+|face-root\/.+|ward-sign\/.+|ward\/.*)$/;
+export function isWardRow(row: string): boolean { return WARD_ROW.test(row); }
+
+/** A ward act refused by name: no credential and no byte of the root rides the error. */
+export class BrowserWardRefused extends Error {
+  override readonly name = "BrowserWardRefused";
+  constructor(readonly reading: string, detail = "the face root opened to no ward act in this browser") { super(`${reading}: ${detail}`); }
+}
+
+/** Refuse a ward row at a door of unlocked custody: the root opens only fresh, for one ward act. */
+function refuseWardRow(row: string): void {
+  if (isWardRow(row)) throw new BrowserWardRefused("ward-needs-fresh-unlock", `${row} rests under its face's ward, which opens only fresh from the face's own route for one act; unlocked custody never reaches it`);
+}
 
 /** The sealed carrier a custody row rests in once a slot binds. */
 export function sealedCarrierOf(row: string): SealedCarrier {
+  refuseWardRow(row);
   if (!isCustodyRow(row)) throw new Error(`[browser-custody] "${row}" names no custody row`);
   return { name: `${KEYSTORE_CARRIER_PREFIX}${row}`, path: `${SEALED_ROW_PREFIX}${row}` };
 }
@@ -380,7 +403,7 @@ const pendingCodec = jsonRecordCodec((v) => {
 }, "fleet join pending");
 const walkCodec = jsonRecordCodec(isWalkRecord, "walk");
 
-/** The device seed's record: its public half and its seed, as the clear row has always held them. */
+/** The device seed's record: its public half and its seed. */
 const deviceSeedCodec: RowCodec = {
   toBytes(value) {
     const v = value as { verifyingKey?: unknown; signingKey?: unknown } | null;
@@ -395,9 +418,34 @@ const deviceSeedCodec: RowCodec = {
   },
 };
 
+/** The roster: one line per held root, its index and its PUBLIC key, so a possession check or a signer's key reads no seed. */
+const personaRosterCodec: RowCodec = {
+  toBytes(value) {
+    const roots = (value as { roots?: unknown } | null)?.roots;
+    const line = (l: unknown): boolean => {
+      const { handleIndex, verifyingKey } = (l ?? {}) as { handleIndex?: unknown; verifyingKey?: unknown };
+      return Number.isSafeInteger(handleIndex) && (handleIndex as number) >= 0 && typeof verifyingKey === "string" && /^[0-9a-f]{64}$/.test(verifyingKey);
+    };
+    // A ROSTER OF BARE INDICES (`{ roots: [0] }`) predates the ward: refuse by name with its cure.
+    if (Array.isArray(roots) && roots.length > 0 && roots.every((r) => typeof r === "number")) {
+      throw new BrowserWardRefused("ward-face-predates", "this face predates the ward; found it again");
+    }
+    if (!Array.isArray(roots) || !roots.every(line)) {
+      throw new Error("[browser-custody] the persona-root roster holds no { roots: [{ handleIndex, verifyingKey }] } record");
+    }
+    return new TextEncoder().encode(JSON.stringify({ roots: roots.map((l: { handleIndex: number; verifyingKey: string }) => ({ handleIndex: l.handleIndex, verifyingKey: l.verifyingKey })) }));
+  },
+  fromBytes(bytes) {
+    const value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as unknown;
+    this.toBytes(value);
+    return value;
+  },
+};
+
 const codecOf = (row: string): RowCodec =>
-  row === DEVICE_SEED_ROW || row.startsWith("face-root/") ? deviceSeedCodec
-    : row.startsWith("nexus-key/") || row.startsWith("vessel-face-key/") || row.startsWith("face-atom/") ? key32Codec
+  row === DEVICE_SEED_ROW ? deviceSeedCodec
+    : row === "persona-root-roster" ? personaRosterCodec
+    : row.startsWith("nexus-key/") || row.startsWith("vessel-face-key/") || row.startsWith("face-atom/") || row.startsWith("vessel-face-tag/") ? key32Codec
     : row.startsWith("face-anchor/") ? archiveCodec
     : row.startsWith("fleet-join-pending/") ? pendingCodec
     : row.startsWith("walk/") ? walkCodec : archiveCodec;
@@ -423,6 +471,7 @@ function treeOrRefuse(idbName: string, held: unknown, row?: string): SlotTree {
  * row never stood. Sealed and locked refuses `sealed-locked`; a clear row beside a tree refuses `unsettled`.
  */
 export async function readKeystoreRow(idbName: string, row: string): Promise<unknown> {
+  refuseWardRow(row);
   const face = faceRowOf(row);
   if (face) return readFaceDoor(face, row, idbName);
   return withCustodyActLock(idbName, "shared", () => readKeystoreRowHeld(idbName, row));
@@ -471,6 +520,7 @@ async function readKeystoreRowHeld(idbName: string, row: string): Promise<unknow
  * write lands through the mesh writer, so the standing seal stays until the new one reads back and opens.
  */
 export async function writeKeystoreRow(idbName: string, row: string, value: unknown): Promise<void> {
+  refuseWardRow(row);
   const face = faceRowOf(row);
   if (face) return writeFaceDoor(face, row, idbName, value);
   return withCustodyActLock(idbName, "shared", () => writeKeystoreRowHeld(idbName, row, value));
@@ -508,9 +558,10 @@ export function withCustodyRows<T>(idbName: string, body: (rows: CustodyRowsAct)
     throw new Error("[browser-custody] this engine offers no Web Locks, so a custody rows act cannot hold the keystore alone");
   }
   return withCustodyActLock(idbName, "exclusive", () => body({
-    read: (row) => readKeystoreRowHeld(idbName, row),
-    write: (row, value) => writeKeystoreRowHeld(idbName, row, value),
+    read: async (row) => { refuseWardRow(row); return readKeystoreRowHeld(idbName, row); },
+    write: async (row, value) => { refuseWardRow(row); return writeKeystoreRowHeld(idbName, row, value); },
     delete: async (row) => {
+      refuseWardRow(row);
       const face = faceRowOf(row);
       if (face) { await removeFaceRow(idbName, face.face, face.row); return; }
       refuseHandleRow(idbName, row);
@@ -727,8 +778,9 @@ export async function unbindBrowserCustodySlot(idbName: string, slotId: string):
 /** The door the clear-password act asks through: false parks the question, true on the person's confirmed pass. */
 export type ConfirmDoor = (question: string) => boolean;
 
-/** What this browser's place clear returns to the clear, as the question names it: the place rows alone; a face's rows clear with that face. */
-export const CLEAR_CUSTODY_CLEARS = "this browser's place custody: the device seed and its walk records";
+/** What this browser's place clear returns to the clear, as the question names it: the place rows alone; a face's rows clear
+ *  with that face, and each face root stays under its face's ward. */
+export const CLEAR_CUSTODY_CLEARS = "this browser's place custody: the device seed, its walk records and the persona-root roster (each face root stays under its face's ward)";
 export const CLEAR_CUSTODY_QUESTION = clearCustodyQuestion(CLEAR_CUSTODY_CLEARS);
 
 export type BrowserCustodyClear =

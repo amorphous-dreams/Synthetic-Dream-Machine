@@ -141,7 +141,10 @@ describe("a private body seals on a real founded vessel, end to end", () => {
 
     // AT REST: the sealed store's own tier and the sealed values' tier hold no plaintext and no bag name.
     const sealedTier = [...tree(sealedStoreDir(root)), ...tree(cadSealDir(root))];
-    expect(sealedTier.map((f) => f.path.split("/").at(-2)).sort()).toEqual(["cad", "index", "key-version", "lockbox", "manifest", "own", "own"]);
+    expect(sealedTier.map((f) => f.path.split("/").at(-2)).sort()).toEqual(["cad", "index", "key-version", "lockbox", "manifest", "own"]);
+    // The one own note names the founding's write head: a manifest cites every manifest its writer verified, so no
+    // manifest-head note rests beside it.
+    expect(sealedTier.filter((f) => f.path.split("/").at(-2) === "own").map((f) => f.path.split("/").at(-1)!.split(".")[0])).toEqual(["write-head"]);
     expect(holds(sealedTier, "SEARCH-ME")).toBe(false);
     expect(sealedTier.some((f) => f.path.includes("SEARCH-ME"))).toBe(false);
     // CONTROL: the same hunt finds the text in a buffer that does hold it.

@@ -19,9 +19,10 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve, sep } from "node:path";
 import { beforeEach } from "vitest";
 import {
-  FsCustodyIo, custodyTreeStands, foundCustody, makeCustodyHolder, seatCustodyWhenNeeded, seatFaceAutoFounder, seatWardGatherer, vesselCustodyHomes,
+  FsCustodyIo, custodyTreeStands, foundCustody, makeCustodyHolder, seatCustodyWhenNeeded, seatWardGatherer, vesselCustodyHomes,
   type CustodyHolder,
 } from "@lararium/node";
+import { seatFaceAutoFounder } from "@lararium/node/testing";
 import { TEST_PASSPHRASE } from "./found-route.js";
 
 /**

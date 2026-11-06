@@ -7,7 +7,7 @@
  * main-verbs orchestrate), the custody-by-type FAIL-CLOSED on wearing an unheld root, and the
  * pure panel-state shaping (personaPanelStateArgs) the `persona-state` worker verb writes.
  */
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
 import {
   personaMultitudeView, renameOwnPersona, type PersonaMultitudeEntry,
@@ -35,7 +35,7 @@ async function mintNext(name: string): Promise<number> {
   const roster = await listBrowserPersonaRoots(name);
   const nextIndex = roster.length ? Math.max(...roster) + 1 : 0;
   await bindSyntheticBrowserCustodySlot(name);
-  await generateOrLoadBrowserPersonaRoot(name, nextIndex);
+  await generateOrLoadBrowserPersonaRoot(name, nextIndex, FIXTURE_WARD);
   await renameOwnPersona(await makeBrowserPersonaPetnameStore(name), nextIndex, `persona-h${nextIndex}`);
   return nextIndex;
 }

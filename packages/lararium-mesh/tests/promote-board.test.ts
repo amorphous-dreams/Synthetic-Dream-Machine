@@ -19,7 +19,8 @@ const signer = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(ne
 
 async function fixture() {
   const root = await signer(1), atom = await signer(2), outsider = await signer(3);
-  const face = { group: GROUP, grant: (k: string) => k === root.key, device: (k: string) => k === atom.key };
+  // A face of one device: a lower reads on its own (the co-sign witness answers yes, as `wardActWitness` does for one device).
+  const face = { group: GROUP, grant: (k: string) => k === root.key, device: (k: string) => k === atom.key, ward: { accepts: () => true } };
   const kapae = (wiki: string, digest: string, raised: boolean, parents: string[], by = root) => signPromoteKapae({ group: GROUP, epoch: 0, wiki, digest, raised, parents }, by);
   const prepare = (wiki: string, digest: string, why = "opens the field-notes macro", by = atom) =>
     signPromotePrepare({ group: GROUP, epoch: 0, wiki, digest, title: "rites/a", classes: ["module-type"], why }, by);

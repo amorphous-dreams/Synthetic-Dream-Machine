@@ -2,6 +2,7 @@ import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js"
 import { describe, expect, it } from "vitest";
 import { makeIslandRepo, groupSecretOpenerFromSeed, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix } from "@lararium/mesh";
 import { foundTheFace, foundThePlace, InMemoryEventStore, KeyhiveProvider, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const rootSeed = new Uint8Array(32).fill(71);
 const founderVesselSeed = new Uint8Array(32).fill(72);
@@ -33,7 +34,7 @@ describe("THE_ROSTER_LAW", () => {
   it("witnesses the place absent and the atoms present on the face roster after a founding, an admit and a fleet join seat", async () => {
     const founderRepo = repo();
     const founderPlace = await foundThePlace({ repo: founderRepo, hearthTrueName: "hearth" });
-    const face = await foundTheFace({
+    const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
       repo: founderRepo,
       daemonHandle: founderPlace.daemonHandle,
       placeVerifyingKey: key(founderVesselSeed),
@@ -104,7 +105,7 @@ describe("THE_ROSTER_LAW", () => {
   it("control — the founded atom reads present on its own face roster", async () => {
     const founderRepo = repo();
     const founderPlace = await foundThePlace({ repo: founderRepo, hearthTrueName: "hearth" });
-    const face = await foundTheFace({
+    const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
       repo: founderRepo,
       daemonHandle: founderPlace.daemonHandle,
       placeVerifyingKey: key(founderVesselSeed),

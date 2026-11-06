@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { KeyhiveProvider, InMemoryEventStore, ArchiveIdentityMismatch } from "@lararium/keyhive";
 import { BootHalted } from "./wire-vessel-rig.js";
-import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, foundedGroupOf } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, fixtureWardDialog, foundedGroupOf } from "./browser-custody-fixture.js";
 import { refuseSharedTreeFaceRows } from "../src/browser-custody.js";
 import { placeSeed } from "./browser-place-seed.fixture.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
@@ -12,7 +12,7 @@ import { BrowserArchiveRowUnreadable, loadBrowserVeilArchive, saveBrowserVeilArc
 async function foundHalted(): Promise<{ idbName: string; group: string }> {
   const idbName = `browser-archive-${crypto.randomUUID()}`;
   await bindSyntheticBrowserCustodySlot(idbName);
-  await expect(openBrowserVessel({ idbName, onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); } } as BrowserVesselOptions))
+  await expect(openBrowserVessel({ idbName, askWardRoute: fixtureWardDialog, onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); } } as BrowserVesselOptions))
     .rejects.toBeInstanceOf(BootHalted);
   return { idbName, group: await foundedGroupOf(idbName) };
 }

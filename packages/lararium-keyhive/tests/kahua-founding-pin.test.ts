@@ -16,6 +16,7 @@ import {
   type LarDoc,
 } from "@lararium/mesh";
 import { foundTheFace, foundThePlace, foundingHearthOf } from "../src/index.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const key = (seed: Uint8Array) => groupSecretOpenerFromSeed(seed).deviceKey;
 
@@ -24,6 +25,7 @@ async function founded() {
   const vesselSeed = new Uint8Array(32).fill(71), signerSeed = new Uint8Array(32).fill(72), atomSeed = new Uint8Array(32).fill(73);
   const place = await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" });
   const input = {
+    vesselTag: testVesselTagDoor(1),
     repo, daemonHandle: place.daemonHandle, placeVerifyingKey: key(vesselSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood" as const, signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(vesselSeed), atomSeed,
   };

@@ -6,6 +6,7 @@ import {
   composeFleetJoinRequest, ed25519SignerFromSeed, fleetJoinOffer, fleetJoinRequestImage,
   fleetJoinSealPair, hex, readFleetJoinRequest,
 } from "@lararium/mesh";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const isRefusal = (v: unknown): boolean => typeof v === "object" && v !== null && Object.hasOwn(v, "refusal");
 const seed = (n: number) => new Uint8Array(32).fill(n);
@@ -17,7 +18,7 @@ const key = async (s: Uint8Array) => hex(await ed.getPublicKeyAsync(s));
 describe("fleet-join request uses the selected face", () => {
   test("the founded atom's request reads; place, face B and unnamed requests refuse", async () => {
     const placeKey = await key(placeSeed);
-    const founded = await runFoundingCeremony({
+    const founded = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1),
       repo: new Repo(), atomSeed, placeVerifyingKey: placeKey, vesselDisplayName: "requester",
       binding: { mode: "self-stood", signerSeed: placeSeed }, hearthTrueName: "",
       nexusPubkey: placeKey,
@@ -30,7 +31,7 @@ describe("fleet-join request uses the selected face", () => {
     const seal = fleetJoinSealPair();
     const request = await composeFleetJoinRequest({
       offer, atomKey, sealKey: seal.key, mintFaceKey: async () => { throw new Error("no scopes"); },
-      custody: {} as never, sign: ed25519SignerFromSeed(founded.atomSeed),
+      custody: {} as never, sign: ed25519SignerFromSeed(founded.atomSeed), vesselTag: testVesselTagDoor(2),
     });
     expect(isRefusal(request)).toBe(false);
     if (isRefusal(request)) return;

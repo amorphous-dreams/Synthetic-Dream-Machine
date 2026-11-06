@@ -101,12 +101,14 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 <<~ ahu slot=`#/the-tiers`>>
 !! The tiers ~ each seat draws the tier that serves it
 
+''The spend balance'' (operator, 2026-11-06, #/rulings): the swarm's draw leans Codex about 70 to Claude 30. Codex carries the lane steps (the lead in the `lead` mode, Terra building, Luna and Sol reading, Terra scouting); Claude carries the controller seat, the second lineage's read where Codex built (the blind Opus read of a custody step), and the few lanes a brief names for a Claude lead. The controller reads the balance per batch from what each tool writes (#/the-shapes) and steers the next launches toward it; the measure that compares a Claude transcript with a Codex rollout against their two pools rests owed to the spend scout's report.
+
 * ''Controller'': Opus 5.5, high effort, refreshing its context at each batch boundary. Fable takes a named ruling Opus at max visibly missed.
-* ''Lane lead'': Sonnet 5.5 with the one-hour subagent cache by default; Opus 5.5 for a seam, custody or security lane, the reason written in the brief. A lead retires at its PR's land and a fresh seat resumes from a cold brief.
+* ''Lane lead'': Codex `gpt-6.1-terra` in the `lead` mode by default, fresh per step, while the Codex pool stands over its lead floor; a Claude lead (Sonnet 5.5 by default, Opus 5.5 for a seam, custody or security lane) only where the brief names why. Under the floor the lead passes to Claude and the balance bends for the window. A lead retires at its PR's land and a fresh seat resumes from a cold brief.
 * ''Fable as a burst'': a Fable lead takes a named integration-judgment bottleneck when all four hold: the lead authors the code; one lane-day at most; no wait past an hour (on a longer wait it writes a brief, hands back and retires); the weekly Fable pool holds room. Fable never stands as a lane's standing lead.
 * ''Builder'': Terra 6.1 medium on file-listed edits alone. A `gpt-6.1-sol` build seat answers a named ask. No Opus or Fable builder seat.
 * ''Reader'': Luna high reads every batch. Sol 6.1 high reads once per TRAIN, over the merged head before the batch lands, covering every lane in it; a lane launches no Sol seat, a security-class slice included. A security-class slice takes the controller's own diff read and a Copilot cold read. A fresh Claude reader serves where the read needs house canon; Fable cold-reads only a spec with open forks that an expensive builder will inherit.
-* ''Researcher'': Fable for parallel web collides, Opus for repo-grounded research, Sonnet for audits and sweeps, Codex Sol with `--search` for one question.
+* ''Researcher'': Terra high in the `read` mode for repo-grounded scouts and audits by default; Codex Sol with `--search` for one question; Fable for parallel web collides and Opus for research that needs the controller's live context.
 * ''General-purpose subagents'' run Sonnet unless the roster names Opus or Fable.
 
 The measures behind each placement stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/model-tiers-2026`>>.
@@ -169,7 +171,7 @@ A premium request counts per prompt, never per tool call.
 * ''A cloud bisect'' chases a single e2e failure with `node tools/e2e-shards.mjs push <lane>` from the lane's worktree (about 5 runners), never a local loop or a full push.
 * ''A lane hands back on green'': its battery (#/the-battery), CI reads green on its head (held-out rides the train), its pull request opens into the work branch, and its fresh read precedes the land. A Copilot PR review runs only on the operator's ask.
 * ''A lane worktree'' counts toward five at most (`node tools/provision-worktree.mjs <dir>` builds it whole in one run: submodules against the main checkout's objects, the frozen install, the grammar wasm, the TW5 vendor blob, every package build and the stamp); the train holds the sixth. Worktrees and scratch roots live under `~/.lares-scratch/<lane>/`, never `/tmp`; a provision reads `df` first and stops under 60G free on C:. A lane may hold a second worktree, each with one writer, when two features on its path build in parallel. Free slots fill from the road's order without asking.
-* ''One tool lands a batch'': `tools/land-train.mjs` carries the train, the chained land, the direct land of a lane that already holds the span head, the disk floor (`LARES_DISK_MIN_C_GB`), the worktree cap, the span-push gate and the cancel of the landed lanes' runs; `--plan` prints the commits it would write and pushes nothing. A verdict reads three states: green, red, and UNREADABLE (GitHub unreachable or a 5xx), which waits, exits 10 and never reads as red or green; `tools/ci-verdict.mjs --wait` carries that wait, and its `job-minutes` line gives the CI currency below.
+* ''One tool lands a batch'': `tools/land-train.mjs` carries the train, the chained land, the direct land of a lane that already holds the span head, the disk floor (`LARES_DISK_MIN_C_GB`), the worktree cap, the span-push gate and the cancel of the landed lanes' runs; `--plan` prints the commits it would write and pushes nothing. A verdict reads three states: green, red, and UNREADABLE (GitHub unreachable or a 5xx), which waits, exits 10 and never reads as red or green; `tools/ci-verdict.mjs --wait` carries that wait, and its `job-minutes` line gives the CI currency below. Every tool that reads CI keeps one pace: `land-train`, `ci-verdict`, `e2e-shards` and `burst-bisect` read GitHub no closer than three minutes apart (`POLL_FLOOR_S`, 180 s, in `tools/ci-verdict.mjs`; operator law, 2026-11-05, after the API quota ran out), and the two find loops read at most three times; the pace decides only when a tool reads again, never a verdict.
 * ''The controller lands in batches'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/state). A batch forms once two or more features read green; a lone green feature drains as a batch of one when no other lane has a feature nearing green, and a span-fault cure or shared ground other lanes build on lands at once. One train reads every green lane merged over the span as it stands: the shared packages' suites, `tools/witness-all.sh`, evergreen and the tallies (a suite log with no "Test Files" line reads red; a dirty tree reads red); each lane's CI carried the e2e. The land writes one commit per lane, chained, each with the train's merge tree, so the span's last tree equals the train's tree. The span pushes only while no run flies on it, and the land cancels the CI runs its lane-branch pushes start. A lane on an older base lands when the span moved only by lands since (subjects carrying ` — merge PR #N`).
 * ''Road commits'' (road rows, o-takiage moves, changelog bullets, `#/state`) ride behind a batch, never between queued lands.
 * ''After each land'' the build cache caps at 15GB (`docker builder prune -f --max-used-space 15GB`); no image or system prune without the operator's word.
@@ -258,6 +260,7 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 # 2026-11-04, red-first, homed: a red homes in the narrowest existing test, table, law or property seed; a new file only for a distinct boundary.
 # 2026-11-04, the wrap-up: one Terra builder and one Luna reader at a time; under the Codex build floor, a Copilot builder with Luna and Sol readers.
 # 2026-11-04, spend: a lead runs fresh per step, and spend reads true usage from the rollouts (#/the-shapes).
+# 2026-11-06, spend balance (operator's words, the Codex pool reset in full that night): "Update the mixed-model-swarm working contract to reduce Claude spends and go with balanced Claude:Codex Spends (leaning on Codex say 70/30). Re-launch a Terra scout to finish that research." (#/the-tiers)
 <<~/ahu>>
 
 <<~ ahu slot=`#/owed`>>
@@ -266,14 +269,14 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all launched Claude swarms... we'll want custom Claude tasked-spirit designs and 'summons', but long step-by-step, leap-by-leap lane-parallel work should go through this to manage the budgets in pono alignment."
 
-# ''A Claude seat.'' The seat spec stays lineage-blind (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>), but only its Codex and Copilot renderings stand. A Claude rendering runs a summoned spirit headless with a pinned model and effort, the seat law appended, and the walls; it reads the run's own usage report, stops the spirit at a ceiling, and keeps every step fresh (the spirit reads its lane state, does one step, writes state and its hand-back, and ends). Built after standing.
+# ''A Claude seat.'' The seat spec stays lineage-blind (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>), but only its Codex and Copilot renderings stand. A Claude rendering runs a summoned spirit headless with a pinned model and effort, the seat law appended, and the walls; it reads the run's own usage report, stops the spirit at a ceiling, and keeps every step fresh (the spirit reads its lane state, does one step, writes state and its hand-back, and ends). Built after standing. Its evidence (2026-11-05): one spirit resumed five times ran ≈953k tokens; fresh spirits per step that evening ran 80k to 170k each.
 # ''Summons.'' A custom tasked spirit gets a named, reviewed definition (model, effort, tools, the seed, its mask), and a summons invokes it by name, so its shape gets reviewed once instead of re-typed into every brief.
 # ''One budget across lineages.'' Row 7's house cap and lane shares, signed by the hand in the live wiki, govern Claude, Codex and Copilot alike. Each seat reads its share through its capability, and the vessel signs the roster's spend rows.
 # ''A fresh-per-step controller.'' The controller seat hands off through <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> instead of living one long session, which grows in cost with the square of its length.
 # ''A Copilot ceiling.'' Copilot spend reads from its log, but no ceiling stops a running Copilot seat; the seat needs one.
 # ''The spend table.'' The launcher reads its limits from a ruled table in `seat-harness#/the-spend-guard`, keyed to the pool window. It was built on a parked lane (`feature/green-jello-dinosaur-5--spend-burn`) and lands after standing.
 
-''The discipline until then.'' Long, lane-parallel work uses a fresh tasked spirit per lane step, never long resumes, which re-send the whole transcript each time. At most three Claude builders run in parallel. Each spirit's token total is recorded in its lane's canon row. Short ad-hoc scouts stay outside the seat. The operator watches the Claude meter, which the house can't read in-session.
+''The discipline until then.'' Long, lane-parallel work uses a fresh tasked spirit per lane step, never long resumes, which re-send the whole transcript each time. At most three Claude spirits run in parallel, and the lane steps go to Codex seats first (#/the-tiers, the spend balance). Each spirit's token total is recorded in its lane's canon row. Short ad-hoc scouts stay outside the seat. The operator watches the Claude meter, which the house can't read in-session.
 
 <<~/ahu>>
 
@@ -291,6 +294,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yJLC5SttgZ34szwSU6ugmFfvnMszp3JhLyynpdk8V3E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;s-opvQeqjt0cyDGUpH2eFj9nH-UUR1SRMLA7vPxRwNI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

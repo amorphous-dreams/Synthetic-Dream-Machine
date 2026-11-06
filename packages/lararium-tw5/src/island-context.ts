@@ -43,6 +43,8 @@ export interface IslandContext {
    * manifest's `grants.catalogUrl`; the kernel lifts it here.
    */
   catalogUrl: string | null;
+  /** The lit face's own catalog laid over `catalogUrl` (`grants.faceCatalogUrl`); null at the floor. */
+  faceCatalogUrl?: string | null;
   /** The face's kahua stage the manifest granted (`IslandGrants.kahuaUrl`); `bags/kahua` mounts from this alone. */
   kahuaUrl?: string | null;
   /** The face the kahua stage folds under (its group and its grant); null or absent, the stage reads empty. */

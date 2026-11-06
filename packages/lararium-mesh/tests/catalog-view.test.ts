@@ -1,0 +1,247 @@
+/**
+ * catalog-view — the catalog splits by face (sealed-store#/owed, U1): a floor catalog naming public rows alone,
+ * readable at the floor (F), and a per-face catalog naming that face's own rows, at the face's derived address (D).
+ *
+ *   V1 — two faces over one floor: face A's private bag lands in A's catalog alone; face B's view lists none of A's bags,
+ *        and the floor names none of them either
+ *   V2 — a raw read of A's catalog under B refuses by name: B's secret derives another address (`face-catalog-foreign`)
+ *   V3 — one change that rewrites a canon row and a wiki row (bag-compact's and rotate-recipe's shape) lands each row on
+ *        its own half, and the view reads both back merged
+ *   V4 — the lift: the rows a floor wrote before the face stood move into the face's catalog and leave the floor, which
+ *        then names public rows alone; the lift runs twice with one effect
+ *   V5 — the face expected (a lit face proved, its sealed catalog not yet open, since the island's holder stands later):
+ *        a face row written in that span rests in memory alone, never in the floor's document nor its history; the view
+ *        reads it, and binding the face carries it into the face's catalog; a floor row still lands on the floor
+ *   V6 — two lit faces, the worn one and a sibling lit beside it: each reads through its OWN view (F with its own D), so a
+ *        row registered under one never reads under the other, the worn face's catalog holds none of the sibling's rows
+ *        and the floor holds neither's; the book's union names both, for the vessel's own bridge reading
+ *   CONTROL — a view with no face lit (the anon floor, a herm) reads and writes the floor as it always did
+ *   NONSENSE — every face row class routes D: an address nothing classes F never lands on the floor once a face stands
+ */
+import { describe, expect, test } from "vitest";
+import { Repo } from "@automerge/automerge-repo";
+import * as A from "@automerge/automerge";
+import { emptyLarDoc, tiddlerText, type LarDoc } from "../src/base-doc.js";
+import { storedLarRecord } from "../src/stored-record.js";
+import { ownEntry } from "../src/stored-value.js";
+import { bagUri, CATALOG_DOC_URI, CROSSROADS_DOC_URI, ORACLE_DOC_URI, catalogCorpusEntryUri, recipeUri } from "../src/lar-uris.js";
+import { personaScopedBagIds } from "../src/persona-scope.js";
+import { wikiSlotUri, wikiWorkingFloorKey } from "../src/wiki-recipe.js";
+import { catalogNamedBags } from "../src/register-bags.js";
+import {
+  catalogRowHalf, faceCatalogDocUrl, openFaceCatalog, FaceCatalogRefusal, makeCatalogView, liftFaceCatalogRows, faceViewBook,
+} from "../src/catalog-view.js";
+
+const secretA = new Uint8Array(32).fill(0xa1);
+const secretB = new Uint8Array(32).fill(0xb2);
+const row = (title: string, text: string) => storedLarRecord(title, { text, kind: "oracle" }, "test");
+const titlesOf = (doc: LarDoc | undefined): string[] => Object.keys(doc?.tiddlers ?? {}).sort();
+
+function stand() {
+  const repo = new Repo({ network: [] });
+  const floor = repo.create<LarDoc>(emptyLarDoc());
+  const faceA = openFaceCatalog(repo, faceCatalogDocUrl(secretA), secretA);
+  const faceB = openFaceCatalog(repo, faceCatalogDocUrl(secretB), secretB);
+  return { repo, floor, faceA, faceB };
+}
+
+describe("the catalog splits by face (U1)", () => {
+  test("V1 — face B's view lists none of face A's bags, and the floor names none of them", async () => {
+    const { floor, faceA, faceB } = stand();
+    const viewA = makeCatalogView(floor, await faceA);
+    const viewB = makeCatalogView(floor, await faceB);
+    const privateBag = bagUri("ledger-a");
+    viewA.change((doc) => { doc.tiddlers[privateBag] = row(privateBag, "automerge:ledgerA"); });
+    // Assert the setup took: A's own view reads its bag.
+    expect(catalogNamedBags(viewA.doc())).toContain(privateBag);
+    expect(catalogNamedBags(viewB.doc())).not.toContain(privateBag);
+    expect(titlesOf(floor.doc())).not.toContain(privateBag);
+    expect(titlesOf((await faceA).doc())).toContain(privateBag);
+  });
+
+  test("V2 — a raw read of face A's catalog under face B refuses by name", async () => {
+    const { repo } = stand();
+    const urlA = faceCatalogDocUrl(secretA);
+    expect(faceCatalogDocUrl(secretB)).not.toBe(urlA);
+    const refused = await openFaceCatalog(repo, urlA, secretB).then(() => null, (e: unknown) => e);
+    expect(refused).toBeInstanceOf(FaceCatalogRefusal);
+    expect((refused as FaceCatalogRefusal).reason).toBe("face-catalog-foreign");
+    // CONTROL: A's own secret opens A's catalog.
+    await expect(openFaceCatalog(repo, urlA, secretA)).resolves.toBeTruthy();
+  });
+
+  test("V3 — one change over a canon row and a wiki row lands each on its own half, read back merged", async () => {
+    const { floor, faceA } = stand();
+    const face = await faceA;
+    const view = makeCatalogView(floor, face);
+    const canon = catalogCorpusEntryUri("engine");
+    const wiki = bagUri("notes");
+    const recipe = recipeUri("catalog", "notes");
+    view.change((doc) => {
+      doc.tiddlers[canon] = row(canon, "automerge:corpus");
+      doc.tiddlers[wiki] = row(wiki, "automerge:notes");
+      doc.tiddlers[recipe] = row(recipe, "");
+    });
+    expect(titlesOf(floor.doc())).toEqual([canon]);
+    expect(titlesOf(face.doc())).toEqual([wiki, recipe].sort());
+    expect(tiddlerText(ownEntry(view.doc()?.tiddlers, canon))).toBe("automerge:corpus");
+    expect(tiddlerText(ownEntry(view.doc()?.tiddlers, wiki))).toBe("automerge:notes");
+    view.change((doc) => { delete doc.tiddlers[wiki]; });
+    expect(titlesOf(face.doc())).toEqual([recipe]);
+  });
+
+  test("V4 — the lift moves the floor's face rows into the face's catalog; the floor then names public rows alone", async () => {
+    const { floor, faceA } = stand();
+    const priv = bagUri("diary");
+    const plane = personaScopedBagIds("ab".repeat(32)).persona;
+    const kahua = bagUri("kahua");
+    const slot = wikiSlotUri("notes", "working");
+    const workingFloor = wikiWorkingFloorKey("notes", { kind: "place", aid: "Eplace" } as never);
+    // The floor stood alone first: every row it wrote rests there.
+    floor.change((doc) => {
+      for (const t of [ORACLE_DOC_URI, CROSSROADS_DOC_URI, CATALOG_DOC_URI, priv, plane, kahua, slot, workingFloor]) doc.tiddlers[t] = row(t, `automerge:${t.length}`);
+    });
+    const face = await faceA;
+    const moved = liftFaceCatalogRows(floor, face);
+    expect(moved.sort()).toEqual([priv, plane, kahua, slot].sort());
+    expect(titlesOf(floor.doc())).toEqual([ORACLE_DOC_URI, CROSSROADS_DOC_URI, CATALOG_DOC_URI, workingFloor].sort());
+    expect(catalogNamedBags(floor.doc()).every((b) => catalogRowHalf(b) === "floor")).toBe(true);
+    expect(titlesOf(face.doc())).toEqual([priv, plane, kahua, slot].sort());
+    // Twice, one effect.
+    expect(liftFaceCatalogRows(floor, face)).toEqual([]);
+    // A row the face already holds keeps the face's value; the floor's copy leaves.
+    floor.change((doc) => { doc.tiddlers[priv] = row(priv, "automerge:stale"); });
+    liftFaceCatalogRows(floor, face);
+    expect(tiddlerText(ownEntry(face.doc()?.tiddlers, priv))).toBe(`automerge:${priv.length}`);
+    expect(titlesOf(floor.doc())).not.toContain(priv);
+  });
+
+  test("CONTROL — no face lit: the view reads and writes the floor as it always did", async () => {
+    const { floor } = stand();
+    const view = makeCatalogView(floor, null);
+    const priv = bagUri("anon-bag");
+    view.change((doc) => { doc.tiddlers[priv] = row(priv, "automerge:anon"); });
+    expect(titlesOf(floor.doc())).toEqual([priv]);
+    expect(view.url).toBe(floor.url);
+    expect(view.documentId).toBe(floor.documentId);
+    expect(catalogNamedBags(view.doc())).toEqual([priv]);
+  });
+
+  test("NONSENSE — the classifier: floor rows name public, signed infrastructure alone; everything else routes D", () => {
+    for (const t of [CATALOG_DOC_URI, ORACLE_DOC_URI, CROSSROADS_DOC_URI, catalogCorpusEntryUri("x"), bagUri("lares"), bagUri("lararium"),
+      bagUri("daemon"), recipeUri("catalog", "daemon"), `${bagUri("realm")}/realm-id`, wikiWorkingFloorKey("w", { kind: "place", aid: "E" } as never)]) {
+      expect([t, catalogRowHalf(t)]).toEqual([t, "floor"]);
+    }
+    for (const t of [bagUri("anything"), bagUri("kahua"), recipeUri("catalog", "notes"), wikiSlotUri("daemon", "working"), "lar:///nowhere/at/all", ""]) {
+      expect([t, catalogRowHalf(t)]).toEqual([t, "face"]);
+    }
+  });
+
+  test("V5 — the face expected: a face row waits in memory, never in the floor's document or history, and binds into the face's catalog", async () => {
+    const { floor, faceA } = stand();
+    const view = makeCatalogView(floor);
+    const privateBag = bagUri("ledger-expected");
+    view.expectFace();
+    view.change((doc) => {
+      doc.tiddlers[privateBag] = row(privateBag, "automerge:ledgerExpected");
+      doc.tiddlers[ORACLE_DOC_URI] = row(ORACLE_DOC_URI, "automerge:publicRowExpected");
+    });
+    // The view reads both; the floor holds the public row alone, and no byte of its history names the face row.
+    expect(tiddlerText(ownEntry(view.doc()?.tiddlers, privateBag))).toBe("automerge:ledgerExpected");
+    expect(titlesOf(floor.doc())).toContain(ORACLE_DOC_URI);
+    expect(titlesOf(floor.doc())).not.toContain(privateBag);
+    expect(Buffer.from(A.save(floor.doc()!)).includes(Buffer.from("ledger-expected"))).toBe(false);
+    const face = await faceA;
+    view.bindFace(face);
+    expect(tiddlerText(ownEntry(face.doc()?.tiddlers, privateBag))).toBe("automerge:ledgerExpected");
+    expect(tiddlerText(ownEntry(view.doc()?.tiddlers, privateBag))).toBe("automerge:ledgerExpected");
+    expect(titlesOf(floor.doc())).not.toContain(privateBag);
+  });
+
+  test("V6 — two lit faces each read through their own view: neither reads the other's rows, the worn catalog and the floor hold none of the sibling's", async () => {
+    const { floor, faceA } = stand();
+    const worn = makeCatalogView(floor, await faceA);
+    const book = faceViewBook(floor, { group: "group-a", view: worn });
+    const rowA = bagUri("plane-of-a"), rowB = bagUri("plane-of-b");
+    book.viewOf("group-a").change((doc) => { doc.tiddlers[rowA] = row(rowA, "automerge:planeA"); });
+    book.viewOf("group-b").change((doc) => { doc.tiddlers[rowB] = row(rowB, "automerge:planeB"); });
+    expect(book.viewOf("group-a"), "the worn face reads through the worn view").toBe(worn);
+    expect(titlesOf(book.viewOf("group-a").doc())).toContain(rowA);
+    expect(titlesOf(book.viewOf("group-a").doc())).not.toContain(rowB);
+    expect(titlesOf(book.viewOf("group-b").doc())).toContain(rowB);
+    expect(titlesOf(book.viewOf("group-b").doc())).not.toContain(rowA);
+    expect(titlesOf((await faceA).doc())).not.toContain(rowB);
+    expect(titlesOf(floor.doc())).not.toContain(rowA);
+    expect(titlesOf(floor.doc())).not.toContain(rowB);
+    expect(titlesOf(book.everyRow())).toEqual(expect.arrayContaining([rowA, rowB]));
+  });
+});
+
+describe("the floor catalog names public books alone (U1, public-only F)", () => {
+  const tiered = (title: string, text: string, tier?: string) => storedLarRecord(title, { text, kind: "oracle", ...(tier ? { "cap-tier": tier } : {}) }, "test");
+
+  test("RED 1 — a public-declared bag's row lands on F, and a herm reading F alone lists it", async () => {
+    const { floor, faceA } = stand();
+    const view = makeCatalogView(floor, await faceA);
+    const pub = bagUri("open-book");
+    view.change((doc) => { doc.tiddlers[pub] = tiered(pub, "automerge:openBook", "public"); });
+    expect(titlesOf(floor.doc())).toContain(pub);
+    expect(titlesOf((await faceA).doc())).not.toContain(pub);
+    expect(catalogNamedBags(floor.doc())).toContain(pub);
+    expect(catalogRowHalf(pub, ownEntry(floor.doc()?.tiddlers, pub) as never)).toBe("floor");
+  });
+
+  test("RED 2 — a private or tier-less bag's row never reaches F", async () => {
+    const { floor, faceA } = stand();
+    const view = makeCatalogView(floor, await faceA);
+    const priv = bagUri("closed-book"), bare = bagUri("bare-book"), contract = bagUri("contract-book"), odd = bagUri("odd-book");
+    view.change((doc) => {
+      doc.tiddlers[priv] = tiered(priv, "automerge:closed", "private");
+      doc.tiddlers[bare] = tiered(bare, "automerge:bare");
+      doc.tiddlers[contract] = tiered(contract, "automerge:contract", "contract");
+      doc.tiddlers[odd] = tiered(odd, "automerge:odd", "Public ");
+    });
+    for (const t of [priv, bare, contract, odd]) {
+      expect(titlesOf(floor.doc())).not.toContain(t);
+      expect(titlesOf((await faceA).doc())).toContain(t);
+    }
+    // a tier on a non-bag title never floors it
+    const wiki = recipeUri("catalog", "notes");
+    view.change((doc) => { doc.tiddlers[wiki] = tiered(wiki, "automerge:notes", "public"); });
+    expect(titlesOf(floor.doc())).not.toContain(wiki);
+  });
+
+  test("RED 3 — re-declaring a bag from public to private moves its row off F", async () => {
+    const { floor, faceA } = stand();
+    const view = makeCatalogView(floor, await faceA);
+    const book = bagUri("turning-book");
+    view.change((doc) => { doc.tiddlers[book] = tiered(book, "automerge:turning", "public"); });
+    expect(catalogNamedBags(floor.doc())).toContain(book);
+    view.change((doc) => { doc.tiddlers[book] = tiered(book, "automerge:turning", "private"); });
+    expect(catalogNamedBags(floor.doc())).not.toContain(book);
+    expect(titlesOf((await faceA).doc())).toContain(book);
+    expect(catalogNamedBags(view.doc())).toContain(book);
+  });
+
+  test("RED 3b — the lift leaves a public row on F and carries a private one to the face", async () => {
+    const { floor, faceA } = stand();
+    const pub = bagUri("lift-open"), priv = bagUri("lift-closed");
+    floor.change((doc) => { doc.tiddlers[pub] = tiered(pub, "automerge:o", "public"); doc.tiddlers[priv] = tiered(priv, "automerge:c", "private"); });
+    const face = await faceA;
+    expect(liftFaceCatalogRows(floor, face)).toEqual([priv]);
+    expect(titlesOf(floor.doc())).toEqual([pub]);
+  });
+
+  test("CONTROL — the face half still lists every row the face owns", async () => {
+    const { floor, faceA } = stand();
+    const view = makeCatalogView(floor, await faceA);
+    const a = bagUri("own-a"), b = bagUri("own-b"), pub = bagUri("own-pub");
+    view.change((doc) => {
+      doc.tiddlers[a] = tiered(a, "automerge:a", "private");
+      doc.tiddlers[b] = tiered(b, "automerge:b");
+      doc.tiddlers[pub] = tiered(pub, "automerge:p", "public");
+    });
+    expect(catalogNamedBags(view.doc()).sort()).toEqual([a, b, pub].sort());
+    expect(catalogNamedBags((await faceA).doc()).sort()).toEqual([a, b].sort());
+  });
+});

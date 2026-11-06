@@ -13,6 +13,10 @@
  *        prefix) in the catalog; each says so
  *   S5 — seated, working is the face's DERIVED address under its secret, by slug and kind: no record names it, two
  *        resolvers of one face find one document, and a face whose secret stands nowhere refuses `no-address-secret`
+ *   S7 — THE SEAT-TO-LIFT GAP (sealed-store#/owed): a face lit (its secret served) whose seat has not landed writes its
+ *        working slot straight into the face's derived document, never a floor document: no working-floor row mints, the
+ *        face door registers nothing before the seat, and the seat's lift registers it once
+ *   (S4 and S6 read the true floor: no face lit, so no address secret stands.)
  */
 import { describe, test, expect } from "vitest";
 import { makeIslandRepo, type Repo } from "@lararium/mesh";
@@ -35,7 +39,7 @@ const PLACE = { kind: "place", aid: "EplaceSlotResolverSynthetic" } as const;
 const LEAF_NEXUS = { kind: "private-nexus", key: VERIFYING_KEY } as const;
 const SECRET = () => new Uint8Array(32).fill(9);
 
-async function rig(opts: { seated: boolean; secret?: () => Promise<Uint8Array | null>; anchor?: WorkingFloorAnchor | null }): Promise<{ resolver: SlotDocResolver; repo: Repo; catalogUrl: string; daemon: CompositeStore; kh: KeyhiveProvider; wikiUrl: string }> {
+async function rig(opts: { seated: boolean | (() => boolean); secret?: () => Promise<Uint8Array | null>; anchor?: WorkingFloorAnchor | null; doorMints?: string[] }): Promise<{ resolver: SlotDocResolver; repo: Repo; catalogUrl: string; daemon: CompositeStore; kh: KeyhiveProvider; wikiUrl: string }> {
   const kh = new KeyhiveProvider();
   await kh.init({ seed: new Uint8Array(32).fill(3), eventStore: noopStore });
   const group = await kh.createGroup();
@@ -52,8 +56,8 @@ async function rig(opts: { seated: boolean; secret?: () => Promise<Uint8Array | 
     catalog: makeCatalogAccessor(repo, catalogHandle.url),
     vesselDid: () => DID, mintedByHex: () => "0x" + "a".repeat(64),
     personaGroupId: group.groupId,
-    faceSeated: async () => opts.seated,
-    faceDoor: makeFaceBagDoor({ face: kh, groupId: group.groupId }),
+    faceSeated: async () => (typeof opts.seated === "function" ? opts.seated() : opts.seated),
+    faceDoor: ((door) => (opts.doorMints ? { ...door, mint: async (url: string, level: never) => { opts.doorMints!.push(url); return door.mint(url, level); } } : door))(makeFaceBagDoor({ face: kh, groupId: group.groupId })) as never,
     faceAddressSecret: opts.secret ?? (async () => SECRET()),
     floorAnchor: () => (opts.anchor === undefined ? PLACE : opts.anchor),
     faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(repo, url as never, label),
@@ -94,7 +98,7 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
   });
 
   test("S4 — unseated, personal binds on the vessel's own key and working rests by the place's key in the catalog; each says so", async () => {
-    const r = await rig({ seated: false });
+    const r = await rig({ seated: false, secret: async () => null });
     for (const kind of ["working", "personal"] as const) {
       const doc = await r.resolver.slotDoc("garden", kind);
       expect(doc?.reach, kind).toBe("vessel-only");
@@ -107,14 +111,14 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
   });
 
   test("RED S6 — a browser leaf at the floor holds no place KEL: its working floor rests by the private Nexus of one it stands as; a vessel that holds neither refuses no-place by name", async () => {
-    const leaf = await rig({ seated: false, anchor: LEAF_NEXUS });
+    const leaf = await rig({ seated: false, anchor: LEAF_NEXUS, secret: async () => null });
     const working = await leaf.resolver.slotDoc("garden", "working");
     expect(working?.reach).toBe("vessel-only");
     const catalog = makeCatalogAccessor(leaf.repo, leaf.catalogUrl);
     expect(await catalog.urlOf(wikiWorkingFloorKey("garden", LEAF_NEXUS)), "the leaf's working floor rests by its own Nexus key").toBe(working?.url);
     expect(wikiWorkingFloorKey("garden", LEAF_NEXUS), "a Nexus key and a place prefix never name one key").not.toBe(wikiWorkingFloorKey("garden", { kind: "place", aid: VERIFYING_KEY }));
     await leaf.kh.dispose(); await leaf.repo.shutdown();
-    const neither = await rig({ seated: false, anchor: null });
+    const neither = await rig({ seated: false, anchor: null, secret: async () => null });
     await expect(neither.resolver.slotDoc("garden", "working")).rejects.toMatchObject({ name: "WorkingSlotRefusal", reason: "no-place" });
     await neither.kh.dispose(); await neither.repo.shutdown();
   });
@@ -132,6 +136,23 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
     const bare = await rig({ seated: true, secret: async () => null });
     await expect(bare.resolver.slotDoc("garden", "working")).rejects.toMatchObject({ reason: "no-address-secret" });
     await bare.kh.dispose(); await bare.repo.shutdown();
+    await r.kh.dispose(); await r.repo.shutdown();
+  });
+
+  test("RED S7 — lit, its seat not yet landed: working rests in the face's derived document, no floor row mints, and the door registers it only at the seat's lift", async () => {
+    let seated = false;
+    const doorMints: string[] = [];
+    const r = await rig({ seated: () => seated, doorMints });
+    const doc = await r.resolver.slotDoc("garden", "working");
+    expect(doc?.url, "the working slot names the face's derived document before the seat").toBe(faceWorkingDocUrl(SECRET(), "garden", "working"));
+    const catalog = makeCatalogAccessor(r.repo, r.catalogUrl);
+    expect(await catalog.urlOf(wikiWorkingFloorKey("garden", PLACE)), "no floor document mints for a lit face").toBeNull();
+    expect(doorMints, "the face door registers nothing before the seat").toEqual([]);
+    seated = true;
+    await r.resolver.liftFloor().catch(() => undefined);
+    expect(doorMints.filter((u) => u === doc?.url), "the seat's lift registers the face's working document once").toHaveLength(1);
+    expect((await r.resolver.slotDoc("garden", "working"))?.url).toBe(doc?.url);
+    expect(doorMints.filter((u) => u === doc?.url)).toHaveLength(1);
     await r.kh.dispose(); await r.repo.shutdown();
   });
 

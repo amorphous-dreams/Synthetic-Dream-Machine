@@ -1,7 +1,7 @@
 /**
  * daemon-island-ask — ONE holder-backed adapter hands every host ask (seat-duty, store-door, memory) its ports.
  *
- * `islandAsk(holder)(make)` reads the facade's `daemonHandle` and `placeVerb` at CALL time (so a restart never leaves an ask on the
+ * `islandAsk(holder)(make)` reads the facade's `composite` (the store whose working slot holds the verb outcome ledger) and `placeVerb` at CALL time (so a restart never leaves an ask on the
  * old island), forces the `channel` origin every host ask rides, and guards the ask the builder returns (`holder.guardAsk`), so an
  * ask pending at a restart rejects `daemon-restarting`. Each caller keeps its own facts, signer, validation and refusals: the
  * adapter builds no ask and reads no fact.
@@ -13,7 +13,7 @@ import { islandAsk } from "../src/daemon-island-ask.js";
 function fakeVm(id: number): DaemonVmCore & { placed: Array<Record<string, unknown>> } {
   const placed: Array<Record<string, unknown>> = [];
   return {
-    placed, daemonHandle: { id } as never,
+    placed, composite: { id } as never,
     placeVerb: (o: Record<string, unknown>) => { placed.push(o); },
     shutdown: async () => ({ acked: true }), dispose: () => undefined,
   } as never;
@@ -26,15 +26,15 @@ describe("islandAsk", () => {
     const held = holdDaemonVm({ vm: first, reopen: async () => next });
     const ask = islandAsk(held);
     const seen: unknown[] = [];
-    const build = (ports: { daemonHandle: unknown; placeVerb: (o: { verb: string; args: Record<string, unknown> }) => void }) => {
-      seen.push(ports.daemonHandle);
+    const build = (ports: { composite: unknown; placeVerb: (o: { verb: string; args: Record<string, unknown> }) => void }) => {
+      seen.push(ports.composite);
       ports.placeVerb({ verb: "seat-duties", args: {} });
       return { answer: new Promise<string>(() => undefined), abandon: () => undefined };
     };
     ask(build as never);
     await held.restart("r");
     ask(build as never);
-    expect(seen).toEqual([first.daemonHandle, next.daemonHandle]);
+    expect(seen).toEqual([first.composite, next.composite]);
     expect(first.placed).toEqual([{ verb: "seat-duties", args: {}, origin: "channel" }]);
     expect(next.placed).toEqual([{ verb: "seat-duties", args: {}, origin: "channel" }]);
   });

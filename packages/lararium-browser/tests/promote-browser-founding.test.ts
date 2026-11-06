@@ -20,8 +20,9 @@ import {
   type LarDoc,
 } from "@lararium/mesh";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, fixtureWardDialog } from "./browser-custody-fixture.js";
 import { BootHalted } from "./wire-vessel-rig.js";
+import { soloCosign } from "../../lararium-mesh/tests/ward-cosign-table.js";
 
 const seen = vi.hoisted(() => ({ foundings: [] as Array<{ repo: unknown; result: Record<string, unknown> }> }));
 vi.mock("@lararium/keyhive", async (importOriginal) => {
@@ -41,7 +42,7 @@ describe("a browser founding ends with the promote board's plane act", () => {
     const idbName = `browser-promote-found-${crypto.randomUUID()}`;
     await bindSyntheticBrowserCustodySlot(idbName);
     let read: { pin: string | null; pins: number; founded: boolean; fork: unknown; first: string | null; group: string } | null = null;
-    await expect(openBrowserVessel({ idbName, onPhase: (phase: string) => {
+    await expect(openBrowserVessel({ idbName, askWardRoute: fixtureWardDialog, onPhase: (phase: string) => {
       if (phase !== "bootstrap-kept") return;
       const founding = seen.foundings[0];
       if (!founding) throw new Error("the browser boot ran no founding");
@@ -82,11 +83,12 @@ describe("a one-device browser fleet lowers a kāpae under the fresh unlock alon
     await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
     await bindFirstFaceSlot(idbName, GROUP, { kind: "passphrase", passphrase: PASS });
     wearFaceOfVessel(idbName, GROUP);
-    const root = await generateOrLoadBrowserPersonaRoot(idbName, 0);
+    const root = await generateOrLoadBrowserPersonaRoot(idbName, 0, PASS);
     lockBrowserCustody(idbName);
     lockFaceCustody(idbName, GROUP);
     const atom = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(4)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(4)) };
-    const face = { group: GROUP, grant: (k: string) => k === root.verifyingKey, device: (k: string) => k === atom.key };
+    // A face of one device: a lower reads on its own (the co-sign witness answers yes, as `wardActWitness` does for one device).
+    const face = { group: GROUP, grant: (k: string) => k === root.verifyingKey, device: (k: string) => k === atom.key, ward: { accepts: () => true } };
     const spawn = () => ({
       postMessage(_m: unknown, transfer: Transferable[]) { const port = transfer[0] as MessagePort; port.onmessage = async (m) => { port.postMessage(await runWardAct(m.data)); }; },
       terminate() {},
@@ -94,9 +96,10 @@ describe("a one-device browser fleet lowers a kāpae under the fresh unlock alon
     const acts: unknown[] = [];
     const doorWith = (askWardRoute?: () => Promise<string>) => promoteBoardDoor({
       group: GROUP, face, atom, epoch: () => 0,
-      rootSigner: async () => { if (!askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock"); return browserWardSigner(idbName, GROUP, await askWardRoute(), spawn); },
+      rootSigner: async () => { if (!askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock"); return browserWardSigner(idbName, 0, await askWardRoute(), spawn); },
       board: { records: async () => acts, land: async (a) => { acts.push(a); } },
       projection: () => ({ planes: {} }),
+      cosign: () => soloCosign(GROUP, atom),
     });
     const hand = { kind: "hand" as const, id: atom.key };
     await doorWith().kapae({ action: "raise", wiki: "daemon", digest: D, who: hand });

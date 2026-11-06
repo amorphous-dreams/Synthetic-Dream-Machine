@@ -54,7 +54,7 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
   // Two registry planes (wiki-layer-ontology#oracle-planes):
   // The oracle carries system wiki recipes as defaults; the catalog carries every
   // document pointer and the vessel's own recipes.
-  const catalog   = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
+  const catalog   = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null;
   const sysPlane  = ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null;
   const catHandle = catalog ? await catalog.handle() : null;
   const sysHandle = sysPlane ? await sysPlane.handle() : null;

@@ -100,13 +100,13 @@ export interface MemeVerbOptions {
 
 /** The daemon's options off its island context — reach across both registry planes (access ≠ load). */
 export function memeVerbOptions(
-  ctx: Pick<IslandContext, "composite" | "tw5" | "repo" | "catalogUrl" | "oracleUrl">,
+  ctx: Pick<IslandContext, "composite" | "tw5" | "repo" | "catalogUrl" | "faceCatalogUrl" | "oracleUrl">,
   /** The instance-slot doc url by THE ONE resolver; null when nothing stands and `mint` is false. */
   slotDocUrl: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>,
   /** A system canon bag's live document, which rests in the Kahu realm (no registry plane names it). Naming it asks nothing. */
   systemCanonUrl?: (bag: string) => Promise<string | null>,
 ): MemeVerbOptions {
-  const catalog = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
+  const catalog = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null;
   const oracle  = ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null;
   const planes = [...(catalog ? [catalog] : []), ...(oracle ? [oracle] : [])];
   return {

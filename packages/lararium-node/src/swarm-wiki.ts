@@ -18,5 +18,6 @@ export function daemonSwarmWiki(daemonDoc: () => Promise<DocHandle<LarDoc>>): Sw
       (await daemonDoc()).change((d) => { if (ownEntry(d.tiddlers, title) === undefined) { put(d, title, text); landed = true; } });
       return landed;
     },
+    list: async (prefix) => Object.keys((await daemonDoc()).doc()?.tiddlers ?? {}).filter((title) => title.startsWith(prefix)),
   };
 }

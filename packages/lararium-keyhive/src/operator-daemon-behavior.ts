@@ -21,7 +21,7 @@ import {
   makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemePutReactor, makeMemeGetReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
   makeWardAlertReactor, fileWardRefusal,
-  makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor,
+  makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
   makeSwitcherStateReactor, makePromoteStateReactor,
   makePersonaStateReactor,
   makeCircleStateReactor,
@@ -84,6 +84,15 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  verb a session places refuses `signer-unavailable`, and the holder counts no record. No vessel key and no daemon
    *  key signs in its place. */
   sessionProof?: IslandSessionProof;
+  /** `docStoreDoor` — the port the vessel's document store asks across (sealed-store#/owed): the vessel's Repo hands
+   *  this island a body to seal under the ask its session sign book booked for the session that wrote the change, and
+   *  a reference to open; the island answers addresses and bodies, never a key, on this port alone. Absent → the
+   *  vessel's sealed rest reaches no holder, and every seal it asks refuses by its own patience. */
+  docStoreDoor?: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void };
+  /** `freshBase` — the document store's cut of a from-now admission's fresh base (`@lararium/mesh` `freshBasePort`),
+   *  over the bag's live document as the vessel's Repo holds it. Absent → every from-now admission refuses
+   *  `fresh-base-unavailable`. */
+  freshBase?: import("@lararium/mesh").ContentKeyHolderPorts["freshBase"];
   /** `countedRaises` — the raises the vessel's own ledger counts on one fleet's board, asked of the vessel's own
    *  fold. Absent → a raise counts where this island's own count answered it (each roll its seat took, each
    *  kept roll handed back under the vessel's receipt). */
@@ -137,7 +146,7 @@ import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isSystemCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
-import { readFace } from "@lararium/mesh";
+import { readFace, answerDocStoreAsks, announceSlotDoc, documentIdOfUrl, type WikiSlotKind } from "@lararium/mesh";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
@@ -156,6 +165,8 @@ import { proposeDraftsToKahua, pageTitleList } from "./kahua-page-propose.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat } from "./content-key-seat.js";
 import { ownChainStanding, type IslandSessionProof } from "./island-session-proof.js";
+// The island side of the session sign door, for an island entry that composes this behaviour.
+export { islandSessionDoor } from "./island-session-proof.js";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import type { RecordSigner, SessionOwnChain } from "@lararium/mesh";
 import { SealedStore, readKeyParcel, readOutboxKey, readCarriedRecord, encodeKeyParcel, readKeyVersionId, utf8Bytes, type ContentKeyHolderPorts, type KeyParcel, type SealedRecord, type SealedStoreRest } from "@lararium/mesh";
@@ -213,7 +224,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // The face archive writer stays on the island shore.
   const {
     persistVeilArchive, shore, events, journalAppend,
-    bagTier, askReceipt, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, countedRaises, kahuCabal, ...daemonExtra
+    bagTier, askReceipt, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, docStoreDoor, freshBase, countedRaises, kahuCabal, ...daemonExtra
   } = extra;
   const daemonAuth = manifest.daemonAuth;
   let clearGate!: () => void;
@@ -291,6 +302,21 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       throw error;
     }
   };
+  // THE LIFT'S RE-REGISTRATION (sealed-store#/owed, U1 · T2): the face's own catalog opens only after this island's
+  // holder stands, so the bags it names reach the register set late. Each registers on the mounted face's hive, durably
+  // through the face plane's ledger as the boot's own did, and joins the set the content-key seat and the chain standing
+  // read. Only the mounted face's own atom asks; a bag the set holds already registers once.
+  const registerLateFaceBags = async (atomKey: string, bags: readonly string[], ctx: IslandContext): Promise<void> => {
+    if (!daemonAuth?.atom || bareKey(atomKey) !== bareKey(daemonAuth.atom.key)) throw new Error(`face-bags-foreign: face ${bareKey(atomKey).slice(0, 12)}… stands not mounted here`);
+    const { keyhive } = await standWorking(ctx);
+    const known = new Set(daemonAuth.registerBags);
+    const fresh = [...new Set(bags)].filter((bag) => typeof bag === "string" && bag.length > 0 && !known.has(bag));
+    if (fresh.length === 0) return;
+    const faceBags = fresh.filter((bag) => !isVesselGround(bag));
+    if (faceLedger) await registerBagsDurably({ provider: keyhive, bags: faceBags, ledger: faceLedger });
+    else for (const bag of faceBags) await keyhive.registerBag(bag);
+    (daemonAuth as { registerBags: readonly string[] }).registerBags = [...daemonAuth.registerBags, ...fresh];
+  };
   // THE FACELESS FLOOR'S VERIFIER. No Keyhive stands, so no capability delegates to anybody: the place acts on its own
   // ground. A verb the vessel's own presence channel took (`channel: "local"`) clears on a bag this vessel registered at the
   // floor; every other ask, a peer's or one that names a face's bag, answers the waking-floor refusal.
@@ -304,6 +330,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // THE CONTENT-KEY HOLDER, seated beside the face identity (sealed-store#/the-store). Bare
   // content keys live in it, in this island's memory alone: no verb answers one, and none crosses the port.
   let contentKeys: ContentKeySeat | null = null;
+  /** The document store's door, answered while this island stands (one subscription; a re-wire replaces it). */
+  let stopDocStoreDoor: (() => void) | null = null;
   /** The vessel's own verified face chain, as the last session reading carried it; null before any session asked. */
   let ownChain: SessionOwnChain | null = null;
   /** The vessel's counted raises and its unanswered ones on the face's fleet board, as the last session reading
@@ -331,7 +359,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // A system canon bag's live document, named by the Kahu realm's bag row in this vessel's catalog. Naming it asks
   // nothing (a copy OUT of canon reads it); every write clears the Kahu predicate before access resolves.
   const realmCanonUrlOf = (ctx: IslandContext) => async (bagUri: string): Promise<string | null> =>
-    ctx.catalogUrl ? realmStandingDocUrl((await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).handle()).doc(), bagUri) : null;
+    ctx.catalogUrl ? realmStandingDocUrl((await makeCatalogAccessor(ctx.repo, ctx.catalogUrl, null).handle()).doc(), bagUri) : null;
 
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
   // through it (the island's slot grants, the host mount by proxy, wiki init, prune-stale,
@@ -346,13 +374,38 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   let intentVerifier: CapabilityVerifier | null = null;
   let registerIntentView: (() => void) | null = null;
   let heedIntentDoor: (() => void) | null = null;
+  // V3: every slot document the resolver answers reaches the vessel's bag map before any write lands in it
+  // (`announceSlotDoc`): the face's derived working address and a draft binding stand under no catalog row.
+  const announced = (slug: string, kind: WikiSlotKind, url: string | null | undefined): void => {
+    const documentId = documentIdOfUrl(url);
+    if (docStoreDoor && documentId) announceSlotDoc(docStoreDoor, wikiSlotUri(slug, kind), documentId);
+  };
+  const announcing = (resolver: SlotDocResolver): SlotDocResolver => ({
+    ...resolver,
+    bindings: async (fingerprint, recipeTrace, slug) => {
+      const out = await resolver.bindings(fingerprint, recipeTrace, slug);
+      announced(slug, "working", out.workingUrl); announced(slug, "draft", out.draftUrl); announced(slug, "personal", out.personalUrl);
+      return out;
+    },
+    // The call forwards as made: an absent option stays absent, never an explicit undefined.
+    slotDoc: async (...call) => {
+      const out = await resolver.slotDoc(...call);
+      announced(call[0], call[1], out?.url);
+      return out;
+    },
+    draft: async (slug) => {
+      const out = await resolver.draft(slug);
+      announced(slug, "draft", out.url);
+      return out;
+    },
+  });
   const slotDocsOf = (ctx: IslandContext): SlotDocResolver => {
     if (slotDocs) return slotDocs;
-    slotDocs = makeSlotDocResolver({
+    slotDocs = announcing(makeSlotDocResolver({
       repo: askReceipt ? restingMinter(ctx.repo, (ids) => askReceipt(ids,
         gateCleared ? undefined : gateClear, islandHeadsOf(ctx.repo, ids))) : ctx.repo,
       daemonStore: ctx.composite, ...(kh ? { keyhive: kh } : {}),
-      catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null,
+      catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null,
       vesselDid: () => didFromVerifyingKey(mintedByHex),
       mintedByHex: () => mintedByHex,
       floorMinter: () => ({ mintedByHex: daemonAuth.placeVerifyingKey, vesselDid: didFromVerifyingKey(daemonAuth.placeVerifyingKey) }),
@@ -378,8 +431,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         ctx.handles.set(bag, handle);
         store.emitInitialReplay();
         store.markSyncComplete();
+        announced(slug, "working", (into as { url?: string }).url);
       },
-    });
+    }));
     return slotDocs;
   };
 
@@ -508,8 +562,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         faceLedger = null;
         if (daemonAuth.personaGroupId) {
           try {
-            if (!ctx.catalogUrl) throw new Error("catalog unavailable");
-            const store = await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(daemonAuth.personaGroupId));
+            // The face's plane as this island mounts it, else the catalog's row for it. The row rests in the face's own
+            // catalog, sealed, which opens only once this island's holder stands below (sealed-store#/owed, T2), so the
+            // mounted layer answers first and the boot never waits on its own holder.
+            const planeBag = personaBagIdFor(daemonAuth.personaGroupId);
+            const mounted = ctx.composite.hasBag(planeBag) ? ctx.composite.storeForBag(planeBag) : null;
+            if (!mounted && !ctx.catalogUrl) throw new Error("catalog unavailable");
+            const store = mounted ?? await makeCatalogAccessor(ctx.repo, ctx.catalogUrl!, ctx.faceCatalogUrl).storeOf(planeBag);
             if (!store) throw new Error("face plane absent");
             await store.listVisible();
             faceLedger = planeBagDocLedger(store);
@@ -557,7 +616,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // (access≠load) — the daemon queries all bags, mounts none. resolve stays
       // cascade-scoped.
       registry.register("where",      makeWhereReactor(ctx.composite, {
-        repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl,
+        repo: ctx.repo, catalogUrl: ctx.catalogUrl, faceCatalogUrl: ctx.faceCatalogUrl ?? null, oracleUrl: ctx.oracleUrl,
         slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
         systemCanonUrl: realmCanonUrlOf(ctx),
       }));
@@ -598,7 +657,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         registerActionReactors(registry, {
           composite: ctx.composite,
           reach: {
-            repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl,
+            repo: ctx.repo, catalogUrl: ctx.catalogUrl, faceCatalogUrl: ctx.faceCatalogUrl ?? null, oracleUrl: ctx.oracleUrl,
             slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
             systemCanonUrl: realmCanonUrlOf(ctx),
           },
@@ -667,7 +726,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (ctx.oracleUrl) {
         // The registry a FACE's planes answer to — the persona, circles, identities, sessions and intents planes all share one
         // tag and one home. Built once so the two verb families below cannot drift onto different planes.
-        const facePlane = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
+        const facePlane = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null;
         // THE FOLLOW GRAPH BELONGS TO THE FACE THAT IS WORN, AND A FACE'S PLANES ARE USER BAGS.
         //
         // `circles-<tag>` names this PersonaGroup's own circles, derived off the same tag as its persona
@@ -808,7 +867,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               throw new Error("[daemon] face-join: no summons in args — carry {contactCard, deviceEdge}.");
             }
             const operationStore = ctx.catalogUrl
-              ? await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(faceGroup()))
+              ? await makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl).storeOf(personaBagIdFor(faceGroup()))
               : null;
             if (!operationStore) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
             // A HEARTH NEVER SEATS ITSELF.
@@ -948,6 +1007,21 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (typeof bag !== "string" || bag.length === 0) throw new Error(`[daemon] ${verb}: \`bag\` required — a private body seals under its own bag's content key.`);
         return bag;
       };
+      // THE DOCUMENT STORE'S DOOR (sealed-store#/owed): the vessel's Repo seals each save here under the session that
+      // booked its change, through the ask the vessel's book holds for it, and opens each value for hydration. The
+      // answers ride the port alone and carry addresses and bodies, never a key; no outcome rests in the daemon wiki.
+      stopDocStoreDoor?.();
+      stopDocStoreDoor = docStoreDoor ? answerDocStoreAsks(docStoreDoor, {
+        seal: async ({ bagId, values, ask, peer }) => {
+          if (!contentKeys) return { refusal: "sealed-store-unavailable" } as never;
+          const signer = await sessionOf(ask.verb, { invocation: { requestId: ask.requestId }, local: true });
+          return contentKeys.sealValues({ bagId, values, signer, ...(peer !== undefined ? { peer } : {}) });
+        },
+        open: async (args) => (contentKeys ? contentKeys.holder.openValue(args) : { refusal: "holder-locked" } as never),
+        // THE VESSEL LOCKED (P2-2): the seat overwrites every content key now, not at the identity's dispose, so no seal
+        // and no open answers past the lock.
+        lock: () => { const seat = contentKeys; contentKeys = null; seat?.lock(); },
+      }) : null;
       registry.register("sealed-seal", async (args, context) => {
         const seat = holderFor("sealed-seal");
         const bag = bagOf("sealed-seal", args);
@@ -1134,7 +1208,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // vesselDid mints through `didFromVerifyingKey` wherever a draft key derives, so those keys never drift —
       // the PLACE is what asks, never the persona root.
       if (ctx.catalogUrl) {
-        const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl);
+        const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl);
         // The oracle accessor supplies default system recipes; the catalog supplies their document pointers.
         const sysPlane = ctx.oracleUrl ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl) : undefined;
         // A system wiki's LIVE canon doc rests in the Kahu realm: named only to a hand the cabal's predicate admits.
@@ -1171,6 +1245,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // residency via post. No live-layer swap (oracle/recipe sync; islands reconcile).
         registry.register("bag-compact", makeCompactBagReactor({ repo: ctx.repo, catalog, post: ctx.post }));
         registry.register("rotate-recipe", makeRotateRecipeReactor({ repo: ctx.repo, catalog, post: ctx.post }));
+        // The declare act (`lares bag declare --tier`) writes meta.mem alone; this verb re-stamps the standing catalog row at once,
+        // so a bag re-declared public -> private leaves the floor catalog without waiting for the next registration.
+        // No tier reader standing reads every bag as undeclared, so a re-stamp fails toward the face, never toward F.
+        registry.register("restamp-bag-tier", makeRestampBagTierReactor({ catalog, bagTier: bagTier ?? (() => null) }));
       }
       // THE CONTENT FENCE DENIES BY DEFAULT. A verb runs on the MOUNTED face's resources (its content keys, its provider,
       // mint and ledger, its slot documents and catalog) whichever face's provider cleared the verify, so a presenter that
@@ -1204,6 +1282,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (msg.type === "daemon:face-lit") {
           try { await lightJoinedFace(msg.entry, ctx); }
           catch (error) { throw new Error(`face ${msg.entry.atom.key} refused: ${String(error)}`); }
+        } else if (msg.type === "daemon:face-bags") {
+          await registerLateFaceBags(msg.atomKey, msg.bags, ctx);
         } else {
           const key = bareKey(msg.atomKey);
           if (daemonAuth.atom && key === bareKey(daemonAuth.atom.key)) throw new Error(`mounted face ${key} cannot be dropped`);
@@ -1220,12 +1300,19 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       return change;
     },
     onWritable: async (ctx: IslandContext) => {
-      if (!daemonAuth.atom && !daemonAuth.personaGroupId && !daemonAuth.deviceEdge) return { state: "no-route", reason: "no face" };
+      if (!daemonAuth.atom && !daemonAuth.personaGroupId && !daemonAuth.deviceEdge) {
+        // AT THE FLOOR THE SLOT STANDS ON THE FLOOR'S OWN DOCUMENT (sealed-store#/U1), keyed by the floor's anchor: a faceless
+        // floor holding one attaches it, so its verb outcomes land; a vessel holding no anchor names the absent route.
+        if (!daemonAuth.workingFloorAnchor) return { state: "no-route", reason: "no face and no floor anchor" };
+        await attachDaemonWorking(ctx);
+        return { state: "standing" };
+      }
       await standWorking(ctx);
       return { state: "standing" };
     },
     verifierFactory: async (ctx: IslandContext) => {
       if (!daemonAuth.atom && !daemonAuth.personaGroupId && !daemonAuth.deviceEdge) {
+        if (daemonAuth.workingFloorAnchor) await attachDaemonWorking(ctx);
         return floorVerifier;
       }
       const { keyhive, floor } = await standWorking(ctx);
@@ -1258,6 +1345,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // THE VESSEL'S OWN FOLD: a shore that injects `countedRaises` names them; else the last session reading's.
           countedRaises: countedRaises && fleetRoot ? () => countedRaises(fleetRoot) : () => ownCounted,
           unansweredRaises: () => ownUnanswered,
+          ...(freshBase ? { freshBase } : {}),
           // THE SEAT'S STANDING READS THE VESSEL'S OWN CHAIN, as the last session reading carried it: before any
           // session asked, no writer stands. A seat roll names no session, so it takes no signer and stays owed by
           // name; a session's own act signs through the door its verb reads (`sessionOf`, below).
@@ -1275,7 +1363,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const group = daemonAuth.personaGroupId;
         const edge = daemonAuth.deviceEdge;
         const veil = kh;
-        const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl);
+        const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl);
         faceSeat = makeFaceSeat({
           group, leasePrefix: leaseEpochPrefix(group), selfVerifyingKey: edge.deviceVerifyingKey, personaRootDid: edge.personaRootDid,
           personaKel: daemonAuth.personaKel,

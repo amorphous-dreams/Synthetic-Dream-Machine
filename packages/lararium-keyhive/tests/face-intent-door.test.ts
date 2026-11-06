@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { fixtureIntentVerbs, signIntentEntry, buildAnswer, buildAsks, buildIntent, intentEntryCid, writeIntentEntry, actCid, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup, intentId,
   mintPersonaInception, signPersonaAct, type DocHandle, type LarDoc } from "@lararium/mesh";
 import { makeFaceIntentDoor, requestFaceJoin, witnessedStandings } from "../src/face-intent-door.js";
+import { taggedAdmission } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const signer = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
 const plane = () => {
@@ -18,7 +19,7 @@ describe("face intent request", () => {
     const inception = mintPersonaInception(`0x${root.key}`, "recovery");
     const log = [] as Awaited<ReturnType<typeof signPersonaAct>>[];
     for (const [act, fields] of [["founding", { personaKelPrefix: inception.prefix, rootCommitment: "root" }],
-      ["admission", { deviceKey: h1.key }], ["admission", { deviceKey: h2.key }], ["admission", { deviceKey: joinee.key }]] as const) {
+      ["admission", { ...(await taggedAdmission(10, group, h1.key)) }], ["admission", { ...(await taggedAdmission(11, group, h2.key)) }], ["admission", { ...(await taggedAdmission(12, group, joinee.key)) }]] as const) {
       const head = log.at(-1);
       log.push(await signPersonaAct(head ? { seq: head.body.seq, cid: actCid(head.body) } : null, { group, act, epoch: 0, fields }, root));
     }
@@ -53,7 +54,7 @@ const faceOf = async () => {
   const inception = mintPersonaInception(`0x${root.key}`, "recovery");
   const log = [] as Awaited<ReturnType<typeof signPersonaAct>>[];
   for (const [act, fields] of [["founding", { personaKelPrefix: inception.prefix, rootCommitment: "root" }],
-    ["admission", { deviceKey: h1.key }], ["admission", { deviceKey: h2.key }], ["admission", { deviceKey: joinee.key }]] as const) {
+    ["admission", { ...(await taggedAdmission(10, group, h1.key)) }], ["admission", { ...(await taggedAdmission(11, group, h2.key)) }], ["admission", { ...(await taggedAdmission(12, group, joinee.key)) }]] as const) {
     const head = log.at(-1);
     log.push(await signPersonaAct(head ? { seq: head.body.seq, cid: actCid(head.body) } : null, { group, act, epoch: 0, fields }, root));
   }

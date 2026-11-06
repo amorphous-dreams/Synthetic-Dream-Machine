@@ -62,7 +62,7 @@ import {
   enrolDevice, sealGroupSecret, groupSecretSealTitle, type GroupSecretSeal,
   type LarTiddlerStore, writePersonaAct,
   FACE_PLANE, faceRelationOf, mintFaceRelation, signFoundingLog, faceRootCommitment, edgeBodyDigest, landFleetGenesis, makeHandLineage, KAHUA_PLANE, kahuaStageDocUrl, PROMOTE_PLANE, promoteBoardDocUrl, promotePlaneUrl,
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type LarDoc, ownEntry} from "@lararium/mesh";
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type LarDoc, ownEntry, type VesselFaceTagDoor} from "@lararium/mesh";
 
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
 import { buildCeremonyTiddlers, webDigest, hex as hexEncode, plainEntries, storedRecord, tiddlerText, kahuaPlaneUrl, type StoredTiddlers } from "@lararium/mesh";
@@ -157,6 +157,9 @@ export interface FoundingCeremonyInput {
   nexusPubkey:         string;
   /** The face atom's seed; a fresh founding mints one when absent. */
   atomSeed?:           Uint8Array;
+  /** The founding vessel's tag door: the founder admission carries its blinded tag for the face and atom. REQUIRED: a
+   *  tagless founding admission seats no device. */
+  vesselTag:           VesselFaceTagDoor;
 }
 
 export interface FoundingCeremonyResult {
@@ -275,6 +278,9 @@ export interface FaceFoundingInput {
   binding:            FoundingBinding;
   hearthTrueName:     string;
   nexusPubkey:        string;
+  /** The founding vessel's tag door: the founder admission carries its blinded tag for the face and atom. REQUIRED: a
+   *  tagless founding admission seats no device. */
+  vesselTag:          VesselFaceTagDoor;
   /** The atom's Keyhive archive as it rests on this shore. */
   veilArchiveBytes?:  Uint8Array;
   /** Whether this face MOUNTS — writes the SINGULAR daemon-doc pins (PersonaGroup / MeshCabal /
@@ -396,13 +402,14 @@ function writeGroupSecretSeal(
  * same hand as the intents plane. Their derived documents stand in the founder's repo; later adoption reads these pins.
  * (meme lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage).
  */
-async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; atomSeed: Uint8Array; face: Pick<FaceFoundingResult, "personaGroupId" | "personaKelPrefix" | "personaUrl" | "identitiesUrl" | "circlesUrl" | "sessionsUrl" | "intentsUrl" | "founderEdge" | "signerDid" | "faceRelation"> }): Promise<void> {
+async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; atomSeed: Uint8Array; vesselTag: VesselFaceTagDoor; face: Pick<FaceFoundingResult, "personaGroupId" | "personaKelPrefix" | "personaUrl" | "identitiesUrl" | "circlesUrl" | "sessionsUrl" | "intentsUrl" | "founderEdge" | "signerDid" | "faceRelation"> }): Promise<void> {
   if (input.binding.mode !== "self-stood") return;
   const { face } = input;
   const seed = input.binding.signerSeed;
   const rootKey = await ed25519VerifyingKeyFromSeed(seed);
   if (rootKey !== verifyingKeyFromDid(face.signerDid as never)) throw new Error("[founding] the root that signs the face's records differs from the founder's DID");
   const signer = { key: rootKey, sign: ed25519SignerFromSeed(seed) };
+  const deviceKey = faceAtomKeyFromSeed(input.atomSeed, face.personaGroupId).key;
   const acts = await signFoundingLog({
     group: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
     rootCommitment: faceRootCommitment(face.founderEdge.personaRootDid), epoch: 0,
@@ -412,8 +419,9 @@ async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; at
       [PROMOTE_PLANE]: promoteBoardDocUrl(face.personaGroupId),
       [FACE_PLANE]: face.faceRelation,
     },
-    deviceKey: faceAtomKeyFromSeed(input.atomSeed, face.personaGroupId).key,
+    deviceKey,
     edgeDigest: edgeBodyDigest(face.founderEdge),
+    vesselTag: await input.vesselTag(face.personaGroupId, deviceKey),
   }, signer);
   await materializeSharedLarDoc(input.repo, kahuaStageDocUrl(face.personaGroupId), "kahua:stage");
   await materializeSharedLarDoc(input.repo, promoteBoardDocUrl(face.personaGroupId), "promote:board");
@@ -445,7 +453,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
     if (!prior.result.intentsUrl) throw new Error("[founding] checkpoint names no intents plane; re-found the face.");
     await landFaceCheckpoint(daemonHandle, prior);
     const resumed = { ...prior.result, atomSeed, veilArchive: base64ToBytes(prior.result.veilArchive) };
-    await landFaceGenesis({ repo, binding: input.binding, atomSeed, face: resumed });
+    await landFaceGenesis({ repo, binding: input.binding, atomSeed, vesselTag: input.vesselTag, face: resumed });
     return resumed;
   }
   // WHETHER THIS FACE MOUNTS. The founding face (h0) writes the singular daemon-doc pins below; an
@@ -643,7 +651,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   };
   const events = (await store.list()).filter((e) => !standing.has(e.hash)).map((e) => ({ hash: e.hash, variant: e.variant, bytes: bytesToBase64(e.bytes), ...(e.island ? { island: e.island } : {}) }));
   const { atomSeed: _heldSeed, ...publicResult } = result;
-  await landFaceGenesis({ repo, binding: input.binding, atomSeed, face: result });
+  await landFaceGenesis({ repo, binding: input.binding, atomSeed, vesselTag: input.vesselTag, face: result });
   const checkpoint: FaceCheckpoint = { scope: foundingScope, result: { ...publicResult, veilArchive: bytesToBase64(veilArchive) }, dyad: dyadRecord, mount, events };
   const checkpointText = await sealCheckpoint(checkpoint, atomSeed);
   const foundingCheckpointTitle = `${FACE_FOUNDING_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
@@ -736,6 +744,7 @@ export async function runFoundingCeremony(
     binding:            input.binding,
     hearthTrueName:     input.hearthTrueName,
     nexusPubkey:        input.nexusPubkey,
+    vesselTag:          input.vesselTag,
     ...(input.atomSeed ? { atomSeed: input.atomSeed } : {}),
   });
   return {

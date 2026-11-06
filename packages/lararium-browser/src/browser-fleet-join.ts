@@ -16,7 +16,7 @@
  * reads through the one reader (`carriedAdmitOfFleetJoin`), so a browser and a node spell one join alike. This
  * browser receives no root bytes.
  *
- * WHAT RESTS WHERE: face keys, the pending join and address secret rest under the slot tree in `keystore`;
+ * WHAT RESTS WHERE: face keys, the face's tag secret, the pending join and address secret rest under the slot tree in `keystore`;
  * signed public records and dials rest in the fleet-join store.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
@@ -33,7 +33,7 @@ import {
 } from "./browser-vessel-identity.js";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
 import { heldFaces } from "./browser-face-custody.js";
-import { browserFaceAtom, faceAddressSecretRow } from "./browser-face-atom.js";
+import { browserFaceAtom, browserVesselFaceTagDoor, faceAddressSecretRow, type BrowserTagDoorWard } from "./browser-face-atom.js";
 
 /** A fleet join this browser refused, by name: a mesh reader's refusal, or this door's own. */
 export class BrowserFleetJoinRefused extends Error {
@@ -124,7 +124,11 @@ async function pendingGroups(idbName: string): Promise<string[]> {
  * This browser's request over an offer the human carried here. The same offer again answers the request already
  * kept; another offer while one join stands pending refuses `join-pending`.
  */
-export async function browserFleetJoinRequest(opts: { readonly offer: unknown; readonly idbName?: string }): Promise<FleetJoinRequest> {
+export async function browserFleetJoinRequest(opts: {
+  readonly offer: unknown; readonly idbName?: string;
+  /** The route the tag door asks for the face's ward key: its mint, or its pop where it already stood here (`BrowserTagDoorWard`). */
+  readonly ward?: BrowserTagDoorWard;
+}): Promise<FleetJoinRequest> {
   const idbName = opts.idbName ?? "lares:vessel";
   const offer = readFleetJoinOffer(opts.offer);
   if (isRefusal(offer)) throw new BrowserFleetJoinRefused(offer.refusal, "the offer does not read.");
@@ -149,6 +153,7 @@ export async function browserFleetJoinRequest(opts: { readonly offer: unknown; r
         } finally { fresh.fill(0); held?.fill(0); }
       },
       sign: (image) => atom.sign(image),
+      vesselTag: browserVesselFaceTagDoor(idbName, opts.ward),
     });
     if (isRefusal(request)) throw new BrowserFleetJoinRefused(request.refusal, "the request this browser composed does not read back.");
     const kept: PendingJoin = { offer, request, sealSecret: hex(seal.secret) };

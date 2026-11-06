@@ -65,6 +65,24 @@ afterEach(() => {
 });
 
 describe("uds front", () => {
+  test("T3: close resolves only once the seat's own close settled, so a stand-down awaits each session's flush before it goes on", async () => {
+    const claim = await setup();
+    const front = serveUdsFront({ claim });
+    let release!: () => void;
+    let flushed = false;
+    const seatClosed = new Promise<void>((resolve) => { release = resolve; });
+    front.attach({ handle: () => {}, close: async () => { await seatClosed; flushed = true; } });
+    let settled = false;
+    const closing = Promise.resolve(front.close()).then(() => { settled = true; });
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    // The setup took: the seat's flush still stands open, and the close has not settled past it.
+    expect(flushed).toBe(false);
+    expect(settled).toBe(false);
+    release();
+    await closing;
+    expect(flushed).toBe(true);
+  });
+
   test("R1: seats hand frames across detach; start channel remains a working control", async () => {
     const claim = await setup();
     const ear = frameEar();

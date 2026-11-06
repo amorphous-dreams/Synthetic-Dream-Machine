@@ -4,7 +4,7 @@ import { sha256HexBytesSync, utf8Bytes } from "./crypto.js";
 import { isCurrentEpoch, signsAtEpoch, type HandLineage } from "./hand-lineage.js";
 import { intentId, readIntentEntry, type IntentAudience, type IntentBound, type SignedIntentEntry } from "./intent-entry.js";
 import { argsWithinPolicy, verbInPrefix, type DelegationBound, type DelegationCite, type DelegationPolicy } from "./intent-delegation.js";
-import { issueCheck, type IntentVerbClass, type IntentVerbRegistry } from "./intent-verbs.js";
+import { issueCheck, WARD_COSIGN_VERBS, type IntentVerbClass, type IntentVerbRegistry } from "./intent-verbs.js";
 
 type Standing = "stands" | "aside" | "unknown";
 export interface IntentReadInput {
@@ -28,16 +28,22 @@ export interface IntentState {
   readonly admissions: readonly { cid: string; relay: string }[];
   readonly id: string; readonly cid: string; readonly issuer: string; readonly verb: string; readonly class: IntentVerbClass;
   readonly fenced: boolean;
+  /** The verb's answer counts only from a device other than the issuer, under the asks audience. */
+  readonly cosign: boolean;
   readonly audience: IntentAudience; readonly bound: IntentBound | null;
   readonly status: "open" | "answered" | "void" | "unknown-frontier";
   readonly voidCause: "superseded" | "cancelled" | "issuer-aside" | "roster-passed" | "delegation-revoked" | "delegation-closed" | "delegation-lapsed" | null;
   readonly agent: null | { readonly delegation: string; readonly status: "live" | "revoked" | "closed" | "lapsed" | "awaiting" };
   readonly asks: readonly IntentRecord[];
+  /** Every answer to this intent's asks, counted or not; `answer` reads the counted ones. */
+  readonly answers: readonly IntentRecord[];
   readonly answer: IntentRecord | "contested" | null;
   readonly claim: IntentRecord | null;
   readonly slots: readonly IntentSlot[];
   readonly voidAfterAct: readonly IntentRecord[];
   readonly outOfAudience: readonly IntentRecord[];
+  /** Every outcome naming this intent as its cause, in a slot or not: a co-signed ward act's spend reads its own (`wardActWitness`). */
+  readonly outcomes: readonly IntentRecord[];
   readonly claims: readonly IntentRecord[];
 }
 export interface IntentView {
@@ -144,7 +150,16 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     const agent = delegation ? { delegation: delegation.cid, status: delegation.status } : null;
     const classification = input.verbs.classOfVerb(body.verb as string)!;
     const ownAsks = asks.filter((q) => str(q, "intent") === id);
-    const ownAnswers = answers.filter((a) => ownAsks.some((q) => q.cid === field(a, "ask")));
+    const everyAnswer = answers.filter((a) => ownAsks.some((q) => q.cid === field(a, "ask")));
+    // A cosign verb counts what `judgeCosign` counts: an answer to an ask the issuer signed, from a standing device other
+    // than the issuer, an approve naming the issuer as executor. A device never approves the act it asked for, and no
+    // other device asks and answers in the issuer's place.
+    // The rule keys on the ward verb's name as well as the flag, as mayAct's audience check does, so a reader whose table
+    // lost the flag still counts only what the judge counts.
+    const cosignCount = !!classification.cosign || WARD_COSIGN_VERBS.includes(body.verb as string);
+    const issuerAsks = new Set(ownAsks.filter((q) => q.entry.signer === issuer).map((q) => q.cid));
+    const ownAnswers = cosignCount ? everyAnswer.filter((a) => issuerAsks.has(str(a, "ask")) && a.entry.signer !== issuer &&
+      input.standing(a.entry.signer) === "stands" && (field(a, "verdict") !== "approve" || field(a, "executor") === issuer)) : everyAnswer;
     const ownOutcomes = outcomes.filter((o) => str(o, "cause") === id);
     const answer = effectiveAnswer(ownAnswers);
     const ownClaims = claims.filter((c) => str(c, "intent") === id);
@@ -217,18 +232,20 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     }
     const unknown = (agent ? agent.status === "awaiting" : input.standing(issuer) === "unknown") || slots.some((s) => s.unknownFrontier);
     const status = voidCause ? "void" : unknown ? "unknown-frontier" : slots.some((s) => s.winner) ? "answered" : "open";
-    states.push({ cid: source.cid, admissions: admissions.flatMap(r => r.ok && r.admission.body.entry === source.cid ? [{ cid: r.cid, relay: r.admission.body.relay }] : []).sort((a, b) => a.cid.localeCompare(b.cid)), id, issuer, verb: body.verb as string, class: classification.class, fenced: classification.class === "single-effect" || !!classification.fenced, audience, bound, status, voidCause, agent, asks: ownAsks,
-      answer, claim, claims: ownClaims, slots, voidAfterAct: voidCause ? ownOutcomes : [], outOfAudience });
+    states.push({ cid: source.cid, admissions: admissions.flatMap(r => r.ok && r.admission.body.entry === source.cid ? [{ cid: r.cid, relay: r.admission.body.relay }] : []).sort((a, b) => a.cid.localeCompare(b.cid)), id, issuer, verb: body.verb as string, class: classification.class, fenced: classification.class === "single-effect" || !!classification.fenced, cosign: !!classification.cosign, audience, bound, status, voidCause, agent, asks: ownAsks, answers: everyAnswer,
+      answer, claim, claims: ownClaims, slots, voidAfterAct: voidCause ? ownOutcomes : [], outOfAudience, outcomes: ownOutcomes });
   }
   refused.sort((a, b) => a.refusal.localeCompare(b.refusal) || (a.cid ?? "").localeCompare(b.cid ?? ""));
   return { intents: states, delegations, refused, refusedAdmissions, collisions, strayAnswers, standing: input.standing, holdsCapability: input.holdsCapability ?? (() => false), face: input.face };
 }
 
-export type MayActReason = "spent" | "answered" | "void" | "not-audience" | "pinned-elsewhere" | "fenced-by-claim" | "awaiting-answer" | "unknown-frontier" | "atom-aside";
+export type MayActReason = "spent" | "answered" | "void" | "not-audience" | "pinned-elsewhere" | "fenced-by-claim" | "awaiting-answer" | "unknown-frontier" | "atom-aside" | "cosign-needs-asks";
 export function mayAct(view: IntentView, intentId: string, atom: string): { readonly act: true } | { readonly act: false; readonly reason: MayActReason } {
   const state = view.intents.find((i) => i.id === intentId);
   if (!state) return { act: false, reason: "not-audience" };
   if (state.voidCause) return { act: false, reason: "void" };
+  // Fail closed whatever table the reader folded with: a ward verb acts only through the asks audience's counted answer.
+  if ((state.cosign || WARD_COSIGN_VERBS.includes(state.verb)) && state.audience.mode !== "asks") return { act: false, reason: "cosign-needs-asks" };
   const standing = view.standing(atom);
   if (standing === "unknown" || state.status === "unknown-frontier") return { act: false, reason: "unknown-frontier" };
   if (standing === "aside") return { act: false, reason: "atom-aside" };

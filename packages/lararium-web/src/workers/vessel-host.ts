@@ -35,8 +35,8 @@ import {
   openBrowserVessel, readBrowserCustody, readBrowserSeedWrap,
   parseAdmitCarriage, toAdmitCarriage, readBrowserCustodyPasskeys, readFaceCustodyPasskeys, browserWardSign,
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
-  standVesselHouse, sessionLifetimeLock, VesselSessionRefused, readBrowserVesselFaces,
-  type BrowserVesselResult, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost,
+  standVesselHouse, sessionLifetimeLock, VesselSessionRefused, readBrowserVesselFaces, wardAskWords,
+  type BrowserVesselResult, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost, type WardAskKind,
 } from "@lararium/browser";
 import { didFromVerifyingKey, parseMeshPeer, type MeshPeer } from "@lararium/mesh";
 import type { PageToVessel, SeedRest, VesselBoot, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
@@ -96,9 +96,10 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     const passkeys = question.kind === "bind-first" ? [] : face === null ? await readBrowserCustodyPasskeys(idbName) : await readFaceCustodyPasskeys(idbName, face);
     return conn.door.ask({ kind: question.kind, act, words: wordsOf(question), face, passkeys });
   };
-  /** A ward ask: a passphrase alone, for one act. A declined ask answers empty, and the ward then refuses `ward-needs-fresh-unlock`. */
-  const askWardOf = (conn: Conn) => async (act: string): Promise<string> => {
-    const route = await conn.door.ask({ kind: "ward", act, face: conn.session?.face ?? null });
+  /** A ward ask: a passphrase alone, for one act, its words named by the ask's kind (`open`, `bind`, `retype`). A declined ask
+   *  answers empty, and the ward then refuses `ward-needs-fresh-unlock`. */
+  const askWardOf = (conn: Conn) => async (act: string, wardKind: WardAskKind = "open"): Promise<string> => {
+    const route = await conn.door.ask({ kind: "ward", act, words: wardAskWords(act, wardKind), face: conn.session?.face ?? null });
     return route?.kind === "passphrase" ? route.passphrase : "";
   };
 
@@ -241,7 +242,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       await h.joinFace(s.sessionId, group, askCustodyOf(conn, "fleet-join"));
       const request = await h.faceAct(s.sessionId, group, async () => {
         if (abandonPending) await browserFleetJoinAbandon(idbName, group);
-        return browserFleetJoinRequest({ offer, idbName });
+        return browserFleetJoinRequest({ offer, idbName, ward: { route: askWardOf(conn) } });
       });
       return { kind: "request", text: JSON.stringify(request, null, 2) };
     },
@@ -379,7 +380,8 @@ export function standVesselHost(env: VesselHostEnv = {}) {
                 // A ward act signs as the face this session wears by its own unlock, never the vessel's by inheritance.
                 const face = conn.session?.face ?? null;
                 if (face === null) throw new VesselSessionRefused("session-faceless");
-                return browserWardSign(idbName, face, await askWardOf(conn)("a walk ward act"), msg.bytes);
+                // The face's root rests under its ward at the founding handle (h0), the one face a founding wears.
+                return browserWardSign(idbName, 0, await askWardOf(conn)("a walk ward act"), msg.bytes);
               });
               return;
           }

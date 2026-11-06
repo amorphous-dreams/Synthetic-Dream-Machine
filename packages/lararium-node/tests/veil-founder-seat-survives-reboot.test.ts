@@ -22,6 +22,7 @@ import {
   hex,
   CompositeStore, DAEMON_BAG_ID, AutomergeDocStore, type LarDoc,
 } from "@lararium/mesh";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
@@ -31,7 +32,7 @@ describe("the founder's veil seat survives the night", () => {
   test("★ knowsAgent(the founding PersonaGroup) holds through every reboot shape ★", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
     const verifyingKey = await pubOf(FOUNDER_SEED);
-    const f = await runFoundingCeremony({ repo, vesselSeed: FOUNDER_SEED, placeVerifyingKey: verifyingKey,
+    const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo, vesselSeed: FOUNDER_SEED, placeVerifyingKey: verifyingKey,
       vesselDisplayName: "Reboot Shrine",
       binding: { mode: "self-stood", signerSeed: FOUNDER_SEED },
       hearthTrueName: "", nexusPubkey: verifyingKey,

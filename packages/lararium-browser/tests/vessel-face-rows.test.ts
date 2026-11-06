@@ -60,7 +60,7 @@ async function foundHalted(tag: string): Promise<{ idbName: string; group: strin
   } finally { db.close(); }
 }
 
-const FACE_PRIVATE = /^(?:sealed\/)?(?:persona-root-|veil-archive-g|face-atom\/|face-anchor\/|face-address-secret\/|fleet-join-pending\/|vessel-face-key\/|nexus-key\/|promoted\/|kapae\/)/;
+const FACE_PRIVATE = /^(?:sealed\/)?(?:persona-root-h|veil-archive-g|face-atom\/|face-anchor\/|face-address-secret\/|vessel-face-tag\/|fleet-join-pending\/|vessel-face-key\/|nexus-key\/|promoted\/|kapae\/)/;
 
 describe("a production founding keeps its face's rows under the face's own tree", () => {
   test("FR1 RED the founding's face rows rest at face-sealed/<fcid>/<row>, none under the shared tree — CONTROL: the shared tree keeps the place seed alone", async () => {
@@ -76,9 +76,11 @@ describe("a production founding keeps its face's rows under the face's own tree"
       fcid = index.entries[0]!.fcid;
     } finally { db.close(); }
     const under = keys.filter((k) => k.startsWith(`face-sealed/${fcid}/`)).map((k) => k.slice(`face-sealed/${fcid}/`.length)).sort();
-    expect(under, "the face's rows rest under its own tree").toEqual(["anchor", "face-address-secret", "face-anchor", "face-atom", "persona-root", "veil-archive"]);
+    expect(under, "the face's rows rest under its own tree").toEqual(["anchor", "face-address-secret", "face-anchor", "face-atom", "veil-archive", "vessel-face-tag"]);
     expect(keys, "the face's tree stands").toContain(`face-slots/${fcid}`);
-    expect(keys.filter((k) => k.startsWith("sealed/")), "CONTROL: the shared tree keeps the place seed alone").toEqual(["sealed/vessel-key"]);
+    // The face's root rests under its own ward, never under a custody tree; the ward's public roster rests beside the place seed.
+    expect(keys, "the face's root rests under its ward").toContain("ward/h0/persona-root");
+    expect(keys.filter((k) => k.startsWith("sealed/")), "CONTROL: the shared tree keeps the place seed and the ward's public roster alone").toEqual(["sealed/persona-root-roster", "sealed/vessel-key"]);
   }, SLOW);
 
   test("FR2 RED a face whose last session left reads nothing, and a second face opens only under its own unlock — CONTROL: the face's own unlock reads again", async () => {
@@ -90,7 +92,7 @@ describe("a production founding keeps its face's rows under the face's own tree"
     const second = `pg-second-${crypto.randomUUID()}`;
     await bindFirstFaceSlot(idbName, second, OTHER);
     expect(await faceKeyOpens(idbName, second, group, "face-atom"), "the second face's key opens none of the first face's rows").toBe(false);
-    expect(await faceKeyOpens(idbName, second, group, "persona-root")).toBe(false);
+    expect(await faceKeyOpens(idbName, second, group, "vessel-face-tag")).toBe(false);
     expect((await unlockFaceCustody(idbName, group, [OTHER])).reading, "the second face's route opens no tree of the first").toBe("no-slot-opens");
     expect((await unlockFaceCustody(idbName, group, [ROUTE])).reading, "CONTROL: the face's own route opens it").toBe("opens");
     expect(await readBrowserFaceAtom(idbName, group)).toBeDefined();
@@ -107,7 +109,8 @@ describe("a face row never rests under the place tree", () => {
     const refused = await openBrowserVessel({ idbName, askCustody: async () => ROUTE } as unknown as BrowserVesselOptions).catch((e: unknown) => e);
     expect(String(refused)).toMatch(/face-row-shared/);
     expect((refused as { reading?: unknown }).reading).toBe("face-row-shared");
-    await expect(readKeystoreRow(idbName, "persona-root-h0")).rejects.toMatchObject({ reading: "face-names-a-handle" });
+    await expect(readKeystoreRow(idbName, "nexus-key/h0/aid")).rejects.toMatchObject({ reading: "face-names-a-handle" });
+    await expect(readKeystoreRow(idbName, "persona-root-h0")).rejects.toMatchObject({ reading: "ward-needs-fresh-unlock" });
   }, SLOW);
 });
 

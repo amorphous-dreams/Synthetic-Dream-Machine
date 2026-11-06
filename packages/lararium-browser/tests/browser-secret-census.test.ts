@@ -14,7 +14,7 @@
  *            connection reopens.
  */
 import { describe, expect, test } from "vitest";
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import { generateOrLoadBrowserPersonaRoot, generateOrLoadBrowserVesselIdentity, openVesselIdb, idbGet } from "../src/browser-vessel-identity.js";
 import { browserFleetJoinLand, browserFleetJoinRequest } from "../src/browser-fleet-join.js";
 import { browserWalkLeaf, browserWalkStore } from "../src/browser-walk.js";
@@ -93,7 +93,7 @@ describe("browser secret census", () => {
     const idbName = name();
     await generateOrLoadBrowserVesselIdentity(idbName);
     const own = await bindSyntheticBrowserCustodySlot(idbName);
-    await generateOrLoadBrowserPersonaRoot(idbName, 0);
+    await generateOrLoadBrowserPersonaRoot(idbName, 0, FIXTURE_WARD);
 
     // The per-Nexus key: the walk leaf returns its seed.
     const leaf = await browserWalkLeaf(idbName, NEXUS, own);
@@ -107,7 +107,7 @@ describe("browser secret census", () => {
     const offer = fleetJoinOffer({ personaGroup: GROUP, rootKey: root.key, nonce: "c3".repeat(32), scopes: [face.scope] });
     // The joinee face's own tree binds before the join's first secret.
     await bindFirstFaceSlot(idbName, GROUP, PASS);
-    const request = await browserFleetJoinRequest({ offer, idbName });
+    const request = await browserFleetJoinRequest({ offer, idbName, ward: { route: async () => FIXTURE_WARD } });
     const faceKey = await secretAt(idbName, ["vessel-face-keys", `${face.scope.nexus}|${face.scope.faceKey.toLowerCase()}`], `vessel-face-key/${GROUP}|${face.scope.nexus}|${face.scope.faceKey.toLowerCase()}`) as Uint8Array;
     const pending = await secretAt(idbName, ["fleet-join", "pending"], `fleet-join-pending/${GROUP}`) as { sealSecret: string };
     const sealSecret = fromHex(pending.sealSecret);

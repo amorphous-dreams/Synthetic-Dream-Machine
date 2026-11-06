@@ -8,9 +8,10 @@ const islandKinds = [
   "event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result",
   "daemon:delegate-verb", "daemon:worldline-compare-result",
   "daemon:worldline-trajectory-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:face-settled",
-  "daemon:residency-op", "daemon:wiki-alert", "gate:clear", "gate:refused", "cas:want", "dyad:ask", "receipt:request", "custody:write", "session:sign",
+  "daemon:residency-op", "daemon:wiki-alert", "gate:clear", "gate:refused", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign",
   "view:catalog", "view:content", "view:settle", "lar:frame", "lar:control-result", "lar:service",
   "port:snapshot", "port:changes", "port:reset", "port:written", "port:answer", "port:presence",
+  "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot",
 ] as const satisfies readonly IslandToVesselMsg["type"][];
 
 function harness(grant = false) {
@@ -153,6 +154,20 @@ describe("shared holder routing keeps every island answer on its binding", () =>
     h.fromIsland({ type: "custody:write", requestId: "custody-1", wikiUri: "wiki:a" });
     expect(a.received.slice(-2).map((m) => (m as { type: string }).type)).toEqual(["breath", "custody:write"]);
     expect(b.received.some((m) => ["breath", "custody:write"].includes((m as { type?: string }).type ?? ""))).toBe(false);
+  });
+
+  test("P2-1: the document store's door answers reach the owner under a holder, and the vessel's asks reach the island", async () => {
+    const h = harness(); const a = h.port(); const b = h.port();
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint); await h.admit(a); await h.admit(b);
+    a.send({ type: "manifest", wikiUri: "wiki:a" });
+    a.send({ type: "docstore:seal", requestId: "docstore-seal-1", ask: "ask-1", verb: "docstore-seal", bagId: "bag", values: [] });
+    expect(h.islandPosts.some((m) => (m as { type?: string }).type === "docstore:seal")).toBe(true);
+    h.fromIsland({ type: "docstore:sealed", requestId: "docstore-seal-1", values: [] });
+    h.fromIsland({ type: "docstore:opened", requestId: "docstore-open-1", refusal: "holder-locked" });
+    h.fromIsland({ type: "docstore:live", requestId: "docstore-live-1", bagId: "bag" });
+    expect(a.received.slice(-3).map((m) => (m as { type: string }).type)).toEqual(["docstore:sealed", "docstore:opened", "docstore:live"]);
+    expect(b.received.some((m) => ((m as { type?: string }).type ?? "").startsWith("docstore:"))).toBe(false);
+    expect(h.drops.filter((d) => d.kind.startsWith("docstore:"))).toEqual([]);
   });
 
   test("unknown replies and unleased camera or owner traffic drop by kind and reason", async () => {

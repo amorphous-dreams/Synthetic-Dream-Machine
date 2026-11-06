@@ -35,11 +35,20 @@ describe("the one current-signer predicate", () => {
     handle.change((doc) => { doc.tiddlers[retiredSlot] = storedLarRecord(retiredSlot, { text: "" }, "test"); });
     const forged = await signLeaseAdvance({ resource: GROUP, epoch: 900 }, oldK);
     handle.change((doc) => { doc.tiddlers[retiredSlot] = storedLarRecord(retiredSlot, { text: forged }, "test"); });
-    const first = await rollSignedLeaseEpochOnBoard(handle, GROUP, newK, seated);
+    const first = await rollSignedLeaseEpochOnBoard(handle, GROUP, newK, seated, (o) => o, () => {});
     expect(first.effective, "the retired key's 900 is not read").toBe(0);
     expect(first.rolled).toBe(1);
-    const second = await rollSignedLeaseEpochOnBoard(handle, GROUP, newK, seated);
+    const second = await rollSignedLeaseEpochOnBoard(handle, GROUP, newK, seated, (o) => o, () => {});
     expect(second.effective, "the honest current advance lands").toBe(1);
-    await expect(rollSignedLeaseEpochOnBoard(handle, GROUP, oldK, seated)).rejects.toThrow(/no PersonaGroup KEL seat/);
+    await expect(rollSignedLeaseEpochOnBoard(handle, GROUP, oldK, seated, (o) => o, () => {})).rejects.toThrow(/no PersonaGroup KEL seat/);
+  });
+
+  test("RED (guard non-optional): the exported roll refuses without the stranding guard and writes nothing", async () => {
+    const k = await mk(3);
+    const seated = currentSignerOf(personaLineageFromKel((await realKel([k.key])).chain));
+    const handle = new Repo({}).create<LarDoc>(emptyLarDoc() as LarDoc);
+    const roll = rollSignedLeaseEpochOnBoard as unknown as (...a: unknown[]) => Promise<unknown>;
+    await expect(roll(handle, GROUP, k, seated, (o: number) => o)).rejects.toThrow(/lease-roll-guard-missing/);
+    expect(Object.keys(handle.doc()?.tiddlers ?? {}).filter((t) => t.includes("/lease-epoch/"))).toEqual([]);
   });
 });

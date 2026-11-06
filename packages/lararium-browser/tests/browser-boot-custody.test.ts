@@ -137,11 +137,15 @@ describe("browser boot custody asks before secret rows rest", () => {
 
   test("RED: a clear keystore binds its first slot before a walk row rests, and the write that refused lands after", async () => {
     const idbName = vessel();
+    const ROSTER = { roots: [{ handleIndex: 0, verifyingKey: "a".repeat(64) }] };
     await generateOrLoadBrowserVesselIdentity(idbName);
+    await expect(writeKeystoreRow(idbName, "persona-root-roster", ROSTER)).rejects.toMatchObject({ reading: "no-custody-slot" });
     const walk = { nexusAid: "nexus-a" };
     await expect(writeKeystoreRow(idbName, "walk/ab", walk)).rejects.toMatchObject({ reading: "no-custody-slot" });
     const verdict = await standBrowserCustody({ idbName, secretMintDue: true, ask: async () => ({ kind: "passphrase", passphrase: "first route" }) });
     expect(verdict.reading).toBe("bound");
+    await writeKeystoreRow(idbName, "persona-root-roster", ROSTER);
+    expect(await readKeystoreRow(idbName, "persona-root-roster")).toEqual(ROSTER);
     await writeKeystoreRow(idbName, "walk/ab", walk);
     expect(await readKeystoreRow(idbName, "walk/ab")).toEqual(walk);
   });

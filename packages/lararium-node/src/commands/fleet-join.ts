@@ -31,7 +31,7 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
  */
-import type { WardCredential } from "../ward-credential.js";
+import { wardCredentialOfRoute, type WardCredential } from "../ward-credential.js";
 import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
@@ -52,6 +52,7 @@ import { keepHearthFloorPins } from "../hearth-floor-pin-store.js";
 import { stoodFloorPins } from "../hearth-sovereign-pin.js";
 import { nexusCharterDocPath, parseNexusDoc } from "../nexus-doc.js";
 import { vesselFloorKeyDoor } from "../node-vessel-identity.js";
+import { vesselFaceTagDoor } from "../vessel-face-tag-store.js";
 import type { NexusLeaf } from "../nexus-leaf.js";
 import { carriedAdmitOfFleetJoin } from "@lararium/keyhive";
 import { standingFaceScopes } from "../face-root-holdings.js";
@@ -66,7 +67,7 @@ import { loadIdentityAnchors } from "../identity-anchors.js";
 import { standFaceAtom } from "../face-atom-store.js";
 import { ensureFaceCustodyOfGroup } from "../face-route.js";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
-import { runDeviceAdmit } from "./device-admit.js";
+import { DeviceAdmitTagRefused, runDeviceAdmit } from "./device-admit.js";
 import { runInit } from "./init.js";
 import { resolveFace, FaceNotNamed } from "../face-selector.js";
 
@@ -218,8 +219,12 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
   // Check before the device edge, certificates, grants, address secret or answer can be made.
   await refuseProvisional(face, "fleet join answer");
 
-  // THE DEVICE EDGE (`runDeviceAdmit`): the root signs the joinee's vessel key into this hearth's fleet.
-  const { payload, hearth } = await runDeviceAdmit({ repo: opts.repo, catalogUrl: opts.catalogUrl, face, joineeVerifyingKey: request.atomKey, signedRequest: new TextEncoder().encode(JSON.stringify(request)), ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}), ...(opts.docUrl ? { islandDocUrl: opts.docUrl } : {}), ...(opts.ward ? { ward: opts.ward } : {}) });
+  // THE DEVICE EDGE (`runDeviceAdmit`): the root signs the joinee's vessel key into this hearth's fleet, its admission under
+  // the joining vessel's blinded tag the request carries.
+  const { payload, hearth } = await (async () => {
+    try { return await runDeviceAdmit({ repo: opts.repo, catalogUrl: opts.catalogUrl, face, joineeVerifyingKey: request.atomKey, vesselTag: { vesselTag: request.vesselTag, vesselSig: request.vesselSig, wardKey: request.wardKey, wardPop: request.wardPop }, signedRequest: new TextEncoder().encode(JSON.stringify(request)), ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}), ...(opts.docUrl ? { islandDocUrl: opts.docUrl } : {}), ...(opts.ward ? { ward: opts.ward } : {}) }); }
+    catch (error) { if (error instanceof DeviceAdmitTagRefused) throw new FleetJoinRefused(error.refusal, error.message); throw error; }
+  })();
 
   // THE DIAL THE JOINEE NEEDS: the face's admit at this hearth's Nexus (minted once, through the contract door), the
   // charter that seats its quorum, and this hearth's floor pins. The admit commits to the pin the edge's hearth stands
@@ -279,7 +284,11 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
  * custody; the join stays pending until its answer lands. The same offer again answers the request already kept;
  * another offer while one join stands pending refuses `join-pending`.
  */
-export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Promise<FleetJoinRequest> {
+export async function runFleetJoinRequest(opts: {
+  readonly offer: unknown;
+  /** The face's ward route for the ward key's pop. Absent, the route the face's custody is born under here serves, else the person at the terminal. */
+  readonly ward?: WardCredential;
+}): Promise<FleetJoinRequest> {
   const offer = readFleetJoinOffer(opts.offer);
   if (isRefusal(offer)) throw new FleetJoinRefused(offer.refusal, "the offer does not read.");
   const pending = await readPendingFleetJoin(offer.personaGroup);
@@ -288,7 +297,10 @@ export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Pr
     if (!isRefusal(kept)) return kept;
     throw new FleetJoinRefused("join-pending", "another fleet join stands pending for this face; land its answer, or abandon it (`lares fleet join abandon`).");
   }
-  const joinFace = await ensureFaceCustodyOfGroup(offer.personaGroup);
+  // ONE PROMPT, ONE ACT: the route the face's custody is born under opens its ward for the ward key's pop.
+  let born: WardCredential | null = null;
+  const joinFace = await ensureFaceCustodyOfGroup(offer.personaGroup, (slots) => { born = wardCredentialOfRoute(slots); });
+  const ward = opts.ward ?? born ?? undefined;
   const atomSeed = await standFaceAtom(offer.personaGroup);
   const atomKey = faceAtomKeyFromSeed(atomSeed, offer.personaGroup).key;
   const seal = fleetJoinSealPair();
@@ -305,6 +317,7 @@ export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Pr
         return minted.publicKey;
       },
       sign: (image) => signHex(image, seed),
+      vesselTag: vesselFaceTagDoor(ward),
     });
     if (isRefusal(request)) throw new FleetJoinRefused(request.refusal, "the request this vessel composed does not read back.");
     await keepPendingFleetJoin(offer.personaGroup, { request, offer, sealSecret: hex(seal.secret) });
