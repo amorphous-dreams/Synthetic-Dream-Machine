@@ -45,6 +45,9 @@ async function awaitLive(p: Page): Promise<void> {
   }, undefined, { timeout: WAIT }).then((h) => h.jsonValue()).catch(() => "never live");
   expect(row, `${logs.slice(-60).join("\n")}\n--- hearth ---\n${hearth?.bootLog().slice(-2000)}`).toMatch(/^live/);
   await p.waitForFunction(() => document.querySelector("#mirror")?.getAttribute("data-lar-shown") === "mirror" && (document.querySelector("#mirror")?.shadowRoot?.querySelector(".lar-mirror")?.childElementCount ?? 0) > 0, undefined, { timeout: WAIT });
+  // The person reads and edits once the mirror stands at full: a skinny mirror omits each body, and the promotion's
+  // snapshot repaints the story, so an edit frame open under it takes its focus back to the title field.
+  await p.waitForFunction(() => document.querySelector("#mirror")?.getAttribute("data-lar-mirror") === "full", undefined, { timeout: WAIT });
 }
 
 async function openPage(context: BrowserContext): Promise<Page> {
