@@ -59,6 +59,28 @@ describe("LarVessel — one island record", () => {
     expect(drop).toHaveBeenCalledOnce();
   });
 
+  // THE FENCE READS ON BOTH SIDES OF ITS AWAIT (row B8): a custody write the lock overtook in flight answers `lift-locked`,
+  // as a session sign that settles after the lock does, so no caller reads a write of a face the lock ended as landed.
+  test("L1 RED: a custody write in flight when the lift locks refuses `lift-locked` once it settles", async () => {
+    const vessel = larVesselOf(await composeVessel(islandFloorStack({ cas, receipt })));
+    let land!: () => void;
+    const lift = await composeVessel(islandLiftStack(vessel, {
+      face: "G-A", drop: () => {}, custodyWrite: () => new Promise<void>((resolve) => { land = resolve; }),
+    }));
+    const write = vessel.record.custodyWrite!("veil-archive" as never, new Uint8Array([1]));
+    await lift.dispose();
+    land();
+    await expect(write).rejects.toThrow(/lift-locked/);
+  });
+
+  test("L0 CONTROL: a custody write that settles while the lift stands lands", async () => {
+    const vessel = larVesselOf(await composeVessel(islandFloorStack({ cas, receipt })));
+    const landed: Uint8Array[] = [];
+    await composeVessel(islandLiftStack(vessel, { face: "G-A", drop: () => {}, custodyWrite: async (_c, bytes) => { landed.push(bytes); } }));
+    await expect(vessel.record.custodyWrite!("veil-archive" as never, new Uint8Array([1]))).resolves.toBeUndefined();
+    expect(landed).toHaveLength(1);
+  });
+
   test("a lift over a record no floor composed refuses", async () => {
     const lift = { face: "G-A", sessionSign: async () => ({ refusal: "x" }), drop: () => {} };
     await expect(composeVessel(islandLiftStack({ record: {}, stands: () => false, liftedFace: () => null }, lift)))
