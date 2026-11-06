@@ -1,6 +1,7 @@
 import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
 import { webkit } from "playwright";
+import wasm from "vite-plugin-wasm";
 import { refusalIsHostDependency } from "./engine-refusal.js";
 
 // Web-surface tests run in real Chromium, Firefox and WebKit because this shore owns the DOM adapter and the engines
@@ -40,10 +41,21 @@ export default defineConfig(async () => ({
         test: {
           name: "web-browser",
           include: ["tests/**/*.test.ts"],
-          exclude: ["tests/e2e/**"],
+          exclude: ["tests/e2e/**", "tests/vessel-host-*.test.ts"],
           // Three engines beside the node e2e project starve its 20 s page waits; the engines take their files one at a time.
           fileParallelism: false,
           browser: { enabled: true, provider: playwright(), instances: await engines() },
+        },
+      },
+      {
+        // The vessel worker's host over the real `@lararium/browser` (its Keyhive and Automerge WASM ride the wasm plugin): a
+        // scratch store per case, the vessel it lights standing in, the host's own wiring read.
+        plugins: [wasm()],
+        test: {
+          name: "vessel-host",
+          include: ["tests/vessel-host-*.test.ts"],
+          fileParallelism: false,
+          browser: { enabled: true, provider: playwright(), instances: [{ browser: "chromium" as const }, { browser: "firefox" as const }] },
         },
       },
       {
