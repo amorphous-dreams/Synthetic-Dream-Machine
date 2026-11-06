@@ -9,6 +9,11 @@
  * The ward takes a passphrase alone: a passkey answer to a ward ask refuses `ward-passkey-refused`. A route the ask did not
  * offer refuses `ceremony-route-refused`. A page that cannot open the ceremony names its refusal (`ceremony:refused`), and the
  * ask rejects with that name; nothing falls back to a form on the surface page.
+ *
+ * EVERY ASK NAMES ITS FACE (slice 3 part ii): the PersonaGroup it speaks for, or null for this browser itself (the floor's
+ * place custody). An ask that names none refuses `ask-face-absent`; a clear names one PersonaGroup, so a clear for this browser
+ * (null) refuses `clear-face-absent`; a local handle index `h<N>` names no face (`face-names-a-handle`). A refused ask reaches
+ * no page.
  */
 import type { Credential } from "@lararium/mesh";
 import type { CeremonyAnswer, CeremonyAsk, CeremonyAskKind, CeremonyPasskey, CeremonyRoute, CeremonyToVessel, VesselToCeremony } from "../ceremony-protocol.js";
@@ -23,14 +28,24 @@ export interface CeremonyAskSpec {
   readonly kind: CeremonyAskKind;
   readonly act: string;
   readonly words?: string;
-  readonly face?: string | null;
+  /** The PersonaGroup the ask speaks for; null names this browser itself. Required: an ask with none refuses `ask-face-absent`. */
+  readonly face: string | null;
   readonly passkeys?: readonly CeremonyPasskey[];
 }
 
 /** What the door tells the page: the public ask, and its settling. */
 export type DoorToPage =
-  | { readonly t: "ask"; readonly askId: string; readonly kind: CeremonyAskKind; readonly act: string; readonly words: string }
+  | { readonly t: "ask"; readonly askId: string; readonly kind: CeremonyAskKind; readonly act: string; readonly words: string; readonly face: string | null }
   | { readonly t: "ask:settled"; readonly askId: string };
+
+/** The face an ask names, checked: present, a PersonaGroup or null for this browser, and a PersonaGroup for a clear. */
+export function checkAskFace(kind: CeremonyAskKind, face: unknown): string | null {
+  if (face === undefined) throw new CeremonyRefused("ask-face-absent");
+  if (face !== null && (typeof face !== "string" || face.length === 0)) throw new CeremonyRefused("ask-face-absent");
+  if (typeof face === "string" && /^h\d+$/.test(face)) throw new CeremonyRefused("face-names-a-handle");
+  if (kind === "clear" && face === null) throw new CeremonyRefused("clear-face-absent");
+  return face;
+}
 
 const hexOf = (bytes: ArrayBuffer): string => [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, "0")).join("");
 
@@ -88,14 +103,15 @@ export function standCeremonyDoor(post: (msg: DoorToPage) => void) {
   return {
     /** Raise one ask and wait for the ceremony's answer, decoded. */
     async ask(spec: CeremonyAskSpec): Promise<Credential | null> {
+      const face = checkAskFace(spec.kind, (spec as { face?: unknown }).face);
       const askId = crypto.randomUUID();
       const passkeys = spec.passkeys ?? [];
       const words = spec.words ?? "";
       const digest = hexOf(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify([askId, spec.kind, spec.act]))));
-      const ask: CeremonyAsk = { t: "ask", askId, kind: spec.kind, act: spec.act, digest, face: spec.face ?? null, routes: routesFor(spec.kind, passkeys), passkeys, words };
+      const ask: CeremonyAsk = { t: "ask", askId, kind: spec.kind, act: spec.act, digest, face, routes: routesFor(spec.kind, passkeys), passkeys, words };
       return new Promise<Credential | null>((resolve, reject) => {
         pending.set(askId, { ask, resolve, reject, port: null });
-        post({ t: "ask", askId, kind: spec.kind, act: spec.act, words });
+        post({ t: "ask", askId, kind: spec.kind, act: spec.act, words, face });
       });
     },
     /** The page handed this thread its end of a ceremony channel. A second port for one ask, or a port for no ask, closes unread. */

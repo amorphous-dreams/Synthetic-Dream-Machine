@@ -120,7 +120,8 @@ export type VesselToPage =
   | { readonly t: "coherence"; readonly frame: CoherenceFrameWithRev }
   | { readonly t: "port-msg"; readonly binding: string; readonly islandKey: string; readonly msg: unknown }
   | { readonly t: "port:refused"; readonly binding: string; readonly reason: string; readonly opening: boolean; readonly portId?: string }
-  | { readonly t: "ask"; readonly askId: string; readonly kind: CeremonyAskKind; readonly act: string; readonly words: string }
+  /** `face` names the PersonaGroup the ask speaks for (null: this browser itself); a public name, never a key. */
+  | { readonly t: "ask"; readonly askId: string; readonly kind: CeremonyAskKind; readonly act: string; readonly words: string; readonly face: string | null }
   | { readonly t: "ask:settled"; readonly askId: string }
   | { readonly t: "status"; readonly status: VesselStatus }
   | { readonly t: "reply"; readonly callId: string; readonly ok: true; readonly value: unknown }

@@ -18,14 +18,18 @@
  * its floor (`signer-unavailable`). The face's last admitted session closing (`pagehide`, a lost port, the house's liveness
  * budget) runs the lock and the vessel returns to its floor. Surface traffic (frames, phases, port messages) reaches the
  * surface session alone: the session that lit the vessel, then the oldest admitted session after it.
+ *
+ * EVERY ASK NAMES ITS FACE (slice 3 part ii): each custody and ward ask carries the face its session wears to the ceremony
+ * (the PersonaGroup; null names this browser itself, the floor's place custody, which every session here wears until its
+ * face's custody stands under its own tree), and the door refuses an ask that names none.
  */
 declare const __LAR_WALK_DOOR__: boolean;
 import {
   openBrowserVessel, standBrowserCustody, readBrowserCustody, readBrowserSeedWrap, loadBrowserActivePersona,
-  parseAdmitCarriage, toAdmitCarriage, readBrowserCustodyPasskeys, browserWardSign,
+  parseAdmitCarriage, toAdmitCarriage, readBrowserCustodyPasskeys, readFaceCustodyPasskeys, browserWardSign,
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
   standVesselHouse, sessionLifetimeLock, VesselSessionRefused,
-  type BrowserVesselResult, type CustodyAnswer, type CustodyAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost,
+  type BrowserVesselResult, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost,
 } from "@lararium/browser";
 import { didFromVerifyingKey, parseMeshPeer, type MeshPeer } from "@lararium/mesh";
 import type { PageToVessel, SeedRest, VesselBoot, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
@@ -72,14 +76,18 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     surface = [...conns.entries()].find(([, c]) => c.session?.admission === "admitted")?.[0] ?? null;
   };
 
-  const wordsOf = (question: CustodyAsk | { readonly kind: "clear" }): string =>
+  const wordsOf = (question: CustodyAsk | HouseAsk | { readonly kind: "clear" }): string =>
     question.kind === "unlock" ? `attempt ${String(question.attempt)} of ${String(question.of)}${question.notes.length ? ` — ${question.notes.join("; ")}` : ""}` : "";
   /** A custody ask through one session's ceremony door: the ceremony offers a passkey route beside the passphrase wherever a passkey pin stands. */
-  const askCustodyOf = (conn: Conn, act: string) => async (question: CustodyAsk | { readonly kind: "clear" }): Promise<CustodyAnswer> =>
-    conn.door.ask({ kind: question.kind, act, words: wordsOf(question), passkeys: question.kind === "bind-first" ? [] : await readBrowserCustodyPasskeys(idbName) });
+  const askCustodyOf = (conn: Conn, act: string) => async (question: HouseAsk | CustodyAsk | { readonly kind: "clear" }): Promise<CustodyAnswer> => {
+    // A house ask names its face; the vessel's own custody asks (its boot, the fleet join) speak for the session's face.
+    const face = "face" in question ? question.face : conn.session?.face ?? null;
+    const passkeys = question.kind === "bind-first" ? [] : face === null ? await readBrowserCustodyPasskeys(idbName) : await readFaceCustodyPasskeys(idbName, face);
+    return conn.door.ask({ kind: question.kind, act, words: wordsOf(question), face, passkeys });
+  };
   /** A ward ask: a passphrase alone, for one act. A declined ask answers empty, and the ward then refuses `ward-needs-fresh-unlock`. */
   const askWardOf = (conn: Conn) => async (act: string): Promise<string> => {
-    const route = await conn.door.ask({ kind: "ward", act });
+    const route = await conn.door.ask({ kind: "ward", act, face: conn.session?.face ?? null });
     return route?.kind === "passphrase" ? route.passphrase : "";
   };
 

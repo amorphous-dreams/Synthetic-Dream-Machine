@@ -14,7 +14,7 @@ import type {
 } from "./vessel-protocol.js";
 
 /** An ask as the page hears it: public words alone. The page opens the ceremony document for it and takes no answer. */
-export interface VesselAsk { readonly askId: string; readonly kind: CeremonyAskKind; readonly act: string; readonly words: string }
+export interface VesselAsk { readonly askId: string; readonly kind: CeremonyAskKind; readonly act: string; readonly words: string; readonly face: string | null }
 
 /** The worker's side the page reads: a message road, and the platform's own termination. */
 export interface VesselWorkerLike {
@@ -98,7 +98,7 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
         handlers.onPortMessage?.(msg.binding, "", { type: "transport:refused", reason: msg.reason, binding: msg.binding });
         if (msg.opening && msg.portId) handlers.onPortMessage?.(msg.binding, "", { type: "port:gone", portId: msg.portId, reason: msg.reason, binding: msg.binding });
         return;
-      case "ask": handlers.onAsk?.({ askId: msg.askId, kind: msg.kind, act: msg.act, words: msg.words }); return;
+      case "ask": handlers.onAsk?.({ askId: msg.askId, kind: msg.kind, act: msg.act, words: msg.words, face: msg.face }); return;
       case "ask:settled": handlers.onAskSettled?.(msg.askId); return;
       case "status":
         if (msg.status.connection) { connection = msg.status.connection; for (const l of connectionListeners) l(connection); }

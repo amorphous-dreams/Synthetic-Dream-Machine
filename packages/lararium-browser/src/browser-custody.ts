@@ -493,6 +493,9 @@ export type CustodyBindRoute =
   | Exclude<Credential, { readonly kind: "passkey" }>
   | { readonly kind: "passkey"; readonly credentialId: Uint8Array; readonly prfSalt: Uint8Array; readonly prfOutput: Uint8Array };
 
+/** The pin a bind route makes (one face's tree binds through it too, `browser-face-custody.ts`). */
+export function custodyPinOf(route: CustodyBindRoute): PinSpec { return pinOf(route); }
+
 function pinOf(route: CustodyBindRoute): PinSpec {
   if (route.kind === "passphrase") return { kind: "passphrase", passphrase: route.passphrase };
   if (route.kind === "paper") return { kind: "paper", confirmed: confirmHeldPaper(route.sheets) };
