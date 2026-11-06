@@ -143,9 +143,8 @@ plane's random 16-byte id carries its confidentiality against a peer that cannot
 ''receives an "add member" signed op referencing its Ed25519 key, then joins''
 ''via `repo.find(url)`, with the url exchanged out-of-band (invitation link, DID''
 ''service endpoint, or social graph record)'', and a Keyhive capability check answers `sharePolicy`.
-`KeyhiveIdentitySlot` stands specified in code and tested as that check, out of its package barrel; no
-production call site constructs it, and both vessels fill the inner ring with the PersonaGroup ring
-(`packages/lararium-keyhive/src/keyhive-identity-slot.ts`).
+The Keyhive identity slot that once stood specified as that check retired (road `K23`): a self-DID verifier binds
+no presenter, and both vessels fill the inner ring with the PersonaGroup ring.
 
 !! Reaction Write-Back Invariants
 
@@ -184,8 +183,7 @@ Automerge's LWW conflict resolution uses actor IDs + Lamport timestamps. If a
 reaction writes as "the system," that actor must carry a persistent identity
 derived from the node's keypair — never regenerated per boot. Unstable actor IDs
 cause spurious conflicts and make LWW resolution non-deterministic across restarts.
-`KeyhiveIdentitySlot.deriveActorId` derives a stable actor id from the identity's DID, and no production
-call site invokes it.
+No identity-derived actor id stands: the Keyhive slot's derivation retired with it (road `K23`).
 
 !! Automerge-Repo: What the Official Docs Say
 
@@ -223,6 +221,6 @@ doc bundle to new nodes.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eE9I0cf1LuEjvW7GG7rtX8ggj7_vKQUsfPfu89Fs-YE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RI3lLFbBQxhxj8KiSPDdPaSsHvHRggOP6QqUiM9esm8`>>
 
 <<^ code=`&#x0004;` to=`?`>>
