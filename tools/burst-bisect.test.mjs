@@ -113,3 +113,22 @@ test('every gh run watch rides the house poll floor, never a literal under it', 
     assert.ok(Number(w[w.indexOf('--interval') + 1]) >= POLL_FLOOR_S);
   }
 });
+
+// The find loop reads at the house pace: no sleep under POLL_FLOOR_S, and a run that never shows
+// costs at most three reads. A run found on the first read sleeps zero times.
+test('the find loop sleeps at the house pace and reads at most three times when the run never shows', async () => {
+  const f = fake({ count: 1, stale: true });
+  let t = 0; const sleeps = [];
+  const { findBudgetMs: _b, ...rest } = opts(f);
+  await burstBisect({ ...rest, now: () => t, sleep: async ms => { sleeps.push(ms); t += ms; } });
+  const reads = f.calls.filter(c => c[0] === 'gh' && c[1] === 'run' && c[2] === 'list').length;
+  assert.ok(sleeps.every(ms => ms >= POLL_FLOOR_S * 1000), `sleeps ${sleeps}`);
+  assert.ok(reads <= 3, `reads ${reads}`);
+});
+
+test('a run found on the first read sleeps zero times', async () => {
+  const f = fake({ count: 1 });
+  const sleeps = [];
+  await burstBisect({ ...opts(f), sleep: async ms => { sleeps.push(ms); } });
+  assert.equal(sleeps.length, 0);
+});

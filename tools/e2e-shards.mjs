@@ -348,7 +348,7 @@ function assertNotBare(repoRoot) {
  * `{ ok, shardCounts, totalTests, run }`. Always deletes the branch, even on a red run — a proof
  * branch left standing after a red read is exactly the kind of debris this tool must not leave.
  */
-export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000, pollMs = 3000 }) {
+export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 2 * POLL_FLOOR_S * 1000, pollMs = POLL_FLOOR_S * 1000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)), now = Date.now }) {
   assertNotBare(repoRoot);
   const branch = `ci/${lane}`;
   const headSha = run("git", ["-C", repoRoot, "rev-parse", "HEAD"], { stdio: ["ignore", "pipe", "pipe"] }).trim();
@@ -356,8 +356,8 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   run("git", ["-C", repoRoot, "push", "origin", `HEAD:refs/heads/${branch}`], { stdio: ["ignore", "pipe", "pipe"] });
 
   let runId;
-  const deadline = Date.now() + findBudgetMs;
-  while (Date.now() < deadline) {
+  const deadline = now() + findBudgetMs;
+  while (now() < deadline) {
     // NEVER `--workflow e2e-shards.yml` here: GitHub's API only resolves a workflow BY FILENAME
     // once that file exists on the repo's default branch, and this tool exists to prove
     // a workflow file that lives only on a throwaway `ci/<lane>` branch. `--branch` + `--event
@@ -371,7 +371,7 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
     const runs = JSON.parse(listed);
     const match = runs.find((r) => r.headSha === headSha);
     if (match) { runId = match.databaseId; break; }
-    await new Promise((r) => setTimeout(r, pollMs));
+    await sleep(pollMs);
   }
   if (!runId) {
     deleteBranch(repoRoot, branch);

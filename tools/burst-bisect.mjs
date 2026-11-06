@@ -47,7 +47,7 @@ function verdictFrom(run, view, log, watched) {
   return { ...run, runId: view.databaseId ?? run.runId, url: view.url ?? null, status, shard, lines };
 }
 
-export async function burstBisect({ repoRoot = resolve('.'), lane, good, bad, max = 8, all = false, run = defaultRun, sleep = defaultSleep, now = Date.now, log = console.log, findBudgetMs = 120_000, pollMs = 3000 }) {
+export async function burstBisect({ repoRoot = resolve('.'), lane, good, bad, max = 8, all = false, run = defaultRun, sleep = defaultSleep, now = Date.now, log = console.log, findBudgetMs = 2 * POLL_FLOOR_S * 1000, pollMs = POLL_FLOOR_S * 1000 }) {
   if (!laneRe.test(lane ?? '') || !shaRe.test(good ?? '') || !shaRe.test(bad ?? '') || !Number.isSafeInteger(max) || max < 1) throw new Error(USAGE);
   const call = (cmd, args) => run(cmd, args, repoRoot);
   if ((await call('git', ['config', '--get', 'core.bare'])).trim() !== 'false') throw new Error('core.bare must read false');
