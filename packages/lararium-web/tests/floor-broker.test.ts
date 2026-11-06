@@ -16,44 +16,16 @@
  *   FB3 RED     the ceremony document neither claims nor offers a vessel port (`vessel:absent`; an offer from it hands
  *               nothing), and an offer for a claim never made hands nothing.
  *   CONTROL     the ceremony's own offer and claim still hand its port.
+ *   FB5 RED     an unanswered claim ends on the claimant's own withdraw (`vessel:withdraw{tabSession}`): its wait settles
+ *               and a later offer hands nothing. CONTROL: a withdraw from any other window ends nothing.
+ *   FB6 RED     an unanswered claim ends when the claimant's client stands gone at the broker's next event (any message
+ *               it hears), never on a timer: its wait settles and a later offer hands nothing. CONTROL: a live
+ *               claimant's claim survives that same event.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
 import { expect, test } from "vitest";
-import brokerSource from "../public/ceremony-broker.js?raw";
-
-const ORIGIN = "https://hearth.test";
-
-interface Posted { readonly msg: unknown; readonly ports: readonly MessagePort[] }
-interface Client { readonly id: string; readonly url: string; readonly type: "window"; readonly posted: Posted[]; postMessage(msg: unknown, transfer?: Transferable[]): void }
-
-function client(id: string, path: string): Client {
-  const posted: Posted[] = [];
-  return { id, url: `${ORIGIN}${path}`, type: "window", posted, postMessage: (msg, transfer = []) => { posted.push({ msg, ports: transfer as MessagePort[] }); } };
-}
-
-/** Stand the broker's real bytes over a stand-in scope; `send` delivers one message from a client, as the platform does. */
-function standBroker(clients: Client[]) {
-  const listeners = new Map<string, Array<(event: unknown) => void>>();
-  const scope = {
-    location: { origin: ORIGIN },
-    skipWaiting: () => Promise.resolve(),
-    clients: {
-      claim: () => Promise.resolve(),
-      get: (id: string) => Promise.resolve(clients.find((c) => c.id === id)),
-      matchAll: () => Promise.resolve(clients.slice()),
-    },
-    addEventListener: (type: string, l: (event: unknown) => void) => { listeners.set(type, [...(listeners.get(type) ?? []), l]); },
-  };
-  new Function("self", brokerSource)(scope);
-  const send = async (from: Client, msg: unknown, ports: MessagePort[] = []): Promise<void> => {
-    const kept: Promise<unknown>[] = [];
-    for (const l of listeners.get("message") ?? []) l({ data: msg, source: from, ports, waitUntil: (p: Promise<unknown>) => { kept.push(p); } });
-    // barrier: the broker's own async hand (its clients reads) settles before the test reads what it posted.
-    for (let i = 0; i < 8; i++) await Promise.resolve();
-  };
-  return { send };
-}
+import { client, standBroker, type Client } from "./fixtures/broker-scope.js";
 
 const wanted = (c: Client) => c.posted.map((p) => p.msg as { t?: string; claimId?: string; tabSession?: string }).filter((m) => m.t === "vessel:want");
 
@@ -119,4 +91,44 @@ test("CONTROL — the ceremony's own offer and claim still hand its port", async
   await broker.send(ceremony, { t: "ceremony:claim", askId: "a1" });
   expect(ceremony.posted.map((p) => p.msg)).toEqual([{ t: "ceremony:port", askId: "a1" }]);
   expect(ceremony.posted[0]!.ports).toEqual([channel.port2]);
+});
+
+const portsTo = (c: Client) => c.posted.filter((p) => (p.msg as { t?: string }).t === "vessel:port");
+
+test("FB5 RED — the claimant's own withdraw ends its unanswered claim; CONTROL: another window's withdraw ends nothing", async () => {
+  const leader = client("lead", "/");
+  const follower = client("follow", "/");
+  const other = client("other", "/");
+  const broker = standBroker([leader, follower, other]);
+  await broker.send(follower, { t: "vessel:claim", tabSession: "tab-b" });
+  const claimId = wanted(leader)[0]?.claimId;
+  expect(claimId).toBeTypeOf("string");
+  const wait = broker.kept[0]!;
+  await broker.send(other, { t: "vessel:withdraw", tabSession: "tab-b" });
+  expect(broker.settled(wait), "CONTROL: a withdraw from a window that never claimed ends nothing").toBe(false);
+  await broker.send(follower, { t: "vessel:withdraw", tabSession: "tab-b" });
+  expect(broker.settled(wait), "the claimant's withdraw ends the claim's wait").toBe(true);
+  await broker.send(leader, { t: "vessel:offer", claimId }, [new MessageChannel().port2]);
+  expect(portsTo(follower), "a withdrawn claim hands nothing").toHaveLength(0);
+});
+
+test("FB6 RED — a gone claimant's claim ends at the broker's next event, never a timer; CONTROL: a live claim survives it", async () => {
+  const leader = client("lead", "/");
+  const gone = client("gone", "/");
+  const live = client("live", "/");
+  const clients = [leader, gone, live];
+  const broker = standBroker(clients);
+  await broker.send(gone, { t: "vessel:claim", tabSession: "tab-g" });
+  await broker.send(live, { t: "vessel:claim", tabSession: "tab-l" });
+  const [goneWant, liveWant] = wanted(leader);
+  const [goneWait, liveWait] = broker.kept;
+  clients.splice(clients.indexOf(gone), 1);
+  // The event: any message the broker hears next (here the ceremony's own offer, unrelated to either claim).
+  await broker.send(leader, { t: "ceremony:offer", askId: "unrelated" }, [new MessageChannel().port2]);
+  expect(broker.settled(goneWait!), "the gone claimant's wait ends at the next event").toBe(true);
+  expect(broker.settled(liveWait!), "CONTROL: a live claimant's wait stands").toBe(false);
+  await broker.send(leader, { t: "vessel:offer", claimId: goneWant!.claimId }, [new MessageChannel().port2]);
+  await broker.send(leader, { t: "vessel:offer", claimId: liveWant!.claimId }, [new MessageChannel().port2]);
+  expect(portsTo(live), "CONTROL: the live claim still hands its port").toHaveLength(1);
+  expect(broker.settled(liveWait!), "and its wait ends at the hand").toBe(true);
 });
