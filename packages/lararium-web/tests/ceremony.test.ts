@@ -10,6 +10,10 @@
  *               ceremony document and on the page. CONTROL: a document standing under all four asks (null).
  *   C4          the page's part: one channel end crosses to the vessel, the other to the broker, the window opens with no
  *               opener on the ask's own path, and the page keeps neither end.
+ *   C5 RED      `face` rides every ask (slice 3 part ii): an ask that names no face refuses `ask-face-absent`, a clear that
+ *               names none (null, "this browser") refuses `clear-face-absent`, and `h<N>` names no face
+ *               (`face-names-a-handle`); nothing reaches the page. CONTROL: an unlock naming the browser itself (null) and
+ *               a clear naming its PersonaGroup raise their asks, the face on both the ceremony's and the page's.
  */
 import { expect, test } from "vitest";
 import { CeremonyRefused, decodeCeremonyAnswer, routesFor, standCeremonyDoor, type DoorToPage } from "../src/workers/ceremony-door.js";
@@ -37,7 +41,7 @@ async function asked(spec: Parameters<ReturnType<typeof standCeremonyDoor>["ask"
 }
 
 test("C1 RED — a ward ask answered with a passkey refuses ward-passkey-refused; CONTROL: a passphrase answers it, and a custody unlock takes a passkey", async () => {
-  const ward = await asked({ kind: "ward", act: "a kāpae-lower" });
+  const ward = await asked({ kind: "ward", act: "a kāpae-lower", face: null });
   expect(ward.ask).toMatchObject({ t: "ask", kind: "ward", act: "a kāpae-lower", routes: ["passphrase"], passkeys: [] });
   expect(ward.ask.digest).toMatch(/^[0-9a-f]{64}$/);
   const id = new Uint8Array([1, 2, 3]).buffer, out = new Uint8Array(32).fill(7).buffer;
@@ -48,14 +52,14 @@ test("C1 RED — a ward ask answered with a passkey refuses ward-passkey-refused
   expect(ward.toPage.at(-1)).toEqual({ t: "ask:settled", askId: ward.ask.askId });
 
   // CONTROL: the same kind of ask, answered with a passphrase, resolves to that passphrase.
-  const again = await asked({ kind: "ward", act: "a commit in daemon" });
+  const again = await asked({ kind: "ward", act: "a commit in daemon", face: null });
   const bytes = new TextEncoder().encode("a ward passphrase").buffer;
   again.ceremony.postMessage({ t: "answer", askId: again.ask.askId, answer: { kind: "passphrase", bytes } } satisfies CeremonyToVessel, [bytes]);
   expect(await again.answer).toEqual({ kind: "passphrase", passphrase: "a ward passphrase" });
 
   // CONTROL: a custody unlock over a standing passkey pin offers and takes the passkey.
   const passkeys = [{ credentialId: new Uint8Array([9, 9]), prfSalt: new Uint8Array(32).fill(1) }];
-  const unlock = await asked({ kind: "unlock", act: "boot", passkeys });
+  const unlock = await asked({ kind: "unlock", act: "boot", face: null, passkeys });
   expect(unlock.ask.routes).toEqual(["passphrase", "passkey"]);
   const id2 = new Uint8Array([9, 9]).buffer, out2 = new Uint8Array(32).fill(5).buffer;
   unlock.ceremony.postMessage({ t: "answer", askId: unlock.ask.askId, answer: { kind: "passkey", credentialId: id2, prfOutput: out2 } } satisfies CeremonyToVessel, [id2, out2]);
@@ -108,4 +112,20 @@ test("C4 — the page sends one channel end to the vessel and one to the broker,
   expect(toBroker[0]!.transfer).toHaveLength(1);
   expect(toBroker[0]!.transfer[0]).not.toBe(toVessel[0]);
   expect(opened).toEqual([["/ceremony.html#ask=0f8fad5b-d9cb-469f-a165-70867728950e", "_blank", "noopener"]]);
+});
+
+test("C5 RED — every ask names its face, and a clear names one PersonaGroup; CONTROL: named asks raise, face and all", async () => {
+  const toPage: DoorToPage[] = [];
+  const door = standCeremonyDoor((m) => { toPage.push(m); });
+  await expect(door.ask({ kind: "unlock", act: "boot" } as unknown as Parameters<typeof door.ask>[0])).rejects.toMatchObject({ refusal: "ask-face-absent" });
+  await expect(door.ask({ kind: "clear", act: "tm-clear-password", face: null })).rejects.toMatchObject({ refusal: "clear-face-absent" });
+  await expect(door.ask({ kind: "unlock", act: "boot", face: "h0" })).rejects.toMatchObject({ refusal: "face-names-a-handle" });
+  expect(toPage, "a refused ask reaches no page").toEqual([]);
+
+  const floor = await asked({ kind: "unlock", act: "boot", face: null });
+  expect(floor.ask.face, "null names this browser itself").toBeNull();
+  const group = "pg-teshima-family-council";
+  const clear = await asked({ kind: "clear", act: "tm-clear-password", face: group });
+  expect(clear.ask.face).toBe(group);
+  expect(clear.toPage[0]).toMatchObject({ t: "ask", kind: "clear", face: group });
 });
