@@ -21,9 +21,11 @@
  * it refuses `ward-act-already-run` and lands the owed outcome.
  *
  * The spend stands FROZEN at its outcome, which cites the answer it spent and the fleet frontier the gate read: a second approve
- * or a deny from a third device, a co-signer set aside (its raise counted at the next frontier) or reading `unknown`, and the
- * issuer set aside after it, each leave the landed act standing; an outcome that cites a frontier counting its own issuer aside
- * stands nothing, and an approved intent with no outcome reads nothing.
+ * or a deny from a third device, and a co-signer set aside (its raise counted at the next frontier) or reading `unknown`, each
+ * leave the landed act standing; an outcome that cites a frontier counting its own issuer aside stands nothing, and an approved
+ * intent with no outcome reads nothing. The ISSUER reads at the reader's current standing (a raise shadows its target at once for
+ * every reader that sees it): an issuer the reader reads aside, or `unknown`, stands no outcome it signed, door-made or signed
+ * outside the gate citing an approve from before its set-aside (`ward-issuer-aside`, `ward-issuer-unknown`).
  *
  * The co-signer's ward stands on the wire: each device's admission carries its per-face ward key, and an approve counts only beside
  * that device's ward signature over (the answer, the ask's digest, the fleet frontier it read). An approve its atom alone signed,
@@ -392,7 +394,7 @@ export function wardCosignTable(vessel: CosignVessel): void {
           expect(await u.landed()).toBe(true);
         });
 
-        test("RED: an outcome that cites a frontier counting its own issuer aside never stands (the issuer stands at the cited frontier as the co-signer does); CONTROL: the issuer set aside after a door-made outcome leaves the act standing", async () => {
+        test("RED: an outcome that cites a frontier counting its own issuer aside never stands (the issuer stands at the cited frontier as the co-signer does); RED: the issuer set aside after a door-made outcome reads aside at once, and the act stands no longer (`ward-issuer-aside`)", async () => {
           const s = await stand(vessel, kind, 2);
           const ask = await s.firstAsk();
           const { id, digest } = wardCosignIntentId(s.port, s.act());
@@ -405,9 +407,34 @@ export function wardCosignTable(vessel: CosignVessel): void {
           const c = await stand(vessel, kind, 2);
           await c.answer(c.b, await c.firstAsk());
           await c.run();
+          expect(await c.landed()).toBe(true);
           c.aside.add(c.a.key);
           c.advance([c.a.key]);
+          expect(await c.landed()).toBe(false);
+          expect(await c.refusal()).toBe("ward-issuer-aside");
+        });
+
+        test("RED: an issuer set aside after an approve signs its own outcome outside the gate, citing the approve and the frontier it stood at: the reader reads the issuer aside and refuses `ward-issuer-aside`, and an issuer reading `unknown` refuses `ward-issuer-unknown`; CONTROL: a standing issuer's door-made outcome stands", async () => {
+          const s = await stand(vessel, kind, 2);
+          const ask = await s.firstAsk();
+          const { id, digest } = wardCosignIntentId(s.port, s.act());
+          const verb = s.act().verb;
+          const answer = await s.answer(s.b, ask);
+          await s.forge();
+          s.aside.add(s.a.key);
+          s.advance([s.a.key]);
+          s.write(await buildOutcome({ group: GROUP, signer: s.a, cause: id, result: { status: "done", act: verb, digest, cosigner: s.b.key.toLowerCase(), answer, frontier: F0 } }));
+          expect(await s.landed()).toBe(false);
+          expect(await s.refusal()).toBe("ward-issuer-aside");
+          s.aside.delete(s.a.key);
+          s.unknown.add(s.a.key);
+          expect(await s.landed()).toBe(false);
+          expect(await s.refusal()).toBe("ward-issuer-unknown");
+          const c = await stand(vessel, kind, 2);
+          await c.answer(c.b, await c.firstAsk());
+          await c.run();
           expect(await c.landed()).toBe(true);
+          expect(await c.refusal()).toBeUndefined();
         });
 
         test("CONTROL: an approved intent with no outcome reads nothing: the act signed beside the approve, outside the door, refuses `ward-act-uncosigned`", async () => {
