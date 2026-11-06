@@ -344,7 +344,7 @@ test("RED: a recorded 502 then green returns green after one wait", async () => 
   const r = await door({ ...GREEN_TABLE(), runs: (n) => (n === 1 ? bad502() : [mkRun()]) });
   assert.equal(r.code, 0, r.out + r.err);
   assert.equal(r.slept.length, 1);
-  assert.equal(r.slept[0], 30000, "the default interval is thirty seconds");
+  assert.equal(r.slept[0], 180000, "the default interval reads the house poll floor: three minutes");
 });
 
 test("RED: a 502 forever exits UNREADABLE (its own code), never RED and never GREEN", async () => {
@@ -377,10 +377,23 @@ test("a head the branch list's window misses is asked for by sha (`gh run list -
 });
 
 test("RED: --wait returns once neither reading is unread: unread, unread, green returns green on the third read", async () => {
-  const r = await door({ ...GREEN_TABLE(), runs: (n) => (n < 3 ? [mkRun({ status: "in_progress", conclusion: null })] : [mkRun()]) }, ["--wait", "--interval", "7"]);
+  const r = await door({ ...GREEN_TABLE(), runs: (n) => (n < 3 ? [mkRun({ status: "in_progress", conclusion: null })] : [mkRun()]) }, ["--wait", "--interval", "300"]);
   assert.equal(r.code, 0, r.out + r.err);
   assert.equal(r.n.runs, 3);
-  assert.deepEqual(r.slept, [7000, 7000]);
+  assert.deepEqual(r.slept, [300000, 300000], "CONTROL: an interval over the floor paces every wait");
+});
+
+test("RED: the house poll floor holds three minutes; --interval under it refuses by name before any read, and every wait of a --wait vigil reads at least the floor", async () => {
+  const { POLL_FLOOR_S } = await import("./ci-verdict.mjs");
+  assert.equal(POLL_FLOOR_S, 180, "the operator's law (2026-11-05): poll CI no closer than three minutes");
+  const r = await door(GREEN_TABLE(), ["--wait", "--interval", "30"]);
+  assert.equal(r.code, 3, "a refusal reads the reader's own usage code, never 2 (unread), which a vigil would read as wait on");
+  assert.match(r.err, /poll-under-floor: 30 < 180/);
+  assert.equal(r.calls.length, 0, "the refusal reads nothing");
+  const w = await door({ ...GREEN_TABLE(), runs: (n) => (n === 1 ? bad502() : n < 4 ? [mkRun({ status: "in_progress", conclusion: null })] : [mkRun()]) }, ["--wait"]);
+  assert.equal(w.code, 0, w.out + w.err);
+  assert.ok(w.slept.length >= 3, "a dark read and two unread reads each waited");
+  for (const ms of w.slept) assert.ok(ms >= 180000, `a wait of ${ms} ms polls closer than the floor`);
 });
 
 test("RED: without --wait an unread head exits 2 at once; a cancelled-clean run keeps --wait waiting", async () => {
