@@ -116,7 +116,7 @@ describe("the browser vessel's lock and stand-down (P2-2, P2-3)", () => {
     const body = /const lockThenDrop = async \(\): Promise<void> => \{([\s\S]*?)\n\s*\};/.exec(vessel())?.[1] ?? "";
     expect(body.length, "the lock's body reads").toBeGreaterThan(0);
     const at = (pattern: RegExp): number => { const m = pattern.exec(body); return m ? m.index : -1; };
-    const flush = at(/await sealedRest\.lock\(\)/), face = at(/sealedCells\.face = \(\) => null/), bags = at(/sealedCells\.bags = \(\) => \[\]/), keys = at(/docStoreDoor\.lock\(\)/), drop = at(/lift\.drop\(\)/);
+    const flush = at(/await sealedRest\.lock\(\)/), face = at(/sealedCells\.face = \(\) => null/), bags = at(/sealedCells\.bags = \(\) => \[\]/), keys = at(/docStoreDoor\.lock\(\)/), drop = at(/await lifted\.dispose\(\)/);
     for (const i of [flush, face, bags, keys, drop]) expect(i).toBeGreaterThanOrEqual(0);
     expect(flush).toBeLessThan(face);
     expect(face).toBeLessThan(drop);

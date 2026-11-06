@@ -1,15 +1,15 @@
 /**
- * browser-island-caps — slice 5a: the browser answers its daemon island's asks through a CapabilityRecord composed as
- * the node composes its own. Receipt, cas and dyad stand at construction; `custodyWrite` and `sessionSign` stand
+ * browser-island-caps — slice 5b: the browser answers its daemon island's asks through a record composed through
+ * the one composer. Receipt, cas and dyad stand at construction; `custodyWrite` and `sessionSign` stand
  * only while a lift holds them. A floor signs nothing (`signer-unavailable`, as `composeHerm` answers); an unlocked
  * vessel signs a booked call, the holder seals under that signature, and the lock takes it all back.
  *
- * Canon: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices (slice 5a)
+ * Canon: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices (slice 5b)
  */
 import { describe, expect, it } from "vitest";
-import { answerIslandAsks, type CapabilityRecord } from "@lararium/mesh";
+import { answerIslandAsks, composeVessel, islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh";
 import { islandSessionDoor } from "@lararium/keyhive";
-import { composeBrowserIslandCaps, liftBrowserIslandCaps } from "../src/browser-island-caps.js";
+import { browserSessionLift } from "../src/browser-island-caps.js";
 import { said, vessel, world } from "../../lararium-mesh/tests/content-key-fixture.js";
 import { utf8Bytes } from "../../lararium-mesh/src/crypto.js";
 
@@ -36,15 +36,15 @@ function wire() {
 
 const SOURCES = import.meta.glob(["../src/open-browser-daemon-vm.ts", "../src/open-browser-vessel.ts", "../src/daemon-island-start.ts"], { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 
-const floorOf = (): CapabilityRecord => composeBrowserIslandCaps({ repo: null, cas: async (cid) => (cid === "cid-held" ? utf8Bytes("held bytes") : null) });
+const floorOf = async () => larVesselOf(await composeVessel(islandFloorStack({ cas: async (cid) => (cid === "cid-held" ? utf8Bytes("held bytes") : null) })));
 
-describe("slice 5a: the browser's island asks answer through its capability record", () => {
+describe("slice 5b: the browser's island asks answer through its capability record", () => {
   it("a browser vessel at its floor answers session:sign with signer-unavailable by name, as composeHerm does", async () => {
-    const record = floorOf();
+    const floor = await floorOf();
     const w = wire();
-    answerIslandAsks(w.vesselSide, record);
-    expect(record.sessionSign).toBeUndefined();
-    expect(record.custodyWrite).toBeUndefined();
+    answerIslandAsks(w.vesselSide, floor.record);
+    expect(floor.record.sessionSign).toBeUndefined();
+    expect(floor.record.custodyWrite).toBeUndefined();
     const read = await w.ask({ type: "session:sign", requestId: "s1", op: "read", ask: "call-1", verb: "sealed-seal" });
     expect(read).toEqual({ type: "session:signed", requestId: "s1", refusal: "signer-unavailable" });
     const sign = await w.ask({ type: "session:sign", requestId: "s2", op: "sign", ask: "call-1", verb: "sealed-seal", payload: utf8Bytes("x") });
@@ -63,23 +63,22 @@ describe("slice 5a: the browser's island asks answer through its capability reco
     const wd = world();
     const v = await vessel(wd, "browser");
     let dropped = false;
-    const record = floorOf();
-    const lift = liftBrowserIslandCaps(record, {
-      session: {
-        signer: { get dropped() { return dropped; }, certificate: v.signer.certificate, sign: (purpose, payload) => v.signer.sign(purpose, payload), drop: () => { dropped = true; } } as never,
-        chain: { scope: v.chain.scope, vesselFaceKey: v.chain.certificate.vesselFaceKey },
-      },
-      custodyWrite: async () => {},
-    });
-    expect(record.sessionSign).toBeTypeOf("function");
-    expect(record.custodyWrite).toBeTypeOf("function");
+    const floor = await floorOf();
+    const sl = browserSessionLift({
+      signer: { get dropped() { return dropped; }, certificate: v.signer.certificate, sign: (purpose, payload) => v.signer.sign(purpose, payload), drop: () => { dropped = true; } } as never,
+      chain: { scope: v.chain.scope, vesselFaceKey: v.chain.certificate.vesselFaceKey },
+    }, async () => {});
+    const lifted = await composeVessel(islandLiftStack(floor, sl.lift));
+    expect(floor.liftedFace()).not.toBeNull();
+    expect(floor.record.sessionSign).toBeTypeOf("function");
+    expect(floor.record.custodyWrite).toBeTypeOf("function");
     const w = wire();
-    answerIslandAsks(w.vesselSide, record);
+    answerIslandAsks(w.vesselSide, floor.record);
     const proof = islandSessionDoor(w.islandSide, { patienceMs: 5_000, idPrefix: "browser-island" });
 
     // An ask no session booked borrows no signer, unlocked or not.
     expect(said(await proof.signer({ requestId: "call-unbooked", verb: "sealed-seal" }))).toBe("signer-unavailable");
-    const release = lift.hold("call-1", "sealed-seal");
+    const release = sl.hold("call-1", "sealed-seal");
     // Another verb under a booked id borrows nothing either.
     expect(said(await proof.signer({ requestId: "call-1", verb: "sealed-open" }))).toBe("signer-unavailable");
     const reading = await proof.signer({ requestId: "call-1", verb: "sealed-seal" });
@@ -91,14 +90,15 @@ describe("slice 5a: the browser's island asks answer through its capability reco
     release();
 
     // THE LOCK: the lift leaves the record, the signer drops, and the next ask refuses by name.
-    lift.drop();
+    await lifted.dispose();
+    expect(floor.liftedFace()).toBeNull();
     expect(dropped).toBe(true);
-    expect(record.sessionSign).toBeUndefined();
-    expect(record.custodyWrite).toBeUndefined();
-    lift.hold("call-2", "sealed-seal");
+    expect(floor.record.sessionSign).toBeUndefined();
+    expect(floor.record.custodyWrite).toBeUndefined();
+    sl.hold("call-2", "sealed-seal");
     expect(said(await proof.signer({ requestId: "call-2", verb: "sealed-seal" }))).toBe("signer-unavailable");
     // CONTROL: the floor's members stay.
-    expect(record.cas).toBeTypeOf("function");
+    expect(floor.record.cas).toBeTypeOf("function");
   });
 
   it("the vessel worker answers its daemon island through the record its vessel composed (a census of the spawn seam)", () => {
@@ -107,8 +107,9 @@ describe("slice 5a: the browser's island asks answer through its capability reco
     expect(vm.length).toBeGreaterThan(0);
     expect(vm.match(/answerIslandAsks\(/g)?.length).toBe(1);
     const open = strip("open-browser-vessel.ts");
-    expect(open).toMatch(/composeBrowserIslandCaps\(/);
-    expect(open).toMatch(/liftBrowserIslandCaps\(/);
+    expect(open).toMatch(/islandFloorStack\(/);
+    expect(open).toMatch(/islandLiftStack\(/);
+    expect(open).not.toMatch(/composeBrowserIslandCaps\(|liftBrowserIslandCaps\(/);
     const island = strip("daemon-island-start.ts");
     expect(island).toMatch(/sessionProof:/);
   });

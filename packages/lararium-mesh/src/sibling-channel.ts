@@ -200,6 +200,9 @@ export function siblingPeerIdOf(deviceKey: string): PeerId {
  */
 export const SIBLING_ROUTE_SHUT = "sibling-route-shut: the sibling dial ships shut by name (the shut-routes house ruling, stable-founding-road #/rulings); no sibling channel opens until a gate-native caller flips it";
 
+/** The refusal a channel names when the face reading it stands under names no lease epoch. */
+export const SIBLING_LEASE_UNREAD = "lease-unread: the face reading names no lease epoch, so no sibling edge licenses against it";
+
 /** Dial a herm's relay as a leaf: SHUT. It opens no socket and rejects with `SIBLING_ROUTE_SHUT`. */
 export function dialSiblingHerm(_opts: {
   readonly address: string;
@@ -930,8 +933,10 @@ export async function standSiblingChannel(opts: {
   readonly enrolment: PersonaGroupEnrolment;
   /** Opens a secret sealed to this device — its own seed's custody, carried as a function. */
   readonly open: GroupSecretOpener;
-  /** The lease epoch this vessel holds for the PersonaGroup; a sibling's edge bound below it reads as lapsed. */
-  readonly expectedEpoch: number;
+  /** The lease epoch this vessel holds for the PersonaGroup; a sibling's edge bound below it reads as lapsed. Null where
+   *  the face reading names no epoch: the channel then refuses `lease-unread`, so no edge licenses against a reading
+   *  nobody made (an epoch of 0 would read every lapsed edge current). */
+  readonly expectedEpoch: number | null;
   /** How long a drop request waits on one herm before the leaf reads it as unanswered. */
   readonly dropDeadlineMs?: number;
   /** Delay before re-dialing a dropped herm. Paces a socket; decides nothing. */
@@ -957,12 +962,17 @@ export async function standSiblingChannel(opts: {
   } catch (err) {
     refusal = `a pinned herm address reads no gate key, so the channel pins nothing it can dial: ${(err as Error).message}`;
   }
+  // A face reading that names no lease epoch licenses no edge: the channel refuses by name before any pin reads.
+  if (opts.expectedEpoch === null) {
+    refusal = `${SIBLING_LEASE_UNREAD}${refusal === undefined ? "" : `; ${refusal}`}`;
+  }
   // The route is shut: the adapter dials nothing, and says why on every dial and in `status()`.
   refusal = `${SIBLING_ROUTE_SHUT}${refusal === undefined ? "" : ` (${refusal})`}`;
+  const expectedEpoch = opts.expectedEpoch;
   const adapter = new SiblingNetworkAdapter({
     kel: eventsNow(),
     leaf: async (kel) => ({
-      deviceKey, sign: opts.sign, kel, expectedEpoch: opts.expectedEpoch,
+      deviceKey, sign: opts.sign, kel, ...(expectedEpoch !== null ? { expectedEpoch } : {}),
       standing: await leafStandingUnder({ kel, deviceKey, enrolment: opts.enrolment, open: opts.open }),
     }),
     transports: refusal === undefined ? opts.herms.map((address) => () => dialSiblingHerm({ address, deviceKey, sign: opts.sign })) : [],

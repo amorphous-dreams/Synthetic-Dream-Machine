@@ -1,156 +1,70 @@
 /**
- * LarVessel — causal island vessel contracts.
- *
- * LarVessel holds no content truth. It receives the assembled CompositeStore
- * (system → corpus:* → wiki → draft) from the factory. Relay and browser
- * vessels share the same class — capability presets encode the environmental
- * difference.
- *
- * Meme: lar:///ha.ka.ba/lares/api/lararium/lar-vessel
+ * The one island record (slice 5b).
+ * Canon: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices
  */
-
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, vi } from "vitest";
 import {
-  LarVessel,
-  LAR_VESSEL_CAPABILITIES_NODE,
-  LAR_VESSEL_CAPABILITIES_BROWSER,
-  LAR_VESSEL_CAPABILITIES_NONE,
-  type LarariumVesselOptions,
-  type LarariumVesselResult,
-  CompositeStore,
-  BAG_IDS,
+  islandFloorStack, islandLiftStack, larVesselOf,
+  type LarariumVesselOptions, type LarariumVesselResult,
+  CompositeStore, BAG_IDS,
 } from "../src/index.js";
+import { composeVessel } from "../src/cap-compose.js";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
-import type { LarTiddlerChange } from "../src/tiddler-store.js";
-
-// ---------------------------------------------------------------------------
-// Fixtures
-// ---------------------------------------------------------------------------
 
 function makeStore(): CompositeStore {
   const store = new CompositeStore();
-  const wiki  = new MemoryTiddlerStore();
+  const wiki = new MemoryTiddlerStore();
   store.addLayer({ bagId: BAG_IDS.lararium, store: wiki, writable: true });
   return store;
 }
 
-// ---------------------------------------------------------------------------
-// Construction
-// ---------------------------------------------------------------------------
+const cas = async () => null;
+const receipt = async () => {};
 
-describe("LarVessel — construction", () => {
-  test("constructs with a CompositeStore and a vesselId", () => {
-    const store = makeStore();
-    const vessel  = new LarVessel({ vesselId: "test-wiki", store });
-    expect(vessel.vesselId).toBe("test-wiki");
-    expect(vessel.store).toBe(store);
+describe("LarVessel — one island record", () => {
+  test("the floor composes one record with its members alone", async () => {
+    const vessel = larVesselOf(await composeVessel(islandFloorStack({ cas, receipt })));
+    expect(vessel.record.cas).toBe(cas);
+    expect(vessel.stands("cas")).toBe(true);
+    expect(vessel.stands("dyad")).toBe(false);
+    expect(vessel.stands("sessionSign")).toBe(false);
+    expect(vessel.stands("custodyWrite")).toBe(false);
+    expect(vessel.liftedFace()).toBeNull();
   });
 
-  test("vmPool starts null", () => {
-    const vessel = new LarVessel({ vesselId: "p1", store: makeStore() });
-    expect(vessel.vmPool).toBeNull();
-    expect(vessel.ready).toBe(false);
+  test("larVesselOf refuses a composition with no island record", async () => {
+    const composed = await composeVessel([]);
+    expect(() => larVesselOf(composed)).toThrow(/no-island-record/);
   });
 
-  test("attachVmPool makes vessel ready", () => {
-    const vessel = new LarVessel({ vesselId: "p1", store: makeStore() });
-    vessel.attachVmPool({ kind: "mock-pool" });
-    expect(vessel.vmPool).toEqual({ kind: "mock-pool" });
-    expect(vessel.ready).toBe(true);
+  test("the floor's dispose takes its members back, and a second dispose takes nothing", async () => {
+    const composed = await composeVessel(islandFloorStack({ cas, receipt }));
+    const vessel = larVesselOf(composed);
+    await composed.dispose();
+    expect(vessel.stands("cas")).toBe(false);
+    await expect(composed.dispose()).resolves.toBeUndefined();
   });
 
-  test("dispose clears vmPool", () => {
-    const vessel = new LarVessel({ vesselId: "p1", store: makeStore() });
-    vessel.attachVmPool("pool");
-    vessel.dispose();
-    expect(vessel.vmPool).toBeNull();
-    expect(vessel.ready).toBe(false);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Capability presets — symmetric node/browser/none
-// ---------------------------------------------------------------------------
-
-describe("LarVessel — capability presets", () => {
-  test("LAR_VESSEL_CAPABILITIES_NODE: disk + relay + hostfulReactions", () => {
-    expect(LAR_VESSEL_CAPABILITIES_NODE.diskAccess).toBe(true);
-    expect(LAR_VESSEL_CAPABILITIES_NODE.persistentRelay).toBe(true);
-    expect(LAR_VESSEL_CAPABILITIES_NODE.hostfulReactions).toBe(true);
-    expect(LAR_VESSEL_CAPABILITIES_NODE.broadcastChannel).toBe(false);
+  test("a lift seated by islandLiftStack leaves through its own dispose only; the read face carries no setter", async () => {
+    const floor = await composeVessel(islandFloorStack({ cas, receipt }));
+    const vessel = larVesselOf(floor);
+    const door = async () => ({ refusal: "x" });
+    const drop = vi.fn();
+    const lift = await composeVessel(islandLiftStack(vessel, { face: "G-A", sessionSign: door, drop }));
+    expect(vessel.liftedFace()).toBe("G-A");
+    expect(vessel.stands("sessionSign")).toBe(true);
+    expect(Object.keys(vessel).some((key) => /^(set|seat)/.test(key))).toBe(false);
+    await lift.dispose();
+    expect(vessel.stands("sessionSign")).toBe(false);
+    expect(drop).toHaveBeenCalledOnce();
   });
 
-  test("LAR_VESSEL_CAPABILITIES_BROWSER: BC + no disk + no hostfulReactions", () => {
-    expect(LAR_VESSEL_CAPABILITIES_BROWSER.diskAccess).toBe(false);
-    expect(LAR_VESSEL_CAPABILITIES_BROWSER.broadcastChannel).toBe(true);
-    expect(LAR_VESSEL_CAPABILITIES_BROWSER.hostfulReactions).toBe(false);
-  });
-
-  test("LAR_VESSEL_CAPABILITIES_NONE: all false", () => {
-    for (const v of Object.values(LAR_VESSEL_CAPABILITIES_NONE)) {
-      expect(v).toBe(false);
-    }
-  });
-
-  test("vessel applies capability overrides from options", () => {
-    const vessel = new LarVessel({
-      vesselId: "p",
-      store:  makeStore(),
-      capabilities: { diskAccess: true, hostfulReactions: true },
-    });
-    expect(vessel.capabilities.diskAccess).toBe(true);
-    expect(vessel.capabilities.broadcastChannel).toBe(false); // default
+  test("a lift over a record no floor composed refuses", async () => {
+    const lift = { face: "G-A", sessionSign: async () => ({ refusal: "x" }), drop: () => {} };
+    await expect(composeVessel(islandLiftStack({ record: {}, stands: () => false, liftedFace: () => null }, lift)))
+      .rejects.toThrow(/no-island-record/);
   });
 });
-
-// ---------------------------------------------------------------------------
-// THE RETIRED SLOT — a vessel that names none now CARRIES none (2026-09-13)
-// ---------------------------------------------------------------------------
-
-describe("the identity slot — no default, and no allow-all standing in for one", () => {
-  test("a vessel given no slot carries null, never a slot that grants everything", () => {
-    const vessel = new LarVessel({ vesselId: "my-host", store: makeStore() });
-    expect(vessel.identity).toBeNull();
-  });
-  test("a vessel given a slot carries exactly that one", async () => {
-    const slot = {
-      did: "did:web:example/vessels/named",
-      deriveActorId: async () => "00000000-0000-4000-8000-000000000000",
-      verifyCapability: async () => false,
-      delegateCapability: async () => null,
-      verifyDelegation: async () => false,
-    };
-    const vessel = new LarVessel({ vesselId: "named", store: makeStore(), identity: slot });
-    expect(vessel.identity).toBe(slot);
-    // CONTROL: the slot the caller handed in answers for itself — nothing wraps or widens it.
-    expect(await vessel.identity!.verifyCapability("automerge:xyz", "read")).toBe(false);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// addProjection — wires to the composite store subscribe
-// ---------------------------------------------------------------------------
-
-describe("LarVessel — addProjection", () => {
-  test("projection receives changes from the store", async () => {
-    const wiki  = new MemoryTiddlerStore();
-    const composite = new CompositeStore();
-    composite.addLayer({ bagId: BAG_IDS.lararium, store: wiki, writable: true });
-    const vessel = new LarVessel({ vesselId: "p", store: composite });
-
-    const changes: LarTiddlerChange[] = [];
-    const unsub = vessel.addProjection({ onUriChanged: (c) => changes.push(c) });
-
-    await wiki.put({ tiddler: { title: "lar:///test" } }, { kind: "crdt-remote", edgeIsland: "wiki" });
-    unsub();
-
-    expect(changes.some((c) => c.title === "lar:///test")).toBe(true);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Lararium vessel contract — shared browser/node open surface
-// ---------------------------------------------------------------------------
 
 describe("lararium-vessel contract — shared boot surface", () => {
   test("shared options carry host/wiki identity", () => {
@@ -164,19 +78,20 @@ describe("lararium-vessel contract — shared boot surface", () => {
   });
 
   test("shared result surface exposes vessel/repo/store/pool symmetry", () => {
-    const vessel = new LarVessel({ vesselId: "p", store: makeStore() });
-    const result: LarariumVesselResult<LarVessel<"pool">, "pool", { kind: "repo" }, CompositeStore> = {
-      vessel,
+    const store = makeStore();
+    const result: LarariumVesselResult<"vessel", "pool", { kind: "repo" }, CompositeStore> = {
+      vessel: "vessel",
       pool: "pool",
       repo: { kind: "repo" },
-      store: vessel.store as CompositeStore,
+      store,
       catalogHandleUrl: "automerge:catalog",
+      oracleDocUrl: null,
       larariumDocUrl: "automerge:island",
       phase: "live",
     };
 
-    expect(result.vessel).toBe(vessel);
-    expect(result.store).toBe(vessel.store);
+    expect(result.vessel).toBe("vessel");
+    expect(result.store).toBe(store);
     expect(result.phase).toBe("live");
   });
 });

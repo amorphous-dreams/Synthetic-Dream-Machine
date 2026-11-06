@@ -8,7 +8,7 @@
  *   D3 only a same-request-id answer settles; silence and unknown standings answer aside. control: concurrent asks settle independently.
  *   D4 daemon asks reach the capability. control: wiki asks answer aside and log DyadRefused once; session asks draw no answer.
  *   D5 each protocol guard accepts its own dyad message and refuses the opposite direction.
- *   D6 the node folds its worn fleet and stands `islandCaps.dyad` before daemon boot.
+ *   D6 the node folds its worn fleet and stands the floor's dyad door before daemon boot.
  *   D7 the browser tab keeps sibling sync current while the daemon island resolves its own board reader.
  */
 import { EventEmitter } from "node:events";
@@ -129,23 +129,31 @@ describe("the dyad capability", () => {
 
   test("D6 — the composition folds the worn fleet and stands the dyad capability before its island boots (a source weld)", () => {
     const src = readFileSync(join(__dirname, "..", "src", "open-node-vessel.ts"), "utf8");
-    // presence first: an ordering over an absent call passes vacuously
-    expect((src.match(/^\s*islandCaps\.dyad = async \(fleetRoot, deviceKey\) => \{$/gm) ?? []).length).toBe(1);
+    // Presence first: an ordering over an absent call passes vacuously.
+    expect((src.match(/^\s*const dyadDoor: DyadReader = async \(fleetRoot, deviceKey\) => \{$/gm) ?? []).length).toBe(1);
     expect((src.match(/await standDaemonIsland\(\{/g) ?? []).length).toBe(1);
+    expect(src).toMatch(/islandFloorStack\(\{[\s\S]*?dyad: dyadDoor/);
+    const door = src.indexOf("const dyadDoor: DyadReader = async (fleetRoot, deviceKey) => {");
+    const floor = src.indexOf("islandFloorStack({");
     const fold = src.indexOf("if (activeAtom) await shadowRing.refold();");
-    const stands = src.indexOf("islandCaps.dyad = async (fleetRoot, deviceKey) => {");
     const boot = src.indexOf("await standDaemonIsland({");
-    expect(fold).toBeGreaterThan(0);
-    expect(fold).toBeLessThan(stands);
-    expect(stands).toBeLessThan(boot);
-    // the ring folds the worn fleet once a face's atom stands; the faceless floor names no fleet
+    expect(door).toBeGreaterThan(-1);
+    expect(floor).toBeGreaterThan(-1);
+    expect(fold).toBeGreaterThan(-1);
+    expect(boot).toBeGreaterThan(-1);
+    expect(door).toBeLessThan(floor);
+    expect(floor).toBeLessThan(boot);
+    expect(fold).toBeLessThan(boot);
     expect(src).toMatch(/if \(wornFleetRoot\) roots\.add\(wornFleetRoot\);/);
-    // the capability answers off the ring, waits on a fold where the reading went dark, and drops at teardown
     expect(src).toMatch(/return shadowRing\.deviceStanding\(fleetRoot, deviceKey\);/);
     expect(src).toMatch(/try \{ await shadowRing\.refold\(\); \} catch \{ return "aside"; \}/);
     expect(src).toMatch(/for \(let tries = 0; tries < 3 && !shadowRing\.fold\(\); tries\+\+\) \{/);
-    // ...with the island's capabilities, after the island shuts (T27; the carried-Nexus rig reads it behaviourally)
-    expect(src).toMatch(/what: "the island capabilities", down: \(\) => \{ delete islandCaps\.dyad; delete islandCaps\.custodyWrite; \}/);
+    // The floor goes down after the daemon island (T27).
+    const floorDown = 'what: "the island\'s floor", down: () => islandFloor.dispose()';
+    const daemonDown = 'what: "the daemon island"';
+    expect(src).toContain(floorDown);
+    expect(src).toContain(daemonDown);
+    expect(src.indexOf(floorDown)).toBeLessThan(src.indexOf(daemonDown));
   });
 
   test("D7 — the leaf reads its fleet board for sibling sync while the daemon island reads its own board for dyad standing (a source weld)", () => {

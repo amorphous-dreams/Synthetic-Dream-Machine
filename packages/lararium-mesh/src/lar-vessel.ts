@@ -1,121 +1,127 @@
-import type { LarTiddlerStore } from "./tiddler-store.js";
-import type { MemeProjection } from "./meme-provider.js";
-import type { IdentitySlot } from "./identity-slot.js";
-
 /**
- * KeyhiveSlot — opaque optional handle for the Keyhive three-layer stack.
+ * lar-vessel — THE ONE RECORD a vessel composes for its islands, through the one composer (`composeVessel`, cap-compose).
  *
- * Typed minimally; fills in as keyhive_wasm API stabilizes (pre-alpha).
- * Layer 1: convergent capabilities (concap tokens, Ed25519 delegation chains)
- * Layer 2: Group CRDT (coordination-free membership + revocation)
- * Layer 3: BeeKEM (binary tree DH key agreement, BLAKE3 ratchet, causal order only)
+ * A vessel hands every island it constructs ONE capability record (`CapabilityRecord`). The node and the browser compose
+ * it alike, as two stacks over the same composer:
+ *
+ *   THE FLOOR (`islandFloorStack`): the members a vessel stands with no face lifted ~ `receipt`, `cas`, `dyad` where the
+ *   vessel reads a fleet board, the document store door and the sealed-rest reading. A floor carries no `custodyWrite`
+ *   and no `sessionSign`, so an island's `session:sign` ask answers `signer-unavailable` by name, as a herm's does.
+ *   THE LIFT (`islandLiftStack`): one face's `custodyWrite` and `sessionSign`, composed as a nested stack over the floor's
+ *   record (the nesting `composeVerbPlane` already rides). Its `dispose` IS the lock: both lift members leave the record
+ *   (each only while it still names the lift's own), the face's drop runs once, and the floor stands on as it stood.
+ *   One lift stands per record at a time: a second lift while one stands refuses `lift-stands`.
+ *
+ * `larVesselOf` reads a composed floor as ONE `LarVessel`: the record its islands read, and roles as predicates over it
+ * (`stands(member)`, `liftedFace()`), never a platform label. Only the lift stack seats or takes back a lift member; the
+ * read face carries no setter.
+ *
+ * Canon: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices (slices 5a, 5b) · lar:///ha.ka.ba/lararium/api/composable-keel
  */
-export interface KeyhiveSlot {
-  verifyCapability(documentId: string, ability: string): Promise<boolean>;
-  addMember(publicKey: Uint8Array): Promise<void>;
-  removeMember(publicKey: Uint8Array): Promise<void>;
-  deriveApplicationSecret(): Promise<Uint8Array>;
+import type { CapModule, ComposedVessel } from "./cap-compose.js";
+import type { CapabilityRecord, CustodyWriter, SessionSignDoor } from "./capability-record.js";
+
+/** The cap-id the floor stack composes its record under. */
+export const ISLAND_RECORD_CAP = "island-record";
+/** The cap-id one lift composes under, nested over a floor's record. */
+export const ISLAND_LIFT_CAP = "island-lift";
+
+/** What a vessel's floor hands its record: every member a vessel stands with no face lifted. */
+export type IslandFloor = Pick<CapabilityRecord, "receipt" | "cas" | "dyad" | "docStore" | "restsSealed">;
+
+/** One face's lift: the members it seats, and the drop its lock runs once (the session's signer, the face's own hold). */
+export interface IslandLift {
+  /** The face this lift stands for: the record answers it from `liftedFace()` while the lift stands. */
+  readonly face: string;
+  readonly custodyWrite?: CustodyWriter | undefined;
+  readonly sessionSign: SessionSignDoor;
+  readonly drop: () => void;
+}
+
+/** The one record a vessel's islands read, with roles as predicates over it. */
+export interface LarVessel {
+  /** The record every island this vessel constructs reads at ask time. */
+  readonly record: Readonly<CapabilityRecord>;
+  /** Whether the record carries this member now. */
+  stands(member: keyof CapabilityRecord): boolean;
+  /** The face whose lift stands on this record now, or null at the floor. */
+  liftedFace(): string | null;
+}
+
+/** The seat a lift takes on one record: held module-private, so only the lift stack seats or takes back. */
+interface LiftSeat { lift: IslandLift | null }
+const seats = new WeakMap<LarVessel, { record: CapabilityRecord; seat: LiftSeat }>();
+
+const FLOOR_MEMBERS = ["receipt", "cas", "dyad", "docStore", "restsSealed"] as const;
+
+/** Compose a vessel's floor: one cap that builds the record its islands read, carrying the floor's members alone. */
+export function islandFloorStack(floor: IslandFloor): CapModule[] {
+  const module: CapModule<LarVessel> = {
+    id: ISLAND_RECORD_CAP,
+    build: () => {
+      const record: CapabilityRecord = {};
+      for (const member of FLOOR_MEMBERS) {
+        const value = floor[member];
+        if (value !== undefined) (record as Record<string, unknown>)[member] = value;
+      }
+      const seat: LiftSeat = { lift: null };
+      const vessel: LarVessel = {
+        record,
+        stands: (member) => record[member] !== undefined,
+        liftedFace: () => seat.lift?.face ?? null,
+      };
+      seats.set(vessel, { record, seat });
+      return vessel;
+    },
+    // The floor's own stand-down: each floor member leaves the record while it still names the floor's own.
+    // A second run takes nothing.
+    dispose: (vessel) => {
+      const held = seats.get(vessel);
+      if (!held) return;
+      for (const member of FLOOR_MEMBERS) {
+        if (floor[member] !== undefined && held.record[member] === floor[member]) delete held.record[member];
+      }
+    },
+  };
+  return [module as CapModule];
+}
+
+/** Read a composed floor as its one `LarVessel`. A composition that carries no island record refuses by name. */
+export function larVesselOf(composed: ComposedVessel): LarVessel {
+  const vessel = composed.get<LarVessel>(ISLAND_RECORD_CAP);
+  if (!vessel || !seats.has(vessel)) throw new Error(`no-island-record: the composition carries no "${ISLAND_RECORD_CAP}" cap (compose it from islandFloorStack)`);
+  return vessel;
 }
 
 /**
- * LarVesselCapabilities — I/O surfaces this local runtime vessel can perform.
- *
- * These declare hostful capability, not authority. No vessel holds content truth.
- * Node, browser, worker, and device vessels participate symmetrically; receipt
- * law, not process role, decides whether a local effect may write.
+ * Compose one face's lift over a floor's record. The build seats `custodyWrite` (where the lift carries one) and
+ * `sessionSign`, refusing `lift-stands` while another lift stands on the record; the dispose (the lock) takes back only
+ * what this lift seated and runs its drop once.
  */
-export interface LarVesselCapabilities {
-  diskAccess:            boolean;
-  corsHop:               boolean;
-  persistentRelay:       boolean;
-  broadcastChannel:      boolean;
-  /**
-   * May write non-idempotent local reaction effects (e.g. generated summary tiddlers).
-   * This flag advertises a hostful surface only; callers still need an authority
-   * receipt and idempotency key before writing effects.
-   */
-  hostfulReactions:      boolean;
+export function islandLiftStack(vessel: LarVessel, lift: IslandLift): CapModule[] {
+  const held = seats.get(vessel);
+  let seated = false;
+  let locked = false;
+  const module: CapModule<IslandLift> = {
+    id: ISLAND_LIFT_CAP,
+    build: () => {
+      if (!held) throw new Error("no-island-record: a lift composes only over a record islandFloorStack composed");
+      const standing = held.seat.lift;
+      if (standing !== null) throw new Error(`lift-stands: face ${standing.face} stands lifted on this record; lock it before ${lift.face} lifts`);
+      held.seat.lift = lift;
+      if (lift.custodyWrite) held.record.custodyWrite = lift.custodyWrite;
+      held.record.sessionSign = lift.sessionSign;
+      seated = true;
+      return lift;
+    },
+    dispose: () => {
+      if (!held || !seated || locked) return;
+      locked = true;
+      if (lift.custodyWrite && held.record.custodyWrite === lift.custodyWrite) delete held.record.custodyWrite;
+      if (held.record.sessionSign === lift.sessionSign) delete held.record.sessionSign;
+      if (held.seat.lift === lift) held.seat.lift = null;
+      lift.drop();
+    },
+  };
+  return [module as CapModule];
 }
-
-export const LAR_VESSEL_CAPABILITIES_NONE: LarVesselCapabilities = {
-  diskAccess: false, corsHop: false, persistentRelay: false,
-  broadcastChannel: false, hostfulReactions: false,
-};
-
-export const LAR_VESSEL_CAPABILITIES_NODE: LarVesselCapabilities = {
-  diskAccess: true, corsHop: true, persistentRelay: true,
-  broadcastChannel: false, hostfulReactions: true,
-};
-
-export const LAR_VESSEL_CAPABILITIES_BROWSER: LarVesselCapabilities = {
-  diskAccess: false, corsHop: false, persistentRelay: false,
-  broadcastChannel: true, hostfulReactions: false,
-};
-
-/**
- * LarVesselOptions — construction args for a LarVessel.
- *
- * `store` holds the full composite store (system → corpus:* → wiki → draft).
- * Factories build the CompositeStore and call markSyncComplete() on the writable
- * AutomergeDocStore layers before constructing the vessel.
- */
-export interface LarVesselOptions<TVm = unknown> {
-  vesselId?:     string;
-  /** Full doc stack — CompositeStore(system → corpus:* → wiki → draft) from the factory. */
-  store:         LarTiddlerStore;
-  vmPool?:       TVm | null;
-  capabilities?: Partial<LarVesselCapabilities>;
-  identity?:     IdentitySlot;
-  /** Pre-alpha placeholder — fills in as keyhive_wasm API stabilizes. */
-  keyhive?:      KeyhiveSlot;
-}
-
-/**
- * LarVessel — the one local runtime vessel class for browser, Node, worker, and device.
- *
- * Relay and browser vessels are symmetric participants. The Repo's storage/network
- * adapters and `capabilities` preset encode environmental differences — not subclasses.
- *
- * `store` holds the full composite stack. Factories own the Automerge DocHandles;
- * LarVessel receives only the assembled LarTiddlerStore interface.
- */
-export class LarVessel<TVm = unknown> {
-  readonly vesselId:     string;
-  /** Full doc stack — CompositeStore(system → corpus:* → wiki → draft). */
-  readonly store:        LarTiddlerStore;
-  readonly capabilities: LarVesselCapabilities;
-  /** The identity slot a factory supplies, or null. NO DEFAULT: a vessel that names no slot carries none,
-   *  never one that grants everything. */
-  readonly identity:     IdentitySlot | null;
-  readonly keyhive:      KeyhiveSlot | undefined;
-
-  private _vmPool: TVm | null;
-
-  constructor(opts: LarVesselOptions<TVm>) {
-    if (!opts.vesselId) throw new Error("LarVessel requires opts.vesselId");
-    this.vesselId     = opts.vesselId;
-    this.store        = opts.store;
-    this.capabilities = { ...LAR_VESSEL_CAPABILITIES_NONE, ...opts.capabilities };
-    this.identity     = opts.identity ?? null;
-    this.keyhive      = opts.keyhive;
-    this._vmPool      = opts.vmPool ?? null;
-  }
-
-  get vmPool(): TVm | null { return this._vmPool; }
-
-  attachVmPool(pool: TVm): void {
-    this._vmPool = pool;
-  }
-
-  get ready(): boolean { return this._vmPool !== null; }
-
-  /** Subscribe a projection to the full composite store. */
-  addProjection(p: MemeProjection): () => void {
-    return this.store.subscribe((change) => p.onUriChanged(change));
-  }
-
-  dispose(): void {
-    this._vmPool = null;
-  }
-}
-

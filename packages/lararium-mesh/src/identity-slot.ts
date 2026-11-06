@@ -15,8 +15,7 @@
  * only same-origin/in-process peers (a legitimate asymmetry, not an open hole). See
  * lararium-canonical-model #open-drift (point 4).
  *
- * The interface is intentionally narrow — only what LarVessel and the Automerge
- * sharePolicy need to function. Keyhive's full three-layer stack (convergent
+ * The interface is intentionally narrow — only what the federation gate's share decision needs. Keyhive's full three-layer stack (convergent
  * capabilities + Group CRDT + BeeKEM) slots in without changing the interface.
  *
  * DNS-based identity namespace:
@@ -54,7 +53,7 @@ export type ActorId = string;
 export type CapabilityToken = string | null;
 
 /**
- * IdentitySlot — minimum surface LarVessel needs from an identity provider.
+ * IdentitySlot — minimum surface the federation gate's share decision needs from an identity provider.
  *
  * All methods are async so implementations can lazily fetch keys from
  * IndexedDB (browser) or a key file (node) without blocking construction.

@@ -1,7 +1,7 @@
 /**
  * Lararium Node Vessel — local-first relay + TW5 engine entrypoint.
  *
- * Boots one LarVessel per configured wiki, wires a WebSocket relay for
+ * Composes an island record for each configured wiki, wires a WebSocket relay for
  * browser vessels to sync through, and attaches a LarDiskProjector so
  * the bags/ tree stays in sync with the Automerge store.
  *

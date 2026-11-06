@@ -14,7 +14,7 @@ export type LarOpenPhase =
   | "island-ready"   // island (system bag) resolved — may arrive async
   | "wiki-ready"     // wiki DocHandle resolved
   | "draft-ready"    // wiki-drafts DocHandle resolved
-  | "vessel-ready"   // LarVessel constructed, CompositeStore wired
+  | "vessel-ready"   // the vessel's island record composed, CompositeStore wired
   | "tw5-booted"     // TW5Engine.boot() resolved
   | "corpus-ready"   // corpus bags attached (fires once all initial corpora loaded)
   | "live";          // island pool attached, vessel sovereign
