@@ -94,7 +94,7 @@ export async function signFoundingLog(parts: {
   };
   await next("founding", { personaKelPrefix: parts.personaKelPrefix, rootCommitment: parts.rootCommitment });
   for (const name of Object.keys(parts.planes).sort()) await next("plane", { plane: name, url: parts.planes[name] });
-  await next("admission", { deviceKey: parts.deviceKey, vesselTag: parts.vesselTag.vesselTag, vesselSig: parts.vesselTag.vesselSig, wardKey: parts.vesselTag.wardKey });
+  await next("admission", { deviceKey: parts.deviceKey, vesselTag: parts.vesselTag.vesselTag, vesselSig: parts.vesselTag.vesselSig, wardKey: parts.vesselTag.wardKey, wardPop: parts.vesselTag.wardPop });
   await next("device-edge", { deviceKey: parts.deviceKey, edgeDigest: parts.edgeDigest });
   return out;
 }

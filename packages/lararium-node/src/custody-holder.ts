@@ -558,6 +558,12 @@ export function makeCustodyHolder(a: {
       const faceTree = decodeSlotTree(await a.io.read(faceTreePath(a.homes.identity, fcid)));
       const opened = faceTree.reading === "readable" ? faceTree.tree.slots.find((sl) => sl.id === proof.slot) : undefined;
       const threshold = opened?.t ?? credentials.length;
+      // THE REWRAP KEEPS THE KEY: it changes the ward's wrapping, never the key the face's ward signs under. A face whose ward key row
+      // stands already founded the key its admission names; a ward bound fresh here would sign under another, so every approve that
+      // device signs would stop verifying. Its tree went missing, so the rows it sealed stay sealed under it, and nothing binds here.
+      if ((await openFaceCarrier({ io: a.io, key: fck, carrier: wardKeyCarrier(fcid) })).reading !== "absent") {
+        throw new WardRefused("ward-key-would-rotate", "this face's ward founded the ward key its admission carries, and its tree stands absent; a fresh ward would sign under a key no admission names: restore the ward tree, or re-found the face");
+      }
       ward = mintWardKey();
       wardKeys.add(ward);
       wardWatch?.(ward);

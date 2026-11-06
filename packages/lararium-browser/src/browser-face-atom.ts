@@ -19,11 +19,14 @@ import {
   standFaceAtomSeed,
   type FaceAtomKey,
   type FaceAtomRows,
+  ed25519SignerFromSeed,
   vesselFaceTagFields,
   wardPublicKeyOf,
   type VesselFaceTagDoor,
 } from "@lararium/mesh";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
+import { browserWardSignRow, BrowserWardRefused, type WardWorkerSpawn } from "./browser-ward.js";
+import type { BrowserWardRoute } from "./browser-ward-cosign.js";
 
 /** The custody row that keeps one face's atom seed. */
 export const faceAtomRow = (personaGroup: string): string => {
@@ -118,34 +121,45 @@ export const wardSignRow = (personaGroup: string): string => {
   return `ward-sign/${personaGroup}`;
 };
 
-/** The face's ward key's public half, minting the row where none stands. The seed zeroes before the door answers. */
-async function standWardKey(idbName: string, group: string): Promise<string> {
+/** The face's ward key's public half, minting the row where none stands. A mint answers the seed it minted too (the caller signs the
+ *  pop with it and zeroes it); a row that stood answers its key alone, and its seed opens only inside the ward worker. */
+async function standWardKey(idbName: string, group: string): Promise<{ readonly key: string; readonly minted: Uint8Array | null }> {
   const row = wardSignRow(group);
-  const seed = await withCustodyRows(idbName, async (rows) => {
+  const stood = await withCustodyRows(idbName, async (rows) => {
     const held = await rows.read(row);
     if (held instanceof Uint8Array) {
       try {
         const record = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(held)) as { signingKey?: unknown };
         if (typeof record.signingKey !== "string" || !/^[0-9a-f]{64}$/.test(record.signingKey)) throw new Error("malformed");
-        return Uint8Array.from(record.signingKey.match(/../g)!.map((h) => parseInt(h, 16)));
+        return { seed: Uint8Array.from(record.signingKey.match(/../g)!.map((h) => parseInt(h, 16))), minted: false };
       } catch { throw new Error("[browser-face-atom] the face's ward key row reads malformed"); }
     }
     if (held !== undefined) throw new Error("[browser-face-atom] the face's ward key row reads malformed");
     const fresh = crypto.getRandomValues(new Uint8Array(32));
     await rows.write(row, new TextEncoder().encode(JSON.stringify({ signingKey: [...fresh].map((b) => b.toString(16).padStart(2, "0")).join("") })));
-    return fresh;
+    return { seed: fresh, minted: true };
   });
-  try { return await wardPublicKeyOf(seed); } finally { seed.fill(0); }
+  try { return { key: await wardPublicKeyOf(stood.seed), minted: stood.minted ? Uint8Array.from(stood.seed) : null }; } finally { stood.seed.fill(0); }
+}
+
+/** The route a tag door asks for the ward key's pop where the key already stood: the passphrase typed for that one act. */
+export interface BrowserTagDoorWard {
+  /** The page's dialog: the route the person types for this one act. A passkey opens no ward (`ward-passkey-refused`). */
+  readonly route?: (act: string) => Promise<BrowserWardRoute>;
+  readonly spawn?: WardWorkerSpawn;
 }
 
 /**
  * THE BROWSER VESSEL'S TAG DOOR: the blinded per-face tag one admission of this browser carries (`vessel-face-tag`).
  * The face's tag secret rests in its own row beside its atom, 32 random bytes minted at the face's founding or first
  * join request and derived from no seed, so the place seed computes no face's tag. A re-join on the face reads the
- * row and presents the same tag. The door answers the tag, the face's ward key (`wardSignRow`, minted beside it at the first ask)
- * and the tag's signature, and zeroes the copies it read.
+ * row and presents the same tag. The door answers the tag, the face's ward key (`wardSignRow`, minted beside it at the first ask),
+ * the tag's signature and the ward key's POP (its own signature over (group, atom, ward key)), and zeroes the copies it read. The
+ * pop signs with the seed the mint holds where this ask mints the key; where the key already stood it signs inside a fresh ward act
+ * of this face (the per-act ward worker, opened from the passphrase typed for it, zeroed after), so a re-read with no route refuses
+ * `ward-needs-fresh-unlock` and a passkey `ward-passkey-refused`.
  */
-export function browserVesselFaceTagDoor(idbName = "lares:vessel"): VesselFaceTagDoor {
+export function browserVesselFaceTagDoor(idbName = "lares:vessel", ward: BrowserTagDoorWard = {}): VesselFaceTagDoor {
   return async (group, deviceKey) => {
     const row = vesselFaceTagRow(group);
     const secret = await withCustodyRows(idbName, async (rows) => {
@@ -156,6 +170,21 @@ export function browserVesselFaceTagDoor(idbName = "lares:vessel"): VesselFaceTa
       await rows.write(row, Uint8Array.from(fresh));
       return fresh;
     });
-    try { return await vesselFaceTagFields(secret, group, deviceKey, await standWardKey(idbName, group)); } finally { secret.fill(0); }
+    let minted: Uint8Array | null = null;
+    try {
+      const stood = await standWardKey(idbName, group);
+      minted = stood.minted;
+      const seed = minted;
+      const sign = seed ? ed25519SignerFromSeed(seed) : async (bytes: Uint8Array): Promise<string> => {
+        if (!ward.route) throw new BrowserWardRefused("ward-needs-fresh-unlock");
+        const route = await ward.route("the admission's ward key proof");
+        const passphrase = typeof route === "string" ? route : route.kind === "passphrase" ? route.passphrase : null;
+        if (passphrase === null) throw new BrowserWardRefused("ward-passkey-refused");
+        const signed = await browserWardSignRow(idbName, wardSignRow(group), passphrase, bytes, ward.spawn);
+        if (signed.key !== stood.key) throw new BrowserWardRefused("ward-key-mismatch");
+        return signed.signature;
+      };
+      return await vesselFaceTagFields(secret, group, deviceKey, stood.key, sign);
+    } finally { secret.fill(0); minted?.fill(0); }
   };
 }

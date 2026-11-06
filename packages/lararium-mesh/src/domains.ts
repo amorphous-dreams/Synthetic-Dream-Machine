@@ -577,6 +577,8 @@ export const WARD_COSIGN_DIGEST_DOMAIN = mint("ward-cosign-digest");
 export const WARD_ANSWER_DOMAIN = mint("ward-answer");
 /** The per-face ward signing seed a node derives from that face's own ward key: its public half rides the device's admission. */
 export const WARD_SIGN_SEED_DOMAIN = mint("ward-sign-seed");
+/** What a device's per-face ward key signs to prove its admission names a key that device holds: (group, device atom, ward key). */
+export const WARD_KEY_POP_DOMAIN = mint("ward-key-pop");
 /** The per-face key a vessel derives from that face's random tag secret and its group id: its public half is the blinded vessel tag an admission carries. */
 export const VESSEL_FACE_TAG_SEED_DOMAIN = mint("vessel-face-tag-seed");
 /** What the per-face tag key signs: the admission it rides (group and device atom), so a tag never vouches for another admission or face. */

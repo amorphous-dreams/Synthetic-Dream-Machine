@@ -647,8 +647,9 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     vesselDisplayName:  vesselIdentity.displayName ?? "operator",
     binding: { mode: "self-stood", signerSeed },
     hearthTrueName,
-    // The face's tag secret mints at random in its own row under the ask, and the settle below moves it onto the group's.
-    vesselTag: foundingVesselFaceTagDoor(askDigest),
+    // The face's tag secret mints at random in its own row under the ask, and the settle below moves it onto the group's; the
+    // founding's own route opens the ward for the ward key's pop.
+    vesselTag: foundingVesselFaceTagDoor(askDigest, ward),
     // THE ISLAND, resolved by the SAME mesh ruling the boot composes — the charter this vessel holds, then
     // the hearth it dials, then its own key as a private nexus of one. A face seated on one board while the
     // boot walks another cannot reach a head, and the Binding Gate HALTS.

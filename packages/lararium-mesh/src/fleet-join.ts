@@ -58,6 +58,7 @@ import {
 } from "./face-proof-subjects.js";
 import { openFromSender, sealToRecipient } from "./sealed-box.js";
 import { vesselFaceTagHolds, type VesselFaceTagDoor } from "./vessel-face-tag.js";
+import { wardKeyPopHolds } from "./ward-answer.js";
 
 // ── Refusals ────────────────────────────────────────────────────────────────────────────────────
 
@@ -71,6 +72,7 @@ export const FLEET_JOIN_REFUSALS = [
   "request-unsigned",          // the vessel key's signature over the request refuses
   "request-vessel-tag-absent", // the request carries no blinded vessel tag for this face
   "request-ward-key-absent", // the request names no per-face ward key for its device
+  "request-ward-key-unproven", // the request's ward key signs no proof over (group, atom, ward key): the device does not hold the key it names
   "request-vessel-tag-invalid", // the tag's signature covers another face, atom or ward key, or reads malformed
   "certificate-request-refused",
   "answer-malformed",
@@ -133,6 +135,8 @@ export interface FleetJoinRequest {
   readonly vesselSig: string;
   /** The joining device's per-face ward key: the key its ward unlock for this face signs a co-sign answer with. */
   readonly wardKey: string;
+  /** That ward key's own signature over (group, atom, ward key) under `ward-key-pop`: the device holds the key it names. */
+  readonly wardPop: string;
   /** One certificate request per offered scope the joinee takes, each signed by its own face-scoped key. */
   readonly requests:  readonly VesselFaceCertificateRequest[];
   /** The vessel key's signature over `fleetJoinRequestImage`. */
@@ -252,7 +256,7 @@ export function fleetJoinEdgeDigest(edge: unknown): string {
 /** The bytes the joining vessel's own key signs over its request. */
 export function fleetJoinRequestImage(r: Omit<FleetJoinRequest, "kind" | "signature">): Uint8Array {
   return signed(FLEET_JOIN_REQUEST_DOMAIN, {
-    nonce: r.nonce, atomKey: r.atomKey, sealKey: r.sealKey, vesselTag: r.vesselTag, vesselSig: r.vesselSig, wardKey: r.wardKey,
+    nonce: r.nonce, atomKey: r.atomKey, sealKey: r.sealKey, vesselTag: r.vesselTag, vesselSig: r.vesselSig, wardKey: r.wardKey, wardPop: r.wardPop,
     requests: r.requests.map((q) => ({ faceKey: q.scope.faceKey, nexus: q.scope.nexus, vesselFaceKey: q.vesselFaceKey, signature: q.signature })),
   });
 }
@@ -348,10 +352,10 @@ export function readFleetJoinRequest(value: unknown, offer: FleetJoinOffer, apar
     const base = ["kind", "nonce", "atomKey", "sealKey", "requests", "signature"];
     if (!record(value)) return refuse("request-malformed");
     // A request standing at its exact shape short of a tag field or its ward key names that field absent; any other shape reads malformed.
-    const keysOf = Object.keys(value), tagFields = ["vesselTag", "vesselSig", "wardKey"];
+    const keysOf = Object.keys(value), tagFields = ["vesselTag", "vesselSig", "wardKey", "wardPop"];
     if (!base.every((k) => keysOf.includes(k)) || keysOf.some((k) => !base.includes(k) && !tagFields.includes(k))) return refuse("request-malformed");
     const tagged = keysOf.includes("vesselTag") && keysOf.includes("vesselSig");
-    const { kind, nonce, atomKey, sealKey, requests, signature, vesselTag, vesselSig, wardKey } = value;
+    const { kind, nonce, atomKey, sealKey, requests, signature, vesselTag, vesselSig, wardKey, wardPop } = value;
     if (kind !== "fleet-join-request" || typeof nonce !== "string" || !HEX64.test(nonce)) return refuse("request-malformed");
     if (!isKey(atomKey) || !isSealKey(sealKey)) return refuse("request-malformed");
     if (!Array.isArray(requests) || requests.length > FLEET_JOIN_SCOPE_BOUND || typeof signature !== "string" || !HEX128.test(signature)) return refuse("request-malformed");
@@ -377,7 +381,8 @@ export function readFleetJoinRequest(value: unknown, offer: FleetJoinOffer, apar
     if (!tagged) return refuse("request-vessel-tag-absent");
     if (wardKey === undefined) return refuse("request-ward-key-absent");
     if (!vesselFaceTagHolds(offer.personaGroup, atomKey, { vesselTag, vesselSig, wardKey })) return refuse("request-vessel-tag-invalid");
-    const body = { nonce, atomKey, sealKey, vesselTag: vesselTag as string, vesselSig: vesselSig as string, wardKey: wardKey as string, requests: read };
+    if (!wardKeyPopHolds(offer.personaGroup, atomKey, { wardKey, wardPop })) return refuse("request-ward-key-unproven");
+    const body = { nonce, atomKey, sealKey, vesselTag: vesselTag as string, vesselSig: vesselSig as string, wardKey: wardKey as string, wardPop: wardPop as string, requests: read };
     if (!readEd25519(signature, fleetJoinRequestImage(body), atomKey).ok) return refuse("request-unsigned");
     return Object.freeze({ kind, ...body, requests: Object.freeze(read), signature });
   });
@@ -552,7 +557,7 @@ export async function composeFleetJoinRequest(args: {
     requests.push(asked.request);
   }
   const tag = await args.vesselTag(args.offer.personaGroup, atomKey);
-  const body = { nonce: args.offer.nonce, atomKey, sealKey: args.sealKey, vesselTag: tag.vesselTag, vesselSig: tag.vesselSig, wardKey: tag.wardKey, requests };
+  const body = { nonce: args.offer.nonce, atomKey, sealKey: args.sealKey, vesselTag: tag.vesselTag, vesselSig: tag.vesselSig, wardKey: tag.wardKey, wardPop: tag.wardPop, requests };
   const signature = await args.sign(fleetJoinRequestImage(body));
   return readFleetJoinRequest({ kind: "fleet-join-request", ...body, signature }, args.offer, [args.offer.rootKey]);
 }

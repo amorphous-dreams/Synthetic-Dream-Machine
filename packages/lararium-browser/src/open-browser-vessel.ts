@@ -790,7 +790,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // The island this leaf stands in keys the KEL board. A FOUNDING leaf dials no anchor, so this resolves to
       // its own key — a private nexus of one, the same value by a different derivation.
       nexusPubkey,
-      vesselTag: browserVesselFaceTagDoor(idbName),
+      // The founding mints the face's ward key and signs its pop with it; a founding that runs again asks the ward route.
+      vesselTag: browserVesselFaceTagDoor(idbName, opts.askWardRoute ? { route: opts.askWardRoute } : {}),
     });
     // THE FACE'S ATOM RESTS BEFORE ITS BOOTSTRAP: the founding minted a random seed, and the face's own custody row keeps it.
     try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); } finally { f.atomSeed.fill(0); }

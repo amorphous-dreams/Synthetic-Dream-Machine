@@ -88,7 +88,7 @@ test("RED: the store door runs an approve first with no route and asks one only 
 
 test("RED: the co-signer's approve carries no ward signature; CONTROL: it carries one over (the answer, the ask's digest, the frontier it read) under the ward key its admission carries, and a deny carries none", async () => {
   const j = await joinee();
-  const wardKey = (await vesselFaceTagDoor()(GROUP, j.answerer.key)).wardKey;
+  const wardKey = (await vesselFaceTagDoor(fixtureWard())(GROUP, j.answerer.key)).wardKey;
   expect(wardKey).toMatch(/^[0-9a-f]{64}$/);
   const landed = await j.answer("ward-house-cap", { ward: fixtureWard() });
   expect(landed.body).toMatchObject({ frontier: FRONTIER });
@@ -109,7 +109,7 @@ test("RED: two faces of one vessel present one ward key, or keys a reader links;
   const one = await joinee();
   const other = "cosign-answer-other-face";
   const { ordinal } = await ensureFaceCustodyOfGroup(other);
-  const door = vesselFaceTagDoor();
+  const door = vesselFaceTagDoor(fixtureWard());
   const k1 = (await door(GROUP, one.answerer.key)).wardKey, k2 = (await door(other, one.answerer.key)).wardKey;
   expect(k1).toMatch(/^[0-9a-f]{64}$/);
   expect(k2).toMatch(/^[0-9a-f]{64}$/);

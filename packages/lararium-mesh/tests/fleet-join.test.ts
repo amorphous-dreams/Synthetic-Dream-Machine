@@ -102,7 +102,7 @@ describe("the fleet-join door's files", () => {
 
   test("the atom signs the request; another key cannot speak for it", async () => {
     const w = await world();
-    const body = { nonce: w.request.nonce, atomKey: w.joinee.key, sealKey: w.request.sealKey, vesselTag: w.request.vesselTag, vesselSig: w.request.vesselSig, wardKey: w.request.wardKey, requests: w.request.requests };
+    const body = { nonce: w.request.nonce, atomKey: w.joinee.key, sealKey: w.request.sealKey, vesselTag: w.request.vesselTag, vesselSig: w.request.vesselSig, wardKey: w.request.wardKey, wardPop: w.request.wardPop, requests: w.request.requests };
     const honest = { kind: "fleet-join-request", ...body, signature: await signHex(fleetJoinRequestImage(body), w.joinee) };
     expect(readFleetJoinRequest(honest, w.offer)).toEqual(honest);
     const forged = { ...honest, signature: await signHex(fleetJoinRequestImage(body), w.root) };
@@ -185,7 +185,7 @@ describe("the fleet-join door's files", () => {
     ({ kind: "fleet-join-request", ...body, signature: await signHex(fleetJoinRequestImage(body), by) });
   const asking = async (scope: FaceScope, by: Pair): Promise<VesselFaceCertificateRequest> =>
     ({ scope, vesselFaceKey: by.key as VesselFaceKey, signature: await signHex(certificateRequestImage(scope, by.key as VesselFaceKey), by) });
-  const body = (w: World) => ({ nonce: w.request.nonce, atomKey: w.request.atomKey, sealKey: w.request.sealKey, vesselTag: w.request.vesselTag, vesselSig: w.request.vesselSig, wardKey: w.request.wardKey, requests: w.request.requests });
+  const body = (w: World) => ({ nonce: w.request.nonce, atomKey: w.request.atomKey, sealKey: w.request.sealKey, vesselTag: w.request.vesselTag, vesselSig: w.request.vesselSig, wardKey: w.request.wardKey, wardPop: w.request.wardPop, requests: w.request.requests });
   /** The answer re-signed by the root after `change`, so only the check under test can refuse it. */
   const resigned = async (w: World, change: Partial<FleetJoinAnswer>, by: Pair = w.root): Promise<FleetJoinAnswer> => {
     const a = { ...w.answer, ...change };

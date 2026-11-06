@@ -83,7 +83,7 @@ test("CONTROL: a deny asks no route and carries no ward; an ask this browser can
 
 test("RED: two faces of one browser present one ward key; CONTROL: a re-read of one face presents the same key", async () => {
   const s = await stand();
-  const door = browserVesselFaceTagDoor(s.idbName);
+  const door = browserVesselFaceTagDoor(s.idbName, { route: async () => PASS, spawn });
   const other = (await door("g-browser-other", s.me.key)).wardKey;
   expect(other).toMatch(/^[0-9a-f]{64}$/);
   expect(other).not.toBe(s.wardKey);

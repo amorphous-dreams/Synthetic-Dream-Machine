@@ -195,8 +195,9 @@ describe("the ward holds the face root apart from unlocked custody", () => {
     const { rmSync } = await import("node:fs");
     const { holder, face } = await wardedFace();
     const s = seat!;
-    // Stand the face as a build before the ward founded it: no ward tree, and the root sealed under the face key.
+    // Stand the face as a build before the ward founded it: no ward tree, no ward key row, and the root sealed under the face key.
     rmSync(wardTreePath(s.homes.identity, face.fcid));
+    rmSync(faceCarrierFor(s.homes, face.fcid, "face-ward-key.bin", carrierTable().find((r) => r.row === "face-ward-key")!).path);
     const opened = await openFaceTree({ io: s.io, homes: s.homes, fcid: face.fcid, credentials: cred(PASS) });
     if (opened.reading !== "opens") throw new Error("the face tree did not open");
     const file = ".persona-group-root-h0.json";
@@ -268,7 +269,12 @@ describe("the rewrap never weakens a ward, and its proof is charged (S2 cold rea
     const { holder } = seat;
     const twoOfTwo: SlotSpec = { t: 2, pins: [{ kind: "passphrase", passphrase: "first half" }, { kind: "passphrase", passphrase: "second half" }] };
     const face = await holder.foundFace({ ordinal: 0, slots: [twoOfTwo] });
+    // A pre-ward face: no ward tree and no ward key row (a face whose row stands refuses `ward-key-would-rotate`).
+    const { faceCarrierFor } = await import("../src/face-custody.js");
+    const { carrierTable } = await import("../src/vault-carriers.js");
+    const keyRow = faceCarrierFor(seat.homes, face.fcid, "face-ward-key.bin", carrierTable().find((r) => r.row === "face-ward-key")!).path;
     rmSync(wardTreePath(seat.homes.identity, face.fcid));
+    rmSync(keyRow);
     const both = [...cred("first half"), ...cred("second half")];
     await holder.rewrapWard({ ordinal: 0 }, both);
     await expect(holder.withWardKey({ ordinal: 0 }, cred("first half"), async () => "opened")).rejects.toThrow(/ward-no-slot-opens|ward-attempts-spent/);
@@ -276,6 +282,7 @@ describe("the rewrap never weakens a ward, and its proof is charged (S2 cold rea
 
     // A wrong route's rewrap proof charges the face's own attempts until they spend.
     rmSync(wardTreePath(seat.homes.identity, face.fcid));
+    rmSync(keyRow);
     const wrong = cred("not this face's route");
     const readings: string[] = [];
     for (let i = 0; i < 4; i++) readings.push(await holder.rewrapWard({ ordinal: 0 }, wrong).then(() => "rewrapped", (e: Error) => /ward-[a-z-]+/.exec(e.message)?.[0] ?? e.message));

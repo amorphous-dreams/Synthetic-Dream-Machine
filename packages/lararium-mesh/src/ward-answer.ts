@@ -13,7 +13,7 @@
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { canonicalJsonBytes, utf8Bytes } from "./crypto.js";
-import { WARD_ANSWER_DOMAIN, WARD_SIGN_SEED_DOMAIN } from "./domains.js";
+import { WARD_ANSWER_DOMAIN, WARD_KEY_POP_DOMAIN, WARD_SIGN_SEED_DOMAIN } from "./domains.js";
 import { ed25519VerifyingKeyFromSeed, verifyEd25519 } from "./ed25519-door.js";
 import { buildAnswer, type IntentSigner } from "./intent-issue.js";
 import type { SignedIntentEntry } from "./intent-entry.js";
@@ -42,6 +42,20 @@ export const wardPublicKeyOf = (seed: Uint8Array): Promise<string> => ed25519Ver
 
 /** A 64-hex ed25519 public key, as an admission's `wardKey` reads. */
 export const isWardKey = (x: unknown): x is string => typeof x === "string" && /^[0-9a-f]{64}$/.test(x);
+
+/** The bytes a device's ward key signs to prove its admission names a key that device holds: (group, device atom, ward key). */
+export function wardKeyPopImage(group: string, deviceKey: string, wardKey: string): Uint8Array {
+  return canonicalJsonBytes({ domain: WARD_KEY_POP_DOMAIN, group, deviceKey: deviceKey.toLowerCase(), wardKey });
+}
+
+/**
+ * True where `wardPop` carries the named ward key's own signature over (group, device atom, ward key): the device holds the key its
+ * admission names. A copied public half, or a pop another atom or face carried, holds nothing.
+ */
+export function wardKeyPopHolds(group: string, deviceKey: string, fields: { readonly wardKey?: unknown; readonly wardPop?: unknown }): boolean {
+  if (!isWardKey(fields.wardKey) || typeof fields.wardPop !== "string") return false;
+  try { return verifyEd25519(fields.wardPop, wardKeyPopImage(group, deviceKey, fields.wardKey), fields.wardKey); } catch { return false; }
+}
 
 /**
  * True where an approve carries the ward signature of `wardKey` (the answerer's admitted ward key) over (the answer, the ask's
