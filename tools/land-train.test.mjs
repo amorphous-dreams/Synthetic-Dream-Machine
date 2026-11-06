@@ -162,6 +162,27 @@ test("G59 CONTROL: a non-mem first-parent change blocks the span CI carry", asyn
   assert.ok(readings.consulted.some(([branch, sha]) => branch === `${SPAN}--a` && sha === w.heads.a), "the unread head was consulted");
 });
 
+test("G59 carries a green ancestor run from any branch, but not across an ignored non-mem commit", async () => {
+  const w = world(["a"]), anchor = w.heads.a;
+  sh(w.work, "checkout", "-q", `${SPAN}--a`);
+  w.heads.a = w.commit(w.work, "bags/g59/head.mem", "head\n", "mem head");
+  sh(w.work, "push", "-q", "origin", `${SPAN}--a`);
+  sh(w.work, "checkout", "-q", SPAN);
+  const verdict = async () => ({ ci: "unread", heldOut: "unread" });
+  const ciRuns = async (sha) => sha === anchor ? [{ headSha: sha, headBranch: "another-branch", event: "push", status: "completed", conclusion: "success" }] : [];
+  const carried = await run(w, { verdict, ciRuns }, { plan: true }, ["a"]);
+  assert.equal(carried.code, 0, carried.out);
+
+  sh(w.work, "checkout", "-q", `${SPAN}--a`);
+  w.commit(w.work, "notes.md", "notes\n", "ignored non-mem");
+  w.heads.a = w.commit(w.work, "bags/g59/next.mem", "next\n", "next mem");
+  sh(w.work, "push", "-q", "origin", `${SPAN}--a`);
+  sh(w.work, "checkout", "-q", SPAN);
+  const blocked = await run(w, { verdict, ciRuns }, { plan: true }, ["a"]);
+  assert.equal(blocked.code, 8, blocked.out);
+  assert.match(blocked.out, /ci unread/);
+});
+
 test("CONTROL: a recorded clean batch of two lanes lands as chained commits whose last tree is the train's tree", async () => {
   const w = world();
   const r = await run(w);

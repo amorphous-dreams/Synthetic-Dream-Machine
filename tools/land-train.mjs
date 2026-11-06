@@ -10,7 +10,7 @@
  *   run from the main checkout, which stands on the span.
  *
  * A lane `<span>--<suffix>` enters on its own green (its CI at its exact head, read by tools/ci-verdict.mjs; a head whose push
- * changed ignored paths alone rides a CI-green lane ancestor). Its land message's subject carries ` — merge PR #<pr>` for its
+ * changed .mem carriers alone rides a CI-green first-parent ancestor). Its land message's subject carries ` — merge PR #<pr>` for its
  * own PR, so every later reader knows the commit for a land. No base is typed: each lane's base derives as its merge-base
  * with the span.
  *
@@ -162,6 +162,25 @@ const isAncestor = (git, a, b) => { try { git(["merge-base", "--is-ancestor", a,
 /** True when the change names at least one path and every path is a `.mem` carrier under bags/ (canon alone: no code, tool, workflow, genesis, plugin or generated file). */
 const onlyMemPaths = (paths) => paths.length > 0 && paths.every((p) => /^bags\/.*\.mem$/.test(p));
 const touchesIgnoredOnly = (git, c) => onlyIgnoredPaths(git(["diff-tree", "-z", "--no-commit-id", "--name-only", "-r", "-m", "--first-parent", c]).split("\0").filter(Boolean));
+const touchesMemOnly = (git, c) => onlyMemPaths(git(["diff-tree", "-z", "--no-commit-id", "--name-only", "-r", "-m", "--first-parent", c]).split("\0").filter(Boolean));
+/** The lane carry reads CI at each ancestor on every branch, and crosses only .mem commits. */
+async function laneGreenAncestor(ops, git, branch, span, c) {
+  if (!touchesMemOnly(git, c)) return null;
+  for (const a of git(["rev-list", "--first-parent", `${c}^`]).split("\n").filter(Boolean)) {
+    let state;
+    if (ops.ciRuns) {
+      try { state = readRunAt(await ops.ciRuns(a), a).state; } catch { return null; }
+    } else {
+      // Injected verdict readers can model the lane and span without a GitHub run list.
+      const lane = await settled(ops, branch, a, { lane: true });
+      const other = lane.ci === "unread" ? await settled(ops, span, a, { lane: true }) : lane;
+      state = other.ci === "green" ? "green" : other.ci === "unread" ? "none" : "blocked";
+    }
+    if (state === "green") return a;
+    if (state !== "none" || !touchesMemOnly(git, a)) return null;
+  }
+  return null;
+}
 /** The nearest first-parent ancestor of `c` reading GREEN at its sha, or null where a commit between holds a run that is not green or touches code. */
 async function greenAncestor(ops, git, branch, c, { lane = false } = {}) {
   for (const a of git(["rev-list", "--first-parent", "-n", "50", `${c}^`]).split("\n").filter(Boolean)) {
@@ -288,9 +307,9 @@ async function validate(lanes, { span, SP, shipDir, git, say, stop }, ops) {
     l.subject = msg.split("\n")[0];
     const v = await settled(ops, branch, LH, { lane: true });
     let k = classifyLane(v);
-    if (k !== "green" && v.ci === "unread" && touchesIgnoredOnly(git, LH)) {
-      // The lane head's push changed ignored paths alone and raised no run; it reads GREEN over a CI-green ancestor on its own branch.
-      const anchor = await greenAncestor(ops, git, branch, LH, { lane: true });
+    if (k !== "green" && v.ci === "unread" && touchesMemOnly(git, LH)) {
+      // A .mem-only head may carry a green CI reading from any branch at a first-parent ancestor.
+      const anchor = await laneGreenAncestor(ops, git, branch, span, LH);
       if (anchor) { say(`lane ${l.suffix} head ${short(LH)} touches ignored paths only; no CI run stands; carried by green ancestor ${short(anchor)}`); k = "green"; }
     }
     if (k === "unreadable") return [10, `UNREADABLE: lane ${l.suffix}'s CI verdict could not be read (${v.ci}); read again later, it is no red`];
