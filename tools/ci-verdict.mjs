@@ -31,13 +31,19 @@
  *   --workflow  default: CI
  *   --held-out  default: held-out.yml (the workflow's file name: a workflow absent from the default branch
  *               answers to no display name)
- *   --wait      read again every --interval seconds (default 30) until neither the CI reading nor the held-out reading
+ *   --wait      read again every --interval seconds until neither the CI reading nor the held-out reading
  *               reads `unread`; the exit code is the CI reading's, unchanged. A run cancelled clean, a run still
  *               running and a held-out run that does not name the head yet are all `unread`, so the wait goes on.
+ *   --interval  seconds between rounds of reads (a round issues several gh calls back to back), for the --wait rounds and the UNREADABLE retries alike. It defaults to the house
+ *               poll floor, POLL_FLOOR_S (180: the operator's law of 2026-11-05, after the GitHub API limit ran out,
+ *               polls CI no closer than three minutes), and a value under the floor refuses by name
+ *               (`poll-under-floor: 30 < 180`, exit 3) before any read. No env var moves it. tools/land-train.mjs reads
+ *               the same constant for every wait it makes.
  *   --retries   how many times an UNREADABLE read (network, 5xx, timeout, rate limit) reads again before the door
  *               says so (default 6). Applies with or without --wait.
- * Exit: 0 green · 1 red · 2 unread · 3 the reader itself could not read (gh absent, no such branch, a 4xx)
- *       · 4 UNREADABLE (GitHub could not be reached, or answered 5xx, for every one of the reads).
+ * Exit: 0 green · 1 red · 2 unread · 3 the reader itself could not read (gh absent, no such branch, a 4xx) or a
+ *       usage refusal (a poll under the floor) · 4 UNREADABLE (GitHub could not be reached, or answered 5xx, for every
+ *       one of the reads).
  *
  * ── THREE VERDICTS, AND A FOURTH THING THAT IS NO VERDICT ───────────────────────────────────────
  * GREEN, RED, and UNREAD (nothing measured the head yet) are readings of the CI. UNREADABLE says the reader could not
@@ -54,6 +60,19 @@
 import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { DRIVERS } from "./held-out-cells.mjs";
+
+/** The house poll floor in seconds: CI poll rounds stand at least three minutes apart (operator law, 2026-11-05); the calls within one round run back to back. Every wait in
+ *  this reader and in tools/land-train.mjs reads it; a poll under it refuses by name. */
+export const POLL_FLOOR_S = 180;
+/** The longest delay a Node timer holds, in milliseconds; above it the timer fires at once and slips under the pace. */
+const TIMER_LIMIT_MS = 2147483647;
+/** The refusal for a poll interval in seconds, or null where it stands at or over the floor. */
+export function pollRefusal(seconds) {
+  const n = Number(seconds);
+  if (seconds === undefined || seconds === null || String(seconds).trim() === "" || !Number.isFinite(n)) return `poll-under-floor: ${seconds} < ${POLL_FLOOR_S} (the poll wants seconds)`;
+  if (n * 1000 > TIMER_LIMIT_MS) return `poll-over-timer-limit: ${seconds} s > ${Math.floor(TIMER_LIMIT_MS / 1000)} s (a timer above 2147483647 ms fires at once)`;
+  return n < POLL_FLOOR_S ? `poll-under-floor: ${seconds} < ${POLL_FLOOR_S}` : null;
+}
 
 /** A run that reached its own end: it measured something. A cancelled or skipped run measured nothing whole. */
 const WHOLE = new Set(["success", "failure", "timed_out", "startup_failure", "action_required"]);
@@ -365,8 +384,9 @@ async function readOnce({ sh, sleep, branch, head, opt }) {
 /** The door: returns the exit code. `sh`, `sleep`, `log` and `err` inject, so a test plants a recorded sequence. */
 export async function main(argv, { sh = defaultSh, sleep = defaultSleep, log = console.log, err = console.error } = {}) {
   const arg = (name, fallback) => { const i = argv.indexOf(`--${name}`); return i >= 0 && argv[i + 1] ? argv[i + 1] : fallback; };
-  const opt = { workflow: arg("workflow", "CI"), heldOut: arg("held-out", "held-out.yml"), limit: arg("limit", "30"), retries: arg("retries", "6"), interval: arg("interval", "30") };
-  for (const k of ["retries", "interval"]) if (!Number.isFinite(Number(opt[k])) || Number(opt[k]) < 0) { err(`ci-verdict: --${k} wants a non-negative number`); return 3; }
+  const opt = { workflow: arg("workflow", "CI"), heldOut: arg("held-out", "held-out.yml"), limit: arg("limit", "30"), retries: arg("retries", "6"), interval: arg("interval", String(POLL_FLOOR_S)) };
+  if (!Number.isFinite(Number(opt.retries)) || Number(opt.retries) < 0) { err("ci-verdict: --retries wants a non-negative number"); return 3; }
+  const under = pollRefusal(opt.interval); if (under) { err(`ci-verdict: ${under}`); return 3; }
   let r, branch;
   try {
     const namedBranch = arg("branch", null);

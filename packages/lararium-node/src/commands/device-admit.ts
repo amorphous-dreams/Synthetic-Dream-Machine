@@ -464,7 +464,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     personaUrl,
   });
   // WHAT THE ANSWER SERVES EQUALS WHAT THE LOG HOLDS: the operation cache never decides a replay. A request whose cached
-  // answer carries an edge the log no longer seats refuses by name, before any act lands.
+  // answer carries an edge the log seats no more refuses by name, before any act lands.
   if (seatedAdmission && edgeBodyDigest(payload.deviceEdge) !== servedDigest) throw replayLapsed();
   if (appended.length) appendPersonaActs(personaHandle, appended);
 

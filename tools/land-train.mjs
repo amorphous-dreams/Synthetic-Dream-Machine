@@ -6,7 +6,7 @@
  *   node tools/land-train.mjs enqueue <suffix:pr:head:msgfile>...                       queue lanes for the next run
  *   node tools/land-train.mjs run [flags]                                               drain the queue
  *   node tools/land-train.mjs status                                                    exit 1 while a train flies
- *   flags: --span <branch> --queue <dir> --ship <dir> --scratch <dir> --k <n> --depth <n> --name <name>
+ *   flags: --span <branch> --queue <dir> --ship <dir> --scratch <dir> --k <n> --depth <n> --name <name> --poll <seconds>
  *   run from the main checkout, which stands on the span.
  *
  * A lane `<span>--<suffix>` enters on its own green (its CI at its exact head, read by tools/ci-verdict.mjs; a head whose push
@@ -43,6 +43,12 @@
  * or pauses where none flies. No clock decides: every wait ends on a result (a verdict, an attempt, a run) or the process's
  * exit, and a train whose run never appears says `NO RUN YET <sha>` each round. The queue lock (`<queue>/lock`, a pid) of a
  * dead process is taken over, and a standing train ref that chains the queued lanes over the span resumes as it stands.
+ *
+ * The poll: every wait between two GitHub reads (an UNREADABLE verdict read again, the landed lanes' run cancel, the
+ * held-out wait, the train run's wait and its NO RUN YET rounds) sleeps `--poll` seconds, in every mode. It defaults to
+ * the house poll floor, POLL_FLOOR_S in tools/ci-verdict.mjs (180: the operator's law of 2026-11-05, after the GitHub API
+ * limit ran out, polls CI no closer than three minutes); a value under the floor refuses by name (`poll-under-floor: 30 <
+ * 180`, exit 2) before the tool reads anything, and `--plan` prints the poll it would keep. No env var moves it.
  *
  * Exit: 0 landed · 2 usage/identity/message/checkout/no common base/meme-only · 3 a head moved or the span moved by a non-land
  *       commit not read green (--local) · 4 merge conflict (--local) · 5 nothing landed (every lane red) or the chain broke
@@ -143,7 +149,11 @@ export function verdictWords(stdout, status) {
 }
 
 import { globToRegExp, onlyIgnoredPaths } from "./ci-ignored-paths.mjs";
-import { classifyFailure } from "./ci-verdict.mjs";
+import { classifyFailure, POLL_FLOOR_S, pollRefusal } from "./ci-verdict.mjs";
+
+export { POLL_FLOOR_S };
+/** The land's ops paced by its poll: `ops.wait()` sleeps the poll between two GitHub reads (tests inject `ops.sleep`). */
+const paced = (ops, poll) => ({ ...ops, poll: Number(poll), wait: () => ops.sleep(Number(poll) * 1000) });
 
 const short = (sha) => String(sha).slice(0, 9);
 const isAncestor = (git, a, b) => { try { git(["merge-base", "--is-ancestor", a, b]); return true; } catch { return false; } };
@@ -159,14 +169,14 @@ async function greenAncestor(ops, git, branch, c, { lane = false } = {}) {
   return null;
 }
 
-/** A lane or road verdict read until it stops reading UNREADABLE (six reads, thirty seconds apart). */
+/** A lane or road verdict read until it stops reading UNREADABLE (six reads, one poll apart). */
 async function settled(ops, branch, sha, { lane = false } = {}) {
   let v;
   for (let i = 0; i < 6; i++) {
     v = await ops.verdict(branch, sha);
     if (lane ? v.ci !== "unreadable" : v.ci !== "unreadable" && v.heldOut !== "unreadable") return v;
     if (v.ci === "red" || (!lane && v.heldOut === "red")) return v;
-    await ops.sleep(30000);
+    await ops.wait();
   }
   return v;
 }
@@ -347,7 +357,9 @@ function takeLock(queueDir, say) {
  * The whole land over injected `ops` (git, verdict, ciRuns, rerun, cancelRun, heldOut, dispatchCI, disk, houseWorktrees,
  * spanRuns, cancelRuns, readMsg, removeWorktree, train, sleep, env, log). Returns `{ code }`; every line goes through `ops.log`.
  */
-export async function landTrain({ name = "train", specs = [], plan = false, local = false, fromQueue = false, span = SPAN, cwd, k = 4, depth = 2, m = 3, shipDir = defaultShip(), queueDir = defaultQueue() }, ops) {
+export async function landTrain({ name = "train", specs = [], plan = false, local = false, fromQueue = false, span = SPAN, cwd, k = 4, depth = 2, m = 3, poll = POLL_FLOOR_S, shipDir = defaultShip(), queueDir = defaultQueue() }, ops) {
+  const under = pollRefusal(poll); if (under) { ops.log(under); return { code: 2 }; }
+  ops = paced(ops, poll);
   const d = door({ span, cwd }, ops); if (d.refusal) return d.refusal;
   const { say, git, stop } = d;
   const entriesDir = join(queueDir, "entries");
@@ -397,7 +409,9 @@ export async function landTrain({ name = "train", specs = [], plan = false, loca
 }
 
 /** Queue lanes for the next `run`: the same reading as a land (head, marker, green, SHIP); one entry file per lane. */
-export async function enqueue({ specs = [], span = SPAN, cwd, shipDir = defaultShip(), queueDir = defaultQueue() }, ops) {
+export async function enqueue({ specs = [], span = SPAN, cwd, poll = POLL_FLOOR_S, shipDir = defaultShip(), queueDir = defaultQueue() }, ops) {
+  const under = pollRefusal(poll); if (under) { ops.log(under); return { code: 2 }; }
+  ops = paced(ops, poll);
   const d = door({ span, cwd }, ops); if (d.refusal) return d.refusal;
   let lanes;
   try { lanes = specs.map(parseSpec); } catch (e) { return d.stop(2, e.message); }
@@ -465,6 +479,7 @@ async function landLocal({ name, lanes, plan, span, direct, d, table, shipDir },
 
   if (plan) {
     say(`PLAN ${direct ? "DIRECT land (no train)" : `local TRAIN ${name}`} over span ${short(SP)}, base ${short(baseSha)}; nothing pushed, nothing built`);
+    say(`PLAN poll CI every ${ops.poll} s (the house floor ${POLL_FLOOR_S} s)`);
     let prev = short(SP);
     for (const l of lanes) {
       const tree = direct ? `tree of the lane head (${short(git(["rev-parse", `${l.head}^{tree}`]))})` : "the train's merge tree for this lane";
@@ -545,7 +560,7 @@ function moveLaneBranches(git, say, span, lands) {
 async function cancelLaneRuns(ops, say, span, moved) {
   let pending = moved;
   for (let round = 0; round < 3 && pending.length; round++) {
-    await ops.sleep(20000);
+    await ops.wait();
     const still = [];
     for (const mv of pending) {
       const ids = await ops.cancelRuns(`${span}--${mv.lane.suffix}`, mv.land);
@@ -639,6 +654,7 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, shipDir, ta
     let links;
     try { ({ links } = chain(SP, queue.slice(0, k))); } catch (e) { if (!e.ship) throw e; return stop(12, e.message); }
     say(`PLAN QUEUE over span ${short(SP)}: train of ${links.length} lane(s); nothing pushed`);
+    say(`PLAN poll CI every ${ops.poll} s (the house floor ${POLL_FLOOR_S} s)`);
     for (const { lane, land } of links) say(`PLAN lane ${lane.suffix} (PR #${lane.pr}) head ${short(lane.head)}: land ${short(land)} (merge-tree over the land before it)  subject: ${lane.subject}`);
     say(`PLAN push the chain head to ${span}--train-<n>-<sha9>, read its CI, fast-forward ${span} to it on green`);
     return { code: 0 };
@@ -654,7 +670,7 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, shipDir, ta
     for (;;) {
       let runs;
       try { runs = await ops.ciRuns(sha); dark = 0; }
-      catch (e) { if (classifyFailure(e) !== "unreadable") throw e; if (++dark >= 6) return { state: "unreadable" }; await ops.sleep(30000); continue; }
+      catch (e) { if (classifyFailure(e) !== "unreadable") throw e; if (++dark >= 6) return { state: "unreadable" }; await ops.wait(); continue; }
       runs = runs.filter((x) => !skip.has(x.databaseId));
       if (rerun) {
         // A gh that answers `attempt` names the new attempt; one that answers none shows the run live, then whole again.
@@ -668,7 +684,7 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, shipDir, ta
       if (watchRef) { const at = remoteRef(watchRef); if (at !== undefined && at !== sha) return { state: "void", run: null, why: `${watchRef} no longer stands at ${short(sha)}` }; }
       if (watchSpan) { const at = remoteRef(span); if (at && at !== sha) return { state: "moved", run: null }; }
       if (r.state === "none") say(rerun ? `RERUN NOT YET READ: run ${rerun.id} attempt ${rerun.attempt} at ${sha}` : `NO RUN YET ${sha}`);
-      await ops.sleep(30000);
+      await ops.wait();
     }
   };
   /** A red reruns its failed jobs once; the reading after it decides. */
@@ -767,7 +783,7 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, shipDir, ta
           gate = heldOutGate(h, past, m);
           if (!gate.pause || !gate.wait) break;
           say(gate.why);
-          await ops.sleep(30000);
+          await ops.wait();
         }
         if (gate.pause) return finish(15, gate.why);
       }
@@ -916,16 +932,18 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const span = take("--span", SPAN), scratch = resolve(take("--scratch", join(userInfo().homedir, ".lares-scratch", "train")));
   const queueDir = resolve(take("--queue", defaultQueue())), shipDir = resolve(take("--ship", defaultShip()));
   const k = Number(take("--k", 4)), depth = Number(take("--depth", 2)), name = take("--name", "train");
-  const plan = flag("--plan"), local = flag("--local");
-  const usage = "usage: land-train.mjs [--plan] [--local] [--span b] [--queue d] [--ship d] [--scratch d] [--k n] [--depth n] [--name n] <suffix:pr:head:msgfile>...\n       land-train.mjs enqueue <suffix:pr:head:msgfile>... | run | status";
+  const plan = flag("--plan"), local = flag("--local"), poll = take("--poll", String(POLL_FLOOR_S));
+  const usage = "usage: land-train.mjs [--plan] [--local] [--span b] [--queue d] [--ship d] [--scratch d] [--k n] [--depth n] [--name n] [--poll seconds] <suffix:pr:head:msgfile>...\n       land-train.mjs enqueue <suffix:pr:head:msgfile>... | run | status";
+  // The poll floor refuses before the tool reads anything: no git, no gh.
+  { const under = pollRefusal(poll); if (under) { console.error(`land-train: ${under}`); process.exit(2); } }
   if (!(k >= 1) || !(depth >= 1)) { console.error(usage); process.exit(2); }
   const cwd = process.cwd(), ops = realOps({ cwd, scratch });
   const [verb, ...rest] = argv;
   let code;
   if (verb === "status") ({ code } = await queueStatus({ span, cwd, queueDir }, ops));
-  else if (verb === "enqueue") ({ code } = rest.length ? await enqueue({ specs: rest, span, cwd, shipDir, queueDir }, ops) : { code: 2 });
-  else if (verb === "run") ({ code } = await landTrain({ fromQueue: true, specs: rest, plan, local, span, cwd, k, depth, shipDir, queueDir, name }, ops));
-  else if (argv.length) ({ code } = await landTrain({ specs: argv, plan, local, span, cwd, k, depth, shipDir, queueDir, name }, ops));
+  else if (verb === "enqueue") ({ code } = rest.length ? await enqueue({ specs: rest, span, cwd, poll, shipDir, queueDir }, ops) : { code: 2 });
+  else if (verb === "run") ({ code } = await landTrain({ fromQueue: true, specs: rest, plan, local, span, cwd, k, depth, poll, shipDir, queueDir, name }, ops));
+  else if (argv.length) ({ code } = await landTrain({ specs: argv, plan, local, span, cwd, k, depth, poll, shipDir, queueDir, name }, ops));
   else { console.error(usage); code = 2; }
   process.exit(code);
 }
