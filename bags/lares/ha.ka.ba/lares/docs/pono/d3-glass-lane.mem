@@ -70,7 +70,7 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 !! The mirror's realm ~ the operator's rulings (2026-10-29) as the lane's work order
 
 * ''A page never stands as a vessel.'' The page holds a surface with a port onto a vessel; §9 of the Island Sovereignty Law reads "no sovereign VM and no key on a surface", and the mirror honors it as a camera fed by the port alone.
-* ''Browser mode, no lends.'' The mirror boots TW5 in its own browser mode: no `configureIslandRuntime`, no worker boot env, no `global`, `Buffer`, `process`, `setImmediate` or `clearImmediate` lent onto the page window. Mu on the iframe and realm menu (same-origin iframe, sandboxed iframe, ShadowRealm, core patch).
+* ''Browser mode, no lends.'' The mirror boots TW5 in its own browser mode: no `configureIslandRuntime`, no worker boot env, no `global`, `Buffer`, `process`, `setImmediate` or `clearImmediate` lent onto the page window. Mu on the iframe and thread menu (same-origin iframe, sandboxed iframe, ShadowRealm, core patch).
 * ''No syncer, no saver, no syncadaptor.'' The port adaptor stays the mirror's one road to truth; TW5's syncer, savers and syncadaptor stay out of its boot, and a person's plugin carrying a syncadaptor or a saver refuses at mount by name.
 * ''The surface owns the URL'' through its `route` door; TW5's hash handling stays off and `#:safe` burns. ''Faults'' land on the alert rail, with TW5's `window.onerror` uninstalled. ''Modals and notifications'' paint in the surface's root layer, and `lar-root-services` owns the mirror's doors (G3).
 * ''Plugins wait on the seal.'' The full mirror runs people's plugins only after sealed-store steps 2 and 3 land for the browser store; no clear row stands under it, the device key rests non-extractable, and the browser vessel's opened key lives in its own worker.
@@ -95,6 +95,6 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1IgiCbQGSIck1GRGSFhNFjWSxqbs0ksNWXWKND_WVKs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eTCQZvmh-s1objioSM4_Dw8D886mPMxinhgQbAxOXn8`>>
 
 <<^ code=`&#x0004;` to=`?`>>
