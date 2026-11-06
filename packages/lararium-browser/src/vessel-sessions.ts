@@ -26,7 +26,8 @@
  * the lock: every ask in flight ends (`lock-ended`), the lit vessel flushes and comes down (its daemon island, its provider
  * and its signers with it), each content-key holder locks (overwriting its keys), and the custody tree key's bytes get
  * overwritten once no custody act runs. The house then stands at its floor: public readings alone, `signer-unavailable` on
- * every ask, and the next session asks for its unlock again.
+ * every ask, and the next session asks for its unlock again. An admission begins only once a lock in flight ends, so no light
+ * it lights goes down with the vessel that lock closes; one a lock overtakes while it asks refuses `lock-ended` and admits again.
  *
  * ── LIVENESS, OWN CLOCK ALONE ────────────────────────────────────────────────────────────────────
  * An abrupt tab loss sends no close. Two roads catch it. Port loss: the tab holds a lifetime Web Lock named for its session,
@@ -192,6 +193,10 @@ export interface VesselHouseOptions<V extends LitVessel> {
   readonly providers?: FaceProviderDoor;
   /** Hear each session's floor reading as it moves. */
   readonly onFloor?: (session: VesselSession, floor: VesselFloorState) => void;
+  /** Hear the lock land, once per lock, whether or not any session stands to hear its floor: the vessel stands down. */
+  readonly onLocked?: (report: VesselLockReport) => void;
+  /** Hear an admission begin its wait on the lock in flight; it goes on once that lock ends. */
+  readonly onAdmissionWaits?: (session: VesselSession) => void;
   /** Hear each session drop, with why. */
   readonly onDrop?: (session: VesselSession, why: string) => void;
   /** Ping a session at each sweep; any message it sends back counts as heard. */
@@ -243,6 +248,8 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
   let lit: V | null = null;
   let lighting: Promise<V> | null = null;
   let locking: Promise<VesselLockReport> | null = null;
+  /** How many locks have begun: an admission that a lock overtook reads it, since that lock overwrote the keys it seated. */
+  let locksBegun = 0;
   let released = false;
   /** Each unlocked face's provider, lit at its first admitted session (K19). */
   const faceLit = new Map<string, Promise<unknown>>();
@@ -339,6 +346,7 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
 
   const lock = async (why: string): Promise<VesselLockReport> => {
     if (locking) return locking;
+    locksBegun++;
     locking = (async () => {
       let actsEnded = 0;
       for (const set of inflight.values()) for (const end of [...set]) { end(new VesselSessionRefused("lock-ended", why)); actsEnded++; }
@@ -359,8 +367,10 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
       for (const h of holders) { try { await h.lock(); } catch (e) { console.warn("[vessel-sessions] a content-key holder refused its lock:", e); } }
       const treeKeysOverwritten = (await overwriteBrowserCustody(opts.idbName)) ? 1 : 0;
       overwriteEveryFaceCustody(opts.idbName);
+      const report = { treeKeysOverwritten, contentKeyHolders: holders.length, actsEnded, vesselDown, why };
+      opts.onLocked?.(report);
       setFloor("floor");
-      return { treeKeysOverwritten, contentKeyHolders: holders.length, actsEnded, vesselDown, why };
+      return report;
     })();
     try { return await locking; } finally { locking = null; }
   };
@@ -477,6 +487,12 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
     async admit(sessionId: string, a: AdmitOptions): Promise<V> {
       const s = sessionOf(sessionId);
       if (s.admission === "admitted") return light(s);
+      // AN ADMISSION BEGINS PAST THE LOCK IN FLIGHT: that lock overwrites every key and retires its host's light at its end,
+      // so a key seated or a light lit before it ends would go down with the vessel it closes.
+      if (locking) opts.onAdmissionWaits?.(s);
+      while (locking) await locking.catch(() => undefined);
+      if (!sessions.has(sessionId)) throw new VesselSessionRefused("lock-ended", "the session closed while a lock ran");
+      const era = locksBegun;
       const own = s.face;
       const mine = seatedOf(sessionId);
       const added = new Set<string>();
@@ -501,6 +517,8 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
         }
         // THE PLACE OPENS BY ITS OWN ROUTE WHEN THE LIGHT NEEDS IT: the face's route first, asked for no more where it opens.
         if (own !== null && !lit && !lighting) await openPlaceForLight(sessionId, a, route);
+        // A lock that began while this session asked overwrote what it seated: it admits again, never over a key gone dark.
+        if (locksBegun !== era) throw new VesselSessionRefused("lock-ended", "a lock ran while this session admitted and overwrote the keys it seated");
         const lightsHere = !lit && !lighting;
         const before = lightsHere ? new Set(heldFaceKeys(opts.idbName)) : null;
         const v = await act(sessionId, light(s));

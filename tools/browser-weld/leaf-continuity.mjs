@@ -66,12 +66,27 @@ async function liveReading(page) {
       (BOOT_TRACE ? `; C4 boot trace: ${JSON.stringify(traceSummary)}` : ""));
   }
   if (state.kind === "failed") throw new Error(`browser vessel boot refused: ${state.status}`);
-  return await page.evaluate(() => {
+  const surface = await page.evaluate(() => {
     const rows = [...document.querySelectorAll("#vessel .row")];
     const did = rows.find((row) => row.querySelector(".k")?.textContent === "did")?.querySelector(".v")?.textContent ?? "";
-    const kel = globalThis.__laresC4PersonaKel;
-    return { did, vessel: document.getElementById("vessel")?.textContent ?? "", kel };
+    return { did, vessel: document.getElementById("vessel")?.textContent ?? "" };
   });
+  return { ...surface, kel: await readKelObservation(page) };
+}
+
+/**
+ * The Binding Gate's KEL observation, read where the gate ran: the leading tab's vessel worker since b1-lift (the observation route
+ * writes it beside the gate's read, on that realm's globalThis), the page's own realm first.
+ */
+async function readKelObservation(page) {
+  const read = () => globalThis.__laresC4PersonaKel;
+  const own = await page.evaluate(read);
+  if (own) return own;
+  for (const worker of page.workers()) {
+    const seen = await worker.evaluate(read).catch(() => undefined);
+    if (seen) return seen;
+  }
+  return undefined;
 }
 
 /** Keep a small terminal tail: a boot timeout must expose a concrete browser cause. */
@@ -439,6 +454,15 @@ async function ordinaryWalk() {
   });
 }
 
+// THE FAULT EMPTIES THE BINDING GATE'S BOOT READ ALONE: the anchor the observation route reads. The co-sign port's per-act
+// `liveKelChain` closure reads the same chain later in the same module and stays untouched, so the fault reaches the gate.
+const BOOT_CHAIN_READ = /const personaKelChain = personaKelChainForPrefix\(kelBoard\.doc\(\), personaKelPrefix\);/g;
+
+function emptyBootChainRead(source) {
+  const count = source.match(BOOT_CHAIN_READ)?.length ?? 0;
+  return { count, body: count === 1 ? source.replace(BOOT_CHAIN_READ, "const personaKelChain = null;") : source };
+}
+
 async function faultWalk() {
   return withProfile(async (context) => {
     const page = await context.newPage();
@@ -447,18 +471,18 @@ async function faultWalk() {
     await page.goto(webUrl(), { waitUntil: "domcontentloaded" });
     await liveReading(page);
 
-    await page.route("**/*.js*", async (route) => {
+    // The gate's read runs in the vessel worker: context routing reaches its modules, as the observation route's does.
+    await context.route("**/*.js*", async (route) => {
       const response = await route.fetch();
       const type = response.headers()["content-type"] ?? "";
       if (!/javascript/.test(type)) return route.fulfill({ response });
       const source = instrumentBootSource(await response.text());
-      const read = /personaKelChainForPrefix\(kelBoard\.doc\(\), personaKelPrefix\)/;
-      const matches = source.match(new RegExp(read.source, "g")) ?? [];
-      if (matches.length === 0) return route.fulfill({ response, body: source });
-      if (matches.length !== 1) throw new Error(`C4 fault route found ${matches.length} chain reads in one fetched module`);
+      const { count, body } = emptyBootChainRead(source);
+      if (count === 0) return route.fulfill({ response, body: source });
+      if (count !== 1) throw new Error(`C4 fault route found ${count} chain reads in one fetched module`);
       replacements += 1;
       if (replacements > 1) throw new Error("C4 fault route found more than one chain read");
-      return route.fulfill({ response, body: source.replace(read, "null") });
+      return route.fulfill({ response, body });
     });
 
     await page.reload({ waitUntil: "domcontentloaded" });
@@ -476,4 +500,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   await faultWalk();
 }
 
-export { instrumentBootSource, observeKelRead };
+export { emptyBootChainRead, instrumentBootSource, observeKelRead, readKelObservation };

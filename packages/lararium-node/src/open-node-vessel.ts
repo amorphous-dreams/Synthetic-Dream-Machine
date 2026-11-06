@@ -157,7 +157,7 @@ import { standingCustody } from "./custody-seat.js";
 import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
-import { composeDialPresentation } from "./dial-presentation.js";
+import { certifyFounderAt, composeDialPresentation } from "./dial-presentation.js";
 import { dialAnchorCell, nodeSessionDoor } from "./uds-session-door.js";
 import { SessionSignBook } from "./session-sign-door.js";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
@@ -476,23 +476,53 @@ export function lateDialOnce(deps: {
   readonly standing: () => boolean;
   /** The vessel stood its dial down: nothing stands after it. */
   readonly tornDown: () => boolean;
-  /** Stand the dial; `live` answers false once a dial stood or the vessel stood down, and the stand then stands nothing. */
-  readonly stand:    (live: () => boolean, ward?: WardCredential) => Promise<void>;
-}): (ward?: WardCredential) => Promise<void> {
+  /** Stand the dial; `live` answers false once a dial stood or the vessel stood down, and the stand then stands nothing.
+   *  `nexusAid` names the Nexus a take's route answers for. */
+  readonly stand:    (live: () => boolean, ward?: WardCredential, nexusAid?: string) => Promise<void>;
+}): (ward?: WardCredential, nexusAid?: string) => Promise<void> {
   let flight: Promise<void> | null = null;
   let flightWard = false;
   const live = (): boolean => !deps.standing() && !deps.tornDown();
-  return (ward) => {
+  return (ward, nexusAid) => {
     if (!live()) return Promise.resolve();
     // A TAKE'S ROUTE IS NEVER DROPPED SILENTLY: a take that joins a dial already in flight with no route of its own refuses by
     // name, since that dial cannot issue the founder's certificate the take's route would (seat-harness#/the-ward).
     if (flight !== null && ward !== undefined && !flightWard) return Promise.reject(new WardRefused("ward-dial-in-flight", "a dial with no ward route stands in flight; take again once it settles"));
     if (flight !== null) return flight;
-    const mine: Promise<void> = Promise.resolve().then(() => deps.stand(live, ward)).finally(() => { if (flight === mine) { flight = null; flightWard = false; } });
+    const mine: Promise<void> = Promise.resolve().then(() => deps.stand(live, ward, nexusAid)).finally(() => { if (flight === mine) { flight = null; flightWard = false; } });
     flight = mine;
     flightWard = ward !== undefined;
     return mine;
   };
+}
+
+/**
+ * One late stand of a take's re-present. With a hearth to dial, the dial carries the take's route (the founder's certificate at
+ * that Nexus issues inside it). With none, the route is never dropped silently: it certifies the founder at the TAKEN Nexus,
+ * where a kept bundle there names no sync url (seat-harness#/the-ward). One ward answer, one act: no other kept Nexus takes a
+ * certificate under it. A route naming no Nexus, or a Nexus that neither the dial nor a no-url bundle answers for, certifies
+ * nothing and refuses `ward-route-unspent`. With no route and no hearth it does nothing, and a
+ * closed stand does nothing; `live` reads again before the certificate's await.
+ */
+export async function standLateTake<C extends { readonly syncUrl: string | null }>(deps: {
+  readonly choose:  () => C;
+  readonly live:    () => boolean;
+  readonly dial:    (choice: C, ward?: WardCredential) => Promise<void>;
+  /** The kept admit bundles, read at the moment of the stand. */
+  readonly kept:    () => ReadonlyArray<{ readonly aid: string; readonly syncUrl?: string | null }>;
+  readonly certify: (nexusAid: string, ward: WardCredential) => Promise<void>;
+}, ward?: WardCredential, nexusAid?: string): Promise<void> {
+  const late = deps.choose();
+  if (!deps.live()) return;
+  if (late.syncUrl !== null) return deps.dial(late, ward);
+  if (ward === undefined) return;
+  if (nexusAid === undefined) throw new WardRefused("ward-route-unspent", "the take's route names no Nexus to certify at, and the late choice dials no hearth");
+  const taken = deps.kept().find((k) => !k.syncUrl && k.aid.toLowerCase() === nexusAid.toLowerCase());
+  if (!deps.live()) return;
+  // THE ROUTE NEVER GOES UNSPENT IN SILENCE: a taken bundle that names a hearth the choice does not dial, or a Nexus no kept
+  // bundle names, leaves nothing to certify, and the take reads its reason instead of `represented`.
+  if (!taken) throw new WardRefused("ward-route-unspent", "the taken Nexus keeps no bundle without a sync url, and the late choice dials no hearth for it");
+  await deps.certify(taken.aid, ward);
 }
 
 /**
@@ -1097,7 +1127,7 @@ async function prepareNodeBootOn(
   // Forward-declared: the holder stands once the vessel's island is known, below, and replays `peerBindings`.
   let nexusMembershipHolder: NexusMembershipHolder | null = null;
   // The dial's re-presentation check — set once the dial stands (below); a board change or a refresh calls it.
-  let representIfMoved: ((ward?: WardCredential) => Promise<void>) | null = null;
+  let representIfMoved: ((ward?: WardCredential, nexusAid?: string) => Promise<void>) | null = null;
   // THE CHARTER'S HEARTH, at the other end of a socket THIS vessel dialed. The realm's return lane reads it:
   // the operator pinned that gate key out of band and imported that hearth's charter, so the realm's own
   // registered books federate back toward it. Filled by the dial below; empty on a vessel that dials nobody.
@@ -1583,7 +1613,7 @@ async function prepareNodeBootOn(
     },
     refoldEdgeShadows: async () => { await edgeShadows?.refold(); },
     reverdict: () => reverdict(),
-    representIfMoved: async (ward) => { await representIfMoved?.(ward); },
+    representIfMoved: async (ward, nexusAid) => { await representIfMoved?.(ward, nexusAid); },
     log: (line) => console.log(`[nexus] ${line}`),
   });
   const afterRoll = (nexusAid?: string, ward?: WardCredential): Promise<boolean> => {
@@ -2845,18 +2875,27 @@ async function prepareNodeBootOn(
     // that already stands keeps what it presents (a moved board re-dials through the adapter). A herm dials no hearth, and a floor
     // composition holds no key to present with, so its attempt names `CustodyLocked` and stands nothing.
     if (placeClass !== "herm") {
-      representIfMoved = lateDialOnce({ standing: () => nexusDial !== null, tornDown: () => dialStoodDown, stand: async (live, ward) => {
-        const late = chooseHearthDial({
+      representIfMoved = lateDialOnce({ standing: () => nexusDial !== null, tornDown: () => dialStoodDown, stand: (live, ward, nexusAid) => standLateTake({
+        choose: () => chooseHearthDial({
           explicitUrl: opts.joinSyncUrl ?? null,
           hearthPin:   hearthPin ? { syncUrl: hearthPin.syncUrl, ...(hearthPin.gatePin ? { gatePin: hearthPin.gatePin } : {}) } : null,
           kept:        readKeptAdmitBundles(sealHome),
           walkRelay:   walkingAt?.record.relay ?? null,
           keptFloor:   (nexusHex) => readKeptHearthFloorPins(sealHome, Buffer.from(nexusHex, "hex").toString("utf8")),
-        });
-        if (late.syncUrl === null || !live()) return;
-        for (const note of late.notes) console.log(`[nexus-join] ${note}`);
-        await standFaceDial(late, live, ward);
-      } });
+        }),
+        live,
+        dial: async (late, w) => {
+          for (const note of late.notes) console.log(`[nexus-join] ${note}`);
+          await standFaceDial(late, live, w);
+        },
+        // THE TAKEN NEXUS, WHERE NO DIAL CARRIES IT (its kept bundle names no sync url: this vessel's own Nexus), takes the founder's
+        // certificate under the take's route, so the carriage pull's presentation there reads it standing with no route of its own.
+        kept: () => readKeptAdmitBundles(sealHome),
+        certify: async (nexus, w) => {
+          const out = await certifyFounderAt({ sealHome, nexus, personaGroup: personaGroupId, ward: w });
+          console.log(`[nexus-join] founder certificate at ${nexus.slice(0, 18)}…: ${"state" in out ? out.state : `${out.refusal}${out.detail ? ` (${out.detail})` : ""}`}`);
+        },
+      }, ward, nexusAid) });
     }
     // ── THE BOOTSTRAP SEEDS; THE CATALOG PLANE REGISTERS ────────────────────────────────────────
     // A face is lit by `lares persona new 0` — a CLI act, on a vessel that is not running — so the plane it
