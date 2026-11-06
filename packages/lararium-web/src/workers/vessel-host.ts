@@ -20,7 +20,7 @@
  * results without a known sender) reaches every admitted session wearing the lit vessel's face over its own port. Control
  * results with a known sender return to that session alone. A session admitted after the light hears the shown surface
  * whole from the frames already sent, folded (`foldLarFrame`), over its own port alone: one tab's arrival moves no epoch,
- * so no other tab's act answers stale-target. The fold lives no longer than the lit vessel: the lock and each new light
+ * so no other tab's act answers stale-target. The fold ends with the lit vessel: the lock and each new light
  * retire both. Port traffic rides its binding
  * to its opening session alone; another session's place refuses `binding-not-owned`. Session loss closes only its own bindings.
  * INBOUND SURFACE ACTS WEAR THE LIT FACE: a control event, a surface switch, a place and a mirror read from a session admitted
@@ -97,7 +97,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
   /** The light the vessel's surface callbacks belong to: a vessel the lock closed calls back under none, so it reaches no
    *  session and no fold. */
   let lightNow: object | null = null;
-  /** THE FOLD LIVES NO LONGER THAN THE LIT VESSEL: the lock and every new light retire the lit vessel, its lighter and its
+  /** THE FOLD ENDS WITH THE LIT VESSEL: the lock and every new light retire the lit vessel, its lighter and its
    *  fold together, so a relight (another face on the same surface slug) hands no late session what the last vessel showed. */
   const retire = (): void => { lightNow = null; litVessel = null; litBy = null; shownFrames.clear(); };
 
