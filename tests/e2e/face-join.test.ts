@@ -22,7 +22,7 @@
  * `capEventsCount`). The act is the signed `face-join-grant/v1` record the verb writes
  * to the PersonaGroup plane, and the outcome NAMES it without carrying it: `recordTitle`, `recordCid` (tagged
  * sha256 over the record's canonical bytes) and `recordHeads` (the plane's heads just after the write). V1–V3 read
- * THAT record off the vessel's own storage through a throwaway repo: the catalog names the plane, and the read
+ * THAT record off the vessel's own storage through a throwaway repo: the bootstrap names the plane, and the read
  * waits CAUSALLY — until the stored plane's history holds `recordHeads` — then reads the record AS OF those heads,
  * so a later join's overwrite never answers for an earlier one. The record must verify under the root that
  * signed the joinee's edge, and its recomputed CID must equal `recordCid`. The view is held to the record as a
@@ -40,6 +40,8 @@ import {
   verifyFaceGrantRecord, faceGrantRecordCid, faceGrantTitle, FACE_GRANT_PREFIX, type FaceGrantRecord,
 } from "../../packages/lararium-keyhive/src/face-grant-record.js";
 import { personaBagIdFor } from "../../packages/lararium-mesh/src/persona-scope.js";
+import { readBootTiddlers } from "../../packages/lararium-node/src/vessel-private.js";
+import { bootFacePlanes } from "../../packages/lararium-node/src/boot-face-planes.js";
 import { plainField, plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
 import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
 import { faceJoinOutcome, requestFaceJoin } from "../harness/face-join-intent.js";
@@ -85,23 +87,22 @@ type PlaneDoc = { tiddlers?: Record<string, { tiddler?: { text?: string }; meta?
  * doc's storage once. The bound guards a hang; the answer is the heads.
  */
 async function recordOffPlane(title: string, group: string, heads: UrlHeads): Promise<{ rec: FaceGrantRecord | null; why: string }> {
-  const catalogUrl = bootDocUrl(lar, "catalog");
-  if (!catalogUrl) return { rec: null, why: "the boot log names no catalog doc" };
+  // THE PLANE'S ADDRESS RIDES THE BOOTSTRAP the founding wrote (boot-face-planes), the one source a boot reads a face's
+  // planes from; the floor's catalog never names a lit face's plane (sealed-store#/U1 lays the face's catalog over it).
+  const bootTiddlers = readBootTiddlers(join(vesselStorageDir(lar), "social-bootstrap.json"));
+  if (!bootTiddlers) return { rec: null, why: "the vessel holds no readable social bootstrap" };
+  const planeUrl = bootFacePlanes(bootTiddlers, group).personaUrl;
+  if (!planeUrl) return { rec: null, why: `the bootstrap names no plane for ${personaBagIdFor(group)}` };
   let why = "never attempted";
   for (let attempt = 0; attempt < 60; attempt++) {
     const repo = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(lar)) });
     try {
-      const cat = await repo.find<PlaneDoc>(catalogUrl as AutomergeUrl);
-      const planeUrl = plainField(cat.doc()?.tiddlers?.[personaBagIdFor(group)] as never, "text") as string | undefined;
-      if (!planeUrl) { why = `the catalog names no plane for ${personaBagIdFor(group)}`; }
-      else {
-        const plane = await repo.find<PlaneDoc>(planeUrl as AutomergeUrl);
-        const missing = heads.filter((h) => plane.metadata(h) === undefined);
-        if (missing.length > 0) throw new Error(`${missing.length} of ${heads.length} head(s) not yet in the stored history`);
-        const row = plane.view(heads).doc()?.tiddlers?.[title];
-        const text = row && !row.meta?.deleted ? plainField(row as never, "text") : undefined;
-        return { rec: typeof text === "string" ? JSON.parse(text) as FaceGrantRecord : null, why: "read at the reported heads" };
-      }
+      const plane = await repo.find<PlaneDoc>(planeUrl as AutomergeUrl);
+      const missing = heads.filter((h) => plane.metadata(h) === undefined);
+      if (missing.length > 0) throw new Error(`${missing.length} of ${heads.length} head(s) not yet in the stored history`);
+      const row = plane.view(heads).doc()?.tiddlers?.[title];
+      const text = row && !row.meta?.deleted ? plainField(row as never, "text") : undefined;
+      return { rec: typeof text === "string" ? JSON.parse(text) as FaceGrantRecord : null, why: "read at the reported heads" };
     } catch (err) {
       why = `the stored plane does not yet hold the reported heads (${err instanceof Error ? err.message : String(err)})`;
     } finally {

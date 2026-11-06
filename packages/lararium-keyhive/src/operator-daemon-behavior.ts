@@ -1296,12 +1296,19 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       return change;
     },
     onWritable: async (ctx: IslandContext) => {
-      if (!daemonAuth.atom && !daemonAuth.personaGroupId && !daemonAuth.deviceEdge) return { state: "no-route", reason: "no face" };
+      if (!daemonAuth.atom && !daemonAuth.personaGroupId && !daemonAuth.deviceEdge) {
+        // AT THE FLOOR THE SLOT STANDS ON THE FLOOR'S OWN DOCUMENT (sealed-store#/U1), keyed by the floor's anchor: a faceless
+        // floor holding one attaches it, so its verb outcomes land; a vessel holding no anchor names the absent route.
+        if (!daemonAuth.workingFloorAnchor) return { state: "no-route", reason: "no face and no floor anchor" };
+        await attachDaemonWorking(ctx);
+        return { state: "standing" };
+      }
       await standWorking(ctx);
       return { state: "standing" };
     },
     verifierFactory: async (ctx: IslandContext) => {
       if (!daemonAuth.atom && !daemonAuth.personaGroupId && !daemonAuth.deviceEdge) {
+        if (daemonAuth.workingFloorAnchor) await attachDaemonWorking(ctx);
         return floorVerifier;
       }
       const { keyhive, floor } = await standWorking(ctx);

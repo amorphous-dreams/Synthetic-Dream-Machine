@@ -58,9 +58,42 @@ beforeEach(() => {
 });
 
 describe("daemon working-layer attachment is a boot condition", () => {
-  test("a faceless daemon names the absent route without waiting", async () => {
+  test("a faceless daemon with no floor anchor names the absent route without waiting", async () => {
     const behavior = makeOperatorDaemonBehavior({ daemonAuth: { placeVerifyingKey: "a".repeat(64), registerBags: [] } } as never);
     await expect(behavior.onWritable!(context() as never)).resolves.toMatchObject({ state: "no-route", reason: expect.stringMatching(/no face/i) });
+    expect(harness.slotDoc).not.toHaveBeenCalled();
+  });
+
+  // sealed-store#/U1: at the floor the working slot stands on the floor's own document, keyed by the floor's anchor, so a
+  // faceless floor's verb outcomes land there (a herm's verb answers) and never meet NO_WORKING_LAYER.
+  test("a faceless floor holding its anchor attaches the working floor as the default writable, on the marker and on ea", async () => {
+    const floorAuth = { daemonAuth: { placeVerifyingKey: "a".repeat(64), registerBags: [], workingFloorAnchor: { kind: "place", aid: "E".repeat(44) } } } as never;
+    harness.slotDoc.mockResolvedValue({ url: "automerge:daemon-working-floor", reach: "vessel-only" });
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    for (const hook of ["onWritable", "verifierFactory"] as const) {
+      harness.slotDoc.mockClear();
+      const ctx = context({ daemonHandle: true }) as unknown as ReturnType<typeof context>;
+      const workingDoc = { tiddlers: {} as Record<string, unknown> };
+      const workingHandle = { url: "automerge:daemon-working-floor", doc: () => workingDoc, heads: () => [], on: () => () => {}, change: (fn: (doc: typeof workingDoc) => void) => fn(workingDoc) };
+      (ctx.repo as unknown as { find: () => Promise<typeof workingHandle> }).find = async () => workingHandle;
+      // The marker rides the behavior; the verifier rides the options the behavior stands on.
+      const out = hook === "onWritable"
+        ? await makeOperatorDaemonBehavior(floorAuth).onWritable!(ctx as never)
+        : await operatorDaemonOptions(floorAuth).verifierFactory!(ctx as never);
+      if (hook === "onWritable") expect(out).toMatchObject({ state: "standing" });
+      expect(harness.slotDoc).toHaveBeenCalledWith("daemon", "working");
+      expect(harness.boot).not.toHaveBeenCalled();
+      expect(ctx.composite.defaultWritableBagId()).toBe(working);
+      await ctx.composite.put({ tiddler: { title: "lar:///ha.ka.ba/floor-outcome", text: "landed" } }, { kind: "test" });
+      expect(workingDoc.tiddlers["lar:///ha.ka.ba/floor-outcome"]).toBeDefined();
+      // The floor verifier reaches the slot it attached, on the local channel alone.
+      if (hook === "verifierFactory") {
+        const verifier = out as { verify: (a: unknown) => Promise<{ ok: boolean }> };
+        await expect(verifier.verify({ bagUrl: working, channel: "local" })).resolves.toMatchObject({ ok: true });
+        await expect(verifier.verify({ bagUrl: working, channel: "peer" })).resolves.toMatchObject({ ok: false });
+      }
+    }
+    log.mockRestore();
   });
 
 
