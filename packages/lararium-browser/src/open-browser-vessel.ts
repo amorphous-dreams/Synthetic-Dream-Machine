@@ -131,7 +131,7 @@ import { waitHandle } from "@lararium/mesh";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
 import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody } from "./browser-custody.js";
 import { clearCustodyVerb, standBrowserCustody, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
-import { guardedBoot, type BootHold } from "./guarded-boot.js";
+import { guardedBoot, takeDownBoot, BootTeardownRefusal, type BootHold } from "./guarded-boot.js";
 import { attachSharedHolder, holderWorkerHandle, houseName } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
 import { shoreInbound } from "@lararium/mesh";
@@ -354,6 +354,14 @@ export type ProjectionSurfaceFrame = LarMsg_Frame & { readonly surface: string }
 export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPool, DaemonVmCore> {
   /** The public identity receipt composed by this vessel. Private signing material never leaves the vessel. */
   identity: BrowserVesselIdentity;
+  /** Flush the Repo's pending writes to the store. */
+  flush: () => Promise<void>;
+  /**
+   * Bring the vessel down whole (the face's last session, vessel-sessions.ts): the wiki islands drain, then what the boot
+   * stood comes down newest first (the daemon island and its signers, the relay, the Repo), then the store lock goes back.
+   * A thing that will not come down keeps the lock and refuses by name (`BootTeardownRefusal`).
+   */
+  close: () => Promise<void>;
   restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
   /**
    * Has this vessel crossed? True once the hearth it dials answered with a verdict signed by the pinned gate key
@@ -486,7 +494,18 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // can retry in the same page over one copy of the store. A boot that cannot take its things down keeps the lock and
   // refuses by name (`BootTeardownRefusal`). A booted vessel keeps both.
   const held: BootHold = { lock: null, stood: [] };
-  return guardedBoot(held, () => bootUnderLock(opts, held), opts.teardownBudgetMs);
+  const opened = await guardedBoot(held, () => bootUnderLock(opts, held), opts.teardownBudgetMs);
+  let closing: Promise<void> | null = null;
+  return Object.assign(opened, {
+    flush: () => opened.repo.flush(),
+    close: () => closing ??= (async () => {
+      await opened.pool.disposeAll().catch((e: unknown) => console.warn("[vessel] the wiki islands did not drain whole:", e));
+      const failed = await takeDownBoot(held, opts.teardownBudgetMs);
+      if (failed.length > 0) throw new BootTeardownRefusal(failed, new Error("the vessel's close"));
+      await held.lock?.release();
+      held.lock = null;
+    })(),
+  });
 }
 
 /**
@@ -506,7 +525,7 @@ async function houseOfBoot(idbName: string, admitting: boolean): Promise<string 
   } catch { return null; }
 }
 
-async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promise<BrowserVesselResult> {
+async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promise<Omit<BrowserVesselResult, "flush" | "close">> {
   const {
     wikiId,
     idbName = "lares:vessel", displayName, onPhase, placeFoundingCard,

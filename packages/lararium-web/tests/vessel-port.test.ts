@@ -111,3 +111,40 @@ test("the crossing reads the vessel's last report, and a listener hears each new
   expect(port.connectionState.getSnapshot()).toEqual({ status: "floor", reason: "no pin" });
   expect(heard).toEqual([{ status: "floor", reason: "no pin" }]);
 });
+
+test("RED: the greeting's session holds its lifetime lock before it says armed, a ping answers pong, and a refused owner crosses by name — CONTROL: no lock, no armed", async () => {
+  const { worker, sent, say } = fakeWorker();
+  const held: string[] = [];
+  let release: (() => void) | null = null;
+  const locks = { request: (name: string, callback: () => Promise<unknown>) => { held.push(name); const p = callback(); release = () => undefined; return p; } };
+  const greeted: unknown[] = [];
+  const ended: unknown[] = [];
+  const port = standVesselPort(worker, { onGreeting: (g) => greeted.push(g), onEnded: (why, stage, refusal) => ended.push({ why, stage, refusal }) }, { locks });
+  say({ t: "greeting", ownerEpoch: "e1", sessionId: "s1", lifetimeLock: "lares:vessel-session:s1" });
+  await tick();
+  expect(held).toEqual(["lares:vessel-session:s1"]);
+  expect(sent.map((s) => s.msg)).toEqual([{ t: "session:armed", sessionId: "s1" }]);
+  expect(port.greeting()).toEqual({ ownerEpoch: "e1", sessionId: "s1", lifetimeLock: "lares:vessel-session:s1" });
+  expect(greeted).toHaveLength(1);
+  say({ t: "ping", n: 7 });
+  expect(sent.at(-1)?.msg).toEqual({ t: "pong", n: 7 });
+  say({ t: "ended", why: "this vessel worker cannot own the store", stage: "open", refusal: "store-owned" });
+  expect(ended).toEqual([{ why: "this vessel worker cannot own the store", stage: "open", refusal: "store-owned" }]);
+  expect(release).not.toBeNull();
+
+  const bare = fakeWorker();
+  standVesselPort(bare.worker, {}, { locks: null });
+  bare.say({ t: "greeting", ownerEpoch: "e1", sessionId: "s2", lifetimeLock: "lares:vessel-session:s2" });
+  await tick();
+  expect(bare.sent, "CONTROL: a page with no Web Locks says no armed it cannot hold").toEqual([]);
+});
+
+test("a hello names an earlier greeting only when the page hands one", () => {
+  const { worker, sent } = fakeWorker();
+  const port = standVesselPort(worker, {}, { locks: null });
+  const boot = { idbName: "x" } as unknown as Parameters<typeof port.hello>[0];
+  port.hello(boot);
+  port.hello(boot, { ownerEpoch: "e0", sessionId: "s0" });
+  expect((sent[0]!.msg as { resume?: unknown }).resume).toBeUndefined();
+  expect((sent[1]!.msg as { resume?: unknown }).resume).toEqual({ ownerEpoch: "e0", sessionId: "s0" });
+});

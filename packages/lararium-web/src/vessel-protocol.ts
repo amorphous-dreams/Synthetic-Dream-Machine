@@ -24,7 +24,13 @@
  *   identity, wiki, connectionState   vessel → page  `status{vessel, connection}`
  *   the fleet-join door               page → vessel  `join:offer{text}` / `join:answer{text}`, answered by `reply`
  *   the holder's SharedWorker         vessel → page  `spawn{role}`; page → vessel `spawned{port}` (transferred, never read)
- *   a boot that stops                 vessel → page  `ended{why}`
+ *   a boot that stops                 vessel → page  `ended{why, refusal?}` (`store-owned`: another worker owns the store)
+ *
+ * THE SESSION (slice 3, `@lararium/browser` vessel-sessions.ts). The port opens one session at `hello`; the vessel answers
+ * `greeting{ownerEpoch, sessionId, lifetimeLock}` (an earlier greeting the hello names and this vessel did not mint reads
+ * `refused` by name, and the session opens afresh). The page holds `lifetimeLock` for its life and says `session:armed`, so
+ * the vessel hears a lost tab when the platform hands it that lock. The vessel pings (`ping`) on its own clock, and the
+ * page answers `pong`. The session admits only by its own unlock; `status{floor}` names the vessel's floor state.
  *
  * THIS PORT CARRIES NO ANSWER BYTES. The answer to a custody or ward ask travels from the ceremony document down its own
  * brokered port (`ceremony-protocol.ts`) straight to this vessel worker; the page mints that port's channel and keeps neither end.
@@ -56,12 +62,16 @@ export interface VesselBoot {
   readonly meshLeaf?: { readonly coordSeed: string; readonly peers: string };
 }
 
+/** The vessel's floor state, a public enum: `floor` (locked: public readings alone, `signer-unavailable` on asks), `lighting`, `lit`. */
+export type VesselFloor = "floor" | "lighting" | "lit";
+
 /** The seed's resting state, named and never its bytes. */
 export type SeedRest = "absent" | "wrapped-prf" | "wrapped-passphrase" | "open";
 
 /** Public readings alone. */
 export interface VesselStatus {
   readonly custody?: BootCustodyVerdict["reading"];
+  readonly floor?: VesselFloor;
   readonly seedRest?: SeedRest;
   /** The key class of a passkey wrap, where `seedRest` reads `wrapped-prf`. */
   readonly seedWrapClass?: string;
@@ -83,7 +93,9 @@ export type JoinOfferReply = { readonly kind: "request"; readonly text: string }
 export type JoinAnswerReply = { readonly kind: "landed"; readonly carriage: string; readonly signerDid: string };
 
 export type PageToVessel =
-  | { readonly t: "hello"; readonly tabSession: string; readonly boot: VesselBoot }
+  | { readonly t: "hello"; readonly tabSession: string; readonly boot: VesselBoot; readonly resume?: { readonly ownerEpoch: string; readonly sessionId: string } }
+  | { readonly t: "session:armed"; readonly sessionId: string }
+  | { readonly t: "pong"; readonly n: number }
   | { readonly t: "ceremony:port"; readonly askId: string; readonly port: MessagePort }
   | { readonly t: "ceremony:refused"; readonly askId: string; readonly refusal: string }
   | { readonly t: "control-event"; readonly surface: string; readonly ev: LarMsg_ControlEvent }
@@ -100,6 +112,8 @@ export type PageToVessel =
   | { readonly t: "walk:ward"; readonly callId: string; readonly bytes: Uint8Array };
 
 export type VesselToPage =
+  | { readonly t: "greeting"; readonly ownerEpoch: string; readonly sessionId: string; readonly lifetimeLock: string; readonly refused?: string }
+  | { readonly t: "ping"; readonly n: number }
   | { readonly t: "phase"; readonly phase: string }
   | { readonly t: "frame"; readonly frame: ProjectionSurfaceFrame }
   | { readonly t: "control-result"; readonly surface: string; readonly result: LarMsg_ControlResult }
@@ -112,4 +126,4 @@ export type VesselToPage =
   | { readonly t: "reply"; readonly callId: string; readonly ok: true; readonly value: unknown }
   | { readonly t: "reply"; readonly callId: string; readonly ok: false; readonly error: VesselError }
   | { readonly t: "spawn"; readonly spawnId: string; readonly role: "holder"; readonly url: string; readonly name: string }
-  | { readonly t: "ended"; readonly why: string; readonly stage: "custody" | "open" };
+  | { readonly t: "ended"; readonly why: string; readonly stage: "custody" | "open"; readonly refusal?: string };

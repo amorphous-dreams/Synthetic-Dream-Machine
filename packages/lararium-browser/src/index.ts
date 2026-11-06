@@ -16,6 +16,8 @@ export { openBrowserVessel, DAEMON_SURFACE_ID } from "./open-browser-vessel.js";
 export { readHearthFloor, floorNexusOf, porchOriginOf, type HearthFloorRead } from "./browser-floor-read.js";
 export { holdVesselLock, vesselLockName, ambientLocks } from "./vessel-lock.js";
 export type { LockHost, VesselLockHold } from "./vessel-lock.js";
+export { standVesselHouse, sessionLifetimeLock, VesselSessionRefused } from "./vessel-sessions.js";
+export type { VesselHouse, VesselSession, VesselFloorState, VesselLockReport, VesselHouseCensus, LitVessel, SessionKeyHolder, VesselSessionRefusal } from "./vessel-sessions.js";
 // The house behind the lock: one daemon island per origin inside a SharedWorker holder, a port per tab.
 export { attachSharedHolder, ambientSharedWorkerHost, holderWorkerHandle, houseName } from "./shared-holder.js";
 export type { SharedWorkerHost, SharedHolderAttach } from "./shared-holder.js";

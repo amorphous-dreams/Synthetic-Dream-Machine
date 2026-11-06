@@ -44,14 +44,29 @@ export interface VesselPortHandlers {
   onAsk?(ask: VesselAsk): void;
   /** The ask closed (answered, declined or refused): the page takes its notice down. */
   onAskSettled?(askId: string): void;
-  onEnded?(why: string, stage: "custody" | "open"): void;
+  onEnded?(why: string, stage: "custody" | "open", refusal?: string): void;
+  /** The vessel opened this tab's session: its owner epoch and minted id (an earlier greeting it refused reads `refused`). */
+  onGreeting?(greeting: VesselGreeting): void;
   /** The holder's SharedWorker, built on the page because a dedicated worker cannot build one. */
   spawnHolder?(url: string, name: string): { readonly port: MessagePort; onError(listener: () => void): void } | null;
 }
 
-export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHandlers) {
+/** The session the vessel opened for this tab. The page trusts no earlier greeting: a respawned vessel mints afresh. */
+export interface VesselGreeting { readonly ownerEpoch: string; readonly sessionId: string; readonly lifetimeLock: string; readonly refused?: string }
+
+/** The Web Locks the page holds its session's lifetime lock on (`navigator.locks`). */
+export interface PageLocks { request(name: string, callback: () => Promise<unknown>): Promise<unknown> }
+const ambientPageLocks = (): PageLocks | null => {
+  const locks = (globalThis as { navigator?: { locks?: LockManager } }).navigator?.locks;
+  return locks ? { request: (name, callback) => locks.request(name, callback) } : null;
+};
+
+export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHandlers, opts: { readonly locks?: PageLocks | null } = {}) {
   const calls = new Map<string, { resolve(v: unknown): void; reject(e: unknown): void }>();
   let connection: BrowserConnectionSnapshot | null = null;
+  let greeting: VesselGreeting | null = null;
+  let endLife: (() => void) | null = null;
+  const locks = opts.locks === undefined ? ambientPageLocks() : opts.locks;
   const connectionListeners = new Set<BrowserConnectionListener>();
   const post = (msg: PageToVessel, transfer: Transferable[] = []): void => worker.postMessage(msg, transfer);
   const call = <T>(make: (callId: string) => PageToVessel): Promise<T> => new Promise<T>((resolve, reject) => {
@@ -63,6 +78,16 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
   worker.addEventListener("message", (e: MessageEvent) => {
     const msg = e.data as VesselToPage;
     switch (msg.t) {
+      case "greeting": {
+        greeting = { ownerEpoch: msg.ownerEpoch, sessionId: msg.sessionId, lifetimeLock: msg.lifetimeLock, ...(msg.refused ? { refused: msg.refused } : {}) };
+        handlers.onGreeting?.(greeting);
+        // THE TAB HOLDS ITS SESSION'S LIFETIME LOCK FOR ITS LIFE: once held, the vessel queues on it, and the platform hands it
+        // over when this page's context goes, with or without a close.
+        const sessionId = msg.sessionId;
+        if (locks) void locks.request(msg.lifetimeLock, () => new Promise<void>((resolve) => { endLife = resolve; post({ t: "session:armed", sessionId }); })).catch(() => undefined);
+        return;
+      }
+      case "ping": post({ t: "pong", n: msg.n }); return;
       case "phase": handlers.onPhase?.(msg.phase); return;
       case "frame": handlers.onFrame?.(msg.frame); return;
       case "control-result": handlers.onControlResult?.(msg.surface, msg.result); return;
@@ -93,13 +118,18 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
         post({ t: "spawned", spawnId: msg.spawnId, port: built.port }, [built.port]);
         return;
       }
-      case "ended": handlers.onEnded?.(msg.why, msg.stage); return;
+      case "ended": handlers.onEnded?.(msg.why, msg.stage, msg.refusal); return;
     }
   });
   worker.addEventListener("error", (e: Event) => handlers.onEnded?.(`the vessel worker failed: ${(e as ErrorEvent).message ?? "error"}`, "open"));
 
   return {
-    hello(boot: VesselBoot): void { post({ t: "hello", tabSession: crypto.randomUUID(), boot }); },
+    /** Open this tab's session; `resume` names an earlier greeting, which a respawned vessel refuses by name. */
+    hello(boot: VesselBoot, resume?: { readonly ownerEpoch: string; readonly sessionId: string }): void {
+      post({ t: "hello", tabSession: crypto.randomUUID(), boot, ...(resume ? { resume } : {}) });
+    },
+    /** The session the vessel greeted this tab with, or null before its greeting. */
+    greeting: (): VesselGreeting | null => greeting,
     pageLife(life: PageLife): void { post({ t: "page:life", life }); },
     /** One end of a ceremony's channel, transferred to the vessel unread; the page keeps neither end. */
     ceremonyPort(askId: string, port: MessagePort): void { post({ t: "ceremony:port", askId, port }, [port]); },
@@ -124,7 +154,7 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
       getSnapshot(): BrowserConnectionSnapshot { return connection ?? { status: "local" }; },
       subscribe(listener: BrowserConnectionListener): () => void { connectionListeners.add(listener); return () => { connectionListeners.delete(listener); }; },
     },
-    terminate(): void { worker.terminate(); },
+    terminate(): void { endLife?.(); endLife = null; worker.terminate(); },
   };
 }
 

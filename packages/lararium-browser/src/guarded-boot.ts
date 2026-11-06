@@ -27,24 +27,30 @@ export class BootTeardownRefusal extends Error {
   }
 }
 
+/** Take down what a boot stood, newest first, each within its budget; answers what would not come down. */
+export async function takeDownBoot(held: BootHold, budgetMs = 5_000): Promise<string[]> {
+  const failed: string[] = [];
+  for (const thing of [...held.stood].reverse()) {
+    // A teardown is bounded: a Repo over a store that never opened awaits a flush that never lands, and a boot that waits
+    // on it forever would hold the page. A thing that outlasts its budget reads as one that will not come down.
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([
+        Promise.resolve().then(() => thing.down()),
+        new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`${thing.what} outlasted its ${String(budgetMs)}ms teardown budget`)), budgetMs); }),
+      ]);
+    } catch { failed.push(thing.what); } finally { if (timer !== undefined) clearTimeout(timer); }
+  }
+  held.stood.length = 0;
+  return failed;
+}
+
 /** Run `boot`; on a throw, take down what it stood (newest first), then give the lock back, or keep it and refuse by name. */
 export async function guardedBoot<T>(held: BootHold, boot: () => Promise<T>, budgetMs = 5_000): Promise<T> {
   try {
     return await boot();
   } catch (error) {
-    const failed: string[] = [];
-    for (const thing of [...held.stood].reverse()) {
-      // A teardown is bounded: a Repo over a store that never opened awaits a flush that never lands, and a boot that waits
-      // on it forever would hold the page. A thing that outlasts its budget reads as one that will not come down.
-      let timer: ReturnType<typeof setTimeout> | undefined;
-      try {
-        await Promise.race([
-          Promise.resolve().then(() => thing.down()),
-          new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`${thing.what} outlasted its ${String(budgetMs)}ms teardown budget`)), budgetMs); }),
-        ]);
-      } catch { failed.push(thing.what); } finally { if (timer !== undefined) clearTimeout(timer); }
-    }
-    held.stood.length = 0;
+    const failed = await takeDownBoot(held, budgetMs);
     if (failed.length > 0) throw new BootTeardownRefusal(failed, error);
     await held.lock?.release().catch(() => undefined);
     throw error;

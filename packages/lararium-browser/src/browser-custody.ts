@@ -102,6 +102,23 @@ export function lockBrowserCustody(idbName: string): void {
   for (const listener of [...lockListeners.get(idbName) ?? []]) listener();
 }
 
+/**
+ * The last session's lock (vessel-sessions.ts): wait out any custody act in flight, then overwrite the tree key's bytes and
+ * drop the unlock. Answers true when a key stood. Taking the act lock exclusive first means no act seals under a key this
+ * overwrites midway; an act that starts after reads no key and refuses `sealed-locked`.
+ */
+export async function overwriteBrowserCustody(idbName: string): Promise<boolean> {
+  return withCustodyActLock(idbName, "exclusive", async () => {
+    const held = unlocked.get(idbName);
+    held?.fill(0);
+    lockBrowserCustody(idbName);
+    return held !== undefined;
+  });
+}
+
+/** How many vessels this thread holds an unlock for: a count, never a key, for the lock's instrument. */
+export function browserCustodyKeysHeld(): number { return unlocked.size; }
+
 const lockListeners = new Map<string, Set<() => void>>();
 /** Hear this page's lock of the vessel: a tab that told the holder it can seal tells it again when it cannot. */
 export function onBrowserCustodyLock(idbName: string, listener: () => void): () => void {
@@ -592,7 +609,10 @@ export async function unlockBrowserCustody(idbName: string, credentials: readonl
     if (!o.opened) return { reading: "no-slot-opens", notes: o.notes };
     const io = browserKeystoreCustodyIo(idbName);
     await settleRotation({ io, treePath: CUSTODY_TREE_ROW, carriers: await standingCarriers(idbName) });
+    // A later session's own unlock opens the same key afresh: the copy it replaces gets overwritten, inside this act's lock.
+    const prior = unlocked.get(idbName);
     unlocked.set(idbName, o.opened.treeKey);
+    if (prior && prior !== o.opened.treeKey) prior.fill(0);
     const { moved, left } = await settleClearRows(idbName, o.opened.treeKey);
     return { reading: "opens", slot: o.opened.slot, settled: moved, unsettled: left };
   });
