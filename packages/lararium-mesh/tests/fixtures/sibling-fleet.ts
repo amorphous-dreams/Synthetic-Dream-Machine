@@ -217,6 +217,8 @@ export function standLeaf(
     readonly alsoVia?: readonly ReturnType<typeof memoryRelay>[];
     /** Delay before the leaf re-dials a herm that dropped it. */
     readonly retryInterval?: number;
+    /** The leaf the adapter reads at every licensing act, in place of the fixture's (a product composition's). */
+    readonly leaf?: (kel: readonly PersonaKelEvent[]) => Promise<SiblingLeaf>;
   } = {},
 ): Leaf {
   const sharePolicy = opts.sharePolicy ?? (async () => true);
@@ -226,10 +228,10 @@ export function standLeaf(
     transports: [relay, ...(opts.alsoVia ?? [])].map((r) => r.transportFor(self.deviceKey)),
     ...(opts.retryInterval !== undefined ? { retryInterval: opts.retryInterval } : {}),
     kel: self.kel,
-    leaf: async (kel) => {
+    leaf: opts.leaf ?? (async (kel) => {
       const leaf = await leafOf(device, enrolment, kel, self.expectedEpoch);
       return opts.presents ? { ...leaf, standing: { held: leaf.standing.held.map((h) => ({ ...h, edge: opts.presents! })) } } : leaf;
-    },
+    }),
     ...(drops ? { drops } : {}),
     onRefusal: (r) => refusals.push(r),
   });
