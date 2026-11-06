@@ -15,6 +15,10 @@
  *   SV2 RED  a session that closes (pagehide) hears no frame after its close, and its bindings close at the vessel; its loss
  *            frees nothing of the other's: the survivor still hears frames and its own binding's traffic, and its binding
  *            stays open at the vessel. CONTROL: before the close both sessions hear the frame.
+ *   SV4 RED  a session admitted AFTER the vessel lit missed every frame already sent (its mirror never stands: glass-tabs
+ *            e2e, the second tab): its admission asks the vessel to repaint the shown surface whole (`resend`), once, so
+ *            the frame reaches it over its own port. The first session (it lit the vessel) asks nothing. CONTROL: a late
+ *            session of ANOTHER face, which wears no lit surface, asks no repaint.
  *
  * The vessel the host lights stands in (as in vessel-host-faces), with its surface callbacks held so a case can fire them.
  *
@@ -69,6 +73,7 @@ function fakeVessel() {
   const placed: Array<{ surface: string; binding: string }> = [];
   const closed: string[] = [];
   const controlEvents: string[] = [];
+  const resent: string[] = [];
   const open = async (o: { idbName: string; face?: string | null } & SurfaceHooks) => {
     hooks.onFrame = o.onFrame;
     hooks.onControlResult = o.onControlResult;
@@ -85,9 +90,10 @@ function fakeVessel() {
       },
       flush: async () => undefined, close: async () => undefined,
       sendControlEvent: (_surface: string, ev: { eventId: string }) => { controlEvents.push(ev.eventId); },
+      resend: (surface: string) => { resent.push(surface); return { ok: true as const }; },
     };
   };
-  return { open, hooks, placed, closed, controlEvents };
+  return { open, hooks, placed, closed, controlEvents, resent };
 }
 
 const until = async (what: string, ok: () => boolean): Promise<void> => {
@@ -224,5 +230,30 @@ describe("surface traffic reaches each session over its own port", () => {
     expect(a.frames(), "a closed session hears no frame after its close").toHaveLength(1);
     expect(a.portMsgs(), "nor its gone binding's traffic").toEqual([]);
     expect(v.closed, "A's loss closes nothing of B's").not.toContain("bind-b");
+  }, SLOW);
+
+  test("SV4 RED a session admitted after the vessel lit asks the vessel to repaint the shown surface — CONTROL: the lighting session and another face ask nothing", async () => {
+    const idbName = `host-surface-late-${crypto.randomUUID()}`;
+    const face = await standFace(idbName, ROUTE);
+    const other = await standFace(idbName, OTHER_ROUTE);
+    const v = fakeVessel();
+    const host = standVesselHost({ locks: navigator.locks, openVessel: v.open } as never);
+    const a = tab(ROUTE), b = tab(ROUTE), g = tab(OTHER_ROUTE);
+    enter(host, a, "tab-a", idbName, face);
+    await until("A admitted", a.admitted);
+    await settle();
+    expect(v.resent, "CONTROL: the session that lit the vessel hears its frames live and asks no repaint").toEqual([]);
+
+    enter(host, b, "tab-b", idbName, face);
+    await until("B admitted", b.admitted);
+    await until("B's admission asks the vessel to repaint its wiki", () => v.resent.length > 0);
+    expect(v.resent).toEqual(["w"]);
+    v.hooks.onFrame!({ n: 1 });
+    await until("B hears the repaint over its own port", () => b.frames().length > 0);
+
+    enter(host, g, "tab-g", idbName, other);
+    await until("G admitted (its own face)", g.admitted);
+    await settle();
+    expect(v.resent, "CONTROL: a session of another face asks no repaint of the lit face's surface").toEqual(["w"]);
   }, SLOW);
 });
