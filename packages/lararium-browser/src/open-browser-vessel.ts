@@ -615,7 +615,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       patienceMs: 30_000, idPrefix: `docstore-${idbName}`,
     }),
     flushRepo: async () => { await repo.flush(); },
-    onHeld: ({ documentId }) => console.log(`[sealed-rest] save-unbooked: ${documentId.slice(0, 12)}… waits in memory for a session to book it`),
+    onHeld: ({ refusal, documentId }) => console.log(`[sealed-rest] ${refusal}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
   });
   const repo = new Repo({
     storage: sealedRest.store,

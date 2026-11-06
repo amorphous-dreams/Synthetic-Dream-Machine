@@ -417,6 +417,44 @@ describe("P1: a bag map that drops (a dial drop, the floor) never writes clear o
   });
 });
 
+describe("P2-1: a seal the door cannot answer keeps its change", () => {
+  it("a save whose seal refuses (no island answers) waits in memory, never throws its change away, and seals once the door answers", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    let answers = false;
+    const held: string[] = [];
+    const own = faceProofSubjectRef(a.chain.scope);
+    const session: Session = { id: "s-a", subject: own, signer: a.signer };
+    let repo: Repo | null = null;
+    const rest = composeSealedRest<Session>({
+      inner, bagOf: () => ({ bagId: BAG, face: own }), sessionFace: () => own,
+      door: {
+        seal: async (args) => answers ? a.holder.sealValues({ ...args, signer: (args.session as Session).signer }) : { refusal: "signer-unavailable", cause: "the daemon island did not answer the seal" } as never,
+        open: (args) => a.holder.openValue(args),
+      },
+      flushRepo: async () => { await repo?.flush(); },
+      onHeld: (h) => held.push(h.refusal),
+    });
+    repo = new Repo({ storage: rest.store, network: [] });
+    const doc = repo.create<{ note?: string }>();
+    rest.wrote(doc.documentId, session);
+    doc.change((d) => { d.note = SECRET; });
+    const direct = rest.store.save([doc.documentId, "incremental", "direct"], A.save(doc.doc() as A.Doc<unknown>));
+    await expect(direct).resolves.toBeUndefined();
+    await repo.flush();
+    expect(rest.store.waiting(doc.documentId)).toBeGreaterThan(0);
+    expect(held).toContain("save-unsealed");
+    expect(restsAny(inner, doc.documentId)).toBe(false);
+    answers = true;
+    expect(await rest.store.reseal()).toBeGreaterThan(0);
+    expect(rest.store.waiting(doc.documentId)).toBe(0);
+    expect(restsClear(inner, doc.documentId, SECRET)).toBe(false);
+    expect(restsAny(inner, doc.documentId)).toBe(true);
+    await repo.shutdown();
+  });
+});
+
 describe("T3: a save waiting at the stand-down is never lost", () => {
   it("a booked change written just before the stand-down seals under its session before any booking drops, and a restart reads it", async () => {
     const w = world();

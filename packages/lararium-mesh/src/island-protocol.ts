@@ -66,6 +66,7 @@ import type { WorkingFloorAnchor } from "./wiki-recipe.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
 import type { SparseFormVector } from "./worldline-trajectory.js";
+import type { DocStoreMsg_Live, DocStoreMsg_Opened, DocStoreMsg_Sealed } from "./sealed-rest.js";
 import {
   LAR_CONTROL_EVENT, LAR_CONTROL_RESULT, LAR_FRAME, LAR_RESEND, LAR_SERVICE,
   readLarControlEvent, readLarControlResult, readLarFrame, readLarResend, readLarService,
@@ -1051,7 +1052,11 @@ export type IslandToVesselMsg =
   | IslandMsg_ViewContent
   | IslandMsg_ViewSettle
   | LarIslandToVesselMsg
-  | PortIslandToVesselMsg;
+  | PortIslandToVesselMsg
+  // The document store's door (sealed-rest): the island's answers to a seal and an open, and its ask for a live document.
+  | DocStoreMsg_Sealed
+  | DocStoreMsg_Opened
+  | DocStoreMsg_Live;
 
 // ── Type guards ────────────────────────────────────────────────────────────
 
@@ -1086,7 +1091,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
   if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }

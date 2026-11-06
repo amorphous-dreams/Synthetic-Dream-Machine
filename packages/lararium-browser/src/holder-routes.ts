@@ -46,4 +46,8 @@ export const HOLDER_ROUTES = {
   "view:catalog": "owner",
   "view:content": "owner",
   "view:settle": "owner",
+  // The document store's door answers the vessel that holds the island's capability record, as its other asks do.
+  "docstore:sealed": "owner",
+  "docstore:opened": "owner",
+  "docstore:live": "owner",
 } as const satisfies Record<IslandToVesselMsg["type"], HolderRoute>;

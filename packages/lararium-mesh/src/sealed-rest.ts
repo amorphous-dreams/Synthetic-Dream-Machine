@@ -304,7 +304,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly sessionFace: () => string | null;
   readonly door: Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open">;
   readonly flushRepo: () => Promise<void>;
-  readonly onHeld?: (held: { readonly refusal: "save-unbooked" | "save-unmapped"; readonly documentId: string }) => void;
+  readonly onHeld?: (held: { readonly refusal: "save-unbooked" | "save-unmapped" | "save-unsealed"; readonly documentId: string }) => void;
 }): SealedRest<S> {
   const book = new SaveBook<S>();
   let watched: { readonly standing: () => S | null; readonly actorOf: (documentId: string) => string | null } | null = null;

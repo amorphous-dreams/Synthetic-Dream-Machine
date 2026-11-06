@@ -45,6 +45,7 @@ export const SEALED_DOCUMENT_REFUSALS = [
   "bag-unmapped",            // a sealed value rests for a document the bag map names no bag for (yet): no byte moves
   "save-unbooked",           // no session booked the change a save carries: it stays in memory, unsealed and unwritten
   "save-unmapped",           // the document rests sealed and the map names no bag for it now: the save waits in memory, never clear
+  "save-unsealed",           // the holder refused or never answered the seal: the save waits in memory, and the next reseal tries again
 ] as const;
 export type SealedDocumentRefusalName = (typeof SEALED_DOCUMENT_REFUSALS)[number];
 
@@ -88,7 +89,7 @@ export interface SealedDocumentPorts {
    *  ever lands beside a sealed one. Read once per document. */
   readonly refuseClearOverSealed?: boolean;
   /** Told once per save the store holds back unsealed (`save-unbooked`), naming its document alone. */
-  onHeld?(held: { readonly refusal: "save-unbooked" | "save-unmapped"; readonly documentId: string }): void;
+  onHeld?(held: { readonly refusal: "save-unbooked" | "save-unmapped" | "save-unsealed"; readonly documentId: string }): void;
   /** A vessel's store (P1): a document that rests sealed, or mapped sealed once this process, keeps its rest class
    *  while the map names no bag for it (a dial that dropped, the floor): its save waits in memory (`save-unmapped`),
    *  never lands clear, and no removal reaches a sealed pointer, until the map stands again and the save seals. */
@@ -166,8 +167,9 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     for (const [name, { key, data }] of [...this.#waiting]) {
       const bag = this.#bagOf(key);
       const session = this.#ports.sessionOf(key[0]!, data);
-      if (bag === null || session === null || session.subject !== bag.face) continue;
-      await this.#inTurn(() => this.#seal(bag, key, data, session));
+      if (bag === null || isPublic(bag) || session === null || session.subject !== bag.face) continue;
+      try { await this.#inTurn(() => this.#seal(bag, key, data, session)); }
+      catch (error) { if (error instanceof SealedDocumentRefusal) continue; throw error; }
       this.#waiting.delete(name);
       sealed++;
     }
@@ -226,7 +228,14 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       return;
     }
     if (session.subject !== bag.face) throw new SealedDocumentRefusal("session-face-foreign");
-    await this.#inTurn(() => this.#seal(bag, key, data, session));
+    // A SEAL THE HOLDER CANNOT ANSWER KEEPS ITS CHANGE: the save waits in memory, readable, and the next reseal seals it.
+    try { await this.#inTurn(() => this.#seal(bag, key, data, session)); }
+    catch (error) {
+      if (!(error instanceof SealedDocumentRefusal)) throw error;
+      this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data) });
+      this.#ports.onHeld?.({ refusal: "save-unsealed", documentId: key[0]! });
+      return;
+    }
     this.#waiting.delete(nameOf(key));
   }
 

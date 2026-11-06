@@ -886,7 +886,7 @@ async function prepareNodeBootOn(
       patienceMs: 30_000, idPrefix: `docstore-${process.pid}`,
     }),
     flushRepo: async () => { await repo.flush(); },
-    onHeld: ({ documentId }) => console.log(`[sealed-rest] save-unbooked: ${documentId.slice(0, 12)}… waits in memory for a session to book it`),
+    onHeld: ({ refusal, documentId }) => console.log(`[sealed-rest] ${refusal}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
   });
   // THE FLOOR PIN SET (house ruling "The admit's gate pin": a floor route's full pin travels through an authenticated
   // relation): each sovereign session hears, at open, the floor pins this
