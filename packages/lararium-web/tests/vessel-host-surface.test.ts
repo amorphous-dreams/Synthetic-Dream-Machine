@@ -74,6 +74,7 @@ function fakeVessel() {
   const closed: string[] = [];
   const controlEvents: string[] = [];
   const resent: string[] = [];
+  let shown = "w";
   const open = async (o: { idbName: string; face?: string | null } & SurfaceHooks) => {
     hooks.onFrame = o.onFrame;
     hooks.onControlResult = o.onControlResult;
@@ -91,9 +92,10 @@ function fakeVessel() {
       flush: async () => undefined, close: async () => undefined,
       sendControlEvent: (_surface: string, ev: { eventId: string }) => { controlEvents.push(ev.eventId); },
       resend: (surface: string) => { resent.push(surface); return { ok: true as const }; },
+      activeSurface: () => shown,
     };
   };
-  return { open, hooks, placed, closed, controlEvents, resent };
+  return { open, hooks, placed, closed, controlEvents, resent, show: (s: string) => { shown = s; } };
 }
 
 const until = async (what: string, ok: () => boolean): Promise<void> => {
@@ -255,5 +257,22 @@ describe("surface traffic reaches each session over its own port", () => {
     await until("G admitted (its own face)", g.admitted);
     await settle();
     expect(v.resent, "CONTROL: a session of another face asks no repaint of the lit face's surface").toEqual(["w"]);
+  }, SLOW);
+
+  test("SV5 RED a tab joining while surface X shows repaints X, never the wiki — CONTROL: the joining tab paints X too", async () => {
+    const idbName = `host-surface-shown-${crypto.randomUUID()}`;
+    const face = await standFace(idbName, ROUTE);
+    const v = fakeVessel();
+    const host = standVesselHost({ locks: navigator.locks, openVessel: v.open } as never);
+    const a = tab(ROUTE), b = tab(ROUTE);
+    enter(host, a, "tab-a", idbName, face);
+    await until("A admitted", a.admitted);
+    v.show("daemon");
+    enter(host, b, "tab-b", idbName, face);
+    await until("B admitted", b.admitted);
+    await until("B's admission asks the vessel to repaint", () => v.resent.length > 0);
+    expect(v.resent, "the repaint names the surface that shows, so no other tab flips").toEqual(["daemon"]);
+    v.hooks.onFrame!({ n: 1 });
+    await until("CONTROL: the joining tab paints the shown surface over its own port", () => b.frames().length > 0);
   }, SLOW);
 });
