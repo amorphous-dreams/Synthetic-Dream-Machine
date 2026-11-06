@@ -6,6 +6,7 @@ import { edgeLedgerDocUrl, materializeSharedLarDoc } from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { shoreStorage } from "@lararium/mesh";
+import { idbSealedStoreShore, sealedStoreDbName } from "./browser-sealed-store.js";
 
 // The daemon INHERITS the wiki render cap (hasProjection). Mount its projection DORMANT at island-boot —
 // exactly as a pool wiki mounts its camera — so summoning the daemon is a pure active-surface gate flip,
@@ -22,6 +23,9 @@ runBrowserSovereignWorker((manifest) => {
     readDyadFromBoard: true,
     ...(dyadLedger ? { dyadLedger } : {}),
     ...(ledgerRepo ? { restDyadLedger: () => ledgerRepo.flush() } : {}),
+    // THE SEALED STORE'S REST (sealed-store#/the-store): the content-key holder stands beside this island's Keyhive
+    // identities, over IndexedDB shelves of its own, and its roll takes this island's seat rolls.
+    ...(key ? { sealedStore: idbSealedStoreShore(sealedStoreDbName(key)) } : {}),
     // ONE SEED SITE: `makeDaemonBehavior` runs the cap-gated `seedDaemonProtocol` in onEa, so the daemon
     // protocol seed (Ui+Persona+Circle+Flow) stands identically on either boot. This ts-only browser vessel
     // passes HULLS_TS_ONLY → it seeds crystal alone, and its onBoot carries the projection mount.

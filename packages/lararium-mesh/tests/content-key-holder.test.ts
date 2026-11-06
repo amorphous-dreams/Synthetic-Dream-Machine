@@ -1048,11 +1048,11 @@ describe("a lock that lands between two writes of one act stops every later writ
   }
   const never = (): boolean => false;
 
-  it("a seal: a lock at the manifest's write, at the row's, or at the manifest note's rests nothing after it", async () => {
+  it("a seal: a lock at the manifest's write, at the row's, or at the head note's rests nothing after it", async () => {
     const points: Record<string, (kind: string, name: string) => boolean> = {
       "the manifest": (kind) => kind === "manifest",
       "the index row": (kind) => kind === "index",
-      "the manifest note": (kind, name) => kind === "own" && name.startsWith("manifest-head."),
+      "the head note": (kind, name) => kind === "own" && name.startsWith("write-head."),
     };
     for (const [where, at] of Object.entries(points)) {
       const { v: [a] } = await fleet(`a-${where}`);
@@ -1061,12 +1061,12 @@ describe("a lock that lands between two writes of one act stops every later writ
       expect(said(await a!.holder.sealBlob({ bagId: BAG, plaintext: body("second"), signer: a!.signer })), where).toBe("holder-locked");
       expect(spy.after(), where).toBe(0);
     }
-    // CONTROL: unlocked, the same seal rests its manifest, its row and both notes.
+    // CONTROL: unlocked, the same seal rests its manifest, its row and its head note.
     const { v: [b] } = await fleet("b");
     await seal(b!, "first");
     const free = lockAt(b!, never);
     expect(said(await b!.holder.sealBlob({ bagId: BAG, plaintext: body("second"), signer: b!.signer }))).toBe("OK");
-    expect(free.puts()).toBe(4);
+    expect(free.puts()).toBe(3);
   });
 
   it("a mint: a lock while the key wraps rests no lockbox, and a lock at the lockbox's write rests no key version record", async () => {
@@ -1081,11 +1081,11 @@ describe("a lock that lands between two writes of one act stops every later writ
     (b!.shore as { wrap: typeof wrap }).wrap = async (args) => { const out = await wrap(args); b!.holder.lock(); return out; };
     expect(said(await b!.holder.sealBlob({ bagId: BAG, plaintext: body("first"), signer: b!.signer }))).toBe("holder-locked");
     expect(free.puts()).toBe(0);
-    // CONTROL: unlocked, a founding seal rests its lockbox, its record, the manifest, the row and both notes.
+    // CONTROL: unlocked, a founding seal rests its lockbox, its record, the manifest, the row and its head note.
     const { v: [c] } = await fleet("c");
     const whole = lockAt(c!, never);
     expect(said(await c!.holder.sealBlob({ bagId: BAG, plaintext: body("first"), signer: c!.signer }))).toBe("OK");
-    expect(whole.puts()).toBe(6);
+    expect(whole.puts()).toBe(5);
   });
 
   it("a hand-over: a lock at the first lockbox's write rests no second lockbox, and one at the last lockbox's rests no hand-over record", async () => {

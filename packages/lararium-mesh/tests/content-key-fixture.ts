@@ -131,8 +131,8 @@ export async function vessel(w: World, name: string, over: { standing?: WriterSt
     ownSeat: async () => (v.seated ? id : null),
     ...(v.cutsBase === null ? {} : { freshBase: async ({ bagId, keyVersion }: { bagId: string; keyVersion: string }) => {
       v.bases.push({ keyVersion, lockboxes: [...rest.values.keys()].filter((k) => k.startsWith("lockbox/")).length });
-      if (v.cutsBase === true && v.cutBase !== null) return v.cutBase({ bagId, keyVersion }) as never;
-      return v.cutsBase === true;
+      if (v.cutsBase !== true) return null;
+      return (v.cutBase !== null ? v.cutBase({ bagId, keyVersion }) : { plaintext: utf8Bytes(`base ${keyVersion}`), ref: hex(sha256(utf8Bytes(`base ${keyVersion}`))), frontier: [] }) as never;
     } }),
     values: {
       read: async (address) => { const bytes = values.get(address); return bytes ? Uint8Array.from(bytes) : null; },

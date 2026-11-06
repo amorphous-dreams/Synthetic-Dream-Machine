@@ -640,6 +640,7 @@ export * from "./content-key-lineage.js";
 export * from "./sealed-store-rest.js";
 export * from "./lockbox-wrap.js";
 export * from "./content-key-holder.js";
+export * from "./sealed-doc-store.js";
 export * from "./memory-section.js";
 export * from "./face-bundle.js";
 export * from "./face-log-view.js";
